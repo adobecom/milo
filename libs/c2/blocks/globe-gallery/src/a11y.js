@@ -7,7 +7,7 @@
         element. Enter/Space ENTERS the gallery.
      2. BROWSE — focus moves into a list of per-image buttons (one per card). Tab /
         Shift+Tab walks image→image; each announces that image's alt text (authored alt →
-        creator description fallback). On focus the globe rotates that image to screen
+        `alt text to be authored` placeholder when none). On focus the globe rotates that image to screen
         centre (injected `centerCard`) and a centred focus ring traces it. Enter on an
         image opens the detail modal for THAT image (injected `openCard`). Esc — or tabbing
         out of the list either end — collapses back to the single entry stop.
@@ -27,12 +27,12 @@
    DI factory: every piece of runtime state it needs (count, sphereFormT, modalIdx, the
    per-image label) is injected as a getter, and the actions it triggers (centerCard,
    openCard, onFocus) are injected callbacks, so this module holds no globe state except
-   its own DOM nodes and imports neither the core nor the modal. `galleryLabel` is the
-   entry button's concise accessible NAME (announced on every focus); `galleryInstructions`
-   is the how-to-drive-it DESCRIPTION, shown as a VISIBLE popup on focus AND wired as the
-   `aria-describedby` child (one element for both audiences) so the name stays terse.
+   its own DOM nodes and imports neither the core nor the modal. `galleryInstructions` is the
+   entry button's operating copy, shown as a VISIBLE popup on focus AND wired as the button's
+   accessible NAME via `aria-labelledby` (one element, both audiences) — so a screen reader
+   announces exactly the on-page instruction with no separate/redundant label (a11y audit).
    Multi-instance safe — all lookups go through the injected root-scoped `q`, and the
-   describedby id is suffixed with the instance `gid`. */
+   labelledby id is suffixed with the instance `gid`. */
 
 export default function createGalleryA11y({
   q,
@@ -44,7 +44,6 @@ export default function createGalleryA11y({
   centerCard,
   openCard,
   onFocus,
-  galleryLabel,
   galleryInstructions,
   gid,
 }) {
@@ -121,16 +120,16 @@ export default function createGalleryA11y({
     widgetEl = document.createElement('button');
     widgetEl.type = 'button';
     widgetEl.className = 'globe-gallery-a11y';
-    widgetEl.setAttribute('aria-label', galleryLabel(getCount()));
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
 
     // Operating instructions, serving BOTH audiences from ONE element (per a11y audit): a
     // VISIBLE popup (CSS shows `.globe-gallery-a11y-tip` on the button's :focus-visible) so
     // sighted keyboard users see "press Enter to enter the gallery", and simultaneously the
-    // button's aria-describedby target so screen readers announce the same text on focus
-    // (aria-describedby reads the referenced node even while it's visually hidden). Kept out
-    // of the concise aria-label NAME so the name stays terse. Child of the button, so it's
-    // removed on teardown; the gid keeps the id unique per instance.
+    // button's aria-labelledby target so a screen reader announces the SAME on-page text as
+    // the button's accessible NAME (aria-labelledby reads the referenced node even while it's
+    // visually hidden). There is no separate label — this copy IS the name, so nothing
+    // redundant (an "interactive image gallery, N images" prefix) is announced. Child of the
+    // button, so it's removed on teardown; the gid keeps the id unique per instance.
     // TODO: `galleryInstructions` is currently a hardcoded English fallback (see
     // resolveGlobeLabels in globe-gallery.js) — localize once the placeholder key is authored.
     if (galleryInstructions) {
@@ -139,7 +138,7 @@ export default function createGalleryA11y({
       descEl.id = `globe-gallery-a11y-desc-${gid}`;
       descEl.textContent = galleryInstructions;
       widgetEl.appendChild(descEl);
-      widgetEl.setAttribute('aria-describedby', descEl.id);
+      widgetEl.setAttribute('aria-labelledby', descEl.id);
     }
 
     // Focusing the globe snaps the page to its interactive (formed-sphere) scroll position

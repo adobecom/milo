@@ -1288,20 +1288,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getSphereFormT: () => sphereFormTAtLastTick,
     getModalIdx: () => modal.getModalIdx(),
     interactiveThreshold: SPHERE_INTERACTIVE_T,
-    // Per-image browse-button name: authored alt text, falling back to the creator
-    // description until alt is authored (no creator-NAME fallback — decision). The final
-    // `Image N` guarantees a non-empty accessible name (WCAG 4.1.2) if a card has neither.
-    // TODO: HARDCODED — localize the positional fallback with the other a11y strings.
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
-      return (m && (m.alt || m.description)) || `Image ${i + 1}`;
+      return (m && m.alt) || 'alt text to be authored';
     },
     // Browse-image focus → rotate the globe so that image is centred on screen.
     centerCard: centerCardOnScreen,
     // Enter on a browse image → open the detail modal for that image, warp from centre.
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
     onFocus: snapToInteractive,
-    galleryLabel: labels.galleryLabel,
     galleryInstructions: labels.galleryInstructions,
     gid,
   });
@@ -2499,46 +2494,33 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 async function resolveGlobeLabels() {
   const [
     arcRegion, prevCard, nextCard, closeBtn, appsUsed,
-    galleryTplRaw, galleryInstrRaw, cardTplRaw,
+    galleryInstrRaw, cardTplRaw,
   ] = await replaceKeyArray(
     ['image-gallery-intro', 'previous-card', 'next-card', 'close', 'apps-used',
-      'image-gallery-label', 'image-gallery-instructions', 'image-gallery-card-label'],
+      'image-gallery-instructions', 'image-gallery-card-label'],
     getConfig(),
   );
   // replaceKey returns the de-hyphenated key (keyToStr: '-'→' ') when a placeholder is
-  // absent from every sheet, so fall back to English there. The globe widget's accessible
-  // NAME (image-gallery-label, tokenized with {{count}}) is kept separate from its
-  // operating INSTRUCTIONS (image-gallery-instructions, read via aria-describedby) so a
-  // screen reader announces a concise name on every focus and the how-to-drive-it once.
-  // TODO: localize — the English strings below are the hardcoded fallbacks that render
-  // until the image-gallery-* keys are finalized in the placeholders sheet (see TODO
-  // above); once the sheet supplies them per locale these branches are never hit.
-  const galleryTpl = galleryTplRaw.includes('{{count}}')
-    ? galleryTplRaw
-    : 'Interactive image gallery, {{count}} images';
+  // absent from every sheet, so fall back to English there.
   // TODO: HARDCODED string — this is the provisional English copy shown in the entry-widget
-  // popup (visible, a11y audit) AND read via aria-describedby. Localize once the
+  // popup (visible, a11y audit) AND read as the widget's accessible name. Localize once the
   // `image-gallery-instructions` placeholder key is authored in the sheet (then this branch
   // is never hit). Keep it phrased as "press Enter → enter the gallery" per the audit.
   const galleryInstructions = galleryInstrRaw === 'image gallery instructions'
     ? 'Press Enter to enter the gallery, then Tab through the images.'
     : galleryInstrRaw;
-  const cardTpl = cardTplRaw.includes('{{name}}')
+  const cardTpl = cardTplRaw.includes('{{index}}')
     ? cardTplRaw
-    : 'View photo by {{name}}, {{index}} of {{count}}';
+    : '{{index}} of {{count}}';
   return {
     arcRegion,
     prevCard,
     nextCard,
     closeBtn,
     appsUsed,
-    // Concise aria-label for the single globe widget (the screen-reader "what is this").
-    // count is the live card total. The controls are described separately (below).
-    galleryLabel: (count) => galleryTpl.replace('{{count}}', String(count)),
-    // Operating instructions, wired as the widget's aria-describedby target in a11y.js.
+    // Operating instructions, wired as the widget's accessible NAME (aria-labelledby) in a11y.js.
     galleryInstructions,
-    cardLabel: (name, index, count) => cardTpl
-      .replace('{{name}}', name)
+    cardLabel: (index, count) => cardTpl
       .replace('{{index}}', String(index))
       .replace('{{count}}', String(count)),
   };

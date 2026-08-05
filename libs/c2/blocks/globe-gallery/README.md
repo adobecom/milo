@@ -39,8 +39,8 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `MODAL_FRAG`'s `uRadius` is set to 0 on mobile (square, full-bleed image). `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
 | `textures.js` | `loadCardTextures({ maxTex })` — loads each card image into a cover-cropped `CanvasTexture`, downscaled to the `maxTex` per-device cap (see Texture memory budget); `loadModalTexture(src, maxTex, onReady)` — lazily loads one full (uncropped) image at a higher cap for the modal, returning the pending `Image` so the caller can cancel; `createClickDragTexture(aspect, hintText)` — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. All named exports, no per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
-| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ creator **description** fallback); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
-| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
+| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ `alt text to be authored` placeholder when none); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. The chrome is a native `<dialog>` (`open()` → `showModal()`, `close()` → `.close()` after the anim), so the focus trap / background `inert` / Escape (`cancel` event) / focus-restore are the platform's; the mobile swipe listeners live on the dialog element (its siblings go inert once `showModal()` runs). Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
@@ -150,7 +150,7 @@ section instead of throwing out of `init()` or running on a null renderer. (Note
 
 ### Card shape
 
-`{ img, picture, name, role, description, badges:[{app:{id,name,abbr}, role}] }`
+`{ img, alt, picture, name, role, description, badges:[{app:{id,name,abbr}, role}] }`
 
 Each fragment section is flat P/UL elements:
 
@@ -160,7 +160,7 @@ Each fragment section is flat P/UL elements:
 | `<p><strong>…</strong></p>` | **name** | empty if unauthored (no hardcoded default) |
 | plain `<p>` | **description** | shown in the modal |
 | `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = app name, inner li = role |
-| `<p><picture>…</picture></p>` | **image** | required — sections without one are skipped |
+| `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
 
 Badge app names resolve against `APP_CATALOG` (by name/abbr/id) for brand icon
 colors; unknown apps render with a derived abbreviation.
@@ -276,17 +276,20 @@ per locale):
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
 | `apps-used` | Apps used | modal badges list `aria-label` |
-| `image-gallery-label` | `Interactive image gallery, {{count}} images` | globe widget `aria-label` — the concise accessible **name** (screen-reader "what is this") |
-| `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, shown as a visible focus popup AND the `aria-describedby` text |
-| `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation (`{{index}} of {{count}}`) |
+| `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, shown as a visible focus popup AND wired as the button's accessible **name** (`aria-labelledby`) |
+| `image-gallery-card-label` | `{{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation |
 
-The globe widget's **name** (`image-gallery-label`) is kept separate from its **controls**
-(`image-gallery-instructions`, wired as a visually-hidden `aria-describedby` child) so a
-screen reader reads a terse name on every focus and the how-to-drive-it once. `image-gallery-label`
-and `image-gallery-card-label` are **tokenized templates** (`{{count}}`, `{{name}}`, `{{index}}`
-substituted at runtime, so each locale controls word order). If a key is absent everywhere the
-code falls back to the English text (the tokenized keys are detected by their missing `{{…}}`;
-`image-gallery-instructions` by its de-hyphenated key string).
+The globe entry widget has **no separate name label**: its `image-gallery-instructions`
+copy IS the accessible name (one visually-hidden-until-focus element, wired as both the
+visible popup and the `aria-labelledby` target), so a screen reader announces exactly the
+on-page instruction — no redundant "interactive image gallery, N images" prefix, and no
+image count (which sighted users don't see either). The modal announcement
+`image-gallery-card-label` is just position (`{{index}} of {{count}}`) — the creator name is
+already in the dialog heading/description, so it's not repeated. `image-gallery-card-label`
+is a **tokenized template** (`{{index}}`, `{{count}}` substituted at runtime, so each locale
+controls word order). If a key is absent everywhere the code falls back to the English text
+(the tokenized key detected by its missing `{{index}}`; `image-gallery-instructions` by its
+de-hyphenated key string).
 
 ### Localization readiness
 
@@ -296,14 +299,14 @@ literals in the code are only **fallbacks** for when a sheet key or authored fie
 missing; on a correctly-authored page they never show. Specifically:
 
 - **Sheet-backed:** all chrome `aria-label`s (modal nav/close, badges list), the arc-copy
-  region label, the globe widget **name** + **instructions**, and the carousel live-region
+  region label, the globe widget **instructions** (which double as its name), and the carousel live-region
   announcement — via the `image-gallery-*` / `previous-card` / `next-card` / `close` /
   `apps-used` keys above. **Setup action for localized pages:** add these keys to the
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
 - **Authored:** arc-copy, pull-quote, and card name/role/description come from the block
-  rows + fragment; each **browse-image button's `aria-label`** is the card's authored **alt**
-  (→ **description** fallback until alt is authored); the "Click & Drag" hint + cursor label
+  rows + fragment; each **browse-image button's `aria-label`** (and the modal image's `alt`)
+  is the card's authored **alt** (→ an `alt text to be authored` placeholder when none); the "Click & Drag" hint + cursor label
   come from **row 2** (the `Click & Drag` literal is just the empty-row fallback). Badge app
   labels come from the authored token (the `App`/`Ap` literal is only the empty-token fallback).
 
@@ -326,8 +329,8 @@ per-instance unique-id suffix it mints from a module-level counter in
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
-`filter: url(#ca-filter-<gid>)`) and the modal heading/description (the dialog's
-`aria-labelledby` / `aria-describedby` IDREFs). `el` itself is the scroll runway
+`filter: url(#ca-filter-<gid>)`) and the modal role-label/heading/description (the
+`<dialog>`'s `aria-labelledby` (role + name) / `aria-describedby` IDREFs). `el` itself is the scroll runway
 (height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery--reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.modal-open` scroll lock.
@@ -367,24 +370,34 @@ globe holds the centred image; mouse drag still works.
 - **Keyboard:** Tab → globe entry; Enter/Space → enter browse mode (focus the first image).
   In browse mode Tab/Shift+Tab moves image→image; **Esc** collapses back to the entry stop;
   tabbing past the last image (or Shift+Tab before the first) leaves the block and collapses.
-  Enter on an image → open the detail modal for it. In the modal, Prev/Next/Close are all tab
-  stops with a focus trap (WAI-ARIA dialog); Left/Right also traverse; Esc / Enter-on-Close
-  exit and **restore focus to the image that opened it** (browse mode intact). Arrow-key globe
-  rotation was removed (browsing replaces it).
+  Enter on an image → open the detail modal for it. The modal chrome is a **native `<dialog>`
+  opened with `showModal()`** (`authoring.js`), so the focus trap, background `inert`, and
+  focus-restore are the platform's, not hand-rolled. On open, focus goes to the **dialog
+  container** (`tabindex="-1"`), not a control — so a screen reader announces the dialog
+  name + description first (see Screen reader). Prev/Next/Close are all tab stops; Tab cycles
+  among them (native inert keeps focus in); navigation is via the on-screen arrows or swipe
+  only — **Left/Right arrows are deliberately NOT bound to prev/next** (screen-reader users
+  need them to read the dialog text; a11y audit). **Esc** (the dialog's `cancel` event,
+  `preventDefault`'d so the close *animation* still plays) / Enter-on-Close exit and the dialog
+  **restores focus to the image that opened it** (browse mode intact). There is **no
+  backdrop-click-to-close** (removed). Arrow-key globe rotation was removed (browsing replaces it).
 - **Instructions popup:** on focus, the entry widget shows a **visible pill** ("Press Enter to
   enter the gallery, then Tab through the images") so *sighted* keyboard users get the affordance
   too (a11y-audit request). It's ONE element (`.globe-gallery-a11y-tip`) — hidden by default,
-  shown on the button's `:focus-visible`, and simultaneously the button's `aria-describedby`
-  target, so screen readers announce the same text (aria-describedby reads the node even while
-  it's visually hidden). Copy is `image-gallery-instructions` (currently a hardcoded English
-  fallback — `TODO` localize).
-- **Screen reader:** the entry button's `aria-label` (`image-gallery-label`) is a concise
-  name; its controls come from that `image-gallery-instructions` popup/`aria-describedby`, so the
-  terse name reads on every focus and the how-to once. Each
-  browse image's `aria-label` is its authored **alt** text (falling back to the creator
-  **description** until alt is authored; no name fallback). The modal dialog announces the
-  first item on open via `aria-labelledby`/`describedby`; each **subsequent** item is
-  announced once by a polite live region (`.globe-gallery-modal__live`, updated only on
+  shown on the button's `:focus-visible`, and simultaneously the button's `aria-labelledby`
+  target, so screen readers announce the same text as the button's accessible **name**
+  (aria-labelledby reads the node even while it's visually hidden). Copy is
+  `image-gallery-instructions` (currently a hardcoded English fallback — `TODO` localize).
+- **Screen reader:** the entry button has **no separate label** — its `image-gallery-instructions`
+  popup IS its accessible name (`aria-labelledby`), so the on-page instruction is the only thing
+  announced on focus (no redundant "interactive image gallery, N images"). Each
+  browse image's `aria-label` is its authored **alt** text (falling back to an explicit
+  `alt text to be authored` placeholder when none). The modal dialog announces the
+  first item on open — focus is on the dialog container, so the SR reads its accessible name
+  (`aria-labelledby` now points at **role-label + name**, so the author's **role** is spoken
+  first) then its `aria-describedby` description, then forward-navigation walks the content
+  (role → name → description → badges) before the Prev/Next/Close controls. Each **subsequent**
+  item is announced once by a polite live region (`.globe-gallery-modal__live`, updated only on
   navigation with `cardLabel` so it doesn't double the open announcement or read the badge list).
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive**

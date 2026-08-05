@@ -108,6 +108,7 @@ function parseFragmentCardSegment(nodes) {
   if (!img) return null;
   return {
     img: img.currentSrc || img.getAttribute('src') || img.src,
+    alt: (img.getAttribute('alt') || '').trim(),
     picture,
     name,
     role,
@@ -183,8 +184,8 @@ export function parseAuthoredContent(el) {
 // Two things still require a real id (no classname equivalent — both are
 // document-wide id references), made unique per instance via `gid`:
 //   • the CA SVG filter — referenced from JS as `filter: url(#ca-filter-<gid>)`.
-//   • the modal heading/description — referenced by the dialog's aria-labelledby
-//     / aria-describedby IDREFs.
+//   • the modal role-label/heading/description — referenced by the dialog's
+//     aria-labelledby (role + name) / aria-describedby (description) IDREFs.
 // `gid` is minted here (this module owns both creating and embedding the ids)
 // and returned by buildGlobeDom so the runtime can build the same url(#…) ref.
 //
@@ -231,10 +232,10 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:111;display:none;pointer-events:none;"></canvas>
 
-  <div class="globe-gallery-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}" aria-hidden="true">
+  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
     <img class="globe-gallery-modal__image" alt="" />
     <div class="globe-gallery-modal__info">
-      <p class="globe-gallery-modal__role-label"></p>
+      <p class="globe-gallery-modal__role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
       <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
@@ -256,7 +257,7 @@ const buildMarkup = (gid, labels) => `
          content change would otherwise be silent). Visually hidden; phrasing is
          controlled in JS (modal.populateModal) so it skips the verbose badge list. -->
     <div class="globe-gallery-modal__live globe-gallery-sr-only" aria-live="polite" aria-atomic="true"></div>
-  </div>
+  </dialog>
 `;
 
 // Per-page instance counter → a unique suffix for this instance's id-bearing

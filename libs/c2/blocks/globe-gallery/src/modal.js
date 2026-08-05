@@ -131,9 +131,6 @@ export default function createGlobeModal({
   // before it fires can cancel it (a stale firing would yank the new modal's
   // is-visible / modal-open / Lenis-pause state). See close() + open().
   let closeTimeoutId = null;
-  // Element to restore focus to when the modal closes (typically the gallery
-  // button that opened it, or whatever had focus before a mouse-click open).
-  let modalFocusRestoreEl = null;
   // keydown listener (on document) — stored so setup() can detach a prior one
   // before re-adding on a breakpoint re-init (avoids stacking → double-nav).
   let keydownHandler = null;
@@ -596,7 +593,7 @@ export default function createGlobeModal({
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     const imgEl = targetEl.querySelector('.globe-gallery-modal__image');
-    if (imgEl) { imgEl.src = meta.img; imgEl.alt = meta.name; }
+    if (imgEl) { imgEl.src = meta.img; imgEl.alt = meta.alt || 'alt text to be authored'; }
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal__role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
@@ -623,7 +620,7 @@ export default function createGlobeModal({
     });
     if (announce) {
       const liveEl = targetEl.querySelector('.globe-gallery-modal__live');
-      if (liveEl) liveEl.textContent = cardLabel(meta.name, i + 1, getCount());
+      if (liveEl) liveEl.textContent = cardLabel(i + 1, getCount());
     }
   }
 
@@ -862,12 +859,6 @@ export default function createGlobeModal({
       closeTimeoutId = null;
     }
     modalOpenedAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    // Remember focus origin so we can restore it on close. Skip the modal
-    // chrome itself in case open() is called from inside it (shouldn't
-    // happen, but defensive).
-    const focusedNow = document.activeElement;
-    const chromeRoot = q('.globe-gallery-modal-chrome');
-    modalFocusRestoreEl = (chromeRoot && chromeRoot.contains(focusedNow)) ? null : focusedNow;
     modalIdx = i;
     modalCard = cards[i];
     // Pin warp center to click origin so the open-animation bulge emanates
@@ -912,18 +903,22 @@ export default function createGlobeModal({
     modalChromeFadeT = 0;
 
     modalEl.classList.add('is-visible');
-    modalEl.setAttribute('aria-hidden', 'false');
+    modalEl.setAttribute('aria-hidden', 'true');
     const chromeEl = q('.globe-gallery-modal-chrome');
-    if (chromeEl) { chromeEl.classList.add('is-visible'); chromeEl.setAttribute('aria-hidden', 'false'); }
+    // Enter the top layer as a native modal dialog — this hands us the focus trap,
+    // background inert, Escape (via the 'cancel' event), and focus-restore on close.
+    if (chromeEl && !chromeEl.open) {
+      try { chromeEl.showModal(); } catch (e) { /* already open / not connected; ignore */ }
+    }
     positionModalChrome();
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
-      // Move keyboard focus into the modal — close button is the safest default
-      // (always present, no destructive default action). Falls back to chromeEl
-      // for screen-reader announcement if close button is somehow missing.
-      const closeBtn = chromeEl && chromeEl.querySelector('.globe-gallery-modal__close');
-      if (closeBtn) { try { closeBtn.focus(); } catch (e) { /* not focusable; ignore */ } }
+      // Move focus to the dialog container (tabindex=-1) rather than a control, so a
+      // screen reader announces the dialog name (role + name) + description first and
+      // forward-navigation then reads the content before the Prev/Next/Close controls.
+      // This overrides showModal()'s default (first focusable = Prev).
+      if (chromeEl) { try { chromeEl.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
     const renderer = getRenderer();
@@ -961,14 +956,7 @@ export default function createGlobeModal({
     // current card flies back to the sphere; neighbors return to their slots silently.
     clearSwipeNeighbors();
 
-    // Blur any focused element inside the modal chrome BEFORE aria-hidden=true gets
-    // applied. Without this, the close button (which user just clicked) retains
-    // focus → browser blocks aria-hidden + warns in console + can interfere with
-    // subsequent pointer event delivery on touch in DevTools device emulation.
     const chromeEl = q('.globe-gallery-modal-chrome');
-    if (chromeEl && document.activeElement && chromeEl.contains(document.activeElement)) {
-      document.activeElement.blur();
-    }
 
     // Snapshot current world transform (the modal target) as the START for the closing animation.
     modalCard.mesh.updateWorldMatrix(true, false);
@@ -1005,16 +993,15 @@ export default function createGlobeModal({
     closeTimeoutId = setTimeout(() => {
       modalEl.classList.remove('is-visible');
       modalEl.setAttribute('aria-hidden', 'true');
-      if (chromeEl) { chromeEl.classList.remove('is-visible'); chromeEl.setAttribute('aria-hidden', 'true'); }
+      if (chromeEl) {
+        chromeEl.classList.remove('is-open');
+        // Leave the top layer. The native dialog restores focus to the element that
+        // opened it (the gallery image button for keyboard users) automatically.
+        if (chromeEl.open) chromeEl.close();
+      }
       document.documentElement.classList.remove('modal-open');
       document.body.classList.remove('modal-open');
       if (window.lenis) window.lenis.start();
-      // Restore focus to whatever the user had focused before opening the modal
-      // (typically the gallery button that opened it for keyboard users).
-      if (modalFocusRestoreEl && document.body.contains(modalFocusRestoreEl)) {
-        try { modalFocusRestoreEl.focus(); } catch (e) { /* element gone; ignore */ }
-      }
-      modalFocusRestoreEl = null;
       closeTimeoutId = null;
     }, MODAL_ANIM_DURATION);
 
@@ -1327,7 +1314,11 @@ export default function createGlobeModal({
       evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
       evtRoot.querySelector('.globe-gallery-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
       evtRoot.querySelector('.globe-gallery-modal__nav--next').addEventListener('click', () => { navigate(1); });
-      modalEl.querySelector('.globe-gallery-modal__backdrop').addEventListener('click', close);
+      // Escape fires the dialog's 'cancel' event — preventDefault it so we play the
+      // close ANIMATION instead of the browser's instant close.
+      if (chromeEl) {
+        chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+      }
     }
 
     // Detach any prior document keydown handler before re-adding (a breakpoint
@@ -1335,13 +1326,6 @@ export default function createGlobeModal({
     if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
     keydownHandler = (e) => {
       if (modalIdx < 0) return;
-      if (e.key === 'Escape') close();
-      if (e.key === 'ArrowLeft') navigate(-1);
-      if (e.key === 'ArrowRight') navigate(1);
-      // Block keyboard scroll keys (PageUp/Down, Home/End, Space, ArrowUp/Down)
-      // while modal is open so the globe doesn't scroll/zoom behind the modal.
-      // Space is exempted when focus is inside the modal chrome — Space should
-      // activate a focused button (e.g., close), not be blocked.
       const chromeRoot = q('.globe-gallery-modal-chrome');
       const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
       if (e.key === 'PageUp' || e.key === 'PageDown'
@@ -1349,28 +1333,6 @@ export default function createGlobeModal({
           || e.key === 'ArrowUp' || e.key === 'ArrowDown'
           || (e.key === ' ' && !focusInChrome)) {
         e.preventDefault();
-      }
-      // Focus trap: keep focus inside the dialog (WAI-ARIA dialog pattern). Prev, Next,
-      // and Close are all tabbable, so Tab/Shift+Tab cycle among them and wrap at the
-      // ends — focus never escapes to the page (or the globe) behind the modal.
-      if (e.key === 'Tab' && chromeRoot) {
-        const focusables = chromeRoot.querySelectorAll('button:not([disabled])');
-        if (focusables.length === 0) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        // If focus has already escaped the dialog (e.g. a backdrop click blurred the
-        // active button to <body>), the first/last wrap below wouldn't fire and Tab
-        // would walk into the page behind. Pull it back to the first control instead.
-        if (!chromeRoot.contains(document.activeElement)) {
-          e.preventDefault();
-          try { first.focus(); } catch (err) { /* not focusable; ignore */ }
-        } else if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          try { last.focus(); } catch (err) { /* not focusable; ignore */ }
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          try { first.focus(); } catch (err) { /* not focusable; ignore */ }
-        }
       }
     };
     document.addEventListener('keydown', keydownHandler);
@@ -1404,7 +1366,10 @@ export default function createGlobeModal({
     const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
     const PULL_SCALE_MIN = 0.80;
 
-    modalEl.addEventListener('touchstart', (e) => {
+    // Gestures attach to the dialog (evtRoot), NOT modalEl: once showModal() runs,
+    // modalEl is a sibling of the top-layer dialog and becomes inert, so touch events
+    // never fire there. The dialog is the live, full-viewport gesture surface.
+    evtRoot.addEventListener('touchstart', (e) => {
       if (getBP() !== 'sm') return;
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
@@ -1422,7 +1387,7 @@ export default function createGlobeModal({
       modalCanvasEl.style.transition = 'none';
     }, { passive: true });
 
-    modalEl.addEventListener('touchmove', (e) => {
+    evtRoot.addEventListener('touchmove', (e) => {
       if (!swActive || e.touches.length !== 1) return;
       const x = e.touches[0].clientX;
       const y = e.touches[0].clientY;
@@ -1462,7 +1427,7 @@ export default function createGlobeModal({
       pushModalWarpUniforms();
     }, { passive: true });
 
-    modalEl.addEventListener('touchend', (e) => {
+    evtRoot.addEventListener('touchend', (e) => {
       if (!swActive) return;
       swActive = false;
       if (!modalCanvasEl || swAxis === null) { swAxis = null; return; }
@@ -1542,8 +1507,9 @@ export default function createGlobeModal({
     }
     const chromeEl = q('.globe-gallery-modal-chrome');
     if (chromeEl) {
-      chromeEl.classList.remove('is-visible', 'is-open');
-      chromeEl.setAttribute('aria-hidden', 'true');
+      chromeEl.classList.remove('is-open');
+      // Leave the top layer if a breakpoint re-init fires with the modal open.
+      if (chromeEl.open) chromeEl.close();
       const liveEl = chromeEl.querySelector('.globe-gallery-modal__live');
       if (liveEl) liveEl.textContent = '';
     }
@@ -1559,7 +1525,6 @@ export default function createGlobeModal({
     if (window.lenis) window.lenis.start();
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 0;
-    modalFocusRestoreEl = null;
   }
 
   // Dispose the modal renderer + clear the pending close timeout (mirrors the

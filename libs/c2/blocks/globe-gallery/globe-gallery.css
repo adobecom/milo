@@ -118,8 +118,11 @@
    Two bands, one globe per page:
    • Hero (2–5): world < canvas (JS, z:3) < a11y / arc-copy (4) < pull-quote (5). Small
      values that intentionally sit BELOW the page's header/chrome.
-   • Modal (110–112): backdrop < modal-canvas (JS, z:111) < chrome (112). Above the page
-     header so the modal overlays the whole page.
+   • Modal (110–112): backdrop < modal-canvas (JS, z:111) < chrome (112). The chrome is a
+     native <dialog> opened with showModal(), so it actually paints in the TOP LAYER (above
+     everything regardless of z-index); the dim backdrop + photo canvas stay in normal flow
+     and show through its transparent surface. The z-index is kept only as a non-modal
+     fallback ordering.
    Chrome children need no z-index — they're a stacking context and paint by DOM order
    (info scrim first, controls after → controls on top).
    • Cursor (113–114): body-level (appended to <body>, not the block), just above the modal
@@ -296,30 +299,53 @@
   background: rgb(0 0 0 / 60%);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
-  pointer-events: auto;
-  cursor: pointer;
 
-  /* No native pan/scroll on touch — JS gesture handlers own the modal area.
-     Without this, the browser starts a pan gesture on touchmove which Lenis then
-     tries to cancel; the browser refuses ("Ignored attempt to cancel touchmove")
-     because the gesture is already in progress. */
-  touch-action: none;
+  /* Decorative dim/blur only. Once the dialog runs showModal() this sibling is inert;
+     it stays in normal flow BELOW the top-layer dialog and its photo canvas, so the
+     dim reads behind the sharp card. The gesture surface + touch-action live on the
+     dialog now (see .globe-gallery-modal-chrome). */
+  pointer-events: none;
 }
 
-/* Chrome layer — close button, info panel, nav arrows. Above the WebGL card canvas.
-   The layer itself is always pointer-events:none so empty areas fall through to
-   the backdrop close handler below; only the child controls are interactive. */
+/* Chrome layer — a native <dialog> opened with showModal(). It hosts the close
+   button, info panel, nav arrows, and (on mobile) the swipe gesture surface. Reset
+   the UA dialog chrome to a full-viewport transparent overlay: it sits in the top
+   layer (above the WebGL card canvas + dim backdrop, which stay in normal flow and
+   show through), so its own z-index is moot but kept for the non-modal fallback.
+   Displayed only while the dialog is open (UA dialog:not([open]) { display:none });
+   .is-open drives the fade. pointer-events:auto + touch-action:none so it is the live
+   gesture surface (its siblings are inert once showModal() runs). */
 .globe-gallery-modal-chrome {
   position: fixed;
   inset: 0;
   z-index: 112;
-  display: none;
-  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+  touch-action: none;
   opacity: 0;
   transition: opacity 0.35s ease;
 }
-.globe-gallery-modal-chrome.is-visible { display: block; }
-.globe-gallery-modal-chrome.is-open    { opacity: 1; }
+.globe-gallery-modal-chrome.is-open { opacity: 1; }
+
+/* The dialog is a scripted focus target (tabindex=-1, focused on open so a screen
+   reader announces the content first) — not a user-tabbable control, so suppress the
+   default full-viewport focus outline. The interactive controls keep their own
+   :focus-visible rings. */
+.globe-gallery-modal-chrome:focus,
+.globe-gallery-modal-chrome:focus-visible { outline: none; }
+
+/* Transparent ::backdrop — the visible dim/blur is the separate .globe-gallery-modal
+   scrim below the photo canvas; a styled backdrop here would sit in the top layer
+   ABOVE the photo and hide it. */
+.globe-gallery-modal-chrome::backdrop { background: transparent; }
 
 /* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
 .globe-gallery-modal__image { display: none; }
