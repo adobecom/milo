@@ -1,0 +1,134 @@
+/* forge-section-3 — "document collage" distinctive section.
+   Every top-level selector is scoped to .forge-section-3 (L10/L19). The collage
+   is a container-query context; all inner sizing is in cqw so the 768×642 Figma
+   canvas scales to whatever width the Milo section provides (L27: no pinned
+   design-width px). Rules key ONLY on classes init() stamps at runtime (DA
+   strips the authored Figma classes — C24). */
+.forge-section-3 {
+  display: flex;
+  justify-content: center;
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 40px) var(--s2a-layout-section-bottom, 80px);
+  background: #f2f2f5;
+}
+.forge-section-3 a { color: inherit; }
+.forge-section-3 .fs3-collage {
+  position: relative;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  aspect-ratio: 768 / 642;
+  overflow: hidden;
+  container-type: inline-size;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+}
+.forge-section-3 .fs3-card {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 1.7cqw;
+  overflow: hidden;
+}
+.forge-section-3 .fs3-title { margin: 0; font-weight: 800; }
+
+/* ---- Report card (lavender, backmost) ---- */
+.forge-section-3 .fs3-card--report { background: #dadae7; padding: 2.3cqw 2cqw 1.8cqw; }
+.forge-section-3 .fs3-report-inner { display: flex; flex-direction: column; }
+.forge-section-3 .fs3-eyebrow {
+  margin: 0;
+  font-size: 0.78cqw;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.04cqw;
+  text-transform: uppercase;
+  color: #5a5a87;
+}
+.forge-section-3 .fs3-eyebrow:first-child { color: #08080b; }
+.forge-section-3 .fs3-title--report {
+  margin-top: 0.6cqw;
+  font-size: 2.55cqw;
+  line-height: 1.03;
+  letter-spacing: -0.09cqw;
+  color: #29293e;
+}
+.forge-section-3 .fs3-body--tiny { margin: 0.7cqw 0 0; font-size: 0.56cqw; line-height: 1.28; color: #29293e; }
+.forge-section-3 .fs3-chartlabel { margin: 0.7cqw 0 0; font-size: 0.55cqw; font-weight: 700; color: #29293e; }
+.forge-section-3 .fs3-caption { margin: 0.5cqw 0 0; font-size: 0.46cqw; line-height: 1.25; color: #49496f; }
+
+/* ---- White-paper card (black, gradient photo top) ---- */
+.forge-section-3 .fs3-card--whitepaper { background: #000; }
+.forge-section-3 .fs3-wp-media { width: 100%; height: 52%; overflow: hidden; }
+.forge-section-3 .fs3-wp-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.forge-section-3 .fs3-wp-body { padding: 1.6cqw; }
+.forge-section-3 .fs3-title--wp { font-size: 2.4cqw; line-height: 0.95; color: #f0f0f0; }
+.forge-section-3 .fs3-wp-contact { margin: 0.9cqw 0 0; font-size: 0.68cqw; line-height: 1.4; color: #f0f0f0; }
+
+/* ---- Growth card (olive frame + dark-rose report) ---- */
+.forge-section-3 .fs3-card--growth { background: #a19735; padding: 1cqw; }
+.forge-section-3 .fs3-growth-photo { position: absolute; inset: 0; z-index: 0; }
+.forge-section-3 .fs3-growth-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.forge-section-3 .fs3-growth-chip {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  margin: 0 0 0.9cqw;
+  padding: 0.6cqw 1.3cqw;
+  border-radius: 1.7cqw;
+  background: #fff;
+  color: #000;
+  font-size: 1.35cqw;
+}
+.forge-section-3 .fs3-growth-panel { position: relative; z-index: 1; padding: 0.9cqw; border-radius: 1.5cqw; background: #682c41; }
+.forge-section-3 .fs3-title--growth { margin: 0 0 0.6cqw; font-size: 2cqw; font-weight: 600; line-height: 1.05; color: #f0877b; }
+.forge-section-3 .fs3-growth-chartwrap { position: relative; height: 9cqw; }
+.forge-section-3 .fs3-chart--growth { width: 100%; height: 100%; }
+.forge-section-3 .fs3-growth-badge {
+  position: absolute;
+  top: 0;
+  right: 0.6cqw;
+  padding: 0.2cqw 0.5cqw;
+  border-radius: 0.3cqw;
+  background: #020202;
+  color: #f0877b;
+  font-size: 0.8cqw;
+}
+
+/* ---- Shared tabs (recoloured per card) ---- */
+.forge-section-3 .fs3-tabs { display: flex; gap: 0.5cqw; margin-bottom: 0.7cqw; }
+.forge-section-3 .fs3-tab { padding: 0.3cqw 0.8cqw; border-radius: 0.5cqw; font-size: 0.95cqw; line-height: 1; }
+.forge-section-3 .fs3-card--growth .fs3-tab { border: 0.12cqw solid #f08478; color: #f08478; }
+.forge-section-3 .fs3-card--growth .fs3-tab--active { background: #f08478; color: #682c41; }
+.forge-section-3 .fs3-card--mediamix .fs3-tab { border: 0.12cqw solid #3d5572; color: #3d5572; }
+.forge-section-3 .fs3-card--mediamix .fs3-tab--active { background: #3d5572; color: #abdde8; }
+
+/* ---- Invoice card ---- */
+.forge-section-3 .fs3-card--invoice { padding: 1.5cqw 1.7cqw; background: #efeff1; color: #2254bd; }
+.forge-section-3 .fs3-inv-inner { display: flex; flex-direction: column; }
+.forge-section-3 .fs3-inv-body { column-count: 2; column-gap: 1.6cqw; margin-top: 0.4cqw; }
+.forge-section-3 .fs3-inv-body > * { break-inside: avoid; }
+.forge-section-3 .fs3-inv-title { margin: 0; font-size: 1.95cqw; font-weight: 800; line-height: 1; letter-spacing: -0.06cqw; }
+.forge-section-3 .fs3-inv-sub { margin: 0 0 0.6cqw; font-size: 0.9cqw; font-weight: 700; }
+.forge-section-3 .fs3-inv-head { margin: 0.4cqw 0 0; font-size: 0.5cqw; font-weight: 800; text-transform: uppercase; }
+.forge-section-3 .fs3-inv-line { margin: 0; font-size: 0.48cqw; line-height: 1.25; }
+.forge-section-3 .fs3-inv-amount { margin: 0; font-size: 0.62cqw; font-weight: 700; text-align: right; }
+
+/* ---- Media-mix card (frontmost, white → teal panel, stacked bars) ---- */
+.forge-section-3 .fs3-card--mediamix { background: #fff; box-shadow: 0 3cqw 5cqw rgba(0, 0, 0, 0.12); }
+.forge-section-3 .fs3-mm-inner {
+  position: absolute;
+  inset: 1cqw;
+  box-sizing: border-box;
+  padding: 1.3cqw;
+  border-radius: 0.8cqw;
+  background: #abdde8;
+  overflow: hidden;
+}
+.forge-section-3 .fs3-title--mm { margin: 0.4cqw 0 0.8cqw; font-size: 1.85cqw; font-weight: 600; line-height: 1.06; color: #3d5572; }
+.forge-section-3 .fs3-mm-divider { height: 0.15cqw; margin-bottom: 1cqw; background: #3d5572; opacity: 0.3; }
+.forge-section-3 .fs3-mm-bars { display: flex; flex-direction: column; gap: 0.3cqw; }
+.forge-section-3 .fs3-mm-bar { box-sizing: border-box; padding: 0.6cqw 0.9cqw; color: #abdde8; }
+.forge-section-3 .fs3-mm-bar-label,
+.forge-section-3 .fs3-mm-bar-val { display: block; font-size: 0.85cqw; line-height: 1.12; letter-spacing: -0.03cqw; }
+.forge-section-3 .fs3-mm-bar--light { color: #3d5572; }
+
+@media (max-width: 600px) {
+  .forge-section-3 { padding: 72px 16px 48px; }
+}

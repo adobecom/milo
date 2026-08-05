@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-section-3",
+  "sectionIndex": 3,
+  "decision": "new-block",
+  "score": 0.57,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-3",
+  "figmaUrl": "",
+  "figmaNodeId": "10495:77319",
+  "distinctive": true,
+  "truthShotRel": "screenshots/section-3-ref.png",
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-aa965a89-msg6z1ii",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-aa965a89-msg6z1ii/libs/c2/blocks/forge-section-3",
+  "miloBranch": "forge/session-aa965a89-2a7",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/2562-aa965a?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css"
+  }
+}

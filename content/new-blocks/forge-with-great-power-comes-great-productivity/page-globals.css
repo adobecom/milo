@@ -1,0 +1,21 @@
+@media(max-width:768px) {
+  .s7-headline{font-size:44px;line-height:48px;letter-spacing:-2px;}
+  .s7-aud-heading{font-size:40px;line-height:44px;}
+}
+
+@media(max-width:600px) {
+  .s7-headline{font-size:36px;line-height:40px;letter-spacing:-1.5px;}
+  .s7-bodytxt{font-size:16px;padding:0 20px;}
+  .s7-aud-heading{font-size:32px;line-height:36px;}
+  .s7-hero-clip{height:980px;}
+  .s7-mosaic{top:380px;gap:8px;}
+}
+
+@media(max-width:480px) {
+  .s7-headline{font-size:28px;line-height:34px;letter-spacing:-1px;}
+  .s7-hero-clip{height:860px;}
+  .s7-mosaic{top:320px;}
+  .s7-col{gap:32px;}
+}
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}

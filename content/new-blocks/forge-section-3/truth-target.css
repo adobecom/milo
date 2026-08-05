@@ -1,0 +1,9 @@
+@media (max-width:767px) {
+.forge-section-3 {transform:scale(0.49);transform-origin:top left;width:768px!important;}
+.forge-section-3 {height:420px!important;overflow:hidden;}
+}
+
+@media (max-width:479px) {
+.forge-section-3 {transform:scale(0.37);}
+.forge-section-3 {height:318px!important;}
+}

@@ -1,0 +1,250 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="new-block" data-figma-node-id="10495:77150" data-block="news">
+<style>
+.s7{width:100%;background:#fff;}
+/* ── Hero ── */
+.s7-hero{width:100%;background:#fff;overflow:hidden;}
+.s7-hero-clip{max-width:768px;margin:0 auto;position:relative;height:1213px;overflow:hidden;background:#fff;}
+/* Copy */
+.s7-copy{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:80px;width:100%;box-sizing:border-box;position:relative;z-index:2;}
+.s7-appid{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.s7-appid-icon{width:16px;height:15px;object-fit:contain;flex-shrink:0;border-radius:2px;background:#e1251b;}
+.s7-appid-text{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#000;}
+.s7-hb{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+.s7-headline{font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-3.2px;text-align:center;color:#000;margin:0;width:100%;padding:0;box-sizing:border-box;}
+.s7-bodytxt{font-family:'Adobe Clean',Arial,sans-serif;font-weight:400;font-size:18px;line-height:24px;text-align:center;color:#000;max-width:696px;margin:0;padding:0 36px;box-sizing:border-box;}
+/* CTA Promo */
+.s7-promo{display:inline-flex;flex-direction:row;align-items:center;gap:16px;padding:12px;border-radius:16px;background:#000;flex-shrink:0;}
+.s7-promo-left{display:flex;flex-direction:row;align-items:center;gap:16px;}
+.s7-promo-icon{width:32px;height:32px;object-fit:contain;flex-shrink:0;border-radius:4px;background:#e1251b;}
+.s7-promo-text{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#fff;white-space:nowrap;}
+.s7-promo-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;padding:0;flex-shrink:0;}
+/* Mosaic */
+.s7-mosaic{position:absolute;top:456px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:12px;z-index:1;}
+.s7-col{display:flex;flex-direction:column;gap:53px;flex-shrink:0;}
+.s7-col img{border-radius:9px;object-fit:cover;display:block;flex-shrink:0;}
+.s7-c1{margin-top:0;}
+.s7-c2{margin-top:52px;}
+.s7-c3{margin-top:18px;}
+.s7-c4{margin-top:76px;}
+.s7-c5{margin-top:0;}
+/* Signature card */
+.s7-sig{position:relative;width:156px;height:156px;border-radius:9px;background:#e5e5e5;overflow:hidden;flex-shrink:0;}
+.s7-sig img{width:100%;height:100%;object-fit:cover;border-radius:0;display:block;}
+.s7-sig-badge{position:absolute;top:9px;left:9px;background:#eb1000;color:#fff;font-size:7px;font-weight:900;font-family:'Adobe Clean',Arial,sans-serif;padding:2px 5px;border-radius:2px;letter-spacing:0.6px;line-height:13px;text-transform:uppercase;}
+.s7-sig-lbl{position:absolute;bottom:9px;left:9px;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:8px;color:#000;line-height:1;}
+/* Research doc */
+.s7-rdoc{width:155px;height:210px;border-radius:4px;background:#b7bdc9;overflow:hidden;flex-shrink:0;position:relative;}
+.s7-rdoc-inner{position:absolute;top:12px;left:10px;right:10px;bottom:12px;background:#dadae7;border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,0.12),0 2px 6px rgba(0,0,0,0.08);padding:8px 7px;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
+.s7-rdoc-h{font-family:'Source Serif Pro',Georgia,serif;font-weight:600;font-size:7px;line-height:1.3;color:#29293e;margin:0;}
+.s7-rdoc-p{font-family:'Source Serif Pro',Georgia,serif;font-weight:400;font-size:3.2px;line-height:1.5;color:#29293e;margin:0;}
+.s7-rdoc-tag{font-family:'Aktiv Grotesk',Arial,sans-serif;font-weight:700;font-size:2.8px;color:#5a5a87;margin-top:4px;letter-spacing:0.4px;}
+/* Hero fade */
+.s7-hero-fade{position:absolute;bottom:0;left:0;right:0;height:280px;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,#fff 100%);pointer-events:none;z-index:4;}
+/* ── Audience ── */
+.s7-aud{width:100%;background:#fff;overflow:hidden;}
+.s7-aud-wrap{max-width:768px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:80px;padding-top:80px;box-sizing:border-box;}
+.s7-aud-top{display:flex;flex-direction:column;align-items:center;gap:24px;width:100%;}
+.s7-aud-heading{font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:48px;line-height:48px;letter-spacing:-1.44px;text-align:center;color:#000;margin:0;max-width:540px;}
+/* Cards */
+.s7-cards{display:flex;flex-direction:row;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 16px;width:100%;box-sizing:border-box;align-items:flex-start;}
+.s7-cards::-webkit-scrollbar{display:none;}
+.s7-card{flex-shrink:0;width:292px;min-width:277px;border-radius:16px;background:#f6f6f6;overflow:hidden;display:flex;flex-direction:column;}
+.s7-card-hdr{display:flex;flex-direction:row;align-items:center;gap:16px;padding:24px;box-sizing:border-box;}
+.s7-card-lbl{font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:18px;letter-spacing:-0.48px;color:#000;flex:1;}
+.s7-card-img{width:100%;height:394px;overflow:hidden;border-radius:16px;flex-shrink:0;background:#e0e0d8;}
+.s7-card-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.s7-card-ftr{padding:24px;display:flex;flex-direction:column;gap:4px;}
+.s7-card-desc{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#000;}
+/* Logo strip */
+.s7-logos{display:flex;flex-direction:row;align-items:center;padding-bottom:24px;width:100%;overflow:hidden;flex-shrink:0;}
+.s7-logos img{height:36px;width:100%;object-fit:cover;object-position:left center;opacity:0.20;display:block;}
+/* Responsive */
+@media(max-width:768px){
+  .s7-headline{font-size:44px;line-height:48px;letter-spacing:-2px;}
+  .s7-aud-heading{font-size:40px;line-height:44px;}
+}
+@media(max-width:600px){
+  .s7-headline{font-size:36px;line-height:40px;letter-spacing:-1.5px;}
+  .s7-bodytxt{font-size:16px;padding:0 20px;}
+  .s7-aud-heading{font-size:32px;line-height:36px;}
+  .s7-hero-clip{height:980px;}
+  .s7-mosaic{top:380px;gap:8px;}
+}
+@media(max-width:480px){
+  .s7-headline{font-size:28px;line-height:34px;letter-spacing:-1px;}
+  .s7-hero-clip{height:860px;}
+  .s7-mosaic{top:320px;}
+  .s7-col{gap:32px;}
+}
+</style>
+
+<div class="s7">
+
+  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <div class="s7-hero">
+    <div class="s7-hero-clip">
+
+      <!-- Copy / CTA -->
+      <div class="s7-copy">
+        <!-- App ID -->
+        <div class="s7-appid">
+          <img class="s7-appid-icon" src="./media_81aa83cdb997a426.png" alt="Adobe Acrobat PDF" width="16" height="15" />
+          <span class="s7-appid-text">PDF &amp; Productivity</span>
+        </div>
+        <!-- Headline + Body -->
+        <div class="s7-hb">
+          <h1 class="s7-headline">With great power comes great productivity.</h1>
+          <p class="s7-bodytxt">Do your best work faster with AI-powered document insights, secure collaboration, and professional content creation — all in one place.</p>
+        </div>
+        <!-- CTA Promo pill -->
+        <div class="s7-promo">
+          <div class="s7-promo-left">
+            <img class="s7-promo-icon" src="./media_81aa83cdb997a426.png" alt="Acrobat icon" width="32" height="32" />
+            <span class="s7-promo-text">Start an Acrobat free trial</span>
+          </div>
+          <button class="s7-promo-btn" aria-label="Show options">
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1.5 1.5L6 6.5L10.5 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Image Mosaic ── -->
+      <div class="s7-mosaic" aria-hidden="true">
+
+        <!-- Column 1 -->
+        <div class="s7-col s7-c1">
+          <img src="./media_1a9cab86eaa09196.png" alt="" width="155" height="155" style="width:155px;height:155px;background:#c4bfb0;" />
+          <!-- Signature card (col-1_img-02) -->
+          <div class="s7-sig">
+            <img src="./media_9aeec163110447e1.png" alt="" style="background:#f0ede8;" />
+            <div class="s7-sig-badge">SIGN</div>
+            <div class="s7-sig-lbl">Signature</div>
+          </div>
+          <img src="./media_75bc3adf5fa06472.png" alt="" width="155" height="210" style="width:155px;height:210px;background:#aaa89e;" />
+        </div>
+
+        <!-- Column 2 -->
+        <div class="s7-col s7-c2">
+          <img src="./media_bcb191f81e867ee5.png" alt="" width="155" height="210" style="width:155px;height:210px;background:#a8b0a4;" />
+          <img src="./media_b9888146030606c0.png" alt="" style="width:158px;height:156px;border-radius:9px;object-fit:cover;display:block;flex-shrink:0;background:#d8d0c8;" />
+          <img src="./media_a19835711bdeeb50.png" alt="" width="155" height="210" style="width:155px;height:210px;background:#c4bdb0;" />
+        </div>
+
+        <!-- Column 3 -->
+        <div class="s7-col s7-c3">
+          <img src="./media_d0b5be81a9c73278.png" alt="" width="155" height="155" style="width:155px;height:155px;background:#d8c0b8;" />
+          <img src="./media_787aecde2dd5dead.png" alt="" style="width:156px;height:156px;border-radius:9px;object-fit:cover;display:block;flex-shrink:0;background:#e4ddd6;" />
+          <img src="./media_5bb290f005df89be.png" alt="" style="width:155px;height:209px;border-radius:9px;object-fit:cover;display:block;flex-shrink:0;background:#beb8b4;" />
+        </div>
+
+        <!-- Column 4 -->
+        <div class="s7-col s7-c4">
+          <img src="./media_b808eae3b178df77.png" alt="" width="155" height="155" style="width:155px;height:155px;background:#c4ccd2;" />
+          <img src="./media_81f2d91b52725cb4.png" alt="" width="155" height="210" style="width:155px;height:210px;background:#b4b8c4;" />
+        </div>
+
+        <!-- Column 5 -->
+        <div class="s7-col s7-c5">
+          <img src="./media_7d06a6e1dc873a60.png" alt="" width="155" height="155" style="width:155px;height:155px;background:#c4bfa8;" />
+          <!-- Research / MSA document card (Frame 2147230307) -->
+          <div class="s7-rdoc">
+            <img src="./media_126cebecd812ac32.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;display:block;" />
+            <div class="s7-rdoc-inner">
+              <p class="s7-rdoc-h">Nutrition of Teenage Girls and Women in Humanitarian Crises</p>
+              <p class="s7-rdoc-p">Global humanitarian crises have reached unprecedented scale and complexity, with the world now facing the most severe food and nutrition crisis in modern history. In just three years since the start of the COVID-19 pandemic, the number of people in need of humanitarian assistance has surged from 168 million to an alarming 339 million.</p>
+              <p class="s7-rdoc-p">Humanitarian crises are growing more severe, disruptive, and prolonged than ever before. Many countries are confronting overlapping shocks—conflict and instability, extreme weather events like extended droughts or severe flooding, and disease outbreaks such as cholera.</p>
+              <div class="s7-rdoc-tag">SPECIAL REPORT</div>
+              <div style="font-family:'Aktiv Grotesk',Arial,sans-serif;font-weight:700;font-size:2.8px;color:#29293e;margin-top:3px;">By Dr. Heather Esme-Collins MBBS, MRCPCH, MMed</div>
+            </div>
+          </div>
+          <img src="./media_dd224a77737bef8b.png" alt="" style="width:156px;height:210px;border-radius:9px;object-fit:cover;display:block;flex-shrink:0;background:#ccc0b8;" />
+          <img src="./media_7c7daea9d2a32570.png" alt="" width="155" height="210" style="width:155px;height:210px;background:#bcc4cc;" />
+        </div>
+
+      </div>
+
+      <!-- Bottom gradient fade -->
+      <div class="s7-hero-fade"></div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ AUDIENCE ═══════════════════════════ -->
+  <div class="s7-aud">
+    <div class="s7-aud-wrap">
+
+      <div class="s7-aud-top">
+        <h2 class="s7-aud-heading">Work faster.<br/>No matter the work.</h2>
+
+        <!-- Horizontal scroll cards -->
+        <div class="s7-cards">
+
+          <!-- Sales -->
+          <div class="s7-card">
+            <div class="s7-card-hdr">
+              <span class="s7-card-lbl">Sales</span>
+              <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1.5 10.5L5.5 6L1.5 1.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+            </div>
+            <div class="s7-card-img">
+              <img src="./media_75bc3adf5fa06472.png" alt="Sales team" />
+            </div>
+            <div class="s7-card-ftr">
+              <span class="s7-card-desc">Close more deals.</span>
+            </div>
+          </div>
+
+          <!-- Marketing -->
+          <div class="s7-card">
+            <div class="s7-card-hdr">
+              <span class="s7-card-lbl">Marketing</span>
+              <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1.5 10.5L5.5 6L1.5 1.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+            </div>
+            <div class="s7-card-img">
+              <img src="./media_15d5571e2c7371ca.png" alt="Marketing professionals" />
+            </div>
+            <div class="s7-card-ftr">
+              <span class="s7-card-desc">Take the pain out of campaigns.</span>
+            </div>
+          </div>
+
+          <!-- Legal -->
+          <div class="s7-card">
+            <div class="s7-card-hdr">
+              <span class="s7-card-lbl">Legal</span>
+              <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1.5 10.5L5.5 6L1.5 1.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+            </div>
+            <div class="s7-card-img">
+              <img src="./media_037b33c12e27e2ec.png" alt="Legal document" />
+            </div>
+            <div class="s7-card-ftr">
+              <span class="s7-card-desc">Move the fine print faster.</span>
+            </div>
+          </div>
+
+          <!-- Human Resources -->
+          <div class="s7-card">
+            <div class="s7-card-hdr">
+              <span class="s7-card-lbl">Human Resources</span>
+              <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1.5 10.5L5.5 6L1.5 1.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+            </div>
+            <div class="s7-card-img">
+              <img src="./media_5bb290f005df89be.png" alt="HR team" />
+            </div>
+            <div class="s7-card-ftr">
+              <span class="s7-card-desc">Make policy more personal.</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Logo strip -->
+      <div class="s7-logos">
+        <img src="./media_a4c08b8c3b42e719.png" alt="Partner logos including Webflow, TBWA, Spotify, AKQA" />
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</section>

@@ -1,0 +1,246 @@
+/* forge-there-s-more-to-acrobat-than-acrobat — authored toward the Figma target.
+   Every selector is scoped to .forge-there-s-more-to-acrobat-than-acrobat and keys
+   ONLY on the classes init() stamps on the reconstructed bento DOM. Layout intent
+   is expressed relatively (aspect-ratio / flex proportions / tokens) — no pinned
+   design-frame pixel widths (L27). */
+
+.forge-there-s-more-to-acrobat-than-acrobat {
+  box-sizing: border-box;
+  background: var(--s2a-color-gray-75, #f6f6f6);
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-80, 80px);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat *,
+.forge-there-s-more-to-acrobat-than-acrobat *::before,
+.forge-there-s-more-to-acrobat-than-acrobat *::after {
+  box-sizing: border-box;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+/* ---- intro copy ---- */
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-heading {
+  max-width: 540px;
+  margin: 0;
+  font-family: "Adobe Clean Display", "Adobe Clean", "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 1.1rem + 2.9vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-align: center;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-subheading {
+  max-width: 616px;
+  margin: 0;
+  font-family: "Adobe Clean", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+  line-height: 1.33;
+  text-align: center;
+  color: var(--s2a-color-gray-900, #131313);
+}
+
+/* ---- cards ---- */
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cards-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-40, 40px);
+  padding-bottom: var(--s2a-spacing-24, 24px);
+  width: 100%;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cards-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+/* left / large overlay card: photo fills, gradient, text overlaid */
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card--overlay {
+  position: relative;
+  flex: 0 1 460px;
+  max-width: 460px;
+  aspect-ratio: 460 / 519;
+  border-radius: var(--s2a-border-radius-16, 16px);
+  overflow: hidden;
+  border: var(--s2a-border-width-2, 2px) solid rgba(255, 255, 255, 0.12);
+  background: #1c1410;
+  isolation: isolate;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__media {
+  position: absolute;
+  inset: 0;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__media picture,
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, rgba(0, 0, 0, 0.52) 0%, rgba(0, 0, 0, 0.18) 55%, rgba(0, 0, 0, 0.06) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__text {
+  position: absolute;
+  inset: var(--s2a-spacing-16, 16px) var(--s2a-spacing-16, 16px) auto;
+  z-index: 2;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-overlay-title {
+  margin: 0 0 6px;
+  font-family: "Adobe Clean Display", "Adobe Clean", "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-overlay-body {
+  margin: 0;
+  font-family: "Adobe Clean", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.33;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card--overlay a {
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+/* right / narrow panel card: contained image card, then copy below */
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card--panel {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 252px;
+  max-width: 252px;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__imgcard {
+  width: 100%;
+  aspect-ratio: 252 / 300;
+  border-radius: var(--s2a-border-radius-16, 16px);
+  background: var(--s2a-color-gray-25, #fff);
+  overflow: hidden;
+  box-shadow: 0 2px 50px 0 rgba(0, 0, 0, 0.25);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__imgcard picture,
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__imgcard img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-12, 12px);
+  padding: var(--s2a-spacing-12, 12px);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-card__hb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-4, 4px);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-panel-title {
+  margin: 0;
+  font-family: "Adobe Clean Display", "Adobe Clean", "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  font-size: 1.125rem;
+  line-height: 1.11;
+  letter-spacing: -0.013em;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-panel-body {
+  margin: 0;
+  font-family: "Adobe Clean", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.31;
+  letter-spacing: 0.01em;
+  color: rgba(0, 0, 0, 0.64);
+}
+
+/* CTA: bold label + chevron */
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--s2a-spacing-4, 4px);
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cta-label,
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cta-link {
+  font-family: "Adobe Clean", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.28;
+  color: inherit;
+  text-decoration: none;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .jtbd-cta-arrow {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-top: 1.5px solid currentcolor;
+  border-right: 1.5px solid currentcolor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* stack on narrow viewports */
+@media (max-width: 768px) {
+  .forge-there-s-more-to-acrobat-than-acrobat {
+    padding-top: var(--s2a-spacing-80, 80px);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .jtbd-cards-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .jtbd-card--overlay,
+  .forge-there-s-more-to-acrobat-than-acrobat .jtbd-card--panel {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 460px;
+  }
+}

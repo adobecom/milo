@@ -1,0 +1,291 @@
+/* forge-with-great-power-comes-great-productivity
+   Scoped to .forge-with-great-power-comes-great-productivity (L10/L19). Keys only
+   on the .fwp-* classes init() stamps on the reconstructed DOM — never on the
+   authored Figma classes (stripped by DA). Figma-frame pixels are translated to
+   responsive units (clamp / aspect-ratio / fr) so the block reflows in its own
+   container, not the 2560px frame (L27). */
+
+.forge-with-great-power-comes-great-productivity {
+  --fwp-ink: var(--s2a-color-text, #000);
+  --fwp-surface: #f6f6f6;
+  --fwp-accent: #e1251b;
+  --fwp-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(64px, 8vw, 120px);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--s2a-layout-section-top, 124px) clamp(16px, 4vw, 40px) var(--s2a-layout-section-bottom, 80px);
+  background: #fff;
+  color: var(--fwp-ink);
+  overflow: hidden;
+}
+.forge-with-great-power-comes-great-productivity * { box-sizing: border-box; }
+.forge-with-great-power-comes-great-productivity img { display: block; max-width: 100%; height: auto; }
+
+/* ───────────────────────────── HERO ───────────────────────────── */
+.forge-with-great-power-comes-great-productivity .fwp-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.forge-with-great-power-comes-great-productivity .fwp-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  width: 100%;
+  max-width: 768px;
+  text-align: center;
+}
+.forge-with-great-power-comes-great-productivity .fwp-appid {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.forge-with-great-power-comes-great-productivity .fwp-appid-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--fwp-accent);
+}
+.forge-with-great-power-comes-great-productivity .fwp-appid-icon img { width: 100%; height: 100%; object-fit: contain; }
+.forge-with-great-power-comes-great-productivity .fwp-appid-text {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.forge-with-great-power-comes-great-productivity .fwp-headline {
+  margin: 0;
+  font-family: 'Adobe Clean Display', Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  font-size: clamp(2.25rem, 5.2vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.forge-with-great-power-comes-great-productivity .fwp-body {
+  margin: 0 auto;
+  max-width: 620px;
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  line-height: 1.35;
+}
+
+/* CTA promo pill */
+.forge-with-great-power-comes-great-productivity .fwp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: var(--fwp-radius);
+  background: #000;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cta-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 8px 4px 4px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cta-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--fwp-accent);
+}
+.forge-with-great-power-comes-great-productivity .fwp-cta-icon img { width: 100%; height: 100%; object-fit: contain; }
+.forge-with-great-power-comes-great-productivity .fwp-cta-text {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cta-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cta-toggle svg { width: 14px; height: 14px; }
+
+/* Masonry image collage */
+.forge-with-great-power-comes-great-productivity .fwp-hero-media {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin-top: clamp(24px, 4vw, 56px);
+}
+.forge-with-great-power-comes-great-productivity .fwp-mosaic { column-count: 5; column-gap: 12px; }
+.forge-with-great-power-comes-great-productivity .fwp-tile {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #ececec;
+}
+.forge-with-great-power-comes-great-productivity .fwp-tile-pic,
+.forge-with-great-power-comes-great-productivity .fwp-tile-pic img { width: 100%; display: block; }
+.forge-with-great-power-comes-great-productivity .fwp-tile-pic img { aspect-ratio: 3 / 4; object-fit: cover; }
+.forge-with-great-power-comes-great-productivity .fwp-tile--doc { background: #e8e6f0; }
+
+/* Text-bearing collage tiles (signature card / special-report doc) */
+.forge-with-great-power-comes-great-productivity .fwp-tile-cap {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+}
+.forge-with-great-power-comes-great-productivity .fwp-tile-cap-line {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 8px;
+  line-height: 1.25;
+  color: #fff;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.forge-with-great-power-comes-great-productivity .fwp-tile-cap-line:first-child {
+  font-weight: 900;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Fade the collage into the page */
+.forge-with-great-power-comes-great-productivity .fwp-hero-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 150px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 88%);
+  pointer-events: none;
+}
+
+/* ─────────────────────────── AUDIENCE ─────────────────────────── */
+.forge-with-great-power-comes-great-productivity .fwp-aud {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(40px, 6vw, 72px);
+}
+.forge-with-great-power-comes-great-productivity .fwp-aud-heading {
+  margin: 0;
+  max-width: 540px;
+  font-family: 'Adobe Clean Display', Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cards {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 1120px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.forge-with-great-power-comes-great-productivity .fwp-cards::-webkit-scrollbar { display: none; }
+.forge-with-great-power-comes-great-productivity .fwp-card {
+  flex: 0 0 auto;
+  width: min(300px, 78vw);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--fwp-radius);
+  background: var(--fwp-surface);
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+.forge-with-great-power-comes-great-productivity .fwp-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 24px;
+}
+.forge-with-great-power-comes-great-productivity .fwp-card-label {
+  flex: 1;
+  font-family: 'Adobe Clean Display', Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.forge-with-great-power-comes-great-productivity .fwp-card-chevron { display: inline-flex; flex-shrink: 0; color: #000; }
+.forge-with-great-power-comes-great-productivity .fwp-card-chevron svg { width: 14px; height: 14px; }
+.forge-with-great-power-comes-great-productivity .fwp-card-media {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--fwp-radius);
+  overflow: hidden;
+  background: #e0e0d8;
+}
+.forge-with-great-power-comes-great-productivity .fwp-card-pic,
+.forge-with-great-power-comes-great-productivity .fwp-card-pic img { width: 100%; height: 100%; display: block; }
+.forge-with-great-power-comes-great-productivity .fwp-card-pic img { object-fit: cover; }
+.forge-with-great-power-comes-great-productivity .fwp-card-ftr { padding: 22px 24px; }
+.forge-with-great-power-comes-great-productivity .fwp-card-desc {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+/* Partner-logo strip */
+.forge-with-great-power-comes-great-productivity .fwp-logos { width: 100%; max-width: 1120px; }
+.forge-with-great-power-comes-great-productivity .fwp-logos-img,
+.forge-with-great-power-comes-great-productivity .fwp-logos-img img { width: 100%; display: block; }
+.forge-with-great-power-comes-great-productivity .fwp-logos-img img {
+  height: 36px;
+  object-fit: contain;
+  object-position: center;
+  opacity: 0.25;
+}
+
+/* ─────────────────────────── RESPONSIVE ───────────────────────── */
+@media (max-width: 1024px) {
+  .forge-with-great-power-comes-great-productivity .fwp-mosaic { column-count: 4; }
+}
+@media (max-width: 768px) {
+  .forge-with-great-power-comes-great-productivity .fwp-mosaic { column-count: 3; column-gap: 8px; }
+  .forge-with-great-power-comes-great-productivity .fwp-tile { margin-bottom: 8px; }
+}
+@media (max-width: 600px) {
+  .forge-with-great-power-comes-great-productivity .fwp-mosaic { column-count: 2; }
+  .forge-with-great-power-comes-great-productivity .fwp-cards { padding-inline: 16px; }
+}
