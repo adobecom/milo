@@ -42,7 +42,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ `alt text to be authored` placeholder when none); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. The chrome is a native `<dialog>` (`open()` → `showModal()`, `close()` → `.close()` after the anim), so the focus trap / background `inert` / Escape (`cancel` event) / focus-restore are the platform's; the mobile swipe listeners live on the dialog element (its siblings go inert once `showModal()` runs). Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
-| `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
+| `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` object (default `{}`) and **write into it instead of allocating** — the core passes reused scratch objects (`fanScratch`/`wpScratch`, plus a shared scratch stage in `computeCardStage`) so the arc→grid→fold transition, which places every card each frame, produces no per-card garbage. |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`), follows the pointer, and runs the **two-step retirement**: `getHintDismissed()` fades the label out (with the WebGL hint, on first drag), and the later `getCursorRetired()` fades the disc/chevrons over `RETIRE_FADE_MS`, after which `active` drops and the **ordinary system cursor takes back over**. `isActive()` lets interaction.js cede (and then re-take) the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
@@ -495,7 +495,18 @@ per `initRuntime`, so a modal that was open when a breakpoint crossing fires wou
 survive the rebuild visually stuck open: the flown-out card mesh is dropped with the old
 `modalScene` (image gone), `modalIdx` resets to -1 so re-wired chrome buttons early-return
 (close/arrows dead), and the scroll lock remains. An open modal is treated as closed cleanly
-when the breakpoint crosses — it does not re-open on the other side. CSS is
+when the breakpoint crosses — it does not re-open on the other side.
+
+For the same reason (the runtime closure survives a `destroy()`+`initRuntime()` rebuild),
+`destroy()` also **resets the sphere orientation + drag/nudge state** (`sphereRotX/Y/Z`,
+`pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, the nav-nudge spring, `wasBrowsing`)
+to the upright resting pose. Otherwise pitch/yaw the user had dragged before a device change
+(a width-band or pointer-precision crossing — the emulator-device-swap case) carried into the
+freshly-rebuilt barrel and rendered it tilted until a scroll-out zeroed it at `sphereFormT <
+0.01`. These closure vars are otherwise only zeroed at the top of the section, so the explicit
+reset in `destroy()` is what makes every rebuild start level.
+
+CSS is
 authored **mobile-first** (Milo convention) and keeps its own three type tiers
 independently of these JS profiles: the sm scale is the unscoped `.globe` base, then
 `@media (min-width:768px)` (md) and `@media (min-width:1280px)` (lg) layer the larger
@@ -729,13 +740,26 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     adjacent pairs share a column), so authored order carries no spatial meaning, and modal
     prev/next walks card *index* and spins to whatever slot the card holds. Each column's stack
     is then centred about y=0, so a short column sits centred rather than hanging from the top.
-  - **Column count is DERIVED, not fixed** (`CYL_COLS_FIT` 0.80): the fewest columns whose
+  - **Column count is DERIVED, not fixed** (`CYL_COLS_FIT`): the fewest columns whose
     tallest column still fits that fraction of the frustum height. It has to scale with the
     card count — a fixed count suited to sm's 24 cards left md's 45 stacked ~6× past the
-    viewport. Resolves to 8 columns on sm, 14 on md (and at 50 cards); ~3–4 cards per column.
-    **This is the wall-HEIGHT dial**: lowering it adds a column, which narrows the cards and
-    shortens the wall (0.95 → 0.80 took sm from 117% of the near-face frustum, bleeding well
-    past the edges, to 83%).
+    viewport. **This is the wall-HEIGHT dial**: lowering it adds a column, which narrows the
+    cards and shortens the wall. The default is `0.80` (shared `YAW_ONLY_GEOMETRY`); **sm
+    overrides it to `0.65`** (`BREAKPOINTS.sm.CYL_COLS_FIT`, applied in `resolveBpProfile`)
+    to trim the wall height after the sm `SPHERE_R` was pulled in — see the next bullet.
+    iPad's md cylinder keeps the shared 0.80.
+  - **Barrel size is the RADIUS, contained per-band.** The masonry sizes the wall against
+    the barrel's *centre-plane* frustum, but the cards a viewer sees are the FRONT ones at
+    the near radius (`z = +SPHERE_R`), so the apparent barrel is bigger than the wall-height
+    fraction implies and it grows with `SPHERE_R`. On a narrow modern-phone viewport the sm
+    barrel's diameter (`2·SPHERE_R`) exceeded the frame width at the centre plane, so the side
+    columns clipped hard against the screen edges (the "barrel too close" report). **sm
+    `SPHERE_R` was reduced 20 → 16**: the radius is the structural lever for barrel WIDTH, so
+    this pulls the whole barrel inside the frame with margin and lowers the near-face
+    magnification (`CAM_Z_SPHERE / (CAM_Z_SPHERE − SPHERE_R)`, 70/50 = 1.4× → 70/54 = 1.30×);
+    the `CYL_COLS_FIT` 0.65 above then trims the matching height. Both are sm-only; the md
+    cylinder (iPad) is unchanged. Verified with a headless-Playwright barrel harness at
+    390×844 and 375×667.
   - **`CYL_ASPECT_CAP` (1.5)** clamps how extreme a card's aspect may get, so one 16:9
     panorama can't dominate a column. Not a distortion — the existing cover-crop UVs simply
     crop harder. Note `imgAspect` is therefore derived from the *solved* size, not the raw
@@ -952,17 +976,25 @@ Remaining (each an independent enhancement / fix — no ordering dependency):
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
    after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
    resources, or collapse gracefully.
-5. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
-   `caFilterR`/`caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`).** It's a
-   second, scroll-velocity-only CA system layered on top of the shader's per-card CA. Its
-   magnitude is sub-pixel on slow scroll, ~`CA_PX_MAX` (3px) max on fast scroll, and zero at
-   rest (now also dead-banded via `SCROLL_VEL_DEADBAND`) — so it's nearly imperceptible,
-   especially on the formed globe (per-card motion CA there is rotation-driven, not
-   scroll-driven, so plain scrolling produces almost no per-card CA either). The shader CA
-   (radial transition split + motion trails) is the CA users actually see and would stay.
-   Product call, not pure cleanup: keep it only if the canvas-wide fringe during *fast*
-   scroll is worth it — easiest way to judge is to crank `CA_PX_MAX` temporarily and see
-   what it contributes. If dropped, it's a tidy self-contained removal.
+5. **Global SVG-filter CA ("Option C") is now OFF on sm; consider dropping it on md too.**
+   `updateGlobalCA` applies a full-canvas SVG chromatic-aberration filter (`caFilterR`/
+   `caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`), re-applied every frame
+   while scrolling. A whole-viewport SVG filter pass is one of the most expensive per-frame
+   operations on a phone compositor, and it runs precisely during the fast scrolling where
+   mobile framedrops reproduce — so it is now gated off on sm via the `GLOBAL_CA` bp flag
+   (`GLOBAL_CA_SM = false`); the per-card in-shader motion CA still runs, so cards keep their
+   smear. It's still on for md (desktop/tablet handles it). It remains a second,
+   scroll-velocity-only CA layered on the shader's per-card CA — sub-pixel on slow scroll,
+   ~`CA_PX_MAX` (3px) max on fast scroll, zero at rest (`SCROLL_VEL_DEADBAND`) — so a full
+   removal on md is still a reasonable product call; keep it only if the canvas-wide fringe
+   during *fast* desktop scroll earns its cost. If dropped, it's a tidy self-contained removal.
+6. **Trim the modal's per-frame work** (`positionModalChrome` in `modal.js`). While a modal
+   is open it runs every frame and re-queries 6 chrome nodes (`.globe-gallery-modal-chrome`
+   + info/close/prev/next/counter) and allocates a fresh `tgtPos`/`tgtQuat`/`tgtScale` each
+   frame (`updateAnimation` allocates the same trio). Low priority — the modal is a brief,
+   isolated interaction, not the scroll hot path measured for framedrops — but the same
+   scratch-object + cached-node pattern used for the arc transition and arc-copy overlay
+   applies cleanly here if the modal ever needs squeezing.
 
 ## Model to copy
 

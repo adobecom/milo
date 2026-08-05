@@ -38,37 +38,40 @@ export function buildArcCtx(arcPanT, W, H, arcSpan) {
   };
 }
 
-// t = 0..1 normalized position across the arc span (0 = one end, 1 = other end)
-export function getFanData(t, arcCtx) {
+export function getFanData(t, arcCtx, out = {}) {
   const angle = arcCtx.thetaM + arcCtx.effectiveSpan / 2
             - t * arcCtx.effectiveSpan
             + arcCtx.rotOffset;
-  const px = arcCtx.fanCX + arcCtx.R * Math.cos(angle);
-  const py = arcCtx.fanCY + arcCtx.R * Math.sin(angle);
   // Radial direction (CSS screen space, Y-down)
   const rx = Math.cos(angle);
   const ry = Math.sin(angle);
+  out.px = arcCtx.fanCX + arcCtx.R * rx;
+  out.py = arcCtx.fanCY + arcCtx.R * ry;
+  out.rx = rx;
+  out.ry = ry;
   // CSS card rotation (in radians) — tangent to arc circle
-  const cssRot = Math.atan2(rx, -ry);
-  return { px, py, rx, ry, cssRot };
+  out.cssRot = Math.atan2(rx, -ry);
+  return out;
 }
 
-// Convert CSS screen coordinates to WebGL world coordinates
-// (origin at screen center; Y flipped)
-export function cssToWorld(px, py, W, H) {
-  return { x: px - W / 2, y: -(py - H / 2) };
+// Convert CSS screen coordinates to WebGL world coordinates (origin at screen center;
+// Y flipped)
+export function cssToWorld(px, py, W, H, out = {}) {
+  out.x = px - W / 2;
+  out.y = -(py - H / 2);
+  return out;
 }
 
 // Rotate a point (in CSS screen space) around (fanCX, fanCY) by angle A (CW in CSS)
-// then convert to world space.
-export function rotateArcPoint(px, py, A, arcCtx, W, H) {
+// then convert to world space
+export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
   const dx = px - arcCtx.fanCX;
   const dy = py - arcCtx.fanCY;
   const cosA = Math.cos(A);
   const sinA = Math.sin(A);
   const rpx = arcCtx.fanCX + dx * cosA - dy * sinA;
   const rpy = arcCtx.fanCY + dx * sinA + dy * cosA;
-  return cssToWorld(rpx, rpy, W, H);
+  return cssToWorld(rpx, rpy, W, H, out);
 }
 
 // Camera Z for the arc phase: set so that at z=0 the frustum height equals H,

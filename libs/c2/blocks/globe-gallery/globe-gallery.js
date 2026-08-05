@@ -38,11 +38,6 @@ const BREAKPOINTS = {
   // card (N_MAX: 0 = uncapped), 9×5 nominal grid, large sphere.
   md: {
     minWidth: 768,
-    // Cap on how many authored cards this band renders. 0 = uncapped (render all).
-    // Desktop shows the full set: the sphere is a Fibonacci distribution and the arc
-    // is a normalized fanT spread, so both scale to any count; the grid intentionally
-    // overflows the viewport already (see computeGridLayout), so cards beyond the
-    // 9×5 = 45 nominal slots land in extra off-screen columns rather than being dropped.
     N_MAX: 0,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
@@ -65,18 +60,11 @@ const BREAKPOINTS = {
     // former fixed 45 cards this resolves to the same 27.
     ARC_DENSE_FRACTION: 0.6,
   },
-  // <768 — Milo sm. Tuned for 375x667 portrait: sphere fits ~88% viewport width /
-  // 49% height at SPHERE_R=20, CAM_Z_SPHERE=70; card count + grid adjusted to
-  // portrait; arc cards sized to fit with margin. ARC_DENSE_FRACTION=0 → cards spread
-  // uniformly across the arc (24 isn't crowded enough to need clustering).
-  // N_MAX is a HARD 24 here (unlike md's uncapped): the 3×8 grid already overflows a
-  // 667px-tall viewport, the sphere is small, and mobile shouldn't pay the texture cost
-  // of a large set. Extra authored cards are deliberately ignored on sm — the first 24 win.
   sm: {
     minWidth: 0,
     N_MAX: 24,
     ARC_SPAN: 3.6,
-    SPHERE_R: 20,
+    SPHERE_R: 16,
     // Sphere-phase card height. On sm this is only the PlaneGeometry base — the cylinder
     // masonry solves each card's real size from the column layout and scales the mesh — so
     // it no longer sets the visible size. Kept sane for the fold's lerp start and the
@@ -97,6 +85,16 @@ const BREAKPOINTS = {
     // the column layout, so area normalization has nothing to do.
     SPHERE_AREA_NORM: 0,
     ARC_DENSE_FRACTION: 0,
+    // Overrides the shared YAW_ONLY_GEOMETRY.CYL_COLS_FIT for the phone band only. The
+    // shared 0.80 sizes the wall against the barrel's CENTRE-plane frustum, but the cards
+    // the viewer sees are the FRONT ones at the near radius (z = +SPHERE_R), magnified
+    // ~CAM_Z_SPHERE/(CAM_Z_SPHERE−SPHERE_R) ≈ 70/50 = 1.4× on sm — so 0.80 of the centre
+    // frustum overflowed the viewport top/bottom/sides (the "barrel too close" report).
+    // A lower fraction forces more, narrower columns and a shorter wall, containing the
+    // near face with margin. iPad (md cylinder) keeps the shared default. Paired with the
+    // reduced SPHERE_R above — the radius fixes the barrel WIDTH (diameter vs the narrow
+    // phone viewport), this trims its HEIGHT to match.
+    CYL_COLS_FIT: 0.65,
   },
 };
 
@@ -111,6 +109,8 @@ const MODAL_TEX_SM = 768;
 const MODAL_TEX_MD = 2048;
 const ANTIALIAS_SM = false;
 const ANTIALIAS_MD = true;
+const GLOBAL_CA_SM = false;
+const GLOBAL_CA_MD = true;
 
 // ── Yaw-only geometry overlay ────────────────────────────────────────────────
 // Viewport width and INPUT CAPABILITY are independent axes, and the sphere-geometry
@@ -567,6 +567,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       // Whether this profile resolved to the cylinder — compared in doLayout to detect a
       // pointer-precision change (the shape counterpart of a width-band crossing).
       YAW_ONLY: cylinder,
+      GLOBAL_CA: name === 'sm' ? GLOBAL_CA_SM : GLOBAL_CA_MD,
       N_TOTAL: nTotal,
       N_VISIBLE: nTotal, // all cards on arc simultaneously (no conveyor)
       ARC_SPAN: cfg.ARC_SPAN,
@@ -590,7 +591,12 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       // size comes from the column solve (cylinderMasonryLayout), so CARD_*_SPHERE above is
       // only the fallback/geometry base — CYL_* are the knobs it reads.
       CYLINDER: !!shape.CYLINDER,
-      CYL_COLS_FIT: shape.CYL_COLS_FIT,
+      // Wall-height dial. The cylinder shape is shared by every yaw-only device, but the
+      // apparent barrel size is not: cards sit at the near radius, so the front face is
+      // magnified by CAM_Z_SPHERE / (CAM_Z_SPHERE − SPHERE_R), which differs per band. A
+      // band may therefore override the shared default to contain its own near face (sm
+      // pulls it in — see BREAKPOINTS.sm.CYL_COLS_FIT).
+      CYL_COLS_FIT: cfg.CYL_COLS_FIT !== undefined ? cfg.CYL_COLS_FIT : shape.CYL_COLS_FIT,
       CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
       CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
       CYL_BULGE: shape.CYL_BULGE,
@@ -634,6 +640,12 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
   let caFilterR = null; // SVG feOffset element for red channel  (Option C)
   let caFilterB = null; // SVG feOffset element for blue channel (Option C)
+  let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
+  // Arc-copy overlay: cached node + last-written style strings (see updateArcCopy).
+  let arcCopyEl = null;
+  let arcCopyLeftStr = '';
+  let arcCopyOpStr = '';
+  let arcCopyTransformStr = '';
   let prevLenisY = 0; // previous frame scroll position — used to compute scrollVel
   let scrollVel = 0; // |lenisY - prevLenisY| — drives motion trail intensity
 
@@ -693,6 +705,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   const stageQuat = new THREE.Quaternion();
   const stageEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const tmpVec3 = new THREE.Vector3();
+  const fanScratch = {};
+  const wpScratch = {};
+  const stageScratch = {};
 
   // Modal-nav "reactivity nudge": when user navigates prev/next within the modal, drive a
   // spring on sphereRotY/X toward a target derived from the new card's slot position. Sphere
@@ -1735,6 +1750,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Vertical shift (dy) tracks scroll velocity — scroll is vertical so R/B shift up/down.
   // Resets to zero when scrolling stops so the canvas returns to clean on every settle.
   function updateGlobalCA() {
+    if (!bp.GLOBAL_CA) {
+      if (globalCaFilterOn) {
+        renderer.domElement.style.filter = '';
+        globalCaFilterOn = false;
+      }
+      return;
+    }
     if (CA_ENABLED && caFilterR) {
       const canvas = renderer.domElement;
       const scrollVelNorm = Math.min(1.0, scrollVel / SCROLL_VEL_MAX);
@@ -1744,36 +1766,44 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         caFilterR.setAttribute('dy', (-globalCA).toFixed(2));
         caFilterB.setAttribute('dx', '0');
         caFilterB.setAttribute('dy', (globalCA * 0.5).toFixed(2));
-        canvas.style.filter = `url(#ca-filter-${gid})`;
-      } else {
+        // Only write the (recalc-triggering) filter string on the off→on edge; while
+        // already on, the SVG feOffset attributes above carry the per-frame change.
+        if (!globalCaFilterOn) {
+          canvas.style.filter = `url(#ca-filter-${gid})`;
+          globalCaFilterOn = true;
+        }
+      } else if (globalCaFilterOn) {
         canvas.style.filter = '';
+        globalCaFilterOn = false;
       }
     }
   }
 
-  // Arc-copy overlay: fades/slides in with the entry, fades + scales out as the
-  // headline arrives. Pinned left per breakpoint.
   function updateArcCopy() {
-    const arcCopyEl = q('.globe-gallery-arc-copy');
-    if (arcCopyEl) {
-      const PROGRESS_HEADLINE_IN = 0.25;
-      const PROGRESS_ARC_COPY_OUT = 0.50;
-      const arcCopyInE = easeOutCubic(Math.min(1, arcCopyEntryT / 0.336));
-      const arcCopyOutT = Math.max(0, Math.min(
-        1,
-        (progress - PROGRESS_HEADLINE_IN) / (PROGRESS_ARC_COPY_OUT - PROGRESS_HEADLINE_IN),
-      ));
-      const arcCopyOutE = easeOutCubic(arcCopyOutT);
-      const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
-      const arcCopySlide = 24 * (1 - arcCopyInE);
-      // sm pins to 8px from viewport left (matches nav pill outer padding).
-      // md uses the 24px-grid-aligned position with centering offset.
-      const gridLeft = (bp.name === 'sm')
-        ? 8
-        : 24 + Math.max(0, (W - 48 - 1392) / 2);
-      arcCopyEl.style.left = `${gridLeft}px`;
-      arcCopyEl.style.opacity = arcCopyOp.toFixed(3);
-      arcCopyEl.style.transform = `translateY(${arcCopySlide.toFixed(1)}px)`;
+    if (!arcCopyEl) return;
+    const PROGRESS_HEADLINE_IN = 0.25;
+    const PROGRESS_ARC_COPY_OUT = 0.50;
+    const arcCopyInE = easeOutCubic(Math.min(1, arcCopyEntryT / 0.336));
+    const arcCopyOutT = Math.max(0, Math.min(
+      1,
+      (progress - PROGRESS_HEADLINE_IN) / (PROGRESS_ARC_COPY_OUT - PROGRESS_HEADLINE_IN),
+    ));
+    const arcCopyOutE = easeOutCubic(arcCopyOutT);
+    const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
+    const arcCopySlide = 24 * (1 - arcCopyInE);
+    // sm pins to 8px from viewport left (matches nav pill outer padding).
+    // md uses the 24px-grid-aligned position with centering offset.
+    const gridLeft = (bp.name === 'sm')
+      ? 8
+      : 24 + Math.max(0, (W - 48 - 1392) / 2);
+    const leftStr = `${gridLeft}px`;
+    const opStr = arcCopyOp.toFixed(3);
+    const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
+    if (leftStr !== arcCopyLeftStr) { arcCopyEl.style.left = leftStr; arcCopyLeftStr = leftStr; }
+    if (opStr !== arcCopyOpStr) { arcCopyEl.style.opacity = opStr; arcCopyOpStr = opStr; }
+    if (transformStr !== arcCopyTransformStr) {
+      arcCopyEl.style.transform = transformStr;
+      arcCopyTransformStr = transformStr;
     }
   }
 
@@ -1956,7 +1986,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       fanT = ARC_DENSE_SPLIT
            + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
     }
-    const fan = getFanData(fanT, arcCtx);
+    const fan = getFanData(fanT, arcCtx, fanScratch);
     const arcDelay = fanT * ARC_STAGGER;
     const arcLocalT = Math.max(
       0,
@@ -1966,8 +1996,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
     const pyPushed = fan.py + fan.ry * 60 * arcLocalE;
     const wp = entryRot > 0.001
-      ? rotateArcPoint(pxPushed, pyPushed, entryRot, arcCtx, W, H)
-      : cssToWorld(pxPushed, pyPushed, W, H);
+      ? rotateArcPoint(pxPushed, pyPushed, entryRot, arcCtx, W, H, wpScratch)
+      : cssToWorld(pxPushed, pyPushed, W, H, wpScratch);
     const arcY = wp.y - entryYOffset;
     const webglRot = -fan.cssRot - entryRot;
 
@@ -1984,16 +2014,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       card.peelStartRot = startRot;
     }
 
-    return {
-      slot,
-      x: lerpN(wp.x, card.gridPos.x, gpE),
-      y: lerpN(arcY, card.gridPos.y, gpE),
-      z: lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE),
-      scale: lerpN(arcScale, card.gridScale, gpE),
-      rotZ: card.peelStartRot == null
-        ? webglRot
-        : card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE,
-    };
+    stageScratch.slot = slot;
+    stageScratch.x = lerpN(wp.x, card.gridPos.x, gpE);
+    stageScratch.y = lerpN(arcY, card.gridPos.y, gpE);
+    stageScratch.z = lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE);
+    stageScratch.scale = lerpN(arcScale, card.gridScale, gpE);
+    stageScratch.rotZ = card.peelStartRot == null
+      ? webglRot
+      : card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE;
+    return stageScratch;
   }
 
   // ── Branch: arc phase — waiting to peel, or actively peeling arc→grid ──
@@ -2394,6 +2423,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // Cache SVG filter elements for Option C global CA
     caFilterR = q('.globe-gallery-ca-r-offset');
     caFilterB = q('.globe-gallery-ca-b-offset');
+    arcCopyEl = q('.globe-gallery-arc-copy');
+    arcCopyLeftStr = ''; arcCopyOpStr = ''; arcCopyTransformStr = '';
 
     modal.setup();
 
@@ -2442,6 +2473,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     cursor.teardown();
     if (renderer) {
       renderer.domElement.style.filter = '';
+      globalCaFilterOn = false;
       renderer.dispose();
       renderer.domElement.style.display = 'none';
     }
@@ -2471,11 +2503,22 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     modal.destroy();
     // A11y gallery cleanup so a fresh init starts clean.
     a11y.teardown();
-    // Reset arc-copy and pull-quote
-    const arcCopyEl = q('.globe-gallery-arc-copy');
+    // Reset arc-copy and pull-quote (arcCopyEl is the node cached in initRuntime).
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
+    // Sphere orientation + drag/nudge state live in this closure, which SURVIVES a
+    // destroy()+initRuntime() rebuild (a band or pointer-precision crossing re-runs
+    // initRuntime on the same runtime). Without an explicit reset, pitch/yaw the user
+    // dragged before the rebuild carry over and the freshly-rebuilt barrel renders
+    // tilted until a scroll-out zeroes it at sphereFormT < 0.01. Reset to the upright
+    // resting pose here so every rebuild starts level.
+    sphereRotX = 0; sphereRotY = 0; sphereRotZ = 0;
+    pitchReleaseCap = Math.PI / 3;
+    sphereDragWarp = 0;
+    drag.isDragging = false; drag.velX = 0; drag.velY = 0;
+    navNudgeActive = false; navNudgeVelX = 0; navNudgeVelY = 0;
+    wasBrowsing = false;
     // NOTE: `bp` is intentionally NOT cleared here. doLayout() compares bp.name
     // against the resolved band to detect a profile crossing, and initRuntime()
     // overwrites it. Clearing it would break the re-init flow.
