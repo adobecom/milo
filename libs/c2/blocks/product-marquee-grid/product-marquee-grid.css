@@ -187,7 +187,7 @@
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
 
-    .pm-price {
+    p:has(a[href*="osi="], [is="inline-price"], [data-wcs-osi]) {
       color: var(--s2a-color-content-default);
       font-family: var(--s2a-font-family-heading);
       font-size: var(--s2a-typography-font-size-heading-5);
@@ -205,7 +205,7 @@
       }
     }
 
-    .pm-price-sub {
+    p:has(a[href*="osi="], [is="inline-price"], [data-wcs-osi]) + p {
       color: var(--s2a-color-content-subtle);
       font-size: var(--s2a-typography-font-size-body-md);
       line-height: var(--s2a-typography-line-height-body-md);
