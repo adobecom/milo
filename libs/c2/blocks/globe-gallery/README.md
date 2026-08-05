@@ -507,7 +507,10 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
 - **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only,
   over the interactive sphere with no modal open: the system cursor is replaced by a 48px
   `mix-blend-mode: difference` disc (so it inverts whatever's beneath it) flanked by two
-  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. It
+  chevrons that squeeze 4px inward while dragging, plus a "Click & Drag" label in a **frosted
+  pill** (the modal-chrome glass — 64%-black, 1px 24%-white border, 12px blur — so the label
+  stays legible over bright cards; the pill IS the transformed `.globe-gallery-cursor__text-wrap`,
+  like the modal nav buttons, so `backdrop-filter` frosts the cards behind it). It
   **retires in two steps** as the user drags, both riding the same `textExitProgress` signal
   as the WebGL hint text: at `CURSOR_HINT_DISMISS_T` (0.12, injected as `getHintDismissed`)
   the label fades out along with the background text; at the later `CURSOR_RETIRE_T` (0.55,

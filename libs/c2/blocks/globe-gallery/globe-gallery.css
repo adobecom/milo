@@ -790,7 +790,18 @@ body.modal-open { overflow: hidden; }
     left: 0;
   }
 
-  .globe-gallery-cursor__text-wrap { will-change: transform; }
+  .globe-gallery-cursor__text-wrap {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.5s ease 0.15s;
+  }
 
   /* Chevron SVG — no blend mode; its own opacity/scale entrance, separate from the disc. */
   .globe-gallery-cursor__ring {
@@ -833,17 +844,13 @@ body.modal-open { overflow: hidden; }
     font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    line-height: 1;
     color: #fff;
-    opacity: 0;
-    transition: opacity 0.5s ease 0.15s;
   }
 
-  .globe-gallery-cursor--active .globe-gallery-cursor__text { opacity: 0.45; }
+  .globe-gallery-cursor--active .globe-gallery-cursor__text-wrap { opacity: 0.9; }
 
-  /* Once the user has dragged, the label dismisses for good (disc + chevrons stay),
-     mirroring the WebGL hint text. Placed after the --active rule (equal specificity)
-     so it wins. */
-  .globe-gallery-cursor--hint-dismissed .globe-gallery-cursor__text { opacity: 0; }
+  .globe-gallery-cursor--hint-dismissed .globe-gallery-cursor__text-wrap { opacity: 0; }
 
   .globe-gallery-cursor--retiring .globe-gallery-cursor__ring {
     opacity: 0;

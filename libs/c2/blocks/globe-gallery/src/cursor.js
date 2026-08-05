@@ -147,8 +147,7 @@ export default function createCursor(deps) {
       discEl.style.top = `${my}px`;
     }
     ringWrap.style.transform = `translate(${mx}px, ${my}px)`;
-    // Label sits right of the disc edge (24px radius + 8px gap), vertically centered.
-    textWrap.style.transform = `translate(${mx + 32}px, ${my - 8}px)`;
+    textWrap.style.transform = `translate(${mx + 32}px, ${my - 11}px)`;
   }
 
   function isActive() { return active; }
