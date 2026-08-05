@@ -175,6 +175,21 @@
   --body-font-family: adobe-clean-thai, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
+:root header.gnav-c1-host {
+  --global-height-nav: 80px;
+  --global-height-breadcrumbs: 46px;
+}
+
+:root header.gnav-c1-host.is-compact:has(.feds-localnav-bar) {
+  --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+}
+
+@media (max-width: 1023px) {
+  :root header.gnav-c1-host:has(.feds-localnav-bar) {
+    --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+  }
+}
+
 @media (min-width: 1200px) {
   :root {
     --spacing-xl: 56px;
@@ -806,7 +821,7 @@ body.mweb-enabled {
 }
 
 @media (min-width: 900px) {
-  header.global-navigation.has-breadcrumbs {
+  header.global-navigation.has-breadcrumbs:not(.gnav-c1-host) {
     padding-bottom: var(--global-height-breadcrumbs);
   }
 
@@ -814,6 +829,17 @@ body.mweb-enabled {
     display: none;
   }
 }
+/* C2 Gnav on C1 Pages */
+@media (min-width: 1204px) {
+  header.global-navigation.has-breadcrumbs:not(.is-compact) {
+    padding-bottom: var(--global-height-breadcrumbs);
+  }
+}
+
+/* header.global-navigation.gnav-c1-host.feds-header-scrolled {
+  padding-bottom: 0;
+  height: 0;
+} */
 
 .breadcrumbs {
   display: none;
