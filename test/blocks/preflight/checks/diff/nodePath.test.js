@@ -15,4 +15,11 @@ describe('preflight diff nodePath', () => {
     expect(getXPath(secondP, root)).to.equal('/div[1]/p[2]');
     expect(getXPath(h2, root)).to.equal('/div[2]/h2[1]');
   });
+
+  it('getXPath counts only same-tag siblings, ignoring mixed-tag preceding siblings', () => {
+    const root = document.createElement('main');
+    root.innerHTML = '<div><h2>a</h2><p>one</p><p>two</p></div>';
+    const secondP = root.querySelectorAll('p')[1];
+    expect(getXPath(secondP, root)).to.equal('/div[1]/p[2]');
+  });
 });

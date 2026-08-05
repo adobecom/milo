@@ -3,17 +3,17 @@ export function normalizeText(text) {
 }
 
 export function getXPath(node, root) {
-  const segs = [];
+  const segments = [];
   let el = node;
   while (el && el !== root && el.parentElement) {
     let index = 1;
-    let sib = el.previousElementSibling;
-    while (sib) {
-      if (sib.tagName === el.tagName) index += 1;
-      sib = sib.previousElementSibling;
+    let sibling = el.previousElementSibling;
+    while (sibling) {
+      if (sibling.tagName === el.tagName) index += 1;
+      sibling = sibling.previousElementSibling;
     }
-    segs.unshift(`${el.tagName.toLowerCase()}[${index}]`);
+    segments.unshift(`${el.tagName.toLowerCase()}[${index}]`);
     el = el.parentElement;
   }
-  return `/${segs.join('/')}`;
+  return `/${segments.join('/')}`;
 }
