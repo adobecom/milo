@@ -525,82 +525,6 @@ export default function createGlobeModal({
     });
   }
 
-  // Pre-attach prev/next at ±viewport_width so a swipe reveals them (iOS Photos style).
-  function attachCardToModal(card) {
-    if (!card || !modalScene) return;
-    if (card.mesh.parent === modalScene) return;
-    modalScene.attach(card.mesh);
-    card.mesh.origMaterial = card.mesh.material;
-    card.mesh.material = getModalMaterial(card);
-    card.mesh.renderOrder = 0;
-    card.mesh.material.depthTest = true;
-    // Reset cached SDF uniforms so stale values from an interrupted session don't carry over.
-    resetModalMaterialUniforms(card.mesh.material, 1);
-  }
-
-  function detachCardToSphere(card) {
-    const sphereGroup = getSphereGroup();
-    if (!card || !sphereGroup) return;
-    if (card.mesh.parent === sphereGroup) return;
-    if (card.mesh.origMaterial) {
-      card.mesh.material = card.mesh.origMaterial;
-      card.mesh.origMaterial = null;
-    }
-    sphereGroup.attach(card.mesh);
-    snapToSphereSlot(card);
-    card.mesh.material.depthTest = true;
-    card.mesh.renderOrder = 0;
-  }
-
-  // Position a card in modalScene at slot -1/0/+1 (±1 offset by one viewport width).
-  function positionCardInModal(card, slot) {
-    if (!card) return;
-    const { W, H } = getViewport();
-    const tgtPos = new THREE.Vector3();
-    const tgtQuat = new THREE.Quaternion();
-    const tgtScale = new THREE.Vector3();
-    computeModalTarget(tgtPos, tgtQuat, tgtScale, card);
-    const pxPerWorld = H / (2 * MODAL_CAM_DIST * Math.tan(Math.PI / 6));
-    const viewportWidthWorld = W / pxPerWorld;
-    card.mesh.position.set(tgtPos.x + slot * viewportWidthWorld, tgtPos.y, tgtPos.z);
-    card.mesh.quaternion.copy(tgtQuat);
-    card.mesh.scale.copy(tgtScale);
-  }
-
-  // Attach barrel prev/next at offset slots (overflow neighbors dissolve in on commit instead).
-  function prepSwipeNeighbors() {
-    const count = getCount();
-    if (!modalCard || count < 3 || isOverflowCard(modalCard)) return;
-    const prevIdx = (modalIdx - 1 + count) % count;
-    const nextIdx = (modalIdx + 1) % count;
-    if (!isOverflowIdx(prevIdx)) {
-      attachCardToModal(getCards()[prevIdx]);
-      positionCardInModal(getCards()[prevIdx], -1);
-    }
-    if (!isOverflowIdx(nextIdx)) {
-      attachCardToModal(getCards()[nextIdx]);
-      positionCardInModal(getCards()[nextIdx], 1);
-    }
-  }
-
-  // Return all non-current cards in modalScene back to sphereGroup.
-  function clearSwipeNeighbors() {
-    const sphereGroup = getSphereGroup();
-    if (!modalScene || !sphereGroup) return;
-    const cards = getCards();
-    // Iterate a copy — detach mutates the list.
-    const children = modalScene.children.slice();
-    for (let i = 0; i < children.length; i += 1) {
-      const child = children[i];
-      // Keep the current card; return every other matching card to the sphere.
-      if (!modalCard || child !== modalCard.mesh) {
-        for (let j = 0; j < cards.length; j += 1) {
-          if (cards[j].mesh === child) { detachCardToSphere(cards[j]); break; }
-        }
-      }
-    }
-  }
-
   // Finalize the desktop nav transition: detach old card to sphere, reset uniforms on the new.
   function completeDesktopNavTransition() {
     if (!dnNavActive) return;
@@ -683,46 +607,6 @@ export default function createGlobeModal({
     dnNavActive = true;
   }
 
-  // Swipe-commit world swap. direction: +1 next (swipe left), -1 prev. Reorg keeps the visual
-  // position identical before/after the CSS reset → no snap.
-  function commitSwipeNavigation(direction) {
-    if (!modalCard || !modalScene) return;
-    // Don't navigate while closing — same reason as navigate().
-    if (modalPhase === MODAL_PHASE.CLOSING) return;
-    const count = getCount();
-    const oldIdx = modalIdx;
-    const newIdx = (oldIdx + direction + count) % count;
-    // Overflow / <3 cards → dissolve cross-warp instead of the 3-mesh reorg (neighbors go home).
-    if (count < 3 || isOverflowIdx(newIdx) || isOverflowCard(modalCard)) {
-      clearSwipeNeighbors();
-      startDesktopNavTransition(newIdx);
-      return;
-    }
-    const cards = getCards();
-    const oldOppoIdx = (oldIdx - direction + count) % count; // old card on opposite side
-    const newFarIdx = (oldIdx + 2 * direction + count) % count; // brand-new neighbor on swipe side
-
-    // 1) Return the opposite-side old neighbor to the sphere (if it was a barrel neighbor).
-    if (!isOverflowIdx(oldOppoIdx)) detachCardToSphere(cards[oldOppoIdx]);
-    // 2) Old current → new opposite-side neighbor.
-    positionCardInModal(cards[oldIdx], -direction);
-    // 3) The chosen neighbor is now the new current.
-    modalCard = cards[newIdx];
-    modalIdx = newIdx;
-    requestModalUpgrade(modalCard, newIdx);
-    positionCardInModal(modalCard, 0);
-    // 4) Attach the new far neighbor (two steps along the swipe), if it's a barrel card.
-    if (!isOverflowIdx(newFarIdx)) {
-      attachCardToModal(cards[newFarIdx]);
-      positionCardInModal(cards[newFarIdx], direction);
-    }
-
-    populateModal(newIdx);
-
-    // Sphere reactivity: spring the rotation partway toward facing the new slot.
-    requestNavNudge(newIdx);
-  }
-
   function open(i, originX, originY) {
     const cards = getCards();
     if (!modalEl || !cards[i]) return;
@@ -793,9 +677,6 @@ export default function createGlobeModal({
     document.documentElement.classList.add('modal-open');
     document.body.classList.add('modal-open');
     if (window.lenis) window.lenis.stop();
-
-    // Pre-attach prev/next for swipe reveal (iOS Photos style). Mobile only.
-    if (getBP() === 'sm') prepSwipeNeighbors();
   }
 
   function close() {
@@ -811,9 +692,6 @@ export default function createGlobeModal({
 
     // Finalize any in-flight desktop nav first so the old card returns to its slot cleanly.
     if (dnNavActive) completeDesktopNavTransition();
-
-    // Detach swipe neighbors so only the current card flies back.
-    clearSwipeNeighbors();
 
     const chromeEl = q('.globe-gallery-modal-chrome');
 
@@ -860,65 +738,10 @@ export default function createGlobeModal({
     // Don't navigate while closing, or startDesktopNavTransition would flip CLOSING→OPEN and orphan
     // the close animation (card left floating in modalScene — the "duplicate globe" bug).
     if (modalPhase === MODAL_PHASE.CLOSING) return;
-    const cards = getCards();
     const count = getCount();
     const next = (modalIdx + direction + count) % count;
-
-    // Cross-warp on desktop/tablet, and on mobile whenever overflow is involved (no slot to
-    // instant-swap through). Mobile barrel↔barrel keeps the instant swap.
-    if (getBP() !== 'sm' || isOverflowIdx(next) || isOverflowCard(modalCard)) {
-      if (getBP() === 'sm') clearSwipeNeighbors();
-      startDesktopNavTransition(next);
-      return;
-    }
-
-    // Detach swipe neighbors before swap; re-prepped at the end. Mobile only.
-    clearSwipeNeighbors();
-
-    // Return the current card mesh to its slot in the sphere group (instant snap).
-    const sphereGroup = getSphereGroup();
-    const oldCard = modalCard;
-    if (oldCard.mesh.origMaterial) {
-      oldCard.mesh.material = oldCard.mesh.origMaterial;
-      oldCard.mesh.origMaterial = null;
-    }
-    sphereGroup.attach(oldCard.mesh);
-    snapToSphereSlot(oldCard);
-    oldCard.mesh.material.depthTest = true;
-    oldCard.mesh.renderOrder = 0;
-
-    // Move the new card into the modal scene and snap it to the target position.
-    const newCard = cards[next];
-    if (modalScene) modalScene.attach(newCard.mesh);
-    else getScene().attach(newCard.mesh);
-    // Swap to SDF material for crisp corners at modal scale.
-    newCard.mesh.origMaterial = newCard.mesh.material;
-    newCard.mesh.material = getModalMaterial(newCard);
-    requestModalUpgrade(newCard, next);
-    newCard.mesh.renderOrder = 0;
-    newCard.mesh.material.depthTest = true;
-
-    const tgtPos = new THREE.Vector3();
-    const tgtQuat = new THREE.Quaternion();
-    const tgtScale = new THREE.Vector3();
-    computeModalTarget(tgtPos, tgtQuat, tgtScale);
-    newCard.mesh.position.copy(tgtPos);
-    newCard.mesh.quaternion.copy(tgtQuat);
-    newCard.mesh.scale.copy(tgtScale);
-
-    modalIdx = next;
-    modalCard = newCard;
-    modalPhase = MODAL_PHASE.OPEN;
-    // Chrome stays fully visible during navigation — no animation, instant swap.
-    modalChromeRevealT0 = -1;
-    modalChromeFadeT = 1;
-    populateModal(next);
-
-    // Sphere reactivity: spring the rotation partway toward facing the new slot.
-    requestNavNudge(next);
-
-    // Prep prev/next of the new current for the next swipe gesture.
-    if (getBP() === 'sm') prepSwipeNeighbors();
+    // Every breakpoint uses the same cross-warp transition (old warps + fades out, new fades in).
+    startDesktopNavTransition(next);
   }
 
   // Modal card animation: from the captured world transform → target near camera (open), or back
@@ -1200,8 +1023,8 @@ export default function createGlobeModal({
       swLastX = x; swLastY = y; swLastT = now;
 
       if (swAxis === 'x') {
-        modalCanvasEl.style.transform = `translate3d(${dx}px, 0, 0)`;
-        // Horizontal warp: scales with drag / 30% viewport width, capped at MODAL_WARP_SWIPE.
+        // Warp-only preview (no slide): the fisheye grows with drag, capped at MODAL_WARP_SWIPE.
+        // Release commits the same cross-warp transition as the nav buttons.
         modalWarp = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.30)) * MODAL_WARP_SWIPE;
       } else {
         // Pull-down only — upward drag does nothing (clamped to 0).
@@ -1225,22 +1048,14 @@ export default function createGlobeModal({
       if (swAxis === 'x') {
         const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
+        // swipe left → next (+1), swipe right → prev (−1). Commit fires the same cross-warp
+        // transition as the nav buttons; a non-commit release lets the preview warp decay
+        // back to 0 in updateAnimation. No canvas slide to reset either way.
         if (commit) {
-          // Animate to translateX(±viewport_width) — where the neighbor lands at center — then swap
-          // world positions as CSS resets (shifts cancel, no snap). swipe left→next, right→prev.
-          const cssDir = dx < 0 ? -1 : 1; // CSS animates toward swipe direction
-          const navDir = -cssDir; // navigate direction (next = +1)
-          modalCanvasEl.style.transition = 'transform 0.22s cubic-bezier(0.32, 0.72, 0, 1)';
-          modalCanvasEl.style.transform = `translate3d(${cssDir * window.innerWidth}px, 0, 0)`;
-          setTimeout(() => {
-            modalCanvasEl.style.transition = 'none';
-            commitSwipeNavigation(navDir);
-            modalCanvasEl.style.transform = '';
-          }, 220);
-        } else {
-          // Rubber-band back to center.
-          modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
-          modalCanvasEl.style.transform = '';
+          // Clear the preview warp so it doesn't bleed onto the new card once the transition
+          // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
+          modalWarp = 0;
+          navigate(dx < 0 ? 1 : -1);
         }
       } else {
         const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
