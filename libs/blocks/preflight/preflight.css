@@ -1858,6 +1858,9 @@ img:hover ~ .asset-meta,
 
   & .preflight-diff-modified::before {
     content: 'Changed';
+
+    /* gray-25 (used by New/Removed) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
+    color: var(--s2a-color-gray-900);
     background: var(--preflight-warning);
   }
 
