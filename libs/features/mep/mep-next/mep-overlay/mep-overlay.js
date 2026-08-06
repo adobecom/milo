@@ -18,6 +18,7 @@ import {
   setPreviewButton,
   getMasRegions,
   findGeoGroupForLocale,
+  hasMasChanges,
 } from './mep-overlay-logic.js';
 import {
   TOGGLE_KEYS,
@@ -89,8 +90,12 @@ function getGnavOffset() {
   });
 }
 
+let lastGnavOffset;
 function updateGnavOffset() {
   const offset = calcGnavOffset();
+  if (offset === lastGnavOffset) return;
+  lastGnavOffset = offset;
+
   document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
   const drawer = document.querySelector('#mep-drawer');
   if (drawer) {
@@ -540,11 +545,17 @@ function setEventListeners() {
 }
 
 function setMasObserver() {
+  let lastMasSummaryKey;
   const refreshMasSummary = () => {
     const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
     if (!bodyEl) return;
 
-    const rows = getMasSummary().flatMap(([label, value]) => (
+    const summary = getMasSummary();
+    const summaryKey = JSON.stringify(summary);
+    if (summaryKey === lastMasSummaryKey) return;
+    lastMasSummaryKey = summaryKey;
+
+    const rows = summary.flatMap(([label, value]) => (
       Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
     ));
     bodyEl.replaceChildren(...rows);
@@ -578,7 +589,8 @@ function setMasObserver() {
   };
 
   let debounceTimer;
-  const masObserver = new MutationObserver(() => {
+  const masObserver = new MutationObserver((mutations) => {
+    if (!hasMasChanges(mutations)) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(runRefreshes, 200);
   });
@@ -596,6 +608,7 @@ function setMasObserver() {
 
 async function buildOverlay() {
   const gnavOffset = await getGnavOffset();
+  lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
   document.querySelector('main').append(
