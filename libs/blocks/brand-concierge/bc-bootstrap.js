@@ -182,14 +182,13 @@ function getUpdatedChatUIConfig() {
   return chatUIConfig;
 }
 
-export async function bcBootstrap(initialMessage, mountIdentifier) {
-  const mountEl = document.querySelector(`#${mountIdentifier}`);
+export function loadWebclient() {
   const logWebClient = (text, src) => {
     // eslint-disable-next-line no-console
     console.log(text, src);
   };
 
-  const { env, locale } = getConfig();
+  const { env } = getConfig();
   const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
@@ -221,6 +220,13 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
   }
 
   loadScript(src);
+}
+
+export async function bcBootstrap(initialMessage, mountIdentifier) {
+  const mountEl = document.querySelector(`#${mountIdentifier}`);
+  const { locale } = getConfig();
+
+  loadWebclient();
 
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
 

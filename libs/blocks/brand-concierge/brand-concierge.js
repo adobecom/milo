@@ -12,6 +12,7 @@ import {
   handleConsent,
 } from './bc-utils.js';
 import {
+  loadWebclient,
   bcBootstrap,
   openSideModal,
   openModal,
@@ -62,6 +63,7 @@ function handleFloatingButton() {
 }
 
 export default async function init(el) {
+  loadWebclient();
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
 

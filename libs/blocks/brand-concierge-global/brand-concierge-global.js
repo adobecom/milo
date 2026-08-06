@@ -7,6 +7,7 @@ import {
   handleConsent,
 } from '../brand-concierge/bc-utils.js';
 import {
+  loadWebclient,
   bcBootstrap,
   openSideModal,
   setAuthoredContent,
@@ -115,6 +116,7 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
+  loadWebclient();
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
