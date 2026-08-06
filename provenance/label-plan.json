@@ -1,0 +1,26 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "global-navigation",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 1,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 2,
+    "dataBlock": "news",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 3,
+    "dataBlock": "global-navigation",
+    "dataVariants": [],
+    "primaryClass": null
+  }
+]
