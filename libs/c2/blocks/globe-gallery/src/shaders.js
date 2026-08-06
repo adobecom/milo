@@ -1,15 +1,5 @@
-/* GLSL source strings for the card + modal ShaderMaterials. */
-
-// ── Modal SDF shader material ─────────────────────────────────────────────
-// Used only for the modal-active card. A rasterized alphaMap will always pixelate
-// at modal scale (card ~75vh, textures at 512–1024px). The SDF computes the rounded
-// rect boundary in the fragment shader at native screen resolution with 1-pixel AA
-// via fwidth — perfectly sharp at any zoom level.
-//
-// uAspect = world-space width/height of the rendered card (CARD_ASPECT × sphereScaleX).
-// The SDF coordinate space maps UV (0,1)×(0,1) → pos in [-A/2,A/2]×[-0.5,0.5] so
-// corner radius uRadius is expressed as a fraction of card height (22/631 ≈ 0.0349).
-
+// Modal SDF shader material — rounded rect computed in the fragment shader (sharp
+// at any zoom). uAspect = card world-space width/height; uRadius = fraction of height.
 export const MODAL_VERT = [
   'varying vec2 vUv;',
   'void main() {',
@@ -37,40 +27,25 @@ export const MODAL_FRAG = [
   '  float d = rrSDF(pos, vec2(uAspect * 0.5 - uRadius, 0.5 - uRadius), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float alpha = 1.0 - smoothstep(-px, px, d);',
-  // When the camera is INSIDE the globe the closing card rotates to show its BACK to the
-  // lens; a DoubleSide plane viewed from behind mirrors horizontally. Flip uv.x (and the warp
-  // anchor) on back faces so the back reads identically to the front — matching CARD_FRAG, so
-  // the image doesn't jump-mirror when the material swaps back at the end of the close (the
-  // "double flip"). No-op for the normal front-facing modal view (gl_FrontFacing true).
+  // Flip uv.x + warp anchor on back faces so the back reads like the front (matches CARD_FRAG).
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
   '  vec2 wc = gl_FrontFacing ? uWarpCenter : vec2(1.0 - uWarpCenter.x, uWarpCenter.y);',
-  // Fisheye/barrel warp anchored at wc — same formula as the globe-card hover shader.
-  // Image content bulges outward around the anchor point.
+  // Fisheye/barrel warp anchored at wc.
   '  vec2 d2 = fUv - wc;',
   '  float r2 = dot(d2, d2);',
   '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + wc;',
-  // Motion-trail CA: R trails behind card motion, B ghosts ahead. Sampled on warpedUv.
+  // Motion-trail CA: R trails behind, B ghosts ahead.
   '  float r = texture2D(map, warpedUv - uMotionDir).r;',
   '  float g = texture2D(map, warpedUv).g;',
   '  float b = texture2D(map, warpedUv + uMotionDir * 0.5).b;',
-  // Re-encode linear→sRGB (Three.js uploads SRGBColorSpace textures decoded to linear)
+  // Re-encode linear→sRGB.
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, alpha * uOpacity);',
   '}',
 ].join('\n');
 
-// ── Card ShaderMaterial — chromatic aberration (Option B) ─────────────────
-// uCA = 0 → normal render; uCA > 0 → R/B channels split outward from card center.
-// uRepeat/uOffset replicate the texture cover-crop the texture matrix would track
-// (a ShaderMaterial doesn't apply texture.repeat/offset automatically).
-// Rounded corners use the same analytic SDF the modal card uses (rrSDF below):
-// uRadius is a fraction of card height (22/631) and uAspect is the card's current
-// world-space width/height, set per phase so corners stay circular as the card
-// stretches from portrait (arc/grid) to its image aspect (sphere). This replaces
-// the old rasterized alphaMap + per-aspect mask cache — sharp at any size, no
-// texture uploads, and the fold morph can lerp uAspect with no mask-swap pop.
-// sRGB re-encode: Three.js uploads SRGBColorSpace textures decoded to linear;
-// custom ShaderMaterial must re-encode linear→sRGB to match MeshBasicMaterial output.
+// Card ShaderMaterial. uCA splits R/B outward; uRepeat/uOffset apply the cover-crop
+// (ShaderMaterial doesn't auto-apply texture.repeat/offset); rounded corners via rrSDF.
 export const CARD_VERT = [
   'varying vec2 vUv;',
   'void main() {',
@@ -103,57 +78,33 @@ export const CARD_FRAG = [
   '  return fract((p.x + p.y) * p.x);',
   '}',
   'void main() {',
-  // When the camera is inside the globe, the far-hemisphere cards are seen from
-  // behind. A DoubleSide plane viewed from its back shows the image mirrored
-  // horizontally. Flip uv.x on back-facing fragments so the back reads identically
-  // to the front (gl_FrontFacing is true for the outward-facing side).
+  // Flip uv.x on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
-  // Fisheye magnify anchored at uHoverPos (cursor position in UV space).
-  // Dividing the offset-from-cursor by (1 + uWarp * r² * 4) samples from closer
-  // to the cursor as r grows, so image content visually expands AROUND the cursor —
-  // the classic "lens loupe" look. uHoverPos = (0.5, 0.5) → centered fisheye.
+  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
   '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // ── Near-camera dissolve, combined melt + particle (uDissolve 0→1) ──
-  // content expands outward (sample from a UV contracted toward
-  // center) so the card stretches as it rushes past the lens. mdir is the outward radial.
+  // Near-camera dissolve (melt + particle): content expands as the card rushes the lens.
   '  vec2 mdir = fUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
   '  if (uDissolve > 0.0) {',
   '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
   '  }',
   '  vec2 baseUv = meltUv * uRepeat + uOffset;',
-  // Rounded-corner alpha: SDF of the card outline in raw geometry UV (the rect is
-  // symmetric, so the back-face uv.x flip doesn't affect it). pos maps UV to a space
-  // uAspect units wide × 1 tall, matching world proportions, so the corner radius is
-  // isotropic in world space. fwidth gives ~1px edge antialiasing at any zoom.
-  // The box half-size is the FULL plane half-size (uAspect/2, 0.5) so the rect fills
-  // the card plane edge-to-edge, matching the old mask. (The modal insets the box by
-  // uRadius and rescales its plane to compensate — the globe card has no such rescale,
-  // so insetting here would shrink every card by uRadius on each side.)
+  // Rounded-corner alpha: rrSDF in world-proportional UV; box half-size is the full
+  // plane (uAspect/2, 0.5) so the rect fills edge-to-edge. fwidth gives ~1px AA.
   '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float a = 1.0 - smoothstep(-px, px, dsd);',
-  // Radial CA (transition peaks) + directional motion trail (velocity-driven)
-  // R: trails behind — displaced opposite to motion + radial spread outward
-  // G: current position, no displacement
-  // B: ghost slightly ahead — displaced in motion direction + radial spread inward
-  // Radial chromatic smear scales with dissolve × distance-from-center, so outer pixels
-  // streak farthest and the R/B split rides that outward vector for a chromatic tail.
+  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
   '  vec2 meltRad = mdir * uDissolve * 0.22;',
   '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
-  // Then particle grain, eaten edge-first (edgeProx from the SDF distance),
-  // so the stretched/smeared card simultaneously breaks into a chromatic grain.
-  // The cell is in the card's OWN uv space (× uAspect so cells stay square), NOT
-  // screen space: the grain is painted onto the card surface and travels with it, so
-  // a spinning/dragging card reads as "this card is disintegrating" rather than sliding
-  // behind a fixed dirty-glass speckle nailed to the camera. Cell count is constant per
-  // card, so dots grow as the card rushes the lens (chunks flying past).
+  // Particle grain eaten edge-first (edgeProx from SDF dist); cells in the card's own
+  // uv space (× uAspect so cells stay square) so the grain travels with the card.
   '  if (uDissolve > 0.0) {',
   '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
   '    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * 160.0);',
@@ -173,13 +124,8 @@ export const CARD_FRAG = [
   '}',
 ].join('\n');
 
-// "Click & Drag" hint text. A simplified CARD_FRAG variant: samples a centered
-// text canvas (alpha = glyph coverage, no rounded-corner SDF), with a barrel warp
-// + per-pixel particle "dissolve" that scatters the glyphs edge-first. uExitP (0→1)
-// drives the one-way exit on the user's first drag: horizontal stretch + radial
-// scatter + amplified warp + full dissolve + opacity fade. uAspect scales the x-axis
-// to world-proportional space so the warp falloff is isotropic on wide viewports
-// (otherwise glyphs stretch horizontally). uUVScale = 1 (kept for symmetry/zoom).
+// "Click & Drag" hint text — a CARD_FRAG variant over a text canvas (no corner SDF),
+// with warp + particle dissolve. uExitP (0→1) drives the one-way exit on first drag.
 export const TEXT_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -214,9 +160,7 @@ export const TEXT_FRAG = [
   '  float g = texture2D(uMap, finalUv).g;',
   '  float b = texture2D(uMap, finalUv - radial + uMotionDir * 0.5).b;',
   '  float a = texture2D(uMap, finalUv).a;',
-  // Edge-proximity map: sample alpha at a wide offset in 4 dirs. Deep interior → all
-  // 4 hits opaque → no boost; near a glyph edge → some hits transparent → edgeProx
-  // rises, so dissolution fires at character edges first and eats inward.
+  // Edge-proximity: sample alpha at 4 offsets so dissolve fires at glyph edges first.
   '  float _bl  = 0.020;',
   '  float _a4  = texture2D(uMap, finalUv + vec2( _bl, 0.0)).a',
   '              + texture2D(uMap, finalUv + vec2(-_bl, 0.0)).a',

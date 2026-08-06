@@ -1,10 +1,4 @@
-/* Authoring layer: parses the block rows + fetches the card fragment, and builds
-   the canvas/overlay/modal DOM the runtime expects. */
-
-// ── Authoring ────────────────────────────────────────────────────────────────
-// Adobe app catalog used to render the modal badge chips (the id drives the
-// brand-colored icon class in globe.css, e.g. .card-modal__badge-icon--photoshop).
-// At module scope so both placeholder generation and authored-badge parsing share it.
+// Badge chips; id drives the brand-colored icon class in globe.css.
 const APP_CATALOG = [
   { id: 'photoshop', name: 'Photoshop', abbr: 'Ps' },
   { id: 'lightroom', name: 'Lightroom', abbr: 'Lr' },
@@ -16,8 +10,7 @@ const APP_CATALOG = [
   { id: 'fresco', name: 'Fresco', abbr: 'Fr' },
 ];
 
-// Resolve a badge's app from an authored token (matches id / name / abbr,
-// case-insensitive). Unknown apps still render, with a derived 2-letter abbr.
+// Match an authored token to an app by id/name/abbr; unknown apps get a 2-letter abbr.
 function findApp(token) {
   const t = (token || '').trim();
   const key = t.toLowerCase();
@@ -28,21 +21,7 @@ function findApp(token) {
   return { id: 'photoshop', name: t || 'App', abbr: t.slice(0, 2) || 'Ap' };
 }
 
-// AUTHORING CONTRACT:
-// The block has three authored rows (direct child <div>s), in fixed order:
-//   Row 0 — arc-copy:   heading → arc-copy title; <p> → arc-copy body
-//   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
-//                       Each card in the fragment is a flat sequence of elements
-//                       (separated by <hr> for multiple cards):
-//                         <p><em>Role</em></p>
-//                         <p><strong>Name</strong></p>
-//                         <p>Description text</p>
-//                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
-//                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote (optional): heading → quote;
-//                       first <p> → name; second <p> → role
-// Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
-// link separately (fetchFragmentCards); the block collapses if the fetch yields none.
+// See README (Authoring contract) for the authored-row layout.
 
 function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -125,12 +104,12 @@ function parseFragmentCards(row) {
   const hasDirectContent = [...row.children].some((n) => n.nodeName === 'P' || n.nodeName === 'UL');
 
   if (!hasDirectContent) {
-    // Children are section divs (each fragment section = one card). Recurse into each.
+    // Children are section divs (each fragment section = one card).
     const divs = [...row.querySelectorAll(':scope > div')];
     return divs.flatMap((div) => parseFragmentCards(div));
   }
 
-  // Flat content — split by <hr> to handle multiple cards within a single section.
+  // Flat content — split by <hr> for multiple cards in one section.
   const segments = [];
   let current = [];
   [...row.childNodes].forEach((node) => {
@@ -144,7 +123,7 @@ function parseFragmentCards(row) {
   return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
 }
 
-// Fetch the fragment's full .plain.html and parse all card sections from it.
+// Fetch the fragment's .plain.html and parse all card sections from it.
 export async function fetchFragmentCards(href) {
   try {
     const resp = await fetch(`${href}.plain.html`);
@@ -161,12 +140,8 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// The rows are positional (see AUTHORING CONTRACT): arc-copy is always row 0,
-// the card fragment link is row 1, an optional hint-text row is 2, and an
-// optional pull-quote is row 3. The
-// fragment href is read here (before buildGlobeDom wipes the DOM) — links are
-// authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
-// the raw <a href> survives to here; the hash is stripped before fetching.
+// Positional rows (see README, Authoring contract). Fragment links are authored
+// with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
@@ -179,23 +154,9 @@ export function parseAuthoredContent(el) {
   };
 }
 
-// ── DOM the runtime expects ──────────────────────────────────────────────────
-// The original prototype hand-authored these nodes in index.html. We build them
-// inside the block element instead. The runtime finds nodes by querying *within
-// the block root* (root.querySelector('.class')), so ids are no longer needed
-// for lookup → more than one globe can coexist on a page.
-//
-// Two things still require a real id (no classname equivalent — both are
-// document-wide id references), made unique per instance via `gid`:
-//   • the CA SVG filter — referenced from JS as `filter: url(#ca-filter-<gid>)`.
-//   • the modal role-label/heading/description — referenced by the dialog's
-//     aria-labelledby (role + name) / aria-describedby (description) IDREFs.
-// `gid` is minted here (this module owns both creating and embedding the ids)
-// and returned by buildGlobeDom so the runtime can build the same url(#…) ref.
-//
-// Fixed-position overlays (ca-svg, pull-quote, modal) can live inside the block:
-// position:fixed escapes the relative/sticky ancestors here (no transform/filter
-// on the chain).
+// Runtime queries nodes within the block root, so multiple globes can coexist.
+// `gid` makes the two document-wide id refs unique per instance: the CA SVG
+// filter (url(#ca-filter-<gid>)) and the modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
     <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
@@ -243,9 +204,9 @@ const buildMarkup = (gid, labels) => `
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
       <ul class="globe-gallery-modal__badges"></ul>
     </div>
-    <!-- sr-only text alternative for the WebGL photo, after the info so the heading is read first. -->
+    <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="globe-gallery-modal__image globe-gallery-sr-only" role="img"></span>
-    <!-- Controls come AFTER the info scrim so they paint on top of it (no z-index needed). -->
+    <!-- Controls after the info scrim so they paint on top of it. -->
     <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -260,14 +221,10 @@ const buildMarkup = (gid, labels) => `
   </dialog>
 `;
 
-// Per-page instance counter → a unique suffix for this instance's id-bearing
-// nodes. Only needs to be unique within the document so multiple globes don't
-// collide on their shared-namespace ids; an incrementing int is the simplest
-// guarantee of that.
+// Per-page instance counter → unique id suffix per globe.
 let globeInstanceSeq = 0;
 
-// Build the block's DOM and return the `gid` used for this instance's unique ids
-// so the runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
+// Build the block's DOM; returns the `gid` for this instance's unique ids.
 export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;

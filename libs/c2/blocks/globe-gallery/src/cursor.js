@@ -1,36 +1,6 @@
-/* ─────────────────────────────────────────────────────────────────────────
-   Custom "Click & Drag" cursor for the globe — a DI module (createCursor(deps)).
+// Custom "Click & Drag" cursor for the globe (DI module). See README (Behavior notes).
 
-   Desktop / hover-capable devices only (`(hover: hover) and (pointer: fine)`):
-   over the interactive sphere, with no modal open, the system cursor is replaced
-   by a white disc (mix-blend-mode: difference → inverts the page beneath it),
-   flanked by two chevrons that squeeze inward while dragging, plus a small
-   label. On touch / coarse-pointer devices setup() is a no-op, so
-   nothing is created and update()/teardown() are inert.
-
-   Two sibling DOM layers, both appended to <body> (not the block root): the disc
-   MUST be a direct body child — mix-blend-mode only blends against real page
-   content from outside a position:fixed (GPU-isolated) container. Multiple globes
-   per page each create their own pair, but only the hovered one activates (one
-   mouse), and inactive discs are visibility:hidden, so they don't collide.
-
-   The label text is the authored hint string (deps.labelText, shared with the
-   WebGL hint text; falls back to "Click & Drag"). Decorative — not exposed to
-   assistive tech; the a11y widget covers the real affordance.
-
-   The cursor retires in two steps as the user drags, both riding the shared
-   textExitProgress signal: deps.getHintDismissed() fades the label out (matching
-   the WebGL hint), then the later deps.getCursorRetired() fades the disc +
-   chevrons over RETIRE_FADE_MS and hands the canvas back to the ordinary system
-   cursor (isActive() goes false, so interaction.js resumes owning it). Both
-   steps reset on scroll-out, so a re-entry gets the full affordance again.
-
-   Owns its DOM + listeners; teardown() removes them and clears the canvas cursor.
-   isActive() lets the interaction module defer its hover cursor (pointer/default)
-   to this one while the custom cursor is showing.
-   ───────────────────────────────────────────────────────────────────────── */
-
-// Disc geometry: 48px, centered on the pointer hot-point via a −24px margin.
+// 48px disc centered on the pointer via the −24px viewBox origin.
 const RING_SVG = [
   '<svg class="globe-gallery-cursor__ring" width="48" height="48" viewBox="-24 -24 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">',
   '<g class="globe-gallery-cursor__chevron-l"><polyline points="-8,-5 -13,0 -8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
@@ -52,10 +22,10 @@ export default function createCursor(deps) {
   let textWrap = null;
   let hasMouse = false; // device supports hover + fine pointer
   let onCanvas = false; // pointer currently over the globe canvas
-  let suppressed = false; // keyboard focus / window blur took over; cleared on the next mousemove
+  let suppressed = false; // keyboard focus / window blur took over; cleared on next mousemove
   let active = false; // cursor currently shown
   let hintDismissed = false; // label faded out after the user's first drag
-  let retireT0 = -1; // timestamp the retirement fade started; -1 = not retiring
+  let retireT0 = -1; // retirement fade start timestamp; -1 = not retiring
   let mx = 0;
   let my = 0;
 
@@ -71,7 +41,7 @@ export default function createCursor(deps) {
     hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (!hasMouse) return;
 
-    // Disc — direct body child (see header note on mix-blend-mode).
+    // Disc — direct body child so mix-blend-mode blends against real page content.
     discEl = document.createElement('div');
     discEl.className = 'globe-gallery-cursor__disc';
     document.body.appendChild(discEl);
@@ -79,8 +49,7 @@ export default function createCursor(deps) {
     // Chevrons + label — no blend mode, safe inside the fixed container.
     containerEl = document.createElement('div');
     containerEl.className = 'globe-gallery-cursor';
-    // Static structure via innerHTML; the authored label is set as textContent
-    // afterward (block convention — never interpolate authored copy into markup).
+    // Static structure via innerHTML; authored label set as textContent below.
     containerEl.innerHTML = `<div class="globe-gallery-cursor__ring-wrap">${RING_SVG}</div>`
       + '<div class="globe-gallery-cursor__text-wrap">'
       + '<span class="globe-gallery-cursor__text"></span>'
@@ -101,15 +70,13 @@ export default function createCursor(deps) {
     window.addEventListener('blur', onSuppress);
   }
 
-  // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on
-  // touch (containerEl is null) — and a no-op write is cheap, so it's safe every tick.
+  // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on touch.
   function update() {
     if (!containerEl || !hasMouse) return;
     const canvas = getCanvas();
 
-    // Retirement: start the CSS fade when the signal flips; once it has run for
-    // RETIRE_FADE_MS, drop `active` too, which hands the canvas cursor back to the
-    // system. The classes stay on past that, so nothing flashes back in.
+    // Retirement: start the CSS fade when the signal flips; after RETIRE_FADE_MS drop
+    // `active` too, handing the canvas cursor back to the system.
     const wantRetired = getCursorRetired();
     if (wantRetired !== (retireT0 >= 0)) {
       retireT0 = wantRetired ? now() : -1;
@@ -128,20 +95,16 @@ export default function createCursor(deps) {
       active = wantActive;
       containerEl.classList.toggle('globe-gallery-cursor--active', active);
       if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--active', active);
-      // Hide the system cursor while ours shows; restore it otherwise. interaction.js
-      // guards its own hover cursor writes on isActive() so the two don't fight.
+      // Hide the system cursor while ours shows; interaction.js defers to isActive().
       if (canvas) canvas.style.cursor = active ? 'none' : '';
     }
-    // One-way label dismissal: once the user has dragged, the "Click & Drag" label
-    // fades out (the disc + chevrons stay). Tracks the shared textExitProgress signal,
-    // which resets on scroll-out, so the flag can flip back on re-entry.
+    // One-way label dismissal: after the first drag the label fades (disc + chevrons stay).
     const wantDismissed = getHintDismissed();
     if (wantDismissed !== hintDismissed) {
       hintDismissed = wantDismissed;
       containerEl.classList.toggle('globe-gallery-cursor--hint-dismissed', hintDismissed);
     }
-    // Computed from `active` so going inactive mid-drag clears the squeeze rather than
-    // freezing it (the per-frame writes below stop once inactive).
+    // From `active` so going inactive mid-drag clears the squeeze rather than freezing it.
     const dragging = active && drag.isDragging;
     containerEl.classList.toggle('globe-gallery-cursor--dragging', dragging);
     if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--dragging', dragging);

@@ -1,6 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-// Re-exports only the Three.js symbols used by globe.js.
-// esbuild tree-shakes the rest of the three package from the output.
+// Re-exports the Three.js symbols globe.js uses; esbuild tree-shakes the rest.
 export {
   CanvasTexture,
   DoubleSide,
