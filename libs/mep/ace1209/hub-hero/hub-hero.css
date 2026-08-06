@@ -326,36 +326,6 @@
 /** dark variant */
 .hub-hero.dark {
   background-color: var(--s2a-color-background-knockout);
-
-  .promo-cta {
-    background-color: var(--s2a-color-background-inverse);
-    color: var(--s2a-color-content-inverse);
-    transition: all .3s ease-in-out;
-
-    span {
-      border-radius: var(--s2a-border-radius-4);
-      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
-      background: var(--s2a-color-transparent-black-04);
-      transition: all .3s ease-in-out;
-
-      svg {
-        transition: all .3s ease-in-out;
-      }
-    }
-
-    &:hover {
-      background-color: var(--s2a-color-background-default);
-      color: var(--s2a-color-content-default);
-
-      span {
-        background-color: var(--s2a-color-background-subtle);
-      }
-
-      svg {
-        filter: invert(1);
-      }
-    }
-  }
 }
 
 .hub-hero.dark .hub-hero-carousel-item,
