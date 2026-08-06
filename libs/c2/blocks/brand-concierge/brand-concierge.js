@@ -664,12 +664,17 @@ function decorateFloatingInput(el, cards, input) {
   decorateCards(floatingInput, cards);
   el.append(floatingInput);
 
+  let resizeRaf;
   const updateLayout = () => {
-    updatePillVisibility(floatingInput);
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      resizeRaf = null;
+      updatePillVisibility(floatingInput);
+    });
   };
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
 }
 

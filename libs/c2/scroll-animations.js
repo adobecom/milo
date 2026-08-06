@@ -528,7 +528,14 @@ export default function init() {
     scrollTasks.length = 0;
   });
 
-  window.lenis.on('scroll', ({ scroll }) => {
-    scrollTasks.forEach((task) => task(scroll));
-  });
+  // Lenis is skipped on mobile, so fall back to native scroll there.
+  if (window.lenis) {
+    window.lenis.on('scroll', ({ scroll }) => {
+      scrollTasks.forEach((task) => task(scroll));
+    });
+  } else {
+    window.addEventListener('scroll', () => {
+      scrollTasks.forEach((task) => task(window.scrollY));
+    }, { passive: true });
+  }
 }

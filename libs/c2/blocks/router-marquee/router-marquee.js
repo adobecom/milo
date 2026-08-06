@@ -179,6 +179,10 @@ const prepareVideo = (imageCol) => {
   });
   video.muted = true;
   video.removeAttribute('autoplay');
+  // Lazy by default so no slide video is eager-fetched (decorate.js re-appends a
+  // <source> via a 1000px-rootMargin observer, which would otherwise starve the
+  // hero poster's download). loadVideo opts a video back in when its slide loads.
+  video.preload = 'none';
   const src = video.dataset.videoSource || video.src;
   video.removeAttribute('src');
   video.querySelectorAll('source').forEach((s) => s.remove());
@@ -195,27 +199,70 @@ const getActiveViewport = () => {
 
 const loadVideo = (video) => {
   if (!video || video.dataset.loaded) return;
+  // Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
+  // hidden viewports/slides never fetch them; promote to a real poster when the video loads.
+  if (video.dataset.rmPoster && !video.getAttribute('poster')) {
+    video.setAttribute('poster', video.dataset.rmPoster);
+  }
+
   const src = video.dataset.lazySrc;
   if (src && !video.querySelector('source')) {
     video.appendChild(createTag('source', { src, type: 'video/mp4' }));
   }
+  video.preload = 'auto';
   video.load();
   video.dataset.loaded = 'true';
 };
 
-const loadViewportVideos = (el) => {
-  const active = getActiveViewport();
-  el.querySelectorAll('.rm-viewport').forEach((vp) => {
-    const isActive = vp.dataset.viewport === active;
-    vp.querySelectorAll('.rm-background video').forEach((v) => {
-      if (!isActive) return;
-      const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
-      if (isActiveSlide) {
-        loadVideo(v);
-        if (!prefersReducedMotion()) v.play().catch(() => {});
-      }
-    });
+// Slides are stacked at inset:0, so loading="lazy" never defers the off-screen
+// ones. Stash the picture sources and restore them only when the slide is needed.
+const stashSlideImage = (slide) => {
+  const pic = slide?.querySelector('.rm-background picture');
+  if (!pic) return;
+  pic.querySelectorAll('source[srcset]').forEach((s) => {
+    s.dataset.lazySrcset = s.getAttribute('srcset');
+    s.removeAttribute('srcset');
   });
+  const img = pic.querySelector('img');
+  if (img?.getAttribute('src')) {
+    img.dataset.lazySrc = img.getAttribute('src');
+    img.removeAttribute('src');
+  }
+};
+
+const loadSlideImage = (slide) => {
+  const pic = slide?.querySelector('.rm-background picture');
+  if (!pic || pic.dataset.loaded) return;
+  pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
+    s.setAttribute('srcset', s.dataset.lazySrcset);
+    delete s.dataset.lazySrcset;
+  });
+  const img = pic.querySelector('img');
+  if (img?.dataset.lazySrc) {
+    img.setAttribute('src', img.dataset.lazySrc);
+    delete img.dataset.lazySrc;
+  }
+  pic.dataset.loaded = 'true';
+};
+
+// Load a slide's picture and video together (slide change / preload).
+const loadSlideMedia = (slide) => {
+  loadSlideImage(slide);
+  loadVideo(slide?.querySelector('video'));
+};
+
+const playActiveVideo = (video) => {
+  loadVideo(video);
+  if (!prefersReducedMotion()) video.play().catch(() => {});
+};
+
+const loadViewportVideos = (el) => {
+  const vp = el.querySelector(`.rm-viewport[data-viewport="${getActiveViewport()}"]`);
+  const activeSlide = vp?.querySelector('.rm-slide.is-active');
+  loadSlideImage(activeSlide);
+  const video = activeSlide?.querySelector('video');
+  if (!video) return;
+  playActiveVideo(video);
 };
 
 const decorateSlide = (slide) => {
@@ -355,17 +402,21 @@ const updateContentSpacing = (el) => {
   const controls = vp?.querySelector('.rm-controls');
   if (!wrapper || !content || !controls || !vp) return;
 
-  // Set min-height so the viewport never shrinks below what the content needs
+  // Read all layout up front, then write, so a minHeight write doesn't invalidate
+  // layout and force the subsequent getBoundingClientRect reads to reflow again.
   const wrapperPadTop = getCssPx(wrapper, 'padding-top');
   const contentH = content.offsetHeight;
-  const needed = wrapperPadTop + contentH + 24 + controls.offsetHeight;
+  const controlsH = controls.offsetHeight;
+  const controlsTop = controls.getBoundingClientRect().top - 24;
+  const contentBottom = content.getBoundingClientRect().bottom;
 
-  vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  // Set min-height so the viewport never shrinks below what the content needs
+  const needed = wrapperPadTop + contentH + 24 + controlsH;
+  const minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
   // Applied to all wrappers to handle slide changes
   const allWrappers = vp.querySelectorAll('.rm-content-wrapper');
-  const controlsTop = controls.getBoundingClientRect().top - 24;
-  const contentBottom = content.getBoundingClientRect().bottom;
   const isCompact = wrapper.classList.contains('rm-compact');
   if (!isCompact && contentBottom >= controlsTop) {
     allWrappers.forEach((w) => w.classList.add('rm-compact'));
@@ -450,7 +501,7 @@ const startAutoplay = (slides, cards, container, block) => {
     const oldSlide = slides[active];
     const newSlide = slides[index];
     const vid = newSlide.querySelector('video');
-    loadVideo(vid);
+    loadSlideMedia(newSlide);
     const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
@@ -497,12 +548,12 @@ const startAutoplay = (slides, cards, container, block) => {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
 
-    requestAnimationFrame(() => dynamicLayoutUpdates(block));
+    requestAnimationFrame(() => updateContentSpacing(block));
   };
 
   const preloadNextVideo = () => {
     const nextIdx = (active + 1) % slides.length;
-    loadVideo(slides[nextIdx]?.querySelector('video'));
+    loadSlideMedia(slides[nextIdx]);
   };
 
   const advance = () => {
@@ -630,27 +681,45 @@ const startAutoplay = (slides, cards, container, block) => {
     setPlayingState(false);
   }, { passive: true });
 
-  requestAnimationFrame(() => {
+  const beginAutoplay = () => {
     if (prefersReducedMotion()) {
       paused = true;
       setPlayingState(false);
       return;
     }
+    if (paused) return;
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
-  });
+  };
+  // Start the progress bar, advance timer, and next-slide preload only once the
+  // hero video presents its first frame. This keeps the first transition (and the
+  // next slide's media) out of the hero's poster->first-frame window, so LCP stays
+  // on the heading instead of being dragged to the late video paint. It also keeps
+  // the progress bar honest: it begins when the video is actually playing.
+  const heroVideo = slides[active]?.querySelector('video');
+  if (heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
+    let started = false;
+    const kick = () => { if (started) return; started = true; beginAutoplay(); };
+    heroVideo.requestVideoFrameCallback(() => kick());
+    setTimeout(kick, 8000);
+  } else {
+    requestAnimationFrame(beginAutoplay);
+  }
 
   return { pause, resume };
 };
 
-const buildViewport = (viewport, slides) => {
+const buildViewport = (viewport, slides, isActiveViewport) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide, i) => {
     decorateSlide(slide);
     slide.setAttribute('role', 'tabpanel');
     slide.setAttribute('aria-roledescription', 'slide');
-    if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
+    // Keep only the active viewport's first slide image eager; every other slide
+    // image is lazy-loaded when it becomes active. (Videos default to lazy in
+    // prepareVideo, so only the image needs this active-slide exception.)
+    if (!(isActiveViewport && i === 0)) stashSlideImage(slide);
   });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
@@ -682,7 +751,9 @@ const reorderSlidesMaybe = (el, viewports) => {
 export default function init(el) {
   const viewports = groupByViewport(el);
   reorderSlidesMaybe(el, viewports);
-  const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
+  const initialVp = getActiveViewport();
+  const containers = Object.entries(viewports)
+    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
   el.replaceChildren(...containers);
   const initializedVps = new Set();
   const autoplayControllers = [];
@@ -702,10 +773,14 @@ export default function init(el) {
   loadViewportVideos(el);
   initViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
+  let resizeRaf;
   window.addEventListener('resize', () => {
-    dynamicLayoutUpdates(el);
-    loadViewportVideos(el);
-    initViewportAutoplay();
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      dynamicLayoutUpdates(el);
+      loadViewportVideos(el);
+      initViewportAutoplay();
+    });
   });
 
   const nextSection = el.closest('.section')?.nextElementSibling;

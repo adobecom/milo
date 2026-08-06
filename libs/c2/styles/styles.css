@@ -1180,7 +1180,6 @@ span.hang-opening-quote {
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
     animation-name: enable-grid-parallax;
-    will-change: padding-inline;
     overflow: clip;
   }
 

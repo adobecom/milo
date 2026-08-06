@@ -2258,6 +2258,20 @@ function initModalEventListener() {
   });
 }
 
+// CPU/RAM are coarse proxies (deviceMemory is Chromium-only), so pair them and
+// bias harder on Windows, whose integrated-GPU compositing is the real jank driver.
+// Missing signals compare false (undefined <= 4 === false) and read as capable.
+// Destructured (not navigator.x) so eslint-plugin-compat skips the guarded APIs.
+function shouldSkipLenis() {
+  if (navigator.connection?.saveData
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+  const { deviceMemory, hardwareConcurrency: cores } = navigator;
+  const isWindows = navigator.userAgent.includes('Windows');
+  return isWindows
+    ? deviceMemory <= 4 || cores <= 4
+    : deviceMemory <= 4 && cores <= 4;
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
 
@@ -2309,37 +2323,56 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    await Promise.all([
-      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-      loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
-    const lerp = 0.06;
-    const fsThreshold = 110;
-    const fsFactor = 0.11;
-    const fsDelay = 700;
-    const lenisPreventSelectors = [
-      '.dialog-modal',
-      '.ot-sdk-container',
-      'div[data-testid="main-content-area"]',
-    ];
-    window.lenis = new window.Lenis({
-      autoRaf: true,
-      lerp,
-      wheelMultiplier: 0.7,
-      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-    });
-    if (document.querySelector('.modal-curtain.is-open')) {
-      window.lenis.stop();
-    }
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
-    window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+    // Skip Lenis on mobile and on devices that can't carry it smoothly
+    const enableLenis = !window.matchMedia('(width < 768px)').matches && !shouldSkipLenis();
+    if (enableLenis) {
+      await Promise.all([
+        new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+        loadScript(`${config.base}/deps/lenis.min.js`),
+      ]);
+      const lerp = 0.06;
+      const fsThreshold = 110;
+      const fsFactor = 0.11;
+      const fsDelay = 700;
+      const lenisPreventSelectors = [
+        '.dialog-modal',
+        '.ot-sdk-container',
+        'div[data-testid="main-content-area"]',
+      ];
+      // Drive rAF manually , pause when idle, save on CPU work
+      window.lenis = new window.Lenis({
+        autoRaf: false,
+        lerp,
+        wheelMultiplier: 0.7,
+        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+      });
+      let lenisRaf = null;
+      const runLenisFrame = (time) => {
+        window.lenis.raf(time);
+        lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
+      };
+      const startLenisRaf = () => {
+        if (lenisRaf === null) lenisRaf = requestAnimationFrame(runLenisFrame);
+      };
+      ['wheel', 'touchstart', 'touchmove', 'keydown', 'scroll'].forEach((evt) => {
+        window.addEventListener(evt, startLenisRaf, { passive: true });
+      });
+      const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
+      window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
+
+      if (document.querySelector('.modal-curtain.is-open')) {
+        window.lenis.stop();
       }
-    }, { passive: true });
+      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+      let fsScrollTimer;
+      window.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > fsThreshold) {
+          window.lenis.options.lerp = fsFactor;
+          clearTimeout(fsScrollTimer);
+          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        }
+      }, { passive: true });
+    }
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
