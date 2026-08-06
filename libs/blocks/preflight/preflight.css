@@ -1246,7 +1246,13 @@ img:hover ~ .asset-meta,
  * Rendered as a dedicated overlay element appended to (or wrapped around) the highlighted
  * element, rather than as outline/::before styles on the element itself — a block's own layered
  * content (background media, gradients, its own overlays) can be higher-stacked than an in-flow
- * outline, burying it. A very high z-index on the overlay keeps it above those layers instead.
+ * outline, burying it.
+ *
+ * The host also gets its own stacking context (see .preflight-diff-highlight-isolate) so the
+ * overlay's z-index is only ever weighed against that block's own layers, never against the
+ * preflight modal (--modal-z-index in modal.css). That's what lets a modest z-index — like
+ * .asset-meta's below — reliably win locally without risking a max-int value that could climb
+ * above the modal itself.
  */
 .preflight-diff-highlight-relative {
   position: relative;
@@ -1259,10 +1265,16 @@ img:hover ~ .asset-meta,
   display: inline-block;
 }
 
+/* Scopes the overlay's stacking context to the highlighted host itself — applied to either the
+ * host element or the .preflight-diff-highlight-wrap wrapper (see ensureOverlayHost). */
+.preflight-diff-highlight-isolate {
+  isolation: isolate;
+}
+
 .preflight-diff-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2147483647;
+  z-index: 5;
   outline-offset: 2px;
   pointer-events: none;
   scroll-margin: 100px;

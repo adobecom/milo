@@ -184,7 +184,7 @@ describe('preflight diff-onpage', () => {
       expect(overlay.classList.contains('is-modified')).to.equal(true);
     });
 
-    it('the overlay is a positioned, click-through, very-high-z-index element sitting above sibling content', () => {
+    it('the overlay is a positioned, click-through, modest-z-index element sitting above sibling content', () => {
       const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
       highlightOnPage(diff, root);
 
@@ -192,7 +192,10 @@ describe('preflight diff-onpage', () => {
       const style = window.getComputedStyle(overlay);
       expect(style.position).to.equal('absolute');
       expect(style.pointerEvents).to.equal('none');
-      expect(Number(style.zIndex)).to.be.greaterThan(1000);
+      // Modest on purpose: the host below is isolation:isolate, so this only needs to beat the
+      // block's own local layers, never the preflight modal (--modal-z-index in modal.css).
+      expect(Number(style.zIndex)).to.equal(5);
+      expect(Number(style.zIndex)).to.be.lessThan(100000);
     });
 
     it('forces a positioning context onto an unpositioned host so the overlay aligns to it, without moving it', () => {
@@ -204,6 +207,15 @@ describe('preflight diff-onpage', () => {
       expect(window.getComputedStyle(h2).position).to.equal('relative');
     });
 
+    it('gives the host its own isolated stacking context so the overlay cannot escape above the modal', () => {
+      const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
+      highlightOnPage(diff, root);
+
+      const h2 = root.querySelector('h2');
+      expect(h2.classList.contains('preflight-diff-highlight-isolate')).to.equal(true);
+      expect(window.getComputedStyle(h2).isolation).to.equal('isolate');
+    });
+
     it('wraps a void/replaced element (img) that cannot host an appended overlay child', () => {
       root.innerHTML = '<div><img src="/a.png" alt="A"></div>';
       const diff = { added: [{ type: 'added', tag: 'IMG', path: '/div[1]/img[1]' }], modified: [], removed: [] };
@@ -213,8 +225,10 @@ describe('preflight diff-onpage', () => {
       const img = root.querySelector('img');
       const wrapper = img.parentElement;
       expect(wrapper.classList.contains('preflight-diff-highlight-wrap')).to.equal(true);
+      expect(wrapper.classList.contains('preflight-diff-highlight-isolate')).to.equal(true);
       expect(wrapper.querySelector(':scope > .preflight-diff-overlay.is-added')).to.exist;
       expect(window.getComputedStyle(wrapper).position).to.equal('relative');
+      expect(window.getComputedStyle(wrapper).isolation).to.equal('isolate');
     });
 
     it('skips removed changes on the page (no overlay for them)', () => {
@@ -257,12 +271,14 @@ describe('preflight diff-onpage', () => {
       const cleanup = highlightOnPage(diff, root);
       expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(3);
       expect(root.querySelector('.preflight-diff-highlight-wrap')).to.exist;
+      expect(root.querySelector('.preflight-diff-highlight-isolate')).to.exist;
 
       cleanup();
 
       expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(0);
       expect(root.querySelector('.preflight-diff-highlight-relative')).to.not.exist;
       expect(root.querySelector('.preflight-diff-highlight-wrap')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-highlight-isolate')).to.not.exist;
       // The wrapped img is back in the tree, unwrapped, in its original spot.
       expect(root.querySelector('img')).to.exist;
       expect(root.querySelector('div > img')).to.exist;

@@ -5,6 +5,7 @@ const ADDED_MODIFIER = 'is-added';
 const MODIFIED_MODIFIER = 'is-modified';
 const WRAP_CLASS = 'preflight-diff-highlight-wrap';
 const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
+const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const JUMP_CLASS = 'preflight-diff-jump-highlight';
 
 // Replaced/void elements don't render appended children (a browser never paints a child of an
@@ -97,6 +98,7 @@ function logUnmapped(change) {
 function clearHighlights(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
   root.querySelectorAll(`.${RELATIVE_CLASS}`).forEach((el) => el.classList.remove(RELATIVE_CLASS));
+  root.querySelectorAll(`.${ISOLATE_CLASS}`).forEach((el) => el.classList.remove(ISOLATE_CLASS));
   root.querySelectorAll(`.${WRAP_CLASS}`).forEach((wrapper) => {
     const original = wrapper.firstElementChild;
     if (original) wrapper.replaceWith(original);
@@ -111,14 +113,20 @@ function clearHighlights(root) {
  * render appended children at all.
  *
  * A block's own layered content (e.g. a marquee's background image/video/overlay) can establish
- * its own z-index stacking — appending the overlay as `el`'s own child, rather than styling `el`
- * itself, keeps the overlay a sibling within that same stacking context so its very-high z-index
- * (see preflight.css) is compared directly against those layers instead of being irrelevant to
- * them, which is what let the old outline+::before get buried underneath in practice.
+ * its own z-index stacking, which used to bury the overlay's outline+::before underneath it. That
+ * was previously "fixed" with a max-int z-index on the overlay — but the overlay lives on the real
+ * page, not inside the preflight modal, so a max-int value also jumps above the modal itself
+ * (--modal-z-index in modal.css), which is wrong.
+ *
+ * The correct fix scopes the problem instead of out-escalating it: giving the host its own
+ * stacking context (`isolation: isolate`, see ISOLATE_CLASS in preflight.css) means the overlay's
+ * z-index is only ever compared against layers *inside* that host — it can win with a modest
+ * value, and it can never escape the host's context to compete with (or exceed) the modal, which
+ * lives in a separate, higher-stacked context on `body`.
  */
 function ensureOverlayHost(el) {
   if (VOID_HOST_TAGS.has(el.tagName)) {
-    const wrapper = createTag('span', { class: WRAP_CLASS });
+    const wrapper = createTag('span', { class: `${WRAP_CLASS} ${ISOLATE_CLASS}` });
     el.replaceWith(wrapper);
     wrapper.append(el);
     return wrapper;
@@ -129,6 +137,7 @@ function ensureOverlayHost(el) {
   if (window.getComputedStyle(el).position === 'static') {
     el.classList.add(RELATIVE_CLASS);
   }
+  el.classList.add(ISOLATE_CLASS);
   return el;
 }
 
@@ -140,7 +149,8 @@ function ensureOverlayHost(el) {
  * Renders each highlight as a dedicated overlay element (see ensureOverlayHost) rather than
  * outlining the target in place — an in-flow outline/::before ribbon on the element itself can
  * end up underneath a block's own higher-stacked layered content (media, gradients, overlays);
- * an appended overlay child with a very high z-index (preflight.css) sits above it instead.
+ * an appended overlay child sits above it instead, thanks to the host's own isolated stacking
+ * context (see ISOLATE_CLASS / ensureOverlayHost) — no need for an extreme z-index.
  *
  * Clears everything this module previously added under `root` before applying — the preflight
  * modal is re-created (not just hidden) on every open, so a prior call's returned cleanup can be
