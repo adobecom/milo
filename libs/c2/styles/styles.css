@@ -1359,7 +1359,7 @@ span.hang-opening-quote {
          faster than the page scrolls, and it visibly dips down before
          pulling up. */
       --gd-grow-from: max(-90vh, -1050px);
-      --gd-reveal-from: 30vh;
+      --gd-reveal-from: 20vh;
       --gd-range-end: cover 48%;
     }
 
@@ -1381,9 +1381,9 @@ span.hang-opening-quote {
     .foreground {
       z-index: 1;
       position: relative;
-      animation: garage-door-reveal linear both;
+      animation: garage-door-reveal ease-out both;
       animation-timeline: --gd-timeline;
-      animation-range: entry 0% var(--gd-range-end);
+      animation-range: entry 0% cover 42%;
 
       * {
         animation: garage-door-line-height ease-out both;
@@ -1399,7 +1399,8 @@ span.hang-opening-quote {
   }
 
   @keyframes garage-door-reveal {
-    from { transform: translateY(var(--gd-reveal-from)); }
+    0%, 65% { transform: translateY(var(--gd-reveal-from)); }
+    100% { transform: translateY(0); }
   }
 
   @keyframes garage-door-bg-scale {
