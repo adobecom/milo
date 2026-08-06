@@ -285,6 +285,98 @@ describe('Brand Concierge', () => {
     delete window.adobe;
   });
 
+  describe('onBeforeEventSend auth token', () => {
+    const originalHref = window.location.href;
+
+    // bcToken and the guestBotDetection query param are frozen per module instance,
+    // so each test imports a cache-busted copy to avoid leaking state between tests.
+    const getOnBeforeEventSend = async () => {
+      const timestamp = Date.now();
+      const { default: freshInit } = await import(`../../../libs/blocks/brand-concierge/brand-concierge.js?t=${timestamp}`);
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.brand-concierge');
+
+      const bootstrapSpy = sinon.spy();
+      window.adobe = { concierge: { bootstrap: bootstrapSpy } };
+
+      await freshInit(block);
+      const input = block.querySelector('#bc-input-field');
+      input.value = 'Test message';
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await waitForElement('#brand-concierge-modal');
+
+      await new Promise((resolve) => {
+        const checkBootstrap = () => {
+          if (bootstrapSpy.called) {
+            resolve();
+          } else {
+            setTimeout(checkBootstrap, 50);
+          }
+        };
+        setTimeout(() => resolve(), 2000);
+        checkBootstrap();
+      });
+
+      return bootstrapSpy.firstCall.args[0].onBeforeEventSend;
+    };
+
+    afterEach(() => {
+      document.querySelector('meta[name="ims-guest-token-bot-detection"]')?.remove();
+      delete window.adobe;
+      delete window.adobeIMS;
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('sends the IMS token when the user is signed in', async () => {
+      window.adobeIMS = {
+        isSignedInUser: () => true,
+        getAccessToken: () => ({ token: 'signed-in-token' }),
+      };
+      const onBeforeEventSend = await getOnBeforeEventSend();
+      const content = {};
+      onBeforeEventSend(content);
+      expect(content.data).to.deep.equal({ type: 'auth', payload: { token: 'signed-in-token' } });
+    });
+
+    it('sends no token when signed out and guest bot-detection metadata is absent', async () => {
+      window.adobeIMS = { isSignedInUser: () => false };
+      const onBeforeEventSend = await getOnBeforeEventSend();
+      const content = {};
+      onBeforeEventSend(content);
+      expect(content.data).to.be.undefined;
+    });
+
+    // This test environment is served from localhost, which never ends in ".adobe.com", so this
+    // also guards the domain gate: if that check were dropped, this would start failing.
+    it('withholds the guest token off adobe.com even when bot-detection metadata is "on"', async () => {
+      expect(window.location.host.endsWith('.adobe.com')).to.be.false;
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'ims-guest-token-bot-detection');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      window.adobeIMS = {
+        isSignedInUser: () => false,
+        getAccessToken: () => ({ token: 'guest-token' }),
+      };
+      const onBeforeEventSend = await getOnBeforeEventSend();
+      const content = {};
+      onBeforeEventSend(content);
+      expect(content.data).to.be.undefined;
+    });
+
+    it('caches the token and does not call getAccessToken again on subsequent events', async () => {
+      window.adobeIMS = {
+        isSignedInUser: () => true,
+        getAccessToken: sinon.stub().returns({ token: 'signed-in-token' }),
+      };
+      const onBeforeEventSend = await getOnBeforeEventSend();
+      onBeforeEventSend({});
+      onBeforeEventSend({});
+      expect(window.adobeIMS.getAccessToken.callCount).to.equal(1);
+    });
+  });
+
   describe('Marquee variant', () => {
     it('decorates the header with eyebrow (h3), title (h2) and subtitle (p) in order', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });

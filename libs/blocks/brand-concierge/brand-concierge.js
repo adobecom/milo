@@ -1,5 +1,5 @@
 import { getModal, closeModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';
 
@@ -399,7 +399,10 @@ async function openChatModal(initialMessage, el) {
       return;
     }
 
-    if (!bcToken) {
+    const guestBotDetectionEnabled = getMetadata('ims-guest-token-bot-detection') === 'on'
+      && window.location.host.endsWith('.adobe.com')
+      && params.get('guestBotDetection') !== 'off';
+    if (!bcToken && (window.adobeIMS?.isSignedInUser() || guestBotDetectionEnabled)) {
       bcToken = window.adobeIMS?.getAccessToken()?.token;
     }
 
