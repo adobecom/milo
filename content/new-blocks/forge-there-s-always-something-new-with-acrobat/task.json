@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-there-s-always-something-new-with-acrobat",
+  "sectionIndex": 2,
+  "decision": "tight-variant",
+  "score": 0.85,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "",
+  "figmaNodeId": "10495:76631",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-4f3f79aa-mshb9ysy",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-4f3f79aa-mshb9ysy/libs/c2/blocks/forge-there-s-always-something-new-with-acrobat",
+  "miloBranch": "forge/session-4f3f79aa-733",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/2562-4f3f79?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-section-1",
+  "sectionIndex": 1,
+  "decision": "ambiguous",
+  "score": 0.65,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-1",
+  "figmaUrl": "",
+  "figmaNodeId": "10495:77319",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-4f3f79aa-mshb9ysy",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-4f3f79aa-mshb9ysy/libs/c2/blocks/forge-section-1",
+  "miloBranch": "forge/session-4f3f79aa-733",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/2562-4f3f79?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

@@ -1,0 +1,116 @@
+/* forge-section-1 — "parallax featured-card media" collage.
+   DA strips authored classes and flattens the section to a class-less run of
+   <h*>/<p>/<picture>, so forge-section-1.js rebuilds the 5-card composition and
+   stamps these part classes. Every metric is expressed relative to the stage
+   width via --px (1 design-px as a share of container width, 768px reference),
+   so the collage scales fluidly to its container instead of pinning Figma-frame
+   pixels (L27). All selectors are scoped under .forge-section-1 (L10/L19). */
+
+.forge-section-1 {
+  background: var(--s2a-color-gray-100, #f2f2f5);
+  padding: var(--s2a-space-xxl, 124px) var(--s2a-space-m, 24px) var(--s2a-space-xl, 80px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.forge-section-1 .fs1-stage {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  aspect-ratio: 768 / 851;
+  container-type: inline-size;
+}
+
+.forge-section-1 .fs1-inner {
+  --px: 0.130208cqw;
+  position: absolute;
+  inset: 0;
+  color: #29293e;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.forge-section-1 .fs1-card {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: calc(12.8 * var(--px));
+  overflow: hidden;
+}
+
+.forge-section-1 .fs1-card a { color: inherit; }
+
+/* ---- card frames: position / colour / tilt ---- */
+.forge-section-1 .fs1-report {
+  left: calc(543 * var(--px)); top: calc(276 * var(--px));
+  width: calc(257 * var(--px)); height: calc(440 * var(--px));
+  padding: calc(20 * var(--px)) calc(18 * var(--px));
+  background: #dadae7; transform: rotate(0.62deg);
+}
+.forge-section-1 .fs1-coral {
+  left: calc(-18 * var(--px)); top: calc(98 * var(--px));
+  width: calc(132 * var(--px)); height: calc(280 * var(--px));
+  background: #f08478; transform: rotate(-0.48deg);
+}
+.forge-section-1 .fs1-invoice {
+  left: calc(15 * var(--px)); top: calc(55 * var(--px));
+  width: calc(305 * var(--px)); height: calc(460 * var(--px));
+  padding: calc(22 * var(--px)) calc(20 * var(--px));
+  background: #efeff1; color: #2254bd; transform: rotate(-0.25deg);
+}
+.forge-section-1 .fs1-wp {
+  left: calc(388 * var(--px)); top: calc(340 * var(--px));
+  width: calc(252 * var(--px)); height: calc(338 * var(--px));
+  padding: calc(5 * var(--px)); background: #f0f0f0; transform: rotate(0.32deg);
+}
+.forge-section-1 .fs1-mm {
+  left: calc(202 * var(--px)); top: calc(182 * var(--px));
+  width: calc(290 * var(--px)); height: calc(393 * var(--px));
+  padding: calc(14 * var(--px)); background: #abdde8; transform: rotate(-0.5deg);
+  box-shadow: 0 calc(20 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
+  display: flex; flex-direction: column;
+}
+
+/* ---- report card ---- */
+.forge-section-1 .rpt__brand { margin: 0 0 calc(3 * var(--px)); font-size: calc(5.5 * var(--px)); font-weight: 700; color: #08080b; letter-spacing: calc(0.3 * var(--px)); }
+.forge-section-1 .rpt__eyebrow { margin: 0 0 calc(8 * var(--px)); font-size: calc(5.5 * var(--px)); font-weight: 700; color: #5a5a87; letter-spacing: calc(0.6 * var(--px)); text-transform: uppercase; }
+.forge-section-1 .rpt__title { margin: 0 0 calc(10 * var(--px)); font-size: calc(19.5 * var(--px)); font-weight: 600; color: #29293e; line-height: 1.12; letter-spacing: calc(-0.7 * var(--px)); }
+.forge-section-1 .rpt__body { margin: 0 0 calc(8 * var(--px)); font-family: Georgia, 'Times New Roman', serif; font-size: calc(4.2 * var(--px)); line-height: 1.55; color: #29293e; }
+.forge-section-1 .rpt__chart-title { margin: calc(4 * var(--px)) 0 calc(5 * var(--px)); font-size: calc(3 * var(--px)); font-weight: 700; text-align: center; color: #29293e; }
+.forge-section-1 .rpt__bars { display: flex; align-items: flex-end; height: calc(52 * var(--px)); gap: calc(2 * var(--px)); }
+.forge-section-1 .rpt__bar { flex: 1; background: #626294; opacity: 0.75; border-radius: calc(1 * var(--px)); }
+.forge-section-1 .rpt__labels { display: flex; gap: calc(2 * var(--px)); margin-top: calc(2 * var(--px)); }
+.forge-section-1 .rpt__label { flex: 1; text-align: center; font-size: calc(2.5 * var(--px)); font-weight: 600; color: #626294; }
+
+/* ---- invoice card ---- */
+.forge-section-1 .inv__title { margin: 0; font-size: calc(20 * var(--px)); font-weight: 700; line-height: 1; letter-spacing: calc(-0.5 * var(--px)); }
+.forge-section-1 .inv__co { margin: calc(4 * var(--px)) 0 calc(8 * var(--px)); font-size: calc(9 * var(--px)); font-weight: 700; }
+.forge-section-1 .inv__body { display: flex; flex-direction: column; gap: calc(1.5 * var(--px)); }
+.forge-section-1 .inv__line { margin: 0; font-size: calc(4 * var(--px)); font-weight: 700; line-height: 1.7; color: #2254bd; }
+.forge-section-1 .inv__footer { margin: calc(8 * var(--px)) 0 0; font-size: calc(9 * var(--px)); font-weight: 700; text-align: center; }
+
+/* ---- white-paper card ---- */
+.forge-section-1 .wp__frame { position: relative; height: 100%; background: #000; border-radius: calc(9 * var(--px)); overflow: hidden; display: flex; flex-direction: column; }
+.forge-section-1 .wp__photo-pic { display: block; width: 100%; height: calc(196 * var(--px)); flex-shrink: 0; }
+.forge-section-1 .wp__photo-pic img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.forge-section-1 .wp__copy { position: relative; flex: 1; min-height: 0; padding: calc(13 * var(--px)) calc(17 * var(--px)) calc(18 * var(--px)); display: flex; flex-direction: column; justify-content: flex-end; }
+.forge-section-1 .wp__text { position: relative; z-index: 1; }
+.forge-section-1 .wp__title { margin: 0 0 calc(8 * var(--px)); font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; font-size: calc(22 * var(--px)); line-height: 0.98; color: #f0f0f0; }
+.forge-section-1 .wp__contact { margin: 0; font-family: Arial, sans-serif; font-size: calc(6.2 * var(--px)); line-height: 1.75; color: #f0f0f0; }
+.forge-section-1 .wp__deco-out { position: absolute; top: 0; right: 0; width: 55%; opacity: 0.45; pointer-events: none; }
+.forge-section-1 .wp__deco-in { position: absolute; right: 0; bottom: 0; width: 58%; opacity: 0.3; pointer-events: none; }
+.forge-section-1 .wp__deco-out img, .forge-section-1 .wp__deco-in img { display: block; width: 100%; height: auto; }
+
+/* ---- media-mix card ---- */
+.forge-section-1 .mm__tabs { display: flex; gap: calc(5 * var(--px)); margin-bottom: calc(12 * var(--px)); flex-shrink: 0; }
+.forge-section-1 .mm__tab { font-family: 'Courier New', monospace; font-size: calc(6.9 * var(--px)); padding: calc(2.5 * var(--px)) calc(7 * var(--px)); border: calc(0.5 * var(--px)) solid #3d5572; border-radius: calc(2.84 * var(--px)); color: #3d5572; white-space: nowrap; }
+.forge-section-1 .mm__tab--active { background: #3d5572; color: #abdde8; }
+.forge-section-1 .mm__title { margin: 0 0 calc(10 * var(--px)); font-size: calc(15.5 * var(--px)); font-weight: 600; color: #3d5572; line-height: 1.15; letter-spacing: calc(-0.4 * var(--px)); flex-shrink: 0; }
+.forge-section-1 .mm__sep { height: calc(1 * var(--px)); background: #3d5572; opacity: 0.2; margin-bottom: calc(11 * var(--px)); flex-shrink: 0; }
+.forge-section-1 .mm__bars { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(5 * var(--px)); }
+.forge-section-1 .mm__bar { flex: 1; display: flex; align-items: flex-start; border-radius: calc(2 * var(--px)); padding: calc(8 * var(--px)) calc(10 * var(--px)); box-sizing: border-box; color: #abdde8; }
+.forge-section-1 .mm__bar--light { color: #3d5572; }
+.forge-section-1 .mm__bar-label { font-size: calc(7.2 * var(--px)); line-height: 1.4; }
+
+@media (max-width: 600px) {
+  .forge-section-1 { padding: var(--s2a-space-xl, 80px) var(--s2a-space-s, 16px) var(--s2a-space-l, 64px); }
+}

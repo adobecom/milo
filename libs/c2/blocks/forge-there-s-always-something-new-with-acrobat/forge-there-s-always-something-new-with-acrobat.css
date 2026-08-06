@@ -1,0 +1,190 @@
+/* forge-there-s-always-something-new-with-acrobat
+   "Features and Releases" — centered header over a two-row, three-up grid.
+   Row 1: real feature cards (image / heading / body / link).
+   Row 2: teaser cards (reserved placeholder tile + baked-copy imagery).
+   All selectors are scoped under the block class; tokens live inside it. */
+
+.forge-there-s-always-something-new-with-acrobat {
+  --wn-bg: var(--s2a-color-background-subtle, #f6f6f6);
+  --wn-text: var(--s2a-color-gray-1000, #000);
+  --wn-text-muted: rgba(0 0 0 / 64%);
+  --wn-card-bg: var(--s2a-color-gray-200, #e4e4e4);
+  --wn-placeholder-bg: var(--s2a-color-gray-300, #c4c4c4);
+  --wn-radius: var(--s2a-border-radius-16, 16px);
+  --wn-serif: var(--s2a-font-family-adobe-clean-display, "Adobe Clean Display"), georgia, serif;
+  --wn-sans: var(--s2a-font-family-adobe-clean, "Adobe Clean"), sans-serif;
+  display: block;
+  width: 100%;
+  background: var(--wn-bg);
+  box-sizing: border-box;
+}
+
+.forge-there-s-always-something-new-with-acrobat * { box-sizing: border-box; }
+
+.forge-there-s-always-something-new-with-acrobat .wn-wrap {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: var(--s2a-spacing-80, 80px) 65px var(--s2a-spacing-124, 124px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+}
+
+/* ---- Header ---- */
+.forge-there-s-always-something-new-with-acrobat .wn-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-eyebrow {
+  margin: 0;
+  font-family: var(--wn-sans);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: normal;
+  text-align: center;
+  color: var(--wn-text-muted);
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-title {
+  margin: 0;
+  max-width: 640px;
+  font-family: var(--wn-serif);
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 48px;
+  letter-spacing: -1.44px;
+  text-align: center;
+  color: var(--wn-text);
+}
+
+/* ---- Rows / columns ---- */
+.forge-there-s-always-something-new-with-acrobat .wn-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Feature card (row 1) ---- */
+.forge-there-s-always-something-new-with-acrobat .wn-card-pic {
+  display: block;
+  width: 100%;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-card-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--wn-radius);
+  object-fit: cover;
+  background: var(--wn-card-bg);
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-16, 16px);
+  padding: var(--s2a-spacing-16, 16px) var(--s2a-spacing-16, 16px) 0;
+  width: 100%;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-hb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-h3 {
+  margin: 0;
+  font-family: var(--wn-serif);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  color: var(--wn-text);
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-body {
+  margin: 0;
+  font-family: var(--wn-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--wn-text-muted);
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--wn-text);
+  font-family: var(--wn-sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-cta-label { color: inherit; }
+.forge-there-s-always-something-new-with-acrobat .wn-cta:hover .wn-cta-label { text-decoration: underline; }
+.forge-there-s-always-something-new-with-acrobat .wn-chevron { display: inline-flex; align-items: center; }
+.forge-there-s-always-something-new-with-acrobat .wn-chevron svg { display: block; }
+
+/* ---- Teaser card (row 2) ---- */
+.forge-there-s-always-something-new-with-acrobat .wn-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--wn-radius);
+  background: var(--wn-placeholder-bg);
+  flex-shrink: 0;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-teaser-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-16, 16px);
+  padding: var(--s2a-spacing-16, 16px) var(--s2a-spacing-16, 16px) 0;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-teaser-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.forge-there-s-always-something-new-with-acrobat .wn-teaser-cta { margin-top: var(--s2a-spacing-8, 8px); }
+
+/* ---- Responsive: stack the rows and shrink the display title ---- */
+@media (max-width: 700px) {
+  .forge-there-s-always-something-new-with-acrobat .wn-wrap {
+    padding: var(--s2a-spacing-48, 48px) var(--s2a-spacing-20, 20px) var(--s2a-spacing-80, 80px);
+    gap: var(--s2a-spacing-32, 32px);
+  }
+
+  .forge-there-s-always-something-new-with-acrobat .wn-row {
+    flex-direction: column;
+    gap: var(--s2a-spacing-32, 32px);
+  }
+
+  .forge-there-s-always-something-new-with-acrobat .wn-title {
+    font-size: 36px;
+    line-height: 38px;
+    letter-spacing: -1px;
+  }
+}
