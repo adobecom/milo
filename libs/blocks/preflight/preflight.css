@@ -1819,34 +1819,35 @@ img:hover ~ .asset-meta,
   gap: var(--s2a-spacing-16);
   padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-32);
 
-  & .preflight-diff-added,
-  & .preflight-diff-modified,
-  & .preflight-diff-removed {
+  /* Gated behind .preflight-diff-active (the highlight toggle) for an undisturbed view when off. */
+  &.preflight-diff-active .preflight-diff-added,
+  &.preflight-diff-active .preflight-diff-modified,
+  &.preflight-diff-active .preflight-diff-removed {
     position: relative;
     outline-offset: 2px;
   }
 
-  & .preflight-diff-added {
+  &.preflight-diff-active .preflight-diff-added {
     outline: 3px solid var(--preflight-success);
   }
 
-  & .preflight-diff-modified {
+  &.preflight-diff-active .preflight-diff-modified {
     outline: 3px solid var(--preflight-warning);
   }
 
-  & .preflight-diff-removed {
+  &.preflight-diff-active .preflight-diff-removed {
     outline: 3px solid var(--preflight-error);
   }
 
-  & :is(.preflight-diff-added, .preflight-diff-modified, .preflight-diff-removed)::before {
+  &.preflight-diff-active :is(.preflight-diff-added, .preflight-diff-modified, .preflight-diff-removed)::before {
     position: absolute;
     inset-block-start: -1px;
     inset-inline-end: -1px;
     z-index: 2;
-    padding: 2px 8px;
+    padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
     font-family: var(--preflight-font);
     font-size: var(--s2a-font-size-12);
-    font-weight: 700;
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--s2a-color-gray-25);
@@ -1856,12 +1857,12 @@ img:hover ~ .asset-meta,
     line-height: 1.8;
   }
 
-  & .preflight-diff-added::before {
+  &.preflight-diff-active .preflight-diff-added::before {
     content: 'New';
     background: var(--preflight-success);
   }
 
-  & .preflight-diff-modified::before {
+  &.preflight-diff-active .preflight-diff-modified::before {
     content: 'Changed';
 
     /* gray-25 (used by New/Removed) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
@@ -1869,17 +1870,27 @@ img:hover ~ .asset-meta,
     background: var(--preflight-warning);
   }
 
-  & .preflight-diff-removed::before {
+  &.preflight-diff-active .preflight-diff-removed::before {
     content: 'Removed';
     background: var(--preflight-error);
   }
 }
 
 .preflight-diff-loading,
-.preflight-diff-empty {
+.preflight-diff-empty,
+.preflight-diff-error {
   padding: var(--s2a-spacing-32);
   color: var(--preflight-fg-subtle);
   text-align: center;
+}
+
+.preflight-diff-error {
+  color: var(--preflight-error);
+}
+
+.preflight-diff-retry {
+  display: block;
+  margin: 0 auto;
 }
 
 .preflight-diff-header {
@@ -1888,9 +1899,39 @@ img:hover ~ .asset-meta,
   color: var(--preflight-fg-subtle);
 }
 
+.preflight-diff-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-12);
+}
+
 .preflight-diff-tabs {
   display: flex;
   gap: var(--s2a-spacing-8);
+}
+
+button.preflight-diff-highlight-toggle {
+  min-height: 44px;
+  padding: 0 var(--s2a-spacing-16);
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-999);
+  background: var(--preflight-surface);
+  color: var(--preflight-fg-subtle);
+  font-family: var(--preflight-font);
+  font-size: var(--s2a-font-size-14);
+  cursor: pointer;
+}
+
+button.preflight-diff-highlight-toggle[aria-pressed="true"] {
+  color: var(--preflight-fg);
+  border-color: var(--preflight-cta-bg);
+}
+
+button.preflight-diff-highlight-toggle:focus-visible {
+  outline: 2px solid var(--preflight-focus);
+  outline-offset: 2px;
 }
 
 button.preflight-diff-tab {
@@ -1925,7 +1966,7 @@ button.preflight-diff-tab:focus-visible {
   min-width: 0;
 }
 
-.preflight-diff-tabpanel[aria-selected="false"] {
+.preflight-diff-tabpanel[hidden] {
   display: none;
 }
 
@@ -2011,6 +2052,7 @@ button.preflight-diff-change-row:focus-visible {
 
 .preflight-diff-change-path {
   overflow: hidden;
+  min-width: 0;
   font-size: var(--s2a-font-size-14);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2018,10 +2060,10 @@ button.preflight-diff-change-row:focus-visible {
 
 .preflight-diff-badge {
   flex-shrink: 0;
-  padding: 2px 8px;
+  padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
   border-radius: var(--s2a-border-radius-999);
   font-size: var(--s2a-font-size-12);
-  font-weight: 700;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--s2a-color-gray-25);

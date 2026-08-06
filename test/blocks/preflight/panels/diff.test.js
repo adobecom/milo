@@ -6,6 +6,7 @@ import { waitFor } from '../../../helpers/waitfor.js';
 
 const TEST_URL = new URL('https://main--milo--adobecom.aem.page/p');
 const noopDecorate = async () => {};
+const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
 
 const LIVE_HTML = `<main>
   <div>
@@ -69,17 +70,74 @@ function stubFetchSkipped() {
   });
 }
 
+// Not skipped (preview genuinely newer) but both sides render the same content — a legitimate
+// "no changes" case distinct from the skipped-by-timestamp path above.
+function stubFetchNoContentChanges() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT', lastModifiedBy: 'preview-author' },
+          live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT', lastModifiedBy: 'live-author' },
+        }),
+      });
+    }
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(LIVE_HTML) });
+  });
+}
+
+// Genuine fetch failure (e.g. 5xx) on the preview .plain.html — distinct from "skipped".
+function stubFetchPreviewFails() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT', lastModifiedBy: 'preview-author' },
+          live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT', lastModifiedBy: 'live-author' },
+        }),
+      });
+    }
+    if (s.includes('aem.live')) return Promise.resolve({ ok: true, text: () => Promise.resolve(LIVE_HTML) });
+    return Promise.resolve({ ok: false });
+  });
+}
+
+// live .plain.html fetch fails (e.g. page never published) — preview content should fall back
+// to comparing against an empty live doc, so every preview node reads as "added".
+function stubFetchLiveMissing() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT', lastModifiedBy: 'preview-author' },
+          live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT', lastModifiedBy: 'live-author' },
+        }),
+      });
+    }
+    if (s.includes('aem.live')) return Promise.resolve({ ok: false });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_HTML) });
+  });
+}
+
 describe('Preflight Content Diff Panel', () => {
   let container;
 
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    window.localStorage.removeItem(HIGHLIGHTS_KEY);
   });
 
   afterEach(() => {
     document.body.removeChild(container);
     sinon.restore();
+    window.localStorage.removeItem(HIGHLIGHTS_KEY);
   });
 
   it('renders the preflight-diff root with a loading indicator initially', async () => {
@@ -90,7 +148,8 @@ describe('Preflight Content Diff Panel', () => {
     expect(container.querySelector('.preflight-diff-empty')).to.not.exist;
     expect(container.querySelector('.preflight-diff-panes')).to.not.exist;
     // Drain the pending async work so it can't leak into the next test's shared signals.
-    await waitFor(() => container.querySelector('.preflight-diff-empty'));
+    // A rejected fetch is a genuine failure, so this settles into the error state, not empty.
+    await waitFor(() => container.querySelector('.preflight-diff-error'));
   });
 
   it('shows the empty state when preview has no unpublished changes', async () => {
@@ -98,6 +157,60 @@ describe('Preflight Content Diff Panel', () => {
     render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
     await waitFor(() => container.querySelector('.preflight-diff-empty'));
     expect(container.querySelector('.preflight-diff-empty').textContent).to.equal('No unpublished changes');
+  });
+
+  it('shows the empty state when preview is newer but renders no content changes', async () => {
+    stubFetchNoContentChanges();
+    render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+    await waitFor(() => container.querySelector('.preflight-diff-empty'));
+    expect(container.querySelector('.preflight-diff-empty').textContent).to.equal('No unpublished changes');
+  });
+
+  it('falls back to an empty live doc when the live fetch fails, marking preview content as added', async () => {
+    stubFetchLiveMissing();
+    render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+    await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+
+    const badges = [...container.querySelectorAll('.preflight-diff-change-item .preflight-diff-badge')]
+      .map((b) => b.textContent);
+    expect(badges.length).to.be.greaterThan(0);
+    expect(badges.every((label) => label === 'New')).to.equal(true);
+  });
+
+  describe('error state', () => {
+    it('shows a distinct error state with a retry action on genuine fetch failure', async () => {
+      stubFetchPreviewFails();
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-error'));
+
+      expect(container.querySelector('.preflight-diff-empty')).to.not.exist;
+      expect(container.querySelector('.preflight-diff-retry')).to.exist;
+    });
+
+    it('retries the load when Retry is clicked', async () => {
+      const failStub = stubFetchPreviewFails();
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-error'));
+
+      failStub.restore();
+      stubFetchWithChanges();
+      container.querySelector('.preflight-diff-retry').click();
+
+      await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+      expect(container.querySelector('.preflight-diff-error')).to.not.exist;
+    });
+  });
+
+  describe('highlight toggle', () => {
+    it('re-reads a persisted off-state on mount', async () => {
+      window.localStorage.setItem(HIGHLIGHTS_KEY, 'false');
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+
+      expect(container.querySelector('.preflight-diff').classList.contains('preflight-diff-active')).to.equal(false);
+      expect(container.querySelector('.preflight-diff-highlight-toggle').getAttribute('aria-pressed')).to.equal('false');
+    });
   });
 
   describe('with changes', () => {
@@ -148,14 +261,18 @@ describe('Preflight Content Diff Panel', () => {
       const contentPanel = container.querySelector('#preflight-diff-panel-content');
       const metadataPanel = container.querySelector('#preflight-diff-panel-metadata');
       const metadataToggle = container.querySelector('#preflight-diff-tab-metadata');
-      expect(contentPanel.getAttribute('aria-selected')).to.equal('true');
+      expect(contentPanel.hasAttribute('hidden')).to.equal(false);
+      expect(metadataPanel.hasAttribute('hidden')).to.equal(true);
 
       metadataToggle.click();
       await waitFor(() => metadataToggle.getAttribute('aria-selected') === 'true');
 
       expect(metadataToggle.getAttribute('aria-selected')).to.equal('true');
-      expect(contentPanel.getAttribute('aria-selected')).to.equal('false');
-      expect(metadataPanel.getAttribute('aria-selected')).to.equal('true');
+      expect(contentPanel.hasAttribute('hidden')).to.equal(true);
+      expect(metadataPanel.hasAttribute('hidden')).to.equal(false);
+      // role="tabpanel" doesn't take aria-selected — only role="tab" does.
+      expect(contentPanel.hasAttribute('aria-selected')).to.equal(false);
+      expect(metadataPanel.hasAttribute('aria-selected')).to.equal(false);
 
       const metaRows = [...container.querySelectorAll('.preflight-diff-metadata-row')];
       expect(metaRows).to.have.length(3);
@@ -172,6 +289,31 @@ describe('Preflight Content Diff Panel', () => {
       expect(header.textContent).to.include('Live: live-author');
       expect(header.textContent).to.include('Preview: preview-author');
       expect(header.textContent).to.include('·');
+    });
+
+    it('defaults highlights on and persists off-toggle to localStorage', async () => {
+      const root = container.querySelector('.preflight-diff');
+      const toggle = container.querySelector('.preflight-diff-highlight-toggle');
+      expect(root.classList.contains('preflight-diff-active')).to.equal(true);
+      expect(toggle.getAttribute('aria-pressed')).to.equal('true');
+
+      toggle.click();
+      await waitFor(() => toggle.getAttribute('aria-pressed') === 'false');
+
+      expect(root.classList.contains('preflight-diff-active')).to.equal(false);
+      expect(window.localStorage.getItem(HIGHLIGHTS_KEY)).to.equal('false');
+    });
+
+    it('mirrors scroll position between live and preview panes', () => {
+      const previewBody = container.querySelector('.preflight-diff-pane-preview .preflight-diff-pane-body');
+      const liveBody = container.querySelector('.preflight-diff-pane-live .preflight-diff-pane-body');
+      Object.defineProperty(liveBody, 'scrollTop', { value: 0, writable: true, configurable: true });
+      Object.defineProperty(previewBody, 'scrollTop', { value: 0, writable: true, configurable: true });
+
+      liveBody.scrollTop = 42;
+      liveBody.dispatchEvent(new Event('scroll'));
+
+      expect(previewBody.scrollTop).to.equal(42);
     });
   });
 });

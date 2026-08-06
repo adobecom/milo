@@ -6,9 +6,10 @@ import { renderPane } from './diff-render.js';
 import { applyHighlights, scrollToChange } from './diff-highlight.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
-const VIEW = { LOADING: 'loading', EMPTY: 'empty', READY: 'ready' };
+const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready' };
 const TAB = { CONTENT: 'content', METADATA: 'metadata' };
 const BADGE_LABEL = { added: 'New', modified: 'Changed', removed: 'Removed' };
+const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
 
 const view = signal(VIEW.LOADING);
 const activeTab = signal(TAB.CONTENT);
@@ -17,6 +18,7 @@ const metadataDiff = signal(null);
 const pageStatus = signal(null);
 const previewPane = signal(null);
 const livePane = signal(null);
+const highlightsOn = signal(true);
 
 function parseMain(htmlText) {
   const doc = new DOMParser().parseFromString(htmlText, 'text/html');
@@ -39,6 +41,27 @@ function buildMetadataRows(metadata) {
   ];
 }
 
+function readHighlightsPref() {
+  try {
+    return window.localStorage.getItem(HIGHLIGHTS_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+function setHighlightsPref(on) {
+  try {
+    window.localStorage.setItem(HIGHLIGHTS_KEY, String(on));
+  } catch {
+    // localStorage unavailable (private mode, quota) — toggle still works for this session.
+  }
+}
+
+function toggleHighlights() {
+  highlightsOn.value = !highlightsOn.value;
+  setHighlightsPref(highlightsOn.value);
+}
+
 // Self-contained: the Inc-1 check's `details` has classifications but not the raw
 // .plain.html the panes need, so the panel fetches and diffs its own copy on mount.
 async function loadDiff(url, decorate) {
@@ -52,14 +75,20 @@ async function loadDiff(url, decorate) {
 
   try {
     const versions = await fetchVersions(url);
-    if (versions.skipped || !versions.preview) {
+    if (versions.skipped) {
       view.value = VIEW.EMPTY;
+      return;
+    }
+    if (!versions.preview) {
+      view.value = VIEW.ERROR;
       return;
     }
 
     const liveHtml = versions.live?.html || EMPTY_MAIN_HTML;
-    const nextContentDiff = diffContent(parseMain(versions.preview.html), parseMain(liveHtml));
-    const nextMetadataDiff = diffMetadata(parseMain(versions.preview.html), parseMain(liveHtml));
+    const previewMain = parseMain(versions.preview.html);
+    const liveMain = parseMain(liveHtml);
+    const nextContentDiff = diffContent(previewMain, liveMain);
+    const nextMetadataDiff = diffMetadata(previewMain, liveMain);
     const [nextPreviewPane, nextLivePane] = await Promise.all([
       renderPane(versions.preview.html, { decorate }),
       renderPane(liveHtml, { decorate }),
@@ -74,7 +103,7 @@ async function loadDiff(url, decorate) {
     view.value = hasChanges(nextContentDiff, nextMetadataDiff) ? VIEW.READY : VIEW.EMPTY;
   } catch (e) {
     window.lana?.log?.(`[preflight][diff-panel] ${e.message}`, { tags: 'preflight', errorType: 'i' });
-    view.value = VIEW.EMPTY;
+    view.value = VIEW.ERROR;
   }
 }
 
@@ -83,6 +112,17 @@ function LastModifiedHeader() {
   const liveBy = status?.live?.lastModifiedBy || 'Unknown';
   const previewBy = status?.preview?.lastModifiedBy || 'Unknown';
   return html`<p class="preflight-diff-header">Live: ${liveBy} · Preview: ${previewBy}</p>`;
+}
+
+function HighlightToggle() {
+  const on = highlightsOn.value;
+  return html`
+    <button
+      class="preflight-diff-highlight-toggle"
+      aria-pressed=${on}
+      onClick=${toggleHighlights}>
+      ${on ? 'Hide highlights' : 'Show highlights'}
+    </button>`;
 }
 
 function DiffTabs() {
@@ -110,6 +150,14 @@ function DiffTabs() {
     </div>`;
 }
 
+function DiffToolbar() {
+  return html`
+    <div class="preflight-diff-toolbar">
+      <${DiffTabs} />
+      <${HighlightToggle} />
+    </div>`;
+}
+
 function ChangeRow({ change, previewRef, liveRef }) {
   return html`
     <li class="preflight-diff-change-item">
@@ -120,7 +168,7 @@ function ChangeRow({ change, previewRef, liveRef }) {
     scrollToChange(liveRef.current, change);
   }}>
         <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
-        <span class="preflight-diff-change-path">${change.path}</span>
+        <span class="preflight-diff-change-path" title=${change.path}>${change.path}</span>
       </button>
     </li>`;
 }
@@ -134,7 +182,7 @@ function ContentTab({ previewRef, liveRef }) {
       class="preflight-diff-tabpanel"
       role="tabpanel"
       aria-labelledby="preflight-diff-tab-content"
-      aria-selected=${activeTab.value === TAB.CONTENT}>
+      hidden=${activeTab.value !== TAB.CONTENT}>
       <div class="preflight-diff-panes">
         <div class="preflight-diff-pane preflight-diff-pane-live">
           <p class="preflight-diff-pane-label">Live</p>
@@ -168,7 +216,7 @@ function MetadataTab() {
       class="preflight-diff-tabpanel"
       role="tabpanel"
       aria-labelledby="preflight-diff-tab-metadata"
-      aria-selected=${activeTab.value === TAB.METADATA}>
+      hidden=${activeTab.value !== TAB.METADATA}>
       ${rows.length === 0 && html`<p class="preflight-diff-empty-changes">No metadata changes</p>`}
       ${rows.length > 0 && html`
         <table class="preflight-diff-metadata-table">
@@ -199,13 +247,31 @@ export default function DiffPanel({ url = new URL(window.location.href), decorat
   const liveRef = useRef(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only, props snapshotted
-  useEffect(() => { loadDiff(url, decorate); }, []);
+  useEffect(() => { highlightsOn.value = readHighlightsPref(); loadDiff(url, decorate); }, []);
 
   useEffect(() => {
-    if (liveRef.current && livePane.value) liveRef.current.replaceChildren(livePane.value);
-    if (previewRef.current && previewPane.value) {
-      previewRef.current.replaceChildren(previewPane.value);
-    }
+    const liveEl = liveRef.current;
+    const previewEl = previewRef.current;
+    if (liveEl && livePane.value) liveEl.replaceChildren(livePane.value);
+    if (previewEl && previewPane.value) previewEl.replaceChildren(previewPane.value);
+    if (!liveEl || !previewEl) return undefined;
+
+    // Nice-to-have: mirror scroll position between panes; guard flag avoids an infinite ping-pong.
+    let syncing = false;
+    const mirror = (source, target) => () => {
+      if (syncing) return;
+      syncing = true;
+      target.scrollTop = source.scrollTop;
+      syncing = false;
+    };
+    const onLiveScroll = mirror(liveEl, previewEl);
+    const onPreviewScroll = mirror(previewEl, liveEl);
+    liveEl.addEventListener('scroll', onLiveScroll, { passive: true });
+    previewEl.addEventListener('scroll', onPreviewScroll, { passive: true });
+    return () => {
+      liveEl.removeEventListener('scroll', onLiveScroll);
+      previewEl.removeEventListener('scroll', onPreviewScroll);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- signal .value reads, not plain vars
   }, [previewPane.value, livePane.value]);
 
@@ -213,6 +279,16 @@ export default function DiffPanel({ url = new URL(window.location.href), decorat
     return html`
       <div class="preflight-diff">
         <p class="preflight-diff-loading">Loading content diff...</p>
+      </div>`;
+  }
+
+  if (view.value === VIEW.ERROR) {
+    return html`
+      <div class="preflight-diff">
+        <p class="preflight-diff-error">Something went wrong loading the content diff.</p>
+        <button class="preflight-action preflight-diff-retry" onClick=${() => loadDiff(url, decorate)}>
+          Retry
+        </button>
       </div>`;
   }
 
@@ -224,9 +300,9 @@ export default function DiffPanel({ url = new URL(window.location.href), decorat
   }
 
   return html`
-    <div class="preflight-diff">
+    <div class="preflight-diff ${highlightsOn.value ? 'preflight-diff-active' : ''}">
       <${LastModifiedHeader} />
-      <${DiffTabs} />
+      <${DiffToolbar} />
       <${ContentTab} previewRef=${previewRef} liveRef=${liveRef} />
       <${MetadataTab} />
     </div>`;
