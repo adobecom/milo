@@ -2751,7 +2751,6 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
-    getMasDepUrl('mas-field.js'),
   ],
   merch: [
     getMasDepUrl('commerce.js'),
