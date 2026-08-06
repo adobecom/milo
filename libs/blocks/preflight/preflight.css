@@ -1238,6 +1238,63 @@ img:hover ~ .asset-meta,
   scroll-margin: 100px;
 }
 
+/*
+ * Page-injected: Content Diff highlights on the real preview page (Option 1). These land
+ * outside #preflight, so — unlike the modal's own .preflight-diff-added/-modified rules —
+ * they resolve raw --s2a-* tokens directly instead of the modal-scoped --preflight-* aliases.
+ */
+:is(.preflight-diff-added, .preflight-diff-modified) {
+  position: relative;
+  outline-offset: 2px;
+  scroll-margin: 100px;
+}
+
+.preflight-diff-added {
+  outline: 3px solid var(--s2a-color-green-900);
+}
+
+.preflight-diff-modified {
+  outline: 3px solid var(--s2a-color-orange-700);
+}
+
+:is(.preflight-diff-added, .preflight-diff-modified)::before {
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-end: -1px;
+  z-index: 2;
+  padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
+  font-family: var(--preflight-font);
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--s2a-color-gray-25);
+  border-start-end-radius: var(--s2a-border-radius-8);
+  border-end-start-radius: var(--s2a-border-radius-8);
+  pointer-events: none;
+  line-height: 1.8;
+}
+
+.preflight-diff-added::before {
+  content: 'New';
+  background: var(--s2a-color-green-900);
+}
+
+.preflight-diff-modified::before {
+  content: 'Changed';
+
+  /* gray-25 (used by New) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
+  color: var(--s2a-color-gray-900);
+  background: var(--s2a-color-orange-700);
+}
+
+/* Page-injected: brief outline when jumping from a change row to its element on the page. */
+.preflight-diff-jump-highlight {
+  outline: 4px solid var(--s2a-color-blue-900) !important;
+  outline-offset: 3px !important;
+  scroll-margin: 100px;
+}
+
 .preflight-return-popover {
   position: fixed;
   top: var(--s2a-spacing-16);
@@ -2048,6 +2105,13 @@ button.preflight-diff-change-row:hover {
 button.preflight-diff-change-row:focus-visible {
   outline: 2px solid var(--preflight-focus);
   outline-offset: 2px;
+}
+
+/* Removed changes have no on-page element to jump to — the row is informational only. Disabled
+ * buttons don't match :hover/:focus-visible, so this doesn't fight the rules above. */
+button.preflight-diff-change-row:disabled {
+  color: var(--preflight-fg-subtle);
+  cursor: default;
 }
 
 .preflight-diff-change-path {

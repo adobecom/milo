@@ -1,7 +1,8 @@
-import { html, signal, useRef } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect, useRef } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import diffContent from '../checks/diff/diffContent.js';
 import diffMetadata from '../checks/diff/diffMetadata.js';
+import { highlightOnPage, jumpToChangeOnPage } from './diff-onpage.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
 // NEW_PAGE and ERROR are both "live not ok" outcomes, split by whether admin status confirms
@@ -192,11 +193,20 @@ function describeChange(change) {
   return `${change.tag.toLowerCase()}: "${text}"`;
 }
 
+// Removed content never rendered on the preview page in the first place — there's nothing on
+// the page to jump to, so that row stays a plain (non-interactive) list entry.
 function ChangeRow({ change }) {
+  const isOnPage = change.type !== 'removed';
   return html`
     <li class="preflight-diff-change-item">
-      <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
-      <span class="preflight-diff-change-path" title=${change.path}>${describeChange(change)}</span>
+      <button
+        type="button"
+        class="preflight-diff-change-row"
+        disabled=${!isOnPage}
+        onClick=${() => isOnPage && jumpToChangeOnPage(change)}>
+        <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
+        <span class="preflight-diff-change-path" title=${change.path}>${describeChange(change)}</span>
+      </button>
     </li>`;
 }
 
@@ -260,6 +270,18 @@ function MetadataTab() {
 export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   const url = rawUrl || new URL(window.location.href);
   const hasLoadedRef = useRef(false);
+
+  // Mirror the toggle/change-list onto the real preview page: on while the toggle is on and a
+  // diff has loaded, off (cleaned up) otherwise — same guard the toggle CSS uses in the modal.
+  // No dependency array: highlightsOn/contentDiff are module-level signals (not component state
+  // or props), so re-running after every render — rather than listing them as deps — is what
+  // actually reacts to their changes here. highlightOnPage clears+reapplies idempotently.
+  useEffect(() => {
+    if (!highlightsOn.value || !contentDiff.value) return undefined;
+    const root = document.querySelector('main');
+    if (!root) return undefined;
+    return highlightOnPage(contentDiff.value, root);
+  });
 
   // On-demand: every preflight tab mounts at once, so without this guard the fetch would fire
   // on every preflight open, tab viewed or not. Runs synchronously in the render body — not in

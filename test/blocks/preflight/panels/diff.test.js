@@ -469,4 +469,92 @@ describe('Preflight Content Diff Panel', () => {
       rowLabels.forEach((row) => expect(row.title).to.match(/^\//));
     });
   });
+
+  describe('on-page highlighting and jump-to', () => {
+    // A real <main>, outside the modal container, standing in for the decorated preview page
+    // DiffPanel's on-page wiring resolves against — structurally the same as PREVIEW_HTML above
+    // so the change paths from stubFetchWithChanges() resolve onto it.
+    let pageMain;
+    let preflightModal;
+    let sidekick;
+
+    beforeEach(() => {
+      pageMain = document.createElement('main');
+      pageMain.innerHTML = `
+        <div>
+          <p>Hello world</p>
+          <p>New paragraph</p>
+          <h2>Brand new heading</h2>
+        </div>`;
+      document.body.append(pageMain);
+
+      preflightModal = document.createElement('div');
+      preflightModal.id = 'preflight';
+      document.body.append(preflightModal);
+
+      sidekick = document.createElement('aem-sidekick');
+      document.body.append(sidekick);
+    });
+
+    afterEach(() => {
+      pageMain.remove();
+      preflightModal.remove();
+      sidekick.remove();
+      document.querySelector('.preflight-return-popover')?.remove();
+    });
+
+    it('outlines the added and modified elements on the real page once the diff loads', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+      await waitFor(() => pageMain.querySelector('.preflight-diff-added'));
+
+      const heading = pageMain.querySelector('h2');
+      const modifiedParagraph = [...pageMain.querySelectorAll('p')][1];
+      expect(heading.classList.contains('preflight-diff-added')).to.equal(true);
+      expect(modifiedParagraph.classList.contains('preflight-diff-modified')).to.equal(true);
+      // Removed content never rendered on the preview page — nothing to outline for it.
+      expect(pageMain.querySelector('.preflight-diff-removed')).to.not.exist;
+    });
+
+    it('removes on-page highlights when the toggle is switched off', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+      await waitFor(() => pageMain.querySelector('.preflight-diff-added'));
+
+      container.querySelector('.preflight-diff-highlight-toggle').click();
+      await waitFor(() => !pageMain.querySelector('.preflight-diff-added'));
+
+      expect(pageMain.querySelector('.preflight-diff-added')).to.not.exist;
+      expect(pageMain.querySelector('.preflight-diff-modified')).to.not.exist;
+    });
+
+    it('clicking an added change row closes the modal and jumps to it on the page', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+
+      const closeSpy = sinon.spy();
+      preflightModal.addEventListener('closeModal', closeSpy);
+
+      const addedRow = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((row) => row.querySelector('.preflight-diff-badge').textContent === 'New');
+      addedRow.querySelector('button').click();
+
+      expect(closeSpy.calledOnce).to.equal(true);
+      await waitFor(() => document.querySelector('.preflight-return-popover'));
+      expect(pageMain.querySelector('h2').classList.contains('preflight-diff-jump-highlight')).to.equal(true);
+    });
+
+    it('disables the removed change row so there is nothing to click', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+
+      const removedRow = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((row) => row.querySelector('.preflight-diff-badge').textContent === 'Removed');
+      expect(removedRow.querySelector('button').disabled).to.equal(true);
+    });
+  });
 });
