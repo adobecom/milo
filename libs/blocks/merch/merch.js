@@ -1153,12 +1153,20 @@ export async function initService(force = false, attributes = {}) {
       let localeFromMarket = locale;
       if (useGeoMarket && validatedMarket) {
         const market = validatedMarket.toUpperCase();
-        const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
-        localeFromMarket = localeOverride ?? locale;
-        // When the fallback locale already encodes this market's country (e.g. GB -> en_GB),
-        // sending an explicit country is redundant and would override the locale's market, so
-        // it's dropped; other markets (e.g. AU, IN -> en_GB) still need their own country.
-        countryFromMarket = localeOverride?.endsWith(`_${market}`) ? undefined : market;
+        countryFromMarket = market;
+        // `country` above is already geo-adjusted; the page's own market comes from its native
+        // milo locale. Only fall back to a market's Global-EN locale when the page isn't
+        // already that market's localized site: e.g. the / EN site (en_US) serving an AU/IN/GB
+        // visitor, never /au, /in or /uk, which keep their native locale.
+        const { country: pageCountry } = getMiloLocaleSettings(miloLocale);
+        if (market !== pageCountry) {
+          const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+          if (localeOverride) {
+            localeFromMarket = localeOverride;
+            // en_GB already resolves the GB market; don't also stamp a (non-GB) country.
+            if (localeOverride.endsWith(`_${market}`)) countryFromMarket = undefined;
+          }
+        }
       }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {

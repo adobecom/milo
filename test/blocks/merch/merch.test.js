@@ -843,7 +843,7 @@ describe('Merch Block', () => {
       }
     });
 
-    it('keeps en_GB (and drops country) for a GB page when the validated market is GB', async () => {
+    it('keeps native en_GB/GB for the /uk page when the validated market is GB', async () => {
       setConfig({ ...config, pathname: '/uk/test.html', locales: { uk: { ietf: 'en-GB' } } });
       const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
       document.head.append(geoDetectionMeta);
@@ -851,8 +851,28 @@ describe('Merch Block', () => {
       getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
       try {
         const service = await initService(true);
+        // The dedicated GB site already serves en_GB natively; the fallback must not alter it.
         expect(service.settings.locale).to.equal('en_GB');
-        expect(service.getAttribute('country')).to.be.null;
+        expect(service.settings.country).to.equal('GB');
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+        setConfig(config);
+      }
+    });
+
+    it('keeps native en_AU/AU for the /au page when the validated market is AU', async () => {
+      setConfig({ ...config, pathname: '/au/test.html', locales: { au: { ietf: 'en-AU' } } });
+      const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'AU');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+      try {
+        const service = await initService(true);
+        // The dedicated AU site must not fall back to the Global-EN (en_GB) catalog.
+        expect(service.settings.locale).to.equal('en_AU');
+        expect(service.settings.country).to.equal('AU');
       } finally {
         geoDetectionMeta.remove();
         sessionStorage.removeItem('akamai');
