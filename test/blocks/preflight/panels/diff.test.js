@@ -33,6 +33,35 @@ const PREVIEW_HTML = `<main>
   </div>
 </main>`;
 
+const LIVE_LABELS_HTML = '<main><div><p>Existing text</p></div></main>';
+const LONG_HEADING = 'A brand new heading with more than sixty characters in its text so truncation kicks in';
+const PREVIEW_LABELS_HTML = `<main>
+  <div>
+    <img src="/a.png" alt="A cool photo">
+    <h3>${LONG_HEADING}</h3>
+    <a href="/x">Learn more</a>
+    <p>Existing text</p>
+    <button>Click me</button>
+  </div>
+</main>`;
+
+function stubFetchWithLabelChanges() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT' },
+          live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT' },
+        }),
+      });
+    }
+    if (s.includes('aem.live')) return Promise.resolve({ ok: true, text: () => Promise.resolve(LIVE_LABELS_HTML) });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_LABELS_HTML) });
+  });
+}
+
 // ES module bindings (e.g. the default export of fetchVersions.js) can't be stubbed
 // under native ESM (mirrors checks/diff.test.js), so fetch is stubbed by URL and the
 // real fetchVersions/diffContent/diffMetadata run against these fixtures.
@@ -105,9 +134,10 @@ function stubFetchPreviewFails() {
   });
 }
 
-// live .plain.html fetch fails (e.g. page never published) — preview content should fall back
-// to comparing against an empty live doc, so every preview node reads as "added".
-function stubFetchLiveMissing() {
+// live .plain.html 404s but admin status confirms the page IS published (has a live
+// lastModified) — the live version exists but couldn't be loaded, so the panel must show the
+// "couldn't load" error state, never fabricate an empty live doc and mark everything "New".
+function stubFetchLiveUnavailablePublished() {
   return sinon.stub(window, 'fetch').callsFake((u) => {
     const s = String(u);
     if (s.includes('admin.hlx.page')) {
@@ -119,7 +149,38 @@ function stubFetchLiveMissing() {
         }),
       });
     }
-    if (s.includes('aem.live')) return Promise.resolve({ ok: false });
+    if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_HTML) });
+  });
+}
+
+// live .plain.html 404s and admin status is itself unavailable (e.g. 5xx) — publish state is
+// unknown, so the panel must not guess; it shows the same "couldn't load" error state.
+function stubFetchLiveUnavailableUnknownStatus() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) return Promise.resolve({ ok: false, status: 500 });
+    if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_HTML) });
+  });
+}
+
+// live .plain.html 404s and admin status confirms the page has never been published (no live
+// lastModified) — a genuinely new page. Preview content is safe to show as new, but the panel
+// must label it as a new page, not silently render a diff against a fabricated empty live doc.
+function stubFetchNewUnpublishedPage() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT', lastModifiedBy: 'preview-author' },
+          live: { lastModified: null },
+        }),
+      });
+    }
+    if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
     return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_HTML) });
   });
 }
@@ -179,15 +240,56 @@ describe('Preflight Content Diff Panel', () => {
     expect(container.querySelector('.preflight-diff-empty').textContent).to.equal('No unpublished changes');
   });
 
-  it('falls back to an empty live doc when the live fetch fails, marking preview content as added', async () => {
-    stubFetchLiveMissing();
-    render(html`<${DiffPanel} url=${TEST_URL} />`, container);
-    await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+  describe('live version unavailable', () => {
+    it('shows the "could not load live" error state when live 404s on a published page', async () => {
+      stubFetchLiveUnavailablePublished();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-error'));
 
-    const badges = [...container.querySelectorAll('.preflight-diff-change-item .preflight-diff-badge')]
-      .map((b) => b.textContent);
-    expect(badges.length).to.be.greaterThan(0);
-    expect(badges.every((label) => label === 'New')).to.equal(true);
+      expect(container.querySelector('.preflight-diff-error').textContent)
+        .to.equal('Couldn’t load the live version to compare.');
+      expect(container.querySelector('.preflight-diff-retry')).to.exist;
+      // Never fabricate a diff against an empty live doc.
+      expect(container.querySelector('.preflight-diff-change-item')).to.not.exist;
+    });
+
+    it('shows the "could not load live" error state when publish status itself is unavailable', async () => {
+      stubFetchLiveUnavailableUnknownStatus();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-error'));
+
+      expect(container.querySelector('.preflight-diff-error').textContent)
+        .to.equal('Couldn’t load the live version to compare.');
+      expect(container.querySelector('.preflight-diff-change-item')).to.not.exist;
+    });
+
+    it('retries and recovers into the ready state once the live fetch succeeds', async () => {
+      const failStub = stubFetchLiveUnavailablePublished();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-error'));
+
+      failStub.restore();
+      stubFetchWithChanges();
+      container.querySelector('.preflight-diff-retry').click();
+
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+      expect(container.querySelector('.preflight-diff-error')).to.not.exist;
+    });
+
+    it('shows a distinct "new page" state for a confirmed-unpublished page, labeling content as new', async () => {
+      stubFetchNewUnpublishedPage();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+
+      expect(container.querySelector('.preflight-diff-new-page').textContent)
+        .to.equal('This page isn’t published yet — all content is new.');
+      expect(container.querySelector('.preflight-diff-error')).to.not.exist;
+
+      const badges = [...container.querySelectorAll('.preflight-diff-change-item .preflight-diff-badge')]
+        .map((b) => b.textContent);
+      expect(badges.length).to.be.greaterThan(0);
+      expect(badges.every((label) => label === 'New')).to.equal(true);
+    });
   });
 
   describe('error state', () => {
@@ -323,6 +425,48 @@ describe('Preflight Content Diff Panel', () => {
 
       expect(root.classList.contains('preflight-diff-active')).to.equal(false);
       expect(window.localStorage.getItem(HIGHLIGHTS_KEY)).to.equal('false');
+    });
+  });
+
+  describe('friendly change labels', () => {
+    let rowLabels;
+
+    beforeEach(async () => {
+      stubFetchWithLabelChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelectorAll('.preflight-diff-change-item').length >= 4);
+      rowLabels = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .map((row) => ({
+          text: row.querySelector('.preflight-diff-change-path').textContent,
+          title: row.querySelector('.preflight-diff-change-path').getAttribute('title'),
+        }));
+    });
+
+    it('labels an added image with "Image" plus its alt text', () => {
+      const imgRow = rowLabels.find((r) => r.text.startsWith('Image'));
+      expect(imgRow.text).to.equal('Image (A cool photo)');
+      expect(imgRow.title).to.equal('/div[1]/img[1]');
+    });
+
+    it('labels an added heading as "Heading" with truncated quoted text', () => {
+      const headingRow = rowLabels.find((r) => r.text.startsWith('Heading'));
+      expect(headingRow.text.startsWith('Heading: "')).to.equal(true);
+      expect(headingRow.text.length).to.be.lessThan(`Heading: "${LONG_HEADING}"`.length);
+      expect(headingRow.text).to.include('…');
+    });
+
+    it('labels an added link as "Link" with its text', () => {
+      const linkRow = rowLabels.find((r) => r.text.startsWith('Link'));
+      expect(linkRow.text).to.equal('Link: "Learn more"');
+    });
+
+    it('labels an added button (no special-case tag) with the lowercased tag name', () => {
+      const buttonRow = rowLabels.find((r) => r.text.startsWith('button'));
+      expect(buttonRow.text).to.equal('button: "Click me"');
+    });
+
+    it('keeps the raw xpath as the title attribute for every row', () => {
+      rowLabels.forEach((row) => expect(row.title).to.match(/^\//));
     });
   });
 });

@@ -18,7 +18,8 @@ function countChanges(content, metadata, unpublished) {
 export function runChecks({ area = document, url = new URL(window.location.href) } = {}) {
   return [(async () => {
     try {
-      const versions = await fetchVersions(url instanceof URL ? url : new URL(url, window.location.href));
+      const resolvedUrl = url instanceof URL ? url : new URL(url, window.location.href);
+      const versions = await fetchVersions(resolvedUrl);
       if (versions.skipped || !versions.preview) {
         return {
           name: 'Content Diff',
@@ -27,8 +28,50 @@ export function runChecks({ area = document, url = new URL(window.location.href)
           details: { skipped: true },
         };
       }
+
       const previewRoot = parseMain(versions.preview.html);
-      const liveRoot = versions.live ? parseMain(versions.live.html) : document.createElement('main');
+
+      // The live .plain.html didn't load — never fabricate an empty live doc to diff against,
+      // that's what made every preview node read as "added" (e.g. a 404'd live page showing
+      // 45 false "NEW" changes). Distinguish a genuinely new/unpublished page (safe to treat
+      // preview content as new) from an unreadable live version of a page that IS published,
+      // or one whose publish state we couldn't even determine (also unsafe to guess).
+      if (versions.liveStatus !== 'ok') {
+        const isConfirmedUnpublished = versions.status != null
+          && !versions.status.live?.lastModified;
+        if (isConfirmedUnpublished) {
+          const emptyRoot = document.createElement('main');
+          const content = diffContent(previewRoot, emptyRoot);
+          const metadata = diffMetadata(previewRoot, emptyRoot);
+          const { unpublished } = await checkUnpublishedFragments({ area })
+            .catch(() => ({ unpublished: [] }));
+          return {
+            name: 'Content Diff',
+            status: STATUS.PASS,
+            severity: SEVERITY.WARNING,
+            details: {
+              content,
+              metadata,
+              unpublishedFragments: unpublished,
+              status: versions.status,
+              skipped: false,
+              newPage: true,
+            },
+          };
+        }
+        return {
+          name: 'Content Diff',
+          status: STATUS.LIMBO,
+          severity: SEVERITY.WARNING,
+          details: {
+            error: 'Could not load the live version to compare.',
+            liveUnavailable: true,
+            status: versions.status,
+          },
+        };
+      }
+
+      const liveRoot = parseMain(versions.live.html);
       const content = diffContent(previewRoot, liveRoot);
       const metadata = diffMetadata(previewRoot, liveRoot);
       const { unpublished } = await checkUnpublishedFragments({ area })

@@ -6,15 +6,18 @@ export function deriveLiveUrl(url) {
   return live;
 }
 
+// Classifies the fetch outcome so callers can tell "the live page doesn't exist yet" (missing)
+// apart from "the live page exists but we failed to load it" (error) — conflating the two is
+// what causes a failed/404 live fetch to be silently treated as an empty live document.
 async function fetchPlain(url) {
   const plain = new URL(url.href);
   plain.pathname = `${plain.pathname.replace(/\/$/, '')}.plain.html`;
   try {
     const resp = await fetch(plain.href);
-    if (!resp.ok) return null;
-    return { html: await resp.text() };
+    if (!resp.ok) return { html: null, fetchStatus: resp.status === 404 ? 'missing' : 'error' };
+    return { html: await resp.text(), fetchStatus: 'ok' };
   } catch {
-    return null;
+    return { html: null, fetchStatus: 'error' };
   }
 }
 
@@ -26,9 +29,14 @@ export default async function fetchVersions(previewUrl) {
   const lMod = status?.live?.lastModified ? Date.parse(status.live.lastModified) : NaN;
   // Nothing unpublished: skip the diff fetch entirely when preview isn't newer than live.
   if (!Number.isNaN(pMod) && !Number.isNaN(lMod) && pMod <= lMod) {
-    return { preview: null, live: null, status, skipped: true };
+    return { preview: null, live: null, liveStatus: 'ok', status, skipped: true };
   }
 
-  const [preview, live] = await Promise.all([fetchPlain(previewUrl), fetchPlain(liveUrl)]);
-  return { preview, live, status, skipped: false };
+  const [previewResult, liveResult] = await Promise.all([
+    fetchPlain(previewUrl),
+    fetchPlain(liveUrl),
+  ]);
+  const preview = previewResult.html === null ? null : { html: previewResult.html };
+  const live = liveResult.html === null ? null : { html: liveResult.html };
+  return { preview, live, liveStatus: liveResult.fetchStatus, status, skipped: false };
 }

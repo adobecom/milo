@@ -4,10 +4,19 @@ import diffContent from '../checks/diff/diffContent.js';
 import diffMetadata from '../checks/diff/diffMetadata.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
-const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready' };
+// NEW_PAGE and ERROR are both "live not ok" outcomes, split by whether admin status confirms
+// the page was never published (safe to label preview content as new) or not (never guess —
+// show an explicit "couldn't load" state instead of fabricating a diff against an empty live).
+const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready', NEW_PAGE: 'new-page' };
 const TAB = { CONTENT: 'content', METADATA: 'metadata' };
 const BADGE_LABEL = { added: 'New', modified: 'Changed', removed: 'Removed' };
 const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
+const DEFAULT_ERROR_MESSAGE = 'Something went wrong loading the content diff.';
+const LIVE_UNAVAILABLE_MESSAGE = 'Couldn’t load the live version to compare.';
+const NEW_PAGE_MESSAGE = 'This page isn’t published yet — all content is new.';
+const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
+const TEXT_TAGS = new Set(['P', 'LI', 'BLOCKQUOTE']);
+const LABEL_TRUNCATE_LENGTH = 60;
 
 const view = signal(VIEW.LOADING);
 const activeTab = signal(TAB.CONTENT);
@@ -15,6 +24,7 @@ const contentDiff = signal(null);
 const metadataDiff = signal(null);
 const pageStatus = signal(null);
 const highlightsOn = signal(true);
+const errorMessage = signal(DEFAULT_ERROR_MESSAGE);
 
 function parseMain(htmlText) {
   const doc = new DOMParser().parseFromString(htmlText, 'text/html');
@@ -66,6 +76,7 @@ async function loadDiff(url) {
   contentDiff.value = null;
   metadataDiff.value = null;
   pageStatus.value = null;
+  errorMessage.value = DEFAULT_ERROR_MESSAGE;
 
   try {
     const versions = await fetchVersions(url);
@@ -78,18 +89,37 @@ async function loadDiff(url) {
       return;
     }
 
-    const liveHtml = versions.live?.html || EMPTY_MAIN_HTML;
     const previewMain = parseMain(versions.preview.html);
-    const liveMain = parseMain(liveHtml);
+    pageStatus.value = versions.status;
+
+    // The live .plain.html didn't load — never fabricate an empty live doc to diff against.
+    // Only a confirmed-unpublished page (admin status has no live lastModified) is safe to show
+    // as "all new"; a live page that IS published (or whose publish state is unknown) must show
+    // an explicit "couldn't load" state instead of guessing.
+    if (versions.liveStatus !== 'ok') {
+      const isConfirmedUnpublished = versions.status != null && !versions.status.live?.lastModified;
+      if (isConfirmedUnpublished) {
+        const emptyMain = parseMain(EMPTY_MAIN_HTML);
+        contentDiff.value = diffContent(previewMain, emptyMain);
+        metadataDiff.value = diffMetadata(previewMain, emptyMain);
+        view.value = VIEW.NEW_PAGE;
+        return;
+      }
+      errorMessage.value = LIVE_UNAVAILABLE_MESSAGE;
+      view.value = VIEW.ERROR;
+      return;
+    }
+
+    const liveMain = parseMain(versions.live.html);
     const nextContentDiff = diffContent(previewMain, liveMain);
     const nextMetadataDiff = diffMetadata(previewMain, liveMain);
 
     contentDiff.value = nextContentDiff;
     metadataDiff.value = nextMetadataDiff;
-    pageStatus.value = versions.status;
     view.value = hasChanges(nextContentDiff, nextMetadataDiff) ? VIEW.READY : VIEW.EMPTY;
   } catch (e) {
     window.lana?.log?.(`[preflight][diff-panel] ${e.message}`, { tags: 'preflight', errorType: 'i' });
+    errorMessage.value = DEFAULT_ERROR_MESSAGE;
     view.value = VIEW.ERROR;
   }
 }
@@ -145,11 +175,28 @@ function DiffToolbar() {
     </div>`;
 }
 
+function truncateLabel(text) {
+  if (!text) return '';
+  if (text.length <= LABEL_TRUNCATE_LENGTH) return text;
+  return `${text.slice(0, LABEL_TRUNCATE_LENGTH - 1)}…`;
+}
+
+// Raw xpaths (e.g. "/div[1]/p[3]") aren't meaningful to authors — build a human-readable label
+// from the change's tag + text instead. The raw path stays as the row's title/tooltip.
+function describeChange(change) {
+  const text = truncateLabel(change.previewText || change.liveText || '');
+  if (change.tag === 'IMG') return text ? `Image (${text})` : 'Image';
+  if (HEADING_TAGS.has(change.tag)) return `Heading: "${text}"`;
+  if (change.tag === 'A') return `Link: "${text}"`;
+  if (TEXT_TAGS.has(change.tag)) return `Text: "${text}"`;
+  return `${change.tag.toLowerCase()}: "${text}"`;
+}
+
 function ChangeRow({ change }) {
   return html`
     <li class="preflight-diff-change-item">
       <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
-      <span class="preflight-diff-change-path" title=${change.path}>${change.path}</span>
+      <span class="preflight-diff-change-path" title=${change.path}>${describeChange(change)}</span>
     </li>`;
 }
 
@@ -234,7 +281,7 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   if (view.value === VIEW.ERROR) {
     return html`
       <div class="preflight-diff">
-        <p class="preflight-diff-error">Something went wrong loading the content diff.</p>
+        <p class="preflight-diff-error">${errorMessage.value}</p>
         <button class="preflight-action preflight-diff-retry" onClick=${() => loadDiff(url)}>
           Retry
         </button>
@@ -245,6 +292,17 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
     return html`
       <div class="preflight-diff">
         <p class="preflight-diff-empty">No unpublished changes</p>
+      </div>`;
+  }
+
+  if (view.value === VIEW.NEW_PAGE) {
+    return html`
+      <div class="preflight-diff ${highlightsOn.value ? 'preflight-diff-active' : ''}">
+        <p class="preflight-diff-new-page">${NEW_PAGE_MESSAGE}</p>
+        <${LastModifiedHeader} />
+        <${DiffToolbar} />
+        <${ContentTab} />
+        <${MetadataTab} />
       </div>`;
   }
 

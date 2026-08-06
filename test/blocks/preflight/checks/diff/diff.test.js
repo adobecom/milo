@@ -65,4 +65,64 @@ describe('preflight diff check', () => {
     const calls = fetchStub.getCalls().map((c) => String(c.args[0]));
     expect(calls.some((u) => u.includes('/some/path'))).to.equal(true);
   });
+
+  it('never fabricates false "added" changes when live 404s on a published page (unknown live failure)', async () => {
+    // Mirrors the cc/photoshop bug: live .plain.html 404s but admin status is unavailable/unclear,
+    // so the tool must refuse to diff against a fabricated empty live doc.
+    sinon.stub(window, 'fetch').callsFake((u) => {
+      const s = String(u);
+      if (s.includes('admin.hlx.page')) return Promise.resolve({ ok: false, status: 500 });
+      if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
+      return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW) });
+    });
+    const [promise] = runChecks({ area: document, url: new URL(URL_PREVIEW) });
+    const res = await promise;
+    expect(res.status).to.equal('limbo');
+    expect(res.details.liveUnavailable).to.equal(true);
+    expect(res.details.content).to.not.exist;
+  });
+
+  it('never fabricates false "added" changes when live 404s on a confirmed-published page', async () => {
+    sinon.stub(window, 'fetch').callsFake((u) => {
+      const s = String(u);
+      if (s.includes('admin.hlx.page')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT' },
+            live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT' },
+          }),
+        });
+      }
+      if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
+      return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW) });
+    });
+    const [promise] = runChecks({ area: document, url: new URL(URL_PREVIEW) });
+    const res = await promise;
+    expect(res.status).to.equal('limbo');
+    expect(res.details.liveUnavailable).to.equal(true);
+    expect(res.details.content).to.not.exist;
+  });
+
+  it('flags a confirmed-unpublished page as new content, not a diff, when live 404s', async () => {
+    sinon.stub(window, 'fetch').callsFake((u) => {
+      const s = String(u);
+      if (s.includes('admin.hlx.page')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT' },
+            live: { lastModified: null },
+          }),
+        });
+      }
+      if (s.includes('aem.live')) return Promise.resolve({ ok: false, status: 404 });
+      return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW) });
+    });
+    const [promise] = runChecks({ area: document, url: new URL(URL_PREVIEW) });
+    const res = await promise;
+    expect(res.status).to.equal('pass');
+    expect(res.details.newPage).to.equal(true);
+    expect(res.details.content.added).to.have.length(2);
+  });
 });
