@@ -35,7 +35,8 @@ function descendantMatch(context, seg) {
 
 // Blocks freely rebuild their own internal DOM (rows/cells) in their init(); a leaf resolved a
 // few levels deep inside one isn't reliably the same leaf the path meant. Outlining the whole
-// block is coarser but robust, and reads fine visually either way.
+// block is coarser but robust, and reads fine visually either way. Only used for block-kind
+// changes — default content is never wrapped this way (see resolveOnPage).
 function toBlockAltitude(el, root) {
   const block = el.closest('.section > div[class]');
   if (block && block !== root && root.contains(block)) return block;
@@ -46,8 +47,15 @@ function toBlockAltitude(el, root) {
  * Best-effort walk of a pre-decoration xpath (from getXPath over a .plain.html <main>) against
  * the real, already-decorated page. Never throws; returns null when it can't confidently resolve
  * anything (not even the outermost segment).
+ *
+ * `kind` controls the altitude of the returned element: a 'block' change climbs to the
+ * containing block (see toBlockAltitude — Milo blocks rebuild their internal DOM, so the outer
+ * block is the only reliably-stable target). Anything else (a 'leaf' / default-content change,
+ * or no kind at all) returns the resolved element itself — climbing further would land on
+ * decoration's default-content-wrapper div and outline the entire section for a single
+ * paragraph or image edit, which is too coarse.
  */
-export function resolveOnPage(path, root) {
+export function resolveOnPage(path, root, kind) {
   if (!root) return null;
   const segments = parsePath(path);
   if (!segments.length) return null;
@@ -64,7 +72,7 @@ export function resolveOnPage(path, root) {
   }
 
   if (matchedLevels === 0) return null;
-  return toBlockAltitude(context, root);
+  return kind === 'block' ? toBlockAltitude(context, root) : context;
 }
 
 function logUnmapped(change) {
@@ -94,7 +102,7 @@ export function highlightOnPage(diff, root) {
   const apply = (change, className) => {
     let el = null;
     try {
-      el = resolveOnPage(change.path, root);
+      el = resolveOnPage(change.path, root, change.kind);
     } catch {
       el = null;
     }
@@ -144,7 +152,7 @@ function showReturnPopover() {
  * removed change, or a change the tolerant resolver couldn't map.
  */
 export function jumpToChangeOnPage(change, root = document.querySelector('main')) {
-  const el = resolveOnPage(change?.path, root);
+  const el = resolveOnPage(change?.path, root, change?.kind);
   if (!el) {
     logUnmapped(change);
     return false;

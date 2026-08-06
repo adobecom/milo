@@ -45,6 +45,37 @@ const PREVIEW_LABELS_HTML = `<main>
   </div>
 </main>`;
 
+const LIVE_BLOCKS_HTML = `<main>
+  <div>
+    <div class="columns">Old col text</div>
+    <div class="marquee">Marquee text</div>
+  </div>
+</main>`;
+
+const PREVIEW_BLOCKS_HTML = `<main>
+  <div>
+    <div class="columns">New col text</div>
+    <div class="two-up">Two up text</div>
+  </div>
+</main>`;
+
+function stubFetchWithBlockChanges() {
+  return sinon.stub(window, 'fetch').callsFake((u) => {
+    const s = String(u);
+    if (s.includes('admin.hlx.page')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          preview: { lastModified: 'Thu, 02 Jan 2026 00:00:00 GMT' },
+          live: { lastModified: 'Wed, 01 Jan 2026 00:00:00 GMT' },
+        }),
+      });
+    }
+    if (s.includes('aem.live')) return Promise.resolve({ ok: true, text: () => Promise.resolve(LIVE_BLOCKS_HTML) });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(PREVIEW_BLOCKS_HTML) });
+  });
+}
+
 function stubFetchWithLabelChanges() {
   return sinon.stub(window, 'fetch').callsFake((u) => {
     const s = String(u);
@@ -467,6 +498,29 @@ describe('Preflight Content Diff Panel', () => {
 
     it('keeps the raw xpath as the title attribute for every row', () => {
       rowLabels.forEach((row) => expect(row.title).to.match(/^\//));
+    });
+  });
+
+  describe('block change labels', () => {
+    let rowTexts;
+
+    beforeEach(async () => {
+      stubFetchWithBlockChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelectorAll('.preflight-diff-change-item').length >= 3);
+      rowTexts = [...container.querySelectorAll('.preflight-diff-change-path')].map((el) => el.textContent);
+    });
+
+    it('labels a block present in preview only as "New block: <TitleCased name>"', () => {
+      expect(rowTexts).to.include('New block: Two Up');
+    });
+
+    it('labels a block with changed inner text at the same slot as "Changed block: <TitleCased name>"', () => {
+      expect(rowTexts).to.include('Changed block: Columns');
+    });
+
+    it('labels a block present in live only as "Removed block: <TitleCased name>"', () => {
+      expect(rowTexts).to.include('Removed block: Marquee');
     });
   });
 

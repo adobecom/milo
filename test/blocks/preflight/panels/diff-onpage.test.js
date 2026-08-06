@@ -44,7 +44,7 @@ describe('preflight diff-onpage', () => {
       expect(el.getAttribute('src')).to.equal('/a.png');
     });
 
-    it('climbs to the containing block when the resolved element sits inside a decorated block', () => {
+    it('climbs to the containing block for a block-kind change, even resolved deep inside its rebuilt DOM', () => {
       const root = document.createElement('main');
       root.innerHTML = `
         <div class="section">
@@ -53,10 +53,57 @@ describe('preflight diff-onpage', () => {
           </div>
         </div>`;
 
-      const el = resolveOnPage('/div[1]/div[1]/div[1]/div[1]/p[1]', root);
+      const el = resolveOnPage('/div[1]/div[1]/div[1]/div[1]/p[1]', root, 'block');
       const block = root.querySelector('.columns.block');
 
       expect(el).to.equal(block);
+    });
+
+    it('does not climb for a leaf-kind change, even when it sits inside a decorated block', () => {
+      // Same fixture as above, but resolved as a 'leaf' change — must return the paragraph
+      // itself, not the containing block.
+      const root = document.createElement('main');
+      root.innerHTML = `
+        <div class="section">
+          <div class="columns block">
+            <div><div><p>Block text</p></div></div>
+          </div>
+        </div>`;
+
+      const el = resolveOnPage('/div[1]/div[1]/div[1]/div[1]/p[1]', root, 'leaf');
+
+      expect(el).to.exist;
+      expect(el.tagName).to.equal('P');
+      expect(el.textContent).to.equal('Block text');
+    });
+
+    it('does not climb past a decoration-inserted default-content-wrapper for a leaf-kind change', () => {
+      // Milo wraps ordinary (non-block) content in a "default-content-wrapper" div, which also
+      // has a class — the resolver must not mistake that wrapper for a block and climb to it.
+      const root = document.createElement('main');
+      root.innerHTML = `
+        <div class="section">
+          <div class="default-content-wrapper">
+            <p>A paragraph that will be modified.</p>
+          </div>
+        </div>`;
+
+      const el = resolveOnPage('/div[1]/p[1]', root, 'leaf');
+      const wrapper = root.querySelector('.default-content-wrapper');
+
+      expect(el).to.exist;
+      expect(el.tagName).to.equal('P');
+      expect(el).to.not.equal(wrapper);
+    });
+
+    it('resolves a leaf-kind change with no kind specified (back-compat default) to the element itself', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div class="section"><div class="default-content-wrapper"><p>Text</p></div></div>';
+
+      const el = resolveOnPage('/div[1]/p[1]', root);
+
+      expect(el).to.exist;
+      expect(el.tagName).to.equal('P');
     });
 
     it('returns null when even the outermost segment cannot be matched', () => {

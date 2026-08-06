@@ -18,6 +18,7 @@ const NEW_PAGE_MESSAGE = 'This page isn’t published yet — all content is new
 const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 const TEXT_TAGS = new Set(['P', 'LI', 'BLOCKQUOTE']);
 const LABEL_TRUNCATE_LENGTH = 60;
+const BLOCK_LABEL_PREFIX = { added: 'New block', modified: 'Changed block', removed: 'Removed block' };
 
 const view = signal(VIEW.LOADING);
 const activeTab = signal(TAB.CONTENT);
@@ -182,9 +183,22 @@ function truncateLabel(text) {
   return `${text.slice(0, LABEL_TRUNCATE_LENGTH - 1)}…`;
 }
 
+// Milo block class names are single tokens, sometimes hyphenated (e.g. "two-up") — title-case
+// each word so the label reads like a name rather than a raw CSS class.
+function titleCaseBlockName(name) {
+  return (name || '')
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Raw xpaths (e.g. "/div[1]/p[3]") aren't meaningful to authors — build a human-readable label
 // from the change's tag + text instead. The raw path stays as the row's title/tooltip.
 function describeChange(change) {
+  if (change.kind === 'block') {
+    return `${BLOCK_LABEL_PREFIX[change.type]}: ${titleCaseBlockName(change.blockName)}`;
+  }
   const text = truncateLabel(change.previewText || change.liveText || '');
   if (change.tag === 'IMG') return text ? `Image (${text})` : 'Image';
   if (HEADING_TAGS.has(change.tag)) return `Heading: "${text}"`;
