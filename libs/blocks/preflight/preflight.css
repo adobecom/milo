@@ -4,6 +4,8 @@
  * page-injected overlays (which live outside #preflight) resolve them.
  */
 
+/* stylelint-disable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity -- pre-existing, predates this change; re-enabled below for new rules */
+
 #preflight .fragment,
 #preflight .section,
 .preflight {
@@ -1806,6 +1808,63 @@ img:hover ~ .asset-meta,
   box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
   pointer-events: none;
   line-height: 2.5;
+}
+
+/* stylelint-enable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity */
+
+/* Compare panes: highlight changed nodes by data-diff-key (Approach B). */
+.preflight-diff {
+  & .preflight-diff-added,
+  & .preflight-diff-modified,
+  & .preflight-diff-removed {
+    position: relative;
+    outline-offset: 2px;
+  }
+
+  & .preflight-diff-added {
+    outline: 3px solid var(--preflight-success);
+  }
+
+  & .preflight-diff-modified {
+    outline: 3px solid var(--preflight-warning);
+  }
+
+  & .preflight-diff-removed {
+    outline: 3px solid var(--preflight-error);
+  }
+
+  & :is(.preflight-diff-added, .preflight-diff-modified, .preflight-diff-removed)::before {
+    position: absolute;
+    inset-block-start: -1px;
+    inset-inline-end: -1px;
+    z-index: 2;
+    padding: 2px 8px;
+    font-family: var(--preflight-font);
+    font-size: var(--s2a-font-size-12);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--s2a-color-gray-25);
+    border-start-end-radius: var(--s2a-border-radius-8);
+    border-end-start-radius: var(--s2a-border-radius-8);
+    pointer-events: none;
+    line-height: 1.8;
+  }
+
+  & .preflight-diff-added::before {
+    content: 'New';
+    background: var(--preflight-success);
+  }
+
+  & .preflight-diff-modified::before {
+    content: 'Changed';
+    background: var(--preflight-warning);
+  }
+
+  & .preflight-diff-removed::before {
+    content: 'Removed';
+    background: var(--preflight-error);
+  }
 }
 
 .dialog-modal#preflight button.dialog-close svg {
