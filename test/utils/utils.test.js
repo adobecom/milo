@@ -3268,6 +3268,94 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadIms guest IMS config', () => {
+    const originalHref = window.location.href;
+    let originalAdobeId;
+
+    const imsGuestConfig = { imsClientId: 'test-client-id' };
+
+    const setGuestMeta = (name, content) => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', name);
+      meta.setAttribute('content', content);
+      document.head.append(meta);
+    };
+
+    const runLoadIms = async () => {
+      const timestamp = Date.now();
+      const guestModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
+      guestModule.setConfig(imsGuestConfig);
+      guestModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+    };
+
+    beforeEach(() => {
+      originalAdobeId = window.adobeid;
+    });
+
+    afterEach(() => {
+      document.querySelector('meta[name="ims-guest-token"]')?.remove();
+      document.querySelector('meta[name="ims-guest-token-with-bfp"]')?.remove();
+      window.history.pushState({}, '', originalHref);
+      window.adobeid = originalAdobeId;
+    });
+
+    it('omits all guest fields when ims-guest-token metadata is absent', async () => {
+      await runLoadIms();
+      expect(window.adobeid.enableGuestAccounts).to.be.undefined;
+      expect(window.adobeid.enableGuestBotDetection).to.be.undefined;
+    });
+
+    it('enables base guest accounts when ims-guest-token is "on"', async () => {
+      setGuestMeta('ims-guest-token', 'on');
+      await runLoadIms();
+      expect(window.adobeid.api_parameters).to.deep.equal({ check_token: { guest_allowed: true } });
+      expect(window.adobeid.enableGuestAccounts).to.be.true;
+      expect(window.adobeid.enableGuestTokenForceRefresh).to.be.true;
+    });
+
+    it('does not enable bot detection alongside base guest accounts by default', async () => {
+      setGuestMeta('ims-guest-token', 'on');
+      await runLoadIms();
+      expect(window.adobeid.enableGuestBotDetection).to.be.undefined;
+      expect(window.adobeid.guestBotDetectionProvider).to.be.undefined;
+    });
+
+    // This test environment is served from localhost, which never ends in ".adobe.com",
+    // so it also guards the domain gate: if that check were dropped, this would start failing.
+    it('keeps bot detection disabled off adobe.com even when ims-guest-token-with-bfp is "on"', async () => {
+      expect(window.location.host.endsWith('.adobe.com')).to.be.false;
+      setGuestMeta('ims-guest-token', 'on');
+      setGuestMeta('ims-guest-token-with-bfp', 'on');
+      await runLoadIms();
+      expect(window.adobeid.enableGuestBotDetection).to.be.undefined;
+      expect(window.adobeid.guestBotDetectionProvider).to.be.undefined;
+    });
+
+    it('does not enable bot detection when ims-guest-token-with-bfp metadata is not "on"', async () => {
+      setGuestMeta('ims-guest-token', 'on');
+      setGuestMeta('ims-guest-token-with-bfp', 'off');
+      await runLoadIms();
+      expect(window.adobeid.enableGuestBotDetection).to.be.undefined;
+    });
+
+    it('respects the guestBotDetection=off kill switch', async () => {
+      setGuestMeta('ims-guest-token', 'on');
+      setGuestMeta('ims-guest-token-with-bfp', 'on');
+      window.history.pushState({}, '', '/?guestBotDetection=off');
+      await runLoadIms();
+      expect(window.adobeid.enableGuestBotDetection).to.be.undefined;
+      expect(window.adobeid.guestBotDetectionProvider).to.be.undefined;
+    });
+
+    it('does not gate base guest accounts on the guestBotDetection kill switch', async () => {
+      setGuestMeta('ims-guest-token', 'on');
+      window.history.pushState({}, '', '/?guestBotDetection=off');
+      await runLoadIms();
+      expect(window.adobeid.enableGuestAccounts).to.be.true;
+    });
+  });
+
   describe('getCountry bot detection', () => {
     const originalUserAgent = navigator.userAgent;
     let savedFetch;

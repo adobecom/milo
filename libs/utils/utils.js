@@ -2044,7 +2044,8 @@ export async function loadIms() {
         reject(new Error('Missing IMS Client ID'));
         return;
       }
-      const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
+      const [unavMeta, ahomeMeta, imsGuest, botDetection] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token'), getMetadata('ims-guest-token-bot-detection')];
+      const guestBotDetection = PAGE_URL.searchParams.get('guestBotDetection');
       const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
@@ -2071,6 +2072,8 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
+        }),
+        ...(imsGuest === 'on' && botDetection === 'on' && window.location.host.endsWith('.adobe.com') && guestBotDetection === 'off' && {
           enableGuestBotDetection: true,
           guestBotDetectionProvider: 'bfp',
         }),
