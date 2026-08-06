@@ -18,7 +18,7 @@ function countChanges(content, metadata, unpublished) {
 export function runChecks({ area = document, url = new URL(window.location.href) } = {}) {
   return [(async () => {
     try {
-      const versions = await fetchVersions(url instanceof URL ? url : new URL(url));
+      const versions = await fetchVersions(url instanceof URL ? url : new URL(url, window.location.href));
       if (versions.skipped || !versions.preview) {
         return {
           name: 'Content Diff',

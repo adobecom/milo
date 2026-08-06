@@ -55,4 +55,14 @@ describe('preflight diff check', () => {
     expect(res.status).to.equal('limbo');
     expect(res.severity).to.equal(SEVERITY.WARNING);
   });
+
+  it('resolves a bare pathname url against the current origin instead of going limbo', async () => {
+    const fetchStub = stubFetch({ newer: true });
+    const [promise] = runChecks({ area: document, url: '/some/path' });
+    const res = await promise;
+    expect(res.status).to.not.equal('limbo');
+    expect(res.status).to.be.oneOf(['pass', 'fail']);
+    const calls = fetchStub.getCalls().map((c) => String(c.args[0]));
+    expect(calls.some((u) => u.includes('/some/path'))).to.equal(true);
+  });
 });
