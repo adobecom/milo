@@ -13,8 +13,8 @@
    `sphereRotQuat` THREE object (shared by reference, updated each frame by the core
    sphere stage — the sphere's orientation is a single accumulated quaternion, so this
    is the whole rotation state); reparenting a card back to its slot goes through
-   `snapToSphereSlot`; the sphere's nav-reactivity spring is triggered via
-   `requestNavNudge` (the spring physics live in core). Motion-trail
+   `snapToSphereSlot`; the sphere's nav-reactivity centring is triggered via
+   `requestNavNudge` (the ease lives in core). Motion-trail
    CA is the core `applyMotionCA`. Everything else (scene, camera, sphereGroup,
    cards, viewport, breakpoint, card dims) is read through getters so the module
    never holds a stale snapshot across a resize / breakpoint re-init. */

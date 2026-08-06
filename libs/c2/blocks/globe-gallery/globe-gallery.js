@@ -282,11 +282,12 @@ const AUTO_ROT_SPEED = 0.000045;
 // PITCH_RELAX (per-frame retained fraction) once browsing ends. See updateSphereRotation.
 const KEY_PITCH_CAP = (85 * Math.PI) / 180;
 const PITCH_RELAX = 0.85;
-// Keyboard-gallery centring uses a monotonic exponential ease (per-frame fraction toward the
-// target) rather than the modal nudge's underdamped spring — so tabbing card→card NEVER
-// overshoots (the spring's overshoot is fine behind the modal blur but reads as dizzying when
-// it swings the whole live globe on every Tab).
-const KEY_EASE = 0.18;
+// Both sphere-centring nudges (keyboard browse + modal traversal) run one frame-counted
+// easeInOutCubic tween — never overshoots as it swings the live globe, and degrades to a
+// slower-but-smooth spin under frame drops. Browse is slow (visible, anti-dizziness); the
+// modal nudge is faster since it runs behind the blur and must settle before the modal closes.
+const KEY_BROWSE_FRAMES = 90;
+const KEY_MODAL_FRAMES = 20;
 // tan(half of the 60° perspective vertical FOV) — used to project a focused card to screen
 // space for the keyboard-gallery focus ring (see updateA11yFocusRing).
 const RING_TANHALF = Math.tan(Math.PI / 6);
@@ -701,6 +702,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   let navNudgeTargetY = 0;
   let navNudgeTargetX = 0;
   let navNudgeTargetZ = 0; // roll target — keyboard centring only (modal leaves it at current)
+  let navNudgeStartY = 0; // ease start pose (captured when the nudge is armed)
+  let navNudgeStartX = 0;
+  let navNudgeStartZ = 0;
+  let navNudgeFrame = 0; // frames elapsed
+  let navNudgeFrames = 0; // total frames for this nudge (KEY_BROWSE_FRAMES / KEY_MODAL_FRAMES)
   const kbTargetQuat = new THREE.Quaternion(); // scratch: keyboard-centring target orientation
   const kbTargetEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const kbUp = new THREE.Vector3(); // scratch: focused card's world up (for the upright roll)
@@ -1130,6 +1136,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     navNudgeTargetY = targetYaw;
     navNudgeTargetX = targetPitch;
     navNudgeTargetZ = sphereRotZ; // no roll change — keep the globe level
+    navNudgeStartY = sphereRotY;
+    navNudgeStartX = sphereRotX;
+    navNudgeStartZ = sphereRotZ;
+    navNudgeFrames = KEY_MODAL_FRAMES;
+    navNudgeFrame = reducedMotion ? KEY_MODAL_FRAMES : 0;
     navNudgeActive = true;
   }
 
@@ -1160,6 +1171,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     navNudgeTargetY = targetYaw;
     navNudgeTargetX = targetPitch;
     navNudgeTargetZ = sphereRotZ + dRoll; // shortest-path roll
+    navNudgeStartY = sphereRotY;
+    navNudgeStartX = sphereRotX;
+    navNudgeStartZ = sphereRotZ;
+    navNudgeFrames = KEY_BROWSE_FRAMES;
+    navNudgeFrame = reducedMotion ? KEY_BROWSE_FRAMES : 0;
     navNudgeActive = true;
     // Kill residual spin (auto-rotate/drag inertia) so it can't fight the ease.
     drag.velX = 0;
@@ -1504,18 +1520,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // Runs even while the modal is open (drag accumulation is gated by the modal branch below,
     // but this ease is independent — that's what lets the sphere align behind the blur so the
     // card is centred when the modal closes). Drives sphereRotY/X (+ Z for the keyboard's upright
-    // roll) toward the target set by centerModalCard / centerCardOnScreen. Monotonic exponential
-    // ease (KEY_EASE), no velocity integrator, so it never overshoots as it swings the live globe.
+    // roll) toward the target set by centerModalCard / centerCardOnScreen — a frame-counted
+    // easeInOutCubic tween (KEY_BROWSE_FRAMES / KEY_MODAL_FRAMES), never overshoots.
     if (navNudgeActive) {
-      const nDy = navNudgeTargetY - sphereRotY;
-      const nDx = navNudgeTargetX - sphereRotX;
-      const nDz = navNudgeTargetZ - sphereRotZ;
-      sphereRotY += nDy * KEY_EASE;
-      sphereRotX += nDx * KEY_EASE;
-      sphereRotZ += nDz * KEY_EASE;
-      if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001 && Math.abs(nDz) < 0.001) {
-        navNudgeActive = false;
-      }
+      navNudgeFrame += 1;
+      const e = easeInOutCubic(Math.min(1, navNudgeFrame / navNudgeFrames));
+      sphereRotY = navNudgeStartY + (navNudgeTargetY - navNudgeStartY) * e;
+      sphereRotX = navNudgeStartX + (navNudgeTargetX - navNudgeStartX) * e;
+      sphereRotZ = navNudgeStartZ + (navNudgeTargetZ - navNudgeStartZ) * e;
+      if (e >= 1) navNudgeActive = false;
     }
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
       // Pause auto-rotation + drag while a modal is open — sphere freezes at its current rotation

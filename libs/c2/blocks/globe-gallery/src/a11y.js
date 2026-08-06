@@ -174,6 +174,7 @@ export default function createGalleryA11y({
     // returns to the image on close.
     cardsEl.addEventListener('focusout', (e) => {
       if (!entered || getModalIdx() >= 0) return;
+      if (!e.relatedTarget && !document.hasFocus()) return;
       if (!e.relatedTarget || !cardsEl.contains(e.relatedTarget)) collapse();
     });
 

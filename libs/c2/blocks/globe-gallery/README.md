@@ -40,7 +40,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `textures.js` | `loadCardTextures({ maxTex })` — loads each card image into a cover-cropped `CanvasTexture`, downscaled to the `maxTex` per-device cap (see Texture memory budget); `loadModalTexture(src, maxTex, onReady)` — lazily loads one full (uncropped) image at a higher cap for the modal, returning the pending `Image` so the caller can cancel; `createClickDragTexture(aspect, hintText)` — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. All named exports, no per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ `alt text to be authored` placeholder when none); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
-| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. The chrome is a native `<dialog>` (`open()` → `showModal()`, `close()` → `.close()` after the anim), so the focus trap / background `inert` / Escape (`cancel` event) / focus-restore are the platform's; the mobile swipe listeners live on the dialog element (its siblings go inert once `showModal()` runs). Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. The chrome is a native `<dialog>` (`open()` → `showModal()`, `close()` → `.close()` after the anim), so the focus trap / background `inert` / Escape (`cancel` event) / focus-restore are the platform's; the mobile swipe listeners live on the dialog element (its siblings go inert once `showModal()` runs). Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge ease in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` object (default `{}`) and **write into it instead of allocating** — the core passes reused scratch objects (`fanScratch`/`wpScratch`, plus a shared scratch stage in `computeCardStage`) so the arc→grid→fold transition, which places every card each frame, produces no per-card garbage. |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
@@ -403,8 +403,12 @@ mouse drag):
    while entered. Tab/Shift+Tab walks image→image; on focus the globe rotates that image to
    screen centre (`centerCardOnScreen` — the same sphere-to-card alignment the modal uses to
    centre a card; on the cylinder it's yaw-only, so a top image stays high and only its column
-   turns to the front) and a centred `:focus-visible` ring traces it. Enter opens the detail modal
-   for **that** image.
+   turns to the front) and a centred `:focus-visible` ring traces it. That browse spin runs a
+   frame-counted `easeInOutCubic` tween (`KEY_BROWSE_FRAMES`; frame-based so it degrades to a
+   slower-but-smooth spin under frame drops rather than jumping) — the same tween the modal
+   traversal nudge uses (`KEY_MODAL_FRAMES`, faster since it runs behind the blur), so the globe
+   eases in AND out of each turn with a crisp finish — no dizzying lurch, no lingering tail. Under
+   reduced motion it snaps instantly (no spin). Enter opens the detail modal for **that** image.
 
 Focusing the entry button — or any browse image — runs `snapToInteractive`:
 `window.lenis.scrollTo(top, { force, immediate })` to `SPHERE_FORMED_PROGRESS` (the
@@ -669,9 +673,11 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     except during the brief post-browse glide). (On `YAW_ONLY` geometry browse is yaw-only, so pitch
     never leaves the ±60° cap and the glide never engages.)
   - **No-overshoot ease.** Both the keyboard gallery and the modal centre a card with the same
-    **monotonic exponential ease** (`KEY_EASE`) — no velocity integrator, so swinging the live
-    globe (keyboard) or the sphere behind the blur (modal) never overshoots. (An earlier modal
-    nudge used an underdamped spring; it was removed when the modal switched to full centring.)
+    **frame-counted `easeInOutCubic` tween** (`KEY_BROWSE_FRAMES` for the visible keyboard spin,
+    the faster `KEY_MODAL_FRAMES` behind the blur) — ease in/out with a crisp finish, so swinging
+    the live globe (keyboard) or the sphere behind the blur (modal) never overshoots, and a low
+    frame rate stretches the spin smoothly instead of jumping. Reduced motion snaps instantly.
+    (Earlier: a monotonic exponential ease, and before that an underdamped modal spring.)
   - **Do not "restore" a blanket ±60° clamp / drop the roll / hard-switch the cap here** — it would
     re-break polar-image centring, card uprighting, or the smooth exit. `'XYZ'` puts the clamped pitch as the *outer* rotation to
   dodge a gimbal flip: with `'YXZ'` (unclamped yaw outside) the local pitch axis's world-X
@@ -720,7 +726,8 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     card, so spinning the globe to re-centre it would be jarring; the globe holds still, and the
     card flies back to exactly where it was tapped on close. It reuses
     the same exact-yaw + pitch alignment as `centerCardOnScreen` (`cardCenterYawPitch`) and the
-    same monotonic `KEY_EASE`; the only differences are the modal caps pitch at ±60° (RESTING, so
+    same frame-counted tween (at `KEY_MODAL_FRAMES`, faster than the visible browse spin); the only
+    other differences are the modal caps pitch at ±60° (RESTING, so
     a near-polar card can't over-tilt then snap down when the ±60° drag clamp resumes on close, vs
     the keyboard's ±85°) and applies **no upright-roll** (leaves `sphereRotZ` alone, so the globe
     stays self-levelled).

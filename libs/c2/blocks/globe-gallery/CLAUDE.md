@@ -36,7 +36,7 @@ from the code alone.
   alignment ease kept in `updateSphereRotation` — `requestNavNudge` → `centerModalCard`, which
   centres the card on modal TRAVERSAL only (prev/next/swipe, NOT on open — clicking a card must
   not spin the globe) so closing the modal returns it to screen centre; it shares
-  `cardCenterYawPitch` + `KEY_EASE` with the keyboard gallery's `centerCardOnScreen`). Card images come from `src/textures.js`
+  `cardCenterYawPitch` + the frame-counted `easeInOutCubic` nudge tween (both centring paths share it; `KEY_MODAL_FRAMES` vs `KEY_BROWSE_FRAMES`) with the keyboard gallery's `centerCardOnScreen`). Card images come from `src/textures.js`
   (`loadCardTextures`); materials from `src/materials.js`. Rounded corners are an analytic
   SDF in the card/modal shaders (`uAspect`/`uRadius`), not a rasterized mask.
 - **DOM is JS-built and scoped to the block root** — the runtime queries nodes by

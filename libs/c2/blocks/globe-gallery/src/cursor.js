@@ -52,6 +52,7 @@ export default function createCursor(deps) {
   let textWrap = null;
   let hasMouse = false; // device supports hover + fine pointer
   let onCanvas = false; // pointer currently over the globe canvas
+  let suppressed = false; // keyboard focus / window blur took over; cleared on the next mousemove
   let active = false; // cursor currently shown
   let hintDismissed = false; // label faded out after the user's first drag
   let retireT0 = -1; // timestamp the retirement fade started; -1 = not retiring
@@ -60,9 +61,10 @@ export default function createCursor(deps) {
 
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
-  function onMove(e) { mx = e.clientX; my = e.clientY; }
+  function onMove(e) { mx = e.clientX; my = e.clientY; suppressed = false; }
   function onEnter() { onCanvas = true; }
   function onLeave() { onCanvas = false; }
+  function onSuppress() { suppressed = true; }
 
   function setup() {
     if (!window.matchMedia) return;
@@ -95,6 +97,8 @@ export default function createCursor(deps) {
     }
     // Window-level so coords stay live even if the pointer briefly leaves the canvas.
     window.addEventListener('mousemove', onMove, { passive: true });
+    document.addEventListener('focusin', onSuppress);
+    window.addEventListener('blur', onSuppress);
   }
 
   // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on
@@ -116,6 +120,7 @@ export default function createCursor(deps) {
 
     const wantActive = !getReducedMotion()
       && onCanvas
+      && !suppressed
       && getSphereInteractive()
       && !getModalOpen()
       && !faded;
@@ -160,10 +165,12 @@ export default function createCursor(deps) {
       canvas.style.cursor = '';
     }
     window.removeEventListener('mousemove', onMove);
+    document.removeEventListener('focusin', onSuppress);
+    window.removeEventListener('blur', onSuppress);
     if (containerEl && containerEl.parentNode) containerEl.parentNode.removeChild(containerEl);
     if (discEl && discEl.parentNode) discEl.parentNode.removeChild(discEl);
     containerEl = null; discEl = null; ringWrap = null; textWrap = null;
-    onCanvas = false; active = false; hintDismissed = false; mx = 0; my = 0;
+    onCanvas = false; suppressed = false; active = false; hintDismissed = false; mx = 0; my = 0;
     retireT0 = -1;
   }
 
