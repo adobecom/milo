@@ -1337,6 +1337,8 @@ span.hang-opening-quote {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
     --gd-range-end: cover 36%;
+    --gd-foreground-range: entry -35% cover 50%;
+    --gd-line-height-range: cover 20% cover 50%;
 
     transform-origin: top center;
     animation: garage-door-grow linear both;
@@ -1352,6 +1354,10 @@ span.hang-opening-quote {
     animation-timeline: --gd-timeline;
     animation-range: entry 0% var(--gd-range-end);
 
+    @media (width >= 768px){
+      --gd-line-height-range: cover 30% cover 50%;
+    }
+
     @media (width >= 1280px) {
       /* Capped so the entry travel distance can't outrun the scroll
          distance the --gd-timeline range actually covers on tall
@@ -1361,12 +1367,15 @@ span.hang-opening-quote {
       --gd-grow-from: max(-90vh, -1050px);
       --gd-reveal-from: 30vh;
       --gd-range-end: cover 48%;
+      --gd-foreground-range: cover -10% cover 50%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: max(-70vh, -800px);
       --gd-range-end: cover 36%;
       --gd-reveal-from: 30vh;
+      --gd-foreground-range: cover -30% cover 50%;
+      --gd-line-height-range: cover 20% cover 50%;
     }
 
     .section-background {
@@ -1384,12 +1393,12 @@ span.hang-opening-quote {
       position: relative;
       animation: garage-door-reveal ease-out both;
       animation-timeline: --gd-timeline;
-      animation-range: cover -30% cover 50%;
+      animation-range: var(--gd-foreground-range);
 
       * {
         animation: garage-door-line-height ease-out both;
         animation-timeline: --gd-timeline;
-        animation-range: cover 30% cover 50%;
+        animation-range: var(--gd-line-height-range);
       }
     }
   }
