@@ -201,6 +201,38 @@ describe('Preflight Content Diff Panel', () => {
     });
   });
 
+  describe('on-demand loading', () => {
+    // Asserts purely on fetchStub call state (not on rendered DOM): the shared, module-level
+    // view/pane signals can carry over a READY render from an earlier test's own instance,
+    // which would make a DOM-presence wait pass on stale content instead of this test's fetch.
+    it('does not fetch until selected, fetches once selected, and does not re-fetch on re-selection', async () => {
+      const fetchStub = stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${false} />`, container);
+
+      // Give any pending microtasks a chance to run; the deferred panel must not have fetched.
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      expect(fetchStub.called).to.equal(false);
+
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${true} />`, container);
+      await waitFor(() => fetchStub.called);
+      const callsAfterFirstLoad = fetchStub.callCount;
+
+      // Switching away and back to the tab must not trigger a second fetch — the guard
+      // latches synchronously on first activation, before the fetch itself even resolves.
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${false} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${true} />`, container);
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      expect(fetchStub.callCount).to.equal(callsAfterFirstLoad);
+    });
+
+    it('defaults to loading immediately when selected is omitted (back-compat)', async () => {
+      const fetchStub = stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      await waitFor(() => fetchStub.called);
+      expect(fetchStub.called).to.equal(true);
+    });
+  });
+
   describe('highlight toggle', () => {
     it('re-reads a persisted off-state on mount', async () => {
       window.localStorage.setItem(HIGHLIGHTS_KEY, 'false');

@@ -56,7 +56,23 @@ describe('preflight diff-render', () => {
       const decorate = async (container) => { received = container; };
       const pane = await renderPane('<main><div><p>hi</p></div></main>', { decorate });
       expect(pane).to.equal(received);
-      expect(pane.tagName).to.equal('MAIN');
+      expect(pane.tagName).to.equal('DIV');
+    });
+
+    it('is not a <main> landmark, to avoid duplicate landmarks when two panes are inserted', async () => {
+      const pane = await renderPane('<main><div><p>hi</p></div></main>', { decorate: async () => {} });
+      expect(pane.tagName).to.not.equal('MAIN');
+      expect(pane.querySelector('main')).to.not.exist;
+    });
+
+    it('strips ids assigned during decoration so panes never carry duplicate ids', async () => {
+      const decorate = async (container) => {
+        container.id = 'root-id';
+        container.querySelector('p').id = 'decorated-id';
+      };
+      const pane = await renderPane('<main><div><p>hi</p></div></main>', { decorate });
+      expect(pane.hasAttribute('id')).to.equal(false);
+      expect(pane.querySelector('[id]')).to.not.exist;
     });
   });
 });

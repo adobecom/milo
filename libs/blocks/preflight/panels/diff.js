@@ -242,12 +242,22 @@ function MetadataTab() {
     </div>`;
 }
 
-export default function DiffPanel({ url = new URL(window.location.href), decorate } = {}) {
+export default function DiffPanel({ url: rawUrl, decorate, selected = true } = {}) {
+  const url = rawUrl || new URL(window.location.href);
   const previewRef = useRef(null);
   const liveRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only, props snapshotted
-  useEffect(() => { highlightsOn.value = readHighlightsPref(); loadDiff(url, decorate); }, []);
+  // On-demand: every preflight tab mounts at once, so without this guard the fetch +
+  // two loadArea decorations would fire on every preflight open, tab viewed or not.
+  /* eslint-disable react-hooks/exhaustive-deps -- url/decorate snapshotted at first activation */
+  useEffect(() => {
+    if (!selected || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    highlightsOn.value = readHighlightsPref();
+    loadDiff(url, decorate);
+  }, [selected]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     const liveEl = liveRef.current;

@@ -40,7 +40,7 @@ const tabs = signal([
   { title: 'Accessibility', desc: 'WCAG conformance and alt-text auditing.', icon: ICONS.accessibility },
   { title: 'Performance', desc: 'Core Web Vitals and LCP readiness.', icon: ICONS.performance },
   { title: 'Assets', desc: 'Image dimensions and asset optimization.', icon: ICONS.assets },
-  { title: 'Content Diff', desc: 'Compare preview vs live', icon: ICONS.diff },
+  { title: 'Content Diff', desc: 'Compare preview vs live.', icon: ICONS.diff },
 ]);
 
 function setTab(active) {
@@ -128,8 +128,8 @@ async function loadIssueCounts() {
   }
 }
 
-function setPanel(title) {
-  switch (title) {
+function setPanel(tab) {
+  switch (tab.title) {
     case 'General':
       return html`<${General} />`;
     case 'SEO':
@@ -144,8 +144,10 @@ function setPanel(title) {
       return html`<${Performance} />`;
     case 'Assets':
       return html`<${Assets} />`;
+    // On-demand: all tabs mount at once, so DiffPanel needs to know when it becomes
+    // the active tab to defer its fetch/decorate work until it's actually viewed.
     case 'Content Diff':
-      return html`<${DiffPanel} />`;
+      return html`<${DiffPanel} selected=${tab.selected === true} />`;
     default:
       return html`<p>No matching panel.</p>`;
   }
@@ -188,7 +190,7 @@ function TabPanel(props) {
       key=${props.tab.title}
       aria-selected=${selected}
       role="tabpanel">
-      ${setPanel(props.tab.title)}
+      ${setPanel(props.tab)}
     </div>`;
 }
 
