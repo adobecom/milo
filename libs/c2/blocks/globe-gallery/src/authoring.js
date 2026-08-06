@@ -237,7 +237,7 @@ const buildMarkup = (gid, labels) => `
       <p class="globe-gallery-modal__role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
-      <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
+      <ul class="globe-gallery-modal__badges"></ul>
     </div>
     <!-- sr-only text alternative for the WebGL photo, after the info so the heading is read first. -->
     <span class="globe-gallery-modal__image globe-gallery-sr-only" role="img"></span>

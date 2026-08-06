@@ -296,7 +296,6 @@ per locale):
 | `previous-card` | Previous card | modal prev-arrow `aria-label` |
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
-| `apps-used` | Apps used | modal badges list `aria-label` |
 | `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, shown as a visible focus popup AND wired as the button's accessible **name** (`aria-labelledby`) |
 | `image-gallery-card-label` | `{{index}} of {{count}}` | the modal card **position**, written to the sr-only `.globe-gallery-modal__position` (in the dialog name + heading describedby) |
 
@@ -321,8 +320,8 @@ missing; on a correctly-authored page they never show. Specifically:
 
 - **Sheet-backed:** all chrome `aria-label`s (modal nav/close, badges list), the arc-copy
   region label, the globe widget **instructions** (which double as its name), and the modal card
-  **position** — via the `image-gallery-*` / `previous-card` / `next-card` / `close` /
-  `apps-used` keys above. **Setup action for localized pages:** add these keys to the
+  **position** — via the `image-gallery-*` / `previous-card` / `next-card` / `close`
+  keys above. **Setup action for localized pages:** add these keys to the
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
 - **Authored:** arc-copy, pull-quote, and card name/role/description come from the block

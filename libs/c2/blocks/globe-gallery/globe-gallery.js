@@ -2600,10 +2600,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 // TODO: finalize authoring these keys
 async function resolveGlobeLabels() {
   const [
-    arcRegion, prevCard, nextCard, closeBtn, appsUsed,
+    arcRegion, prevCard, nextCard, closeBtn,
     galleryInstrRaw, cardTplRaw,
   ] = await replaceKeyArray(
-    ['image-gallery-intro', 'previous-card', 'next-card', 'close', 'apps-used',
+    ['image-gallery-intro', 'previous-card', 'next-card', 'close',
       'image-gallery-instructions', 'image-gallery-card-label'],
     getConfig(),
   );
@@ -2624,7 +2624,6 @@ async function resolveGlobeLabels() {
     prevCard,
     nextCard,
     closeBtn,
-    appsUsed,
     // Operating instructions, wired as the widget's accessible NAME (aria-labelledby) in a11y.js.
     galleryInstructions,
     cardLabel: (index, count) => cardTpl
