@@ -7,7 +7,7 @@ import {
   setFormData,
   getFormData,
   validatePhoneNumber,
-  removePhoneNumberFormat,
+  normalizePhoneNumber,
   getPhoneFieldConfig,
   fetchConsentString,
   getPageLocale,
@@ -16,6 +16,7 @@ import {
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
   br: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  in: { ietf: 'en-US', tk: 'hah7vzn.css' },
 };
 const config = {
   imsClientId: 'milo',
@@ -529,20 +530,24 @@ describe('Phone utils', () => {
     setConfig(config);
   });
 
-  it('removePhoneNumberFormat should strip non-digit characters', () => {
-    expect(removePhoneNumberFormat('(11) 91234-5678')).to.equal('11912345678');
-    expect(removePhoneNumberFormat('+55 (11) 91234-5678')).to.equal('5511912345678');
-    expect(removePhoneNumberFormat('11912345678')).to.equal('11912345678');
+  it('normalizePhoneNumber should return the national number without formatting or country code', () => {
+    expect(normalizePhoneNumber('(11) 91234-5678')).to.equal('11912345678');
+    expect(normalizePhoneNumber('+55 (11) 91234-5678')).to.equal('11912345678');
+    expect(normalizePhoneNumber('5511912345678')).to.equal('11912345678');
+    expect(normalizePhoneNumber('11912345678')).to.equal('11912345678');
   });
 
-  it('removePhoneNumberFormat should handle undefined', () => {
-    expect(removePhoneNumberFormat(undefined)).to.be.undefined;
+  it('normalizePhoneNumber should handle undefined', () => {
+    expect(normalizePhoneNumber(undefined)).to.be.undefined;
   });
 
   it('validatePhoneNumber should return true for valid BR mobile numbers', () => {
     expect(validatePhoneNumber('(11) 91234-5678')).to.be.true;
     expect(validatePhoneNumber('11 91234-5678')).to.be.true;
     expect(validatePhoneNumber('11912345678')).to.be.true;
+    expect(validatePhoneNumber('+5511912345678')).to.be.true;
+    expect(validatePhoneNumber('+55 (11) 91234-5678')).to.be.true;
+    expect(validatePhoneNumber('5511912345678')).to.be.true;
   });
 
   it('validatePhoneNumber should return false for invalid numbers', () => {
@@ -568,10 +573,89 @@ describe('Phone utils', () => {
   it('getPhoneFieldConfig format should format BR phone number correctly', () => {
     const phoneConfig = getPhoneFieldConfig();
     expect(phoneConfig.format('11912345678')).to.equal('(11) 91234-5678');
+    expect(phoneConfig.format('+55 (11) 91234-5678')).to.equal('(11) 91234-5678');
   });
 
   it('getPageLocale should return br when on /br/ path', () => {
     expect(getPageLocale()).to.equal('br');
+  });
+});
+
+describe('India phone utils', () => {
+  let originalPathname;
+
+  beforeEach(() => {
+    originalPathname = window.location.pathname;
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = '/in/';
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  afterEach(() => {
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = originalPathname;
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  it('getPageLocale should return in when on /in/ path', () => {
+    expect(getPageLocale()).to.equal('in');
+  });
+
+  it('getPhoneFieldConfig should return IN config for IN locale', () => {
+    const phoneConfig = getPhoneFieldConfig();
+    expect(phoneConfig).to.exist;
+    expect(phoneConfig.code).to.equal('+91');
+    expect(phoneConfig.validationPattern).to.be.instanceOf(RegExp);
+    expect(typeof phoneConfig.format).to.equal('function');
+    expect(phoneConfig.icon).to.contain('in-flag.svg');
+  });
+
+  it('validatePhoneNumber should return true for valid IN mobile numbers', () => {
+    expect(validatePhoneNumber('9876543210')).to.be.true;
+    expect(validatePhoneNumber('98765 43210')).to.be.true;
+    expect(validatePhoneNumber('98765-43210')).to.be.true;
+    expect(validatePhoneNumber('09876543210')).to.be.true;
+    expect(validatePhoneNumber('6012345678')).to.be.true;
+    expect(validatePhoneNumber('+919876543210')).to.be.true;
+    expect(validatePhoneNumber('+91 98765 43210')).to.be.true;
+    expect(validatePhoneNumber('919876543210')).to.be.true;
+  });
+
+  it('validatePhoneNumber should return false for invalid IN numbers', () => {
+    expect(validatePhoneNumber('1234567890')).to.be.false;
+    expect(validatePhoneNumber('5876543210')).to.be.false;
+    expect(validatePhoneNumber('98765432')).to.be.false;
+    expect(validatePhoneNumber('12345678901')).to.be.false;
+    expect(validatePhoneNumber('invalid')).to.be.false;
+  });
+
+  it('validatePhoneNumber should return false for empty or null values', () => {
+    expect(validatePhoneNumber('')).to.be.false;
+    expect(validatePhoneNumber(null)).to.be.false;
+    expect(validatePhoneNumber(undefined)).to.be.false;
+  });
+
+  it('getPhoneFieldConfig format should format IN phone number correctly', () => {
+    const phoneConfig = getPhoneFieldConfig();
+    expect(phoneConfig.format('9876543210')).to.equal('98765-43210');
+    expect(phoneConfig.format('98765-43210')).to.equal('98765-43210');
+    expect(phoneConfig.format('+91 98765 43210')).to.equal('98765-43210');
+    expect(phoneConfig.format('919876543210')).to.equal('98765-43210');
+  });
+
+  it('getPhoneFieldConfig format should strip a leading trunk 0', () => {
+    const phoneConfig = getPhoneFieldConfig();
+    expect(phoneConfig.format('09876543210')).to.equal('98765-43210');
+  });
+
+  it('normalizePhoneNumber should return the national number without country code or trunk 0', () => {
+    expect(normalizePhoneNumber('9876543210')).to.equal('9876543210');
+    expect(normalizePhoneNumber('98765-43210')).to.equal('9876543210');
+    expect(normalizePhoneNumber('09876543210')).to.equal('9876543210');
+    expect(normalizePhoneNumber('+91 98765 43210')).to.equal('9876543210');
+    expect(normalizePhoneNumber('919876543210')).to.equal('9876543210');
   });
 });
 
@@ -672,6 +756,96 @@ describe('Phone fields rendering', () => {
     expect(body.phoneNumber).to.equal('11912345678');
     expect(body.phoneCountryCode).to.equal('55');
     expect(body.phoneExtension).to.be.undefined;
+    fetchSpy.restore();
+  });
+});
+
+describe('India phone fields rendering', () => {
+  const IN_CONSENT_URL = 'https://main--federal--adobecom.aem.page/in/federal/email-collection/consents/cs8a.plain.html';
+  let originalPathname;
+
+  beforeEach(async () => {
+    originalPathname = window.location.pathname;
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    setGetIdentity();
+    setAdobePrivacy();
+    setAlloyAll();
+    setIms();
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = '/in/';
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+    mockFetch({ consentUrl: IN_CONSENT_URL, subscribed: false });
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    restoreFetch();
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = originalPathname;
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  it('Should format a valid number with a trunk 0 on change', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const phoneInput = block.querySelector('#phone-number');
+    phoneInput.value = '09876543210';
+    phoneInput.dispatchEvent(new Event('change'));
+    await sleep(50);
+    expect(phoneInput.value).to.equal('98765-43210');
+    expect(phoneInput.classList.contains('invalid')).to.be.false;
+  });
+
+  it('Should format a valid number with a +91 country code on change', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const phoneInput = block.querySelector('#phone-number');
+    phoneInput.value = '+91 98765 43210';
+    phoneInput.dispatchEvent(new Event('change'));
+    await sleep(50);
+    expect(phoneInput.value).to.equal('98765-43210');
+    expect(phoneInput.classList.contains('invalid')).to.be.false;
+  });
+
+  it('Should reject a number combining a country code and a trunk 0, with or without a leading +', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const phoneInput = block.querySelector('#phone-number');
+
+    phoneInput.value = '9106123456789';
+    phoneInput.dispatchEvent(new Event('change'));
+    await sleep(50);
+    expect(phoneInput.classList.contains('invalid')).to.be.true;
+    expect(phoneInput.value).to.equal('9106123456789');
+
+    phoneInput.value = '+9106123456789';
+    phoneInput.dispatchEvent(new Event('change'));
+    await sleep(50);
+    expect(phoneInput.classList.contains('invalid')).to.be.true;
+    expect(phoneInput.value).to.equal('+9106123456789');
+  });
+
+  it('Should normalize a raw, never-formatted number on submit (no prior change event)', async () => {
+    const fetchSpy = sinon.spy(window, 'fetch');
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const emailInput = block.querySelector('#email');
+    emailInput.value = 'test@test.com';
+    const phoneInput = block.querySelector('#phone-number');
+    phoneInput.value = '+91 98765 43210';
+    block.querySelector('button[type="submit"]').click();
+    await sleep(50);
+    const submitCall = fetchSpy.getCalls().find((call) => String(call.args[0]).includes('form-submit'));
+    expect(submitCall).to.exist;
+    const body = JSON.parse(submitCall.args[1].body);
+    expect(body.phoneNumber).to.equal('9876543210');
+    expect(body.phoneCountryCode).to.equal('91');
     fetchSpy.restore();
   });
 });
