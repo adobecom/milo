@@ -182,6 +182,11 @@ export const GeoMap = {
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
+ * MAS locale overrides for markets that share a language but have different country codes
+ */
+const MARKET_LOCALE_OVERRIDES = { en: { AU: 'en_GB', IN: 'en_GB', GB: 'en_GB' } };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -1145,14 +1150,23 @@ export async function initService(force = false, attributes = {}) {
       ]);
 
       let countryFromMarket = country;
-      if (useGeoMarket && validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      let localeFromMarket = locale;
+      if (useGeoMarket && validatedMarket) {
+        const market = validatedMarket.toUpperCase();
+        const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+        localeFromMarket = localeOverride ?? locale;
+        // When the fallback locale already encodes this market's country (e.g. GB -> en_GB),
+        // sending an explicit country is redundant and would override the locale's market, so
+        // it's dropped; other markets (e.g. AU, IN -> en_GB) still need their own country.
+        countryFromMarket = localeOverride?.endsWith(`_${market}`) ? undefined : market;
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
-          locale,
+          locale: localeFromMarket,
           language,
-          country: countryFromMarket,
+          ...(countryFromMarket ? { country: countryFromMarket } : {}),
           ...attributes,
           ...commerce,
         });
@@ -1178,8 +1192,12 @@ export async function initService(force = false, attributes = {}) {
           if (isSignedIn) fetchEntitlements();
         });
         if (useGeoMarket) guardCheckoutLinkImsCountry(service);
-      } else if (useGeoMarket && countryFromMarket !== country) {
-        service.setAttribute('country', countryFromMarket);
+      } else if (useGeoMarket) {
+        if (countryFromMarket !== country) {
+          if (countryFromMarket) service.setAttribute('country', countryFromMarket);
+          else service.removeAttribute('country');
+        }
+        if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
