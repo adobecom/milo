@@ -166,6 +166,21 @@ export default function createGlobeModal({
   // after their hi-res texture is released) — they have no small base texture to fall back on.
   let overflowPlaceholderTex = null;
 
+  // Return the modal to its resting closed identity (no open card). Shared by both
+  // close-finalize branches (overflow + barrel) and destroy().
+  function closeModalIdentity() {
+    modalPhase = MODAL_PHASE.CLOSED;
+    modalCard = null;
+    modalIdx = -1;
+  }
+
+  // Chrome starts hidden and fades in after the card settles (see updateAnimation). Reset
+  // on open, close, and resetModalDom so a fresh modal session starts with chrome hidden.
+  function resetChromeReveal() {
+    modalChromeRevealT0 = -1;
+    modalChromeFadeT = 0;
+  }
+
   function getModalIdx() { return modalIdx; }
 
   // Barrel = the cards with a real sphere slot (getCards()). Indices ≥ this are overflow.
@@ -906,8 +921,7 @@ export default function createGlobeModal({
     modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
     // Reset chrome reveal so elements start hidden and fade in after card settles.
-    modalChromeRevealT0 = -1;
-    modalChromeFadeT = 0;
+    resetChromeReveal();
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'true');
@@ -977,8 +991,7 @@ export default function createGlobeModal({
     modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
     // Immediately hide chrome elements — they'll hide with the container fade.
-    modalChromeRevealT0 = -1;
-    modalChromeFadeT = 0;
+    resetChromeReveal();
 
     modalEl.classList.remove('is-open');
     if (chromeEl) chromeEl.classList.remove('is-open');
@@ -1147,9 +1160,7 @@ export default function createGlobeModal({
           retireOverflowCard(modalCard);
           releaseModalTexture();
           if (modalCanvasEl) modalCanvasEl.style.display = 'none';
-          modalPhase = MODAL_PHASE.CLOSED;
-          modalCard = null;
-          modalIdx = -1;
+          closeModalIdentity();
         }
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
         // Live target = the slot's current world transform.
@@ -1199,9 +1210,7 @@ export default function createGlobeModal({
           // Free the opened card's lazily-loaded hi-res texture (only the small base set
           // stays resident between modal sessions).
           releaseModalTexture();
-          modalPhase = MODAL_PHASE.CLOSED;
-          modalCard = null;
-          modalIdx = -1;
+          closeModalIdentity();
         }
       }
 
@@ -1527,8 +1536,7 @@ export default function createGlobeModal({
     document.documentElement.classList.remove('modal-open');
     document.body.classList.remove('modal-open');
     if (window.lenis) window.lenis.start();
-    modalChromeRevealT0 = -1;
-    modalChromeFadeT = 0;
+    resetChromeReveal();
   }
 
   // Dispose the modal renderer + clear the pending close timeout (mirrors the
@@ -1556,9 +1564,7 @@ export default function createGlobeModal({
       modalRenderer = null;
     }
     modalScene = null;
-    modalCard = null;
-    modalIdx = -1;
-    modalPhase = MODAL_PHASE.CLOSED;
+    closeModalIdentity();
     dnNavActive = false;
   }
 

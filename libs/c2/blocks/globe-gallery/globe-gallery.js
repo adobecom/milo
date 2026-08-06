@@ -714,6 +714,18 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Pitch cap that glides ±85°→±60° when leaving keyboard browse, so exiting a beyond-cap
   // card doesn't snap the globe (see updateSphereRotation). π/3 = the ±60° resting cap.
   let pitchReleaseCap = Math.PI / 3;
+  // Return the sphere to its upright resting orientation. Shared by the scroll-out zero
+  // (updateSphereRotation, sphereFormT < 0.01) and the destroy()+re-init rebuild, which
+  // were otherwise line-for-line duplicates. Deliberately does NOT touch drag velocity or
+  // sphereDragWarp — the two callers handle those differently (the scroll-out branch eases
+  // warp toward 0 every frame; destroy() additionally zeroes drag + wasBrowsing).
+  function resetSphereOrientation() {
+    sphereRotX = 0;
+    sphereRotY = 0;
+    sphereRotZ = 0;
+    pitchReleaseCap = Math.PI / 3;
+    navNudgeActive = false;
+  }
   // Scratch for applyCardFacing (reused per card, per frame — never retained).
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
@@ -1608,11 +1620,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       sphereDragWarp += (0 - sphereDragWarp) * 0.20;
       if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
       if (sphereFormT < 0.01) {
-        sphereRotY = 0;
-        sphereRotX = 0;
-        sphereRotZ = 0;
-        pitchReleaseCap = Math.PI / 3;
-        navNudgeActive = false;
+        resetSphereOrientation();
       }
     }
 
@@ -2571,11 +2579,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // dragged before the rebuild carry over and the freshly-rebuilt barrel renders
     // tilted until a scroll-out zeroes it at sphereFormT < 0.01. Reset to the upright
     // resting pose here so every rebuild starts level.
-    sphereRotX = 0; sphereRotY = 0; sphereRotZ = 0;
-    pitchReleaseCap = Math.PI / 3;
+    resetSphereOrientation();
     sphereDragWarp = 0;
     drag.isDragging = false; drag.velX = 0; drag.velY = 0;
-    navNudgeActive = false;
     wasBrowsing = false;
     // NOTE: `bp` is intentionally NOT cleared here. doLayout() compares bp.name
     // against the resolved band to detect a profile crossing, and initRuntime()

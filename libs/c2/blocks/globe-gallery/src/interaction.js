@@ -84,11 +84,18 @@ export default function createInteraction({
     return drag.isDragging && canvasEl != null && canvasEl.hasPointerCapture(e.pointerId);
   }
 
-  function cancelDrag() {
-    if (!drag.isDragging) return;
+  // Zero the shared drag object (spin state + inertia velocity). Shared by cancelDrag
+  // (guarded) and teardown. NOT used on pointerup, which deliberately keeps velX/velY so
+  // the release carries inertia into updateSphereRotation.
+  function resetDrag() {
     drag.isDragging = false;
     drag.velX = 0;
     drag.velY = 0;
+  }
+
+  function cancelDrag() {
+    if (!drag.isDragging) return;
+    resetDrag();
   }
 
   // Raycast the cards under the pointer; returns THREE intersections (nearest
@@ -231,9 +238,7 @@ export default function createInteraction({
       canvasEl.style.cursor = '';
       canvasEl = null;
     }
-    drag.isDragging = false;
-    drag.velX = 0;
-    drag.velY = 0;
+    resetDrag();
   }
 
   // True when the in-flight gesture is a touch drag the PAGE owns (vertical scroll),

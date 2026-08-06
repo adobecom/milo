@@ -56,6 +56,13 @@ export default function createGalleryA11y({
   let appliedModalOpen = null;
   let appliedEntered = null;
 
+  // Clear the last-applied tab state so updateTabStops() re-writes the DOM on its next call.
+  // Shared by setup() (fresh wiring) and teardown() (so a re-init doesn't skip the first write).
+  function resetAppliedTabState() {
+    appliedModalOpen = null;
+    appliedEntered = null;
+  }
+
   // Whether the globe can be activated/entered right now (sphere formed + no modal).
   function isInteractive() {
     return getSphereFormT() >= interactiveThreshold && getModalIdx() < 0;
@@ -181,8 +188,7 @@ export default function createGalleryA11y({
     parent.appendChild(widgetEl);
     parent.appendChild(cardsEl);
     entered = false;
-    appliedModalOpen = null;
-    appliedEntered = null;
+    resetAppliedTabState();
   }
 
   // Keep the tab order in sync with (modalOpen, entered): modal open → nothing in the
@@ -249,8 +255,7 @@ export default function createGalleryA11y({
     cardButtons = [];
     entered = false;
     focusedIdx = -1;
-    appliedModalOpen = null;
-    appliedEntered = null;
+    resetAppliedTabState();
   }
 
   return {
