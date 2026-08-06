@@ -781,7 +781,14 @@ header.global-navigation + .feds-localnav {
   height: var(--feds-localnav-height);
 }
 
-.feds-promo-aside-wrapper {
+/*
+  gnav-c1-host (federal gnav mounted on a milo C1 page) excluded: the federal
+  bundle's own CSS already makes .feds-promo-aside-wrapper position: fixed and
+  drives body padding-top from the promo's real height, so the sticky header
+  renders below it natively. These declarations are for milo's legacy gnav
+  only and would otherwise fight federal's for the same properties.
+*/
+.feds-promo-aside-wrapper:not(:has(+ header.gnav-c1-host)) {
   position: sticky;
   top: 0;
   z-index: 11;
@@ -805,7 +812,7 @@ sr-only, .sr-only, .feds-sr-only {
   border: 0;
 }
 
-header.global-navigation.has-promo {
+header.global-navigation.has-promo:not(.gnav-c1-host) {
   top: var(--global-height-navPromo);
 }
 
