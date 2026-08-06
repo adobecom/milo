@@ -1812,8 +1812,13 @@ img:hover ~ .asset-meta,
 
 /* stylelint-enable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity */
 
-/* Compare panes: highlight changed nodes by data-diff-key (Approach B). */
+/* Compare panel: layout, plus highlighting changed nodes by data-diff-key (Approach B). */
 .preflight-diff {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-16);
+  padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-32);
+
   & .preflight-diff-added,
   & .preflight-diff-modified,
   & .preflight-diff-removed {
@@ -1868,6 +1873,199 @@ img:hover ~ .asset-meta,
     content: 'Removed';
     background: var(--preflight-error);
   }
+}
+
+.preflight-diff-loading,
+.preflight-diff-empty {
+  padding: var(--s2a-spacing-32);
+  color: var(--preflight-fg-subtle);
+  text-align: center;
+}
+
+.preflight-diff-header {
+  margin: 0;
+  font-size: var(--s2a-font-size-14);
+  color: var(--preflight-fg-subtle);
+}
+
+.preflight-diff-tabs {
+  display: flex;
+  gap: var(--s2a-spacing-8);
+}
+
+button.preflight-diff-tab {
+  min-height: 44px;
+  padding: 0 var(--s2a-spacing-16);
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-999);
+  background: var(--preflight-surface);
+  color: var(--preflight-fg-subtle);
+  font-family: var(--preflight-font);
+  font-size: var(--s2a-font-size-14);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+button.preflight-diff-tab[aria-selected="true"] {
+  background: var(--preflight-cta-bg);
+  border-color: var(--preflight-cta-bg);
+  color: var(--preflight-cta-fg);
+}
+
+button.preflight-diff-tab:focus-visible {
+  outline: 2px solid var(--preflight-focus);
+  outline-offset: 2px;
+}
+
+.preflight-diff-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-16);
+  min-width: 0;
+}
+
+.preflight-diff-tabpanel[aria-selected="false"] {
+  display: none;
+}
+
+.preflight-diff-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s2a-spacing-16);
+}
+
+.preflight-diff-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-12);
+  overflow: hidden;
+}
+
+.preflight-diff-pane-label {
+  margin: 0;
+  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
+  background: var(--preflight-surface-subtle);
+  border-bottom: 1px solid var(--preflight-border);
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--preflight-fg-subtle);
+}
+
+.preflight-diff-pane-body {
+  max-height: 360px;
+  padding: var(--s2a-spacing-12);
+  overflow-y: auto;
+}
+
+.preflight-diff-changes-title {
+  margin: 0 0 var(--s2a-spacing-8);
+  font-size: var(--s2a-font-size-14);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+}
+
+.preflight-diff-empty-changes {
+  margin: 0;
+  color: var(--preflight-fg-subtle);
+  font-style: italic;
+}
+
+.preflight-diff-change-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button.preflight-diff-change-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-12);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-8);
+  background: var(--preflight-surface-subtle);
+  color: var(--preflight-fg);
+  font-family: var(--preflight-font);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+button.preflight-diff-change-row:hover {
+  background: var(--preflight-hover);
+}
+
+button.preflight-diff-change-row:focus-visible {
+  outline: 2px solid var(--preflight-focus);
+  outline-offset: 2px;
+}
+
+.preflight-diff-change-path {
+  overflow: hidden;
+  font-size: var(--s2a-font-size-14);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preflight-diff-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--s2a-border-radius-999);
+  font-size: var(--s2a-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--s2a-color-gray-25);
+}
+
+.preflight-diff-badge.is-added {
+  background: var(--preflight-success);
+}
+
+.preflight-diff-badge.is-modified {
+  /* gray-25 (used by New/Removed) fails AA on orange-700; gray-900 clears it. */
+  color: var(--s2a-color-gray-900);
+  background: var(--preflight-warning);
+}
+
+.preflight-diff-badge.is-removed {
+  background: var(--preflight-error);
+}
+
+.preflight-diff-metadata-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preflight-diff-metadata-th,
+.preflight-diff-metadata-td {
+  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
+  border-bottom: 1px solid var(--preflight-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.preflight-diff-metadata-th {
+  background: var(--preflight-surface-subtle);
+  font-size: var(--s2a-font-size-12);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--preflight-fg-subtle);
+}
+
+.preflight-diff-metadata-key {
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-8);
 }
 
 .dialog-modal#preflight button.dialog-close svg {
@@ -1952,6 +2150,10 @@ img:hover ~ .asset-meta,
   .martech-toolbar {
     flex-direction: row;
     align-items: center;
+  }
+
+  .preflight-diff-panes {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
