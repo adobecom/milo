@@ -5,7 +5,6 @@ import DiffPanel from '../../../../libs/blocks/preflight/panels/diff.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
 const TEST_URL = new URL('https://main--milo--adobecom.aem.page/p');
-const noopDecorate = async () => {};
 const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
 
 const LIVE_HTML = `<main>
@@ -135,6 +134,11 @@ describe('Preflight Content Diff Panel', () => {
   });
 
   afterEach(() => {
+    // Unmount the Preact tree (not just detaching the DOM node) so this test's component
+    // instance stops subscribing to the shared, module-level signals (view, contentDiff,
+    // highlightsOn, ...) — otherwise dead instances from earlier tests keep reacting to
+    // signal updates from later tests and race with their assertions.
+    render(null, container);
     document.body.removeChild(container);
     sinon.restore();
     window.localStorage.removeItem(HIGHLIGHTS_KEY);
@@ -146,30 +150,39 @@ describe('Preflight Content Diff Panel', () => {
     expect(container.querySelector('.preflight-diff')).to.exist;
     expect(container.querySelector('.preflight-diff-loading')).to.exist;
     expect(container.querySelector('.preflight-diff-empty')).to.not.exist;
-    expect(container.querySelector('.preflight-diff-panes')).to.not.exist;
     // Drain the pending async work so it can't leak into the next test's shared signals.
     // A rejected fetch is a genuine failure, so this settles into the error state, not empty.
     await waitFor(() => container.querySelector('.preflight-diff-error'));
   });
 
+  it('does not render the two-pane comparison markup that used to trigger loadArea', async () => {
+    stubFetchWithChanges();
+    render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+    await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+
+    expect(container.querySelector('.preflight-diff-panes')).to.not.exist;
+    expect(container.querySelector('.preflight-diff-pane-live')).to.not.exist;
+    expect(container.querySelector('.preflight-diff-pane-preview')).to.not.exist;
+  });
+
   it('shows the empty state when preview has no unpublished changes', async () => {
     stubFetchSkipped();
-    render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+    render(html`<${DiffPanel} url=${TEST_URL} />`, container);
     await waitFor(() => container.querySelector('.preflight-diff-empty'));
     expect(container.querySelector('.preflight-diff-empty').textContent).to.equal('No unpublished changes');
   });
 
   it('shows the empty state when preview is newer but renders no content changes', async () => {
     stubFetchNoContentChanges();
-    render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+    render(html`<${DiffPanel} url=${TEST_URL} />`, container);
     await waitFor(() => container.querySelector('.preflight-diff-empty'));
     expect(container.querySelector('.preflight-diff-empty').textContent).to.equal('No unpublished changes');
   });
 
   it('falls back to an empty live doc when the live fetch fails, marking preview content as added', async () => {
     stubFetchLiveMissing();
-    render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
-    await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+    render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+    await waitFor(() => container.querySelector('.preflight-diff-change-item'));
 
     const badges = [...container.querySelectorAll('.preflight-diff-change-item .preflight-diff-badge')]
       .map((b) => b.textContent);
@@ -180,7 +193,7 @@ describe('Preflight Content Diff Panel', () => {
   describe('error state', () => {
     it('shows a distinct error state with a retry action on genuine fetch failure', async () => {
       stubFetchPreviewFails();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-error'));
 
       expect(container.querySelector('.preflight-diff-empty')).to.not.exist;
@@ -189,47 +202,51 @@ describe('Preflight Content Diff Panel', () => {
 
     it('retries the load when Retry is clicked', async () => {
       const failStub = stubFetchPreviewFails();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-error'));
 
       failStub.restore();
       stubFetchWithChanges();
       container.querySelector('.preflight-diff-retry').click();
 
-      await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
       expect(container.querySelector('.preflight-diff-error')).to.not.exist;
     });
   });
 
   describe('on-demand loading', () => {
-    // Asserts purely on fetchStub call state (not on rendered DOM): the shared, module-level
-    // view/pane signals can carry over a READY render from an earlier test's own instance,
-    // which would make a DOM-presence wait pass on stale content instead of this test's fetch.
     it('does not fetch until selected, fetches once selected, and does not re-fetch on re-selection', async () => {
       const fetchStub = stubFetchWithChanges();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${false} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} selected=${false} />`, container);
 
       // Give any pending microtasks a chance to run; the deferred panel must not have fetched.
       await new Promise((resolve) => { setTimeout(resolve, 0); });
       expect(fetchStub.called).to.equal(false);
 
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${true} />`, container);
-      await waitFor(() => fetchStub.called);
+      render(html`<${DiffPanel} url=${TEST_URL} selected=${true} />`, container);
+      // Wait for the full settle (not just the first fetch call) — loadDiff's fetchVersions()
+      // makes three sequential/parallel fetch() calls (status, then preview + live), so
+      // capturing callCount right as the first one fires would under-count the original load.
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
       const callsAfterFirstLoad = fetchStub.callCount;
 
       // Switching away and back to the tab must not trigger a second fetch — the guard
       // latches synchronously on first activation, before the fetch itself even resolves.
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${false} />`, container);
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} selected=${true} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} selected=${false} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} selected=${true} />`, container);
       await new Promise((resolve) => { setTimeout(resolve, 0); });
       expect(fetchStub.callCount).to.equal(callsAfterFirstLoad);
     });
 
     it('defaults to loading immediately when selected is omitted (back-compat)', async () => {
       const fetchStub = stubFetchWithChanges();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => fetchStub.called);
       expect(fetchStub.called).to.equal(true);
+
+      // Drain the in-flight loadDiff so it can't settle mid-way through a later test and
+      // clobber the shared, module-level signals (view, contentDiff, ...) out from under it.
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
     });
   });
 
@@ -237,8 +254,8 @@ describe('Preflight Content Diff Panel', () => {
     it('re-reads a persisted off-state on mount', async () => {
       window.localStorage.setItem(HIGHLIGHTS_KEY, 'false');
       stubFetchWithChanges();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
-      await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-highlight-toggle'));
 
       expect(container.querySelector('.preflight-diff').classList.contains('preflight-diff-active')).to.equal(false);
       expect(container.querySelector('.preflight-diff-highlight-toggle').getAttribute('aria-pressed')).to.equal('false');
@@ -248,25 +265,8 @@ describe('Preflight Content Diff Panel', () => {
   describe('with changes', () => {
     beforeEach(async () => {
       stubFetchWithChanges();
-      render(html`<${DiffPanel} url=${TEST_URL} decorate=${noopDecorate} />`, container);
-      await waitFor(() => container.querySelector('.preflight-diff-pane-preview [data-diff-key]'));
-    });
-
-    it('renders live and preview panes with highlights applied by change type', () => {
-      const previewBody = container.querySelector('.preflight-diff-pane-preview .preflight-diff-pane-body');
-      const liveBody = container.querySelector('.preflight-diff-pane-live .preflight-diff-pane-body');
-
-      // added: only in preview
-      expect(previewBody.querySelector('h2.preflight-diff-added')).to.exist;
-      expect(liveBody.querySelector('.preflight-diff-added')).to.not.exist;
-
-      // modified: both panes, same path
-      expect(previewBody.querySelector('p.preflight-diff-modified')).to.exist;
-      expect(liveBody.querySelector('p.preflight-diff-modified')).to.exist;
-
-      // removed: only in live
-      expect(liveBody.querySelector('p.preflight-diff-removed')).to.exist;
-      expect(previewBody.querySelector('.preflight-diff-removed')).to.not.exist;
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
     });
 
     it('lists one change row per change with the right badge', () => {
@@ -276,17 +276,6 @@ describe('Preflight Content Diff Panel', () => {
       expect(badges).to.include('New');
       expect(badges).to.include('Changed');
       expect(badges).to.include('Removed');
-    });
-
-    it('scrolls both panes when a modified change row is clicked', () => {
-      const scrollToStub = sinon.stub(Element.prototype, 'scrollTo');
-      const rows = [...container.querySelectorAll('.preflight-diff-change-item')];
-      const modifiedRow = rows.find((row) => row.querySelector('.preflight-diff-badge').textContent === 'Changed');
-
-      modifiedRow.querySelector('.preflight-diff-change-row').click();
-
-      // present in both live and preview panes, so both get scrolled
-      expect(scrollToStub.callCount).to.equal(2);
     });
 
     it('switches to the Metadata tab and lists key/value changes', async () => {
@@ -334,18 +323,6 @@ describe('Preflight Content Diff Panel', () => {
 
       expect(root.classList.contains('preflight-diff-active')).to.equal(false);
       expect(window.localStorage.getItem(HIGHLIGHTS_KEY)).to.equal('false');
-    });
-
-    it('mirrors scroll position between live and preview panes', () => {
-      const previewBody = container.querySelector('.preflight-diff-pane-preview .preflight-diff-pane-body');
-      const liveBody = container.querySelector('.preflight-diff-pane-live .preflight-diff-pane-body');
-      Object.defineProperty(liveBody, 'scrollTop', { value: 0, writable: true, configurable: true });
-      Object.defineProperty(previewBody, 'scrollTop', { value: 0, writable: true, configurable: true });
-
-      liveBody.scrollTop = 42;
-      liveBody.dispatchEvent(new Event('scroll'));
-
-      expect(previewBody.scrollTop).to.equal(42);
     });
   });
 });

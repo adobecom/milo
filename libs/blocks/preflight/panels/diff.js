@@ -1,9 +1,7 @@
-import { html, signal, useEffect, useRef } from '../../../deps/htm-preact.js';
+import { html, signal, useRef } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import diffContent from '../checks/diff/diffContent.js';
 import diffMetadata from '../checks/diff/diffMetadata.js';
-import { renderPane } from './diff-render.js';
-import { applyHighlights, scrollToChange } from './diff-highlight.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
 const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready' };
@@ -16,8 +14,6 @@ const activeTab = signal(TAB.CONTENT);
 const contentDiff = signal(null);
 const metadataDiff = signal(null);
 const pageStatus = signal(null);
-const previewPane = signal(null);
-const livePane = signal(null);
 const highlightsOn = signal(true);
 
 function parseMain(htmlText) {
@@ -64,14 +60,12 @@ function toggleHighlights() {
 
 // Self-contained: the Inc-1 check's `details` has classifications but not the raw
 // .plain.html the panes need, so the panel fetches and diffs its own copy on mount.
-async function loadDiff(url, decorate) {
+async function loadDiff(url) {
   view.value = VIEW.LOADING;
   activeTab.value = TAB.CONTENT;
   contentDiff.value = null;
   metadataDiff.value = null;
   pageStatus.value = null;
-  previewPane.value = null;
-  livePane.value = null;
 
   try {
     const versions = await fetchVersions(url);
@@ -89,17 +83,10 @@ async function loadDiff(url, decorate) {
     const liveMain = parseMain(liveHtml);
     const nextContentDiff = diffContent(previewMain, liveMain);
     const nextMetadataDiff = diffMetadata(previewMain, liveMain);
-    const [nextPreviewPane, nextLivePane] = await Promise.all([
-      renderPane(versions.preview.html, { decorate }),
-      renderPane(liveHtml, { decorate }),
-    ]);
-    applyHighlights(nextPreviewPane, nextLivePane, nextContentDiff);
 
     contentDiff.value = nextContentDiff;
     metadataDiff.value = nextMetadataDiff;
     pageStatus.value = versions.status;
-    previewPane.value = nextPreviewPane;
-    livePane.value = nextLivePane;
     view.value = hasChanges(nextContentDiff, nextMetadataDiff) ? VIEW.READY : VIEW.EMPTY;
   } catch (e) {
     window.lana?.log?.(`[preflight][diff-panel] ${e.message}`, { tags: 'preflight', errorType: 'i' });
@@ -158,22 +145,15 @@ function DiffToolbar() {
     </div>`;
 }
 
-function ChangeRow({ change, previewRef, liveRef }) {
+function ChangeRow({ change }) {
   return html`
     <li class="preflight-diff-change-item">
-      <button
-        class="preflight-diff-change-row"
-        onClick=${() => {
-    scrollToChange(previewRef.current, change);
-    scrollToChange(liveRef.current, change);
-  }}>
-        <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
-        <span class="preflight-diff-change-path" title=${change.path}>${change.path}</span>
-      </button>
+      <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
+      <span class="preflight-diff-change-path" title=${change.path}>${change.path}</span>
     </li>`;
 }
 
-function ContentTab({ previewRef, liveRef }) {
+function ContentTab() {
   const diff = contentDiff.value;
   const changes = [...diff.added, ...diff.modified, ...diff.removed];
   return html`
@@ -183,16 +163,6 @@ function ContentTab({ previewRef, liveRef }) {
       role="tabpanel"
       aria-labelledby="preflight-diff-tab-content"
       hidden=${activeTab.value !== TAB.CONTENT}>
-      <div class="preflight-diff-panes">
-        <div class="preflight-diff-pane preflight-diff-pane-live">
-          <p class="preflight-diff-pane-label">Live</p>
-          <div class="preflight-diff-pane-body" ref=${liveRef}></div>
-        </div>
-        <div class="preflight-diff-pane preflight-diff-pane-preview">
-          <p class="preflight-diff-pane-label">Preview</p>
-          <div class="preflight-diff-pane-body" ref=${previewRef}></div>
-        </div>
-      </div>
       <div class="preflight-diff-changes">
         <p class="preflight-diff-changes-title">Changes (${changes.length})</p>
         ${changes.length === 0 && html`<p class="preflight-diff-empty-changes">No content changes</p>`}
@@ -200,9 +170,7 @@ function ContentTab({ previewRef, liveRef }) {
           <ul class="preflight-diff-change-list">
             ${changes.map((change) => html`<${ChangeRow}
               key=${`${change.type}-${change.path}`}
-              change=${change}
-              previewRef=${previewRef}
-              liveRef=${liveRef} />`)}
+              change=${change} />`)}
           </ul>`}
       </div>
     </div>`;
@@ -242,48 +210,19 @@ function MetadataTab() {
     </div>`;
 }
 
-export default function DiffPanel({ url: rawUrl, decorate, selected = true } = {}) {
+export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   const url = rawUrl || new URL(window.location.href);
-  const previewRef = useRef(null);
-  const liveRef = useRef(null);
   const hasLoadedRef = useRef(false);
 
-  // On-demand: every preflight tab mounts at once, so without this guard the fetch +
-  // two loadArea decorations would fire on every preflight open, tab viewed or not.
-  /* eslint-disable react-hooks/exhaustive-deps -- url/decorate snapshotted at first activation */
-  useEffect(() => {
-    if (!selected || hasLoadedRef.current) return;
+  // On-demand: every preflight tab mounts at once, so without this guard the fetch would fire
+  // on every preflight open, tab viewed or not. Runs synchronously in the render body — not in
+  // a useEffect — so the highlights preference is committed before this same render reads it
+  // below, instead of racing the async loadDiff() work against a separately-scheduled effect.
+  if (selected && !hasLoadedRef.current) {
     hasLoadedRef.current = true;
     highlightsOn.value = readHighlightsPref();
-    loadDiff(url, decorate);
-  }, [selected]);
-  /* eslint-enable react-hooks/exhaustive-deps */
-
-  useEffect(() => {
-    const liveEl = liveRef.current;
-    const previewEl = previewRef.current;
-    if (liveEl && livePane.value) liveEl.replaceChildren(livePane.value);
-    if (previewEl && previewPane.value) previewEl.replaceChildren(previewPane.value);
-    if (!liveEl || !previewEl) return undefined;
-
-    // Nice-to-have: mirror scroll position between panes; guard flag avoids an infinite ping-pong.
-    let syncing = false;
-    const mirror = (source, target) => () => {
-      if (syncing) return;
-      syncing = true;
-      target.scrollTop = source.scrollTop;
-      syncing = false;
-    };
-    const onLiveScroll = mirror(liveEl, previewEl);
-    const onPreviewScroll = mirror(previewEl, liveEl);
-    liveEl.addEventListener('scroll', onLiveScroll, { passive: true });
-    previewEl.addEventListener('scroll', onPreviewScroll, { passive: true });
-    return () => {
-      liveEl.removeEventListener('scroll', onLiveScroll);
-      previewEl.removeEventListener('scroll', onPreviewScroll);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- signal .value reads, not plain vars
-  }, [previewPane.value, livePane.value]);
+    loadDiff(url);
+  }
 
   if (view.value === VIEW.LOADING) {
     return html`
@@ -296,7 +235,7 @@ export default function DiffPanel({ url: rawUrl, decorate, selected = true } = {
     return html`
       <div class="preflight-diff">
         <p class="preflight-diff-error">Something went wrong loading the content diff.</p>
-        <button class="preflight-action preflight-diff-retry" onClick=${() => loadDiff(url, decorate)}>
+        <button class="preflight-action preflight-diff-retry" onClick=${() => loadDiff(url)}>
           Retry
         </button>
       </div>`;
@@ -313,7 +252,7 @@ export default function DiffPanel({ url: rawUrl, decorate, selected = true } = {
     <div class="preflight-diff ${highlightsOn.value ? 'preflight-diff-active' : ''}">
       <${LastModifiedHeader} />
       <${DiffToolbar} />
-      <${ContentTab} previewRef=${previewRef} liveRef=${liveRef} />
+      <${ContentTab} />
       <${MetadataTab} />
     </div>`;
 }
