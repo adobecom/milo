@@ -1,6 +1,6 @@
 import { normalizeText, getXPath } from './nodePath.js';
 
-const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, blockquote';
+export const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, blockquote';
 
 function ownText(el) {
   if (el.tagName === 'IMG') return normalizeText(el.getAttribute('alt') || '');
