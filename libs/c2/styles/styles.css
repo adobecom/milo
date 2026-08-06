@@ -1359,13 +1359,14 @@ span.hang-opening-quote {
          faster than the page scrolls, and it visibly dips down before
          pulling up. */
       --gd-grow-from: max(-90vh, -1050px);
-      --gd-reveal-from: 20vh;
+      --gd-reveal-from: 30vh;
       --gd-range-end: cover 48%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: max(-70vh, -800px);
       --gd-range-end: cover 36%;
+      --gd-reveal-from: 30vh;
     }
 
     .section-background {
@@ -1383,12 +1384,12 @@ span.hang-opening-quote {
       position: relative;
       animation: garage-door-reveal ease-out both;
       animation-timeline: --gd-timeline;
-      animation-range: entry 0% cover 42%;
+      animation-range: cover -30% cover 50%;
 
       * {
         animation: garage-door-line-height ease-out both;
-        animation-timeline: view();
-        animation-range: entry 30% cover 60%;
+        animation-timeline: --gd-timeline;
+        animation-range: cover 30% cover 50%;
       }
     }
   }
