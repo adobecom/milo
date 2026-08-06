@@ -216,10 +216,15 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
-      const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
-      // Remove its 'em' or 'strong' wrapper
-      link.parentElement.replaceWith(link);
+    const isPrimaryCta = link.parentElement.tagName === 'STRONG' || link.matches('a.con-button.blue');
+    const isSecondaryCta = !isPrimaryCta
+      && (link.parentElement.tagName === 'EM' || link.matches('a.con-button.outline'));
+    if (isPrimaryCta || isSecondaryCta) {
+      const type = isSecondaryCta ? 'secondaryCta' : 'primaryCta';
+      // Remove its 'em' or 'strong' wrapper, if still present
+      if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
+        link.parentElement.replaceWith(link);
+      }
       const clonedLink = link.cloneNode(true);
       const processedLink = link.classList.contains('merch') ? await merch.default(clonedLink) : link;
       const decoratedLink = decorateCta({ elem: processedLink, type, index: itemIndex.position });

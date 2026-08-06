@@ -534,6 +534,30 @@ export const closeGnavOptions = () => {
   enableMobileScroll();
   setMenuState();
 };
+
+const getOrgFlags = (organizations) => {
+  const ORG_TYPE_CCT = 'DIRECT';
+  const ORG_TYPE_CCE = 'Enterprise';
+  const ORG_TYPE_CCE_DEPR = 'INDIRECT';
+  const ROLE_ADMIN = 'GRP_ADMIN';
+
+  const orgs = organizations?.organizations || [];
+  const relevantOrgs = orgs.filter(
+    (org) => org.orgType === ORG_TYPE_CCT
+      || org.orgType === ORG_TYPE_CCE
+      || org.orgType === ORG_TYPE_CCE_DEPR,
+  );
+  const showTeam = relevantOrgs.some(
+    (org) => org.orgType === ORG_TYPE_CCT
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  const showEnterprise = relevantOrgs.some(
+    (org) => (org.orgType === ORG_TYPE_CCE || org.orgType === ORG_TYPE_CCE_DEPR)
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  return { hasOrgs: showTeam || showEnterprise };
+};
+
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -939,10 +963,35 @@ class Gnav {
     // If user is signed in, decorate the profile avatar
     const accessToken = window.adobeIMS.getAccessToken();
     const { env } = getConfig();
-    const headers = new Headers({ Authorization: `Bearer ${accessToken.token}` });
-    const profileData = await fetch(`https://${env.adobeIO}/profile`, { headers });
+    // Get user profile for x-account-id
+    let accountId = '';
+    let hasOrgs = false;
+    try {
+      const [profile, organizations] = await Promise.all([
+        window.adobeIMS.getProfile(),
+        window.adobeIMS.getOrganizations(),
+      ]);
+      accountId = profile?.userId || '';
+      hasOrgs = getOrgFlags(organizations).hasOrgs;
+    } catch (e) {
+      accountId = '';
+      hasOrgs = false;
+      lanaLog({
+        message: 'GNAV: decorateProfile has failed to fetch profile or organizations data',
+        e,
+        tags: 'gnav',
+        errorType: 'i',
+        severity: 'error',
+      });
+    }
+    const headers = new Headers({
+      Authorization: `Bearer ${accessToken.token}`,
+      'x-account-id': accountId,
+      'x-api-key': window.adobeid?.client_id,
+    });
+    const profileData = await fetch(`https://${env.adobeIO}/api/profile`, { headers });
 
-    if (profileData.status !== 200) {
+    if (!profileData.ok) {
       lanaLog({
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
@@ -953,7 +1002,8 @@ class Gnav {
       return;
     }
 
-    const { sections, user: { avatar } } = await profileData.json();
+    const profileJson = await profileData.json();
+    const avatar = profileJson?.images?.['138'] || '';
 
     this.blocks.profile.buttonElem = await decorateProfileTrigger({ avatar });
     decoratedElem.append(this.blocks.profile.buttonElem);
@@ -968,7 +1018,7 @@ class Gnav {
         rawElem,
         decoratedElem,
         avatar,
-        sections,
+        hasOrgs,
         buttonElem: this.blocks.profile.buttonElem,
         // If the dropdown has been decorated due to a click, open it
         openOnInit: e instanceof Event,
@@ -1496,10 +1546,12 @@ class Gnav {
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
     const isPrimaryCta = item.closest('strong') instanceof HTMLElement
-      || item.matches('a.con-button.blue');
+      || item.matches('a.con-button.blue')
+      || item.querySelector('a.con-button.blue') instanceof HTMLElement;
     if (isPrimaryCta) return 'primaryCta';
     const isSecondaryCta = item.closest('em') instanceof HTMLElement
-      || item.matches('a.con-button.outline');
+      || item.matches('a.con-button.outline')
+      || item.querySelector('a.con-button.outline') instanceof HTMLElement;
     if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
@@ -1789,13 +1841,16 @@ class Gnav {
           return addMepHighlightAndTargetId(triggerTemplate, item);
         }
         case 'primaryCta':
-        case 'secondaryCta':
-          // Remove its 'em' or 'strong' wrapper
-          item.parentElement.replaceWith(item);
+        case 'secondaryCta': {
+          const ctaLink = item.matches('a') ? item : item.querySelector('a');
+          if (ctaLink.parentElement.tagName === 'STRONG' || ctaLink.parentElement.tagName === 'EM') {
+            ctaLink.parentElement.replaceWith(ctaLink);
+          }
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: ctaLink.classList.contains('merch') ? await (await import('../merch/merch.js')).default(ctaLink) : ctaLink, type: itemType, index: index + 1 })}
             </div>`, item);
+        }
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
