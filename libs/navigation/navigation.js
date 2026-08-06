@@ -23,6 +23,19 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.aem.page',
 };
 
+// Known-safe origins a consumer is allowed to override the default
+// content/federal origin with. Anything else falls back to the env default.
+const allowedOriginOverrides = [
+  'https://milo.adobe.com',
+  'https://milo.stage.adobe.com',
+  'https://www.adobe.com',
+  'https://www.stage.adobe.com',
+  'https://business.adobe.com',
+  'https://business.stage.adobe.com',
+  'https://helpx.adobe.com',
+  'https://helpx.stage.adobe.com',
+];
+
 /**
  * Origin for federal content (locales, etc.) in standalone gnav.
  * Matches adobe.com / federal, not Milo libs.
@@ -145,7 +158,9 @@ export default async function loadBlock(configs, customLib) {
     loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
-  const origin = originOverride || getStandaloneNavOrigin(env);
+  const origin = (originOverride && allowedOriginOverrides.includes(originOverride))
+    ? originOverride
+    : getStandaloneNavOrigin(env);
   let bootstrapBlock;
   let locales;
   let setConfig;
