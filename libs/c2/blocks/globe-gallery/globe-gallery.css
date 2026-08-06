@@ -546,6 +546,28 @@
   color: #fff;
 }
 
+.globe-gallery-modal__badge-app--link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.globe-gallery-modal__badge-app--link::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid #fff;
+  border-top: 1.5px solid #fff;
+  transform: rotate(45deg) translateY(-1px);
+  flex-shrink: 0;
+}
+
+.globe-gallery-modal__badge-app--link:hover {
+  text-decoration: underline;
+}
+
 .globe-gallery-modal__badge-role {
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-size: 13px;

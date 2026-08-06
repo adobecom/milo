@@ -89,17 +89,21 @@ function parseFragmentCardSegment(nodes) {
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
         const nestedLi = li.querySelector('ul > li');
+        const anchor = [...li.childNodes].find((n) => n.nodeName === 'A');
+        const appHref = anchor ? (anchor.getAttribute('href') || null) : null;
         if (nestedLi) {
-          const appText = [...li.childNodes]
-            .filter((n) => n.nodeType === Node.TEXT_NODE)
-            .map((n) => n.textContent.trim())
-            .join('').trim();
+          const appText = anchor
+            ? anchor.textContent.trim()
+            : [...li.childNodes]
+              .filter((n) => n.nodeType === Node.TEXT_NODE)
+              .map((n) => n.textContent.trim())
+              .join('').trim();
           const roleText = nestedLi.textContent.trim();
-          if (appText) badges.push({ app: findApp(appText), role: roleText });
+          if (appText) badges.push({ app: findApp(appText), role: roleText, href: appHref });
         } else {
           // Legacy pipe-separated format: "Photoshop | Compositing"
           const parts = li.textContent.split('|').map((s) => s.trim()).filter(Boolean);
-          if (parts[0]) badges.push({ app: findApp(parts[0]), role: parts.slice(1).join(' ') });
+          if (parts[0]) badges.push({ app: findApp(parts[0]), role: parts.slice(1).join(' '), href: appHref });
         }
       });
     }

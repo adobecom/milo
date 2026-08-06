@@ -637,11 +637,10 @@ export default function createGlobeModal({
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal__badge';
-      row.innerHTML = '<div class="globe-gallery-modal__badge-left">'
-          + `<div class="globe-gallery-modal__badge-icon globe-gallery-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>`
-          + `<span class="globe-gallery-modal__badge-app">${b.app.name}</span>`
-        + '</div>'
-        + `<span class="globe-gallery-modal__badge-role">${b.role}</span>`;
+      const appNameHtml = b.href
+        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${b.href}">${b.app.name}</a>`
+        : `<span class="globe-gallery-modal__badge-app">${b.app.name}</span>`;
+      row.innerHTML = `<div class="globe-gallery-modal__badge-left"><div class="globe-gallery-modal__badge-icon globe-gallery-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>${appNameHtml}</div><span class="globe-gallery-modal__badge-role">${b.role}</span>`;
       badgesEl.appendChild(row);
     });
   }
