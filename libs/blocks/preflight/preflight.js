@@ -10,6 +10,7 @@ import Martech from './panels/martech.js';
 import Merch from './panels/merch.js';
 import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
+import DiffPanel from './panels/diff.js';
 
 const HEADING = 'Milo Preflight';
 const SUBHEADING = 'Pre-publish quality checks for this page';
@@ -28,6 +29,7 @@ const ICONS = {
   accessibility: svg(html`<circle cx="10" cy="3.8" r="1.6" /><path d="M3.5 7.3c2 1 4 1.5 6.5 1.5s4.5-.5 6.5-1.5" /><path d="M10 7v5" /><path d="M6.8 17.5 10 12l3.2 5.5" />`),
   performance: svg(html`<path d="M3.2 15.5a7 7 0 1 1 13.6 0" /><line x1="10" y1="13.5" x2="13.2" y2="9.2" /><circle cx="10" cy="13.5" r="1" fill="currentColor" stroke="none" />`),
   assets: svg(html`<rect x="2.5" y="3.8" width="15" height="12.4" rx="2" /><circle cx="7" cy="8" r="1.4" /><path d="M3.2 14.5 7.5 11l3 2.2L14 9.8l3.5 3.4" />`),
+  diff: svg(html`<rect x="2.2" y="3" width="6.6" height="14" rx="1.4" /><rect x="11.2" y="3" width="6.6" height="14" rx="1.4" />`),
 };
 
 const tabs = signal([
@@ -38,6 +40,7 @@ const tabs = signal([
   { title: 'Accessibility', desc: 'WCAG conformance and alt-text auditing.', icon: ICONS.accessibility },
   { title: 'Performance', desc: 'Core Web Vitals and LCP readiness.', icon: ICONS.performance },
   { title: 'Assets', desc: 'Image dimensions and asset optimization.', icon: ICONS.assets },
+  { title: 'Content Diff', desc: 'Compare preview vs live', icon: ICONS.diff },
 ]);
 
 function setTab(active) {
@@ -141,6 +144,8 @@ function setPanel(title) {
       return html`<${Performance} />`;
     case 'Assets':
       return html`<${Assets} />`;
+    case 'Content Diff':
+      return html`<${DiffPanel} />`;
     default:
       return html`<p>No matching panel.</p>`;
   }
