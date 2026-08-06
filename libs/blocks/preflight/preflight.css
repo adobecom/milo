@@ -1239,29 +1239,47 @@ img:hover ~ .asset-meta,
 }
 
 /*
- * Page-injected: Content Diff highlights on the real preview page (Option 1). These land
- * outside #preflight, so — unlike the modal's own .preflight-diff-added/-modified rules —
- * they resolve raw --s2a-* tokens directly instead of the modal-scoped --preflight-* aliases.
+ * Page-injected: Content Diff highlights on the real preview page. These land outside
+ * #preflight, so — unlike the modal's own .preflight-diff-active rules — they resolve raw
+ * --s2a-* tokens directly instead of the modal-scoped --preflight-* aliases.
+ *
+ * Rendered as a dedicated overlay element appended to (or wrapped around) the highlighted
+ * element, rather than as outline/::before styles on the element itself — a block's own layered
+ * content (background media, gradients, its own overlays) can be higher-stacked than an in-flow
+ * outline, burying it. A very high z-index on the overlay keeps it above those layers instead.
  */
-:is(.preflight-diff-added, .preflight-diff-modified) {
+.preflight-diff-highlight-relative {
   position: relative;
+}
+
+/* Positioned wrapper inserted only around elements that can't host an appended child overlay
+ * themselves (img, video, ...) — see ensureOverlayHost in diff-onpage.js. */
+.preflight-diff-highlight-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.preflight-diff-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2147483647;
   outline-offset: 2px;
+  pointer-events: none;
   scroll-margin: 100px;
 }
 
-.preflight-diff-added {
+.preflight-diff-overlay.is-added {
   outline: 3px solid var(--s2a-color-green-900);
 }
 
-.preflight-diff-modified {
+.preflight-diff-overlay.is-modified {
   outline: 3px solid var(--s2a-color-orange-700);
 }
 
-:is(.preflight-diff-added, .preflight-diff-modified)::before {
+.preflight-diff-overlay::before {
   position: absolute;
   inset-block-start: -1px;
   inset-inline-end: -1px;
-  z-index: 2;
   padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
   font-family: var(--preflight-font);
   font-size: var(--s2a-font-size-12);
@@ -1271,16 +1289,15 @@ img:hover ~ .asset-meta,
   color: var(--s2a-color-gray-25);
   border-start-end-radius: var(--s2a-border-radius-8);
   border-end-start-radius: var(--s2a-border-radius-8);
-  pointer-events: none;
   line-height: 1.8;
 }
 
-.preflight-diff-added::before {
+.preflight-diff-overlay.is-added::before {
   content: 'New';
   background: var(--s2a-color-green-900);
 }
 
-.preflight-diff-modified::before {
+.preflight-diff-overlay.is-modified::before {
   content: 'Changed';
 
   /* gray-25 (used by New) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
@@ -2081,11 +2098,20 @@ button.preflight-diff-tab:focus-visible {
   list-style: none;
 }
 
+/* Groups the jump-to row and the expand toggle side by side — two sibling buttons, not a
+ * button nested inside a button, so the expand control can't accidentally trigger the jump. */
+.preflight-diff-change-row-group {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s2a-spacing-8);
+}
+
 button.preflight-diff-change-row {
   display: flex;
   align-items: center;
   gap: var(--s2a-spacing-12);
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   min-height: 44px;
   padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
   border: 1px solid var(--preflight-border);
@@ -2112,6 +2138,108 @@ button.preflight-diff-change-row:focus-visible {
 button.preflight-diff-change-row:disabled {
   color: var(--preflight-fg-subtle);
   cursor: default;
+}
+
+button.preflight-diff-change-expand {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-8);
+  background: var(--preflight-surface-subtle);
+  color: var(--preflight-fg-subtle);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+button.preflight-diff-change-expand:hover {
+  background: var(--preflight-hover);
+}
+
+button.preflight-diff-change-expand:focus-visible {
+  outline: 2px solid var(--preflight-focus);
+  outline-offset: 2px;
+}
+
+button.preflight-diff-change-expand[aria-expanded="true"] {
+  color: var(--preflight-fg);
+}
+
+.preflight-diff-expand-chevron {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-block-end: 2px;
+  border-inline-end: 2px solid currentcolor;
+  border-block-end: 2px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+
+/* Rotate the chevron to point up when the detail is open. */
+button.preflight-diff-change-expand[aria-expanded="true"] .preflight-diff-expand-chevron {
+  transform: rotate(225deg);
+  margin-block-end: -4px;
+}
+
+.preflight-diff-change-detail {
+  padding: var(--s2a-spacing-12);
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-8);
+  background: var(--preflight-surface);
+}
+
+.preflight-diff-detail-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s2a-spacing-12);
+}
+
+.preflight-diff-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8);
+  min-width: 0;
+}
+
+.preflight-diff-detail-label {
+  margin: 0;
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--preflight-fg-subtle);
+}
+
+.preflight-diff-snippet-text {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--s2a-font-size-14);
+}
+
+.preflight-diff-snippet-empty {
+  margin: 0;
+  color: var(--preflight-fg-subtle);
+  font-style: italic;
+}
+
+.preflight-diff-snippet-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8);
+}
+
+.preflight-diff-snippet-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-8);
+}
+
+.preflight-diff-snippet-img {
+  max-width: 100%;
+  max-height: 160px;
+  height: auto;
+  border-radius: var(--s2a-border-radius-8);
 }
 
 .preflight-diff-change-path {
@@ -2259,6 +2387,12 @@ button.preflight-diff-change-row:disabled {
   }
 
   .preflight-diff-panes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Before/After (Changed) has two columns worth showing side by side; Removed/Added only ever
+   * render one column, so the single-column track just stays full width for those. */
+  .preflight-diff-detail-columns:has(.preflight-diff-detail-col:nth-child(2)) {
     grid-template-columns: 1fr 1fr;
   }
 }

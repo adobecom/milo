@@ -1,8 +1,17 @@
 import { createTag } from '../../../utils/utils.js';
 
-const ADDED_CLASS = 'preflight-diff-added';
-const MODIFIED_CLASS = 'preflight-diff-modified';
+const OVERLAY_CLASS = 'preflight-diff-overlay';
+const ADDED_MODIFIER = 'is-added';
+const MODIFIED_MODIFIER = 'is-modified';
+const WRAP_CLASS = 'preflight-diff-highlight-wrap';
+const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const JUMP_CLASS = 'preflight-diff-jump-highlight';
+
+// Replaced/void elements don't render appended children (a browser never paints a child of an
+// <img>), so the overlay can't live inside them directly — those get wrapped instead (see
+// ensureOverlayHost). Every other diffable tag (p, headings, li, a, button, blockquote, and a
+// block's own container div) can safely host the overlay as a plain child.
+const VOID_HOST_TAGS = new Set(['IMG', 'VIDEO', 'IFRAME', 'AUDIO', 'EMBED', 'OBJECT', 'CANVAS', 'INPUT']);
 
 // Matches getXPath's segment shape "tag[index]", e.g. "/div[1]/p[3]" -> [{tag, index}, ...].
 function parsePath(path) {
@@ -82,9 +91,45 @@ function logUnmapped(change) {
   );
 }
 
+// Removes every overlay this module ever added under `root`, and reverses any wrapping/
+// positioning it applied to host them — leaves the page exactly as it was found. Order matters:
+// overlays are removed first so a wrapper's only remaining child is the original wrapped element.
 function clearHighlights(root) {
-  root.querySelectorAll(`.${ADDED_CLASS}, .${MODIFIED_CLASS}`)
-    .forEach((el) => el.classList.remove(ADDED_CLASS, MODIFIED_CLASS));
+  root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
+  root.querySelectorAll(`.${RELATIVE_CLASS}`).forEach((el) => el.classList.remove(RELATIVE_CLASS));
+  root.querySelectorAll(`.${WRAP_CLASS}`).forEach((wrapper) => {
+    const original = wrapper.firstElementChild;
+    if (original) wrapper.replaceWith(original);
+    else wrapper.remove();
+  });
+}
+
+/**
+ * Returns an element the overlay can be safely appended to for `el`: `el` itself for anything
+ * that renders its children (a block's own container div, p/heading/li/a/button/blockquote), or
+ * a freshly-inserted positioned wrapper for replaced/void elements (img, video, ...) that never
+ * render appended children at all.
+ *
+ * A block's own layered content (e.g. a marquee's background image/video/overlay) can establish
+ * its own z-index stacking — appending the overlay as `el`'s own child, rather than styling `el`
+ * itself, keeps the overlay a sibling within that same stacking context so its very-high z-index
+ * (see preflight.css) is compared directly against those layers instead of being irrelevant to
+ * them, which is what let the old outline+::before get buried underneath in practice.
+ */
+function ensureOverlayHost(el) {
+  if (VOID_HOST_TAGS.has(el.tagName)) {
+    const wrapper = createTag('span', { class: WRAP_CLASS });
+    el.replaceWith(wrapper);
+    wrapper.append(el);
+    return wrapper;
+  }
+  // Only force a positioning context when one doesn't already exist — position:relative with no
+  // offsets doesn't move `el`, so this is a no-op visually, but skipping it when `el` (or a block
+  // root) is already positioned avoids fighting an explicit position the page's own CSS set.
+  if (window.getComputedStyle(el).position === 'static') {
+    el.classList.add(RELATIVE_CLASS);
+  }
+  return el;
 }
 
 /**
@@ -92,14 +137,20 @@ function clearHighlights(root) {
  * the preview page in the first place, so it's intentionally skipped here (it stays list-only).
  * Never throws — an unresolvable change is logged and skipped.
  *
- * Clears any of its own classes under `root` before applying — the preflight modal is re-created
- * (not just hidden) on every open, so a prior call's returned cleanup can be orphaned rather than
- * invoked; clearing first keeps re-runs idempotent instead of accumulating stale outlines.
+ * Renders each highlight as a dedicated overlay element (see ensureOverlayHost) rather than
+ * outlining the target in place — an in-flow outline/::before ribbon on the element itself can
+ * end up underneath a block's own higher-stacked layered content (media, gradients, overlays);
+ * an appended overlay child with a very high z-index (preflight.css) sits above it instead.
+ *
+ * Clears everything this module previously added under `root` before applying — the preflight
+ * modal is re-created (not just hidden) on every open, so a prior call's returned cleanup can be
+ * orphaned rather than invoked; clearing first keeps re-runs idempotent instead of accumulating
+ * stale overlays or wrappers.
  */
 export function highlightOnPage(diff, root) {
   clearHighlights(root);
 
-  const apply = (change, className) => {
+  const apply = (change, modifierClass) => {
     let el = null;
     try {
       el = resolveOnPage(change.path, root, change.kind);
@@ -110,11 +161,13 @@ export function highlightOnPage(diff, root) {
       logUnmapped(change);
       return;
     }
-    el.classList.add(className);
+    const host = ensureOverlayHost(el);
+    const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}`, 'aria-hidden': 'true' });
+    host.append(overlay);
   };
 
-  (diff?.added || []).forEach((change) => apply(change, ADDED_CLASS));
-  (diff?.modified || []).forEach((change) => apply(change, MODIFIED_CLASS));
+  (diff?.added || []).forEach((change) => apply(change, ADDED_MODIFIER));
+  (diff?.modified || []).forEach((change) => apply(change, MODIFIED_MODIFIER));
 
   return function cleanup() {
     clearHighlights(root);

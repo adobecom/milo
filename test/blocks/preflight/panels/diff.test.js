@@ -557,31 +557,30 @@ describe('Preflight Content Diff Panel', () => {
       document.querySelector('.preflight-return-popover')?.remove();
     });
 
-    it('outlines the added and modified elements on the real page once the diff loads', async () => {
+    it('overlays the added and modified elements on the real page once the diff loads', async () => {
       stubFetchWithChanges();
       render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-change-item'));
-      await waitFor(() => pageMain.querySelector('.preflight-diff-added'));
+      await waitFor(() => pageMain.querySelector('.preflight-diff-overlay'));
 
       const heading = pageMain.querySelector('h2');
       const modifiedParagraph = [...pageMain.querySelectorAll('p')][1];
-      expect(heading.classList.contains('preflight-diff-added')).to.equal(true);
-      expect(modifiedParagraph.classList.contains('preflight-diff-modified')).to.equal(true);
-      // Removed content never rendered on the preview page — nothing to outline for it.
-      expect(pageMain.querySelector('.preflight-diff-removed')).to.not.exist;
+      expect(heading.querySelector(':scope > .preflight-diff-overlay.is-added')).to.exist;
+      expect(modifiedParagraph.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+      // Removed content never rendered on the preview page — nothing to overlay for it.
+      expect(pageMain.querySelector('.preflight-diff-overlay.is-removed')).to.not.exist;
     });
 
-    it('removes on-page highlights when the toggle is switched off', async () => {
+    it('removes on-page highlight overlays when the toggle is switched off', async () => {
       stubFetchWithChanges();
       render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-change-item'));
-      await waitFor(() => pageMain.querySelector('.preflight-diff-added'));
+      await waitFor(() => pageMain.querySelector('.preflight-diff-overlay'));
 
       container.querySelector('.preflight-diff-highlight-toggle').click();
-      await waitFor(() => !pageMain.querySelector('.preflight-diff-added'));
+      await waitFor(() => !pageMain.querySelector('.preflight-diff-overlay'));
 
-      expect(pageMain.querySelector('.preflight-diff-added')).to.not.exist;
-      expect(pageMain.querySelector('.preflight-diff-modified')).to.not.exist;
+      expect(pageMain.querySelector('.preflight-diff-overlay')).to.not.exist;
     });
 
     it('clicking an added change row closes the modal and jumps to it on the page', async () => {
@@ -594,21 +593,145 @@ describe('Preflight Content Diff Panel', () => {
 
       const addedRow = [...container.querySelectorAll('.preflight-diff-change-item')]
         .find((row) => row.querySelector('.preflight-diff-badge').textContent === 'New');
-      addedRow.querySelector('button').click();
+      addedRow.querySelector('.preflight-diff-change-row').click();
 
       expect(closeSpy.calledOnce).to.equal(true);
       await waitFor(() => document.querySelector('.preflight-return-popover'));
       expect(pageMain.querySelector('h2').classList.contains('preflight-diff-jump-highlight')).to.equal(true);
     });
 
-    it('disables the removed change row so there is nothing to click', async () => {
+    it('clicking the expand toggle reveals detail without closing the modal or jumping', async () => {
       stubFetchWithChanges();
       render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-change-item'));
 
-      const removedRow = [...container.querySelectorAll('.preflight-diff-change-item')]
-        .find((row) => row.querySelector('.preflight-diff-badge').textContent === 'Removed');
-      expect(removedRow.querySelector('button').disabled).to.equal(true);
+      const closeSpy = sinon.spy();
+      preflightModal.addEventListener('closeModal', closeSpy);
+
+      const addedItem = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((item) => item.querySelector('.preflight-diff-badge').textContent === 'New');
+      addedItem.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => addedItem.querySelector('.preflight-diff-change-detail'));
+
+      expect(closeSpy.called).to.equal(false);
+      expect(document.querySelector('.preflight-return-popover')).to.not.exist;
+    });
+
+    it('disables the removed change row so there is nothing to click, but still allows expanding it', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+
+      const removedItem = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((item) => item.querySelector('.preflight-diff-badge').textContent === 'Removed');
+      expect(removedItem.querySelector('.preflight-diff-change-row').disabled).to.equal(true);
+      expect(removedItem.querySelector('.preflight-diff-change-expand').disabled).to.equal(false);
+    });
+  });
+
+  describe('change detail (before/after)', () => {
+    beforeEach(async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+    });
+
+    function itemFor(badgeText) {
+      return [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((item) => item.querySelector('.preflight-diff-badge').textContent === badgeText);
+    }
+
+    it('starts collapsed with no detail region and aria-expanded false', () => {
+      const item = itemFor('Changed');
+      expect(item.querySelector('.preflight-diff-change-detail')).to.not.exist;
+      expect(item.querySelector('.preflight-diff-change-expand').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('has a jump button and a separate expand toggle that are not nested inside each other', () => {
+      const item = itemFor('Changed');
+      const jumpBtn = item.querySelector('.preflight-diff-change-row');
+      const expandBtn = item.querySelector('.preflight-diff-change-expand');
+      expect(jumpBtn).to.exist;
+      expect(expandBtn).to.exist;
+      expect(jumpBtn.contains(expandBtn)).to.equal(false);
+      expect(expandBtn.contains(jumpBtn)).to.equal(false);
+    });
+
+    it('expanding a Changed row shows Before (live) and After (preview) text', async () => {
+      const item = itemFor('Changed');
+      item.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      expect(item.querySelector('.preflight-diff-change-expand').getAttribute('aria-expanded')).to.equal('true');
+      const labels = [...item.querySelectorAll('.preflight-diff-detail-label')].map((el) => el.textContent);
+      expect(labels).to.deep.equal(['Before', 'After']);
+      const snippets = [...item.querySelectorAll('.preflight-diff-snippet-text')].map((el) => el.textContent);
+      expect(snippets).to.include('Old paragraph');
+      expect(snippets).to.include('New paragraph');
+    });
+
+    it('expanding a Removed row shows only the removed (live) content', async () => {
+      const item = itemFor('Removed');
+      item.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      const labels = [...item.querySelectorAll('.preflight-diff-detail-label')].map((el) => el.textContent);
+      expect(labels).to.deep.equal(['Removed']);
+      expect(item.querySelector('.preflight-diff-snippet-text').textContent).to.equal('Removed paragraph');
+    });
+
+    it('expanding an Added row shows only the After (preview) content', async () => {
+      const item = itemFor('New');
+      item.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      const labels = [...item.querySelectorAll('.preflight-diff-detail-label')].map((el) => el.textContent);
+      expect(labels).to.deep.equal(['After']);
+      expect(item.querySelector('.preflight-diff-snippet-text').textContent).to.equal('Brand new heading');
+    });
+
+    it('collapsing hides the detail region and flips aria-expanded back to false', async () => {
+      const item = itemFor('Changed');
+      const expandBtn = item.querySelector('.preflight-diff-change-expand');
+      expandBtn.click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      expandBtn.click();
+      await waitFor(() => !item.querySelector('.preflight-diff-change-detail'));
+      expect(expandBtn.getAttribute('aria-expanded')).to.equal('false');
+    });
+  });
+
+  describe('change detail — image and block snippets', () => {
+    it('renders the actual cloned <img> (with its real live/preview src) for an added image change', async () => {
+      stubFetchWithLabelChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelectorAll('.preflight-diff-change-item').length >= 4);
+
+      const item = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((el) => el.querySelector('.preflight-diff-change-path').textContent.startsWith('Image'));
+      item.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      const img = item.querySelector('.preflight-diff-snippet-img');
+      expect(img).to.exist;
+      expect(img.getAttribute('src')).to.equal('/a.png');
+      expect(img.getAttribute('alt')).to.equal('A cool photo');
+    });
+
+    it("renders a removed block's text as a lightweight snippet instead of its raw unstyled markup", async () => {
+      stubFetchWithBlockChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelectorAll('.preflight-diff-change-item').length >= 3);
+
+      const item = [...container.querySelectorAll('.preflight-diff-change-item')]
+        .find((el) => el.querySelector('.preflight-diff-change-path').textContent === 'Removed block: Marquee');
+      item.querySelector('.preflight-diff-change-expand').click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      expect(item.querySelector('.preflight-diff-snippet-text').textContent).to.equal('Marquee text');
+      // No raw <div class="marquee"> markup dropped in — just the lightweight text/media snippet.
+      expect(item.querySelector('.preflight-diff-change-detail .marquee')).to.not.exist;
     });
   });
 });

@@ -1,4 +1,4 @@
-import { html, signal, useEffect, useRef } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect, useRef, useState } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import diffContent from '../checks/diff/diffContent.js';
 import diffMetadata from '../checks/diff/diffMetadata.js';
@@ -19,6 +19,10 @@ const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 const TEXT_TAGS = new Set(['P', 'LI', 'BLOCKQUOTE']);
 const LABEL_TRUNCATE_LENGTH = 60;
 const BLOCK_LABEL_PREFIX = { added: 'New block', modified: 'Changed block', removed: 'Removed block' };
+// A block's raw pre-decoration markup can carry many images (rows/cells) — the detail snippet
+// is meant as a lightweight "what did this look like" preview, not a full re-render, so it's
+// capped rather than cloning every image the block ever had.
+const MAX_SNIPPET_IMAGES = 4;
 
 const view = signal(VIEW.LOADING);
 const activeTab = signal(TAB.CONTENT);
@@ -207,20 +211,139 @@ function describeChange(change) {
   return `${change.tag.toLowerCase()}: "${text}"`;
 }
 
+// `change.path` is a raw xpath ("/div[1]/p[3]") — safe as an HTML id, but not guaranteed unique
+// enough alone if two changes ever shared a path, so type is folded in too (mirrors the list key).
+function toDetailId(change) {
+  return `preflight-diff-detail-${change.type}-${change.path}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+}
+
+// Clones a live/preview DOM node (never a network string) into a scoped container via useEffect
+// + ref — no loadArea, no decoration, no innerHTML from fetched content. Used for an <img> leaf
+// change, where the actual live/preview <img> (with its real src) is the most useful preview.
+function ClonedElement({ el }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+    container.textContent = '';
+    if (!el) return;
+    const clone = el.cloneNode(true);
+    clone.classList.add('preflight-diff-snippet-img');
+    container.append(clone);
+  }, [el]);
+  return html`<div class="preflight-diff-snippet-media" ref=${ref}></div>`;
+}
+
+// A block never gets its raw markup re-rendered here (unstyled block internals look bad) — only
+// its text and a capped set of its own <img> nodes (cloned, not re-parsed) are shown, as a
+// lightweight stand-in for "what did this block look like".
+function BlockSnippet({ el, text }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+    container.textContent = '';
+    const images = el ? [...el.querySelectorAll('img')].slice(0, MAX_SNIPPET_IMAGES) : [];
+    images.forEach((img) => {
+      const clone = img.cloneNode(true);
+      clone.classList.add('preflight-diff-snippet-img');
+      container.append(clone);
+    });
+  }, [el]);
+  return html`
+    <div class="preflight-diff-snippet-block">
+      <p class="preflight-diff-snippet-text">${text || 'No text content'}</p>
+      <div class="preflight-diff-snippet-media" ref=${ref}></div>
+    </div>`;
+}
+
+// Text is rendered through Preact's own templating (a plain text child, not innerHTML), so
+// fetched live/preview strings are inserted safely without any manual escaping.
+function TextSnippet({ text }) {
+  return html`<p class="preflight-diff-snippet-text">${text || '(no text)'}</p>`;
+}
+
+function ChangeSnippet({ change, side }) {
+  const el = side === 'live' ? change.liveEl : change.previewEl;
+  const text = side === 'live' ? change.liveText : change.previewText;
+
+  if (change.kind === 'block') return html`<${BlockSnippet} el=${el} text=${text} />`;
+  if (change.tag === 'IMG') {
+    if (!el) return html`<p class="preflight-diff-snippet-empty">Image unavailable</p>`;
+    return html`<${ClonedElement} el=${el} />`;
+  }
+  return html`<${TextSnippet} text=${text} />`;
+}
+
+// Before/after detail shown when a change row is expanded. Changed shows both sides so the
+// author can see what flips; Removed shows only the live side (there's no preview counterpart);
+// Added's "after" is optional context — it's already visible on the page once published.
+function ChangeDetail({ change }) {
+  if (change.type === 'modified') {
+    return html`
+      <div class="preflight-diff-detail-columns">
+        <div class="preflight-diff-detail-col">
+          <p class="preflight-diff-detail-label">Before</p>
+          <${ChangeSnippet} change=${change} side="live" />
+        </div>
+        <div class="preflight-diff-detail-col">
+          <p class="preflight-diff-detail-label">After</p>
+          <${ChangeSnippet} change=${change} side="preview" />
+        </div>
+      </div>`;
+  }
+  if (change.type === 'removed') {
+    return html`
+      <div class="preflight-diff-detail-columns">
+        <div class="preflight-diff-detail-col">
+          <p class="preflight-diff-detail-label">Removed</p>
+          <${ChangeSnippet} change=${change} side="live" />
+        </div>
+      </div>`;
+  }
+  return html`
+    <div class="preflight-diff-detail-columns">
+      <div class="preflight-diff-detail-col">
+        <p class="preflight-diff-detail-label">After</p>
+        <${ChangeSnippet} change=${change} side="preview" />
+      </div>
+    </div>`;
+}
+
 // Removed content never rendered on the preview page in the first place — there's nothing on
-// the page to jump to, so that row stays a plain (non-interactive) list entry.
+// the page to jump to, so that row stays a plain (non-interactive) list entry. The expand toggle
+// is a separate control from the jump button (not a nested button) so it can reveal the
+// before/after detail without also triggering the jump-to-page action.
 function ChangeRow({ change }) {
   const isOnPage = change.type !== 'removed';
+  const [expanded, setExpanded] = useState(false);
+  const detailId = toDetailId(change);
+  const label = describeChange(change);
   return html`
     <li class="preflight-diff-change-item">
-      <button
-        type="button"
-        class="preflight-diff-change-row"
-        disabled=${!isOnPage}
-        onClick=${() => isOnPage && jumpToChangeOnPage(change)}>
-        <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
-        <span class="preflight-diff-change-path" title=${change.path}>${describeChange(change)}</span>
-      </button>
+      <div class="preflight-diff-change-row-group">
+        <button
+          type="button"
+          class="preflight-diff-change-row"
+          disabled=${!isOnPage}
+          onClick=${() => isOnPage && jumpToChangeOnPage(change)}>
+          <span class="preflight-diff-badge is-${change.type}">${BADGE_LABEL[change.type]}</span>
+          <span class="preflight-diff-change-path" title=${change.path}>${label}</span>
+        </button>
+        <button
+          type="button"
+          class="preflight-diff-change-expand"
+          aria-expanded=${expanded}
+          aria-controls=${detailId}
+          aria-label=${`${expanded ? 'Hide' : 'Show'} details for ${label}`}
+          onClick=${() => setExpanded((prev) => !prev)}>
+          <span class="preflight-diff-expand-chevron" aria-hidden="true"></span>
+        </button>
+      </div>
+      ${expanded && html`
+        <div id=${detailId} class="preflight-diff-change-detail">
+          <${ChangeDetail} change=${change} />
+        </div>`}
     </li>`;
 }
 

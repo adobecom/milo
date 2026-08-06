@@ -1,11 +1,18 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { loadStyle } from '../../../../libs/utils/utils.js';
 import {
   resolveOnPage,
   highlightOnPage,
   jumpToChangeOnPage,
 } from '../../../../libs/blocks/preflight/panels/diff-onpage.js';
 import { waitFor } from '../../../helpers/waitfor.js';
+
+// loadStyle uses a load/error callback, not a promise — wrap it so getComputedStyle assertions
+// below don't race the stylesheet's network fetch.
+await new Promise((resolve) => {
+  loadStyle('../../../../libs/blocks/preflight/preflight.css', resolve);
+});
 
 describe('preflight diff-onpage', () => {
   describe('resolveOnPage', () => {
@@ -146,7 +153,7 @@ describe('preflight diff-onpage', () => {
       sinon.restore();
     });
 
-    it('adds preflight-diff-added to a resolved added change', () => {
+    it('appends a preflight-diff-overlay child (not a class on the element itself) for a resolved added change', () => {
       const diff = {
         added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }],
         modified: [],
@@ -156,10 +163,13 @@ describe('preflight diff-onpage', () => {
       highlightOnPage(diff, root);
 
       const h2 = root.querySelector('h2');
-      expect(h2.classList.contains('preflight-diff-added')).to.equal(true);
+      expect(h2.classList.contains('preflight-diff-overlay')).to.equal(false);
+      const overlay = h2.querySelector(':scope > .preflight-diff-overlay');
+      expect(overlay).to.exist;
+      expect(overlay.classList.contains('is-added')).to.equal(true);
     });
 
-    it('adds preflight-diff-modified to a resolved modified change', () => {
+    it('appends a preflight-diff-overlay child with is-modified for a resolved modified change', () => {
       const diff = {
         added: [],
         modified: [{ type: 'modified', tag: 'P', path: '/div[1]/p[2]' }],
@@ -169,10 +179,45 @@ describe('preflight diff-onpage', () => {
       highlightOnPage(diff, root);
 
       const p = [...root.querySelectorAll('p')][1];
-      expect(p.classList.contains('preflight-diff-modified')).to.equal(true);
+      const overlay = p.querySelector(':scope > .preflight-diff-overlay');
+      expect(overlay).to.exist;
+      expect(overlay.classList.contains('is-modified')).to.equal(true);
     });
 
-    it('skips removed changes on the page (no element carries a class for them)', () => {
+    it('the overlay is a positioned, click-through, very-high-z-index element sitting above sibling content', () => {
+      const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
+      highlightOnPage(diff, root);
+
+      const overlay = root.querySelector('.preflight-diff-overlay');
+      const style = window.getComputedStyle(overlay);
+      expect(style.position).to.equal('absolute');
+      expect(style.pointerEvents).to.equal('none');
+      expect(Number(style.zIndex)).to.be.greaterThan(1000);
+    });
+
+    it('forces a positioning context onto an unpositioned host so the overlay aligns to it, without moving it', () => {
+      const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
+      highlightOnPage(diff, root);
+
+      const h2 = root.querySelector('h2');
+      expect(h2.classList.contains('preflight-diff-highlight-relative')).to.equal(true);
+      expect(window.getComputedStyle(h2).position).to.equal('relative');
+    });
+
+    it('wraps a void/replaced element (img) that cannot host an appended overlay child', () => {
+      root.innerHTML = '<div><img src="/a.png" alt="A"></div>';
+      const diff = { added: [{ type: 'added', tag: 'IMG', path: '/div[1]/img[1]' }], modified: [], removed: [] };
+
+      highlightOnPage(diff, root);
+
+      const img = root.querySelector('img');
+      const wrapper = img.parentElement;
+      expect(wrapper.classList.contains('preflight-diff-highlight-wrap')).to.equal(true);
+      expect(wrapper.querySelector(':scope > .preflight-diff-overlay.is-added')).to.exist;
+      expect(window.getComputedStyle(wrapper).position).to.equal('relative');
+    });
+
+    it('skips removed changes on the page (no overlay for them)', () => {
       const diff = {
         added: [],
         modified: [],
@@ -181,8 +226,7 @@ describe('preflight diff-onpage', () => {
 
       highlightOnPage(diff, root);
 
-      expect(root.querySelector('.preflight-diff-added')).to.not.exist;
-      expect(root.querySelector('.preflight-diff-modified')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
     });
 
     it('skips a change that cannot be resolved, without throwing, and logs to lana', () => {
@@ -193,36 +237,50 @@ describe('preflight diff-onpage', () => {
       };
 
       expect(() => highlightOnPage(diff, root)).to.not.throw();
-      expect(root.querySelector('.preflight-diff-added')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
       expect(lanaLogStub.called).to.equal(true);
       expect(lanaLogStub.firstCall.args[0]).to.include('diff-onpage');
       expect(lanaLogStub.firstCall.args[1]).to.deep.include({ tags: 'preflight' });
     });
 
-    it('returns a cleanup function that removes every class it applied', () => {
+    it('returns a cleanup function that removes every overlay and reverses any positioning/wrapping it applied', () => {
+      root.innerHTML = '<div><p>Kept</p><p>Old text</p><h2>New heading</h2><img src="/a.png" alt="A"></div>';
       const diff = {
-        added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }],
+        added: [
+          { type: 'added', tag: 'H2', path: '/div[1]/h2[1]' },
+          { type: 'added', tag: 'IMG', path: '/div[1]/img[1]' },
+        ],
         modified: [{ type: 'modified', tag: 'P', path: '/div[1]/p[2]' }],
         removed: [],
       };
 
       const cleanup = highlightOnPage(diff, root);
-      expect(root.querySelectorAll('.preflight-diff-added, .preflight-diff-modified')).to.have.length(2);
+      expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(3);
+      expect(root.querySelector('.preflight-diff-highlight-wrap')).to.exist;
 
       cleanup();
 
-      expect(root.querySelectorAll('.preflight-diff-added, .preflight-diff-modified')).to.have.length(0);
+      expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(0);
+      expect(root.querySelector('.preflight-diff-highlight-relative')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-highlight-wrap')).to.not.exist;
+      // The wrapped img is back in the tree, unwrapped, in its original spot.
+      expect(root.querySelector('img')).to.exist;
+      expect(root.querySelector('div > img')).to.exist;
     });
 
-    it('clears previously-applied classes at the start of a re-run, even without calling cleanup', () => {
-      const first = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
+    it('clears previously-applied overlays/wrappers at the start of a re-run, even without calling cleanup', () => {
+      root.innerHTML = '<div><img src="/a.png" alt="A"></div>';
+      const first = { added: [{ type: 'added', tag: 'IMG', path: '/div[1]/img[1]' }], modified: [], removed: [] };
       highlightOnPage(first, root);
-      expect(root.querySelector('.preflight-diff-added')).to.exist;
+      expect(root.querySelector('.preflight-diff-overlay')).to.exist;
+      expect(root.querySelector('.preflight-diff-highlight-wrap')).to.exist;
 
       const second = { added: [], modified: [], removed: [] };
       highlightOnPage(second, root);
 
-      expect(root.querySelector('.preflight-diff-added')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-highlight-wrap')).to.not.exist;
+      expect(root.querySelector('img')).to.exist;
     });
 
     it('handles an empty/undefined diff without throwing', () => {
