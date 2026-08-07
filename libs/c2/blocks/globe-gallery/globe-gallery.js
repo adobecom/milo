@@ -152,6 +152,10 @@ const CA_MOTION_STRENGTH = 1.0; // directional UV shift max — peel / fold / sp
 const CA_MOTION_STRENGTH_ARC = 0.04; // softer clamp while cards sit on the arc
 const SCROLL_VEL_MAX = 14; // px/frame scroll speed that saturates the motion trail
 const SCROLL_VEL_DEADBAND = 7; // px/frame below this = Lenis settle noise → no CA
+// Touch scroll is not Lenis-smoothed (page-level Lenis leaves syncTouch off), so damp the
+// scroll-driven timeline ourselves on touch. Fraction of the remaining gap closed per 60fps
+// frame (frame-rate normalized at use); lower = more damping/lag.
+const SCROLL_DAMP_TOUCH = 0.1;
 const CA_PX_MAX = 4; // max vertical pixel shift for the global canvas SVG filter
 
 // Hover (sphere phase only) — settles in/out, no continuous animation.
@@ -364,6 +368,13 @@ function createGlobeGalleryRuntime(
     gridTilts = [];
 
   let progress = 0;
+
+  let snapProgress = true;
+  // Damp the scroll timeline on touch only — desktop/wheel is already Lenis-smoothed, and a
+  // narrow desktop window (sm width) still has a fine pointer. Set in initRuntime (re-evaluated
+  // on every rebuild, so a trackpad↔touch flip is picked up). See CLAUDE.md / README.
+  let dampScroll = false;
+  let lastTickMs = 0; // performance.now() at the previous tick, for frame-rate-normalized damping
   let arcCopyEntryT = 0;
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
@@ -862,6 +873,7 @@ function createGlobeGalleryRuntime(
     requestAnimationFrame(() => {
       if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
       else window.scrollTo(0, top);
+      snapProgress = true; // land the interactive globe instantly — don't damp-glide the snap
     });
   }
 
@@ -948,7 +960,20 @@ function createGlobeGalleryRuntime(
     const entryStart = blockDocTop - H * ENTRY_LEAD_VH;
     const entryRange = H * ENTRY_RAMP_VH;
     arcCopyEntryT = Math.max(0, Math.min(1, (lenisY - entryStart) / entryRange));
-    progress = Math.max(0, Math.min(1, (lenisY - blockDocTop) / blockHeight));
+    // On touch, ease `progress` toward the raw scroll target instead of tracking it 1:1, so a
+    // fling can't jump the timeline past a whole phase (and the motion doesn't feel dizzying).
+    // Frame-rate normalized so 120Hz ProMotion and 60Hz damp at the same wall-clock rate.
+    const progressTarget = Math.max(0, Math.min(1, (lenisY - blockDocTop) / blockHeight));
+    const nowMs = performance.now();
+    const dtMs = lastTickMs ? nowMs - lastTickMs : 1000 / 60;
+    lastTickMs = nowMs;
+    if (dampScroll && !snapProgress) {
+      const dampStep = 1 - (1 - SCROLL_DAMP_TOUCH) ** (dtMs / (1000 / 60));
+      progress += (progressTarget - progress) * dampStep;
+    } else {
+      progress = progressTarget;
+    }
+    snapProgress = false;
 
     // arcPanT: preroll animates in with the entry so the arc is already moving as it enters view.
     const arcPanT = Math.min(1, progress / PROGRESS_PAN_END + PROGRESS_ARC_PREROLL * arcCopyEntryT);
@@ -1660,6 +1685,8 @@ function createGlobeGalleryRuntime(
     if (rafId) return;
     // Reset the velocity baseline so a resume after an off-screen scroll doesn't spike scrollVel.
     prevLenisY = window.scrollY;
+    snapProgress = true;
+    lastTickMs = 0; // drop the dt baseline so the paused gap isn't counted as one frame
     rafId = requestAnimationFrame(rafLoop);
   }
   function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
@@ -1744,6 +1771,9 @@ function createGlobeGalleryRuntime(
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
+    dampScroll = !reducedMotion
+      && !!window.matchMedia
+      && window.matchMedia('(pointer: coarse)').matches;
 
     try {
       const aa = bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD;
@@ -1933,6 +1963,7 @@ function createGlobeGalleryRuntime(
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
+    progress = 0; snapProgress = true; lastTickMs = 0;
     // Reset sphere orientation + drag/nudge state: the closure survives a rebuild, so without
     // this a pre-rebuild tilt carries over. See README (destroy resets).
     resetSphereOrientation();

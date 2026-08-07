@@ -300,6 +300,20 @@ Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFr
 driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
 
+**Touch scroll damping.** Milo's page-level Lenis smooths wheel/desktop scroll (lerp 0.08)
+but leaves `syncTouch` off, so **touch scroll is raw native scroll** — a fling produces large
+per-frame `scrollY` deltas that would jump the timeline past whole phases and feel dizzying.
+So on coarse-pointer devices only (`dampScroll`, set in `initRuntime` from
+`matchMedia('(pointer: coarse)')`, and off under reduced motion), `progress` is eased toward
+its raw target instead of tracking 1:1: `progress += (target - progress) * dampStep`, where
+`dampStep` is `SCROLL_DAMP_TOUCH` (0.1) frame-rate-normalized against the tick's `dtMs` so
+60Hz and 120Hz damp at the same wall-clock rate. Desktop/wheel (and a narrow desktop window,
+which still has a fine pointer) is untouched — Lenis remains the only smoothing there. A
+`snapProgress` flag skips the ease for non-continuous jumps that must land instantly: the
+first frame, the a11y focus-snap `scrollTo`, off-screen ticker resume, and rebuilds; flings
+are deliberately NOT snapped. This is separate from the velocity-based CA, which still reads
+raw `scrollVel`.
+
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
 (textures loaded + cards built) AND `onScreen` are true; `syncTicker()` reconciles them and
 is called whenever either flips. `onScreen` is driven by an `IntersectionObserver` on the
