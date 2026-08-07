@@ -149,8 +149,9 @@ const onHover = (event) => {
   slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
-  container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
-  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === 5);
+  const maxIndex = slideEl.closest('.hub-hero')?.classList.contains('slides-3') ? 3 : 5;
+  container.classList.toggle('stick-left', rtl ? slideIndex === maxIndex : slideIndex === 1);
+  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === maxIndex);
 
   if (hoverTracked) return;
 
@@ -166,10 +167,11 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
   const children = [...slide.children];
   const left = children[0];
-  const right = children[1];
+  const right = children[1] ?? children[0];
 
   const [eyebrow, heading] = left.children;
   const asset = right.children[0];
+  const icon = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
@@ -191,6 +193,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='hub-hero-carousel-item-media'>
         ${asset?.outerHTML}
+        ${icon?.outerHTML ?? ''}
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
@@ -256,8 +259,8 @@ const upgradeVideoPreload = (carousel) => {
   });
 };
 
-const handleCarousel = (slds) => {
-  const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
+const handleCarousel = (slds, isThreeSlides) => {
+  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
@@ -295,20 +298,27 @@ const setCarouselSlideOffsets = (grid, carousel) => {
   });
 };
 
-const handleGridImages = (imageContainers, slides) => {
+const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
-  [...imageContainers[0].children]?.forEach((img) => {
-    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, img));
-  });
-  [...imageContainers[1].children]?.forEach((img, index) => {
-    container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
+  [...imageContainers[0].children]?.forEach((cntr) => {
+    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, cntr));
   });
 
-  const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
-  const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
+  [1, 2].forEach((i) => {
+    [...(imageContainers[i]?.children ?? [])].forEach((img, index) => {
+      if (img.children?.length) container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1})`)?.appendChild(img);
+    });
+  });
 
-  col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
-  col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
+  const gridColumns = [...container.querySelectorAll('.hub-hero-image-grid-container-col')];
+
+  const leftSlideIndex = isThreeSlides ? 0 : 1;
+  const rightSlideIndex = isThreeSlides ? 2 : 3;
+
+  const leftClone = slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  if (leftClone) gridColumns[1]?.append(leftClone);
+  if (rightClone) gridColumns[3]?.append(rightClone);
 
   return container;
 };
@@ -342,6 +352,7 @@ const findSize = (classes, key) => classes.find((item) => item.match(key))?.spli
 export default async function init(el) {
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
+  const isThreeSlides = classes.includes('slides-3');
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
@@ -353,10 +364,11 @@ export default async function init(el) {
   decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
   carouselHeader.classList.add('hub-hero-carousel-header');
-  const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
-  const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
-  const grid = handleGridImages(gridImages, carouselImages);
-  const elasticCarousel = handleCarousel(carouselImages);
+  const gridImages = [...el.querySelectorAll(`.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)${isThreeSlides ? ', .hub-hero > div:nth-child(4)' : ''}`)];
+  const carouselImages = [...el.querySelectorAll(`.hub-hero > div:nth-last-of-type(-n+${isThreeSlides ? 3 : 4})`)];
+
+  const grid = handleGridImages(gridImages, carouselImages, isThreeSlides);
+  const elasticCarousel = handleCarousel(carouselImages, isThreeSlides);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
