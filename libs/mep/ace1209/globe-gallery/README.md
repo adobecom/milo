@@ -155,9 +155,9 @@ pipe-separated `Name | Role` single-`<li>` form is still parsed.
 
 - **md (≥768) — uncapped.** Every authored card renders. Sphere (Fibonacci) and arc (normalized
   `fanT`) are count-agnostic; the grid's 9×5 is only *nominal* (fixes card size, gap, centering
-  origin) and already overflows ~1.44× as a "more cards beyond" cue, so cards past 45 continue into
-  further off-screen columns. `totalW`/`totalH` derive from the nominal dims, so **adding cards never
-  shifts cards 0–44**. Practical ceiling is texture memory, not layout.
+  origin) and already overflows ~1.44× as a "more cards beyond" cue, so authored cards beyond the
+  nominal grid continue into further off-screen columns. `totalW`/`totalH` derive from the nominal
+  dims, so **adding cards never shifts already-placed cards**. Practical ceiling is texture memory, not layout.
 - **sm (<768) — barrel hard cap of 24, modal gallery uncapped.** The 3×8 grid already exceeds a
   667px viewport, so mobile renders only the first 24 on the arc/grid/barrel (`bp.N_TOTAL`, logged
   via `lana`), loading only their 24 base textures. The modal still browses ALL images (below) —
@@ -520,7 +520,7 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     yaw-only drags can't reach its poles). Constants live in the `YAW_ONLY_GEOMETRY` overlay.
   - **Why split** — the shape constants exist only because a yaw-only drag can't change a card's
     latitude. Keying them to width was wrong: an **iPad Pro is ≥768px (`md`) but drags with
-    touch**, which left 7 of its 45 cards permanently >60° oblique. Use `(pointer: coarse)` (the
+    touch**, which left 7 of its authored cards permanently >60° oblique. Use `(pointer: coarse)` (the
     *primary* pointer's precision), not `(hover: none)` or a UA sniff. A trackpad flip
     (`coarse`→`fine`) is handled: geometry bakes at `buildCards()`, so `doLayout` compares
     `bp.YAW_ONLY` and rebuilds via `destroy()`+`init()` (driven by a media-query `change` listener,
@@ -531,9 +531,9 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     ```
     device                  band cards  shape            cols  cardW  wall@near  col imb
     iPhone (393, touch)     sm      24  cylinder masonry    8  13.09      83%      1.05
-    iPad Pro (1024, touch)  md      45  cylinder masonry   14  13.09     164%*     1.22
-    iPad Pro + trackpad     md      45  full sphere         -      -        n/a       -
-    Desktop (1440, mouse)   md      45  full sphere         -      -        n/a       -
+    iPad Pro (1024, touch)  md       N  cylinder masonry   14  13.09     164%*     1.22
+    iPad Pro + trackpad     md       N  full sphere         -      -        n/a       -
+    Desktop (1440, mouse)   md       N  full sphere         -      -        n/a       -
     Narrow desktop (500)    sm      24  cylinder masonry    8  13.09      83%      1.05
     * >100% = wall bleeds past top/bottom — intended immersive framing (77% of centre frustum).
     ```

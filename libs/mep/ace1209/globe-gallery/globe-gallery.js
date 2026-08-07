@@ -468,7 +468,7 @@ function createGlobeGalleryRuntime(
   let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
 
   // Grid layout — GRID_COLS/ROWS are the NOMINAL grid (size, gap, centering origin);
-  // totalW/totalH derive from the nominal dims so adding cards never shifts cards 0–44.
+  // totalW/totalH derive from the nominal dims so adding cards never shifts already-placed cards.
   // See README (Card count).
   function computeGridLayout() {
     if (cards.length === 0) return;
