@@ -66,13 +66,13 @@ const bcAnalytics = (event) => {
       case 'cta:clicked':
         _satellite.track('event', {
           data: {
-            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${event.data?.element?.loginStatus}` } },
+            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${event.data?.loginStatus}` } },
             _adobe_corpnew: {
               digitalData: {
                 primaryEvent: {
                   eventInfo: {
                     interaction: {
-                      click: `BC-cta|loginStatus:${event.data?.element?.loginStatus}`,
+                      click: `BC-cta|loginStatus:${event.data?.loginStatus}`,
                       iclick: true,
                     },
                   },
