@@ -182,6 +182,11 @@ export const GeoMap = {
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
+ * MAS locale overrides for markets that share a language but have different country codes
+ */
+const MARKET_LOCALE_OVERRIDES = { en: { AU: 'en_GB', IN: 'en_GB', GB: 'en_GB' } };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -1145,14 +1150,31 @@ export async function initService(force = false, attributes = {}) {
       ]);
 
       let countryFromMarket = country;
-      if (useGeoMarket && validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      let localeFromMarket = locale;
+      if (useGeoMarket && validatedMarket) {
+        const market = validatedMarket.toUpperCase();
+        countryFromMarket = market;
+        // `country` above is already geo-adjusted; the page's own market comes from its native
+        // milo locale. Only fall back to a market's Global-EN locale when the page isn't
+        // already that market's localized site: e.g. the / EN site (en_US) serving an AU/IN/GB
+        // visitor, never /au, /in or /uk, which keep their native locale.
+        const { country: pageCountry } = getMiloLocaleSettings(miloLocale);
+        if (market !== pageCountry) {
+          const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+          if (localeOverride) {
+            localeFromMarket = localeOverride;
+            // en_GB already resolves the GB market; don't also stamp a (non-GB) country.
+            if (localeOverride.endsWith(`_${market}`)) countryFromMarket = undefined;
+          }
+        }
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
-          locale,
+          locale: localeFromMarket,
           language,
-          country: countryFromMarket,
+          ...(countryFromMarket ? { country: countryFromMarket } : {}),
           ...attributes,
           ...commerce,
         });
@@ -1178,8 +1200,12 @@ export async function initService(force = false, attributes = {}) {
           if (isSignedIn) fetchEntitlements();
         });
         if (useGeoMarket) guardCheckoutLinkImsCountry(service);
-      } else if (useGeoMarket && countryFromMarket !== country) {
-        service.setAttribute('country', countryFromMarket);
+      } else if (useGeoMarket) {
+        if (countryFromMarket !== country) {
+          if (countryFromMarket) service.setAttribute('country', countryFromMarket);
+          else service.removeAttribute('country');
+        }
+        if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
