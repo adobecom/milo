@@ -164,6 +164,58 @@ function setupBlock(el) {
     properties.forEach((property) => element.style.removeProperty(`--split-aside-grid-${property}`));
   }
 
+  /* Push the active media's stored aspect ratio onto the stack so the stack
+     resizes to match the slide on show. Tablet/desktop only. */
+  function updateStackAspectRatio() {
+    if (isMobile) return;
+    const active = medias.find((media) => media.dataset.slot === '0');
+    const ratio = active?.style.getPropertyValue('--split-aside-grid-media-aspect-ratio');
+    if (ratio) setInline(stack, { 'aspect-ratio': ratio });
+  }
+
+  function setMediaAspectRatio(media, width, height) {
+    if (!width || !height) return;
+    setInline(media, { 'media-aspect-ratio': `${width} / ${height}` });
+    if (media.dataset.slot === '0') updateStackAspectRatio();
+  }
+
+  function resolveVideoAspectRatio(video, media) {
+    const applyFromMetadata = () => setMediaAspectRatio(media, video.videoWidth, video.videoHeight);
+    if (video.readyState >= 1) {
+      applyFromMetadata();
+      return;
+    }
+    video.addEventListener('loadedmetadata', applyFromMetadata, { once: true });
+  }
+
+  function resolveMediaAspectRatios() {
+    medias.forEach((media) => {
+      const img = media.querySelector('img');
+      if (img) {
+        setMediaAspectRatio(media, parseInt(img.getAttribute('width'), 10), parseInt(img.getAttribute('height'), 10));
+        return;
+      }
+      const video = media.querySelector('video');
+      if (!video) return;
+      const poster = video.getAttribute('poster');
+      if (!poster) {
+        resolveVideoAspectRatio(video, media);
+        return;
+      }
+      /* Prefer the poster's dimensions; fall back to video metadata if it fails to load. */
+      const posterImg = new Image();
+      posterImg.addEventListener('load', () => {
+        if (posterImg.naturalWidth && posterImg.naturalHeight) {
+          setMediaAspectRatio(media, posterImg.naturalWidth, posterImg.naturalHeight);
+        } else {
+          resolveVideoAspectRatio(video, media);
+        }
+      }, { once: true });
+      posterImg.addEventListener('error', () => resolveVideoAspectRatio(video, media), { once: true });
+      posterImg.src = poster;
+    });
+  }
+
   function applyRotation(updateRotation, isSetup) {
     rotation += updateRotation;
     medias.forEach((m, idx) => {
@@ -201,6 +253,7 @@ function setupBlock(el) {
     });
 
     setAriaHiddenAndTabIndex();
+    updateStackAspectRatio();
     if (!isSetup && isMobile) updateAriaLive(ariaLive, items);
   }
 
@@ -546,6 +599,7 @@ function setupBlock(el) {
   const desktopMQ = window.matchMedia(DESKTOP_MQ);
   let mobileBound = false;
   let desktopBound = false;
+  let aspectRatiosResolved = false;
 
   function enableMobileNavigation() {
     prevBtn.addEventListener('click', handleNavigation);
@@ -579,12 +633,22 @@ function setupBlock(el) {
     setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
   }
 
+  function handleResizeMobileCarousel() {
+    const activeMedia = medias.find((media) => media.getAttribute('data-slot') === '0');
+    // TODO: Check on RTL
+    const { x } = activeMedia.getBoundingClientRect();
+    const { width } = stack.getBoundingClientRect();
+    setInline(stack, { 'stack-cutoff': `${width - x}px` });
+  }
+
   function addResizeObserver() {
     resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
-      if (isMobileCarousel && isMobile) goToMobileCarouselActive();
-      else handleResizeDesktop();
+      if (isMobileCarousel && isMobile) {
+        goToMobileCarouselActive();
+        handleResizeMobileCarousel();
+      } else handleResizeDesktop();
     });
     resizeObserver.observe(stack);
   }
@@ -660,6 +724,10 @@ function setupBlock(el) {
     }
 
     applyRotation(0, true);
+    if (!aspectRatiosResolved) {
+      aspectRatiosResolved = true;
+      resolveMediaAspectRatios();
+    }
     if (isMobile && isMobileCarousel) cloneMobileCarouselSlides();
   }
 

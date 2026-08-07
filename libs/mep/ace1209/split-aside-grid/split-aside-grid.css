@@ -113,7 +113,7 @@
         height: auto;
         min-width: 200%;
         transform: none;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: var(--split-aside-grid-media-aspect-ratio, 16 / 9);
       }
     }
 
@@ -283,7 +283,7 @@
     touch-action: auto;
     user-select: auto;
     align-items: center;
-    aspect-ratio: 213/155;
+    aspect-ratio: var(--split-aside-grid-aspect-ratio, 16 / 9);
     margin-block-end: unset;
 
     .media {
@@ -337,6 +337,10 @@
     padding-inline: 0;
     cursor: pointer;
     margin-block-end: var(--grid-item-spacing);
+
+    &[data-cloned="true"] {
+      display: none;
+    }
 
     .foreground {
       align-items: flex-start;
@@ -476,21 +480,19 @@
 }
 
 :root:has(meta[name="foundation"][content="c2"]) {
-  @media (width >= 768px) {
-    .split-aside-grid-stack {
-      --btn-spacing: var(--s2a-spacing-lg);
-      --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
-      --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
-      button.play-pause-button {
-        right: unset;
-        inset-inline-end: var(--btn-position);
-      }
+  .split-aside-grid-stack {
+    --btn-spacing: var(--s2a-spacing-lg);
+    --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
+    --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
+    button.play-pause-button {
+      right: unset;
+      inset-inline-end: var(--btn-position);
     }
+  }
 
-    @media (width >= 1280px) {
-      .split-aside-grid-stack {
-        --btn-spacing: var(--s2a-spacing-xl);
-      }
+  @media (width >= 1280px) {
+    .split-aside-grid-stack {
+      --btn-spacing: var(--s2a-spacing-xl);
     }
   }
 

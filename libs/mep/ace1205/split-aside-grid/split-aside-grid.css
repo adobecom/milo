@@ -237,7 +237,7 @@
     touch-action: auto;
     user-select: auto;
     align-items: center;
-    aspect-ratio: 213/155;
+    aspect-ratio: var(--split-aside-grid-aspect-ratio, 213/155);
     margin-block-end: unset;
 
     .media {
