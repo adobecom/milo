@@ -1963,62 +1963,6 @@ img:hover ~ .asset-meta,
   flex-direction: column;
   gap: var(--s2a-spacing-16);
   padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-32);
-
-  /* Gated behind .preflight-diff-active (the highlight toggle) for an undisturbed view when off. */
-  &.preflight-diff-active .preflight-diff-added,
-  &.preflight-diff-active .preflight-diff-modified,
-  &.preflight-diff-active .preflight-diff-removed {
-    position: relative;
-    outline-offset: 2px;
-  }
-
-  &.preflight-diff-active .preflight-diff-added {
-    outline: 3px solid var(--preflight-success);
-  }
-
-  &.preflight-diff-active .preflight-diff-modified {
-    outline: 3px solid var(--preflight-warning);
-  }
-
-  &.preflight-diff-active .preflight-diff-removed {
-    outline: 3px solid var(--preflight-error);
-  }
-
-  &.preflight-diff-active :is(.preflight-diff-added, .preflight-diff-modified, .preflight-diff-removed)::before {
-    position: absolute;
-    inset-block-start: -1px;
-    inset-inline-end: -1px;
-    z-index: 2;
-    padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
-    font-family: var(--preflight-font);
-    font-size: var(--s2a-font-size-12);
-    font-weight: var(--s2a-font-weight-adobe-clean-bold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--s2a-color-gray-25);
-    border-start-end-radius: var(--s2a-border-radius-8);
-    border-end-start-radius: var(--s2a-border-radius-8);
-    pointer-events: none;
-    line-height: 1.8;
-  }
-
-  &.preflight-diff-active .preflight-diff-added::before {
-    content: 'New';
-    background: var(--preflight-success);
-  }
-
-  &.preflight-diff-active .preflight-diff-modified::before {
-    content: 'Changed';
-
-    /* gray-25 (used by New/Removed) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
-    color: var(--s2a-color-gray-900);
-    background: var(--preflight-warning);
-  }
-
-  &.preflight-diff-active .preflight-diff-removed::before {
-    content: 'Removed';
-    background: var(--preflight-error);
-  }
 }
 
 .preflight-diff-loading,
@@ -2113,39 +2057,6 @@ button.preflight-diff-tab:focus-visible {
 
 .preflight-diff-tabpanel[hidden] {
   display: none;
-}
-
-.preflight-diff-panes {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--s2a-spacing-16);
-}
-
-.preflight-diff-pane {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-12);
-  overflow: hidden;
-}
-
-.preflight-diff-pane-label {
-  margin: 0;
-  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
-  background: var(--preflight-surface-subtle);
-  border-bottom: 1px solid var(--preflight-border);
-  font-size: var(--s2a-font-size-12);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--preflight-fg-subtle);
-}
-
-.preflight-diff-pane-body {
-  max-height: 360px;
-  padding: var(--s2a-spacing-12);
-  overflow-y: auto;
 }
 
 .preflight-diff-changes-title {
@@ -2455,10 +2366,6 @@ button.preflight-diff-change-expand[aria-expanded="true"] .preflight-diff-expand
   .martech-toolbar {
     flex-direction: row;
     align-items: center;
-  }
-
-  .preflight-diff-panes {
-    grid-template-columns: 1fr 1fr;
   }
 
   /* Before/After (Changed) has two columns worth showing side by side; Removed/Added only ever
