@@ -1,5 +1,5 @@
 /* Mobile-first (Milo convention): unscoped base = sm (<768); each @media (min-width) layers md/lg on top. */
-/* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
+/* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix, custom-property-pattern */
 
 /* Reduced motion: plain document flow, static interactive globe (see README, Accessibility). */
 .globe-gallery.globe-gallery--reduced {
@@ -24,7 +24,7 @@
 
   height: var(--runway-height);
   position: relative;
-  background: #131313;
+  background: var(--s2a-color-gray-900);
   margin-top: 0;
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
 
@@ -94,9 +94,9 @@
   box-sizing: border-box;
   padding: 16px;
   background: rgb(0 0 0 / 30%);
-  -webkit-backdrop-filter: blur(64px);
-  backdrop-filter: blur(64px);
-  border-radius: 16px;
+  -webkit-backdrop-filter: blur(var(--s2a-blur-64));
+  backdrop-filter: blur(var(--s2a-blur-64));
+  border-radius: var(--s2a-border-radius-md);
   pointer-events: none;
   opacity: 0;
   will-change: opacity, transform;
@@ -109,9 +109,9 @@
   font-family: var(--font-display);
   font-weight: 900;
   font-size: 18px;
-  line-height: 21px;
-  letter-spacing: -0.48px;
-  color: #fff;
+  line-height: var(--s2a-font-line-height-21);
+  letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+  color: var(--s2a-color-gray-25);
   margin: 0 0 4px;
 }
 
@@ -121,7 +121,7 @@
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
   letter-spacing: var(--type-body-m-ls);
-  color: #c6c6c6;
+  color: var(--s2a-color-gray-400);
   margin: 0;
 }
 
@@ -170,7 +170,7 @@
   font-size: var(--type-title-1-size);
   line-height: var(--type-title-1-lh);
   letter-spacing: var(--type-title-1-ls);
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
@@ -185,7 +185,7 @@
   font-size: var(--type-body-l-size);
   line-height: var(--type-body-l-lh);
   letter-spacing: var(--type-body-l-ls);
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
@@ -195,7 +195,7 @@
   font-size: var(--type-body-l-size);
   line-height: var(--type-body-l-lh);
   letter-spacing: var(--type-body-l-ls);
-  color: #c6c6c6;
+  color: var(--s2a-color-gray-400);
   margin: 0;
 }
 
@@ -264,7 +264,7 @@
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -291,7 +291,7 @@
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -308,7 +308,7 @@
   height: 266px;
   margin: 0;
   padding: 24px 24px 84px;
-  border: var(--s2a-border-width-sm) solid rgb(255 255 255 / 0%);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
   border-radius: var(--s2a-border-radius-md);
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(12px);
@@ -340,7 +340,7 @@
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
-  color: #c6c6c6;
+  color: var(--s2a-color-gray-400);
   margin: 0;
 }
 
@@ -348,17 +348,17 @@
   font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
   font-weight: 900;
   font-size: 20px;
-  line-height: 24px;
+  line-height: var(--s2a-font-line-height-24);
   letter-spacing: -0.6px;
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   margin: 2px 0 8px;
 }
 
 .globe-gallery-modal__description {
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-size: 13px;
-  line-height: 18px;
-  color: #c6c6c6;
+  line-height: var(--s2a-font-line-height-18);
+  color: var(--s2a-color-gray-400);
   margin: 0 0 12px;
   max-width: 375px;
 
@@ -400,7 +400,7 @@
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-weight: 700;
   font-size: 13px;
-  color: #fff;
+  color: var(--s2a-color-gray-25);
 }
 
 .globe-gallery-modal__badge-app--link {
@@ -415,8 +415,8 @@
   display: inline-block;
   width: 6px;
   height: 6px;
-  border-right: 1.5px solid #fff;
-  border-top: 1.5px solid #fff;
+  border-right: 1.5px solid var(--s2a-color-gray-25);
+  border-top: 1.5px solid var(--s2a-color-gray-25);
   transform: rotate(45deg) translateY(-1px);
   flex-shrink: 0;
 }
@@ -428,7 +428,7 @@
 .globe-gallery-modal__badge-role {
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-size: 13px;
-  color: #c6c6c6;
+  color: var(--s2a-color-gray-400);
 }
 
 /* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
@@ -437,7 +437,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -505,11 +505,11 @@ body.modal-open { overflow: hidden; }
   transform: translate(-50%, -50%) scale(0.96);
   max-width: min(78vw, 320px);
   padding: 12px 20px;
-  border-radius: 8px;
-  border: 1px solid rgb(255 255 255 / 24%);
-  background: rgb(0 0 0 / 64%);
+  border-radius: var(--s2a-border-radius-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
   backdrop-filter: blur(12px);
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.35;
@@ -632,7 +632,7 @@ body.modal-open { overflow: hidden; }
     height: 48px;
     margin: -24px; /* center on the pointer hot-point */
     border-radius: 50%;
-    background: #fff;
+    background: var(--s2a-color-gray-25);
     mix-blend-mode: difference;
     transform: scale(0);
     visibility: hidden; /* snaps instantly — no disc lingering at the click point on modal open */
@@ -711,7 +711,7 @@ body.modal-open { overflow: hidden; }
     letter-spacing: 0.02em;
     white-space: nowrap;
     line-height: 1;
-    color: #fff;
+    color: var(--s2a-color-gray-25);
   }
 
   .globe-gallery-cursor--active .globe-gallery-cursor__text-wrap { opacity: 0.9; }
