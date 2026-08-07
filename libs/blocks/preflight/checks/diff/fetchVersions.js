@@ -1,4 +1,4 @@
-import { getPageStatus } from './adminStatus.js';
+import { getPageStatus } from '../adminStatus.js';
 
 export function deriveLiveUrl(url) {
   const live = new URL(url.href);

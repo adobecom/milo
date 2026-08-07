@@ -3,7 +3,7 @@ import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
-import { getAdminUrl } from '../checks/diff/adminStatus.js';
+import { getAdminUrl } from '../checks/adminStatus.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';

@@ -7,10 +7,11 @@ export function getAdminUrl(url, type) {
   let owner; let repo; let branch;
   if (crossRepo) {
     ({ owner, repo, branch } = crossRepo);
+  } else if (url.hostname === 'localhost') {
+    [branch, repo, owner] = ['main', 'milo', 'adobecom'];
   } else {
-    if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
-    const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
-    [branch, repo, owner] = project.split('--');
+    if (!(/adobecom\.(hlx|aem)\./.test(url.hostname))) return false;
+    [branch, repo, owner] = url.hostname.split('.')[0].split('--');
   }
   const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
   return type === 'status' ? `${base}?editUrl=auto` : base;
