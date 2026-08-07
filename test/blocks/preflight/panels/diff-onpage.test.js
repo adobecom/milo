@@ -207,6 +207,23 @@ describe('preflight diff-onpage', () => {
       const overlay = h2.querySelector(':scope > .preflight-diff-overlay');
       expect(overlay).to.exist;
       expect(overlay.classList.contains('is-added')).to.equal(true);
+      expect(overlay.classList.contains('is-block')).to.equal(false);
+    });
+
+    it('marks a block-kind change overlay with is-block so it gets the inset-frame treatment', () => {
+      root.innerHTML = '<div class="section"><div class="marquee"><p>Block text</p></div></div>';
+      const diff = {
+        added: [{ type: 'added', kind: 'block', tag: 'DIV', path: '/div[1]/div[1]', blockName: 'marquee' }],
+        modified: [],
+        removed: [],
+      };
+
+      highlightOnPage(diff, root);
+
+      const overlay = root.querySelector('.marquee > .preflight-diff-overlay');
+      expect(overlay).to.exist;
+      expect(overlay.classList.contains('is-block')).to.equal(true);
+      expect(overlay.classList.contains('is-added')).to.equal(true);
     });
 
     it('appends a preflight-diff-overlay child with is-modified for a resolved modified change', () => {

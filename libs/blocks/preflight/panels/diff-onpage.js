@@ -163,7 +163,10 @@ export function highlightOnPage(diff, root, onDismiss) {
       return;
     }
     const host = ensureOverlayHost(el);
-    const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}`, 'aria-hidden': 'true' });
+    // Block hosts are often full-bleed — an edge outline lands at the viewport perimeter and reads
+    // as invisible, so block overlays get an inset frame + tint instead (see preflight.css).
+    const kindClass = change.kind === 'block' ? ' is-block' : '';
+    const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
     const srLabel = createTag('span', { class: SR_ONLY_CLASS }, SR_LABEL[modifierClass]);
     host.append(overlay, srLabel);
     applied += 1;

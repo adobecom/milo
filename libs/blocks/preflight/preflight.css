@@ -1288,6 +1288,23 @@ img:hover ~ .asset-meta,
   outline: 3px solid var(--s2a-color-orange-700);
 }
 
+/* Block overlays cover a whole (often full-bleed) block; an edge outline lands at the viewport
+   perimeter and reads as invisible, so draw an inset frame + faint tint pulled inside the box. */
+.preflight-diff-overlay.is-block {
+  inset: 3px;
+  outline: none;
+}
+
+.preflight-diff-overlay.is-block.is-added {
+  box-shadow: inset 0 0 0 3px var(--s2a-color-green-900);
+  background: color-mix(in srgb, var(--s2a-color-green-900) 12%, transparent);
+}
+
+.preflight-diff-overlay.is-block.is-modified {
+  box-shadow: inset 0 0 0 3px var(--s2a-color-orange-700);
+  background: color-mix(in srgb, var(--s2a-color-orange-700) 12%, transparent);
+}
+
 /* Standard visually-hidden pattern (mirrors sr-only in libs/styles/styles.css) — the overlay's
  * "New"/"Changed" badge is aria-hidden, so this carries the equivalent text to screen readers. */
 .preflight-diff-sr-only {
