@@ -20,7 +20,7 @@
    hub-creative/styles/global/typography.css. */
 .globe-gallery {
   /* Total scroll length + single source of truth for pacing (JS + pull-quote pin derive from it). */
-  --runway-height: 630vh;
+  --runway-height: 945vh;
 
   height: var(--runway-height);
   position: relative;
