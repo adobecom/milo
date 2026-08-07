@@ -316,9 +316,9 @@
     }
 
     .rcc-item {
-      font-size: var(--s2a-typography-font-size-super);
-      line-height: var(--s2a-typography-line-height-super);
-      letter-spacing: var(--s2a-typography-letter-spacing-super);
+      font-size: var(--s2a-typography-font-size-heading-2);
+      line-height: var(--s2a-typography-line-height-heading-2);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
     }
 
     .rcc-media-wrapper {
@@ -344,8 +344,16 @@
 }
 
 @media (width >= 1440px) {
-  .roller-carousel-copy .rcc-content {
-    max-width: 1920px;
-    margin-inline: auto;
+  .roller-carousel-copy {
+    .rcc-content {
+      max-width: 1920px;
+      margin-inline: auto;
+    }
+
+    .rcc-item {
+      font-size: var(--s2a-typography-font-size-super);
+      line-height: var(--s2a-typography-line-height-super);
+      letter-spacing: var(--s2a-typography-letter-spacing-super);
+    }
   }
 }
