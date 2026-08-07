@@ -63,6 +63,25 @@ const bcAnalytics = (event) => {
           },
         });
         break;
+      case 'cta:clicked':
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${event.data?.element?.loginStatus}` } },
+            _adobe_corpnew: {
+              digitalData: {
+                primaryEvent: {
+                  eventInfo: {
+                    interaction: {
+                      click: `BC-cta|loginStatus:${event.data?.element?.loginStatus}`,
+                      iclick: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+        break;
       case 'firefly:galleryRendered':
         _satellite.track('event', {
           data: {
