@@ -3,11 +3,7 @@ import fetchVersions from './diff/fetchVersions.js';
 import diffContent from './diff/diffContent.js';
 import diffMetadata from './diff/diffMetadata.js';
 import { checkUnpublishedFragments } from './merch.js';
-
-function parseMain(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.querySelector('main') || doc.body;
-}
+import { parseMain, isConfirmedUnpublished } from './diff/versionHelpers.js';
 
 function countChanges(content, metadata, unpublished) {
   return content.added.length + content.modified.length + content.removed.length
@@ -34,9 +30,7 @@ export function runChecks({ area = document, url = new URL(window.location.href)
       // Never fabricate an empty live doc when live fails to load — only a confirmed-unpublished
       // page is safe to treat as "all new".
       if (versions.liveStatus !== 'ok') {
-        const isConfirmedUnpublished = versions.status != null
-          && !versions.status.live?.lastModified;
-        if (isConfirmedUnpublished) {
+        if (isConfirmedUnpublished(versions)) {
           const emptyRoot = document.createElement('main');
           const content = diffContent(previewRoot, emptyRoot);
           const metadata = diffMetadata(previewRoot, emptyRoot);

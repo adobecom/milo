@@ -2,6 +2,7 @@ import { html, signal, useEffect, useRef, useState } from '../../../deps/htm-pre
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import diffContent from '../checks/diff/diffContent.js';
 import diffMetadata from '../checks/diff/diffMetadata.js';
+import { parseMain, isConfirmedUnpublished } from '../checks/diff/versionHelpers.js';
 import { highlightOnPage, jumpToChangeOnPage } from './diff-onpage.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
@@ -26,11 +27,6 @@ const metadataDiff = signal(null);
 const pageStatus = signal(null);
 const highlightsOn = signal(true);
 const errorMessage = signal(DEFAULT_ERROR_MESSAGE);
-
-function parseMain(htmlText) {
-  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-  return doc.querySelector('main') || doc.body;
-}
 
 function hasChanges(content, metadata) {
   if (!content || !metadata) return false;
@@ -76,8 +72,7 @@ async function loadDiff(url) {
 
     // Never fabricate an empty live doc — only a confirmed-unpublished page is safe to call "new"
     if (versions.liveStatus !== 'ok') {
-      const isConfirmedUnpublished = versions.status != null && !versions.status.live?.lastModified;
-      if (isConfirmedUnpublished) {
+      if (isConfirmedUnpublished(versions)) {
         const emptyMain = parseMain(EMPTY_MAIN_HTML);
         contentDiff.value = diffContent(previewMain, emptyMain);
         metadataDiff.value = diffMetadata(previewMain, emptyMain);
