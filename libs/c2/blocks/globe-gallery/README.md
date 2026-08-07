@@ -256,13 +256,13 @@ degrades to the de-hyphenated key text. **Setup for localized pages:** add these
 | `previous-card` | Previous card | modal prev-arrow `aria-label` |
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
-| `position-of-total` | `{{index}} of {{count}}` | modal card **position**, written to the sr-only `.globe-gallery-modal__position` (a **tokenized template** — `{{index}}`/`{{count}}` substituted at runtime, so each locale controls word order) |
+| `index-of-count` | `{{index}} of {{count}}` | modal card **position**, written to the sr-only `.globe-gallery-modal__position` (a **tokenized template** — `{{index}}`/`{{count}}` substituted at runtime, so each locale controls word order) |
 
 The entry widget has **no separate name label**: its authored **instructions** (see Authored
 below) ARE its accessible name (one hidden-until-focus element serving as both the popup and the
 `aria-labelledby` target), so a screen reader announces exactly the on-page instruction — no
 redundant "N images" prefix. The modal announcement is position only (the creator name is already
-in the heading). Absent sheet keys fall back to English (the tokenized `position-of-total`
+in the heading). Absent sheet keys fall back to English (the tokenized `index-of-count`
 detected by its missing `{{index}}`; other keys by the de-hyphenated key text).
 
 **Authored:** arc-copy, pull-quote, card name/role/description (rows + fragment); each browse-image
@@ -274,11 +274,6 @@ the **a11y entry-widget instructions** (the widget's accessible name; falls back
 `Press Enter to enter the gallery, then Tab through the images.` — `DEFAULT_GALLERY_INSTRUCTIONS` in
 `authoring.js` — when the paragraph is absent); badge names + logos come straight from the authored
 product links.
-
-The modal's `NN / NN` counter (`populateModal`) has **no** sheet/authoring path by design: it's
-`aria-hidden` (SRs get the localized position from `position-of-total` instead) and renders
-only digits + `/`, so there's nothing to translate. Authored badge names carry their own
-localization. No CSS `content:` text strings.
 
 ## Architecture notes
 

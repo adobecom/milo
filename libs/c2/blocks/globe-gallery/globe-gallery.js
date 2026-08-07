@@ -1956,12 +1956,10 @@ async function resolveGlobeLabels() {
   const [
     prevCard, nextCard, closeBtn, cardTplRaw,
   ] = await replaceKeyArray(
-    ['previous-card', 'next-card', 'close', 'position-of-total'],
+    ['previous-card', 'next-card', 'close', 'index-of-count'],
     getConfig(),
   );
-  // replaceKey returns the de-hyphenated key when absent from every sheet — fall back to the
-  // English token template (detected by the missing {{index}} token).
-  const cardTpl = cardTplRaw.includes('{{index}}')
+  const cardTpl = cardTplRaw.includes('{{index}}') && cardTplRaw.includes('{{count}}')
     ? cardTplRaw
     : '{{index}} of {{count}}';
   return {
