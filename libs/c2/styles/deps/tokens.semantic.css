@@ -4,11 +4,13 @@
 
 :root {
   /* Border Radius */
-  --s2a-border-radius-2xs: var(--s2a-border-radius-2);
-  --s2a-border-radius-xs: var(--s2a-border-radius-4);
-  --s2a-border-radius-sm: var(--s2a-border-radius-8);
+  --s2a-border-radius-2xs: var(--s2a-border-radius-4);
+  --s2a-border-radius-xs: var(--s2a-border-radius-8);
+  --s2a-border-radius-sm: var(--s2a-border-radius-12);
   --s2a-border-radius-md: var(--s2a-border-radius-16);
-  --s2a-border-radius-lg: var(--s2a-border-radius-32);
+  --s2a-border-radius-lg: var(--s2a-border-radius-22);
+  --s2a-border-radius-xl: var(--s2a-border-radius-32);
+  --s2a-border-radius-3xs: var(--s2a-border-radius-2);
   --s2a-border-radius-none: var(--s2a-border-radius-0);
   --s2a-border-radius-round: var(--s2a-border-radius-999);
 
@@ -102,7 +104,7 @@
   /* Layout */
   --s2a-layout-sm: var(--s2a-spacing-80);
   --s2a-layout-md: var(--s2a-spacing-96);
-  --s2a-layout-lg: var(--s2a-spacing-124);
+  --s2a-layout-lg: var(--s2a-spacing-128);
   --s2a-layout-xl: var(--s2a-spacing-160);
   --s2a-layout-2xl: var(--s2a-spacing-240);
 }
