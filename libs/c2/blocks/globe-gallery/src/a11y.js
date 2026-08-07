@@ -87,7 +87,8 @@ export default function createGalleryA11y({
 
     // Instructions serve both audiences from one element: visible :focus-visible popup and
     // the button's aria-labelledby name. See README (Accessibility).
-    // TODO: galleryInstructions is a hardcoded English fallback — localize once key exists.
+    // galleryInstructions is authored inline (row 2, 2nd <p>) with an English code fallback,
+    // so it's always set here. See authoring.js / README (Localization).
     if (galleryInstructions) {
       const descEl = document.createElement('span');
       descEl.className = 'globe-gallery-a11y-tip';

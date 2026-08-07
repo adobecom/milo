@@ -26,6 +26,11 @@ function badgeIconHtml(anchor) {
 
 // See README (Authoring contract) for the authored-row layout.
 
+// English fallback for the a11y entry-widget instructions when row 2 has no
+// second paragraph. Authored inline (row 2, 2nd <p>) so it's localizable
+// without the placeholders sheet.
+const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
+
 function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
@@ -155,12 +160,17 @@ export async function fetchFragmentCards(href) {
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  const hintText = hintTextRow?.textContent.trim() || '';
+  // Row 2 carries the "Click & Drag" hint (1st <p>) and the a11y entry-widget
+  // instructions (2nd <p>, optional — falls back to the English default).
+  const hintParas = hintTextRow ? [...hintTextRow.querySelectorAll('p')] : [];
+  const hintText = (hintParas[0]?.textContent ?? hintTextRow?.textContent ?? '').trim();
+  const instructions = hintParas[1]?.textContent.trim() || DEFAULT_GALLERY_INSTRUCTIONS;
   return {
     arcCopy: parseArcCopy(arcCopyRow),
     pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
     hintText,
+    instructions,
   };
 }
 
@@ -186,10 +196,10 @@ const buildMarkup = (gid, labels) => `
     </defs>
   </svg>
 
-  <aside class="globe-gallery-arc-copy" role="region" aria-label="${labels.arcRegion}">
+  <div class="globe-gallery-arc-copy">
     <h2 class="globe-gallery-arc-copy__title"></h2>
     <p class="globe-gallery-arc-copy__body"></p>
-  </aside>
+  </div>
 
   <div class="globe-gallery-pullquote-pin">
     <div class="globe-gallery-pullquote">

@@ -109,12 +109,12 @@ are optional):
 | --- | --- | --- |
 | 0 | **Arc-copy** | heading → `.offer-arc-copy__title`; `<p>` → `.offer-arc-copy__body` |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
-| 2 | **Hint text** | plain text for the WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent) |
+| 2 | **Hint + instructions** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (falls back to the English default if absent) |
 | 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
 
 Rows are positional. `parseAuthoredContent(el)` returns
-`{ arcCopy, pullQuote, fragmentHref, hintText }`; cards are loaded separately from
-the fragment link by `fetchFragmentCards`.
+`{ arcCopy, pullQuote, fragmentHref, hintText, instructions }`; cards are loaded
+separately from the fragment link by `fetchFragmentCards`.
 
 ### Fragment loading
 
@@ -247,35 +247,36 @@ comes from either the `placeholders` sheet or authored content; hardcoded litera
 only fallbacks that never show on a correctly-authored page.
 
 **Sheet-backed** (via `replaceKeyArray`; `resolveGlobeLabels()` fetches once per init and threads
-the labels into `buildGlobeDom`, the a11y factory, and the modal). English is the fallback — the
-default-locale sheet supplies it, and a missing key degrades to the de-hyphenated key text. **Setup
-for localized pages:** add these keys per locale (`// TODO: finalize authoring these keys`):
+the labels into `buildGlobeDom` for the modal chrome aria-labels and into the modal for the card
+position). English is the fallback — the default-locale sheet supplies it, and a missing key
+degrades to the de-hyphenated key text. **Setup for localized pages:** add these keys per locale:
 
 | Key | English value | Used for |
 | --- | --- | --- |
-| `image-gallery-intro` | Image gallery intro | `.globe-gallery-arc-copy` region label |
 | `previous-card` | Previous card | modal prev-arrow `aria-label` |
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
-| `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, both a visible focus popup AND the button's accessible **name** (`aria-labelledby`) |
-| `image-gallery-card-label` | `{{index}} of {{count}}` | modal card **position**, written to the sr-only `.globe-gallery-modal__position` (a **tokenized template** — `{{index}}`/`{{count}}` substituted at runtime, so each locale controls word order) |
+| `position-of-total` | `{{index}} of {{count}}` | modal card **position**, written to the sr-only `.globe-gallery-modal__position` (a **tokenized template** — `{{index}}`/`{{count}}` substituted at runtime, so each locale controls word order) |
 
-The entry widget has **no separate name label**: `image-gallery-instructions` IS its accessible
-name (one hidden-until-focus element serving as both the popup and the `aria-labelledby` target), so
-a screen reader announces exactly the on-page instruction — no redundant "N images" prefix. The
-modal announcement is position only (the creator name is already in the heading). Absent keys fall
-back to English (the tokenized key detected by its missing `{{index}}`; instructions by the
-de-hyphenated key).
+The entry widget has **no separate name label**: its authored **instructions** (see Authored
+below) ARE its accessible name (one hidden-until-focus element serving as both the popup and the
+`aria-labelledby` target), so a screen reader announces exactly the on-page instruction — no
+redundant "N images" prefix. The modal announcement is position only (the creator name is already
+in the heading). Absent sheet keys fall back to English (the tokenized `position-of-total`
+detected by its missing `{{index}}`; other keys by the de-hyphenated key text).
 
 **Authored:** arc-copy, pull-quote, card name/role/description (rows + fragment); each browse-image
 button's `aria-label` and the modal's `role="img"` label is the card's authored **alt** (→ `alt text
-to be authored` when none); the "Click & Drag" hint + cursor label come from **row 2**
-(`createClickDragTexture` auto-scales the font; both are decorative, not exposed to AT — the a11y
-instructions cover the real affordance; `Click & Drag` is the empty-row fallback); badge names +
-logos come straight from the authored product links.
+to be authored` when none); **row 2** carries two paragraphs — the 1st is the "Click & Drag" hint +
+cursor label (`createClickDragTexture` auto-scales the font; decorative, not exposed to AT — the
+a11y instructions cover the real affordance; `Click & Drag` is the empty-cell fallback), the 2nd is
+the **a11y entry-widget instructions** (the widget's accessible name; falls back to
+`Press Enter to enter the gallery, then Tab through the images.` — `DEFAULT_GALLERY_INSTRUCTIONS` in
+`authoring.js` — when the paragraph is absent); badge names + logos come straight from the authored
+product links.
 
 The modal's `NN / NN` counter (`populateModal`) has **no** sheet/authoring path by design: it's
-`aria-hidden` (SRs get the localized position from `image-gallery-card-label` instead) and renders
+`aria-hidden` (SRs get the localized position from `position-of-total` instead) and renders
 only digits + `/`, so there's nothing to translate. Authored badge names carry their own
 localization. No CSS `content:` text strings.
 

@@ -282,7 +282,15 @@ function fibSpherePos(i, total, radius) {
 // Factory returning { init, destroy }. `root` is the block element; all DOM lookups are
 // scoped to it (root.querySelector) so >1 globe can coexist. `gid` is this instance's
 // unique-id suffix (minted by buildGlobeDom) so the CA filter url(#…) ref matches its node.
-function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, reducedMotion) {
+function createGlobeGalleryRuntime(
+  authoredCards,
+  hintText,
+  instructions,
+  root,
+  gid,
+  labels,
+  reducedMotion,
+) {
   const q = (sel) => root.querySelector(sel); // root-scoped query (multi-instance safe)
 
   const CARD_CONTENT = authoredCards || [];
@@ -891,7 +899,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // Enter on a browse image → open the detail modal for that image, warp from centre.
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
     onFocus: snapToInteractive,
-    galleryInstructions: labels.galleryInstructions,
+    galleryInstructions: instructions,
     gid,
   });
 
@@ -1941,34 +1949,25 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   return { init: initRuntime, destroy };
 }
 
-// Localized UI strings — chrome aria-labels + gallery labels resolve through Milo's placeholder
-// dictionary, English fallback. See README (Localization) for the keys to add.
-// TODO: finalize authoring these keys
+// Localized UI strings — chrome aria-labels + card-position label resolve through Milo's
+// placeholder dictionary, English fallback. See README (Localization) for the keys.
+// (The a11y entry-widget instructions are authored inline in row 2, not sheet-backed.)
 async function resolveGlobeLabels() {
   const [
-    arcRegion, prevCard, nextCard, closeBtn,
-    galleryInstrRaw, cardTplRaw,
+    prevCard, nextCard, closeBtn, cardTplRaw,
   ] = await replaceKeyArray(
-    ['image-gallery-intro', 'previous-card', 'next-card', 'close',
-      'image-gallery-instructions', 'image-gallery-card-label'],
+    ['previous-card', 'next-card', 'close', 'position-of-total'],
     getConfig(),
   );
-  // replaceKey returns the de-hyphenated key when absent from every sheet — fall back to English.
-  // TODO: HARDCODED English fallback for the entry-widget instructions; localize once the
-  // `image-gallery-instructions` key is authored. Keep the "press Enter → enter" phrasing (audit).
-  const galleryInstructions = galleryInstrRaw === 'image gallery instructions'
-    ? 'Press Enter to enter the gallery, then Tab through the images.'
-    : galleryInstrRaw;
+  // replaceKey returns the de-hyphenated key when absent from every sheet — fall back to the
+  // English token template (detected by the missing {{index}} token).
   const cardTpl = cardTplRaw.includes('{{index}}')
     ? cardTplRaw
     : '{{index}} of {{count}}';
   return {
-    arcRegion,
     prevCard,
     nextCard,
     closeBtn,
-    // Wired as the widget's accessible name (aria-labelledby) in a11y.js.
-    galleryInstructions,
     cardLabel: (index, count) => cardTpl
       .replace('{{index}}', String(index))
       .replace('{{count}}', String(count)),
@@ -1981,7 +1980,7 @@ export default async function init(el) {
   if (reducedMotion) el.classList.add('globe-gallery--reduced');
 
   // Extract authored content before buildGlobeDom() wipes the block's children.
-  const { arcCopy, pullQuote, hintText, fragmentHref } = parseAuthoredContent(el);
+  const { arcCopy, pullQuote, hintText, instructions, fragmentHref } = parseAuthoredContent(el);
 
   const labels = await resolveGlobeLabels();
   // buildGlobeDom mints + returns the per-instance id suffix (reused for the CA filter ref)
@@ -1995,7 +1994,15 @@ export default async function init(el) {
     el.classList.add('globe-gallery--empty');
     return el;
   }
-  const runtime = createGlobeGalleryRuntime(cards, hintText, el, gid, labels, reducedMotion);
+  const runtime = createGlobeGalleryRuntime(
+    cards,
+    hintText,
+    instructions,
+    el,
+    gid,
+    labels,
+    reducedMotion,
+  );
   if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
   if (runtime.init() === false) { el.classList.add('globe-gallery--empty'); return el; }
   el.globeRuntime = runtime;
