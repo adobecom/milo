@@ -2,10 +2,7 @@ import { normalizeText, getXPath } from './nodePath.js';
 
 export const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, blockquote';
 
-// Same-slot leaf pairs are only "modified" when their texts are actually related — otherwise
-// an edit that happens to land on the same path/tag as an unrelated removal (or the phantom
-// empty wrapper a removed image leaves behind) gets misclassified as a change instead of a
-// separate remove + add. Word-overlap (Jaccard) is a cheap, dependency-free similarity proxy.
+// Jaccard word-overlap gate: below this, a same-path pair is a separate remove+add, not "modified"
 const SIMILARITY_THRESHOLD = 0.3;
 
 function ownText(el) {
@@ -23,8 +20,7 @@ function tokenize(text) {
   return normalizeText(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 }
 
-// Jaccard similarity of the two texts' token sets. Two empty texts count as identical (there's
-// nothing to disagree about); one empty and one not are treated as wholly dissimilar.
+// Jaccard similarity; two empty texts count as identical, empty vs non-empty as wholly dissimilar
 function textSimilarity(a, b) {
   const setA = new Set(tokenize(a));
   const setB = new Set(tokenize(b));
@@ -69,17 +65,13 @@ function collectLeaf(el, root) {
   };
 }
 
-// A leaf with no own text that isn't itself an <img> is a decoration/authoring wrapper around
-// something else (e.g. a <p> that only wraps an <img>) rather than real content of its own —
-// collecting it would shadow the thing it wraps with a phantom "empty text" change.
+// Skip non-img leaves with no own text — they're wrappers (e.g. a <p> around an <img>), not content
 function isEmptyWrapper(el) {
   return el.tagName !== 'IMG' && ownText(el) === '';
 }
 
-// Gathers diffable units from one section (a direct child <div> of <main>): a direct-child
-// div[class] is one opaque "block" unit (its internal DOM is never decomposed further — blocks
-// freely rebuild their own markup, and a partial diff of their internals isn't meaningful);
-// everything else is walked for the default-content leaf tags.
+// A direct-child div[class] is one opaque block unit (blocks rebuild their own markup);
+// everything else is walked as default-content leaves.
 function collectFromSection(section, root, units) {
   [...section.children].forEach((child) => {
     if (child.tagName === 'DIV' && firstClass(child)) {
@@ -133,12 +125,8 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
-// An unmatched removed+added pair at the same path/tag is one element edited in place — but
-// only when it's actually the same slot's content changing. Blocks identify their slot by
-// blockName+path (a block's own text can change completely and still be "the same block,
-// edited"); leaves additionally require similar text, or an unrelated add/remove pair that
-// happens to land on the same path/tag (e.g. after a sibling is removed) would misreport as
-// "modified" instead of a separate removal and addition.
+// Blocks match by blockName+path (text can change entirely and still be "same block, edited");
+// leaves also require similar text, else an unrelated add/remove pair could misreport as "modified"
 function isModifiedPair(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag || removedUnit.path !== addedUnit.path) return false;
   if (removedUnit.kind === 'block' || addedUnit.kind === 'block') {

@@ -31,11 +31,8 @@ export function runChecks({ area = document, url = new URL(window.location.href)
 
       const previewRoot = parseMain(versions.preview.html);
 
-      // The live .plain.html didn't load — never fabricate an empty live doc to diff against,
-      // that's what made every preview node read as "added" (e.g. a 404'd live page showing
-      // 45 false "NEW" changes). Distinguish a genuinely new/unpublished page (safe to treat
-      // preview content as new) from an unreadable live version of a page that IS published,
-      // or one whose publish state we couldn't even determine (also unsafe to guess).
+      // Never fabricate an empty live doc when live fails to load — only a confirmed-unpublished
+      // page is safe to treat as "all new".
       if (versions.liveStatus !== 'ok') {
         const isConfirmedUnpublished = versions.status != null
           && !versions.status.live?.lastModified;
@@ -79,7 +76,7 @@ export function runChecks({ area = document, url = new URL(window.location.href)
       const total = countChanges(content, metadata, unpublished);
       return {
         name: 'Content Diff',
-        // WARNING severity "fail" here means "changes exist", not a broken page.
+        // "fail" here means "changes exist", not a broken page.
         status: total > 0 ? STATUS.FAIL : STATUS.PASS,
         severity: SEVERITY.WARNING,
         details: {
@@ -102,6 +99,5 @@ export function runChecks({ area = document, url = new URL(window.location.href)
   })()];
 }
 
-// Mirrors structure.js: a lone named export trips import/prefer-default-export,
-// so bundle it (plus the internal helpers) into a default export too.
+// Mirrors structure.js: bundle helpers into a default export too (lone named export trips lint).
 export default { parseMain, countChanges, runChecks };

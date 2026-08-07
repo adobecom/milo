@@ -6,9 +6,8 @@ export function deriveLiveUrl(url) {
   return live;
 }
 
-// Classifies the fetch outcome so callers can tell "the live page doesn't exist yet" (missing)
-// apart from "the live page exists but we failed to load it" (error) — conflating the two is
-// what causes a failed/404 live fetch to be silently treated as an empty live document.
+// Distinguish "live page doesn't exist" (missing) from "failed to load it" (error) — conflating
+// both is what causes a failed/404 fetch to be silently treated as an empty live document.
 async function fetchPlain(url) {
   const plain = new URL(url.href);
   plain.pathname = `${plain.pathname.replace(/\/$/, '')}.plain.html`;

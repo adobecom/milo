@@ -5,9 +5,7 @@ import diffMetadata from '../checks/diff/diffMetadata.js';
 import { highlightOnPage, jumpToChangeOnPage } from './diff-onpage.js';
 
 const EMPTY_MAIN_HTML = '<main></main>';
-// NEW_PAGE and ERROR are both "live not ok" outcomes, split by whether admin status confirms
-// the page was never published (safe to label preview content as new) or not (never guess —
-// show an explicit "couldn't load" state instead of fabricating a diff against an empty live).
+// NEW_PAGE = confirmed-unpublished (safe to show as "all new"); ERROR = unknown/failed live fetch
 const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready', NEW_PAGE: 'new-page' };
 const TAB = { CONTENT: 'content', METADATA: 'metadata' };
 const BADGE_LABEL = { added: 'New', modified: 'Changed', removed: 'Removed' };
@@ -18,9 +16,7 @@ const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 const TEXT_TAGS = new Set(['P', 'LI', 'BLOCKQUOTE']);
 const LABEL_TRUNCATE_LENGTH = 60;
 const BLOCK_LABEL_PREFIX = { added: 'New block', modified: 'Changed block', removed: 'Removed block' };
-// A block's raw pre-decoration markup can carry many images (rows/cells) — the detail snippet
-// is meant as a lightweight "what did this look like" preview, not a full re-render, so it's
-// capped rather than cloning every image the block ever had.
+// Snippet is a lightweight preview, not a full re-render — cap images rather than clone them all
 const MAX_SNIPPET_IMAGES = 4;
 
 const view = signal(VIEW.LOADING);
@@ -56,8 +52,6 @@ function toggleHighlights() {
   highlightsOn.value = !highlightsOn.value;
 }
 
-// Self-contained: the Inc-1 check's `details` has classifications but not the raw
-// .plain.html the panes need, so the panel fetches and diffs its own copy on mount.
 async function loadDiff(url) {
   view.value = VIEW.LOADING;
   activeTab.value = TAB.CONTENT;
@@ -80,10 +74,7 @@ async function loadDiff(url) {
     const previewMain = parseMain(versions.preview.html);
     pageStatus.value = versions.status;
 
-    // The live .plain.html didn't load — never fabricate an empty live doc to diff against.
-    // Only a confirmed-unpublished page (admin status has no live lastModified) is safe to show
-    // as "all new"; a live page that IS published (or whose publish state is unknown) must show
-    // an explicit "couldn't load" state instead of guessing.
+    // Never fabricate an empty live doc — only a confirmed-unpublished page is safe to call "new"
     if (versions.liveStatus !== 'ok') {
       const isConfirmedUnpublished = versions.status != null && !versions.status.live?.lastModified;
       if (isConfirmedUnpublished) {
@@ -169,8 +160,7 @@ function truncateLabel(text) {
   return `${text.slice(0, LABEL_TRUNCATE_LENGTH - 1)}…`;
 }
 
-// Milo block class names are single tokens, sometimes hyphenated (e.g. "two-up") — title-case
-// each word so the label reads like a name rather than a raw CSS class.
+// Title-case each word so a hyphenated class name (e.g. "two-up") reads like a name
 function titleCaseBlockName(name) {
   return (name || '')
     .split(/[-_]/)
@@ -179,8 +169,7 @@ function titleCaseBlockName(name) {
     .join(' ');
 }
 
-// Raw xpaths (e.g. "/div[1]/p[3]") aren't meaningful to authors — build a human-readable label
-// from the change's tag + text instead. The raw path stays as the row's title/tooltip.
+// Raw xpath isn't meaningful to authors — build a human-readable label (path stays as tooltip)
 function describeChange(change) {
   if (change.kind === 'block') {
     return `${BLOCK_LABEL_PREFIX[change.type]}: ${titleCaseBlockName(change.blockName)}`;
@@ -193,15 +182,12 @@ function describeChange(change) {
   return `${change.tag.toLowerCase()}: "${text}"`;
 }
 
-// `change.path` is a raw xpath ("/div[1]/p[3]") — safe as an HTML id, but not guaranteed unique
-// enough alone if two changes ever shared a path, so type is folded in too (mirrors the list key).
+// Fold type into the id since two changes could share a path (mirrors the list key)
 function toDetailId(change) {
   return `preflight-diff-detail-${change.type}-${change.path}`.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
-// Clones a live/preview DOM node (never a network string) into a scoped container via useEffect
-// + ref — no loadArea, no decoration, no innerHTML from fetched content. Used for an <img> leaf
-// change, where the actual live/preview <img> (with its real src) is the most useful preview.
+// Clones the real live/preview DOM node — never innerHTML from fetched content
 function ClonedElement({ el }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -216,9 +202,7 @@ function ClonedElement({ el }) {
   return html`<div class="preflight-diff-snippet-media" ref=${ref}></div>`;
 }
 
-// A block never gets its raw markup re-rendered here (unstyled block internals look bad) — only
-// its text and a capped set of its own <img> nodes (cloned, not re-parsed) are shown, as a
-// lightweight stand-in for "what did this block look like".
+// Shows text + a capped set of cloned images as a stand-in — block markup isn't re-rendered raw
 function BlockSnippet({ el, text }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -239,8 +223,7 @@ function BlockSnippet({ el, text }) {
     </div>`;
 }
 
-// Text is rendered through Preact's own templating (a plain text child, not innerHTML), so
-// fetched live/preview strings are inserted safely without any manual escaping.
+// Rendered as a plain text child (not innerHTML), so fetched text is safe without manual escaping
 function TextSnippet({ text }) {
   return html`<p class="preflight-diff-snippet-text">${text || '(no text)'}</p>`;
 }
@@ -257,9 +240,7 @@ function ChangeSnippet({ change, side }) {
   return html`<${TextSnippet} text=${text} />`;
 }
 
-// Before/after detail shown when a change row is expanded. Changed shows both sides so the
-// author can see what flips; Removed shows only the live side (there's no preview counterpart);
-// Added's "after" is optional context — it's already visible on the page once published.
+// Modified shows both sides; Removed only has a live side; Added's "after" is just context
 function ChangeDetail({ change }) {
   if (change.type === 'modified') {
     return html`
@@ -292,10 +273,8 @@ function ChangeDetail({ change }) {
     </div>`;
 }
 
-// Removed content never rendered on the preview page in the first place — there's nothing on
-// the page to jump to, so that row stays a plain (non-interactive) list entry. The expand toggle
-// is a separate control from the jump button (not a nested button) so it can reveal the
-// before/after detail without also triggering the jump-to-page action.
+// Removed rows aren't clickable (nothing on the page to jump to); expand is a separate button so
+// it doesn't trigger the jump.
 function ChangeRow({ change }) {
   const isOnPage = change.type !== 'removed';
   const [expanded, setExpanded] = useState(false);
@@ -390,11 +369,8 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   const url = rawUrl || new URL(window.location.href);
   const hasLoadedRef = useRef(false);
 
-  // Mirror the toggle/change-list onto the real preview page: on while the toggle is on and a
-  // diff has loaded, off (cleaned up) otherwise — same guard the toggle CSS uses in the modal.
-  // No dependency array: highlightsOn/contentDiff are module-level signals (not component state
-  // or props), so re-running after every render — rather than listing them as deps — is what
-  // actually reacts to their changes here. highlightOnPage clears+reapplies idempotently.
+  // No deps array: highlightsOn/contentDiff are module-level signals, so re-running every render
+  // is what reacts to their changes.
   useEffect(() => {
     if (!highlightsOn.value || !contentDiff.value) return undefined;
     const root = document.querySelector('main');
@@ -402,10 +378,8 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
     return highlightOnPage(contentDiff.value, root, () => { highlightsOn.value = false; });
   });
 
-  // On-demand: every preflight tab mounts at once, so without this guard the fetch would fire
-  // on every preflight open, tab viewed or not. Runs synchronously in the render body — not in
-  // a useEffect — so the guard latches immediately, instead of racing the async loadDiff() work
-  // against a separately-scheduled effect.
+  // Runs in the render body (not useEffect) so the guard latches immediately, avoiding a race
+  // with the async loadDiff() work.
   if (selected && !hasLoadedRef.current) {
     hasLoadedRef.current = true;
     loadDiff(url);
