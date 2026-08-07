@@ -22,7 +22,10 @@ async function fetchPlain(url) {
 
 export default async function fetchVersions(previewUrl) {
   const liveUrl = deriveLiveUrl(previewUrl);
-  const status = await getPageStatus(previewUrl).catch(() => null);
+  const status = await getPageStatus(previewUrl).catch((e) => {
+    window.lana?.log?.(`[preflight][diff] status fetch failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
+    return null;
+  });
 
   const pMod = status?.preview?.lastModified ? Date.parse(status.preview.lastModified) : NaN;
   const lMod = status?.live?.lastModified ? Date.parse(status.live.lastModified) : NaN;

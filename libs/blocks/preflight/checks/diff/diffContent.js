@@ -129,10 +129,7 @@ function lcsPairs(live, preview) {
 // leaves also require similar text, else an unrelated add/remove pair could misreport as "modified"
 function isModifiedPair(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag || removedUnit.path !== addedUnit.path) return false;
-  if (removedUnit.kind === 'block' || addedUnit.kind === 'block') {
-    return removedUnit.kind === 'block' && addedUnit.kind === 'block'
-      && removedUnit.blockName === addedUnit.blockName;
-  }
+  if (removedUnit.kind === 'block') return removedUnit.blockName === addedUnit.blockName;
   return isSimilarEnough(removedUnit, addedUnit);
 }
 
