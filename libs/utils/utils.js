@@ -144,9 +144,6 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
-  'product-marquee-grid',
-  'hover-list',
-  'tabs',
 ];
 
 const AUTO_BLOCKS = [

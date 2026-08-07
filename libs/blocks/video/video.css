@@ -163,7 +163,6 @@ video {
     right: 2%;
   }
 }
-
 :root:has(meta[name="foundation"][content="c2"]) {
   button.play-pause-button {
     width: 32px;

@@ -62,9 +62,7 @@ module.exports = {
     '/tools/loc/*',
     '/libs/features/spectrum-web-components/*',
     '/libs/navigation/dist/*',
-    '/libs/c2/blocks/globe/three.module.min.js',
-    '/libs/c2/blocks/globe/hub-creative/*',
-    '/libs/c2/blocks/globe/_reference/*',
+    '/libs/mep/ace1209/globe-gallery/three.module.min.js',
   ],
   plugins: [
     'chai-friendly',
