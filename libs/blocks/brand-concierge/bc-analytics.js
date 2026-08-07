@@ -66,13 +66,13 @@ const bcAnalytics = (event) => {
       case 'cta:clicked':
         _satellite.track('event', {
           data: {
-            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${event.data?.loginStatus}` } },
+            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out'}` } },
             _adobe_corpnew: {
               digitalData: {
                 primaryEvent: {
                   eventInfo: {
                     interaction: {
-                      click: `BC-cta|loginStatus:${event.data?.loginStatus}`,
+                      click: `BC-cta|loginStatus:${window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out'}`,
                       iclick: true,
                     },
                   },
