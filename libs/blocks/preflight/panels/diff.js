@@ -11,7 +11,6 @@ const EMPTY_MAIN_HTML = '<main></main>';
 const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready', NEW_PAGE: 'new-page' };
 const TAB = { CONTENT: 'content', METADATA: 'metadata' };
 const BADGE_LABEL = { added: 'New', modified: 'Changed', removed: 'Removed' };
-const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong loading the content diff.';
 const LIVE_UNAVAILABLE_MESSAGE = 'Couldn’t load the live version to compare.';
 const NEW_PAGE_MESSAGE = 'This page isn’t published yet — all content is new.';
@@ -53,25 +52,8 @@ function buildMetadataRows(metadata) {
   ];
 }
 
-function readHighlightsPref() {
-  try {
-    return window.localStorage.getItem(HIGHLIGHTS_KEY) !== 'false';
-  } catch {
-    return true;
-  }
-}
-
-function setHighlightsPref(on) {
-  try {
-    window.localStorage.setItem(HIGHLIGHTS_KEY, String(on));
-  } catch {
-    // localStorage unavailable (private mode, quota) — toggle still works for this session.
-  }
-}
-
 function toggleHighlights() {
   highlightsOn.value = !highlightsOn.value;
-  setHighlightsPref(highlightsOn.value);
 }
 
 // Self-contained: the Inc-1 check's `details` has classifications but not the raw
@@ -422,11 +404,10 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
 
   // On-demand: every preflight tab mounts at once, so without this guard the fetch would fire
   // on every preflight open, tab viewed or not. Runs synchronously in the render body — not in
-  // a useEffect — so the highlights preference is committed before this same render reads it
-  // below, instead of racing the async loadDiff() work against a separately-scheduled effect.
+  // a useEffect — so the guard latches immediately, instead of racing the async loadDiff() work
+  // against a separately-scheduled effect.
   if (selected && !hasLoadedRef.current) {
     hasLoadedRef.current = true;
-    highlightsOn.value = readHighlightsPref();
     loadDiff(url);
   }
 

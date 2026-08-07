@@ -5,7 +5,6 @@ import DiffPanel from '../../../../libs/blocks/preflight/panels/diff.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
 const TEST_URL = new URL('https://main--milo--adobecom.aem.page/p');
-const HIGHLIGHTS_KEY = 'preflight-diff-highlights';
 
 const LIVE_HTML = `<main>
   <div>
@@ -222,10 +221,13 @@ describe('Preflight Content Diff Panel', () => {
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    window.localStorage.removeItem(HIGHLIGHTS_KEY);
   });
 
   afterEach(() => {
+    // highlightsOn is session-scoped (no storage backing it anymore), so a test that toggles
+    // it off would otherwise leak that off-state into every later test in this file.
+    const toggle = container.querySelector('.preflight-diff-highlight-toggle');
+    if (toggle?.getAttribute('aria-pressed') === 'false') toggle.click();
     // Unmount the Preact tree (not just detaching the DOM node) so this test's component
     // instance stops subscribing to the shared, module-level signals (view, contentDiff,
     // highlightsOn, ...) — otherwise dead instances from earlier tests keep reacting to
@@ -233,7 +235,6 @@ describe('Preflight Content Diff Panel', () => {
     render(null, container);
     document.body.removeChild(container);
     sinon.restore();
-    window.localStorage.removeItem(HIGHLIGHTS_KEY);
   });
 
   it('renders the preflight-diff root with a loading indicator initially', async () => {
@@ -384,14 +385,15 @@ describe('Preflight Content Diff Panel', () => {
   });
 
   describe('highlight toggle', () => {
-    it('re-reads a persisted off-state on mount', async () => {
-      window.localStorage.setItem(HIGHLIGHTS_KEY, 'false');
+    it('ignores any previously stored preference and defaults highlights on (session-scoped)', async () => {
+      window.localStorage.setItem('preflight-diff-highlights', 'false');
       stubFetchWithChanges();
       render(html`<${DiffPanel} url=${TEST_URL} />`, container);
       await waitFor(() => container.querySelector('.preflight-diff-highlight-toggle'));
 
-      expect(container.querySelector('.preflight-diff').classList.contains('preflight-diff-active')).to.equal(false);
-      expect(container.querySelector('.preflight-diff-highlight-toggle').getAttribute('aria-pressed')).to.equal('false');
+      expect(container.querySelector('.preflight-diff').classList.contains('preflight-diff-active')).to.equal(true);
+      expect(container.querySelector('.preflight-diff-highlight-toggle').getAttribute('aria-pressed')).to.equal('true');
+      window.localStorage.removeItem('preflight-diff-highlights');
     });
   });
 
@@ -445,7 +447,7 @@ describe('Preflight Content Diff Panel', () => {
       expect(header.textContent).to.include('·');
     });
 
-    it('defaults highlights on and persists off-toggle to localStorage', async () => {
+    it('defaults highlights on and toggling off does not persist to storage', async () => {
       const root = container.querySelector('.preflight-diff');
       const toggle = container.querySelector('.preflight-diff-highlight-toggle');
       expect(root.classList.contains('preflight-diff-active')).to.equal(true);
@@ -455,7 +457,7 @@ describe('Preflight Content Diff Panel', () => {
       await waitFor(() => toggle.getAttribute('aria-pressed') === 'false');
 
       expect(root.classList.contains('preflight-diff-active')).to.equal(false);
-      expect(window.localStorage.getItem(HIGHLIGHTS_KEY)).to.equal('false');
+      expect(window.localStorage.getItem('preflight-diff-highlights')).to.equal(null);
     });
   });
 
