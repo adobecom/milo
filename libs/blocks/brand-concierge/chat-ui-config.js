@@ -50,7 +50,7 @@ export default {
       enabled: true,
       maxSessions: 10,
       maxMessagesPerSession: 100,
-      cleanupInterval: 24,
+      cleanupInterval: 0.5,
     },
     meetingForm: {
       fieldsPerRow: 2,
