@@ -1289,7 +1289,8 @@ img:hover ~ .asset-meta,
 }
 
 /* Block overlays cover a whole (often full-bleed) block; an edge outline lands at the viewport
-   perimeter and reads as invisible, so draw an inset frame + faint tint pulled inside the box. */
+   perimeter and reads as invisible, so draw the frame pulled inside the box instead. No background
+   tint — a fill over the block's own content (text, media) washes it out and reads as blurry. */
 .preflight-diff-overlay.is-block {
   inset: 3px;
   outline: none;
@@ -1297,12 +1298,10 @@ img:hover ~ .asset-meta,
 
 .preflight-diff-overlay.is-block.is-added {
   box-shadow: inset 0 0 0 3px var(--s2a-color-green-900);
-  background: color-mix(in srgb, var(--s2a-color-green-900) 12%, transparent);
 }
 
 .preflight-diff-overlay.is-block.is-modified {
   box-shadow: inset 0 0 0 3px var(--s2a-color-orange-700);
-  background: color-mix(in srgb, var(--s2a-color-orange-700) 12%, transparent);
 }
 
 /* Standard visually-hidden pattern (mirrors sr-only in libs/styles/styles.css) — the overlay's
