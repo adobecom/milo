@@ -16,10 +16,11 @@ from the code alone.
   exceptions: 3 `no-use-before-define` in `globe-gallery.js` for genuine forward refs to the
   `destroy`/`initRuntime` mutual pair (1 in `doLayout`, 2 in `recoverFromContextLoss` — both
   the BP-crossing rebuild and the WebGL-context-loss recovery call `destroy` then re-init);
-  and 2
-  `import/no-relative-packages` on the `getConfig` / `replaceKeyArray` imports in `globe-gallery.js`
+  and 1
+  `import/no-relative-packages` on the `getFederatedUrl` import in `src/authoring.js`
   (the block's build-only `package.json` makes eslint see a package boundary that doesn't
-  exist at runtime).
+  exist at runtime). All block-chrome UI copy is authored inline (block rows), so there is no
+  longer any placeholders-sheet read (`getConfig` / `replaceKeyArray` imports are gone).
 - **`tick()` is a thin orchestrator** — `computeFrame()` builds one per-frame `frame`
   context (scroll + phase t-values + card-entry transforms), then named single-concern
   stages (`updateActiveCamera`, `updateSphereRotation`, `updateSphereGroupDepth`,

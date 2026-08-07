@@ -55,11 +55,11 @@ are git-ignored; `three.module.min.js` is eslint-ignored.
 
 All nine shipped JS modules (`globe-gallery.js` + `src/`: `authoring`, `shaders`, `materials`,
 `a11y`, `modal`, `math`, `interaction`, `cursor`) are **airbnb-clean** (`npx eslint` exit 0), with only targeted
-`// eslint-disable-next-line` exceptions: in `globe-gallery.js`, 2 `import/no-relative-packages`
-(the `getConfig`/`replaceKeyArray` imports — the block's build-only `package.json` makes eslint see
-a package boundary that doesn't exist at runtime) and 3 `no-use-before-define` for the
+`// eslint-disable-next-line` exceptions: in `globe-gallery.js`, 3 `no-use-before-define` for the
 `destroy`/`initRuntime` mutual pair (`doLayout`'s BP-crossing rebuild + the two context-loss
-recovery calls). No blanket `/* eslint-disable */`.
+recovery calls); and in `authoring.js`, 1 `import/no-relative-packages` (the `getFederatedUrl`
+import — the block's build-only `package.json` makes eslint see a package boundary that doesn't
+exist at runtime). No blanket `/* eslint-disable */`.
 
 `globe-gallery.css` carries one file-wide `stylelint-disable`: `selector-class-pattern` (the BEM
 class names are queried verbatim by `globe-gallery.js` via `querySelector`, so renaming to satisfy
@@ -109,12 +109,13 @@ are optional):
 | --- | --- | --- |
 | 0 | **Arc-copy** | heading → `.offer-arc-copy__title`; `<p>` → `.offer-arc-copy__body` |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
-| 2 | **Hint + instructions** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (falls back to the English default if absent) |
+| 2 | **Hint + instructions + labels** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (English fallback); optional third `<p>` → the four UI labels, `\|\|`-separated in on-screen order **prev-arrow \|\| card-position template \|\| next-arrow \|\| close** (each part falls back to English) |
 | 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
 
 Rows are positional. `parseAuthoredContent(el)` returns
-`{ arcCopy, pullQuote, fragmentHref, hintText, instructions }`; cards are loaded
-separately from the fragment link by `fetchFragmentCards`.
+`{ arcCopy, pullQuote, fragmentHref, hintText, instructions, labels }` (`labels` =
+`{ prevCard, nextCard, closeBtn, cardLabel }`, built by `buildLabels` from row 2's
+third `<p>`); cards are loaded separately from the fragment link by `fetchFragmentCards`.
 
 ### Fragment loading
 
@@ -242,38 +243,33 @@ explicit `.dispose()`), so a boundary rebuild doesn't leak a card set.
 
 ## Localization
 
-The block ships **no hardcoded user-facing copy**. Every user-facing string is localizable — it
-comes from either the `placeholders` sheet or authored content; hardcoded literals in the code are
-only fallbacks that never show on a correctly-authored page.
+The block ships **no hardcoded user-facing copy** and reads **no placeholders sheet**. Every
+user-facing string is authored (block rows + card fragment) and localized with the page; hardcoded
+literals in the code are only fallbacks that never show on a correctly-authored page.
 
-**Sheet-backed** (via `replaceKeyArray`; `resolveGlobeLabels()` fetches once per init and threads
-the labels into `buildGlobeDom` for the modal chrome aria-labels and into the modal for the card
-position). English is the fallback — the default-locale sheet supplies it, and a missing key
-degrades to the de-hyphenated key text. **Setup for localized pages:** add these keys per locale:
+**Row 2 carries all the block-chrome copy** in up to three `<p>`s, each localized inline:
 
-| Key | English value | Used for |
-| --- | --- | --- |
-| `previous-card` | Previous card | modal prev-arrow `aria-label` |
-| `next-card` | Next card | modal next-arrow `aria-label` |
-| `close` | Close | modal close-button `aria-label` |
-| `index-of-count` | `{{index}} of {{count}}` | modal card **position**, written to the sr-only `.globe-gallery-modal__position` (a **tokenized template** — `{{index}}`/`{{count}}` substituted at runtime, so each locale controls word order) |
+| Row 2 `<p>` | String | Used for | Fallback |
+| --- | --- | --- | --- |
+| 1st | "Click & Drag" | WebGL hint + desktop cursor label (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font) | `Click & Drag` (empty-cell) |
+| 2nd | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
+| 3rd | `prev \|\| {index} of {count} \|\| next \|\| close` | the four UI labels: modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen left→right order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
 
-The entry widget has **no separate name label**: its authored **instructions** (see Authored
-below) ARE its accessible name (one hidden-until-focus element serving as both the popup and the
+The card-position part is a **tokenized template**: single-brace ICU-style `{index}`/`{count}`
+substituted at runtime so each locale controls word order. Single brace keeps them distinct from
+Milo's `{{key}}` placeholder syntax; a value missing either token falls back to `{index} of {count}`.
+The `\|\|` divider is safe because the pipe is not natural-language punctuation in any locale.
+
+The entry widget has **no separate name label**: its authored **instructions** (row 2, 2nd `<p>`)
+ARE its accessible name (one hidden-until-focus element serving as both the popup and the
 `aria-labelledby` target), so a screen reader announces exactly the on-page instruction — no
 redundant "N images" prefix. The modal announcement is position only (the creator name is already
-in the heading). Absent sheet keys fall back to English (the tokenized `index-of-count`
-detected by its missing `{{index}}`; other keys by the de-hyphenated key text).
+in the heading).
 
-**Authored:** arc-copy, pull-quote, card name/role/description (rows + fragment); each browse-image
-button's `aria-label` and the modal's `role="img"` label is the card's authored **alt** (→ `alt text
-to be authored` when none); **row 2** carries two paragraphs — the 1st is the "Click & Drag" hint +
-cursor label (`createClickDragTexture` auto-scales the font; decorative, not exposed to AT — the
-a11y instructions cover the real affordance; `Click & Drag` is the empty-cell fallback), the 2nd is
-the **a11y entry-widget instructions** (the widget's accessible name; falls back to
-`Press Enter to enter the gallery, then Tab through the images.` — `DEFAULT_GALLERY_INSTRUCTIONS` in
-`authoring.js` — when the paragraph is absent); badge names + logos come straight from the authored
-product links.
+**Also authored:** arc-copy, pull-quote, card name/role/description (rows + fragment); each
+browse-image button's `aria-label` and the modal's `role="img"` label is the card's authored
+**alt** (→ `alt text to be authored` when none); badge names + logos come straight from the
+authored product links.
 
 ## Architecture notes
 

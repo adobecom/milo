@@ -31,6 +31,27 @@ function badgeIconHtml(anchor) {
 // without the placeholders sheet.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
+const LABEL_DIVIDER = '||';
+const DEFAULT_LABELS = ['Previous card', '{index} of {count}', 'Next card', 'Close'];
+
+function buildLabels(labelPara) {
+  const parts = labelPara
+    ? labelPara.textContent.split(LABEL_DIVIDER).map((s) => s.trim())
+    : [];
+  const [prevCard, cardTplRaw, nextCard, closeBtn] = parts;
+  const cardTpl = cardTplRaw?.includes('{index}') && cardTplRaw?.includes('{count}')
+    ? cardTplRaw
+    : DEFAULT_LABELS[1];
+  return {
+    prevCard: prevCard || DEFAULT_LABELS[0],
+    nextCard: nextCard || DEFAULT_LABELS[2],
+    closeBtn: closeBtn || DEFAULT_LABELS[3],
+    cardLabel: (index, count) => cardTpl
+      .replace('{index}', String(index))
+      .replace('{count}', String(count)),
+  };
+}
+
 function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
@@ -160,8 +181,6 @@ export async function fetchFragmentCards(href) {
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  // Row 2 carries the "Click & Drag" hint (1st <p>) and the a11y entry-widget
-  // instructions (2nd <p>, optional — falls back to the English default).
   const hintParas = hintTextRow ? [...hintTextRow.querySelectorAll('p')] : [];
   const hintText = (hintParas[0]?.textContent ?? hintTextRow?.textContent ?? '').trim();
   const instructions = hintParas[1]?.textContent.trim() || DEFAULT_GALLERY_INSTRUCTIONS;
@@ -171,6 +190,7 @@ export function parseAuthoredContent(el) {
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
     hintText,
     instructions,
+    labels: buildLabels(hintParas[2]),
   };
 }
 

@@ -1,8 +1,4 @@
 import * as THREE from './three.module.min.js';
-// eslint-disable-next-line import/no-relative-packages
-import { getConfig } from '../../../utils/utils.js';
-// eslint-disable-next-line import/no-relative-packages
-import { replaceKeyArray } from '../../../features/placeholders.js';
 import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial,
@@ -1949,38 +1945,16 @@ function createGlobeGalleryRuntime(
   return { init: initRuntime, destroy };
 }
 
-// Localized UI strings — chrome aria-labels + card-position label resolve through Milo's
-// placeholder dictionary, English fallback. See README (Localization) for the keys.
-// (The a11y entry-widget instructions are authored inline in row 2, not sheet-backed.)
-async function resolveGlobeLabels() {
-  const [
-    prevCard, nextCard, closeBtn, cardTplRaw,
-  ] = await replaceKeyArray(
-    ['previous-card', 'next-card', 'close', 'index-of-count'],
-    getConfig(),
-  );
-  const cardTpl = cardTplRaw.includes('{{index}}') && cardTplRaw.includes('{{count}}')
-    ? cardTplRaw
-    : '{{index}} of {{count}}';
-  return {
-    prevCard,
-    nextCard,
-    closeBtn,
-    cardLabel: (index, count) => cardTpl
-      .replace('{{index}}', String(index))
-      .replace('{{count}}', String(count)),
-  };
-}
-
 export default async function init(el) {
   // Reduced motion: static, still-interactive globe in plain document flow. See README.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) el.classList.add('globe-gallery--reduced');
 
-  // Extract authored content before buildGlobeDom() wipes the block's children.
-  const { arcCopy, pullQuote, hintText, instructions, fragmentHref } = parseAuthoredContent(el);
+  // Extract authored content (incl. the UI labels) before buildGlobeDom() wipes the children.
+  const {
+    arcCopy, pullQuote, hintText, instructions, labels, fragmentHref,
+  } = parseAuthoredContent(el);
 
-  const labels = await resolveGlobeLabels();
   // buildGlobeDom mints + returns the per-instance id suffix (reused for the CA filter ref)
   // and fills the arc-copy / pull-quote slots.
   const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote });
