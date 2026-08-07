@@ -7,6 +7,7 @@ const WRAP_CLASS = 'preflight-diff-highlight-wrap';
 const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const JUMP_CLASS = 'preflight-diff-jump-highlight';
+const CONTROL_CLASS = 'preflight-diff-highlight-control';
 
 // Replaced/void elements don't render appended children (a browser never paints a child of an
 // <img>), so the overlay can't live inside them directly — those get wrapped instead (see
@@ -95,7 +96,7 @@ function logUnmapped(change) {
 // Removes every overlay this module ever added under `root`, and reverses any wrapping/
 // positioning it applied to host them — leaves the page exactly as it was found. Order matters:
 // overlays are removed first so a wrapper's only remaining child is the original wrapped element.
-function clearHighlights(root) {
+export function clearHighlights(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
   root.querySelectorAll(`.${RELATIVE_CLASS}`).forEach((el) => el.classList.remove(RELATIVE_CLASS));
   root.querySelectorAll(`.${ISOLATE_CLASS}`).forEach((el) => el.classList.remove(ISOLATE_CLASS));
@@ -104,6 +105,7 @@ function clearHighlights(root) {
     if (original) wrapper.replaceWith(original);
     else wrapper.remove();
   });
+  document.querySelector(`.${CONTROL_CLASS}`)?.remove();
 }
 
 /**
@@ -157,9 +159,29 @@ function ensureOverlayHost(el) {
  * orphaned rather than invoked; clearing first keeps re-runs idempotent instead of accumulating
  * stale overlays or wrappers.
  */
-export function highlightOnPage(diff, root) {
+// Page-injected control (like showReturnPopover) so highlights can be dismissed without
+// reopening preflight. Hide clears immediately (works with the modal closed) and flips the
+// panel's toggle via onDismiss so a reopened panel reflects the off state.
+function showHighlightControl(root, onDismiss) {
+  document.querySelector(`.${CONTROL_CLASS}`)?.remove();
+  const label = createTag('span', { class: 'preflight-diff-control-label' }, 'Unpublished changes highlighted');
+  const hide = createTag('button', { class: 'preflight-diff-control-hide' }, 'Hide');
+  const control = createTag(
+    'div',
+    { class: CONTROL_CLASS, role: 'region', 'aria-label': 'Unpublished content highlights' },
+    [label, hide],
+  );
+  hide.addEventListener('click', () => {
+    clearHighlights(root);
+    onDismiss();
+  });
+  document.body.append(control);
+}
+
+export function highlightOnPage(diff, root, onDismiss) {
   clearHighlights(root);
 
+  let applied = 0;
   const apply = (change, modifierClass) => {
     let el = null;
     try {
@@ -174,10 +196,13 @@ export function highlightOnPage(diff, root) {
     const host = ensureOverlayHost(el);
     const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}`, 'aria-hidden': 'true' });
     host.append(overlay);
+    applied += 1;
   };
 
   (diff?.added || []).forEach((change) => apply(change, ADDED_MODIFIER));
   (diff?.modified || []).forEach((change) => apply(change, MODIFIED_MODIFIER));
+
+  if (applied > 0 && typeof onDismiss === 'function') showHighlightControl(root, onDismiss);
 
   return function cleanup() {
     clearHighlights(root);

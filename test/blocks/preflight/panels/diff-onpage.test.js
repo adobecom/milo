@@ -5,6 +5,7 @@ import {
   resolveOnPage,
   highlightOnPage,
   jumpToChangeOnPage,
+  clearHighlights,
 } from '../../../../libs/blocks/preflight/panels/diff-onpage.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -302,6 +303,62 @@ describe('preflight diff-onpage', () => {
     it('handles an empty/undefined diff without throwing', () => {
       expect(() => highlightOnPage(null, root)).to.not.throw();
       expect(() => highlightOnPage({ added: [], modified: [], removed: [] }, root)).to.not.throw();
+    });
+  });
+
+  describe('on-page dismiss control', () => {
+    let root;
+    let diff;
+
+    beforeEach(() => {
+      root = document.createElement('main');
+      root.innerHTML = '<div><p>Kept</p><p>Old text</p><h2>New heading</h2></div>';
+      document.body.append(root);
+      diff = {
+        added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }],
+        modified: [],
+        removed: [],
+      };
+    });
+
+    afterEach(() => {
+      root.remove();
+      document.querySelector('.preflight-diff-highlight-control')?.remove();
+      sinon.restore();
+    });
+
+    it('injects a dismiss control when highlights are applied and onDismiss is provided', () => {
+      const onDismiss = sinon.spy();
+      highlightOnPage(diff, root, onDismiss);
+      const control = document.querySelector('.preflight-diff-highlight-control');
+      expect(control).to.exist;
+      expect(control.querySelector('.preflight-diff-control-hide')).to.exist;
+    });
+
+    it('does not inject a control when there is nothing to highlight', () => {
+      highlightOnPage({ added: [], modified: [] }, root, sinon.spy());
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
+    });
+
+    it('does not inject a control when no onDismiss is given', () => {
+      highlightOnPage(diff, root);
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
+    });
+
+    it('clicking Hide clears overlays, removes the control, and calls onDismiss', () => {
+      const onDismiss = sinon.spy();
+      highlightOnPage(diff, root, onDismiss);
+      document.querySelector('.preflight-diff-control-hide').click();
+
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
+      expect(onDismiss.calledOnce).to.equal(true);
+    });
+
+    it('clearHighlights removes the injected control', () => {
+      highlightOnPage(diff, root, sinon.spy());
+      clearHighlights(root);
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
     });
   });
 

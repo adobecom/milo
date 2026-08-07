@@ -399,7 +399,7 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
     if (!highlightsOn.value || !contentDiff.value) return undefined;
     const root = document.querySelector('main');
     if (!root) return undefined;
-    return highlightOnPage(contentDiff.value, root);
+    return highlightOnPage(contentDiff.value, root, () => { highlightsOn.value = false; });
   });
 
   // On-demand: every preflight tab mounts at once, so without this guard the fetch would fire

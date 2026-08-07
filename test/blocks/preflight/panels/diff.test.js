@@ -557,6 +557,7 @@ describe('Preflight Content Diff Panel', () => {
       preflightModal.remove();
       sidekick.remove();
       document.querySelector('.preflight-return-popover')?.remove();
+      document.querySelector('.preflight-diff-highlight-control')?.remove();
     });
 
     it('overlays the added and modified elements on the real page once the diff loads', async () => {
@@ -617,6 +618,24 @@ describe('Preflight Content Diff Panel', () => {
 
       expect(closeSpy.called).to.equal(false);
       expect(document.querySelector('.preflight-return-popover')).to.not.exist;
+    });
+
+    it('shows an on-page dismiss control that clears highlights when clicked', async () => {
+      stubFetchWithChanges();
+      render(html`<${DiffPanel} url=${TEST_URL} />`, container);
+      await waitFor(() => container.querySelector('.preflight-diff-change-item'));
+      await waitFor(() => pageMain.querySelector('.preflight-diff-overlay'));
+
+      const control = document.querySelector('.preflight-diff-highlight-control');
+      expect(control).to.exist;
+
+      control.querySelector('.preflight-diff-control-hide').click();
+      await waitFor(() => !pageMain.querySelector('.preflight-diff-overlay'));
+
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
+      // The class flip only happens on the signal-driven re-render (async), unlike the
+      // overlay/control removal above which clearHighlights applies synchronously.
+      await waitFor(() => !container.querySelector('.preflight-diff').classList.contains('preflight-diff-active'));
     });
 
     it('disables the removed change row so there is nothing to click, but still allows expanding it', async () => {
