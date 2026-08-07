@@ -7,6 +7,9 @@ import {
   lingoActive,
   getLingoRegion,
 } from '../../../utils/utils.js';
+import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -30,6 +33,36 @@ function getFederalDomain(config) {
   if (env.name === 'stage') return 'https://www.stage.adobe.com/federal';
   if (env.name === 'prod') return 'https://www.adobe.com/federal';
   return `${DEFAULT_FEDERAL_URL}/federal`;
+}
+
+async function decorateAppPrompt(el) {
+  const state = getMetadata('app-prompt')?.toLowerCase();
+  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+  const hasMobileUA = MOBILE_UA_REGEX.test(navigator.userAgent);
+
+  if (state === 'off'
+    || !window.adobeIMS?.isSignedInUser()
+    || !isDesktop.matches
+    || hasMobileUA
+    || !entName?.length
+    || !promptPath?.length) return;
+
+  const parent = el.querySelector('.feds-utilities');
+  if (!parent) return;
+
+  const { base } = getConfig();
+  const [webappPrompt] = await Promise.all([
+    import('../../../features/webapp-prompt/webapp-prompt.js'),
+    loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
+  ]);
+
+  await webappPrompt.default({
+    promptPath,
+    entName,
+    parent,
+    getAnchorState: () => window.UniversalNav?.getComponent?.('app-switcher'),
+  });
 }
 
 export default async function init(el) {
@@ -89,6 +122,9 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => requestAnimationFrame(() => window.lenis?.resize()));
+  gnavPromise.then(() => {
+    requestAnimationFrame(() => window.lenis?.resize());
+    decorateAppPrompt(el);
+  });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
