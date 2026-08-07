@@ -112,7 +112,7 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
   const merch = await Promise.all(runChecksMerch({ area }));
-  const diff = await Promise.all(runChecksDiff({ area, url }));
+  const diff = await Promise.all(runChecksDiff({ url }));
   return {
     accessibility,
     assets,

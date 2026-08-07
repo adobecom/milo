@@ -1,22 +1,20 @@
 import { SEVERITY, STATUS } from './constants.js';
 import fetchVersions from './diff/fetchVersions.js';
-import diffContent from './diff/diffContent.js';
-import diffMetadata from './diff/diffMetadata.js';
-import { checkUnpublishedFragments } from './merch.js';
-import { parseMain, isConfirmedUnpublished } from './diff/versionHelpers.js';
+import computeDiff, { DIFF_STATE } from './diff/computeDiff.js';
 
-function countChanges(content, metadata, unpublished) {
+function countChanges(content, metadata) {
   return content.added.length + content.modified.length + content.removed.length
-    + metadata.added.length + metadata.modified.length + metadata.removed.length
-    + unpublished.length;
+    + metadata.added.length + metadata.modified.length + metadata.removed.length;
 }
 
-export function runChecks({ area = document, url = new URL(window.location.href) } = {}) {
+export function runChecks({ url = new URL(window.location.href) } = {}) {
   return [(async () => {
     try {
       const resolvedUrl = url instanceof URL ? url : new URL(url, window.location.href);
       const versions = await fetchVersions(resolvedUrl);
-      if (versions.skipped || !versions.preview) {
+      const diff = computeDiff(versions);
+
+      if (diff.state === DIFF_STATE.SKIPPED || diff.state === DIFF_STATE.NO_PREVIEW) {
         return {
           name: 'Content Diff',
           status: STATUS.PASS,
@@ -25,31 +23,7 @@ export function runChecks({ area = document, url = new URL(window.location.href)
         };
       }
 
-      const previewRoot = parseMain(versions.preview.html);
-
-      // Never fabricate an empty live doc when live fails to load — only a confirmed-unpublished
-      // page is safe to treat as "all new".
-      if (versions.liveStatus !== 'ok') {
-        if (isConfirmedUnpublished(versions)) {
-          const emptyRoot = document.createElement('main');
-          const content = diffContent(previewRoot, emptyRoot);
-          const metadata = diffMetadata(previewRoot, emptyRoot);
-          const { unpublished } = await checkUnpublishedFragments({ area })
-            .catch(() => ({ unpublished: [] }));
-          return {
-            name: 'Content Diff',
-            status: STATUS.PASS,
-            severity: SEVERITY.WARNING,
-            details: {
-              content,
-              metadata,
-              unpublishedFragments: unpublished,
-              status: versions.status,
-              skipped: false,
-              newPage: true,
-            },
-          };
-        }
+      if (diff.state === DIFF_STATE.LIVE_UNAVAILABLE) {
         return {
           name: 'Content Diff',
           status: STATUS.LIMBO,
@@ -62,21 +36,31 @@ export function runChecks({ area = document, url = new URL(window.location.href)
         };
       }
 
-      const liveRoot = parseMain(versions.live.html);
-      const content = diffContent(previewRoot, liveRoot);
-      const metadata = diffMetadata(previewRoot, liveRoot);
-      const { unpublished } = await checkUnpublishedFragments({ area })
-        .catch(() => ({ unpublished: [] }));
-      const total = countChanges(content, metadata, unpublished);
+      // A brand-new (unpublished) page is "all new content", not a broken diff — always pass.
+      if (diff.state === DIFF_STATE.NEW_PAGE) {
+        return {
+          name: 'Content Diff',
+          status: STATUS.PASS,
+          severity: SEVERITY.WARNING,
+          details: {
+            content: diff.content,
+            metadata: diff.metadata,
+            status: versions.status,
+            skipped: false,
+            newPage: true,
+          },
+        };
+      }
+
+      const total = countChanges(diff.content, diff.metadata);
       return {
         name: 'Content Diff',
         // "fail" here means "changes exist", not a broken page.
         status: total > 0 ? STATUS.FAIL : STATUS.PASS,
         severity: SEVERITY.WARNING,
         details: {
-          content,
-          metadata,
-          unpublishedFragments: unpublished,
+          content: diff.content,
+          metadata: diff.metadata,
           status: versions.status,
           skipped: false,
         },
@@ -94,4 +78,4 @@ export function runChecks({ area = document, url = new URL(window.location.href)
 }
 
 // Mirrors structure.js: bundle helpers into a default export too (lone named export trips lint).
-export default { parseMain, countChanges, runChecks };
+export default { countChanges, runChecks };

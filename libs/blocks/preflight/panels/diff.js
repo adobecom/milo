@@ -1,11 +1,8 @@
 import { html, signal, useEffect, useRef, useState } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
-import diffContent from '../checks/diff/diffContent.js';
-import diffMetadata from '../checks/diff/diffMetadata.js';
-import { parseMain, isConfirmedUnpublished } from '../checks/diff/versionHelpers.js';
+import computeDiff, { DIFF_STATE } from '../checks/diff/computeDiff.js';
 import { highlightOnPage, jumpToChangeOnPage } from './diff-onpage.js';
 
-const EMPTY_MAIN_HTML = '<main></main>';
 // NEW_PAGE = confirmed-unpublished (safe to show as "all new"); ERROR = unknown/failed live fetch
 const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready', NEW_PAGE: 'new-page' };
 const TAB = { CONTENT: 'content', METADATA: 'metadata' };
@@ -58,39 +55,33 @@ async function loadDiff(url) {
 
   try {
     const versions = await fetchVersions(url);
-    if (versions.skipped) {
-      view.value = VIEW.EMPTY;
-      return;
-    }
-    if (!versions.preview) {
-      view.value = VIEW.ERROR;
-      return;
+    const diff = computeDiff(versions);
+    // Set once a preview exists (every state but skipped/no-preview) — mirrors the check.
+    if (diff.state !== DIFF_STATE.SKIPPED && diff.state !== DIFF_STATE.NO_PREVIEW) {
+      pageStatus.value = versions.status;
     }
 
-    const previewMain = parseMain(versions.preview.html);
-    pageStatus.value = versions.status;
-
-    // Never fabricate an empty live doc — only a confirmed-unpublished page is safe to call "new"
-    if (versions.liveStatus !== 'ok') {
-      if (isConfirmedUnpublished(versions)) {
-        const emptyMain = parseMain(EMPTY_MAIN_HTML);
-        contentDiff.value = diffContent(previewMain, emptyMain);
-        metadataDiff.value = diffMetadata(previewMain, emptyMain);
+    switch (diff.state) {
+      case DIFF_STATE.NO_PREVIEW:
+        view.value = VIEW.ERROR;
+        return;
+      case DIFF_STATE.LIVE_UNAVAILABLE:
+        errorMessage.value = LIVE_UNAVAILABLE_MESSAGE;
+        view.value = VIEW.ERROR;
+        return;
+      case DIFF_STATE.NEW_PAGE:
+        contentDiff.value = diff.content;
+        metadataDiff.value = diff.metadata;
         view.value = VIEW.NEW_PAGE;
         return;
-      }
-      errorMessage.value = LIVE_UNAVAILABLE_MESSAGE;
-      view.value = VIEW.ERROR;
-      return;
+      case DIFF_STATE.READY:
+        contentDiff.value = diff.content;
+        metadataDiff.value = diff.metadata;
+        view.value = hasChanges(diff.content, diff.metadata) ? VIEW.READY : VIEW.EMPTY;
+        return;
+      default: // SKIPPED — preview not newer than live, nothing unpublished
+        view.value = VIEW.EMPTY;
     }
-
-    const liveMain = parseMain(versions.live.html);
-    const nextContentDiff = diffContent(previewMain, liveMain);
-    const nextMetadataDiff = diffMetadata(previewMain, liveMain);
-
-    contentDiff.value = nextContentDiff;
-    metadataDiff.value = nextMetadataDiff;
-    view.value = hasChanges(nextContentDiff, nextMetadataDiff) ? VIEW.READY : VIEW.EMPTY;
   } catch (e) {
     window.lana?.log?.(`[preflight][diff-panel] ${e.message}`, { tags: 'preflight', errorType: 'i' });
     errorMessage.value = DEFAULT_ERROR_MESSAGE;
