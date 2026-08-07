@@ -477,10 +477,12 @@ async function buildAdditionalManifests() {
   const lastManifestEl = manifestEls[manifestEls.length - 1];
   if (!lastManifestEl) return;
 
+  let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
     const manifestEl = buildManifestCard(manifest, { mmm: true });
     manifestEl.classList.add('mmm-manifest-card');
-    lastManifestEl.after(manifestEl);
+    insertionPoint.after(manifestEl);
+    insertionPoint = manifestEl;
   }
 }
 
