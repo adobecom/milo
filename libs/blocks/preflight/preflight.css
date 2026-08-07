@@ -1288,11 +1288,11 @@ img:hover ~ .asset-meta,
   outline: 3px solid var(--s2a-color-orange-700);
 }
 
-/* Block overlays cover a whole (often full-bleed) block; an edge outline lands at the viewport
-   perimeter and reads as invisible, so draw the frame pulled inside the box instead. No background
-   tint — a fill over the block's own content (text, media) washes it out and reads as blurry. */
+/* Block overlays cover a whole (often full-bleed) block, drawn as an inset box-shadow frame rather
+   than an outline. No background tint — a fill over the block's own content (text, media) washes it
+   out and reads as blurry. */
 .preflight-diff-overlay.is-block {
-  inset: 3px;
+  inset: 0;
   outline: none;
 }
 
