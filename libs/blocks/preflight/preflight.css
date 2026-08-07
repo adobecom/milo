@@ -1330,15 +1330,9 @@ img:hover ~ .asset-meta,
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--s2a-color-gray-25);
-  border-radius: var(--s2a-border-radius-8);
+  border-start-end-radius: var(--s2a-border-radius-8);
+  border-end-start-radius: var(--s2a-border-radius-8);
   line-height: 1.8;
-}
-
-/* Blocks are often full-bleed: their inline-end edge sits at (or just past, via 100vw + scrollbar)
-   the viewport edge, so a corner-anchored badge clips off-screen. Float it fully inside instead. */
-.preflight-diff-overlay.is-block::before {
-  inset-block-start: var(--s2a-spacing-8);
-  inset-inline-end: var(--s2a-spacing-8);
 }
 
 .preflight-diff-overlay.is-added::before {
