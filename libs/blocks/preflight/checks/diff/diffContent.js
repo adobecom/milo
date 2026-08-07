@@ -21,7 +21,7 @@ function tokenize(text) {
 }
 
 // Jaccard similarity; two empty texts count as identical, empty vs non-empty as wholly dissimilar
-function textSimilarity(a, b) {
+export function textSimilarity(a, b) {
   const setA = new Set(tokenize(a));
   const setB = new Set(tokenize(b));
   if (setA.size === 0 && setB.size === 0) return 1;

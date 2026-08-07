@@ -134,6 +134,45 @@ describe('preflight diff-onpage', () => {
     it('returns null when root is missing', () => {
       expect(resolveOnPage('/div[1]/p[1]', null)).to.equal(null);
     });
+
+    it('fails closed when a fallback match lands on an element with unrelated text', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div><div class="decoration-wrapper"><p>Text</p></div></div>';
+
+      const el = resolveOnPage('/div[1]/p[1]', root, undefined, 'Completely unrelated phrase');
+
+      expect(el).to.equal(null);
+    });
+
+    it('still accepts a direct-child exact match even when expectedText is unrelated', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div><p>Hello</p><p>World</p></div>';
+
+      const el = resolveOnPage('/div[1]/p[2]', root, undefined, 'Completely unrelated phrase');
+
+      expect(el).to.exist;
+      expect(el.textContent).to.equal('World');
+    });
+
+    it('accepts a fallback match onto an image (empty textContent) regardless of expectedText', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div><picture><img src="/a.png" alt="A"></picture></div>';
+
+      const el = resolveOnPage('/div[1]/img[1]', root, undefined, 'Some unrelated alt text');
+
+      expect(el).to.exist;
+      expect(el.tagName).to.equal('IMG');
+    });
+
+    it('accepts a fallback match whose text is similar enough to expectedText', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div><div class="decoration-wrapper"><p>Text</p></div></div>';
+
+      const el = resolveOnPage('/div[1]/p[1]', root, undefined, 'Text');
+
+      expect(el).to.exist;
+      expect(el.textContent).to.equal('Text');
+    });
   });
 
   describe('highlightOnPage', () => {

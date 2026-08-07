@@ -1,4 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
+import { normalizeText } from '../checks/diff/nodePath.js';
+import { textSimilarity } from '../checks/diff/diffContent.js';
 
 const OVERLAY_CLASS = 'preflight-diff-overlay';
 const ADDED_MODIFIER = 'is-added';
@@ -49,23 +51,32 @@ function toBlockAltitude(el, root) {
 
 // Best-effort walk of a pre-decoration xpath against the real, decorated page; never throws.
 // kind 'block' climbs to the containing block; anything else returns the resolved element as-is.
-export function resolveOnPage(path, root, kind) {
+export function resolveOnPage(path, root, kind, expectedText) {
   if (!root) return null;
   const segments = parsePath(path);
   if (!segments.length) return null;
 
   let context = root;
   let matchedLevels = 0;
+  let usedFallback = false;
 
   for (let i = 0; i < segments.length; i += 1) {
     const seg = segments[i];
-    const match = directChildMatch(context, seg) || descendantMatch(context, seg);
+    const direct = directChildMatch(context, seg);
+    const match = direct || descendantMatch(context, seg);
     if (!match) break;
+    if (!direct) usedFallback = true;
     context = match;
     matchedLevels += 1;
   }
 
   if (matchedLevels === 0) return null;
+
+  // A fuzzy fallback can land on the wrong element — verify its text before trusting it.
+  if (usedFallback && expectedText && normalizeText(context.textContent)) {
+    if (textSimilarity(normalizeText(context.textContent), expectedText) < 0.3) return null;
+  }
+
   return kind === 'block' ? toBlockAltitude(context, root) : context;
 }
 
@@ -134,7 +145,7 @@ export function highlightOnPage(diff, root, onDismiss) {
   const apply = (change, modifierClass) => {
     let el = null;
     try {
-      el = resolveOnPage(change.path, root, change.kind);
+      el = resolveOnPage(change.path, root, change.kind, change.previewText || change.liveText || '');
     } catch {
       el = null;
     }
@@ -183,7 +194,8 @@ function showReturnPopover() {
 }
 
 export function jumpToChangeOnPage(change, root = document.querySelector('main')) {
-  const el = resolveOnPage(change?.path, root, change?.kind);
+  const expectedText = change?.previewText || change?.liveText || '';
+  const el = resolveOnPage(change?.path, root, change?.kind, expectedText);
   if (!el) {
     logUnmapped(change);
     return false;
