@@ -364,8 +364,8 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   const url = rawUrl || new URL(window.location.href);
   const hasLoadedRef = useRef(false);
 
-  // No deps array: highlightsOn/contentDiff are module-level signals, so re-running every render
-  // is what reacts to their changes.
+  // Overlays live on the page and intentionally outlive the modal —
+  // cleared by the on-page control or reload.
   useEffect(() => {
     if (!highlightsOn.value || !contentDiff.value) return undefined;
     const root = document.querySelector('main');
