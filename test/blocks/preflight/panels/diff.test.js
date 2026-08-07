@@ -668,6 +668,20 @@ describe('Preflight Content Diff Panel', () => {
       expect(item.querySelector('.preflight-diff-change-expand').getAttribute('aria-expanded')).to.equal('false');
     });
 
+    it('drops aria-controls while collapsed, then points it at the rendered detail id once expanded', async () => {
+      const item = itemFor('Changed');
+      const expandBtn = item.querySelector('.preflight-diff-change-expand');
+      expect(expandBtn.hasAttribute('aria-controls')).to.equal(false);
+
+      expandBtn.click();
+      await waitFor(() => item.querySelector('.preflight-diff-change-detail'));
+
+      const controlsId = expandBtn.getAttribute('aria-controls');
+      const detail = item.querySelector('.preflight-diff-change-detail');
+      expect(controlsId).to.equal(detail.id);
+      expect(document.getElementById(controlsId)).to.equal(detail);
+    });
+
     it('has a jump button and a separate expand toggle that are not nested inside each other', () => {
       const item = itemFor('Changed');
       const jumpBtn = item.querySelector('.preflight-diff-change-row');

@@ -290,7 +290,7 @@ function ChangeRow({ change }) {
           type="button"
           class="preflight-diff-change-expand"
           aria-expanded=${expanded}
-          aria-controls=${detailId}
+          aria-controls=${expanded ? detailId : undefined}
           aria-label=${`${expanded ? 'Hide' : 'Show'} details for ${label}`}
           onClick=${() => setExpanded((prev) => !prev)}>
           <span class="preflight-diff-expand-chevron" aria-hidden="true"></span>

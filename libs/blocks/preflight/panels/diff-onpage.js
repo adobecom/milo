@@ -10,6 +10,14 @@ const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const JUMP_CLASS = 'preflight-diff-jump-highlight';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
+const SR_ONLY_CLASS = 'preflight-diff-sr-only';
+
+// The overlay's "New"/"Changed" badge is a CSS ::before and aria-hidden — screen readers need
+// this text as a real accessible node instead.
+const SR_LABEL = {
+  [ADDED_MODIFIER]: 'Unpublished — new',
+  [MODIFIED_MODIFIER]: 'Unpublished — changed',
+};
 
 // Void/replaced elements never render appended children, so the overlay can't live inside them
 // directly — those get wrapped instead (see ensureOverlayHost).
@@ -91,6 +99,7 @@ function logUnmapped(change) {
 // so a wrapper's only remaining child is the original wrapped element.
 export function clearHighlights(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
+  root.querySelectorAll(`.${SR_ONLY_CLASS}`).forEach((el) => el.remove());
   root.querySelectorAll(`.${RELATIVE_CLASS}`).forEach((el) => el.classList.remove(RELATIVE_CLASS));
   root.querySelectorAll(`.${ISOLATE_CLASS}`).forEach((el) => el.classList.remove(ISOLATE_CLASS));
   root.querySelectorAll(`.${WRAP_CLASS}`).forEach((wrapper) => {
@@ -155,7 +164,8 @@ export function highlightOnPage(diff, root, onDismiss) {
     }
     const host = ensureOverlayHost(el);
     const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}`, 'aria-hidden': 'true' });
-    host.append(overlay);
+    const srLabel = createTag('span', { class: SR_ONLY_CLASS }, SR_LABEL[modifierClass]);
+    host.append(overlay, srLabel);
     applied += 1;
   };
 

@@ -224,6 +224,30 @@ describe('preflight diff-onpage', () => {
       expect(overlay.classList.contains('is-modified')).to.equal(true);
     });
 
+    it('gives an added overlay host a visually-hidden accessible label, since the overlay itself is aria-hidden', () => {
+      const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
+
+      highlightOnPage(diff, root);
+
+      const h2 = root.querySelector('h2');
+      const overlay = h2.querySelector(':scope > .preflight-diff-overlay');
+      expect(overlay.getAttribute('aria-hidden')).to.equal('true');
+      const srLabel = h2.querySelector(':scope > .preflight-diff-sr-only');
+      expect(srLabel).to.exist;
+      expect(srLabel.textContent).to.equal('Unpublished — new');
+    });
+
+    it('gives a modified overlay host a visually-hidden accessible label reading "changed"', () => {
+      const diff = { added: [], modified: [{ type: 'modified', tag: 'P', path: '/div[1]/p[2]' }], removed: [] };
+
+      highlightOnPage(diff, root);
+
+      const p = [...root.querySelectorAll('p')][1];
+      const srLabel = p.querySelector(':scope > .preflight-diff-sr-only');
+      expect(srLabel).to.exist;
+      expect(srLabel.textContent).to.equal('Unpublished — changed');
+    });
+
     it('the overlay is a positioned, click-through, modest-z-index element sitting above sibling content', () => {
       const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
       highlightOnPage(diff, root);
