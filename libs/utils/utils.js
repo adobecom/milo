@@ -120,7 +120,6 @@ const C2_BLOCKS = [
   'floating-cta',
   'global-footer',
   'global-navigation',
-  'globe-gallery',
   'hover-list',
   'hub-hero',
   'iframe',

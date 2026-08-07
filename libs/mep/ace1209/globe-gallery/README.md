@@ -47,25 +47,8 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
 | `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
-| `hub-creative-v3/index.html` | The current-target prototype (self-contained, full page). **Design/source reference for porting.** |
-| `hub-creative-v1/`, `hub-creative-v2/`, `hub-creative-v3/` | Original prototype source (read-only reference; **git-ignored** via `.gitignore` `hub-creative-v*`, so not shipped or linted in CI). **`v3` is the newest design reference** — the source for the now-shipped shortened grid phase, WebGL "Click & Drag" text, and desktop custom cursor; `hub-creative-v3/CHANGES.md` explains the design intent if you're tuning them. |
 
-Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
-are git-ignored; `three.module.min.js` is eslint-ignored.
-
-All nine shipped JS modules (`globe-gallery.js` + `src/`: `authoring`, `shaders`, `materials`,
-`a11y`, `modal`, `math`, `interaction`, `cursor`) are **airbnb-clean** (`npx eslint` exit 0), with only targeted
-`// eslint-disable-next-line` exceptions: in `globe-gallery.js`, 3 `no-use-before-define` for the
-`destroy`/`initRuntime` mutual pair (`doLayout`'s BP-crossing rebuild + the two context-loss
-recovery calls); and in `authoring.js`, 1 `import/no-relative-packages` (the `getFederatedUrl`
-import — the block's build-only `package.json` makes eslint see a package boundary that doesn't
-exist at runtime). No blanket `/* eslint-disable */`.
-
-`globe-gallery.css` carries one file-wide `stylelint-disable`: `selector-class-pattern` (the BEM
-class names are queried verbatim by `globe-gallery.js` via `querySelector`, so renaming to satisfy
-the pattern would break the JS) plus `property-no-vendor-prefix`/`value-no-vendor-prefix` (Safari
-still needs `-webkit-backdrop-filter` for the blur and `-webkit-line-clamp` for the modal
-description clamp).
+Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). `three.module.min.js` is eslint-ignored.
 
 ### Module layout
 
@@ -87,15 +70,6 @@ The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches th
 through the shared `sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge` callbacks.
 
 ## How to run
-
-The block is authored at
-`https://www.adobe.com/homepage/drafts/jingleh/globe-dev` with a 45-card fragment
-at `/homepage/fragments/drafts/jingle/globe-cards-filled`. Load with
-`?milolibs=local` against `npm run libs`, or against the stage CDN. (Serve over
-http, not `file://`, or textures CORS-taint to gray.)
-
-The `hub-creative-v*` dirs are **design/source reference only** — read them (and
-`hub-creative-v3/CHANGES.md`) to understand what a feature should do when porting.
 
 To regenerate Three.js after adding a new `THREE.*` call: add the symbol to
 `three-src.js`, then `cd libs/c2/blocks/globe-gallery && npm install && npm run build`.
@@ -688,36 +662,3 @@ Constants whose rationale is covered in the sections above (and so kept terse in
 timeline + `FOLD_PEEL_OVERLAP`, `ENTRY_*`, the `CYL_*` / `SPHERE_AREA_NORM` / `CARD_FACE_CAMERA`
 shape knobs, the near-fade + `dragFlipZ` constants, and the keyboard/modal centring frames + pitch
 caps (all under Behavior notes / Card count).
-
-## Open items / backlog
-
-Shipped and documented in the sections above (kept out of this list — see git history for the
-change record): DOM scoped to the block root (multi-globe), authored-count layout, the DI-module
-extraction (`a11y.js` / `modal.js` / `interaction.js` / `cursor.js`), reduced motion, the
-single-widget keyboard/SR model, the SDF rounded corners, the shortened grid phase
-(`FOLD_PEEL_OVERLAP`), the WebGL hint text + desktop cursor, the off-screen ticker gate, and WebGL
-context-loss recovery.
-
-Decided (kept as-is for now): the **global SVG-filter CA on md**. It's OFF on sm (the
-`GLOBAL_CA` bp flag — a whole-viewport SVG filter is the most expensive per-frame op on a
-phone compositor, exactly during the fast scroll where mobile framedrops reproduced) and
-stays ON for md, where desktop/tablet handle it and the canvas-wide fringe on fast scroll is
-wanted. Revisit only if a real md perf issue appears; if dropped it's a tidy self-contained
-removal (`updateGlobalCA` + the `<filter>` markup in `buildGlobeDom` + the `caFilterR/B` refs).
-
-Remaining (each an independent enhancement / fix — no ordering dependency):
-1. **Mobile drag affordance.** The cursor is desktop-only and the WebGL hint text is the only
-   touch hint today. Options: a brief auto-nudge rotation on first view, a touch-specific
-   on-canvas glyph, or leave the text as-is — a design call, judge on a real device.
-   Now that touch is **yaw-only** (see Behavior notes), the hint arguably wants copy that
-   says *swipe sideways* rather than the desktop "Click & Drag" — it's the authored hint
-   string (row 2), so it's an authoring/localization change, not code.
-2. **Zoom landing zone (pacing, not interaction).** `zoomT` begins the instant the fold
-   ends, and the zoom uses `easeOutCubic` (3× speed at onset ≈ 91 world units of camera
-   travel per viewport-height). The window where the sphere is interactive *and* the
-   camera is still parked is only `progress` 0.265→0.322 ≈ **238px of scroll** at the
-   default 630vh runway — narrower than one casual flick, so users often meet the globe
-   already partway into the zoom rather than at its composed best. If that reads as a
-   problem on a real device, the cheap fix is delaying the zoom's start (a gap between
-   `foldLast` and where `zoomT` climbs) rather than a true scroll-park, which would mean
-   remapping `progress` across the whole timeline. Affects desktop equally.
