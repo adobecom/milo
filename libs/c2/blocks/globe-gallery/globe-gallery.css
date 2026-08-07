@@ -1,66 +1,25 @@
-/* ─────────────────────────────────────────────────────────────────────────
-   Globe — C2 block styles. Ported from hub-creative offer-section.css (now globe-gallery.css).
-
-   Mobile-first (Milo convention): the unscoped base rules are the sm (<768)
-   layout, and every `@media (min-width: …)` block layers the larger viewports
-   on top. So a property's sm value lives in the base rule and only the deltas
-   for md (≥768) / lg (≥1280) live in the media queries.
-
-   Two stylelint rules are disabled file-wide, both deliberate:
-   • selector-class-pattern — class names are BEM (.globe-gallery-pullquote__quote,
-     .globe-gallery-modal__badge-icon--ps). The names are queried verbatim by globe-gallery.js
-     (GLOBE_MARKUP / querySelector), so renaming would break JS.
-   • *-no-vendor-prefix — the -webkit-backdrop-filter and display:-webkit-box /
-     -webkit-line-clamp prefixes are required for Safari (backdrop blur and the
-     modal description's 3-line clamp). Standard equivalents aren't yet usable.
-   ───────────────────────────────────────────────────────────────────────── */
+/* Mobile-first (Milo convention): unscoped base = sm (<768); each @media (min-width) layers md/lg on top. */
 /* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
 
-/* Reduced motion: no scroll choreography — lay the block out as normal document flow.
-   The globe renders as a STATIC, interactive sphere in a ~100vh section that scrolls
-   away naturally (the canvas is absolute inside the now-static .globe-gallery-world —
-   set in JS), then the pull-quote follows below in normal flow (no sticky pin, always
-   visible). The runtime still pins its timeline to the formed sphere and disables
-   auto-spin / fly-through (see globe-gallery.js). The compound selector beats the
-   .globe-gallery runway height regardless of source order. (Cards failing to load falls
-   back to the separate --empty collapse.) */
+/* Reduced motion: plain document flow, static interactive globe (see README, Accessibility). */
 .globe-gallery.globe-gallery--reduced {
   height: auto;
   min-height: 0;
 }
 
-/* The per-descendant --reduced overrides (world / arc-copy / a11y / pull-quote) are
-   grouped at the END of this file — they must follow the base rules they override
-   (descending-specificity / cascade). See "Reduced-motion flow overrides" below. */
+/* Per-descendant --reduced overrides are grouped at the END of the file (they must follow their bases). */
 
-/* Nothing to render (no authored cards / WebGL unavailable): collapse the runway to
-   nothing so the block takes no space. Distinct from --reduced, which still shows the
-   static globe. */
+/* No cards / WebGL unavailable: collapse the runway to nothing. Distinct from --reduced. */
 .globe-gallery.globe-gallery--empty {
   height: auto;
   min-height: 0;
 }
 
-/* Scroll lock while the card modal is open (replaces Lenis.stop()) is defined
-   once, near the modal CSS below (see the html.modal-open / body.modal-open rule). */
-
-/* ── Type-scale tokens ───────────────────────────────────────────────────────
-   Ported from the prototype's styles/global/typography.css. The prototype
-   relied on these :root tokens; Milo does NOT define them, so without this the
-   pull-quote and arc-copy fall back to default 16px text. Scoped to .globe so
-   they cascade to the JS-built overlays (pull-quote / arc-copy / modal are DOM
-   descendants — position:fixed doesn't break custom-property inheritance).
-   Keep values in sync with hub-creative/styles/global/typography.css.
-
-   Mobile-first: the base values are the sm (<768) scale; the media queries
-   below step the title + body-l up for md (≥768) and lg (≥1280). body-m never
-   changes across tiers, so it lives only here. */
+/* Scroll model + type-scale tokens: see README (Architecture notes / Behavior notes). Milo
+   doesn't ship the prototype's :root tokens, so define them scoped to .globe. Keep in sync with
+   hub-creative/styles/global/typography.css. */
 .globe-gallery {
-  /* --runway-height is the block's total scroll length and the single source of truth for
-     pacing: the JS reads the rendered height (no hard-coded copy there), and the pull-quote
-     pin derives its height from it (see .globe-gallery-pullquote-pin) so the two stay in
-     proportion and the quote's reveal stays aligned. Tune the whole animation here — larger
-     = slower/more scroll, smaller = snappier with a shorter frozen-quote tail. */
+  /* Total scroll length + single source of truth for pacing (JS + pull-quote pin derive from it). */
   --runway-height: 630vh;
 
   height: var(--runway-height);
@@ -69,8 +28,7 @@
   margin-top: 0;
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
 
-  /* Kill the mobile tap flash (inherited) — otherwise tapping a card to open, or the
-     synthetic tap-click landing on the full-screen backdrop, shows a blue-ish overlay. */
+  /* kill the mobile tap flash on cards / backdrop */
   -webkit-tap-highlight-color: transparent;
 
   --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
@@ -95,7 +53,6 @@
   --type-body-m-ls: 0.01em;
 }
 
-/* Milo md (≥768): step the title + body-l up from the sm base. */
 @media (min-width: 768px) {
   .globe-gallery {
     --type-title-1-size: 56px;
@@ -103,7 +60,6 @@
   }
 }
 
-/* Milo lg (≥1280): the largest type scale. */
 @media (min-width: 1280px) {
   .globe-gallery {
     --type-title-1-size: 80px;
@@ -113,22 +69,10 @@
   }
 }
 
-/* ── z-index scheme (all in the page's root stacking context — the block root sets no
-   stacking context) ──────────────────────────────────────────────────────────────────
-   Two bands, one globe per page:
-   • Hero (2–5): world < canvas (JS, z:3) < a11y / arc-copy (4) < pull-quote (5). Small
-     values that intentionally sit BELOW the page's header/chrome.
-   • Modal (110–112): backdrop < modal-canvas (JS, z:111) < chrome (112). The chrome is a
-     native <dialog> opened with showModal(), so it actually paints in the TOP LAYER (above
-     everything regardless of z-index); the dim backdrop + photo canvas stay in normal flow
-     and show through its transparent surface. The z-index is kept only as a non-modal
-     fallback ordering.
-   Chrome children need no z-index — they're a stacking context and paint by DOM order
-   (info scrim first, controls after → controls on top).
-   • Cursor (113–114): body-level (appended to <body>, not the block), just above the modal
-     band so the custom cursor tops everything the block draws. */
+/* z-index bands (page root stacking context): hero 2–5, modal 110–112, cursor 113–114. The modal
+   chrome is a native <dialog>/showModal() in the top layer, so its z-index is a non-modal fallback. */
 
-/* Sticky viewport — cards are absolutely positioned within this */
+/* Sticky viewport — cards are absolutely positioned within this. */
 .globe-gallery-world {
   position: sticky;
   top: 0;
@@ -138,19 +82,12 @@
   z-index: 2;
 }
 
-/* ── Arc copy (slides up before arc, fades+scales out as headline arrives) ──
-   Mobile-first: the base rule is the sm treatment — a dark frosted-glass pill
-   capped to the viewport width, resting 8px above the bottom (mirrors the top
-   nav pill's blur + radius, with a dark fill for legibility over the WebGL
-   cards; background at 0.30 alpha so the cards read through while the opaque
-   text stays legible). The min-width:768 block strips the panel back to plain
-   floating text. JS sets the `left` each frame in tick(). */
+/* Arc copy. Base (sm) = dark frosted pill over the cards; min-width:768 strips it to floating text.
+   JS sets `left` each frame. */
 .globe-gallery-arc-copy {
   position: fixed;
 
-  /* width allows up to (viewport - 16px) so the panel can reach 359px on a 375px
-     viewport (8px gap each side, symmetric). max-width caps at 359 for larger
-     phones. An earlier calc(100vw - 32px) was clamping to 343px on iPhone SE. */
+  /* (viewport - 16px), 8px gap each side, capped at 359px; calc(100vw - 32px) clamped to 343 on SE. */
   width: calc(100vw - 16px);
   max-width: 359px;
   bottom: 8px;
@@ -168,7 +105,7 @@
 }
 
 .globe-gallery-arc-copy__title {
-  /* 18px custom mini-headline (between Title-4 and body) */
+  /* 18px custom mini-headline (between Title-4 and body). */
   font-family: var(--font-display);
   font-weight: 900;
   font-size: 18px;
@@ -188,14 +125,8 @@
   margin: 0;
 }
 
-/* ── Pull-quote (sticky inside .globe-gallery-pullquote-pin) ──
-   The pin container is absolute at the bottom of the runway. The pull-quote is sticky
-   inside it, so it scrolls in naturally from below, sticks centered through the zoom
-   phase, and scrolls off the top as the runway ends — no JS required.
-   The pin height is a fixed fraction of --runway-height, so it scales with the runway
-   and the quote's sticky reveal stays aligned with the zoomT threshold as you tune. The
-   fraction also sets how long the quote stays frozen (≈ pin height − quote height), i.e.
-   the scroll length after the fly-through. */
+/* Pull-quote. The pin is absolute at the runway bottom; the quote is sticky inside it, so it reveals,
+   holds, and exits with no JS. Pin height is a fraction of --runway-height so it scales with the runway. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   bottom: 0;
@@ -205,15 +136,12 @@
   pointer-events: none;
 }
 
-/* The pull-quote is opacity:0/scale:0.9 while scrolling invisibly into its sticky
-   position. JS adds .is-active once zoomT crosses the threshold (element is already
-   at rest at 50vh center), so the transition makes it emerge in place. The sticky
-   container handles the natural exit — no JS needed to trigger it. */
+/* Hidden (opacity:0/scale:0.9) until JS adds .is-active at the zoomT threshold, so it emerges in place. */
 .globe-gallery-pullquote {
   --pq-height: 583px;
 
   position: sticky;
-  top: calc(50vh - var(--pq-height) / 2); /* centered vertically */
+  top: calc(50vh - var(--pq-height) / 2);
   box-sizing: border-box;
   width: 100%;
   max-width: 1920px;
@@ -246,9 +174,7 @@
   margin: 0;
 }
 
-/* Gap between the quote and the name/role. In the base (space-between) layout the two
-   are already pushed apart; this only bites when they cluster together — e.g. the RM
-   centred layout. */
+/* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
 .globe-gallery-pullquote__attribution {
   margin-top: 24px;
 }
@@ -273,14 +199,9 @@
   margin: 0;
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   Card detail modal — opens when user clicks a card on the globe.
-   Globe stays rendering behind (blurred via .is-modal-active on
-   .globe-gallery-canvas). Box flies from click position to center.
-───────────────────────────────────────────────────────────────── */
+/* Card detail modal (see README, Behavior notes / Accessibility). */
 
-/* ── Backdrop layer (z:110) — blurs the globe canvas; card canvas at z:115 stays sharp.
-   Chrome layer (z:116) sits above the card canvas so the info panel overlays the card. */
+/* Backdrop layer (z:110) — dims/blurs the globe canvas behind the sharp card canvas. */
 .globe-gallery-modal {
   position: fixed;
   inset: 0;
@@ -300,21 +221,13 @@
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 
-  /* Decorative dim/blur only. Once the dialog runs showModal() this sibling is inert;
-     it stays in normal flow BELOW the top-layer dialog and its photo canvas, so the
-     dim reads behind the sharp card. The gesture surface + touch-action live on the
-     dialog now (see .globe-gallery-modal-chrome). */
+  /* Decorative dim/blur only; inert once the dialog runs showModal(). */
   pointer-events: none;
 }
 
-/* Chrome layer — a native <dialog> opened with showModal(). It hosts the close
-   button, info panel, nav arrows, and (on mobile) the swipe gesture surface. Reset
-   the UA dialog chrome to a full-viewport transparent overlay: it sits in the top
-   layer (above the WebGL card canvas + dim backdrop, which stay in normal flow and
-   show through), so its own z-index is moot but kept for the non-modal fallback.
-   Displayed only while the dialog is open (UA dialog:not([open]) { display:none });
-   .is-open drives the fade. pointer-events:auto + touch-action:none so it is the live
-   gesture surface (its siblings are inert once showModal() runs). */
+/* Chrome layer — a native <dialog> opened with showModal(), reset to a full-viewport transparent
+   overlay in the top layer (z-index is a non-modal fallback). It is the live gesture surface
+   (pointer-events:auto + touch-action:none); its siblings are inert once showModal() runs. */
 .globe-gallery-modal-chrome {
   position: fixed;
   inset: 0;
@@ -335,21 +248,14 @@
 }
 .globe-gallery-modal-chrome.is-open { opacity: 1; }
 
-/* The dialog is a scripted focus target (tabindex=-1, focused on open so a screen
-   reader announces the content first) — not a user-tabbable control, so suppress the
-   default full-viewport focus outline. The interactive controls keep their own
-   :focus-visible rings. */
+/* Scripted focus target (tabindex=-1), not user-tabbable, so suppress the full-viewport outline. */
 .globe-gallery-modal-chrome:focus,
 .globe-gallery-modal-chrome:focus-visible { outline: none; }
 
-/* Transparent ::backdrop — the visible dim/blur is the separate .globe-gallery-modal
-   scrim below the photo canvas; a styled backdrop here would sit in the top layer
-   ABOVE the photo and hide it. */
+/* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
 .globe-gallery-modal-chrome::backdrop { background: transparent; }
 
-/* Nav arrows — position (edges on desktop, bottom row on mobile) is set per-frame
-   by JS (positionModalChrome); CSS handles visual style only. Dark frosted treatment
-   with a 1px 24%-white border that sits over the photo at every breakpoint. */
+/* Nav arrows — position set per-frame by JS (positionModalChrome); CSS is visual style only. */
 .globe-gallery-modal__nav {
   width: 44px;
   height: 44px;
@@ -375,8 +281,7 @@
 
 .globe-gallery-modal__nav:active { transform: scale(0.98); }
 
-/* Close button — position set by JS; CSS handles visual style only.
-   Same 1px 24%-white border + 64%-black frosted glass as the nav arrows. */
+/* Close button — position set by JS; same frosted treatment as the nav arrows. */
 .globe-gallery-modal__close {
   position: absolute;
   width: 38px;
@@ -396,14 +301,8 @@
 }
 .globe-gallery-modal__close:hover { background: rgb(0 0 0 / 78%); }
 
-/* Info panel — position (top/left/right) set by JS.
-   Base (sm): the panel overlays the asset, so it carries a dark frosted-glass
-   background + light text for legibility, with tight vertical padding to fit the
-   Mobile (base): a full-width chunk pinned to the bottom (JS sets left/right/bottom,
-   CSS sets the height) holding the description, badges, counter, and arrows. The
-   min-width:768 block turns it into a full-height left-edge scrim. Flex column with
-   badges margin-top:auto keeps the eyebrow/title/description at the top and the
-   product list toward the bottom (padding-bottom reserves the arrow row). */
+/* Info panel — position set by JS. Base (sm) = bottom scrim chunk; min-width:768 = full-height
+   left-edge scrim. Badges margin-top:auto pins them low; padding-bottom reserves the arrow row. */
 .globe-gallery-modal__info {
   position: absolute;
   height: 266px;
@@ -419,7 +318,7 @@
   display: flex;
   flex-direction: column;
 
-  /* padding must count toward width (no global border-box reset in Milo). */
+  /* padding must count toward width — no global border-box reset in Milo */
   box-sizing: border-box;
 }
 
@@ -432,8 +331,7 @@
   padding: 0;
 }
 
-/* Push the badges toward the bottom of the content area (above the reserved
-   arrow-row padding). 0,2,0 beats the 0,1,0 rule above. */
+/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
 .globe-gallery-modal__info > .globe-gallery-modal__badges {
   margin-top: auto;
 }
@@ -464,8 +362,7 @@
   margin: 0 0 12px;
   max-width: 375px;
 
-  /* Cap the description to 3 lines (sm) so badges don't get pushed off-screen.
-     The min-width:768 block unclamps it (display:block / overflow:visible). */
+  /* Cap to 3 lines (sm) so badges stay on-screen; min-width:768 unclamps it. */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -488,55 +385,15 @@
 .globe-gallery-modal__badge-icon {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Adobe Clean', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 11px;
-  color: #fff;
   flex-shrink: 0;
+  display: block;
 }
 
-.globe-gallery-modal__badge-icon--photoshop {
-  background: #001E36;
-  color: #31A8FF;
-}
-
-.globe-gallery-modal__badge-icon--lightroom {
-  background: #001E36;
-  color: #31A8FF;
-}
-
-.globe-gallery-modal__badge-icon--illustrator {
-  background: #300;
-  color: #FF9A00;
-}
-
-.globe-gallery-modal__badge-icon--premiere {
-  background: #00005B;
-  color: #99F;
-}
-
-.globe-gallery-modal__badge-icon--aftereffects {
-  background: #00005B;
-  color: #99F;
-}
-
-.globe-gallery-modal__badge-icon--firefly {
-  background: #2E1A47;
-  color: #C593FF;
-}
-
-.globe-gallery-modal__badge-icon--express {
-  background: #E60012;
-  color: #fff;
-}
-
-.globe-gallery-modal__badge-icon--fresco {
-  background: #C3007A;
-  color: #fff;
+.globe-gallery-modal__badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .globe-gallery-modal__badge-app {
@@ -574,8 +431,7 @@
   color: #c6c6c6;
 }
 
-/* Counter ("1/N") — bottom-center progress indicator (positioned by JS). Base (sm)
-   is plain text; the min-width:768 block turns it into a dark frosted pill. */
+/* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
 .globe-gallery-modal__counter {
   height: 44px;
   display: flex;
@@ -590,23 +446,13 @@
   user-select: none;
 }
 
-/* Lock scroll completely while the modal is open. body alone wasn't enough:
-   on most browsers `html` is the actual scrolling element, so wheel/trackpad
-   scroll bypassed body's overflow:hidden and Lenis tracked the native scroll
-   → sphereFormT and zoomT kept updating underneath the modal. Locking BOTH
-   covers either-is-the-scrolling-element behavior. The JS wheel/touchmove
-   preventer (added in globe-gallery.js) is the second layer for cases where
-   overflow:hidden doesn't fully block momentum scrolling (iOS Safari). */
+/* Lock scroll while the modal is open. Lock BOTH html + body — either can be the scrolling
+   element, and body alone let wheel/trackpad scroll bypass it (JS is the second layer for iOS). */
 html.modal-open,
 body.modal-open { overflow: hidden; }
 
-/* The globe is exposed to assistive tech as ONE focusable widget (built by JS in
-   src/a11y.js once cards load), not a per-card list: Tab selects the globe, Left/Right
-   arrows spin it, Enter/Space opens carousel mode (the modal) at the first item. The
-   widget is a transparent button centered over the sphere so sighted keyboard users get
-   a circular :focus-visible ring tracing the globe; pointer-events:none so it never
-   intercepts mouse drag on the canvas beneath. Tabbable only while the sphere is
-   interactive (toggled in JS). */
+/* Globe entry widget — the single focusable a11y button over the sphere (see README, Accessibility).
+   pointer-events:none so it never intercepts canvas drag; tabbable only while interactive (JS). */
 .globe-gallery-a11y {
   position: fixed;
   top: 50%;
@@ -620,26 +466,21 @@ body.modal-open { overflow: hidden; }
   background: transparent;
   border-radius: 50%;
   pointer-events: none; /* never intercept canvas drag */
-  z-index: 4; /* above the WebGL canvas (z:3) so the focus ring shows; the modal still covers it */
+  z-index: 4; /* above the WebGL canvas (z:3); the modal still covers it */
 }
 .globe-gallery-a11y:focus { outline: none; }
 
-/* Per-image browse buttons (keyboard "enter the gallery" mode). The container overlays the
-   canvas (full viewport); each button is sized + positioned per-frame from JS
-   (updateA11yFocusRing) to the projected screen rect of its image, so the focused one's
-   :focus-visible ring hugs the actual image as the globe rotates it to centre. All
-   pointer-events:none so they never intercept canvas drag. Tabbable only while browsing
-   (toggled in JS). */
+/* Per-image browse buttons (keyboard browse mode). JS sizes/positions each per-frame to its image's
+   projected screen rect. pointer-events:none; tabbable only while browsing. See README (Accessibility). */
 .globe-gallery-a11y-cards {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 4; /* same layer as the entry widget; above the WebGL canvas */
+  z-index: 4; /* same layer as the entry widget */
 }
 
-/* Default to viewport centre (≈ sphere centre) so the one frame between focus and the first
-   setFocusRect() puts any focus ring near where the image is heading, not the top-left
-   corner. JS overwrites left/top/width/height each frame while focused. */
+/* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
+   image, not the top-left. JS overwrites left/top/width/height each frame while focused. */
 .globe-gallery-a11y-card {
   position: absolute;
   left: 50%;
@@ -655,11 +496,8 @@ body.modal-open { overflow: hidden; }
 }
 .globe-gallery-a11y-card:focus { outline: none; }
 
-/* Entry-widget instructions popup. ONE element (the button's aria-describedby target) that
-   is ALSO a visible pill: hidden by default (aria-describedby still reads it for screen
-   readers), shown when the globe entry button is keyboard-focused so sighted users see the
-   "press Enter to enter the gallery" affordance too (a11y audit request). Centred on the
-   sphere; pointer-events:none so it never blocks the canvas. */
+/* Entry-widget instructions popup — one element that is both the aria-labelledby target and a visible
+   pill shown on focus (see README, Accessibility). pointer-events:none so it never blocks the canvas. */
 .globe-gallery-a11y-tip {
   position: absolute;
   top: 50%;
@@ -681,7 +519,7 @@ body.modal-open { overflow: hidden; }
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 5; /* above the a11y layer (z:4); the modal (higher) still covers it */
+  z-index: 5; /* above the a11y layer (z:4); the modal still covers it */
 }
 
 .globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
@@ -690,8 +528,7 @@ body.modal-open { overflow: hidden; }
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* Visually-hidden but screen-reader-readable (e.g. the modal carousel live region).
-   1×1 clipped is the standard sr-only recipe that keeps the node in the a11y tree. */
+/* Visually-hidden but screen-reader-readable — the standard 1×1 clipped sr-only recipe. */
 .globe-gallery-sr-only {
   position: absolute;
   width: 1px;
@@ -704,10 +541,7 @@ body.modal-open { overflow: hidden; }
   border: 0;
 }
 
-/* ── Keyboard focus indicators (Spectrum-style: 2px #1473E6 with 2px offset) ──
-   The globe widget + the modal chrome buttons are all real DOM elements, so
-   :focus-visible styles them directly. (Outline follows the widget's border-radius in
-   modern browsers, so the globe ring reads as a circle.) */
+/* Keyboard focus indicators (Spectrum-style: 2px #1473E6, 2px offset). */
 .globe-gallery-a11y:focus-visible,
 .globe-gallery-a11y-card:focus-visible,
 .globe-gallery-modal__close:focus-visible,
@@ -716,14 +550,7 @@ body.modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Milo md+ (≥768px) — desktop modal + arc-copy treatment layered on the sm base.
-   The info card becomes a SOLID WHITE card with dark text overlaid on the lower
-   image (matching the prototype), nav arrows become white buttons in the dark
-   margin outside the image, the description unclamps, and the arc-copy drops its
-   frosted pill for plain floating text. The close button keeps the dark frosted
-   treatment over the photo at every width.
-───────────────────────────────────────────────────────────────────────── */
+/* Milo md+ (≥768px) — desktop modal + arc-copy treatment over the sm base (see README, Behavior notes). */
 @media (min-width: 768px) {
   .globe-gallery-arc-copy {
     width: 382px;
@@ -732,8 +559,7 @@ body.modal-open { overflow: hidden; }
     background: none;
   }
 
-  /* Info scrim → full-height on the viewport's left edge (JS sets top/bottom/left/width).
-     Background/blur inherit from the base rule. */
+  /* Info scrim → full-height left-edge (JS sets top/bottom/left/width); background/blur inherit. */
   .globe-gallery-modal__info {
     height: auto;
     border-radius: 0;
@@ -765,7 +591,6 @@ body.modal-open { overflow: hidden; }
   .globe-gallery-modal__badge-icon {
     width: 28px;
     height: 28px;
-    font-size: 12px;
   }
 
   .globe-gallery-modal__badge-app { font-size: 14px; }
@@ -782,10 +607,8 @@ body.modal-open { overflow: hidden; }
   }
 }
 
-/* ── Custom "Click & Drag" cursor (desktop / hover-capable only) ──────────────
-   Body-level elements created by src/cursor.js (not scoped to .globe-gallery — the
-   disc must be a direct body child for mix-blend-mode to blend against the page). The
-   @media guard mirrors the JS gate so these never apply on touch/coarse-pointer. */
+/* Custom "Click & Drag" cursor, desktop only (see README, Behavior notes). Body-level elements from
+   src/cursor.js; the @media guard mirrors the JS gate so it never applies on touch/coarse pointers. */
 @media (hover: hover) and (pointer: fine) {
   .globe-gallery-cursor {
     pointer-events: none;
@@ -793,14 +616,12 @@ body.modal-open { overflow: hidden; }
     top: 0;
     left: 0;
 
-    /* Body-level (can't use the block's local stacking), so it needs an explicit page
-       value: one above the modal band (≤112) is enough to top everything the block draws. */
+    /* body-level; above the modal band (≤112) to top everything the block draws */
     z-index: 114;
   }
 
-  /* Disc — direct body child so mix-blend-mode: difference blends against real page
-     content (nesting in a position:fixed container GPU-isolates it). top/left positioning
-     keeps `transform` free for the scale entrance. */
+  /* Disc — direct body child so mix-blend-mode: difference blends against page content (a
+     position:fixed container would GPU-isolate it). top/left keeps `transform` free for the entrance. */
   .globe-gallery-cursor__disc {
     pointer-events: none;
     position: fixed;
@@ -820,7 +641,7 @@ body.modal-open { overflow: hidden; }
 
   .globe-gallery-cursor__disc--active {
     transform: scale(1);
-    visibility: visible; /* entrance scale animation still plays */
+    visibility: visible;
   }
 
   .globe-gallery-cursor__disc--dragging {
@@ -848,7 +669,7 @@ body.modal-open { overflow: hidden; }
     transition: opacity 0.5s ease 0.15s;
   }
 
-  /* Chevron SVG — no blend mode; its own opacity/scale entrance, separate from the disc. */
+  /* Chevron SVG — no blend mode; own opacity/scale entrance, separate from the disc. */
   .globe-gallery-cursor__ring {
     display: block;
     position: absolute;
@@ -909,48 +730,34 @@ body.modal-open { overflow: hidden; }
   }
 }
 
-/* ── Reduced-motion flow overrides ───────────────────────────────────────────
-   Placed at the end of the file (after the base rules they override) so the
-   descendant selectors don't precede their lower-specificity bases. Under
-   prefers-reduced-motion the block is plain document flow: the globe sits in a
-   static ~100vh section that scrolls away, then the pull-quote follows below. The
-   .globe-gallery--reduced class + JS canvas repositioning are set in globe-gallery.js. */
+/* Reduced-motion flow overrides — grouped at the end so descendant selectors follow their bases
+   (no-descending-specificity). See README (Accessibility) for the plain-document-flow layout. */
 
-/* Globe section: static (not sticky) so it scrolls away; position:relative anchors
-   the absolute canvas + a11y widget it contains. Height = 8vh clearance above the 100vh
-   canvas (mirrors the canvas `top:8vh` set in JS) — no extra slack below, so the
-   pull-quote follows close beneath the globe. */
+/* Globe section: static so it scrolls away; relative anchors the absolute canvas. Height = 8vh + 100vh canvas. */
 .globe-gallery--reduced .globe-gallery-world {
   position: relative;
   height: 108vh;
 }
 
-/* No arc phase under RM — the arc-copy pill has nothing to introduce and (being
-   fixed) would otherwise hang over the scrolling page. */
+/* No arc phase under RM — a fixed pill would hang over the scrolling page. */
 .globe-gallery--reduced .globe-gallery-arc-copy {
   display: none;
 }
 
-/* A11y widget scrolls with the globe (absolute in the relative world). Re-centre it on
-   the sphere — canvas top (8vh) + half the 100vh canvas — since the base top:50% would
-   track the taller world, not the sphere centre. */
+/* A11y widget scrolls with the globe; re-centre on the sphere (base top:50% tracks the taller world). */
 .globe-gallery--reduced .globe-gallery-a11y {
   position: absolute;
   top: 58vh;
 }
 
-/* The focus-ring overlay tracks the scrolled canvas (absolute, matching its 8vh top +
-   100vh box) so the projected px coords land on the right image. */
+/* Focus-ring overlay tracks the scrolled canvas (matching its 8vh top + 100vh box). */
 .globe-gallery--reduced .globe-gallery-a11y-cards {
   position: absolute;
   inset: 8vh 0 auto;
   height: 100vh;
 }
 
-/* Pull-quote flows normally after the globe: drop the runway-bottom pin + sticky, show
-   it statically (no scroll-driven opacity/scale reveal), and top-align it in its own box
-   (no full-viewport centring) with a padding gap above so it sits a comfortable distance
-   below the globe rather than a full screen away. */
+/* Pull-quote flows normally after the globe: drop the pin/sticky, show statically, top-aligned with a gap above. */
 .globe-gallery--reduced .globe-gallery-pullquote-pin {
   position: static;
   height: auto;
@@ -968,11 +775,7 @@ body.modal-open { overflow: hidden; }
   transition: none;
 }
 
-/* ── Reduced-motion: interaction micro-animations ────────────────────────────
-   The scroll choreography is already replaced wholesale under RM (the flow overrides
-   above + globe-gallery.js), and the custom cursor is JS-gated off. This drops the
-   remaining CSS-only motion: the scale transforms on the modal nav buttons (the colour
-   change stays as the hover/active cue). */
+/* Reduced-motion: drop the remaining CSS-only motion — the modal nav button scale (colour cue stays). */
 @media (prefers-reduced-motion: reduce) {
   .globe-gallery-modal__nav:hover,
   .globe-gallery-modal__nav:active {

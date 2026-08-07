@@ -35,11 +35,11 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | File | What it is |
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator over named single-concern stages plus `modal.*` / `a11y.*`; per-card placement is a dispatcher (`updateCardTransform`) over four branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`). Instantiates the DI modules. |
-| `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. |
+| `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
 | `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = 22/631 of height + `uAspect`), no rasterized mask (`MODAL_FRAG` `uRadius` 0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
 | `materials.js` | GPU-asset factories (all named exports, no per-instance state). **Materials:** `createCardMaterial` (card ShaderMaterial — cover-crop + optional CA/warp + SDF corners, with the property-proxy), `createModalMaterial` (modal SDF), `createTextMaterial` (hint `TEXT_FRAG`, uniforms only). **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy full image at a higher cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)` (renders the hint string, auto-scaled font). |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
-| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
+| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), mobile swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge, derived from the viewport + `ARC_SPAN` + the per-frame `arcCtx` the core owns; `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame card placement produces no garbage. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares drag velocity by reference via the `drag` object. Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
@@ -60,6 +60,12 @@ All nine shipped JS modules (`globe-gallery.js` + `src/`: `authoring`, `shaders`
 a package boundary that doesn't exist at runtime) and 3 `no-use-before-define` for the
 `destroy`/`initRuntime` mutual pair (`doLayout`'s BP-crossing rebuild + the two context-loss
 recovery calls). No blanket `/* eslint-disable */`.
+
+`globe-gallery.css` carries one file-wide `stylelint-disable`: `selector-class-pattern` (the BEM
+class names are queried verbatim by `globe-gallery.js` via `querySelector`, so renaming to satisfy
+the pattern would break the JS) plus `property-no-vendor-prefix`/`value-no-vendor-prefix` (Safari
+still needs `-webkit-backdrop-filter` for the blur and `-webkit-line-clamp` for the modal
+description clamp).
 
 ### Module layout
 
@@ -149,7 +155,8 @@ Regression-test with the `WEBGL_lose_context` extension: `const x = document.que
 
 ### Card shape
 
-`{ img, alt, picture, name, role, description, badges:[{app:{id,name,abbr}, role}] }`
+`{ img, alt, picture, name, role, description, badges:[{name, role, href, icon}] }`
+(`href` = optional product link on the badge name; `icon` = optional decorated `<picture>` markup for the authored logo SVG, else null)
 
 Each fragment section is flat P/UL elements:
 
@@ -158,11 +165,16 @@ Each fragment section is flat P/UL elements:
 | `<p><em>…</em></p>` | **role** | empty if unauthored (no hardcoded default) |
 | `<p><strong>…</strong></p>` | **name** | empty if unauthored (no hardcoded default) |
 | plain `<p>` | **description** | shown in the modal |
-| `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = app name, inner li = role |
+| `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = product name + links (see below), inner li = role |
 | `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
 
-Badge app names resolve against `APP_CATALOG` (by name/abbr/id) for brand icon
-colors; unknown apps render with a derived abbreviation.
+Each badge's outer `<li>` may carry up to two direct-child links: an **optional logo**
+(a link whose href/text is an `.svg` — omit it and no logo renders) and the **product
+link** that supplies the badge name and its click target. Logo assets live under
+`/federal` on the federated content root, so the URL is resolved through Milo's
+`getFederatedUrl` (NOT `decorateSVG`, which would rewrite the host to a bare pathname on
+the consumer origin). A bare name (no product link) renders as plain text; the legacy
+pipe-separated `Name | Role` single-`<li>` form is still parsed.
 
 **Card count.** `N_TOTAL` follows the authored count, capped per breakpoint by `N_MAX`:
 
@@ -181,9 +193,11 @@ colors; unknown apps render with a derived abbreviation.
 images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** per overflow index (a
 quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
 **dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
-reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse) — and
-any overflow-involving nav routes through the cross-warp dissolve on **every** breakpoint (the
-instant-swap / swipe-neighbour paths reparent to/from the sphere and can't carry a slotless card).
+reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
+modal nav — arrows, keyboard, and mobile swipe — routes through the same cross-warp transition on
+**every** breakpoint (`navigate` → `startDesktopNavTransition`); mobile swipe just builds a warp
+preview during the drag, then commits that transition on release. The old mobile instant-swap /
+swipe-neighbour slot reorg was removed — a slotless overflow card can only cross-warp anyway.
 The **keyboard/SR browse gallery stays at 24** (its centring targets real sphere cards); SR users
 reach every image through modal ←→ nav. Overflow carriers + textures are disposed on `destroy`.
 
@@ -257,13 +271,13 @@ de-hyphenated key).
 button's `aria-label` and the modal's `role="img"` label is the card's authored **alt** (→ `alt text
 to be authored` when none); the "Click & Drag" hint + cursor label come from **row 2**
 (`createClickDragTexture` auto-scales the font; both are decorative, not exposed to AT — the a11y
-instructions cover the real affordance; `Click & Drag` is the empty-row fallback); badge app labels
-from the authored token (`App`/`Ap` is the empty-token fallback).
+instructions cover the real affordance; `Click & Drag` is the empty-row fallback); badge names +
+logos come straight from the authored product links.
 
-The one string with **no** sheet/authoring path is the modal's `1/N` counter (`populateModal`,
-`// TODO:`) — but it's `aria-hidden` (SRs get the localized position instead), so it's a visual-only
-concern for locales with different numerals. Adobe brand names in `APP_CATALOG` are untranslated by
-design. No CSS `content:` text strings.
+The modal's `NN / NN` counter (`populateModal`) has **no** sheet/authoring path by design: it's
+`aria-hidden` (SRs get the localized position from `image-gallery-card-label` instead) and renders
+only digits + `/`, so there's nothing to translate. Authored badge names carry their own
+localization. No CSS `content:` text strings.
 
 ## Architecture notes
 

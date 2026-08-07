@@ -1,24 +1,27 @@
-// Badge chips; id drives the brand-colored icon class in globe.css.
-const APP_CATALOG = [
-  { id: 'photoshop', name: 'Photoshop', abbr: 'Ps' },
-  { id: 'lightroom', name: 'Lightroom', abbr: 'Lr' },
-  { id: 'illustrator', name: 'Illustrator', abbr: 'Ai' },
-  { id: 'premiere', name: 'Premiere Pro', abbr: 'Pr' },
-  { id: 'aftereffects', name: 'After Effects', abbr: 'Ae' },
-  { id: 'firefly', name: 'Firefly', abbr: 'Ff' },
-  { id: 'express', name: 'Express', abbr: 'Ex' },
-  { id: 'fresco', name: 'Fresco', abbr: 'Fr' },
-];
+// eslint-disable-next-line import/no-relative-packages
+import { getFederatedUrl } from '../../../../utils/utils.js';
 
-// Match an authored token to an app by id/name/abbr; unknown apps get a 2-letter abbr.
-function findApp(token) {
-  const t = (token || '').trim();
-  const key = t.toLowerCase();
-  const match = APP_CATALOG.find(
-    (a) => a.id === key || a.name.toLowerCase() === key || a.abbr.toLowerCase() === key,
-  );
-  if (match) return match;
-  return { id: 'photoshop', name: t || 'App', abbr: t.slice(0, 2) || 'Ap' };
+// The authored SVG URL (href, or the visible URL text) if this anchor is a badge logo.
+function badgeSvgUrl(a) {
+  const href = a.getAttribute('href') || '';
+  if (href.includes('.svg')) return href;
+  const text = a.textContent.trim();
+  return text.includes('.svg') ? text : '';
+}
+
+function isSvgAnchor(a) {
+  return !!badgeSvgUrl(a);
+}
+
+// Inline <picture> markup for an authored SVG-logo anchor, or null. The assets live under
+// /federal on the federated content root (NOT the consumer origin), so resolve through
+// getFederatedUrl rather than decorateSVG — which would strip the host to a bare pathname.
+// The logo is decorative (the badge name is the labelled link), hence aria-hidden + empty alt.
+function badgeIconHtml(anchor) {
+  const url = badgeSvgUrl(anchor);
+  if (!url) return null;
+  const src = getFederatedUrl(url);
+  return `<picture class="globe-gallery-modal__badge-icon" aria-hidden="true"><img loading="lazy" src="${src}" alt=""></picture>`;
 }
 
 // See README (Authoring contract) for the authored-row layout.
@@ -67,22 +70,29 @@ function parseFragmentCardSegment(nodes) {
       if (text && !description) description = text;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
+        // A row may carry two direct-child links: an optional .svg logo and the product
+        // link that labels it. Either may be absent.
+        const anchors = [...li.childNodes].filter((n) => n.nodeName === 'A');
+        const svgAnchor = anchors.find(isSvgAnchor) || null;
+        const linkAnchor = anchors.find((a) => a !== svgAnchor) || null;
+        const icon = svgAnchor ? badgeIconHtml(svgAnchor) : null;
+        const href = linkAnchor ? (linkAnchor.getAttribute('href') || null) : null;
+
         const nestedLi = li.querySelector('ul > li');
-        const anchor = [...li.childNodes].find((n) => n.nodeName === 'A');
-        const appHref = anchor ? (anchor.getAttribute('href') || null) : null;
         if (nestedLi) {
-          const appText = anchor
-            ? anchor.textContent.trim()
+          const badgeName = linkAnchor
+            ? linkAnchor.textContent.trim()
             : [...li.childNodes]
               .filter((n) => n.nodeType === Node.TEXT_NODE)
               .map((n) => n.textContent.trim())
               .join('').trim();
-          const roleText = nestedLi.textContent.trim();
-          if (appText) badges.push({ app: findApp(appText), role: roleText, href: appHref });
+          const badgeRole = nestedLi.textContent.trim();
+          if (badgeName) badges.push({ name: badgeName, role: badgeRole, href, icon });
         } else {
-          // Legacy pipe-separated format: "Photoshop | Compositing"
-          const parts = li.textContent.split('|').map((s) => s.trim()).filter(Boolean);
-          if (parts[0]) badges.push({ app: findApp(parts[0]), role: parts.slice(1).join(' '), href: appHref });
+          // Legacy pipe-separated format: "Photoshop | Compositing".
+          const source = linkAnchor ? linkAnchor.textContent : li.textContent;
+          const parts = source.split('|').map((s) => s.trim()).filter(Boolean);
+          if (parts[0]) badges.push({ name: parts[0], role: parts.slice(1).join(' '), href, icon });
         }
       });
     }

@@ -504,7 +504,6 @@ export default function createGlobeModal({
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
     targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
-    // TODO: localize — "NN / NN" is hardcoded (aria-hidden, visual only; SR uses cardLabel).
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
@@ -517,10 +516,11 @@ export default function createGlobeModal({
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal__badge';
-      const appNameHtml = b.href
-        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${b.href}">${b.app.name}</a>`
-        : `<span class="globe-gallery-modal__badge-app">${b.app.name}</span>`;
-      row.innerHTML = `<div class="globe-gallery-modal__badge-left"><div class="globe-gallery-modal__badge-icon globe-gallery-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>${appNameHtml}</div><span class="globe-gallery-modal__badge-role">${b.role}</span>`;
+      const nameHtml = b.href
+        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${b.href}">${b.name}</a>`
+        : `<span class="globe-gallery-modal__badge-app">${b.name}</span>`;
+      // The logo is authored per row; rows without one just render the name (no empty chip).
+      row.innerHTML = `<div class="globe-gallery-modal__badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal__badge-role">${b.role}</span>`;
       badgesEl.appendChild(row);
     });
   }
