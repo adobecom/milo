@@ -40,7 +40,8 @@ export default async function init(el) {
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders } = await import('../../../features/placeholders.js');
     const placeholders = await fetchPlaceholders({ config });
-    return new Map(Object.entries(placeholders));
+    // Merge in any MEP manifest "placeholders" sheet overrides
+    return new Map(Object.entries({ ...placeholders, ...config.placeholders }));
   })();
   // for now we only support inBlock commands.
   // Since MEP on gnav is relatively rare we'll

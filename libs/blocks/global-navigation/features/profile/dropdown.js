@@ -37,12 +37,25 @@ const decorateProfileLink = (service, path = '') => {
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
+const clearSignOutCookies = () => {
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const labels = host.split('.');
+  // Domain-scoped account cookies set at the edge / by the unav that must not outlive sign-out.
+  ['ims_country_code', 'acomsis', 'acomsis_stage'].forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
+};
+
 class ProfileDropdown {
   constructor({
     rawElem,
     decoratedElem,
     avatar,
-    sections,
+    hasOrgs,
     buttonElem,
     openOnInit,
   } = {}) {
@@ -51,7 +64,7 @@ class ProfileDropdown {
     this.avatar = avatar;
     this.buttonElem = buttonElem;
     this.decoratedElem = decoratedElem;
-    this.sections = sections;
+    this.hasOrgs = hasOrgs;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
     logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', 'gnav-profile', 'e');
@@ -74,14 +87,13 @@ class ProfileDropdown {
         this.placeholders.profileButton,
         this.placeholders.signOut,
         this.placeholders.viewAccount,
-        this.placeholders.manageTeams,
-        this.placeholders.manageEnterprise,
         this.placeholders.profileAvatar,
+        this.placeholders.goToAdminConsole,
       ],
       { displayName: this.profileData.displayName, email: this.profileData.email },
     ] = await Promise.all([
       replaceKeyArray(
-        ['profile-button', 'sign-out', 'view-account', 'manage-teams', 'manage-enterprise', 'profile-avatar'],
+        ['profile-button', 'sign-out', 'view-account', 'profile-avatar', 'go-to-admin-console'],
         getFedsPlaceholderConfig(),
       ),
       window.adobeIMS.getProfile(),
@@ -124,8 +136,7 @@ class ProfileDropdown {
         </a>
         ${this.localMenu ? this.decorateLocalMenu() : ''}
         <ul class="feds-profile-actions">
-          ${this.sections?.manage?.items?.team?.id ? decorateAction(this.placeholders.manageTeams, '/team') : ''}
-          ${this.sections?.manage?.items?.enterprise?.id ? decorateAction(this.placeholders.manageEnterprise) : ''}
+          ${this.hasOrgs ? decorateAction(this.placeholders.goToAdminConsole || 'Go to Admin Console') : ''}
           ${this.decorateSignOut()}
         </ul>
       </div>
@@ -163,6 +174,7 @@ class ProfileDropdown {
 
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      clearSignOutCookies();
       window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut({ redirect_uri: window.location.href });
     });
