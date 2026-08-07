@@ -300,6 +300,15 @@ Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFr
 driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
 
+`--runway-height` is **longer on mobile than desktop** (sm base `945vh`; `min-width:768px`
+restores `630vh`). Milo's Lenis smooths wheel scroll but leaves `syncTouch` off, so touch
+scroll is raw native scroll — on the shorter desktop runway a single fling would blow through
+whole phases and feel dizzying. The taller mobile runway maps each pixel of scroll to less of
+the timeline, so one fling can't cross the journey, while scroll stays 1:1 responsive (no
+damping/lag). It's the single knob for mobile pacing; everything else (JS `blockHeight`, the
+pull-quote pin `calc(--runway-height * 0.4)`, all phase fractions of `progress`) derives from
+it, so no JS retuning is needed when it changes.
+
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
 (textures loaded + cards built) AND `onScreen` are true; `syncTicker()` reconciles them and
 is called whenever either flips. `onScreen` is driven by an `IntersectionObserver` on the

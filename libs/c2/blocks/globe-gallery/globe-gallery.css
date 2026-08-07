@@ -19,8 +19,12 @@
    doesn't ship the prototype's :root tokens, so define them scoped to .globe. Keep in sync with
    hub-creative/styles/global/typography.css. */
 .globe-gallery {
-  /* Total scroll length + single source of truth for pacing (JS + pull-quote pin derive from it). */
-  --runway-height: 630vh;
+  /* Total scroll length + single source of truth for pacing (JS blockHeight + pull-quote pin
+     derive from it). Base = sm/mobile: a longer runway so touch scroll isn't Lenis-smoothed
+     (syncTouch off) and one fling can't blow through the whole journey — each pixel of scroll
+     maps to less of the timeline, keeping scroll 1:1 responsive without damping. md/lg restore
+     the shorter desktop value below. Single tuning knob for mobile pacing. */
+  --runway-height: 945vh;
 
   height: var(--runway-height);
   position: relative;
@@ -55,6 +59,8 @@
 
 @media (min-width: 768px) {
   .globe-gallery {
+    /* Desktop/tablet: wheel scroll is Lenis-smoothed, so the shorter runway is fine. */
+    --runway-height: 630vh;
     --type-title-1-size: 56px;
     --type-body-l-size: 18px;
   }
