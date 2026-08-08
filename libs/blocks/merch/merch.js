@@ -281,7 +281,7 @@ let checkoutLinkImsCountryObserver;
  * for those re-stamps and corrects any unsupported country back to the page's validated
  * market, re-triggering MAS's re-render with the corrected value.
  */
-function guardCheckoutLinkImsCountry(service) {
+function guardCheckoutLinkImsCountry(service, hasCountryOverride) {
   if (typeof MutationObserver === 'undefined') return;
   checkoutLinkImsCountryObserver?.disconnect();
   checkoutLinkImsCountryObserver = new MutationObserver((mutations) => {
@@ -293,8 +293,10 @@ function guardCheckoutLinkImsCountry(service) {
       // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
       // bailing out here (value already matches fallback) is what stops the loop.
       if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
-      const { isSupportedMarket } = await import('../../utils/market.js');
-      if (await isSupportedMarket(country)) return;
+      if (!hasCountryOverride) {
+        const { isSupportedMarket } = await import('../../utils/market.js');
+        if (await isSupportedMarket(country)) return;
+      }
       cta.dataset.imsCountry = fallback;
     });
   });
@@ -1132,6 +1134,10 @@ export async function initService(force = false, attributes = {}) {
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
       const useGeoMarket = isMasGeoDetectionEnabled();
+      // An explicit `?country=` query param is an override signal: it should always win,
+      // even over an IMS country that's otherwise a supported market for the page.
+      const hasCountryOverride = useGeoMarket
+        && !!new URLSearchParams(window.location.search).get('country');
 
       // Load all independent resources in parallel
       const fragmentClientUrl = getFragmentClientUrl();
@@ -1199,7 +1205,7 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-        if (useGeoMarket) guardCheckoutLinkImsCountry(service);
+        if (useGeoMarket) guardCheckoutLinkImsCountry(service, hasCountryOverride);
       } else if (useGeoMarket) {
         if (countryFromMarket !== country) {
           if (countryFromMarket) service.setAttribute('country', countryFromMarket);
