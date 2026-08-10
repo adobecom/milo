@@ -182,6 +182,21 @@ export async function fetchFragmentCards(href) {
   }
 }
 
+// Right-size a helix/DA media image to the width we actually rasterize, so slow connections
+// don't download the full-res source only for us to downscale it client-side. Requests webp at
+// `width`px (mirrors the width/format convention in libs/utils/decorate.js's decoratePictures).
+// Non-media URLs (external assets that don't honor these params) are returned as-is.
+export function optimizeImgUrl(src, width) {
+  if (!src) return src;
+  try {
+    const url = new URL(src, window.location.href);
+    if (!/(^|\/)media_[0-9a-f]/i.test(url.pathname)) return src;
+    return `${url.origin}${url.pathname}?width=${Math.round(width)}&format=webply`;
+  } catch (e) {
+    return src;
+  }
+}
+
 // Positional rows (see README, Authoring contract). Fragment links are authored
 // with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {

@@ -173,7 +173,11 @@ export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onEach,
 
   function tryLoad(i) {
     const img = new Image();
-    img.onload = () => { done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex))); };
+    img.onload = () => {
+      const rasterize = () => done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex)));
+      if (img.decode) img.decode().then(rasterize, rasterize);
+      else rasterize();
+    };
     img.onerror = () => {
       window.lana?.log?.(`globe-gallery: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: 'globe-gallery', severity: 'warn' });
       done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));

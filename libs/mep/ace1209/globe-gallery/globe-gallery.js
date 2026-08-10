@@ -1,10 +1,11 @@
 import * as THREE from './three.module.min.js';
-import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
+import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom, optimizeImgUrl } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
 } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
+import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createCursor from './src/cursor.js';
 import {
@@ -469,8 +470,6 @@ function createGlobeGalleryRuntime(
   let a11y = null;
   let interaction = null;
   let cursor = null;
-  let modalPrefetchCanvas = null; // canvas holding the one-shot pointerdown modal prefetch
-  let modalPrefetchIdleId = 0; // requestIdleCallback/setTimeout handle for the idle modal prefetch
 
   // Suppresses the focus→snap-scroll while the tab is backgrounded (pdf-space pattern).
   let suppressFocusSnap = false;
@@ -891,53 +890,9 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uAspect.value = aspect;
   }
 
-  // Lazy modal controller: the modal module (src/modal.js) is only needed after a user interaction,
-  // so it's code-split behind a dynamic import and constructed on demand. All per-frame calls
-  // (render/isCardManaged/getModalIdx/updateAnimation/updateDesktopNav) no-op cheaply until then.
-  // ensureLoaded() is idempotent and prefetched on idle + first interaction so the first open is
-  // instant. See initRuntime (prefetch) and destroy (teardown).
-  function createModalController(config) {
-    let real = null;
-    let loading = null;
-    let destroyed = false;
-    let didSetup = false;
-    let lastW = 0; let lastH = 0;
-    function ensureLoaded() {
-      if (real || destroyed) return Promise.resolve(real);
-      if (loading) return loading;
-      loading = import('./src/modal.js')
-        .then(({ default: createGlobeModal }) => {
-          loading = null;
-          if (destroyed) return null;
-          real = createGlobeModal(config);
-          if (didSetup) real.setup();
-          if (lastW || lastH) real.resize(lastW, lastH);
-          return real;
-        })
-        .catch((e) => {
-          loading = null;
-          window.lana?.log?.(`globe-gallery: modal module failed to load: ${e?.message || e}`, { tags: 'globe-gallery', severity: 'error' });
-          return null;
-        });
-      return loading;
-    }
-    return {
-      ensureLoaded,
-      setup() { didSetup = true; if (real) real.setup(); },
-      render() { if (real) real.render(); },
-      resize(w, h) { lastW = w; lastH = h; if (real) real.resize(w, h); },
-      updateAnimation(active) { if (real) real.updateAnimation(active); },
-      updateDesktopNav() { if (real) real.updateDesktopNav(); },
-      isCardManaged(card) { return real ? real.isCardManaged(card) : false; },
-      getModalIdx() { return real ? real.getModalIdx() : -1; },
-      open(idx, x, y) { ensureLoaded().then((m) => { if (m) m.open(idx, x, y); }); },
-      destroy() { destroyed = true; if (real) { real.destroy(); real = null; } },
-    };
-  }
-
-  // Modal DI config — the callbacks depend on helpers defined above. Reads live state via getters;
-  // reaches the sphere only through sphereRotQuat + the snap/nudge callbacks.
-  modal = createModalController({
+  // Modal DI module — assigned after the helpers its callbacks depend on. Reads live state via
+  // getters; reaches the sphere only through sphereRotQuat + the snap/nudge callbacks.
+  modal = createGlobeModal({
     q,
     getScene: () => scene,
     getCamera: () => camera,
@@ -952,7 +907,8 @@ function createGlobeGalleryRuntime(
       const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
       const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
       if (modalCap <= base) return null;
-      return loadModalTextureRaw(getCardMetadata(idx).img, modalCap, onReady);
+      const src = optimizeImgUrl(getCardMetadata(idx).img, modalCap);
+      return loadModalTextureRaw(src, modalCap, onReady);
     },
     getViewport: () => ({ W, H }),
     getBP: () => bp.name,
@@ -973,20 +929,9 @@ function createGlobeGalleryRuntime(
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
   });
 
-  // Warm the modal module. Fired on first pointerdown and on idle once textures finish.
-  const prefetchModal = () => { modal.ensureLoaded(); };
-  function prefetchModalIdle() {
-    if (window.requestIdleCallback) {
-      modalPrefetchIdleId = window.requestIdleCallback(prefetchModal, { timeout: 3000 });
-    } else {
-      modalPrefetchIdleId = window.setTimeout(prefetchModal, 1200);
-    }
-  }
-
   // Focusing the widget snaps the page to the interactive globe state (formed-sphere offset;
   // block top under RM). Deferred a frame so focus settles first (pdf-space). See README.
   function snapToInteractive() {
-    modal.ensureLoaded(); // keyboard entry into the widget → warm the modal module
     if (suppressFocusSnap) return;
     const top = reducedMotion
       ? blockDocTop
@@ -2030,11 +1975,6 @@ function createGlobeGalleryRuntime(
 
     modal.setup();
 
-    // Prefetch the modal module on first interaction so the first open is instant (idle prefetch
-    // also fires once textures finish; whichever lands first). Auto-removed after one fire.
-    modalPrefetchCanvas = canvas;
-    canvas.addEventListener('pointerdown', prefetchModal, { once: true, passive: true });
-
     // Build the scene up front so the block paints immediately: cards render as contours and each
     // photo un-dissolves in as its texture lands, instead of blocking on the whole set.
     buildCards();
@@ -2056,8 +1996,10 @@ function createGlobeGalleryRuntime(
       card.arcRepeatY = texData.arcRepeatY;
       card.arcOffsetX = texData.arcOffsetX;
       card.arcOffsetY = texData.arcOffsetY;
-      // md sphere sizes per-card now (positions are index-based, no reflow); the sm barrel
-      // packs against all aspects, so it re-solves once in onDone instead.
+      // Native image aspect — the modal reads this on every breakpoint for its plane aspect.
+      card.sphereScaleX = texData.sphereScaleX;
+      // md sphere also sizes the rendered card per-card now (positions are index-based, no reflow);
+      // the sm barrel packs against all aspects, so it re-solves its render sizing once in onDone.
       if (!bp.CYLINDER) updateCardSphereSizing(card, texData.sphereScaleX);
       card.hasTexture = true; // revealT eases up in updateCardTransform
     };
@@ -2070,13 +2012,15 @@ function createGlobeGalleryRuntime(
       cardTexData = loadedTexData;
       if (bp.CYLINDER) resolveMasonryLayout(); // recomputeDragFlip runs when the morph settles
       else recomputeDragFlip();
-      prefetchModalIdle();
     };
+    const cardMaxTex = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
     loadCardTextures({
       count: bp.N_TOTAL,
-      getSrc: (i) => getCardMetadata(i).img,
+      // Request the image already sized to our texture cap so slow links download ~tens of KB,
+      // not the full-res source (we downscale to cardMaxTex client-side regardless).
+      getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTex),
       planeAspect: CARD_ASPECT,
-      maxTex: bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD,
+      maxTex: cardMaxTex,
     }, onEachTexture, onDoneTextures);
     return true;
   }
@@ -2109,16 +2053,6 @@ function createGlobeGalleryRuntime(
     window.removeEventListener('blur', armFocusGuard);
     window.removeEventListener('focus', disarmFocusGuard);
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    // Cancel the modal prefetch (a pending import bails via the controller's destroyed flag).
-    if (modalPrefetchCanvas) {
-      modalPrefetchCanvas.removeEventListener('pointerdown', prefetchModal);
-      modalPrefetchCanvas = null;
-    }
-    if (modalPrefetchIdleId) {
-      if (window.cancelIdleCallback) window.cancelIdleCallback(modalPrefetchIdleId);
-      else clearTimeout(modalPrefetchIdleId);
-      modalPrefetchIdleId = 0;
-    }
     interaction.teardown();
     // Cursor cleanup — runs while renderer exists so getCanvas() resolves.
     cursor.teardown();
