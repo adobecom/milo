@@ -13,6 +13,7 @@ import {
   getCookie,
   getGeoLocalePrefix,
   resolveDetectedMarketCountry,
+  getPromoMepEnablement,
 } from '../../../../utils/utils.js';
 import {
   US_GEO,
@@ -82,7 +83,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, geoRestriction,
+  manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -98,7 +100,9 @@ function toActivity({
     pathname,
     analyticsTitle,
     geoRestriction,
-    mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   };
 }
 
@@ -149,6 +153,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     disabled,
     geoRestriction,
     mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   } = manifest;
 
   const editPath = normalizePath(url);
@@ -194,6 +201,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
     mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
     geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
@@ -239,11 +249,28 @@ function getTheme() {
   return (getMetadata('theme') || 'None');
 }
 
-function getTargetIntegration() {
+function isTargetOn() {
   const { page } = parseMepConfig();
   const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
-  if (mepTarget === undefined) return page.target;
-  return { postlcp: 'on post LCP' }[mepTarget] ?? mepTarget;
+  const targetValue = mepTarget === undefined ? page.target : mepTarget;
+  return !!targetValue && targetValue !== 'off';
+}
+
+function getTargetIntegration() {
+  return isTargetOn() ? 'on' : 'off';
+}
+
+function getLoadTargetFaster() {
+  if (!isTargetOn()) return 'n/a';
+  return getMetadata('personalization-v2') ? 'on' : 'off';
+}
+
+function getPromoMetadata() {
+  return getPromoMepEnablement() ? 'on' : 'off';
+}
+
+function getMepParam() {
+  return new URLSearchParams(window.location.search).has('mep') ? 'on' : 'off';
 }
 
 export function getLocale() {
@@ -256,7 +283,7 @@ export function getLastSeen() {
   return formatDate(new Date(page.lastSeen));
 }
 
-function getPersonalization() {
+function getPersonalizationMetadata() {
   const { page } = parseMepConfig();
   return page.personalization;
 }
@@ -314,8 +341,13 @@ export function getPageSummary() {
     ['Manifests Found', getManifestsFound()],
     ['Foundation', getFoundation()],
     ['Theme', getTheme()],
-    ['Target Integration', getTargetIntegration()],
-    ['Personalization', getPersonalization()],
+    ['Load Target Faster (v2)', getLoadTargetFaster()],
+    ['Manifest Sources', [
+      ['Target Integration', getTargetIntegration()],
+      ['Personalization Metadata', getPersonalizationMetadata()],
+      ['Promo Metadata', getPromoMetadata()],
+      ['MEP Param', getMepParam()],
+    ]],
   ]);
 }
 

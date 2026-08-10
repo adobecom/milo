@@ -453,14 +453,40 @@ describe('getPageSummary', () => {
     });
   });
 
-  it('includes Manifests Found, Foundation, Theme, Target Integration, Personalization', async () => {
+  it('includes Manifests Found, Foundation, Theme, Target Integration, Load Target Faster (v2)', async () => {
     const pairs = await getPageSummary();
     const labels = pairs.map(([l]) => l);
     expect(labels).to.include('Manifests Found');
     expect(labels).to.include('Foundation');
     expect(labels).to.include('Theme');
     expect(labels).to.include('Target Integration');
-    expect(labels).to.include('Personalization');
+    expect(labels).to.include('Load Target Faster (v2)');
+  });
+
+  it('Target Integration nests Personalization Metadata, Promo Metadata, Mep Param', async () => {
+    const pairs = await getPageSummary();
+    const [, targetIntegration] = pairs.find(([l]) => l === 'Target Integration');
+    const subLabels = targetIntegration.map(([l]) => l);
+    expect(subLabels).to.deep.equal(['Personalization Metadata', 'Promo Metadata', 'Mep Param']);
+    targetIntegration.forEach(([, value]) => expect(value).to.equal('off'));
+  });
+
+  it('Load Target Faster (v2) is n/a when Target is off', async () => {
+    setConfig({ ...config, mep: { ...config.mep, targetEnabled: false } });
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('n/a');
+  });
+
+  it('Load Target Faster (v2) reflects personalization-v2 metadata when Target is on', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'personalization-v2';
+    meta.content = 'on';
+    document.head.append(meta);
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('on');
+    meta.remove();
   });
 
   it('reports 0 manifests found when experiments array is empty', async () => {

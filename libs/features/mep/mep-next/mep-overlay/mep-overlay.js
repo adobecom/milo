@@ -124,6 +124,20 @@ function buildRow(label, value) {
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
+function buildNestedSection(label, subPairs) {
+  const rows = subPairs.map(([subLabel, subValue]) => {
+    const isOnOff = subValue === 'on' || subValue === 'off';
+    const valEl = createTag('div', isOnOff ? { class: subValue === 'on' ? 'mep-row-value emphasis' : 'mep-row-value' } : {});
+    valEl.textContent = subValue == null ? '' : String(subValue);
+    return createTag('div', { class: 'mep-surfaces-row' }, [
+      createTag('div', { class: 'mep-row-value' }, subLabel),
+      valEl,
+    ]);
+  });
+  const children = label ? [createTag('h2', {}, label), ...rows] : rows;
+  return createTag('div', { class: 'mep-row-section' }, children);
+}
+
 function markExpanded(el, key) {
   el.dataset.cardKey = key;
   if (getExpandedCards().has(key)) el.classList.add('expanded');
@@ -153,8 +167,10 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
   rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Mktg Action', manifest.mktgAction));
-  if (manifest.geoRestriction) rows.push(buildRow('Geo', manifest.geoRestriction));
+  rows.push(buildRow('Geo Restriction', manifest.geoRestriction || 'none'));
+  rows.push(buildRow('Type', manifest.manifestType || 'none'));
+  rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
+  rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
   if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
@@ -278,18 +294,6 @@ async function buildSpoofGeo(card, pageId) {
   });
 
   return [...rows, selectEl];
-}
-
-function buildNestedSection(label, subPairs) {
-  const rows = subPairs.map(([subLabel, subValue]) => {
-    const valEl = createTag('div', {});
-    valEl.textContent = subValue == null ? '' : String(subValue);
-    return createTag('div', { class: 'mep-surfaces-row' }, [
-      createTag('div', { class: 'mep-row-value' }, subLabel),
-      valEl,
-    ]);
-  });
-  return createTag('div', { class: 'mep-row-section' }, [createTag('h2', {}, label), ...rows]);
 }
 
 async function buildSummaryData(card) {
