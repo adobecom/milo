@@ -1,0 +1,785 @@
+/* Mobile-first (Milo convention): unscoped base = sm (<768); each @media (min-width) layers md/lg on top. */
+/* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix, custom-property-pattern */
+
+/* Reduced motion: plain document flow, static interactive globe (see README, Accessibility). */
+.globe-gallery.globe-gallery--reduced {
+  height: auto;
+  min-height: 0;
+}
+
+/* Per-descendant --reduced overrides are grouped at the END of the file (they must follow their bases). */
+
+/* No cards / WebGL unavailable: collapse the runway to nothing. Distinct from --reduced. */
+.globe-gallery.globe-gallery--empty {
+  height: auto;
+  min-height: 0;
+}
+
+/* Scroll model + type-scale tokens: see README (Architecture notes / Behavior notes). Milo
+   doesn't ship the prototype's :root tokens, so define them scoped to .globe. Keep in sync with
+   hub-creative/styles/global/typography.css. */
+.globe-gallery {
+  /* Total scroll length + single source of truth for pacing (JS + pull-quote pin derive from it). */
+  --runway-height: 945vh;
+
+  height: var(--runway-height);
+  position: relative;
+  background: var(--s2a-color-gray-900);
+  margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
+
+  /* kill the mobile tap flash on cards / backdrop */
+  -webkit-tap-highlight-color: transparent;
+
+  --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
+
+  /* Title 1 — sm: 40/38.4/-1.2px */
+  --type-title-1-size: 40px;
+  --type-title-1-weight: 900;
+  --type-title-1-lh: 0.96;
+  --type-title-1-ls: -0.03em;
+
+  /* Body Large — sm: 16/20.8/0 */
+  --type-body-l-size: 16px;
+  --type-body-l-weight: 400;
+  --type-body-l-lh: 1.3;
+  --type-body-l-ls: 0;
+
+  /* Body Medium — 16/20.8/+0.16px (all tiers) */
+  --type-body-m-size: 16px;
+  --type-body-m-weight: 400;
+  --type-body-m-lh: 1.3;
+  --type-body-m-ls: 0.01em;
+}
+
+@media (min-width: 768px) {
+  .globe-gallery {
+    --type-title-1-size: 56px;
+    --type-body-l-size: 18px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .globe-gallery {
+    --type-title-1-size: 80px;
+    --type-title-1-ls: -0.04em;
+    --type-body-l-size: 20px;
+    --type-body-l-lh: 1.2;
+  }
+}
+
+/* z-index bands (page root stacking context): hero 2–5, modal 110–112, cursor 113–114. The modal
+   chrome is a native <dialog>/showModal() in the top layer, so its z-index is a non-modal fallback. */
+
+/* Sticky viewport — cards are absolutely positioned within this. */
+.globe-gallery-world {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Arc copy. Base (sm) = dark frosted pill over the cards; min-width:768 strips it to floating text.
+   JS sets `left` each frame. */
+.globe-gallery-arc-copy {
+  position: fixed;
+
+  /* (viewport - 16px), 8px gap each side, capped at 359px; calc(100vw - 32px) clamped to 343 on SE. */
+  width: calc(100vw - 16px);
+  max-width: 359px;
+  bottom: 8px;
+  box-sizing: border-box;
+  padding: 16px;
+  background: rgb(0 0 0 / 30%);
+  -webkit-backdrop-filter: blur(var(--s2a-blur-64));
+  backdrop-filter: blur(var(--s2a-blur-64));
+  border-radius: var(--s2a-border-radius-md);
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  transform-origin: left bottom;
+  z-index: 4;
+}
+
+.globe-gallery-arc-copy__title {
+  /* 18px custom mini-headline (between Title-4 and body). */
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: var(--s2a-font-line-height-21);
+  letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+  color: var(--s2a-color-gray-25);
+  margin: 0 0 4px;
+}
+
+.globe-gallery-arc-copy__body {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-m-weight);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  letter-spacing: var(--type-body-m-ls);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+/* Pull-quote. The pin is absolute at the runway bottom; the quote is sticky inside it, so it reveals,
+   holds, and exits with no JS. Pin height is a fraction of --runway-height so it scales with the runway. */
+.globe-gallery-pullquote-pin {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--runway-height) * 0.4);
+  pointer-events: none;
+}
+
+/* Hidden (opacity:0/scale:0.9) until JS adds .is-active at the zoomT threshold, so it emerges in place. */
+.globe-gallery-pullquote {
+  --pq-height: 583px;
+
+  position: sticky;
+  top: calc(50vh - var(--pq-height) / 2);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  height: var(--pq-height);
+  z-index: 5;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.globe-gallery-pullquote.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.globe-gallery-pullquote__quote {
+  font-family: var(--font-display);
+  font-weight: var(--type-title-1-weight);
+  font-size: var(--type-title-1-size);
+  line-height: var(--type-title-1-lh);
+  letter-spacing: var(--type-title-1-ls);
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+/* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
+.globe-gallery-pullquote__attribution {
+  margin-top: 24px;
+}
+
+.globe-gallery-pullquote__name {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-l-weight);
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+  letter-spacing: var(--type-body-l-ls);
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+.globe-gallery-pullquote__role {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-l-weight);
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+  letter-spacing: var(--type-body-l-ls);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+/* Card detail modal (see README, Behavior notes / Accessibility). */
+
+/* Backdrop layer (z:110) — dims/blurs the globe canvas behind the sharp card canvas. */
+.globe-gallery-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s linear;
+}
+.globe-gallery-modal.is-visible { display: block; }
+.globe-gallery-modal.is-open    { opacity: 1; }
+
+.globe-gallery-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+
+  /* Decorative dim/blur only; inert once the dialog runs showModal(). */
+  pointer-events: none;
+}
+
+/* Chrome layer — a native <dialog> opened with showModal(), reset to a full-viewport transparent
+   overlay in the top layer (z-index is a non-modal fallback). It is the live gesture surface
+   (pointer-events:auto + touch-action:none); its siblings are inert once showModal() runs. */
+.globe-gallery-modal-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 112;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.globe-gallery-modal-chrome.is-open { opacity: 1; }
+
+/* Scripted focus target (tabindex=-1), not user-tabbable, so suppress the full-viewport outline. */
+.globe-gallery-modal-chrome:focus,
+.globe-gallery-modal-chrome:focus-visible { outline: none; }
+
+/* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
+.globe-gallery-modal-chrome::backdrop { background: transparent; }
+
+/* Nav arrows — position set per-frame by JS (positionModalChrome); CSS is visual style only. */
+.globe-gallery-modal__nav {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.globe-gallery-modal__nav:hover {
+  background: rgb(0 0 0 / 78%);
+  transform: scale(1.05);
+}
+
+.globe-gallery-modal__nav:active { transform: scale(0.98); }
+
+/* Close button — position set by JS; same frosted treatment as the nav arrows. */
+.globe-gallery-modal__close {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: background 0.2s ease;
+}
+.globe-gallery-modal__close:hover { background: rgb(0 0 0 / 78%); }
+
+/* Info panel — position set by JS. Base (sm) = bottom scrim chunk; min-width:768 = full-height
+   left-edge scrim. Badges margin-top:auto pins them low; padding-bottom reserves the arrow row. */
+.globe-gallery-modal__info {
+  position: absolute;
+  height: 266px;
+  margin: 0;
+  padding: 24px 24px 84px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--s2a-border-radius-md);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+
+  /* padding must count toward width — no global border-box reset in Milo */
+  box-sizing: border-box;
+}
+
+.globe-gallery-modal__badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
+.globe-gallery-modal__info > .globe-gallery-modal__badges {
+  margin-top: auto;
+}
+
+.globe-gallery-modal__role-label {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+.globe-gallery-modal__name {
+  font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: var(--s2a-font-line-height-24);
+  letter-spacing: -0.6px;
+  color: var(--s2a-color-gray-25);
+  margin: 2px 0 8px;
+}
+
+.globe-gallery-modal__description {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: var(--s2a-font-line-height-18);
+  color: var(--s2a-color-gray-400);
+  margin: 0 0 12px;
+  max-width: 375px;
+
+  /* Cap to 3 lines (sm) so badges stay on-screen; min-width:768 unclamps it. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.globe-gallery-modal__badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.globe-gallery-modal__badge-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.globe-gallery-modal__badge-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.globe-gallery-modal__badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.globe-gallery-modal__badge-app {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--s2a-color-gray-25);
+}
+
+.globe-gallery-modal__badge-app--link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.globe-gallery-modal__badge-app--link::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--s2a-color-gray-25);
+  border-top: 1.5px solid var(--s2a-color-gray-25);
+  transform: rotate(45deg) translateY(-1px);
+  flex-shrink: 0;
+}
+
+.globe-gallery-modal__badge-app--link:hover {
+  text-decoration: underline;
+}
+
+.globe-gallery-modal__badge-role {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--s2a-color-gray-400);
+}
+
+/* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
+.globe-gallery-modal__counter {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s2a-color-gray-25);
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Lock scroll while the modal is open. Lock BOTH html + body — either can be the scrolling
+   element, and body alone let wheel/trackpad scroll bypass it (JS is the second layer for iOS). */
+html.modal-open,
+body.modal-open { overflow: hidden; }
+
+/* Globe entry widget — the single focusable a11y button over the sphere (see README, Accessibility).
+   pointer-events:none so it never intercepts canvas drag; tabbable only while interactive (JS). */
+.globe-gallery-a11y {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 80vh);
+  height: min(80vw, 80vh);
+  transform: translate(-50%, -50%);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none; /* never intercept canvas drag */
+  z-index: 4; /* above the WebGL canvas (z:3); the modal still covers it */
+}
+.globe-gallery-a11y:focus { outline: none; }
+
+/* Per-image browse buttons (keyboard browse mode). JS sizes/positions each per-frame to its image's
+   projected screen rect. pointer-events:none; tabbable only while browsing. See README (Accessibility). */
+.globe-gallery-a11y-cards {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4; /* same layer as the entry widget */
+}
+
+/* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
+   image, not the top-left. JS overwrites left/top/width/height each frame while focused. */
+.globe-gallery-a11y-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.globe-gallery-a11y-card:focus { outline: none; }
+
+/* Entry-widget instructions popup — one element that is both the aria-labelledby target and a visible
+   pill shown on focus (see README, Accessibility). pointer-events:none so it never blocks the canvas. */
+.globe-gallery-a11y-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  max-width: min(78vw, 320px);
+  padding: 12px 20px;
+  border-radius: var(--s2a-border-radius-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5; /* above the a11y layer (z:4); the modal still covers it */
+}
+
+.globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Visually-hidden but screen-reader-readable — the standard 1×1 clipped sr-only recipe. */
+.globe-gallery-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard focus indicators (Spectrum-style: 2px #1473E6, 2px offset). */
+.globe-gallery-a11y:focus-visible,
+.globe-gallery-a11y-card:focus-visible,
+.globe-gallery-modal__close:focus-visible,
+.globe-gallery-modal__nav:focus-visible {
+  outline: 2px solid #1473E6;
+  outline-offset: 2px;
+}
+
+/* Milo md+ (≥768px) — desktop modal + arc-copy treatment over the sm base (see README, Behavior notes). */
+@media (min-width: 768px) {
+  .globe-gallery-arc-copy {
+    width: 382px;
+    max-width: none;
+    bottom: 72px;
+    background: none;
+  }
+
+  /* Info scrim → full-height left-edge (JS sets top/bottom/left/width); background/blur inherit. */
+  .globe-gallery-modal__info {
+    height: auto;
+    border-radius: 0;
+    padding: 40px 32px;
+  }
+
+  .globe-gallery-modal__role-label { margin-top: auto; }
+
+  .globe-gallery-modal__name {
+    font-size: 24px;
+    line-height: 28px;
+    letter-spacing: -0.6px;
+    margin: 4px 0 12px;
+  }
+
+  .globe-gallery-modal__description {
+    font-size: 15px;
+    line-height: 22px;
+    margin: 0;
+    max-width: none;
+
+    /* Undo the sm 3-line clamp — the full-height scrim has room. */
+    display: block;
+    overflow: visible;
+  }
+
+  .globe-gallery-modal__badges { gap: 10px; }
+
+  .globe-gallery-modal__badge-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .globe-gallery-modal__badge-app { font-size: 14px; }
+  .globe-gallery-modal__badge-role { font-size: 14px; }
+
+  .globe-gallery-modal__counter {
+    width: 138px;
+    box-sizing: border-box;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Custom "Click & Drag" cursor, desktop only (see README, Behavior notes). Body-level elements from
+   src/cursor.js; the @media guard mirrors the JS gate so it never applies on touch/coarse pointers. */
+@media (hover: hover) and (pointer: fine) {
+  .globe-gallery-cursor {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    /* body-level; above the modal band (≤112) to top everything the block draws */
+    z-index: 114;
+  }
+
+  /* Disc — direct body child so mix-blend-mode: difference blends against page content (a
+     position:fixed container would GPU-isolate it). top/left keeps `transform` free for the entrance. */
+  .globe-gallery-cursor__disc {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 113; /* just below the cursor container */
+    width: 48px;
+    height: 48px;
+    margin: -24px; /* center on the pointer hot-point */
+    border-radius: 50%;
+    background: var(--s2a-color-gray-25);
+    mix-blend-mode: difference;
+    transform: scale(0);
+    visibility: hidden; /* snaps instantly — no disc lingering at the click point on modal open */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor__disc--active {
+    transform: scale(1);
+    visibility: visible;
+  }
+
+  .globe-gallery-cursor__disc--dragging {
+    transform: scale(0.82);
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor__ring-wrap,
+  .globe-gallery-cursor__text-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .globe-gallery-cursor__text-wrap {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.5s ease 0.15s;
+  }
+
+  /* Chevron SVG — no blend mode; own opacity/scale entrance, separate from the disc. */
+  .globe-gallery-cursor__ring {
+    display: block;
+    position: absolute;
+    top: -24px;
+    left: -24px;
+    width: 48px;
+    height: 48px;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5);
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor--active .globe-gallery-cursor__ring {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__ring {
+    transform: scale(0.82);
+    transition: opacity 0.35s ease, transform 0.15s ease;
+  }
+
+  /* Chevrons squeeze inward while dragging. */
+  .globe-gallery-cursor__chevron-l,
+  .globe-gallery-cursor__chevron-r {
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__chevron-l { transform: translateX(4px); }
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__chevron-r { transform: translateX(-4px); }
+
+  .globe-gallery-cursor__text {
+    display: block;
+    font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    line-height: 1;
+    color: var(--s2a-color-gray-25);
+  }
+
+  .globe-gallery-cursor--active .globe-gallery-cursor__text-wrap { opacity: 0.9; }
+
+  .globe-gallery-cursor--hint-dismissed .globe-gallery-cursor__text-wrap { opacity: 0; }
+
+  .globe-gallery-cursor--retiring .globe-gallery-cursor__ring {
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.42s ease, transform 0.42s ease;
+  }
+
+  .globe-gallery-cursor__disc--retiring {
+    transform: scale(0);
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Reduced-motion flow overrides — grouped at the end so descendant selectors follow their bases
+   (no-descending-specificity). See README (Accessibility) for the plain-document-flow layout. */
+
+/* Globe section: static so it scrolls away; relative anchors the absolute canvas. Height = 8vh + 100vh canvas. */
+.globe-gallery--reduced .globe-gallery-world {
+  position: relative;
+  height: 108vh;
+}
+
+/* No arc phase under RM — a fixed pill would hang over the scrolling page. */
+.globe-gallery--reduced .globe-gallery-arc-copy {
+  display: none;
+}
+
+/* A11y widget scrolls with the globe; re-centre on the sphere (base top:50% tracks the taller world). */
+.globe-gallery--reduced .globe-gallery-a11y {
+  position: absolute;
+  top: 58vh;
+}
+
+/* Focus-ring overlay tracks the scrolled canvas (matching its 8vh top + 100vh box). */
+.globe-gallery--reduced .globe-gallery-a11y-cards {
+  position: absolute;
+  inset: 8vh 0 auto;
+  height: 100vh;
+}
+
+/* Pull-quote flows normally after the globe: drop the pin/sticky, show statically, top-aligned with a gap above. */
+.globe-gallery--reduced .globe-gallery-pullquote-pin {
+  position: static;
+  height: auto;
+}
+
+.globe-gallery--reduced .globe-gallery-pullquote {
+  position: static;
+  top: auto;
+  height: auto;
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 10vh 24px 8vh;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Reduced-motion: drop the remaining CSS-only motion — the modal nav button scale (colour cue stays). */
+@media (prefers-reduced-motion: reduce) {
+  .globe-gallery-modal__nav:hover,
+  .globe-gallery-modal__nav:active {
+    transform: none;
+  }
+}

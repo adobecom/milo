@@ -16,5 +16,6 @@ module.exports = {
     '/libs/deps/*',
     '/libs/navigation/dist/*',
     '/tools/loc/*',
+    '/libs/mep/ace1209/globe-gallery/three.module.min.js',
   ],
 };
