@@ -20,7 +20,8 @@ export function getAdminUrl(url, type) {
 export async function getPageStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   if (!adminUrl) return null;
-  const resp = await fetch(adminUrl);
+  // no-store: the skip / new-page decision depends on current publish state, not a cached one.
+  const resp = await fetch(adminUrl, { cache: 'no-store' });
   if (!resp.ok) return null;
   const json = await resp.json();
   const pick = (o) => ({

@@ -7,11 +7,13 @@ export function deriveLiveUrl(url) {
 }
 
 // "missing" (doesn't exist) vs "error" (failed to load) — conflating them fakes an empty live doc.
+// no-store: live/preview .plain.html are cached (max-age 7200), so a plain fetch would diff against
+// a stale copy during iterative edits — always pull the current version.
 async function fetchPlain(url) {
   const plain = new URL(url.href);
   plain.pathname = `${plain.pathname.replace(/\/$/, '')}.plain.html`;
   try {
-    const resp = await fetch(plain.href);
+    const resp = await fetch(plain.href, { cache: 'no-store' });
     if (!resp.ok) return { html: null, fetchStatus: resp.status === 404 ? 'missing' : 'error' };
     return { html: await resp.text(), fetchStatus: 'ok' };
   } catch {
