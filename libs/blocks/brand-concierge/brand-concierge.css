@@ -1171,6 +1171,11 @@
     padding: 0 24px;
   }
 
+  .c2-dark .bc-header-title {
+    font-size: 56px;
+    line-height: 56px;
+  }
+
   .bc-prompt-cards {
     max-width: 768px;
   }
