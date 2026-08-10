@@ -295,7 +295,12 @@ function isMasGeoDetectionEnabled() {
 // getFederatedContentRoot for the federal (non-marketsSource) case. Returns null when a
 // marketsSource override is configured — that URL needs Milo config we don't have yet, so
 // the caller falls back to the raw sync country (no clamp) on those pages.
-function getDefaultMarketsUrl() {
+//
+// Exported so a consumer bootstrap can kick this fetch off at T=0, in parallel with
+// importing this module, and hand the result to resolveMasMarket({ marketsConfig }). A
+// consumer that must start the fetch *before* the import resolves has to inline the same
+// URL — keep the two in sync; the shape is stable (unlike GeoMap).
+export function getMasMarketsUrl() {
   const src = new URLSearchParams(window.location.search).get('marketsSource')
     || document.querySelector('meta[name="marketssource"]')?.content;
   if (src) return null;
@@ -316,18 +321,25 @@ function getDefaultMarketsUrl() {
  * from the Server-Timing geo header, so no geo lookup). Returns null on non-geo-detection
  * pages (locale-in-URL is already exact) and degrades to the raw sync country on any failure.
  *
- * @param {{ locale?: {prefix?: string}, marketsUrl?: string }} [opts]
+ * Pass `marketsConfig` (already-fetched supported-markets JSON) to skip the fetch entirely —
+ * this is how a consumer bootstrap starts that fetch at T=0, in parallel with importing this
+ * module, instead of serializing it behind the import. See {@link getMasMarketsUrl}.
+ *
+ * @param {{ locale?: {prefix?: string}, marketsUrl?: string, marketsConfig?: object }} [opts]
  * @returns {Promise<string|null>} clamped market (lowercase), sync guess, or null
  */
-export async function resolveMasMarket({ locale, marketsUrl } = {}) {
+export async function resolveMasMarket({ locale, marketsUrl, marketsConfig } = {}) {
   if (!isMasGeoDetectionEnabled()) return null;
   const detected = getSyncMarketCountry();
   try {
-    const url = marketsUrl || getDefaultMarketsUrl();
-    if (!url) return detected || null;
-    const resp = await fetch(url);
-    if (!resp.ok) return detected || null;
-    const json = await resp.json();
+    let json = marketsConfig;
+    if (!json) {
+      const url = marketsUrl || getMasMarketsUrl();
+      if (!url) return detected || null;
+      const resp = await fetch(url);
+      if (!resp.ok) return detected || null;
+      json = await resp.json();
+    }
     const marketConfig = { languages: parseMarketsLanguages(json) };
     return validateMarket(marketConfig, detected, locale) || detected || null;
   } catch (e) {

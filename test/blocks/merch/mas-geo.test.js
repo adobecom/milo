@@ -224,5 +224,14 @@ describe('mas-geo', () => {
       sinon.stub(window, 'fetch').rejects(new Error('network'));
       expect(await resolveMasMarket({ locale: { prefix: '' }, marketsUrl: '/x.json' })).to.equal('ch');
     });
+
+    it('uses a pre-fetched marketsConfig without fetching', async () => {
+      enableGeo();
+      sessionStorage.setItem('akamai', 'zz'); // unsupported -> clamps to defaultMarket
+      const fetchStub = sinon.stub(window, 'fetch');
+      const marketsConfig = { languages: { data: [{ prefix: '', supportedRegions: 'us,gb', defaultMarket: 'us' }] } };
+      expect(await resolveMasMarket({ locale: { prefix: '' }, marketsConfig })).to.equal('us');
+      expect(fetchStub.called).to.equal(false);
+    });
   });
 });
