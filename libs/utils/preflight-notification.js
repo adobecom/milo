@@ -57,6 +57,13 @@ export async function autoHighlightUnpublished() {
     ]);
     const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
     if (!content) return;
+    // The overlays + labels are styled by preflight.css. The modal loads it when it opens, but on
+    // the bare preview page we must load it ourselves — otherwise the frames render invisible and
+    // the sr-only labels show as raw text. Await it so there's no flash of unstyled labels.
+    const { miloLibs, codeRoot } = getConfig();
+    await new Promise((resolve) => {
+      loadStyle(`${miloLibs || codeRoot}/blocks/preflight/preflight.css`, resolve);
+    });
     const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
     autoHighlightOnPage(content, root);
   } catch (e) {
