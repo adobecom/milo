@@ -137,30 +137,15 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     margin-bottom: initial;
   }
 
-  &:has(+ .rounded-corners),
-  &:has(+ .rounded-corners-top) {
-    /* add spacing to bottom of previous section to avoid content overlap  */
-    &::after {
-      content: '';
-      display: block;
-
-      /* Set full-width to account for masonry-layout / grid-width-*) */
-      grid-column: 1 / -1;
-      width: 100%;
-      height: var(--s2a-border-radius-lg);
-    }
-  }
-
-  &.rounded-corners + .section,
-  &.rounded-corners-bottom + .section {
-    /* add spacing to top of next section to avoid content overlap */
-    &::before {
-      content: '';
-      display: block;
-      grid-column: 1 / -1;
-      width: 100%;
-      height: var(--s2a-border-radius-lg);
-    }
+  &:has(+ .rounded-corners)::after,
+  &:has(+ .rounded-corners-top)::after,
+  &.rounded-corners + .section::before,
+  &.rounded-corners-bottom + .section::before {
+    content: '';
+    display: block;
+    grid-column: 1 / -1;
+    width: 100%;
+    height: var(--s2a-border-radius-lg);
   }
 
   &.rounded-corners-bottom {
