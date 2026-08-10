@@ -470,7 +470,6 @@
 }
 
 .email-collection.mailing-list .heading-l {
-  font-family: var(--s2a-font-family-heading);
   font-weight: var(--s2a-font-weight-heading);
   font-size: var(--s2a-typography-font-size-heading-4);
   line-height: var(--s2a-typography-line-height-heading-4);
