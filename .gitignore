@@ -21,7 +21,6 @@ libs/navigation/dist/
 **/.CLAUDE.md
 mcp-server.log
 .playwright-stamp
-docs/superpowers/
 
 # Font files should not be committed due to copyright & branding reasons. Use Typekit instead.
 *.otf
