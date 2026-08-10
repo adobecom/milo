@@ -183,6 +183,8 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   }
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
+  const iconImg = icon?.querySelector('img');
+  if (isSvgUrl(iconImg?.src)) iconImg.src = getFederatedUrl(iconImg.src);
 
   decorateBlockText(left);
 
@@ -319,6 +321,10 @@ const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
   if (leftClone) gridColumns[1]?.append(leftClone);
   if (rightClone) gridColumns[3]?.append(rightClone);
+
+  container.querySelectorAll('img').forEach((img) => {
+    if (isSvgUrl(img.src)) img.src = getFederatedUrl(img.src);
+  });
 
   return container;
 };
