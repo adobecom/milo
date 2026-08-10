@@ -480,7 +480,6 @@
 }
 
 .email-collection.mailing-list .body-m {
-  font-family: var(--s2a-font-family-body);
   font-weight: var(--s2a-font-weight-body);
   font-size: var(--s2a-typography-font-size-body-md);
   line-height: var(--s2a-typography-line-height-body-md);
