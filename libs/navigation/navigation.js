@@ -120,7 +120,9 @@ export default async function loadBlock(configs, customLib) {
     console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
-  const branch = new URLSearchParams(window.location.search).get('navbranch');
+  const branch = env !== 'prod'
+    ? new URLSearchParams(window.location.search).get('navbranch')
+    : null;
   let miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
   const useLocal = new URLSearchParams(window.location.search).get('useLocal') || false;
   if (useLocal) {
