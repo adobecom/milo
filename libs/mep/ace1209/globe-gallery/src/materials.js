@@ -21,6 +21,8 @@ export function createCardMaterial({
       uAspect: { value: aspect },
       uRadius: { value: 22.0 / 631.0 },
       uDissolve: { value: 0 }, // near-camera proximity dissolve (0 = solid, 1 = fully dispersed)
+      uReveal: { value: 0 }, // texture-ready reveal (0 = contour only, 1 = full photo)
+      uContourFade: { value: 1 }, // near-camera gate for the contour (mirrors proxFade)
     },
     vertexShader: CARD_VERT,
     fragmentShader: CARD_FRAG,
@@ -117,44 +119,65 @@ function imageToCanvas(img, maxTex) {
   return cv;
 }
 
-// Load every card image into a CanvasTexture with a cover-fit crop. onDone fires once
-// all `count` settle; cardTexData[i] carries the cover-crop UVs + sphereScaleX.
-export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onDone) {
+// A tiny transparent texture so a card mesh can be built (and its contour rendered) before its
+// real photo has loaded. Its pixels are never shown — the contour hides them until uReveal > 0.
+export function createPlaceholderTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 1; cv.height = 1;
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Cover-fit crop for one loaded texture. Mutates tex.repeat/offset and returns the per-card
+// data (sphereScaleX = native width stretch; arcRepeat/Offset = cover-crop UVs for arc/grid).
+function computeTexData(tex, planeAspect) {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const imgW = (tex.image && tex.image.width) || 1;
+  const imgH = (tex.image && tex.image.height) || 1;
+  const imgAspect = imgW / imgH;
+  if (imgAspect > planeAspect) {
+    // Image wider than plane → crop left/right, keep center
+    tex.repeat.x = planeAspect / imgAspect;
+    tex.offset.x = (1 - tex.repeat.x) / 2;
+  } else if (imgAspect < planeAspect) {
+    // Image taller than plane → crop top/bottom, keep center
+    tex.repeat.y = imgAspect / planeAspect;
+    tex.offset.y = (1 - tex.repeat.y) / 2;
+  }
+  return {
+    sphereScaleX: imgAspect / planeAspect,
+    arcRepeatX: tex.repeat.x,
+    arcRepeatY: tex.repeat.y,
+    arcOffsetX: tex.offset.x,
+    arcOffsetY: tex.offset.y,
+  };
+}
+
+// Load every card image into a CanvasTexture with a cover-fit crop. `onEach(i, tex, texData)`
+// fires as each image settles (progressive reveal); `onDone(textures, cardTexData)` fires once
+// all `count` have settled. Callers own the stale-load guard in these callbacks.
+export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
-  const cardTexData = [];
+  const cardTexData = new Array(count);
 
   function done(i, tex) {
-    tex.colorSpace = THREE.SRGBColorSpace;
-    // Cover-fit crop so the native aspect isn't stretched to the plane.
-    const imgW = (tex.image && tex.image.width) || 1;
-    const imgH = (tex.image && tex.image.height) || 1;
-    const imgAspect = imgW / imgH;
-    if (imgAspect > planeAspect) {
-      // Image wider than plane → crop left/right, keep center
-      tex.repeat.x = planeAspect / imgAspect;
-      tex.offset.x = (1 - tex.repeat.x) / 2;
-    } else if (imgAspect < planeAspect) {
-      // Image taller than plane → crop top/bottom, keep center
-      tex.repeat.y = imgAspect / planeAspect;
-      tex.offset.y = (1 - tex.repeat.y) / 2;
-    }
-    // sphereScaleX: width stretch for native ratio on the sphere. arcRepeat/Offset: cover-crop UVs.
-    cardTexData[i] = {
-      sphereScaleX: imgAspect / planeAspect,
-      arcRepeatX: tex.repeat.x,
-      arcRepeatY: tex.repeat.y,
-      arcOffsetX: tex.offset.x,
-      arcOffsetY: tex.offset.y,
-    };
+    const texData = computeTexData(tex, planeAspect);
     textures[i] = tex;
+    cardTexData[i] = texData;
+    if (onEach) onEach(i, tex, texData);
     loaded += 1;
-    if (loaded === count) onDone(textures, cardTexData);
+    if (loaded === count && onDone) onDone(textures, cardTexData);
   }
 
   function tryLoad(i) {
     const img = new Image();
-    img.onload = () => { done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex))); };
+    img.onload = () => {
+      const rasterize = () => done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex)));
+      if (img.decode) img.decode().then(rasterize, rasterize);
+      else rasterize();
+    };
     img.onerror = () => {
       window.lana?.log?.(`globe-gallery: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: 'globe-gallery', severity: 'warn' });
       done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));

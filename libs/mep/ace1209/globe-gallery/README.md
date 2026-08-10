@@ -276,7 +276,8 @@ driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
 
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
-(textures loaded + cards built) AND `onScreen` are true; `syncTicker()` reconciles them and
+(cards built — contours paint immediately, textures fill in progressively; see Progressive
+texture loading) AND `onScreen` are true; `syncTicker()` reconciles them and
 is called whenever either flips. `onScreen` is driven by an `IntersectionObserver` on the
 block root with a generous `rootMargin: '100% 0px'` — the root IS the tall runway, so one
 extra viewport top and bottom keeps the loop alive through the `ENTRY_LEAD_VH` pre-roll (it
@@ -287,6 +288,39 @@ because reduced motion also keeps the ticker running on an otherwise-static glob
 long off-screen scroll doesn't read a spurious one-frame `scrollVel` spike. The observer is
 created in `initRuntime`, disconnected in `destroy` (mirrors `layoutObs`); it fires once on
 `observe()` to correct the `onScreen` default.
+
+**Progressive texture loading (contours → un-dissolve).** Card meshes are built up front,
+before any photo loads, so the block paints immediately: `initRuntime` runs
+`buildCards()`/`buildTextMesh()`/`a11y.setup()` and flips `renderReady` **before**
+`loadCardTextures`, seeding each card with a shared 1×1 `placeholderTex` and a placeholder
+aspect. Until a card's photo lands it renders as a **contour** — a faint rounded-rect fill +
+~1px edge stroke drawn in `CARD_FRAG` from the existing `rrSDF`, driven by two uniforms
+(`uReveal` 0→1 = contour→photo crossfade, `uContourFade` = proxFade so the contour respects the
+near-camera cull). `loadCardTextures` reports **per image** via `onEach` (plus `onDone` once all
+settle; the caller owns the `textureLoadGeneration` stale-guard in both). `onEach` swaps in the
+real texture, refreshes the card's cover-crop UVs + native `sphereScaleX`, and flips
+`hasTexture`; `revealT` then eases 0→1 in `updateCardTransform` and the photo **un-dissolves**
+in — the same edge-first particle effect as the near-camera proximity fade (`uDissolve`), so the
+two compose in `placeSphereCard` by **max-dissolve / min-opacity** (neither un-hides what the
+other hides). On **md** (sphere) positions are index-based (`fibSpherePos`), so a landed texture
+only morphs the card's scale/aspect in place (`updateCardSphereSizing`) — never a reflow. On
+**sm** the masonry barrel is a whole-set solve (packing needs every aspect), so it's packed once
+with placeholder aspects and **re-solved once** in `onDone` (`resolveMasonryLayout`); each card
+then eases from its provisional slot to the final one via a one-time `masonryMorph` tween
+(invisible while the user is still in arc/grid, the common case). `dragFlipZ` (aspect-dependent)
+is recomputed in `onDone` / when the morph settles. Images decode off the main thread
+(`img.decode()` before rasterizing) so many decode concurrently instead of serializing on
+`onload`. Net: `renderReady` now means *cards built* (contours visible), not *all textures
+loaded* — the old all-or-nothing barrier is gone.
+
+**Right-sized image requests.** `loadCardTextures`' `getSrc` and the modal upgrade both route the
+authored image URL through `optimizeImgUrl(src, cap)` (`authoring.js`), which for a helix/DA
+`media_*` asset rewrites it to `?width=<cap>&format=webply` — mirroring `libs/utils/decorate.js`'s
+`decoratePictures` convention (strip query, width + `webply`). Non-`media_` URLs pass through
+untouched. Because we downscale client-side anyway (`fitDims`), this only trims bytes on the wire
+(≈10–30× on slow links), not the final texture resolution. A side benefit: the modal now requests
+its own cap (`MODAL_TEX_MD` 2048) explicitly, so it reaches the intended sharpness instead of being
+limited by whatever width the authored `<img>` src happened to be.
 
 **Pausing must hide the canvas (multi-globe correctness).** The main canvas is
 `position:fixed` + full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the
