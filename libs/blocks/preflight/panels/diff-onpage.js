@@ -147,6 +147,12 @@ function showHighlightControl(root, onDismiss) {
   document.body.append(control);
 }
 
+// Session-scoped dismiss: once the author hides highlights (via the on-page control or the panel
+// toggle) keep them hidden until reload — both drivers flip this one flag, so they stay in sync.
+let highlightsDismissed = false;
+export const areHighlightsDismissed = () => highlightsDismissed;
+export const setHighlightsDismissed = (value) => { highlightsDismissed = value; };
+
 export function highlightOnPage(diff, root, onDismiss) {
   clearHighlights(root);
 
@@ -180,6 +186,13 @@ export function highlightOnPage(diff, root, onDismiss) {
   return function cleanup() {
     clearHighlights(root);
   };
+}
+
+// Auto-apply on preview load (Functional Acceptance #1 — highlights appear with no author action).
+// The caller preview-gates + defers this; respects the session dismiss so a hidden state sticks.
+export function autoHighlightOnPage(diff, root) {
+  if (highlightsDismissed || !root) return undefined;
+  return highlightOnPage(diff, root, () => { highlightsDismissed = true; });
 }
 
 function clearJumpHighlight() {

@@ -43,6 +43,21 @@ export function diffNudgeMessage(count) {
   return `${count} change${count === 1 ? '' : 's'} vs live — compare before publishing.`;
 }
 
+// FA #1: highlights appear on the preview page with no author action. Runs in the deferred phase
+// behind a preview-host guard (see delayed.js). Reuses the cached preflight diff — the check
+// already ran as part of the on-load suite — so this adds no extra fetch.
+export async function autoHighlightUnpublished() {
+  const results = await getPreflightResults({
+    url: window.location.href,
+    area: document,
+  }).catch(() => null);
+  const content = results?.runChecks?.diff?.[0]?.details?.content;
+  const root = document.querySelector('main');
+  if (!content || !root) return;
+  const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
+  autoHighlightOnPage(content, root);
+}
+
 function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }

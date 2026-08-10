@@ -1,7 +1,7 @@
 import { html, signal, useEffect, useRef, useState } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import computeDiff, { DIFF_STATE } from '../checks/diff/computeDiff.js';
-import { highlightOnPage, jumpToChangeOnPage } from './diff-onpage.js';
+import { highlightOnPage, jumpToChangeOnPage, areHighlightsDismissed, setHighlightsDismissed } from './diff-onpage.js';
 
 // NEW_PAGE = confirmed-unpublished (safe to show as "all new"); ERROR = unknown/failed live fetch
 const VIEW = { LOADING: 'loading', EMPTY: 'empty', ERROR: 'error', READY: 'ready', NEW_PAGE: 'new-page' };
@@ -22,7 +22,9 @@ const activeTab = signal(TAB.CONTENT);
 const contentDiff = signal(null);
 const metadataDiff = signal(null);
 const pageStatus = signal(null);
-const highlightsOn = signal(true);
+// Highlights may already be on from the auto-apply on preview load — start from the shared
+// session-dismiss flag so the panel toggle and the on-page control agree.
+const highlightsOn = signal(!areHighlightsDismissed());
 const errorMessage = signal(DEFAULT_ERROR_MESSAGE);
 
 function hasChanges(content, metadata) {
@@ -43,6 +45,7 @@ function buildMetadataRows(metadata) {
 
 function toggleHighlights() {
   highlightsOn.value = !highlightsOn.value;
+  setHighlightsDismissed(!highlightsOn.value);
 }
 
 async function loadDiff(url) {
@@ -361,7 +364,10 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
     if (!highlightsOn.value || !contentDiff.value) return undefined;
     const root = document.querySelector('main');
     if (!root) return undefined;
-    return highlightOnPage(contentDiff.value, root, () => { highlightsOn.value = false; });
+    return highlightOnPage(contentDiff.value, root, () => {
+      highlightsOn.value = false;
+      setHighlightsDismissed(true);
+    });
   });
 
   // Runs in the render body (not useEffect) so the guard latches immediately, avoiding a race

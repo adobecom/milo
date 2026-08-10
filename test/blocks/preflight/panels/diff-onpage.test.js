@@ -6,6 +6,9 @@ import {
   highlightOnPage,
   jumpToChangeOnPage,
   clearHighlights,
+  autoHighlightOnPage,
+  areHighlightsDismissed,
+  setHighlightsDismissed,
 } from '../../../../libs/blocks/preflight/panels/diff-onpage.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -524,6 +527,39 @@ describe('preflight diff-onpage', () => {
       expect(result).to.equal(false);
       expect(closeSpy.called).to.equal(false);
       expect(document.querySelector('.preflight-return-popover')).to.not.exist;
+    });
+  });
+
+  describe('autoHighlightOnPage (preview-load auto-apply, FA #1)', () => {
+    let root;
+    beforeEach(() => {
+      setHighlightsDismissed(false);
+      root = document.createElement('main');
+      root.innerHTML = '<div><p>Hello world</p></div>';
+      document.body.append(root);
+    });
+    afterEach(() => {
+      clearHighlights(root);
+      root.remove();
+      setHighlightsDismissed(false);
+    });
+
+    it('applies overlays with no author action when highlights are not dismissed', () => {
+      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
+      expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
+    });
+
+    it('is a no-op once highlights have been dismissed for the session', () => {
+      setHighlightsDismissed(true);
+      const cleanup = autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
+      expect(cleanup).to.equal(undefined);
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+    });
+
+    it('dismissing via the on-page control flips the shared session flag', () => {
+      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
+      document.querySelector('.preflight-diff-highlight-control .preflight-diff-control-hide')?.click();
+      expect(areHighlightsDismissed()).to.equal(true);
     });
   });
 });

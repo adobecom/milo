@@ -113,8 +113,10 @@ export const loadPreflightResults = async () => {
   if (!hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
 
   const run = async () => {
-    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
+    const { default: showPreflightNotification, autoHighlightUnpublished } = await import('../utils/preflight-notification.js');
     await showPreflightNotification();
+    // Preview-only: auto-highlight unpublished content on the page (FA #1 — no author action).
+    if (hostname.endsWith('.aem.page')) await autoHighlightUnpublished();
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
