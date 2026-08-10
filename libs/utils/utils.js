@@ -2764,6 +2764,15 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
+// Blocks whose JS pulls in blocks/merch/mas-geo.js (merch.js directly; the MAS autoblocks
+// via their static import of merch.js). Preloaded in parallel to avoid a load waterfall.
+const MAS_PRELOAD_BLOCKS = [
+  'merch',
+  'merch-card-autoblock',
+  'merch-card-collection-autoblock',
+  'mas-compare-chart-autoblock',
+];
+
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
@@ -2772,6 +2781,15 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  if (MAS_PRELOAD_BLOCKS.includes(name)) {
+    // merch.js statically imports mas-geo.js, and the MAS autoblocks statically import
+    // merch.js; preload the chain in parallel so nothing loads as a sequential hop.
+    const { base } = getConfig();
+    if (name !== 'merch') {
+      loadLink(`${base}/blocks/merch/merch.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    }
+    loadLink(`${base}/blocks/merch/mas-geo.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
