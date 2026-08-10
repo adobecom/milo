@@ -67,6 +67,15 @@ const LitResolver = {
   },
 };
 
+// mep-overlay modules are authoring/preview tools not needed in the standalone-feds bundle.
+// Marking them external prevents code-split chunks and the associated CSS asset issues.
+const MepOverlayExternal = {
+  name: 'mep-overlay-external',
+  setup({ onResolve }) {
+    onResolve({ filter: /mep-overlay/ }, () => ({ external: true }));
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -74,5 +83,5 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [LitResolver, StyleLoader],
+  plugins: [LitResolver, MepOverlayExternal, StyleLoader],
 });
