@@ -1,11 +1,10 @@
 import * as THREE from './three.module.min.js';
 import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
 import {
-  createCardMaterial, createTextMaterial,
+  createCardMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
 } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
-import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createCursor from './src/cursor.js';
 import {
@@ -159,6 +158,11 @@ const HOVER_CA = 0.025; // CA bump composed additively onto transition CA
 const HOVER_WARP = 0.4; // barrel-distortion amount sent to shader
 const HOVER_SCALE = 0.25; // scale multiplier added: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
+
+// Progressive texture reveal: per-card un-dissolve once its photo lands. See buildCards + onEach.
+const REVEAL_RATE = 0.06; // per-frame reveal ease (~0.28s @60fps)
+// One-time masonry (sm barrel) reflow after all textures load, if the barrel is already formed.
+const MASONRY_MORPH_RATE = 0.05; // per-frame ease of the position/scale morph (~0.33s)
 
 // Near-camera proximity fade (zoom-through): dissolve a card by its depth in front of the
 // lens before it can fill the frame. Thresholds in card-heights. See README (near fade).
@@ -358,9 +362,12 @@ function createGlobeGalleryRuntime(
   let renderer; let scene; let camera; let cameraOrtho; let
     sphereGroup;
   let cards = [];
-  // Both assigned by loadCardTextures()'s onDone before buildCards() runs.
+  // Cards + meshes are built up front (with contours); textures fill in progressively via onEach.
   let textures = [];
   let cardTexData = []; // per-card sphereScaleX + arc UV crop values
+  let placeholderTex = null; // shared transparent texture for not-yet-loaded cards
+  // One-time sm-barrel reflow once all aspects are known (masonry packing is a whole-set solve).
+  const masonryMorph = { active: false, t: 0 };
   let gridCardW = 0; let
     gridTilts = [];
 
@@ -462,6 +469,8 @@ function createGlobeGalleryRuntime(
   let a11y = null;
   let interaction = null;
   let cursor = null;
+  let modalPrefetchCanvas = null; // canvas holding the one-shot pointerdown modal prefetch
+  let modalPrefetchIdleId = 0; // requestIdleCallback/setTimeout handle for the idle modal prefetch
 
   // Suppresses the focus→snap-scroll while the tab is backgrounded (pdf-space pattern).
   let suppressFocusSnap = false;
@@ -503,6 +512,7 @@ function createGlobeGalleryRuntime(
       N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
       CARD_ROLL_JITTER, SPHERE_AREA_NORM, CYLINDER,
     } = bp;
+    if (!placeholderTex) placeholderTex = createPlaceholderTexture();
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
     // Reduced motion (desktop): shrink the static sphere to fit (see RM_GLOBE_SCALE_MD).
@@ -545,7 +555,8 @@ function createGlobeGalleryRuntime(
 
       const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
       const mat = createCardMaterial({
-        texture: textures[i],
+        // Contour until this card's photo lands (onEach swaps in the real texture).
+        texture: textures[i] || placeholderTex,
         aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
         repeatX,
         repeatY,
@@ -601,11 +612,27 @@ function createGlobeGalleryRuntime(
         hoverT: 0, // eased 0→1 hover progress (sphere phase only)
         hoverTarget: 0, // instant 0|1 set by onHover() raycast
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
+        hasTexture: !!textures[i], // false until this card's photo loads (onEach flips it)
+        revealT: textures[i] ? 1 : 0, // eased 0→1 texture-ready un-dissolve
       });
     }
-    // Drag-flip threshold: camera z below which drag inverts, anchored to where cards VANISH
-    // (front wall's max radial distance + the tallest card's fade-end) so the flip lands with
-    // the dissolve. Fold in sphereGroup.scale (RM shrinks the group on md). See README.
+    // eslint-disable-next-line no-use-before-define -- hoisted helper defined just below
+    recomputeDragFlip();
+
+    // Seed per-card random tilts once so they stay stable across resize.
+    gridTilts = [];
+    for (let ti = 0; ti < N_TOTAL; ti += 1) {
+      gridTilts.push((Math.random() - 0.5) * 0.175); // ±5° in radians
+    }
+    computeGridLayout();
+  }
+
+  // Drag-flip threshold: camera z below which drag inverts, anchored to where cards VANISH
+  // (front wall's max radial distance + the tallest card's fade-end) so the flip lands with
+  // the dissolve. Fold in sphereGroup.scale (RM shrinks the group on md). See README.
+  // Recomputed once all textures land, since sphereWorldH starts at a placeholder aspect.
+  function recomputeDragFlip() {
+    if (!sphereGroup || cards.length === 0) return;
     const groupScale = sphereGroup.scale.x || 1;
     const maxRadial = cards.reduce(
       (m, c) => Math.max(m, Math.hypot(c.spherePos.x, c.spherePos.z)),
@@ -618,13 +645,62 @@ function createGlobeGalleryRuntime(
       maxRadial + NEAR_FADE_END * maxCardH,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
     );
+  }
 
-    // Seed per-card random tilts once so they stay stable across resize.
-    gridTilts = [];
-    for (let ti = 0; ti < N_TOTAL; ti += 1) {
-      gridTilts.push((Math.random() - 0.5) * 0.175); // ±5° in radians
+  // Sphere-phase sizing for one card from its loaded image aspect (non-masonry path). Read live
+  // each frame by placeSphereCard, so updating these here "morphs" the card into its native shape.
+  function updateCardSphereSizing(card, sphereScaleX) {
+    const areaNorm = bp.SPHERE_AREA_NORM ? sphereScaleX ** -bp.SPHERE_AREA_NORM : 1;
+    card.sphereScaleX = sphereScaleX;
+    card.sphereScaleSX = sphereScaleX * areaNorm;
+    card.sphereScaleSY = areaNorm;
+    card.sphereWorldH = bp.CARD_H_SPHERE * areaNorm;
+    card.imgAspect = sphereScaleX * CARD_ASPECT;
+  }
+
+  // sm barrel only: masonry packing needs every image aspect, so it's solved once with placeholder
+  // aspects up front and re-solved here after all textures land. Each card morphs from its
+  // provisional slot to the final one (invisible if the user is still in arc/grid). See onDone.
+  function resolveMasonryLayout() {
+    const { N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE } = bp;
+    const masonry = cylinderMasonryLayout({
+      aspects: Array.from({ length: N_TOTAL }, (unused, i) => {
+        const d = cardTexData[i] || {};
+        return (d.sphereScaleX !== undefined ? d.sphereScaleX : 1) * CARD_ASPECT;
+      }),
+      radius: SPHERE_R,
+      frustumH: bp.CYL_FRUSTUM_H,
+      colsFit: bp.CYL_COLS_FIT,
+      gapRatio: bp.CYL_GAP_RATIO,
+      aspectCap: bp.CYL_ASPECT_CAP,
+      bulge: bp.CYL_BULGE,
+    });
+    const up = new THREE.Vector3(0, 1, 0);
+    for (let i = 0; i < N_TOTAL; i += 1) {
+      const card = cards[i];
+      if (!card) continue; // eslint-disable-line no-continue
+      const mas = masonry[i];
+      const sp = mas.pos.clone();
+      const faceTarget = sp.clone().sub(mas.normal);
+      const m = new THREE.Matrix4().lookAt(sp, faceTarget, up);
+      const sq = new THREE.Quaternion().setFromRotationMatrix(m); // no roll on the masonry path
+      card.morph = {
+        posFrom: card.spherePos.clone(),
+        posTo: sp,
+        quatFrom: card.sphereQuat.clone(),
+        quatTo: sq,
+        ssxFrom: card.sphereScaleSX,
+        ssxTo: mas.w / CARD_W_SPHERE,
+        ssyFrom: card.sphereScaleSY,
+        ssyTo: mas.h / CARD_H_SPHERE,
+        swhFrom: card.sphereWorldH,
+        swhTo: mas.h,
+        iaFrom: card.imgAspect,
+        iaTo: mas.w / mas.h,
+      };
     }
-    computeGridLayout();
+    masonryMorph.active = true;
+    masonryMorph.t = 0;
   }
 
   // World-space size of the hint-text plane: fills the frustum at the text's resting depth.
@@ -815,9 +891,53 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uAspect.value = aspect;
   }
 
-  // Modal DI module — assigned after the helpers its callbacks depend on. Reads live state via
-  // getters; reaches the sphere only through sphereRotQuat + the snap/nudge callbacks.
-  modal = createGlobeModal({
+  // Lazy modal controller: the modal module (src/modal.js) is only needed after a user interaction,
+  // so it's code-split behind a dynamic import and constructed on demand. All per-frame calls
+  // (render/isCardManaged/getModalIdx/updateAnimation/updateDesktopNav) no-op cheaply until then.
+  // ensureLoaded() is idempotent and prefetched on idle + first interaction so the first open is
+  // instant. See initRuntime (prefetch) and destroy (teardown).
+  function createModalController(config) {
+    let real = null;
+    let loading = null;
+    let destroyed = false;
+    let didSetup = false;
+    let lastW = 0; let lastH = 0;
+    function ensureLoaded() {
+      if (real || destroyed) return Promise.resolve(real);
+      if (loading) return loading;
+      loading = import('./src/modal.js')
+        .then(({ default: createGlobeModal }) => {
+          loading = null;
+          if (destroyed) return null;
+          real = createGlobeModal(config);
+          if (didSetup) real.setup();
+          if (lastW || lastH) real.resize(lastW, lastH);
+          return real;
+        })
+        .catch((e) => {
+          loading = null;
+          window.lana?.log?.(`globe-gallery: modal module failed to load: ${e?.message || e}`, { tags: 'globe-gallery', severity: 'error' });
+          return null;
+        });
+      return loading;
+    }
+    return {
+      ensureLoaded,
+      setup() { didSetup = true; if (real) real.setup(); },
+      render() { if (real) real.render(); },
+      resize(w, h) { lastW = w; lastH = h; if (real) real.resize(w, h); },
+      updateAnimation(active) { if (real) real.updateAnimation(active); },
+      updateDesktopNav() { if (real) real.updateDesktopNav(); },
+      isCardManaged(card) { return real ? real.isCardManaged(card) : false; },
+      getModalIdx() { return real ? real.getModalIdx() : -1; },
+      open(idx, x, y) { ensureLoaded().then((m) => { if (m) m.open(idx, x, y); }); },
+      destroy() { destroyed = true; if (real) { real.destroy(); real = null; } },
+    };
+  }
+
+  // Modal DI config — the callbacks depend on helpers defined above. Reads live state via getters;
+  // reaches the sphere only through sphereRotQuat + the snap/nudge callbacks.
+  modal = createModalController({
     q,
     getScene: () => scene,
     getCamera: () => camera,
@@ -853,9 +973,20 @@ function createGlobeGalleryRuntime(
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
   });
 
+  // Warm the modal module. Fired on first pointerdown and on idle once textures finish.
+  const prefetchModal = () => { modal.ensureLoaded(); };
+  function prefetchModalIdle() {
+    if (window.requestIdleCallback) {
+      modalPrefetchIdleId = window.requestIdleCallback(prefetchModal, { timeout: 3000 });
+    } else {
+      modalPrefetchIdleId = window.setTimeout(prefetchModal, 1200);
+    }
+  }
+
   // Focusing the widget snaps the page to the interactive globe state (formed-sphere offset;
   // block top under RM). Deferred a frame so focus settles first (pdf-space). See README.
   function snapToInteractive() {
+    modal.ensureLoaded(); // keyboard entry into the widget → warm the modal module
     if (suppressFocusSnap) return;
     const top = reducedMotion
       ? blockDocTop
@@ -1302,8 +1433,14 @@ function createGlobeGalleryRuntime(
     }
     applyCardFacing(mesh);
     mesh.renderOrder = 0;
-    mesh.material.opacity = proxFade;
-    mesh.material.uniforms.uDissolve.value = 1 - proxFade;
+    // Compose the near-camera proximity fade with the texture-ready reveal (both drive dissolve +
+    // opacity): take the max dissolve / min opacity so neither un-hides what the other hides.
+    const proxDis = 1 - proxFade;
+    const revealDis = 1 - card.revealT;
+    mesh.material.opacity = Math.min(proxFade, card.revealT);
+    mesh.material.uniforms.uDissolve.value = Math.max(proxDis, revealDis);
+    mesh.material.uniforms.uReveal.value = card.revealT;
+    mesh.material.uniforms.uContourFade.value = proxFade;
     // Hover composes additively on transition CA. uHoverPos anchors the warp at the cursor UV
     // when hovered; otherwise the drag warp uses the card centre (0.5, 0.5).
     if (CA_ENABLED) {
@@ -1477,6 +1614,22 @@ function createGlobeGalleryRuntime(
     // Skip cards the modal manages (active card + swipe-neighbors) — modal.js drives them.
     if (modal.isCardManaged(card)) return;
 
+    // Advance the texture-ready reveal (started in onEach) and the one-time sm-barrel reflow morph
+    // (set up in resolveMasonryLayout). Both must run before the branch reads revealT/spherePos.
+    if (card.hasTexture && card.revealT < 1) {
+      card.revealT = Math.min(1, card.revealT + REVEAL_RATE);
+    }
+    if (masonryMorph.active && card.morph) {
+      const e = easeInOutCubic(masonryMorph.t);
+      const mo = card.morph;
+      card.spherePos.lerpVectors(mo.posFrom, mo.posTo, e);
+      card.sphereQuat.slerpQuaternions(mo.quatFrom, mo.quatTo, e);
+      card.sphereScaleSX = lerpN(mo.ssxFrom, mo.ssxTo, e);
+      card.sphereScaleSY = lerpN(mo.ssyFrom, mo.ssyTo, e);
+      card.sphereWorldH = lerpN(mo.swhFrom, mo.swhTo, e);
+      card.imgAspect = lerpN(mo.iaFrom, mo.iaTo, e);
+    }
+
     // Arc → grid peel stagger: i-based cascade + per-card jitter.
     const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * GRID_PEEL_STAGGER;
     const jitter = (card.peelJitter - 0.5) * ARC_PEEL_JITTER;
@@ -1510,9 +1663,12 @@ function createGlobeGalleryRuntime(
     if (sphereFormT < SPHERE_INTERACTIVE_T || reducedMotion) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
 
-    // Reset the near-camera dissolve here (not per branch) so a card leaving the sphere phase
-    // can't carry a stale value into the other branches.
-    mesh.material.uniforms.uDissolve.value = 0;
+    // Contour/reveal defaults for the non-sphere phases (placeSphereCard overrides them with its
+    // own proximity+reveal combine). uDissolve doubles as the reveal un-dissolve here and the
+    // near-camera dissolve in the sphere phase, so it must be (re)set every frame.
+    mesh.material.uniforms.uReveal.value = card.revealT;
+    mesh.material.uniforms.uContourFade.value = 1;
+    mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
 
     // Capture position before the branch updates it — delta drives motion CA.
     const prevMeshX = mesh.position.x;
@@ -1532,7 +1688,15 @@ function createGlobeGalleryRuntime(
 
   // Position every card for this frame over the shared `frame` context.
   function updateCardTransforms(frame) {
+    if (masonryMorph.active) {
+      masonryMorph.t = Math.min(1, masonryMorph.t + MASONRY_MORPH_RATE);
+    }
     for (let i = 0; i < bp.N_TOTAL; i += 1) updateCardTransform(i, frame);
+    if (masonryMorph.active && masonryMorph.t >= 1) {
+      masonryMorph.active = false;
+      for (let i = 0; i < cards.length; i += 1) { if (cards[i]) cards[i].morph = null; }
+      recomputeDragFlip(); // now that spherePos/sphereWorldH hold the final masonry values
+    }
   }
 
   // Stage: hint-exit signal. Owns textExitProgress (0→1) driving the hint dissolve + cursor
@@ -1866,25 +2030,54 @@ function createGlobeGalleryRuntime(
 
     modal.setup();
 
+    // Prefetch the modal module on first interaction so the first open is instant (idle prefetch
+    // also fires once textures finish; whichever lands first). Auto-removed after one fire.
+    modalPrefetchCanvas = canvas;
+    canvas.addEventListener('pointerdown', prefetchModal, { once: true, passive: true });
+
+    // Build the scene up front so the block paints immediately: cards render as contours and each
+    // photo un-dissolves in as its texture lands, instead of blocking on the whole set.
+    buildCards();
+    buildTextMesh();
+    a11y.setup();
+    renderReady = true;
+    syncTicker();
+
     const loadGeneration = textureLoadGeneration;
-    loadCardTextures({
-      count: bp.N_TOTAL,
-      getSrc: (i) => getCardMetadata(i).img,
-      planeAspect: CARD_ASPECT,
-      maxTex: bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD,
-    }, (loadedTextures, loadedTexData) => {
+    const onEachTexture = (i, tex, texData) => {
+      if (loadGeneration !== textureLoadGeneration) { tex.dispose(); return; }
+      textures[i] = tex;
+      cardTexData[i] = texData;
+      const card = cards[i];
+      if (!card) return;
+      card.mesh.material.map = tex; // property proxy writes uMap
+      // Cover-crop UVs (used by the arc/grid/fold phases; the sphere renders identity UVs).
+      card.arcRepeatX = texData.arcRepeatX;
+      card.arcRepeatY = texData.arcRepeatY;
+      card.arcOffsetX = texData.arcOffsetX;
+      card.arcOffsetY = texData.arcOffsetY;
+      // md sphere sizes per-card now (positions are index-based, no reflow); the sm barrel
+      // packs against all aspects, so it re-solves once in onDone instead.
+      if (!bp.CYLINDER) updateCardSphereSizing(card, texData.sphereScaleX);
+      card.hasTexture = true; // revealT eases up in updateCardTransform
+    };
+    const onDoneTextures = (loadedTextures, loadedTexData) => {
       if (loadGeneration !== textureLoadGeneration) {
         loadedTextures.forEach((t) => t && t.dispose());
         return;
       }
       textures = loadedTextures;
       cardTexData = loadedTexData;
-      buildCards();
-      buildTextMesh();
-      a11y.setup();
-      renderReady = true;
-      syncTicker();
-    });
+      if (bp.CYLINDER) resolveMasonryLayout(); // recomputeDragFlip runs when the morph settles
+      else recomputeDragFlip();
+      prefetchModalIdle();
+    };
+    loadCardTextures({
+      count: bp.N_TOTAL,
+      getSrc: (i) => getCardMetadata(i).img,
+      planeAspect: CARD_ASPECT,
+      maxTex: bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD,
+    }, onEachTexture, onDoneTextures);
     return true;
   }
 
@@ -1916,6 +2109,16 @@ function createGlobeGalleryRuntime(
     window.removeEventListener('blur', armFocusGuard);
     window.removeEventListener('focus', disarmFocusGuard);
     document.removeEventListener('visibilitychange', onVisibilityChange);
+    // Cancel the modal prefetch (a pending import bails via the controller's destroyed flag).
+    if (modalPrefetchCanvas) {
+      modalPrefetchCanvas.removeEventListener('pointerdown', prefetchModal);
+      modalPrefetchCanvas = null;
+    }
+    if (modalPrefetchIdleId) {
+      if (window.cancelIdleCallback) window.cancelIdleCallback(modalPrefetchIdleId);
+      else clearTimeout(modalPrefetchIdleId);
+      modalPrefetchIdleId = 0;
+    }
     interaction.teardown();
     // Cursor cleanup — runs while renderer exists so getCanvas() resolves.
     cursor.teardown();
@@ -1939,6 +2142,8 @@ function createGlobeGalleryRuntime(
     for (let i = 0; i < textures.length; i += 1) {
       if (textures[i]) textures[i].dispose();
     }
+    if (placeholderTex) { placeholderTex.dispose(); placeholderTex = null; }
+    masonryMorph.active = false; masonryMorph.t = 0;
     cards = [];
     textures = [];
     cardTexData = [];

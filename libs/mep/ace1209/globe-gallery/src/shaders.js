@@ -66,6 +66,8 @@ export const CARD_FRAG = [
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
   'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
+  'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
+  'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
@@ -97,6 +99,7 @@ export const CARD_FRAG = [
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float a = 1.0 - smoothstep(-px, px, dsd);',
+  '  float shapeA = a;', // solid rounded-rect alpha, kept before the particle dissolve eats `a`
   // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
   '  vec2 meltRad = mdir * uDissolve * 0.22;',
   '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
@@ -120,7 +123,14 @@ export const CARD_FRAG = [
   '    a *= (dR + dG + dB) * 0.3333;',
   '  }',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
-  '  gl_FragColor = vec4(srgb, a * uOpacity);',
+  // Contour: faint fill + ~1px edge stroke (reuse dsd/px), shown before the photo un-dissolves in.
+  '  float stroke = 1.0 - smoothstep(0.0, px * 1.5, abs(dsd));',
+  '  float contourA = (shapeA * 0.06 + stroke * 0.5) * uContourFade;',
+  // Crossfade contour → photo as reveal goes 0→1; the photo alpha `a` is already dispersing when
+  // uDissolve > 0, so the reveal reads as the same edge-first un-dissolve.
+  '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
+  '  float outA = mix(contourA, a * uOpacity, uReveal);',
+  '  gl_FragColor = vec4(outCol, outA);',
   '}',
 ].join('\n');
 
