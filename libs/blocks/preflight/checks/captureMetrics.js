@@ -44,21 +44,6 @@ const mapChecksWithColumn = (checks) => checks?.map((check) => ({
   key: ID_TO_COLUMN[check.checkId || check.id],
 }));
 
-export function buildDiffCounts(diffResults) {
-  const details = diffResults?.[0]?.details || {};
-  const content = details.content || { added: [], modified: [], removed: [] };
-  const metadata = details.metadata || { added: [], modified: [], removed: [] };
-  const metadataChangedCount = metadata.added.length
-    + metadata.modified.length
-    + metadata.removed.length;
-  return {
-    diff_content_added_count: content.added.length,
-    diff_content_modified_count: content.modified.length,
-    diff_content_removed_count: content.removed.length,
-    diff_metadata_changed_count: metadataChangedCount,
-  };
-}
-
 async function capture(results) {
   const token = window.adobeIMS?.getAccessToken()?.token;
   const { imsClientId } = getConfig();
@@ -79,14 +64,12 @@ async function capture(results) {
     resolvedAssets,
     resolvedStructure,
     resolvedAccessibility,
-    resolvedDiff,
   ] = await Promise.all([
     results.performance ? Promise.all(results.performance) : [],
     results.seo ? Promise.all(results.seo) : [],
     results.assets ? Promise.all(results.assets) : [],
     results.structure ? Promise.all(results.structure) : [],
     results.accessibility ? Promise.all(results.accessibility) : [],
-    results.diff ? Promise.all(results.diff) : [],
   ]);
 
   const accessibilitySummary = resolvedAccessibility[0];
@@ -109,7 +92,6 @@ async function capture(results) {
     accessibility_issues_count: accessibilitySummary?.details?.issuesCount ?? null,
     accessibility_metrics: accessibilitySummary?.details?.violations ?? null,
     performance_video_as_lcp: performanceVideoAsLcp,
-    ...buildDiffCounts(resolvedDiff),
   };
 
   return { results: transformedResults, contextData, token, imsClientId };

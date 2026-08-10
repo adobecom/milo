@@ -1,8 +1,32 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
-import { countChanges } from '../blocks/preflight/checks/diff.js';
 import loadC2Tokens from '../blocks/preflight/c2-tokens.js';
 import { loadStyle, getConfig } from './utils.js';
+
+// FA #1: highlight unpublished content on the preview page with no author action. Computes the diff
+// directly (one fetch) and loads the styles/tokens the modal would, since no modal is open here.
+export async function autoHighlightUnpublished() {
+  const root = document.querySelector('main');
+  if (!root) return;
+  try {
+    const [{ default: fetchVersions }, { default: computeDiff }] = await Promise.all([
+      import('../blocks/preflight/checks/diff/fetchVersions.js'),
+      import('../blocks/preflight/checks/diff/computeDiff.js'),
+    ]);
+    const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
+    if (!content) return;
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    await Promise.all([
+      new Promise((res) => { loadStyle(`${base}/blocks/preflight/preflight.css`, res); }),
+      loadC2Tokens(base),
+    ]);
+    const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
+    autoHighlightOnPage(content, root);
+  } catch (e) {
+    window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
+  }
+}
 
 let wasDismissed = false;
 let sidekickObserver;
@@ -12,6 +36,19 @@ function openPreflightPanel() {
   if (!sidekick) return;
   sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
 }
+
+['previewed', 'published'].forEach((event) => {
+  sidekick?.addEventListener(event, async () => {
+    const results = await getPreflightResults({
+      url: window.location.href,
+      area: document,
+      useCache: false,
+    }).catch(() => null);
+    if (!results) return;
+    window.hasCapturedPreflightMetrics = false;
+    captureMetrics(results.runChecks).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
+  });
+});
 
 function dismissNotification() {
   document.querySelector('.milo-preflight-overlay')?.remove();
@@ -33,47 +70,11 @@ function getMasUnpublishedCount(results) {
   }, 0);
 }
 
-export function getDiffChangeCount(results) {
-  const details = results?.runChecks?.diff?.[0]?.details || {};
-  const empty = { added: [], modified: [], removed: [] };
-  return countChanges(details.content || empty, details.metadata || empty);
-}
-
-export function diffNudgeMessage(count) {
-  return `${count} change${count === 1 ? '' : 's'} vs live — compare before publishing.`;
-}
-
-// FA #1: highlights on preview load with no author action. Computes the diff directly (one fetch)
-// rather than the sidekick-gated preflight suite, so it doesn't wait on the sidekick.
-export async function autoHighlightUnpublished() {
-  const root = document.querySelector('main');
-  if (!root) return;
-  try {
-    const [{ default: fetchVersions }, { default: computeDiff }] = await Promise.all([
-      import('../blocks/preflight/checks/diff/fetchVersions.js'),
-      import('../blocks/preflight/checks/diff/computeDiff.js'),
-    ]);
-    const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
-    if (!content) return;
-    // No modal on a bare preview page, so load what it would: preflight.css + the c2 :root tokens.
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-    await Promise.all([
-      new Promise((res) => { loadStyle(`${base}/blocks/preflight/preflight.css`, res); }),
-      loadC2Tokens(base),
-    ]);
-    const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
-    autoHighlightOnPage(content, root);
-  } catch (e) {
-    window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
-  }
-}
-
 function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }
 
-async function createPreflightNotification(masUnpublishedCount = 0, diffMessage = '') {
+async function createPreflightNotification(masUnpublishedCount = 0) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   // The modal already surfaces the results, so don't also show the notification.
@@ -86,18 +87,13 @@ async function createPreflightNotification(masUnpublishedCount = 0, diffMessage 
     ? `<br/><span class="notification-mas-line">M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.</span>`
     : '';
 
-  // The diff nudge swaps in its own copy but keeps the same review CTA below.
-  const message = diffMessage
-    ? `${diffMessage} <button class="preflight-review-link">Review</button>`
-    : `Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}`;
-
   const overlay = document.createElement('div');
   overlay.className = 'milo-preflight-overlay';
   overlay.innerHTML = `
     <div class="preflight-notification">
       <div class="notification-content">
         <span class="notification-message">
-          ${message}
+          Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}
         </span>
         <button class="notification-close">×</button>
       </div>
@@ -115,24 +111,6 @@ async function createPreflightNotification(masUnpublishedCount = 0, diffMessage 
 
   document.body.appendChild(overlay);
 }
-
-['previewed', 'published'].forEach((event) => {
-  sidekick?.addEventListener(event, async () => {
-    const results = await getPreflightResults({
-      url: window.location.href,
-      area: document,
-      useCache: false,
-    }).catch(() => null);
-    if (!results) return;
-    window.hasCapturedPreflightMetrics = false;
-    captureMetrics(results.runChecks).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
-    // Diff nudge is preview-only: aem.live stakeholders and a just-synced publish never see it.
-    if (event === 'previewed' && window.location.hostname.endsWith('.aem.page')) {
-      const diffCount = getDiffChangeCount(results);
-      if (diffCount > 0) await createPreflightNotification(0, diffNudgeMessage(diffCount));
-    }
-  });
-});
 
 function setupLinkCheckListener() {
   if (linkCheckListener) return;

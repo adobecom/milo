@@ -16,7 +16,7 @@ describe('preflight computeDiff', () => {
     expect(diff.state).to.equal(DIFF_STATE.NO_PREVIEW);
   });
 
-  it('returns READY with the content/metadata diff when both sides load', () => {
+  it('returns READY with the content diff when both sides load', () => {
     const diff = computeDiff({
       preview: { html: PREVIEW },
       live: { html: LIVE },
@@ -25,7 +25,6 @@ describe('preflight computeDiff', () => {
     });
     expect(diff.state).to.equal(DIFF_STATE.READY);
     expect(diff.content.added).to.have.length(1);
-    expect(diff.metadata).to.exist;
   });
 
   it('returns NEW_PAGE (all content new) for a confirmed-unpublished page when live is missing', () => {

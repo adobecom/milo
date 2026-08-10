@@ -1333,18 +1333,9 @@ img:hover ~ .asset-meta,
   background: var(--s2a-color-orange-700);
 }
 
-/* Page-injected: brief outline when jumping from a change row to its element on the page. */
-.preflight-diff-jump-highlight {
-  outline: 4px solid var(--s2a-color-blue-900) !important;
-  outline-offset: 3px !important;
-  scroll-margin: 100px;
-}
-
-/* .preflight-return-popover (jump-to-change) and .preflight-diff-highlight-control (dismiss
- * highlights) are page-injected siblings with near-identical chrome — consolidated via :is()
- * so they can't drift; only their fixed-position anchor differs (top vs inset-block-end). */
-:is(.preflight-return-popover, .preflight-diff-highlight-control) {
+.preflight-return-popover {
   position: fixed;
+  top: var(--s2a-spacing-16);
   inset-inline-start: var(--s2a-spacing-16);
   z-index: 1000;
   display: flex;
@@ -1363,22 +1354,14 @@ img:hover ~ .asset-meta,
   font-size: var(--s2a-font-size-14);
 }
 
-.preflight-return-popover {
-  top: var(--s2a-spacing-16);
-}
-
-.preflight-diff-highlight-control {
-  inset-block-end: var(--s2a-spacing-16);
-}
-
-:is(.preflight-return-label, .preflight-diff-control-label) {
+.preflight-return-label {
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   white-space: nowrap;
 }
 
 /* On small phones drop the label — the buttons are self-explanatory. */
 @media (max-width: 599px) {
-  :is(.preflight-return-label, .preflight-diff-control-label) {
+  .preflight-return-label {
     display: none;
   }
 }
@@ -1386,7 +1369,7 @@ img:hover ~ .asset-meta,
 .preflight-return-reopen {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  height: 32px;
   padding: 0 var(--s2a-spacing-16);
   border: none;
   border-radius: var(--s2a-border-radius-999);
@@ -1410,9 +1393,6 @@ img:hover ~ .asset-meta,
 }
 
 .preflight-return-dismiss {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
   background: none;
   border: none;
   padding: 0 var(--s2a-spacing-8);
@@ -1428,9 +1408,38 @@ img:hover ~ .asset-meta,
   color: var(--s2a-color-content-default);
 }
 
-.preflight-return-dismiss:focus-visible {
-  outline: 2px solid var(--s2a-color-focus-ring-default);
-  outline-offset: 2px;
+/* Page-injected control (bottom-left) to dismiss the on-page highlights without reopening preflight. */
+.preflight-diff-highlight-control {
+  position: fixed;
+  inset-inline-start: var(--s2a-spacing-16);
+  inset-block-end: var(--s2a-spacing-16);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-12);
+  max-width: calc(100vw - 32px);
+  padding-block: var(--s2a-spacing-8);
+  padding-inline-start: var(--s2a-spacing-16);
+  padding-inline-end: var(--s2a-spacing-8);
+  background: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+  border: 1px solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-999);
+  box-shadow: 0 8px 24px var(--s2a-color-transparent-black-24);
+  font-family: var(--preflight-font);
+  font-size: var(--s2a-font-size-14);
+}
+
+.preflight-diff-control-label {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  white-space: nowrap;
+}
+
+/* On small phones drop the label — the button is self-explanatory. */
+@media (max-width: 599px) {
+  .preflight-diff-control-label {
+    display: none;
+  }
 }
 
 .preflight-diff-control-hide {
@@ -1958,333 +1967,6 @@ img:hover ~ .asset-meta,
 
 /* stylelint-enable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity */
 
-/* Compare panel: layout, plus highlighting changed nodes by data-diff-key (Approach B). */
-.preflight-diff {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-16);
-  padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-32);
-}
-
-.preflight-diff-loading,
-.preflight-diff-empty,
-.preflight-diff-error {
-  padding: var(--s2a-spacing-32);
-  color: var(--preflight-fg-subtle);
-  text-align: center;
-}
-
-.preflight-diff-error {
-  color: var(--preflight-error);
-}
-
-.preflight-diff-retry {
-  display: block;
-  margin: 0 auto;
-}
-
-.preflight-diff-header {
-  margin: 0;
-  font-size: var(--s2a-font-size-14);
-  color: var(--preflight-fg-subtle);
-}
-
-.preflight-diff-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s2a-spacing-12);
-}
-
-.preflight-diff-tabs {
-  display: flex;
-  gap: var(--s2a-spacing-8);
-}
-
-button.preflight-diff-highlight-toggle {
-  min-height: 44px;
-  padding: 0 var(--s2a-spacing-16);
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-999);
-  background: var(--preflight-surface);
-  color: var(--preflight-fg-subtle);
-  font-family: var(--preflight-font);
-  font-size: var(--s2a-font-size-14);
-  cursor: pointer;
-}
-
-button.preflight-diff-highlight-toggle[aria-pressed="true"] {
-  color: var(--preflight-fg);
-  border-color: var(--preflight-cta-bg);
-}
-
-button.preflight-diff-highlight-toggle:focus-visible {
-  outline: 2px solid var(--preflight-focus);
-  outline-offset: 2px;
-}
-
-button.preflight-diff-tab {
-  min-height: 44px;
-  padding: 0 var(--s2a-spacing-16);
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-999);
-  background: var(--preflight-surface);
-  color: var(--preflight-fg-subtle);
-  font-family: var(--preflight-font);
-  font-size: var(--s2a-font-size-14);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-button.preflight-diff-tab[aria-selected="true"] {
-  background: var(--preflight-cta-bg);
-  border-color: var(--preflight-cta-bg);
-  color: var(--preflight-cta-fg);
-}
-
-button.preflight-diff-tab:focus-visible {
-  outline: 2px solid var(--preflight-focus);
-  outline-offset: 2px;
-}
-
-.preflight-diff-tabpanel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-16);
-  min-width: 0;
-}
-
-.preflight-diff-tabpanel[hidden] {
-  display: none;
-}
-
-.preflight-diff-changes-title {
-  margin: 0 0 var(--s2a-spacing-8);
-  font-size: var(--s2a-font-size-14);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-}
-
-.preflight-diff-empty-changes {
-  margin: 0;
-  color: var(--preflight-fg-subtle);
-  font-style: italic;
-}
-
-.preflight-diff-change-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-8);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Groups the jump-to row and the expand toggle side by side — two sibling buttons, not a
- * button nested inside a button, so the expand control can't accidentally trigger the jump. */
-.preflight-diff-change-row-group {
-  display: flex;
-  align-items: stretch;
-  gap: var(--s2a-spacing-8);
-}
-
-button.preflight-diff-change-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s2a-spacing-12);
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-8);
-  background: var(--preflight-surface-subtle);
-  color: var(--preflight-fg);
-  font-family: var(--preflight-font);
-  text-align: start;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-button.preflight-diff-change-row:hover {
-  background: var(--preflight-hover);
-}
-
-button.preflight-diff-change-row:focus-visible {
-  outline: 2px solid var(--preflight-focus);
-  outline-offset: 2px;
-}
-
-/* Removed changes have no on-page element to jump to — the row is informational only. Disabled
- * buttons don't match :hover/:focus-visible, so this doesn't fight the rules above. */
-button.preflight-diff-change-row:disabled {
-  color: var(--preflight-fg-subtle);
-  cursor: default;
-}
-
-button.preflight-diff-change-expand {
-  flex-shrink: 0;
-  min-width: 44px;
-  min-height: 44px;
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-8);
-  background: var(--preflight-surface-subtle);
-  color: var(--preflight-fg-subtle);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-button.preflight-diff-change-expand:hover {
-  background: var(--preflight-hover);
-}
-
-button.preflight-diff-change-expand:focus-visible {
-  outline: 2px solid var(--preflight-focus);
-  outline-offset: 2px;
-}
-
-button.preflight-diff-change-expand[aria-expanded="true"] {
-  color: var(--preflight-fg);
-}
-
-.preflight-diff-expand-chevron {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-block-end: 2px;
-  border-inline-end: 2px solid currentcolor;
-  border-block-end: 2px solid currentcolor;
-  transform: rotate(45deg);
-  transition: transform 0.15s;
-}
-
-/* Rotate the chevron to point up when the detail is open. */
-button.preflight-diff-change-expand[aria-expanded="true"] .preflight-diff-expand-chevron {
-  transform: rotate(225deg);
-  margin-block-end: -4px;
-}
-
-.preflight-diff-change-detail {
-  padding: var(--s2a-spacing-12);
-  border: 1px solid var(--preflight-border);
-  border-radius: var(--s2a-border-radius-8);
-  background: var(--preflight-surface);
-}
-
-.preflight-diff-detail-columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--s2a-spacing-12);
-}
-
-.preflight-diff-detail-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-8);
-  min-width: 0;
-}
-
-.preflight-diff-detail-label {
-  margin: 0;
-  font-size: var(--s2a-font-size-12);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--preflight-fg-subtle);
-}
-
-.preflight-diff-snippet-text {
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-size: var(--s2a-font-size-14);
-}
-
-.preflight-diff-snippet-empty {
-  margin: 0;
-  color: var(--preflight-fg-subtle);
-  font-style: italic;
-}
-
-.preflight-diff-snippet-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-8);
-}
-
-.preflight-diff-snippet-media {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s2a-spacing-8);
-}
-
-.preflight-diff-snippet-img {
-  max-width: 100%;
-  max-height: 160px;
-  height: auto;
-  border-radius: var(--s2a-border-radius-8);
-}
-
-.preflight-diff-change-path {
-  overflow: hidden;
-  min-width: 0;
-  font-size: var(--s2a-font-size-14);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.preflight-diff-badge {
-  flex-shrink: 0;
-  padding: var(--s2a-spacing-2) var(--s2a-spacing-8);
-  border-radius: var(--s2a-border-radius-999);
-  font-size: var(--s2a-font-size-12);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--s2a-color-gray-25);
-}
-
-.preflight-diff-badge.is-added {
-  background: var(--preflight-success);
-}
-
-.preflight-diff-badge.is-modified {
-  /* gray-25 (used by New/Removed) fails AA on orange-700; gray-900 clears it. */
-  color: var(--s2a-color-gray-900);
-  background: var(--preflight-warning);
-}
-
-.preflight-diff-badge.is-removed {
-  background: var(--preflight-error);
-}
-
-.preflight-diff-metadata-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.preflight-diff-metadata-th,
-.preflight-diff-metadata-td {
-  padding: var(--s2a-spacing-8) var(--s2a-spacing-12);
-  border-bottom: 1px solid var(--preflight-border);
-  text-align: start;
-  vertical-align: top;
-}
-
-.preflight-diff-metadata-th {
-  background: var(--preflight-surface-subtle);
-  font-size: var(--s2a-font-size-12);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--preflight-fg-subtle);
-}
-
-.preflight-diff-metadata-key {
-  display: flex;
-  align-items: center;
-  gap: var(--s2a-spacing-8);
-}
-
 .dialog-modal#preflight button.dialog-close svg {
   display: block;
 }
@@ -2367,12 +2049,6 @@ button.preflight-diff-change-expand[aria-expanded="true"] .preflight-diff-expand
   .martech-toolbar {
     flex-direction: row;
     align-items: center;
-  }
-
-  /* Before/After (Changed) has two columns worth showing side by side; Removed/Added only ever
-   * render one column, so the single-column track just stays full width for those. */
-  .preflight-diff-detail-columns:has(.preflight-diff-detail-col:nth-child(2)) {
-    grid-template-columns: 1fr 1fr;
   }
 }
 

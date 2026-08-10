@@ -4,13 +4,11 @@ import { loadStyle } from '../../../../libs/utils/utils.js';
 import {
   resolveOnPage,
   highlightOnPage,
-  jumpToChangeOnPage,
   clearHighlights,
   autoHighlightOnPage,
   areHighlightsDismissed,
   setHighlightsDismissed,
 } from '../../../../libs/blocks/preflight/panels/diff-onpage.js';
-import { waitFor } from '../../../helpers/waitfor.js';
 
 // loadStyle uses a load/error callback, not a promise — wrap it so getComputedStyle assertions
 // below don't race the stylesheet's network fetch.
@@ -442,91 +440,6 @@ describe('preflight diff-onpage', () => {
       highlightOnPage(diff, root, sinon.spy());
       clearHighlights(root);
       expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
-    });
-  });
-
-  describe('jumpToChangeOnPage', () => {
-    let root;
-    let preflightModal;
-    let sidekick;
-
-    beforeEach(() => {
-      root = document.createElement('main');
-      root.innerHTML = '<div><p>Kept</p><h2>New heading</h2></div>';
-      document.body.append(root);
-
-      preflightModal = document.createElement('div');
-      preflightModal.id = 'preflight';
-      document.body.append(preflightModal);
-
-      sidekick = document.createElement('aem-sidekick');
-      document.body.append(sidekick);
-
-      window.lana = { log: sinon.stub() };
-    });
-
-    afterEach(() => {
-      root.remove();
-      preflightModal.remove();
-      sidekick.remove();
-      document.querySelector('.preflight-return-popover')?.remove();
-      document.querySelectorAll('.preflight-diff-jump-highlight')
-        .forEach((el) => el.classList.remove('preflight-diff-jump-highlight'));
-      delete window.lana;
-      sinon.restore();
-    });
-
-    it('closes the preflight modal, flashes the element, and shows the return popover', async () => {
-      const closeSpy = sinon.spy();
-      preflightModal.addEventListener('closeModal', closeSpy);
-      const h2 = root.querySelector('h2');
-      const scrollSpy = sinon.spy(h2, 'scrollIntoView');
-
-      const result = jumpToChangeOnPage({ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }, root);
-
-      expect(result).to.equal(true);
-      expect(closeSpy.calledOnce).to.equal(true);
-
-      await waitFor(() => document.querySelector('.preflight-return-popover'));
-
-      expect(scrollSpy.calledOnce).to.equal(true);
-      expect(h2.classList.contains('preflight-diff-jump-highlight')).to.equal(true);
-      expect(document.querySelector('.preflight-return-reopen')).to.exist;
-      expect(document.querySelector('.preflight-return-dismiss')).to.exist;
-    });
-
-    it('dismiss removes the popover and the flash highlight', async () => {
-      jumpToChangeOnPage({ type: 'modified', tag: 'H2', path: '/div[1]/h2[1]' }, root);
-      await waitFor(() => document.querySelector('.preflight-return-popover'));
-
-      document.querySelector('.preflight-return-dismiss').click();
-
-      expect(document.querySelector('.preflight-return-popover')).to.not.exist;
-      expect(root.querySelector('.preflight-diff-jump-highlight')).to.not.exist;
-    });
-
-    it('reopen dispatches custom:preflight on the sidekick and removes the popover', async () => {
-      const reopenSpy = sinon.spy();
-      sidekick.addEventListener('custom:preflight', reopenSpy);
-
-      jumpToChangeOnPage({ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }, root);
-      await waitFor(() => document.querySelector('.preflight-return-popover'));
-
-      document.querySelector('.preflight-return-reopen').click();
-
-      expect(reopenSpy.calledOnce).to.equal(true);
-      expect(document.querySelector('.preflight-return-popover')).to.not.exist;
-    });
-
-    it('returns false and does not touch the DOM when the change cannot be resolved on the page', () => {
-      const closeSpy = sinon.spy();
-      preflightModal.addEventListener('closeModal', closeSpy);
-
-      const result = jumpToChangeOnPage({ type: 'removed', tag: 'P', path: '/article[1]/p[9]' }, root);
-
-      expect(result).to.equal(false);
-      expect(closeSpy.called).to.equal(false);
-      expect(document.querySelector('.preflight-return-popover')).to.not.exist;
     });
   });
 

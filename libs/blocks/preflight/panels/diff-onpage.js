@@ -8,7 +8,6 @@ const MODIFIED_MODIFIER = 'is-modified';
 const WRAP_CLASS = 'preflight-diff-highlight-wrap';
 const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
-const JUMP_CLASS = 'preflight-diff-jump-highlight';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
 // Marker for cleanup/tests only — visually-hidden styling comes from Milo's global .sr-only.
 const SR_ONLY_CLASS = 'preflight-diff-sr-only';
@@ -182,46 +181,4 @@ export function highlightOnPage(diff, root, onDismiss) {
 export function autoHighlightOnPage(diff, root) {
   if (highlightsDismissed || !root) return undefined;
   return highlightOnPage(diff, root, () => { highlightsDismissed = true; });
-}
-
-function clearJumpHighlight() {
-  document.querySelectorAll(`.${JUMP_CLASS}`).forEach((el) => el.classList.remove(JUMP_CLASS));
-}
-
-// Mirrors panels/assets.js's goToAsset affordance
-function showReturnPopover() {
-  document.querySelector('.preflight-return-popover')?.remove();
-
-  const label = createTag('span', { class: 'preflight-return-label' }, 'Reviewing change on page');
-  const reopen = createTag('button', { class: 'preflight-return-reopen' }, 'Back to Preflight');
-  const dismiss = createTag('button', { class: 'preflight-return-dismiss' }, 'Dismiss');
-  const popover = createTag('div', { class: 'preflight-return-popover', role: 'dialog', 'aria-label': 'Content change review' }, [label, reopen, dismiss]);
-
-  const cleanup = () => { popover.remove(); clearJumpHighlight(); };
-  dismiss.addEventListener('click', cleanup);
-  reopen.addEventListener('click', () => {
-    cleanup();
-    document.querySelector('aem-sidekick, helix-sidekick')
-      ?.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
-  });
-
-  document.body.append(popover);
-}
-
-export function jumpToChangeOnPage(change, root = document.querySelector('main')) {
-  const expectedText = change?.previewText || change?.liveText || '';
-  const el = resolveOnPage(change?.path, root, change?.kind, expectedText);
-  if (!el) {
-    logUnmapped(change);
-    return false;
-  }
-
-  document.getElementById('preflight')?.dispatchEvent(new CustomEvent('closeModal'));
-  requestAnimationFrame(() => {
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    clearJumpHighlight();
-    el.classList.add(JUMP_CLASS);
-    showReturnPopover();
-  });
-  return true;
 }

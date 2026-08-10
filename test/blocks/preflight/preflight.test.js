@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { Preflight } from '../../../libs/blocks/preflight/preflight.js';
 
-const TAB_TITLES = ['General', 'SEO', 'Martech', 'M@S', 'Accessibility', 'Performance', 'Assets', 'Content Diff'];
+const TAB_TITLES = ['General', 'SEO', 'Martech', 'M@S', 'Accessibility', 'Performance', 'Assets'];
 // Signal-driven re-renders (tab switch) and useEffect checks resolve on a later tick.
 const tick = () => new Promise((resolve) => { setTimeout(resolve, 50); });
 
@@ -26,7 +26,7 @@ describe('Preflight modal (isolation)', () => {
     sinon.restore();
   });
 
-  it('renders all eight tabs with the correct labels', () => {
+  it('renders all seven tabs with the correct labels', () => {
     render(html`<${Preflight} />`, container);
     const buttons = [...container.querySelectorAll('.preflight-tab-button')];
     expect(buttons).to.have.lengthOf(TAB_TITLES.length);
