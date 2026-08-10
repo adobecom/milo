@@ -1304,20 +1304,6 @@ img:hover ~ .asset-meta,
   box-shadow: inset 0 0 0 3px var(--s2a-color-orange-700);
 }
 
-/* Standard visually-hidden pattern (mirrors sr-only in libs/styles/styles.css) — the overlay's
- * "New"/"Changed" badge is aria-hidden, so this carries the equivalent text to screen readers. */
-.preflight-diff-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .preflight-diff-overlay::before {
   position: absolute;
   inset-block-start: -1px;

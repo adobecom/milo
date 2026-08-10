@@ -10,6 +10,7 @@ const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const JUMP_CLASS = 'preflight-diff-jump-highlight';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
+// Marker for cleanup/tests only — visually-hidden styling comes from Milo's global .sr-only.
 const SR_ONLY_CLASS = 'preflight-diff-sr-only';
 
 // The overlay badge is an aria-hidden ::before; screen readers get this real text node.
@@ -162,7 +163,7 @@ export function highlightOnPage(diff, root, onDismiss) {
     // so block overlays use an inset frame instead (see preflight.css).
     const kindClass = change.kind === 'block' ? ' is-block' : '';
     const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
-    const srLabel = createTag('span', { class: SR_ONLY_CLASS }, SR_LABEL[modifierClass]);
+    const srLabel = createTag('span', { class: `sr-only ${SR_ONLY_CLASS}` }, SR_LABEL[modifierClass]);
     host.append(overlay, srLabel);
     applied += 1;
   };
