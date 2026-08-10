@@ -1,6 +1,7 @@
 import { html, signal, useEffect, useRef, useState } from '../../../deps/htm-preact.js';
 import fetchVersions from '../checks/diff/fetchVersions.js';
 import computeDiff, { DIFF_STATE } from '../checks/diff/computeDiff.js';
+import { countChanges } from '../checks/diff.js';
 import { highlightOnPage, jumpToChangeOnPage, areHighlightsDismissed, setHighlightsDismissed } from './diff-onpage.js';
 
 // NEW_PAGE = confirmed-unpublished (safe to show as "all new"); ERROR = unknown/failed live fetch
@@ -28,9 +29,7 @@ const errorMessage = signal(DEFAULT_ERROR_MESSAGE);
 
 function hasChanges(content, metadata) {
   if (!content || !metadata) return false;
-  const total = content.added.length + content.modified.length + content.removed.length
-    + metadata.added.length + metadata.modified.length + metadata.removed.length;
-  return total > 0;
+  return countChanges(content, metadata) > 0;
 }
 
 function buildMetadataRows(metadata) {
@@ -86,7 +85,6 @@ async function loadDiff(url) {
     }
   } catch (e) {
     window.lana?.log?.(`[preflight][diff-panel] ${e.message}`, { tags: 'preflight', errorType: 'i' });
-    errorMessage.value = DEFAULT_ERROR_MESSAGE;
     view.value = VIEW.ERROR;
   }
 }
@@ -395,19 +393,9 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
       </div>`;
   }
 
-  if (view.value === VIEW.NEW_PAGE) {
-    return html`
-      <div class="preflight-diff ${highlightsOn.value ? 'preflight-diff-active' : ''}">
-        <p class="preflight-diff-new-page">${NEW_PAGE_MESSAGE}</p>
-        <${LastModifiedHeader} />
-        <${DiffToolbar} />
-        <${ContentTab} />
-        <${MetadataTab} />
-      </div>`;
-  }
-
   return html`
     <div class="preflight-diff ${highlightsOn.value ? 'preflight-diff-active' : ''}">
+      ${view.value === VIEW.NEW_PAGE && html`<p class="preflight-diff-new-page">${NEW_PAGE_MESSAGE}</p>`}
       <${LastModifiedHeader} />
       <${DiffToolbar} />
       <${ContentTab} />

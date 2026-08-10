@@ -1,5 +1,7 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
+import { countChanges } from '../blocks/preflight/checks/diff.js';
+import loadC2Tokens from '../blocks/preflight/c2-tokens.js';
 import { loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
@@ -33,10 +35,8 @@ function getMasUnpublishedCount(results) {
 
 export function getDiffChangeCount(results) {
   const details = results?.runChecks?.diff?.[0]?.details || {};
-  const content = details.content || { added: [], modified: [], removed: [] };
-  const metadata = details.metadata || { added: [], modified: [], removed: [] };
-  return content.added.length + content.modified.length + content.removed.length
-    + metadata.added.length + metadata.modified.length + metadata.removed.length;
+  const empty = { added: [], modified: [], removed: [] };
+  return countChanges(details.content || empty, details.metadata || empty);
 }
 
 export function diffNudgeMessage(count) {
@@ -55,17 +55,13 @@ export async function autoHighlightUnpublished() {
     ]);
     const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
     if (!content) return;
-    // No modal on a bare preview page, so load what it would: preflight.css (overlay/label rules)
-    // + the c2 :root token files the CSS colors resolve against (keep in sync with preflight.js).
+    // No modal on a bare preview page, so load what it would: preflight.css + the c2 :root tokens.
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
-    const styles = [
-      `${base}/blocks/preflight/preflight.css`,
-      `${base}/c2/styles/deps/tokens.primitives.css`,
-      `${base}/c2/styles/deps/tokens.primitives.light.css`,
-      `${base}/c2/styles/deps/tokens.semantic.light.css`,
-    ];
-    await Promise.all(styles.map((href) => new Promise((res) => { loadStyle(href, res); })));
+    await Promise.all([
+      new Promise((res) => { loadStyle(`${base}/blocks/preflight/preflight.css`, res); }),
+      loadC2Tokens(base),
+    ]);
     const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
     autoHighlightOnPage(content, root);
   } catch (e) {

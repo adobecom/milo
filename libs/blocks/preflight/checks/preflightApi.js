@@ -106,13 +106,15 @@ const isUrlExcluded = (url, exclusionPatterns = {}) => {
 
 const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
+  // Network-bound: start now and await last so its fetches overlap the DOM-only checks.
+  const diffPromise = Promise.all(runChecksDiff({ url }));
   const accessibility = await Promise.all(runChecksAccessibility({ area }));
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
   const merch = await Promise.all(runChecksMerch({ area }));
-  const diff = await Promise.all(runChecksDiff({ url }));
+  const diff = await diffPromise;
   return {
     accessibility,
     assets,
