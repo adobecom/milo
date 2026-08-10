@@ -6,7 +6,6 @@ export function getXPath(node, root) {
   const segments = [];
   let el = node;
   while (el && el !== root && el.parentElement) {
-    // XPath index is 1-based and per-tag — count only same-tag preceding siblings
     let index = 1;
     let sibling = el.previousElementSibling;
     while (sibling) {

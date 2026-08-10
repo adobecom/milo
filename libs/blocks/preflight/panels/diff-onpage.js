@@ -9,19 +9,15 @@ const WRAP_CLASS = 'preflight-diff-highlight-wrap';
 const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
-// Marker for cleanup/tests only — visually-hidden styling comes from Milo's global .sr-only.
 const SR_ONLY_CLASS = 'preflight-diff-sr-only';
 
-// The overlay badge is an aria-hidden ::before; screen readers get this real text node.
 const SR_LABEL = {
   [ADDED_MODIFIER]: 'Unpublished — new',
   [MODIFIED_MODIFIER]: 'Unpublished — changed',
 };
 
-// Void/replaced elements can't host appended children, so these get wrapped (ensureOverlayHost).
 const VOID_HOST_TAGS = new Set(['IMG', 'VIDEO', 'IFRAME', 'AUDIO', 'EMBED', 'OBJECT', 'CANVAS', 'INPUT']);
 
-// Matches getXPath's segment shape "tag[index]", e.g. "/div[1]/p[3]" -> [{tag, index}, ...].
 function parsePath(path) {
   if (!path) return [];
   return path.split('/')
@@ -34,26 +30,22 @@ function parsePath(path) {
     .filter(Boolean);
 }
 
-// Same-tag count among direct children only — the exact rule getXPath used; high-confidence match.
 function directChildMatch(context, seg) {
   const siblings = [...context.children].filter((el) => el.tagName === seg.tag);
   return siblings[seg.index - 1] || null;
 }
 
-// Fallback for decoration wrappers (e.g. <img> in <picture>) — any-depth, lower confidence.
 function descendantMatch(context, seg) {
   const found = context.querySelectorAll(seg.tag.toLowerCase());
   return found[seg.index - 1] || null;
 }
 
-// Blocks rebuild their DOM — a leaf resolved deep inside may be wrong, so climb to the block.
 function toBlockAltitude(el, root) {
   const block = el.closest('.section > div[class]');
   if (block && block !== root && root.contains(block)) return block;
   return el;
 }
 
-// Best-effort walk of a pre-decoration xpath against the decorated page; never throws.
 export function resolveOnPage(path, root, kind, expectedText) {
   if (!root) return null;
   const segments = parsePath(path);
@@ -75,7 +67,6 @@ export function resolveOnPage(path, root, kind, expectedText) {
 
   if (matchedLevels === 0) return null;
 
-  // A fuzzy fallback can land on the wrong element — verify its text before trusting it.
   if (usedFallback && expectedText && normalizeText(context.textContent)) {
     if (textSimilarity(normalizeText(context.textContent), expectedText) < 0.3) return null;
   }
@@ -90,7 +81,6 @@ function logUnmapped(change) {
   );
 }
 
-// Order matters: remove overlays before unwrapping, so a wrapper's last child is the original.
 export function clearHighlights(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
   root.querySelectorAll(`.${SR_ONLY_CLASS}`).forEach((el) => el.remove());
@@ -104,7 +94,6 @@ export function clearHighlights(root) {
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
 }
 
-// ISOLATE_CLASS scopes the overlay's stacking context so its z-index can't outrank the modal.
 function ensureOverlayHost(el) {
   if (VOID_HOST_TAGS.has(el.tagName)) {
     const wrapper = createTag('span', { class: `${WRAP_CLASS} ${ISOLATE_CLASS}` });
@@ -112,7 +101,6 @@ function ensureOverlayHost(el) {
     wrapper.append(el);
     return wrapper;
   }
-  // Only add a positioning context if none exists, so we don't fight the page's own position.
   if (window.getComputedStyle(el).position === 'static') {
     el.classList.add(RELATIVE_CLASS);
   }
@@ -120,7 +108,6 @@ function ensureOverlayHost(el) {
   return el;
 }
 
-// Page-injected control so highlights can be dismissed without reopening preflight.
 function showHighlightControl(root, onDismiss) {
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
   const label = createTag('span', { class: 'preflight-diff-control-label' }, 'Unpublished changes highlighted');
@@ -137,7 +124,6 @@ function showHighlightControl(root, onDismiss) {
   document.body.append(control);
 }
 
-// Session dismiss shared by the on-page control and the panel toggle, so hiding stays in sync.
 let highlightsDismissed = false;
 export const areHighlightsDismissed = () => highlightsDismissed;
 export const setHighlightsDismissed = (value) => { highlightsDismissed = value; };
@@ -158,8 +144,6 @@ export function highlightOnPage(diff, root, onDismiss) {
       return;
     }
     const host = ensureOverlayHost(el);
-    // Full-bleed blocks: an edge outline sits at the viewport perimeter and reads as invisible,
-    // so block overlays use an inset frame instead (see preflight.css).
     const kindClass = change.kind === 'block' ? ' is-block' : '';
     const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
     const srLabel = createTag('span', { class: `sr-only ${SR_ONLY_CLASS}` }, SR_LABEL[modifierClass]);
@@ -177,7 +161,6 @@ export function highlightOnPage(diff, root, onDismiss) {
   };
 }
 
-// Auto-apply on preview load (FA #1). Caller preview-gates + defers; respects the dismiss flag.
 export function autoHighlightOnPage(diff, root) {
   if (highlightsDismissed || !root) return undefined;
   return highlightOnPage(diff, root, () => { highlightsDismissed = true; });

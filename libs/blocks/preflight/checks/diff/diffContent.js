@@ -2,7 +2,6 @@ import { normalizeText, getXPath } from './nodePath.js';
 
 export const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, blockquote';
 
-// Jaccard word-overlap gate: below this, a same-path pair is a separate remove+add, not "modified"
 const SIMILARITY_THRESHOLD = 0.3;
 
 function ownText(el) {
@@ -20,7 +19,6 @@ function tokenize(text) {
   return normalizeText(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 }
 
-// Jaccard similarity; two empty texts count as identical, empty vs non-empty as wholly dissimilar
 export function textSimilarity(a, b) {
   const setA = new Set(tokenize(a));
   const setB = new Set(tokenize(b));
@@ -65,12 +63,10 @@ function collectLeaf(el, root) {
   };
 }
 
-// Skip non-img leaves with no own text — they're wrappers (e.g. a <p> around an <img>), not content
 function isEmptyWrapper(el) {
   return el.tagName !== 'IMG' && ownText(el) === '';
 }
 
-// A direct-child div[class] is one opaque block unit; everything else is walked as leaves.
 function collectFromSection(section, root, units) {
   [...section.children].forEach((child) => {
     if (child.tagName === 'DIV' && firstClass(child)) {
@@ -95,7 +91,6 @@ function collect(rootEl) {
   return units;
 }
 
-// Longest-common-subsequence match on signatures; returns [liveIdx, previewIdx] pairs.
 function lcsPairs(live, preview) {
   const n = live.length;
   const m = preview.length;
@@ -124,7 +119,6 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
-// Blocks pair by blockName+path; leaves also need similar text, else add+remove looks "modified".
 function isModifiedPair(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag || removedUnit.path !== addedUnit.path) return false;
   if (removedUnit.kind === 'block') return removedUnit.blockName === addedUnit.blockName;

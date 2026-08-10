@@ -3,8 +3,6 @@ import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
 import loadC2Tokens from '../blocks/preflight/c2-tokens.js';
 import { loadStyle, getConfig } from './utils.js';
 
-// FA #1: highlight unpublished content on the preview page with no author action. Computes the diff
-// directly (one fetch) and loads the styles/tokens the modal would, since no modal is open here.
 export async function autoHighlightUnpublished() {
   const root = document.querySelector('main');
   if (!root) return;

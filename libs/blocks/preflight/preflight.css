@@ -4,7 +4,6 @@
  * page-injected overlays (which live outside #preflight) resolve them.
  */
 
-/* stylelint-disable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity -- pre-existing, predates this change; re-enabled below for new rules */
 
 #preflight .fragment,
 #preflight .section,
@@ -1238,35 +1237,15 @@ img:hover ~ .asset-meta,
   scroll-margin: 100px;
 }
 
-/*
- * Page-injected: Content Diff highlights on the real preview page. These land outside
- * #preflight, so — unlike the modal's own .preflight-diff-active rules — they resolve raw
- * --s2a-* tokens directly instead of the modal-scoped --preflight-* aliases.
- *
- * Rendered as a dedicated overlay element appended to (or wrapped around) the highlighted
- * element, rather than as outline/::before styles on the element itself — a block's own layered
- * content (background media, gradients, its own overlays) can be higher-stacked than an in-flow
- * outline, burying it.
- *
- * The host also gets its own stacking context (see .preflight-diff-highlight-isolate) so the
- * overlay's z-index is only ever weighed against that block's own layers, never against the
- * preflight modal (--modal-z-index in modal.css). That's what lets a modest z-index — like
- * .asset-meta's below — reliably win locally without risking a max-int value that could climb
- * above the modal itself.
- */
 .preflight-diff-highlight-relative {
   position: relative;
 }
 
-/* Positioned wrapper inserted only around elements that can't host an appended child overlay
- * themselves (img, video, ...) — see ensureOverlayHost in diff-onpage.js. */
 .preflight-diff-highlight-wrap {
   position: relative;
   display: inline-block;
 }
 
-/* Scopes the overlay's stacking context to the highlighted host itself — applied to either the
- * host element or the .preflight-diff-highlight-wrap wrapper (see ensureOverlayHost). */
 .preflight-diff-highlight-isolate {
   isolation: isolate;
 }
@@ -1288,9 +1267,6 @@ img:hover ~ .asset-meta,
   outline: 3px solid var(--s2a-color-orange-700);
 }
 
-/* Block overlays cover a whole (often full-bleed) block, drawn as an inset box-shadow frame rather
-   than an outline. No background tint — a fill over the block's own content (text, media) washes it
-   out and reads as blurry. */
 .preflight-diff-overlay.is-block {
   inset: 0;
   outline: none;
@@ -1328,7 +1304,6 @@ img:hover ~ .asset-meta,
 .preflight-diff-overlay.is-modified::before {
   content: 'Changed';
 
-  /* gray-25 (used by New) fails AA on orange-700 (3.23:1); gray-900 clears it at 5.74:1. */
   color: var(--s2a-color-gray-900);
   background: var(--s2a-color-orange-700);
 }
@@ -1408,7 +1383,6 @@ img:hover ~ .asset-meta,
   color: var(--s2a-color-content-default);
 }
 
-/* Page-injected control (bottom-left) to dismiss the on-page highlights without reopening preflight. */
 .preflight-diff-highlight-control {
   position: fixed;
   inset-inline-start: var(--s2a-spacing-16);
@@ -1435,7 +1409,6 @@ img:hover ~ .asset-meta,
   white-space: nowrap;
 }
 
-/* On small phones drop the label — the button is self-explanatory. */
 @media (max-width: 599px) {
   .preflight-diff-control-label {
     display: none;
@@ -1965,7 +1938,6 @@ img:hover ~ .asset-meta,
   line-height: 2.5;
 }
 
-/* stylelint-enable comment-empty-line-before, property-no-vendor-prefix, no-descending-specificity */
 
 .dialog-modal#preflight button.dialog-close svg {
   display: block;

@@ -6,9 +6,6 @@ export function deriveLiveUrl(url) {
   return live;
 }
 
-// "missing" (doesn't exist) vs "error" (failed to load) — conflating them fakes an empty live doc.
-// no-store: live/preview .plain.html are cached (max-age 7200), so a plain fetch would diff against
-// a stale copy during iterative edits — always pull the current version.
 async function fetchPlain(url) {
   const plain = new URL(url.href);
   plain.pathname = `${plain.pathname.replace(/\/$/, '')}.plain.html`;
@@ -30,7 +27,6 @@ export default async function fetchVersions(previewUrl) {
 
   const pMod = status?.preview?.lastModified ? Date.parse(status.preview.lastModified) : NaN;
   const lMod = status?.live?.lastModified ? Date.parse(status.live.lastModified) : NaN;
-  // Nothing unpublished: skip the diff fetch entirely when preview isn't newer than live.
   if (!Number.isNaN(pMod) && !Number.isNaN(lMod) && pMod <= lMod) {
     return { preview: null, live: null, liveStatus: 'ok', status, skipped: true };
   }
