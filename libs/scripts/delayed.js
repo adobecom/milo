@@ -113,11 +113,16 @@ export const loadPreflightResults = async () => {
   if (!hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
 
   const run = async () => {
-    const { default: showPreflightNotification, autoHighlightUnpublished } = await import('../utils/preflight-notification.js');
+    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
     await showPreflightNotification();
-    // Preview-only: auto-highlight unpublished content on the page (FA #1 — no author action).
-    if (hostname.endsWith('.aem.page')) await autoHighlightUnpublished();
   };
+
+  // FA #1: auto-highlight unpublished content on preview load — fired here, NOT inside run(), so it
+  // doesn't wait on the sidekick (which would delay highlights until the author opens it).
+  if (hostname.endsWith('.aem.page')) {
+    const { autoHighlightUnpublished } = await import('../utils/preflight-notification.js');
+    autoHighlightUnpublished();
+  }
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) {

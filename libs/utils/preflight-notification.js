@@ -43,19 +43,25 @@ export function diffNudgeMessage(count) {
   return `${count} change${count === 1 ? '' : 's'} vs live — compare before publishing.`;
 }
 
-// FA #1: highlights appear on the preview page with no author action. Runs in the deferred phase
-// behind a preview-host guard (see delayed.js). Reuses the cached preflight diff — the check
-// already ran as part of the on-load suite — so this adds no extra fetch.
+// FA #1: highlights appear on the preview page with no author action — and without waiting on the
+// sidekick (the nudge needs it; the on-page highlight must not, or it would only show once the
+// author opens the sidekick). Computes the diff directly (one live fetch, deferred phase) rather
+// than the sidekick-gated preflight suite.
 export async function autoHighlightUnpublished() {
-  const results = await getPreflightResults({
-    url: window.location.href,
-    area: document,
-  }).catch(() => null);
-  const content = results?.runChecks?.diff?.[0]?.details?.content;
   const root = document.querySelector('main');
-  if (!content || !root) return;
-  const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
-  autoHighlightOnPage(content, root);
+  if (!root) return;
+  try {
+    const [{ default: fetchVersions }, { default: computeDiff }] = await Promise.all([
+      import('../blocks/preflight/checks/diff/fetchVersions.js'),
+      import('../blocks/preflight/checks/diff/computeDiff.js'),
+    ]);
+    const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
+    if (!content) return;
+    const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
+    autoHighlightOnPage(content, root);
+  } catch (e) {
+    window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
+  }
 }
 
 function isPreflightOpen() {
