@@ -1,5 +1,11 @@
+import { getConfig } from '../../../utils/utils.js';
+
+export function getAnalyticsLabel(step) {
+  return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
+}
+
 /* eslint-disable no-undef, no-underscore-dangle */
-const bcAnalytics = (event) => {
+export const bcAnalytics = (event) => {
   if (window?._satellite?.track) {
     switch (event.eventType) {
       case 'query:submitted':
@@ -111,5 +117,3 @@ const bcAnalytics = (event) => {
     }
   }
 };
-
-export default bcAnalytics;
