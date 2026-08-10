@@ -117,8 +117,7 @@ export const loadPreflightResults = async () => {
     await showPreflightNotification();
   };
 
-  // FA #1: auto-highlight unpublished content on preview load — fired here, NOT inside run(), so it
-  // doesn't wait on the sidekick (which would delay highlights until the author opens it).
+  // FA #1: fire on load, not inside the sidekick-gated run(), so highlights don't wait on it.
   if (hostname.endsWith('.aem.page')) {
     const { autoHighlightUnpublished } = await import('../utils/preflight-notification.js');
     autoHighlightUnpublished();

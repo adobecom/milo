@@ -43,10 +43,8 @@ export function diffNudgeMessage(count) {
   return `${count} change${count === 1 ? '' : 's'} vs live — compare before publishing.`;
 }
 
-// FA #1: highlights appear on the preview page with no author action — and without waiting on the
-// sidekick (the nudge needs it; the on-page highlight must not, or it would only show once the
-// author opens the sidekick). Computes the diff directly (one live fetch, deferred phase) rather
-// than the sidekick-gated preflight suite.
+// FA #1: highlights on preview load with no author action. Computes the diff directly (one fetch)
+// rather than the sidekick-gated preflight suite, so it doesn't wait on the sidekick.
 export async function autoHighlightUnpublished() {
   const root = document.querySelector('main');
   if (!root) return;
@@ -57,10 +55,8 @@ export async function autoHighlightUnpublished() {
     ]);
     const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
     if (!content) return;
-    // On a bare preview page (no modal) nothing loaded the overlay styles or the c2 --s2a-* tokens
-    // they resolve. preflight.js loads both when the modal opens; replicate here: preflight.css for
-    // the overlay/label rules + the :root token files for their colors (keep in sync with the
-    // C2_TOKENS list in preflight.js). Await all so overlays draw fully styled, no flash.
+    // No modal on a bare preview page, so load what it would: preflight.css (overlay/label rules)
+    // + the c2 :root token files the CSS colors resolve against (keep in sync with preflight.js).
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
     const styles = [

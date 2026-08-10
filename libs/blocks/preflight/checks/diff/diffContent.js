@@ -70,8 +70,7 @@ function isEmptyWrapper(el) {
   return el.tagName !== 'IMG' && ownText(el) === '';
 }
 
-// A direct-child div[class] is one opaque block unit (blocks rebuild their own markup);
-// everything else is walked as default-content leaves.
+// A direct-child div[class] is one opaque block unit; everything else is walked as leaves.
 function collectFromSection(section, root, units) {
   [...section.children].forEach((child) => {
     if (child.tagName === 'DIV' && firstClass(child)) {
@@ -125,8 +124,7 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
-// Blocks match by blockName+path (text can change entirely and still be "same block, edited");
-// leaves also require similar text, else an unrelated add/remove pair could misreport as "modified"
+// Blocks pair by blockName+path; leaves also need similar text, else add+remove looks "modified".
 function isModifiedPair(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag || removedUnit.path !== addedUnit.path) return false;
   if (removedUnit.kind === 'block') return removedUnit.blockName === addedUnit.blockName;

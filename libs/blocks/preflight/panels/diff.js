@@ -14,7 +14,7 @@ const HEADING_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
 const TEXT_TAGS = new Set(['P', 'LI', 'BLOCKQUOTE']);
 const LABEL_TRUNCATE_LENGTH = 60;
 const BLOCK_LABEL_PREFIX = { added: 'New block', modified: 'Changed block', removed: 'Removed block' };
-// Snippet is a lightweight preview, not a full re-render — cap images rather than clone them all
+// Snippet is a lightweight preview — cap images rather than clone them all.
 const MAX_SNIPPET_IMAGES = 4;
 
 const view = signal(VIEW.LOADING);
@@ -22,8 +22,7 @@ const activeTab = signal(TAB.CONTENT);
 const contentDiff = signal(null);
 const metadataDiff = signal(null);
 const pageStatus = signal(null);
-// Highlights may already be on from the auto-apply on preview load — start from the shared
-// session-dismiss flag so the panel toggle and the on-page control agree.
+// Start from the shared dismiss flag; highlights may already be on from the auto-apply on load.
 const highlightsOn = signal(!areHighlightsDismissed());
 const errorMessage = signal(DEFAULT_ERROR_MESSAGE);
 
@@ -59,7 +58,7 @@ async function loadDiff(url) {
   try {
     const versions = await fetchVersions(url);
     const diff = computeDiff(versions);
-    // Set once a preview exists (every state but skipped/no-preview) — mirrors the check.
+    // Set once a preview exists (all states but skipped/no-preview).
     if (diff.state !== DIFF_STATE.SKIPPED && diff.state !== DIFF_STATE.NO_PREVIEW) {
       pageStatus.value = versions.status;
     }
@@ -149,7 +148,6 @@ function truncateLabel(text) {
   return `${text.slice(0, LABEL_TRUNCATE_LENGTH - 1)}…`;
 }
 
-// Title-case each word so a hyphenated class name (e.g. "two-up") reads like a name
 function titleCaseBlockName(name) {
   return (name || '')
     .split(/[-_]/)
@@ -212,7 +210,6 @@ function BlockSnippet({ el, text }) {
     </div>`;
 }
 
-// Rendered as a plain text child (not innerHTML), so fetched text is safe without manual escaping
 function TextSnippet({ text }) {
   return html`<p class="preflight-diff-snippet-text">${text || '(no text)'}</p>`;
 }
@@ -262,8 +259,7 @@ function ChangeDetail({ change }) {
     </div>`;
 }
 
-// Removed rows aren't clickable (nothing on the page to jump to); expand is a separate button so
-// it doesn't trigger the jump.
+// Removed rows aren't clickable (nothing on-page to jump to); expand is a separate button.
 function ChangeRow({ change }) {
   const isOnPage = change.type !== 'removed';
   const [expanded, setExpanded] = useState(false);
@@ -358,8 +354,7 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
   const url = rawUrl || new URL(window.location.href);
   const hasLoadedRef = useRef(false);
 
-  // Overlays live on the page and intentionally outlive the modal —
-  // cleared by the on-page control or reload.
+  // Overlays intentionally outlive the modal — cleared by the on-page control or a reload.
   useEffect(() => {
     if (!highlightsOn.value || !contentDiff.value) return undefined;
     const root = document.querySelector('main');
@@ -370,8 +365,7 @@ export default function DiffPanel({ url: rawUrl, selected = true } = {}) {
     });
   });
 
-  // Runs in the render body (not useEffect) so the guard latches immediately, avoiding a race
-  // with the async loadDiff() work.
+  // In the render body (not useEffect) so the guard latches before the async loadDiff() races.
   if (selected && !hasLoadedRef.current) {
     hasLoadedRef.current = true;
     loadDiff(url);

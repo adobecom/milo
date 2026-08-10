@@ -144,8 +144,7 @@ function setPanel(tab) {
       return html`<${Performance} />`;
     case 'Assets':
       return html`<${Assets} />`;
-    // On-demand: all tabs mount at once, so DiffPanel needs to know when it becomes
-    // the active tab to defer its fetch/decorate work until it's actually viewed.
+    // All tabs mount at once; DiffPanel defers its fetch until it's the active tab.
     case 'Content Diff':
       return html`<${DiffPanel} selected=${tab.selected === true} />`;
     default:

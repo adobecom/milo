@@ -10,9 +10,7 @@ export const DIFF_STATE = {
   READY: 'ready',
 };
 
-// Turns already-fetched versions into { state, content, metadata }. Callers fetch versions
-// themselves — the check eagerly for the aggregate run, the panel lazily on tab-select — so this
-// stays free of network work and both layers share one skip/new-page/compare implementation.
+// Fetch-free (callers pass in the versions) so the check and the panel share one diff path.
 export default function computeDiff(versions) {
   if (versions.skipped) return { state: DIFF_STATE.SKIPPED };
   if (!versions.preview) return { state: DIFF_STATE.NO_PREVIEW };
@@ -20,8 +18,7 @@ export default function computeDiff(versions) {
   const previewRoot = parseMain(versions.preview.html);
 
   if (versions.liveStatus !== 'ok') {
-    // Never fabricate an empty live doc when live fails to load — only a confirmed-unpublished
-    // page is safe to treat as "all new".
+    // Only a confirmed-unpublished page is safe as "all new" — never fake an empty live doc.
     if (!isConfirmedUnpublished(versions)) return { state: DIFF_STATE.LIVE_UNAVAILABLE };
     const emptyRoot = document.createElement('main');
     return {
