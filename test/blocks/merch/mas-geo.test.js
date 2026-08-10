@@ -1,10 +1,15 @@
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import {
   getMiloLocaleSettings,
   isMasFragmentLink,
   getMasFragmentId,
   getMasFragmentUrl,
   preloadMasFragment,
+  parseMarketsLanguages,
+  marketsLangForLocale,
+  validateMarket,
+  resolveMasMarket,
 } from '../../../libs/blocks/merch/mas-geo.js';
 
 const link = (href) => {
@@ -121,6 +126,103 @@ describe('mas-geo', () => {
       const url = preloadMasFragment(link(`${STUDIO}#fragment=frag4`), { locale: { prefix: '' } });
       expect(url).to.include('locale=en_GB');
       expect(url).to.not.include('country=');
+    });
+
+    it('uses an explicit resolved market over the sync guess', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'mas-geo-detection';
+      meta.content = 'on';
+      document.head.appendChild(meta);
+      sessionStorage.setItem('akamai', 'de'); // sync guess would be DE
+      const url = preloadMasFragment(link(`${STUDIO}#fragment=frag5`), { locale: { prefix: '/fr' }, market: 'ch' });
+      expect(url).to.include('country=CH');
+      expect(url).to.not.include('country=DE');
+    });
+  });
+
+  describe('parseMarketsLanguages', () => {
+    it('reads the languages.data shape', () => {
+      expect(parseMarketsLanguages({ languages: { data: [{ prefix: '' }] } })).to.deep.equal([{ prefix: '' }]);
+    });
+    it('reads the flat data shape', () => {
+      expect(parseMarketsLanguages({ data: [{ prefix: 'de' }] })).to.deep.equal([{ prefix: 'de' }]);
+    });
+    it('returns [] for empty input', () => {
+      expect(parseMarketsLanguages(null)).to.deep.equal([]);
+    });
+  });
+
+  describe('marketsLangForLocale', () => {
+    const cfg = { languages: [{ prefix: '', defaultMarket: 'us' }, { prefix: 'de', defaultMarket: 'de' }] };
+    it('matches by prefix', () => {
+      expect(marketsLangForLocale(cfg, { prefix: '/de' }).defaultMarket).to.equal('de');
+    });
+    it('falls back to the first entry', () => {
+      expect(marketsLangForLocale(cfg, { prefix: '/zz' }).defaultMarket).to.equal('us');
+    });
+  });
+
+  describe('validateMarket', () => {
+    const cfg = { languages: [{ prefix: '', supportedRegions: 'us,ca,gb', defaultMarket: 'us' }] };
+    it('passes a supported market through', () => {
+      expect(validateMarket(cfg, 'gb', { prefix: '' })).to.equal('gb');
+    });
+    it('clamps an unsupported market to defaultMarket', () => {
+      expect(validateMarket(cfg, 'zz', { prefix: '' })).to.equal('us');
+    });
+    it('uses defaultMarket when nothing is detected', () => {
+      expect(validateMarket(cfg, undefined, { prefix: '' })).to.equal('us');
+    });
+    it('returns the detected market when there is no config', () => {
+      expect(validateMarket(null, 'ch', { prefix: '' })).to.equal('ch');
+    });
+  });
+
+  describe('resolveMasMarket', () => {
+    afterEach(() => {
+      sinon.restore();
+      document.head.querySelectorAll('meta[name="mas-geo-detection"]').forEach((m) => m.remove());
+      sessionStorage.removeItem('akamai');
+    });
+
+    const enableGeo = () => {
+      const meta = document.createElement('meta');
+      meta.name = 'mas-geo-detection';
+      meta.content = 'on';
+      document.head.appendChild(meta);
+    };
+
+    it('returns null when geo-detection is off (no fetch)', async () => {
+      const fetchStub = sinon.stub(window, 'fetch');
+      expect(await resolveMasMarket({ locale: { prefix: '' } })).to.equal(null);
+      expect(fetchStub.called).to.equal(false);
+    });
+
+    it('returns the clamped market on a geo-detection page', async () => {
+      enableGeo();
+      sessionStorage.setItem('akamai', 'zz'); // unsupported -> clamps to defaultMarket
+      sinon.stub(window, 'fetch').resolves({
+        ok: true,
+        json: () => Promise.resolve({ languages: { data: [{ prefix: '', supportedRegions: 'us,gb', defaultMarket: 'us' }] } }),
+      });
+      expect(await resolveMasMarket({ locale: { prefix: '' }, marketsUrl: '/x.json' })).to.equal('us');
+    });
+
+    it('keeps a supported detected market', async () => {
+      enableGeo();
+      sessionStorage.setItem('akamai', 'gb');
+      sinon.stub(window, 'fetch').resolves({
+        ok: true,
+        json: () => Promise.resolve({ languages: { data: [{ prefix: '', supportedRegions: 'us,gb', defaultMarket: 'us' }] } }),
+      });
+      expect(await resolveMasMarket({ locale: { prefix: '' }, marketsUrl: '/x.json' })).to.equal('gb');
+    });
+
+    it('falls back to the sync guess when the fetch fails', async () => {
+      enableGeo();
+      sessionStorage.setItem('akamai', 'ch');
+      sinon.stub(window, 'fetch').rejects(new Error('network'));
+      expect(await resolveMasMarket({ locale: { prefix: '' }, marketsUrl: '/x.json' })).to.equal('ch');
     });
   });
 });

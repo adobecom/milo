@@ -172,6 +172,48 @@ export function getMiloLocaleSettings(miloLocale) {
 }
 
 /* ---------------------------------------------------------------------------
+ * Supported-markets validation (shared with utils/market.js)
+ *
+ * These are the *pure* parts of market.js's getValidatedMarket — the clamp that
+ * maps a detected country to the page's supported markets. They live here (the
+ * dependency-free layer) so the early preload can run them without booting
+ * utils.js, and utils/market.js re-imports them so there is one source of truth.
+ * ------------------------------------------------------------------------- */
+
+/** Normalise the supported-markets JSON to a flat languages array. */
+export function parseMarketsLanguages(marketsConfigJson) {
+  return marketsConfigJson?.languages?.data ?? marketsConfigJson?.data ?? [];
+}
+
+/** Pick the language entry for a page locale. Mirrors market.js. */
+export function marketsLangForLocale(marketsConfig, locale) {
+  if (!marketsConfig?.languages?.length) return undefined;
+  const { languages } = marketsConfig;
+  const pagePrefix = locale?.prefix?.replace(/^\//, '') || '';
+  let languageEntry = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (!languageEntry && locale?.base) {
+    languageEntry = languages.find((lang) => (lang.prefix || '') === locale.base);
+  }
+  return languageEntry || languages[0];
+}
+
+/**
+ * Clamp a detected country to the page's supported markets — falls back to the
+ * page language's defaultMarket when the detected country isn't supported.
+ * `marketConfig` is `{ languages: [...] }` (see {@link parseMarketsLanguages}).
+ * This is the exact tail of market.js's getValidatedMarket.
+ */
+export function validateMarket(marketConfig, detectedMarket, locale) {
+  if (!marketConfig?.languages?.length) return detectedMarket || 'us';
+  const currLang = marketsLangForLocale(marketConfig, locale);
+  if (!currLang) return detectedMarket || 'us';
+  const market = detectedMarket || currLang.defaultMarket || 'us';
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  return validated || 'us';
+}
+
+/* ---------------------------------------------------------------------------
  * Early first-section fragment preload
  * ------------------------------------------------------------------------- */
 
@@ -205,17 +247,39 @@ function getCookie(name) {
   return document.cookie.split('; ').find((row) => row.startsWith(`${name}=`))?.split('=')[1];
 }
 
+function isMasImsLoginEnabled() {
+  const param = new URLSearchParams(window.location.search).get('mas-ims-login');
+  const meta = document.querySelector('meta[name="mas-ims-login"]')?.content;
+  return (param ?? meta)?.toLowerCase() === 'on';
+}
+
+// The Akamai geo lives on the page's own `Server-Timing: geo` response header (the same
+// source utils.setCountry() stashes into sessionStorage). Reading it directly means we don't
+// depend on setCountry() having run yet, and it's present on a cold first visit — so the
+// utils.getCountry() network fallback (geo.js) essentially never applies here.
+function getGeoFromServerTiming() {
+  try {
+    const nav = window.performance?.getEntriesByType?.('navigation')?.[0];
+    return nav?.serverTiming?.find((t) => t?.name === 'geo')?.description;
+  } catch (e) {
+    return undefined;
+  }
+}
+
 // Sync, best-effort detected-market country — mirrors the precedence of
-// utils.computeDetectedMarketCountry (country param > akamaiLocale param > cookie > Akamai
-// geo already stashed in sessionStorage). No network. A wrong guess is harmless: the
-// browser reuses a preload only on an exact-URL match, so the block simply fetches the
-// correct URL instead.
+// utils.computeDetectedMarketCountry (country param > akamaiLocale param > cookie >
+// ims_country_code when IMS login is on > Akamai geo). No network. A wrong guess is
+// harmless: the browser reuses a preload only on an exact-URL match, so the block simply
+// fetches the correct URL instead.
 function getSyncMarketCountry() {
   const params = new URLSearchParams(window.location.search);
+  const ims = isMasImsLoginEnabled() ? normCountry(getCookie('ims_country_code')) : undefined;
   return normCountry(params.get('country'))
     || normCountry(params.get('akamaiLocale'))
     || normCountry(getCookie('country'))
-    || normCountry(sessionStorage.getItem('akamai'));
+    || ims
+    || normCountry(sessionStorage.getItem('akamai'))
+    || normCountry(getGeoFromServerTiming());
 }
 
 // Intentionally a DOM-only variant of merch.js's getMetadata-based isMasGeoDetectionEnabled,
@@ -225,6 +289,50 @@ function isMasGeoDetectionEnabled() {
   const meta = document.querySelector('meta[name="mas-geo-detection"]')?.content;
   const val = (param ?? meta)?.toLowerCase();
   return val === 'on' || val === 'true';
+}
+
+// Default supported-markets.json URL, reproduced dependency-free from utils.getMarketsUrl /
+// getFederatedContentRoot for the federal (non-marketsSource) case. Returns null when a
+// marketsSource override is configured — that URL needs Milo config we don't have yet, so
+// the caller falls back to the raw sync country (no clamp) on those pages.
+function getDefaultMarketsUrl() {
+  const src = new URLSearchParams(window.location.search).get('marketsSource')
+    || document.querySelector('meta[name="marketssource"]')?.content;
+  if (src) return null;
+  const { origin } = window.location;
+  let root;
+  if (origin.includes('localhost') || origin.includes('.aem.') || origin.includes('.hlx.')) {
+    root = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  } else {
+    root = origin.replace('.stage', '') === 'https://www.adobe.com' ? origin : 'https://www.adobe.com';
+  }
+  return `${root}/federal/assets/supported-markets/supported-markets.json`;
+}
+
+/**
+ * Resolve the exact (supported-markets-clamped) country for a geo-detection page — the same
+ * answer market.js's getValidatedMarket lands on, but usable before Milo boots. The only
+ * network cost is the small, cacheable supported-markets.json fetch (detected country comes
+ * from the Server-Timing geo header, so no geo lookup). Returns null on non-geo-detection
+ * pages (locale-in-URL is already exact) and degrades to the raw sync country on any failure.
+ *
+ * @param {{ locale?: {prefix?: string}, marketsUrl?: string }} [opts]
+ * @returns {Promise<string|null>} clamped market (lowercase), sync guess, or null
+ */
+export async function resolveMasMarket({ locale, marketsUrl } = {}) {
+  if (!isMasGeoDetectionEnabled()) return null;
+  const detected = getSyncMarketCountry();
+  try {
+    const url = marketsUrl || getDefaultMarketsUrl();
+    if (!url) return detected || null;
+    const resp = await fetch(url);
+    if (!resp.ok) return detected || null;
+    const json = await resp.json();
+    const marketConfig = { languages: parseMarketsLanguages(json) };
+    return validateMarket(marketConfig, detected, locale) || detected || null;
+  } catch (e) {
+    return detected || null;
+  }
 }
 
 export function getMasFragmentUrl(fragmentId, { locale, country, apiKey } = {}) {
@@ -246,12 +354,14 @@ export function getMasFragmentUrl(fragmentId, { locale, country, apiKey } = {}) 
  * builds and fetches its own exact URL.
  *
  * @param {HTMLAnchorElement} a  first-section MAS studio link
- * @param {{ locale?: {prefix?: string}, apiKey?: string }} [opts]
+ * @param {{ locale?: {prefix?: string}, apiKey?: string, market?: string }} [opts]
  *   locale — pass the consumer's resolved locale ({ prefix }); before loadArea getConfig()
  *   isn't populated yet, so the caller supplies it. apiKey — override the default wcs key.
+ *   market — the resolved (supported-markets-clamped) country from {@link resolveMasMarket};
+ *   when omitted, a raw sync guess is used on geo-detection pages.
  * @returns {string|null} the preloaded URL, or null if nothing was preloaded
  */
-export function preloadMasFragment(a, { locale: miloLocale, apiKey } = {}) {
+export function preloadMasFragment(a, { locale: miloLocale, apiKey, market } = {}) {
   const fragmentId = getMasFragmentId(a);
   if (!fragmentId) return null;
 
@@ -262,17 +372,17 @@ export function preloadMasFragment(a, { locale: miloLocale, apiKey } = {}) {
   let { locale } = settings;
   let country = localeCountry;
   if (isMasGeoDetectionEnabled()) {
-    const detected = getSyncMarketCountry();
+    const detected = normCountry(market) || getSyncMarketCountry();
     if (detected) {
-      const market = detected.toUpperCase();
-      country = market;
+      const mkt = detected.toUpperCase();
+      country = mkt;
       // Mirror merch.js: a non-localized page (e.g. global-EN) serving an AU/IN/GB visitor
       // fetches that market's Global-EN locale, not en_US + country.
-      if (market !== localeCountry) {
-        const override = MARKET_LOCALE_OVERRIDES[language]?.[market];
+      if (mkt !== localeCountry) {
+        const override = MARKET_LOCALE_OVERRIDES[language]?.[mkt];
         if (override) {
           locale = override;
-          if (override.endsWith(`_${market}`)) country = undefined;
+          if (override.endsWith(`_${mkt}`)) country = undefined;
         }
       }
     }
