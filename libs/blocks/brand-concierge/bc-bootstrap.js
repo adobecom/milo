@@ -20,7 +20,7 @@ let bcToken;
  * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
  * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
  */
-function createSusiComponentForModal({
+export function createSusiComponentForModal({
   authParams,
   config,
   variant,
@@ -164,7 +164,7 @@ export function setAuthoredContent(header = null, cards = null, input = null) {
   }
 }
 
-function getUpdatedChatUIConfig() {
+export function getUpdatedChatUIConfig() {
   if (authoredContent?.header) chatUIConfig.text['welcome.heading'] = authoredContent.header.title;
   if (authoredContent?.header?.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
   if (authoredContent?.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;

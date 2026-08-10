@@ -6,7 +6,9 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge', () => {
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
