@@ -193,11 +193,12 @@ function configTabs(config, rootElem) {
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const forward = e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      const forward = e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight');
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');

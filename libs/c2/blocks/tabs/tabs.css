@@ -13,10 +13,6 @@
     background: transparent;
   }
 
-  &.rtl {
-    direction: rtl;
-  }
-
   .tabs-wrapper {
     display: flex;
     width: 100%;
@@ -209,4 +205,8 @@
   [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
   }
+}
+
+html[dir="rtl"] .tabs {
+  direction: rtl;
 }
