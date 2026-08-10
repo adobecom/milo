@@ -453,22 +453,26 @@ describe('getPageSummary', () => {
     });
   });
 
-  it('includes Manifests Found, Foundation, Theme, Target Integration, Load Target Faster (v2)', async () => {
+  it('includes Manifests Found, Foundation, Theme, Load Target Faster (v2), Manifest Sources', async () => {
     const pairs = await getPageSummary();
     const labels = pairs.map(([l]) => l);
     expect(labels).to.include('Manifests Found');
     expect(labels).to.include('Foundation');
     expect(labels).to.include('Theme');
-    expect(labels).to.include('Target Integration');
     expect(labels).to.include('Load Target Faster (v2)');
+    expect(labels).to.include('Manifest Sources');
   });
 
-  it('Target Integration nests Personalization Metadata, Promo Metadata, Mep Param', async () => {
+  it('Manifest Sources nests Target Integration, Personalization Metadata, Promo Metadata, MEP Param', async () => {
     const pairs = await getPageSummary();
-    const [, targetIntegration] = pairs.find(([l]) => l === 'Target Integration');
-    const subLabels = targetIntegration.map(([l]) => l);
-    expect(subLabels).to.deep.equal(['Personalization Metadata', 'Promo Metadata', 'Mep Param']);
-    targetIntegration.forEach(([, value]) => expect(value).to.equal('off'));
+    const [, manifestSources] = pairs.find(([l]) => l === 'Manifest Sources');
+    const subLabels = manifestSources.map(([l]) => l);
+    expect(subLabels).to.deep.equal(['Target Integration', 'Personalization Metadata', 'Promo Metadata', 'MEP Param']);
+    const [, targetIntegration] = manifestSources.find(([l]) => l === 'Target Integration');
+    expect(targetIntegration).to.equal('on');
+    manifestSources
+      .filter(([l]) => l !== 'Target Integration')
+      .forEach(([, value]) => expect(value).to.equal('off'));
   });
 
   it('Load Target Faster (v2) is n/a when Target is off', async () => {
