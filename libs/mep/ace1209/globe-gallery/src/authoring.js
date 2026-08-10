@@ -1,6 +1,11 @@
 // eslint-disable-next-line import/no-relative-packages
 import { getFederatedUrl } from '../../../../utils/utils.js';
 
+export function escapeHtml(s) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
+}
+
 // The authored SVG URL (href, or the visible URL text) if this anchor is a badge logo.
 function badgeSvgUrl(a) {
   const href = a.getAttribute('href') || '';
@@ -21,7 +26,7 @@ function badgeIconHtml(anchor) {
   const url = badgeSvgUrl(anchor);
   if (!url) return null;
   const src = getFederatedUrl(url);
-  return `<picture class="globe-gallery-modal__badge-icon" aria-hidden="true"><img loading="lazy" src="${src}" alt=""></picture>`;
+  return `<picture class="globe-gallery-modal__badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
 // See README (Authoring contract) for the authored-row layout.
@@ -53,6 +58,7 @@ function buildLabels(labelPara) {
 }
 
 function parseArcCopy(row) {
+  if (!row) return { title: '', body: '' };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
     .filter((p) => !p.querySelector('picture,img'))
@@ -247,14 +253,14 @@ const buildMarkup = (gid, labels) => `
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="globe-gallery-modal__image globe-gallery-sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${labels.nextCard}">
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="globe-gallery-modal__counter" aria-hidden="true"></div>
-    <button class="globe-gallery-modal__close" type="button" aria-label="${labels.closeBtn}">
+    <button class="globe-gallery-modal__close" type="button" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
     <span class="globe-gallery-modal__position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>

@@ -285,7 +285,6 @@ function createGlobeGalleryRuntime(
   root,
   gid,
   labels,
-  reducedMotion,
 ) {
   const q = (sel) => root.querySelector(sel); // root-scoped query (multi-instance safe)
 
@@ -295,6 +294,8 @@ function createGlobeGalleryRuntime(
   function getCardMetadata(i) {
     return CARD_CONTENT[i];
   }
+
+  let reducedMotion = false;
 
   // Active breakpoint profile — frozen, constant within a band. Assigned by resolveBpProfile
   // in initRuntime, rebuilt on a band crossing. null until then — do NOT read at module load.
@@ -840,7 +841,7 @@ function createGlobeGalleryRuntime(
     getAntialias: () => (bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD),
     caEnabled: CA_ENABLED,
     cardLabel: labels.cardLabel,
-    reducedMotion,
+    getReducedMotion: () => reducedMotion,
     sphereRotQuat,
     snapToSphereSlot: snapCardToSphereSlot,
     applySphereFacing,
@@ -888,7 +889,7 @@ function createGlobeGalleryRuntime(
     interactiveThreshold: SPHERE_INTERACTIVE_T,
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
-      return (m && m.alt) || 'alt text to be authored';
+      return (m && m.alt) || `Image ${i + 1}`;
     },
     // Browse-image focus → rotate the globe so that image is centred on screen.
     centerCard: centerCardOnScreen,
@@ -1393,9 +1394,9 @@ function createGlobeGalleryRuntime(
     const { arcPanT, entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
     const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
     const slot = i; // no conveyor: all cards on arc simultaneously
-    const rawT = Math.max(0, Math.min(1, slot / (N_VISIBLE - 1)));
+    const rawT = Math.max(0, Math.min(1, slot / Math.max(1, N_VISIBLE - 1)));
     // Non-uniform fanT split (see ARC_DENSE_SPLIT): cluster low-i off-screen, spread the rest.
-    const splitR = ARC_DENSE_COUNT / (N_VISIBLE - 1);
+    const splitR = ARC_DENSE_COUNT / Math.max(1, N_VISIBLE - 1);
     let fanT;
     if (rawT < splitR) {
       fanT = (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT;
@@ -1477,7 +1478,7 @@ function createGlobeGalleryRuntime(
     if (modal.isCardManaged(card)) return;
 
     // Arc → grid peel stagger: i-based cascade + per-card jitter.
-    const baseDelay = (i / (N_TOTAL - 1)) * GRID_PEEL_STAGGER;
+    const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * GRID_PEEL_STAGGER;
     const jitter = (card.peelJitter - 0.5) * ARC_PEEL_JITTER;
     const gpDelay = Math.max(0, Math.min(GRID_PEEL_STAGGER, baseDelay + jitter));
     const gpLocalT = Math.max(0, Math.min(1, (gridFormT - gpDelay) / Math.max(0.01, gpWin)));
@@ -1506,7 +1507,7 @@ function createGlobeGalleryRuntime(
 
     // Hover state ease — gated on the global interactive threshold (not per-card fdE, so
     // late-folding cards hover at sphereFormT=0.8). Visual effects render only in the sphere block.
-    if (sphereFormT < SPHERE_INTERACTIVE_T) card.hoverTarget = 0;
+    if (sphereFormT < SPHERE_INTERACTIVE_T || reducedMotion) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
 
     // Reset the near-camera dissolve here (not per branch) so a card leaving the sphere phase
@@ -1721,21 +1722,29 @@ function createGlobeGalleryRuntime(
   }
 
   let resizeHandler = null;
-  // Pointer-precision media query + listener (see the yaw-only geometry overlay).
-  let coarsePointerMQ = null;
-  let coarsePointerHandler = null;
+  // Reduced-motion media query + listener (a mid-session OS toggle rebuilds; see doLayout).
+  let reducedMotionMQ = null;
+  let reducedMotionHandler = null;
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
   let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility
+  let textureLoadGeneration = 0;
 
   function initRuntime() {
     const canvas = q('.globe-gallery-canvas');
     if (!canvas) return false;
+
+    reducedMotion = !!(window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    root.classList.toggle('globe-gallery--reduced', reducedMotion);
 
     // Reduced motion: canvas into normal flow (absolute in the static world) so the globe
     // scrolls away; top nudge clears the section above. See README (Reduced motion).
     if (reducedMotion) {
       canvas.style.position = 'absolute';
       canvas.style.top = '8vh';
+    } else {
+      canvas.style.position = '';
+      canvas.style.top = '';
     }
 
     W = window.innerWidth;
@@ -1775,11 +1784,14 @@ function createGlobeGalleryRuntime(
       W = window.innerWidth;
       H = window.innerHeight;
 
-      // A band crossing (768px) or a pointer-precision change rebuilds via destroy()+init()
-      // (geometry is baked at buildCards time); resizing within a band takes the cheap path.
+      // A band crossing (768px) or a reduced-motion toggle rebuilds via destroy()+init()
+      // (geometry + RM layout are baked at build time); resizing within a band takes the cheap
+      // path. Pointer precision is read at init only — a mid-session mouse/trackpad swap needs a
+      // reload (out of scope; see README).
       const nextBand = resolveBP(W);
-      const nextYawOnly = usesCylinderGeometry(nextBand.name);
-      if (nextBand.name !== bp.name || nextYawOnly !== bp.YAW_ONLY) {
+      const nextReducedMotion = !!(window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
         destroy();
         if (initRuntime() === false) root.classList.add('globe-gallery--empty');
@@ -1807,15 +1819,15 @@ function createGlobeGalleryRuntime(
     resizeHandler = doLayout;
     window.addEventListener('resize', resizeHandler, { passive: true });
 
-    // Pointer precision can change without a resize (trackpad attach) and selects the sphere
-    // shape, so listen for it directly. doLayout decides whether a rebuild is actually needed.
-    if (coarsePointerMQ && coarsePointerHandler) {
-      coarsePointerMQ.removeEventListener('change', coarsePointerHandler);
+    // Reduced motion can toggle mid-session (OS setting) without a resize, so listen directly;
+    // doLayout rebuilds so the static/animated layout switch never needs a reload.
+    if (reducedMotionMQ && reducedMotionHandler) {
+      reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
     }
     if (window.matchMedia) {
-      coarsePointerMQ = window.matchMedia('(pointer: coarse)');
-      coarsePointerHandler = doLayout;
-      coarsePointerMQ.addEventListener('change', coarsePointerHandler);
+      reducedMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+      reducedMotionHandler = doLayout;
+      reducedMotionMQ.addEventListener('change', reducedMotionHandler);
     }
 
     // Recompute block metrics whenever page height changes (content loading above shifts
@@ -1854,12 +1866,17 @@ function createGlobeGalleryRuntime(
 
     modal.setup();
 
+    const loadGeneration = textureLoadGeneration;
     loadCardTextures({
       count: bp.N_TOTAL,
       getSrc: (i) => getCardMetadata(i).img,
       planeAspect: CARD_ASPECT,
       maxTex: bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD,
     }, (loadedTextures, loadedTexData) => {
+      if (loadGeneration !== textureLoadGeneration) {
+        loadedTextures.forEach((t) => t && t.dispose());
+        return;
+      }
       textures = loadedTextures;
       cardTexData = loadedTexData;
       buildCards();
@@ -1874,6 +1891,8 @@ function createGlobeGalleryRuntime(
   function destroy() {
     stopTicker();
     renderReady = false;
+    textureLoadGeneration += 1; // invalidate any loadCardTextures callback still in flight
+
     onScreen = true; // reset the visibility default; the next init's observer re-corrects it
     bindContextListeners(false);
     if (contextStableTimer) { clearTimeout(contextStableTimer); contextStableTimer = 0; }
@@ -1885,10 +1904,10 @@ function createGlobeGalleryRuntime(
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
     }
-    if (coarsePointerMQ && coarsePointerHandler) {
-      coarsePointerMQ.removeEventListener('change', coarsePointerHandler);
-      coarsePointerMQ = null;
-      coarsePointerHandler = null;
+    if (reducedMotionMQ && reducedMotionHandler) {
+      reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
+      reducedMotionMQ = null;
+      reducedMotionHandler = null;
     }
     if (layoutObs) {
       layoutObs.disconnect();
@@ -1961,7 +1980,6 @@ export default async function init(el) {
 
   // Cards come from the authored fragment link.
   const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
-  // No cards → collapse the block rather than init an empty scene.
   if (!cards || cards.length === 0) {
     el.classList.add('globe-gallery--empty');
     return el;
@@ -1973,7 +1991,6 @@ export default async function init(el) {
     el,
     gid,
     labels,
-    reducedMotion,
   );
   if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
   if (runtime.init() === false) { el.classList.add('globe-gallery--empty'); return el; }

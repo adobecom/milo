@@ -109,8 +109,9 @@ function imageToCanvas(img, maxTex) {
   const ctx = cv.getContext('2d');
   try {
     ctx.drawImage(img, 0, 0, w, h);
-    ctx.getImageData(0, 0, 1, 1); // throws if canvas tainted
+    ctx.getImageData(0, 0, 1, 1); // throws (SecurityError) if the canvas is cross-origin tainted
   } catch (e) {
+    window.lana?.log?.(`globe-gallery: card image could not be rasterized, rendering fallback: ${img.src} — ${e?.message || e}`, { tags: 'globe-gallery', severity: 'warn' });
     return makeCanvas(w, h, '#444');
   }
   return cv;
@@ -155,6 +156,7 @@ export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onDone)
     const img = new Image();
     img.onload = () => { done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex))); };
     img.onerror = () => {
+      window.lana?.log?.(`globe-gallery: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: 'globe-gallery', severity: 'warn' });
       done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));
     };
     img.src = getSrc(i); // no crossOrigin — needed so img.onload fires for file://

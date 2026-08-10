@@ -39,7 +39,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = 22/631 of height + `uAspect`), no rasterized mask (`MODAL_FRAG` `uRadius` 0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
 | `materials.js` | GPU-asset factories (all named exports, no per-instance state). **Materials:** `createCardMaterial` (card ShaderMaterial — cover-crop + optional CA/warp + SDF corners, with the property-proxy), `createModalMaterial` (modal SDF), `createTextMaterial` (hint `TEXT_FRAG`, uniforms only). **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy full image at a higher cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)` (renders the hint string, auto-scaled font). |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
-| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), mobile swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
+| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), touch swipe/pull gestures (gated on a coarse primary pointer, so tablets at ≥768 get them too), chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge, derived from the viewport + `ARC_SPAN` + the per-frame `arcCtx` the core owns; `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame card placement produces no garbage. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares drag velocity by reference via the `drag` object. Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
@@ -81,7 +81,7 @@ are optional):
 
 | Row | Purpose | Content |
 | --- | --- | --- |
-| 0 | **Arc-copy** | heading → `.offer-arc-copy__title`; `<p>` → `.offer-arc-copy__body` |
+| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy__title`; `<p>` → `.globe-gallery-arc-copy__body` |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
 | 2 | **Hint + instructions + labels** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (English fallback); optional third `<p>` → the four UI labels, `\|\|`-separated in on-screen order **prev-arrow \|\| card-position template \|\| next-arrow \|\| close** (each part falls back to English) |
 | 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
@@ -169,9 +169,9 @@ images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** 
 quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
 **dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
 reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
-modal nav — arrows, keyboard, and mobile swipe — routes through the same cross-warp transition on
-**every** breakpoint (`navigate` → `startDesktopNavTransition`); mobile swipe just builds a warp
-preview during the drag, then commits that transition on release. The old mobile instant-swap /
+modal nav — on-screen arrows, Left/Right keys, and touch swipe — routes through the same cross-warp
+transition on **every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just
+builds a warp preview during the drag, then commits that transition on release. The old mobile instant-swap /
 swipe-neighbour slot reorg was removed — a slotless overflow card can only cross-warp anyway.
 The **keyboard/SR browse gallery stays at 24** (its centring targets real sphere cards); SR users
 reach every image through modal ←→ nav. Overflow carriers + textures are disposed on `destroy`.
@@ -253,8 +253,9 @@ authored product links.
 markup, fills the arc-copy / pull-quote slots, and **returns the `gid`** (the
 per-instance unique-id suffix it mints from a module-level counter in
 `authoring.js`). The runtime finds nodes by **class, queried within
-`el`** (`root.querySelector('.offer-globe-canvas')`, `.modal-card-canvas`,
-`.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`, …) →
+`el`** (`root.querySelector('.globe-gallery-canvas')`, `.globe-gallery-modal-canvas`,
+`.globe-gallery-pullquote`, `.globe-gallery-modal*`,
+`.globe-gallery-ca-r-offset`/`.globe-gallery-ca-b-offset`, …) →
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
@@ -324,8 +325,11 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   **name heading** (`tabindex="-1"`), NOT the dialog container — focusing the `<dialog>` makes
   VoiceOver enumerate it as a group and swallow its name; landing on a child makes VO announce the
   dialog name then the heading. Prev/Next/Close are tab stops (native inert keeps focus in);
-  navigation is via arrows or swipe only — **Left/Right arrows are deliberately NOT bound to
-  prev/next** (SR users need them to read the dialog; a11y audit). **Esc** (the `cancel` event,
+  navigation is via the on-screen Prev/Next buttons, touch swipe, or **Left/Right arrow keys —
+  bound to prev/next ONLY while focus is on the dialog's own controls** (`focusInChrome`, i.e.
+  focus mode), never at document level, so a screen reader arrowing through the description text
+  (browse / virtual-cursor mode) is never hijacked; the buttons stay the primary, discoverable
+  path (a11y audit). **Esc** (the `cancel` event,
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
@@ -348,9 +352,16 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive** globe
 instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery--reduced`):
 `computeFrame` pins scroll to `SPHERE_FORMED_PROGRESS` (formed sphere, `scrollVel` 0), auto-spin is
-off (drag + arrow-spin still work), and the modal snaps with no fly/warp. Rather than a tall runway
+off (drag + arrow-spin still work), the hover fisheye/scale/CA is suppressed (`hoverTarget` forced
+to 0 in `updateCardTransform`; the `cursor:pointer` affordance stays), and the modal snaps with no
+fly/warp (the modal reads RM through a **live getter** — it's built once, before `initRuntime`
+resolves the preference, and persists across rebuilds, so a snapshot would go stale). Rather than a tall runway
 + fixed canvas, the globe is a static ~100vh section that scrolls away, with the pull-quote below in
-normal flow. The pieces:
+normal flow. The preference is **re-read on every `initRuntime`**, and a
+`matchMedia('(prefers-reduced-motion: reduce)')` `change` listener feeds `doLayout`, so toggling
+the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
+change (no reload; the non-RM path clears the canvas `position`/`top` so a toggle-off reverts
+cleanly). The pieces:
 
 - **Canvas** — `position:absolute` + `top:8vh` (not `fixed`), inside the now-`relative`
   `.globe-gallery-world`, so it scrolls and clips with the page; `updateCanvasVisibility` reveals it
@@ -395,8 +406,9 @@ sphere). Per-profile knobs in `BREAKPOINTS`: `N_MAX` (0=uncapped), `ARC_SPAN`, `
 for the shape keys (`CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
 card count, so `doLayout` triggers a full `destroy()`+`init()` rebuild; resizing within a band takes
-the cheap path (renderer/camera resize). The `resize` handler is the sole driver — no `matchMedia`
-boundary listeners.
+the cheap path (renderer/camera resize). The `resize` handler is the sole driver of the **width**
+boundary — no `matchMedia` listener for 768px. The one `matchMedia` `change` listener is for
+reduced motion (see Reduced motion); pointer precision is read at init only (see Shape).
 
 Because the block's `innerHTML` is built once in the outer `init(el)` (not per `initRuntime`) and
 the runtime closure survives a `destroy()`+`initRuntime()` rebuild, `destroy()` resets state a
@@ -444,7 +456,9 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   retire); both steps reset on scroll-out. Two **body-level** DOM layers: the disc **must** be a
   direct `<body>` child (`mix-blend-mode` only reaches page content from outside a `position: fixed`
   container); chevrons + label live in a fixed container. Sets `cursor: none` while active;
-  `interaction.js` cedes its hover cursor via `isActive()`. No-op on touch. With multiple globes each
+  `interaction.js` cedes its hover cursor via `isActive()`. No-op on touch: `(hover: hover) and
+  (pointer: fine)` is read **once at setup** (a device that gains a fine pointer mid-session needs a
+  reload, unless a re-init — e.g. an RM toggle — re-reads it). With multiple globes each
   makes its own pair but only the hovered one activates (inactive discs `visibility: hidden`). Label
   copy is the authored hint string (see Localization).
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.** The
@@ -464,6 +478,14 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   role/name/description (two `margin-top:auto` splits the free space, badges pinned bottom); mobile's
   scrim is one full-width 266px chunk pinned to the bottom. All dark frosted (`rgb(0 0 0 / 64%)` +
   `blur(12px)`, light text).
+  - **Touch gestures (in the modal) are gated on a coarse primary pointer**
+    (`matchMedia('(pointer: coarse)')`, mirroring `usesCylinderGeometry`), not on the `sm` width
+    band — so tablets at md (≥768) get them too. A per-gesture axis lock (`AXIS_LOCK_PX` 10px)
+    splits horizontal **swipe → prev/next** (warp preview during the drag, cross-warp on commit)
+    from a vertical **pull-down → dismiss** (finger-tracked `translate`+`scale`, commit flies the
+    card back from where it was released; upward drag is clamped to 0). matchMedia-less → no
+    gestures. The gesture code transforms the canvas, not the chrome, so it's layout-agnostic
+    across the sm scrim and the md full-height panel.
 - **Sphere rotation — clamped Euler pitch/yaw (yaw free, pitch capped ±60°).** The orientation
   SOURCE is a pitch/yaw pair (`sphereRotX`, `sphereRotY`); the shared `sphereRotQuat` every
   consumer reads (card transforms, modal close, snap) is **rebuilt from it each frame**
@@ -521,12 +543,12 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   - **Why split** — the shape constants exist only because a yaw-only drag can't change a card's
     latitude. Keying them to width was wrong: an **iPad Pro is ≥768px (`md`) but drags with
     touch**, which left 7 of its authored cards permanently >60° oblique. Use `(pointer: coarse)` (the
-    *primary* pointer's precision), not `(hover: none)` or a UA sniff. A trackpad flip
-    (`coarse`→`fine`) is handled: geometry bakes at `buildCards()`, so `doLayout` compares
-    `bp.YAW_ONLY` and rebuilds via `destroy()`+`init()` (driven by a media-query `change` listener,
-    since attaching a trackpad fires no `resize`). Distinct from `interaction.js`'s per-*gesture*
-    `e.pointerType` check, so a hybrid device gets full pitch from its mouse and yaw-only from a
-    finger.
+    *primary* pointer's precision), not `(hover: none)` or a UA sniff. Precision is read **once at
+    init** (`usesCylinderGeometry`), so the geometry that bakes at `buildCards()` matches the device
+    the page loaded on; a **mid-session mouse/trackpad swap needs a reload** (out of scope — rare,
+    and not worth a live-rebuild listener). Distinct from `interaction.js`'s per-*gesture*
+    `e.pointerType` check, so a hybrid device still gets full pitch from its mouse and yaw-only from
+    a finger within one session.
 
     ```
     device                  band cards  shape            cols  cardW  wall@near  col imb
@@ -662,3 +684,19 @@ Constants whose rationale is covered in the sections above (and so kept terse in
 timeline + `FOLD_PEEL_OVERLAP`, `ENTRY_*`, the `CYL_*` / `SPHERE_AREA_NORM` / `CARD_FACE_CAMERA`
 shape knobs, the near-fade + `dragFlipZ` constants, and the keyboard/modal centring frames + pitch
 caps (all under Behavior notes / Card count).
+
+## Open items / backlog
+
+Known follow-ups, not blocking this integration branch:
+
+- **Bundle-drift isn't CI-checked.** `package.json`'s build step (esbuild → `three.module.min.js`
+  from `src/three-src.js` + the pinned `three`) is a manual local step; nothing in CI verifies the
+  committed minified bundle still matches its source. As more `THREE.*` symbols are added the
+  bundle can silently drift from the pin. Worth a CI check (rebuild + diff) before this leaves the
+  experimental wave.
+- **No automated tests.** The block ships without unit or Nala E2E coverage. The initial pass leans
+  on the planned VQA; a test suite (at least the authoring/parse paths, the N=0/N=1 edge cases, and
+  a modal open/nav/close smoke) should land before it graduates from the experimental wave.
+- **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
+  (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
+  the fully-formed, still globe is a scroll-pacing tuning matter still open.

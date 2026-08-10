@@ -508,6 +508,7 @@ body.modal-open { overflow: hidden; }
   border-radius: var(--s2a-border-radius-sm);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   color: var(--s2a-color-gray-25);
   font-size: 1rem;

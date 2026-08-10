@@ -36,6 +36,8 @@ export default function createCursor(deps) {
   function onLeave() { onCanvas = false; }
   function onSuppress() { suppressed = true; }
 
+  // Capability is read once. A device that gains/loses a fine pointer mid-session is out of scope
+  // (a re-init re-reads it — e.g. an RM toggle; otherwise reload). See README (Behavior notes).
   function setup() {
     if (!window.matchMedia) return;
     hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

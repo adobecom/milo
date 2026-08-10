@@ -1,6 +1,7 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic } from './math.js';
+import { escapeHtml } from './authoring.js';
 
 // Modal lifecycle phases. CLOSED is null so `if (modalPhase)` reads as "modal live".
 const MODAL_PHASE = Object.freeze({
@@ -48,8 +49,7 @@ export default function createGlobeModal({
   caEnabled,
   // Localized "{index} of {count}" for the sr-only __position element.
   cardLabel,
-  // When true, open/close/nav snap instantly with no fly/warp (prefers-reduced-motion).
-  reducedMotion,
+  getReducedMotion,
   // Sphere-rotation bridge (live THREE object shared by reference).
   sphereRotQuat,
   snapToSphereSlot,
@@ -498,7 +498,15 @@ export default function createGlobeModal({
     const meta = getCardMetadata(i);
     // role="img" text alternative for the WebGL photo (no src — the visible photo is the canvas).
     const imgEl = targetEl.querySelector('.globe-gallery-modal__image');
-    if (imgEl) imgEl.setAttribute('aria-label', meta.alt || 'alt text to be authored');
+    if (imgEl) {
+      if (meta.alt) {
+        imgEl.setAttribute('aria-label', meta.alt);
+        imgEl.removeAttribute('aria-hidden');
+      } else {
+        imgEl.removeAttribute('aria-label');
+        imgEl.setAttribute('aria-hidden', 'true');
+      }
+    }
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal__role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
@@ -517,10 +525,10 @@ export default function createGlobeModal({
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal__badge';
       const nameHtml = b.href
-        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${b.href}">${b.name}</a>`
-        : `<span class="globe-gallery-modal__badge-app">${b.name}</span>`;
+        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${escapeHtml(b.href)}">${escapeHtml(b.name)}</a>`
+        : `<span class="globe-gallery-modal__badge-app">${escapeHtml(b.name)}</span>`;
       // The logo is authored per row; rows without one just render the name (no empty chip).
-      row.innerHTML = `<div class="globe-gallery-modal__badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal__badge-role">${b.role}</span>`;
+      row.innerHTML = `<div class="globe-gallery-modal__badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal__badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
   }
@@ -739,6 +747,7 @@ export default function createGlobeModal({
     // the close animation (card left floating in modalScene — the "duplicate globe" bug).
     if (modalPhase === MODAL_PHASE.CLOSING) return;
     const count = getCount();
+    if (count <= 1) return;
     const next = (modalIdx + direction + count) % count;
     // Every breakpoint uses the same cross-warp transition (old warps + fades out, new fades in).
     startDesktopNavTransition(next);
@@ -751,7 +760,7 @@ export default function createGlobeModal({
       const sphereGroup = getSphereGroup();
       const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       // Reduced motion: force aT=1 so the fly snaps in one frame and the warp bell curves collapse.
-      const aT = reducedMotion
+      const aT = getReducedMotion()
         ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
       const aE = easeInOutCubic(aT);
       const tgtPos = scratchPos;
@@ -777,7 +786,7 @@ export default function createGlobeModal({
 
         // Chrome reveal: start fade once card is 90% to target (skip at 1 — navigate snaps).
         if (modalChromeFadeT < 1) {
-          if (reducedMotion) {
+          if (getReducedMotion()) {
             modalChromeFadeT = 1; // chrome appears instantly
           } else {
             if (aT >= 0.90 && modalChromeRevealT0 < 0) modalChromeRevealT0 = now;
@@ -874,7 +883,7 @@ export default function createGlobeModal({
     if (dnNavActive) {
       const dnNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       // Reduced motion: force completion — the new card just becomes visible.
-      const dnT = reducedMotion ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
+      const dnT = getReducedMotion() ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
       if (dnT >= 1) {
         completeDesktopNavTransition();
       } else {
@@ -937,8 +946,12 @@ export default function createGlobeModal({
     listenersWired = true;
     if (!alreadyWired) {
       evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
-      evtRoot.querySelector('.globe-gallery-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
-      evtRoot.querySelector('.globe-gallery-modal__nav--next').addEventListener('click', () => { navigate(1); });
+      const prevBtn = evtRoot.querySelector('.globe-gallery-modal__nav--prev');
+      const nextBtn = evtRoot.querySelector('.globe-gallery-modal__nav--next');
+      prevBtn.addEventListener('click', () => { navigate(-1); });
+      nextBtn.addEventListener('click', () => { navigate(1); });
+      // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
+      if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
       // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
       if (chromeEl) {
         chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
@@ -951,6 +964,11 @@ export default function createGlobeModal({
       if (modalIdx < 0) return;
       const chromeRoot = q('.globe-gallery-modal-chrome');
       const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
+      if (focusInChrome && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault();
+        navigate(e.key === 'ArrowLeft' ? -1 : 1);
+        return;
+      }
       if (e.key === 'PageUp' || e.key === 'PageDown'
           || e.key === 'Home' || e.key === 'End'
           || e.key === 'ArrowUp' || e.key === 'ArrowDown'
@@ -981,9 +999,15 @@ export default function createGlobeModal({
     const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
     const PULL_SCALE_MIN = 0.80;
 
+    // Swipe/pull applies to touch-primary devices, not just the sm width band — tablets at
+    // md (≥768, coarse pointer) get the same gesture nav the globe's yaw-only shape assumes.
+    // Mirrors usesCylinderGeometry's '(pointer: coarse)' check. matchMedia-less → no gestures.
+    const isTouchPrimary = () => !!(window.matchMedia
+      && window.matchMedia('(pointer: coarse)').matches);
+
     // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {
-      if (getBP() !== 'sm') return;
+      if (!isTouchPrimary()) return;
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
