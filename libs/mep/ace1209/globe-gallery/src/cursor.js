@@ -2,9 +2,9 @@
 
 // 48px disc centered on the pointer via the −24px viewBox origin.
 const RING_SVG = [
-  '<svg class="globe-gallery-cursor__ring" width="48" height="48" viewBox="-24 -24 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">',
-  '<g class="globe-gallery-cursor__chevron-l"><polyline points="-8,-5 -13,0 -8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
-  '<g class="globe-gallery-cursor__chevron-r"><polyline points="8,-5 13,0 8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  '<svg class="globe-gallery-cursor-ring" width="48" height="48" viewBox="-24 -24 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">',
+  '<g class="globe-gallery-cursor-chevron-l"><polyline points="-8,-5 -13,0 -8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  '<g class="globe-gallery-cursor-chevron-r"><polyline points="8,-5 13,0 8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
   '</svg>',
 ].join('');
 
@@ -45,21 +45,21 @@ export default function createCursor(deps) {
 
     // Disc — direct body child so mix-blend-mode blends against real page content.
     discEl = document.createElement('div');
-    discEl.className = 'globe-gallery-cursor__disc';
+    discEl.className = 'globe-gallery-cursor-disc';
     document.body.appendChild(discEl);
 
     // Chevrons + label — no blend mode, safe inside the fixed container.
     containerEl = document.createElement('div');
     containerEl.className = 'globe-gallery-cursor';
     // Static structure via innerHTML; authored label set as textContent below.
-    containerEl.innerHTML = `<div class="globe-gallery-cursor__ring-wrap">${RING_SVG}</div>`
-      + '<div class="globe-gallery-cursor__text-wrap">'
-      + '<span class="globe-gallery-cursor__text"></span>'
+    containerEl.innerHTML = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
+      + '<div class="globe-gallery-cursor-text-wrap">'
+      + '<span class="globe-gallery-cursor-text"></span>'
       + '</div>';
     document.body.appendChild(containerEl);
-    ringWrap = containerEl.querySelector('.globe-gallery-cursor__ring-wrap');
-    textWrap = containerEl.querySelector('.globe-gallery-cursor__text-wrap');
-    containerEl.querySelector('.globe-gallery-cursor__text').textContent = labelText || 'Click & Drag';
+    ringWrap = containerEl.querySelector('.globe-gallery-cursor-ring-wrap');
+    textWrap = containerEl.querySelector('.globe-gallery-cursor-text-wrap');
+    containerEl.querySelector('.globe-gallery-cursor-text').textContent = labelText || 'Click & Drag';
 
     const canvas = getCanvas();
     if (canvas) {
@@ -82,8 +82,8 @@ export default function createCursor(deps) {
     const wantRetired = getCursorRetired();
     if (wantRetired !== (retireT0 >= 0)) {
       retireT0 = wantRetired ? now() : -1;
-      containerEl.classList.toggle('globe-gallery-cursor--retiring', wantRetired);
-      if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--retiring', wantRetired);
+      containerEl.classList.toggle('globe-gallery-cursor-retiring', wantRetired);
+      if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-retiring', wantRetired);
     }
     const faded = retireT0 >= 0 && now() - retireT0 >= RETIRE_FADE_MS;
 
@@ -95,8 +95,8 @@ export default function createCursor(deps) {
       && !faded;
     if (wantActive !== active) {
       active = wantActive;
-      containerEl.classList.toggle('globe-gallery-cursor--active', active);
-      if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--active', active);
+      containerEl.classList.toggle('globe-gallery-cursor-active', active);
+      if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-active', active);
       // Hide the system cursor while ours shows; interaction.js defers to isActive().
       if (canvas) canvas.style.cursor = active ? 'none' : '';
     }
@@ -104,12 +104,12 @@ export default function createCursor(deps) {
     const wantDismissed = getHintDismissed();
     if (wantDismissed !== hintDismissed) {
       hintDismissed = wantDismissed;
-      containerEl.classList.toggle('globe-gallery-cursor--hint-dismissed', hintDismissed);
+      containerEl.classList.toggle('globe-gallery-cursor-hint-dismissed', hintDismissed);
     }
     // From `active` so going inactive mid-drag clears the squeeze rather than freezing it.
     const dragging = active && drag.isDragging;
-    containerEl.classList.toggle('globe-gallery-cursor--dragging', dragging);
-    if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--dragging', dragging);
+    containerEl.classList.toggle('globe-gallery-cursor-dragging', dragging);
+    if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-dragging', dragging);
     if (!active) return;
     if (discEl) {
       // top/left (not transform) keeps `transform` free for the CSS scale entrance.
