@@ -16,6 +16,11 @@ import {
 
 let stayActive = false;
 
+function setCssGnavHeight() {
+  const gnavHeight = document.querySelector('header.global-navigation').getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--bc-gnav-height', `${gnavHeight}px`);
+}
+
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
   gnavCards.classList.add('active');
@@ -38,6 +43,7 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
+  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -45,6 +51,7 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
+  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -134,8 +141,7 @@ export default function init(el) {
     }
   });
 
-  const mainTop = document.querySelector('main').offsetTop;
-  document.documentElement.style.setProperty('--bc-main-top', `${mainTop}px`);
+  setCssGnavHeight();
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
