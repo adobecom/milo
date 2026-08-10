@@ -61,7 +61,7 @@ describe('Brand Concierge Global', () => {
     expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
 
     // main-top CSS variable is set
-    expect(document.documentElement.style.getPropertyValue('--bc-main-top')).to.match(/px$/);
+    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
 
     // authored rows are removed from the block
     expect(block.children.length).to.equal(0);
