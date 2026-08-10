@@ -320,10 +320,6 @@
     min-width: 0;
   }
 
-  .email-collection:not(.large-image) .image {
-    margin-bottom: var(--focus-outline-margin);
-  }
-
   .email-collection .message .image img {
     max-height: unset;
   }
@@ -357,6 +353,7 @@
   .email-collection > :not(.message) .text > div {
     overflow-y: auto;
     padding-right: var(--form-padding);
+    padding-bottom: var(--focus-outline-margin);
   }
 
   .email-collection.no-image .foreground {
@@ -543,7 +540,7 @@
   }
 
   .email-collection.mailing-list .text {
-    padding: 0;
+    padding: var(--s2a-spacing-24) 0;
   }
 
   .email-collection.mailing-list .button-container {
