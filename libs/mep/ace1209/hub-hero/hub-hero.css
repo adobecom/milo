@@ -411,8 +411,9 @@
 .hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3) p:nth-child(1) picture,
 .hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) p:nth-child(1) picture,
 .hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3)  picture,
-.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) picture {
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) picture:nth-child(1) {
   position: absolute;
+  left: 0;
 }
 
 .hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3),
@@ -471,6 +472,7 @@
   }
 
   .hub-hero-carousel-item-media>p:nth-child(2),
+  .hub-hero-carousel-item-media>p:has(picture),
   .hub-hero-carousel-item-media>picture:nth-child(2) {
     position: absolute;
     top: var(--s2a-spacing-sm);
@@ -478,6 +480,11 @@
     animation: hubHeroGridIconFade ease both;
     animation-timeline: --hub-hero;
     animation-range: contain 25% contain 40%;
+  }
+
+  .hub-hero-carousel-item-media>p:has(picture) {
+    top: 0;
+    left: 0;
   }
 
   @media (width >=768px) {
