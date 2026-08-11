@@ -81,7 +81,7 @@ function logUnmapped(change) {
   );
 }
 
-export function clearHighlights(root) {
+function clearOverlays(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
   root.querySelectorAll(`.${SR_ONLY_CLASS}`).forEach((el) => el.remove());
   root.querySelectorAll(`.${RELATIVE_CLASS}`).forEach((el) => el.classList.remove(RELATIVE_CLASS));
@@ -91,6 +91,10 @@ export function clearHighlights(root) {
     if (original) wrapper.replaceWith(original);
     else wrapper.remove();
   });
+}
+
+export function clearHighlights(root) {
+  clearOverlays(root);
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
 }
 
@@ -110,53 +114,63 @@ function ensureOverlayHost(el) {
   return el;
 }
 
-function showHighlightControl(root, onDismiss) {
-  document.querySelector(`.${CONTROL_CLASS}`)?.remove();
-  const label = createTag('span', { class: 'preflight-diff-control-label' }, 'Unpublished changes highlighted');
-  const hide = createTag('button', { class: 'preflight-diff-control-hide' }, 'Hide');
-  const control = createTag(
-    'div',
-    { class: CONTROL_CLASS, role: 'region', 'aria-label': 'Unpublished content highlights' },
-    [label, hide],
-  );
-  hide.addEventListener('click', () => {
-    clearHighlights(root);
-    onDismiss();
-  });
-  document.body.append(control);
-}
-
 let highlightsDismissed = false;
 export const areHighlightsDismissed = () => highlightsDismissed;
 export const setHighlightsDismissed = (value) => { highlightsDismissed = value; };
 
-export function highlightOnPage(diff, root, onDismiss) {
+function showHighlightControl(root, applyOverlays) {
+  document.querySelector(`.${CONTROL_CLASS}`)?.remove();
+  const label = createTag('span', { class: 'preflight-diff-control-label' }, 'Unpublished changes highlighted');
+  const toggle = createTag('button', { class: 'preflight-diff-control-hide' }, 'Hide');
+  const control = createTag(
+    'div',
+    { class: CONTROL_CLASS, role: 'region', 'aria-label': 'Unpublished content highlights' },
+    [label, toggle],
+  );
+  toggle.addEventListener('click', () => {
+    if (areHighlightsDismissed()) {
+      applyOverlays();
+      setHighlightsDismissed(false);
+      toggle.textContent = 'Hide';
+    } else {
+      clearOverlays(root);
+      setHighlightsDismissed(true);
+      toggle.textContent = 'Show';
+    }
+  });
+  document.body.append(control);
+}
+
+export function highlightOnPage(diff, root) {
   clearHighlights(root);
 
-  let applied = 0;
-  const apply = (change, modifierClass) => {
-    let el = null;
-    try {
-      el = resolveOnPage(change.path, root, change.kind, change.previewText || change.liveText || '');
-    } catch {
-      el = null;
-    }
-    if (!el) {
-      logUnmapped(change);
-      return;
-    }
-    const host = ensureOverlayHost(el);
-    const kindClass = change.kind === 'block' ? ' is-block' : '';
-    const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
-    const srLabel = createTag('span', { class: `sr-only ${SR_ONLY_CLASS}` }, SR_LABEL[modifierClass]);
-    host.append(overlay, srLabel);
-    applied += 1;
+  const applyOverlays = () => {
+    clearOverlays(root);
+    let applied = 0;
+    const apply = (change, modifierClass) => {
+      let el = null;
+      try {
+        el = resolveOnPage(change.path, root, change.kind, change.previewText || change.liveText || '');
+      } catch {
+        el = null;
+      }
+      if (!el) {
+        logUnmapped(change);
+        return;
+      }
+      const host = ensureOverlayHost(el);
+      const kindClass = change.kind === 'block' ? ' is-block' : '';
+      const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
+      const srLabel = createTag('span', { class: `sr-only ${SR_ONLY_CLASS}` }, SR_LABEL[modifierClass]);
+      host.append(overlay, srLabel);
+      applied += 1;
+    };
+    (diff?.added || []).forEach((change) => apply(change, ADDED_MODIFIER));
+    (diff?.modified || []).forEach((change) => apply(change, MODIFIED_MODIFIER));
+    return applied;
   };
 
-  (diff?.added || []).forEach((change) => apply(change, ADDED_MODIFIER));
-  (diff?.modified || []).forEach((change) => apply(change, MODIFIED_MODIFIER));
-
-  if (applied > 0 && typeof onDismiss === 'function') showHighlightControl(root, onDismiss);
+  if (applyOverlays() > 0) showHighlightControl(root, applyOverlays);
 
   return function cleanup() {
     clearHighlights(root);
@@ -165,5 +179,5 @@ export function highlightOnPage(diff, root, onDismiss) {
 
 export function autoHighlightOnPage(diff, root) {
   if (highlightsDismissed || !root) return undefined;
-  return highlightOnPage(diff, root, () => { highlightsDismissed = true; });
+  return highlightOnPage(diff, root);
 }

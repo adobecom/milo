@@ -190,6 +190,8 @@ describe('preflight diff-onpage', () => {
 
     afterEach(() => {
       root.remove();
+      document.querySelector('.preflight-diff-highlight-control')?.remove();
+      setHighlightsDismissed(false);
       delete window.lana;
       sinon.restore();
     });
@@ -387,11 +389,12 @@ describe('preflight diff-onpage', () => {
     });
   });
 
-  describe('on-page dismiss control', () => {
+  describe('on-page Hide/Show toggle control', () => {
     let root;
     let diff;
 
     beforeEach(() => {
+      setHighlightsDismissed(false);
       root = document.createElement('main');
       root.innerHTML = '<div><p>Kept</p><p>Old text</p><h2>New heading</h2></div>';
       document.body.append(root);
@@ -405,39 +408,48 @@ describe('preflight diff-onpage', () => {
     afterEach(() => {
       root.remove();
       document.querySelector('.preflight-diff-highlight-control')?.remove();
+      setHighlightsDismissed(false);
       sinon.restore();
     });
 
-    it('injects a dismiss control when highlights are applied and onDismiss is provided', () => {
-      const onDismiss = sinon.spy();
-      highlightOnPage(diff, root, onDismiss);
+    it('injects a toggle control (labelled Hide) when highlights are applied', () => {
+      highlightOnPage(diff, root);
       const control = document.querySelector('.preflight-diff-highlight-control');
       expect(control).to.exist;
-      expect(control.querySelector('.preflight-diff-control-hide')).to.exist;
+      const toggle = control.querySelector('.preflight-diff-control-hide');
+      expect(toggle).to.exist;
+      expect(toggle.textContent).to.equal('Hide');
     });
 
     it('does not inject a control when there is nothing to highlight', () => {
-      highlightOnPage({ added: [], modified: [] }, root, sinon.spy());
+      highlightOnPage({ added: [], modified: [] }, root);
       expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
     });
 
-    it('does not inject a control when no onDismiss is given', () => {
+    it('clicking Hide clears overlays, keeps the control as a Show toggle, and flips the session flag', () => {
       highlightOnPage(diff, root);
-      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
-    });
-
-    it('clicking Hide clears overlays, removes the control, and calls onDismiss', () => {
-      const onDismiss = sinon.spy();
-      highlightOnPage(diff, root, onDismiss);
       document.querySelector('.preflight-diff-control-hide').click();
 
       expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
-      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
-      expect(onDismiss.calledOnce).to.equal(true);
+      const toggle = document.querySelector('.preflight-diff-highlight-control .preflight-diff-control-hide');
+      expect(toggle).to.exist;
+      expect(toggle.textContent).to.equal('Show');
+      expect(areHighlightsDismissed()).to.equal(true);
+    });
+
+    it('clicking Show re-applies overlays, relabels back to Hide, and clears the session flag', () => {
+      highlightOnPage(diff, root);
+      const toggle = document.querySelector('.preflight-diff-control-hide');
+      toggle.click();
+      toggle.click();
+
+      expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
+      expect(toggle.textContent).to.equal('Hide');
+      expect(areHighlightsDismissed()).to.equal(false);
     });
 
     it('clearHighlights removes the injected control', () => {
-      highlightOnPage(diff, root, sinon.spy());
+      highlightOnPage(diff, root);
       clearHighlights(root);
       expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
     });
