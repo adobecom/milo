@@ -1,0 +1,231 @@
+.forge-there-s-more-to-acrobat-than-acrobat body-* class (L10). Layout intent is ported
+   from the Figma section as responsive units, .forge-there-s-more-to-acrobat-than-acrobat not pinned design-width px (L27). */
+
+.forge-there-s-more-to-acrobat-than-acrobat {
+  --tma-radius: var(--s2a-border-radius-16, 16px);
+  --tma-radius-sm: var(--s2a-border-radius-12, 12px);
+  --tma-gap: var(--s2a-spacing-8, 8px);
+  --tma-font-display: 'Adobe Clean Display', 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+  --tma-font-text: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-80, 80px);
+  background-color: var(--s2a-color-background-subtle, #f6f6f6);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat * { box-sizing: border-box; }
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-40, 40px);
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-headline {
+  margin: 0;
+  max-width: 540px;
+  font-family: var(--tma-font-display);
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 56px;
+  letter-spacing: -1.68px;
+  text-align: center;
+  color: var(--s2a-color-content-heading, #000);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-subhead {
+  margin: 0;
+  max-width: 616px;
+  font-family: var(--tma-font-text);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+  color: var(--s2a-color-content-default, #131313);
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cols {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--tma-gap);
+  width: 100%;
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-left {
+  flex: 892 1 0%;
+  aspect-ratio: 892 / 1000;
+  border-radius: var(--tma-radius);
+  overflow: hidden;
+  background-color: #1a1a2e;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right {
+  flex: 492 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right-media {
+  aspect-ratio: 5 / 6;
+  border-radius: var(--tma-radius);
+  overflow: hidden;
+  background-color: #f0f2f5;
+  box-shadow: 0 4px 100px 0 rgba(0, 0, 0, 0.25);
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-left picture,
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-left img,
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right-media picture,
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24, 24px);
+  padding: var(--s2a-spacing-24, 24px);
+  max-width: 491px;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-headline-sm {
+  margin: 0;
+  font-family: var(--tma-font-display);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  text-align: left;
+  color: var(--s2a-color-content-heading, #000);
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-body-sm {
+  margin: 0;
+  font-family: var(--tma-font-text);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: left;
+  color: var(--s2a-color-content-body-subtle, rgba(0, 0, 0, 0.64));
+}
+
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: fit-content;
+  font-family: var(--tma-font-text);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  text-decoration: none;
+  color: var(--s2a-color-content-heading, #000);
+  cursor: pointer;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cta:hover {
+  text-decoration: underline;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cta-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cta-icon svg {
+  display: block;
+  width: 6px;
+  height: 10px;
+}
+
+
+@media (max-width: 1024px) {
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-cols {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-left {
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: auto;
+    height: clamp(320px, 56vw, 700px);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right-media {
+    aspect-ratio: auto;
+    height: clamp(280px, 46vw, 600px);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-card-copy {
+    max-width: 491px;
+  }
+}
+
+@media (max-width: 768px) {
+  .forge-there-s-more-to-acrobat-than-acrobat {
+    padding-top: var(--s2a-spacing-64, 64px);
+    padding-left: var(--s2a-spacing-16, 16px);
+    padding-right: var(--s2a-spacing-16, 16px);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-inner {
+    gap: var(--s2a-spacing-24, 28px);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-headline {
+    font-size: 36px;
+    line-height: 40px;
+    letter-spacing: -1px;
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-left {
+    height: 80vw;
+    border-radius: var(--tma-radius-sm);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-right-media {
+    height: 70vw;
+    border-radius: var(--tma-radius-sm);
+  }
+
+  .forge-there-s-more-to-acrobat-than-acrobat .forge-there-s-more-to-acrobat-than-acrobat-card-copy {
+    padding: var(--s2a-spacing-16, 16px);
+  }
+}

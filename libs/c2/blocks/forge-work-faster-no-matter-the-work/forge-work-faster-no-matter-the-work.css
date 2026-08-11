@@ -1,0 +1,183 @@
+/* forge-work-faster-no-matter-the-work — centered copy + 4-up audience carousel
+   + faded partner-logo strip. All rules scoped to the block root. Figma's fixed
+   design-width px are expressed as responsive units (fr columns, aspect-ratio,
+   max-width) so the section reflows to its own container, never the frame width. */
+
+.forge-work-faster-no-matter-the-work {
+  --fwf-card-bg: #f6f6f6; /* between gray-25/gray-100; exact tile grey */
+  --fwf-card-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 124px 40px 80px;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-work-faster-no-matter-the-work .fwf__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 124px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- Copy --- */
+.forge-work-faster-no-matter-the-work .fwf__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__title {
+  max-width: 540px;
+  margin: 0;
+  font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -1.68px;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-work-faster-no-matter-the-work .fwf__sub {
+  max-width: 616px;
+  margin: 0;
+  font-family: var(--s2a-font-family-body, "Adobe Clean"), adobe-clean, sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--s2a-color-gray-900, #131313);
+}
+
+/* --- Cards + logo strip --- */
+.forge-work-faster-no-matter-the-work .fwf__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 124px;
+  width: 100%;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__carousel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--fwf-card-radius);
+  background: var(--fwf-card-bg);
+  overflow: hidden;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-lbl {
+  font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.48px;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 292 / 394;
+  border-radius: var(--fwf-card-radius);
+  overflow: hidden;
+  background: #d8d8d8;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-img picture,
+.forge-work-faster-no-matter-the-work .fwf__card-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-img .fwf__layer,
+.forge-work-faster-no-matter-the-work .fwf__card-img .fwf__layer img {
+  object-fit: contain;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-ftr {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__card-tag {
+  margin: 0;
+  font-family: var(--s2a-font-family-body, "Adobe Clean"), adobe-clean, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+/* --- Partner / customer logo strip --- */
+.forge-work-faster-no-matter-the-work .fwf__logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.forge-work-faster-no-matter-the-work .fwf__logos picture,
+.forge-work-faster-no-matter-the-work .fwf__logos img {
+  width: 100%;
+  max-width: 1102px;
+  height: auto;
+  aspect-ratio: 1102 / 36;
+  display: block;
+  opacity: 0.2;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1200px) {
+  .forge-work-faster-no-matter-the-work .fwf__title { font-size: 48px; }
+}
+
+@media (max-width: 1024px) {
+  .forge-work-faster-no-matter-the-work .fwf__inner { gap: 60px; }
+  .forge-work-faster-no-matter-the-work .fwf__content { gap: 60px; }
+  .forge-work-faster-no-matter-the-work .fwf__carousel {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .forge-work-faster-no-matter-the-work .fwf__title { font-size: 44px; }
+  .forge-work-faster-no-matter-the-work .fwf__logos picture,
+  .forge-work-faster-no-matter-the-work .fwf__logos img { aspect-ratio: auto; }
+}
+
+@media (max-width: 600px) {
+  .forge-work-faster-no-matter-the-work { padding: 64px 20px 48px; }
+  .forge-work-faster-no-matter-the-work .fwf__inner { gap: 48px; }
+  .forge-work-faster-no-matter-the-work .fwf__content { gap: 48px; }
+  .forge-work-faster-no-matter-the-work .fwf__carousel { grid-template-columns: 1fr; }
+  .forge-work-faster-no-matter-the-work .fwf__card { max-width: 340px; margin: 0 auto; width: 100%; }
+  .forge-work-faster-no-matter-the-work .fwf__title { font-size: 34px; letter-spacing: -1px; }
+  .forge-work-faster-no-matter-the-work .fwf__sub { font-size: 17px; }
+}

@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-there-s-always-something-new-with-acrobat",
+  "sectionIndex": 6,
+  "decision": "tight-variant",
+  "score": 0.85,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-6",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=9943-37834",
+  "figmaNodeId": "9943:38890",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo-logs-deploy-ml-judge/src/forge/shared/data/_repos/milo/.forge-worktrees/session-526d4ec7-msoim6my",
+  "miloTargetPath": "/Users/osahin/repos/milo-logs-deploy-ml-judge/src/forge/shared/data/_repos/milo/.forge-worktrees/session-526d4ec7-msoim6my/libs/c2/blocks/forge-there-s-always-something-new-with-acrobat",
+  "miloBranch": "forge/session-526d4ec7-108",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/figma-526d4e?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

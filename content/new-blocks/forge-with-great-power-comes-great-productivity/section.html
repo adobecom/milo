@@ -1,0 +1,188 @@
+<section data-binding-score="0.71" data-binding="loose-variant" data-figma-node-id="9943:37835" data-block="news" style="width:100%;background:#ffffff;overflow:hidden;position:relative;">
+  <style>
+    [data-figma-node-id="9943:37835"] .h9h1 {
+      font-family: 'Adobe Clean Display','Adobe Clean',Helvetica,Arial,sans-serif;
+      font-weight: 900;
+      font-size: 80px;
+      line-height: 76px;
+      letter-spacing: -3.2px;
+      text-align: center;
+      color: #000;
+      margin: 0;
+      max-width: 960px;
+    }
+    [data-figma-node-id="9943:37835"] .h9body {
+      font-family: 'Adobe Clean',Helvetica,Arial,sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 24px;
+      text-align: center;
+      color: #000;
+      max-width: 696px;
+      margin: 0;
+    }
+    [data-figma-node-id="9943:37835"] .h9copy {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 124px 40px 0;
+      box-sizing: border-box;
+    }
+    [data-figma-node-id="9943:37835"] .h9gallery-wrap {
+      overflow: hidden;
+      height: 1279px;
+    }
+    [data-figma-node-id="9943:37835"] .h9gallery {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      width: 1535px;
+      margin: 0 auto;
+      height: 100%;
+    }
+    [data-figma-node-id="9943:37835"] .h9col {
+      display: flex;
+      flex-direction: column;
+      gap: 100px;
+      width: 291px;
+      flex-shrink: 0;
+    }
+    [data-figma-node-id="9943:37835"] .h9img {
+      border-radius: 16px;
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+      background: #e5e5e5;
+    }
+    @media (max-width: 1280px) {
+      [data-figma-node-id="9943:37835"] .h9h1 { font-size: 64px !important; line-height: 64px !important; }
+    }
+    @media (max-width: 1024px) {
+      [data-figma-node-id="9943:37835"] .h9h1 { font-size: 52px !important; line-height: 56px !important; letter-spacing: -2px !important; }
+      [data-figma-node-id="9943:37835"] .h9body { font-size: 18px !important; }
+      [data-figma-node-id="9943:37835"] .h9copy { padding-top: 72px !important; padding-left: 24px !important; padding-right: 24px !important; }
+    }
+    @media (max-width: 768px) {
+      [data-figma-node-id="9943:37835"] .h9h1 { font-size: 36px !important; line-height: 40px !important; letter-spacing: -1.2px !important; }
+      [data-figma-node-id="9943:37835"] .h9body { font-size: 16px !important; line-height: 22px !important; }
+      [data-figma-node-id="9943:37835"] .h9copy { padding-top: 48px !important; padding-left: 16px !important; padding-right: 16px !important; gap: 16px !important; }
+      [data-figma-node-id="9943:37835"] .h9gallery-wrap { overflow-x: auto !important; height: auto !important; min-height: 600px !important; }
+    }
+  </style>
+
+  <!-- Navigation bar – full-bleed image -->
+  <img src="media_bizpro-hub-navBarContainer.png" alt="Nav Bar Container" style="width:100%;height:auto;display:block;min-height:52px;background:#f5f5f5;" />
+
+  <!-- Hero copy – centred in max 1440px -->
+  <div class="h9copy">
+
+    <!-- App ID: plain text label, no icon -->
+    <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:#000;">PDF &amp; Productivity</span>
+
+    <!-- Headline + body text -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+      <h1 class="h9h1">With great power comes great productivity.</h1>
+      <p class="h9body">Do your best work faster with trusted PDF tools, AI-powered document insights, secure collaboration, and professional content creation — all in one place.</p>
+    </div>
+
+    <!-- Promo CTA pill -->
+    <div style="display:inline-flex;align-items:center;gap:12px;padding:12px;border-radius:100px;background:#000;flex-shrink:0;">
+      <!-- Icon + text -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:32px;height:32px;background:#eb1000;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <text x="5" y="18" fill="white" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="bold">A</text>
+          </svg>
+        </div>
+        <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#fff;white-space:nowrap;">Try Acrobat for free</span>
+      </div>
+      <!-- Plus button -->
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;overflow:hidden;">
+        <img src="media_bizpro-hub-plus.png" alt="Plus" style="width:20px;height:20px;object-fit:contain;display:block;" />
+      </div>
+    </div>
+
+  </div><!-- /hero copy -->
+
+  <!-- Image gallery
+       5 cols × 291 px + 4 gaps × 20 px = 1535 px
+       Centred in 1440 px → ±47.5 px clip on each side via overflow:hidden -->
+  <div class="h9gallery-wrap">
+    <div class="h9gallery">
+
+      <!-- ─── Column 1 · Frame 2147230208 ─── -->
+      <div class="h9col">
+        <img src="media_bizpro-hub-rectangle810732.png" alt="Rectangle 810732" class="h9img" style="width:291px;height:291px;" />
+
+        <!-- col-1_img-02: signature card (292 × 292) -->
+        <div style="position:relative;width:292px;height:292px;border-radius:16px;background:#e5e5e5;overflow:hidden;flex-shrink:0;">
+          <!-- Red banner layer -->
+          <img src="media_bizpro-hub-rectangle2147231490.png" alt="" style="position:absolute;top:0;left:0;display:block;background:#eb1000;max-width:100%;max-height:100%;" />
+          <!-- Signature image (top layer) -->
+          <img src="media_bizpro-hub-image3587.png" alt="image 3587" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>
+
+        <img src="media_bizpro-hub-rectangle810731.png" alt="Rectangle 810731" class="h9img" style="width:291px;height:394px;" />
+      </div>
+
+      <!-- ─── Column 2 · Frame 2147230209 ─── -->
+      <div class="h9col">
+        <img src="media_bizpro-hub-rectangle8107321.png" alt="Rectangle 810732" class="h9img" style="width:291px;height:394px;" />
+        <img src="media_bizpro-hub-col2img02.png" alt="col-2_img-02" class="h9img" style="width:291px;height:292px;" />
+        <img src="media_bizpro-hub-rectangle810724.png" alt="Rectangle 810724" class="h9img" style="width:291px;height:393px;" />
+      </div>
+
+      <!-- ─── Column 3 · Frame 2147230210 ─── -->
+      <div class="h9col">
+        <img src="media_bizpro-hub-rectangle810734.png" alt="Rectangle 810734" class="h9img" style="width:291px;height:291px;" />
+        <img src="media_bizpro-hub-col5img02.png" alt="col-5_img-02" class="h9img" style="width:291px;height:292px;" />
+        <img src="media_bizpro-hub-rectangle810735.png" alt="Rectangle 810735" class="h9img" style="width:291px;height:392px;" />
+      </div>
+
+      <!-- ─── Column 4 · Frame 2147230427 (justify-center) ─── -->
+      <div class="h9col" style="justify-content:center;height:1279px;gap:100px;">
+        <img src="media_bizpro-hub-image.png" alt="Image" class="h9img" style="width:291px;height:291px;" />
+        <img src="media_bizpro-hub-rectangle8107311.png" alt="Rectangle 810731" class="h9img" style="width:291px;height:394px;" />
+      </div>
+
+      <!-- ─── Column 5 · Frame 2147230206 ─── -->
+      <div class="h9col">
+        <img src="media_bizpro-hub-rectangle810729.png" alt="Rectangle 810729" class="h9img" style="width:291px;height:291px;" />
+
+        <!-- Frame 2147230307: Research document card (291 × 393, radius 8px) -->
+        <div style="position:relative;width:291px;height:393px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+          <!-- Card background photo -->
+          <img src="media_bizpro-hub-rectangle810727.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#b7bdc9;display:block;border-radius:16px;" />
+          <!-- Research paper overlay (424 × 547 at position left:41 top:41 — clipped by parent overflow:hidden) -->
+          <div style="position:absolute;left:41px;top:41px;width:424px;height:547px;background:#dadae7;border-radius:4.15px;overflow:hidden;
+                      box-shadow:0 2.8px 2.2px rgba(0,0,0,.02),0 6.7px 5.3px rgba(0,0,0,.03),0 12.5px 10px rgba(0,0,0,.04),0 22.3px 17.9px rgba(0,0,0,.04),0 41.8px 33.4px rgba(0,0,0,.05),0 100px 80px rgba(0,0,0,.07);">
+            <div style="padding:14px 16px;">
+              <!-- Special Report label -->
+              <p style="font-family:'Aktiv Grotesk',Helvetica,Arial,sans-serif;font-weight:700;font-size:5.2px;line-height:6px;color:#5a5a87;margin:0 0 4px;text-transform:uppercase;letter-spacing:.3px;">SPECIAL REPORT</p>
+              <!-- Title -->
+              <h2 style="font-family:'Source Serif Pro',Georgia,serif;font-weight:600;font-size:27px;line-height:25px;letter-spacing:-1.04px;color:#29293e;margin:0 0 8px;max-width:392px;">Nutrition of Teenage Girls and Women in Humanitarian Crises</h2>
+              <!-- Author -->
+              <p style="font-family:'Aktiv Grotesk',Helvetica,Arial,sans-serif;font-weight:700;font-size:5.2px;line-height:6px;color:#29293e;margin:0 0 8px;">By Dr. Heather Esme-Collins MBBS, MRCPCH, MMed</p>
+              <!-- Body paragraphs (Figma native 7.79 px font) -->
+              <p style="font-family:'Source Serif Pro',Georgia,serif;font-weight:400;font-size:7.8px;line-height:9px;color:#29293e;margin:0 0 6px;">Global humanitarian crises have reached unprecedented scale and complexity, with the world now facing the most severe food and nutrition crisis in modern history. In just three years since the start of the COVID-19 pandemic, the number of people in need of humanitarian assistance has surged from 168 million to an alarming 339 million.</p>
+              <p style="font-family:'Source Serif Pro',Georgia,serif;font-weight:400;font-size:7.8px;line-height:9px;color:#29293e;margin:0 0 6px;">Humanitarian crises are growing more severe, disruptive, and prolonged than ever before. Many countries are confronting overlapping shocks — conflict and instability, extreme weather events like extended droughts or severe flooding, and disease outbreaks such as cholera. These local and regional crises have been further intensified by the socioeconomic fallout of the COVID-19 pandemic and the ripple effects of the war in Ukraine on food and fuel prices.</p>
+              <p style="font-family:'Source Serif Pro',Georgia,serif;font-weight:400;font-size:7.8px;line-height:9px;color:#29293e;margin:0 0 8px;">All of this places a disproportionate burden on adolescent girls and women, worsening their ability to find, access, and afford nutritious food and essential nutrition services, while making it harder to sustain healthy nutrition practices.</p>
+              <!-- Section label -->
+              <p style="font-family:'Aktiv Grotesk',Helvetica,Arial,sans-serif;font-weight:700;font-size:4.15px;line-height:5px;color:#08080b;margin:0 0 4px;text-transform:uppercase;letter-spacing:.2px;">OVER, UNDER: NOURISHMENT AT A GLANCE</p>
+              <!-- Chart image -->
+              <img src="media_bizpro-hub-image3860.png" alt="image 3860" style="width:100%;height:auto;display:block;margin-top:4px;background:#dadae7;" />
+            </div>
+          </div>
+        </div><!-- /research card -->
+
+        <img src="media_bizpro-hub-col4img02.png" alt="col-4_img-02" class="h9img" style="width:291px;height:394px;" />
+        <img src="media_bizpro-hub-rectangle8107241.png" alt="Rectangle 810724" class="h9img" style="width:291px;height:393px;" />
+      </div>
+
+    </div>
+  </div><!-- /gallery -->
+
+</section>

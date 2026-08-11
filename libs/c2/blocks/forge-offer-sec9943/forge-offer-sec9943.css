@@ -1,0 +1,196 @@
+/* forge-offer-sec9943 — "scattered documents" collage + document grid.
+   Authored toward the Figma target; every selector is scoped to the block class
+   and keyed on the classes init() stamps on the reconstructed DOM (never on the
+   Figma classes, which DA strips before init() runs). */
+
+.forge-offer-sec9943 {
+  --sec9943-tile-radius: 12px;
+  --sec9943-label: #4a4a4a;
+  --sec9943-doc-font: -apple-system, blinkmacsystemfont, 'Segoe UI', helvetica, arial, sans-serif;
+
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 64px) var(--s2a-layout-section-bottom, 80px);
+  background-color: var(--s2a-color-bg, #f6f6f6);
+  background-image: radial-gradient(circle, #d0d0d0 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+}
+
+.forge-offer-sec9943 * { box-sizing: border-box; }
+
+.forge-offer-sec9943 .sec9943-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Scatter collage (decorative, desktop) ─────────────────────────── */
+.forge-offer-sec9943 .collage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1440 / 640;
+  margin-bottom: var(--s2a-spacing-48, 48px);
+}
+
+.forge-offer-sec9943 .collage-card {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #e9e9e9;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
+}
+
+.forge-offer-sec9943 .collage-card picture,
+.forge-offer-sec9943 .collage-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Document grid ─────────────────────────────────────────────────── */
+.forge-offer-sec9943 .docgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s2a-spacing-40, 40px) var(--s2a-spacing-32, 32px);
+  justify-items: center;
+}
+
+.forge-offer-sec9943 .doc {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 220px;
+}
+
+.forge-offer-sec9943 .doc-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 200 / 265;
+  border-radius: var(--sec9943-tile-radius);
+  overflow: hidden;
+  background: #fff;
+  color: #1a1a1a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .09);
+  font-family: var(--sec9943-doc-font);
+}
+
+.forge-offer-sec9943 .doc-media,
+.forge-offer-sec9943 .doc-media picture,
+.forge-offer-sec9943 .doc-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.forge-offer-sec9943 .doc-card--media-copy .doc-media { height: 62%; }
+
+.forge-offer-sec9943 .doc-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  height: 100%;
+}
+
+.forge-offer-sec9943 .doc-card--media-copy .doc-card-copy {
+  height: auto;
+  padding: 11px 12px;
+}
+
+.forge-offer-sec9943 .doc-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #e84320;
+  color: #fff;
+  font: 900 16px/1 arial, sans-serif;
+  flex: 0 0 auto;
+}
+
+.forge-offer-sec9943 .doc-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.forge-offer-sec9943 .doc-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #6a6a6a;
+  color: #fff;
+  font: 600 7.5px/1.4 arial, sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.forge-offer-sec9943 .doc-tags .doc-tag:first-child { background: #e8503a; }
+.forge-offer-sec9943 .doc-tags .doc-tag:nth-child(2) { background: #2563eb; }
+
+.forge-offer-sec9943 .doc-title {
+  margin: 0;
+  font: 700 13px/1.25 arial, sans-serif;
+  color: inherit;
+}
+
+.forge-offer-sec9943 .doc-amount {
+  margin-top: auto;
+  align-self: flex-end;
+  font: 700 13px/1 arial, sans-serif;
+}
+
+.forge-offer-sec9943 .doc-copy-line {
+  margin: 0;
+  font: 9px/1.45 arial, sans-serif;
+  color: rgba(26, 26, 26, .55);
+}
+
+.forge-offer-sec9943 .doc-label {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  color: var(--sec9943-label);
+  font-family: var(--sec9943-doc-font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Per-card tints (translate the Figma per-document colours) ─────── */
+.forge-offer-sec9943 .doc-card--flyer {
+  background: linear-gradient(145deg, #7c3aed 0%, #9333ea 18%, #16a34a 54%, #ec4899 82%, #d946ef 100%);
+  color: #fff;
+}
+.forge-offer-sec9943 .doc-card--invoice { border: 1px solid #ddd; }
+.forge-offer-sec9943 .doc-card--invoice .doc-title { color: #2563eb; letter-spacing: .06em; }
+.forge-offer-sec9943 .doc-card--chart { background: #7ecdd5; }
+.forge-offer-sec9943 .doc-card--dark { background: #141414; color: #fff; }
+.forge-offer-sec9943 .doc-card--dark .doc-copy-line { color: rgba(255, 255, 255, .5); }
+.forge-offer-sec9943 .doc-card--mono { background: #6b1e35; color: #fff; }
+.forge-offer-sec9943 .doc-card--paper { border: 1px solid #ddd; }
+.forge-offer-sec9943 .doc-card--brand {
+  background:
+    radial-gradient(120px 120px at 15% 12%, rgba(124, 58, 237, .85), transparent 60%),
+    radial-gradient(120px 120px at 82% 30%, rgba(236, 72, 153, .85), transparent 60%),
+    radial-gradient(110px 110px at 30% 82%, rgba(34, 197, 94, .8), transparent 60%),
+    #0d0d0d;
+  color: #fff;
+}
+.forge-offer-sec9943 .doc-card--photo { background: #7a8a99; }
+
+/* Any link inside the section stays readable on tinted cards. */
+.forge-offer-sec9943 a { color: inherit; }
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .forge-offer-sec9943 .docgrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .forge-offer-sec9943 { padding: 72px var(--s2a-layout-md, 32px) 56px; }
+  .forge-offer-sec9943 .collage { display: none; }
+}
+
+@media (max-width: 520px) {
+  .forge-offer-sec9943 .docgrid { grid-template-columns: minmax(0, 220px); justify-content: center; }
+}

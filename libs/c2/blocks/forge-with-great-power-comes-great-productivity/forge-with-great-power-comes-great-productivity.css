@@ -1,0 +1,248 @@
+/* forge-with-great-power-comes-great-productivity — hero + image-collage section.
+   Authored toward the Figma target (truth-target.css + reference frame), keyed
+   ONLY on the classes init() stamps on the reconstructed DOM (DA strips the Figma
+   classes at runtime — C24). All selectors are scoped under the block root; no
+   :root / body / @font-face / @import (L19). */
+
+.forge-with-great-power-comes-great-productivity {
+  --fwp-fg: var(--s2a-color-gray-1000, #000);
+  --fwp-tile-bg: var(--s2a-color-gray-200, #e5e5e5);
+  --fwp-gap: clamp(24px, 4.5vw, 88px);
+  padding: 0 0 var(--s2a-layout-section-bottom, 80px);
+  overflow: hidden;
+  background: var(--s2a-color-white, #fff);
+  box-sizing: border-box;
+}
+
+.forge-with-great-power-comes-great-productivity *,
+.forge-with-great-power-comes-great-productivity *::before,
+.forge-with-great-power-comes-great-productivity *::after {
+  box-sizing: border-box;
+}
+
+.forge-with-great-power-comes-great-productivity .frame {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Hero copy ─────────────────────────────────────────────────────────── */
+.forge-with-great-power-comes-great-productivity .hero {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  padding: clamp(48px, 8vw, 124px) clamp(16px, 4vw, 40px) 0;
+}
+
+.forge-with-great-power-comes-great-productivity .eyebrow {
+  margin: 0;
+  font-family: 'Adobe Clean', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--fwp-fg);
+  text-align: center;
+}
+
+.forge-with-great-power-comes-great-productivity .headings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.forge-with-great-power-comes-great-productivity .headline {
+  margin: 0;
+  max-width: 960px;
+  font-family: 'Adobe Clean Display', 'Adobe Clean', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(36px, 5.6vw, 80px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-align: center;
+  color: var(--fwp-fg);
+}
+
+.forge-with-great-power-comes-great-productivity .body {
+  margin: 0;
+  max-width: 696px;
+  font-family: 'Adobe Clean', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--fwp-fg);
+}
+
+/* ── CTA pill ──────────────────────────────────────────────────────────── */
+.forge-with-great-power-comes-great-productivity .cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 100px;
+  background: var(--fwp-fg);
+  cursor: pointer;
+  font-family: 'Adobe Clean', Helvetica, Arial, sans-serif;
+}
+
+.forge-with-great-power-comes-great-productivity .cta-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: var(--s2a-color-red, #eb1000);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.forge-with-great-power-comes-great-productivity .cta-label {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.forge-with-great-power-comes-great-productivity .cta-plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.forge-with-great-power-comes-great-productivity .cta-plus img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+/* ── Image collage (masonry) ───────────────────────────────────────────── */
+.forge-with-great-power-comes-great-productivity .gallery-wrap {
+  max-width: 1535px;
+  margin: clamp(40px, 6vw, 80px) auto 0;
+  padding: 0 clamp(16px, 3vw, 40px);
+}
+
+.forge-with-great-power-comes-great-productivity .gallery {
+  columns: 5;
+  column-gap: 20px;
+}
+
+.forge-with-great-power-comes-great-productivity .tile {
+  break-inside: avoid;
+  margin: 0 0 var(--fwp-gap);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--fwp-tile-bg);
+  aspect-ratio: 291 / 340;
+}
+
+.forge-with-great-power-comes-great-productivity .tile > picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.forge-with-great-power-comes-great-productivity .tile > picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Research-paper document card ──────────────────────────────────────── */
+.forge-with-great-power-comes-great-productivity .doc-card {
+  background: #b7bdc9;
+  padding: 8%;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-paper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 14px 16px;
+  border-radius: 4px;
+  background: #dadae7;
+  box-shadow: 0 22px 18px rgba(0, 0, 0, 0.05), 0 41px 33px rgba(0, 0, 0, 0.05);
+  color: #29293e;
+  font-family: 'Source Serif Pro', Georgia, serif;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-eyebrow {
+  margin: 0 0 4px;
+  font-family: 'Adobe Clean', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 6px;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5a5a87;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #29293e;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-body {
+  margin: 0 0 5px;
+  font-weight: 400;
+  font-size: 7px;
+  line-height: 1.2;
+  color: #29293e;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-chart {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.forge-with-great-power-comes-great-productivity .doc-chart img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Links inside the (light) section stay readable, never inherit global a{}. */
+.forge-with-great-power-comes-great-productivity a {
+  color: inherit;
+}
+
+/* ── Responsive column counts ──────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .forge-with-great-power-comes-great-productivity .gallery { columns: 4; }
+}
+
+@media (max-width: 900px) {
+  .forge-with-great-power-comes-great-productivity .gallery { columns: 3; }
+}
+
+@media (max-width: 600px) {
+  .forge-with-great-power-comes-great-productivity .gallery { columns: 2; column-gap: 12px; }
+  .forge-with-great-power-comes-great-productivity .tile { margin-bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-with-great-power-comes-great-productivity * { animation: none !important; transition: none !important; }
+}

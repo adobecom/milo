@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'explore-card',
   'faq',
   'floating-cta',
+  'forge-create-beautifully',
   'global-footer',
   'global-navigation',
   'hover-list',
@@ -144,6 +145,14 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-offer-sec9943',
+  'forge-plans-that-work-for-you',
+  'forge-section-3',
+  'forge-there-s-always-something-new-with-acrobat',
+  'forge-there-s-always-something-new-with-acrobat-7',
+  'forge-there-s-more-to-acrobat-than-acrobat',
+  'forge-with-great-power-comes-great-productivity',
+  'forge-work-faster-no-matter-the-work',
 ];
 
 const AUTO_BLOCKS = [

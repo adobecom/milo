@@ -1,0 +1,71 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="new-block" data-figma-node-id="9943:38008" data-block="news" style="width:100%;background-color:#f6f6f6;">
+  <style>
+    .jtbd-inner{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:40px;padding-top:124px;padding-bottom:24px;box-sizing:border-box;}
+    .jtbd-copy{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+    .jtbd-headline{margin:0;padding:0;width:540px;max-width:calc(100% - 48px);font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#000000;}
+    .jtbd-subhead{margin:0;padding:0;width:616px;max-width:calc(100% - 48px);font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;text-align:center;color:#131313;}
+    .jtbd-cols{display:flex;flex-direction:row;gap:8px;padding:0 24px;width:100%;box-sizing:border-box;min-height:1000px;align-items:flex-start;}
+    .jtbd-left{width:892px;height:1000px;flex-shrink:0;border-radius:16px;overflow:hidden;object-fit:cover;display:block;background-color:#1a1a2e;}
+    .jtbd-right{display:flex;flex-direction:column;flex:1;min-width:0;}
+    .jtbd-right-img{width:100%;height:600px;flex-shrink:0;border-radius:16px;display:block;background-color:#f0f2f5;box-shadow:0px 4px 100px 0px rgba(0,0,0,0.25);object-fit:cover;}
+    .jtbd-card-copy{display:flex;flex-direction:column;gap:24px;padding:24px;width:391px;box-sizing:border-box;}
+    .jtbd-headline-sm{margin:0;padding:0;font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:18px;line-height:18px;letter-spacing:-0.48px;text-align:left;color:#000000;}
+    .jtbd-body-sm{margin:0;padding:0;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;text-align:left;color:rgba(0,0,0,0.64);}
+    .jtbd-cta{display:inline-flex;flex-direction:row;align-items:center;gap:8px;text-decoration:none;cursor:pointer;}
+    .jtbd-cta-label{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000000;}
+    @media(max-width:1024px){
+      .jtbd-cols{flex-direction:column;min-height:auto;}
+      .jtbd-left{width:100%;height:clamp(320px,56vw,700px);}
+      .jtbd-right{width:100%;}
+      .jtbd-right-img{height:clamp(280px,46vw,600px);}
+      .jtbd-card-copy{width:100%;max-width:491px;}
+    }
+    @media(max-width:768px){
+      .jtbd-inner{padding-top:64px;gap:28px;}
+      .jtbd-headline{font-size:36px;line-height:40px;letter-spacing:-1px;}
+      .jtbd-cols{padding:0 16px;}
+      .jtbd-left{height:80vw;border-radius:12px;}
+      .jtbd-right-img{height:70vw;border-radius:12px;}
+      .jtbd-card-copy{padding:16px;}
+    }
+  </style>
+  <div class="jtbd-inner">
+
+    <!-- Section headline copy -->
+    <div class="jtbd-copy">
+      <h2 class="jtbd-headline">There's more to Acrobat than Acrobat.</h2>
+      <p class="jtbd-subhead">Create, edit, sign, and more with 70+ professional tools. Use AI to generate a&#160; presentation from your files and documents. And that's just the beginning.</p>
+    </div>
+
+    <!-- Two-column media row -->
+    <div class="jtbd-cols">
+
+      <!-- Left: large photo card (892×1000, includes "Understand quickly." text overlay baked in) -->
+      <img class="jtbd-left" src="media_bizpro-hub-assetFrame.png" alt="Person using Acrobat on a laptop – Understand quickly with AI Assistant" loading="lazy" />
+
+      <!-- Right column: collaboration card + copy -->
+      <div class="jtbd-right">
+
+        <!-- Collaboration UI screenshot card -->
+        <img class="jtbd-right-img" src="media_bizpro-hub-frame2147230324.png" alt="PDF Space collaboration interface showing shared documents and Invite People" loading="lazy" />
+
+        <!-- Text copy below right card -->
+        <div class="jtbd-card-copy">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <h3 class="jtbd-headline-sm">Collaborate effortlessly.</h3>
+            <p class="jtbd-body-sm">Share a secure PDF Space with teammates, where everyone can ask AI Assistant to help with research, strategy, planning, or quick learning.</p>
+          </div>
+          <!-- Learn more CTA -->
+          <a href="#" class="jtbd-cta">
+            <span class="jtbd-cta-label">Learn more</span>
+            <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path d="M1 1.5L4.5 5L1 8.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>

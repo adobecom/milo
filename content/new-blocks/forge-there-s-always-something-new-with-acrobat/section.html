@@ -1,0 +1,177 @@
+<section data-binding-source="judge" data-binding-variants="default" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="9943:38890" data-block="news" style="width:100%;background-color:#f6f6f6;">
+  <style>
+    .wn-inner{max-width:1440px;margin:0 auto;padding:80px 124px 124px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:48px;}
+    .wn-section-heading{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:32px;width:100%;}
+    .wn-copy-block{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+    .wn-eyebrow{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:rgba(0,0,0,0.639);text-align:center;margin:0;padding:0;}
+    .wn-headline{font-family:'Adobe Clean Display','Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;color:#000;text-align:center;max-width:664px;margin:0;padding:0;}
+    .wn-buttons{display:flex;flex-direction:row;gap:8px;align-items:center;}
+    .wn-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 24px;border-radius:75px;background:#000;border:none;cursor:pointer;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:17px;color:#fff;white-space:nowrap;}
+    .wn-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 24px;border-radius:75px;background:transparent;border:1.5px solid #000;cursor:pointer;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:17px;color:#000;white-space:nowrap;}
+    .wn-grid{display:flex;flex-direction:row;gap:8px;width:100%;}
+    .wn-col{display:flex;flex-direction:column;flex:1 1 0;min-width:0;}
+    .wn-card-img{width:100%;height:294px;object-fit:cover;border-radius:12px;background-color:#d4d4d4;display:block;flex-shrink:0;}
+    .wn-card-placeholder{width:100%;height:294px;border-radius:12px;background-color:#c4c4c4;display:block;flex-shrink:0;}
+    .wn-card-copy{display:flex;flex-direction:column;gap:24px;padding:24px;}
+    .wn-card-text-sm{display:flex;flex-direction:column;gap:8px;}
+    .wn-card-text-lg{display:flex;flex-direction:column;gap:16px;}
+    .wn-card-title{margin:0;padding:0;font-family:'Adobe Clean Display','Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:18px;line-height:18px;letter-spacing:-0.48px;color:#000;}
+    .wn-card-body{margin:0;padding:0;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(0,0,0,0.639);}
+    .wn-cta{display:inline-flex;flex-direction:row;align-items:center;gap:8px;text-decoration:none;cursor:pointer;}
+    .wn-cta-label{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;}
+    .wn-skel-bar{border-radius:4px;background-color:#d8d8d8;max-width:100%;}
+    .wn-skel-line{border-radius:3px;background-color:#e4e4e4;height:12px;width:100%;}
+    @media (max-width:1200px){
+      .wn-inner{padding:60px 60px 80px;}
+      .wn-headline{font-size:44px;line-height:48px;letter-spacing:-1.2px;}
+    }
+    @media (max-width:1024px){
+      .wn-inner{padding:60px 40px 80px;}
+      .wn-headline{font-size:38px;line-height:42px;letter-spacing:-1px;}
+      .wn-grid{flex-wrap:wrap;}
+      .wn-col{flex:0 0 calc(50% - 4px);min-width:0;}
+    }
+    @media (max-width:768px){
+      .wn-inner{padding:48px 20px 60px;}
+      .wn-headline{font-size:30px;line-height:34px;letter-spacing:-0.5px;}
+      .wn-col{flex:0 0 100%;}
+      .wn-buttons{flex-direction:column;width:100%;align-items:stretch;}
+      .wn-btn-primary,.wn-btn-secondary{width:100%;justify-content:center;}
+    }
+  </style>
+
+  <div class="wn-inner">
+
+    <!-- Section Heading -->
+    <div class="wn-section-heading">
+      <div class="wn-copy-block">
+        <p class="wn-eyebrow">Features and Releases</p>
+        <h2 class="wn-headline">There's always something new with Acrobat.</h2>
+      </div>
+      <div class="wn-buttons">
+        <button class="wn-btn-primary">Label</button>
+        <button class="wn-btn-secondary">Label</button>
+      </div>
+    </div>
+
+    <!-- Row 1: 3 Feature Columns with Images -->
+    <div class="wn-grid">
+
+      <!-- Column 1: PDF to Podcast -->
+      <div class="wn-col">
+        <img class="wn-card-img" src="media_bizpro-hub-asset.png" alt="PDF to Podcast" loading="lazy" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-sm">
+            <h3 class="wn-card-title">PDF to Podcast</h3>
+            <p class="wn-card-body">Convert any PDF into audio playback, with options to hear a quick overview or a complete narration.</p>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 2: One-click Brand Kit Setup -->
+      <div class="wn-col">
+        <img class="wn-card-img" src="media_bizpro-hub-asset1.png" alt="One-click Brand Kit Setup" loading="lazy" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-sm">
+            <h3 class="wn-card-title">One-click Brand Kit Setup</h3>
+            <p class="wn-card-body">Set up a complete brand kit in a single click by automatically extracting logos, colors, and fonts from existing content.</p>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 3: AI-Powered Video Highlights -->
+      <div class="wn-col">
+        <img class="wn-card-img" src="media_bizpro-hub-asset2.png" alt="AI-Powered Video Highlights" loading="lazy" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-sm">
+            <h3 class="wn-card-title">AI-Powered Video Highlights</h3>
+            <p class="wn-card-body">Upload any video and let Adobe Express automatically find the highlights, add captions, and export in any aspect ratio.</p>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Row 2: 3 More Feature Columns -->
+    <div class="wn-grid">
+
+      <!-- Column 4: fill photograph -->
+      <div class="wn-col">
+        <img class="wn-card-img" src="media_bizpro-hub-fill1a42bf64fc71.png" alt="Feature" loading="lazy" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-lg">
+            <div class="wn-skel-bar" style="width:286px;height:41px;"></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="wn-skel-line"></div>
+              <div class="wn-skel-line" style="width:82%;"></div>
+            </div>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 5: gray placeholder -->
+      <div class="wn-col">
+        <div class="wn-card-placeholder"></div>
+        <div class="wn-card-copy">
+          <div class="wn-card-text-lg">
+            <div class="wn-skel-bar" style="width:311px;height:45px;"></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="wn-skel-line"></div>
+              <div class="wn-skel-line" style="width:88%;"></div>
+              <div class="wn-skel-line" style="width:62%;"></div>
+            </div>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 6: gray placeholder -->
+      <div class="wn-col">
+        <div class="wn-card-placeholder"></div>
+        <div class="wn-card-copy">
+          <div class="wn-card-text-lg">
+            <div class="wn-skel-bar" style="width:302px;height:41px;"></div>
+            <div class="wn-skel-bar" style="width:247px;height:35px;background-color:#e4e4e4;"></div>
+          </div>
+          <a href="#" class="wn-cta">
+            <span class="wn-cta-label">Learn more</span>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+              <path d="M1 1L6 6L1 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>

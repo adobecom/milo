@@ -1,0 +1,110 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+@media(max-width:1280px) {.aud-card{width:calc(25% - 6px);min-width:200px;}}
+
+@media(max-width:1024px) {
+      .aud-h2{font-size:44px;line-height:48px;}
+      .aud-carousel{flex-wrap:wrap;justify-content:center;}
+      .aud-card{width:calc(50% - 4px);min-width:0;}
+      .aud-content{gap:60px;}
+    }
+
+@media(max-width:768px) {
+      .aud-inner{padding:60px 20px 24px;gap:28px;}
+      .aud-h2{font-size:34px;line-height:38px;width:auto;}
+      .aud-sub{width:auto;font-size:17px;}
+      .aud-carousel{flex-direction:column;align-items:center;}
+      .aud-card{width:100%;max-width:340px;min-width:0;}
+      .aud-content{gap:48px;}
+    }
+
+@media(max-width:1024px) {
+      .jtbd-cols{flex-direction:column;min-height:auto;}
+      .jtbd-left{width:100%;height:clamp(320px,56vw,700px);}
+      .jtbd-right{width:100%;}
+      .jtbd-right-img{height:clamp(280px,46vw,600px);}
+      .jtbd-card-copy{width:100%;max-width:491px;}
+    }
+
+@media(max-width:768px) {
+      .jtbd-inner{padding-top:64px;gap:28px;}
+      .jtbd-headline{font-size:36px;line-height:40px;letter-spacing:-1px;}
+      .jtbd-cols{padding:0 16px;}
+      .jtbd-left{height:80vw;border-radius:12px;}
+      .jtbd-right-img{height:70vw;border-radius:12px;}
+      .jtbd-card-copy{padding:16px;}
+    }
+
+@media(max-width:1200px) {
+  .offer-sec9943 .oi9943{height:auto;min-height:600px;padding-bottom:60px;}
+  .offer-sec9943 .sc9943{display:none!important;}
+  .offer-sec9943 .connsvg9943{display:none;}
+  .offer-sec9943 .dg9943{position:relative;top:auto;left:auto;grid-template-columns:repeat(2,200px);justify-content:center;column-gap:32px;row-gap:32px;padding:60px 0;}
+}
+
+@media(max-width:520px) {
+  .offer-sec9943 .dg9943{grid-template-columns:200px;}
+}
+
+@media(max-width:1440px) {
+  .fgtu-try-sec{padding:124px max(calc((100% - 988px)/2),20px);}
+}
+
+@media(max-width:1200px) {
+  .fgtu-try-sec{padding:80px 40px;}
+  .fgtu-sg{padding-top:80px!important;}
+  .fgtu-ui-wrap{height:auto;}
+  .fgtu-ui-inner{position:relative!important;width:100%!important;height:auto!important;}
+  .fgtu-ui-frame{width:100%!important;height:auto!important;min-height:480px;}
+  .fgtu-h2{font-size:42px;line-height:48px;}
+}
+
+@media(max-width:1024px) {
+  .fgtu-row{gap:40px;flex-wrap:wrap;justify-content:center;}
+  .fgtu-rows{gap:40px;}
+  .fgtu-gc{align-items:center;}
+  .fgtu-copy-block{width:100%;max-width:600px;}
+  .fgtu-try-sec{padding:80px 24px;}
+  .fgtu-h2{font-size:36px;line-height:42px;}
+}
+
+@media(max-width:768px) {
+  .fgtu-sg{padding-top:60px!important;}
+  .fgtu-row{gap:20px;}
+  .fgtu-rows{gap:40px;}
+  .fgtu-h2{font-size:28px;line-height:34px;}
+  .fgtu-copy-block{padding:16px;}
+}
+
+@media(max-width:1200px) {
+  .s8-plans-inner{padding:80px 48px;}
+  .s8-cards{flex-wrap:wrap;}
+  .s8-card{flex:1 1 calc(50% - 8px);min-width:260px;}
+  .s8-card-dark{min-width:260px;}
+  .s8-fcols{flex-wrap:wrap;padding:0 48px;}
+  .s8-fcol{flex:1 1 calc(33% - 8px);min-width:160px;}
+  .s8-ai,.s8-featured,.s8-bottombar{padding-left:48px;padding-right:48px;}
+  .s8-search{width:100%;}
+}
+
+@media(max-width:768px) {
+  .s8-plans-inner{padding:60px 24px;}
+  .s8-title{font-size:36px;line-height:40px;}
+  .s8-tabs{width:100%;}
+  .s8-cards{flex-direction:column;}
+  .s8-card,.s8-card-dark{width:100%;min-width:0;flex:none;}
+  .s8-ai-h2{font-size:36px;line-height:40px;}
+  .s8-ai,.s8-featured,.s8-bottombar{padding-left:24px;padding-right:24px;}
+  .s8-fcols{flex-direction:column;padding:0 24px;}
+  .s8-search{width:100%;}
+}
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }

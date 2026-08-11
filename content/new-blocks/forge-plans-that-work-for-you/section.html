@@ -1,0 +1,473 @@
+<section data-binding-score="0.55" data-binding="new-block" data-figma-node-id="9943:39745" data-block="news" style="width:100%;display:block;">
+<style>
+[data-figma-node-id="9943:39745"]{width:100%;display:block;}
+[data-figma-node-id="9943:39745"] *{box-sizing:border-box;margin:0;padding:0;}
+[data-figma-node-id="9943:39745"] a{text-decoration:none;}
+.s8-plans{width:100%;background:#fff;border-radius:32px;overflow:hidden;position:relative;z-index:2;}
+.s8-plans-inner{max-width:1440px;margin:0 auto;padding:124px 120px;display:flex;flex-direction:column;align-items:center;gap:48px;}
+.s8-title{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#000;max-width:984px;}
+.s8-tabs-wrap{display:flex;justify-content:center;}
+.s8-tabs{display:inline-flex;flex-direction:row;align-items:center;background:rgba(0,0,0,0.052);border-radius:50px;padding:4px;gap:2px;width:502px;}
+.s8-tab{flex:1;display:flex;justify-content:center;align-items:center;padding:6px 20px;border-radius:50px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:17px;cursor:pointer;color:rgba(0,0,0,0.6);border:none;background:transparent;white-space:nowrap;}
+.s8-tab.active{background:#000;color:#fff;}
+.s8-cards{display:flex;flex-direction:row;align-items:flex-start;gap:8px;width:100%;max-width:1200px;}
+.s8-card{flex:1;display:flex;flex-direction:column;border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;overflow:hidden;}
+.s8-card-dark{background:#000;border-color:#000;}
+.s8-card-header{background:#fff;border-radius:8px 8px 0 0;padding:24px;display:flex;flex-direction:column;gap:24px;}
+.s8-tag-row{display:flex;flex-direction:row;align-items:center;gap:12px;}
+.s8-tag{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:rgba(0,0,0,0.64);}
+.s8-tag-dark{color:#000;}
+.s8-card-info{display:flex;flex-direction:column;gap:8px;}
+.s8-card-name{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;}
+.s8-card-desc{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:#000;}
+.s8-price-wrap{display:flex;flex-direction:column;gap:8px;}
+.s8-price{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;}
+.s8-price-sub{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);}
+.s8-cta{padding-top:16px;}
+.s8-btn-outline{display:flex;justify-content:center;align-items:center;width:100%;height:40px;padding:10px 24px;border-radius:999px;border:1px solid #000;background:transparent;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;cursor:pointer;}
+.s8-btn-blue{display:flex;justify-content:center;align-items:center;width:100%;height:40px;padding:10px 24px;border-radius:999px;border:none;background:#3b63fb;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#fff;cursor:pointer;}
+.s8-secure{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.s8-secure-text{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);}
+.s8-features{padding:24px;display:flex;flex-direction:column;gap:0;background:#f8f8f8;flex:1;}
+.s8-features-dark{background:#000;}
+.s8-fg{display:flex;flex-direction:column;gap:8px;}
+.s8-fg+.s8-fg{border-top:1px solid #e8e8e8;padding-top:16px;margin-top:12px;}
+.s8-fg-dark+.s8-fg-dark{border-top:1px solid rgba(255,255,255,0.16);padding-top:16px;margin-top:12px;}
+.s8-fh{display:flex;flex-direction:row;align-items:center;gap:4px;}
+.s8-fl{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:#000;}
+.s8-fl-wt{color:#fff;}
+.s8-fi{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);padding-left:24px;}
+.s8-fi-wt{color:#fff;padding-left:24px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;}
+.s8-fi-bold{color:#fff;padding-left:24px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;}
+.s8-ai-dot{width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;}
+.s8-compare-row{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.s8-compare-btn{display:flex;justify-content:center;align-items:center;height:40px;padding:10px 24px;border-radius:999px;border:1px solid rgba(0,0,0,0.08);background:transparent;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;cursor:pointer;white-space:nowrap;}
+.s8-nav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;}
+.s8-nav-lt{background:#f8f8f8;}
+.s8-nav-dk{background:#000;}
+/* Dark section */
+.s8-dark{width:100%;background:#000;margin-top:-32px;position:relative;z-index:1;}
+.s8-dark-inner{max-width:1440px;margin:0 auto;padding-top:160px;display:flex;flex-direction:column;gap:124px;}
+.s8-ai{display:flex;flex-direction:column;align-items:center;gap:24px;padding:0 124px 32px;}
+.s8-ai-copy{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;padding-bottom:32px;}
+.s8-ai-eyebrow{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:14px;line-height:13px;letter-spacing:0.14px;text-align:center;color:#4f4f4f;}
+.s8-ai-h2{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#fff;}
+.s8-ai-sub{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:20px;line-height:26px;letter-spacing:-0.4px;text-align:center;color:#fff;}
+.s8-ai-cta{display:flex;justify-content:center;align-items:center;height:40px;padding:10px 24px;border-radius:75px;background:rgba(255,255,255,0.1);border:1px solid rgba(0,0,0,0.1);font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:14px;line-height:13px;letter-spacing:0.14px;color:rgba(255,255,255,0.7);cursor:pointer;}
+.s8-search{display:flex;flex-direction:row;justify-content:space-between;align-items:center;width:768px;max-width:100%;height:56px;border-radius:28px;background:rgba(255,255,255,0.1);border:2px solid rgba(0,0,0,0.1);overflow:hidden;padding:6px;}
+.s8-search-left{display:flex;align-items:center;gap:12px;padding-left:12px;flex:1;}
+.s8-search-ph{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:rgba(255,255,255,0.6);}
+.s8-search-sub{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.s8-disclaimer{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:12px;line-height:18px;text-align:center;color:rgba(255,255,255,0.6);max-width:720px;}
+/* Footer */
+.s8-footer{display:flex;flex-direction:column;gap:40px;}
+.s8-fcols{display:flex;flex-direction:row;gap:8px;padding:0 124px;}
+.s8-fcol{flex:1;display:flex;flex-direction:column;gap:24px;}
+.s8-fch{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#fff;}
+.s8-fcl{display:flex;flex-direction:column;gap:8px;}
+.s8-fclink{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(255,255,255,0.64);cursor:pointer;}
+.s8-fclink:hover{color:#fff;}
+.s8-featured{display:flex;flex-direction:column;gap:24px;padding:0 124px;}
+.s8-featured-h{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#fff;}
+.s8-featured-list{display:flex;flex-direction:row;align-items:center;gap:24px;flex-wrap:wrap;}
+.s8-fprod{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.s8-fprod-name{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:12px;line-height:16px;letter-spacing:0.24px;color:rgba(255,255,255,0.64);}
+.s8-bottombar{display:flex;flex-direction:row;justify-content:space-between;align-items:center;padding:0 124px 40px;flex-wrap:wrap;gap:16px;}
+.s8-bl{display:flex;flex-direction:row;align-items:center;gap:24px;flex-wrap:wrap;}
+.s8-bt{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:12px;line-height:16px;letter-spacing:0.24px;color:rgba(255,255,255,0.64);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.s8-social{display:flex;flex-direction:row;align-items:center;gap:16px;}
+.s8-sico{color:rgba(255,255,255,0.64);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.s8-sico:hover{color:#fff;}
+.s8-logo-bottom{width:100%;height:338px;background:#000;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
+.s8-logo-word{font-family:'Adobe Clean Display','Helvetica Neue',Impact,'Arial Black',sans-serif;font-weight:900;font-size:440px;line-height:0.88;color:#141414;letter-spacing:-14px;white-space:nowrap;user-select:none;margin-bottom:-30px;}
+@media(max-width:1200px){
+  .s8-plans-inner{padding:80px 48px;}
+  .s8-cards{flex-wrap:wrap;}
+  .s8-card{flex:1 1 calc(50% - 8px);min-width:260px;}
+  .s8-card-dark{min-width:260px;}
+  .s8-fcols{flex-wrap:wrap;padding:0 48px;}
+  .s8-fcol{flex:1 1 calc(33% - 8px);min-width:160px;}
+  .s8-ai,.s8-featured,.s8-bottombar{padding-left:48px;padding-right:48px;}
+  .s8-search{width:100%;}
+}
+@media(max-width:768px){
+  .s8-plans-inner{padding:60px 24px;}
+  .s8-title{font-size:36px;line-height:40px;}
+  .s8-tabs{width:100%;}
+  .s8-cards{flex-direction:column;}
+  .s8-card,.s8-card-dark{width:100%;min-width:0;flex:none;}
+  .s8-ai-h2{font-size:36px;line-height:40px;}
+  .s8-ai,.s8-featured,.s8-bottombar{padding-left:24px;padding-right:24px;}
+  .s8-fcols{flex-direction:column;padding:0 24px;}
+  .s8-search{width:100%;}
+}
+</style>
+
+<!-- WHITE PLANS SECTION -->
+<div class="s8-plans">
+  <div class="s8-plans-inner">
+
+    <h2 class="s8-title">Plans that work for you.</h2>
+
+    <div class="s8-tabs-wrap">
+      <div class="s8-tabs">
+        <button class="s8-tab active">Individuals</button>
+        <button class="s8-tab">Businesses</button>
+        <button class="s8-tab">Students &amp; Teachers</button>
+      </div>
+    </div>
+
+    <div class="s8-cards">
+
+      <!-- Card 1: Acrobat Reader -->
+      <div class="s8-card">
+        <div class="s8-card-header">
+          <div class="s8-tag-row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><rect width="24" height="24" rx="5" fill="#CC0000" ></rect><path d="M7 4.5h5.5l4 4V19.5H7V4.5z" fill="white" opacity=".85" ></path><path d="M12.5 4.5l4 4h-4V4.5z" fill="white" opacity=".55" ></path><rect x="9" y="11" width="5" height="1" rx=".5" fill="#CC0000" opacity=".5" ></rect><rect x="9" y="13.5" width="5" height="1" rx=".5" fill="#CC0000" opacity=".5" ></rect><rect x="9" y="16" width="3.5" height="1" rx=".5" fill="#CC0000" opacity=".5" ></rect></svg>
+            <span class="s8-tag">PDF viewing</span>
+          </div>
+          <div class="s8-card-info">
+            <div class="s8-card-name">Acrobat Reader</div>
+            <div class="s8-card-desc">Start with the trusted standard for viewing and sharing PDFs.&#160;</div>
+          </div>
+          <div class="s8-price-wrap">
+            <div>
+              <div class="s8-price">Free</div>
+              <div class="s8-price-sub">Download today</div>
+            </div>
+            <div class="s8-cta"><button class="s8-btn-outline">Get free app</button></div>
+          </div>
+          <div class="s8-secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.75" y="7.25" width="10.5" height="7.5" rx="1.5" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" ></rect><path d="M5 7V5.5a3 3 0 016 0V7" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" ></path></svg>
+            <span class="s8-secure-text">Secure transaction</span>
+          </div>
+        </div>
+        <div class="s8-features">
+          <div class="s8-fg">
+            <div class="s8-fh">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="9" height="14" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><path d="M11 6.5l5 3-5 3" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl">Core PDF tools</span>
+            </div>
+            <div class="s8-fi">View, Print, Share PDFs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Acrobat Express -->
+      <div class="s8-card">
+        <div class="s8-card-header">
+          <div class="s8-tag-row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><rect width="24" height="24" rx="5" fill="#CC0000" ></rect><path d="M7 4.5h5.5l4 4V19.5H7V4.5z" fill="white" opacity=".85" ></path><path d="M12.5 4.5l4 4h-4V4.5z" fill="white" opacity=".55" ></path></svg>
+            <span class="s8-tag">AI Insights and creation</span>
+          </div>
+          <div class="s8-card-info">
+            <div class="s8-card-name">Acrobat Express</div>
+            <div class="s8-card-desc">Get document insights with AI-powered tools, and quickly create on-brand content.&#160;</div>
+          </div>
+          <div class="s8-price-wrap">
+            <div>
+              <div class="s8-price">US$9.99/mo</div>
+              <div class="s8-price-sub">Annual, billed monthly</div>
+            </div>
+            <div class="s8-cta"><button class="s8-btn-blue">Free Trial</button></div>
+          </div>
+          <div class="s8-secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.75" y="7.25" width="10.5" height="7.5" rx="1.5" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" ></rect><path d="M5 7V5.5a3 3 0 016 0V7" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" ></path></svg>
+            <span class="s8-secure-text">Secure transaction</span>
+          </div>
+        </div>
+        <div class="s8-features">
+          <div class="s8-fg">
+            <div class="s8-fh">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="9" height="14" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><path d="M11 6.5l5 3-5 3" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl">Core PDF tools</span>
+            </div>
+            <div class="s8-fi">View, Print, Share PDFs</div>
+          </div>
+          <div class="s8-fg">
+            <div class="s8-fh">
+              <div class="s8-ai-dot"></div>
+              <span class="s8-fl">AI Assistant</span>
+            </div>
+            <div class="s8-fi">Summarize documents</div>
+            <div class="s8-fi">Organize and share in PDF Spaces</div>
+          </div>
+          <div class="s8-fg">
+            <div class="s8-fh">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 2l3.5 3.5-8 8H2.5v-3.5L10.5 2z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl">Creation tools</span>
+            </div>
+            <div class="s8-fi">Make presentations, flyers, and social ads</div>
+            <div class="s8-fi">Design with easy-to-use tools</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Acrobat Pro -->
+      <div class="s8-card">
+        <div class="s8-card-header">
+          <div class="s8-tag-row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><rect width="24" height="24" rx="5" fill="#CC0000" ></rect><path d="M7 4.5h5.5l4 4V19.5H7V4.5z" fill="white" opacity=".85" ></path><path d="M12.5 4.5l4 4h-4V4.5z" fill="white" opacity=".55" ></path></svg>
+            <span class="s8-tag">Full PDF toolset</span>
+          </div>
+          <div class="s8-card-info">
+            <div class="s8-card-name">Acrobat Pro</div>
+            <div class="s8-card-desc">Do it all with the complete AI-powered PDF and design solution for document workflows.</div>
+          </div>
+          <div class="s8-price-wrap">
+            <div>
+              <div class="s8-price">US$19.99/mo</div>
+              <div class="s8-price-sub">Annual, billed monthly</div>
+            </div>
+            <div class="s8-cta"><button class="s8-btn-blue">Free Trial</button></div>
+          </div>
+          <div class="s8-secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.75" y="7.25" width="10.5" height="7.5" rx="1.5" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" ></rect><path d="M5 7V5.5a3 3 0 016 0V7" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" ></path></svg>
+            <span class="s8-secure-text">Secure transaction</span>
+          </div>
+        </div>
+        <div class="s8-features">
+          <div class="s8-fg">
+            <div class="s8-fh">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="9" height="14" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><path d="M11 6.5l5 3-5 3" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl">70+ PDF tools</span>
+            </div>
+            <div class="s8-fi">Convert, Compress, Create PDFs</div>
+            <div class="s8-fi">Edit, export, protect and organize PDFs</div>
+            <div class="s8-fi">Collect e-signatures and track responses</div>
+            <div class="s8-fi">Password protect PDFs and redact sensitive information</div>
+            <div class="s8-fi">Auto-compare versions of a PDF</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Acrobat Studio (dark / best value) -->
+      <div class="s8-card s8-card-dark">
+        <div class="s8-card-header">
+          <div class="s8-tag-row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><rect width="24" height="24" rx="5" fill="#CC0000" ></rect><path d="M7 4.5h5.5l4 4V19.5H7V4.5z" fill="white" opacity=".85" ></path><path d="M12.5 4.5l4 4h-4V4.5z" fill="white" opacity=".55" ></path></svg>
+            <span class="s8-tag s8-tag-dark">Best value</span>
+          </div>
+          <div class="s8-card-info">
+            <div class="s8-card-name">Acrobat Studio</div>
+            <div class="s8-card-desc">Create, edit, and sign PDFs with secure PDF and e-signature workflows.</div>
+          </div>
+          <div class="s8-price-wrap">
+            <div>
+              <div class="s8-price">US$24.99/mo</div>
+              <div class="s8-price-sub">Annual, billed monthly</div>
+            </div>
+            <div class="s8-cta"><button class="s8-btn-blue">Free Trial</button></div>
+          </div>
+          <div class="s8-secure">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.75" y="7.25" width="10.5" height="7.5" rx="1.5" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" ></rect><path d="M5 7V5.5a3 3 0 016 0V7" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" ></path></svg>
+            <span class="s8-secure-text">Secure transaction</span>
+          </div>
+        </div>
+        <div class="s8-features s8-features-dark">
+          <div class="s8-fg s8-fg-dark">
+            <div class="s8-fh">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="9" height="14" rx="1.5" stroke="white" stroke-width="1.5" ></rect><path d="M11 6.5l5 3-5 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl s8-fl-wt">70+ PDF tools</span>
+            </div>
+            <div class="s8-fi-bold">All Acrobat Pro PDF tools</div>
+          </div>
+          <div class="s8-fg s8-fg-dark">
+            <div class="s8-fh">
+              <div class="s8-ai-dot"></div>
+              <span class="s8-fl s8-fl-wt">AI Assistant</span>
+            </div>
+            <div class="s8-fi-wt">Summarize documents</div>
+            <div class="s8-fi-wt">Organize and share in PDF Spaces</div>
+            <div class="s8-fi-wt">Contract analysis</div>
+          </div>
+          <div class="s8-fg s8-fg-dark">
+            <div class="s8-fh">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 2l3.5 3.5-8 8H2.5v-3.5L10.5 2z" stroke="white" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+              <span class="s8-fl s8-fl-wt">Creation tools</span>
+            </div>
+            <div class="s8-fi-wt">Make presentations, flyers, and social ads</div>
+            <div class="s8-fi-wt">Design with easy-to-use tools</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /cards -->
+
+    <div class="s8-compare-row">
+      <button class="s8-compare-btn">Compare Plans</button>
+      <button class="s8-nav s8-nav-lt" aria-label="Previous">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+      </button>
+      <button class="s8-nav s8-nav-dk" aria-label="Next">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+      </button>
+    </div>
+
+  </div>
+</div><!-- /s8-plans -->
+
+<!-- BLACK SECTION: AI SEARCH + FOOTER -->
+<div class="s8-dark">
+  <div class="s8-dark-inner">
+
+    <!-- AI Search -->
+    <div class="s8-ai">
+      <div class="s8-ai-copy">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7.5px;width:100%;">
+          <p class="s8-ai-eyebrow">Adobe is for everyone</p>
+          <h2 class="s8-ai-h2">Find what you're looking for.</h2>
+        </div>
+        <p class="s8-ai-sub">Get answers from our agent about Adobe products and solutions.</p>
+        <div style="padding-top:8px;">
+          <button class="s8-ai-cta">Try in Photoshop Web</button>
+        </div>
+      </div>
+      <div class="s8-search">
+        <div class="s8-search-left">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l1.5 4.6 4.5 1.4-3.5 2.6 1.2 4.6L10 12.8l-3.7 2.4 1.2-4.6L4 8l4.5-1.4L10 2z" fill="rgba(255,255,255,0.6)" ></path></svg>
+          <span class="s8-search-ph">Ask anything</span>
+        </div>
+        <button class="s8-search-sub">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 5.5l4.5 4.5-4.5 4.5" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+        </button>
+      </div>
+      <p class="s8-disclaimer">Use of this beta AI chatbot is subject to Adobe's Privacy Policy. Don't share sensitive data. AI responses are not your Content, may be inaccurate and any offers provided are non-binding. Generative AI Terms.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="s8-footer">
+
+      <div class="s8-fcols">
+        <div class="s8-fcol">
+          <div class="s8-fch">For individuals &amp; small business</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Creative AI</a>
+            <a href="#" class="s8-fclink">Photography</a>
+            <a href="#" class="s8-fclink">Design &amp; Illustration</a>
+            <a href="#" class="s8-fclink">Video &amp; animation</a>
+            <a href="#" class="s8-fclink">PDF</a>
+            <a href="#" class="s8-fclink">3D</a>
+            <a href="#" class="s8-fclink">Elements Family</a>
+            <a href="#" class="s8-fclink">Stock images &amp; video</a>
+            <a href="#" class="s8-fclink">View all products</a>
+          </div>
+        </div>
+        <div class="s8-fcol">
+          <div class="s8-fch">For medium &amp; large business</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Personalization at scale</a>
+            <a href="#" class="s8-fclink">Content supply chain</a>
+            <a href="#" class="s8-fclink">Unified customer experience</a>
+            <a href="#" class="s8-fclink">Creativity and production</a>
+            <a href="#" class="s8-fclink">B2B GTM orchestration</a>
+            <a href="#" class="s8-fclink">View all products</a>
+          </div>
+        </div>
+        <div class="s8-fcol">
+          <div class="s8-fch">For Organizations</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Education</a>
+            <a href="#" class="s8-fclink">Nonprofits</a>
+            <a href="#" class="s8-fclink">Government</a>
+          </div>
+        </div>
+        <div class="s8-fcol">
+          <div class="s8-fch">Support</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Help Center</a>
+            <a href="#" class="s8-fclink">Download and install</a>
+            <a href="#" class="s8-fclink">Adobe Community</a>
+            <a href="#" class="s8-fclink">Adobe Learn</a>
+            <a href="#" class="s8-fclink">Medium &amp; large business support</a>
+          </div>
+        </div>
+        <div class="s8-fcol">
+          <div class="s8-fch">Contact</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Chat with sales</a>
+            <a href="#" class="s8-fclink">Request information</a>
+          </div>
+        </div>
+        <div class="s8-fcol">
+          <div class="s8-fch">Adobe</div>
+          <div class="s8-fcl">
+            <a href="#" class="s8-fclink">Log into your account</a>
+            <a href="#" class="s8-fclink">About</a>
+            <a href="#" class="s8-fclink">Careers</a>
+            <a href="#" class="s8-fclink">Events</a>
+            <a href="#" class="s8-fclink">Newsroom</a>
+            <a href="#" class="s8-fclink">Corporate Responsibility</a>
+            <a href="#" class="s8-fclink">Investor Relations</a>
+            <a href="#" class="s8-fclink">Supply Chain</a>
+            <a href="#" class="s8-fclink">Trust Center</a>
+            <a href="#" class="s8-fclink">Integrity</a>
+            <a href="#" class="s8-fclink">Adobe for All</a>
+            <a href="#" class="s8-fclink">Adobe Blog</a>
+            <a href="#" class="s8-fclink">Terms</a>
+            <a href="#" class="s8-fclink">Privacy</a>
+            <a href="#" class="s8-fclink">Cookie preferences</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="s8-featured">
+        <div class="s8-featured-h">Featured Products</div>
+        <div class="s8-featured-list">
+          <div class="s8-fprod">
+            <svg width="16" height="15" viewBox="0 0 16 15" fill="none"><rect width="16" height="15" rx="3" fill="#CC0000" ></rect><path d="M4.5 2.5h4.5l3 3V12.5H4.5V2.5z" fill="white" opacity=".85" ></path><path d="M9 2.5l3 3H9V2.5z" fill="white" opacity=".55" ></path></svg>
+            <span class="s8-fprod-name">Acrobat Reader</span>
+          </div>
+          <div class="s8-fprod">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="3" fill="#0C0C1E" ></rect><path d="M8 2l1.2 3.7 3.8 1.3-3 2.2 1 3.8L8 10.8l-3 2.2 1-3.8-3-2.2 3.8-1.3L8 2z" fill="#FAC813" ></path></svg>
+            <span class="s8-fprod-name">Firefly</span>
+          </div>
+          <div class="s8-fprod">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="3" fill="#E34C00" ></rect><path d="M8 2.5L10.2 8H5.8L8 2.5z" fill="white" opacity=".9" ></path><path d="M5.8 8L3.5 13.5h9L10.2 8H5.8z" fill="white" opacity=".75" ></path></svg>
+            <span class="s8-fprod-name">Adobe Express</span>
+          </div>
+          <div class="s8-fprod">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="3" fill="#001E36" ></rect><text x="2" y="12" font-size="9" font-weight="bold" fill="#31A8FF" font-family="Arial,sans-serif">Ps</text></svg>
+            <span class="s8-fprod-name">Photoshop</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="s8-bottombar">
+        <div class="s8-bl">
+          <span class="s8-bt">Change region <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1l3 3 3-3" stroke="rgba(255,255,255,0.64)" stroke-width="1.5" stroke-linecap="round" ></path></svg></span>
+          <span class="s8-bt">© 2026 Adobe Inc. All rights reserved.</span>
+          <span class="s8-bt">Do not sell or share my personal information</span>
+          <span class="s8-bt">
+            <svg width="9" height="10" viewBox="0 0 9 10" fill="none"><rect x="0.5" y="0.5" width="3.5" height="3.5" rx=".5" stroke="rgba(255,255,255,0.64)" ></rect><rect x="5" y="0.5" width="3.5" height="3.5" rx=".5" stroke="rgba(255,255,255,0.64)" ></rect><path d="M1 9l1.5-3 1.5 3M5.5 9l1.5-3 1.5 3M2.2 7.5h2.1M5.7 7.5h2.1" stroke="rgba(255,255,255,0.64)" stroke-width=".9" stroke-linecap="round" ></path></svg>
+            AdChoices
+          </span>
+        </div>
+        <div class="s8-social">
+          <a href="#" class="s8-sico">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" ></circle><path d="M12.5 8H14V6h-1.5C11.1 6 10 7.1 10 8.5V10H8.5v2H10v6h2v-6h1.5l.5-2H12V8.5c0-.28.22-.5.5-.5z" fill="rgba(255,255,255,0.64)" ></path></svg>
+          </a>
+          <a href="#" class="s8-sico">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" ></circle><rect x="6.5" y="9" width="2" height="7" fill="rgba(255,255,255,0.64)" ></rect><circle cx="7.5" cy="7" r="1.1" fill="rgba(255,255,255,0.64)" ></circle><path d="M11 9v7h2v-3.5c0-1.1.6-1.5 1.5-1.5s1.5.5 1.5 1.5V16H18v-3.5c0-2.2-1.5-3.5-3-3.5-1 0-1.7.5-2 1V9h-2z" fill="rgba(255,255,255,0.64)" ></path></svg>
+          </a>
+          <a href="#" class="s8-sico">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" ></circle><rect x="7" y="7" width="8" height="8" rx="2.5" stroke="rgba(255,255,255,0.64)" stroke-width="1.2" ></rect><circle cx="11" cy="11" r="2" stroke="rgba(255,255,255,0.64)" stroke-width="1.2" ></circle><circle cx="13.8" cy="8.2" r=".6" fill="rgba(255,255,255,0.64)" ></circle></svg>
+          </a>
+          <a href="#" class="s8-sico">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" ></circle><path d="M7 7l3.2 4.4L7 15.2h1.4l2.5-2.9 2 2.9H16l-3.4-4.7L15.6 7h-1.4L12 9.7 10 7H7z" fill="rgba(255,255,255,0.64)" ></path></svg>
+          </a>
+          <a href="#" class="s8-sico" style="margin-left:4px;">
+            <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M11 0L0 18h22L11 0z" fill="rgba(255,255,255,0.55)" ></path></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="s8-logo-bottom">
+        <div class="s8-logo-word">Adobe</div>
+      </div>
+
+    </div><!-- /footer -->
+  </div><!-- /dark-inner -->
+</div><!-- /dark -->
+
+</section>

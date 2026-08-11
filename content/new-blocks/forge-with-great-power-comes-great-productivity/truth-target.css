@@ -1,0 +1,80 @@
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9h1 {
+      font-family: 'Adobe Clean Display','Adobe Clean',Helvetica,Arial,sans-serif;
+      font-weight: 900;
+      font-size: 80px;
+      line-height: 76px;
+      letter-spacing: -3.2px;
+      text-align: center;
+      color: #000;
+      margin: 0;
+      max-width: 960px;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9body {
+      font-family: 'Adobe Clean',Helvetica,Arial,sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 24px;
+      text-align: center;
+      color: #000;
+      max-width: 696px;
+      margin: 0;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9copy {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 124px 40px 0;
+      box-sizing: border-box;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9gallery-wrap {
+      overflow: hidden;
+      height: 1279px;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9gallery {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      width: 1535px;
+      margin: 0 auto;
+      height: 100%;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9col {
+      display: flex;
+      flex-direction: column;
+      gap: 100px;
+      width: 291px;
+      flex-shrink: 0;
+    }
+
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9img {
+      border-radius: 16px;
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+      background: #e5e5e5;
+    }
+
+@media (max-width: 1280px) {
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9h1 { font-size: 64px !important; line-height: 64px !important; }
+}
+
+@media (max-width: 1024px) {
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9h1 { font-size: 52px !important; line-height: 56px !important; letter-spacing: -2px !important; }
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9body { font-size: 18px !important; }
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9copy { padding-top: 72px !important; padding-left: 24px !important; padding-right: 24px !important; }
+}
+
+@media (max-width: 768px) {
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9h1 { font-size: 36px !important; line-height: 40px !important; letter-spacing: -1.2px !important; }
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9body { font-size: 16px !important; line-height: 22px !important; }
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9copy { padding-top: 48px !important; padding-left: 16px !important; padding-right: 16px !important; gap: 16px !important; }
+.forge-with-great-power-comes-great-productivity [data-figma-node-id="9943:37835"] .h9gallery-wrap { overflow-x: auto !important; height: auto !important; min-height: 600px !important; }
+}

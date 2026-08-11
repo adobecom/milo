@@ -1,0 +1,25 @@
+/* lockup variant — centered text/CTA lockup. Tokens: --s2a-* only. */
+.forge-there-s-always-something-new-with-acrobat--lockup {
+  display: flex;
+  justify-content: center;
+  padding: var(--s2a-layout-lg);
+  background: var(--s2a-color-gray-1000);
+}
+.forge-there-s-always-something-new-with-acrobat--lockup .lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24);
+  max-width: 720px;
+  text-align: center;
+  color: var(--s2a-color-gray-25);
+}
+.forge-there-s-always-something-new-with-acrobat--lockup .lockup-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2a-spacing-12) var(--s2a-spacing-32);
+  border-radius: var(--s2a-border-radius-999);
+  background: var(--s2a-color-brand-adobe-red);
+  color: var(--s2a-color-gray-25);
+  text-decoration: none;
+}

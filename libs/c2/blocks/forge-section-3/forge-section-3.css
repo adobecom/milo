@@ -1,0 +1,160 @@
+/* forge-section-3 — decorative collage of five rotated, overlapping
+   "business document" cards over a light-grey stage. Every rule is keyed on the
+   classes init() stamps at runtime (the authored Figma classes are stripped by
+   DA — C24) and every selector is prefixed with the block root (L10/L19). Layout
+   INTENT is ported from the Figma section as responsive units (%, aspect-ratio,
+   rotation) — never pinned design-width px (L27). Tokens live inside the block
+   root, not :root (L19). */
+
+.forge-section-3 {
+  --fs3-radius: var(--s2a-border-radius-24, 24px);
+  --fs3-font: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+  --fs3-serif: Georgia, 'Times New Roman', serif;
+  --fs3-report-bg: #dadae7;
+  --fs3-report-ink: #29293e;
+  --fs3-paper-bg: #000;
+  --fs3-paper-ink: #f0f0f0;
+  --fs3-growth-bg: #682c41;
+  --fs3-growth-ink: #f0877b;
+  --fs3-invoice-bg: #efeff1;
+  --fs3-invoice-ink: #2254bd;
+  --fs3-media-bg: #abdde8;
+  --fs3-media-ink: #3d5572;
+
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-80, 80px);
+  background-color: var(--s2a-color-background-subtle, #f6f6f6);
+  overflow: hidden;
+}
+
+.forge-section-3 * { box-sizing: border-box; }
+
+/* --- Collage stage: aspect-ratio box, cards positioned as % of it --- */
+.forge-section-3 .forge-section-3-collage {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  aspect-ratio: 1440 / 1080;
+}
+
+.forge-section-3 .forge-section-3-card {
+  position: absolute;
+  width: 31%;
+  aspect-ratio: 446 / 558;
+  padding: 5.5%;
+  border-radius: var(--fs3-radius);
+  overflow: hidden;
+  font-family: var(--fs3-font);
+  font-size: clamp(6px, 1.15vw, 13px);
+  line-height: 1.2;
+  transform-origin: 0 0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Shared child roles */
+.forge-section-3 .forge-section-3-card .forge-section-3-title { margin: 0 0 0.3em; font-weight: 700; line-height: 1.05; }
+.forge-section-3 .forge-section-3-card .forge-section-3-eyebrow { margin: 0 0 0.35em; font-size: 0.72em; font-weight: 700; letter-spacing: 0.02em; }
+.forge-section-3 .forge-section-3-card .forge-section-3-copy { margin: 0 0 0.5em; font-size: 0.78em; }
+.forge-section-3 .forge-section-3-card .forge-section-3-media { margin: 0; }
+.forge-section-3 .forge-section-3-card img,
+.forge-section-3 .forge-section-3-card picture { display: block; max-width: 100%; height: auto; }
+.forge-section-3 .forge-section-3-card .forge-section-3-media--bg { display: none; }
+
+/* Tabs (growth + media) */
+.forge-section-3 .forge-section-3-tabs { display: flex; gap: 0.5em; margin-bottom: 0.9em; }
+.forge-section-3 .forge-section-3-tab { margin: 0; padding: 0.35em 0.5em; border-radius: 0.45em; font-size: 0.9em; font-weight: 600; line-height: 1; }
+
+/* --- 1. Industry Report (back layer) --- */
+.forge-section-3 .forge-section-3-card--report {
+  left: 78%; top: 38%; rotate: 35.4deg;
+  background: var(--fs3-report-bg); color: var(--fs3-report-ink);
+  z-index: 1;
+}
+.forge-section-3 .forge-section-3-card--report .forge-section-3-title { font-size: 2.4em; letter-spacing: -0.03em; margin-bottom: 0.5em; }
+.forge-section-3 .forge-section-3-card--report .forge-section-3-copy {
+  font-family: var(--fs3-serif); font-size: 0.6em; line-height: 1.25; margin-bottom: 0.4em;
+}
+.forge-section-3 .forge-section-3-card--report .forge-section-3-chart {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 2%; height: 34%; margin-top: 0.6em; padding-top: 0.4em;
+  border-top: 1px solid #9d9dbf; border-left: 1px solid #9d9dbf;
+}
+.forge-section-3 .forge-section-3-card--report .forge-section-3-chart .forge-section-3-media { flex: 1; }
+.forge-section-3 .forge-section-3-card--report .forge-section-3-chart img { width: 100%; }
+
+/* --- 2. White Paper cover --- */
+.forge-section-3 .forge-section-3-card--whitepaper {
+  left: 58%; top: 25%; width: 28.5%; aspect-ratio: 410 / 531; padding: 0;
+  rotate: 18.6deg; background: var(--fs3-paper-bg); color: var(--fs3-paper-ink);
+  z-index: 3; box-shadow: 14px 26px 40px rgba(0, 0, 0, 0.35);
+}
+.forge-section-3 .forge-section-3-card--whitepaper .forge-section-3-media:first-child img { width: 100%; height: 66%; object-fit: cover; }
+.forge-section-3 .forge-section-3-card--whitepaper .forge-section-3-media:not(:first-child) { position: absolute; top: 4%; left: 4%; width: 45%; opacity: 0.85; }
+.forge-section-3 .forge-section-3-card--whitepaper .forge-section-3-title {
+  position: absolute; left: 6%; bottom: 8%; margin: 0;
+  font-family: var(--fs3-serif); font-size: 2.6em; line-height: 0.9;
+}
+.forge-section-3 .forge-section-3-card--whitepaper .forge-section-3-copy {
+  position: absolute; right: 5%; bottom: 8%; margin: 0; font-size: 0.7em; text-align: right;
+}
+
+/* --- 3. Growth / Monthly User Acquisition --- */
+.forge-section-3 .forge-section-3-card--growth {
+  left: -18%; top: -8%; width: 31%; aspect-ratio: 448 / 558;
+  rotate: -27.4deg; background: var(--fs3-growth-bg); color: var(--fs3-growth-ink);
+  z-index: 6;
+}
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-tab--active { background: var(--fs3-growth-ink); color: var(--fs3-growth-bg); }
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-tab--ghost { border: 1px solid var(--fs3-growth-ink); }
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-title { font-size: 2em; max-width: 60%; }
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-media {
+  margin-top: 0.8em; padding: 0.6em; background: var(--fs3-growth-ink); border-radius: 0.3em;
+}
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-media img { width: 100%; border: 2px solid var(--fs3-growth-bg); }
+.forge-section-3 .forge-section-3-card--growth .forge-section-3-copy {
+  display: inline-block; margin: 0.6em 0 0; padding: 0.3em 0.45em;
+  background: #020202; color: var(--fs3-growth-ink); border-radius: 0.3em; font-size: 0.85em; font-weight: 700;
+}
+
+/* --- 4. Invoice --- */
+.forge-section-3 .forge-section-3-card--invoice {
+  left: 8%; top: -4%; width: 31%; aspect-ratio: 448 / 558;
+  rotate: -14.3deg; background: var(--fs3-invoice-bg); color: var(--fs3-invoice-ink);
+  z-index: 7;
+}
+.forge-section-3 .forge-section-3-card--invoice .forge-section-3-title:first-of-type,
+.forge-section-3 .forge-section-3-card--invoice .forge-section-3-title { font-size: 2.2em; letter-spacing: -0.02em; }
+.forge-section-3 .forge-section-3-card--invoice .forge-section-3-eyebrow { font-size: 0.62em; margin-bottom: 0.15em; }
+.forge-section-3 .forge-section-3-card--invoice .forge-section-3-copy { font-size: 0.62em; margin-bottom: 0.2em; font-weight: 700; }
+
+/* --- 5. Media Mix (front) --- */
+.forge-section-3 .forge-section-3-card--media {
+  left: 35%; top: 12%; width: 31%; aspect-ratio: 446 / 556; rotate: 0deg;
+  background: var(--fs3-media-bg); color: var(--fs3-media-ink);
+  z-index: 8;
+  box-shadow: 0 42px 33px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+}
+.forge-section-3 .forge-section-3-card--media .forge-section-3-tab--active { background: var(--fs3-media-ink); color: var(--fs3-media-bg); }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-tab--ghost { border: 1px solid var(--fs3-media-ink); }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-title { font-size: 2em; margin-bottom: 0.6em; }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-treemap { display: flex; flex-direction: column; gap: 2px; }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-cell {
+  margin: 0; padding: 0.5em; color: var(--fs3-media-bg); font-size: 0.85em; font-weight: 500; line-height: 1;
+}
+.forge-section-3 .forge-section-3-card--media .forge-section-3-cell[data-cell="0"] { background: #3d5572; min-height: 6.5em; }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-cell[data-cell="1"] { background: #40739b; min-height: 4em; }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-cell[data-cell="2"] { background: #588cb4; min-height: 3em; }
+.forge-section-3 .forge-section-3-card--media .forge-section-3-cell[data-cell="3"] { background: #a5bdcf; color: var(--fs3-media-ink); min-height: 2em; }
+
+/* --- Responsive: below the collage breakpoint, un-rotate + stack the cards --- */
+@media (width <= 900px) {
+  .forge-section-3 .forge-section-3-collage {
+    aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 420px;
+  }
+  .forge-section-3 .forge-section-3-card {
+    position: static; width: 100%; rotate: 0deg; left: auto; top: auto; padding: 24px;
+  }
+  .forge-section-3 .forge-section-3-card--report .forge-section-3-copy { column-count: 2; font-size: 0.85em; }
+}

@@ -1,0 +1,250 @@
+<section data-binding-source="judge" data-binding-variants="default" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="9943:39279" data-block="news">
+<style>
+  [data-figma-node-id="9943:39279"] {
+    width: 100%;
+    background-color: #f6f6f6;
+  }
+  .wn-wrap {
+    max-width: 1440px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding: 52px 124px 124px;
+  }
+  .wn-section-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+  .wn-eyebrow {
+    margin: 0;
+    font-family: 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 20px;
+    color: rgba(0, 0, 0, 0.64);
+  }
+  .wn-heading {
+    margin: 0;
+    max-width: 664px;
+    font-family: 'Adobe Clean Display', 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 900;
+    font-size: 56px;
+    line-height: 56px;
+    letter-spacing: -1.68px;
+    color: #000000;
+    text-align: center;
+  }
+  .wn-cols {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+    max-width: 1192px;
+  }
+  .wn-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .wn-asset-img {
+    display: block;
+    width: 100%;
+    height: 294px;
+    border-radius: 16px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .wn-asset-box {
+    width: 100%;
+    height: 294px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .wn-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 24px 0;
+  }
+  .wn-copy-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .wn-card-title {
+    margin: 0;
+    font-family: 'Adobe Clean Display', 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    line-height: 18px;
+    letter-spacing: -0.2px;
+    color: #000000;
+  }
+  .wn-card-body {
+    margin: 0;
+    font-family: 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: rgba(0, 0, 0, 0.64);
+  }
+  .wn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .wn-cta-text {
+    font-family: 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 18px;
+    color: #000000;
+  }
+  @media (max-width: 1200px) {
+    .wn-wrap { padding: 48px 60px 100px; }
+    .wn-heading { font-size: 48px; line-height: 50px; }
+  }
+  @media (max-width: 1024px) {
+    .wn-wrap { padding: 44px 40px 80px; gap: 32px; }
+    .wn-heading { font-size: 42px; line-height: 46px; letter-spacing: -1.2px; }
+  }
+  @media (max-width: 768px) {
+    .wn-wrap { padding: 40px 24px 64px; gap: 28px; }
+    .wn-cols { flex-direction: column; }
+    .wn-heading { font-size: 36px; line-height: 38px; letter-spacing: -0.9px; }
+    .wn-asset-box, .wn-asset-img { height: 240px; }
+  }
+  @media (max-width: 480px) {
+    .wn-wrap { padding: 32px 20px 56px; }
+    .wn-heading { font-size: 30px; line-height: 33px; }
+  }
+</style>
+
+<div class="wn-wrap">
+
+  <!-- Section Heading -->
+  <div class="wn-section-head">
+    <p class="wn-eyebrow">Features and Releases</p>
+    <h2 class="wn-heading">There’s always something new with Acrobat.</h2>
+  </div>
+
+  <!-- 3-Column Feature Cards -->
+  <div class="wn-cols">
+
+    <!-- ── Column 1: PDF to Podcast ── -->
+    <div class="wn-col">
+      <img src="media_bizpro-hub-asset3.png" alt="PDF to Podcast interface showing Generate Podcast UI with audio waveform player" class="wn-asset-img" style="background-color: #1a1a1a;" />
+      <div class="wn-copy">
+        <div class="wn-copy-group">
+          <h3 class="wn-card-title">PDF to Podcast</h3>
+          <p class="wn-card-body">Convert any PDF into audio playback, with options to hear a quick overview or a complete narration.</p>
+        </div>
+        <a href="#" class="wn-cta">
+          <span class="wn-cta-text">Learn more</span>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:block;flex-shrink:0;">
+            <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Column 2: One-click Brand Kit Setup ── -->
+    <div class="wn-col">
+      <div class="wn-asset-box" style="background-color: #000000;">
+        <!-- Top-left: dark panel with colorful brand icon -->
+        <div style="position:absolute;left:7px;top:8px;width:140px;height:135px;border-radius:9px;background:#252525;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <svg width="96" height="78" viewBox="0 0 96 78" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Left arch shape — pink/coral -->
+            <path d="M12 66 L12 34 C12 18 22 7 34 7 C46 7 52 17 52 33 L52 44" stroke="#f472b6" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round" ></path>
+            <!-- Right arch shape — lime green -->
+            <path d="M44 66 L44 44 C44 26 54 9 66 9 C78 9 84 21 84 37 L84 66" stroke="#4ade80" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round" ></path>
+            <!-- Accent dots -->
+            <circle cx="12" cy="66" r="5" fill="#fb923c" ></circle>
+            <circle cx="52" cy="44" r="5" fill="#fbbf24" ></circle>
+            <circle cx="84" cy="66" r="5" fill="#4ade80" ></circle>
+          </svg>
+        </div>
+        <!-- Right: smooth conic gradient panel -->
+        <div style="position:absolute;left:155px;top:8px;width:228px;height:278px;border-radius:9px;background:conic-gradient(from 155deg at 52% 48%, #34d399, #86efac, #d9f99d, #fde047, #fbbf24, #fb923c, #fda4af, #f0abfc, #c084fc, #a5b4fc, #7dd3fc, #34d399);"></div>
+        <!-- Bottom-left: coral/salmon panel with chart line -->
+        <div style="position:absolute;left:7px;top:151px;width:140px;height:135px;border-radius:9px;background:#e77f68;overflow:hidden;">
+          <svg style="position:absolute;left:-18px;top:28px;" width="172" height="90" viewBox="0 0 172 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M4 76 C18 70, 36 62, 56 52 C70 45, 84 42, 96 46 C106 49, 114 36, 130 26 C144 18, 158 20, 172 16" stroke="#000000" stroke-width="1.5" fill="none" ></path>
+          </svg>
+          <!-- Peak dot -->
+          <div style="position:absolute;left:64px;top:54px;width:5px;height:5px;background:#ed502c;border:1.2px solid #000;border-radius:50%;"></div>
+          <!-- Tooltip label -->
+          <div style="position:absolute;left:50px;top:40px;background:#020202;border-radius:2px;padding:2px 5px;white-space:nowrap;">
+            <span style="font-size:5.5px;line-height:1;color:#ed502c;font-family:monospace;font-weight:700;letter-spacing:0.2px;">+67.8%</span>
+          </div>
+        </div>
+      </div>
+      <div class="wn-copy">
+        <div class="wn-copy-group">
+          <h3 class="wn-card-title">One-click Brand Kit Setup</h3>
+          <p class="wn-card-body">Set up a complete brand kit in a single click by automatically extracting logos, colors, and fonts from existing content.</p>
+        </div>
+        <a href="#" class="wn-cta">
+          <span class="wn-cta-text">Learn more</span>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:block;flex-shrink:0;">
+            <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Column 3: AI-Powered Video Highlights ── -->
+    <div class="wn-col">
+      <div class="wn-asset-box" style="background-color: #e5e6e3;">
+        <!-- Fan of video cards, symmetric, growing toward center -->
+        <!-- Far left edge -->
+        <div style="position:absolute;left:0;top:139px;width:17px;height:17px;background:#d4d4d2;"></div>
+        <!-- Small left thumbnail -->
+        <div style="position:absolute;left:17px;top:128px;width:39px;height:39px;background:#d0d0ce;border-radius:3px;overflow:hidden;">
+          <img src="media_bizpro-hub-asset4.png" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'" />
+        </div>
+        <!-- Far right edge -->
+        <div style="position:absolute;left:375px;top:139px;width:17px;height:17px;background:#d4d4d2;"></div>
+        <!-- Small right thumbnail -->
+        <div style="position:absolute;left:336px;top:128px;width:39px;height:39px;background:#d0d0ce;border-radius:3px;"></div>
+        <!-- Medium left panel -->
+        <div style="position:absolute;left:56px;top:98px;width:51px;height:99px;background:#cacac8;border-radius:5px;"></div>
+        <!-- Medium right panel -->
+        <div style="position:absolute;left:284px;top:98px;width:51px;height:99px;background:#cacac8;border-radius:5px;"></div>
+        <!-- Tall left panel -->
+        <div style="position:absolute;left:108px;top:67px;width:39px;height:161px;background:#c4c4c2;border-radius:5px;"></div>
+        <!-- Tall right panel -->
+        <div style="position:absolute;left:245px;top:67px;width:39px;height:161px;background:#c8c8c6;border-radius:5px;"></div>
+        <!-- Center main card — largest, uses image asset -->
+        <div style="position:absolute;left:147px;top:43px;width:98px;height:208px;border-radius:7px;background:#bbbbb9;overflow:hidden;">
+          <img src="media_bizpro-hub-asset4.png" alt="AI-powered video highlight frame" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>
+      </div>
+      <div class="wn-copy">
+        <div class="wn-copy-group">
+          <h3 class="wn-card-title">AI-Powered Video Highlights</h3>
+          <p class="wn-card-body">Upload any video and let Adobe Express automatically find the highlights, add captions, and export in any aspect ratio.</p>
+        </div>
+        <a href="#" class="wn-cta">
+          <span class="wn-cta-text">Learn more</span>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:block;flex-shrink:0;">
+            <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>

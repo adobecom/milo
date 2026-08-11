@@ -1,0 +1,279 @@
+/* forge-create-beautifully — document-showcase collage + PDF-Space CTA.
+   Scoped to .forge-create-beautifully. Layout intent is expressed relatively
+   (grid + aspect-ratio + clamp), never pinned to the 2560px Figma frame. */
+
+.forge-create-beautifully {
+  --fcb-badge-bg: #e1e1f1;
+  --fcb-text: var(--s2a-color-gray-1000, #131313);
+  --fcb-muted: rgba(0, 0, 0, 0.64);
+  --fcb-tile: var(--s2a-color-gray-100, #ededf5);
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  padding: clamp(64px, 10vw, 124px) clamp(20px, 5vw, 40px) clamp(48px, 7vw, 80px);
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 1.6px) 0 0 / 24px 24px,
+    linear-gradient(180deg, rgba(246, 246, 246, 0) 0%, #f6f6f6 100%),
+    #fbfbfb;
+  color: var(--fcb-text);
+}
+
+.forge-create-beautifully * { box-sizing: border-box; }
+
+.forge-create-beautifully .forge-create-beautifully__inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 8vw, 96px);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ---- Document card grid ---- */
+.forge-create-beautifully .fcb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 200px));
+  justify-content: center;
+  align-items: start;
+  gap: clamp(20px, 4vw, 56px);
+  width: 100%;
+}
+
+.forge-create-beautifully .fcb-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.forge-create-beautifully .fcb-card__cover {
+  width: 100%;
+  /* Reserve the box up front (matches the ~192x240 Figma cover) so an image with
+     no width/height attrs can never shift the page while it loads (CLS guard). */
+  aspect-ratio: 192 / 240;
+  border-radius: var(--s2a-border-radius-8, 8px);
+  overflow: hidden;
+  background: var(--fcb-tile);
+}
+
+.forge-create-beautifully .fcb-card__cover--media {
+  line-height: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.forge-create-beautifully .fcb-card__cover--media picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.forge-create-beautifully .fcb-card__img,
+.forge-create-beautifully .fcb-card__cover--media img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Text-cover tile — a tinted "document cover" for cards with no preview image. */
+.forge-create-beautifully .fcb-card__cover--tile {
+  aspect-ratio: 192 / 240;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.forge-create-beautifully .fcb-card__title {
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-weight: 700;
+  font-size: clamp(14px, 1.1vw, 16px);
+  line-height: 1.15;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+
+.forge-create-beautifully .fcb-card__sub {
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-size: 11px;
+  line-height: 1.2;
+  opacity: 0.72;
+  overflow-wrap: anywhere;
+}
+
+/* Faint "document lines" for an empty (badge-only) tile. */
+.forge-create-beautifully .fcb-card__cover--tile:empty {
+  background-image: repeating-linear-gradient(
+    180deg, transparent 0 22px,
+    rgba(0, 0, 0, 0.06) 22px 23px, transparent 23px 34px);
+  background-position: 0 18px;
+}
+
+/* Tint cycle so the collage reads as varied covers. */
+.forge-create-beautifully .fcb-card__cover--tile { background-color: #ececf4; color: #2b2b3a; }
+.forge-create-beautifully .fcb-card:nth-child(4n + 1) .fcb-card__cover--tile { background-color: #efeff1; color: #2254bd; }
+.forge-create-beautifully .fcb-card:nth-child(4n + 2) .fcb-card__cover--tile { background-color: #abdde8; color: #29435c; }
+.forge-create-beautifully .fcb-card:nth-child(4n + 3) .fcb-card__cover--tile { background-color: #682c41; color: #f0877b; }
+.forge-create-beautifully .fcb-card:nth-child(4n) .fcb-card__cover--tile { background-color: #dadae7; color: #29293e; }
+
+.forge-create-beautifully .fcb-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 6px;
+  border-radius: var(--s2a-border-radius-2, 2px);
+  background: var(--fcb-badge-bg);
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -0.24px;
+  color: var(--s2a-color-gray-1000, #000);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Copy panel ---- */
+.forge-create-beautifully .fcb-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24, 24px);
+  align-self: flex-end;
+  width: 100%;
+  max-width: 392px;
+  padding: var(--s2a-spacing-24, 24px);
+}
+
+.forge-create-beautifully .fcb-copy .fcb-heading {
+  margin: 0;
+  font-family: var(--s2a-font-family-adobe-clean-display, 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif);
+  font-weight: 900;
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.15;
+  letter-spacing: -0.48px;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-create-beautifully .fcb-copy p {
+  margin: 0;
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--fcb-muted);
+}
+
+/* ---- CTAs ---- */
+.forge-create-beautifully .fcb-cta {
+  appearance: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--s2a-color-gray-1000, #000);
+  cursor: pointer;
+}
+
+.forge-create-beautifully .fcb-cta::after {
+  content: '';
+  width: 6px;
+  height: 10px;
+  background: currentcolor;
+  clip-path: polygon(0 0, 35% 0, 100% 50%, 35% 100%, 0 100%, 62% 50%);
+}
+
+.forge-create-beautifully .fcb-cta--solid {
+  align-self: center;
+  padding: 11px 24px;
+  border-radius: var(--s2a-border-radius-999, 75px);
+  background: var(--s2a-color-gray-1000, #000);
+  color: #fff;
+}
+
+.forge-create-beautifully .fcb-cta--solid::after { display: none; }
+.forge-create-beautifully .fcb-cta:hover { opacity: 0.82; }
+
+/* ---- Test-drive CTA region ---- */
+.forge-create-beautifully .fcb-try {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  width: 100%;
+  text-align: center;
+}
+
+.forge-create-beautifully .fcb-try__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.forge-create-beautifully .fcb-try .fcb-heading {
+  margin: 0;
+  max-width: 732px;
+  font-family: var(--s2a-font-family-adobe-clean-display, 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif);
+  font-weight: 900;
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -1.68px;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-create-beautifully .fcb-try__copy p {
+  margin: 0;
+  max-width: 616px;
+  font-family: var(--s2a-font-family-adobe-clean, 'Adobe Clean', system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--s2a-color-gray-900, #131313);
+}
+
+/* Decorative app-window plate (aria-hidden). */
+.forge-create-beautifully .fcb-try__frame {
+  width: 100%;
+  max-width: 988px;
+  aspect-ratio: 988 / 567;
+  border-radius: 12px;
+  border: 4px solid #fff;
+  overflow: hidden;
+  background: #252525;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.14), 0 100px 82px rgba(0, 0, 0, 0.12);
+}
+
+.forge-create-beautifully .fcb-try__bar {
+  height: 35px;
+  background: #323232;
+  border-bottom: 1px solid #545454;
+}
+
+.forge-create-beautifully .fcb-try__canvas {
+  height: calc(100% - 36px);
+  background:
+    linear-gradient(90deg, #323232 0 21%, transparent 21%),
+    #252525;
+}
+
+.forge-create-beautifully .fcb-try a { color: var(--s2a-color-gray-100, #ebebeb); }
+
+@media (max-width: 900px) {
+  .forge-create-beautifully .fcb-copy { align-self: center; max-width: 600px; text-align: center; align-items: center; }
+  .forge-create-beautifully .fcb-cta { align-self: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-create-beautifully .fcb-cta { transition: none; }
+}
