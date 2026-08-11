@@ -123,7 +123,6 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
-  loadWebclient();
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
@@ -132,6 +131,9 @@ export default function init(el) {
     (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
   });
   window.addEventListener('feds:signOut', () => {
+    if (!window.adobe?.concierge?.clearHistory) {
+      loadWebclient();
+    }
     if (window.adobe?.concierge?.clearHistory) {
       if (document.body.classList.contains('bc-side-open')) {
         const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');

@@ -406,7 +406,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
     },
   );
 
-  // Test 9: Brand Concierge web client is preloaded load (loads at init)
+  // Test 9: Brand Concierge web client load (lazy, on first modal open)
   test(
     `[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`,
     async ({ page, baseURL }) => {
@@ -423,8 +423,9 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-3: Verify web client script is NOT yet loaded before modal opens', async () => {
-        // as a first init step.
-        await expect(bc.webClientScript).toHaveCount(1);
+        // BC M2 fast-follows changed the loader: web-client main.js is
+        // injected lazily inside openChatModal, not as a final init step.
+        await expect(bc.webClientScript).toHaveCount(0);
       });
 
       await test.step('step-4: Trigger modal by clicking the first prompt card', async () => {
