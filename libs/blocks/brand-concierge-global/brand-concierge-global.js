@@ -113,8 +113,6 @@ function decorateGnav(cards, input, topNav, el) {
       window.milo = milo;
       window.milo.brandConcierge = brandConcierge;
     }
-
-    if (localStorage.getItem('bc-side-overlay') === 'open') openSideModal(null, bcBootstrap);
   }
 }
 
@@ -156,4 +154,8 @@ export default function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+    openSideModal(null, bcBootstrap);
+  }
 }

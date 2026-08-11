@@ -182,4 +182,8 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+    openSideModal(null, bcBootstrap);
+  }
 }

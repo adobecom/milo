@@ -16,7 +16,7 @@ export default class BrandConciergeBlock {
     this.floatingButtonVisible = this.page.locator('.bc-floating-button.bc-floating-show');
 
     // Modal elements
-    this.modal = this.page.locator('#brand-concierge-modal');
+    this.modal = this.page.locator('#brand-concierge-side');
     this.modalMount = this.page.locator('#brand-concierge-mount');
     this.modalInputContainer = this.modalMount.locator('.input-container').first();
     this.modalDisclaimer = this.modalMount.locator('.disclaimer-message').first();
@@ -46,7 +46,7 @@ export default class BrandConciergeBlock {
     this.marqueeSendButton = this.block.locator('.input-field-button').first();
 
     // Modal close/dismiss elements
-    this.modalCloseButton = this.page.locator('#brand-concierge-modal .dialog-close');
+    this.modalCloseButton = this.page.locator('#brand-concierge-side .dialog-close');
     this.modalCurtain = this.page.locator('.modal-curtain');
 
     // Floating-input variant bar

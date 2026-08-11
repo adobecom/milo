@@ -28,7 +28,9 @@ const getTargetHeight = (target) => {
 };
 
 export function setCssGnavHeight() {
-  const gnavHeight = document.querySelector('header.global-navigation').getBoundingClientRect().height;
+  const gnav = document.querySelector('header.global-navigation');
+  if (!gnav) return;
+  const gnavHeight = gnav.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--bc-gnav-height', `${gnavHeight}px`);
 }
 
