@@ -11,12 +11,16 @@ import {
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
 function getFederalDomain(config) {
-  const queryParams = new URLSearchParams(window.location.search);
-  const federalBranch = queryParams.get('fedsbranch');
-  if (federalBranch?.trim()) {
-    const sanitized = federalBranch.trim().toLowerCase();
-    if (sanitized === 'local') return 'http://localhost:3000/federal';
-    return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+  const env = getEnv(config);
+
+  if (env.name !== 'prod') {
+    const queryParams = new URLSearchParams(window.location.search);
+    const federalBranch = queryParams.get('fedsbranch');
+    if (federalBranch?.trim()) {
+      const sanitized = federalBranch.trim().toLowerCase();
+      if (sanitized === 'local') return 'http://localhost:3000/federal';
+      return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+    }
   }
 
   const { hostname } = window.location;
@@ -26,7 +30,6 @@ function getFederalDomain(config) {
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
 
-  const env = getEnv(config);
   if (env.name === 'stage') return 'https://www.stage.adobe.com/federal';
   if (env.name === 'prod') return 'https://www.adobe.com/federal';
   return `${DEFAULT_FEDERAL_URL}/federal`;
