@@ -270,7 +270,8 @@ function getPromoMetadata() {
 }
 
 function getMepParam() {
-  return new URLSearchParams(window.location.search).has('mep') ? 'on' : 'off';
+  const mepParam = new URLSearchParams(window.location.search).get('mep');
+  return mepParam?.includes('json') ? 'on' : 'off';
 }
 
 export function getLocale() {
