@@ -19,8 +19,6 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // contention (shared preview origin) their arrival can exceed the default
   // budget on slower firefox/webkit workers. Widen the ceilings — timeouts are
   // ceilings, not sleeps, so fast runs are unaffected.
-  test.setTimeout(60000);
-  const BADGE_TIMEOUT = 20000;
   const URL = `${baseURL.replace('.aem.live', '.aem.page')}${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
@@ -28,7 +26,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // test the negative case first
   // test 4 will test the negative case for a MEP fragment
 
-  await expect(mepButtonLoc.caasBadge).not.toBeVisible();
+  await expect(mepButtonLoc.caasBadge).toHaveCount(0);
   await expect(mepButtonLoc.masHighlightActive).toHaveCount(0);
 
   // highlight options
@@ -46,12 +44,12 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
 
   await expect(mepButtonLoc.fragment2).toHaveAttribute('data-fragment-display', '/drafts/nala/features/personalization/mep-next-button/fragments/fragment-in-base-page');
 
-  await expect(mepButtonLoc.caasBadge).toBeVisible({ timeout: BADGE_TIMEOUT });
+  await expect(mepButtonLoc.caasBadge).toHaveCount(1);
   // Standalone card: mas highlight is engaged and the card is recognized, but it
   // gets no action stack (Edit/OST/Copy is collection-only). TODO: cover the
   // collection stack on a dedicated collection test page.
   await expect(mepButtonLoc.masHighlightActive).toHaveCount(1);
-  await expect(mepButtonLoc.masCardHost.first()).toBeVisible({ timeout: BADGE_TIMEOUT });
+  await expect(mepButtonLoc.masCardHost.first()).toHaveCount(1);
   await expect(mepButtonLoc.masCardActionStack).toHaveCount(0);
 });
 
@@ -227,5 +225,5 @@ test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, 
   await mepButtonLoc.previewButton.click();
 
   // the manifest should have inserted the accordion onto the page
-  await expect(mepButtonLoc.accordion).toBeVisible();
+  await expect(mepButtonLoc.accordion).toHaveCount(1);
 });

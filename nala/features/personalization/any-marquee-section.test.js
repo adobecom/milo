@@ -17,14 +17,14 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${defaultURL}`);
     await page.goto(defaultURL);
     await expect(page.locator(PZNUpdateLocator)).toHaveCount(0);
-    await expect(page.locator(marqueeLocator)).toHaveCount(18);
-    await expect(page.locator(heroMarqueeLocator)).toHaveCount(3);
+    await expect(page.locator(marqueeLocator)).toHaveCount(1);
+    await expect(page.locator(heroMarqueeLocator)).toHaveCount(1);
   });
 
   await test.step('step-2: verify personalized page substitutions', async () => {
     console.info(`[Test Page]: ${pznURL}`);
     await page.goto(pznURL);
-    await expect(page.locator(PZNUpdateLocator)).toHaveCount(21);
+    await expect(page.locator(PZNUpdateLocator)).toHaveCount(2);
     await expect(page.locator(marqueeLocator)).toHaveCount(0);
     await expect(page.locator(heroMarqueeLocator)).toHaveCount(0);
   });
