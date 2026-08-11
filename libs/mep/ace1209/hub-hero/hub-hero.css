@@ -170,9 +170,14 @@
   img {
     border-radius: var(--s2a-border-radius-md);
   }
+  
+  .video-holder {
+    border-radius: var(--s2a-border-radius-sm);
+  }
+  
 }
 
-.hub-hero-image-grid-container-col * {
+.hub-hero-image-grid-container-col > div {
   max-width: var(--grid-img-width);
   min-width: var(--grid-img-width-min);
   width: var(--grid-img-width);
@@ -379,7 +384,10 @@
   }
 }
 
-.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) {
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2), 
+.hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(2),
+.hub-hero-carousel-item .hub-hero-carousel-item-media p:has(picture) picture,
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div picture:nth-child(2) {
   position: absolute;
   top: var(--s2a-spacing-sm);
   left: var(--s2a-spacing-sm);
@@ -389,7 +397,10 @@
   z-index: 1;
 }
 
-.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img {
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img,
+.hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(2) img,
+.hub-hero-carousel-item .hub-hero-carousel-item-media p:has(picture) img,
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div picture:nth-child(2) img {
   width: 24px;
   height: 24px;
   min-width: unset;
@@ -398,7 +409,9 @@
 }
 
 .hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3) p:nth-child(1) picture,
-.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) p:nth-child(1) picture {
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) p:nth-child(1) picture,
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3)  picture,
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) picture {
   position: absolute;
 }
 
@@ -423,6 +436,10 @@
 
     p:nth-child(1) {
       height: 100%;
+    }
+
+    .video-holder, video {
+      width: 100%;
     }
   }
 
@@ -453,7 +470,8 @@
     }
   }
 
-  .hub-hero-carousel-item-media>p:nth-child(2) {
+  .hub-hero-carousel-item-media>p:nth-child(2),
+  .hub-hero-carousel-item-media>picture:nth-child(2) {
     position: absolute;
     top: var(--s2a-spacing-sm);
     left: var(--s2a-spacing-sm);

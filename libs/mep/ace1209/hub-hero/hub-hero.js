@@ -183,6 +183,8 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   }
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
+  const iconImg = icon?.querySelector('img');
+  if (isSvgUrl(iconImg?.src)) iconImg.src = getFederatedUrl(iconImg.src);
 
   decorateBlockText(left);
 
@@ -209,7 +211,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const slideEl = createTag('a', {
     class: 'hub-hero-carousel-item',
     tabindex: 0,
-    href: link?.href,
+    // href: link?.href,
     'data-index': index + 1,
     role: 'link',
     ...(isMobile() && {
@@ -319,6 +321,9 @@ const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
   if (leftClone) gridColumns[1]?.append(leftClone);
   if (rightClone) gridColumns[3]?.append(rightClone);
+  container.querySelectorAll('img').forEach((img) => {
+    if (isSvgUrl(img.src)) img.src = getFederatedUrl(img.src);
+  });
 
   return container;
 };
