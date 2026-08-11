@@ -35,20 +35,7 @@ function addAlloyTracking(lobObject) {
     modelScore: 'spectraScore',
   };
 
-  // Define helper functions for alloy_all if not already available
-  const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
-  const set = (obj, path, val) => {
-    path.split('.').reduce((current, segment, index, segments) => {
-      if (index === segments.length - 1) current[segment] = val;
-      else current[segment] = current[segment] || {};
-      return current[segment];
-    }, obj);
-    return obj;
-  };
-
   window.alloy_all = window.alloy_all || {};
-  window.alloy_all.get = window.alloy_all.get || get;
-  window.alloy_all.set = window.alloy_all.set || set;
   const alloyAll = window.alloy_all;
   alloyAll.data = alloyAll.data || {};
   alloyAll.data._adobe_corpnew = alloyAll.data._adobe_corpnew || {};
@@ -59,7 +46,6 @@ function addAlloyTracking(lobObject) {
     if (!spectraValues[key]) return;
     customEvents.push({ propertyName: spectraValues[key], propertyValue: value });
   });
-  if (window.location.href.includes('lobdebug')) console.log('Alloy tracking events:', customEvents);
 }
 
 /* eslint-enable no-underscore-dangle */
