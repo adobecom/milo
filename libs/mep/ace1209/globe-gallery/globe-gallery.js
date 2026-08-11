@@ -1021,6 +1021,8 @@ function createGlobeGalleryRuntime(
     maxVel: MAX_VEL,
     drag,
     isCursorActive: () => cursor.isActive(),
+    // Pitch follows geometry, not pointer type: the barrel (bp.YAW_ONLY) is yaw-only for mouse too.
+    getYawOnly: () => bp.YAW_ONLY,
   });
 
   // Per-frame pipeline. tick() is a thin orchestrator over the single-concern stages below;
@@ -2093,7 +2095,10 @@ function createGlobeGalleryRuntime(
     if (renderer) {
       renderer.domElement.style.filter = '';
       globalCaFilterOn = false;
-      renderer.forceContextLoss();
+      // NOTE: do NOT forceContextLoss() here — the canvas element is reused across rebuilds
+      // (band crossings / reduced-motion toggles), and a force-lost context is never restored,
+      // so the next renderer on the same canvas is born dead ("Context Lost"). dispose() alone
+      // frees this renderer's GPU resources.
       renderer.dispose();
       renderer.domElement.style.display = 'none';
     }

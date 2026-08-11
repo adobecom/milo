@@ -22,7 +22,9 @@ Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome). Mouse
 drags spin **yaw freely** but **pitch is clamped to ±60°** (cards never pass vertical
 or read upside down, and the globe self-levels); **touch drags spin yaw only** so
-vertical swipes stay page scroll (see Sphere rotation + Touch gesture arbitration).
+vertical swipes stay page scroll, and **the barrel is yaw-only for mouse too** (pitch
+follows the geometry, not the pointer — a cylinder can't centre vertically). See
+Sphere rotation + Touch gesture arbitration.
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
@@ -648,9 +650,14 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     *primary* pointer's precision), not `(hover: none)` or a UA sniff. Precision is read **once at
     init** (`usesCylinderGeometry`), so the geometry that bakes at `buildCards()` matches the device
     the page loaded on; a **mid-session mouse/trackpad swap needs a reload** (out of scope — rare,
-    and not worth a live-rebuild listener). Distinct from `interaction.js`'s per-*gesture*
-    `e.pointerType` check, so a hybrid device still gets full pitch from its mouse and yaw-only from
-    a finger within one session.
+    and not worth a live-rebuild listener). The width half *is* live, though: crossing 768px rebuilds
+    the geometry and flips `bp.YAW_ONLY`, and drag-pitch follows it (`getYawOnly: () => bp.YAW_ONLY`),
+    so a desktop window narrowed to `sm` gets the barrel *and* yaw-only mouse drags in lockstep.
+  - **Pitch is gated on `bp.YAW_ONLY` (geometry), not `e.pointerType`.** The barrel is yaw-only for
+    everyone — mouse included — because a cylinder can't centre a card vertically (matching the
+    keyboard/modal centring path, which holds pitch on `YAW_ONLY`). Pointer type still matters for
+    the *touch* half: a finger on the sphere is yaw-only (vertical = scroll) even though the sphere
+    itself pitches, so the drag path suppresses `velY` when `isTouchDrag || getYawOnly()`.
 
     ```
     device                  band cards  shape            cols  cardW  wall@near  col imb
@@ -737,11 +744,13 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     sparsity the old fixed ±14° read as debris. md keeps the collage character.
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On
   touch a vertical drag *is* the page-scroll gesture, so touch gets **yaw only** (horizontal spins,
-  vertical scrolls); pitch (`drag.velY`) stays mouse-only. `touch-action: pan-y` alone isn't enough
+  vertical scrolls); pitch (`drag.velY`) is written only when `!isTouchDrag && !getYawOnly()` — i.e.
+  a mouse on the sphere. `touch-action: pan-y` alone isn't enough
   — moves before the browser commits to the pan leak a pitch kick — so the axis is resolved in JS
   from the first `AXIS_LOCK_THRESHOLD` (8px) of travel, then **latched** for the gesture (a curved
   swipe can't flip axes; a 45° tie resolves to vertical). `isTouchDrag` is per-gesture from
-  `e.pointerType`, so a touchscreen laptop locks finger input but keeps full mouse pitch.
+  `e.pointerType`, so a touchscreen laptop locks finger input but keeps mouse pitch **on the sphere**
+  (its mouse still yaws-only on the barrel, since pitch follows geometry).
   - **Taps aren't gated on the lock** — `CLICK_MAX_MOVE` (10px) > the 8px threshold, so a jittery
     tap may have latched an axis; `onPointerUp`'s independent distance/time test keeps tap-to-open
     unchanged.

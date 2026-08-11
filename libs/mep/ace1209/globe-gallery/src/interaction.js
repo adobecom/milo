@@ -13,7 +13,7 @@ const AXIS_VERTICAL = 2; // page scroll — we ignore the gesture entirely
 
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
-  getSphereFormT, interactiveThreshold, maxVel, drag, isCursorActive,
+  getSphereFormT, interactiveThreshold, maxVel, drag, isCursorActive, getYawOnly,
 }) {
   // Raycaster + NDC scratch for canvas picking.
   const raycaster = new THREE.Raycaster();
@@ -92,8 +92,11 @@ export default function createInteraction({
     // Touch, vertical → the page owns this gesture; leave the sphere inert.
     if (isTouchDrag && axisLock === AXIS_VERTICAL) return;
     drag.velX = Math.max(-maxVel, Math.min(maxVel, (e.clientX - lastMX) * DRAG_SENSITIVITY));
-    // Pitch is mouse-only. +Y delta (drag down) tips the front down so the globe follows.
-    if (!isTouchDrag) {
+    // Pitch is enabled only for a mouse on the sphere. Touch never pitches (vertical = scroll);
+    // the yaw-only barrel never pitches for anyone (a cylinder can't centre vertically — matches
+    // the keyboard/modal centring path, which holds pitch when bp.YAW_ONLY). +Y delta (drag down)
+    // tips the front down so the globe follows.
+    if (!isTouchDrag && !getYawOnly()) {
       drag.velY = Math.max(-maxVel, Math.min(maxVel, (e.clientY - lastMY) * DRAG_SENSITIVITY));
     }
     lastMX = e.clientX; lastMY = e.clientY;
