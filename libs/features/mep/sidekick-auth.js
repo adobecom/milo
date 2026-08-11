@@ -38,10 +38,11 @@ export function isSidekickAuthed() {
   return isAuthedIn(getPluginActionBarShadow());
 }
 
-// Ungated = genuine preview/dev only (*.aem.page/*.hlx.page, *.aem.reviews,
-// localhost). Everything else — adobe.com, prodDomains, the public *.aem.live edge,
-// unknown hosts — is GATED. env is spoofable (?env=stage), so it may only tighten.
-const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$/;
+// Ungated (no auth) = preview/dev/stage/internal hosts only; prod, prodDomains, the
+// public *.aem.live edge, and unknown hosts stay GATED. graybox's [.-] covers both
+// graybox.adobe.com and the hyphenated business-graybox.adobe.com. Keyed on hostname,
+// not config.env.name (spoofable via ?env=stage on any host).
+const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$|(^|\.)(stage|corp)\.adobe\.com$|(^|[.-])graybox\.adobe\.com$/;
 export function isUngatedHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
 }

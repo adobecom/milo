@@ -47,19 +47,54 @@ const bcAnalytics = (event) => {
       case 'card:clicked':
         _satellite.track('event', {
           data: {
-            web: { webInteraction: { name: `BC-card_clicked|${event.data?.element?.cardType}|${event.data?.element?.productName}` } },
+            web: { webInteraction: { name: `BC-card_clicked|${event.data?.element?.cardType}|${event.data?.element?.productName}|loginStatus:${event.data?.element?.loginStatus}` } },
             _adobe_corpnew: {
               digitalData: {
                 primaryEvent: {
                   eventInfo: {
                     interaction: {
-                      click: `BC-card|${event.data?.element?.cardType}|${event.data?.element?.productName}|${event.data?.element?.productPageURL}`,
+                      click: `BC-card|${event.data?.element?.cardType}|${event.data?.element?.productName}|${event.data?.element?.productPageURL}|loginStatus:${event.data?.element?.loginStatus}`,
                       iclick: true,
                     },
                   },
                 },
               },
             },
+          },
+        });
+        break;
+      case 'cta:clicked':
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `BC-cta_clicked|loginStatus:${window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out'}` } },
+            _adobe_corpnew: {
+              digitalData: {
+                primaryEvent: {
+                  eventInfo: {
+                    interaction: {
+                      click: `BC-cta|loginStatus:${window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out'}`,
+                      iclick: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+        break;
+      case 'firefly:galleryRendered':
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `BC-firefly_gallery_rendered|loginStatus:${event.data?.element?.loginStatus}` } },
+            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { additionalImpressions: `BC-firefly-gallery|${event.data?.element?.cardType}|loginStatus:${event.data?.element?.loginStatus}` } } } } },
+          },
+        });
+        break;
+      case 'firefly:imageRendered':
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `BC-firefly_image_rendered|loginStatus:${event.data?.element?.loginStatus}` } },
+            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { additionalImpressions: `BC-firefly-image|${event.data?.element?.cardType}|loginStatus:${event.data?.element?.loginStatus}` } } } } },
           },
         });
         break;
