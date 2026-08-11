@@ -1,16 +1,12 @@
 .email-collection {
   --form-error-color: var(--s2a-color-red-900);
-  --form-padding: 56px; /* no matching --s2a-spacing token (between 48 and 64) */
-  --focus-outline-margin: var(--s2a-spacing-4); /* nearest token to 5px */
-  --phone-country-code-gap: 6px; /* no matching --s2a-spacing token (between 4 and 8) */
+  --form-padding: 56px;
+  --focus-outline-margin: var(--s2a-spacing-4);
+  --phone-country-code-gap: 6px;
   --phone-country-code-icon: var(--s2a-spacing-20);
   --form-input-padding: var(--s2a-spacing-12);
 }
 
-/* Local typography hooks: C2's global .heading-1..6/.body-lg/md/sm scale is
-   sized for page-level hero/marquee content and grows dramatically at wider
-   breakpoints, which doesn't fit this block's compact modal-card layout.
-   These rules use the same raw --s2a- tokens at a fixed, non-hero scale. */
 .email-collection .heading-l {
   margin: 0;
   font-size: var(--s2a-font-size-24);
@@ -20,7 +16,7 @@
 .email-collection .body-m {
   margin: 0;
   font-size: var(--s2a-font-size-18);
-  line-height: var(--s2a-font-line-height-24); /* nearest token to 27px */
+  line-height: var(--s2a-font-line-height-24);
 }
 
 .email-collection .body-xs {
@@ -71,11 +67,11 @@
 }
 
 .email-collection .message {
-  padding: var(--s2a-spacing-40) 14px; /* no matching --s2a-spacing token (between 12 and 16) */
+  padding: var(--s2a-spacing-40) 14px;
 }
 
 .email-collection .message .text {
-  padding: 0 10px; /* no matching --s2a-spacing token (between 8 and 12) */
+  padding: 0 10px;
 }
 
 .email-collection .message .image {
@@ -275,7 +271,7 @@
 }
 
 .email-collection .show-form {
-  color: var(--s2a-color-blue-1000); /* nearest token to #1473E6, no exact match */
+  color: var(--s2a-color-blue-1000);
   cursor: pointer;
 }
 
@@ -305,7 +301,7 @@
     padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
     display: flex;
     flex-direction: row;
-    gap: var(--s2a-spacing-32); /* nearest token to 35px */
+    gap: var(--s2a-spacing-32);
     height: inherit;
   }
 
@@ -449,8 +445,6 @@
   background-position: calc(100% - 30px);
 }
 
-/* Mailing list style — 1:1 to Figma (MAX 2026 mailing list modal)
-   https://www.figma.com/design/8aeFANwsGMtivmRxpnS2DO/branch/nWxzoFDREANoBhxldO6KUY/MAX-2026-UX-SSOT?node-id=4190-192872 */
 .email-collection.mailing-list .foreground {
   border-radius: var(--s2a-border-radius-24);
   min-height: unset;
@@ -487,9 +481,6 @@
   margin: 0;
 }
 
-/* Rows stack full-width by default; only consecutive .button-container
-   siblings (e.g. the two CTAs in a success message) share a row, sized
-   full-width on mobile and auto-width side-by-side from 700px up. */
 .email-collection.mailing-list .text > div {
   display: flex;
   flex-flow: row wrap;
@@ -498,9 +489,6 @@
   width: 100%;
 }
 
-/* The gap above replaces the margin-top/-bottom rules earlier in this file
-   (icon-area, heading-l:has(+ form), form) for the mailing-list variant only
-   — this reset's higher specificity always wins for direct children here. */
 .email-collection.mailing-list .text > div > :not(.button-container) {
   flex: 1 0 100%;
   margin: 0;
@@ -512,10 +500,6 @@
   margin: 0;
 }
 
-/* The Milo CTA convention (decorateButtons) maps a <strong>-wrapped link to
-   `.con-button.blue`; the mailing list modal's primary CTA is solid black
-   instead, so repaint it to match Figma's fill button instead of adding a
-   one-off button component. */
 .email-collection.mailing-list .con-button.blue {
   background-color: var(--s2a-color-gray-1000);
   border-color: var(--s2a-color-gray-1000);
