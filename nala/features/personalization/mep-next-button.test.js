@@ -19,6 +19,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // contention (shared preview origin) their arrival can exceed the default
   // budget on slower firefox/webkit workers. Widen the ceilings — timeouts are
   // ceilings, not sleeps, so fast runs are unaffected.
+  test.setTimeout(60000);
   const URL = `${baseURL.replace('.aem.live', '.aem.page')}${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
