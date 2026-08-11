@@ -182,6 +182,11 @@ export const GeoMap = {
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
+ * MAS locale overrides for markets that share a language but have different country codes
+ */
+const MARKET_LOCALE_OVERRIDES = { en: { AU: 'en_GB', IN: 'en_GB', GB: 'en_GB' } };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -246,6 +251,58 @@ export function isMasGeoDetectionEnabled() {
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+/**
+ * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
+ * user's real IMS profile country when it's a supported market, otherwise Milo's own
+ * geo-validated market country. Prevents MAS's checkout-mixin from substituting an
+ * unsupported/unvalidated IMS profile country at render time.
+ */
+export async function resolveCheckoutCountry(service) {
+  const fallback = service.settings.country;
+  try {
+    const imsCountry = await service.imsCountryPromise;
+    if (imsCountry) {
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(imsCountry)) return imsCountry;
+    }
+  } catch { /* ignore, fall back to validated market country */ }
+  return fallback;
+}
+
+let checkoutLinkImsCountryObserver;
+
+/**
+ * MAS's own checkout-mixin re-stamps `data-ims-country` asynchronously, after the checkout
+ * link has already rendered, with the signed-in user's raw IMS profile country -- with no
+ * validation against the page's supported markets. Milo doesn't own that code (it ships
+ * from the external MAS web-components package), so instead of pre-empting it, this watches
+ * for those re-stamps and corrects any unsupported country back to the page's validated
+ * market, re-triggering MAS's re-render with the corrected value.
+ */
+function guardCheckoutLinkImsCountry(service) {
+  if (typeof MutationObserver === 'undefined') return;
+  checkoutLinkImsCountryObserver?.disconnect();
+  checkoutLinkImsCountryObserver = new MutationObserver((mutations) => {
+    mutations.forEach(async (mutation) => {
+      const cta = mutation.target;
+      if (!cta.matches?.('a[is="checkout-link"]')) return;
+      const country = cta.dataset.imsCountry;
+      const fallback = service.settings.country;
+      // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
+      // bailing out here (value already matches fallback) is what stops the loop.
+      if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(country)) return;
+      cta.dataset.imsCountry = fallback;
+    });
+  });
+  checkoutLinkImsCountryObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-ims-country'],
+    subtree: true,
+  });
 }
 
 export async function getLocaleSettings(miloLocale) {
@@ -1093,14 +1150,31 @@ export async function initService(force = false, attributes = {}) {
       ]);
 
       let countryFromMarket = country;
-      if (useGeoMarket && validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      let localeFromMarket = locale;
+      if (useGeoMarket && validatedMarket) {
+        const market = validatedMarket.toUpperCase();
+        countryFromMarket = market;
+        // `country` above is already geo-adjusted; the page's own market comes from its native
+        // milo locale. Only fall back to a market's Global-EN locale when the page isn't
+        // already that market's localized site: e.g. the / EN site (en_US) serving an AU/IN/GB
+        // visitor, never /au, /in or /uk, which keep their native locale.
+        const { country: pageCountry } = getMiloLocaleSettings(miloLocale);
+        if (market !== pageCountry) {
+          const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+          if (localeOverride) {
+            localeFromMarket = localeOverride;
+            // en_GB already resolves the GB market; don't also stamp a (non-GB) country.
+            if (localeOverride.endsWith(`_${market}`)) countryFromMarket = undefined;
+          }
+        }
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
-          locale,
+          locale: localeFromMarket,
           language,
-          country: countryFromMarket,
+          ...(countryFromMarket ? { country: countryFromMarket } : {}),
           ...attributes,
           ...commerce,
         });
@@ -1125,8 +1199,13 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-      } else if (useGeoMarket && countryFromMarket !== country) {
-        service.setAttribute('country', countryFromMarket);
+        if (useGeoMarket) guardCheckoutLinkImsCountry(service);
+      } else if (useGeoMarket) {
+        if (countryFromMarket !== country) {
+          if (countryFromMarket) service.setAttribute('country', countryFromMarket);
+          else service.removeAttribute('country');
+        }
+        if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
@@ -1406,6 +1485,10 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  if (isMasGeoDetectionEnabled() && service.settings.country) {
+    const country = await resolveCheckoutCountry(service);
+    if (country) cta.setAttribute('data-ims-country', country);
+  }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
@@ -1516,11 +1599,9 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  if (fragments) {
-    const command = fragments[fragment];
-    if (command && command.action === 'replace') {
-      return { ...options, fragment: command.content };
-    }
+  const command = fragments?.[fragment]?.[options.field || ''];
+  if (command && command.action === 'replace') {
+    return { ...options, fragment: command.content };
   }
   return options;
 }

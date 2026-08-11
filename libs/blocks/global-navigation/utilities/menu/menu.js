@@ -216,10 +216,15 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
-      const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
-      // Remove its 'em' or 'strong' wrapper
-      link.parentElement.replaceWith(link);
+    const isPrimaryCta = link.parentElement.tagName === 'STRONG' || link.matches('a.con-button.blue');
+    const isSecondaryCta = !isPrimaryCta
+      && (link.parentElement.tagName === 'EM' || link.matches('a.con-button.outline'));
+    if (isPrimaryCta || isSecondaryCta) {
+      const type = isSecondaryCta ? 'secondaryCta' : 'primaryCta';
+      // Remove its 'em' or 'strong' wrapper, if still present
+      if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
+        link.parentElement.replaceWith(link);
+      }
       const clonedLink = link.cloneNode(true);
       const processedLink = link.classList.contains('merch') ? await merch.default(clonedLink) : link;
       const decoratedLink = decorateCta({ elem: processedLink, type, index: itemIndex.position });
@@ -282,10 +287,20 @@ const decoratePromo = async (elem, index) => {
   }
 
   if (promoHeader?.textContent.trim()) {
-    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">
-        ${promoHeader.textContent.trim()}
-      </div>`;
-    promoHeader.parentElement.replaceWith(headingElem);
+    const headingParagraph = promoHeader.parentElement;
+    const headingMerchLinks = headingParagraph.querySelectorAll('a.merch');
+    for (const link of headingMerchLinks) {
+      const priceEl = await merch.default(link.cloneNode(true));
+      if (priceEl instanceof HTMLElement) link.replaceWith(priceEl);
+    }
+    headingParagraph.querySelectorAll('strong').forEach((strong) => {
+      strong.replaceWith(...strong.childNodes);
+    });
+    // Wrap heading in one inline <span> so the text and inline prices flow together on same line
+    const headingContent = document.createElement('span');
+    headingContent.append(...headingParagraph.childNodes);
+    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">${headingContent}</div>`;
+    headingParagraph.replaceWith(headingElem);
   }
 
   await decorateElements({ elem, className: 'feds-promo-link', index });
