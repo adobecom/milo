@@ -480,7 +480,7 @@ export async function loadMasComponent(componentName) {
     }
 
     try {
-      return await import(targetUrl);
+      return await import(/* webpackIgnore: true */ /* @vite-ignore */ targetUrl);
     } catch (error) {
       failedExternalLoads.add(targetUrl);
       throw error;
