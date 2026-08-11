@@ -6,6 +6,7 @@ import {
   replaceKey,
   replaceKeyArray,
   decoratePlaceholderArea,
+  getGeoIpPlaceholders,
 } from '../../../libs/features/placeholders.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -160,6 +161,25 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     cfg.locale.contentRoot = '/test/features/placeholders';
     const text = await replaceText('{{buy-now-geo-ip}}', cfg);
     expect(text).to.equal('Buy now');
+  });
+
+  it('getGeoIpPlaceholders returns a Map of -geo-ip overrides (for the C2 gnav map merge)', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const overrides = await getGeoIpPlaceholders(cfg);
+    expect(overrides).to.be.instanceOf(Map);
+    expect(overrides.get('phone-number-geo-ip')).to.equal('+352 800 99999');
+    expect(overrides.get('buy-now-geo-ip')).to.equal('Acheter maintenant');
+    // only -geo-ip keys are included — base keys must not leak into the merge
+    [...overrides.keys()].forEach((key) => expect(key.endsWith('-geo-ip')).to.be.true);
+  });
+
+  it('getGeoIpPlaceholders returns null when langfirst is off', async () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+    const cfg = getConfig();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const overrides = await getGeoIpPlaceholders(cfg);
+    expect(overrides).to.equal(null);
   });
 
   it('deferred update swaps base to geo value in href, preserves custom text', async () => {
