@@ -49,12 +49,11 @@ function addAlloyTracking(lobObject) {
   window.alloy_all = window.alloy_all || {};
   window.alloy_all.get = window.alloy_all.get || get;
   window.alloy_all.set = window.alloy_all.set || set;
-  const alloyAll = window.alloy_all;
-  alloyAll.data = alloyAll.data || {};
-  alloyAll.data._adobe_corpnew = alloyAll.data._adobe_corpnew || {};
-  alloyAll.data._adobe_corpnew.event = alloyAll.data._adobe_corpnew.event || {};
-  alloyAll.data._adobe_corpnew.event.custom = alloyAll.data._adobe_corpnew.event.custom || [];
-  const customEvents = alloyAll.data._adobe_corpnew.event.custom;
+
+  const dataObjString = 'data._adobe_corpnew.event.custom';
+  const customEvents = window.alloy_all.get(window.alloy_all, dataObjString) || [];
+  window.alloy_all.set(window.alloy_all, dataObjString, customEvents);
+
   Object.entries(lobObject).forEach(([key, value]) => {
     if (!spectraValues[key]) return;
     customEvents.push({ propertyName: spectraValues[key], propertyValue: value });
