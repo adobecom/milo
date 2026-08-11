@@ -398,8 +398,8 @@ nav.feds-topnav .feds-bc-wrapper {
   }
 
   #brand-concierge-side.dialog-modal {
-  height: calc(100vh - 48px);
-}
+    height: calc(100vh - 48px);
+  }
 }
 
 #brand-concierge-modal.dialog-modal.closing,
@@ -620,10 +620,6 @@ nav.feds-topnav .feds-bc-wrapper {
     z-index: 5;
   }
 
-  #brand-concierge-side.dialog-modal.expanded {
-    z-index: var(--modal-z-index);
-  }
-
   #brand-concierge-side.dialog-modal.opening {
     animation: var(--bc-modal-animation-time) ease-in-out slide-in;
   }
@@ -644,6 +640,7 @@ nav.feds-topnav .feds-bc-wrapper {
     top: unset;
     width: 100%;
     max-width: 80vw;
+    z-index: var(--modal-z-index);
   }
 
   #brand-concierge-side.dialog-modal.closing.expanded {

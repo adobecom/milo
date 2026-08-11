@@ -5,6 +5,7 @@ import {
   decorateCards,
   updateReplicatedValue,
   handleConsent,
+  setCssGnavHeight,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -15,11 +16,6 @@ import {
 } from '../brand-concierge/bc-bootstrap.js';
 
 let stayActive = false;
-
-function setCssGnavHeight() {
-  const gnavHeight = document.querySelector('header.global-navigation').getBoundingClientRect().height;
-  document.documentElement.style.setProperty('--bc-gnav-height', `${gnavHeight}px`);
-}
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');

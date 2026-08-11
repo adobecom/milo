@@ -27,6 +27,11 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+export function setCssGnavHeight() {
+  const gnavHeight = document.querySelector('header.global-navigation').getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--bc-gnav-height', `${gnavHeight}px`);
+}
+
 export function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();

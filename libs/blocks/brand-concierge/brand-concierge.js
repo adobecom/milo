@@ -10,12 +10,12 @@ import {
   decorateFloatingInput,
   updateReplicatedValue,
   handleConsent,
+  setCssGnavHeight,
 } from './bc-utils.js';
 import {
   loadWebclient,
   bcBootstrap,
   openSideModal,
-  openModal,
   setAuthoredContent,
   susiTestButton,
   mountId,
@@ -23,21 +23,12 @@ import {
 
 const variants = {};
 
-function checkGlobal() {
-  let global = false;
-  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    global = window.milo.brandConcierge.brandConciergeGlobal;
-  }
-  return global;
-}
-
 function routeInput(text) {
-  if (checkGlobal()) {
-    const isOpen = document.body.classList.contains('bc-side-open');
-    if (isOpen) bcBootstrap(text, mountId);
-    else openSideModal(text, bcBootstrap);
-  } else {
-    openModal(text, bcBootstrap);
+  const isOpen = document.body.classList.contains('bc-side-open');
+  if (isOpen) bcBootstrap(text, mountId);
+  else {
+    setCssGnavHeight();
+    openSideModal(text, bcBootstrap);
   }
 }
 
@@ -85,6 +76,8 @@ export default async function init(el) {
       window.adobe.concierge.clearHistory();
     }
   });
+
+  setCssGnavHeight();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
