@@ -1651,7 +1651,15 @@ export function getOptions(el) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  const { searchParams } = new URL(el.href);
+  const url = new URL(el.href);
+  // Inline fragment field links (mas.adobe.com/studio.html#...&field=...) are routed here
+  // instead of merch-card-autoblock (see decorateAutoBlock in utils.js) so a field render
+  // never pulls in merch-card. Kept lazy so plain price/CTA links don't pay for it either.
+  if (url.hash.includes('field=')) {
+    const { default: initMasField } = await import('./mas-field.js');
+    return initMasField(el);
+  }
+  const { searchParams } = url;
   const isCta = searchParams.get('type') === 'checkoutUrl';
   const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
   const service = await initService();

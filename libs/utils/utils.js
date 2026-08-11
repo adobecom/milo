@@ -1572,6 +1572,14 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
+    // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
+    // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
+    // dependencies out of the critical path when only a field is authored (e.g. in marquee).
+    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+      a.className = 'merch link-block';
+      return true;
+    }
+
     a.className = `${key} link-block`;
     return true;
   });
@@ -2772,6 +2780,11 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  if (name === 'merch') {
+    // Field links dynamically import this sibling module from merch.js's init(); preload it
+    // in parallel instead of only discovering it after merch.js itself has loaded and run.
+    loadLink(`${blockPath.slice(0, blockPath.lastIndexOf('/'))}/mas-field.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
