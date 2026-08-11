@@ -91,13 +91,25 @@ function parseFragmentCardSegment(nodes) {
 
     if (tag === 'P') {
       const pic = node.querySelector('picture');
-      if (pic) { img = pic.querySelector('img'); return; }
+      if (pic) {
+        img = pic.querySelector('img');
+        return;
+      }
       const inlineImg = node.querySelector('img');
-      if (inlineImg) { img = inlineImg; return; }
+      if (inlineImg) {
+        img = inlineImg;
+        return;
+      }
       const em = node.querySelector('em');
-      if (em) { role = em.textContent.trim(); return; }
+      if (em) {
+        role = em.textContent.trim();
+        return;
+      }
       const strong = node.querySelector('strong');
-      if (strong) { name = strong.textContent.trim(); return; }
+      if (strong) {
+        name = strong.textContent.trim();
+        return;
+      }
       const text = node.textContent.trim();
       if (text && !description) description = text;
     } else if (tag === 'UL') {

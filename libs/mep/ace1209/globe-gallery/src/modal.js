@@ -3,6 +3,8 @@ import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic } from './math.js';
 import { escapeHtml } from './authoring.js';
 
+const perfNow = () => performance?.now() ?? Date.now();
+
 // Modal lifecycle phases. CLOSED is null so `if (modalPhase)` reads as "modal live".
 const MODAL_PHASE = Object.freeze({
   CLOSED: null,
@@ -399,9 +401,7 @@ export default function createGlobeModal({
     if (closeEl) {
       closeEl.style.position = 'absolute';
       closeEl.style.top = '24px';
-      closeEl.style.bottom = 'auto';
-      closeEl.style[rtl ? 'left' : 'right'] = '24px';
-      closeEl.style[rtl ? 'right' : 'left'] = 'auto';
+      closeEl.style.insetInlineEnd = '24px';
     }
 
     // Nav arrows + counter positioned individually (no wrapper) so :hover scale survives the fade.
@@ -458,8 +458,7 @@ export default function createGlobeModal({
       } else {
         infoEl.style.top = '0';
         infoEl.style.bottom = '0';
-        infoEl.style[rtl ? 'right' : 'left'] = '0';
-        infoEl.style[rtl ? 'left' : 'right'] = 'auto';
+        infoEl.style.insetInlineStart = '0';
         infoEl.style.width = `${DT_SCRIM_W}px`;
         infoEl.style.height = '';
       }
@@ -602,7 +601,7 @@ export default function createGlobeModal({
 
     dnNavOldCard = oldCard;
     dnNavNewCard = newCard;
-    dnNavT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    dnNavT0 = perfNow();
     dnNavActive = true;
   }
 
@@ -614,7 +613,7 @@ export default function createGlobeModal({
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
     }
-    modalOpenedAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
     // Pin warp center to click origin (default ~center).
@@ -649,7 +648,7 @@ export default function createGlobeModal({
     if (modalCanvasEl) modalCanvasEl.style.display = 'block';
 
     modalPhase = MODAL_PHASE.OPENING;
-    modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalAnimT0 = perfNow();
 
     // Reset chrome reveal so elements start hidden and fade in after card settles.
     resetChromeReveal();
@@ -682,7 +681,7 @@ export default function createGlobeModal({
     // Suppress only the synthetic click after touch pointerup (would immediately close the fresh
     // modal). Escape / pull-to-close are deliberate and must not be swallowed inside this window.
     if (viaPointer) {
-      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const now = perfNow();
       if (now - modalOpenedAt < 200) return;
     }
     if (!modalEl || modalIdx < 0 || !modalCard) return;
@@ -704,7 +703,7 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldScale(modalCloseStartScale);
 
     modalPhase = MODAL_PHASE.CLOSING;
-    modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalAnimT0 = perfNow();
 
     // Hide chrome immediately — it fades with the container.
     resetChromeReveal();
@@ -752,7 +751,7 @@ export default function createGlobeModal({
   function updateAnimation(sphereRotActive) {
     if (modalCard && modalPhase) {
       const sphereGroup = getSphereGroup();
-      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const now = perfNow();
       // Reduced motion: force aT=1 so the fly snaps in one frame and the warp bell curves collapse.
       const aT = getReducedMotion()
         ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
@@ -875,7 +874,7 @@ export default function createGlobeModal({
   // Desktop nav cross-warp: both cards' uWarp on a sin bell curve; opacity cross-fades.
   function updateDesktopNav() {
     if (dnNavActive) {
-      const dnNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const dnNow = perfNow();
       // Reduced motion: force completion — the new card just becomes visible.
       const dnT = getReducedMotion() ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
       if (dnT >= 1) {
@@ -996,8 +995,7 @@ export default function createGlobeModal({
     // Swipe/pull applies to touch-primary devices, not just the sm width band — tablets at
     // md (≥768, coarse pointer) get the same gesture nav the globe's yaw-only shape assumes.
     // Mirrors usesCylinderGeometry's '(pointer: coarse)' check. matchMedia-less → no gestures.
-    const isTouchPrimary = () => !!(window.matchMedia
-      && window.matchMedia('(pointer: coarse)').matches);
+    const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
 
     // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {
@@ -1105,10 +1103,9 @@ export default function createGlobeModal({
       if (!swActive) return;
       swActive = false;
       swAxis = null;
-      if (modalCanvasEl) {
-        modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
-        modalCanvasEl.style.transform = '';
-      }
+      if (!modalCanvasEl) return;
+      modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      modalCanvasEl.style.transform = '';
     }, { passive: true });
   }
 

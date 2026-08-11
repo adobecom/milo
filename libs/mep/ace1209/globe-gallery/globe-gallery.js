@@ -15,6 +15,8 @@ import {
 
 const CARD_ASPECT = 456 / 631; // portrait
 
+const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 // Two render profiles split at 768px (Milo sm↔md); resolved once via resolveBP(W).
 // See README (Breakpoints).
 const BREAKPOINTS = {
@@ -86,8 +88,7 @@ const YAW_ONLY_GEOMETRY = {
 // pointer. matchMedia-less environments are treated as precise-pointer. See README.
 function usesCylinderGeometry(bandName) {
   if (bandName === 'sm') return true;
-  if (!window.matchMedia) return false;
-  return window.matchMedia('(pointer: coarse)').matches;
+  return !!window.matchMedia?.('(pointer: coarse)').matches;
 }
 
 // Phase timeline (progress 0→1 across the full scroll length). See README (Phase constants).
@@ -1874,8 +1875,7 @@ function createGlobeGalleryRuntime(
     const canvas = q('.globe-gallery-canvas');
     if (!canvas) return false;
 
-    reducedMotion = !!(window.matchMedia
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    reducedMotion = prefersReducedMotion();
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
 
     // Reduced motion: canvas into normal flow (absolute in the static world) so the globe
@@ -1930,8 +1930,7 @@ function createGlobeGalleryRuntime(
       // path. Pointer precision is read at init only — a mid-session mouse/trackpad swap needs a
       // reload (out of scope; see README).
       const nextBand = resolveBP(W);
-      const nextReducedMotion = !!(window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      const nextReducedMotion = prefersReducedMotion();
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
         destroy();
@@ -1967,8 +1966,8 @@ function createGlobeGalleryRuntime(
     if (reducedMotionMQ && reducedMotionHandler) {
       reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
     }
-    if (window.matchMedia) {
-      reducedMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotionMQ = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? null;
+    if (reducedMotionMQ) {
       reducedMotionHandler = doLayout;
       reducedMotionMQ.addEventListener('change', reducedMotionHandler);
     }
@@ -2145,9 +2144,9 @@ function createGlobeGalleryRuntime(
 
 export default async function init(el) {
   // Reduced motion: static, still-interactive globe in plain document flow. See README.
-  const reducedMotion = !!(window.matchMedia
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  if (reducedMotion) el.classList.add('globe-gallery-reduced');
+  if (prefersReducedMotion()) {
+    el.classList.add('globe-gallery-reduced');
+  }
 
   // Extract authored content (incl. the UI labels) before buildGlobeDom() wipes the children.
   const {
