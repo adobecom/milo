@@ -81,7 +81,7 @@ describe('Brand Concierge', () => {
     // trigger submit via Enter
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
     expect(modal.querySelector('#brand-concierge-mount')).to.exist;
     expect(modal.querySelector('#brand-concierge-mount').dataset.initialMessage).to.equal('Hello world');
@@ -104,7 +104,7 @@ describe('Brand Concierge', () => {
     const buttons = block.querySelectorAll('.prompt-card-button');
     buttons[1].click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
@@ -220,7 +220,7 @@ describe('Brand Concierge', () => {
 
     floatingButton.click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
@@ -242,7 +242,7 @@ describe('Brand Concierge', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
 
     // Wait for bootstrap to be called (waitForCondition checks for API availability)
