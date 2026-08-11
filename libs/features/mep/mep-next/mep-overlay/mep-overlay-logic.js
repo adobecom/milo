@@ -341,12 +341,12 @@ export function getPageSummary() {
     ['Foundation', getFoundation()],
     ['Theme', getTheme()],
     ['Load Target Faster (v2)', getLoadTargetFaster()],
-    ['Manifest Sources', [
+    ['Manifest Sources', resolvePairs([
       ['Target Integration', getTargetIntegration()],
       ['Personalization Metadata', getPersonalizationMetadata()],
       ['Promo Metadata', getPromoMetadata()],
       ['MEP Param', getMepParam()],
-    ]],
+    ])],
   ]);
 }
 
