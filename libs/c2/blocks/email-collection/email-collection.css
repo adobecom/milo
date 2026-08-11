@@ -79,6 +79,11 @@
   align-items: center;
 }
 
+.email-collection .icon-area picture img {
+  max-width: 200px;
+  max-height: 45px;
+}
+
 .email-collection .message .image img {
   max-height: 350px;
 }
@@ -117,11 +122,6 @@
 .email-collection .icon-area picture {
   display: flex;
   align-items: center;
-}
-
-.email-collection .icon-area picture img {
-  max-width: 200px;
-  max-height: 45px;
 }
 
 .email-collection.mailing-list .icon-area,
@@ -267,7 +267,7 @@
 }
 
 .email-collection .subscribed-email:last-child {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .email-collection .show-form {
@@ -348,7 +348,6 @@
 
   .email-collection > :not(.message) .text > div {
     overflow-y: auto;
-    padding-right: var(--form-padding);
     padding-bottom: var(--focus-outline-margin);
   }
 
