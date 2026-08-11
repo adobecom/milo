@@ -90,8 +90,12 @@ function getGnavOffset() {
   });
 }
 
+let lastGnavOffset;
 function updateGnavOffset() {
   const offset = calcGnavOffset();
+  if (offset === lastGnavOffset) return;
+  lastGnavOffset = offset;
+
   document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
   const drawer = document.querySelector('#mep-drawer');
   if (drawer) {
@@ -133,7 +137,7 @@ function toggleExpandedCard(cardEl) {
   localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
-function buildManifestCard(manifest) {
+function buildManifestCard(manifest, { mmm = false } = {}) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
   const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
@@ -141,7 +145,7 @@ function buildManifestCard(manifest) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('span', { class: 'mep-overline' }, 'Manifest'),
+    createTag('span', { class: 'mep-overline' }, mmm ? '7 Day Manifest' : 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
@@ -468,16 +472,38 @@ async function buildAdditionalManifests() {
   if (!manifests.length) return;
 
   const drawerEl = document.querySelector('#mep-drawer');
+  if (drawerEl.querySelector('.mmm-manifest-card')) return;
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
+  if (!lastManifestEl) return;
 
-  if (!lastManifestEl || lastManifestEl.classList.contains('mmm-manifest-card')) return;
-
+  let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
-    const manifestEl = buildManifestCard(manifest);
+    const manifestEl = buildManifestCard(manifest, { mmm: true });
     manifestEl.classList.add('mmm-manifest-card');
-    lastManifestEl.after(manifestEl);
+    insertionPoint.after(manifestEl);
+    insertionPoint = manifestEl;
   }
+}
+
+let additionalManifestsPromise;
+async function toggleManifestManager(event) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const mmmManifestEls = drawerEl?.querySelectorAll('.mmm-manifest-card');
+  if (mmmManifestEls?.length) {
+    mmmManifestEls.forEach((el) => { el.hidden = !event.target.checked; });
+    return;
+  }
+  if (!event.target.checked) return;
+
+  additionalManifestsPromise ??= buildAdditionalManifests().finally(() => {
+    additionalManifestsPromise = null;
+  });
+  await additionalManifestsPromise;
+
+  drawerEl.querySelectorAll('.mmm-manifest-card').forEach((el) => {
+    el.hidden = !event.target.checked;
+  });
 }
 
 let gnavOffsetRaf;
@@ -514,18 +540,24 @@ function setEventListeners() {
   });
 
   drawerEl.addEventListener('input', (event) => {
-    if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
+    if (event.target.id === 'toggle-manifest-manager') toggleManifestManager(event);
     toggleHighlight(event);
     if (event.target.type !== 'checkbox') setPreviewButton(event);
   });
 }
 
 function setMasObserver() {
+  let lastMasSummaryKey;
   const refreshMasSummary = () => {
     const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
     if (!bodyEl) return;
 
-    const rows = getMasSummary().flatMap(([label, value]) => (
+    const summary = getMasSummary();
+    const summaryKey = JSON.stringify(summary);
+    if (summaryKey === lastMasSummaryKey) return;
+    lastMasSummaryKey = summaryKey;
+
+    const rows = summary.flatMap(([label, value]) => (
       Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
     ));
     bodyEl.replaceChildren(...rows);
@@ -578,6 +610,7 @@ function setMasObserver() {
 
 async function buildOverlay() {
   const gnavOffset = await getGnavOffset();
+  lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
   document.querySelector('main').append(
