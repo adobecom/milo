@@ -54,7 +54,7 @@
   padding-block-start: var(--s2a-layout-sm);
   text-align: center;
   img {
-    max-height: 127px;
+    max-height: 200px;
     width: auto;
   }
 }
@@ -281,13 +281,6 @@
     max-width: 100svw;
     .dialog-close {
       right: var(--s2a-spacing-md);
-    }
-  }
-
-  .tour-row-image-center {
-    img {
-      max-height: 110px;
-      width: auto;
     }
   }
 
