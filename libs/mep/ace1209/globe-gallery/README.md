@@ -568,9 +568,10 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.** The
   prev/next arrows and counter are independent chrome children (no wrapper), positioned per-frame by
   `positionModalChrome`, reading as one bottom-centre row at every breakpoint. **Desktop/tablet:** the
-  counter pill centres on the image's bottom edge, an arrow `DT_NAV_GAP` (12px) each side; the pill is
+  counter pill centres horizontally on the image, an arrow `DT_NAV_GAP` (12px) each side; the pill is
   a fixed `DT_COUNTER_W` (138px, mirror its CSS `width`) so the flank offset needs no measuring; all
-  three share one `bottom`, 44px tall. **Mobile:** the same row spread wide into the bottom-left/right
+  three share one `bottom` — a fixed 24px from the *viewport* bottom (not the image bottom), so the
+  row sits at the same height across images regardless of the photo's aspect ratio — 44px tall. **Mobile:** the same row spread wide into the bottom-left/right
   corners inside the bottom scrim. The three frosted controls (both arrows + close) share one style
   (1px `--s2a-color-transparent-white-24` border, `--s2a-border-radius-4`,
   `--s2a-color-transparent-black-64`, `blur(12px)`); close sits top-right at every breakpoint. The
@@ -578,8 +579,9 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   12px; mobile full-bleed to screen width, square corners `uRadius=0`), native aspect kept — the
   sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`) so the *photo*, not
   the geometry, reaches the margin. Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
-  scrim on the **viewport's left edge, full height**, holding the left-aligned, vertically-centred
-  role/name/description (two `margin-top:auto` splits the free space, badges pinned bottom); mobile's
+  scrim on the **viewport's left edge, full height**, holding the left-aligned, top-anchored
+  role/name/description (badges keep `margin-top:auto` → pinned bottom, so long copy grows downward
+  into the scrim rather than overflowing past its top edge); mobile's
   scrim is one full-width 266px chunk pinned to the bottom. All dark frosted (`rgb(0 0 0 / 64%)` +
   `blur(12px)`, light text).
   - **Touch gestures (in the modal) are gated on a coarse primary pointer**

@@ -356,8 +356,8 @@ export default function createGlobeModal({
     const chromeEl = q('.globe-gallery-modal-chrome');
     const camera = getCamera();
     if (!chromeEl || !camera) return;
-    const { W, H } = getViewport();
-    const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
+    const { W } = getViewport();
+    const { w: CARD_W_SPHERE } = getCardDims();
     if (!chromeNodes || chromeNodes.chromeEl !== chromeEl) {
       chromeNodes = {
         chromeEl,
@@ -375,19 +375,13 @@ export default function createGlobeModal({
     const tgtScale = scratchScale;
     computeModalTarget(tgtPos, tgtQuat, tgtScale);
 
-    const halfH = CARD_H_SPHERE * tgtScale.y * 0.5;
     const halfW = CARD_W_SPHERE * tgtScale.x * 0.5;
 
     if (!chromeProjV) chromeProjV = new THREE.Vector3();
     const pv = chromeProjV;
 
-    // Project card edges to screen pixels.
-    pv.set(0, tgtPos.y + halfH, tgtPos.z).project(camera);
-    const cardTopPx = (1 - pv.y) * 0.5 * H;
-
-    pv.set(0, tgtPos.y - halfH, tgtPos.z).project(camera);
-    const cardBotPx = (1 - pv.y) * 0.5 * H;
-
+    // Project the card's horizontal edges to screen pixels (used to centre the desktop control row
+    // under the image). Vertical placement is intentionally NOT derived from the card — see below.
     pv.set(tgtPos.x - halfW, tgtPos.y, tgtPos.z).project(camera);
     const cardLeftPx = (pv.x + 1) * 0.5 * W;
 
@@ -395,13 +389,8 @@ export default function createGlobeModal({
     const cardRightPx = (pv.x + 1) * 0.5 * W;
 
     // Clamp to visible viewport (card may bleed off edges at large scale).
-    const visBot = Math.min(H, cardBotPx);
     const visLeft = Math.max(0, cardLeftPx);
     const visRight = Math.min(W, cardRightPx);
-
-    // Inset by the SDF radius (px) so chrome sits over visible photo, not geometry.
-    const SDF_RADIUS_PX = SDF_CORNER_RADIUS * (cardBotPx - cardTopPx);
-    const INSET = 24 + Math.round(SDF_RADIUS_PX);
 
     const isMobile = (getBP() === 'sm');
     const rtl = isRtl();
@@ -436,8 +425,7 @@ export default function createGlobeModal({
         counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
       }
     } else {
-      // Counter and arrows share one `bottom` → one row.
-      const rowBottom = `${H - visBot + INSET}px`;
+      const rowBottom = `${EDGE}px`;
       const centerX = (visLeft + visRight) / 2;
       const flank = DT_COUNTER_W / 2 + DT_NAV_GAP; // pill edge → arrow's near edge
       if (counterEl) {

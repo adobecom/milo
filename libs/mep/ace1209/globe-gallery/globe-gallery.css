@@ -514,7 +514,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
     padding: 40px 32px;
   }
 
-  .globe-gallery-modal-role-label { margin-top: auto; }
+  .globe-gallery-modal-role-label { margin-top: 0; }
 
   .globe-gallery-modal-name {
     font-size: 24px;
