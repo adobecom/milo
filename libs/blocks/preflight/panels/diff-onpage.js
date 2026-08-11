@@ -95,10 +95,12 @@ export function clearHighlights(root) {
 }
 
 function ensureOverlayHost(el) {
-  if (VOID_HOST_TAGS.has(el.tagName)) {
+  const inPicture = el.tagName === 'IMG' && el.parentElement?.tagName === 'PICTURE';
+  const target = inPicture ? el.parentElement : el;
+  if (target.tagName === 'PICTURE' || VOID_HOST_TAGS.has(target.tagName)) {
     const wrapper = createTag('span', { class: `${WRAP_CLASS} ${ISOLATE_CLASS}` });
-    el.replaceWith(wrapper);
-    wrapper.append(el);
+    target.replaceWith(wrapper);
+    wrapper.append(target);
     return wrapper;
   }
   if (window.getComputedStyle(el).position === 'static') {
