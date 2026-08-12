@@ -22,7 +22,9 @@ Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome). Mouse
 drags spin **yaw freely** but **pitch is clamped to ±60°** (cards never pass vertical
 or read upside down, and the globe self-levels); **touch drags spin yaw only** so
-vertical swipes stay page scroll (see Sphere rotation + Touch gesture arbitration).
+vertical swipes stay page scroll, and **the barrel is yaw-only for mouse too** (pitch
+follows the geometry, not the pointer — a cylinder can't centre vertically). See
+Sphere rotation + Touch gesture arbitration.
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
@@ -48,7 +50,9 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
 | `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
 
-Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). `three.module.min.js` is eslint-ignored.
+Experimental block: loaded via MEP from `libs/mep/ace1209/globe-gallery/` — **not** registered in
+`C2_BLOCKS` (`libs/utils/utils.js`). `three.module.min.js` and `src/three-src.js` are eslint-ignored
+(the compat config skips them — the tree-shaken bundle and the bare `three` build-entry import).
 
 ### Module layout
 
@@ -81,7 +85,7 @@ are optional):
 
 | Row | Purpose | Content |
 | --- | --- | --- |
-| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy__title`; `<p>` → `.globe-gallery-arc-copy__body` |
+| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; `<p>` → `.globe-gallery-arc-copy-body` |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
 | 2 | **Hint + instructions + labels** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (English fallback); optional third `<p>` → the four UI labels, `\|\|`-separated in on-screen order **prev-arrow \|\| card-position template \|\| next-arrow \|\| close** (each part falls back to English) |
 | 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
@@ -102,10 +106,10 @@ itself — AEM Edge Delivery returns all card sections as bare `<div>`s (one per
 racing the parse.
 
 Cards come solely from the fetched fragment. If the fetch yields none — a failed
-request, or no fragment link authored — the block collapses to `.globe-gallery--empty`
+request, or no fragment link authored — the block collapses to `.globe-gallery-empty`
 (`height:auto`) rather than rendering an empty scene. There is no inline-DOM-card
 fallback (authoring is expected to provide a valid fragment link). (Distinct from
-`.globe-gallery--reduced`, the reduced-motion render path — see Accessibility.)
+`.globe-gallery-reduced`, the reduced-motion render path — see Accessibility.)
 
 The same `--empty` collapse is the fallback when **WebGL is unavailable**: `initRuntime`
 creates the `WebGLRenderer` in a `try/catch` (Three.js throws when `getContext` returns
@@ -169,7 +173,7 @@ images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** 
 quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
 **dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
 reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
-modal nav — on-screen arrows, Left/Right keys, and touch swipe — routes through the same cross-warp
+modal nav — on-screen arrows and touch swipe — routes through the same cross-warp
 transition on **every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just
 builds a warp preview during the drag, then commits that transition on release. The old mobile instant-swap /
 swipe-neighbour slot reorg was removed — a slotless overflow card can only cross-warp anyway.
@@ -261,19 +265,67 @@ unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal role-label/heading/description (the
 `<dialog>`'s `aria-labelledby` (role + name) / `aria-describedby` IDREFs). `el` itself is the scroll runway
-(height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery--reduced`);
+(height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
-time) is the `.modal-open` scroll lock.
+time) is the `.globe-gallery-modal-open` scroll lock.
 
-**Scroll model.** The block element *is* the scroll runway (its height is the
-`--runway-height` custom property) — there's no separate runway element, and nothing
-hard-codes the value: progress is measured against the block's own
-metrics: `progress = clamp((scrollY - blockDocTop) / blockHeight, 0, 1)`, where
-`blockDocTop` is the block's top in document space and `blockHeight` its full scroll
-length (both refreshed in `doLayout` + a body `ResizeObserver`). Milo's page-level
-Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFrame`
-driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
-`window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
+**Scroll model.** The block element *is* the scroll runway (its height is `--runway-height`) — there's
+no separate runway element. Raw scroll is measured against the block's own metrics (`blockDocTop` =
+top in document space, `blockHeight` = `offsetHeight`, both refreshed in `doLayout` + a body
+`ResizeObserver`), then remapped **piecewise** (in `computeFrame`) into the `progress` 0→1 the phase
+math consumes. This decouples formation length from the tail, so the runway can be trimmed without
+speeding up the globe:
+
+| segment | raw scroll | → progress | owns |
+|---|---|---|---|
+| **formation** (arc→grid→fold→settle) | `0 → --formation-vh` (304vh) | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
+| **tail** (zoom-through + pull-quote) | `--formation-vh → --runway-height` | `foldLast → 1` | `zoomT`, cursor retire, pull-quote |
+
+Formation is **locked** to a fixed scroll length: `FORMATION_SCROLL_VH` (JS) = `--formation-vh` (CSS)
+= 304vh (≈ `SPHERE_FORMED_PROGRESS` × the original 945vh single-runway tuning). `formedScrollPx()` is
+the single source used by the remap, the reduced-motion pin, and the focus-snap. Within the tail,
+`zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
+(`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
+
+Because formation is fixed, `--runway-height` sets tail length only. `--runway-height` is **shared**
+across breakpoints; `--pq-pin-factor` is **per-breakpoint** (`@media (min-width:768px)` overrides the
+sm base). CSS custom props on `.globe-gallery`:
+
+| prop | sm (base) | md+ | effect |
+|---|---|---|---|
+| `--runway-height` | 520vh | 520vh | total height = formation + tail; ↓ = shorter stretch after the globe (shrinks gap **and** hold together) |
+| `--formation-vh` | 304vh | 304vh | locked formation length; must equal `FORMATION_SCROLL_VH` in JS |
+| `--pq-pin-factor` | 0.65 | 0.55 | share of the tail the (bottom-anchored) quote pin occupies → its hold |
+
+sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
+`≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the fixed 583px
+quote is taller in vh on a phone (~73vh at 800px vs ~54vh at 1080), i.e. it eats more of the pin. md's
+factor is capped ~0.55: above it the fade-in would cross md's globe-clear (`zoomT≈0.42`) and land the
+quote over the globe.
+
+**Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
+--pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
+threshold `pqAppearZoomT = (1 − --pq-pin-factor) − PQ_APPEAR_LEAD` (0.03) is **read from the CSS var in
+`doLayout`** — so the pin geometry and the opacity trigger can't drift, per breakpoint or across a
+768px resize. Higher `--pq-pin-factor` → quote appears earlier **and** holds longer (they trade off at
+a fixed runway); to change both together, move `--runway-height`.
+
+**Tuning cheatsheet** (all visual — no test harness, so eyeball each):
+- *Whole stretch after the globe too long:* lower `--runway-height` (both breakpoints).
+- *Quote hold too short/long, or appears too early/late:* `--pq-pin-factor` for that breakpoint (JS
+  threshold auto-follows). md is capped ~0.55 (globe-clear); sm can go to ~0.67.
+- *"Click & Drag" cursor lingers too long/short:* `CURSOR_ZOOM_RETIRE_T` (0.40) — keep it ≥ the md
+  camera-clear `zoomT` (≈0.42... it currently fires just before, at camz≈−33, accepted) and, on md,
+  `< pqAppearZoomT` so it retires before the quote. `CURSOR_ZOOM_DISMISS_T` (0.38) fades the label
+  first. (Cursor is desktop-only, so sm's earlier quote doesn't affect it.)
+- *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
+
+Current result (from the progress math; hold is viewport-dependent since the quote is a fixed 583px):
+md gap ≈91vh / hold ≈65vh; sm gap ≈69vh / hold ≈68vh.
+
+Milo's page-level Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFrame`
+driver, `startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
+`.globe-gallery-modal-open { overflow:hidden }` CSS lock.
 
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
 (cards built — contours paint immediately, textures fill in progressively; see Progressive
@@ -332,6 +384,20 @@ on screen (its clicks/drags/hover land on the off-screen globe's paused canvas).
 loop's `updateCanvasVisibility` restores the display. A single off-screen globe hiding its
 own canvas is a no-op (it's out of view anyway).
 
+**z-index / stacking order.** All values live in `globe-gallery.css` (plus the two canvas inline
+styles in `authoring.js`). Two bands in the page-root stacking context:
+
+- **Hero — 2–5:** world `2`, main canvas `3`, arc-copy / a11y widgets `4`, pull-quote / a11y tip `5`.
+- **Modal — 13–17:** backdrop `13`, modal canvas `14`, chrome `15`, cursor disc `16`, cursor container `17`.
+
+The modal band sits just above the **C2 gnav (`12`)** so the immersive card view covers the nav, and
+deliberately **below** the higher-priority interrupts that should appear over the globe — caas (`200`),
+market-selector (`9999`), georouting / Milo modals (`100000`), and the consent banner. It can't collapse
+into the 1–10 range precisely because it must clear the gnav. C1 core blocks (e.g. legacy gnav, the
+authored `notification` block) aren't authored alongside C2, so nothing occupies the 18–199 gap here.
+The modal chrome is a native `<dialog>`/`showModal()` in the top layer, so its z-index is only a
+non-supporting-browser fallback.
+
 ## Accessibility
 
 The globe is exposed as a **two-level gallery** (`a11y.js`), not a flat per-card list. Both levels
@@ -359,11 +425,10 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   **name heading** (`tabindex="-1"`), NOT the dialog container — focusing the `<dialog>` makes
   VoiceOver enumerate it as a group and swallow its name; landing on a child makes VO announce the
   dialog name then the heading. Prev/Next/Close are tab stops (native inert keeps focus in);
-  navigation is via the on-screen Prev/Next buttons, touch swipe, or **Left/Right arrow keys —
-  bound to prev/next ONLY while focus is on the dialog's own controls** (`focusInChrome`, i.e.
-  focus mode), never at document level, so a screen reader arrowing through the description text
-  (browse / virtual-cursor mode) is never hijacked; the buttons stay the primary, discoverable
-  path (a11y audit). **Esc** (the `cancel` event,
+  navigation is via the on-screen Prev/Next buttons or touch swipe. There is **no arrow-key
+  card nav** — the buttons cover keyboard + SR users, and with no document-level key handler a
+  screen reader arrowing through the description text (browse / virtual-cursor mode) is never
+  hijacked. **Esc** (the `cancel` event,
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
@@ -384,7 +449,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   couldn't reliably cover the open case, which is why it was dropped.)
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive** globe
-instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery--reduced`):
+instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery-reduced`):
 `computeFrame` pins scroll to `SPHERE_FORMED_PROGRESS` (formed sphere, `scrollVel` 0), auto-spin is
 off (drag + arrow-spin still work), the hover fisheye/scale/CA is suppressed (`hoverTarget` forced
 to 0 in `updateCardTransform`; the `cursor:pointer` affordance stays), and the modal snaps with no
@@ -410,14 +475,18 @@ cleanly). The pieces:
   box so it sits under the globe; `updatePullQuote` early-returns (CSS owns it).
 - **Arc-copy** — `display:none` (no arc phase; a fixed pill would hang over the scrolling page).
 
-The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery--empty`.
+The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery-empty`.
 
-Phase constants (module scope):
+Phase constants (module scope). The `P_*` values live in **progress-space** (0→1) and shape formation
++ zoom; the runway split, pull-quote, and cursor retirement are covered under **Scroll model → the
+runway / progress model** above (they're driven by `--runway-height` / `--formation-vh` /
+`--pq-pin-factor` in CSS, read/derived in JS):
 
 ```
 P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
 P_FOLD_DUR=0.25  P_ZOOM_END=1.00  GRID_PEEL_STAGGER=0.20  SPHERE_INTERACTIVE_T=0.8
 FOLD_PEEL_OVERLAP=0.35  CA_ENABLED=true
+FORMATION_SCROLL_VH=304  PQ_APPEAR_LEAD=0.03  CURSOR_ZOOM_DISMISS_T=0.38  CURSOR_ZOOM_RETIRE_T=0.40
 ```
 
 `FOLD_PEEL_OVERLAP` (0–1) makes each card begin folding to the sphere that far — in peel
@@ -427,6 +496,26 @@ localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold win
 (`SPHERE_FORMED_PROGRESS`, `computeFrame`'s `foldFirst`/`foldLast`) and the per-card fold timer all
 derive from it, so camera / depth-sort / interactivity stay aligned. `0` restores "settle, then
 fold."
+
+**Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
+(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
+fold constants move: `ARC_COPY_OUT_FORM_START = 0.20` → `ARC_COPY_OUT_FORM_END = 0.90`, i.e.
+progress ≈ `0.096` → `0.294` against a formed sphere at `0.322`. It therefore starts only once the
+fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finishes forming — one
+window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
+**not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
+midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
+spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
+
+`FOLD_FIRST_PROGRESS` (module scope) is the mirror of `computeFrame`'s `foldFirst` — the same
+single-source role `SPHERE_FORMED_PROGRESS` plays for `foldLast` — and `computeFrame` reads it
+rather than recomputing.
+
+**Arc-copy placement** is split between CSS and JS: CSS owns the block edge (`bottom` — `8px` at
+sm, `24px` from `min-width:768px`, docking it to the viewport bottom on the same 24px gutter the JS
+uses inline-start), JS owns the inline-start inset per frame in `updateArcCopy` (`8px` at sm; at md
+`24 + max(0, (W − 48 − 1392) / 2)`, the 24px-grid-aligned position with centering) plus the opacity
+and the 24px entry slide.
 
 **Entry timing** — two independent constants: `ENTRY_LEAD_VH` (`0.4`) viewport-heights before the
 block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
@@ -449,7 +538,7 @@ the runtime closure survives a `destroy()`+`initRuntime()` rebuild, `destroy()` 
 rebuild would otherwise inherit:
 - `modal.destroy()` calls `resetModalDom()` — synchronously returns the modal DOM + page state to
   the closed baseline (clears `is-visible`/`is-open`/`aria-hidden`, hides `.modal-card-canvas`,
-  clears `modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
+  clears `globe-gallery-modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
   stuck open (its mesh dropped with the old `modalScene`, `modalIdx` reset to -1 so chrome buttons
   are dead, scroll lock stuck). An open modal closes cleanly on crossing; it doesn't re-open.
 - `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereRotX/Y/Z`,
@@ -498,9 +587,10 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.** The
   prev/next arrows and counter are independent chrome children (no wrapper), positioned per-frame by
   `positionModalChrome`, reading as one bottom-centre row at every breakpoint. **Desktop/tablet:** the
-  counter pill centres on the image's bottom edge, an arrow `DT_NAV_GAP` (12px) each side; the pill is
+  counter pill centres horizontally on the image, an arrow `DT_NAV_GAP` (12px) each side; the pill is
   a fixed `DT_COUNTER_W` (138px, mirror its CSS `width`) so the flank offset needs no measuring; all
-  three share one `bottom`, 44px tall. **Mobile:** the same row spread wide into the bottom-left/right
+  three share one `bottom` — a fixed 24px from the *viewport* bottom (not the image bottom), so the
+  row sits at the same height across images regardless of the photo's aspect ratio — 44px tall. **Mobile:** the same row spread wide into the bottom-left/right
   corners inside the bottom scrim. The three frosted controls (both arrows + close) share one style
   (1px `--s2a-color-transparent-white-24` border, `--s2a-border-radius-4`,
   `--s2a-color-transparent-black-64`, `blur(12px)`); close sits top-right at every breakpoint. The
@@ -508,10 +598,21 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   12px; mobile full-bleed to screen width, square corners `uRadius=0`), native aspect kept — the
   sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`) so the *photo*, not
   the geometry, reaches the margin. Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
-  scrim on the **viewport's left edge, full height**, holding the left-aligned, vertically-centred
-  role/name/description (two `margin-top:auto` splits the free space, badges pinned bottom); mobile's
-  scrim is one full-width 266px chunk pinned to the bottom. All dark frosted (`rgb(0 0 0 / 64%)` +
-  `blur(12px)`, light text).
+  scrim on the **viewport's left edge, full height**; mobile's scrim is one full-width bottom chunk
+  (content-sized, capped at `60dvh`). Both are a **pinned header / scrolling body / pinned footer**:
+  role + name are `flex-shrink:0` at the top, the **badges** are `flex-shrink:0` at the bottom (so
+  those tabbable controls are always on-screen), and the **description** is the only scroll region
+  (`min-height:0; overflow-y:auto`) — long copy scrolls instead of overflowing or
+  hiding the badges. A `mask-image` scroll-shadow (`updateDescFade`, re-measured on
+  scroll / resize / card-change) fades whichever edge has more copy, so the scroll affordance
+  survives macOS's hidden overlay scrollbar. JS gives the description `tabindex="0"` only while it actually overflows, so it's
+  keyboard-scrollable then without leaving a pointless tab stop when the copy fits; the full text is
+  always in the a11y tree via the dialog's `aria-describedby`; `touchstart` skips the swipe/pull
+  gesture when a drag starts inside it so the copy scrolls rather than closing the modal. It also
+  carries **`data-lenis-prevent`** — Milo loads the Lenis smooth-scroll lib on `foundation:c2` pages
+  (`utils.js`), which hijacks the wheel/touch and applies it to the (scroll-locked) page, so a nested
+  scroll region silently won't scroll without opting out via that attribute. All dark frosted
+  (`rgb(0 0 0 / 64%)` + `blur(12px)`, light text).
   - **Touch gestures (in the modal) are gated on a coarse primary pointer**
     (`matchMedia('(pointer: coarse)')`, mirroring `usesCylinderGeometry`), not on the `sm` width
     band — so tablets at md (≥768) get them too. A per-gesture axis lock (`AXIS_LOCK_PX` 10px)
@@ -580,9 +681,14 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     *primary* pointer's precision), not `(hover: none)` or a UA sniff. Precision is read **once at
     init** (`usesCylinderGeometry`), so the geometry that bakes at `buildCards()` matches the device
     the page loaded on; a **mid-session mouse/trackpad swap needs a reload** (out of scope — rare,
-    and not worth a live-rebuild listener). Distinct from `interaction.js`'s per-*gesture*
-    `e.pointerType` check, so a hybrid device still gets full pitch from its mouse and yaw-only from
-    a finger within one session.
+    and not worth a live-rebuild listener). The width half *is* live, though: crossing 768px rebuilds
+    the geometry and flips `bp.YAW_ONLY`, and drag-pitch follows it (`getYawOnly: () => bp.YAW_ONLY`),
+    so a desktop window narrowed to `sm` gets the barrel *and* yaw-only mouse drags in lockstep.
+  - **Pitch is gated on `bp.YAW_ONLY` (geometry), not `e.pointerType`.** The barrel is yaw-only for
+    everyone — mouse included — because a cylinder can't centre a card vertically (matching the
+    keyboard/modal centring path, which holds pitch on `YAW_ONLY`). Pointer type still matters for
+    the *touch* half: a finger on the sphere is yaw-only (vertical = scroll) even though the sphere
+    itself pitches, so the drag path suppresses `velY` when `isTouchDrag || getYawOnly()`.
 
     ```
     device                  band cards  shape            cols  cardW  wall@near  col imb
@@ -669,11 +775,13 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     sparsity the old fixed ±14° read as debris. md keeps the collage character.
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On
   touch a vertical drag *is* the page-scroll gesture, so touch gets **yaw only** (horizontal spins,
-  vertical scrolls); pitch (`drag.velY`) stays mouse-only. `touch-action: pan-y` alone isn't enough
+  vertical scrolls); pitch (`drag.velY`) is written only when `!isTouchDrag && !getYawOnly()` — i.e.
+  a mouse on the sphere. `touch-action: pan-y` alone isn't enough
   — moves before the browser commits to the pan leak a pitch kick — so the axis is resolved in JS
   from the first `AXIS_LOCK_THRESHOLD` (8px) of travel, then **latched** for the gesture (a curved
   swipe can't flip axes; a 45° tie resolves to vertical). `isTouchDrag` is per-gesture from
-  `e.pointerType`, so a touchscreen laptop locks finger input but keeps full mouse pitch.
+  `e.pointerType`, so a touchscreen laptop locks finger input but keeps mouse pitch **on the sphere**
+  (its mouse still yaws-only on the barrel, since pitch follows geometry).
   - **Taps aren't gated on the lock** — `CLICK_MAX_MOVE` (10px) > the 8px threshold, so a jittery
     tap may have latched an axis; `onPointerUp`'s independent distance/time test keeps tap-to-open
     unchanged.
@@ -684,10 +792,10 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   - No dwell needed: touch scrolling is self-terminating, so on lift the sphere is stationary and
     `sphereFormT >= 0.8` holds — scroll and spin are mutually exclusive in time. (How easy it is to
     *land* on the pristine formed globe is a pacing matter — see Open items.)
-- **`.globe-gallery`-scoped type-scale tokens in `globe-gallery.css`.** The prototype relied on
-  `:root` tokens from a typography stylesheet Milo doesn't ship; `globe-gallery.css` defines the
-  needed `--font-display`/`--type-title-1-*`/`--type-body-*` tokens scoped to `.globe`. Keep in sync
-  with `hub-creative/styles/global/typography.css`.
+- **Typography rides Milo's S2A type system.** Display/body copy carries the standard `heading-1` /
+  `body-lg` / `body-md` classes (added in `buildMarkup`), which supply responsive
+  size/line-height/letter-spacing; `globe-gallery.css` sets only family (`--heading-font-family` /
+  `--body-font-family`), weight (`--s2a-font-weight-*`), colour, and margins on top.
 
 ## Tuning reference
 
@@ -734,3 +842,20 @@ Known follow-ups, not blocking this integration branch:
 - **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
   (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
   the fully-formed, still globe is a scroll-pacing tuning matter still open.
+- **Pull-quote uses a hardcoded `--pq-height: 583px`.** It's a shortcut (enables `top: calc(50vh -
+  h/2)` centering + a predictable hold = `pin − h`), but it's brittle to copy length — longer/localized
+  strings overflow the fixed box (no `overflow` handling), shorter copy leaves a dead gap under
+  `justify-content: space-between`. Make it copy-flexible (revisit in a future session). Two options:
+  - **A (recommended) — content-sized, transform-centered.** `position: sticky; top: 50vh;
+    transform: translateY(-50%) scale(…)` (the `-50%` is own-height-relative, so no fixed height);
+    drop `height` + `justify-content: space-between` for a `gap`; add `max-height: 90vh; overflow`
+    for pathologically long quotes. Keeps the "small quote → longer hold, no runway penalty" property;
+    the attribution sits directly under the quote (grouped, not spread). Retune `PQ_APPEAR_LEAD` — the
+    stick/centre point shifts by ~½ the quote height — and re-verify pacing. (A "100vh sticky wrapper +
+    `place-items:center`" variant is bulletproof but costs ~+100vh of runway for the same hold, so it's
+    not preferred.)
+  - **B — keep the top/bottom spread look.** Retain a defined height (`min-height` instead of a hard
+    `height`) so the quote/attribution stay spread; tolerates overflow better than today but partly
+    keeps the rigidity. Only if the spread is a deliberate editorial layout worth preserving.
+  - Decision needed from design: grouped (A) vs spread (B). See Scroll model → runway / progress model
+    for how `--pq-height` feeds the hold.

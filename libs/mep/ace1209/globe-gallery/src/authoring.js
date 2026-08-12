@@ -26,7 +26,7 @@ function badgeIconHtml(anchor) {
   const url = badgeSvgUrl(anchor);
   if (!url) return null;
   const src = getFederatedUrl(url);
-  return `<picture class="globe-gallery-modal__badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
+  return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
 // See README (Authoring contract) for the authored-row layout.
@@ -81,7 +81,7 @@ function parsePullQuote(row) {
 }
 
 function parseFragmentCardSegment(nodes) {
-  let picture = null; let img = null;
+  let img = null;
   let role = ''; let name = ''; let description = '';
   const badges = [];
 
@@ -91,13 +91,25 @@ function parseFragmentCardSegment(nodes) {
 
     if (tag === 'P') {
       const pic = node.querySelector('picture');
-      if (pic) { picture = pic; img = pic.querySelector('img'); return; }
+      if (pic) {
+        img = pic.querySelector('img');
+        return;
+      }
       const inlineImg = node.querySelector('img');
-      if (inlineImg) { img = inlineImg; return; }
+      if (inlineImg) {
+        img = inlineImg;
+        return;
+      }
       const em = node.querySelector('em');
-      if (em) { role = em.textContent.trim(); return; }
+      if (em) {
+        role = em.textContent.trim();
+        return;
+      }
       const strong = node.querySelector('strong');
-      if (strong) { name = strong.textContent.trim(); return; }
+      if (strong) {
+        name = strong.textContent.trim();
+        return;
+      }
       const text = node.textContent.trim();
       if (text && !description) description = text;
     } else if (tag === 'UL') {
@@ -134,7 +146,6 @@ function parseFragmentCardSegment(nodes) {
   return {
     img: img.currentSrc || img.getAttribute('src') || img.src,
     alt: (img.getAttribute('alt') || '').trim(),
-    picture,
     name,
     role,
     description,
@@ -171,9 +182,10 @@ export async function fetchFragmentCards(href) {
     const resp = await fetch(`${href}.plain.html`);
     if (!resp.ok) return null;
     const html = await resp.text();
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    const cards = [...tmp.querySelectorAll(':scope > div')]
+    // DOMParser yields an inert document (no browsing context), so card <img>/<picture>
+    // never fetch here — only the right-sized texture URL (optimizeImgUrl) is downloaded.
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const cards = [...doc.body.querySelectorAll(':scope > div')]
       .flatMap((section) => parseFragmentCards(section))
       .filter(Boolean);
     return cards.length ? cards : null;
@@ -238,47 +250,47 @@ const buildMarkup = (gid, labels) => `
   </svg>
 
   <div class="globe-gallery-arc-copy">
-    <h2 class="globe-gallery-arc-copy__title"></h2>
-    <p class="globe-gallery-arc-copy__body"></p>
+    <h2 class="globe-gallery-arc-copy-title"></h2>
+    <p class="globe-gallery-arc-copy-body body-md"></p>
   </div>
 
   <div class="globe-gallery-pullquote-pin">
     <div class="globe-gallery-pullquote">
-      <blockquote class="globe-gallery-pullquote__quote"></blockquote>
-      <div class="globe-gallery-pullquote__attribution">
-        <p class="globe-gallery-pullquote__name"></p>
-        <p class="globe-gallery-pullquote__role"></p>
+      <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
+      <div class="globe-gallery-pullquote-attribution">
+        <p class="globe-gallery-pullquote-name body-lg"></p>
+        <p class="globe-gallery-pullquote-role body-lg"></p>
       </div>
     </div>
   </div>
 
   <div class="globe-gallery-modal" aria-hidden="true">
-    <div class="globe-gallery-modal__backdrop"></div>
+    <div class="globe-gallery-modal-backdrop"></div>
   </div>
 
-  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:111;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
-    <div class="globe-gallery-modal__info">
-      <p class="globe-gallery-modal__role-label" id="globe-gallery-modal-role-${gid}"></p>
-      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
-      <ul class="globe-gallery-modal__badges"></ul>
+    <div class="globe-gallery-modal-info">
+      <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
+      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
+      <p class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></p>
+      <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
-    <span class="globe-gallery-modal__image globe-gallery-sr-only" role="img"></span>
+    <span class="globe-gallery-modal-image globe-gallery-sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${escapeHtml(labels.prevCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${escapeHtml(labels.nextCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <div class="globe-gallery-modal__counter" aria-hidden="true"></div>
-    <button class="globe-gallery-modal__close" type="button" aria-label="${escapeHtml(labels.closeBtn)}">
+    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
+    <button class="globe-gallery-modal-close" type="button" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <span class="globe-gallery-modal__position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
+    <span class="globe-gallery-modal-position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
   </dialog>
 `;
 
@@ -290,10 +302,14 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
-  el.querySelector('.globe-gallery-arc-copy__title').textContent = arcCopy.title;
-  el.querySelector('.globe-gallery-arc-copy__body').textContent = arcCopy.body;
-  el.querySelector('.globe-gallery-pullquote__quote').textContent = pullQuote.quote;
-  el.querySelector('.globe-gallery-pullquote__name').textContent = pullQuote.name;
-  el.querySelector('.globe-gallery-pullquote__role').textContent = pullQuote.role;
+  el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
+  el.querySelector('.globe-gallery-arc-copy-body').textContent = arcCopy.body;
+  if (pullQuote) {
+    el.querySelector('.globe-gallery-pullquote-quote').textContent = pullQuote.quote;
+    el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
+    el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
+  } else {
+    el.querySelector('.globe-gallery-pullquote-pin').remove();
+  }
   return gid;
 }

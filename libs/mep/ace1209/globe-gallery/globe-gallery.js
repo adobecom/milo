@@ -15,6 +15,9 @@ import {
 
 const CARD_ASPECT = 456 / 631; // portrait
 
+const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const isRtl = () => document.documentElement.dir === 'rtl';
+
 // Two render profiles split at 768px (Milo sm↔md); resolved once via resolveBP(W).
 // See README (Breakpoints).
 const BREAKPOINTS = {
@@ -86,8 +89,7 @@ const YAW_ONLY_GEOMETRY = {
 // pointer. matchMedia-less environments are treated as precise-pointer. See README.
 function usesCylinderGeometry(bandName) {
   if (bandName === 'sm') return true;
-  if (!window.matchMedia) return false;
-  return window.matchMedia('(pointer: coarse)').matches;
+  return !!window.matchMedia?.('(pointer: coarse)').matches;
 }
 
 // Phase timeline (progress 0→1 across the full scroll length). See README (Phase constants).
@@ -99,11 +101,21 @@ const PROGRESS_GRID_ARC_START = 0.30;
 const PROGRESS_GRID_ARC_END = 0.60;
 const PROGRESS_FOLD_DUR = 0.25;
 const PROGRESS_ZOOM_END = 1.00;
+// Pull-quote fade-in lead before the pin centres: pqAppearZoomT = (1 − --pq-pin-factor) − this (set
+// per breakpoint in doLayout). See README → runway / progress model.
+const PQ_APPEAR_LEAD = 0.03;
 // Peel stagger; defined here since the fold window derives from it.
 const GRID_PEEL_STAGGER = 0.20;
 // Grid→sphere fold overlap. See README (FOLD_PEEL_OVERLAP). 0 restores "settle then fold".
 const FOLD_PEEL_OVERLAP = 0.35;
 const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
+const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
+const FOLD_FIRST_PROGRESS = Math.max(
+  0,
+  (PROGRESS_GRID_ARC_START
+    + FOLD_START_LOCAL_T * (1 - GRID_PEEL_STAGGER) * GRID_ARC_RANGE
+    - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
+);
 // Progress at sphereFormT=1, zoomT=0 — the "interactive globe" position keyboard focus snaps
 // to. Mirrors computeFrame's foldLast (single source).
 const SPHERE_FORMED_PROGRESS = Math.max(
@@ -113,6 +125,10 @@ const SPHERE_FORMED_PROGRESS = Math.max(
       * (PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START)
     - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
 ) + PROGRESS_FOLD_DUR;
+
+// Fixed formation scroll length; `progress` is remapped piecewise around it so trimming the runway
+// only compresses the tail. Keep = --formation-vh (CSS). See README → runway / progress model.
+const FORMATION_SCROLL_VH = 304; // ≈ SPHERE_FORMED_PROGRESS × 945
 
 // Entry timing — two independent knobs. See README (Entry timing).
 const ENTRY_LEAD_VH = 0.4;
@@ -188,9 +204,12 @@ const TEXT_CA_DIR_STRENGTH = 0.05; // uMotionDir strength for drag CA on the tex
 const TEXT_CA_WARP_MUL = 1.5; // warp-driven CA boost
 const TEXT_DRAG_WARP_MUL = 3.0; // text drag-warp vs sphere cards — more violent
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit — letterforms bleed off
-// Custom cursor two-step retirement off textExitProgress: label fades, then whole cursor.
+// Two-step cursor retirement (label, then whole cursor), off textExitProgress (drag) or zoomT (once
+// the camera clears the globe). Thresholds/constraints: README → runway / progress model.
 const CURSOR_HINT_DISMISS_T = 0.12;
 const CURSOR_RETIRE_T = 0.55;
+const CURSOR_ZOOM_DISMISS_T = 0.38;
+const CURSOR_ZOOM_RETIRE_T = 0.40;
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 // Cylindrical masonry layout — a WHOLE-SET solve (card heights depend on image aspects, so
@@ -376,6 +395,7 @@ function createGlobeGalleryRuntime(
   let arcCopyEntryT = 0;
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
+  let pqAppearZoomT = 0.5; // zoomT the pull-quote fades in at; from --pq-pin-factor (see doLayout)
   let W = 0; let
     H = 0;
 
@@ -387,7 +407,8 @@ function createGlobeGalleryRuntime(
   let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
   // Arc-copy overlay: cached node + last-written style strings (see updateArcCopy).
   let arcCopyEl = null;
-  let arcCopyLeftStr = '';
+  let arcCopyInlineStartSide = '';
+  let arcCopyInlineStartStr = '';
   let arcCopyOpStr = '';
   let arcCopyTransformStr = '';
   let prevLenisY = 0; // previous frame scroll position
@@ -752,6 +773,7 @@ function createGlobeGalleryRuntime(
   // sphereFormT is computed in tick(); cached so interaction.js's click/hover handlers
   // (which fire between ticks) know whether the sphere is clickable.
   let sphereFormTAtLastTick = 0;
+  let zoomTAtLastTick = 0;
 
   // Card facing — tilts limb cards partway toward the camera so edge-on slivers stay legible.
   // MUST be per-frame (the sphere rotates). Target is sign(n.z) × view dir so back cards keep
@@ -903,12 +925,12 @@ function createGlobeGalleryRuntime(
     getCardMetadata,
     // Lazily load a sharper texture for the opened card. Returns the pending Image (so the
     // modal can cancel it) or null when the base cap already meets the modal cap (reuse, no load).
-    loadModalUpgrade: (idx, onReady) => {
+    loadModalUpgrade: (idx, onReady, onError) => {
       const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
       const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
       if (modalCap <= base) return null;
       const src = optimizeImgUrl(getCardMetadata(idx).img, modalCap);
-      return loadModalTextureRaw(src, modalCap, onReady);
+      return loadModalTextureRaw(src, modalCap, onReady, onError);
     },
     getViewport: () => ({ W, H }),
     getBP: () => bp.name,
@@ -929,13 +951,19 @@ function createGlobeGalleryRuntime(
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
   });
 
+  // Scroll px from the block top where the sphere is fully formed (progress = foldLast); locked to
+  // FORMATION_SCROLL_VH, clamped to the runway. See README → runway / progress model.
+  function formedScrollPx() {
+    return Math.min((FORMATION_SCROLL_VH / 100) * H, blockHeight);
+  }
+
   // Focusing the widget snaps the page to the interactive globe state (formed-sphere offset;
   // block top under RM). Deferred a frame so focus settles first (pdf-space). See README.
   function snapToInteractive() {
     if (suppressFocusSnap) return;
     const top = reducedMotion
       ? blockDocTop
-      : blockDocTop + SPHERE_FORMED_PROGRESS * blockHeight;
+      : blockDocTop + formedScrollPx();
     requestAnimationFrame(() => {
       if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
       else window.scrollTo(0, top);
@@ -984,8 +1012,10 @@ function createGlobeGalleryRuntime(
     getModalOpen: () => modal.getModalIdx() >= 0,
     getReducedMotion: () => reducedMotion,
     // Two-step exit off the shared hint signal (see the threshold constants).
-    getHintDismissed: () => textExitProgress > CURSOR_HINT_DISMISS_T,
-    getCursorRetired: () => textExitProgress > CURSOR_RETIRE_T,
+    getHintDismissed: () => textExitProgress > CURSOR_HINT_DISMISS_T
+      || zoomTAtLastTick > CURSOR_ZOOM_DISMISS_T,
+    getCursorRetired: () => textExitProgress > CURSOR_RETIRE_T
+      || zoomTAtLastTick > CURSOR_ZOOM_RETIRE_T,
     labelText: hintText || 'Click & Drag',
     drag,
   });
@@ -1001,6 +1031,8 @@ function createGlobeGalleryRuntime(
     maxVel: MAX_VEL,
     drag,
     isCursorActive: () => cursor.isActive(),
+    // Pitch follows geometry, not pointer type: the barrel (bp.YAW_ONLY) is yaw-only for mouse too.
+    getYawOnly: () => bp.YAW_ONLY,
   });
 
   // Per-frame pipeline. tick() is a thin orchestrator over the single-concern stages below;
@@ -1014,7 +1046,7 @@ function createGlobeGalleryRuntime(
     // Reduced motion: pin scroll input to the formed-sphere position (static globe, no motion
     // trail). The pin cancels in `progress`; canvas visibility still uses real scroll.
     const lenisY = reducedMotion
-      ? blockDocTop + SPHERE_FORMED_PROGRESS * blockHeight
+      ? blockDocTop + formedScrollPx()
       : window.scrollY;
     const scrollingDown = lenisY >= prevLenisY;
     // px/frame scroll speed — drives the velocity-based CA. Dead-banded to suppress Lenis
@@ -1025,7 +1057,14 @@ function createGlobeGalleryRuntime(
     const entryStart = blockDocTop - H * ENTRY_LEAD_VH;
     const entryRange = H * ENTRY_RAMP_VH;
     arcCopyEntryT = Math.max(0, Math.min(1, (lenisY - entryStart) / entryRange));
-    progress = Math.max(0, Math.min(1, (lenisY - blockDocTop) / blockHeight));
+    // Piecewise: formation over [0, formPx] (fixed length), zoom-through + quote over the rest.
+    const rawScroll = lenisY - blockDocTop;
+    const formPx = formedScrollPx();
+    const tailPx = Math.max(1, blockHeight - formPx);
+    progress = rawScroll <= formPx
+      ? Math.max(0, Math.min(1, rawScroll / formPx)) * SPHERE_FORMED_PROGRESS
+      : SPHERE_FORMED_PROGRESS
+        + Math.max(0, Math.min(1, (rawScroll - formPx) / tailPx)) * (1 - SPHERE_FORMED_PROGRESS);
 
     // arcPanT: preroll animates in with the entry so the arc is already moving as it enters view.
     const arcPanT = Math.min(1, progress / PROGRESS_PAN_END + PROGRESS_ARC_PREROLL * arcCopyEntryT);
@@ -1040,16 +1079,15 @@ function createGlobeGalleryRuntime(
 
     // Convert arc-pan arrival times to progress units for the fold/zoom phases.
     const gpWin = 1.0 - GRID_PEEL_STAGGER;
-    const arcRange = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
-    // First card folds when its peel reaches FOLD_START_LOCAL_T·gpWin; foldLast
+    // foldFirst: first card folds when its peel reaches FOLD_START_LOCAL_T·gpWin; foldLast
     // (= SPHERE_FORMED_PROGRESS) tracks the latest card's finish.
-    const foldFirstArcT = PROGRESS_GRID_ARC_START + FOLD_START_LOCAL_T * gpWin * arcRange;
-    const foldFirst = Math.max(0, (foldFirstArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+    const foldFirst = FOLD_FIRST_PROGRESS;
     const foldLast = SPHERE_FORMED_PROGRESS;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
     // Zoom-through starts the instant the sphere finishes forming (no interactive gap).
     const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (PROGRESS_ZOOM_END - foldLast)));
     sphereFormTAtLastTick = sphereFormT; // cache for interaction's click/hover handlers
+    zoomTAtLastTick = zoomT;
 
     // Card-entry transforms (arc branch): entryRot sweeps the arc in after a 5% hold;
     // entryYOffset is the vertical slide-up; arcScale is the arc→sphere size ratio.
@@ -1245,18 +1283,18 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // Pull-quote: JS adds .is-active once zoomT crosses 0.38 (sticky handles forward exit). On
+  // Pull-quote: JS adds .is-active once zoomT crosses pqAppearZoomT (sticky handles exit). On
   // scroll-up, a fast 0.15s fade so it disappears before the sticky element drifts down.
   function updatePullQuote(frame) {
     const { zoomT, scrollingDown } = frame;
     // Reduced motion: CSS owns it (opacity:1, no reveal) — no JS toggling.
     if (reducedMotion) return;
     if (pqEl) {
-      if (zoomT >= 0.38 && !pqShown) {
+      if (zoomT >= pqAppearZoomT && !pqShown) {
         pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
         pqShown = true;
         pqEl.classList.add('is-active');
-      } else if (zoomT < 0.38 && pqShown) {
+      } else if (zoomT < pqAppearZoomT && pqShown) {
         if (!scrollingDown) {
           pqEl.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
         }
@@ -1314,24 +1352,35 @@ function createGlobeGalleryRuntime(
 
   function updateArcCopy() {
     if (!arcCopyEl) return;
-    const PROGRESS_HEADLINE_IN = 0.25;
-    const PROGRESS_ARC_COPY_OUT = 0.50;
+    const ARC_COPY_OUT_FORM_START = 0.20;
+    const ARC_COPY_OUT_FORM_END = 0.90;
+    const foldWindow = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
+    const outStart = FOLD_FIRST_PROGRESS + ARC_COPY_OUT_FORM_START * foldWindow;
+    const outEnd = FOLD_FIRST_PROGRESS + ARC_COPY_OUT_FORM_END * foldWindow;
     const arcCopyInE = easeOutCubic(Math.min(1, arcCopyEntryT / 0.336));
-    const arcCopyOutT = Math.max(0, Math.min(
-      1,
-      (progress - PROGRESS_HEADLINE_IN) / (PROGRESS_ARC_COPY_OUT - PROGRESS_HEADLINE_IN),
-    ));
-    const arcCopyOutE = easeOutCubic(arcCopyOutT);
+    const arcCopyOutT = Math.max(0, Math.min(1, (progress - outStart) / (outEnd - outStart)));
+    const arcCopyOutE = easeInOutCubic(arcCopyOutT);
     const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
     const arcCopySlide = 24 * (1 - arcCopyInE);
-    // sm pins 8px from viewport left; md uses the 24px-grid-aligned position with centering.
+    // sm pins 8px from viewport inline-start;
+    // md uses the 24px-grid-aligned position with centering.
     const gridLeft = (bp.name === 'sm')
       ? 8
       : 24 + Math.max(0, (W - 48 - 1392) / 2);
-    const leftStr = `${gridLeft}px`;
+    const inlineStartSide = isRtl() ? 'right' : 'left';
+    const inlineEndSide = isRtl() ? 'left' : 'right';
+    const insetStr = `${gridLeft}px`;
     const opStr = arcCopyOp.toFixed(3);
     const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
-    if (leftStr !== arcCopyLeftStr) { arcCopyEl.style.left = leftStr; arcCopyLeftStr = leftStr; }
+    if (inlineStartSide !== arcCopyInlineStartSide) {
+      arcCopyEl.style[inlineEndSide] = '';
+      arcCopyInlineStartSide = inlineStartSide;
+      arcCopyInlineStartStr = '';
+    }
+    if (insetStr !== arcCopyInlineStartStr) {
+      arcCopyEl.style[inlineStartSide] = insetStr;
+      arcCopyInlineStartStr = insetStr;
+    }
     if (opStr !== arcCopyOpStr) { arcCopyEl.style.opacity = opStr; arcCopyOpStr = opStr; }
     if (transformStr !== arcCopyTransformStr) {
       arcCopyEl.style.transform = transformStr;
@@ -1788,6 +1837,7 @@ function createGlobeGalleryRuntime(
   let contextRebuilds = 0;
   let contextStableTimer = 0;
   let contextRecovering = false;
+  let contextRecoverTimer = 0;
   function onContextLost(e) {
     e.preventDefault();
     if (contextStableTimer) { clearTimeout(contextStableTimer); contextStableTimer = 0; }
@@ -1796,6 +1846,7 @@ function createGlobeGalleryRuntime(
     window.lana?.log?.('globe-gallery: WebGL context lost', { tags: 'globe-gallery', severity: 'warn' });
   }
   function recoverFromContextLoss() {
+    contextRecoverTimer = 0;
     contextRecovering = false;
     contextRebuilds += 1;
     const collapsed = contextRebuilds > MAX_CONTEXT_REBUILDS;
@@ -1809,7 +1860,7 @@ function createGlobeGalleryRuntime(
     destroy();
     // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
     if (collapsed || initRuntime() === false) {
-      root.classList.add('globe-gallery--empty');
+      root.classList.add('globe-gallery-empty');
       return;
     }
     contextStableTimer = window.setTimeout(() => {
@@ -1819,7 +1870,7 @@ function createGlobeGalleryRuntime(
   function onContextRestored() {
     if (contextRecovering) return; // coalesce the main + modal canvases' restore events (README)
     contextRecovering = true;
-    window.setTimeout(recoverFromContextLoss, 0);
+    contextRecoverTimer = window.setTimeout(recoverFromContextLoss, 0);
   }
   function bindContextListeners(add) {
     const fn = add ? 'addEventListener' : 'removeEventListener';
@@ -1842,9 +1893,8 @@ function createGlobeGalleryRuntime(
     const canvas = q('.globe-gallery-canvas');
     if (!canvas) return false;
 
-    reducedMotion = !!(window.matchMedia
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    root.classList.toggle('globe-gallery--reduced', reducedMotion);
+    reducedMotion = prefersReducedMotion();
+    root.classList.toggle('globe-gallery-reduced', reducedMotion);
 
     // Reduced motion: canvas into normal flow (absolute in the static world) so the globe
     // scrolls away; top nudge clears the section above. See README (Reduced motion).
@@ -1898,16 +1948,17 @@ function createGlobeGalleryRuntime(
       // path. Pointer precision is read at init only — a mid-session mouse/trackpad swap needs a
       // reload (out of scope; see README).
       const nextBand = resolveBP(W);
-      const nextReducedMotion = !!(window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      const nextReducedMotion = prefersReducedMotion();
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
         destroy();
-        if (initRuntime() === false) root.classList.add('globe-gallery--empty');
+        if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
       blockDocTop = root.getBoundingClientRect().top + window.scrollY;
       blockHeight = root.offsetHeight || window.innerHeight * 7;
+      const pinFactor = parseFloat(getComputedStyle(root).getPropertyValue('--pq-pin-factor')) || 0.44;
+      pqAppearZoomT = Math.max(0, (1 - pinFactor) - PQ_APPEAR_LEAD);
       // Re-apply DPR (can change when dragging between monitors of different density).
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
@@ -1933,8 +1984,8 @@ function createGlobeGalleryRuntime(
     if (reducedMotionMQ && reducedMotionHandler) {
       reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
     }
-    if (window.matchMedia) {
-      reducedMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotionMQ = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? null;
+    if (reducedMotionMQ) {
       reducedMotionHandler = doLayout;
       reducedMotionMQ.addEventListener('change', reducedMotionHandler);
     }
@@ -1971,7 +2022,10 @@ function createGlobeGalleryRuntime(
     caFilterR = q('.globe-gallery-ca-r-offset');
     caFilterB = q('.globe-gallery-ca-b-offset');
     arcCopyEl = q('.globe-gallery-arc-copy');
-    arcCopyLeftStr = ''; arcCopyOpStr = ''; arcCopyTransformStr = '';
+    arcCopyInlineStartSide = '';
+    arcCopyInlineStartStr = '';
+    arcCopyOpStr = '';
+    arcCopyTransformStr = '';
 
     modal.setup();
 
@@ -2033,6 +2087,8 @@ function createGlobeGalleryRuntime(
     onScreen = true; // reset the visibility default; the next init's observer re-corrects it
     bindContextListeners(false);
     if (contextStableTimer) { clearTimeout(contextStableTimer); contextStableTimer = 0; }
+    if (contextRecoverTimer) { clearTimeout(contextRecoverTimer); contextRecoverTimer = 0; }
+    contextRecovering = false;
     if (intersectionObs) {
       intersectionObs.disconnect();
       intersectionObs = null;
@@ -2059,6 +2115,10 @@ function createGlobeGalleryRuntime(
     if (renderer) {
       renderer.domElement.style.filter = '';
       globalCaFilterOn = false;
+      // NOTE: do NOT forceContextLoss() here — the canvas element is reused across rebuilds
+      // (band crossings / reduced-motion toggles), and a force-lost context is never restored,
+      // so the next renderer on the same canvas is born dead ("Context Lost"). dispose() alone
+      // frees this renderer's GPU resources.
       renderer.dispose();
       renderer.domElement.style.display = 'none';
     }
@@ -2105,8 +2165,9 @@ function createGlobeGalleryRuntime(
 
 export default async function init(el) {
   // Reduced motion: static, still-interactive globe in plain document flow. See README.
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reducedMotion) el.classList.add('globe-gallery--reduced');
+  if (prefersReducedMotion()) {
+    el.classList.add('globe-gallery-reduced');
+  }
 
   // Extract authored content (incl. the UI labels) before buildGlobeDom() wipes the children.
   const {
@@ -2120,7 +2181,7 @@ export default async function init(el) {
   // Cards come from the authored fragment link.
   const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
   if (!cards || cards.length === 0) {
-    el.classList.add('globe-gallery--empty');
+    el.classList.add('globe-gallery-empty');
     return el;
   }
   const runtime = createGlobeGalleryRuntime(
@@ -2131,17 +2192,16 @@ export default async function init(el) {
     gid,
     labels,
   );
-  if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
-  if (runtime.init() === false) { el.classList.add('globe-gallery--empty'); return el; }
+  if (!runtime) { el.classList.add('globe-gallery-empty'); return el; }
+  if (runtime.init() === false) { el.classList.add('globe-gallery-empty'); return el; }
   el.globeRuntime = runtime;
 
-  // Teardown when the block is removed (SPA / MEP swaps).
   const removalObserver = new MutationObserver(() => {
     if (document.contains(el)) return;
     runtime.destroy();
     removalObserver.disconnect();
   });
-  if (el.parentElement) removalObserver.observe(el.parentElement, { childList: true });
+  removalObserver.observe(document.body, { childList: true, subtree: true });
 
   return el;
 }

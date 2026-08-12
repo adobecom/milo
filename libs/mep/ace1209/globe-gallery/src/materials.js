@@ -189,14 +189,19 @@ export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onEach,
 }
 
 // Load one card image at a higher cap for the modal (raw-UV, no cover-crop). onReady fires
-// once decoded; caller owns disposal. On error nothing fires. Returns the Image so a pending
-// load can be cancelled (img.src = '').
-export function loadModalTexture(src, maxTex, onReady) {
+// once decoded; caller owns disposal. onError fires if the load fails so the caller can drop its
+// pending-Image reference (the base texture stays). Returns the Image so a pending load can be
+// cancelled (img.src = '').
+export function loadModalTexture(src, maxTex, onReady, onError) {
   const img = new Image();
   img.onload = () => {
     const tex = new THREE.CanvasTexture(imageToCanvas(img, maxTex));
     tex.colorSpace = THREE.SRGBColorSpace;
     onReady(tex);
+  };
+  img.onerror = () => {
+    window.lana?.log?.(`globe-gallery: modal texture upgrade failed: ${src}`, { tags: 'globe-gallery', severity: 'warn' });
+    if (onError) onError();
   };
   img.src = src; // no crossOrigin — needed so onload fires for file://
   return img;

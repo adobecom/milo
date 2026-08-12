@@ -3,6 +3,8 @@ import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic } from './math.js';
 import { escapeHtml } from './authoring.js';
 
+const perfNow = () => performance?.now() ?? Date.now();
+
 // Modal lifecycle phases. CLOSED is null so `if (modalPhase)` reads as "modal live".
 const MODAL_PHASE = Object.freeze({
   CLOSED: null,
@@ -28,7 +30,7 @@ const DN_NAV_WARP = 0.40; // peak warp
 const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
 const DT_SCRIM_W = 316; // info scrim fixed width
 const DT_NAV_GAP = 12; // gap between counter pill and each arrow
-const DT_COUNTER_W = 138; // .globe-gallery-modal__counter fixed width (md+ CSS)
+const DT_COUNTER_W = 138; // .globe-gallery-modal-counter fixed width (md+ CSS)
 
 export default function createGlobeModal({
   q,
@@ -39,7 +41,7 @@ export default function createGlobeModal({
   getCards,
   getCount,
   getCardMetadata,
-  // Lazily load a sharper texture for the opened card. (idx, onReady) → Image|null; null = no-op.
+  // Lazily load a sharper texture for the opened card. (idx, onReady, onError) → Image|null.
   loadModalUpgrade,
   getViewport,
   getBP,
@@ -93,8 +95,6 @@ export default function createGlobeModal({
   let modalOpenedAt = 0;
   // close-finalize timeout id; open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
-  // document keydown listener; setup() detaches a prior one before re-adding on re-init.
-  let keydownHandler = null;
   // click/touch listeners wired once — DOM persists across re-inits so re-adding would stack.
   let listenersWired = false;
 
@@ -127,6 +127,8 @@ export default function createGlobeModal({
   }
 
   function getModalIdx() { return modalIdx; }
+
+  const isRtl = () => document.documentElement.dir === 'rtl';
 
   // Barrel = cards with a real sphere slot; indices ≥ this are overflow.
   function barrelCount() { return getCards().length; }
@@ -180,7 +182,7 @@ export default function createGlobeModal({
   // Load an overflow carrier's image at the modal cap, swap in on decode, derive aspect. Owns
   // its texture per-card (disposed in retireOverflowCard) so a cross-fade keeps the outgoing image.
   function loadOverflowTexture(card, idx) {
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.src = ''; card.pendingImg = null; }
+    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
     if (!loadModalUpgrade) return;
     card.pendingImg = loadModalUpgrade(idx, (tex) => {
       card.pendingImg = null;
@@ -192,13 +194,13 @@ export default function createGlobeModal({
         card.sphereScaleX = asp / cardAspect;
         card.modalMat.uniforms.uAspect.value = asp; // = cardAspect × sphereScaleX
       }
-    });
+    }, () => { card.pendingImg = null; });
   }
 
   // Retire an overflow carrier on nav-away/close: unparent, hide, drop texture, reset material.
   function retireOverflowCard(card) {
     if (!isOverflowCard(card)) return;
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.src = ''; card.pendingImg = null; }
+    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
     if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
     card.mesh.visible = false;
     card.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
@@ -219,6 +221,7 @@ export default function createGlobeModal({
   function releaseModalTexture() {
     if (modalTexImg) {
       modalTexImg.onload = null;
+      modalTexImg.onerror = null;
       modalTexImg.src = '';
       modalTexImg = null;
     }
@@ -271,7 +274,7 @@ export default function createGlobeModal({
       modalTexOwned = tex;
       modalTexCard = card;
       card.modalMat.uniforms.map.value = tex;
-    });
+    }, () => { modalTexImg = null; });
   }
 
   // Reset the cached SDF material's animated uniforms so a stale mid-fade value doesn't ghost.
@@ -354,16 +357,16 @@ export default function createGlobeModal({
     const chromeEl = q('.globe-gallery-modal-chrome');
     const camera = getCamera();
     if (!chromeEl || !camera) return;
-    const { W, H } = getViewport();
-    const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
+    const { W } = getViewport();
+    const { w: CARD_W_SPHERE } = getCardDims();
     if (!chromeNodes || chromeNodes.chromeEl !== chromeEl) {
       chromeNodes = {
         chromeEl,
-        infoEl: chromeEl.querySelector('.globe-gallery-modal__info'),
-        closeEl: chromeEl.querySelector('.globe-gallery-modal__close'),
-        prevEl: chromeEl.querySelector('.globe-gallery-modal__nav--prev'),
-        nextEl: chromeEl.querySelector('.globe-gallery-modal__nav--next'),
-        counterEl: chromeEl.querySelector('.globe-gallery-modal__counter'),
+        infoEl: chromeEl.querySelector('.globe-gallery-modal-info'),
+        closeEl: chromeEl.querySelector('.globe-gallery-modal-close'),
+        prevEl: chromeEl.querySelector('.globe-gallery-modal-nav-prev'),
+        nextEl: chromeEl.querySelector('.globe-gallery-modal-nav-next'),
+        counterEl: chromeEl.querySelector('.globe-gallery-modal-counter'),
       };
     }
     const { infoEl, closeEl, prevEl, nextEl, counterEl } = chromeNodes;
@@ -373,19 +376,13 @@ export default function createGlobeModal({
     const tgtScale = scratchScale;
     computeModalTarget(tgtPos, tgtQuat, tgtScale);
 
-    const halfH = CARD_H_SPHERE * tgtScale.y * 0.5;
     const halfW = CARD_W_SPHERE * tgtScale.x * 0.5;
 
     if (!chromeProjV) chromeProjV = new THREE.Vector3();
     const pv = chromeProjV;
 
-    // Project card edges to screen pixels.
-    pv.set(0, tgtPos.y + halfH, tgtPos.z).project(camera);
-    const cardTopPx = (1 - pv.y) * 0.5 * H;
-
-    pv.set(0, tgtPos.y - halfH, tgtPos.z).project(camera);
-    const cardBotPx = (1 - pv.y) * 0.5 * H;
-
+    // Project the card's horizontal edges to screen pixels (used to centre the desktop control row
+    // under the image). Vertical placement is intentionally NOT derived from the card — see below.
     pv.set(tgtPos.x - halfW, tgtPos.y, tgtPos.z).project(camera);
     const cardLeftPx = (pv.x + 1) * 0.5 * W;
 
@@ -393,62 +390,55 @@ export default function createGlobeModal({
     const cardRightPx = (pv.x + 1) * 0.5 * W;
 
     // Clamp to visible viewport (card may bleed off edges at large scale).
-    const visBot = Math.min(H, cardBotPx);
     const visLeft = Math.max(0, cardLeftPx);
     const visRight = Math.min(W, cardRightPx);
 
-    // Inset by the SDF radius (px) so chrome sits over visible photo, not geometry.
-    const SDF_RADIUS_PX = SDF_CORNER_RADIUS * (cardBotPx - cardTopPx);
-    const INSET = 24 + Math.round(SDF_RADIUS_PX);
-
     const isMobile = (getBP() === 'sm');
+    const rtl = isRtl();
 
-    // Close button → top-right of the viewport (24px inset) at every breakpoint.
+    // Close button → top inline-end corner of the viewport (24px inset) at every breakpoint.
     if (closeEl) {
       closeEl.style.position = 'absolute';
       closeEl.style.top = '24px';
-      closeEl.style.right = '24px';
-      closeEl.style.bottom = 'auto';
-      closeEl.style.left = 'auto';
+      closeEl.style.insetInlineEnd = '24px';
     }
 
     // Nav arrows + counter positioned individually (no wrapper) so :hover scale survives the fade.
     // Mobile → arrows bottom corners, counter bottom-center. Desktop → one row at the image bottom.
-    const NAV_SIZE = 44; // matches the .globe-gallery-modal__nav width/height in CSS
+    const NAV_SIZE = 44; // matches the .globe-gallery-modal-nav width/height in CSS
     const EDGE = 24;
     const counterBase = 'translateX(-50%)';
     if (prevEl) prevEl.style.position = 'absolute';
     if (nextEl) nextEl.style.position = 'absolute';
     if (counterEl) counterEl.style.position = 'absolute';
 
+    const setBottomEdge = (elx, side) => {
+      elx.style[side] = `${EDGE}px`; elx.style[side === 'left' ? 'right' : 'left'] = 'auto';
+      elx.style.top = 'auto'; elx.style.bottom = `${EDGE}px`;
+    };
     if (isMobile) {
-      if (prevEl) {
-        prevEl.style.left = `${EDGE}px`; prevEl.style.right = 'auto';
-        prevEl.style.top = 'auto'; prevEl.style.bottom = `${EDGE}px`;
-      }
-      if (nextEl) {
-        nextEl.style.left = 'auto'; nextEl.style.right = `${EDGE}px`;
-        nextEl.style.top = 'auto'; nextEl.style.bottom = `${EDGE}px`;
-      }
+      if (prevEl) setBottomEdge(prevEl, rtl ? 'right' : 'left');
+      if (nextEl) setBottomEdge(nextEl, rtl ? 'left' : 'right');
       if (counterEl) {
         counterEl.style.left = '50%'; counterEl.style.right = 'auto';
         counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
       }
     } else {
-      // Counter and arrows share one `bottom` → one row.
-      const rowBottom = `${H - visBot + INSET}px`;
+      const rowBottom = `${EDGE}px`;
       const centerX = (visLeft + visRight) / 2;
       const flank = DT_COUNTER_W / 2 + DT_NAV_GAP; // pill edge → arrow's near edge
       if (counterEl) {
         counterEl.style.left = `${Math.round(centerX)}px`; counterEl.style.right = 'auto';
         counterEl.style.top = 'auto'; counterEl.style.bottom = rowBottom;
       }
+      const prevX = rtl ? centerX + flank : centerX - flank - NAV_SIZE;
+      const nextX = rtl ? centerX - flank - NAV_SIZE : centerX + flank;
       if (prevEl) {
-        prevEl.style.left = `${Math.round(centerX - flank - NAV_SIZE)}px`; prevEl.style.right = 'auto';
+        prevEl.style.left = `${Math.round(prevX)}px`; prevEl.style.right = 'auto';
         prevEl.style.top = 'auto'; prevEl.style.bottom = rowBottom;
       }
       if (nextEl) {
-        nextEl.style.left = `${Math.round(centerX + flank)}px`; nextEl.style.right = 'auto';
+        nextEl.style.left = `${Math.round(nextX)}px`; nextEl.style.right = 'auto';
         nextEl.style.top = 'auto'; nextEl.style.bottom = rowBottom;
       }
     }
@@ -456,7 +446,6 @@ export default function createGlobeModal({
     // Info scrim: mobile = full-width bottom chunk; desktop = full-height left edge.
     if (infoEl) {
       infoEl.style.position = 'absolute';
-      infoEl.style.minHeight = '';
       if (isMobile) {
         infoEl.style.top = 'auto';
         infoEl.style.bottom = '0';
@@ -467,8 +456,7 @@ export default function createGlobeModal({
       } else {
         infoEl.style.top = '0';
         infoEl.style.bottom = '0';
-        infoEl.style.left = '0';
-        infoEl.style.right = 'auto';
+        infoEl.style.insetInlineStart = '0';
         infoEl.style.width = `${DT_SCRIM_W}px`;
         infoEl.style.height = '';
       }
@@ -492,12 +480,30 @@ export default function createGlobeModal({
     applyFade(counterEl, counterBase);
   }
 
+  // Set the description's mask fade lengths from scroll position; focusable only when it scrolls.
+  function updateDescFade(descEl) {
+    if (!descEl) return;
+    const overflow = descEl.scrollHeight - descEl.clientHeight;
+    const canScroll = overflow > 1;
+    const top = canScroll && descEl.scrollTop > 1;
+    const bottom = canScroll && descEl.scrollTop < overflow - 1;
+    descEl.style.setProperty('--desc-fade-top', top ? '20px' : '0');
+    descEl.style.setProperty('--desc-fade-bottom', bottom ? '20px' : '0');
+    if (canScroll) descEl.tabIndex = 0;
+    else if (document.activeElement !== descEl) descEl.removeAttribute('tabindex');
+  }
+
+  function scheduleDescFade() {
+    const descEl = q('.globe-gallery-modal-description');
+    if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
+  }
+
   function populateModal(i) {
     const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     // role="img" text alternative for the WebGL photo (no src — the visible photo is the canvas).
-    const imgEl = targetEl.querySelector('.globe-gallery-modal__image');
+    const imgEl = targetEl.querySelector('.globe-gallery-modal-image');
     if (imgEl) {
       if (meta.alt) {
         imgEl.setAttribute('aria-label', meta.alt);
@@ -507,30 +513,33 @@ export default function createGlobeModal({
         imgEl.setAttribute('aria-hidden', 'true');
       }
     }
-    const roleLabelEl = targetEl.querySelector('.globe-gallery-modal__role-label');
+    const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
-    targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
-    targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
-    const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
+    targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
+    targetEl.querySelector('.globe-gallery-modal-description').textContent = meta.description;
+    const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
     }
     // SR position — read via the dialog name (aria-labelledby) + heading (aria-describedby).
-    const posEl = targetEl.querySelector('.globe-gallery-modal__position');
+    const posEl = targetEl.querySelector('.globe-gallery-modal-position');
     if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
-    const badgesEl = targetEl.querySelector('.globe-gallery-modal__badges');
+    const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
-      row.className = 'globe-gallery-modal__badge';
+      row.className = 'globe-gallery-modal-badge';
       const nameHtml = b.href
-        ? `<a class="globe-gallery-modal__badge-app globe-gallery-modal__badge-app--link" href="${escapeHtml(b.href)}">${escapeHtml(b.name)}</a>`
-        : `<span class="globe-gallery-modal__badge-app">${escapeHtml(b.name)}</span>`;
+        ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}">${escapeHtml(b.name)}</a>`
+        : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
       // The logo is authored per row; rows without one just render the name (no empty chip).
-      row.innerHTML = `<div class="globe-gallery-modal__badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal__badge-role">${escapeHtml(b.role)}</span>`;
+      row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
+    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+    if (descEl) descEl.scrollTop = 0;
+    scheduleDescFade();
   }
 
   // Finalize the desktop nav transition: detach old card to sphere, reset uniforms on the new.
@@ -611,7 +620,7 @@ export default function createGlobeModal({
 
     dnNavOldCard = oldCard;
     dnNavNewCard = newCard;
-    dnNavT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    dnNavT0 = perfNow();
     dnNavActive = true;
   }
 
@@ -623,7 +632,7 @@ export default function createGlobeModal({
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
     }
-    modalOpenedAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
     // Pin warp center to click origin (default ~center).
@@ -658,7 +667,7 @@ export default function createGlobeModal({
     if (modalCanvasEl) modalCanvasEl.style.display = 'block';
 
     modalPhase = MODAL_PHASE.OPENING;
-    modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalAnimT0 = perfNow();
 
     // Reset chrome reveal so elements start hidden and fade in after card settles.
     resetChromeReveal();
@@ -674,7 +683,7 @@ export default function createGlobeModal({
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
-      const nameEl = chromeEl && chromeEl.querySelector('.globe-gallery-modal__name');
+      const nameEl = chromeEl && chromeEl.querySelector('.globe-gallery-modal-name');
       const focusEl = nameEl || chromeEl;
       if (focusEl) { try { focusEl.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
@@ -682,15 +691,18 @@ export default function createGlobeModal({
     const renderer = getRenderer();
     const canvas = renderer && renderer.domElement;
     if (canvas) canvas.classList.add('is-modal-active');
-    document.documentElement.classList.add('modal-open');
-    document.body.classList.add('modal-open');
+    document.documentElement.classList.add('globe-gallery-modal-open');
+    document.body.classList.add('globe-gallery-modal-open');
     if (window.lenis) window.lenis.stop();
   }
 
-  function close() {
-    // Suppress the synthetic click after touch pointerup (would immediately close the fresh modal).
-    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    if (now - modalOpenedAt < 200) return;
+  function close(viaPointer) {
+    // Suppress only the synthetic click after touch pointerup (would immediately close the fresh
+    // modal). Escape / pull-to-close are deliberate and must not be swallowed inside this window.
+    if (viaPointer) {
+      const now = perfNow();
+      if (now - modalOpenedAt < 200) return;
+    }
     if (!modalEl || modalIdx < 0 || !modalCard) return;
     // Re-entrancy guard: ignore extra close requests while already CLOSING (avoids jitter).
     if (modalPhase === MODAL_PHASE.CLOSING) return;
@@ -710,7 +722,7 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldScale(modalCloseStartScale);
 
     modalPhase = MODAL_PHASE.CLOSING;
-    modalAnimT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalAnimT0 = perfNow();
 
     // Hide chrome immediately — it fades with the container.
     resetChromeReveal();
@@ -730,8 +742,8 @@ export default function createGlobeModal({
         if (chromeEl.open) chromeEl.close();
         if (restoreFocusOnClose) restoreFocusOnClose(restoreIdx);
       }
-      document.documentElement.classList.remove('modal-open');
-      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('globe-gallery-modal-open');
+      document.body.classList.remove('globe-gallery-modal-open');
       if (window.lenis) window.lenis.start();
       closeTimeoutId = null;
     }, MODAL_ANIM_DURATION);
@@ -758,7 +770,7 @@ export default function createGlobeModal({
   function updateAnimation(sphereRotActive) {
     if (modalCard && modalPhase) {
       const sphereGroup = getSphereGroup();
-      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const now = perfNow();
       // Reduced motion: force aT=1 so the fly snaps in one frame and the warp bell curves collapse.
       const aT = getReducedMotion()
         ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
@@ -881,7 +893,7 @@ export default function createGlobeModal({
   // Desktop nav cross-warp: both cards' uWarp on a sin bell curve; opacity cross-fades.
   function updateDesktopNav() {
     if (dnNavActive) {
-      const dnNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const dnNow = perfNow();
       // Reduced motion: force completion — the new card just becomes visible.
       const dnT = getReducedMotion() ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
       if (dnT >= 1) {
@@ -913,6 +925,8 @@ export default function createGlobeModal({
     if (!modalRenderer) return;
     modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     modalRenderer.setSize(w, h);
+    // Resize can change whether the description overflows — re-measure the fade cue.
+    if (modalIdx >= 0) scheduleDescFade();
   }
 
   // Create the modal renderer/scene + THREE temps and wire DOM interactions. Once per init.
@@ -945,38 +959,20 @@ export default function createGlobeModal({
     const alreadyWired = listenersWired;
     listenersWired = true;
     if (!alreadyWired) {
-      evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
-      const prevBtn = evtRoot.querySelector('.globe-gallery-modal__nav--prev');
-      const nextBtn = evtRoot.querySelector('.globe-gallery-modal__nav--next');
+      evtRoot.querySelector('.globe-gallery-modal-close').addEventListener('click', () => close(true));
+      const prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
+      const nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
       prevBtn.addEventListener('click', () => { navigate(-1); });
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
       if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
+      const descEl = evtRoot.querySelector('.globe-gallery-modal-description');
+      if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
       if (chromeEl) {
         chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
       }
     }
-
-    // Detach prior keydown before re-adding (re-init calls setup() again — avoid stacking).
-    if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
-    keydownHandler = (e) => {
-      if (modalIdx < 0) return;
-      const chromeRoot = q('.globe-gallery-modal-chrome');
-      const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
-      if (focusInChrome && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        e.preventDefault();
-        navigate(e.key === 'ArrowLeft' ? -1 : 1);
-        return;
-      }
-      if (e.key === 'PageUp' || e.key === 'PageDown'
-          || e.key === 'Home' || e.key === 'End'
-          || e.key === 'ArrowUp' || e.key === 'ArrowDown'
-          || (e.key === ' ' && !focusInChrome)) {
-        e.preventDefault();
-      }
-    };
-    document.addEventListener('keydown', keydownHandler);
 
     // Touch gestures wired once too; nothing runs after this, so early-return.
     if (alreadyWired) return;
@@ -1002,8 +998,7 @@ export default function createGlobeModal({
     // Swipe/pull applies to touch-primary devices, not just the sm width band — tablets at
     // md (≥768, coarse pointer) get the same gesture nav the globe's yaw-only shape assumes.
     // Mirrors usesCylinderGeometry's '(pointer: coarse)' check. matchMedia-less → no gestures.
-    const isTouchPrimary = () => !!(window.matchMedia
-      && window.matchMedia('(pointer: coarse)').matches);
+    const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
 
     // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {
@@ -1011,6 +1006,8 @@ export default function createGlobeModal({
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
+      // Description owns its own touch scroll — don't hijack it for swipe/pull-to-close.
+      if (e.target?.closest?.('.globe-gallery-modal-description')) return;
       swStartX = e.touches[0].clientX; swLastX = swStartX;
       swStartY = e.touches[0].clientY; swLastY = swStartY;
       swLastT = Date.now();
@@ -1079,7 +1076,7 @@ export default function createGlobeModal({
           // Clear the preview warp so it doesn't bleed onto the new card once the transition
           // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
           modalWarp = 0;
-          navigate(dx < 0 ? 1 : -1);
+          navigate((dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1));
         }
       } else {
         const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
@@ -1106,6 +1103,15 @@ export default function createGlobeModal({
       }
       swAxis = null;
     }, { passive: true });
+
+    evtRoot.addEventListener('touchcancel', () => {
+      if (!swActive) return;
+      swActive = false;
+      swAxis = null;
+      if (!modalCanvasEl) return;
+      modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      modalCanvasEl.style.transform = '';
+    }, { passive: true });
   }
 
   // Synchronously return the modal DOM + page state to closed. destroy() forces phase to CLOSED
@@ -1129,21 +1135,19 @@ export default function createGlobeModal({
     }
     const mainCanvas = q('.globe-gallery-canvas');
     if (mainCanvas) mainCanvas.classList.remove('is-modal-active');
-    document.documentElement.classList.remove('modal-open');
-    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('globe-gallery-modal-open');
+    document.body.classList.remove('globe-gallery-modal-open');
     if (window.lenis) window.lenis.start();
     resetChromeReveal();
   }
 
-  // Dispose the modal renderer + clear the close timeout, remove keydown, reset DOM/page state.
   function destroy() {
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
-    if (keydownHandler) { document.removeEventListener('keydown', keydownHandler); keydownHandler = null; }
     resetModalDom();
     releaseModalTexture();
     // Dispose lazy overflow carriers — Three frees GPU memory only on explicit dispose.
     overflowCards.forEach((card) => {
-      if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.src = ''; card.pendingImg = null; }
+      if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
       if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
       card.mesh.geometry.dispose();
       card.modalMat.dispose();
