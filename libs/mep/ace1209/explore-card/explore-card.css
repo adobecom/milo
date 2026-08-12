@@ -1,3 +1,9 @@
+:root:has(meta[name="foundation"][content="c2"]) {
+  .explore-card .explore-card-background .video-container button.play-pause-button {
+    z-index: 2;
+  }
+}
+
 .explore-card {
   --color-accent-focus-ring: var(--s2a-color-blue-800);
 
