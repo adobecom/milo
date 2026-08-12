@@ -16,6 +16,7 @@ import {
 const CARD_ASPECT = 456 / 631; // portrait
 
 const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const isRtl = () => document.documentElement.dir === 'rtl';
 
 // Two render profiles split at 768px (Milo sm↔md); resolved once via resolveBP(W).
 // See README (Breakpoints).
@@ -399,7 +400,8 @@ function createGlobeGalleryRuntime(
   let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
   // Arc-copy overlay: cached node + last-written style strings (see updateArcCopy).
   let arcCopyEl = null;
-  let arcCopyLeftStr = '';
+  let arcCopyInlineStartSide = '';
+  let arcCopyInlineStartStr = '';
   let arcCopyOpStr = '';
   let arcCopyTransformStr = '';
   let prevLenisY = 0; // previous frame scroll position
@@ -1355,14 +1357,25 @@ function createGlobeGalleryRuntime(
     const arcCopyOutE = easeOutCubic(arcCopyOutT);
     const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
     const arcCopySlide = 24 * (1 - arcCopyInE);
-    // sm pins 8px from viewport left; md uses the 24px-grid-aligned position with centering.
+    // sm pins 8px from viewport inline-start;
+    // md uses the 24px-grid-aligned position with centering.
     const gridLeft = (bp.name === 'sm')
       ? 8
       : 24 + Math.max(0, (W - 48 - 1392) / 2);
-    const leftStr = `${gridLeft}px`;
+    const inlineStartSide = isRtl() ? 'right' : 'left';
+    const inlineEndSide = isRtl() ? 'left' : 'right';
+    const insetStr = `${gridLeft}px`;
     const opStr = arcCopyOp.toFixed(3);
     const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
-    if (leftStr !== arcCopyLeftStr) { arcCopyEl.style.left = leftStr; arcCopyLeftStr = leftStr; }
+    if (inlineStartSide !== arcCopyInlineStartSide) {
+      arcCopyEl.style[inlineEndSide] = '';
+      arcCopyInlineStartSide = inlineStartSide;
+      arcCopyInlineStartStr = '';
+    }
+    if (insetStr !== arcCopyInlineStartStr) {
+      arcCopyEl.style[inlineStartSide] = insetStr;
+      arcCopyInlineStartStr = insetStr;
+    }
     if (opStr !== arcCopyOpStr) { arcCopyEl.style.opacity = opStr; arcCopyOpStr = opStr; }
     if (transformStr !== arcCopyTransformStr) {
       arcCopyEl.style.transform = transformStr;
@@ -2004,7 +2017,10 @@ function createGlobeGalleryRuntime(
     caFilterR = q('.globe-gallery-ca-r-offset');
     caFilterB = q('.globe-gallery-ca-b-offset');
     arcCopyEl = q('.globe-gallery-arc-copy');
-    arcCopyLeftStr = ''; arcCopyOpStr = ''; arcCopyTransformStr = '';
+    arcCopyInlineStartSide = '';
+    arcCopyInlineStartStr = '';
+    arcCopyOpStr = '';
+    arcCopyTransformStr = '';
 
     modal.setup();
 

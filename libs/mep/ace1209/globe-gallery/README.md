@@ -267,7 +267,7 @@ document-wide id references): the CA SVG filter (referenced from JS as
 `<dialog>`'s `aria-labelledby` (role + name) / `aria-describedby` IDREFs). `el` itself is the scroll runway
 (height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
-time) is the `.modal-open` scroll lock.
+time) is the `.globe-gallery-modal-open` scroll lock.
 
 **Scroll model.** The block element *is* the scroll runway (its height is `--runway-height`) — there's
 no separate runway element. Raw scroll is measured against the block's own metrics (`blockDocTop` =
@@ -518,7 +518,7 @@ the runtime closure survives a `destroy()`+`initRuntime()` rebuild, `destroy()` 
 rebuild would otherwise inherit:
 - `modal.destroy()` calls `resetModalDom()` — synchronously returns the modal DOM + page state to
   the closed baseline (clears `is-visible`/`is-open`/`aria-hidden`, hides `.modal-card-canvas`,
-  clears `modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
+  clears `globe-gallery-modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
   stuck open (its mesh dropped with the old `modalScene`, `modalIdx` reset to -1 so chrome buttons
   are dead, scroll lock stuck). An open modal closes cleanly on crossing; it doesn't re-open.
 - `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereRotX/Y/Z`,

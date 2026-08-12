@@ -34,7 +34,6 @@
   z-index: 2;
 }
 
-/* JS positions left each frame. */
 .globe-gallery-arc-copy {
   position: fixed;
 
@@ -53,6 +52,10 @@
   will-change: opacity, transform;
   transform-origin: left bottom;
   z-index: 4;
+}
+
+html[dir="rtl"] .globe-gallery-arc-copy {
+  transform-origin: right bottom;
 }
 
 .globe-gallery-arc-copy-title {
@@ -78,7 +81,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc((var(--runway-height) - var(--formation-vh)) * var(--pq-pin-factor));
+  height: max(1px, calc((var(--runway-height) - var(--formation-vh)) * var(--pq-pin-factor)));
   pointer-events: none;
 }
 
@@ -162,6 +165,7 @@
   inset: 0;
   z-index: 15;
   width: 100vw;
+  height: 100vh;
   height: 100dvh;
   max-width: none;
   max-height: none;

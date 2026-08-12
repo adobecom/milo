@@ -221,6 +221,7 @@ export default function createGlobeModal({
   function releaseModalTexture() {
     if (modalTexImg) {
       modalTexImg.onload = null;
+      modalTexImg.onerror = null;
       modalTexImg.src = '';
       modalTexImg = null;
     }
