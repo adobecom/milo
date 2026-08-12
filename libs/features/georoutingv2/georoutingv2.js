@@ -1,5 +1,4 @@
 import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { sendAnalytics } from '../../blocks/modal/modal.js';
 import { norm } from '../../utils/market.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
@@ -502,6 +501,7 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         const akamaiCode = await getCountry();
         const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:${storedInter || 'none'}`;
+        const { sendAnalytics } = await import('../../blocks/modal/modal.js');
         sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
@@ -527,6 +527,7 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:none`;
+        const { sendAnalytics } = await import('../../blocks/modal/modal.js');
         sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
