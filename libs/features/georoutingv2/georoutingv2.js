@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { getFederatedContentRoot, getCountry, setMarket, normCountryCode as norm } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
@@ -8,6 +9,25 @@ let getMetadata;
 let loadBlock;
 let loadStyle;
 let isC2Page;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalytics(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -500,7 +520,6 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         const akamaiCode = await getCountry();
         const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:${storedInter || 'none'}`;
-        const { sendAnalytics } = await import('../../blocks/modal/modal.js');
         sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
@@ -526,7 +545,6 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:none`;
-        const { sendAnalytics } = await import('../../blocks/modal/modal.js');
         sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
