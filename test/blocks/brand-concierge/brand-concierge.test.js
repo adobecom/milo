@@ -6,9 +6,23 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge', () => {
+  afterEach(() => {
+    // The side overlay is a singleton with persistent state (localStorage +
+    // body class + a single #brand-concierge-modal element). Without cleanup
+    // it leaks across tests, so a second modal-open test collides with the
+    // overlay left open by the first. Reset it between tests.
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+    document.body.classList.remove('bc-side-open');
+    localStorage.removeItem('bc-side-overlay');
+    sinon.restore();
+  });
+
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
