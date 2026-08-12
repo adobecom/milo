@@ -497,6 +497,26 @@ localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold win
 derive from it, so camera / depth-sort / interactivity stay aligned. `0` restores "settle, then
 fold."
 
+**Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
+(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
+fold constants move: `ARC_COPY_OUT_FORM_START = 0.20` → `ARC_COPY_OUT_FORM_END = 0.90`, i.e.
+progress ≈ `0.096` → `0.294` against a formed sphere at `0.322`. It therefore starts only once the
+fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finishes forming — one
+window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
+**not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
+midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
+spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
+
+`FOLD_FIRST_PROGRESS` (module scope) is the mirror of `computeFrame`'s `foldFirst` — the same
+single-source role `SPHERE_FORMED_PROGRESS` plays for `foldLast` — and `computeFrame` reads it
+rather than recomputing.
+
+**Arc-copy placement** is split between CSS and JS: CSS owns the block edge (`bottom` — `8px` at
+sm, `24px` from `min-width:768px`, docking it to the viewport bottom on the same 24px gutter the JS
+uses inline-start), JS owns the inline-start inset per frame in `updateArcCopy` (`8px` at sm; at md
+`24 + max(0, (W − 48 − 1392) / 2)`, the 24px-grid-aligned position with centering) plus the opacity
+and the 24px entry slide.
+
 **Entry timing** — two independent constants: `ENTRY_LEAD_VH` (`0.4`) viewport-heights before the
 block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
 over content above), and `ENTRY_RAMP_VH` (`1.05`) the ramp over which `arcCopyEntryT` goes 0→1

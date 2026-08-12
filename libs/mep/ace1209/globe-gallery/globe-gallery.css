@@ -495,7 +495,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   .globe-gallery-arc-copy {
     width: 382px;
     max-width: none;
-    bottom: 72px;
+    bottom: 24px;
     background: none;
   }
 

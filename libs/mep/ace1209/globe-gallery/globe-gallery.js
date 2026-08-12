@@ -109,6 +109,13 @@ const GRID_PEEL_STAGGER = 0.20;
 // Grid→sphere fold overlap. See README (FOLD_PEEL_OVERLAP). 0 restores "settle then fold".
 const FOLD_PEEL_OVERLAP = 0.35;
 const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
+const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
+const FOLD_FIRST_PROGRESS = Math.max(
+  0,
+  (PROGRESS_GRID_ARC_START
+    + FOLD_START_LOCAL_T * (1 - GRID_PEEL_STAGGER) * GRID_ARC_RANGE
+    - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
+);
 // Progress at sphereFormT=1, zoomT=0 — the "interactive globe" position keyboard focus snaps
 // to. Mirrors computeFrame's foldLast (single source).
 const SPHERE_FORMED_PROGRESS = Math.max(
@@ -1072,11 +1079,9 @@ function createGlobeGalleryRuntime(
 
     // Convert arc-pan arrival times to progress units for the fold/zoom phases.
     const gpWin = 1.0 - GRID_PEEL_STAGGER;
-    const arcRange = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
-    // First card folds when its peel reaches FOLD_START_LOCAL_T·gpWin; foldLast
+    // foldFirst: first card folds when its peel reaches FOLD_START_LOCAL_T·gpWin; foldLast
     // (= SPHERE_FORMED_PROGRESS) tracks the latest card's finish.
-    const foldFirstArcT = PROGRESS_GRID_ARC_START + FOLD_START_LOCAL_T * gpWin * arcRange;
-    const foldFirst = Math.max(0, (foldFirstArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+    const foldFirst = FOLD_FIRST_PROGRESS;
     const foldLast = SPHERE_FORMED_PROGRESS;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
     // Zoom-through starts the instant the sphere finishes forming (no interactive gap).
@@ -1347,14 +1352,14 @@ function createGlobeGalleryRuntime(
 
   function updateArcCopy() {
     if (!arcCopyEl) return;
-    const PROGRESS_HEADLINE_IN = 0.25;
-    const PROGRESS_ARC_COPY_OUT = 0.50;
+    const ARC_COPY_OUT_FORM_START = 0.20;
+    const ARC_COPY_OUT_FORM_END = 0.90;
+    const foldWindow = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
+    const outStart = FOLD_FIRST_PROGRESS + ARC_COPY_OUT_FORM_START * foldWindow;
+    const outEnd = FOLD_FIRST_PROGRESS + ARC_COPY_OUT_FORM_END * foldWindow;
     const arcCopyInE = easeOutCubic(Math.min(1, arcCopyEntryT / 0.336));
-    const arcCopyOutT = Math.max(0, Math.min(
-      1,
-      (progress - PROGRESS_HEADLINE_IN) / (PROGRESS_ARC_COPY_OUT - PROGRESS_HEADLINE_IN),
-    ));
-    const arcCopyOutE = easeOutCubic(arcCopyOutT);
+    const arcCopyOutT = Math.max(0, Math.min(1, (progress - outStart) / (outEnd - outStart)));
+    const arcCopyOutE = easeInOutCubic(arcCopyOutT);
     const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
     const arcCopySlide = 24 * (1 - arcCopyInE);
     // sm pins 8px from viewport inline-start;
