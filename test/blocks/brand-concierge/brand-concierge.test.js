@@ -6,9 +6,23 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge', () => {
+  afterEach(() => {
+    // The side overlay is a singleton with persistent state (localStorage +
+    // body class + a single #brand-concierge-side element). Without cleanup
+    // it leaks across tests, so a second modal-open test collides with the
+    // overlay left open by the first. Reset it between tests.
+    document.getElementById('brand-concierge-side')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+    document.body.classList.remove('bc-side-open');
+    localStorage.removeItem('bc-side-overlay');
+    sinon.restore();
+  });
+
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
@@ -79,7 +93,7 @@ describe('Brand Concierge', () => {
     // trigger submit via Enter
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
     expect(modal.querySelector('#brand-concierge-mount')).to.exist;
     expect(modal.querySelector('#brand-concierge-mount').dataset.initialMessage).to.equal('Hello world');
@@ -102,7 +116,7 @@ describe('Brand Concierge', () => {
     const buttons = block.querySelectorAll('.prompt-card-button');
     buttons[1].click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
@@ -218,7 +232,7 @@ describe('Brand Concierge', () => {
 
     floatingButton.click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
@@ -240,7 +254,7 @@ describe('Brand Concierge', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
 
     // Wait for bootstrap to be called (waitForCondition checks for API availability)
