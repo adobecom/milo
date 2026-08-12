@@ -97,20 +97,20 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer:popover-open {
   opacity: 1;
-  transform: translateX(0%);
+  transform: translate3d(0, 0, 0);
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
 @starting-style {
   .mep-drawer:popover-open {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
   }
 }
 
 .mep-drawer:not(:popover-open) {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translate3d(-100%, 0, 0);
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
@@ -240,6 +240,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-radius: 8px;
   background: var(--mep-dark-44);
   border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-card[hidden] {
+  display: none;
 }
 
 .mep-drawer .mep-card.center {

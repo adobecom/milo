@@ -1285,21 +1285,15 @@ span.hang-opening-quote {
         animation-timeline: view(block);
       }
 
-      /* Prolong animation for 2 rows */
+      /* End at the viewport top so multi-row cards settle level on short viewports. */
       &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
       &.four-up:has(> :nth-child(5 of :not([class*="section-"]))),
       &.six-up:has(> :nth-child(7 of :not([class*="section-"]))) {
-        --parallax-range-end-name: cover;
-        --parallax-range-end-length: 70%;
-      }
+        --parallax-range-end-name: exit-crossing;
+        --parallax-range-end-length: 0%;
 
-      /* Prolong animation for 3+ rows */
-      &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
-      &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
-      &.four-up:has(> :nth-child(9 of :not([class*="section-"]))),
-      &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
-        --parallax-range-end-length: 80%;
+        view-timeline-inset: 0 10%;
       }
     }
   }
