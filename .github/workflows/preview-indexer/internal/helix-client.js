@@ -1,4 +1,5 @@
 import { createAxiosWithRetry } from './utils.js';
+import { getImsToken } from './ims-client.js';
 
 const axiosWithRetry = createAxiosWithRetry();
 
@@ -14,17 +15,10 @@ const axiosWithRetryError = async (request) => {
   }
 };
 
-const {
-  AEM_LIVE_ADMIN_TOKEN = '',
-  LOCAL_RUN = '',
-} = process.env;
+const { LOCAL_RUN = '' } = process.env;
 const JOB_STATUS_POLL_INTERVAL = Number(process.env.JOB_STATUS_POLL_INTERVAL || '15');
 const JOB_STATUS_TIMEOUT = Number(process.env.JOB_STATUS_TIMEOUT || '2700');
 const LOG_FETCH_MAX_REQUESTS = Number(process.env.LOG_FETCH_MAX_REQUESTS || '10');
-
-if (!LOCAL_RUN) {
-  console.log({ AEM_LIVE_ADMIN_TOKEN: !!AEM_LIVE_ADMIN_TOKEN });
-}
 
 const getSiteEnvKey = (owner, repo, prefix = '') => `${prefix || ''}${owner}_${repo}`.replaceAll('-', '_').toUpperCase();
 
@@ -35,8 +29,7 @@ function delay(ms) {
 }
 
 async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
-  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   console.log(`Fetching logs for site: ${siteOrg}/${siteRepo}...`);
   const initialUrl = `https://admin.hlx.page/log/${siteOrg}/${siteRepo}/main?from=${fromParam}&to=${toParam}`;
   const entriesSet = new Set();
@@ -52,7 +45,7 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
       console.debug(`Fetching page ${requestCount} for ${siteRepo}: ${nextUrl}`);
       const request = await fetch(nextUrl, {
         method: 'GET',
-        headers: { Authorization: `token ${adminToken}` },
+        headers: { Authorization: `Bearer ${adminToken}` },
       });
 
       if (!request.ok) {
@@ -105,14 +98,13 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
 }
 
 async function triggerPreview(owner, repo, path) {
-  const adminTokenKey = getSiteEnvKey(owner, repo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   const url = `https://admin.hlx.page/preview/${owner}/${repo}/main${path}`;
   console.log(`previewing path: ${url}`);
   const response = await axiosWithRetryError({
     method: 'POST',
     url,
-    headers: { Authorization: `token ${adminToken}` },
+    headers: { Authorization: `Bearer ${adminToken}` },
   });
   return response.data;
 }
@@ -125,7 +117,7 @@ async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now())
     response = await axiosWithRetryError({
       method: 'GET',
       url: jobStatusUrl,
-      headers: { Authorization: `token ${adminToken}` }
+      headers: { Authorization: `Bearer ${adminToken}` }
     });
   } catch (error) {
     console.error(`Error fetching job status: ${jobStatusUrl}`);
@@ -147,8 +139,7 @@ async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now())
 
 async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   const path = regionPath.endsWith('/') ? regionPath : `${regionPath}/`;
-  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   const body = {
     select: ['preview'],
     paths: [`${path}*`],
@@ -161,7 +152,7 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     method: 'POST',
     url: initialUrl,
     headers: {
-      Authorization: `token ${adminToken}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     },
     data: JSON.stringify(body)
@@ -173,7 +164,7 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     const detailsResponse = await axiosWithRetryError({
       method: 'GET',
       url: detailsUrl,
-      headers: { Authorization: `token ${adminToken}` }
+      headers: { Authorization: `Bearer ${adminToken}` }
     });
     const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
