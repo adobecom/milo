@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
@@ -311,6 +312,26 @@ describe('GeoRouting', () => {
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
+  });
+
+  const EXPECTED_LOAD_EVENT = 'Load:us-ch|Geo_Routing_Modal|locale:us|country:ch|intl:none';
+  const trackedEventNames = (track) => track.getCalls()
+    .map((c) => c.args?.[1]?.data?.web?.webInteraction?.name);
+
+  it('Fires the modal-load analytics event with the correct name', async () => {
+    setUserCountryFromIP();
+    mockConfig.locale.prefix = '';
+    const track = stub();
+    const ogSatellite = window._satellite;
+    window._satellite = { track };
+    try {
+      await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+      const names = trackedEventNames(track);
+      expect(names).to.include(EXPECTED_LOAD_EVENT);
+    } finally {
+      if (ogSatellite === undefined) delete window._satellite;
+      else window._satellite = ogSatellite;
+    }
   });
 
   it('Does not create a modal if the user IP matches session storage.', async () => {

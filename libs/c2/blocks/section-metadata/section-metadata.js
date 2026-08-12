@@ -2,8 +2,8 @@ import { handleFocalpoint, decoratePictures } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const mediaQueries = {
-  mobile: window.matchMedia('(max-width: 767px)'),
-  tablet: window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
+  mobile: window.matchMedia('(width < 768px)'),
+  tablet: window.matchMedia('(768px <= width < 1280px)'),
 };
 
 export function handleBackground(div, section) {
@@ -107,24 +107,30 @@ export async function handleStyle(text, section) {
 }
 
 function handleMasonry(text, section) {
-  const spanSets = text.filter(Boolean).map((entry) => {
-    const spans = [];
-    entry.split('\n').forEach((line) => spans.push(...line.trim().split(',')));
-    return spans.map((s) => s.trim() || 'span 4');
-  });
+  const spanSets = text.filter(Boolean).map((entry) => (
+    entry.split('\n').map((line) => line.trim().split(',').map((s) => s.trim() || 'span 4'))
+  ));
 
   if (spanSets.length === 0) return;
 
   section.classList.add('masonry-layout');
   if (spanSets.length > 1) section.classList.add('masonry-responsive');
+  const isStagger = section.className.includes('parallax-stagger-');
   const divs = [...section.querySelectorAll(":scope > div:not([class*='metadata']):not(.section-background)")];
 
-  const applySpans = (spans) => {
+  const applySpans = (rows) => {
+    const cards = rows.flatMap((row) => row.map((span, j) => ({
+      span,
+      index: isStagger ? ((j + 0.5) / row.length).toFixed(2) : undefined,
+    })));
+
     divs.forEach((div, i) => {
-      const gridClasses = [...div.classList].filter((cls) => cls.startsWith('grid-'));
-      if (gridClasses.length) div.classList.remove(...gridClasses);
-      const spanWidth = spans[i] || 'span 4';
-      div.classList.add(`grid-${spanWidth.replace(' ', '-')}`);
+      const { span = 'span 4', index } = cards[i] ?? {};
+      div.classList.remove(...[...div.classList].filter((cls) => cls.startsWith('grid-')));
+      div.classList.add(`grid-${span.replace(' ', '-')}`);
+      if (index !== undefined) {
+        div.style.setProperty('--parallax-stagger-index', index);
+      }
     });
   };
 
