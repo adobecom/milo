@@ -195,6 +195,11 @@ const getActiveViewport = () => {
 
 const loadVideo = (video) => {
   if (!video || video.dataset.loaded) return;
+  // Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
+  // hidden viewports/slides never fetch them; promote to a real poster when the video loads.
+  if (video.dataset.rmPoster && !video.getAttribute('poster')) {
+    video.setAttribute('poster', video.dataset.rmPoster);
+  }
   const src = video.dataset.lazySrc;
   if (src && !video.querySelector('source')) {
     video.appendChild(createTag('source', { src, type: 'video/mp4' }));
