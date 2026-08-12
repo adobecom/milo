@@ -18,12 +18,9 @@ function isSvgAnchor(a) {
   return !!badgeSvgUrl(a);
 }
 
-// Inline <picture> markup for an authored SVG-logo anchor, or null. The assets live under
-// /federal on the federated content root (NOT the consumer origin), so resolve through
-// getFederatedUrl rather than decorateSVG — which would strip the host to a bare pathname.
-// The logo is decorative (the badge name is the labelled link), hence aria-hidden + empty alt.
-function badgeIconHtml(anchor) {
-  const url = badgeSvgUrl(anchor);
+// Inline <picture> markup for a badge logo URL, or null. getFederatedUrl (not decorateSVG) and
+// aria-hidden: see README (Card shape).
+function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
   return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
@@ -114,29 +111,27 @@ function parseFragmentCardSegment(nodes) {
       if (text && !description) description = text;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
-        // A row may carry two direct-child links: an optional .svg logo and the product
-        // link that labels it. Either may be absent.
-        const anchors = [...li.childNodes].filter((n) => n.nodeName === 'A');
+        // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
+        const row = li.cloneNode(true);
+        const featureLi = row.querySelector(':scope > ul > li');
+        row.querySelector(':scope > ul')?.remove();
+
+        const anchors = [...row.querySelectorAll('a')];
         const svgAnchor = anchors.find(isSvgAnchor) || null;
         const linkAnchor = anchors.find((a) => a !== svgAnchor) || null;
-        const icon = svgAnchor ? badgeIconHtml(svgAnchor) : null;
-        const href = linkAnchor ? (linkAnchor.getAttribute('href') || null) : null;
+        const icon = badgeIconHtml(
+          svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src'),
+        );
+        svgAnchor?.remove(); // its URL text is markup, never part of the name
 
-        const nestedLi = li.querySelector('ul > li');
-        if (nestedLi) {
-          const badgeName = linkAnchor
-            ? linkAnchor.textContent.trim()
-            : [...li.childNodes]
-              .filter((n) => n.nodeType === Node.TEXT_NODE)
-              .map((n) => n.textContent.trim())
-              .join('').trim();
-          const badgeRole = nestedLi.textContent.trim();
-          if (badgeName) badges.push({ name: badgeName, role: badgeRole, href, icon });
-        } else {
-          // Legacy pipe-separated format: "Photoshop | Compositing".
-          const source = linkAnchor ? linkAnchor.textContent : li.textContent;
-          const parts = source.split('|').map((s) => s.trim()).filter(Boolean);
-          if (parts[0]) badges.push({ name: parts[0], role: parts.slice(1).join(' '), href, icon });
+        const name = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
+        if (name) {
+          badges.push({
+            name,
+            role: featureLi?.textContent.trim() || '',
+            href: linkAnchor?.getAttribute('href') || null,
+            icon,
+          });
         }
       });
     }

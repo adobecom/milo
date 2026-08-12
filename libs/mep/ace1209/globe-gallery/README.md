@@ -4,6 +4,10 @@ A scroll-driven **Three.js WebGL** hero, running in a real Milo page. The core
 arc→grid→sphere→zoom, the detail modal, the a11y gallery, and chromatic aberration (CA) are all
 shipped; remaining items are in Open items / backlog.
 
+**New here, or changing *when* something happens?** Read **Lifecycle timeline** — it maps every
+scroll position to what each subsystem is doing, and names the six separate normalized clocks the
+code mixes.
+
 ## What it is
 
 Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored photo cards
@@ -36,13 +40,14 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 
 | File | What it is |
 | --- | --- |
-| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator over named single-concern stages plus `modal.*` / `a11y.*`; per-card placement is a dispatcher (`updateCardTransform`) over four branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`). Instantiates the DI modules. |
+| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants + pure helpers (module scope) — all scroll-**timing** constants live in `timeline.js` — and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator over named single-concern stages plus `modal.*` / `a11y.*`; per-card placement is a dispatcher (`updateCardTransform`) over four branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`). Instantiates the DI modules. |
 | `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
 | `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = 22/631 of height + `uAspect`), no rasterized mask (`MODAL_FRAG` `uRadius` 0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
 | `materials.js` | GPU-asset factories (all named exports, no per-instance state). **Materials:** `createCardMaterial` (card ShaderMaterial — cover-crop + optional CA/warp + SDF corners, with the property-proxy), `createModalMaterial` (modal SDF), `createTextMaterial` (hint `TEXT_FRAG`, uniforms only). **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy full image at a higher cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)` (renders the hint string, auto-scaled font). |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), touch swipe/pull gestures (gated on a coarse primary pointer, so tablets at ≥768 get them too), chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge, derived from the viewport + `ARC_SPAN` + the per-frame `arcCtx` the core owns; `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame card placement produces no garbage. |
+| `timeline.js` | **The scroll timeline.** Every phase constant, entry knob and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)` — the pure derivation of all six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`) — and `cardFoldStartProgress(gpDelay)`, the per-card fold gate that `FOLD_FIRST_PROGRESS` is the `gpDelay = 0` case of. No THREE, no DOM, no closure state, so it is unit-testable in isolation and is the single place to change **when** something happens. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely (a degenerate viewport/runway makes the ratios 0/0, and one NaN would poison every mesh position). Imported as a namespace (`import * as TL`, mirroring `THREE`) so adding a threshold doesn't mean editing an import list. See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares drag velocity by reference via the `drag` object. Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
@@ -62,16 +67,42 @@ the arc-phase geometry live in `math.js`); (3) `createGlobeGalleryRuntime()` —
 holding sphere state + behavior. The active breakpoint's resolved render profile is one frozen `bp`
 object built by `resolveBpProfile()` on each (re)init; functions destructure what they need from it,
 DI getters read `bp.*` live. Inside the closure the **per-frame pipeline** is single-concern stages
-run in a fixed order by `tick()`: `computeFrame()` builds one `frame` context (scroll + phase
-t-values + card-entry transforms), each stage reads what it needs from it and the producer stages
-write results back onto it (`activeCamera`, `sphereRotActive`, `sphGroupZ`), so one object flows
-through to the card loop. Per-card placement (the largest stage) is a dispatcher over four
-runtime-scope branch fns — kept in this file, not a module, because they read deeply from the
-closure and run in the hot loop. Five DI modules are injected with live-state getters: GPU resources
-(`materials.js`), the a11y widget, the modal, `interaction.js` (sharing drag
-velocity via the `drag` object), and the cursor (its `isActive()` gates interaction's hover cursor).
-The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere only
-through the shared `sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge` callbacks.
+run in a fixed order by `tick()`: `computeFrame()` is a thin wrapper that refreshes the persistent
+`frameInput` from live layout/scroll state and calls `timeline.js`'s pure `deriveFrame`, which writes
+every clock onto the persistent `frame` context (scroll + the six clocks + card-entry transforms);
+each stage reads what it needs from it and the producer stages write results back onto it
+(`activeCamera`, `sphereRotActive`, `sphGroupZ`), so one object flows through to the card loop.
+**`frame` and `frameInput` are allocated once and mutated in place** — stages consume them
+synchronously within a tick and never retain them, so the per-frame pipeline allocates nothing.
+`frame` is also the single source for the clocks: read `frame.progress` / `frame.zoomT` rather than
+caching them in the closure. (In `globe-gallery.js` the persistent object is named `frameState`;
+stages take it as a parameter named `frame`, so the two don't shadow.)
+
+Who writes what:
+
+| | fields |
+| --- | --- |
+| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH`, `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), plus `prevLenisY` — the **only** inter-frame scroll state, carried back from `frame.lenisY` after each derive (and re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel`) |
+| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
+| `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
+
+**Grouped closure state.** Related mutable state is held in small plain objects rather than loose
+`let`s, so the runtime closure stays legible: `drag` (`isDragging`/`velX`/`velY`, shared by
+reference with `interaction.js`), `masonryMorph` (`active`/`t`), `sphereOrient` (`x` = pitch, `y` =
+yaw, `z` = roll — see Sphere rotation), `navNudge` (`active`, `target{X,Y,Z}` = destination pose,
+`start{X,Y,Z}` = pose captured when armed, `frame`/`frames` = elapsed/total count from
+`KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set by keyboard centring only — the
+modal leaves it as-is), `arcCopy` (`el` + the last-written style strings `startSide`/`startStr`/
+`opStr`/`transformStr`, so `updateArcCopy` only touches the DOM when a value actually changed), and
+`ctxLoss` (`rebuilds`/`stableTimer`/`recovering`/`recoverTimer` — see WebGL context loss).
+
+Per-card placement (the largest stage) is a dispatcher over four runtime-scope branch fns — kept in
+this file, not a module, because they read deeply from the closure and run in the hot loop. Five DI
+modules are injected with live-state getters: GPU resources (`materials.js`), the a11y widget, the
+modal, `interaction.js` (sharing drag velocity via the `drag` object), and the cursor (its
+`isActive()` gates interaction's hover cursor). The modal owns its canvas/scene + the `MODAL_PHASE`
+state machine and reaches the sphere only through the shared `sphereRotQuat` / `snapToSphereSlot` /
+`requestNavNudge` callbacks.
 
 ## How to run
 
@@ -124,7 +155,7 @@ low-memory eviction) would leave a blank canvas. `initRuntime` binds `webglconte
 `webglcontextrestored` on **both** canvases (main + modal, `bindContextListeners`): lost stops the
 ticker and clears `renderReady`; restored rebuilds all GPU state via the same
 `destroy()`+`initRuntime()` path a breakpoint crossing uses. The two canvases' restore events are
-coalesced into ONE rebuild (`contextRecovering` guard + a macrotask defer). A rebuild cap
+coalesced into ONE rebuild (`ctxLoss.recovering` guard + a macrotask defer). A rebuild cap
 (`MAX_CONTEXT_REBUILDS`) collapses to `--empty` under sustained GPU pressure rather than looping;
 the counter resets once a rebuild survives `CONTEXT_STABLE_MS`. (Three.js's renderer already
 `preventDefault()`s the lost event — which is what makes the browser fire `restored`.)
@@ -144,16 +175,37 @@ Each fragment section is flat P/UL elements:
 | `<p><em>…</em></p>` | **role** | empty if unauthored (no hardcoded default) |
 | `<p><strong>…</strong></p>` | **name** | empty if unauthored (no hardcoded default) |
 | plain `<p>` | **description** | shown in the modal |
-| `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = product name + links (see below), inner li = role |
+| `<ul>`, one `<li>` per badge | **badges** | see below — nested `<ul><li>` = the product feature |
 | `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
 
-Each badge's outer `<li>` may carry up to two direct-child links: an **optional logo**
-(a link whose href/text is an `.svg` — omit it and no logo renders) and the **product
-link** that supplies the badge name and its click target. Logo assets live under
-`/federal` on the federated content root, so the URL is resolved through Milo's
-`getFederatedUrl` (NOT `decorateSVG`, which would rewrite the host to a bare pathname on
-the consumer origin). A bare name (no product link) renders as plain text; the legacy
-pipe-separated `Name | Role` single-`<li>` form is still parsed.
+**Badge rows.** A badge `<li>` splits into exactly two parts: the **nested `<ul>`** is the
+product feature, and **everything else in the row** is the product — an optional logo plus the
+product link that supplies the name and its click target. That's the whole rule, so wrapper
+markup doesn't matter: DA emits a bare `<li>` when there's no feature and wraps the row in a
+`<p>` as soon as there is one, and both parse identically.
+
+```html
+<!-- feature authored → DA wraps the row in <p> -->
+<li>
+  <p><a href="…/photoshop-64.svg">…/photoshop-64.svg</a> <a href="…/photoshop.html">Photoshop</a></p>
+  <ul><li>Feature X</li></ul>
+</li>
+
+<!-- no feature → bare row, role left empty -->
+<li><a href="…/illustrator-64.svg">…/illustrator-64.svg</a> <a href="…/illustrator.html">Adobe Illustrator</a></li>
+```
+
+The logo may be an `.svg` link (href *or* visible URL text) or a plain `<img>`; omit it and no
+logo renders. It's decorative — the badge name is the labelled link — so it renders
+`aria-hidden` with an empty `alt`. Assets live under `/federal` on the federated content root,
+so the URL is resolved through Milo's `getFederatedUrl` (NOT `decorateSVG`, which would rewrite
+the host to a bare pathname on the consumer origin). A row with no product link takes its name
+from its own text and renders as plain text; a row with no feature renders with an empty role.
+
+> The row is read from a **clone** with the feature `<ul>` detached, so the product half can be
+> matched with plain `querySelector` without walking into the feature list and without mutating
+> authored DOM. The earlier direct-children-only read silently dropped every `<p>`-wrapped badge
+> (empty name → no row pushed), which looked like a modal layout bug rather than a parse miss.
 
 **Card count.** `N_TOTAL` follows the authored count, capped per breakpoint by `N_MAX`:
 
@@ -269,7 +321,9 @@ document-wide id references): the CA SVG filter (referenced from JS as
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-gallery-modal-open` scroll lock.
 
-**Scroll model.** The block element *is* the scroll runway (its height is `--runway-height`) — there's
+**Scroll model.** (For *what happens at each point* on that scroll, see **Lifecycle timeline**
+below — charts + an event table. This subsection is the mechanism that gets you there.) The block
+element *is* the scroll runway (its height is `--runway-height`) — there's
 no separate runway element. Raw scroll is measured against the block's own metrics (`blockDocTop` =
 top in document space, `blockHeight` = `offsetHeight`, both refreshed in `doLayout` + a body
 `ResizeObserver`), then remapped **piecewise** (in `computeFrame`) into the `progress` 0→1 the phase
@@ -398,6 +452,138 @@ authored `notification` block) aren't authored alongside C2, so nothing occupies
 The modal chrome is a native `<dialog>`/`showModal()` in the top layer, so its z-index is only a
 non-supporting-browser fallback.
 
+## Lifecycle timeline
+
+**Start here if you're changing *when* something happens.** The code that owns all of this is
+**`src/timeline.js`** — every phase constant, every threshold, and the pure `deriveFrame` that
+produces the clocks. Scroll model (above) explains how raw scroll becomes `progress`. This section
+is the cross-section: *at a given scroll position, what is every subsystem doing?*
+
+Nothing here is a source of truth — every number below is derived from `timeline.js`, so if you
+retune a constant, re-run the snippet at the end of this section and update the tables from its
+output rather than hand-editing them.
+
+### The six clocks
+
+Most confusion in this block comes from code that mixes normalized timers. There are six, and they
+do **not** share a zero:
+
+| clock | 0 → 1 spans | formula | read by |
+| --- | --- | --- | --- |
+| `arcCopyEntryT` | `ENTRY_LEAD_VH` before the block top → `ENTRY_RAMP_VH` later | raw `window.scrollY`, *not* `progress` | arc-copy fade-in, arc pre-roll, entry slide |
+| `progress` | block top → runway end | piecewise remap (formation / tail) | the master clock; everything below derives from it |
+| `arcPanT` | arc pre-roll → arc fully panned | `progress / PROGRESS_PAN_END + PROGRESS_ARC_PREROLL · arcCopyEntryT` | arc geometry (`buildArcCtx`), `gridFormT` |
+| `gridFormT` | peel start → all cards in grid | `(arcPanT − 0.30) / 0.30` | per-card peel (`gpLocalT` after per-card delay + jitter) |
+| `sphereFormT` | `FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS` | `(progress − 0.039) / (0.322 − 0.039)` | camera, depth sort, interactivity, hint text, arc-copy fade-out |
+| `zoomT` | sphere formed → runway end | `(progress − 0.322) / (1 − 0.322)` | zoom camera, cursor retire, pull-quote, canvas hide |
+
+Two consequences worth internalizing: `arcPanT` is the only clock that depends on
+`arcCopyEntryT`, so arc/grid timing shifts with *how the user entered the block*; and `sphereFormT`
+/ `zoomT` are back-to-back (`zoomT` starts the frame `sphereFormT` reaches 1), so there is no
+interactive dwell built into the scroll — the "formed globe" is a single point, not a range.
+
+### Formation — `progress` 0 → 0.322, scroll 0 → 304vh
+
+```
+            0      37   64    90           156                 251  277   304  (vh)
+            |       |    |     |            |                   |    |     |
+cards       ###arc##|#####peel to grid######|..........peel done............
+                       |##################fold to sphere####################
+camera      ..ortho.|#############perspective -> CAM_Z_SPHERE###############
+arc-copy    ######visible######|~~~~~~~~~~~~~~fade out~~~~~~~~~~~~~~~|gone..
+hint text   ....hidden...|##############warp in -> faint rest###############
+depth sort  ................off................|############on##############
+input       ........................inert.......................|###live####
+```
+
+The overlap in the top two lanes is the point of `FOLD_PEEL_OVERLAP`: the first cards begin folding
+(54vh) long before the last cards finish peeling (156vh), so the grid never visibly "resolves".
+
+### Tail — `zoomT` 0 → 1, scroll 304 → 520vh
+
+```
+            0.00             0.30   0.42                              0.95
+            |                  |      |                                 |  |
+camera      ###################CAM_Z_SPHERE -> CAM_Z_END####################
+globe       #sweeps past viewer|.........gone (sm 0.30 / md 0.42)...........
+hint text   ~~~~~~~~~fade~~~~~~~~|..................gone....................
+cursor      ##########live##########||...............retired................
+quote (sm)  .......hidden.......|############in -> hold -> exit#############
+quote (md)  ..........hidden..........|#########in -> hold -> exit##########
+canvas      ###########################visible##########################|...
+```
+
+### Event table
+
+`vh` assumes the default `--runway-height: 520vh` / `--formation-vh: 304vh`; `progress` and the
+gate columns are runway-independent.
+
+| vh | `progress` | gate | what happens | where |
+| ---: | ---: | --- | --- | --- |
+| −40 | — | `lenisY ≥ blockDocTop − ENTRY_LEAD_VH·H` | canvas `display:block`; `arcCopyEntryT` starts | `updateCanvasVisibility` |
+| −40→65 | — | `arcCopyEntryT` 0→1 over `ENTRY_RAMP_VH` | arc pre-roll speeds up, cards slide up, arc-copy fades **in** (done at `entryT` 0.336) | `computeFrame`, `updateArcCopy` |
+| 0 | 0.000 | block top | `progress` starts; cards on the arc | — |
+| 37 | 0.039 | `FOLD_FIRST_PROGRESS` | `sphereFormT` leaves 0 → camera switches **ortho → perspective** | `updateActiveCamera` |
+| ~41 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `ARC_PEEL_JITTER`) | `updateCardTransform` |
+| ~54 | ~0.057 | `gpLocalT ≥ FOLD_START_LOCAL_T` | first card actually starts **folding** to the sphere | `updateCardTransform` |
+| 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` (0.10) | "Click & Drag" hint plane un-hides, warps in | `updateClickDragText` |
+| 90 | 0.096 | 20% of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
+| 156 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
+| 170 | 0.180 | `sphereFormT > 0.5` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
+| 251 | 0.265 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` (0.8) | hover / drag / click / auto-rotate go **live**; a11y browse enabled | `updateSphereRotation`, `updateCardTransform` |
+| 277 | 0.294 | 90% of the fold window | **arc-copy fully gone** | `updateArcCopy` |
+| 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
+| 376 | 0.548 | `zoomT ≥ 1/3` | hint text fully faded | `updateClickDragText` |
+| 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
+| 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--pq-pin-factor`) | `updatePullQuote` |
+| 386 | 0.580 | `CURSOR_ZOOM_DISMISS_T` (0.38) | cursor label fades | `cursor.update` |
+| 390 | 0.593 | `CURSOR_ZOOM_RETIRE_T` (0.40) | cursor disc retires | `cursor.update` |
+| 509 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` (quote alone to the end) | `updateCanvasVisibility` |
+| 520 | 1.000 | runway end | pull-quote pin exits | CSS (`--pq-pin-factor`) |
+
+Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
+(contours → un-dissolve, plus the one-time sm masonry re-solve on `onDone`), the modal
+(`sphereFormT ≥ SPHERE_INTERACTIVE_T` is its only scroll gate), and `textExitProgress` — the hint
+dissolve / cursor retirement accrue from **drag activity**, not scroll, and reset whenever
+`sphereFormT` drops below the interactive threshold.
+
+### Known wrinkle: `sphereFormT` leads the cards during entry
+
+`FOLD_FIRST_PROGRESS` is computed as if `arcCopyEntryT` were already 1, but the per-card fold gate
+reads the **live** `gridFormT`, which is still ramping. Entering the block from the top,
+`arcCopyEntryT` only reaches 1 at `progress` ≈ 0.069, so between `progress` 0.039 and ~0.057
+`sphereFormT` reports the fold as underway while every card is still on the arc. Visible effect is
+limited to the camera flipping ortho → perspective ~17vh early (existing, accepted behavior). Anything newly keyed
+to "the fold has started" should gate on `gridFormT`/`fdE` if it must match the cards exactly.
+
+### Re-deriving these numbers
+
+`timeline.js` is importable on its own (no THREE, no DOM), so this reads the **live** constants
+rather than restating them — it cannot drift from the code:
+
+```sh
+cd libs/mep/ace1209/globe-gallery && node --input-type=module -e "
+import * as T from './src/timeline.js';
+const RUNWAY_VH = 520; // --runway-height
+const tail = RUNWAY_VH - T.FORMATION_SCROLL_VH;
+const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
+  ? (p / T.SPHERE_FORMED_PROGRESS) * T.FORMATION_SCROLL_VH
+  : T.FORMATION_SCROLL_VH
+    + ((p - T.SPHERE_FORMED_PROGRESS) / (1 - T.SPHERE_FORMED_PROGRESS)) * tail);
+const row = (n, p) => console.log(String(Math.round(vh(p))).padStart(4) + 'vh', p.toFixed(3), n);
+row('fold starts / sphereFormT>0', T.FOLD_FIRST_PROGRESS);
+row('hint text appears', T.progressAtFormT(T.TEXT_APPEAR_START));
+row('arc-copy fade start', T.ARC_COPY_OUT_START);
+row('depth sort on', T.progressAtFormT(T.DEPTH_SORT_FORM_T));
+row('interactive', T.progressAtFormT(T.SPHERE_INTERACTIVE_T));
+row('arc-copy gone', T.ARC_COPY_OUT_END);
+row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
+row('hint text faded', T.progressAtZoomT(1 / T.TEXT_ZOOM_FADE_RATE));
+row('cursor label / retire', T.progressAtZoomT(T.CURSOR_ZOOM_RETIRE_T));
+row('canvas hidden', T.progressAtZoomT(T.CANVAS_HIDE_ZOOM_T));
+"
+```
+
 ## Accessibility
 
 The globe is exposed as a **two-level gallery** (`a11y.js`), not a flat per-card list. Both levels
@@ -477,7 +663,8 @@ cleanly). The pieces:
 
 The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery-empty`.
 
-Phase constants (module scope). The `P_*` values live in **progress-space** (0→1) and shape formation
+Phase constants (all in **`src/timeline.js`**) — these are the *inputs*; **Lifecycle timeline**
+above shows what they add up to. The `P_*` values live in **progress-space** (0→1) and shape formation
 + zoom; the runway split, pull-quote, and cursor retirement are covered under **Scroll model → the
 runway / progress model** above (they're driven by `--runway-height` / `--formation-vh` /
 `--pq-pin-factor` in CSS, read/derived in JS):
@@ -493,9 +680,9 @@ FORMATION_SCROLL_VH=304  PQ_APPEAR_LEAD=0.03  CURSOR_ZOOM_DISMISS_T=0.38  CURSOR
 position-space — **before** it fully lands in the grid (folding from its live peel position, no
 snap), so the grid never visibly "resolves" and the sphere forms earlier. The fold opens at peel
 localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold window
-(`SPHERE_FORMED_PROGRESS`, `computeFrame`'s `foldFirst`/`foldLast`) and the per-card fold timer all
-derive from it, so camera / depth-sort / interactivity stay aligned. `0` restores "settle, then
-fold."
+(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`) and the per-card fold timer
+(`cardFoldStartProgress`) both derive from it in `timeline.js`, so camera / depth-sort /
+interactivity stay aligned. `0` restores "settle, then fold."
 
 **Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
@@ -507,9 +694,10 @@ window for both profiles, since the fold constants are shared. The out-ease is `
 midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
 spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
 
-`FOLD_FIRST_PROGRESS` (module scope) is the mirror of `computeFrame`'s `foldFirst` — the same
-single-source role `SPHERE_FORMED_PROGRESS` plays for `foldLast` — and `computeFrame` reads it
-rather than recomputing.
+`FOLD_FIRST_PROGRESS` and `SPHERE_FORMED_PROGRESS` are the fold window's two ends, and
+`cardFoldStartProgress(gpDelay)` is the same computation per card — `FOLD_FIRST_PROGRESS` is its
+`gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
+cannot drift apart.
 
 **Arc-copy placement** is split between CSS and JS: CSS owns the block edge (`bottom` — `8px` at
 sm, `24px` from `min-width:768px`, docking it to the viewport bottom on the same 24px gutter the JS
@@ -541,8 +729,8 @@ rebuild would otherwise inherit:
   clears `globe-gallery-modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
   stuck open (its mesh dropped with the old `modalScene`, `modalIdx` reset to -1 so chrome buttons
   are dead, scroll lock stuck). An open modal closes cleanly on crossing; it doesn't re-open.
-- `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereRotX/Y/Z`,
-  `pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, `navNudge*`, `wasBrowsing`) to the upright
+- `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereOrient.x/y/z`,
+  `sphereOrient.pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, `navNudge.*`, `wasBrowsing`) to the upright
   pose — else pitch/yaw dragged before a device change carried into the rebuilt barrel and rendered
   it tilted until a scroll-out zeroed it.
 
@@ -622,7 +810,7 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     gestures. The gesture code transforms the canvas, not the chrome, so it's layout-agnostic
     across the sm scrim and the md full-height panel.
 - **Sphere rotation — clamped Euler pitch/yaw (yaw free, pitch capped ±60°).** The orientation
-  SOURCE is a pitch/yaw pair (`sphereRotX`, `sphereRotY`); the shared `sphereRotQuat` every
+  SOURCE is a pitch/yaw pair (`sphereOrient.x`, `sphereOrient.y`); the shared `sphereRotQuat` every
   consumer reads (card transforms, modal close, snap) is **rebuilt from it each frame**
   (`refreshSphereRotQuat` → `setFromEuler`, order `'XYZ'`). Yaw is an unclamped turntable spin;
   pitch tilts about world X, **clamped ±π/3 (±60°)**, so cards never pass vertical and the globe
@@ -636,12 +824,12 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
     triple and eased per-axis (yaw shortest-path, pitch, upright **roll**). **On `YAW_ONLY`
     geometry it's yaw-only** (`cardCenterYawPitch` holds pitch) — a barrel can't centre vertically,
     so a top image stays high and only its column turns front.
-  - **Roll (`sphereRotZ`) exists ONLY for keyboard uprighting** — 0 for drag/ambient, set by
+  - **Roll (`sphereOrient.z`) exists ONLY for keyboard uprighting** — 0 for drag/ambient, set by
     `centerCardOnScreen`, eased back to 0 (`PITCH_RELAX`) when browsing ends.
   - **Pitch exception (±85°) via a GLIDING cap.** Drag keeps ±60°, but sphere keyboard-centring
     may tilt to **±85°** (`KEY_PITCH_CAP`) so a near-polar image reaches vertical centre. The seam
-    is `pitchReleaseCap`: while browsing it tracks the held pitch; on exit it eases back to ±60°
-    (`PITCH_RELAX`) with `sphereRotX` clamped to it each frame, so leaving a beyond-cap card slides
+    is `sphereOrient.pitchReleaseCap`: while browsing it tracks the held pitch; on exit it eases back
+    to ±60° (`PITCH_RELAX`) with `sphereOrient.x` clamped to it each frame, so leaving a beyond-cap card slides
     down to level instead of snapping. (Yaw-only browse never leaves ±60°, so the glide never fires.)
   - **No-overshoot ease.** Keyboard and modal centring share one **frame-counted `easeInOutCubic`
     tween** (`KEY_BROWSE_FRAMES` visible; `KEY_MODAL_FRAMES` faster, behind the blur) — never
@@ -799,8 +987,10 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
 
 ## Tuning reference
 
-The module-scope constants in `globe-gallery.js` are the core's tuning surface. The ones whose
-*value* isn't self-explanatory (and whose rationale used to live in long inline comments):
+The module-scope constants are the core's tuning surface, split by kind: **scroll timing** (phase
+constants, entry ramp, and every threshold) lives in `src/timeline.js` — see Lifecycle timeline —
+and the **visual/physics** constants below stay in `globe-gallery.js`. The ones whose *value* isn't
+self-explanatory (and whose rationale used to live in long inline comments):
 
 | Constant(s) | Value | Role |
 | --- | --- | --- |
@@ -822,8 +1012,29 @@ The module-scope constants in `globe-gallery.js` are the core's tuning surface. 
 | `TEXT_CA_DIR_STRENGTH` / `_WARP_MUL` | `0.05` / `1.5` | drag-CA strength on the hint text / warp-driven CA boost |
 | `TEXT_WARP_OVERFLOW` | `0.6` | extra mesh scale per warp unit, so letterforms bleed off-screen |
 
+### `timeline.js` constants
+
+Most of this file's exports are documented where they matter: the `P_*` phase constants and
+`FOLD_PEEL_OVERLAP` under Behavior notes → Phase constants; `FORMATION_SCROLL_VH` /
+`PQ_APPEAR_LEAD` under Scroll model; `ENTRY_LEAD_VH` / `ENTRY_RAMP_VH` under Entry timing; and
+every gate threshold in the Lifecycle timeline event table. The remainder — carried in code as
+bare names — are:
+
+| Constant | Value | Space | Role |
+| --- | --- | --- | --- |
+| `SLIDE_IN_PROGRESS` | `0.07` | progress | progress by which the card entry slide-up has completed |
+| `ARC_ENTRY_HOLD_T` | `0.05` | `arcCopyEntryT` | hold before the arc starts sweeping in |
+| `ENTRY_ROT_MAX` | `0.9` | radians | arc sweep-in rotation at `arcCopyEntryT` = 0; `entryRot` decays from it, and `updateCardTransform` divides by it to renormalize for the per-card entry CA |
+| `ENTRY_SLIDE_H_FRAC` | `0.30` | fraction of `H` | `entryYOffset` at slide 0 — how far below its arc position a card starts |
+| `ARC_COPY_IN_ENTRY_T` | `0.336` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
+| `SPHERE_ORIENT_RESET_T` | `0.01` | `sphereFormT` | below this a scroll-out resets the sphere orientation (a brief dip mid-scroll keeps it) |
+| `TEXT_ZOOM_FADE_RATE` | `3` | `zoomT` | hint text is fully faded at `zoomT` = 1/rate |
+| `GRID_PEEL_WINDOW` | `0.8` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
+| `GRID_ARC_RANGE` / `FOLD_WINDOW` | `0.30` / `0.283` | — | derived spans: the grid-peel arc range, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
+| `progressAtFormT` / `progressAtZoomT` | — | — | helpers mapping a `sphereFormT` / `zoomT` back to progress. For docs and tests — not called per frame |
+
 Constants whose rationale is covered in the sections above (and so kept terse in code): the phase
-timeline + `FOLD_PEEL_OVERLAP`, `ENTRY_*`, the `CYL_*` / `SPHERE_AREA_NORM` / `CARD_FACE_CAMERA`
+timeline + `FOLD_PEEL_OVERLAP`, `ENTRY_*` (all now in `timeline.js`), the `CYL_*` / `SPHERE_AREA_NORM` / `CARD_FACE_CAMERA`
 shape knobs, the near-fade + `dragFlipZ` constants, and the keyboard/modal centring frames + pitch
 caps (all under Behavior notes / Card count).
 
