@@ -215,6 +215,18 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     expect(textNode.nodeValue).to.equal('+352 800 99999');
   });
 
+  it('deferred update swaps geo-ip value when preceded by another placeholder in the same text node', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const textNode = document.createTextNode('{{add-to-cart}} and {{buy-now-geo-ip}}');
+
+    await decoratePlaceholderArea({ nodes: [textNode] });
+    expect(textNode.nodeValue).to.equal('Add to cart and Buy now');
+
+    await decoratePlaceholderArea.deferredGeo;
+    expect(textNode.nodeValue).to.equal('Add to cart and Acheter maintenant');
+  });
+
   it('MEP placeholder overrides geo-ip value', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';
