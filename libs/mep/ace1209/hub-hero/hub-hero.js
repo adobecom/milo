@@ -150,8 +150,8 @@ const onHover = (event) => {
 
   const rtl = isRtl();
   const maxIndex = slideEl.closest('.hub-hero')?.classList.contains('slides-3') ? 3 : 5;
-  // container.classList.toggle('stick-left', rtl ? slideIndex === maxIndex : slideIndex === 1);
-  // container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === maxIndex);
+  container.classList.toggle('stick-left', rtl ? slideIndex === maxIndex : slideIndex === 1);
+  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === maxIndex);
 
   if (hoverTracked) return;
 
@@ -314,7 +314,7 @@ const handleGridImages = (imageContainers, slides, isThreeSlides) => {
 
   const gridColumns = [...container.querySelectorAll('.hub-hero-image-grid-container-col')];
 
-  const leftSlideIndex = isThreeSlides ? 0 : 1;
+  const leftSlideIndex = 1;
   const rightSlideIndex = isThreeSlides ? 2 : 3;
 
   const leftClone = slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
