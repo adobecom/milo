@@ -95,8 +95,6 @@ export default function createGlobeModal({
   let modalOpenedAt = 0;
   // close-finalize timeout id; open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
-  // document keydown listener; setup() detaches a prior one before re-adding on re-init.
-  let keydownHandler = null;
   // click/touch listeners wired once — DOM persists across re-inits so re-adding would stack.
   let listenersWired = false;
 
@@ -447,7 +445,6 @@ export default function createGlobeModal({
     // Info scrim: mobile = full-width bottom chunk; desktop = full-height left edge.
     if (infoEl) {
       infoEl.style.position = 'absolute';
-      infoEl.style.minHeight = '';
       if (isMobile) {
         infoEl.style.top = 'auto';
         infoEl.style.bottom = '0';
@@ -480,6 +477,24 @@ export default function createGlobeModal({
     applyFade(prevEl, '');
     applyFade(nextEl, '');
     applyFade(counterEl, counterBase);
+  }
+
+  // Set the description's mask fade lengths from scroll position; focusable only when it scrolls.
+  function updateDescFade(descEl) {
+    if (!descEl) return;
+    const overflow = descEl.scrollHeight - descEl.clientHeight;
+    const canScroll = overflow > 1;
+    const top = canScroll && descEl.scrollTop > 1;
+    const bottom = canScroll && descEl.scrollTop < overflow - 1;
+    descEl.style.setProperty('--desc-fade-top', top ? '20px' : '0');
+    descEl.style.setProperty('--desc-fade-bottom', bottom ? '20px' : '0');
+    if (canScroll) descEl.tabIndex = 0;
+    else if (document.activeElement !== descEl) descEl.removeAttribute('tabindex');
+  }
+
+  function scheduleDescFade() {
+    const descEl = q('.globe-gallery-modal-description');
+    if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
   }
 
   function populateModal(i) {
@@ -521,6 +536,9 @@ export default function createGlobeModal({
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
+    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+    if (descEl) descEl.scrollTop = 0;
+    scheduleDescFade();
   }
 
   // Finalize the desktop nav transition: detach old card to sphere, reset uniforms on the new.
@@ -906,6 +924,8 @@ export default function createGlobeModal({
     if (!modalRenderer) return;
     modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     modalRenderer.setSize(w, h);
+    // Resize can change whether the description overflows — re-measure the fade cue.
+    if (modalIdx >= 0) scheduleDescFade();
   }
 
   // Create the modal renderer/scene + THREE temps and wire DOM interactions. Once per init.
@@ -945,31 +965,13 @@ export default function createGlobeModal({
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
       if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
+      const descEl = evtRoot.querySelector('.globe-gallery-modal-description');
+      if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
       if (chromeEl) {
         chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
       }
     }
-
-    // Detach prior keydown before re-adding (re-init calls setup() again — avoid stacking).
-    if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
-    keydownHandler = (e) => {
-      if (modalIdx < 0) return;
-      const chromeRoot = q('.globe-gallery-modal-chrome');
-      const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
-      if (focusInChrome && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        e.preventDefault();
-        navigate((e.key === 'ArrowLeft' ? -1 : 1) * (isRtl() ? -1 : 1));
-        return;
-      }
-      if (e.key === 'PageUp' || e.key === 'PageDown'
-          || e.key === 'Home' || e.key === 'End'
-          || e.key === 'ArrowUp' || e.key === 'ArrowDown'
-          || (e.key === ' ' && !focusInChrome)) {
-        e.preventDefault();
-      }
-    };
-    document.addEventListener('keydown', keydownHandler);
 
     // Touch gestures wired once too; nothing runs after this, so early-return.
     if (alreadyWired) return;
@@ -1003,6 +1005,8 @@ export default function createGlobeModal({
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
+      // Description owns its own touch scroll — don't hijack it for swipe/pull-to-close.
+      if (e.target?.closest?.('.globe-gallery-modal-description')) return;
       swStartX = e.touches[0].clientX; swLastX = swStartX;
       swStartY = e.touches[0].clientY; swLastY = swStartY;
       swLastT = Date.now();
@@ -1136,10 +1140,8 @@ export default function createGlobeModal({
     resetChromeReveal();
   }
 
-  // Dispose the modal renderer + clear the close timeout, remove keydown, reset DOM/page state.
   function destroy() {
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
-    if (keydownHandler) { document.removeEventListener('keydown', keydownHandler); keydownHandler = null; }
     resetModalDom();
     releaseModalTexture();
     // Dispose lazy overflow carriers — Three frees GPU memory only on explicit dispose.

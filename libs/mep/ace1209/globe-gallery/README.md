@@ -173,7 +173,7 @@ images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** 
 quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
 **dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
 reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
-modal nav — on-screen arrows, Left/Right keys, and touch swipe — routes through the same cross-warp
+modal nav — on-screen arrows and touch swipe — routes through the same cross-warp
 transition on **every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just
 builds a warp preview during the drag, then commits that transition on release. The old mobile instant-swap /
 swipe-neighbour slot reorg was removed — a slotless overflow card can only cross-warp anyway.
@@ -425,11 +425,10 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   **name heading** (`tabindex="-1"`), NOT the dialog container — focusing the `<dialog>` makes
   VoiceOver enumerate it as a group and swallow its name; landing on a child makes VO announce the
   dialog name then the heading. Prev/Next/Close are tab stops (native inert keeps focus in);
-  navigation is via the on-screen Prev/Next buttons, touch swipe, or **Left/Right arrow keys —
-  bound to prev/next ONLY while focus is on the dialog's own controls** (`focusInChrome`, i.e.
-  focus mode), never at document level, so a screen reader arrowing through the description text
-  (browse / virtual-cursor mode) is never hijacked; the buttons stay the primary, discoverable
-  path (a11y audit). **Esc** (the `cancel` event,
+  navigation is via the on-screen Prev/Next buttons or touch swipe. There is **no arrow-key
+  card nav** — the buttons cover keyboard + SR users, and with no document-level key handler a
+  screen reader arrowing through the description text (browse / virtual-cursor mode) is never
+  hijacked. **Esc** (the `cancel` event,
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
@@ -579,11 +578,21 @@ layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted pane
   12px; mobile full-bleed to screen width, square corners `uRadius=0`), native aspect kept — the
   sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`) so the *photo*, not
   the geometry, reaches the margin. Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
-  scrim on the **viewport's left edge, full height**, holding the left-aligned, top-anchored
-  role/name/description (badges keep `margin-top:auto` → pinned bottom, so long copy grows downward
-  into the scrim rather than overflowing past its top edge); mobile's
-  scrim is one full-width 266px chunk pinned to the bottom. All dark frosted (`rgb(0 0 0 / 64%)` +
-  `blur(12px)`, light text).
+  scrim on the **viewport's left edge, full height**; mobile's scrim is one full-width bottom chunk
+  (content-sized, capped at `60dvh`). Both are a **pinned header / scrolling body / pinned footer**:
+  role + name are `flex-shrink:0` at the top, the **badges** are `flex-shrink:0` at the bottom (so
+  those tabbable controls are always on-screen), and the **description** is the only scroll region
+  (`min-height:0; overflow-y:auto`) — long copy scrolls instead of overflowing or
+  hiding the badges. A `mask-image` scroll-shadow (`updateDescFade`, re-measured on
+  scroll / resize / card-change) fades whichever edge has more copy, so the scroll affordance
+  survives macOS's hidden overlay scrollbar. JS gives the description `tabindex="0"` only while it actually overflows, so it's
+  keyboard-scrollable then without leaving a pointless tab stop when the copy fits; the full text is
+  always in the a11y tree via the dialog's `aria-describedby`; `touchstart` skips the swipe/pull
+  gesture when a drag starts inside it so the copy scrolls rather than closing the modal. It also
+  carries **`data-lenis-prevent`** — Milo loads the Lenis smooth-scroll lib on `foundation:c2` pages
+  (`utils.js`), which hijacks the wheel/touch and applies it to the (scroll-locked) page, so a nested
+  scroll region silently won't scroll without opting out via that attribute. All dark frosted
+  (`rgb(0 0 0 / 64%)` + `blur(12px)`, light text).
   - **Touch gestures (in the modal) are gated on a coarse primary pointer**
     (`matchMedia('(pointer: coarse)')`, mirroring `usesCylinderGeometry`), not on the `sm` width
     band — so tablets at md (≥768) get them too. A per-gesture axis lock (`AXIS_LOCK_PX` 10px)

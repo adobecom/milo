@@ -233,7 +233,7 @@
 /* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the nav row. */
 .globe-gallery-modal-info {
   position: absolute;
-  height: 266px;
+  max-height: 60dvh;
   margin: 0;
   padding: 24px 24px 84px;
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
@@ -249,6 +249,10 @@
   /* padding must count toward width — no global border-box reset in Milo */
   box-sizing: border-box;
 }
+
+.globe-gallery-modal-role-label,
+.globe-gallery-modal-name,
+.globe-gallery-modal-badges { flex-shrink: 0; }
 
 .globe-gallery-modal-badges {
   display: flex;
@@ -289,12 +293,18 @@
   color: var(--s2a-color-gray-400);
   margin: 0 0 12px;
   max-width: 375px;
+  min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
+  overflow-y: auto;
+  touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
+  scrollbar-width: thin;
+  scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
 
-  /* Cap to 3 lines (sm) so badges stay on-screen; min-width:768 unclamps it. */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* Scroll-shadow fade cue; JS (updateDescFade) sets each length to 0 (no fade) or 20px. */
+  --desc-fade-top: 0;
+  --desc-fade-bottom: 0;
+
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
 }
 
 .globe-gallery-modal-badge {
@@ -488,6 +498,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   /* Full-height left-edge; JS sets top/bottom/inset-inline-start/width. */
   .globe-gallery-modal-info {
     height: auto;
+    max-height: none;
     border-radius: 0;
     padding: 40px 32px;
   }
@@ -506,10 +517,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
     line-height: 22px;
     margin: 0;
     max-width: none;
-
-    /* Undo the sm 3-line clamp — the full-height scrim has room. */
-    display: block;
-    overflow: visible;
   }
 
   .globe-gallery-modal-badges { gap: 10px; }

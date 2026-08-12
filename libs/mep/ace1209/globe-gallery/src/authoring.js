@@ -274,7 +274,7 @@ const buildMarkup = (gid, labels) => `
     <div class="globe-gallery-modal-info">
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <p class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}"></p>
+      <p class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></p>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
