@@ -1,5 +1,5 @@
 import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { sendAnalytics } from '../../martech/helpers.js';
+import { sendAnalytics } from '../../blocks/modal/modal.js';
 import { norm } from '../../utils/market.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
