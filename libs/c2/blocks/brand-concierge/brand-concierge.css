@@ -847,7 +847,7 @@
   z-index: calc( var(--modal-z-index) + 1);
 }
 
-#bc-susi-modal + .modal-curtain {
+#bc-susi-modal ~ .modal-curtain {
   z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
@@ -883,12 +883,12 @@
   bottom: -100vh;
 }
 
-#brand-concierge-modal + .modal-curtain {
+#brand-concierge-modal ~ .modal-curtain {
   animation: var(--bc-modal-animation-time) ease-in-out fade-in;
   opacity: 1;
 }
 
-#brand-concierge-modal.closing + .modal-curtain {
+#brand-concierge-modal.closing ~ .modal-curtain {
   animation: var(--bc-modal-animation-time) ease-in-out fade-out;
   opacity: 0;
 }
@@ -896,8 +896,8 @@
 @media (prefers-reduced-motion: reduce) {
   #brand-concierge-modal.dialog-modal,
   #brand-concierge-modal.dialog-modal.closing,
-  #brand-concierge-modal + .modal-curtain,
-  #brand-concierge-modal.closing + .modal-curtain {
+  #brand-concierge-modal ~ .modal-curtain,
+  #brand-concierge-modal.closing ~ .modal-curtain {
     animation: none;
   }
 
