@@ -1,5 +1,4 @@
-import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { norm } from '../../utils/market.js';
+import { getFederatedContentRoot, getCountry, setMarket, normCountryCode as norm } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
