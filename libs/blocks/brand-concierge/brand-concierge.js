@@ -15,6 +15,7 @@ import {
 import {
   loadWebclient,
   bcBootstrap,
+  openModal,
   openSideModal,
   setAuthoredContent,
   mountId,
@@ -22,12 +23,24 @@ import {
 
 const variants = {};
 
+function checkGlobal() {
+  let global = false;
+  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
+    global = window.milo.brandConcierge.brandConciergeGlobal;
+  }
+  return global;
+}
+
 function routeInput(text) {
-  const isOpen = document.body.classList.contains('bc-side-open');
-  if (isOpen) bcBootstrap(text, mountId);
-  else {
-    setCssGnavHeight();
-    openSideModal(text, bcBootstrap);
+  if (checkGlobal()) {
+    const isOpen = document.body.classList.contains('bc-side-open');
+    if (isOpen) bcBootstrap(text, mountId);
+    else {
+      setCssGnavHeight();
+      openSideModal(text, bcBootstrap);
+    }
+  } else {
+    openModal(text, bcBootstrap);
   }
 }
 
