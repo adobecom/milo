@@ -187,13 +187,18 @@ function initTabs(elm, config, rootElem) {
   const tabLists = elm.querySelectorAll(':scope > .tabs-wrapper [role="tablist"], :scope > .tabs-wrapper [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
+    const isRadioGroup = tabList.getAttribute('role') === 'radiogroup';
+    const keys = isRadioGroup
+      ? ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp']
+      : ['ArrowRight', 'ArrowLeft'];
     tabList.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const forward = e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      if (!keys.includes(e.key)) return;
+      const forward = e.key === 'ArrowDown' || e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');
       tabs[tabFocus].focus();
+      if (tabs[tabFocus].getAttribute('role') === 'radio') tabs[tabFocus].click();
     });
   });
   tabs.forEach((tab) => {
