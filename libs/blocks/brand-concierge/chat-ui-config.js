@@ -21,6 +21,7 @@ export default {
     chat: {
       messageAlignment: 'normal',
       messageWidth: '100%',
+      feedbackAlignment: 'left',
       widgetsInMessageContentTypes: [
         'cta-actions',
         'firefly-community-gallery',

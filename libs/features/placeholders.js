@@ -107,6 +107,19 @@ async function getGeoPlaceholders(config, sheet) {
   });
 }
 
+// Map of `-geo-ip` placeholder overrides for the visitor's geo, or null when
+// inactive/none apply. Exposed for surfaces that do their own token replacement
+// outside milo's decorateArea pipeline (e.g. the C2 federal gnav).
+export async function getGeoIpPlaceholders(config = getConfig(), sheet = 'default') {
+  const geo = await getGeoPlaceholders(config, sheet);
+  if (!geo) return null;
+  const overrides = new Map();
+  Object.entries(geo).forEach(([key, value]) => {
+    if (isGeoIpKey(key) && typeof value === 'string') overrides.set(key, value);
+  });
+  return overrides.size ? overrides : null;
+}
+
 async function getPlaceholder(key, config, sheet) {
   let defaultFetched = false;
   const defaultLocale = 'en-US';

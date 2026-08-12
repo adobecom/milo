@@ -306,14 +306,57 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   });
 }
 
-function checkSlideForVideo(activeSlide) {
-  const video = activeSlide.querySelector('video');
-  /* c8 ignore start */
-  if (video?.played.length > 0 && !video?.paused) {
-    video.pause();
-    syncPausePlayIcon(video);
-  }
-  /* c8 ignore end */
+// Hinting layouts intentionally peek the neighboring slide, so require
+// majority overlap (not just any overlap) to count a slide as still "in view".
+const VISIBILITY_THRESHOLD = 0.5;
+
+function getOverlapRatio(rect, wrapperRect) {
+  const overlapWidth = Math.max(0, Math.min(rect.right, wrapperRect.right)
+    - Math.max(rect.left, wrapperRect.left));
+  const overlapHeight = Math.max(0, Math.min(rect.bottom, wrapperRect.bottom)
+    - Math.max(rect.top, wrapperRect.top));
+  const rectArea = rect.width * rect.height;
+  if (!rectArea) return 0;
+  return (overlapWidth * overlapHeight) / rectArea;
+}
+
+// Pauses a slide's video if it's actually playing and no longer
+// sufficiently overlaps the carousel wrapper's visible (overflow: hidden) area.
+function checkSlideForVideo(slide, wrapperRect) {
+  const video = slide.querySelector('video');
+  if (!video || !video.played.length || video.paused) return;
+  if (getOverlapRatio(video.getBoundingClientRect(), wrapperRect) >= VISIBILITY_THRESHOLD) return;
+  video.pause();
+  syncPausePlayIcon(video);
+}
+
+function pauseVideosOutOfView(slides, wrapper) {
+  const wrapperRect = wrapper?.getBoundingClientRect();
+  if (!wrapperRect) return;
+  slides.forEach((slide) => checkSlideForVideo(slide, wrapperRect));
+}
+
+// Waits for the slide track's transform transition to finish (falling back to
+// a timer in case transitionend never fires) before checking visibility,
+// since slide positions aren't final until the transition settles. Filtered
+// to the track's own transform so a child slide's opacity transition
+// (carousel.css .carousel-slide) can't resolve this early via bubbling.
+const TRANSITION_FALLBACK_MS = 700; // .6s CSS transition + 25ms reflow delay, plus margin
+
+function waitForSlideTransition(slideContainer, onDone) {
+  let settled = false;
+  const settle = () => {
+    if (settled) return;
+    settled = true;
+    // eslint-disable-next-line no-use-before-define
+    clearTimeout(fallbackTimer);
+    onDone();
+  };
+  const fallbackTimer = setTimeout(settle, TRANSITION_FALLBACK_MS);
+  slideContainer.addEventListener('transitionend', (e) => {
+    if (e.target !== slideContainer || e.propertyName !== 'transform') return;
+    settle();
+  }, { once: true });
 }
 
 // Sets a multiplier variable, used by CSS, to move the indicator dots.
@@ -382,13 +425,6 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
     });
   });
 }
-// hinting (tablet/mobile)
-function isSlideVisible(currentIdx, targetIdx, n, isNext) {
-  if (isNext) return currentIdx === targetIdx || currentIdx === (targetIdx + 1) % n;
-  const prev = (targetIdx - 1 + n) % n;
-  const next = (targetIdx + 1) % n;
-  return currentIdx === prev || currentIdx === targetIdx || currentIdx === next;
-}
 
 // Skip focus on touch events to prevent the browser from scrolling the page
 function focusNavButton(button, event) {
@@ -416,6 +452,7 @@ function moveSlides(event, carouselElements) {
     const atBoundary = isNext ? atEnd : atStart;
     if (atBoundary) {
       checkCircularNav(carouselElements);
+      pauseVideosOutOfView(slides, slideContainer.closest('.carousel-wrapper'));
       return;
     }
   }
@@ -425,17 +462,9 @@ function moveSlides(event, carouselElements) {
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
-  let skipPause = false;
 
   // hinting-tablet / hinting-mobile
   const isHintingMobile = (el.classList.contains('hinting-mobile') || el.classList.contains('hinting-center-mobile')) && isMobileVp.matches;
-  if (isHintingTablet(el) || isHintingMobile) {
-    const n = slides.length;
-    const currentIdx = carouselElements.currentActiveIndex;
-    const targetIdx = isNext ? (currentIdx + 1) % n : (currentIdx - 1 + n) % n;
-    skipPause = isSlideVisible(currentIdx, targetIdx, n, isNext);
-  }
-  if (!skipPause) checkSlideForVideo(activeSlide);
 
   // Track reference slide - last slide initially
   if (!referenceSlide) {
@@ -527,6 +556,9 @@ function moveSlides(event, carouselElements) {
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
   setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+
+  const wrapper = slideContainer.closest('.carousel-wrapper');
+  waitForSlideTransition(slideContainer, () => pauseVideosOutOfView(slides, wrapper));
 }
 
 export function getSwipeDistance(start, end) {

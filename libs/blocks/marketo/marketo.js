@@ -56,6 +56,7 @@ const FORM_MAP = {
   'sfdc-campaign-id': 'program.campaignids.sfdc',
   'poi-field': 'field_filters.products',
   'hardcoded-poi': 'program.poi',
+  'cta-override': 'form.cta.override',
 };
 export const FORM_PARAM = 'form';
 

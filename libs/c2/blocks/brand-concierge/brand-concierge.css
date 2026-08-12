@@ -1011,6 +1011,11 @@
     padding: 56px 24px 12px;
   }
 
+  .c2-dark .bc-header-title {
+    font-size: 48px;
+    line-height: 48px;
+  }
+
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -1089,7 +1094,7 @@
     flex-wrap: wrap;
     max-width: 600px;
   }
-  
+
   .hero .prompt-card-button,
   .pill-cards .prompt-card-button {
     flex-direction: row;
@@ -1166,6 +1171,11 @@
   .bc-header,
   .hero .bc-header {
     padding: 0 24px;
+  }
+
+  .c2-dark .bc-header-title {
+    font-size: 56px;
+    line-height: 56px;
   }
 
   .bc-prompt-cards {

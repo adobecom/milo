@@ -11,6 +11,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   createTag,
+  loadBlock,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
@@ -131,6 +132,18 @@ export const logErrorFor = async (fn, message, tags, errorType, severity = 'erro
     lanaLog({ message, e, tags, errorType, severity });
     throw new Error(e);
   }
+};
+
+export const clearSignOutCookies = () => {
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const labels = host.split('.');
+  ['ims_country_code', 'acomsis', 'acomsis_stage'].forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
 };
 
 export function addMepHighlightAndTargetId(el, source) {
@@ -577,6 +590,13 @@ export function trigger({
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
+export async function resolveMerchCardFields(content, loader = loadBlock) {
+  const fields = content.querySelectorAll(
+    'a.merch-card-autoblock.link-block[href*="field="]',
+  );
+  await Promise.all([...fields].map((field) => loader(field)));
+}
+
 export async function fetchAndProcessPlainHtml({
   url,
   plainHTMLPromise = null,
@@ -657,6 +677,7 @@ export async function fetchAndProcessPlainHtml({
   }
 
   body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
+  if (shouldDecorateLinks) await resolveMerchCardFields(body);
   return body;
 }
 
