@@ -15,6 +15,7 @@ const webClientVersion = params.get('webclientversion');
 const susiScopes = 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read';
 
 let bcToken;
+let susiListener;
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -312,6 +313,14 @@ export async function openModal(initialMessage, bootstrap) {
     modal.classList.remove('opening');
   }, animationMs);
 
+  if (susiListener !== 'signIn:decorateNav') {
+    window.addEventListener('signIn:decorateNav', async () => {
+      await window.adobeIMS?.refreshToken();
+      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+    });
+    susiListener = 'signIn:decorateNav';
+  }
+
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
@@ -343,6 +352,14 @@ export async function openSideModal(initialMessage, bootstrap) {
   setTimeout(() => {
     modal.classList.remove('opening');
   }, animationMs);
+
+  if (susiListener !== 'signIn:decorateNav') {
+    window.addEventListener('signIn:decorateNav', async () => {
+      await window.adobeIMS?.refreshToken();
+      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+    });
+    susiListener = 'signIn:decorateNav';
+  }
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));

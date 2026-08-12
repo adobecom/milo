@@ -68,10 +68,6 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('signIn:decorateNav', async () => {
-    await window.adobeIMS?.refreshToken();
-    (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
-  });
   window.addEventListener('feds:signOut', () => {
     if (!window.adobe?.concierge?.clearHistory) {
       loadWebclient();
