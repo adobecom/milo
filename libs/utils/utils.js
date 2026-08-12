@@ -2759,10 +2759,10 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
-    getMasDepUrl('mas-field.js'),
   ],
   merch: [
     getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/mas-field.js`,
   ],
 };
 
@@ -2781,14 +2781,10 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  if (name === 'merch') {
-    // Field links dynamically import this sibling module from merch.js's init(); preload it
-    // in parallel instead of only discovering it after merch.js itself has loaded and run.
-    loadLink(`${blockPath.slice(0, blockPath.lastIndexOf('/'))}/mas-field.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
-    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
