@@ -1063,7 +1063,7 @@
 /* below large */
 @media (1380px > width) {
   .hub-hero {
-    --hub-hero-carousel-item-max-width: max(292px, calc(var(--slide-max-viewport) - 16px));
+    --hub-hero-carousel-item-max-width: clamp(292px, calc(var(--slide-max-viewport) - 16px), 392px);
     --hub-hero-carousel-item-min-width: 146px;
   }
 }
