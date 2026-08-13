@@ -4,7 +4,7 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 const DEFAULT_TEXT_CONFIG = { heading: '6', body: 'md' };
 let videoObserver = null;
 
-const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+function isSvgUrl(url) { return /\.svg(\?.*)?$/i.test(url || ''); }
 
 function decorateCardText(foreground) {
   decorateBlockText(foreground, DEFAULT_TEXT_CONFIG);
