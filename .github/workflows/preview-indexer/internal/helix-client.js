@@ -109,15 +109,14 @@ async function triggerPreview(owner, repo, path) {
   return response.data;
 }
 
-async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now()) {
+async function awaitBulkJobStatus(jobStatusUrl, startedAt = Date.now()) {
   console.log(`Awaiting bulk job status: ${jobStatusUrl}`);
-  const { adminToken } = options;
   let response;
   try {
     response = await axiosWithRetryError({
       method: 'GET',
       url: jobStatusUrl,
-      headers: { Authorization: `Bearer ${adminToken}` }
+      headers: { Authorization: `Bearer ${await getImsToken()}` }
     });
   } catch (error) {
     console.error(`Error fetching job status: ${jobStatusUrl}`);
@@ -134,7 +133,7 @@ async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now())
     console.error(`Job status timeout: ${jobStatusUrl}`);
     return null;
   }
-  return awaitBulkJobStatus(json.links.self, { adminToken }, startedAt);
+  return awaitBulkJobStatus(json.links.self, startedAt);
 }
 
 async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
@@ -158,13 +157,13 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     data: JSON.stringify(body)
   });
   const job = response.data;
-  const detailsUrl = await awaitBulkJobStatus(job.links.self, { adminToken });
+  const detailsUrl = await awaitBulkJobStatus(job.links.self);
   if (detailsUrl) {
     console.debug(`Fetching job details: ${detailsUrl}`);
     const detailsResponse = await axiosWithRetryError({
       method: 'GET',
       url: detailsUrl,
-      headers: { Authorization: `Bearer ${adminToken}` }
+      headers: { Authorization: `Bearer ${await getImsToken()}` }
     });
     const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
