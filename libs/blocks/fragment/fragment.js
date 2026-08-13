@@ -137,6 +137,11 @@ export default async function init(a) {
     ['mepLingo', 'originalHref', 'mepLingoInsert', 'mepLingoRemove',
       'mepLingoSectionSwap', 'mepLingoBlockSwap', 'mepLingoSkippedQI']
       .forEach((k) => delete a.dataset[k]);
+    // Replacement is itself a lingo link — resolve it regionally (inherits LCP/skip-QI).
+    if (a.href.includes('#_mep-lingo')) {
+      a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+      relHref = a.href;
+    }
   }
 
   if (a.href.includes('#_inline')) {

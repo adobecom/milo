@@ -290,6 +290,45 @@ describe('MEP Lingo Fragments', () => {
     expect(frag.dataset.mepLingoFallback).to.be.undefined;
   });
 
+  it('re-resolves a mep-lingo replacement regionally instead of clearing it', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    // A plain (non-lingo) fragment link, in a non-LCP section, targeted by a MEP replace
+    // whose TARGET is itself a mep-lingo link.
+    const section = document.createElement('div');
+    section.className = 'plain-replace-section section';
+    section.dataset.idx = '1';
+    section.innerHTML = '<div><div><a class="plain-frag" href="/test/blocks/fragment/mocks/fragments/frag-b">Plain</a></div></div>';
+    document.body.appendChild(section);
+    const a = section.querySelector('a.plain-frag');
+    const path = new URL(a.href).pathname;
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [path]: {
+            action: 'replace',
+            fragment: '/fragments/mep-lingo-test#_mep-lingo',
+            selector: path,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // The replacement's OWN href drove a regional (ROC) resolution — not a plain,
+    // non-regional fetch — proving it was re-resolved rather than cleared.
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoRoc).to.exist;
+    section.remove();
+  });
+
   it('loads ROC inline fragment', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     stubQueryIndex();
