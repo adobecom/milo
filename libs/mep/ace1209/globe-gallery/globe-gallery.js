@@ -82,7 +82,7 @@ const YAW_ONLY_GEOMETRY = {
   CYL_GAP_RATIO: 0.20, // inter-card gap as a fraction of card width
   CYL_ASPECT_CAP: 1.5, // clamp on card aspect (cover-crop crops harder past it)
   CYL_BULGE: 0.18, // barrel bulge: r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
-  CARD_FACE_CAMERA: 0.35, // limb polish (weaker than the sphere's 0.5)
+  CARD_FACE_CAMERA: 0.1, // limb polish; costs barrel smoothness — read the README before raising
   SPHERE_AREA_NORM: 0,
 };
 

@@ -1065,17 +1065,17 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     it to the fade keeps the flip aligned. `maxRadial` is radial (rotation-invariant); `sphereGroup.
     scale` (RM shrink) folded in; capped at `CAM_Z_SPHERE × DRAG_FLIP_MAX_CAM_FRAC` (0.95) so it
     can't fire at zoom start; gated on `zoomT > 0`.
-  - **No roll jitter here** (columns lining up *is* the effect). **`CARD_FACE_CAMERA` is `0.35`** (vs
-    the sphere's 0.5) — only limb polish, since a cylinder has no polar cards to rescue.
+  - **No roll jitter here** (columns lining up *is* the effect). **`CARD_FACE_CAMERA` is `0.10`** —
+    it shipped at `0.35`; on a barrel it buys limb legibility at the cost of the curve (below).
   - **Why not a chopped masonry globe** (rejected): meridian columns on a sphere project to curves,
     so in-column alignment breaks; a 0.7 band holds only ~2 cards/column and returns latitude
     obliquity. Masonry needs a developable surface — a cylinder is one, a sphere isn't.
 - **Density + facing pass** (full-sphere path; fixes the "edgy / unevenly distributed" read).
   Adding cards fixes none of it — nearest-neighbour spacing is already even at N=24 and worsens with
   more cards (foreshortening variance). Four independent levers:
-  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.35` cylinder / `0` full sphere).** A radial card's
-    obliquity equals its angular distance from front-centre, so limb cards render as lines.
-    `applyCardFacing` turns each card partway toward the camera (slivers 5→0, worst obliquity
+  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.10` cylinder / `0` full sphere).** A
+    radial card's obliquity equals its angular distance from front-centre, so limb cards render as
+    lines. `applyCardFacing` turns each card partway toward the camera (slivers 5→0, worst obliquity
     81°→41°). Must be **per-frame** (a baked tilt rotates away from the camera). The target is
     `sign(n.z) × viewDir`, not `viewDir` (a uniform blend toward +Z rotates a back card to
     perpendicular — a new sliver). The effect must **fade to zero at edge-on** or the 180°-apart
@@ -1084,6 +1084,39 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     past ~0.35 eats the limb correction. Applied at **three** sites that must agree or the card
     snaps: `placeSphereCard`, `snapCardToSphereSlot`, and `placeFoldingCard` (scaled by `fdE` so it
     eases in over the fold, continuous with the sphere branch).
+  - **Why the barrel runs `0.10`, not `0.35`.** The full-sphere path is `0`, so this only ever runs
+    on the cylinder — where it fights the geometry as much as it helps. At `0.35` it read as "cards
+    pop up when they face the camera, and spin on their own past a certain angle." Both symptoms are
+    this one dial. Measured on the sm barrel (`R` 16, `CAM_Z` 70, `CYL_BULGE` 0.18):
+    - **It un-seats cards from the bulge** (the "pop"). The tilt is a full 3D re-aim, so it also
+      cancels part of each card's *vertical* slope — the slope `cylinderMasonryLayout` computes
+      precisely so cards sit flush. The cancellation scales with card height, so a front column's
+      pitch error runs `0°` at mid-height → **`−4.33°` at top/bottom row at `0.35`** (`−1.24°` at
+      `0.10`). The column stops being a curve and reads as hinged slats.
+    - **It unwinds far faster than it winds up** (the "self-rotation"). From 0→75° of azimuth the
+      tilt grows at a constant `+0.35°` per degree of spin — locked to the rotation, so invisible.
+      Past 75.5° (`|n.z|` enters the band) it reverses and peaks at **`−2.84°`/° at `0.35`**
+      (`−0.81°`/° at `0.10`), dumping the accumulated tilt in ~14.5° of spin. C1, so no literal
+      jump, but it reads as cards spinning on their own near the limb. It also pushes the edge-on
+      crossing out from `acos(R/CAM_Z)` = 77.0° (82.0° at `0.10`, 85.3° at `0.35`) and steepens it,
+      so cards hold more than their true width to the limb, then pinch to a line and flip to their
+      back face.
+    - **Tuning table** (maxSnap °/° · front pitch error · limb width vs a true barrel). Both costs
+      scale linearly with the dial; only the snap responds to the band:
+
+      | `CARD_FACE_CAMERA` / `FACING_EDGE_ON_BAND` | maxSnap | pitch err | limb width |
+      | --- | --- | --- | --- |
+      | `0` (true barrel) | `0.00` | `0°` | `1.00×` |
+      | **`.10` / `.25` — shipped** | `0.81` | `−1.24°` | `1.33×` |
+      | `.10` / `.45` | `0.40` | `−1.24°` | `1.33×` |
+      | `.20` / `.45` | `0.80` | `−2.47°` | `1.64×` |
+      | `.35` / `.25` — was shipped | `2.84` | `−4.33°` | `2.07×` |
+
+      Widening the band is close to free: it buys back snap without touching limb width (the pitch
+      error is set by the dial alone). `FACING_EDGE_ON_BAND` is safe to retune — no sphere path
+      reads it. If the pop ever needs to go to zero while keeping limb width, make the re-aim
+      **yaw-only** on this path (project `cardNormal` into XZ before `setFromUnitVectors`): the
+      geometry is yaw-only anyway, and it zeroes the pitch error outright at any dial value.
   - **Uneven card SIZE → `SPHERE_AREA_NORM` (`0.5` yaw-only / `0` else).** Native-aspect sizing
     (height `CARD_H_SPHERE`, width `sphereScaleX`) makes a 16:9 image 2.67× the area of a 2:3 one, so
     wide cards blot out neighbours. Scaling *both* axes by `sphereScaleX^-norm` equalizes area at
