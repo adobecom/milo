@@ -182,7 +182,7 @@
       .card-overlay {
         --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
-        aspect-ratio: 41 / 35;
+        aspect-ratio: 3 / 2;
       }
     }
   }
