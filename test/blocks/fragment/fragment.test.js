@@ -226,6 +226,8 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.clear();
     document.head.querySelector('meta[name="langfirst"]')?.remove();
     if (fetchStub) fetchStub.restore();
+    const c = getConfig();
+    if (c.mep) delete c.mep.fragments;
   });
 
   it('loads ROC fragment and sets data-mep-lingo-roc', async () => {
@@ -242,6 +244,50 @@ describe('MEP Lingo Fragments', () => {
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
     expect(frag.dataset.mepLingoRoc).to.exist;
+  });
+
+  it('applies a MEP replace to a mep-lingo link and clears stale lingo state', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    const a = document.querySelector('a.mep-lingo-frag');
+    await simulateDecorateLinks(a);
+    // decorate localized the href with a region prefix and captured the authored href
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.originalHref).to.exist;
+
+    // Key the fragment map by the authored (non-region) path on a different origin,
+    // exactly the mismatch the exact-key lookups can't resolve.
+    const origPath = new URL(a.dataset.originalHref).pathname;
+    const fragKey = `https://main--federal--adobecom.aem.page${origPath}`;
+    const replacement = '/test/blocks/fragment/mocks/fragments/frag-b';
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [fragKey]: {
+            action: 'replace',
+            fragment: replacement,
+            selector: fragKey,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // Replace won: the replacement rendered and the stale lingo state was cleared,
+    // so the replacement was not reprocessed through the lingo fetch/fallback path.
+    expect(a.dataset.mepLingo).to.be.undefined;
+    expect(a.dataset.originalHref).to.be.undefined;
+    const section = document.querySelector('.mep-lingo-section');
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoRoc).to.be.undefined;
+    expect(frag.dataset.mepLingoFallback).to.be.undefined;
   });
 
   it('loads ROC inline fragment', async () => {
