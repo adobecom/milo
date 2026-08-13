@@ -79,6 +79,16 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   background: var(--mep-dark-44);
 }
 
+body.mep-align-left .mep-fab {
+  right: auto;
+  left: 0;
+  border-radius: 0 100% 100% 0;
+}
+
+body.mep-align-left:has(#mep-drawer:popover-open) .mep-fab {
+  transform: translateX(-100%);
+}
+
 .mep-drawer {
   position: fixed;
   display: flex;
@@ -115,6 +125,21 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
+body.mep-align-left .mep-drawer {
+  right: auto;
+  left: 0;
+}
+
+@starting-style {
+  body.mep-align-left .mep-drawer:popover-open {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+body.mep-align-left .mep-drawer:not(:popover-open) {
+  transform: translate3d(-100%, 0, 0);
+}
+
 .mep-drawer a {
   color: var(--mep-white-100);
 }
@@ -144,7 +169,14 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   align-items: center;
 }
 
-.mep-drawer .mep-header .mep-navigation .icon-close {
+.mep-drawer .mep-header .mep-navigation .mep-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mep-drawer .mep-header .mep-navigation .icon-close,
+.mep-drawer .mep-header .mep-navigation .mep-align-toggle {
   background: none;
   border: none;
   padding: 0;

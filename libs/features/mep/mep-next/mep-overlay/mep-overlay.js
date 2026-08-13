@@ -32,6 +32,12 @@ import svgs from './mep-overlay-svg.js';
 let authenticated = false;
 const domParser = new DOMParser();
 
+const ALIGN_STORAGE_KEY = 'mep-align-left';
+
+function applyStoredAlignment() {
+  document.body.classList.toggle(ALIGN_STORAGE_KEY, localStorage.getItem(ALIGN_STORAGE_KEY) === 'true');
+}
+
 const CARD_DATA = {
   actions: [
     ['Highlight', [
@@ -445,14 +451,23 @@ function checkAuthAndBuild(pageId) {
   });
 }
 
+function buildAlignToggle() {
+  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', title: 'Move to other side', 'aria-label': 'Move to other side' });
+  btn.appendChild(svgIcon('icon-swap-horiz'));
+  return btn;
+}
+
 function buildDrawer(gnavOffset, pageId) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
+  const alignToggleBtn = buildAlignToggle();
+
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [alignToggleBtn, closeBtn]);
+  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, actionsEl]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
   const children = [headerEl, bodyEl];
@@ -522,6 +537,11 @@ function setEventListeners() {
   const drawerEl = document.querySelector('#mep-drawer');
 
   drawerEl.addEventListener('click', (event) => {
+    if (event.target.closest('.mep-align-toggle')) {
+      const alignLeft = document.body.classList.toggle(ALIGN_STORAGE_KEY);
+      localStorage.setItem(ALIGN_STORAGE_KEY, String(alignLeft));
+      return;
+    }
     const tab = event.target.closest('.mep-tab');
     if (tab) {
       const tabIndex = tab.getAttribute('data-tab');
@@ -621,6 +641,7 @@ async function buildOverlay() {
 }
 
 export default async function init() {
+  applyStoredAlignment();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
