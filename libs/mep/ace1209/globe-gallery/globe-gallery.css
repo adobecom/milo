@@ -44,8 +44,8 @@
   box-sizing: border-box;
   padding: 16px;
   background: var(--s2a-color-transparent-black-32);
-  -webkit-backdrop-filter: blur(var(--s2a-blur-64));
-  backdrop-filter: blur(var(--s2a-blur-64));
+  -webkit-backdrop-filter: blur(var(--s2a-blur-lg));
+  backdrop-filter: blur(var(--s2a-blur-lg));
   border-radius: var(--s2a-border-radius-md);
   pointer-events: none;
   opacity: 0;
@@ -192,7 +192,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-modal-nav {
   width: 44px;
   height: 44px;
-  border-radius: var(--s2a-border-radius-4);
+  border-radius: var(--s2a-border-radius-xs);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(12px);
@@ -219,7 +219,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   position: absolute;
   width: 38px;
   height: 38px;
-  border-radius: var(--s2a-border-radius-4);
+  border-radius: var(--s2a-border-radius-xs);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(12px);
@@ -284,7 +284,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: 20px;
-  line-height: var(--s2a-font-line-height-24);
+  line-height: var(--s2a-font-line-height-md);
   letter-spacing: -0.6px;
   color: var(--s2a-color-gray-25);
   margin: 2px 0 8px;
@@ -293,7 +293,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-modal-description {
   font-family: var(--body-font-family);
   font-size: 13px;
-  line-height: var(--s2a-font-line-height-18);
+  line-height: var(--s2a-font-line-height-xs);
   color: var(--s2a-color-gray-400);
   margin: 0 0 12px;
   max-width: 375px;
@@ -536,7 +536,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   .globe-gallery-modal-counter {
     width: 138px;
     box-sizing: border-box;
-    border-radius: var(--s2a-border-radius-4);
+    border-radius: var(--s2a-border-radius-xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
     -webkit-backdrop-filter: blur(12px);
@@ -595,7 +595,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
     display: flex;
     align-items: center;
     padding: 4px 10px;
-    border-radius: var(--s2a-border-radius-4);
+    border-radius: var(--s2a-border-radius-xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
     -webkit-backdrop-filter: blur(12px);
