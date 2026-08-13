@@ -275,14 +275,14 @@ const buildMarkup = (gid, labels) => `
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="globe-gallery-modal-image globe-gallery-sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" aria-label="${escapeHtml(labels.prevCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" aria-label="${escapeHtml(labels.nextCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
-    <button class="globe-gallery-modal-close" type="button" aria-label="${escapeHtml(labels.closeBtn)}">
+    <button class="globe-gallery-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
     <span class="globe-gallery-modal-position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>

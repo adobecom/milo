@@ -739,6 +739,125 @@ profiles: sm is the unscoped `.globe` base, then `@media (min-width:768px)` (md)
 layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted panels) base,
 `min-width:768px` overrides to the desktop card.
 
+## Analytics
+
+The block answers one question: **what fraction of card opens lead to a clickthrough to a
+product page.** Nothing is tracked per-card — with ~50 cards that is cardinality nobody asked
+for. Card identity appears nowhere.
+
+### Why this needs any custom code
+
+Milo's `decorateDefaultLinkAnalytics` (`libs/martech/attributes.js`) runs **once**, from
+`documentPostSectionLoading`, and only ever touches `<a>` and `<button>`. That leaves this
+block with four holes:
+
+1. A card is WebGL pixels raycast in `interaction.js` — there is no DOM node to decorate.
+2. Auto-generated labels are `${label}-${linkCount}--${header}`, where `linkCount` is the
+   ordinal among *all* links/buttons in the block. The ~50 `.globe-gallery-a11y-card` buttons
+   precede the modal controls, so prev used to read `previous card-52--`. That ordinal is also
+   **race-dependent** (the a11y buttons only exist after the async fragment fetch) and is
+   **never re-applied** after a breakpoint rebuild destroys and recreates them.
+3. Badge CTAs are minted per card inside `populateModal`, always after the decoration pass.
+4. Escape and the mobile gestures produce no DOM click at all.
+
+### The approach
+
+**Everything is a `daa-ll` on a real element. There is no custom analytics code in this block.**
+
+Every interaction that lacks a DOM click of its own — a canvas card tap, a swipe, a pull-down,
+Escape — is routed through the real control that already means that action, via `.click()`.
+DAA reads `daa-ll` off the clicked node and does not check `isTrusted`, so a synthetic click
+reports exactly like a user's. Same idiom as Milo's own modal (`libs/blocks/modal/modal.js`,
+Escape → `close.click()`).
+
+For a card tap, that control is the card's own `.globe-gallery-a11y-card` button — the one real
+element that already means "open card i". It is `pointer-events: none` and 0×0, but `.click()`
+dispatches programmatically and ignores hit-testing entirely. `a11y.trackCardOpen(idx)` is the
+explicit entry point, so this dependency shows up in the module's contract rather than being an
+implicit reach into the DOM.
+
+Every `daa-ll` is set explicitly — in `buildMarkup`, at card-button creation, or at badge mint
+time — so none of it depends on when decoration runs. `attributes.js` preserves an existing
+`daa-ll`, re-running each `-`-separated segment through `processTrackingLabels` for localization
+only, which round-trips these values unchanged. **That removes the race in hole 2 rather than
+working around it.**
+
+| Interaction | Mechanism | Label |
+| --- | --- | --- |
+| Card open (canvas tap) | `a11y.trackCardOpen` clicks the card's button | `card_open--globe_gallery` |
+| Card open (keyboard) | real click on that same button | `card_open--globe_gallery` |
+| Enter keyboard gallery (BROWSE) | `daa-ll` on the entry widget | `enter_gallery_kbd--globe_gallery` |
+| Badge CTA | `daa-ll`, minted in `populateModal` | `Photoshop--globe_card_modal` |
+| Prev (button or swipe) | `daa-ll` in `buildMarkup` | `prev_card-1--globe_card_modal` |
+| Next (button or swipe) | `daa-ll` in `buildMarkup` | `next_card-2--globe_card_modal` |
+| Close (button, Escape, pull-down) | `daa-ll` in `buildMarkup` | `close-3--globe_card_modal` |
+
+Pointer and keyboard opens converge on the *same element and label*, so parity is structural
+rather than something to remember.
+
+Full DAA chain for a CTA, via the block's inherited `daa-lh`:
+`Photoshop|globe_card_modal|b2|globe-gallery|s3`. `showModal()` moves the dialog to the top
+layer but does not change DOM ancestry, so that chain survives.
+
+**The ratio:** `sum(globe_card_modal CTA clicks) / sum(card_open)`. It is session-level, not
+strictly per-card — a user may browse several cards before clicking through. Cards-viewed
+(opens + navs) is derivable if a deeper denominator is ever wanted. Because both sides now go
+through DAA, they share one consent path; there is no gate on one and not the other.
+
+### Details worth not re-deriving
+
+- **Badge labels carry no index.** Derived from badge row position it would differ per card
+  (Photoshop `-1` on one card, `-3` on another), splitting the one aggregate that matters. One
+  product = one label. Milo's gnav ships numberless labels too (`daa-ll="Brand"`).
+  `processTrackingLabels` also strips `-`, so a product name like `Photoshop-Web` becomes
+  `Photoshop Web` and cannot corrupt the level split.
+- **20 characters per segment.** `decorateDefaultLinkAnalytics` re-runs every `-`-separated
+  segment of an existing `daa-ll` through `processTrackingLabels(part, config, 20)`, which
+  hard-slices at 20 — silently. `enter_gallery_keyboard` became `enter_gallery_keyboa`, hence
+  the `_kbd` abbreviation. Check any new label the same way: split on `-`, and no piece may
+  exceed 20 characters. Product names are already sliced to 20 at mint time.
+- **Every card button carries the *same* explicit `daa-ll`** (`CARD_OPEN_DAA_LL` in `a11y.js`).
+  Left to auto-decoration they would each derive a label from `aria-label` — the card's alt
+  text — producing ~50 per-card labels, exactly the cardinality this design rejects. Explicit
+  also means the label cannot drift with the button's ordinal.
+- **`event.isTrusted` separates acting from reporting.** A synthetic click carries
+  `isTrusted: false`; genuine user activation is always `true`, including keyboard Enter/Space
+  and screen-reader activation (AT goes through the platform accessibility API, which browsers
+  surface as a trusted click). So `onCardClick` bails on untrusted events: `trackCardOpen`'s
+  click is report-only, and without that bail it would reopen the modal at viewport centre,
+  discarding the tap coordinates the raycast passes. The marker rides on the event, so unlike a
+  module-scope flag it cannot latch, leak, or need a `finally`.
+  **Test gotcha:** an E2E test driving the block with `page.evaluate(el => el.click())` produces
+  an untrusted click and will appear to do nothing. Use the real click API (Playwright's
+  `locator.click()` dispatches trusted input).
+- **Only the canvas path calls `trackCardOpen`** (`openModalFromCanvas` in `globe-gallery.js`,
+  kept separate from `openModalAndDismissHint` for exactly this reason). A keyboard open is
+  already a real click on that button, so reporting there too would double-count it.
+- **`enter_gallery` is the one engagement signal here.** The entry widget is a real button, so
+  it costs a single label and roughly one event per keyboard session. It answers a question
+  nothing else does: whether the two-level a11y gallery is ever entered at all. Note the widget
+  is only *clicked* to enter BROWSE; merely focusing it (which scrolls the page to the
+  interactive globe via `snapToInteractive`) is a focus event and is not reported.
+- **Caveat inherent to `daa-ll` on any button:** a real click reports even when the handler
+  then declines to act — `enterBrowse()` bails if the sphere isn't formed, and `onCardClick`
+  bails if `isInteractive()` is false. Expect a small over-count on both.
+- **`close(e.isTrusted)`** (`modal.js`) is the same idea. `close(viaPointer)` ignores a close
+  within 200ms of open, to swallow the *browser's* synthetic click after a touch pointerup —
+  which is trusted, so the guard still applies to it. Escape and pull-to-close route through
+  `clickClose()`, are untrusted, and so are exempt; without that, Escape within 200ms of open
+  would be silently ignored. `viaPointer` and `isTrusted` turn out to be the same predicate,
+  so it is derived from the event rather than stashed.
+- **Do not add `daa-lh` anywhere in the block.** `attributes.md` forbids it, and a `daa-lh` on
+  the block element makes `decorateSectionAnalytics` skip link decoration for the whole block.
+- **Not tracked, deliberately:** globe drag/hover/auto-rotation, scroll milestones, card
+  impressions, and close *method* (button vs Escape vs swipe all collapse to one label). The
+  first two are the highest-volume signals here. Note these are the one class of signal the
+  all-`daa-ll` design cannot express: nothing is clicked, and there is no element that means
+  "the user reached the formed globe". Adding one would mean reintroducing `sendAnalytics`
+  (`libs/martech/helpers.js`) at the `SPHERE_INTERACTIVE_T` gate behind a once-only flag — and
+  with it a second reporting path, which gates on consent separately from DAA. Worth weighing
+  against the consolidation before adding the first one.
+
 ## Behavior notes (intentional differences from the prototype)
 
 - **"Click & Drag" hint text (WebGL).** A `PlaneGeometry` in `sphereGroup` behind the sphere's back

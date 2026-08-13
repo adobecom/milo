@@ -2,6 +2,10 @@ import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic } from './math.js';
 import { escapeHtml } from './authoring.js';
+/* eslint-disable import/no-relative-packages */
+import { processTrackingLabels } from '../../../../martech/attributes.js';
+import { getConfig } from '../../../../utils/utils.js';
+/* eslint-enable import/no-relative-packages */
 
 const perfNow = () => performance?.now() ?? Date.now();
 
@@ -97,6 +101,11 @@ export default function createGlobeModal({
   let closeTimeoutId = null;
   // click/touch listeners wired once — DOM persists across re-inits so re-adding would stack.
   let listenersWired = false;
+  // Held so Escape + the touch gestures can click them rather than call navigate()/close().
+  // See README (Analytics).
+  let prevBtn = null;
+  let nextBtn = null;
+  let closeBtn = null;
 
   let modalWarp = 0;
   const modalWarpCenter = new THREE.Vector2(0.5, 0.5);
@@ -530,8 +539,10 @@ export default function createGlobeModal({
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal-badge';
+      // Labelled by product, not by card, and unindexed. See README (Analytics).
+      const daall = `${processTrackingLabels(b.name, getConfig(), 20)}--globe_card_modal`;
       const nameHtml = b.href
-        ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}">${escapeHtml(b.name)}</a>`
+        ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
         : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
       // The logo is authored per row; rows without one just render the name (no empty chip).
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
@@ -753,6 +764,11 @@ export default function createGlobeModal({
     if (canvas) canvas.classList.remove('is-modal-active');
   }
 
+  // Close via the button so Escape / pull-to-close report it. See README (Analytics).
+  function clickClose() {
+    if (closeBtn) closeBtn.click(); else close();
+  }
+
   function navigate(direction) {
     if (modalIdx < 0 || !modalCard) return;
     // Don't navigate while closing, or startDesktopNavTransition would flip CLOSING→OPEN and orphan
@@ -959,9 +975,12 @@ export default function createGlobeModal({
     const alreadyWired = listenersWired;
     listenersWired = true;
     if (!alreadyWired) {
-      evtRoot.querySelector('.globe-gallery-modal-close').addEventListener('click', () => close(true));
-      const prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
-      const nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
+      closeBtn = evtRoot.querySelector('.globe-gallery-modal-close');
+      // isTrusted is exactly viaPointer: the guard exists to swallow the browser's synthetic
+      // click after a touch pointerup (trusted); ours from clickClose() are not.
+      closeBtn.addEventListener('click', (e) => close(e.isTrusted));
+      prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
+      nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
       prevBtn.addEventListener('click', () => { navigate(-1); });
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
@@ -970,7 +989,7 @@ export default function createGlobeModal({
       if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
       if (chromeEl) {
-        chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+        chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); clickClose(); });
       }
     }
 
@@ -1069,20 +1088,23 @@ export default function createGlobeModal({
       if (swAxis === 'x') {
         const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
-        // swipe left → next (+1), swipe right → prev (−1). Commit fires the same cross-warp
-        // transition as the nav buttons; a non-commit release lets the preview warp decay
-        // back to 0 in updateAnimation. No canvas slide to reset either way.
+        // swipe left → next (+1), swipe right → prev (−1). Commit clicks the matching nav
+        // button — same handler, plus it reports (see README, Analytics); a non-commit release
+        // lets the preview warp decay back to 0 in updateAnimation. No canvas slide either way.
         if (commit) {
           // Clear the preview warp so it doesn't bleed onto the new card once the transition
           // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
           modalWarp = 0;
-          navigate((dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1));
+          const dir = (dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1);
+          const btn = dir < 0 ? prevBtn : nextBtn;
+          // hidden on a single-card gallery — clicking would report a no-op nav.
+          if (btn?.hidden === false) btn.click(); else navigate(dir);
         }
       } else {
         const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
                       || swVelY > COMMIT_VEL_Y;
         if (pullCommit) {
-          // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close() —
+          // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close —
           // so the fly-back starts from where the user dragged, not center. No snap.
           if (modalCard) {
             const { H: vpH } = getViewport();
@@ -1094,7 +1116,7 @@ export default function createGlobeModal({
           }
           modalCanvasEl.style.transition = 'none';
           modalCanvasEl.style.transform = '';
-          close();
+          clickClose();
         } else {
           // Rubber-band back.
           modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';

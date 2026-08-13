@@ -926,6 +926,12 @@ function createGlobeGalleryRuntime(
     modal.open(idx, x, y);
   };
 
+  // Canvas taps only — the keyboard path reports itself. See README (Analytics).
+  const openModalFromCanvas = (idx, x, y) => {
+    openModalAndDismissHint(idx, x, y);
+    if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
+  };
+
   a11y = createGalleryA11y({
     q,
     getCount: () => bp.N_TOTAL,
@@ -966,7 +972,7 @@ function createGlobeGalleryRuntime(
     getCamera: () => camera,
     getCards: () => cards,
     getModalIdx: () => modal.getModalIdx(),
-    openModal: (idx, x, y) => openModalAndDismissHint(idx, x, y),
+    openModal: (idx, x, y) => openModalFromCanvas(idx, x, y),
     getSphereFormT: () => frameState.sphereFormT,
     interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
     maxVel: MAX_VEL,
