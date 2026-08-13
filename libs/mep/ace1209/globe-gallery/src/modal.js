@@ -405,17 +405,19 @@ export default function createGlobeModal({
     const isMobile = (getBP() === 'sm');
     const rtl = isRtl();
 
-    // Close button → top inline-end corner of the viewport (24px inset) at every breakpoint.
+    // Uniform chrome inset from the viewport edges; matches the .globe-gallery-modal-info padding.
+    const EDGE = isMobile ? 16 : 24;
+
+    // Close button → top inline-end corner of the viewport, at the same inset as everything else.
     if (closeEl) {
       closeEl.style.position = 'absolute';
-      closeEl.style.top = '24px';
-      closeEl.style.insetInlineEnd = '24px';
+      closeEl.style.top = `${EDGE}px`;
+      closeEl.style.insetInlineEnd = `${EDGE}px`;
     }
 
     // Nav arrows + counter positioned individually (no wrapper) so :hover scale survives the fade.
     // Mobile → arrows bottom corners, counter bottom-center. Desktop → one row at the image bottom.
     const NAV_SIZE = 44; // matches the .globe-gallery-modal-nav width/height in CSS
-    const EDGE = 24;
     const counterBase = 'translateX(-50%)';
     if (prevEl) prevEl.style.position = 'absolute';
     if (nextEl) nextEl.style.position = 'absolute';

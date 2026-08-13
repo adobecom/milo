@@ -234,12 +234,13 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 .globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
 
-/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the nav row. */
+/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the nav row.
+   sm bottom = EDGE 16 + nav 44 + 16 clearance; the arrows sit under the badges at this breakpoint. */
 .globe-gallery-modal-info {
   position: absolute;
   max-height: 60dvh;
   margin: 0;
-  padding: 24px 24px 84px;
+  padding: 16px 16px 76px;
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
   border-radius: var(--s2a-border-radius-md);
   background: var(--s2a-color-transparent-black-64);
@@ -523,7 +524,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
     height: auto;
     max-height: none;
     border-radius: 0;
-    padding: 40px 32px;
+    padding: 24px;
   }
 
   .globe-gallery-modal-role-label { margin-top: 0; }
