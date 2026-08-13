@@ -641,7 +641,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — floating-input bar remains attached', async () => {
@@ -656,7 +656,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal — floating-input bar remains attached', async () => {
@@ -746,7 +746,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — floating-input dark bar remains attached', async () => {
@@ -761,7 +761,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal — floating-input dark bar remains attached', async () => {
@@ -853,7 +853,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — bar remains attached', async () => {
@@ -868,7 +868,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.inputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal via Escape — bar remains attached', async () => {
@@ -965,7 +965,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — bar remains attached', async () => {
@@ -982,7 +982,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal via Escape — bar remains attached', async () => {
