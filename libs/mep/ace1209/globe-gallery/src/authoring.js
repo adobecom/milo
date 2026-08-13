@@ -54,16 +54,19 @@ function buildLabels(labelPara) {
   };
 }
 
+// Move the authored <p>s into a container. See README (Reusing authored paragraphs).
+export function renderParagraphs(container, paras) {
+  if (container) container.replaceChildren(...paras);
+}
+
 function parseArcCopy(row) {
-  if (!row) return { title: '', body: '' };
+  if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('picture,img'))
-    .map((p) => p.textContent)
-    .filter(Boolean);
+    .filter((p) => !p.querySelector('picture,img') && p.textContent.trim());
   return {
-    title: heading ? heading.textContent : paras.shift() || '',
-    body: paras.join(' '),
+    title: heading ? heading.textContent : paras.shift()?.textContent.trim() || '',
+    body: paras,
   };
 }
 
@@ -77,38 +80,40 @@ function parsePullQuote(row) {
   };
 }
 
+// The <em>/<strong> text, but only when it IS the whole paragraph. See README (Card shape).
+function wholeParaChild(p, selector) {
+  const child = p.querySelector(selector);
+  const text = child?.textContent.trim();
+  return text && text === p.textContent.trim() ? text : '';
+}
+
 function parseFragmentCardSegment(nodes) {
   let img = null;
-  let role = ''; let name = ''; let description = '';
+  let role = ''; let name = '';
+  const description = [];
   const badges = [];
 
   nodes.forEach((node) => {
     const tag = node.nodeName && node.nodeName.toUpperCase();
     if (!tag) return;
 
-    if (tag === 'P') {
-      const pic = node.querySelector('picture');
-      if (pic) {
-        img = pic.querySelector('img');
-        return;
-      }
-      const inlineImg = node.querySelector('img');
+    if (/^H[1-6]$/.test(tag)) {
+      if (!name) name = node.textContent.trim();
+    } else if (tag === 'P') {
+      const inlineImg = node.querySelector('img'); // <picture> or bare <img>; first wins
       if (inlineImg) {
-        img = inlineImg;
+        if (!img) img = inlineImg;
         return;
       }
-      const em = node.querySelector('em');
-      if (em) {
-        role = em.textContent.trim();
-        return;
+      if (!role) {
+        const em = wholeParaChild(node, 'em');
+        if (em) { role = em; return; }
       }
-      const strong = node.querySelector('strong');
-      if (strong) {
-        name = strong.textContent.trim();
-        return;
+      if (!name) {
+        const strong = wholeParaChild(node, 'strong');
+        if (strong) { name = strong; return; }
       }
-      const text = node.textContent.trim();
-      if (text && !description) description = text;
+      if (node.textContent.trim()) description.push(node); // everything else is description
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
         // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
@@ -124,10 +129,10 @@ function parseFragmentCardSegment(nodes) {
         );
         svgAnchor?.remove(); // its URL text is markup, never part of the name
 
-        const name = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
-        if (name) {
+        const badgeName = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
+        if (badgeName) {
           badges.push({
-            name,
+            name: badgeName,
             role: featureLi?.textContent.trim() || '',
             href: linkAnchor?.getAttribute('href') || null,
             icon,
@@ -246,7 +251,7 @@ const buildMarkup = (gid, labels) => `
 
   <div class="globe-gallery-arc-copy">
     <h2 class="globe-gallery-arc-copy-title"></h2>
-    <p class="globe-gallery-arc-copy-body body-md"></p>
+    <div class="globe-gallery-arc-copy-body body-md"></div>
   </div>
 
   <div class="globe-gallery-pullquote-pin">
@@ -269,7 +274,7 @@ const buildMarkup = (gid, labels) => `
     <div class="globe-gallery-modal-info">
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <p class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></p>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
@@ -298,7 +303,7 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
-  el.querySelector('.globe-gallery-arc-copy-body').textContent = arcCopy.body;
+  renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
   if (pullQuote) {
     el.querySelector('.globe-gallery-pullquote-quote').textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;

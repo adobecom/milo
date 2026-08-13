@@ -1,7 +1,7 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic } from './math.js';
-import { escapeHtml } from './authoring.js';
+import { escapeHtml, renderParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -525,7 +525,7 @@ export default function createGlobeModal({
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-    targetEl.querySelector('.globe-gallery-modal-description').textContent = meta.description;
+    renderParagraphs(targetEl.querySelector('.globe-gallery-modal-description'), meta.description);
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));

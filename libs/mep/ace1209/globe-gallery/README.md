@@ -116,7 +116,7 @@ are optional):
 
 | Row | Purpose | Content |
 | --- | --- | --- |
-| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; `<p>` → `.globe-gallery-arc-copy-body` |
+| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; remaining `<p>`s → `.globe-gallery-arc-copy-body` (each authored paragraph is reused as-is, inline markup included) |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
 | 2 | **Hint + instructions + labels** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (English fallback); optional third `<p>` → the four UI labels, `\|\|`-separated in on-screen order **prev-arrow \|\| card-position template \|\| next-arrow \|\| close** (each part falls back to English) |
 | 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
@@ -166,17 +166,18 @@ Regression-test with the `WEBGL_lose_context` extension: `const x = document.que
 ### Card shape
 
 `{ img, alt, picture, name, role, description, badges:[{name, role, href, icon}] }`
-(`href` = optional product link on the badge name; `icon` = optional decorated `<picture>` markup for the authored logo SVG, else null)
+(`href` = optional product link on the badge name; `icon` = optional decorated `<picture>` markup for the authored logo SVG, else null;
+`description` = an **array of authored `<p>` elements**, not a string — see *Reusing authored paragraphs* below)
 
 Each fragment section is flat P/UL elements:
 
 | Element | Becomes | Notes |
 | --- | --- | --- |
-| `<p><em>…</em></p>` | **role** | empty if unauthored (no hardcoded default) |
-| `<p><strong>…</strong></p>` | **name** | empty if unauthored (no hardcoded default) |
-| plain `<p>` | **description** | shown in the modal |
+| `<p><em>…</em></p>` | **role** | only when the `<em>` is the *whole* paragraph; first one wins; empty if unauthored (no hardcoded default) |
+| `<p><strong>…</strong></p>` or `<h1>`–`<h6>` | **name** | `<strong>` must be the *whole* paragraph; first one wins; empty if unauthored (no hardcoded default) |
+| every other non-empty `<p>` | **description** | any number of paragraphs, in authored order, shown in the modal — inline `<a>`/`<strong>`/`<em>` are preserved (a sentence with emphasis or a link stays description; it is not mistaken for the name/role) |
 | `<ul>`, one `<li>` per badge | **badges** | see below — nested `<ul><li>` = the product feature |
-| `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
+| `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; a bare inline `<img>` works too; the **first** image wins, later ones are ignored; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
 
 **Badge rows.** A badge `<li>` splits into exactly two parts: the **nested `<ul>`** is the
 product feature, and **everything else in the row** is the product — an optional logo plus the
@@ -206,6 +207,23 @@ from its own text and renders as plain text; a row with no feature renders with 
 > matched with plain `querySelector` without walking into the feature list and without mutating
 > authored DOM. The earlier direct-children-only read silently dropped every `<p>`-wrapped badge
 > (empty name → no row pushed), which looked like a modal layout bug rather than a parse miss.
+
+### Reusing authored paragraphs
+
+Both the card **description** and the arc-copy **body** hold the authored `<p>` elements
+themselves, not extracted strings, and `renderParagraphs(container, paras)` moves them on screen
+with `replaceChildren`. Reusing the authored node is what keeps inline `<a>`/`<strong>`/`<em>`
+alive — a `textContent` read flattens them, and re-serializing to an HTML string means escaping
+and re-parsing markup we already have as DOM. This is also why both containers are `<div>`s in
+`buildMarkup`: paragraphs can't nest inside a `<p>`.
+
+**Nothing is cloned, because a paragraph is never in two places.** `buildGlobeDom` and
+`fetchFragmentCards` each run once per block instance, so two globes on a page parse their own
+nodes and share nothing; within one globe, only one modal exists and only one card is shown at a
+time. Re-rendering the same card is safe: `replaceChildren` moves nodes that a previous render
+already detached (the parse holds the reference, so they survive detached), and re-rendering the
+*same* nodes into the *same* container is a no-op. Cloning would only be needed if some future
+feature rendered one card's paragraphs into two live containers at once.
 
 **Card count.** `N_TOTAL` follows the authored count, capped per breakpoint by `N_MAX`:
 

@@ -311,6 +311,25 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
 }
 
+.globe-gallery-arc-copy-body p,
+.globe-gallery-modal-description p {
+  margin: 0;
+}
+
+.globe-gallery-arc-copy-body p + p,
+.globe-gallery-modal-description p + p {
+  margin-top: 8px;
+}
+
+.globe-gallery-modal-description a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.globe-gallery-modal-description a:hover {
+  color: var(--s2a-color-gray-25);
+}
+
 .globe-gallery-modal-badge {
   display: flex;
   align-items: center;
