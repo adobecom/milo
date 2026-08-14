@@ -193,7 +193,7 @@ function initTabs(elm, config, rootElem) {
       : ['ArrowRight', 'ArrowLeft'];
     tabList.addEventListener('keydown', (e) => {
       if (!keys.includes(e.key)) return;
-      const forward = e.key === 'ArrowDown' || e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      const forward = e.key === 'ArrowDown' || e.key === 'ArrowRight';
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');
