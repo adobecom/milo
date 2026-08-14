@@ -11,7 +11,10 @@ const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
-const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
+// 768px is this block's own breakpoint: hub-hero.css switches on `(width < 768px)` /
+// `(width >= 768px)`. `(min-width: 768px)` therefore matched DESKTOP, so a predicate named
+// `isMobile` was true on desktop and false on mobile.
+const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -215,10 +218,12 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: 'link',
-    ...(isMobile() && {
-      'aria-roledescription': 'slide',
-      'aria-label': ariaLabel,
-    }),
+    // Unconditional, not viewport-gated. `buildSlide` runs once at init, so any
+    // viewport-dependent ARIA here is sampled once and goes stale on the first
+    // resize/rotate; and the block presents itself as a carousel at every width — its
+    // sibling `aria-describedby` below was already unconditional.
+    'aria-roledescription': 'slide',
+    'aria-label': ariaLabel,
     'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
