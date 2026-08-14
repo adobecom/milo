@@ -29,6 +29,33 @@ const playVideo = (video) => {
   });
 };
 
+// ── The carousel owns its own videos ────────────────────────────────────────
+//
+// `decorateAnchorVideo` registers every `#viewportplay` video with Milo's SHARED observer
+// (`applyInViewPortPlay`, libs/utils/decorate.js:468), which plays above
+// `intersectionRatio > 0.8` and pauses at `<= 0.8`. That is a sound default for a video
+// sitting still in a page, but this block RESIZES its slides on hover
+// (`.hub-hero-carousel-item.hovered { width: 150% }`, hub-hero.css:922), which shrinks every
+// sibling — and resizing an observed element changes its intersectionRatio. So hovering ANY
+// card drove the video in a card the pointer never touched. MEASURED on the real page:
+//
+//   hover the NEIGHBOURING card  -> decorate.js:459 play()   the video starts
+//   hover the video's OWN card   -> decorate.js:457 pause()  the video stops
+//
+// which is exactly backwards, and it is why hovering across the cards behaved differently
+// from hovering the video and then leaving the whole set.
+//
+// Release the video from that shared observer so `setVideoState` is the only thing that
+// starts or stops it. The viewport axis is not lost: `handleMobileAutoplay` covers it on
+// mobile, which is where `#viewportplay` autoplay is wanted. The SEPARATE per-video observer
+// that lazily attaches the `<source>` (decorate.js:583) is deliberately left alone — that one
+// is load-bearing, and unobserving it would put the block straight back to a video with
+// nothing to play.
+const releaseSharedViewportPlay = (video) => {
+  if (!video) return;
+  window.videoIntersectionObs?.unobserve(video);
+};
+
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
   rewindIntervals.delete(video);
@@ -240,6 +267,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   // is undefined and this block never used to run at all.
   const video = asset?.matches?.('video') ? asset : asset?.querySelector?.('video');
   if (video?.dataset.videoSource) {
+    releaseSharedViewportPlay(video);
     video.setAttribute('preload', 'none');
     if (!video.querySelector('source')) {
       video.appendChild(createTag('source', { src: video.dataset.videoSource, type: 'video/mp4' }));
