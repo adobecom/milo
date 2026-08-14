@@ -65,9 +65,9 @@ export function createSusiComponentForModal({
 
 async function openSusiLightModal() {
   window.history.replaceState(
-    null,
+    {},
     document.title,
-    window.location.pathname,
+    `${window.location.pathname}${window.location.search}`,
   );
   const config = getConfig();
   const { env, locale, imsClientId } = config || {};
