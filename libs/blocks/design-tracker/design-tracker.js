@@ -3,7 +3,7 @@
 // why. window.DESIGN_TRACKER_DATA_URL is an override hook for local testing
 // only; real usage always reads from DA.
 const DATA_URL = window.DESIGN_TRACKER_DATA_URL
-  || 'https://content.da.live/adobecom/milo/drafts/dusan/design-tracker/entries.json';
+  || 'https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/entries.json';
 
 function entryDate(entry) {
   return entry.figmaLastModified || entry.addedDate || null;
