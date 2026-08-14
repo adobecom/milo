@@ -1,0 +1,747 @@
+/* Scoped to the block itself, not `body` — this is a real page's block now,
+   not the standalone tool's whole document, and must not clobber the site's
+   own body styles. Same reasoning for `header`/`h1`/`label` below: scoped
+   under .design-tracker so this doesn't affect the site's own gnav header. */
+.design-tracker {
+  font-family: adobe-clean, 'Source Sans Pro', -apple-system, sans-serif;
+  padding: 0 24px 48px;
+  background: #f5f5f5;
+  color: #2c2c2c;
+}
+
+.design-tracker header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.header-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.design-tracker header h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 13px;
+  color: #6e6e6e;
+  margin: 4px 0 0;
+  max-width: 640px;
+}
+
+.design-tracker header label {
+  font-size: 14px;
+  padding-top: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-timeline {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.skip-timeline:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  clip: auto;
+  white-space: normal;
+  padding: 2px 8px;
+  background: #1473e6;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.design-tracker-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ticket-group {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.ticket-group h2 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+
+.ticket-group h2 a {
+  color: #1473e6;
+  text-decoration: none;
+}
+
+.ticket-meta {
+  font-size: 13px;
+  color: #6e6e6e;
+  margin-bottom: 12px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e8f0fe;
+  color: #0b57b0; /* #1473e6 on this bg is 3.96:1, fails WCAG AA (4.5:1) — darkened */
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.designs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.design-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.design-card {
+  width: 200px;
+  flex-shrink: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Below ~800px the fixed 200px card was permanently eating a big share of
+   the already-narrow chart area — stack card above chart instead. */
+@media (max-width: 800px) {
+  .design-row {
+    flex-direction: column;
+  }
+
+  .design-card {
+    width: 100%;
+  }
+
+  .design-card img {
+    height: 90px;
+  }
+}
+
+.design-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: #f0f0f0;
+  display: block;
+}
+
+.design-card-body {
+  padding: 8px 10px;
+}
+
+.design-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.design-card-date {
+  font-size: 12px;
+  color: #6e6e6e;
+}
+
+.roadmap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.roadmap-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6e6e6e;
+  margin-bottom: 6px;
+}
+
+.roadmap-track-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.roadmap-track {
+  min-width: 0;
+  min-height: 100px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Edge bars/labels are centered on their 0%/100% position via a negative
+     margin, which pushes them outside the scrollable content's own box —
+     this padding gives them room so they aren't clipped by the scrollport. */
+  padding: 0 8px;
+}
+
+/* Right-edge fade + hint, shown only while there's more timeline to scroll
+   to (toggled via .roadmap-track-scrollable in JS) — overflow-x:auto gives
+   no visual cue on its own that older history is scrolled off-screen. */
+.roadmap-track-wrap::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 17px; /* stop above the day-labels row so dates stay legible */
+  width: 28px;
+  background: linear-gradient(to right, rgba(250, 250, 250, 0), rgba(250, 250, 250, 0.9));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.roadmap-track-wrap.roadmap-track-scrollable::after {
+  opacity: 1;
+}
+
+.roadmap-track:focus-visible,
+.roadmap-summary:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: -2px;
+}
+
+.roadmap-track-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.roadmap-bars {
+  position: relative;
+  height: 100px;
+}
+
+.roadmap-day-labels {
+  position: relative;
+  height: 16px;
+}
+
+.roadmap-day-label {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #6e6e6e;
+  white-space: nowrap;
+}
+
+.roadmap-day-label-first {
+  transform: translateX(0);
+}
+
+.roadmap-day-label-last {
+  transform: translateX(-100%);
+}
+
+.roadmap-bar {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  margin-left: -8px;
+  background: #1473e6;
+  border: none;
+  border-radius: 3px 3px 0 0;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+}
+
+.roadmap-bar-empty {
+  width: 4px;
+  margin-left: -2px;
+  background: #e0e0e0;
+  cursor: default;
+}
+
+.roadmap-bar-empty:hover {
+  opacity: 0.85;
+}
+
+/* Visible bars can be as thin as 16x4px (roadmap-bar-zero below), well
+   under the 24x24px WCAG 2.5.8 target-size minimum — this invisible
+   pseudo-element pads the clickable/tappable area without changing what's
+   painted. Horizontal padding is capped at 2px/side (not enough alone to
+   reach 24px) because day-bars sit only 20px apart (DAY_SLOT_WIDTH in
+   design-tracker.js) — padding enough to hit 24px wide would make
+   neighboring bars' hit areas overlap, so vertical padding (bars don't
+   stack vertically, so no equivalent overlap risk) does the rest. */
+.roadmap-bar::before {
+  content: '';
+  position: absolute;
+  inset: -10px -2px;
+}
+
+.roadmap-bar:hover {
+  opacity: 1;
+  background: #0d66d0;
+}
+
+.roadmap-bar-selected {
+  background: #0d66d0;
+  opacity: 1;
+  outline: 2px solid #0d66d0;
+  outline-offset: 1px;
+}
+
+.roadmap-bar-zero {
+  height: 4px !important;
+  background: #c8c8c8;
+}
+
+.roadmap-bar-zero:hover {
+  background: #a8a8a8;
+}
+
+.roadmap-bar-outside-range {
+  /* Opacity alone (previously 0.25, ~1.25:1 against the track) both fails
+     WCAG 1.4.11 non-text contrast and is a color/shade-only signal — the
+     dashed outline gives a shape-based "excluded" cue that survives low
+     contrast or a color-vision deficiency, and 0.4 brings the fill itself
+     closer to (though not fully at) 3:1. */
+  opacity: 0.4;
+  outline: 1px dashed #9a9a9a;
+  outline-offset: 1px;
+}
+
+.roadmap-bar-outside-range:hover {
+  opacity: 0.6;
+}
+
+.roadmap-summary {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f5f8ff;
+  border: 1px solid #d3e2fc;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.roadmap-summary-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.roadmap-summary-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Half the row's width, not sized off the image's own aspect ratio — a
+   tall/narrow Figma frame would otherwise still render very tall at this
+   width, so height is capped separately (below) with an internal scroll
+   instead of shrinking the width to compensate, which used to make the
+   thumbnail tiny for tall designs. flex-wrap above lets the versions list
+   drop to its own row if the row is too narrow to fit both at once. */
+.roadmap-summary-body .roadmap-screenshot {
+  flex: 1 1 50%;
+  max-width: 50%;
+}
+
+.roadmap-summary-versions {
+  flex: 1;
+  min-width: 240px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.roadmap-summary-version {
+  padding: 8px 0;
+  border-top: 1px solid #d3e2fc;
+}
+
+.roadmap-summary-version:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.roadmap-summary-version-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.roadmap-summary-count {
+  color: #6e6e6e;
+  margin-bottom: 6px;
+}
+
+.roadmap-summary-plain {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.roadmap-summary-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.roadmap-summary-list li {
+  padding: 6px 4px;
+  margin: 0 -4px;
+  border-bottom: 1px solid #e5edfc;
+  border-radius: 4px;
+  transition: background-color 0.1s;
+}
+
+/* Only rows with a matching box on the image get the clickable affordance
+   (see the el.box check in renderVersionSummary) — a row with nothing to
+   jump to shouldn't look interactive. */
+.roadmap-summary-list-item-clickable {
+  cursor: pointer;
+}
+
+.roadmap-summary-list-item-clickable:hover {
+  background-color: #eaf1ff;
+}
+
+/* Briefly applied by jumpToListItem() when a box on the image is clicked —
+   same treatment as :hover, since it's communicating the same thing
+   ("this is the row that box belongs to"), just triggered from the image
+   side instead of the mouse actually sitting over this row. */
+.roadmap-summary-list-item-jumped {
+  background-color: #eaf1ff;
+}
+
+.roadmap-summary-item-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.roadmap-summary-item-link {
+  color: #0b57b0; /* #1473e6 on this bg is 4.27:1, fails WCAG AA (4.5:1) — darkened */
+  text-decoration: underline; /* relying on color alone to read as a link fails 1.4.1 */
+}
+
+.roadmap-screenshot {
+  margin-bottom: 10px;
+  border: 1px solid #d3e2fc;
+  border-radius: 4px;
+  background: #fff;
+  /* Width is a plain 50/50 split with the versions list (see
+     .roadmap-summary-body .roadmap-screenshot) — for a tall/narrow Figma
+     frame that means the image itself can still be quite tall, so height
+     is capped here with a scrollbar (matching .roadmap-summary-versions'
+     own max-height) rather than shrinking the image to compensate, which
+     used to make the thumbnail tiny for tall designs. This must stay a
+     plain scroll, not overflow:hidden — .roadmap-screenshot-inner's own
+     box has to stay the image's full, uncropped size, or the
+     .roadmap-highlight % math below (which assumes that) breaks. */
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.roadmap-screenshot-inner {
+  position: relative; /* positioning context for .roadmap-highlight — sized to
+                          the image only, not to the legend/caption below it */
+  /* cursor lives here (not on .roadmap-screenshot) since the click/keyboard
+     handler is scoped to just this element, not the legend/caption below it */
+  cursor: zoom-in;
+}
+
+.roadmap-screenshot-inner:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: -2px;
+}
+
+.roadmap-screenshot-inner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-modal[hidden] {
+  display: none;
+}
+
+.image-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.image-modal-dialog {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #2c2c2c;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.image-modal-close:hover {
+  background: #e0e0e0;
+}
+
+.image-modal-close:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 2px;
+}
+
+/* Shrink-wraps to the image's own rendered size (an inline-block, not a
+   full-width block like .roadmap-screenshot-inner) — the highlight boxes
+   below are positioned as % of THIS element, so it must match the image's
+   box exactly, same invariant as the inline thumbnail above. */
+.image-modal-inner {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  cursor: zoom-in;
+}
+
+.image-modal-inner:not(.image-modal-inner-fit) {
+  cursor: zoom-out;
+}
+
+.image-modal-inner:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 2px;
+}
+
+/* "Fit" caps the image so the whole dialog fits the viewport on open —
+   for a tall/narrow screenshot this can shrink it below its own native
+   resolution. Clicking toggles to full native size (no cap at all); the
+   dialog's own overflow:auto lets it scroll instead. */
+.image-modal-inner-fit img {
+  display: block;
+  max-width: min(900px, 85vw);
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+}
+
+.image-modal-inner:not(.image-modal-inner-fit) img {
+  display: block;
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+}
+
+/* Without a cap, this text has no intrinsic narrow width to shrink-to-fit
+   to — a long sentence that can't fit on one line just claims the full
+   available (90vw) width instead of wrapping at a sane size, ballooning
+   the dialog far wider than the image it's captioning. */
+.image-modal-body .roadmap-screenshot-caption,
+.image-modal-body .roadmap-legend {
+  max-width: 340px;
+}
+
+body.image-modal-open {
+  overflow: hidden;
+}
+
+.roadmap-highlight {
+  position: absolute;
+  box-sizing: border-box; /* border must be drawn *inside* the %-based width/height,
+                              not added outside it — otherwise this fixed-px border
+                              shifts/enlarges the box by a fixed amount that's
+                              imperceptible when enlarged but very visible when the
+                              screenshot is shrunk (fixed px vs. the box's %-based size) */
+  border: 2px solid #6e6e6e; /* fallback for any changeType not covered below, so it's never invisible */
+  background: rgba(110, 110, 110, 0.15);
+  /* Clickable now (jumps to the matching row in the changes list, see
+     jumpToListItem() in design-tracker.js) — a click landing on empty image
+     area with no box underneath still reaches the enlarge/zoom toggle
+     underneath just fine, since there's nothing here to intercept it. */
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.roadmap-highlight-modified {
+  border-color: #1473e6;
+  background: rgba(20, 115, 230, 0.15);
+}
+
+.roadmap-highlight-added {
+  border-color: #2d9d78;
+  background: rgba(45, 157, 120, 0.15);
+}
+
+.roadmap-highlight-removed {
+  border-color: #d7373f;
+  background: rgba(215, 55, 63, 0.15);
+}
+
+.roadmap-highlight-recreated {
+  border-color: #9256d9;
+  background: rgba(146, 86, 217, 0.15);
+}
+
+/* Clicking a row in the version-summary list (or a box on the image, the
+   other direction) toggles this on the one matching box — every other box
+   keeps its own changeType color and stays exactly as visible, nothing
+   dims. This overrides that color with a solid, distinct yellow instead of
+   just scaling it up in its own color, so the selected box doesn't blend
+   in with same-colored neighbors (e.g. two "modified" boxes next to each
+   other). Declared after the changeType rules above so it wins the
+   cascade — same specificity (one class each), so source order decides. */
+.roadmap-highlight-active {
+  transform: scale(1.6);
+  border-color: #f9a825;
+  background: rgba(249, 168, 37, 0.4);
+  outline: 2px solid #f9a825;
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.roadmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee; /* now sits above the image, not below it */
+  font-size: 10px;
+  color: #4b4b4b;
+}
+
+.roadmap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roadmap-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 2px solid #6e6e6e;
+  background: rgba(110, 110, 110, 0.15);
+  flex-shrink: 0;
+}
+
+.roadmap-legend-swatch-modified {
+  border-color: #1473e6;
+  background: rgba(20, 115, 230, 0.15);
+}
+
+.roadmap-legend-swatch-added {
+  border-color: #2d9d78;
+  background: rgba(45, 157, 120, 0.15);
+}
+
+.roadmap-legend-swatch-removed {
+  border-color: #d7373f;
+  background: rgba(215, 55, 63, 0.15);
+}
+
+.roadmap-legend-swatch-recreated {
+  border-color: #9256d9;
+  background: rgba(146, 86, 217, 0.15);
+}
+
+.roadmap-screenshot-caption {
+  font-size: 10px;
+  color: #6e6e6e;
+  font-style: italic;
+  padding: 4px 6px;
+  border-top: 1px solid #eee;
+}
+
+.roadmap-summary-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 8px;
+  color: #fff;
+  flex-shrink: 0;
+  background: #6e6e6e; /* fallback for any changeType not covered below, so it's never invisible */
+}
+
+.roadmap-summary-badge-modified {
+  background: #1473e6;
+}
+
+.roadmap-summary-badge-added {
+  background: #1e7a5c; /* white text on #2d9d78 was 3.38:1, fails WCAG AA (4.5:1) — darkened */
+}
+
+.roadmap-summary-badge-removed {
+  background: #d7373f;
+}
+
+.roadmap-summary-badge-recreated {
+  background: #9256d9;
+}
+
+.roadmap-summary-details {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-weight: 400;
+  color: #4b4b4b;
+}
+
+.roadmap-summary-details li {
+  padding: 1px 0;
+  border-bottom: none;
+}
+
+.roadmap-summary-note {
+  color: #6e6e6e;
+  margin-top: 4px;
+}
+
+.empty-state {
+  color: #6e6e6e;
+  padding: 40px 0;
+  text-align: center;
+}

@@ -30,6 +30,7 @@ const C1_BLOCKS = [
   'chart',
   'columns',
   'comparison-table',
+  'design-tracker',
   'editorial-card',
   'email-collection',
   'faas',

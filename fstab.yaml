@@ -1,2 +1,8 @@
 mountpoints:
   /: https://adobe.sharepoint.com/:f:/r/sites/adobecom/Shared%20Documents/milo
+  /drafts/dusan:
+    url: https://content.da.live/adobecom/milo/drafts/dusan/
+    type: markup
+  /drafts/dusan:
+    url: https://content.da.live/adobecom/milo/drafts/dusan/
+    type: markup
