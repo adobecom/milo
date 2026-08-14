@@ -579,6 +579,7 @@
     --glass-frame-width: 4px;
     --glass-stroke: 0.6px;
     --glass-fill: rgb(255 255 255 / 5%);
+    box-sizing: border-box;
     border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
     padding: var(--glass-frame-width);
     background: var(--glass-fill);
@@ -591,6 +592,7 @@
     @media (width >= 768px) {
       --glass-frame-width: 6.5px;
       --glass-stroke: 1px;
+      box-sizing: unset;
     }
 
     @media (width >= 1280px) {
