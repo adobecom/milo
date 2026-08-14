@@ -764,8 +764,50 @@ function renderDayScreenshot(dayBucket, entry, summary) {
   return wrap;
 }
 
-function renderSummary(container, dayBucket, entry) {
+// Days whose full per-element detail was too bulky to embed (see
+// embed_page.py's offload_oversized_days) point at a separate small DA
+// document instead — same-origin relative URL, fetched lazily only when a
+// user actually opens that day, not upfront. Cached per (entry, day) so
+// reopening the same day doesn't refetch. Falls back to the already-present
+// changedElementCount-only view (renderVersionSummary's "no specific
+// element names identified" case) if the fetch fails — never blocks the
+// rest of the summary on it.
+const offloadedDayCache = new Map();
+
+async function loadOffloadedDay(entry, day) {
+  const url = entry.offloadedDays?.[day];
+  if (!url) return;
+  const cacheKey = `${entry.figmaFileKey}-${entry.figmaNodeId}-${day}`;
+  if (offloadedDayCache.has(cacheKey)) {
+    await offloadedDayCache.get(cacheKey);
+    return;
+  }
+  const promise = fetch(url)
+    .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+    .then((byVersionId) => {
+      (entry.versionChanges || []).forEach((change) => {
+        if (change.date.slice(0, 10) === day && byVersionId[change.versionId]) {
+          change.changedElements = byVersionId[change.versionId];
+        }
+      });
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load full change detail for', day, err);
+    });
+  offloadedDayCache.set(cacheKey, promise);
+  await promise;
+}
+
+async function renderSummary(container, dayBucket, entry) {
   container.hidden = false;
+  container.textContent = 'Loading…';
+
+  await loadOffloadedDay(entry, dayBucket.day);
+  // dayBucket.changes are the same objects mutated in place by
+  // loadOffloadedDay above (both point at entries in entry.versionChanges),
+  // so no re-lookup needed here — they already reflect the full detail.
+
   container.textContent = '';
 
   const header = document.createElement('div');

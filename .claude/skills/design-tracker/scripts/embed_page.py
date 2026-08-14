@@ -27,54 +27,129 @@ design-tracker.js reads this gallery at decorate() time: each hidden <img>'s
 a {key: renderedSrc} lookup from the already-rendered (already re-hosted)
 img elements, and uses that src instead of the raw DA URL from the JSON.
 
+The SAME size limit also applies to per-element changedElements detail text
+(confirmed: one busy design's versionChanges text alone hit 1.59MB, no
+images involved). Same fix, applied to text instead of images: any day
+whose full detail would blow the budget gets that day's full changedElements
+uploaded as its own separate small DA document (same upload+preview
+mechanism as the main page), instead of embedded inline. The embedded copy
+keeps date/magnitude/author/changedElementCount for every version (so the
+history bar chart and version list are always complete) but replaces
+changedElements with a `detailUrl` pointer for those specific days; design-
+tracker.js fetches that URL only when a user actually opens that day's
+summary, not upfront.
+
 Usage:
-  python3 embed_page.py --entries <path to db entries.json> --out <output html path>
+  python3 embed_page.py --entries <path to db entries.json> --token <da-auth-helper token> --page-org-repo adobecom/milo --page-branch parallax-garage-door-mask --page-path drafts/dusan/design-tracker --out <output html path>
 """
 import argparse
 import html
 import json
+import urllib.request
 
 # Confirmed via direct testing: Helix's content-bus 409s somewhere between
-# ~1MB (succeeds) and ~1.6MB (fails) for this authored-content pipeline —
-# and this isn't only about images (fixed separately, see module docstring):
-# a single busy design's versionChanges text alone (hundreds of versions,
-# each with a full changedElements array of per-element names/details) can
-# blow this on its own. Kept comfortably under the confirmed-working size
-# rather than the exact boundary, since the true limit isn't documented.
+# ~1MB (succeeds) and ~1.6MB (fails) for this authored-content pipeline.
+# Kept comfortably under the confirmed-working size rather than the exact
+# boundary, since the true limit isn't documented.
 MAX_DOCUMENT_BYTES = 900_000
 
+DETAIL_DOC_TEMPLATE = """<body>
+  <header></header>
+  <main>
+    <div>
+      <div>{data}</div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+"""
 
-def trim_to_budget(entries):
-    """Degrades gracefully, not silently: drops changedElements (the bulky
-    per-element detail list) from the OLDEST versions first, across all
-    entries combined — never touches date/magnitude/author/versionId, so
-    the full-history magnitude bar chart stays 100% accurate no matter how
-    much gets trimmed. Only the "click a day to see exactly what changed"
-    detail list degrades, and only for old-enough versions to matter. This
-    is a size-budget fallback, not a design choice — see the "Publishing
-    the dashboard page" section of SKILL.md for the tradeoff being made
-    here, and revisit if a same-origin lazy-fetch alternative is verified
-    to work (would remove the need for this entirely)."""
-    all_changes = []
+
+def da_request(method, url, token, data=None, content_type=None):
+    # Cloudflare (fronting admin.da.live/admin.hlx.page) 403s on urllib's
+    # default User-Agent ("Python-urllib/3.x") even with a valid auth token
+    # — same issue already fixed once for image downloads in this file.
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "User-Agent": "Mozilla/5.0 (compatible; design-tracker-skill/1.0)",
+    }
+    if content_type:
+        headers["Content-Type"] = content_type
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req) as resp:
+        return resp.status, resp.read()
+
+
+def upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path):
+    """Uploads one day's full (untrimmed) changedElements as its own DA doc,
+    previews it, and returns the resulting relative URL (same-origin with
+    the main page) — or None if anything failed, in which case the caller
+    falls back to trimming that day instead of leaving a broken reference."""
+    org, repo = org_repo.split("/")
+    key = f"{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}"
+    doc_path = f"{page_path}/detail/{key}"
+    payload = json.dumps({c["versionId"]: c.get("changedElements") or [] for c in changes})
+    body = DETAIL_DOC_TEMPLATE.format(data=html.escape(payload, quote=False)).encode()
+
+    try:
+        da_request(
+            "POST", f"https://admin.da.live/source/{org}/{repo}/{doc_path}.html",
+            token, data=body, content_type="text/html",
+        )
+        da_request(
+            "POST", f"https://admin.hlx.page/preview/{org}/{repo}/{branch}/{doc_path}",
+            token,
+        )
+    except Exception as e:
+        print(json.dumps({"detailDocError": key, "reason": str(e)}))
+        return None
+    return f"./detail/{key}"
+
+
+def offload_oversized_days(entries, token, org_repo, branch, page_path):
+    """Same-day grouping as the UI itself (one summary panel per day) — a
+    day either keeps all its versions' full detail inline, or all of them
+    move to one shared detail doc for that day, never a partial mix."""
+    by_entry_day = {}
     for entry in entries:
         for change in entry.get("versionChanges") or []:
             if change.get("changedElements"):
-                all_changes.append((change.get("date") or "", change))
-    all_changes.sort(key=lambda pair: pair[0])  # oldest first
+                day = (change.get("date") or "")[:10]
+                by_entry_day.setdefault((id(entry), day), []).append(change)
 
     total = len(json.dumps(entries))
+    # Largest days first — offloading one big day frees more budget per
+    # network round-trip than offloading many small ones.
+    ranked = sorted(
+        by_entry_day.items(),
+        key=lambda kv: len(json.dumps([c["changedElements"] for c in kv[1]])),
+        reverse=True,
+    )
+    offloaded = 0
     trimmed = 0
-    for _, change in all_changes:
+    entry_by_id = {id(e): e for e in entries}
+    for (entry_id, day), changes in ranked:
         if total <= MAX_DOCUMENT_BYTES:
             break
-        # Incremental size accounting (avoids re-serializing the whole
-        # multi-hundred-KB document on every single trimmed version).
-        before = len(json.dumps(change["changedElements"]))
-        change["changedElements"] = []
-        after = len(json.dumps(change["changedElements"]))
+        entry = entry_by_id[entry_id]
+        before = len(json.dumps([c["changedElements"] for c in changes]))
+        detail_url = upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path)
+        for c in changes:
+            c["changedElements"] = []
+        if detail_url is not None:
+            entry.setdefault("offloadedDays", {})[day] = detail_url
+            offloaded += 1
+        else:
+            # Upload failed — falls back to the old degrade-gracefully
+            # behavior (drop detail, keep magnitude/count) rather than
+            # leaving this day's full data embedded and risking the whole
+            # page blowing past the size limit at upload time.
+            trimmed += 1
+        after = len(json.dumps([c["changedElements"] for c in changes]))
         total -= (before - after)
-        trimmed += 1
-    return trimmed
+    if trimmed:
+        print(json.dumps({"daysTrimmedAfterOffloadFailure": trimmed}))
+    return offloaded
 
 
 def thumb_key(entry):
@@ -125,12 +200,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--entries", required=True, help="path to the db entries.json (plain DA URLs)")
     parser.add_argument("--out", required=True, help="output path for the page HTML")
+    parser.add_argument("--token", required=True, help="da-auth-helper token, for uploading offloaded detail docs")
+    parser.add_argument("--page-org-repo", required=True, help="e.g. adobecom/milo")
+    parser.add_argument("--page-branch", required=True, help="branch the page is being previewed on")
+    parser.add_argument("--page-path", required=True, help="e.g. drafts/dusan/design-tracker")
     args = parser.parse_args()
 
     with open(args.entries) as f:
         entries = json.load(f)
 
-    trimmed = trim_to_budget(entries)
+    offloaded = offload_oversized_days(entries, args.token, args.page_org_repo, args.page_branch, args.page_path)
 
     gallery, keys = build_gallery(entries)
     json_text = json.dumps(entries)
@@ -144,7 +223,7 @@ def main():
         "entries": len(entries),
         "images": len(keys),
         "outputBytes": len(page),
-        "versionsWithDetailTrimmed": trimmed,
+        "daysOffloaded": offloaded,
     }))
 
 
