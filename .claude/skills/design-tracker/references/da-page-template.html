@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Design Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" href="data:,">
+    <!-- Points design-tracker.js at DA instead of the local repo-relative file.
+         Must be set before design-tracker.js loads. Reads authenticate
+         transparently for a logged-in employee — no token here. -->
+    <script>window.DESIGN_TRACKER_DATA_URL = '__ENTRIES_URL__';</script>
+    <!-- design-tracker.js/.css are uploaded into this same DA folder (see
+         "Publishing the dashboard page" in SKILL.md) — self-contained, no
+         dependency on milo's own deploy status. milo is a shared library
+         consumed by other sites' deploys, not a standalone live site itself;
+         there is no "main--milo--adobecom.aem.live" to reference. -->
+    <link rel="stylesheet" href="__DA_BASE__/design-tracker.css?v=__CACHE_BUST__">
+    <script src="__DA_BASE__/design-tracker.js?v=__CACHE_BUST__" type="module"></script>
+  </head>
+  <body>
+    <header>
+      <div class="header-titles">
+        <h1>Design Tracker</h1>
+        <p class="header-subtitle">Figma design changes, grouped by the Jira ticket they belong to. Each chart below is scaled to that design's own biggest day of change — bar height isn't comparable between different designs.</p>
+      </div>
+      <label for="since">Changes since</label>
+      <input type="date" id="since">
+      <div id="filter-status" class="visually-hidden" aria-live="polite"></div>
+    </header>
+    <main id="groups"></main>
+  </body>
+</html>

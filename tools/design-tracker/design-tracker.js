@@ -1,4 +1,9 @@
-const DATA_URL = '/tools/design-tracker/entries.json';
+// On the local milo tool this is the repo-relative file (gitignored — never
+// committed, see .gitignore). On the DA-hosted dashboard, the page's own
+// inline script sets window.DESIGN_TRACKER_DATA_URL to a content.da.live URL
+// before this file loads; DA requests authenticate transparently for a
+// logged-in employee (no token handling needed here).
+const DATA_URL = window.DESIGN_TRACKER_DATA_URL || '/tools/design-tracker/entries.json';
 
 function entryDate(entry) {
   return entry.figmaLastModified || entry.addedDate || null;

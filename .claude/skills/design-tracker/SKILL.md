@@ -2,24 +2,98 @@
 name: design-tracker
 description: >
   Tracks Figma design changes paired with the Jira tickets that relate to
-  them, for the internal dashboard at tools/design-tracker/. Adds new
-  Figma+Jira pairs and refreshes their Figma/Jira data by writing to
-  tools/design-tracker/entries.json, which the static page renders.
+  them, for the dashboard hosted as a DA page (never in this repo). Adds,
+  removes, or refreshes Figma+Jira pairs and uploads the result to DA as
+  entries.json, which the DA-hosted page fetches live at runtime.
 disable-model-invocation: true
 ---
 
 # Design Tracker Skill
 
-Maintains `tools/design-tracker/entries.json`, the data file behind the
-static dashboard at `tools/design-tracker/index.html`. The page itself is a
-pure static viewer (fetch + render) — all data comes from this file, and
-this skill is the only thing that writes to it.
+Maintains `entries.json`, the data file behind the design-tracker
+dashboard, and the DA-hosted page that renders it. `tools/design-tracker/`
+in this repo holds only the reusable `design-tracker.js`/`.css` (public,
+non-sensitive code) — the data and the actual dashboard page live in DA.
+
+## Data lives in DA, never in this repo (read this first)
+
+**`adobecom/milo` is public.** Jira ticket details and unreleased Figma
+design screenshots must never be committed here. `entries.json` and
+`thumbnails/` were committed by mistake in earlier sessions (commits
+`08484dcde`/`ff8e19c87`) — deleting them at the tip in a later commit did
+**not** remove them from history; both blobs remain fully retrievable from
+those commits on the public repo (a `git show <commit>:<path>` or GitHub's
+own commit-history UI still serves them). Both paths are now gitignored as
+a backstop. **Never work around that gitignore** — if a script wants to
+write to `tools/design-tracker/entries.json` or
+`tools/design-tracker/thumbnails/`, that's a sign it's using the old
+pattern and needs to write to a scratch dir + upload to DA instead.
+
+All entry data, screenshots, and the dashboard page itself instead live in
+a private DA drafts space, read directly via `content.da.live` (never
+through `admin.hlx.page` preview/live — see "Publishing the dashboard
+page" below for why), so viewing any of it requires DA auth:
+
+```
+https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/
+```
+
+This value is duplicated as the default `--da-base` in
+`scripts/merge_entry.py` and in `references/da-page-template.html`'s
+`__ENTRIES_URL__` placeholder — keep them in sync if the location ever
+changes.
+
+**Auth for the skill's own uploads** (this file, screenshots, the page
+itself): `da-auth-helper token` (run `da-auth-helper login` first if it's
+expired — opens a browser OAuth flow, so this needs to happen in an
+interactive session, not delegated to a background agent).
+
+**Auth for the page's own runtime reads is not our concern.** Confirmed
+`content.da.live` returns `401` with no `Authorization` header and `200`
+with one — but a logged-in employee's browser adds that header
+transparently (via an internal extension), so `design-tracker.js`'s plain
+`fetch()`/`img.src` calls against DA URLs just work with no token
+handling in our code at all. **Do not add a token input, `sessionStorage`
+token, or blob-URL image fetching** — this was tried and is explicitly the
+wrong direction: it bakes a "paste your token" affordance into the page
+for a problem that's already solved at the browser/network layer.
+
+Every instruction below that involves writing a file means: write it to a
+**scratch directory** (e.g. `/tmp/design-tracker/`), then upload via the
+DA admin API — same pattern `build-content-from-figma` uses:
+
+```bash
+TOKEN=$(da-auth-helper token)
+curl -s -w "\n%{http_code}" -X POST \
+  "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/<relative-path>" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "data=@<local-scratch-path>;type=<mime-type>"
+```
+
+`entries.json` → `type=application/json`. Thumbnails/screenshots →
+`image/png`. The dashboard page → `text/html` (see "Publishing the
+dashboard page").
 
 ## When invoked
 
 The user will either:
 - **Add** a new pair: give you a Figma URL and a Jira URL to track.
+- **Remove** a pair: give you a `jiraKey` or `figmaFileKey`/`figmaNodeId` to stop tracking.
 - **Refresh**: ask you to pull fresh data for one entry or all entries.
+
+## Remove a pair
+
+1. Download the current `entries.json` from DA (see "Writing back" for the
+   exact command).
+2. Filter out the entry matching the given `jiraKey` (or
+   `figmaFileKey`+`figmaNodeId`) — confirm with the user which entry you're
+   about to remove before doing so if more than one plausible match exists.
+3. Upload the filtered array back to DA (see "Writing back").
+4. **Leave that entry's thumbnail/screenshot files in DA** — deleting them
+   is optional cleanup, not required for correctness (an orphaned image
+   with no entry referencing it is harmless). If the user explicitly asks
+   for cleanup, use `curl -X DELETE` against the same
+   `admin.da.live/source/...` path.
 
 ## Add a new pair
 
@@ -30,10 +104,21 @@ The user will either:
      all, set `figmaNodeId` to JSON `null`** — this means "track the whole
      file" (see "Whole-file tracking" below), not "track nothing."
 2. Parse the Jira URL: `jiraKey` is the path segment after `/browse/`.
-3. Append a new entry object to `tools/design-tracker/entries.json`
-   (create the array if the file is empty) with `addedDate` set to today
-   and all other Figma/Jira data fields set to `null` — then immediately
-   run the **Refresh** steps below for this entry.
+3. Download the current `entries.json` from DA (see "Writing back") and
+   append a new entry object (create the array if empty) with `addedDate`
+   set to today and all other Figma/Jira data fields set to `null` — then
+   immediately run the **Refresh** steps below for this entry.
+4. **Always pull the full version history for a newly-added design, not
+   just current state** — run "Version-history change bars" below (it's
+   optional for a routine *refresh* of an already-tracked design, but
+   mandatory the first time a design is added, so the user gets the whole
+   history immediately rather than only change data going forward from
+   today). Pass a high `--max-versions` (well above the default 60) so a
+   design with a long history doesn't get truncated — if the script's
+   `--since`/`--max-versions` error fires (see that section), that's the
+   signal to raise `--max-versions` further, not to accept partial
+   history. Also run "End-of-day screenshots" for the same reason, unless
+   the user says they don't want screenshots for this one.
 
 ## Refresh Figma data (per entry)
 
@@ -41,11 +126,15 @@ The user will either:
    entry's `figmaFileKey`/`figmaNodeId`. It returns a **short-lived** URL —
    it will expire, so never store it directly in `entries.json`. Instead,
    immediately `curl` it down to
-   `tools/design-tracker/thumbnails/<figmaFileKey>-<figmaNodeId with : replaced by ->.png`
-   (create the directory if needed) and set `figmaThumbnailUrl` in the
-   entry to that **relative path** (e.g.
-   `thumbnails/q87sUm2fvForRQzxGum5wE-392-16552.png`), not a Figma URL.
-   Use `get_metadata` on the node to get a human-readable name for
+   `/tmp/design-tracker/thumbnails/<figmaFileKey>-<figmaNodeId with : replaced by ->.png`,
+   upload that file to DA at
+   `.../design-tracker/thumbnails/<same filename>` (see "Data lives in DA"
+   above), and set `figmaThumbnailUrl` in the entry to the resulting
+   **`content.da.live` URL** (e.g.
+   `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/thumbnails/q87sUm2fvForRQzxGum5wE-392-16552.png`)
+   — not a Figma URL and not a local/relative path. `design-tracker.js`
+   fetches thumbnails with an auth header, which only resolves against a
+   real DA URL. Use `get_metadata` on the node to get a human-readable name for
    `figmaFileName` if you don't already have one. **This step needs a
    specific node and doesn't apply to whole-file entries** (`figmaNodeId`
    is `null`) — `get_screenshot` requires a `nodeId`, so there's no single
@@ -109,31 +198,56 @@ previously-fetched data.
 
 ## Writing back
 
-Rewrite `tools/design-tracker/entries.json` as a pretty-printed JSON array
-(2-space indent) with the updated entry (or entries) merged in by matching
-on `figmaFileKey` + `figmaNodeId` (not a fixed triple-key — `jiraKey` is
-only used to disambiguate the rare case where the *same* node is tracked
-under more than one ticket, not as a third required match field every
-time). **Never auto-commit** — the user reviews and commits the updated
-file themselves.
+1. **Download the current `entries.json` from DA first** — it's the
+   source of truth now, not a file tracked in this repo:
+   ```bash
+   TOKEN=$(da-auth-helper token)
+   mkdir -p /tmp/design-tracker
+   curl -s -H "Authorization: Bearer $TOKEN" \
+     "https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/entries.json" \
+     -o /tmp/design-tracker/entries.json
+   ```
+   On the very first run ever, this 404s / comes back empty — start from
+   `[]` instead of treating that as a failure.
+2. Merge the updated entry (or entries) into that local scratch copy,
+   matching on `figmaFileKey` + `figmaNodeId` (not a fixed triple-key —
+   `jiraKey` is only used to disambiguate the rare case where the *same*
+   node is tracked under more than one ticket, not as a third required
+   match field every time), and pretty-print (2-space indent).
+3. **Upload the merged file back to DA**:
+   ```bash
+   curl -s -w "\n%{http_code}" -X POST \
+     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/entries.json" \
+     -H "Authorization: Bearer $TOKEN" \
+     -F "data=@/tmp/design-tracker/entries.json;type=application/json"
+   ```
 
-**Prefer `scripts/merge_entry.py` over hand-written merge code.** Writing
-this matching/merge logic inline from memory each session is exactly
-the kind of repetitive glue code that caused real bugs (see git history —
-the `id`/`box`/`dayScreenshots` fields from a `diff_versions.py` run sat
-unused for a full session because the merge step was never documented).
-Use:
+**Never write this file inside the milo repo** — `tools/design-tracker/entries.json`
+is gitignored specifically to catch a script or habit that reverts to the
+old local-file pattern.
+
+**Prefer `scripts/merge_entry.py` over hand-written merge code** for step 2.
+Writing this matching/merge logic inline from memory each session is
+exactly the kind of repetitive glue code that caused real bugs (see git
+history — the `id`/`box`/`dayScreenshots` fields from a `diff_versions.py`
+run sat unused for a full session because the merge step was never
+documented). Use:
 ```bash
 python3 $SKILL_DIR/scripts/merge_entry.py \
-  --entries tools/design-tracker/entries.json \
+  --entries /tmp/design-tracker/entries.json \
   --file-key <figmaFileKey> --node-id <figmaNodeId> \
-  --diff-output <path to diff_versions.py's JSON output>
+  --diff-output <path to diff_versions.py's JSON output> \
+  --scratch-dir /tmp/design-tracker \
+  --da-base https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker
 ```
 It handles matching, deduping `versionChanges` by `versionId` (union, kept
 sorted by date — so a partial `--since` refresh doesn't need to guess
-whether to splice or clobber), and stripping `dayScreenshots` paths to be
-relative to `tools/design-tracker/`. If you must merge by hand instead,
-replicate that dedupe behavior rather than blindly overwriting the array.
+whether to splice or clobber), and rewrites each `dayScreenshots` path from
+a local `--scratch-dir` path to its DA URL (`--da-base`) — **you must have
+already uploaded that screenshot to DA** before merging; the script only
+rewrites the reference, it doesn't upload. If you must merge by hand
+instead, replicate that dedupe behavior rather than blindly overwriting
+the array.
 
 **Token-expiry vs rate-limiting**: an `HTTP 401`/`403` from any script's
 `api_get`/Jira call almost always means the token itself is dead — tell
@@ -143,10 +257,92 @@ retrying won't help. `HTTP 429` is the rate limiter and *is* worth
 retrying/backing off (already handled automatically, see below). Don't
 confuse the two when triaging a failed run.
 
-## Version-history change bars (optional, on request)
+## Publishing the dashboard page
 
-When the user wants to see the *magnitude* of design changes over time
-(rendered as bars in the UI), use `scripts/diff_versions.py`. It requires
+The actual dashboard the user opens is a DA page, not anything in this
+repo. It's a thin shell — `references/da-page-template.html` — that loads
+`design-tracker.js`/`.css` and points `window.DESIGN_TRACKER_DATA_URL` at
+DA's `entries.json`. It fetches data live on every page load (no baked-in
+data, no regeneration needed when entries.json changes) — only re-upload
+this shell if the template itself changes.
+
+**View it via `content.da.live` directly — never `admin.hlx.page`
+preview/live.** `adobecom/da-dc` is Adobe's real production Acrobat site
+(canonical URL points at `www.adobe.com`, loads `/acrobat/scripts/scripts.js`,
+full global nav/footer). Confirmed by testing: uploading this page and
+calling `/preview/` or `/live/` routes it through that site's own EDS page
+template, which processes `<main>` through its own block-decoration JS and
+**silently drops every custom `<head>` tag and all of our markup** — the
+rendered result was the full Acrobat site chrome with a completely empty
+`<main>`, nothing of ours anywhere.
+
+The fix: `content.da.live` is a plain authenticated static-file store —
+confirmed a raw `.html` upload comes back with `content-type: text/html`
+and renders correctly as a normal page when fetched directly (bypassing
+the EDS pipeline entirely, since `admin.hlx.page` is never involved).
+The dashboard's real URL is therefore:
+```
+https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker.html
+```
+**Never call `admin.hlx.page/preview` or `/live` for this page or for
+`design-tracker.js`/`.css`/`entries.json`.** Those endpoints are for
+authoring real site content through da-dc's block pipeline — not relevant
+here, and calling `/live/` in particular would make it genuinely public on
+`aem.live` with no auth wall at all (confirmed this directly — do not
+repeat that mistake).
+
+**This dashboard must never reference milo's own site as a source for
+`design-tracker.js`/`.css`.** There is no such thing as
+"main--milo--adobecom.aem.live" — milo is a shared library other site
+repos consume, not a standalone deployed site itself (verified: even
+`scripts/scripts.js`, guaranteed to exist, 404s at every branch alias
+tried). The only way to make milo's own files reachable at a URL would be
+pushing this work onto `stage`/`main` and into a real site's deploy —
+**never do that for this dashboard.** Instead, `design-tracker.js`/`.css`
+are uploaded into the *same DA folder* as the page, making the whole thing
+self-contained:
+
+1. Upload the current copies of `tools/design-tracker/design-tracker.js`
+   and `.css` from this repo (read-only source — this repo's copies stay
+   the canonical source of the code, DA just gets a copy to serve):
+   ```bash
+   TOKEN=$(da-auth-helper token)
+   curl -s -w "\n%{http_code}" -X POST \
+     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/design-tracker.js" \
+     -H "Authorization: Bearer $TOKEN" \
+     -F "data=@tools/design-tracker/design-tracker.js;type=text/javascript"
+   curl -s -w "\n%{http_code}" -X POST \
+     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/design-tracker.css" \
+     -H "Authorization: Bearer $TOKEN" \
+     -F "data=@tools/design-tracker/design-tracker.css;type=text/css"
+   ```
+   Re-run this step whenever `tools/design-tracker/design-tracker.js`/`.css`
+   change in this repo — DA's copies don't update on their own.
+2. Fill in the page template's placeholders:
+   - `__ENTRIES_URL__` → `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/entries.json`
+   - `__DA_BASE__` → `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker`
+   - `__CACHE_BUST__` → today's date (`YYYYMMDD`), same convention as
+     `index.html`'s own `?v=` cache-buster
+3. Upload it as `text/html`:
+   ```bash
+   curl -s -w "\n%{http_code}" -X POST \
+     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker.html" \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: text/html" \
+     --data-binary @<filled-in-template-path>
+   ```
+4. The dashboard is now live (in the "already updated" sense, not the EDS
+   "published" sense) at
+   `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker.html` —
+   open it directly, no preview/publish step needed or wanted.
+
+## Version-history change bars (mandatory when adding a design, optional otherwise)
+
+**Required step of "Add a new pair"** (see above) — run this for the full
+history immediately when a design is newly tracked, not just on request.
+For a routine refresh of an already-tracked design, it's optional/on-request
+as before. Either way, use `scripts/diff_versions.py` to see the
+*magnitude* of design changes over time (rendered as bars in the UI). It requires
 `FIGMA_TOKEN` (read-only Figma personal access token — the MCP tools don't
 expose version history at all, so this always goes through the REST API
 directly):
@@ -256,28 +452,38 @@ fallback so an uncovered type is never invisible) and an entry in
 `design-tracker.js`'s `HIGHLIGHT_LEGEND` — keep these three in sync if you
 add a new `changeType`.
 
-## End-of-day screenshots + highlight overlay (optional, on request)
+## End-of-day screenshots + highlight overlay (mandatory when adding a design, optional otherwise)
 
-Pass `--screenshot-dir <dir>` to `diff_versions.py` to additionally fetch
+Also part of "Add a new pair"'s required full-history pull — skip only if
+the user explicitly says no screenshots for this design. For a routine
+refresh, it's optional/on-request as before. Pass `--screenshot-dir <dir>`
+to `diff_versions.py` to additionally fetch
 one best-effort preview image per calendar day that had a real change
 (scale is computed dynamically from the tracked node's own bounding box to
 target ~700px on the longer edge — don't hardcode a fixed scale, a fixed
 0.3 produced an 81MB/image disaster on a 36k×50k-px node before this was
-fixed). Use a per-node directory so two tracked designs in the same file
-don't collide:
+fixed). Point it at a **scratch directory**, not this repo — a per-node
+subdirectory so two tracked designs in the same file don't collide:
 ```bash
 python3 $SKILL_DIR/scripts/diff_versions.py \
   --file-key <figmaFileKey> --node-id <figmaNodeId> \
-  --screenshot-dir tools/design-tracker/thumbnails/days/<figmaNodeId with : replaced by ->
+  --screenshot-dir /tmp/design-tracker/thumbnails/days/<figmaNodeId with : replaced by ->
 ```
+Then **upload every file under that directory to DA** (same
+`admin.da.live/source/.../design-tracker/thumbnails/days/<node>/<file>`
+pattern as elsewhere) before merging — `merge_entry.py` rewrites paths to
+DA URLs assuming the upload already happened, it does not do the upload
+itself.
+
 The script's JSON output includes a top-level `dayScreenshots` object
 (`{ "YYYY-MM-DD": { "path": ..., "nodeBox": {...} } }`) alongside
 `results`/`errors` — **this must also be merged into the entry** (as
-`entry.dayScreenshots`), with `path` stripped of any `tools/design-tracker/`
-prefix so it's relative like `figmaThumbnailUrl`. `merge_entry.py` does
-this automatically; if merging by hand, don't just copy `results` and
-forget `dayScreenshots` (this happened for a full session before it was
-caught).
+`entry.dayScreenshots`), with `path` rewritten from the local
+`--scratch-dir` path to its DA URL. `merge_entry.py` does this
+automatically (`--scratch-dir`/`--da-base`); if merging by hand, don't
+just copy `results` and forget `dayScreenshots` (this happened for a full
+session before it was caught), and don't leave `path` pointing at a local
+scratch file that won't exist on anyone else's machine.
 
 The page overlays highlight boxes on this screenshot using each changed
 element's `box` (absolute bounding box) converted to a percentage relative

@@ -29,3 +29,7 @@ mcp-server.log
 *.woff
 *.woff2
 *.eot
+
+# Design tracker data lives in DA (private, auth-gated), never in this public repo.
+/tools/design-tracker/entries.json
+/tools/design-tracker/thumbnails/
