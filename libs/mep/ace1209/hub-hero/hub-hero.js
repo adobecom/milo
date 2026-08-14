@@ -113,9 +113,12 @@ const onSlideLeave = (event) => {
   }, 100));
 };
 
+// `onHover` writes `isFocus ? 'focused' : 'hovered'`, so clearing only 'hovered' left
+// '.focused' permanently set — and Chrome focuses an `<a tabindex="0">` on mousedown, so a
+// single click pinned it forever.
 const removeHovered = (carousel) => {
   const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
-  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
+  [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
 const onCarouselLeave = (event) => {
