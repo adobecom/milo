@@ -2,7 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200;
-const M_BREAKPOINT = 768;
+const M_BREAKPOINT = 1024;
 const L_BREAKPOINT = 1280;
 const MIN_ROLLER_ROOM = 120;
 
@@ -66,11 +66,11 @@ function buildMedia(apps) {
 function buildHeader(eyebrowEl, headingEl) {
   const header = createTag('div', { class: 'rcc-header' });
   if (eyebrowEl) {
-    eyebrowEl.classList.add('rcc-eyebrow');
+    eyebrowEl.classList.add('rcc-eyebrow', 'eyebrow');
     header.append(eyebrowEl);
   }
   if (headingEl) {
-    headingEl.classList.add('rcc-heading');
+    headingEl.classList.add('rcc-heading', 'heading-2');
     header.append(headingEl);
   }
   return header;
@@ -102,7 +102,9 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
   block.classList.add('rcc-reduced-motion');
 
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
-  bg.append(buildBgSlide(apps[0], true));
+  const bgSlide = buildBgSlide(apps[0], true);
+  eagerLoad(bgSlide, true);
+  bg.append(bgSlide);
 
   const content = createTag('div', { class: 'rcc-rm-content' });
   content.append(buildHeader(eyebrowEl, headingEl));
@@ -114,17 +116,15 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
     if (app.category && app.category !== currentCategory) {
       currentCategory = app.category;
       const catWrap = createTag('div', { class: 'rcc-category-wrapper rcc-rm-category' });
-      const catLabel = createTag('h3', { class: 'rcc-category' });
+      const catLabel = createTag('h3', { class: 'rcc-category heading-6' });
       catLabel.textContent = currentCategory;
       catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' }));
       list.append(catWrap);
       group = createTag('ul', { class: 'rcc-rm-group', 'aria-label': currentCategory });
       list.append(group);
     }
-    const li = createTag('li');
-    const btn = createTag('button', { class: 'rcc-rm-item', type: 'button' });
-    btn.textContent = app.name;
-    li.append(btn);
+    const li = createTag('li', { class: 'rcc-rm-item' });
+    li.textContent = app.name;
     if (!group) {
       group = createTag('ul', { class: 'rcc-rm-group' });
       list.append(group);
@@ -148,15 +148,15 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
 
   const carousel = createTag('div', { class: 'rcc-carousel' });
   const categoryWrapper = createTag('div', { class: 'rcc-category-wrapper' });
-  const categoryLabel = createTag('span', { class: 'rcc-category' });
+  const categoryLabel = createTag('span', { class: 'rcc-category heading-6' });
   categoryLabel.textContent = apps[0].category;
-  const divider = createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' });
+  const divider = createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' });
   categoryWrapper.append(categoryLabel, divider);
 
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
   const list = createTag('ul', { class: 'rcc-list' });
   apps.forEach((app, i) => {
-    const item = createTag('li', { class: `rcc-item${i === 0 ? ' is-active' : ''}` });
+    const item = createTag('li', { class: `rcc-item heading-2${i === 0 ? ' is-active' : ''}` });
     item.textContent = app.name;
     list.append(item);
   });
@@ -233,8 +233,8 @@ function createUpdatePosition({
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
     } else if (w >= M_BREAKPOINT) {
-      lineY = mediaRect.top - wrapRect.top - itemH;
-      bottomAlign = true;
+      lineY = mediaRect.top - wrapRect.top + itemH * 0.75;
+      bottomAlign = false;
     } else {
       const keyLine = divider.getBoundingClientRect().bottom - wrapRect.top;
       const imageTop = mediaRect.top - wrapRect.top;
@@ -306,9 +306,15 @@ function initScroll(block, refs, apps) {
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
+  let ticking = false;
   window.addEventListener('scroll', () => {
-    updatePosition();
-    evaluateReflow();
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      updatePosition();
+      evaluateReflow();
+      ticking = false;
+    });
   }, { passive: true });
 }
 

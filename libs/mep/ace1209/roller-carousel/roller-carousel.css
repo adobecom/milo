@@ -80,24 +80,11 @@
   }
 
   .rcc-eyebrow {
-    font-family: var(--body-font-family);
-    font-size: var(--s2a-typography-font-size-eyebrow);
-    line-height: var(--s2a-typography-line-height-eyebrow);
-    font-weight: var(--s2a-font-weight-eyebrow);
-    letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
     color: var(--s2a-color-content-knockout);
-    margin: 0;
-    padding: 0;
   }
 
   .rcc-heading {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-2);
-    line-height: var(--s2a-typography-line-height-heading-2);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
     color: var(--s2a-color-content-knockout);
-    margin: 0;
-    padding: 0;
   }
 
   .rcc-carousel {
@@ -116,14 +103,8 @@
   }
 
   .rcc-category {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-6);
-    line-height: var(--s2a-typography-line-height-heading-6);
-    font-weight: var(--s2a-font-weight-heading);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
     color: var(--s2a-color-content-knockout);
     white-space: nowrap;
-    margin: 0;
   }
 
   .rcc-divider {
@@ -133,15 +114,14 @@
 
   .rcc-list-wrapper {
     flex: 1;
-    overflow: hidden;
+    overflow-y: clip;
     min-height: 0;
     position: relative;
   }
 
   .rcc-list {
     position: absolute;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -149,10 +129,7 @@
   }
 
   .rcc-item {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-2);
-    line-height: var(--s2a-typography-line-height-heading-2);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+    font-weight: var(--s2a-font-weight-body);
     color: var(--s2a-color-content-knockout);
     opacity: 0.12;
     transition: opacity 0.3s ease;
@@ -167,7 +144,7 @@
 
   .rcc-media-wrapper {
     position: absolute;
-    right: var(--s2a-spacing-lg);
+    inset-inline-end: var(--s2a-spacing-lg);
     bottom: var(--s2a-spacing-lg);
     z-index: 2;
     aspect-ratio: 650 / 766;
@@ -180,7 +157,7 @@
   .rcc-media-icon {
     position: absolute;
     top: var(--s2a-spacing-md);
-    left: var(--s2a-spacing-md);
+    inset-inline-start: var(--s2a-spacing-md);
     width: 24px;
     height: 24px;
     z-index: 1;
@@ -278,22 +255,11 @@
     }
 
     .rcc-rm-item {
-      appearance: none;
-      border: 0;
-      background: none;
-      padding: 0;
-      text-align: start;
-      cursor: pointer;
-      font-family: var(--heading-font-family);
+      display: block;
       font-size: var(--s2a-typography-font-size-heading-2);
       line-height: var(--s2a-typography-line-height-heading-2);
       letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
       color: var(--s2a-color-content-knockout);
-
-      &:focus-visible {
-        outline: 2px solid var(--s2a-color-content-knockout);
-        outline-offset: 4px;
-      }
     }
   }
 }
@@ -318,7 +284,7 @@
 
     .rcc-media-icon {
       top: var(--s2a-spacing-lg);
-      left: var(--s2a-spacing-lg);
+      inset-inline-start: var(--s2a-spacing-lg);
       width: 32px;
       height: 32px;
     }
@@ -330,8 +296,8 @@
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
-      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) var(--s2a-spacing-lg);
-      padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
+      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
+      padding-inline-start: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
       gap: 0;
     }
 
@@ -350,27 +316,27 @@
     }
 
     .rcc-item {
-      font-size: var(--s2a-typography-font-size-super);
-      line-height: var(--s2a-typography-line-height-super);
-      letter-spacing: var(--s2a-typography-letter-spacing-super);
+      font-size: var(--s2a-typography-font-size-heading-2);
+      line-height: var(--s2a-typography-line-height-heading-2);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
     }
 
     .rcc-media-wrapper {
       position: relative;
-      right: auto;
+      inset-inline-end: auto;
       bottom: auto;
       z-index: auto;
       aspect-ratio: auto;
       flex: 0 0 650px;
-      align-self: flex-end;
+      align-self: flex-start;
       height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
       border-radius: var(--s2a-border-radius-md);
       overflow: hidden;
     }
 
     .rcc-media-icon {
-      top: var(--s2a-spacing-lg);
-      left: var(--s2a-spacing-lg);
+      top: var(--s2a-spacing-xl);
+      inset-inline-start: var(--s2a-spacing-xl);
       width: 32px;
       height: 32px;
     }
@@ -378,8 +344,16 @@
 }
 
 @media (width >= 1440px) {
-  .roller-carousel .rcc-content {
-    max-width: 1920px;
-    margin-inline: auto;
+  .roller-carousel {
+    .rcc-content {
+      max-width: 1920px;
+      margin-inline: auto;
+    }
+
+    .rcc-item {
+      font-size: var(--s2a-typography-font-size-super);
+      line-height: var(--s2a-typography-line-height-super);
+      letter-spacing: var(--s2a-typography-letter-spacing-super);
+    }
   }
 }
