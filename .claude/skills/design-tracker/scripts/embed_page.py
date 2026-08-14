@@ -34,6 +34,48 @@ import argparse
 import html
 import json
 
+# Confirmed via direct testing: Helix's content-bus 409s somewhere between
+# ~1MB (succeeds) and ~1.6MB (fails) for this authored-content pipeline —
+# and this isn't only about images (fixed separately, see module docstring):
+# a single busy design's versionChanges text alone (hundreds of versions,
+# each with a full changedElements array of per-element names/details) can
+# blow this on its own. Kept comfortably under the confirmed-working size
+# rather than the exact boundary, since the true limit isn't documented.
+MAX_DOCUMENT_BYTES = 900_000
+
+
+def trim_to_budget(entries):
+    """Degrades gracefully, not silently: drops changedElements (the bulky
+    per-element detail list) from the OLDEST versions first, across all
+    entries combined — never touches date/magnitude/author/versionId, so
+    the full-history magnitude bar chart stays 100% accurate no matter how
+    much gets trimmed. Only the "click a day to see exactly what changed"
+    detail list degrades, and only for old-enough versions to matter. This
+    is a size-budget fallback, not a design choice — see the "Publishing
+    the dashboard page" section of SKILL.md for the tradeoff being made
+    here, and revisit if a same-origin lazy-fetch alternative is verified
+    to work (would remove the need for this entirely)."""
+    all_changes = []
+    for entry in entries:
+        for change in entry.get("versionChanges") or []:
+            if change.get("changedElements"):
+                all_changes.append((change.get("date") or "", change))
+    all_changes.sort(key=lambda pair: pair[0])  # oldest first
+
+    total = len(json.dumps(entries))
+    trimmed = 0
+    for _, change in all_changes:
+        if total <= MAX_DOCUMENT_BYTES:
+            break
+        # Incremental size accounting (avoids re-serializing the whole
+        # multi-hundred-KB document on every single trimmed version).
+        before = len(json.dumps(change["changedElements"]))
+        change["changedElements"] = []
+        after = len(json.dumps(change["changedElements"]))
+        total -= (before - after)
+        trimmed += 1
+    return trimmed
+
 
 def thumb_key(entry):
     return f"dt-thumb-{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}"
@@ -88,6 +130,8 @@ def main():
     with open(args.entries) as f:
         entries = json.load(f)
 
+    trimmed = trim_to_budget(entries)
+
     gallery, keys = build_gallery(entries)
     json_text = json.dumps(entries)
     escaped = html.escape(json_text, quote=False)
@@ -96,7 +140,12 @@ def main():
     with open(args.out, "w") as f:
         f.write(page)
 
-    print(json.dumps({"entries": len(entries), "images": len(keys), "outputBytes": len(page)}))
+    print(json.dumps({
+        "entries": len(entries),
+        "images": len(keys),
+        "outputBytes": len(page),
+        "versionsWithDetailTrimmed": trimmed,
+    }))
 
 
 if __name__ == "__main__":
