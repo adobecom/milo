@@ -60,6 +60,42 @@ const rewindVideo = (video) => {
   rewindIntervals.set(video, intervalRewind);
 };
 
+// ── ONE owner for "should this video be running?" ────────────────────────────
+//
+// Four handlers used to drive the same `<video>` with no arbitration between them: the
+// mobile slideObserver played it, the nextSlideObserver rewound or played it, mouseenter/
+// focus played it, and mouseleave rewound it 100ms later. Whichever fired last won, so a
+// rewind could land on top of a hover-play and vice versa. Now every one of them reports a
+// FACT about its own axis and this function is the only place that decides.
+//
+// Note there is a fifth owner outside this file: `applyInViewPortPlay` in
+// libs/utils/decorate.js observes any `data-play-viewport` video with a shared global
+// IntersectionObserver and plays/pauses it at a 0.8 ratio. That one is Milo's, it is not
+// ours to arbitrate, and it only becomes reachable at all now that the carousel keeps the
+// original video node instead of a re-parsed clone.
+const videoStates = new WeakMap();
+
+const setVideoState = (video, patch) => {
+  if (!video) return;
+  const state = videoStates.get(video) ?? { hovered: false, focused: false, inView: false };
+  Object.assign(state, patch);
+  videoStates.set(video, state);
+
+  clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.delete(video);
+
+  if (state.hovered || state.focused || state.inView) {
+    stopRewind(video);
+    // Guarded: re-calling play() on an already-playing element is harmless but manufactures
+    // AbortError noise in the log we just started keeping.
+    if (video.paused) playVideo(video);
+    return;
+  }
+  // Debounced, as the mouseleave path always was — it coalesces observer chatter and stops a
+  // one-pixel pointer wobble from restarting the video.
+  slideLeaveTimeouts.set(video, setTimeout(() => rewindVideo(video), 100));
+};
+
 const handleMobileAutoplay = (carousel) => {
   const slides = [...carousel.querySelectorAll('.hub-hero-carousel-item')];
   const observers = [];
@@ -74,10 +110,10 @@ const handleMobileAutoplay = (carousel) => {
     // Play when this slide enters view — but not if the next slide is already covering it
     const slideObserver = new IntersectionObserver(
       ([entry]) => {
-        if (!isMobile() || !entry.isIntersecting) return;
+        if (!isMobile()) return;
         const nextRect = nextSlide?.getBoundingClientRect();
         const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-        if (!isCovered) playVideo(video);
+        setVideoState(video, { inView: entry.isIntersecting && !isCovered });
       },
       { threshold: 0.6 },
     );
@@ -90,13 +126,11 @@ const handleMobileAutoplay = (carousel) => {
       ([entry]) => {
         if (!isMobile()) return;
         if (entry.isIntersecting) {
-          rewindVideo(video);
+          setVideoState(video, { inView: false });
           return;
         }
         const rect = slide.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= window.innerHeight) {
-          playVideo(video);
-        }
+        setVideoState(video, { inView: rect.top >= 0 && rect.top <= window.innerHeight });
       },
       { threshold: 0.6 },
     );
@@ -124,13 +158,7 @@ const scrollHubHeroTo = (el, progress) => {
 };
 
 const onSlideLeave = (event) => {
-  const video = event?.target?.querySelector('video');
-  if (!video) return;
-
-  clearTimeout(slideLeaveTimeouts.get(video));
-  slideLeaveTimeouts.set(video, setTimeout(() => {
-    rewindVideo(video);
-  }, 100));
+  setVideoState(event?.target?.querySelector('video'), { hovered: false });
 };
 
 // The keyboard counterpart of `mouseleave`. Without it a slide entered by Tab kept playing
@@ -138,7 +166,7 @@ const onSlideLeave = (event) => {
 // else in this block listens for `blur` or `focusout`.
 const onSlideBlur = (event) => {
   event.target?.classList?.remove('focused');
-  onSlideLeave(event);
+  setVideoState(event.target?.querySelector('video'), { focused: false });
 };
 
 // `onHover` writes `isFocus ? 'focused' : 'hovered'`, so clearing only 'hovered' left
@@ -166,14 +194,13 @@ const onHover = (event) => {
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
 
-  const video = slideEl.querySelector('video');
-  clearTimeout(slideLeaveTimeouts.get(video));
-  slideLeaveTimeouts.delete(video);
-
-  if (video) {
-    stopRewind(video);
-    playVideo(video);
-  }
+  // Only KEYBOARD focus counts as an activation axis. Chrome focuses an `<a tabindex="0">` on
+  // mousedown, so a plain `focus` test would latch `focused: true` on click and keep that
+  // slide's video playing after the pointer moved to another one — while the CSS, which keys
+  // off `:focus-visible` (hub-hero.css:923), showed nothing expanded. `:focus-visible` is the
+  // pattern `decorateHubHeroCTA` already uses in this file.
+  const isKeyboardFocus = isFocus && slideEl.matches(':focus-visible');
+  setVideoState(slideEl.querySelector('video'), isKeyboardFocus ? { focused: true } : { hovered: true });
 
   const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
