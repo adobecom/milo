@@ -498,6 +498,9 @@
   --s2a-color-content-subheading: var(--s2a-color-content-knockout);
   --s2a-color-content-subtle: var(--s2a-color-transparent-white-64);
   --s2a-color-content-heading: var(--s2a-color-content-knockout);
+   --s2a-color-content-body-strong: var(--s2a-color-content-strong);
+  --s2a-color-content-body-subtle: var(--s2a-color-content-subtle);
+  --s2a-color-content-caption: var(--s2a-color-content-subtle);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
 
   /* Milo-specific declarations */

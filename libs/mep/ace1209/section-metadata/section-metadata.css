@@ -244,7 +244,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       display: inline-block;
       text-decoration: none;
       color: var(--s2a-color-content-label);
-      margin-top: var(--s2a-spacing-md);
+      margin-top: var(--s2a-spacing-xs);
 
       &::before {
         content: '';
@@ -255,6 +255,11 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 
   &.bento .dark .explore-card-content [class*='body-'] {
+    color: var(--s2a-color-content-body-subtle);
+  }
+
+  &.bento .body-color-solid .explore-card-content [class*='body-'],
+  &.bento .body-color-solid.dark .explore-card-content [class*='body-'] {
     color: inherit;
   }
 
@@ -354,8 +359,9 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     }
 
     img,
-    .video-container video {
+    video {
       transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
+      height: auto;
     }
   }
 }

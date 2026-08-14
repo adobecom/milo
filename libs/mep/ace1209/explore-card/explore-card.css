@@ -1,5 +1,10 @@
 :root:has(meta[name="foundation"][content="c2"]) {
   .explore-card .explore-card-background .video-container button.play-pause-button {
+    top: var(--s2a-spacing-lg);
+    right: var(--s2a-spacing-lg);
+    bottom: initial;
+    width: var(--s2a-spacing-32);
+    height: var(--s2a-spacing-32);
     z-index: 2;
   }
 }
@@ -180,6 +185,13 @@
 }
 
 @media (width >= 1440px) {
+  :root:has(meta[name="foundation"][content="c2"]) {
+    .explore-card .explore-card-background .video-container button.play-pause-button {
+      top: var(--s2a-spacing-xl);
+      right: var(--s2a-spacing-xl);
+    }
+  }
+
   .explore-card-content {
     min-height: 300px;
   }
