@@ -16,6 +16,7 @@
   --gg-copy-max: 1920px;
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100vw - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
+  --gg-crosshair-width: 1px;
 
   height: var(--gg-runway-height);
   position: relative;
@@ -31,6 +32,14 @@
     height: auto;
     min-height: 0;
   }
+}
+
+@media (width >= 768px) {
+  .globe-gallery { --gg-copy-pad: var(--s2a-spacing-3xl); }
+}
+
+@media (width >= 1440px) {
+  .globe-gallery { --gg-copy-pad: var(--s2a-spacing-4xl); }
 }
 
 /* z-index bands: hero 2–5, modal 13–17. See README. */
@@ -105,6 +114,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 /* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
 .globe-gallery-pullquote {
   --gg-pq-height: 583px;
+  --gg-pq-pad-block: var(--gg-copy-pad);
 
   position: sticky;
   top: calc(50vh - var(--gg-pq-height) / 2);
@@ -118,7 +128,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: var(--gg-copy-pad);
+  padding-block: var(--gg-pq-pad-block);
+  padding-inline: var(--gg-copy-pad);
   opacity: 0;
   pointer-events: none;
   transform: scale(0.9);
@@ -130,9 +141,31 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   transform: scale(1);
 }
 
+.globe-gallery-pullquote::before,
+.globe-gallery-pullquote::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border: 0 solid var(--s2a-color-gray-800);
+}
+
+.globe-gallery-pullquote::before {
+  inset-block: var(--gg-pq-pad-block);
+  inset-inline: 0;
+  border-block-width: var(--gg-crosshair-width);
+}
+
+.globe-gallery-pullquote::after {
+  inset-block: 0;
+  inset-inline: var(--gg-copy-pad);
+  border-inline-width: var(--gg-crosshair-width);
+}
+
+/* WebKit hangs the opening quote; authoring.js does the rest. See README (Hanging the opening mark). */
 .globe-gallery-pullquote-quote {
   color: var(--s2a-color-gray-25);
   margin: 0;
+  hanging-punctuation: first;
 }
 
 /* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
@@ -740,16 +773,18 @@ body.globe-gallery-modal-open { overflow: hidden; }
 }
 
 .globe-gallery-reduced .globe-gallery-pullquote {
-  position: static;
+  --gg-pq-pad-block: 10vh 8vh;
+
+  position: relative;
   top: auto;
   height: auto;
   min-height: 0;
   justify-content: flex-start;
-  padding: 10vh var(--gg-copy-pad) 8vh;
   opacity: 1;
   transform: none;
   transition: none;
 }
+
 
 /* Drop nav scale hover animation; colour cue stays. */
 @media (prefers-reduced-motion: reduce) {

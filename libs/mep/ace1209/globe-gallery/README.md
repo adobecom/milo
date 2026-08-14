@@ -319,6 +319,72 @@ browse-image button's `aria-label` and the modal's `role="img"` label is the car
 **alt** (→ `alt text to be authored` when none); badge names + logos come straight from the
 authored product links.
 
+### Hanging the opening mark
+
+The pull-quote outdents its opening quote into the margin, so the first line's text meets the
+same column the rest of the quote and the name/role below it sit on. `hanging-punctuation: first`
+(`.css`) does this natively but **only in WebKit**; `hangOpeningMark` (`authoring.js`) reproduces
+it everywhere else by measuring the mark and setting a negative `text-indent`.
+
+**Measured, not tabulated.** The mark and its width both change by locale — `“` (~0.49em), `«`,
+`„`, `「` (a full em) — and *which* mark appears comes from the **authored copy, not the page's
+locale**: a `de` page whose translator typed `"` gets ASCII, not `„`. So the code tests the first
+character and measures that glyph in the font the locale actually resolved, rather than keeping a
+per-locale table that would be both unmaintainable and keyed on the wrong thing.
+
+**Which characters count** — Unicode general categories, matching the set CSS Text hangs, so the
+fallback and WebKit's native path act on identical characters:
+
+| Category | Meaning | Examples |
+| --- | --- | --- |
+| `Ps` | open bracket | `(` `「` `（` — and `„` `‚`, which Unicode files as brackets, not quotes |
+| `Pi` | initial quote | `“` `‘` `«` `‹` |
+| `Pf` | final quote | `”` `’` `»` `›` — several locales **open** on these (sv/fi `”`, da `»`) |
+| + `"` `'` | ASCII | category `Po`, since one character serves as both opener and closer |
+
+Categories rather than a literal list, so a new locale needs no code change. `Pe` closers (`」`),
+dashes, and the rest of `Po` (`!` `¿`) are excluded.
+
+**Full-width CJK brackets are skipped**, on two tests: the mark measuring **≥ 0.8em** (`「『（`
+run ~0.96em; the widest Latin quote, `«`, is ~0.55em, so the gap is wide and the cutoff is not
+delicate), or simply **exceeding the padding**, where it would be shoved past the viewport edge
+into the block's `overflow-x: clip` and sheared. Either way the code suppresses the hang
+**including WebKit's native one** — only a measurement can detect these limits, which CSS can't
+express — so every browser lands on the same result.
+
+The width test is what makes that result **breakpoint-independent**, and it is load-bearing rather
+than belt-and-braces. Both inputs to the padding test move: `--gg-copy-pad` steps 24→48→64 (see
+Crosshair frame) and `heading-1` steps 40→56→80px, and they step at *different* widths. On the
+padding test alone, `768–1023` is a band where the padding has already grown to 48px but the type
+is still 40px, so a `「` fits and hangs there while being suppressed at every other size. Worse,
+the measurement runs once at init and is never recomputed, so a resize from that band up to
+`1280` would strand a 0.96em hang against a 48px pad and shear it.
+
+Covering CJK is a different rule rather than a smaller number: JIS sets a line-head opening
+bracket half-width, aligning its *ink* to the margin instead of aligning the following character
+to the column. Worth building only if a CJK locale ships this block.
+
+**Implementation notes** — each of these is load-bearing:
+
+- Runs after `document.fonts.ready`; Adobe Clean's metrics differ from the fallback font's, so
+  measuring earlier bakes in the wrong advance.
+- Canvas, not `getBoundingClientRect`: the pull-quote sits under `transform: scale(.9)` until it
+  activates, which scales a client rect but not a canvas measurement.
+- The **advance**, not the ink width, is what lands the second character on the column — and
+  `measureText` omits `letter-spacing`, which `heading-1` sets, so it is added back.
+- Emitted in `em`, not px. `heading-1` is **responsive** (40px → 56px at 1024 → 80px at 1280), so
+  a px indent would go stale on every breakpoint crossing; the em ratio holds without a recompute.
+  It holds only *approximately* — `letter-spacing` is a fixed px that does not scale with the type,
+  so the ratio drifts ~0.02em (≈1px at 80px) across breakpoints. Also covers text-only zoom.
+- Accurate to the pixel while the webfont is up. If Adobe Clean is missing the stack falls to c2's
+  `Arial Bold Adjusted`, whose `size-adjust: 92%` layout applies but the canvas measurement does
+  not, leaving the hang ~1px out at 80px type. Invisible, and only on the fallback path — but it is
+  why this measures the glyph rather than trusting the number to be exact.
+- `textContent` is trimmed first: authored markup arrives with newlines and indentation, which
+  collapse in rendering but would otherwise defeat the first-character test.
+- The `ctx.font` readback guards a silent failure — canvas ignores an unparseable shorthand and
+  keeps its `10px sans-serif` default, which would measure a small, plausible, wrong advance.
+
 ## Architecture notes
 
 **DOM is JS-built and scoped to the block root.** `init(el)` calls
@@ -809,6 +875,42 @@ copy on the inset; at md+ the pill background is gone, so the box is offset back
 Before this, `updateArcCopy` positioned the box per-frame from a 1392px content grid
 (`24 + max(0, (W - 48 - 1392) / 2)`), which put the arc copy 16px inboard of the pull-quote below
 1440px and up to 256px inboard above it (1920px viewport: copy at 280px vs the quote's 24px).
+
+### Crosshair frame
+
+`--gg-copy-pad` steps **24px → 48px (≥768) → 64px (≥1440)**, and the pull-quote draws a hairline
+crosshair on it — so the quote's own text edge lands on the vertical line, and the hanging opening
+mark is the one thing outside it. Because that var also feeds `--gg-content-inset`, **the arc copy
+widens with it** — the two share one edge by design, so they still cannot drift.
+
+| Width | `--gg-copy-pad` | Token |
+| --- | --- | --- |
+| < 768 | 24px | `--s2a-spacing-lg` |
+| 768–1439 | 48px | `--s2a-spacing-3xl` |
+| ≥ 1440 | 64px | `--s2a-spacing-4xl` |
+
+Note this uses c2's **grid** breakpoint (768, where `--grid-columns` becomes 12) for the first step
+and its **token tier** `xl` (1440) for the second. c2's responsive token tiers are `sm` = base,
+`md` = 1024, `lg` = 1280, `xl` = 1440 — so lg (1280–1439) holds md's 48px here.
+
+Drawn as two pseudo-elements on `.globe-gallery-pullquote`, not four: `::before` insets top/bottom
+and borders its block edges, `::after` insets inline and borders its inline edges. Each pair spans
+the full box instead of stopping at the corners, so the runs **cross** and read as a crosshair
+rather than a closed rectangle. They are `position: absolute`, which both keeps them out of the
+flex flow (an abspos child of a flex container is not a flex item) and lets them inherit the
+parent's fade and `scale(.9)→1`, so the frame animates in with the quote.
+
+Two constraints worth not re-deriving:
+
+- The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as
+  a containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame
+  over the whole runway.
+- The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the
+  `::before` `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one
+  property (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding
+  without the lines moving with it.
+- Widening the padding gives the hanging quote more room, which is exactly what makes the
+  measured hang's fit test breakpoint-dependent — see **Localization → Hanging the opening mark**.
 
 ## Analytics
 

@@ -59,6 +59,35 @@ export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }
 
+const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
+
+function hangOpeningMark(quoteEl) {
+  const text = quoteEl.textContent.trim();
+  const container = quoteEl.closest('.globe-gallery-pullquote');
+  if (!container || !OPENING_MARK.test(text)) return;
+  const cs = getComputedStyle(quoteEl);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
+  // Canvas ignores letter-spacing, and heading-1 has some.
+  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
+  const room = parseFloat(getComputedStyle(container).paddingInlineStart) || 0;
+  // Too wide to hang — a CJK bracket, or just past the padding. Stop WebKit as well.
+  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) {
+    quoteEl.style.hangingPunctuation = 'none';
+    return;
+  }
+  if (advance > 0 && !CSS.supports('hanging-punctuation', 'first')) {
+    quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+  }
+}
+
+function applyQuoteHang(quoteEl) {
+  if (!quoteEl) return;
+  const run = () => hangOpeningMark(quoteEl);
+  document.fonts?.ready?.then(run, run);
+}
+
 function parseArcCopy(row) {
   if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -305,9 +334,11 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
   renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
   if (pullQuote) {
-    el.querySelector('.globe-gallery-pullquote-quote').textContent = pullQuote.quote;
+    const quoteEl = el.querySelector('.globe-gallery-pullquote-quote');
+    quoteEl.textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
     el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
+    applyQuoteHang(quoteEl);
   } else {
     el.querySelector('.globe-gallery-pullquote-pin').remove();
   }
