@@ -748,8 +748,9 @@ body.globe-gallery-modal-open { overflow: hidden; }
   height: 108vh;
 }
 
-/* No arc phase under RM — a fixed pill would hang over the scrolling page. */
-.globe-gallery-reduced .globe-gallery-arc-copy {
+/* No arc phase under RM — a fixed pill would hang over the scrolling page.
+   `html` prefix matches the specificity of the html[dir="rtl"] rule above. */
+html .globe-gallery-reduced .globe-gallery-arc-copy {
   display: none;
 }
 

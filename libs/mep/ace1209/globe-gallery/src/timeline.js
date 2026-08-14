@@ -82,7 +82,7 @@ export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
 // --- Frame ---
 
-const clamp01 = (v) => (v > 0 ? (v > 1 ? 1 : v) : 0);
+const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN → 0
 
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
 // monomorphic; activeCamera and below are written by tick()'s producer stages.
