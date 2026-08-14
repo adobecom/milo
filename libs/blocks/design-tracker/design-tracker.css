@@ -606,7 +606,12 @@ body.image-modal-open {
                               shifts/enlarges the box by a fixed amount that's
                               imperceptible when enlarged but very visible when the
                               screenshot is shrunk (fixed px vs. the box's %-based size) */
-  border: 2px solid #6e6e6e; /* fallback for any changeType not covered below, so it's never invisible */
+  /* 1px, not 2px — a densely-changed day (100+ small elements, e.g. a long
+     repeated list) packs many adjacent/overlapping boxes into a small area;
+     confirmed visually that at 2px the borders alone compound into a solid
+     mesh, independent of fill opacity. 1px still reads as a clear per-box
+     outline once zoomed/hovered, without dominating at a glance. */
+  border: 1px solid #6e6e6e; /* fallback for any changeType not covered below, so it's never invisible */
   background: rgba(110, 110, 110, 0.15);
   /* Clickable now (jumps to the matching row in the changes list, see
      jumpToListItem() in design-tracker.js) — a click landing on empty image
@@ -614,6 +619,21 @@ body.image-modal-open {
      underneath just fine, since there's nothing here to intercept it. */
   cursor: pointer;
   transition: transform 0.1s;
+}
+
+/* Lets a user distinguish one box from its neighbors in a dense cluster
+   before committing to a click — previously there was no feedback at all
+   between "cursor: pointer" and the click landing. Excludes the active
+   (already-selected) box so hovering it doesn't fight its own bigger scale. */
+.roadmap-highlight:hover:not(.roadmap-highlight-active) {
+  transform: scale(1.3);
+  z-index: 1;
+  /* Not currentcolor — color isn't set per changeType, only border-color
+     is, so currentcolor would resolve to the inherited body text color
+     instead of matching. A neutral dark outline reads fine against any of
+     the four changeType colors. */
+  outline: 1px solid #2c2c2c;
+  outline-offset: 1px;
 }
 
 .roadmap-highlight-modified {
