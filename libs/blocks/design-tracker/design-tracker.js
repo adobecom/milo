@@ -1,9 +1,22 @@
 // Data lives in DA (private, auth-gated), never in this repo — see
 // .claude/skills/design-tracker/SKILL.md's "Data lives in DA" section for
-// why. window.DESIGN_TRACKER_DATA_URL is an override hook for local testing
-// only; real usage always reads from DA.
-const DATA_URL = window.DESIGN_TRACKER_DATA_URL
-  || 'https://content.da.live/adobecom/milo/drafts/dusan/design-tracker/entries.json';
+// why. Confirmed (three separate hosting contexts, all real browser tests):
+// a page's own fetch()/img.src against content.da.live gets a real 401 —
+// there is no transparent auth for that from arbitrary JS, only for da.live's
+// own app and for Helix's server-side content fetch during page render. So
+// entries.json (thumbnails included, as base64 data URIs) is embedded
+// directly in the block's own authored content at generation time — see
+// SKILL.md's "Publishing the dashboard page" — read here, never fetched.
+function readEmbeddedEntries(block) {
+  const cell = block.querySelector(':scope > div > div');
+  const text = cell?.textContent?.trim();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
 
 function entryDate(entry) {
   return entry.figmaLastModified || entry.addedDate || null;
@@ -822,6 +835,9 @@ function buildHeader(block) {
 }
 
 export default async function decorate(block) {
+  // Must read the authored data cell before clearing block.textContent below.
+  const embedded = readEmbeddedEntries(block);
+
   block.textContent = '';
   const { sinceInput, filterStatus } = buildHeader(block);
 
@@ -832,13 +848,19 @@ export default async function decorate(block) {
 
   let entries = [];
   let loadError = false;
-  try {
-    // cache-bust: content.da.live can be cached aggressively by intermediate
-    // caches, same reasoning as the standalone tool's static server — without
-    // this, a refreshed entries.json can keep serving a stale copy.
-    const res = await fetch(`${DATA_URL}?v=${Date.now()}`);
-    entries = await res.json();
-  } catch {
+  if (embedded) {
+    entries = embedded;
+  } else if (window.DESIGN_TRACKER_DATA_URL) {
+    // Local/dev override only — production content always has embedded data,
+    // since a live fetch against content.da.live is a confirmed 401 (see
+    // readEmbeddedEntries's comment above).
+    try {
+      const res = await fetch(`${window.DESIGN_TRACKER_DATA_URL}?v=${Date.now()}`);
+      entries = await res.json();
+    } catch {
+      loadError = true;
+    }
+  } else {
     loadError = true;
   }
 
