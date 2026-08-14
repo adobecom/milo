@@ -174,12 +174,18 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const icon = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
 
-  if (asset?.dataset.videoSource) {
-    asset.setAttribute('preload', 'none');
-    asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
-    asset.setAttribute('muted', true);
-    asset.setAttribute('tabindex', '-1');
-    asset.removeAttribute('controls');
+  // `asset` is the authored WRAPPER, not the media element: for a video cell the authored
+  // markup is `<p><video data-video-source=...></video></p>`, so `asset.dataset.videoSource`
+  // is undefined and this block never used to run at all.
+  const video = asset?.matches?.('video') ? asset : asset?.querySelector?.('video');
+  if (video?.dataset.videoSource) {
+    video.setAttribute('preload', 'none');
+    if (!video.querySelector('source')) {
+      video.appendChild(createTag('source', { src: video.dataset.videoSource, type: 'video/mp4' }));
+    }
+    video.setAttribute('muted', true);
+    video.setAttribute('tabindex', '-1');
+    video.removeAttribute('controls');
   }
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
@@ -191,10 +197,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       <div class='hub-hero-carousel-item-header'>
         ${eyebrow?.outerHTML}
       </div>
-      <div class='hub-hero-carousel-item-media'>
-        ${asset?.outerHTML}
-        ${icon?.outerHTML ?? ''}
-      </div>
+      <div class='hub-hero-carousel-item-media'></div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
         <span aria-hidden='true'>${icons?.add}</span>
@@ -219,6 +222,13 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
+
+  // MOVE the real asset/icon nodes in instead of re-parsing `${asset.outerHTML}`. Serialising
+  // an element to a string and re-parsing it mints a NEW element, which silently drops every
+  // JS-side association Milo already made on the original — including the lazy `<source>`
+  // IntersectionObserver `decorateAnchorVideo` registers (utils/decorate.js), which is the only
+  // thing that ever gives a `#viewportplay` video something to play.
+  slideEl.querySelector('.hub-hero-carousel-item-media')?.append(...[asset, icon].filter(Boolean));
 
   if (link?.dataset?.modalHash) slideEl.dataset.modalHash = link.dataset.modalHash;
   if (link?.dataset?.modalPath) slideEl.dataset.modalPath = link.dataset.modalPath;
