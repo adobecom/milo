@@ -18,6 +18,17 @@ const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
+// Every `play()` in this block used to end in `.catch(() => { })`. A rejection here is
+// usually routine — an AbortError when a competing pause()/rewind interrupts the play(), or a
+// NotAllowedError from the autoplay policy — but swallowing it silently is exactly why a video
+// that could never play at all (no `<source>`, so NETWORK_EMPTY) presented as intermittent
+// rather than broken. Log it instead; `info`, because it is observable-not-actionable.
+const playVideo = (video) => {
+  video?.play().catch((error) => {
+    window.lana?.log(`hub-hero: video play rejected: ${error?.name}: ${error?.message}`, { tags: 'hub-hero', severity: 'info' });
+  });
+};
+
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
   rewindIntervals.delete(video);
@@ -66,7 +77,7 @@ const handleMobileAutoplay = (carousel) => {
         if (!isMobile() || !entry.isIntersecting) return;
         const nextRect = nextSlide?.getBoundingClientRect();
         const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-        if (!isCovered) video.play().catch(() => { });
+        if (!isCovered) playVideo(video);
       },
       { threshold: 0.6 },
     );
@@ -84,7 +95,7 @@ const handleMobileAutoplay = (carousel) => {
         }
         const rect = slide.getBoundingClientRect();
         if (rect.top >= 0 && rect.top <= window.innerHeight) {
-          video.play().catch(() => { });
+          playVideo(video);
         }
       },
       { threshold: 0.6 },
@@ -122,9 +133,6 @@ const onSlideLeave = (event) => {
   }, 100));
 };
 
-// `onHover` writes `isFocus ? 'focused' : 'hovered'`, so clearing only 'hovered' left
-// '.focused' permanently set — and Chrome focuses an `<a tabindex="0">` on mousedown, so a
-// single click pinned it forever.
 // The keyboard counterpart of `mouseleave`. Without it a slide entered by Tab kept playing
 // and kept its class after focus moved on: `focus` was wired up on its own, and nothing
 // else in this block listens for `blur` or `focusout`.
@@ -133,6 +141,9 @@ const onSlideBlur = (event) => {
   onSlideLeave(event);
 };
 
+// `onHover` writes `isFocus ? 'focused' : 'hovered'`, so clearing only 'hovered' left
+// '.focused' permanently set — and Chrome focuses an `<a tabindex="0">` on mousedown, so a
+// single click pinned it forever.
 const removeHovered = (carousel) => {
   const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
   [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
@@ -161,7 +172,7 @@ const onHover = (event) => {
 
   if (video) {
     stopRewind(video);
-    video.play().catch(() => { });
+    playVideo(video);
   }
 
   const slideIndex = slideEl.dataset.index * 1;
