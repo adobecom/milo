@@ -1,12 +1,10 @@
 // to run tests:
 // npm run nala stage tag=mepact1 mode=headed
 
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from './mep-test.js';
 import { features } from './mep-actions.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';
-
-process.env.NALA_WORKER_COUNT = '2';
 
 const miloLibs = process.env.MILO_LIBS || '';
 const sec5Loc = 'main:has-text("Section 5")';

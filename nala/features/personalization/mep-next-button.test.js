@@ -2,12 +2,9 @@
 //   npm run nala stage mep-next-button.test.js mode=debug
 //   npm run nala stage tag=mepnext1 mode=debug
 
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from './mep-test.js';
 import { features } from './mep-next-button.spec.js';
 import MepButton from './mep-next-button.page.js';
-
-process.env.NALA_WORKER_COUNT = '2';
-// process.env.NALA_TIMEOUT = '60000';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
@@ -20,8 +17,10 @@ test.beforeEach(async ({ page }) => {
 test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   // The caas/mas highlight badges render instantly once toggled, but under CI
   // contention (shared preview origin) their arrival can exceed the default
-  // budget on slower firefox/webkit workers. Widen the ceilings — timeouts are
-  // ceilings, not sleeps, so fast runs are unaffected.
+  // budget on slower firefox/webkit workers. Widen the ceiling — timeouts are
+  // ceilings, not sleeps, so fast runs are unaffected. Keep this cushion until the
+  // mep-test.js pacing is proven to hold combined RPS under the AEM.live limit in CI.
+  test.setTimeout(60000);
   const URL = `${baseURL.replace('.aem.live', '.aem.page')}${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
