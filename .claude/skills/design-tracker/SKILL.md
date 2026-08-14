@@ -101,24 +101,45 @@ The user will either:
    - `figmaFileKey`: the path segment after `/design/`.
    - `figmaNodeId`: the `node-id` query param, with `-` converted to `:`
      (e.g. `392-16552` → `392:16552`). **If the URL has no `node-id` at
-     all, set `figmaNodeId` to JSON `null`** — this means "track the whole
-     file" (see "Whole-file tracking" below), not "track nothing."
+     all, don't default to whole-file tracking** — call `get_metadata`
+     (Figma MCP, no `nodeId`) to see the file's top-level pages, then
+     `get_metadata` again on the relevant page to see its top-level frames.
+     A Figma page commonly holds one umbrella design as several viewport
+     variants side by side (e.g. `xl - 1441+`, `lg - 1280-1440`,
+     `md - 1279...`, `sm - 768...`) plus non-design annotation frames (a
+     "SSOT" marker, notes, etc.) — **split each real viewport-variant frame
+     into its own separate entry** (own `figmaNodeId`, own `figmaFileName`
+     from the frame's name), not one `figmaNodeId: null` blob for the whole
+     file. If it's genuinely ambiguous which top-level frames are real
+     variants vs. annotations, ask the user rather than guessing — but
+     default to splitting, since that's almost always what "no node-id"
+     means in practice. Only fall back to true whole-file tracking (see
+     "Whole-file tracking" below) if the user explicitly asks to track
+     everything as one unit.
 2. Parse the Jira URL: `jiraKey` is the path segment after `/browse/`.
 3. Download the current `entries.json` from DA (see "Writing back") and
    append a new entry object (create the array if empty) with `addedDate`
-   set to today and all other Figma/Jira data fields set to `null` — then
-   immediately run the **Refresh** steps below for this entry.
+   set to today and all other Figma/Jira data fields set to `null` — **one
+   entry per identified frame** if step 1 found multiple viewport variants
+   under one umbrella design, not one entry for the whole group. All
+   variants from the same add share the same `jiraKey`/`jiraUrl` (if any)
+   so they group together on the dashboard as one ticket's designs — only
+   `figmaNodeId`/`figmaFileName` (and everything Refresh fills in
+   per-entry) differ between them. Then immediately run the **Refresh**
+   steps below for each new entry.
 4. **Always pull the full version history for a newly-added design, not
    just current state** — run "Version-history change bars" below (it's
    optional for a routine *refresh* of an already-tracked design, but
    mandatory the first time a design is added, so the user gets the whole
    history immediately rather than only change data going forward from
-   today). Pass a high `--max-versions` (well above the default 60) so a
-   design with a long history doesn't get truncated — if the script's
-   `--since`/`--max-versions` error fires (see that section), that's the
-   signal to raise `--max-versions` further, not to accept partial
-   history. Also run "End-of-day screenshots" for the same reason, unless
-   the user says they don't want screenshots for this one.
+   today) — **for every entry added**, not just one, when step 1 split a
+   URL into multiple viewport variants. Pass a high `--max-versions` (well
+   above the default 60) so a design with a long history doesn't get
+   truncated — if the script's `--since`/`--max-versions` error fires (see
+   that section), that's the signal to raise `--max-versions` further, not
+   to accept partial history. Also run "End-of-day screenshots" for the
+   same reason, unless the user says they don't want screenshots for this
+   one.
 
 ## Refresh Figma data (per entry)
 
@@ -152,7 +173,13 @@ The user will either:
    leave `figmaLastModified` as `null` — the page falls back to
    `addedDate` for sorting/filtering, so this degrades gracefully.
 
-## Whole-file tracking (figmaNodeId: null)
+## Whole-file tracking (figmaNodeId: null) — rare, explicit-request-only fallback
+
+**Not the default for a no-node-id URL** — see "Add a new pair" step 1:
+a no-node-id URL almost always means "split into each viewport-variant
+frame," each getting its own real `figmaNodeId`. Only use whole-file
+tracking (`figmaNodeId: null`) when the user explicitly says they want the
+entire file tracked as a single unit rather than split per design.
 
 Omitting `--node-id` when calling `diff_versions.py` (and `merge_entry.py`
 — omit the flag entirely, don't pass the literal string `"None"`) tracks
