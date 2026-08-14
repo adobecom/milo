@@ -356,6 +356,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     .video-container {
       opacity: 1;
       object-position: top;
+      height: auto;
     }
 
     img,
