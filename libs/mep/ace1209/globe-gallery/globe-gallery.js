@@ -17,7 +17,6 @@ import * as TL from './src/timeline.js';
 const CARD_ASPECT = 456 / 631; // portrait
 
 const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-const isRtl = () => document.documentElement.dir === 'rtl';
 
 // Two render profiles split at 768px (Milo sm↔md); resolved once via resolveBP(W).
 // See README (Breakpoints).
@@ -348,7 +347,8 @@ function createGlobeGalleryRuntime(
 
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
-  let pqAppearZoomT = 0.5; // zoomT the pull-quote fades in at; from --pq-pin-factor (see doLayout)
+  // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see doLayout)
+  let pqAppearZoomT = 0.5;
   let W = 0; let
     H = 0;
 
@@ -359,7 +359,7 @@ function createGlobeGalleryRuntime(
   let caFilterB = null; // SVG feOffset element for blue channel
   let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
   // Cached node + last-written style strings (DOM writes only on change).
-  const arcCopy = { el: null, startSide: '', startStr: '', opStr: '', transformStr: '' };
+  const arcCopy = { el: null, opStr: '', transformStr: '' };
 
   const drag = { isDragging: false, velX: 0, velY: 0 };
   let renderReady = false;
@@ -1241,25 +1241,8 @@ function createGlobeGalleryRuntime(
     const arcCopyOutE = easeInOutCubic(arcCopyOutT);
     const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
     const arcCopySlide = 24 * (1 - arcCopyInE);
-    // sm pins 8px from viewport inline-start;
-    // md uses the 24px-grid-aligned position with centering.
-    const gridLeft = (bp.name === 'sm')
-      ? 8
-      : 24 + Math.max(0, (W - 48 - 1392) / 2);
-    const inlineStartSide = isRtl() ? 'right' : 'left';
-    const inlineEndSide = isRtl() ? 'left' : 'right';
-    const insetStr = `${gridLeft}px`;
     const opStr = arcCopyOp.toFixed(3);
     const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
-    if (inlineStartSide !== arcCopy.startSide) {
-      arcCopy.el.style[inlineEndSide] = '';
-      arcCopy.startSide = inlineStartSide;
-      arcCopy.startStr = '';
-    }
-    if (insetStr !== arcCopy.startStr) {
-      arcCopy.el.style[inlineStartSide] = insetStr;
-      arcCopy.startStr = insetStr;
-    }
     if (opStr !== arcCopy.opStr) { arcCopy.el.style.opacity = opStr; arcCopy.opStr = opStr; }
     if (transformStr !== arcCopy.transformStr) {
       arcCopy.el.style.transform = transformStr;
@@ -1831,7 +1814,7 @@ function createGlobeGalleryRuntime(
       }
       blockDocTop = root.getBoundingClientRect().top + window.scrollY;
       blockHeight = root.offsetHeight || window.innerHeight * 7;
-      const pinFactor = parseFloat(getComputedStyle(root).getPropertyValue('--pq-pin-factor')) || 0.44;
+      const pinFactor = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-pin-factor')) || 0.44;
       pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
       // Re-apply DPR (can change when dragging between monitors of different density).
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1896,8 +1879,6 @@ function createGlobeGalleryRuntime(
     caFilterR = q('.globe-gallery-ca-r-offset');
     caFilterB = q('.globe-gallery-ca-b-offset');
     arcCopy.el = q('.globe-gallery-arc-copy');
-    arcCopy.startSide = '';
-    arcCopy.startStr = '';
     arcCopy.opStr = '';
     arcCopy.transformStr = '';
 

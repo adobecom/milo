@@ -36,7 +36,7 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 ) + PROGRESS_FOLD_DUR;
 export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-export const FORMATION_SCROLL_VH = 304; // keep = --formation-vh (CSS)
+export const FORMATION_SCROLL_VH = 304; // keep = --gg-formation-vh (CSS)
 export const PQ_APPEAR_LEAD = 0.03;
 
 // --- Entry (raw-scroll space, before `progress` exists) ---

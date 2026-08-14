@@ -39,13 +39,13 @@ export function createCardMaterial({
 }
 
 // Modal SDF material for the flown-out card. `aspect` is the card's world-space
-// width/height; uRadius is a fraction of card height (22/631).
+// width/height; uRadius is a fraction of card height, owned by modal.js (see README).
 export function createModalMaterial(texture, aspect) {
   return new THREE.ShaderMaterial({
     uniforms: {
       map: { value: texture },
       uAspect: { value: aspect },
-      uRadius: { value: 22.0 / 631.0 }, // modal.js sets to 0 on mobile (square, full-bleed)
+      uRadius: { value: 22.0 / 631.0 },
       uOpacity: { value: 1.0 },
       uMotionDir: { value: new THREE.Vector2(0, 0) },
       uWarp: { value: 0 },

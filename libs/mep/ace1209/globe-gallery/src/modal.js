@@ -18,8 +18,7 @@ const MODAL_PHASE = Object.freeze({
 });
 // Camera→card distance the modal card flies to (perspective FOV 60°).
 const MODAL_CAM_DIST = 16.4;
-// SDF corner radius: 22px on the 631px-tall source; materials.js mirrors it.
-const SDF_CORNER_RADIUS = 22 / 631;
+const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
 const MODAL_ANIM_DURATION = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
 // Fisheye warp peaks (sin bell curve) per modal interaction.
@@ -139,6 +138,22 @@ export default function createGlobeModal({
 
   const isRtl = () => document.documentElement.dir === 'rtl';
 
+  // Desktop/tablet plane fit + the uRadius fraction for a constant MODAL_RADIUS_PX. See README.
+  function modalDesktopFit(uAspect) {
+    const { W, H } = getViewport();
+    const R = MODAL_RADIUS_PX;
+    const cardHPx = Math.min(
+      (H - 2 * DT_IMG_MARGIN) + 2 * R,
+      ((W - 2 * DT_IMG_MARGIN) + 2 * R) / uAspect,
+    );
+    return { cardHPx, radiusFrac: R / cardHPx };
+  }
+
+  function modalRadiusFrac(uAspect) {
+    if (getBP() === 'sm') return 0;
+    return modalDesktopFit(uAspect).radiusFrac;
+  }
+
   // Barrel = cards with a real sphere slot; indices ≥ this are overflow.
   function barrelCount() { return getCards().length; }
   function isOverflowIdx(idx) { return idx >= barrelCount(); }
@@ -160,7 +175,7 @@ export default function createGlobeModal({
   function createOverflowCard(idx) {
     const { w, h } = getCardDims();
     const mat = createModalMaterial(ensureOverflowPlaceholder(), cardAspect);
-    mat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+    mat.uniforms.uRadius.value = modalRadiusFrac(cardAspect);
     const geo = new THREE.PlaneGeometry(w, h, 1, 1);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.material.depthTest = true;
@@ -253,7 +268,8 @@ export default function createGlobeModal({
   function getModalMaterial(card) {
     // Overflow carriers ARE the modal material — just refresh the corner radius.
     if (card.isOverflow) {
-      card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+      const u = card.modalMat.uniforms;
+      u.uRadius.value = modalRadiusFrac(u.uAspect.value);
       return card.modalMat;
     }
     if (!card.modalMat) {
@@ -262,8 +278,7 @@ export default function createGlobeModal({
       // Reset to base in case a prior open left a since-disposed hi-res texture.
       card.modalMat.uniforms.map.value = card.mesh.material.map;
     }
-    // Mobile: no corner radius; set each call so a breakpoint change is honored.
-    card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+    card.modalMat.uniforms.uRadius.value = modalRadiusFrac(card.sphereScaleX * cardAspect);
     return card.modalMat;
   }
 
@@ -331,32 +346,28 @@ export default function createGlobeModal({
     // Width is proportional via sphereScaleX (aspect kept); branches below diverge mobile/desktop.
     const isMobile = (getBP() === 'sm');
     const sScaleX = (card && card.sphereScaleX) ? card.sphereScaleX : 1;
+    const uAspect = cardAspect * sScaleX;
     let scaleY; let
       scaleX;
 
     if (isMobile) {
       // Mobile: full-bleed width, top-aligned, square corners; height follows aspect.
-      const uAspect = cardAspect * sScaleX;
       const cardHPx = W / uAspect;
       scaleX = W / (CARD_W_SPHERE * pxPerWorld);
       scaleY = scaleX / sScaleX;
       outPos.set(0, (H / 2 - cardHPx / 2) / pxPerWorld, camZ - dist);
     } else {
       // Desktop/tablet: visible photo contain-fit to the viewport minus DT_IMG_MARGIN, aspect
-      // kept. Geometry is backed out of the SDF corner inset (uRadius·cardHPx on all four sides)
-      // so the visible photo — not the geometry — reaches the margin. See README (Behavior notes).
-      const uAspect = cardAspect * sScaleX;
-      const SDF_RADIUS = SDF_CORNER_RADIUS;
-      const cardHPxFillH = (H - 2 * DT_IMG_MARGIN) / (1 - 2 * SDF_RADIUS);
-      const cardHPxFillW = (W - 2 * DT_IMG_MARGIN) / (uAspect - 2 * SDF_RADIUS);
-      const cardHPx = Math.min(cardHPxFillH, cardHPxFillW);
-
+      // kept — see README (Behavior notes).
+      const { cardHPx } = modalDesktopFit(uAspect);
       scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
 
       // Centered at viewport center.
       outPos.set(0, 0, camZ - dist);
     }
+    // uRadius tracks the fit, so it is re-pushed every frame — see README (Behavior notes).
+    if (card && card.modalMat) card.modalMat.uniforms.uRadius.value = modalRadiusFrac(uAspect);
     outQuat.identity();
     outScale.set(scaleX, scaleY, 1.0);
   }
@@ -405,37 +416,36 @@ export default function createGlobeModal({
     const isMobile = (getBP() === 'sm');
     const rtl = isRtl();
 
-    // Uniform chrome inset from the viewport edges; matches the .globe-gallery-modal-info padding.
-    const EDGE = isMobile ? 16 : 24;
+    const EDGE = 'var(--gg-modal-edge)';
 
     // Close button → top inline-end corner of the viewport, at the same inset as everything else.
     if (closeEl) {
       closeEl.style.position = 'absolute';
-      closeEl.style.top = `${EDGE}px`;
-      closeEl.style.insetInlineEnd = `${EDGE}px`;
+      closeEl.style.top = EDGE;
+      closeEl.style.insetInlineEnd = EDGE;
     }
 
     // Nav arrows + counter positioned individually (no wrapper) so :hover scale survives the fade.
     // Mobile → arrows bottom corners, counter bottom-center. Desktop → one row at the image bottom.
-    const NAV_SIZE = 44; // matches the .globe-gallery-modal-nav width/height in CSS
+    const NAV_SIZE = 48;
     const counterBase = 'translateX(-50%)';
     if (prevEl) prevEl.style.position = 'absolute';
     if (nextEl) nextEl.style.position = 'absolute';
     if (counterEl) counterEl.style.position = 'absolute';
 
     const setBottomEdge = (elx, side) => {
-      elx.style[side] = `${EDGE}px`; elx.style[side === 'left' ? 'right' : 'left'] = 'auto';
-      elx.style.top = 'auto'; elx.style.bottom = `${EDGE}px`;
+      elx.style[side] = EDGE; elx.style[side === 'left' ? 'right' : 'left'] = 'auto';
+      elx.style.top = 'auto'; elx.style.bottom = EDGE;
     };
     if (isMobile) {
       if (prevEl) setBottomEdge(prevEl, rtl ? 'right' : 'left');
       if (nextEl) setBottomEdge(nextEl, rtl ? 'left' : 'right');
       if (counterEl) {
         counterEl.style.left = '50%'; counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
+        counterEl.style.top = 'auto'; counterEl.style.bottom = EDGE;
       }
     } else {
-      const rowBottom = `${EDGE}px`;
+      const rowBottom = EDGE;
       const centerX = (visLeft + visRight) / 2;
       const flank = DT_COUNTER_W / 2 + DT_NAV_GAP; // pill edge → arrow's near edge
       if (counterEl) {
@@ -498,8 +508,8 @@ export default function createGlobeModal({
     const canScroll = overflow > 1;
     const top = canScroll && descEl.scrollTop > 1;
     const bottom = canScroll && descEl.scrollTop < overflow - 1;
-    descEl.style.setProperty('--desc-fade-top', top ? '20px' : '0');
-    descEl.style.setProperty('--desc-fade-bottom', bottom ? '20px' : '0');
+    descEl.style.setProperty('--gg-desc-fade-top', top ? '20px' : '0');
+    descEl.style.setProperty('--gg-desc-fade-bottom', bottom ? '20px' : '0');
     if (canScroll) descEl.tabIndex = 0;
     else if (document.activeElement !== descEl) descEl.removeAttribute('tabindex');
   }

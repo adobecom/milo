@@ -10,7 +10,7 @@ code mixes.
 
 ## What it is
 
-Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored photo cards
+Over a tall, pinned scroll range (`--gg-runway-height` in the CSS), the authored photo cards
 (any count on desktop; first 24 on mobile — but the **modal browses all** authored images on
 mobile, see Card count) animate through four phases:
 
@@ -42,7 +42,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants + pure helpers (module scope) — all scroll-**timing** constants live in `timeline.js` — and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator over named single-concern stages plus `modal.*` / `a11y.*`; per-card placement is a dispatcher (`updateCardTransform`) over four branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`). Instantiates the DI modules. |
 | `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
-| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = 22/631 of height + `uAspect`), no rasterized mask (`MODAL_FRAG` `uRadius` 0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
+| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = fraction of card height + `uAspect`), no rasterized mask. Note the two frags use *different* SDF box conventions: `CARD_FRAG` fills the plane edge-to-edge (barrel cards keep the proportional 22/631 radius), while `MODAL_FRAG` insets the shape by `uRadius` on all four sides — modal.js sizes the plane around that inset and sets `uRadius` for a constant 16px on-screen radius (0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
 | `materials.js` | GPU-asset factories (all named exports, no per-instance state). **Materials:** `createCardMaterial` (card ShaderMaterial — cover-crop + optional CA/warp + SDF corners, with the property-proxy), `createModalMaterial` (modal SDF), `createTextMaterial` (hint `TEXT_FRAG`, uniforms only). **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy full image at a higher cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)` (renders the hint string, auto-scaled font). |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), touch swipe/pull gestures (gated on a coarse primary pointer, so tablets at ≥768 get them too), chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
@@ -92,8 +92,8 @@ reference with `interaction.js`), `masonryMorph` (`active`/`t`), `sphereOrient` 
 yaw, `z` = roll — see Sphere rotation), `navNudge` (`active`, `target{X,Y,Z}` = destination pose,
 `start{X,Y,Z}` = pose captured when armed, `frame`/`frames` = elapsed/total count from
 `KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set by keyboard centring only — the
-modal leaves it as-is), `arcCopy` (`el` + the last-written style strings `startSide`/`startStr`/
-`opStr`/`transformStr`, so `updateArcCopy` only touches the DOM when a value actually changed), and
+modal leaves it as-is), `arcCopy` (`el` + the last-written style strings `opStr`/`transformStr`, so
+`updateArcCopy` only touches the DOM when a value actually changed), and
 `ctxLoss` (`rebuilds`/`stableTimer`/`recovering`/`recoverTimer` — see WebGL context loss).
 
 Per-card placement (the largest stage) is a dispatcher over four runtime-scope branch fns — kept in
@@ -335,13 +335,13 @@ unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal role-label/heading/description (the
 `<dialog>`'s `aria-labelledby` (role + name) / `aria-describedby` IDREFs). `el` itself is the scroll runway
-(height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
+(height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-gallery-modal-open` scroll lock.
 
 **Scroll model.** (For *what happens at each point* on that scroll, see **Lifecycle timeline**
 below — charts + an event table. This subsection is the mechanism that gets you there.) The block
-element *is* the scroll runway (its height is `--runway-height`) — there's
+element *is* the scroll runway (its height is `--gg-runway-height`) — there's
 no separate runway element. Raw scroll is measured against the block's own metrics (`blockDocTop` =
 top in document space, `blockHeight` = `offsetHeight`, both refreshed in `doLayout` + a body
 `ResizeObserver`), then remapped **piecewise** (in `computeFrame`) into the `progress` 0→1 the phase
@@ -350,24 +350,24 @@ speeding up the globe:
 
 | segment | raw scroll | → progress | owns |
 |---|---|---|---|
-| **formation** (arc→grid→fold→settle) | `0 → --formation-vh` (304vh) | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
-| **tail** (zoom-through + pull-quote) | `--formation-vh → --runway-height` | `foldLast → 1` | `zoomT`, cursor retire, pull-quote |
+| **formation** (arc→grid→fold→settle) | `0 → --gg-formation-vh` (304vh) | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
+| **tail** (zoom-through + pull-quote) | `--gg-formation-vh → --gg-runway-height` | `foldLast → 1` | `zoomT`, cursor retire, pull-quote |
 
-Formation is **locked** to a fixed scroll length: `FORMATION_SCROLL_VH` (JS) = `--formation-vh` (CSS)
+Formation is **locked** to a fixed scroll length: `FORMATION_SCROLL_VH` (JS) = `--gg-formation-vh` (CSS)
 = 304vh (≈ `SPHERE_FORMED_PROGRESS` × the original 945vh single-runway tuning). `formedScrollPx()` is
 the single source used by the remap, the reduced-motion pin, and the focus-snap. Within the tail,
 `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
 
-Because formation is fixed, `--runway-height` sets tail length only. `--runway-height` is **shared**
-across breakpoints; `--pq-pin-factor` is **per-breakpoint** (`@media (min-width:768px)` overrides the
+Because formation is fixed, `--gg-runway-height` sets tail length only. `--gg-runway-height` is **shared**
+across breakpoints; `--gg-pq-pin-factor` is **per-breakpoint** (`@media (min-width:768px)` overrides the
 sm base). CSS custom props on `.globe-gallery`:
 
 | prop | sm (base) | md+ | effect |
 |---|---|---|---|
-| `--runway-height` | 520vh | 520vh | total height = formation + tail; ↓ = shorter stretch after the globe (shrinks gap **and** hold together) |
-| `--formation-vh` | 304vh | 304vh | locked formation length; must equal `FORMATION_SCROLL_VH` in JS |
-| `--pq-pin-factor` | 0.65 | 0.55 | share of the tail the (bottom-anchored) quote pin occupies → its hold |
+| `--gg-runway-height` | 520vh | 520vh | total height = formation + tail; ↓ = shorter stretch after the globe (shrinks gap **and** hold together) |
+| `--gg-formation-vh` | 304vh | 304vh | locked formation length; must equal `FORMATION_SCROLL_VH` in JS |
+| `--gg-pq-pin-factor` | 0.65 | 0.55 | share of the tail the (bottom-anchored) quote pin occupies → its hold |
 
 sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
 `≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the fixed 583px
@@ -376,15 +376,15 @@ factor is capped ~0.55: above it the fade-in would cross md's globe-clear (`zoom
 quote over the globe.
 
 **Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
---pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
-threshold `pqAppearZoomT = (1 − --pq-pin-factor) − PQ_APPEAR_LEAD` (0.03) is **read from the CSS var in
+--gg-pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
+threshold `pqAppearZoomT = (1 − --gg-pq-pin-factor) − PQ_APPEAR_LEAD` (0.03) is **read from the CSS var in
 `doLayout`** — so the pin geometry and the opacity trigger can't drift, per breakpoint or across a
-768px resize. Higher `--pq-pin-factor` → quote appears earlier **and** holds longer (they trade off at
-a fixed runway); to change both together, move `--runway-height`.
+768px resize. Higher `--gg-pq-pin-factor` → quote appears earlier **and** holds longer (they trade off at
+a fixed runway); to change both together, move `--gg-runway-height`.
 
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
-- *Whole stretch after the globe too long:* lower `--runway-height` (both breakpoints).
-- *Quote hold too short/long, or appears too early/late:* `--pq-pin-factor` for that breakpoint (JS
+- *Whole stretch after the globe too long:* lower `--gg-runway-height` (both breakpoints).
+- *Quote hold too short/long, or appears too early/late:* `--gg-pq-pin-factor` for that breakpoint (JS
   threshold auto-follows). md is capped ~0.55 (globe-clear); sm can go to ~0.67.
 - *"Click & Drag" cursor lingers too long/short:* `CURSOR_ZOOM_RETIRE_T` (0.40) — keep it ≥ the md
   camera-clear `zoomT` (≈0.42... it currently fires just before, at camz≈−33, accepted) and, on md,
@@ -533,7 +533,7 @@ canvas      ###########################visible##########################|...
 
 ### Event table
 
-`vh` assumes the default `--runway-height: 520vh` / `--formation-vh: 304vh`; `progress` and the
+`vh` assumes the default `--gg-runway-height: 520vh` / `--gg-formation-vh: 304vh`; `progress` and the
 gate columns are runway-independent.
 
 | vh | `progress` | gate | what happens | where |
@@ -553,11 +553,11 @@ gate columns are runway-independent.
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
 | 376 | 0.548 | `zoomT ≥ 1/3` | hint text fully faded | `updateClickDragText` |
 | 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
-| 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--pq-pin-factor`) | `updatePullQuote` |
+| 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--gg-pq-pin-factor`) | `updatePullQuote` |
 | 386 | 0.580 | `CURSOR_ZOOM_DISMISS_T` (0.38) | cursor label fades | `cursor.update` |
 | 390 | 0.593 | `CURSOR_ZOOM_RETIRE_T` (0.40) | cursor disc retires | `cursor.update` |
 | 509 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` (quote alone to the end) | `updateCanvasVisibility` |
-| 520 | 1.000 | runway end | pull-quote pin exits | CSS (`--pq-pin-factor`) |
+| 520 | 1.000 | runway end | pull-quote pin exits | CSS (`--gg-pq-pin-factor`) |
 
 Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
 (contours → un-dissolve, plus the one-time sm masonry re-solve on `onDone`), the modal
@@ -582,7 +582,7 @@ rather than restating them — it cannot drift from the code:
 ```sh
 cd libs/mep/ace1209/globe-gallery && node --input-type=module -e "
 import * as T from './src/timeline.js';
-const RUNWAY_VH = 520; // --runway-height
+const RUNWAY_VH = 520; // --gg-runway-height
 const tail = RUNWAY_VH - T.FORMATION_SCROLL_VH;
 const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
   ? (p / T.SPHERE_FORMED_PROGRESS) * T.FORMATION_SCROLL_VH
@@ -684,8 +684,8 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 Phase constants (all in **`src/timeline.js`**) — these are the *inputs*; **Lifecycle timeline**
 above shows what they add up to. The `P_*` values live in **progress-space** (0→1) and shape formation
 + zoom; the runway split, pull-quote, and cursor retirement are covered under **Scroll model → the
-runway / progress model** above (they're driven by `--runway-height` / `--formation-vh` /
-`--pq-pin-factor` in CSS, read/derived in JS):
+runway / progress model** above (they're driven by `--gg-runway-height` / `--gg-formation-vh` /
+`--gg-pq-pin-factor` in CSS, read/derived in JS):
 
 ```
 P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
@@ -717,11 +717,11 @@ spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
 `gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
 cannot drift apart.
 
-**Arc-copy placement** is split between CSS and JS: CSS owns the block edge (`bottom` — `8px` at
-sm, `24px` from `min-width:768px`, docking it to the viewport bottom on the same 24px gutter the JS
-uses inline-start), JS owns the inline-start inset per frame in `updateArcCopy` (`8px` at sm; at md
-`24 + max(0, (W − 48 − 1392) / 2)`, the 24px-grid-aligned position with centering) plus the opacity
-and the 24px entry slide.
+**Arc-copy placement is all CSS**; `updateArcCopy` owns only the opacity and the 24px entry slide.
+CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
+and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
+below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
+handles RTL, so the JS side-swap that used to maintain `left`/`right` by hand is gone.
 
 **Entry timing** — two independent constants: `ENTRY_LEAD_VH` (`0.4`) viewport-heights before the
 block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
@@ -752,10 +752,63 @@ rebuild would otherwise inherit:
   pose — else pitch/yaw dragged before a device change carried into the rebuilt barrel and rendered
   it tilted until a scroll-out zeroed it.
 
+**Tokens.** Every spacing, radius, border-width, font-size, font-weight and blur value that lands on
+an S2A scale uses the token, not the literal — including positional insets (`bottom`,
+`inset-inline-start`) and the `p + p` copy rhythm. Sizes tied to a specific design measurement stay
+literal, because pinning them to a coincidentally-equal token would imply a relationship that isn't
+there: the arc-copy `359px`/`382px` widths, the `138px` counter pill (mirrored by `DT_COUNTER_W`),
+the `375px` description measure, `--gg-pq-height` 583px, the 24/28px badge icons, and the 48px cursor
+disc. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
+snapping it to the nearest token is the cheaper fix:
+
+| value | where | nearest token |
+| --- | --- | --- |
+| `13px` font-size | modal role-label, badge app + role (sm) | none (scale is 12 / 14) |
+| `28px` line-height | modal name at md+ | none (24 / 32) |
+| `-0.6px` letter-spacing | modal name, both breakpoints | none (−0.48 / −0.96) |
+| `10px` gap | badge-left, badges at md+ | `--s2a-spacing-xs` 8 / `--s2a-spacing-sm` 12 |
+| `10px` padding-inline | cursor text pill | same |
+| `6px` radius | `--gg-control-radius` | `--s2a-border-radius-xs` 4 / `-sm` 8 |
+| `12px` blur | `--gg-chrome-blur` | `--s2a-blur-xs` 8 / `--s2a-blur-sm` 16 |
+| `18px` blur | modal backdrop | `--s2a-blur-sm` 16 |
+
+`--gg-chrome-blur` exists because that 12px appeared six times (modal arrows, close, info scrim, the
+md counter pill, the a11y tip, the cursor label). It is declared on `.globe-gallery` **and**
+`.globe-gallery-cursor` — `cursor.js` appends the cursor container to `<body>`, outside the block, so
+it cannot inherit. The same is true of any future local var the cursor needs.
+
+Note the font-size tokens are **rem** (`--s2a-font-size-sm` is `0.875rem`). Neither `libs/styles` nor
+`libs/c2/styles` overrides the root font-size, so they resolve to their nominal px — but unlike the
+px literals they replaced, this block's type now scales with a reader's browser font-size setting,
+which is the intended C2 behaviour.
+
+**Naming.** Classes are `globe-gallery-*` (BEM-ish, matching the block name); every custom property
+this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`--bc-` in
+brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
+is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
+inherit a stranger's value from an ancestor. Props read or written from JS
+(`--gg-pq-pin-factor` in `doLayout`, `--gg-desc-fade-top` / `--gg-desc-fade-bottom` in
+`updateDescFade`, `--gg-modal-edge` in `positionModalChrome`) are the coupling points — grep both
+files before renaming one. Only `--s2a-*` tokens come from upstream, and one of them
+(`--s2a-font-letter-spacing-neg-0_48`) has an underscore, which is why `custom-property-pattern` is
+disabled on that single line rather than file-wide.
+
 CSS is authored **mobile-first** and keeps its own three type tiers independently of the JS
 profiles: sm is the unscoped `.globe` base, then `@media (min-width:768px)` (md) and `1280px` (lg)
 layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted panels) base,
 `min-width:768px` overrides to the desktop card.
+
+The **arc copy and the pull-quote share one left copy edge**, `--gg-content-inset` on
+`.globe-gallery`: `max(0px, 100vw - --gg-copy-max) / 2 + --gg-copy-pad`, i.e. the pull-quote's own
+text edge (it centres a `--gg-copy-max` 1920px box and pads it by `--gg-copy-pad`, and the rule
+consumes the same two vars so the pair cannot drift). The arc copy is `position: fixed`, so its
+`inset-inline-start` resolves against the viewport and RTL is handled by the logical property —
+there is no JS involved. At sm it pins 8px from the edge and its own `--gg-arc-pad` (16px) lands the
+copy on the inset; at md+ the pill background is gone, so the box is offset back by that padding
+(`calc(var(--gg-content-inset) - var(--gg-arc-pad))`) to put the *copy*, not the box, on the edge.
+Before this, `updateArcCopy` positioned the box per-frame from a 1392px content grid
+(`24 + max(0, (W - 48 - 1392) / 2)`), which put the arc copy 16px inboard of the pull-quote below
+1440px and up to 256px inboard above it (1920px viewport: copy at 280px vs the quote's 24px).
 
 ## Analytics
 
@@ -914,15 +967,38 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   `positionModalChrome`, reading as one bottom-centre row at every breakpoint. **Desktop/tablet:** the
   counter pill centres horizontally on the image, an arrow `DT_NAV_GAP` (12px) each side; the pill is
   a fixed `DT_COUNTER_W` (138px, mirror its CSS `width`) so the flank offset needs no measuring; all
-  three share one `bottom` — a fixed 24px from the *viewport* bottom (not the image bottom), so the
-  row sits at the same height across images regardless of the photo's aspect ratio — 44px tall. **Mobile:** the same row spread wide into the bottom-left/right
+  three share one `bottom` — `--gg-modal-edge` from the *viewport* bottom (not the image bottom), so the
+  row sits at the same height across images regardless of the photo's aspect ratio — 48px tall. **Mobile:** the same row spread wide into the bottom-left/right
   corners inside the bottom scrim. The three frosted controls (both arrows + close) share one style
-  (1px `--s2a-color-transparent-white-24` border, `--s2a-border-radius-4`,
-  `--s2a-color-transparent-black-64`, `blur(12px)`); close sits top-right at every breakpoint. The
+  (1px `--s2a-color-transparent-white-24` border, `--gg-control-radius`,
+  `--s2a-color-transparent-black-64`, `blur(12px)`) and one 48×48 `--gg-control-size` hit target at
+  every breakpoint; close sits top-right at every breakpoint. Chrome geometry is three locals on
+  `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `--s2a-spacing-lg` at md+;
+  the single inset for all four controls *and* the scrim padding — `positionModalChrome` assigns the
+  `var()` string so nothing is duplicated in JS), `--gg-control-size` (48px, mirrored as `NAV_SIZE`
+  only because the desktop flank offset needs it as a number), and `--gg-control-radius` (6px — a
+  literal; S2A's radius scale has no 6px step). `--gg-modal-edge` is also the sm scrim's
+  `padding-bottom` reserve (`edge + control + edge`, so the arrows clear the badges); at md+ the
+  arrows sit under the image instead, so the override drops the reserve to a flat `edge`. The
   **visible image** is contain-fit to the viewport minus a symmetric margin (desktop `DT_IMG_MARGIN`
   12px; mobile full-bleed to screen width, square corners `uRadius=0`), native aspect kept — the
   sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`) so the *photo*, not
-  the geometry, reaches the margin. Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
+  the geometry, reaches the margin. The desktop corner radius is a **constant `MODAL_RADIUS_PX`
+  (16px) on screen for every card**, not a fixed fraction of height. `uRadius` is normalised to card
+  *height*, so `modalDesktopFit(uAspect)` solves the plane height as photo + 2·16px and derives
+  `radiusFrac = 16 / cardHPx` — per card, because `cardHPx` depends on whether that card's aspect
+  makes the fit width- or height-limited. Fixing the radius in px also removes the old circular
+  dependency (with a fractional radius the fit divided by `1 - 2·uRadius`).
+  `modalRadiusFrac(uAspect)` wraps it with the mobile `0`; it takes the **aspect**, not the card,
+  because that is the only per-card input — `uAspect = cardAspect × sphereScaleX`, and despite the
+  name `sphereScaleX` is not a sphere-phase transform, it is the card's native image aspect relative
+  to the base card aspect (set on texture decode, see `loadOverflowTexture`). The modal is still
+  WebGL geometry (a plane in `modalScene` under the same perspective camera), so this is the same
+  aspect the sphere phase uses. Because the fraction depends on the fit, `computeModalTarget`
+  re-pushes `uRadius` **per-frame** — a resize, or an overflow card's late aspect correction on
+  decode, changes `cardHPx`; the `getModalMaterial` / `createOverflowCard` assignments (and the
+  `createModalMaterial` initialiser) only seed the frames before it first runs.
+  Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
   scrim on the **viewport's left edge, full height**; mobile's scrim is one full-width bottom chunk
   (content-sized, capped at `60dvh`). Both are a **pinned header / scrolling body / pinned footer**:
   role + name are `flex-shrink:0` at the top, the **badges** are `flex-shrink:0` at the bottom (so
@@ -1223,7 +1299,7 @@ Known follow-ups, not blocking this integration branch:
 - **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
   (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
   the fully-formed, still globe is a scroll-pacing tuning matter still open.
-- **Pull-quote uses a hardcoded `--pq-height: 583px`.** It's a shortcut (enables `top: calc(50vh -
+- **Pull-quote uses a hardcoded `--gg-pq-height: 583px`.** It's a shortcut (enables `top: calc(50vh -
   h/2)` centering + a predictable hold = `pin − h`), but it's brittle to copy length — longer/localized
   strings overflow the fixed box (no `overflow` handling), shorter copy leaves a dead gap under
   `justify-content: space-between`. Make it copy-flexible (revisit in a future session). Two options:
@@ -1239,4 +1315,4 @@ Known follow-ups, not blocking this integration branch:
     `height`) so the quote/attribution stay spread; tolerates overflow better than today but partly
     keeps the rigidity. Only if the spread is a deliberate editorial layout worth preserving.
   - Decision needed from design: grouped (A) vs spread (B). See Scroll model → runway / progress model
-    for how `--pq-height` feeds the hold.
+    for how `--gg-pq-height` feeds the hold.

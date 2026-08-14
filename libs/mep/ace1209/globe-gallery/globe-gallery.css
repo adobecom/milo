@@ -1,13 +1,23 @@
-/* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix, custom-property-pattern */
+/* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
+
+.globe-gallery,
+.globe-gallery-cursor {
+  --gg-chrome-blur: 12px;
+}
 
 /* Scroll model (see README). .globe-gallery-reduced and .globe-gallery-empty overrides are at the end of this file. */
 .globe-gallery {
   /* Full scroll-runway model: README. */
-  --runway-height: 520vh;
-  --formation-vh: 304vh;
-  --pq-pin-factor: 0.65;
+  --gg-runway-height: 520vh;
+  --gg-formation-vh: 304vh;
+  --gg-pq-pin-factor: 0.65;
 
-  height: var(--runway-height);
+  /* Shared copy edge: the pull-quote's own left text edge, reused by the arc copy. See README. */
+  --gg-copy-max: 1920px;
+  --gg-copy-pad: var(--s2a-spacing-lg);
+  --gg-content-inset: calc(max(0px, 100vw - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
+
+  height: var(--gg-runway-height);
   position: relative;
   background: var(--s2a-color-gray-900);
   margin-top: 0;
@@ -35,14 +45,19 @@
 }
 
 .globe-gallery-arc-copy {
+  --gg-arc-pad: var(--s2a-spacing-md);
+
   position: fixed;
 
   /* (viewport - 16px), 8px gap each side, capped at 359px; calc(100vw - 32px) clamped to 343 on SE. */
-  width: calc(100vw - 16px);
+  width: calc(100vw - var(--s2a-spacing-xs) * 2);
   max-width: 359px;
-  bottom: 8px;
+  bottom: var(--s2a-spacing-xs);
+
+  /* sm: the pill hugs the edge and its own padding lands the copy on --gg-content-inset. */
+  inset-inline-start: var(--s2a-spacing-xs);
   box-sizing: border-box;
-  padding: 16px;
+  padding: var(--gg-arc-pad);
   background: var(--s2a-color-transparent-black-32);
   -webkit-backdrop-filter: blur(var(--s2a-blur-lg));
   backdrop-filter: blur(var(--s2a-blur-lg));
@@ -62,11 +77,13 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   /* 18px custom mini-headline (between Title-4 and body) — no standard type class fits. */
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
-  font-size: 18px;
+  font-size: var(--s2a-font-size-lg);
   line-height: var(--s2a-font-line-height-21);
+
+  /* stylelint-disable-next-line custom-property-pattern -- upstream S2A token has an underscore */
   letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
   color: var(--s2a-color-gray-25);
-  margin: 0 0 4px;
+  margin: 0 0 var(--s2a-spacing-2xs);
 }
 
 .globe-gallery-arc-copy-body {
@@ -81,27 +98,27 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   bottom: 0;
   left: 0;
   right: 0;
-  height: max(1px, calc((var(--runway-height) - var(--formation-vh)) * var(--pq-pin-factor)));
+  height: max(1px, calc((var(--gg-runway-height) - var(--gg-formation-vh)) * var(--gg-pq-pin-factor)));
   pointer-events: none;
 }
 
 /* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
 .globe-gallery-pullquote {
-  --pq-height: 583px;
+  --gg-pq-height: 583px;
 
   position: sticky;
-  top: calc(50vh - var(--pq-height) / 2);
+  top: calc(50vh - var(--gg-pq-height) / 2);
   box-sizing: border-box;
   width: 100%;
-  max-width: 1920px;
+  max-width: var(--gg-copy-max);
   margin: 0 auto;
-  height: var(--pq-height);
+  height: var(--gg-pq-height);
   z-index: 5;
   background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
+  padding: var(--gg-copy-pad);
   opacity: 0;
   pointer-events: none;
   transform: scale(0.9);
@@ -120,7 +137,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
 .globe-gallery-pullquote-attribution {
-  margin-top: 24px;
+  margin-top: var(--s2a-spacing-lg);
 }
 
 .globe-gallery-pullquote-name {
@@ -161,6 +178,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* Native <dialog> via showModal(); full-viewport top-layer overlay. Gesture surface: siblings go inert. */
 .globe-gallery-modal-chrome {
+  --gg-modal-edge: var(--s2a-spacing-md);
+  --gg-control-size: 48px;
+  --gg-control-radius: 6px;
+
   position: fixed;
   inset: 0;
   z-index: 15;
@@ -190,13 +211,13 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* Position set per-frame by JS; CSS is visual style only. */
 .globe-gallery-modal-nav {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--s2a-border-radius-xs);
+  width: var(--gg-control-size);
+  height: var(--gg-control-size);
+  border-radius: var(--gg-control-radius);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
   color: var(--s2a-color-gray-25);
   cursor: pointer;
   display: flex;
@@ -217,13 +238,13 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 /* Close button — position set by JS; same frosted treatment as the nav arrows. */
 .globe-gallery-modal-close {
   position: absolute;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--s2a-border-radius-xs);
+  width: var(--gg-control-size);
+  height: var(--gg-control-size);
+  border-radius: var(--gg-control-radius);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
   color: var(--s2a-color-gray-25);
   cursor: pointer;
   display: flex;
@@ -234,18 +255,18 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 .globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
 
-/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the nav row.
-   sm bottom = EDGE 16 + nav 44 + 16 clearance; the arrows sit under the badges at this breakpoint. */
+/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the sm nav
+   row (edge + control + edge). See README (Modal chrome). */
 .globe-gallery-modal-info {
   position: absolute;
   max-height: 60dvh;
   margin: 0;
-  padding: 16px 16px 76px;
+  padding: var(--gg-modal-edge) var(--gg-modal-edge) calc(var(--gg-modal-edge) * 2 + var(--gg-control-size));
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
   border-radius: var(--s2a-border-radius-md);
   background: var(--s2a-color-transparent-black-64);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
   box-shadow: none;
   pointer-events: auto;
   display: flex;
@@ -262,7 +283,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-modal-badges {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--s2a-spacing-xs);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -284,19 +305,19 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-modal-name {
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
-  font-size: 20px;
+  font-size: var(--s2a-font-size-xl);
   line-height: var(--s2a-font-line-height-md);
   letter-spacing: -0.6px;
   color: var(--s2a-color-gray-25);
-  margin: 2px 0 8px;
+  margin: var(--s2a-spacing-3xs) 0 var(--s2a-spacing-xs);
 }
 
 .globe-gallery-modal-description {
   font-family: var(--body-font-family);
-  font-size: 13px;
-  line-height: var(--s2a-font-line-height-xs);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
-  margin: 0 0 12px;
+  margin: 0 0 var(--s2a-spacing-sm);
   max-width: 375px;
   min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
   overflow-y: auto;
@@ -305,11 +326,11 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
 
   /* Scroll-shadow fade cue; JS (updateDescFade) sets each length to 0 (no fade) or 20px. */
-  --desc-fade-top: 0;
-  --desc-fade-bottom: 0;
+  --gg-desc-fade-top: 0;
+  --gg-desc-fade-bottom: 0;
 
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
 }
 
 .globe-gallery-arc-copy-body p,
@@ -319,7 +340,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 .globe-gallery-arc-copy-body p + p,
 .globe-gallery-modal-description p + p {
-  margin-top: 8px;
+  margin-top: var(--s2a-spacing-xs);
 }
 
 .globe-gallery-modal-description a {
@@ -335,7 +356,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s2a-spacing-sm);
 }
 
 .globe-gallery-modal-badge-left {
@@ -369,7 +390,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--s2a-spacing-3xs);
 }
 
 .globe-gallery-modal-badge-app-link::after {
@@ -377,8 +398,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: inline-block;
   width: 6px;
   height: 6px;
-  border-right: 2px solid var(--s2a-color-gray-25);
-  border-top: 2px solid var(--s2a-color-gray-25);
+  border-right: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
+  border-top: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
   transform: rotate(45deg) translateY(-1px);
   flex-shrink: 0;
 }
@@ -395,13 +416,13 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
 .globe-gallery-modal-counter {
-  height: 44px;
+  height: var(--gg-control-size);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--s2a-color-gray-25);
   font-family: var(--body-font-family);
-  font-size: 14px;
+  font-size: var(--s2a-font-size-sm);
   font-weight: var(--s2a-font-weight-body);
   letter-spacing: 0.02em;
   pointer-events: none;
@@ -462,15 +483,15 @@ body.globe-gallery-modal-open { overflow: hidden; }
   left: 50%;
   transform: translate(-50%, -50%) scale(0.96);
   max-width: min(78vw, 320px);
-  padding: 12px 20px;
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-20);
   border-radius: var(--s2a-border-radius-sm);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
   background: var(--s2a-color-transparent-black-64);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
   color: var(--s2a-color-gray-25);
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--s2a-font-size-md);
+  font-weight: var(--s2a-font-weight-adobe-clean-medium);
   line-height: 1.35;
   text-align: center;
   white-space: normal;
@@ -504,18 +525,22 @@ body.globe-gallery-modal-open { overflow: hidden; }
 .globe-gallery-a11y-card:focus-visible,
 .globe-gallery-modal-close:focus-visible,
 .globe-gallery-modal-nav:focus-visible {
-  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
   outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
   /* Smaller quote-pin factor at md; see README. */
-  .globe-gallery { --pq-pin-factor: 0.55; }
+  .globe-gallery { --gg-pq-pin-factor: 0.55; }
 
+  .globe-gallery-modal-chrome { --gg-modal-edge: var(--s2a-spacing-lg); }
+
+  /* md+: no pill background, so the copy's own left edge must sit on --gg-content-inset. */
   .globe-gallery-arc-copy {
     width: 382px;
     max-width: none;
-    bottom: 24px;
+    bottom: var(--s2a-spacing-lg);
+    inset-inline-start: calc(var(--gg-content-inset) - var(--gg-arc-pad));
     background: none;
   }
 
@@ -524,21 +549,19 @@ body.globe-gallery-modal-open { overflow: hidden; }
     height: auto;
     max-height: none;
     border-radius: 0;
-    padding: 24px;
+    padding: var(--gg-modal-edge);
   }
 
   .globe-gallery-modal-role-label { margin-top: 0; }
 
   .globe-gallery-modal-name {
-    font-size: 24px;
+    font-size: var(--s2a-font-size-2xl);
     line-height: 28px;
     letter-spacing: -0.6px;
-    margin: 4px 0 12px;
+    margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-sm);
   }
 
   .globe-gallery-modal-description {
-    font-size: 15px;
-    line-height: 22px;
     margin: 0;
     max-width: none;
   }
@@ -550,17 +573,17 @@ body.globe-gallery-modal-open { overflow: hidden; }
     height: 28px;
   }
 
-  .globe-gallery-modal-badge-app { font-size: 14px; }
-  .globe-gallery-modal-badge-role { font-size: 14px; }
+  .globe-gallery-modal-badge-app { font-size: var(--s2a-font-size-sm); }
+  .globe-gallery-modal-badge-role { font-size: var(--s2a-font-size-sm); }
 
   .globe-gallery-modal-counter {
     width: 138px;
     box-sizing: border-box;
-    border-radius: var(--s2a-border-radius-xs);
+    border-radius: var(--gg-control-radius);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+    backdrop-filter: blur(var(--gg-chrome-blur));
   }
 }
 
@@ -618,8 +641,8 @@ body.globe-gallery-modal-open { overflow: hidden; }
     border-radius: var(--s2a-border-radius-xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+    backdrop-filter: blur(var(--gg-chrome-blur));
     opacity: 0;
     transition: opacity 0.5s ease 0.15s;
   }
@@ -660,7 +683,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   .globe-gallery-cursor-text {
     display: block;
     font-family: var(--heading-font-family);
-    font-size: 12px;
+    font-size: var(--s2a-font-size-xs);
     font-weight: var(--s2a-font-weight-adobe-clean-bold);
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -722,7 +745,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   height: auto;
   min-height: 0;
   justify-content: flex-start;
-  padding: 10vh 24px 8vh;
+  padding: 10vh var(--gg-copy-pad) 8vh;
   opacity: 1;
   transform: none;
   transition: none;
