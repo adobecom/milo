@@ -443,14 +443,31 @@ function renderVersionSummary(change, entry) {
   return block;
 }
 
+// dayScreenshots[day].nodeBox is captured once per day, but a day's
+// changedElements come from potentially many separate version snapshots —
+// if the tracked frame's own absolute bounding box resized between two of
+// those versions (e.g. content added, widening it), a box computed against
+// the day's single (later, larger) nodeBox can land far outside [0,100]%.
+// Confirmed directly: every observed case of this was changeType
+// "recreated" specifically (reconcile_recreated() pairs added/removed
+// nodes by name+type only, no position check, so it's also the case most
+// exposed to picking an unrelated sibling instance's real-but-differently-
+// scaled box). Rather than render a highlight box that's visibly floating
+// nowhere near real content, skip it — the element still shows in the
+// text list either way, just without a misleading visual overlay.
+const OUT_OF_RANGE_TOLERANCE = 20; // %, allows real partial-edge overflow
+
 function boxToPercent(box, nodeBox) {
   if (!box || !nodeBox || !nodeBox.width || !nodeBox.height) return null;
-  return {
+  const pct = {
     left: ((box.x - nodeBox.x) / nodeBox.width) * 100,
     top: ((box.y - nodeBox.y) / nodeBox.height) * 100,
     width: (box.width / nodeBox.width) * 100,
     height: (box.height / nodeBox.height) * 100,
   };
+  const t = OUT_OF_RANGE_TOLERANCE;
+  if (pct.left < -t || pct.left > 100 + t || pct.top < -t || pct.top > 100 + t) return null;
+  return pct;
 }
 
 const HIGHLIGHT_LEGEND = [
