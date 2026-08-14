@@ -783,7 +783,19 @@ async function loadOffloadedDay(entry, day) {
     return;
   }
   const promise = fetch(url)
-    .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+    .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
+    .then((text) => {
+      // The detail doc is authored/previewed the same way as any other DA
+      // page, so Helix wraps it in the full site template (nav/scripts/
+      // etc.) rather than returning raw JSON — confirmed the actual
+      // payload ends up as <main><div><p>{json}</p></div></main>.
+      // DOMParser (not a regex) both extracts it and decodes HTML entities
+      // (Figma text containing < > & would otherwise come back escaped).
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      const payload = doc.querySelector('main p')?.textContent;
+      if (!payload) throw new Error('detail doc missing expected <main><div><p> payload');
+      return JSON.parse(payload);
+    })
     .then((byVersionId) => {
       (entry.versionChanges || []).forEach((change) => {
         if (change.date.slice(0, 10) === day && byVersionId[change.versionId]) {
