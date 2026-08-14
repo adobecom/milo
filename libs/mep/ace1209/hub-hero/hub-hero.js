@@ -116,6 +116,14 @@ const onSlideLeave = (event) => {
 // `onHover` writes `isFocus ? 'focused' : 'hovered'`, so clearing only 'hovered' left
 // '.focused' permanently set — and Chrome focuses an `<a tabindex="0">` on mousedown, so a
 // single click pinned it forever.
+// The keyboard counterpart of `mouseleave`. Without it a slide entered by Tab kept playing
+// and kept its class after focus moved on: `focus` was wired up on its own, and nothing
+// else in this block listens for `blur` or `focusout`.
+const onSlideBlur = (event) => {
+  event.target?.classList?.remove('focused');
+  onSlideLeave(event);
+};
+
 const removeHovered = (carousel) => {
   const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
   [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
@@ -244,6 +252,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
   slideEl.addEventListener('focus', onHover);
+  slideEl.addEventListener('blur', onSlideBlur);
   return slideEl;
 };
 
