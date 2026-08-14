@@ -144,6 +144,10 @@ function setupBlock(el) {
 
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
+      item.removeAttribute('aria-hidden');
+      item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+        focusable.removeAttribute('tabindex');
+      });
       const toHide = isMobile ? item : item.querySelector('.foreground');
       toHide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
@@ -398,7 +402,7 @@ function setupBlock(el) {
       const cloneFront = elements[elements.length - 1].cloneNode(true);
       [cloneBack, cloneFront].forEach((clone) => {
         clone.setAttribute('data-cloned', 'true');
-        clone.setAttribute('aria-hidden', 'true');
+        clone.setAttribute('inert', '');
         clone.removeAttribute('data-slide-index');
         clone.removeAttribute('data-slot');
       });
@@ -579,12 +583,22 @@ function setupBlock(el) {
     setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
   }
 
+  function handleResizeMobileCarousel() {
+    const activeMedia = medias.find((media) => media.getAttribute('data-slot') === '0');
+    const { left, right } = activeMedia.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const cutoff = isRTL ? -left : right - viewportWidth;
+    setInline(stack, { 'stack-cutoff': `${cutoff}px` });
+  }
+
   function addResizeObserver() {
     resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
-      if (isMobileCarousel && isMobile) goToMobileCarouselActive();
-      else handleResizeDesktop();
+      if (isMobileCarousel && isMobile) {
+        goToMobileCarouselActive();
+        handleResizeMobileCarousel();
+      } else handleResizeDesktop();
     });
     resizeObserver.observe(stack);
   }
