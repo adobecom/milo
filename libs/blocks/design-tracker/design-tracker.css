@@ -38,6 +38,17 @@
   padding-top: 2px;
 }
 
+/* Below this, the flex row squeezes .header-titles down to a near-zero
+   width (min-width: 0 lets it shrink past its content's natural size),
+   wrapping the subtitle into an unreadable single-word-per-line column
+   next to the pinned-right date filter — confirmed visually at 375px.
+   Stacking the filter below the titles instead of beside them fixes it. */
+@media (width <= 600px) {
+  .design-tracker header {
+    flex-direction: column;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
