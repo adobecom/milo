@@ -110,7 +110,12 @@ def upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path):
     except Exception as e:
         print(json.dumps({"detailDocError": key, "reason": str(e)}))
         return None
-    return f"./detail/{key}"
+    # Absolute (leading /), not "./detail/{key}" — confirmed directly that a
+    # relative reference resolves against the page URL's own "directory"
+    # (everything up to the last /), which for a page at .../design-tracker
+    # (no trailing slash) is .../drafts/dusan/, not .../design-tracker/ —
+    # silently 404ing at a sibling path instead of the intended nested one.
+    return f"/{page_path}/detail/{key}"
 
 
 def offload_oversized_days(entries, token, org_repo, branch, page_path):
