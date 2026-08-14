@@ -133,8 +133,8 @@ const handleMobileAutoplay = (carousel) => {
 
     const nextSlide = slides[index + 1];
 
-    if (!nextSlide) return;
-    // Play when this slide enters view — but not if the next slide is already covering it
+    // Play when this slide enters view — but not if the next slide is already covering it.
+    // `nextRect` is undefined-safe on the last slide, which by definition cannot be covered.
     const slideObserver = new IntersectionObserver(
       ([entry]) => {
         if (!isMobile()) return;
@@ -146,6 +146,10 @@ const handleMobileAutoplay = (carousel) => {
     );
     slideObserver.observe(slide);
     observers.push(slideObserver);
+
+    // Only the "next slide covers this one" observer actually needs a next slide. This guard
+    // used to sit above, and skipped the LAST slide entirely — including its play observer.
+    if (!nextSlide) return;
 
     // Rewind when the next slide starts covering this one;
     // play again when it uncovers (user scrolls back up)
