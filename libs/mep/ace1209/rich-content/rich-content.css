@@ -491,8 +491,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--s2a-spacing-lg);
-  padding-top: calc(var(--s2a-spacing-4xl) + var(--rc-pull-offset));
-  padding-bottom: var(--s2a-spacing-4xl);
+  padding-block: calc(var(--s2a-spacing-4xl) + var(--rc-pull-offset)) var(--s2a-spacing-4xl);
   overflow: clip;
   --grid-margin-width: 0px; /* Keep unit for calc */
 
@@ -614,8 +613,7 @@
 
 @media (width >= 768px) {
   .rich-content.media {
-    padding-top: var(--s2a-layout-sm);
-    padding-bottom: var(--s2a-layout-sm);
+    padding-block: var(--s2a-layout-sm);
 
     img {
       max-width: unset;
@@ -739,8 +737,7 @@
 @media (width >= 1024px) {
   .rich-content.media {
     gap: var(--s2a-spacing-3xl);
-    padding-top: var(--s2a-layout-lg);
-    padding-bottom: var(--s2a-layout-lg);
+    padding-block: var(--s2a-layout-lg);
   }
 
   .rich-content.media img {
