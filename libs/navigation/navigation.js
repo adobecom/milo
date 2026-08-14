@@ -283,6 +283,7 @@ export default async function loadBlock(configs, customLib) {
       }
       if (block.key === 'footer') {
         const footerSource = configBlock.footerSource || `${config?.locale?.contentRoot}/footer`;
+        const isC2Footer = configBlock.foundation === 'c2';
         try {
           const metaTags = [
             { key: 'footerSource', name: 'footer-source' },
@@ -294,8 +295,17 @@ export default async function loadBlock(configs, customLib) {
           };
 
           setMetaTags(metaTags, footerConfigs, createTag);
-          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
-          const { default: init } = await import('../blocks/global-footer/global-footer.js');
+          if (isC2Footer) {
+            import('./footer-c2.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer-c2.css`));
+          } else {
+            import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
+          }
+          let init;
+          if (isC2Footer) {
+            ({ default: init } = await import('../c2/blocks/global-footer/global-footer.js'));
+          } else {
+            ({ default: init } = await import('../blocks/global-footer/global-footer.js'));
+          }
           await bootstrapBlock(init, footerConfigs);
         } catch (e) {
           configBlock.onError?.(e);
