@@ -84,9 +84,16 @@ def upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path):
     """Uploads one day's full (untrimmed) changedElements as its own DA doc,
     previews it, and returns the resulting relative URL (same-origin with
     the main page) — or None if anything failed, in which case the caller
-    falls back to trimming that day instead of leaving a broken reference."""
+    falls back to trimming that day instead of leaving a broken reference.
+
+    Confirmed directly: Helix serves the previewed webPath all-lowercase
+    regardless of the source doc's path casing (e.g. a Figma fileKey with
+    mixed case like "6FQTDUAttFbukvtskDAkPS" gets served at
+    ".../6fqtduattfbukvtskdakps-..."). HTTP paths are case-sensitive, so a
+    mixed-case reference 404s even though the doc genuinely exists — the
+    key must be lowercased here to match what will actually be fetchable."""
     org, repo = org_repo.split("/")
-    key = f"{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}"
+    key = f"{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}".lower()
     doc_path = f"{page_path}/detail/{key}"
     payload = json.dumps({c["versionId"]: c.get("changedElements") or [] for c in changes})
     body = DETAIL_DOC_TEMPLATE.format(data=html.escape(payload, quote=False)).encode()
