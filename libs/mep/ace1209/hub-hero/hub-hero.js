@@ -26,16 +26,25 @@ const stopRewind = (video) => {
 const rewindVideo = (video) => {
   stopRewind(video);
   video.pause();
-  const startSystemTime = Date.now();
   const startVideoTime = video.currentTime;
+  // Already at the start: there is nothing to rewind, and arming an interval here is how the
+  // old code leaked one — its only exit test was `video.currentTime === 0`, which on an
+  // unplayed video was already true on the first tick and called `video.load()` for nothing.
+  if (!(startVideoTime > 0)) return;
+  const startSystemTime = Date.now();
   const intervalRewind = setInterval(() => {
-    if (video.currentTime === 0) {
+    const target = startVideoTime - (Date.now() - startSystemTime) / 1000;
+    // Terminate on the COMPUTED target, never on a read-back of `currentTime`. The element
+    // snaps `currentTime` to a seekable position, so `=== 0` is not guaranteed to ever hold
+    // and the interval could run forever — one leaked timer per video per rewind. Also no
+    // `video.load()` on completion: that resets the element to NETWORK_EMPTY and aborts any
+    // `play()` already in flight.
+    if (target <= 0) {
+      video.currentTime = 0;
       stopRewind(video);
-      video.load();
       return;
     }
-    const elapsed = Date.now() - startSystemTime;
-    video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
+    video.currentTime = target;
   }, 30);
   rewindIntervals.set(video, intervalRewind);
 };
