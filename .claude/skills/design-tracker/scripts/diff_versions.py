@@ -88,7 +88,16 @@ def fetch_all_versions(file_key, max_versions):
 
 def node_document(file_key, node_id, version_id):
     data = api_get(f"{API}/files/{file_key}/nodes?ids={node_id}&version={version_id}")
-    return data["nodes"][node_id]["document"]
+    # Figma returns {"nodes": {node_id: null}} (not a missing key) for a
+    # version older than when this node existed — not a malformed response,
+    # just "nothing to diff here yet." Recorded as a distinct, expected
+    # reason rather than the generic NoneType crash this used to surface as,
+    # so a run's `errors` list reads as "history stops here" instead of
+    # looking like hundreds of real failures.
+    node = data["nodes"].get(node_id)
+    if node is None:
+        raise ValueError(f"node {node_id} did not exist yet at version {version_id}")
+    return node["document"]
 
 
 def full_file_document(file_key, version_id):

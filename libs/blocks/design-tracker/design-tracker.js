@@ -4,11 +4,11 @@
 // a page's own fetch()/img.src against content.da.live gets a real 401 —
 // there is no transparent auth for that from arbitrary JS, only for da.live's
 // own app and for Helix's server-side content fetch during page render. So
-// entries.json (thumbnails included, as base64 data URIs) is embedded
+// entries.json (dates/magnitudes/element names — no images) is embedded
 // directly in the block's own authored content at generation time — see
 // SKILL.md's "Publishing the dashboard page" — read here, never fetched.
 function readEmbeddedEntries(block) {
-  const cell = block.querySelector(':scope > div > div');
+  const cell = block.querySelector(':scope > div:nth-child(1) > div');
   const text = cell?.textContent?.trim();
   if (!text) return null;
   try {
@@ -16,6 +16,50 @@ function readEmbeddedEntries(block) {
   } catch {
     return null;
   }
+}
+
+// Images can't be embedded as base64 alongside the JSON above (screenshots
+// alone, 500KB+ each as PNGs, blow past a ~1-2MB document-size limit on
+// Helix's content-bus with more than a couple of days tracked — confirmed
+// directly, a small entries.json-only page uploads fine, the same page with
+// day-screenshots embedded gets a 409). Instead they're authored as real
+// <img> tags in a hidden second row — confirmed Helix downloads and
+// re-hosts any image actually referenced this way onto its own same-origin
+// media_<hash> URL at render time, so by the time this code runs, each
+// image's own `src` is already same-origin (no content.da.live fetch, no
+// auth problem, no size problem — the reference stays lightweight in the
+// source document). `alt` carries the key embed_page.py assigned it.
+function readImageGallery(block) {
+  const lookup = {};
+  block.querySelectorAll(':scope > div:nth-child(2) img').forEach((img) => {
+    if (img.alt) lookup[img.alt] = img.currentSrc || img.src;
+  });
+  return lookup;
+}
+
+function thumbKey(entry) {
+  return `dt-thumb-${entry.figmaFileKey}-${(entry.figmaNodeId || 'file').replace(/:/g, '-')}`;
+}
+
+function dayKey(entry, day) {
+  return `dt-day-${entry.figmaFileKey}-${(entry.figmaNodeId || 'file').replace(/:/g, '-')}-${day}`;
+}
+
+// Rewrites each entry's image references in place to the gallery's resolved
+// (already re-hosted) src, so every render function downstream can keep
+// treating figmaThumbnailUrl/dayScreenshots[day].path as a plain usable URL
+// — falls back to the original DA URL when the key isn't in the gallery
+// (e.g. local/dev testing without a real Helix render pass having run).
+function resolveImages(entries, gallery) {
+  entries.forEach((entry) => {
+    const tKey = thumbKey(entry);
+    if (entry.figmaThumbnailUrl && gallery[tKey]) entry.figmaThumbnailUrl = gallery[tKey];
+    Object.entries(entry.dayScreenshots || {}).forEach(([day, shot]) => {
+      const dKey = dayKey(entry, day);
+      if (shot.path && gallery[dKey]) shot.path = gallery[dKey];
+    });
+  });
+  return entries;
 }
 
 function entryDate(entry) {
@@ -835,8 +879,11 @@ function buildHeader(block) {
 }
 
 export default async function decorate(block) {
-  // Must read the authored data cell before clearing block.textContent below.
+  // Must read the authored data cell + image gallery before clearing
+  // block.textContent below.
   const embedded = readEmbeddedEntries(block);
+  const gallery = readImageGallery(block);
+  if (embedded) resolveImages(embedded, gallery);
 
   block.textContent = '';
   const { sinceInput, filterStatus } = buildHeader(block);
