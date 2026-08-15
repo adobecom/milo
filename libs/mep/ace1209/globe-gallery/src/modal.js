@@ -548,11 +548,12 @@ export default function createGlobeModal({
     if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
+    const config = getConfig();
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal-badge';
       // Labelled by product, not by card, and unindexed. See README (Analytics).
-      const daall = `${processTrackingLabels(b.name, getConfig(), 20)}--globe_card_modal`;
+      const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
       const nameHtml = b.href
         ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
         : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;

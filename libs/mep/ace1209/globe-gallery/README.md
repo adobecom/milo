@@ -8,6 +8,24 @@ shipped; remaining items are in Open items / backlog.
 scroll position to what each subsystem is doing, and names the six separate normalized clocks the
 code mixes.
 
+## Conventions for editing this block
+
+**Prose belongs here, not in the code.** These files ship unminified, so every comment is payload on
+a hero block. Keep code comments to a line or two — a pointer like `// See README (Scroll model).`
+beats a paragraph. When a change needs real explanation, write it in the relevant README section and
+point at it.
+
+**This README documents current behavior, not how it got here.** It is long because the block is
+intricate; keep it that way rather than growing an archaeology of every past decision. When you
+change something, *replace* the old explanation instead of appending to it. Specifically:
+
+- No change-logs, no "used to / was removed / shipped at X / now does Y", no reverted-attempt
+  write-ups, no rejected-alternative essays — git holds all of that.
+- Keep rationale only where it would change a future decision: a constraint that will bite again, a
+  number that must not be retuned blindly, a footgun. Prefer the rule over the incident that found it.
+- Prefer a table or a runnable snippet over paragraphs. Anything derivable from the code should be
+  derived (see **Re-deriving these numbers**) rather than restated and left to drift.
+
 ## What it is
 
 Over a tall, pinned scroll range (`--gg-runway-height` in the CSS), the authored photo cards
@@ -40,14 +58,14 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 
 | File | What it is |
 | --- | --- |
-| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants + pure helpers (module scope) — all scroll-**timing** constants live in `timeline.js` — and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator over named single-concern stages plus `modal.*` / `a11y.*`; per-card placement is a dispatcher (`updateCardTransform`) over four branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`). Instantiates the DI modules. |
+| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants (scroll **timing** lives in `timeline.js`) and the stateful core: arc/grid/fold/sphere placement, drag physics, lifecycle. `tick()` orchestrates single-concern stages; `updateCardTransform` dispatches over four placement branch fns. Instantiates the DI modules. See Module layout. |
 | `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
-| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`, `uRadius` = fraction of card height + `uAspect`), no rasterized mask. Note the two frags use *different* SDF box conventions: `CARD_FRAG` fills the plane edge-to-edge (barrel cards keep the proportional 22/631 radius), while `MODAL_FRAG` insets the shape by `uRadius` on all four sides — modal.js sizes the plane around that inset and sets `uRadius` for a constant 16px on-screen radius (0 on mobile). `TEXT_FRAG` (the hint) adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
-| `materials.js` | GPU-asset factories (all named exports, no per-instance state). **Materials:** `createCardMaterial` (card ShaderMaterial — cover-crop + optional CA/warp + SDF corners, with the property-proxy), `createModalMaterial` (modal SDF), `createTextMaterial` (hint `TEXT_FRAG`, uniforms only). **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy full image at a higher cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)` (renders the hint string, auto-scaled font). |
+| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`), no rasterized mask. The two use *different* box conventions: `CARD_FRAG` fills the plane edge-to-edge, while `MODAL_FRAG` insets the shape by `uRadius` on all four sides (see Modal chrome). `TEXT_FRAG` adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
+| `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
-| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav (all breakpoints), touch swipe/pull gestures (gated on a coarse primary pointer, so tablets at ≥768 get them too), chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected: shared `sphereRotQuat` + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks. |
-| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge, derived from the viewport + `ARC_SPAN` + the per-frame `arcCtx` the core owns; `getFanData`/`cssToWorld`/`rotateArcPoint` take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame card placement produces no garbage. |
-| `timeline.js` | **The scroll timeline.** Every phase constant, entry knob and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)` — the pure derivation of all six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`) — and `cardFoldStartProgress(gpDelay)`, the per-card fold gate that `FOLD_FIRST_PROGRESS` is the `gpDelay = 0` case of. No THREE, no DOM, no closure state, so it is unit-testable in isolation and is the single place to change **when** something happens. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely (a degenerate viewport/runway makes the ratios 0/0, and one NaN would poison every mesh position). Imported as a namespace (`import * as TL`, mirroring `THREE`) so adding a threshold doesn't mean editing an import list. See Lifecycle timeline. |
+| `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
+| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
+| `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares drag velocity by reference via the `drag` object. Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
@@ -61,22 +79,21 @@ Experimental block: loaded via MEP from `libs/mep/ace1209/globe-gallery/` — **
 
 ### Module layout
 
-`globe-gallery.js` is organized top-down: (1) module-scope tuning constants (the core's tuning
-surface); (2) domain helpers `fibSpherePos` / `cylinderMasonryLayout` (generic easings + `lerpN` +
-the arc-phase geometry live in `math.js`); (3) `createGlobeGalleryRuntime()` — the per-instance closure
-holding sphere state + behavior. The active breakpoint's resolved render profile is one frozen `bp`
-object built by `resolveBpProfile()` on each (re)init; functions destructure what they need from it,
-DI getters read `bp.*` live. Inside the closure the **per-frame pipeline** is single-concern stages
-run in a fixed order by `tick()`: `computeFrame()` is a thin wrapper that refreshes the persistent
-`frameInput` from live layout/scroll state and calls `timeline.js`'s pure `deriveFrame`, which writes
-every clock onto the persistent `frame` context (scroll + the six clocks + card-entry transforms);
-each stage reads what it needs from it and the producer stages write results back onto it
-(`activeCamera`, `sphereRotActive`, `sphGroupZ`), so one object flows through to the card loop.
-**`frame` and `frameInput` are allocated once and mutated in place** — stages consume them
-synchronously within a tick and never retain them, so the per-frame pipeline allocates nothing.
-`frame` is also the single source for the clocks: read `frame.progress` / `frame.zoomT` rather than
-caching them in the closure. (In `globe-gallery.js` the persistent object is named `frameState`;
-stages take it as a parameter named `frame`, so the two don't shadow.)
+`globe-gallery.js` is organized top-down: (1) module-scope tuning constants; (2) domain helpers
+`fibSpherePos` / `cylinderMasonryLayout` (generic easings, `lerpN` and the arc-phase geometry live in
+`math.js`); (3) `createGlobeGalleryRuntime()` — the per-instance closure holding sphere state +
+behavior. The active breakpoint's render profile is one frozen `bp` object from `resolveBpProfile()`
+per (re)init; functions destructure what they need, DI getters read `bp.*` live.
+
+Inside the closure the **per-frame pipeline** is single-concern stages run in a fixed order by
+`tick()`. `computeFrame()` refreshes the persistent `frameInput` from live layout/scroll state and
+calls `timeline.js`'s pure `deriveFrame`, which writes every clock onto the persistent `frame`
+context; each stage reads from it, and producer stages write results back, so one object flows
+through to the card loop. **Both objects are allocated once and mutated in place** — stages consume
+them synchronously and never retain them, so the pipeline allocates nothing. `frame` is the single
+source for the clocks: read `frame.progress` / `frame.zoomT` rather than caching them in the closure.
+(The persistent object is `frameState`; stages take it as a parameter named `frame`, so the two don't
+shadow.)
 
 Who writes what:
 
@@ -86,28 +103,24 @@ Who writes what:
 | `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
-**Grouped closure state.** Related mutable state is held in small plain objects rather than loose
-`let`s, so the runtime closure stays legible: `drag` (`isDragging`/`velX`/`velY`, shared by
-reference with `interaction.js`), `masonryMorph` (`active`/`t`), `sphereOrient` (`x` = pitch, `y` =
-yaw, `z` = roll — see Sphere rotation), `navNudge` (`active`, `target{X,Y,Z}` = destination pose,
-`start{X,Y,Z}` = pose captured when armed, `frame`/`frames` = elapsed/total count from
-`KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set by keyboard centring only — the
-modal leaves it as-is), `arcCopy` (`el` + the last-written style strings `opStr`/`transformStr`, so
-`updateArcCopy` only touches the DOM when a value actually changed), and
-`ctxLoss` (`rebuilds`/`stableTimer`/`recovering`/`recoverTimer` — see WebGL context loss).
+**Grouped closure state.** Related mutable state lives in small plain objects rather than loose
+`let`s: `drag` (`isDragging`/`velX`/`velY`, shared by reference with `interaction.js`),
+`masonryMorph` (`active`/`t`), `sphereOrient` (`x` pitch / `y` yaw / `z` roll — see Sphere rotation),
+`navNudge` (`active`, `target{X,Y,Z}` destination pose, `start{X,Y,Z}` pose when armed,
+`frame`/`frames` elapsed/total from `KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set
+by keyboard centring only), `arcCopy` (`el` + last-written style strings, so `updateArcCopy` only
+touches the DOM on change), and `ctxLoss` (see WebGL context loss).
 
 Per-card placement (the largest stage) is a dispatcher over four runtime-scope branch fns — kept in
-this file, not a module, because they read deeply from the closure and run in the hot loop. Five DI
-modules are injected with live-state getters: GPU resources (`materials.js`), the a11y widget, the
-modal, `interaction.js` (sharing drag velocity via the `drag` object), and the cursor (its
-`isActive()` gates interaction's hover cursor). The modal owns its canvas/scene + the `MODAL_PHASE`
-state machine and reaches the sphere only through the shared `sphereRotQuat` / `snapToSphereSlot` /
-`requestNavNudge` callbacks.
+this file because they read deeply from the closure and run in the hot loop. Five DI modules are
+injected with live-state getters: `materials.js`, the a11y widget, the modal, `interaction.js`, and
+the cursor. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
+only through the shared `sphereRotQuat` / `snapToSphereSlot` / `requestNavNudge` callbacks.
 
-## How to run
+## Rebuilding Three.js
 
-To regenerate Three.js after adding a new `THREE.*` call: add the symbol to
-`three-src.js`, then `cd libs/c2/blocks/globe-gallery && npm install && npm run build`.
+After adding a new `THREE.*` call, add the symbol to `src/three-src.js`, then
+`cd libs/mep/ace1209/globe-gallery && npm install && npm run build`.
 
 ## Authoring contract
 
@@ -177,7 +190,14 @@ Each fragment section is flat P/UL elements:
 | `<p><strong>…</strong></p>` or `<h1>`–`<h6>` | **name** | `<strong>` must be the *whole* paragraph; first one wins; empty if unauthored (no hardcoded default) |
 | every other non-empty `<p>` | **description** | any number of paragraphs, in authored order, shown in the modal — inline `<a>`/`<strong>`/`<em>` are preserved (a sentence with emphasis or a link stays description; it is not mistaken for the name/role) |
 | `<ul>`, one `<li>` per badge | **badges** | see below — nested `<ul><li>` = the product feature |
-| `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped; a bare inline `<img>` works too; the **first** image wins, later ones are ignored; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
+| `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped (and logged to `lana`); a `<picture>`/`<img>` **direct child** of the section works too (see below), as does a bare inline `<img>`; the **first** image wins, later ones are ignored; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
+
+**A card with no copy is a lone unwrapped image.** When the image is the section's *only* content
+the pipeline drops the `<p>`, so `.plain.html` serves `<div><picture>…</picture></div>`. Both the
+section/container dispatch (`CARD_CONTENT_TAGS`) and the segment reader must therefore accept
+`PICTURE`/`IMG`, not just `P`/`UL` — otherwise the section reads as a *container*, yields no cards,
+and drops silently. An imageless section logs to `lana`. A card with no copy renders on the globe
+and opens a modal with empty role/name/description/badges — there is no non-clickable-card path.
 
 **Badge rows.** A badge `<li>` splits into exactly two parts: the **nested `<ul>`** is the
 product feature, and **everything else in the row** is the product — an optional logo plus the
@@ -203,10 +223,9 @@ so the URL is resolved through Milo's `getFederatedUrl` (NOT `decorateSVG`, whic
 the host to a bare pathname on the consumer origin). A row with no product link takes its name
 from its own text and renders as plain text; a row with no feature renders with an empty role.
 
-> The row is read from a **clone** with the feature `<ul>` detached, so the product half can be
-> matched with plain `querySelector` without walking into the feature list and without mutating
-> authored DOM. The earlier direct-children-only read silently dropped every `<p>`-wrapped badge
-> (empty name → no row pushed), which looked like a modal layout bug rather than a parse miss.
+The row is read from a **clone** with the feature `<ul>` detached, so the product half matches with
+plain `querySelector` without walking into the feature list or mutating authored DOM. A
+direct-children-only read would silently drop every `<p>`-wrapped badge.
 
 ### Reusing authored paragraphs
 
@@ -217,13 +236,11 @@ alive — a `textContent` read flattens them, and re-serializing to an HTML stri
 and re-parsing markup we already have as DOM. This is also why both containers are `<div>`s in
 `buildMarkup`: paragraphs can't nest inside a `<p>`.
 
-**Nothing is cloned, because a paragraph is never in two places.** `buildGlobeDom` and
-`fetchFragmentCards` each run once per block instance, so two globes on a page parse their own
-nodes and share nothing; within one globe, only one modal exists and only one card is shown at a
-time. Re-rendering the same card is safe: `replaceChildren` moves nodes that a previous render
-already detached (the parse holds the reference, so they survive detached), and re-rendering the
-*same* nodes into the *same* container is a no-op. Cloning would only be needed if some future
-feature rendered one card's paragraphs into two live containers at once.
+**Nothing is cloned, because a paragraph is never in two places.** Each instance parses its own
+nodes, and only one modal shows one card at a time. Re-rendering the same card is safe:
+`replaceChildren` moves nodes a previous render detached (the parse holds the reference), and
+re-rendering the same nodes into the same container is a no-op. Cloning would only be needed to
+render one card's paragraphs into two live containers at once.
 
 **Card count.** `N_TOTAL` follows the authored count, capped per breakpoint by `N_MAX`:
 
@@ -243,10 +260,10 @@ images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** 
 quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
 **dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
 reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
-modal nav — on-screen arrows and touch swipe — routes through the same cross-warp
-transition on **every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just
-builds a warp preview during the drag, then commits that transition on release. The old mobile instant-swap /
-swipe-neighbour slot reorg was removed — a slotless overflow card can only cross-warp anyway.
+modal nav — on-screen arrows and touch swipe — routes through the same cross-warp transition on
+**every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just builds a warp
+preview during the drag, then commits that transition on release. (A slotless overflow card can only
+cross-warp, so there is no instant-swap path.)
 The **keyboard/SR browse gallery stays at 24** (its centring targets real sphere cards); SR users
 reach every image through modal ←→ nav. Overflow carriers + textures are disposed on `destroy`.
 
@@ -256,9 +273,9 @@ clustered:spread arc ratio holds at any count.
 
 ### Texture memory budget
 
-Card images are downscaled to a per-device cap on upload (iOS uploads textures as uncompressed
-RGBA + mipmaps; the full base set — all cards resident during the arc→grid settle — otherwise
-overran the WebKit per-tab cap and crashed the tab with no JS error). Caps live in
+Card images are downscaled to a per-device cap on upload. This is load-bearing on iOS, which uploads
+textures as uncompressed RGBA + mipmaps: uncapped, the base set (all cards resident during the
+arc→grid settle) overruns the WebKit per-tab cap and kills the tab with no JS error. Caps live in
 `globe-gallery.js` (`CARD_TEX_SM/MD`, `MODAL_TEX_SM/MD`):
 
 - **Base set** (`loadCardTextures({ maxTex })`), all cards resident — dominates. `256` on sm (just
@@ -272,14 +289,13 @@ overran the WebKit per-tab cap and crashed the tab with no JS error). Caps live 
   `getModalMaterial` placeholders the base texture, `requestModalUpgrade` swaps the sharper one when
   decoded, `releaseModalTexture` disposes on close/nav/destroy.
 
-**Estimating the cost.** GPU textures store uncompressed regardless of file size: `resident ≈ w × h
-× 4 × 1.333` (RGBA + the mipmap pyramid, which converges to +⅓). Dimensions are the *downscaled
-canvas* (longest side = cap), not the source; cover-crop doesn't change residency. E.g. a 4:3 source
-at 256 → 256×192 → ~0.26MB, ×24 ≈ 6MB; at 768, ~2.3MB (9× area); the 2048 modal texture ≈ 17MB
-transient.
+**Estimating the cost.** GPU textures store uncompressed regardless of file size: `resident ≈ w × h ×
+4 × 1.333` (RGBA + the mipmap pyramid, converging to +⅓). Dimensions are the *downscaled canvas*
+(longest side = cap), not the source; cover-crop doesn't change residency. A 4:3 source at 256 →
+256×192 → ~0.26MB, ×24 ≈ 6MB; at 768, ~2.3MB (9× area).
 
-The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item: its canvas matches
-the camera aspect, so `TEXT_MAX_SIDE` caps the *longest* side (2048) — else a portrait phone derived
+The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item: its canvas matches the
+camera aspect, so `TEXT_MAX_SIDE` caps the *longest* side at 2048 — uncapped, a portrait phone derives
 a 2048×4180 ≈ 45MB canvas, mostly empty. Capped, portrait tops ~1004×2048 (~11MB).
 
 `ANTIALIAS_SM`/`ANTIALIAS_MD` toggle MSAA per band (set at renderer creation): on for md (card
@@ -345,45 +361,31 @@ fallback and WebKit's native path act on identical characters:
 Categories rather than a literal list, so a new locale needs no code change. `Pe` closers (`」`),
 dashes, and the rest of `Po` (`!` `¿`) are excluded.
 
-**Full-width CJK brackets are skipped**, on two tests: the mark measuring **≥ 0.8em** (`「『（`
-run ~0.96em; the widest Latin quote, `«`, is ~0.55em, so the gap is wide and the cutoff is not
-delicate), or simply **exceeding the padding**, where it would be shoved past the viewport edge
-into the block's `overflow-x: clip` and sheared. Either way the code suppresses the hang
-**including WebKit's native one** — only a measurement can detect these limits, which CSS can't
-express — so every browser lands on the same result.
+**Full-width CJK brackets are skipped**, on two tests: the mark measuring **≥ 0.8em** (`「『（` run
+~0.96em vs ~0.55em for the widest Latin quote `«`, so the cutoff isn't delicate), or **exceeding the
+padding**, where it would be shoved past the viewport edge into the block's `overflow-x: clip` and
+sheared. Either test suppresses the hang **including WebKit's native one**, so every browser lands on
+the same result. The width test is what makes that result breakpoint-independent: `--gg-copy-pad`
+(24→48→64) and `heading-1` (40→56→80px) step at *different* widths, so the padding test alone leaves
+`768–1023` a band where a `「` fits and hangs while being suppressed everywhere else — and since the
+measurement runs once at init, a later resize would strand it and shear.
 
-The width test is what makes that result **breakpoint-independent**, and it is load-bearing rather
-than belt-and-braces. Both inputs to the padding test move: `--gg-copy-pad` steps 24→48→64 (see
-Crosshair frame) and `heading-1` steps 40→56→80px, and they step at *different* widths. On the
-padding test alone, `768–1023` is a band where the padding has already grown to 48px but the type
-is still 40px, so a `「` fits and hangs there while being suppressed at every other size. Worse,
-the measurement runs once at init and is never recomputed, so a resize from that band up to
-`1280` would strand a 0.96em hang against a 48px pad and shear it.
+Proper CJK support is a different rule, not a smaller number: JIS sets a line-head opening bracket
+half-width, aligning its *ink* to the margin rather than the following character to the column.
+Worth building only if a CJK locale ships this block.
 
-Covering CJK is a different rule rather than a smaller number: JIS sets a line-head opening
-bracket half-width, aligning its *ink* to the margin instead of aligning the following character
-to the column. Worth building only if a CJK locale ships this block.
+**Implementation notes** — each is load-bearing:
 
-**Implementation notes** — each of these is load-bearing:
-
-- Runs after `document.fonts.ready`; Adobe Clean's metrics differ from the fallback font's, so
-  measuring earlier bakes in the wrong advance.
-- Canvas, not `getBoundingClientRect`: the pull-quote sits under `transform: scale(.9)` until it
+- Runs after `document.fonts.ready`: Adobe Clean's metrics differ from the fallback's.
+- Canvas, not `getBoundingClientRect` — the quote sits under `transform: scale(.9)` until it
   activates, which scales a client rect but not a canvas measurement.
-- The **advance**, not the ink width, is what lands the second character on the column — and
-  `measureText` omits `letter-spacing`, which `heading-1` sets, so it is added back.
-- Emitted in `em`, not px. `heading-1` is **responsive** (40px → 56px at 1024 → 80px at 1280), so
-  a px indent would go stale on every breakpoint crossing; the em ratio holds without a recompute.
-  It holds only *approximately* — `letter-spacing` is a fixed px that does not scale with the type,
-  so the ratio drifts ~0.02em (≈1px at 80px) across breakpoints. Also covers text-only zoom.
-- Accurate to the pixel while the webfont is up. If Adobe Clean is missing the stack falls to c2's
-  `Arial Bold Adjusted`, whose `size-adjust: 92%` layout applies but the canvas measurement does
-  not, leaving the hang ~1px out at 80px type. Invisible, and only on the fallback path — but it is
-  why this measures the glyph rather than trusting the number to be exact.
-- `textContent` is trimmed first: authored markup arrives with newlines and indentation, which
-  collapse in rendering but would otherwise defeat the first-character test.
-- The `ctx.font` readback guards a silent failure — canvas ignores an unparseable shorthand and
-  keeps its `10px sans-serif` default, which would measure a small, plausible, wrong advance.
+- Uses the **advance**, not ink width, and adds back the `letter-spacing` that `measureText` omits.
+- Emitted in `em`: `heading-1` is responsive, so a px indent would go stale on every breakpoint. The
+  ratio drifts ~0.02em (≈1px at 80px) because `letter-spacing` is a fixed px. Also covers text zoom.
+- `textContent` is trimmed — authored markup arrives with newlines that would defeat the
+  first-character test.
+- The `ctx.font` readback guards a silent failure: canvas ignores an unparseable shorthand and keeps
+  its `10px sans-serif` default, which would measure a plausible but wrong advance.
 
 ## Architecture notes
 
@@ -419,27 +421,37 @@ speeding up the globe:
 | **formation** (arc→grid→fold→settle) | `0 → --gg-formation-vh` (304vh) | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
 | **tail** (zoom-through + pull-quote) | `--gg-formation-vh → --gg-runway-height` | `foldLast → 1` | `zoomT`, cursor retire, pull-quote |
 
-Formation is **locked** to a fixed scroll length: `FORMATION_SCROLL_VH` (JS) = `--gg-formation-vh` (CSS)
-= 304vh (≈ `SPHERE_FORMED_PROGRESS` × the original 945vh single-runway tuning). `formedScrollPx()` is
-the single source used by the remap, the reduced-motion pin, and the focus-snap. Within the tail,
-`zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
+Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets tail length only.
+`formedScrollPx()` is the single source used by the remap, the reduced-motion pin, and the focus-snap.
+Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
 
-Because formation is fixed, `--gg-runway-height` sets tail length only. `--gg-runway-height` is **shared**
-across breakpoints; `--gg-pq-pin-factor` is **per-breakpoint** (`@media (min-width:768px)` overrides the
-sm base). CSS custom props on `.globe-gallery`:
+**CSS is the source of truth for all three props**, read per layout in `doLayout`, so retuning is a
+CSS-only edit:
 
 | prop | sm (base) | md+ | effect |
 |---|---|---|---|
 | `--gg-runway-height` | 520vh | 520vh | total height = formation + tail; ↓ = shorter stretch after the globe (shrinks gap **and** hold together) |
-| `--gg-formation-vh` | 304vh | 304vh | locked formation length; must equal `FORMATION_SCROLL_VH` in JS |
+| `--gg-formation-vh` | 304vh | 304vh | locked formation length |
 | `--gg-pq-pin-factor` | 0.65 | 0.55 | share of the tail the (bottom-anchored) quote pin occupies → its hold |
+
+`timeline.js`'s exported `CSS_FALLBACK` is the **only** JS copy of these numbers, read only when a
+property fails to resolve — possible because `loadBlock` races a block's stylesheet against its script
+(`libs/utils/utils.js:1369`), and an unresolved property parses to `NaN`, which would propagate into
+`progress` and kill the animation silently. It is not a second source of truth: if it and CSS
+disagree, CSS wins and `CSS_FALLBACK` is simply stale. Nothing else in JS may re-inline these values.
+`timeline.js` stays pure (no DOM), so `doLayout` does the reading, via a `cssNum(prop, fallback)`
+helper testing `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
+
+`measureBlock()` (from `doLayout` and `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
+is `offsetHeight`, itself CSS-driven, so `--gg-runway-height` is never read directly; `offsetHeight`
+is `0` only before the stylesheet applies, when the property wouldn't resolve either — hence the
+fallback there is `CSS_FALLBACK.RUNWAY_VH`.
 
 sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
 `≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the fixed 583px
-quote is taller in vh on a phone (~73vh at 800px vs ~54vh at 1080), i.e. it eats more of the pin. md's
-factor is capped ~0.55: above it the fade-in would cross md's globe-clear (`zoomT≈0.42`) and land the
-quote over the globe.
+quote eats more of the pin on a phone (~73vh at 800px vs ~54vh at 1080). md's factor is capped ~0.55:
+above it the fade-in would cross md's globe-clear and land the quote over the globe.
 
 **Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
 --gg-pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
@@ -461,8 +473,8 @@ a fixed runway); to change both together, move `--gg-runway-height`.
 Current result (from the progress math; hold is viewport-dependent since the quote is a fixed 583px):
 md gap ≈91vh / hold ≈65vh; sm gap ≈69vh / hold ≈68vh.
 
-Milo's page-level Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFrame`
-driver, `startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
+Milo's page-level Lenis keeps `window.scrollY` in sync; the driver is a plain `requestAnimationFrame`
+loop (`startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
 `.globe-gallery-modal-open { overflow:hidden }` CSS lock.
 
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
@@ -479,48 +491,38 @@ long off-screen scroll doesn't read a spurious one-frame `scrollVel` spike. The 
 created in `initRuntime`, disconnected in `destroy` (mirrors `layoutObs`); it fires once on
 `observe()` to correct the `onScreen` default.
 
-**Progressive texture loading (contours → un-dissolve).** Card meshes are built up front,
-before any photo loads, so the block paints immediately: `initRuntime` runs
-`buildCards()`/`buildTextMesh()`/`a11y.setup()` and flips `renderReady` **before**
-`loadCardTextures`, seeding each card with a shared 1×1 `placeholderTex` and a placeholder
-aspect. Until a card's photo lands it renders as a **contour** — a faint rounded-rect fill +
-~1px edge stroke drawn in `CARD_FRAG` from the existing `rrSDF`, driven by two uniforms
-(`uReveal` 0→1 = contour→photo crossfade, `uContourFade` = proxFade so the contour respects the
-near-camera cull). `loadCardTextures` reports **per image** via `onEach` (plus `onDone` once all
-settle; the caller owns the `textureLoadGeneration` stale-guard in both). `onEach` swaps in the
-real texture, refreshes the card's cover-crop UVs + native `sphereScaleX`, and flips
-`hasTexture`; `revealT` then eases 0→1 in `updateCardTransform` and the photo **un-dissolves**
-in — the same edge-first particle effect as the near-camera proximity fade (`uDissolve`), so the
-two compose in `placeSphereCard` by **max-dissolve / min-opacity** (neither un-hides what the
-other hides). On **md** (sphere) positions are index-based (`fibSpherePos`), so a landed texture
-only morphs the card's scale/aspect in place (`updateCardSphereSizing`) — never a reflow. On
-**sm** the masonry barrel is a whole-set solve (packing needs every aspect), so it's packed once
-with placeholder aspects and **re-solved once** in `onDone` (`resolveMasonryLayout`); each card
-then eases from its provisional slot to the final one via a one-time `masonryMorph` tween
-(invisible while the user is still in arc/grid, the common case). `dragFlipZ` (aspect-dependent)
-is recomputed in `onDone` / when the morph settles. Images decode off the main thread
-(`img.decode()` before rasterizing) so many decode concurrently instead of serializing on
-`onload`. Net: `renderReady` now means *cards built* (contours visible), not *all textures
-loaded* — the old all-or-nothing barrier is gone.
+**Progressive texture loading (contours → un-dissolve).** Card meshes are built before any photo
+loads, so the block paints immediately: `initRuntime` runs `buildCards()`/`buildTextMesh()`/
+`a11y.setup()` and flips `renderReady` **before** `loadCardTextures`, seeding each card with a shared
+1×1 `placeholderTex` and a placeholder aspect. Until a card's photo lands it renders as a **contour**
+— a faint rounded-rect fill + ~1px stroke drawn in `CARD_FRAG` from `rrSDF`, driven by `uReveal`
+(contour→photo crossfade) and `uContourFade` (proxFade, so the contour respects the near-camera cull).
+`loadCardTextures` reports **per image** via `onEach`, plus `onDone` once all settle; the caller owns
+the `textureLoadGeneration` stale-guard in both. `onEach` swaps in the real texture, refreshes
+cover-crop UVs + native `sphereScaleX`, and flips `hasTexture`; `revealT` then eases 0→1 and the photo
+**un-dissolves** in — the same edge-first particle effect as the near-camera fade (`uDissolve`), so
+the two compose in `placeSphereCard` by **max-dissolve / min-opacity**, neither un-hiding what the
+other hides. On **md** positions are index-based (`fibSpherePos`), so a landed texture only morphs
+scale/aspect in place — never a reflow. On **sm** the masonry barrel is a whole-set solve, so it's
+packed once with placeholder aspects and **re-solved once** in `onDone`, each card easing to its final
+slot via a one-time `masonryMorph` tween (invisible while the user is still in arc/grid, the common
+case). `dragFlipZ` is recomputed in `onDone` / when the morph settles. Images decode off the main
+thread (`img.decode()`) so many decode concurrently. So `renderReady` means *cards built* (contours
+visible), not *all textures loaded*.
 
 **Right-sized image requests.** `loadCardTextures`' `getSrc` and the modal upgrade both route the
-authored image URL through `optimizeImgUrl(src, cap)` (`authoring.js`), which for a helix/DA
-`media_*` asset rewrites it to `?width=<cap>&format=webply` — mirroring `libs/utils/decorate.js`'s
-`decoratePictures` convention (strip query, width + `webply`). Non-`media_` URLs pass through
-untouched. Because we downscale client-side anyway (`fitDims`), this only trims bytes on the wire
-(≈10–30× on slow links), not the final texture resolution. A side benefit: the modal now requests
-its own cap (`MODAL_TEX_MD` 2048) explicitly, so it reaches the intended sharpness instead of being
-limited by whatever width the authored `<img>` src happened to be.
+authored URL through `optimizeImgUrl(src, cap)` (`authoring.js`), which for a helix/DA `media_*` asset
+rewrites it to `?width=<cap>&format=webply`, mirroring `decoratePictures`' convention. Non-`media_`
+URLs pass through. Because we downscale client-side anyway (`fitDims`), this trims bytes on the wire
+(≈10–30× on slow links), not the final texture resolution — and it lets the modal request its own cap
+(`MODAL_TEX_MD` 2048) rather than being limited by the authored `<img>` src width.
 
-**Pausing must hide the canvas (multi-globe correctness).** The main canvas is
-`position:fixed` + full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the
-stage that `display:none`s it when the block is out of range — runs *inside* `tick()`. So
-when `syncTicker()` stops the loop it also sets `renderer.domElement.style.display = 'none'`;
-otherwise a paused globe's fixed canvas keeps intercepting pointer events across the whole
-viewport, which with **multiple globes per page** silently blocks whichever globe is actually
-on screen (its clicks/drags/hover land on the off-screen globe's paused canvas). The resumed
-loop's `updateCanvasVisibility` restores the display. A single off-screen globe hiding its
-own canvas is a no-op (it's out of view anyway).
+**Pausing must hide the canvas (multi-globe correctness).** The main canvas is `position:fixed` +
+full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the stage that `display:none`s
+it when out of range — runs *inside* `tick()`. So when `syncTicker()` stops the loop it also sets
+`display = 'none'` directly; otherwise a paused globe's fixed canvas keeps intercepting pointer events
+across the whole viewport, which with **multiple globes per page** silently swallows the clicks meant
+for whichever globe is actually on screen. The resumed loop's `updateCanvasVisibility` restores it.
 
 **z-index / stacking order.** All values live in `globe-gallery.css` (plus the two canvas inline
 styles in `authoring.js`). Two bands in the page-root stacking context:
@@ -528,13 +530,11 @@ styles in `authoring.js`). Two bands in the page-root stacking context:
 - **Hero — 2–5:** world `2`, main canvas `3`, arc-copy / a11y widgets `4`, pull-quote / a11y tip `5`.
 - **Modal — 13–17:** backdrop `13`, modal canvas `14`, chrome `15`, cursor disc `16`, cursor container `17`.
 
-The modal band sits just above the **C2 gnav (`12`)** so the immersive card view covers the nav, and
-deliberately **below** the higher-priority interrupts that should appear over the globe — caas (`200`),
-market-selector (`9999`), georouting / Milo modals (`100000`), and the consent banner. It can't collapse
-into the 1–10 range precisely because it must clear the gnav. C1 core blocks (e.g. legacy gnav, the
-authored `notification` block) aren't authored alongside C2, so nothing occupies the 18–199 gap here.
-The modal chrome is a native `<dialog>`/`showModal()` in the top layer, so its z-index is only a
-non-supporting-browser fallback.
+The modal band sits just above the **C2 gnav (`12`)** so the card view covers the nav, and
+deliberately **below** the interrupts that should appear over the globe — caas (`200`),
+market-selector (`9999`), georouting / Milo modals (`100000`), and the consent banner. It can't
+collapse into the 1–10 range precisely because it must clear the gnav. The modal chrome is a native
+`<dialog>`/`showModal()` in the top layer, so its z-index is only a non-supporting-browser fallback.
 
 ## Lifecycle timeline
 
@@ -648,11 +648,11 @@ rather than restating them — it cannot drift from the code:
 ```sh
 cd libs/mep/ace1209/globe-gallery && node --input-type=module -e "
 import * as T from './src/timeline.js';
-const RUNWAY_VH = 520; // --gg-runway-height
-const tail = RUNWAY_VH - T.FORMATION_SCROLL_VH;
+const { RUNWAY_VH, FORMATION_VH } = T.CSS_FALLBACK; // = the CSS defaults
+const tail = RUNWAY_VH - FORMATION_VH;
 const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
-  ? (p / T.SPHERE_FORMED_PROGRESS) * T.FORMATION_SCROLL_VH
-  : T.FORMATION_SCROLL_VH
+  ? (p / T.SPHERE_FORMED_PROGRESS) * FORMATION_VH
+  : FORMATION_VH
     + ((p - T.SPHERE_FORMED_PROGRESS) / (1 - T.SPHERE_FORMED_PROGRESS)) * tail);
 const row = (n, p) => console.log(String(Math.round(vh(p))).padStart(4) + 'vh', p.toFixed(3), n);
 row('fold starts / sphereFormT>0', T.FOLD_FIRST_PROGRESS);
@@ -667,6 +667,54 @@ row('cursor label / retire', T.progressAtZoomT(T.CURSOR_ZOOM_RETIRE_T));
 row('canvas hidden', T.progressAtZoomT(T.CANVAS_HIDE_ZOOM_T));
 "
 ```
+
+## Phase constants
+
+All in **`src/timeline.js`** — these are the *inputs*; **Lifecycle timeline** above shows what they
+add up to. The `P_*` values live in **progress-space** (0→1) and shape formation + zoom; the runway
+split, pull-quote, and cursor retirement are covered under **Scroll model** (driven by the CSS props,
+read in JS):
+
+```
+P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
+P_FOLD_DUR=0.25  P_ZOOM_END=1.00  GRID_PEEL_STAGGER=0.20  SPHERE_INTERACTIVE_T=0.8
+FOLD_PEEL_OVERLAP=0.35  CA_ENABLED=true
+PQ_APPEAR_LEAD=0.03  CURSOR_ZOOM_DISMISS_T=0.38  CURSOR_ZOOM_RETIRE_T=0.40
+```
+
+`FOLD_PEEL_OVERLAP` (0–1) makes each card begin folding to the sphere that far — in peel
+position-space — **before** it fully lands in the grid (folding from its live peel position, no
+snap), so the grid never visibly "resolves" and the sphere forms earlier. The fold opens at peel
+localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold window
+(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`) and the per-card fold timer
+(`cardFoldStartProgress`) both derive from it in `timeline.js`, so camera / depth-sort /
+interactivity stay aligned. `0` restores "settle, then fold."
+
+**Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
+(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
+fold constants move: `ARC_COPY_OUT_FORM_START = 0.20` → `ARC_COPY_OUT_FORM_END = 0.90`, i.e.
+progress ≈ `0.096` → `0.294` against a formed sphere at `0.322`. It therefore starts only once the
+fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finishes forming — one
+window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
+**not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
+midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
+spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
+
+`FOLD_FIRST_PROGRESS` and `SPHERE_FORMED_PROGRESS` are the fold window's two ends, and
+`cardFoldStartProgress(gpDelay)` is the same computation per card — `FOLD_FIRST_PROGRESS` is its
+`gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
+cannot drift apart.
+
+**Arc-copy placement is all CSS**; `updateArcCopy` owns only the opacity and the 24px entry slide.
+CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
+and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
+below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
+handles RTL, so no JS is involved in the side-swap.
+
+**Entry timing** — two independent constants: `ENTRY_LEAD_VH` (`0.4`) viewport-heights before the
+block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
+over content above), and `ENTRY_RAMP_VH` (`1.05`) the ramp over which `arcCopyEntryT` goes 0→1
+(arc-copy fade, arc pre-roll speed, text→arc gap).
 
 ## Accessibility
 
@@ -715,8 +763,8 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   in one sr-only element referenced by BOTH the dialog's `aria-labelledby` and the heading's
   `aria-describedby` — **no `aria-live`** — so it's deterministic on both paths: on open it's read
   with the focused heading; on nav (focus stays on Prev/Next) the accessible-name text changes, so
-  VoiceOver re-announces the dialog name. (A live region would be more portable across AT but
-  couldn't reliably cover the open case, which is why it was dropped.)
+  VoiceOver re-announces the dialog name. A live region would be more portable across AT but can't
+  reliably cover the open case.
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive** globe
 instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery-reduced`):
@@ -747,52 +795,7 @@ cleanly). The pieces:
 
 The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery-empty`.
 
-Phase constants (all in **`src/timeline.js`**) — these are the *inputs*; **Lifecycle timeline**
-above shows what they add up to. The `P_*` values live in **progress-space** (0→1) and shape formation
-+ zoom; the runway split, pull-quote, and cursor retirement are covered under **Scroll model → the
-runway / progress model** above (they're driven by `--gg-runway-height` / `--gg-formation-vh` /
-`--gg-pq-pin-factor` in CSS, read/derived in JS):
-
-```
-P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
-P_FOLD_DUR=0.25  P_ZOOM_END=1.00  GRID_PEEL_STAGGER=0.20  SPHERE_INTERACTIVE_T=0.8
-FOLD_PEEL_OVERLAP=0.35  CA_ENABLED=true
-FORMATION_SCROLL_VH=304  PQ_APPEAR_LEAD=0.03  CURSOR_ZOOM_DISMISS_T=0.38  CURSOR_ZOOM_RETIRE_T=0.40
-```
-
-`FOLD_PEEL_OVERLAP` (0–1) makes each card begin folding to the sphere that far — in peel
-position-space — **before** it fully lands in the grid (folding from its live peel position, no
-snap), so the grid never visibly "resolves" and the sphere forms earlier. The fold opens at peel
-localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold window
-(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`) and the per-card fold timer
-(`cardFoldStartProgress`) both derive from it in `timeline.js`, so camera / depth-sort /
-interactivity stay aligned. `0` restores "settle, then fold."
-
-**Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
-(`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
-fold constants move: `ARC_COPY_OUT_FORM_START = 0.20` → `ARC_COPY_OUT_FORM_END = 0.90`, i.e.
-progress ≈ `0.096` → `0.294` against a formed sphere at `0.322`. It therefore starts only once the
-fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finishes forming — one
-window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
-**not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
-midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
-spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
-
-`FOLD_FIRST_PROGRESS` and `SPHERE_FORMED_PROGRESS` are the fold window's two ends, and
-`cardFoldStartProgress(gpDelay)` is the same computation per card — `FOLD_FIRST_PROGRESS` is its
-`gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
-cannot drift apart.
-
-**Arc-copy placement is all CSS**; `updateArcCopy` owns only the opacity and the 24px entry slide.
-CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
-and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
-below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
-handles RTL, so the JS side-swap that used to maintain `left`/`right` by hand is gone.
-
-**Entry timing** — two independent constants: `ENTRY_LEAD_VH` (`0.4`) viewport-heights before the
-block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
-over content above), and `ENTRY_RAMP_VH` (`1.05`) the ramp over which `arcCopyEntryT` goes 0→1
-(arc-copy fade, arc pre-roll speed, text→arc gap).
+## Breakpoints & rebuilds
 
 **Breakpoints** resolve once in `init()`: two render profiles split at 768px — `md` (≥768, all
 cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, first 24, 3×8, smaller
@@ -804,6 +807,21 @@ card count, so `doLayout` triggers a full `destroy()`+`init()` rebuild; resizing
 the cheap path (renderer/camera resize). The `resize` handler is the sole driver of the **width**
 boundary — no `matchMedia` listener for 768px. The one `matchMedia` `change` listener is for
 reduced motion (see Reduced motion); pointer precision is read at init only (see Shape).
+
+**`doLayout` cost control.** `resize` fires ~once per frame during a desktop window drag, and once
+mid-scroll whenever iOS Safari collapses the URL bar (changing `innerHeight`) — the latter landing
+inside the formation animation. So the handler is split three ways:
+- Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. Only the
+  `resize` path takes this exit (`doLayout({ fromResize: true })`); the init call and the
+  reduced-motion `change` listener run with the viewport unchanged and must still execute the body.
+  Both listeners are wrapped rather than passed `doLayout` directly, or the event argument would land
+  in its options object.
+- Renderer/camera/`computeGridLayout()` stay **synchronous** — a stale `W`/`H` renders the canvas
+  stretched and desyncs `formedScrollPx()`.
+- `buildTextMesh()` is **trailing-debounced** (`TEXT_REBUILD_DEBOUNCE_MS`, 150ms), but only while
+  `textMesh.visible` is false — it disposes a GPU texture, redraws a 2D canvas and uploads a new one.
+  On screen it rebuilds synchronously, since a deferred rebuild would leave it stretched at the old
+  aspect. `destroy()` clears any pending timer so a band crossing can't rebuild into a torn-down scene.
 
 Because the block's `innerHTML` is built once in the outer `init(el)` (not per `initRuntime`) and
 the runtime closure survives a `destroy()`+`initRuntime()` rebuild, `destroy()` resets state a
@@ -817,6 +835,8 @@ rebuild would otherwise inherit:
   `sphereOrient.pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, `navNudge.*`, `wasBrowsing`) to the upright
   pose — else pitch/yaw dragged before a device change carried into the rebuilt barrel and rendered
   it tilted until a scroll-out zeroed it.
+
+## CSS
 
 **Tokens.** Every spacing, radius, border-width, font-size, font-weight and blur value that lands on
 an S2A scale uses the token, not the literal — including positional insets (`bottom`,
@@ -844,9 +864,8 @@ md counter pill, the a11y tip, the cursor label). It is declared on `.globe-gall
 it cannot inherit. The same is true of any future local var the cursor needs.
 
 Note the font-size tokens are **rem** (`--s2a-font-size-sm` is `0.875rem`). Neither `libs/styles` nor
-`libs/c2/styles` overrides the root font-size, so they resolve to their nominal px — but unlike the
-px literals they replaced, this block's type now scales with a reader's browser font-size setting,
-which is the intended C2 behaviour.
+`libs/c2/styles` overrides the root font-size, so they resolve to their nominal px while still scaling
+with a reader's browser font-size setting — the intended C2 behaviour, and why px literals aren't used.
 
 **Naming.** Classes are `globe-gallery-*` (BEM-ish, matching the block name); every custom property
 this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`--bc-` in
@@ -872,9 +891,6 @@ consumes the same two vars so the pair cannot drift). The arc copy is `position:
 there is no JS involved. At sm it pins 8px from the edge and its own `--gg-arc-pad` (16px) lands the
 copy on the inset; at md+ the pill background is gone, so the box is offset back by that padding
 (`calc(var(--gg-content-inset) - var(--gg-arc-pad))`) to put the *copy*, not the box, on the edge.
-Before this, `updateArcCopy` positioned the box per-frame from a 1392px content grid
-(`24 + max(0, (W - 48 - 1392) / 2)`), which put the arc copy 16px inboard of the pull-quote below
-1440px and up to 256px inboard above it (1920px viewport: copy at 280px vs the quote's 24px).
 
 ### Crosshair frame
 
@@ -925,11 +941,11 @@ Milo's `decorateDefaultLinkAnalytics` (`libs/martech/attributes.js`) runs **once
 block with four holes:
 
 1. A card is WebGL pixels raycast in `interaction.js` — there is no DOM node to decorate.
-2. Auto-generated labels are `${label}-${linkCount}--${header}`, where `linkCount` is the
-   ordinal among *all* links/buttons in the block. The ~50 `.globe-gallery-a11y-card` buttons
-   precede the modal controls, so prev used to read `previous card-52--`. That ordinal is also
-   **race-dependent** (the a11y buttons only exist after the async fragment fetch) and is
-   **never re-applied** after a breakpoint rebuild destroys and recreates them.
+2. Auto-generated labels are `${label}-${linkCount}--${header}`, where `linkCount` is the ordinal
+   among *all* links/buttons in the block. The ~50 `.globe-gallery-a11y-card` buttons precede the
+   modal controls, so prev would read `previous card-52--`. That ordinal is **race-dependent** (the
+   a11y buttons only exist after the async fragment fetch) and **never re-applied** after a
+   breakpoint rebuild recreates them.
 3. Badge CTAs are minted per card inside `populateModal`, always after the decoration pass.
 4. Escape and the mobile gestures produce no DOM click at all.
 
@@ -979,59 +995,50 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
 ### Details worth not re-deriving
 
-- **Badge labels carry no index.** Derived from badge row position it would differ per card
-  (Photoshop `-1` on one card, `-3` on another), splitting the one aggregate that matters. One
-  product = one label. Milo's gnav ships numberless labels too (`daa-ll="Brand"`).
-  `processTrackingLabels` also strips `-`, so a product name like `Photoshop-Web` becomes
-  `Photoshop Web` and cannot corrupt the level split.
-- **20 characters per segment.** `decorateDefaultLinkAnalytics` re-runs every `-`-separated
-  segment of an existing `daa-ll` through `processTrackingLabels(part, config, 20)`, which
-  hard-slices at 20 — silently. `enter_gallery_keyboard` became `enter_gallery_keyboa`, hence
-  the `_kbd` abbreviation. Check any new label the same way: split on `-`, and no piece may
-  exceed 20 characters. Product names are already sliced to 20 at mint time.
-- **Every card button carries the *same* explicit `daa-ll`** (`CARD_OPEN_DAA_LL` in `a11y.js`).
-  Left to auto-decoration they would each derive a label from `aria-label` — the card's alt
-  text — producing ~50 per-card labels, exactly the cardinality this design rejects. Explicit
-  also means the label cannot drift with the button's ordinal.
+- **Badge labels carry no index.** Derived from row position it would differ per card (Photoshop
+  `-1` on one, `-3` on another), splitting the one aggregate that matters. One product = one label.
+  `processTrackingLabels` also strips `-`, so `Photoshop-Web` becomes `Photoshop Web` and can't
+  corrupt the level split.
+- **20 characters per segment.** `decorateDefaultLinkAnalytics` re-runs every `-`-separated segment
+  of an existing `daa-ll` through `processTrackingLabels(part, config, 20)`, which hard-slices at 20
+  **silently** — hence `_kbd` rather than `_keyboard`. Check any new label the same way: split on
+  `-`, and no piece may exceed 20 characters. Product names are sliced to 20 at mint time.
+- **Every card button carries the *same* explicit `daa-ll`** (`CARD_OPEN_DAA_LL` in `a11y.js`). Left
+  to auto-decoration each would derive a label from `aria-label` — the card's alt text — producing
+  ~50 per-card labels, the exact cardinality this design rejects.
 - **`event.isTrusted` separates acting from reporting.** A synthetic click carries
-  `isTrusted: false`; genuine user activation is always `true`, including keyboard Enter/Space
-  and screen-reader activation (AT goes through the platform accessibility API, which browsers
-  surface as a trusted click). So `onCardClick` bails on untrusted events: `trackCardOpen`'s
-  click is report-only, and without that bail it would reopen the modal at viewport centre,
-  discarding the tap coordinates the raycast passes. The marker rides on the event, so unlike a
-  module-scope flag it cannot latch, leak, or need a `finally`.
-  **Test gotcha:** an E2E test driving the block with `page.evaluate(el => el.click())` produces
-  an untrusted click and will appear to do nothing. Use the real click API (Playwright's
-  `locator.click()` dispatches trusted input).
-- **Only the canvas path calls `trackCardOpen`** (`openModalFromCanvas` in `globe-gallery.js`,
-  kept separate from `openModalAndDismissHint` for exactly this reason). A keyboard open is
-  already a real click on that button, so reporting there too would double-count it.
-- **`enter_gallery` is the one engagement signal here.** The entry widget is a real button, so
-  it costs a single label and roughly one event per keyboard session. It answers a question
-  nothing else does: whether the two-level a11y gallery is ever entered at all. Note the widget
-  is only *clicked* to enter BROWSE; merely focusing it (which scrolls the page to the
-  interactive globe via `snapToInteractive`) is a focus event and is not reported.
-- **Caveat inherent to `daa-ll` on any button:** a real click reports even when the handler
-  then declines to act — `enterBrowse()` bails if the sphere isn't formed, and `onCardClick`
-  bails if `isInteractive()` is false. Expect a small over-count on both.
-- **`close(e.isTrusted)`** (`modal.js`) is the same idea. `close(viaPointer)` ignores a close
-  within 200ms of open, to swallow the *browser's* synthetic click after a touch pointerup —
-  which is trusted, so the guard still applies to it. Escape and pull-to-close route through
-  `clickClose()`, are untrusted, and so are exempt; without that, Escape within 200ms of open
-  would be silently ignored. `viaPointer` and `isTrusted` turn out to be the same predicate,
-  so it is derived from the event rather than stashed.
-- **Do not add `daa-lh` anywhere in the block.** `attributes.md` forbids it, and a `daa-lh` on
-  the block element makes `decorateSectionAnalytics` skip link decoration for the whole block.
-- **Not tracked, deliberately:** globe drag/hover/auto-rotation, scroll milestones, card
-  impressions, and close *method* (button vs Escape vs swipe all collapse to one label). The
-  first two are the highest-volume signals here. Note these are the one class of signal the
-  all-`daa-ll` design cannot express: nothing is clicked, and there is no element that means
-  "the user reached the formed globe". Adding one would mean reintroducing `sendAnalytics`
-  (`libs/martech/helpers.js`) at the `SPHERE_INTERACTIVE_T` gate behind a once-only flag — and
-  with it a second reporting path, which gates on consent separately from DAA. Worth weighing
-  against the consolidation before adding the first one.
+  `isTrusted: false`; genuine user activation is always `true`, including keyboard Enter/Space and
+  screen-reader activation (AT goes through the platform accessibility API, which browsers surface as
+  a trusted click). So `onCardClick` bails on untrusted events: `trackCardOpen`'s click is
+  report-only, and without that bail it would reopen the modal at viewport centre, discarding the tap
+  coordinates the raycast passes. The marker rides on the event, so unlike a module-scope flag it
+  can't latch or leak.
+  **Test gotcha:** driving the block with `page.evaluate(el => el.click())` produces an untrusted
+  click and appears to do nothing. Use a real click API (Playwright's `locator.click()`).
+- **Only the canvas path calls `trackCardOpen`** (`openModalFromCanvas`, kept separate from
+  `openModalAndDismissHint` for this reason). A keyboard open is already a real click on that button,
+  so reporting there too would double-count.
+- **`enter_gallery` is the one engagement signal here** — one label, ~one event per keyboard session,
+  answering whether the two-level gallery is ever entered at all. The widget is only *clicked* to
+  enter BROWSE; merely focusing it (which scrolls via `snapToInteractive`) is not reported.
+- **Caveat inherent to `daa-ll` on any button:** a real click reports even when the handler declines
+  to act — `enterBrowse()` bails if the sphere isn't formed, `onCardClick` if `isInteractive()` is
+  false. Expect a small over-count on both.
+- **`close(e.isTrusted)`** (`modal.js`) is the same idea. `close(viaPointer)` ignores a close within
+  200ms of open, to swallow the *browser's* synthetic click after a touch pointerup — which is
+  trusted, so the guard applies. Escape and pull-to-close route through `clickClose()`, are
+  untrusted, and are exempt; otherwise Escape within 200ms of open would be silently ignored.
+  `viaPointer` and `isTrusted` are the same predicate, so it's derived from the event, not stashed.
+- **Do not add `daa-lh` anywhere in the block.** `attributes.md` forbids it, and a `daa-lh` on the
+  block element makes `decorateSectionAnalytics` skip link decoration for the whole block.
+- **Not tracked, deliberately:** globe drag/hover/auto-rotation, scroll milestones, card impressions,
+  and close *method* (button vs Escape vs swipe collapse to one label). These are the one class of
+  signal the all-`daa-ll` design cannot express — nothing is clicked, and no element means "the user
+  reached the formed globe". Adding one means reintroducing `sendAnalytics`
+  (`libs/martech/helpers.js`) at the `SPHERE_INTERACTIVE_T` gate behind a once-only flag, and with it
+  a second reporting path that gates on consent separately from DAA.
 
-## Behavior notes (intentional differences from the prototype)
+## Behavior notes
 
 - **"Click & Drag" hint text (WebGL).** A `PlaneGeometry` in `sphereGroup` behind the sphere's back
   surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = -1`), so it rotates with the globe and
@@ -1064,58 +1071,48 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   reload, unless a re-init — e.g. an RM toggle — re-reads it). With multiple globes each
   makes its own pair but only the hovered one activates (inactive discs `visibility: hidden`). Label
   copy is the authored hint string (see Localization).
-- **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.** The
-  prev/next arrows and counter are independent chrome children (no wrapper), positioned per-frame by
-  `positionModalChrome`, reading as one bottom-centre row at every breakpoint. **Desktop/tablet:** the
-  counter pill centres horizontally on the image, an arrow `DT_NAV_GAP` (12px) each side; the pill is
-  a fixed `DT_COUNTER_W` (138px, mirror its CSS `width`) so the flank offset needs no measuring; all
-  three share one `bottom` — `--gg-modal-edge` from the *viewport* bottom (not the image bottom), so the
-  row sits at the same height across images regardless of the photo's aspect ratio — 48px tall. **Mobile:** the same row spread wide into the bottom-left/right
-  corners inside the bottom scrim. The three frosted controls (both arrows + close) share one style
-  (1px `--s2a-color-transparent-white-24` border, `--gg-control-radius`,
-  `--s2a-color-transparent-black-64`, `blur(12px)`) and one 48×48 `--gg-control-size` hit target at
-  every breakpoint; close sits top-right at every breakpoint. Chrome geometry is three locals on
-  `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `--s2a-spacing-lg` at md+;
-  the single inset for all four controls *and* the scrim padding — `positionModalChrome` assigns the
-  `var()` string so nothing is duplicated in JS), `--gg-control-size` (48px, mirrored as `NAV_SIZE`
-  only because the desktop flank offset needs it as a number), and `--gg-control-radius` (6px — a
-  literal; S2A's radius scale has no 6px step). `--gg-modal-edge` is also the sm scrim's
-  `padding-bottom` reserve (`edge + control + edge`, so the arrows clear the badges); at md+ the
-  arrows sit under the image instead, so the override drops the reserve to a flat `edge`. The
-  **visible image** is contain-fit to the viewport minus a symmetric margin (desktop `DT_IMG_MARGIN`
-  12px; mobile full-bleed to screen width, square corners `uRadius=0`), native aspect kept — the
-  sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`) so the *photo*, not
-  the geometry, reaches the margin. The desktop corner radius is a **constant `MODAL_RADIUS_PX`
-  (16px) on screen for every card**, not a fixed fraction of height. `uRadius` is normalised to card
-  *height*, so `modalDesktopFit(uAspect)` solves the plane height as photo + 2·16px and derives
-  `radiusFrac = 16 / cardHPx` — per card, because `cardHPx` depends on whether that card's aspect
-  makes the fit width- or height-limited. Fixing the radius in px also removes the old circular
-  dependency (with a fractional radius the fit divided by `1 - 2·uRadius`).
-  `modalRadiusFrac(uAspect)` wraps it with the mobile `0`; it takes the **aspect**, not the card,
-  because that is the only per-card input — `uAspect = cardAspect × sphereScaleX`, and despite the
-  name `sphereScaleX` is not a sphere-phase transform, it is the card's native image aspect relative
-  to the base card aspect (set on texture decode, see `loadOverflowTexture`). The modal is still
-  WebGL geometry (a plane in `modalScene` under the same perspective camera), so this is the same
-  aspect the sphere phase uses. Because the fraction depends on the fit, `computeModalTarget`
-  re-pushes `uRadius` **per-frame** — a resize, or an overflow card's late aspect correction on
-  decode, changes `cardHPx`; the `getModalMaterial` / `createOverflowCard` assignments (and the
-  `createModalMaterial` initialiser) only seed the frames before it first runs.
-  Desktop adds a fixed-width (`DT_SCRIM_W` 316px) dark frosted
-  scrim on the **viewport's left edge, full height**; mobile's scrim is one full-width bottom chunk
-  (content-sized, capped at `60dvh`). Both are a **pinned header / scrolling body / pinned footer**:
-  role + name are `flex-shrink:0` at the top, the **badges** are `flex-shrink:0` at the bottom (so
-  those tabbable controls are always on-screen), and the **description** is the only scroll region
-  (`min-height:0; overflow-y:auto`) — long copy scrolls instead of overflowing or
-  hiding the badges. A `mask-image` scroll-shadow (`updateDescFade`, re-measured on
-  scroll / resize / card-change) fades whichever edge has more copy, so the scroll affordance
-  survives macOS's hidden overlay scrollbar. JS gives the description `tabindex="0"` only while it actually overflows, so it's
-  keyboard-scrollable then without leaving a pointless tab stop when the copy fits; the full text is
-  always in the a11y tree via the dialog's `aria-describedby`; `touchstart` skips the swipe/pull
-  gesture when a drag starts inside it so the copy scrolls rather than closing the modal. It also
-  carries **`data-lenis-prevent`** — Milo loads the Lenis smooth-scroll lib on `foundation:c2` pages
-  (`utils.js`), which hijacks the wheel/touch and applies it to the (scroll-locked) page, so a nested
-  scroll region silently won't scroll without opting out via that attribute. All dark frosted
-  (`rgb(0 0 0 / 64%)` + `blur(12px)`, light text).
+- **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.**
+  - **Controls.** Prev/next arrows and the counter are independent chrome children (no wrapper),
+    positioned per-frame by `positionModalChrome`, reading as one bottom-centre row at every
+    breakpoint. **Desktop/tablet:** the counter pill centres on the image with an arrow `DT_NAV_GAP`
+    (12px) each side; the pill's fixed `DT_COUNTER_W` (138px, mirroring its CSS `width`) means the
+    flank offset needs no measuring. All three share one `bottom` — `--gg-modal-edge` from the
+    *viewport* bottom, not the image bottom, so the row holds its height whatever the photo's aspect.
+    **Mobile:** the same row spread into the bottom corners inside the scrim. The three frosted
+    controls (both arrows + close) share one style and one 48×48 `--gg-control-size` hit target
+    everywhere; close sits top-right at every breakpoint. Geometry is three locals on
+    `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `-lg` at md+ — the single
+    inset for all four controls *and* the scrim padding; `positionModalChrome` assigns the `var()`
+    string so nothing is duplicated in JS), `--gg-control-size` (mirrored as `NAV_SIZE` only because
+    the desktop flank offset needs a number), and `--gg-control-radius` (6px literal; no S2A step).
+    `--gg-modal-edge` is also the sm scrim's `padding-bottom` reserve (`edge + control + edge`, so the
+    arrows clear the badges); at md+ the arrows sit under the image, so the override drops it to a
+    flat `edge`.
+  - **Image fit + corner radius.** The **visible image** is contain-fit to the viewport minus a
+    symmetric margin (desktop `DT_IMG_MARGIN` 12px; mobile full-bleed, square corners `uRadius=0`),
+    native aspect kept — the sizing math backs the geometry out of the SDF corner inset
+    (`uRadius·cardHPx`) so the *photo*, not the geometry, reaches the margin. Desktop keeps a constant
+    `MODAL_RADIUS_PX` (16px) **on screen for every card**, not a fraction of height: `uRadius` is
+    normalised to card height, so `modalDesktopFit(uAspect)` solves the plane height as photo + 2·16px
+    and derives `radiusFrac = 16 / cardHPx` — per card, since `cardHPx` depends on whether that card's
+    aspect makes the fit width- or height-limited. `modalRadiusFrac(uAspect)` wraps it with the mobile
+    `0`, taking the **aspect** because that's the only per-card input: `uAspect = cardAspect ×
+    sphereScaleX`, and despite the name `sphereScaleX` is not a sphere-phase transform but the card's
+    native image aspect relative to the base card aspect (set on texture decode). Because the fraction
+    depends on the fit, `computeModalTarget` re-pushes `uRadius` **per-frame** — a resize, or an
+    overflow card's late aspect correction on decode, changes `cardHPx`.
+  - **Scrim + scroll region.** Desktop gets a fixed-width (`DT_SCRIM_W` 316px) dark frosted scrim on
+    the **viewport's left edge, full height**; mobile gets one full-width bottom chunk (content-sized,
+    capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: role + name are
+    `flex-shrink:0` at the top, **badges** are `flex-shrink:0` at the bottom (so those tabbable
+    controls stay on-screen), and the **description** is the only scroll region (`min-height:0;
+    overflow-y:auto`). A `mask-image` scroll-shadow (`updateDescFade`, re-measured on
+    scroll/resize/card-change) fades whichever edge has more copy, so the affordance survives macOS's
+    hidden overlay scrollbar. JS gives the description `tabindex="0"` only while it actually overflows;
+    the full text is always in the a11y tree via `aria-describedby`; `touchstart` skips the swipe/pull
+    gesture when a drag starts inside it. It also carries **`data-lenis-prevent`** — Milo loads Lenis
+    on `foundation:c2` pages, which hijacks wheel/touch and applies it to the (scroll-locked) page, so
+    a nested scroll region silently won't scroll without that attribute.
   - **Touch gestures (in the modal) are gated on a coarse primary pointer**
     (`matchMedia('(pointer: coarse)')`, mirroring `usesCylinderGeometry`), not on the `sm` width
     band — so tablets at md (≥768) get them too. A per-gesture axis lock (`AXIS_LOCK_PX` 10px)
@@ -1149,14 +1146,12 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **No-overshoot ease.** Keyboard and modal centring share one **frame-counted `easeInOutCubic`
     tween** (`KEY_BROWSE_FRAMES` visible; `KEY_MODAL_FRAMES` faster, behind the blur) — never
     overshoots, and a low frame rate stretches the spin smoothly instead of jumping. RM snaps.
-  - **Why capped, not a free trackball.** A pure-trackball version was tried and **reverted** (git
-    commit `desktop no clamp, drag yaw-only`): full tumbling read as too free, and — the deciding
-    factor — trackball roll is path-dependent, so curved drags accumulate tilt that never
-    self-cancels (a closed input loop isn't a closed orientation loop). Clamped Euler makes
-    orientation a pure function of `(pitch, yaw)`: roll returns to 0 whenever pitch does, bounded by
-    `|roll| ≤ |pitch| ≤ 60°`. That self-correction is the reason for the cap; don't restore a
-    blanket clamp / drop the roll / hard-switch the cap without re-breaking polar centring,
-    uprighting, or the smooth exit.
+  - **Why capped, not a free trackball.** Trackball roll is path-dependent, so curved drags
+    accumulate tilt that never self-cancels (a closed input loop isn't a closed orientation loop).
+    Clamped Euler makes orientation a pure function of `(pitch, yaw)`: roll returns to 0 whenever
+    pitch does, bounded by `|roll| ≤ |pitch| ≤ 60°`. That self-correction is the reason for the cap;
+    don't restore a blanket clamp, drop the roll, or hard-switch the cap without re-breaking polar
+    centring, uprighting, or the smooth exit.
   - **Modal TRAVERSAL centres the viewed card (shared with the keyboard gallery); it doesn't
     "nudge."** `centerModalCard` (injected as `requestNavNudge`, called on modal **prev / next /
     swipe** — NOT open) rotates the sphere so the revealed card faces centre behind the modal, so
@@ -1169,8 +1164,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     close and the focus ring hugs the card. On **yaw-only geometry** pitch is held. **Camera INSIDE
     the globe** (modal opened mid-zoom-through then traversed): once inside the camera sees the FAR
     (−Z) wall, so `cardCenterYawPitch` flips the target to −Z (keyed off `cameraInsideSphere`;
-    keyboard browse never hits it). Replaced an earlier capped-spring "reactivity nudge" that never
-    reached centre.
+    keyboard browse never hits it).
 - **Two independent axes: viewport WIDTH and INPUT PRECISION** — resolved separately, never
   conflated.
   - **Width** (`resolveBP`, 768px) picks the render profile: card count, grid dims, sphere
@@ -1206,26 +1200,23 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 - **Yaw-only devices render a barrelled CYLINDER, not a sphere** (`cylinderMasonryLayout`). Every
   card's normal is **horizontal**, so obliquity depends only on azimuth — exactly what yaw controls
   — so yaw brings any card face-on at any height. Reads as the sphere's caps unfolded into a wall.
-  Layout is cylindrical **masonry**: fixed columns around the circumference, cards packed down each
-  (replacing a golden-angle helix that clumped and sized unevenly).
+  Layout is cylindrical **masonry**: fixed columns around the circumference, cards packed down each.
   - **Uniform WIDTH fixes alignment; varying HEIGHT is the effect.** Width = column width (columns
     read as true verticals); height follows each image's native aspect (the stagger). Makes
     `SPHERE_AREA_NORM` unnecessary here (0). `CYL_ASPECT_CAP` (1.5) stops one panorama dominating a
     column (cover-crop UVs crop harder; `imgAspect` derives from the *solved* size so the corner SDF
     still matches). `CYL_GAP_RATIO` (0.20) sets both gaps (card width = pitch / (1 + ratio)).
-  - **Packing: shortest column, tallest card first** (longest-processing-time-first) — cuts column
-    imbalance from 1.64× to ~1.05 vs source order. Free to reorder: the layout scatters consecutive
+  - **Packing: shortest column, tallest card first** (longest-processing-time-first) — holds column
+    imbalance at ~1.05 vs 1.64× for source order. Free to reorder: the layout scatters consecutive
     cards, so authored order carries no spatial meaning and modal prev/next walks card *index*. Each
     column's stack is centred about y=0.
   - **Column count is DERIVED** (`CYL_COLS_FIT`, the wall-HEIGHT dial): fewest columns whose tallest
     fits that fraction of frustum height (must scale with count). Default `0.80`; **sm overrides to
-    `0.65`** (`BREAKPOINTS.sm.CYL_COLS_FIT`) to trim height after `SPHERE_R` was pulled in. iPad's md
-    cylinder keeps 0.80.
-  - **Barrel size is the RADIUS.** The wall sizes against the centre-plane frustum, but viewers see
-    the FRONT cards at the near radius, magnified `CAM_Z_SPHERE / (CAM_Z_SPHERE − SPHERE_R)`. On a
-    narrow phone the sm barrel clipped the screen edges, so **sm `SPHERE_R` was reduced 20 → 16**
-    (radius is the width lever; 1.4×→1.30× near magnification), paired with the `CYL_COLS_FIT` 0.65
-    for height. md unchanged.
+    `0.65`** (`BREAKPOINTS.sm.CYL_COLS_FIT`). iPad's md cylinder keeps 0.80.
+  - **Barrel size is the RADIUS** — the width lever. The wall sizes against the centre-plane frustum,
+    but viewers see the FRONT cards at the near radius, magnified
+    `CAM_Z_SPHERE / (CAM_Z_SPHERE − SPHERE_R)`. sm runs `SPHERE_R` 16 (1.30× near magnification) so
+    the barrel clears a narrow phone's screen edges, paired with `CYL_COLS_FIT` 0.65 for height.
   - **`CYL_BULGE` (0.12) barrels the wall** — `r = R·(1 − bulge·t²)`, `t = 2y/wallH` — so the
     silhouette curves like a globe while every column keeps a constant azimuth (still projects to a
     vertical line; only radial displacement). Costs ~9° normal tilt on sm / ~14° on md. **Don't push
@@ -1243,14 +1234,14 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     it to the fade keeps the flip aligned. `maxRadial` is radial (rotation-invariant); `sphereGroup.
     scale` (RM shrink) folded in; capped at `CAM_Z_SPHERE × DRAG_FLIP_MAX_CAM_FRAC` (0.95) so it
     can't fire at zoom start; gated on `zoomT > 0`.
-  - **No roll jitter here** (columns lining up *is* the effect). **`CARD_FACE_CAMERA` is `0.10`** —
-    it shipped at `0.35`; on a barrel it buys limb legibility at the cost of the curve (below).
-  - **Why not a chopped masonry globe** (rejected): meridian columns on a sphere project to curves,
-    so in-column alignment breaks; a 0.7 band holds only ~2 cards/column and returns latitude
-    obliquity. Masonry needs a developable surface — a cylinder is one, a sphere isn't.
-- **Density + facing pass** (full-sphere path; fixes the "edgy / unevenly distributed" read).
-  Adding cards fixes none of it — nearest-neighbour spacing is already even at N=24 and worsens with
-  more cards (foreshortening variance). Four independent levers:
+  - **No roll jitter here** (columns lining up *is* the effect). **`CARD_FACE_CAMERA` is `0.10`** — on
+    a barrel it buys limb legibility at the cost of the curve (below).
+  - **Not a masonry sphere:** masonry needs a developable surface. Meridian columns on a sphere
+    project to curves, so in-column alignment breaks, and a 0.7 band holds only ~2 cards/column while
+    reintroducing latitude obliquity.
+- **Density + facing pass** (full-sphere path; fixes the "edgy / unevenly distributed" read). Adding
+  cards doesn't help — nearest-neighbour spacing is already even at N=24 and worsens with more cards
+  (foreshortening variance). Four independent levers:
   - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.10` cylinder / `0` full sphere).** A
     radial card's obliquity equals its angular distance from front-centre, so limb cards render as
     lines. `applyCardFacing` turns each card partway toward the camera (slivers 5→0, worst obliquity
@@ -1262,53 +1253,40 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     past ~0.35 eats the limb correction. Applied at **three** sites that must agree or the card
     snaps: `placeSphereCard`, `snapCardToSphereSlot`, and `placeFoldingCard` (scaled by `fdE` so it
     eases in over the fold, continuous with the sphere branch).
-  - **Why the barrel runs `0.10`, not `0.35`.** The full-sphere path is `0`, so this only ever runs
-    on the cylinder — where it fights the geometry as much as it helps. At `0.35` it read as "cards
-    pop up when they face the camera, and spin on their own past a certain angle." Both symptoms are
-    this one dial. Measured on the sm barrel (`R` 16, `CAM_Z` 70, `CYL_BULGE` 0.18):
-    - **It un-seats cards from the bulge** (the "pop"). The tilt is a full 3D re-aim, so it also
-      cancels part of each card's *vertical* slope — the slope `cylinderMasonryLayout` computes
-      precisely so cards sit flush. The cancellation scales with card height, so a front column's
-      pitch error runs `0°` at mid-height → **`−4.33°` at top/bottom row at `0.35`** (`−1.24°` at
-      `0.10`). The column stops being a curve and reads as hinged slats.
-    - **It unwinds far faster than it winds up** (the "self-rotation"). From 0→75° of azimuth the
-      tilt grows at a constant `+0.35°` per degree of spin — locked to the rotation, so invisible.
-      Past 75.5° (`|n.z|` enters the band) it reverses and peaks at **`−2.84°`/° at `0.35`**
-      (`−0.81°`/° at `0.10`), dumping the accumulated tilt in ~14.5° of spin. C1, so no literal
-      jump, but it reads as cards spinning on their own near the limb. It also pushes the edge-on
-      crossing out from `acos(R/CAM_Z)` = 77.0° (82.0° at `0.10`, 85.3° at `0.35`) and steepens it,
-      so cards hold more than their true width to the limb, then pinch to a line and flip to their
-      back face.
-    - **Tuning table** (maxSnap °/° · front pitch error · limb width vs a true barrel). Both costs
-      scale linearly with the dial; only the snap responds to the band:
+  - **Why the barrel runs `0.10`.** The full-sphere path is `0`, so this dial only ever runs on the
+    cylinder, where it fights the geometry as much as it helps. Raising it produces two coupled
+    symptoms — cards "popping up" as they face the camera, and appearing to spin on their own near the
+    limb. Both come from this one dial: the tilt is a full 3D re-aim, so it partly cancels each card's
+    *vertical* slope (the one `cylinderMasonryLayout` computes so cards sit flush on the bulge), and
+    it unwinds much faster than it winds up once `|n.z|` enters the edge-on band. Measured on the sm
+    barrel (`R` 16, `CAM_Z` 70) — both costs scale linearly with the dial; only the snap responds to
+    the band:
 
-      | `CARD_FACE_CAMERA` / `FACING_EDGE_ON_BAND` | maxSnap | pitch err | limb width |
-      | --- | --- | --- | --- |
-      | `0` (true barrel) | `0.00` | `0°` | `1.00×` |
-      | **`.10` / `.25` — shipped** | `0.81` | `−1.24°` | `1.33×` |
-      | `.10` / `.45` | `0.40` | `−1.24°` | `1.33×` |
-      | `.20` / `.45` | `0.80` | `−2.47°` | `1.64×` |
-      | `.35` / `.25` — was shipped | `2.84` | `−4.33°` | `2.07×` |
+    | `CARD_FACE_CAMERA` / `FACING_EDGE_ON_BAND` | maxSnap °/° | front pitch err | limb width |
+    | --- | --- | --- | --- |
+    | `0` (true barrel) | `0.00` | `0°` | `1.00×` |
+    | **`.10` / `.25` — shipped** | `0.81` | `−1.24°` | `1.33×` |
+    | `.10` / `.45` | `0.40` | `−1.24°` | `1.33×` |
+    | `.20` / `.45` | `0.80` | `−2.47°` | `1.64×` |
+    | `.35` / `.25` | `2.84` | `−4.33°` | `2.07×` |
 
-      Widening the band is close to free: it buys back snap without touching limb width (the pitch
-      error is set by the dial alone). `FACING_EDGE_ON_BAND` is safe to retune — no sphere path
-      reads it. If the pop ever needs to go to zero while keeping limb width, make the re-aim
-      **yaw-only** on this path (project `cardNormal` into XZ before `setFromUnitVectors`): the
-      geometry is yaw-only anyway, and it zeroes the pitch error outright at any dial value.
+    Widening the band is close to free — it buys back snap without touching limb width, since the
+    pitch error is set by the dial alone — and `FACING_EDGE_ON_BAND` is safe to retune because no
+    sphere path reads it. To zero the pop while keeping limb width, make the re-aim **yaw-only** here
+    (project `cardNormal` into XZ before `setFromUnitVectors`); the geometry is yaw-only anyway.
   - **Uneven card SIZE → `SPHERE_AREA_NORM` (`0.5` yaw-only / `0` else).** Native-aspect sizing
     (height `CARD_H_SPHERE`, width `sphereScaleX`) makes a 16:9 image 2.67× the area of a 2:3 one, so
     wide cards blot out neighbours. Scaling *both* axes by `sphereScaleX^-norm` equalizes area at
     `norm=0.5` (area ∝ ssx·ssx⁻¹ = 1) with the aspect — and the image — undistorted (spread
     2.67×→1.00×). Baked into `card.sphereScaleSX/SY` at build (raw `sphereScaleX` kept for arc/grid/
     modal); applied at the same three sites **plus** `modal.js`'s close target (needs
-    `applySphereFacing` injected, else it jumps when `snapToSphereSlot` runs). `norm=0` reproduces
-    the old scaling exactly (precise-pointer untouched); uniform scale preserves `uAspect` so corners
-    stay circular.
-  - **Sparseness → `CARD_H_SPHERE` 6.0 → 11.0 on sm** (sphere path only). 24 cards at 6.0 covered
-    only 12.4% of the sphere face. Coverage scales with **H²**, so size is a far stronger lever than
-    count and adds no textures/draw calls. Nominal height before `SPHERE_AREA_NORM`; net ~42%.
-  - **Scatter → `CARD_ROLL_JITTER` (sm `0.18` ≈ ±5°, md `0.5` ≈ ±14°).** Per-BP now; at sm's
-    sparsity the old fixed ±14° read as debris. md keeps the collage character.
+    `applySphereFacing` injected, else it jumps when `snapToSphereSlot` runs). `norm=0` is the
+    unscaled case; uniform scale preserves `uAspect` so corners stay circular.
+  - **Sparseness → `CARD_H_SPHERE` `11.0` on sm** (sphere path only). Coverage scales with **H²**, so
+    size is a far stronger lever than count and adds no textures/draw calls. Nominal height before
+    `SPHERE_AREA_NORM`; net ~42% of the sphere face.
+  - **Scatter → `CARD_ROLL_JITTER` (sm `0.18` ≈ ±5°, md `0.5` ≈ ±14°).** Per-BP: at sm's sparsity
+    ±14° reads as debris, while md keeps the collage character.
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On
   touch a vertical drag *is* the page-scroll gesture, so touch gets **yaw only** (horizontal spins,
   vertical scrolls); pitch (`drag.velY`) is written only when `!isTouchDrag && !getYawOnly()` — i.e.
@@ -1338,7 +1316,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 The module-scope constants are the core's tuning surface, split by kind: **scroll timing** (phase
 constants, entry ramp, and every threshold) lives in `src/timeline.js` — see Lifecycle timeline —
 and the **visual/physics** constants below stay in `globe-gallery.js`. The ones whose *value* isn't
-self-explanatory (and whose rationale used to live in long inline comments):
+self-explanatory:
 
 | Constant(s) | Value | Role |
 | --- | --- | --- |
@@ -1363,7 +1341,7 @@ self-explanatory (and whose rationale used to live in long inline comments):
 ### `timeline.js` constants
 
 Most of this file's exports are documented where they matter: the `P_*` phase constants and
-`FOLD_PEEL_OVERLAP` under Behavior notes → Phase constants; `FORMATION_SCROLL_VH` /
+`FOLD_PEEL_OVERLAP` under Phase constants; `CSS_FALLBACK` /
 `PQ_APPEAR_LEAD` under Scroll model; `ENTRY_LEAD_VH` / `ENTRY_RAMP_VH` under Entry timing; and
 every gate threshold in the Lifecycle timeline event table. The remainder — carried in code as
 bare names — are:
@@ -1380,11 +1358,6 @@ bare names — are:
 | `GRID_PEEL_WINDOW` | `0.8` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | `0.30` / `0.283` | — | derived spans: the grid-peel arc range, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
 | `progressAtFormT` / `progressAtZoomT` | — | — | helpers mapping a `sphereFormT` / `zoomT` back to progress. For docs and tests — not called per frame |
-
-Constants whose rationale is covered in the sections above (and so kept terse in code): the phase
-timeline + `FOLD_PEEL_OVERLAP`, `ENTRY_*` (all now in `timeline.js`), the `CYL_*` / `SPHERE_AREA_NORM` / `CARD_FACE_CAMERA`
-shape knobs, the near-fade + `dragFlipZ` constants, and the keyboard/modal centring frames + pitch
-caps (all under Behavior notes / Card count).
 
 ## Open items / backlog
 
@@ -1416,5 +1389,5 @@ Known follow-ups, not blocking this integration branch:
   - **B — keep the top/bottom spread look.** Retain a defined height (`min-height` instead of a hard
     `height`) so the quote/attribution stay spread; tolerates overflow better than today but partly
     keeps the rigidity. Only if the spread is a deliberate editorial layout worth preserving.
-  - Decision needed from design: grouped (A) vs spread (B). See Scroll model → runway / progress model
-    for how `--gg-pq-height` feeds the hold.
+  - Decision needed from design: grouped (A) vs spread (B). See **Scroll model** for how
+    `--gg-pq-height` feeds the hold.

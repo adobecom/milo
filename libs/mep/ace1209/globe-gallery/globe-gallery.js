@@ -98,6 +98,8 @@ const ARC_STAGGER = 0.594;
 // Reduced motion: shrink the static desktop sphere so the whole ball fits (sm left at 1).
 const RM_GLOBE_SCALE_MD = 0.9;
 
+const TEXT_REBUILD_DEBOUNCE_MS = 150;
+
 // Grid peel / fold.
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 // Non-uniform fanT split: low-i cards cluster into fanT [0, this] off-screen and peel first;
@@ -349,6 +351,7 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see doLayout)
   let pqAppearZoomT = 0.5;
+  let formationVh = 0; // from --gg-formation-vh (see doLayout)
   let W = 0; let
     H = 0;
 
@@ -892,10 +895,16 @@ function createGlobeGalleryRuntime(
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
   });
 
+  // Block top in document space + full scroll length. See README (Scroll model).
+  function measureBlock() {
+    blockDocTop = root.getBoundingClientRect().top + window.scrollY;
+    blockHeight = root.offsetHeight || (TL.CSS_FALLBACK.RUNWAY_VH / 100) * H;
+  }
+
   // Scroll px from the block top where the sphere is fully formed (progress = foldLast); locked to
-  // FORMATION_SCROLL_VH, clamped to the runway. See README → runway / progress model.
+  // --gg-formation-vh, clamped to the runway. See README (Scroll model).
   function formedScrollPx() {
-    return Math.min((TL.FORMATION_SCROLL_VH / 100) * H, blockHeight);
+    return Math.min((formationVh / 100) * H, blockHeight);
   }
 
   // Focusing the widget snaps the page to the interactive globe state (formed-sphere offset;
@@ -1739,6 +1748,7 @@ function createGlobeGalleryRuntime(
   }
 
   let resizeHandler = null;
+  let textRebuildTimer = 0;
   // Reduced-motion media query + listener (a mid-session OS toggle rebuilds; see doLayout).
   let reducedMotionMQ = null;
   let reducedMotionHandler = null;
@@ -1796,9 +1806,13 @@ function createGlobeGalleryRuntime(
     cameraOrtho.position.set(0, 0, 100);
     cameraOrtho.lookAt(0, 0, 0);
 
-    function doLayout() {
-      W = window.innerWidth;
-      H = window.innerHeight;
+    // Only the resize path passes fromResize — see README (doLayout cost control).
+    function doLayout({ fromResize = false } = {}) {
+      const nextW = window.innerWidth;
+      const nextH = window.innerHeight;
+      if (fromResize && nextW === W && nextH === H) return;
+      W = nextW;
+      H = nextH;
 
       // A band crossing (768px) or a reduced-motion toggle rebuilds via destroy()+init()
       // (geometry + RM layout are baked at build time); resizing within a band takes the cheap
@@ -1812,10 +1826,15 @@ function createGlobeGalleryRuntime(
         if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
-      blockDocTop = root.getBoundingClientRect().top + window.scrollY;
-      blockHeight = root.offsetHeight || window.innerHeight * 7;
-      const pinFactor = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-pin-factor')) || 0.44;
+      measureBlock();
+      const rootStyle = getComputedStyle(root);
+      const cssNum = (prop, fallback) => {
+        const n = parseFloat(rootStyle.getPropertyValue(prop));
+        return Number.isFinite(n) ? n : fallback;
+      };
+      const pinFactor = cssNum('--gg-pq-pin-factor', TL.CSS_FALLBACK.PQ_PIN_FACTOR);
       pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
+      formationVh = cssNum('--gg-formation-vh', TL.CSS_FALLBACK.FORMATION_VH);
       // Re-apply DPR (can change when dragging between monitors of different density).
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
@@ -1828,12 +1847,23 @@ function createGlobeGalleryRuntime(
       cameraOrtho.bottom = -H / 2;
       cameraOrtho.updateProjectionMatrix();
       computeGridLayout();
-      // Hint-text plane size tracks the viewport — rebuild on within-band resize.
-      if (textMesh) buildTextMesh();
+      // Deferred only while off-screen. See README (doLayout cost control).
+      if (textMesh) {
+        clearTimeout(textRebuildTimer);
+        textRebuildTimer = 0;
+        if (textMesh.visible) {
+          buildTextMesh();
+        } else {
+          textRebuildTimer = setTimeout(() => {
+            textRebuildTimer = 0;
+            if (textMesh) buildTextMesh();
+          }, TEXT_REBUILD_DEBOUNCE_MS);
+        }
+      }
     }
     doLayout();
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
-    resizeHandler = doLayout;
+    resizeHandler = () => doLayout({ fromResize: true });
     window.addEventListener('resize', resizeHandler, { passive: true });
 
     // Reduced motion can toggle mid-session (OS setting) without a resize, so listen directly;
@@ -1843,17 +1873,14 @@ function createGlobeGalleryRuntime(
     }
     reducedMotionMQ = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? null;
     if (reducedMotionMQ) {
-      reducedMotionHandler = doLayout;
+      reducedMotionHandler = () => doLayout();
       reducedMotionMQ.addEventListener('change', reducedMotionHandler);
     }
 
     // Recompute block metrics whenever page height changes (content loading above shifts
     // offsetTop; blockHeight=0 at first paint would make progress=Infinity).
     if (layoutObs) layoutObs.disconnect();
-    layoutObs = new ResizeObserver(() => {
-      blockDocTop = root.getBoundingClientRect().top + window.scrollY;
-      blockHeight = root.offsetHeight || window.innerHeight * 7;
-    });
+    layoutObs = new ResizeObserver(() => { measureBlock(); });
     layoutObs.observe(document.body);
 
     if (intersectionObs) intersectionObs.disconnect();
@@ -1952,6 +1979,7 @@ function createGlobeGalleryRuntime(
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
     }
+    if (textRebuildTimer) { clearTimeout(textRebuildTimer); textRebuildTimer = 0; }
     if (reducedMotionMQ && reducedMotionHandler) {
       reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
       reducedMotionMQ = null;

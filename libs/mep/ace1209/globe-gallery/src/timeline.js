@@ -36,7 +36,13 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 ) + PROGRESS_FOLD_DUR;
 export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-export const FORMATION_SCROLL_VH = 304; // keep = --gg-formation-vh (CSS)
+// CSS owns these; only read when the custom property doesn't resolve. See README (Scroll model).
+export const CSS_FALLBACK = {
+  FORMATION_VH: 304,
+  RUNWAY_VH: 520,
+  PQ_PIN_FACTOR: 0.65,
+};
+
 export const PQ_APPEAR_LEAD = 0.03;
 
 // --- Entry (raw-scroll space, before `progress` exists) ---

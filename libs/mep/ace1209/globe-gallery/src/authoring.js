@@ -143,6 +143,9 @@ function parseFragmentCardSegment(nodes) {
         if (strong) { name = strong; return; }
       }
       if (node.textContent.trim()) description.push(node); // everything else is description
+    } else if (tag === 'PICTURE' || tag === 'IMG') {
+      const bare = tag === 'IMG' ? node : node.querySelector('img');
+      if (!img && bare) img = bare;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
         // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
@@ -171,7 +174,14 @@ function parseFragmentCardSegment(nodes) {
     }
   });
 
-  if (!img) return null;
+  if (!img) {
+    const label = nodes.map((n) => n.textContent || '').join(' ').trim().slice(0, 60);
+    window.lana?.log?.(
+      `globe-gallery: fragment section skipped, no image — "${label}"`,
+      { tags: 'globe-gallery', severity: 'info' },
+    );
+    return null;
+  }
   return {
     img: img.currentSrc || img.getAttribute('src') || img.src,
     alt: (img.getAttribute('alt') || '').trim(),
@@ -182,8 +192,10 @@ function parseFragmentCardSegment(nodes) {
   };
 }
 
+const CARD_CONTENT_TAGS = /^(P|UL|PICTURE|IMG|H[1-6])$/;
+
 function parseFragmentCards(row) {
-  const hasDirectContent = [...row.children].some((n) => n.nodeName === 'P' || n.nodeName === 'UL');
+  const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
 
   if (!hasDirectContent) {
     // Children are section divs (each fragment section = one card).
