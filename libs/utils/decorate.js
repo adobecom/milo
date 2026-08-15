@@ -683,30 +683,24 @@ function warnDuplicateH1s(viewportData) {
   }
 }
 
+function inheritRowCells(row, prevRow) {
+  if (!row || !prevRow) return;
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
+      col.replaceChildren(...cloneChildren(prevCol));
+    }
+  });
+}
+
 function resolveInheritance(rows, previousContent) {
   if (!previousContent) return;
 
   const [contentRow, ...extraRows] = rows;
-  const prevChildren = [...previousContent.children];
-  const [prevContentRow, ...prevExtraRows] = prevChildren;
+  const [prevContentRow, ...prevExtraRows] = previousContent.children;
 
-  if (contentRow && prevContentRow) {
-    [...contentRow.children].forEach((col, i) => {
-      const prevCol = prevContentRow.children[i];
-      if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
-        col.replaceChildren(...cloneChildren(prevCol));
-      }
-    });
-  }
-
-  extraRows.forEach((row, i) => {
-    const prevRow = prevExtraRows[i];
-    const cell = row?.children[0];
-    const prevCell = prevRow?.children[0];
-    if (cell && isEmptyCell(cell) && prevCell && !isEmptyCell(prevCell)) {
-      cell.replaceChildren(...cloneChildren(prevCell));
-    }
-  });
+  inheritRowCells(contentRow, prevContentRow);
+  extraRows.forEach((row, i) => inheritRowCells(row, prevExtraRows[i]));
 }
 
 function parseViewportContent(el) {

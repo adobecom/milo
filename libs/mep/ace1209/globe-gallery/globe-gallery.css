@@ -1,0 +1,725 @@
+/* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix, custom-property-pattern */
+
+/* Scroll model (see README). .globe-gallery-reduced and .globe-gallery-empty overrides are at the end of this file. */
+.globe-gallery {
+  /* Full scroll-runway model: README. */
+  --runway-height: 520vh;
+  --formation-vh: 304vh;
+  --pq-pin-factor: 0.65;
+
+  height: var(--runway-height);
+  position: relative;
+  background: var(--s2a-color-gray-900);
+  margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
+
+  /* kill the mobile tap flash on cards / backdrop */
+  -webkit-tap-highlight-color: transparent;
+
+  &.globe-gallery-reduced,
+  &.globe-gallery-empty {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* z-index bands: hero 2–5, modal 13–17. See README. */
+
+.globe-gallery-world {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.globe-gallery-arc-copy {
+  position: fixed;
+
+  /* (viewport - 16px), 8px gap each side, capped at 359px; calc(100vw - 32px) clamped to 343 on SE. */
+  width: calc(100vw - 16px);
+  max-width: 359px;
+  bottom: 8px;
+  box-sizing: border-box;
+  padding: 16px;
+  background: var(--s2a-color-transparent-black-32);
+  -webkit-backdrop-filter: blur(var(--s2a-blur-64));
+  backdrop-filter: blur(var(--s2a-blur-64));
+  border-radius: var(--s2a-border-radius-md);
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  transform-origin: left bottom;
+  z-index: 4;
+}
+
+html[dir="rtl"] .globe-gallery-arc-copy {
+  transform-origin: right bottom;
+}
+
+.globe-gallery-arc-copy-title {
+  /* 18px custom mini-headline (between Title-4 and body) — no standard type class fits. */
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
+  font-size: 18px;
+  line-height: var(--s2a-font-line-height-21);
+  letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+  color: var(--s2a-color-gray-25);
+  margin: 0 0 4px;
+}
+
+.globe-gallery-arc-copy-body {
+  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+/* Absolute at runway bottom; sticky quote inside reveals/holds/exits without JS. */
+.globe-gallery-pullquote-pin {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: max(1px, calc((var(--runway-height) - var(--formation-vh)) * var(--pq-pin-factor)));
+  pointer-events: none;
+}
+
+/* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
+.globe-gallery-pullquote {
+  --pq-height: 583px;
+
+  position: sticky;
+  top: calc(50vh - var(--pq-height) / 2);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  height: var(--pq-height);
+  z-index: 5;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.globe-gallery-pullquote.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.globe-gallery-pullquote-quote {
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+/* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
+.globe-gallery-pullquote-attribution {
+  margin-top: 24px;
+}
+
+.globe-gallery-pullquote-name {
+  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+.globe-gallery-pullquote-role {
+  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+/* Backdrop layer (z:13) — dims/blurs the globe canvas behind the sharp card canvas. */
+.globe-gallery-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s linear;
+}
+.globe-gallery-modal.is-visible { display: block; }
+.globe-gallery-modal.is-open    { opacity: 1; }
+
+.globe-gallery-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+
+  /* Decorative dim/blur only; inert once the dialog runs showModal(). */
+  pointer-events: none;
+}
+
+/* Native <dialog> via showModal(); full-viewport top-layer overlay. Gesture surface: siblings go inert. */
+.globe-gallery-modal-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.globe-gallery-modal-chrome.is-open { opacity: 1; }
+
+/* Scripted focus target (tabindex=-1), not user-tabbable, so suppress the full-viewport outline. */
+.globe-gallery-modal-chrome:focus,
+.globe-gallery-modal-chrome:focus-visible { outline: none; }
+
+/* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
+.globe-gallery-modal-chrome::backdrop { background: transparent; }
+
+/* Position set per-frame by JS; CSS is visual style only. */
+.globe-gallery-modal-nav {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.globe-gallery-modal-nav:hover {
+  background: var(--s2a-color-transparent-black-80);
+  transform: scale(1.05);
+}
+
+.globe-gallery-modal-nav:active { transform: scale(0.98); }
+
+/* Close button — position set by JS; same frosted treatment as the nav arrows. */
+.globe-gallery-modal-close {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: background 0.2s ease;
+}
+.globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
+
+/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the nav row. */
+.globe-gallery-modal-info {
+  position: absolute;
+  max-height: 60dvh;
+  margin: 0;
+  padding: 24px 24px 84px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--s2a-border-radius-md);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+
+  /* padding must count toward width — no global border-box reset in Milo */
+  box-sizing: border-box;
+}
+
+.globe-gallery-modal-role-label,
+.globe-gallery-modal-name,
+.globe-gallery-modal-badges { flex-shrink: 0; }
+
+.globe-gallery-modal-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
+.globe-gallery-modal-info > .globe-gallery-modal-badges {
+  margin-top: auto;
+}
+
+.globe-gallery-modal-role-label {
+  font-family: var(--body-font-family);
+  font-size: 13px;
+  font-weight: var(--s2a-font-weight-body);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+.globe-gallery-modal-name {
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
+  font-size: 20px;
+  line-height: var(--s2a-font-line-height-24);
+  letter-spacing: -0.6px;
+  color: var(--s2a-color-gray-25);
+  margin: 2px 0 8px;
+}
+
+.globe-gallery-modal-description {
+  font-family: var(--body-font-family);
+  font-size: 13px;
+  line-height: var(--s2a-font-line-height-18);
+  color: var(--s2a-color-gray-400);
+  margin: 0 0 12px;
+  max-width: 375px;
+  min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
+  overflow-y: auto;
+  touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
+  scrollbar-width: thin;
+  scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
+
+  /* Scroll-shadow fade cue; JS (updateDescFade) sets each length to 0 (no fade) or 20px. */
+  --desc-fade-top: 0;
+  --desc-fade-bottom: 0;
+
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--desc-fade-top), #000 calc(100% - var(--desc-fade-bottom)), transparent 100%);
+}
+
+.globe-gallery-modal-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.globe-gallery-modal-badge-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.globe-gallery-modal-badge-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.globe-gallery-modal-badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.globe-gallery-modal-badge-app {
+  font-family: var(--body-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: 13px;
+  color: var(--s2a-color-gray-25);
+}
+
+.globe-gallery-modal-badge-app-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.globe-gallery-modal-badge-app-link::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--s2a-color-gray-25);
+  border-top: 2px solid var(--s2a-color-gray-25);
+  transform: rotate(45deg) translateY(-1px);
+  flex-shrink: 0;
+}
+
+.globe-gallery-modal-badge-app-link:hover {
+  text-decoration: underline;
+}
+
+.globe-gallery-modal-badge-role {
+  font-family: var(--body-font-family);
+  font-size: 13px;
+  color: var(--s2a-color-gray-400);
+}
+
+/* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
+.globe-gallery-modal-counter {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: 14px;
+  font-weight: var(--s2a-font-weight-body);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Lock both html + body: either may be the scrolling element; body alone leaks wheel events on some browsers. */
+html.globe-gallery-modal-open,
+body.globe-gallery-modal-open { overflow: hidden; }
+
+/* pointer-events:none — never intercepts canvas drag; tabbable only while interactive (JS). */
+.globe-gallery-a11y {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 80vh);
+  height: min(80vw, 80vh);
+  transform: translate(-50%, -50%);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none; /* never intercept canvas drag */
+  z-index: 4; /* above the WebGL canvas (z:3); the modal still covers it */
+}
+.globe-gallery-a11y:focus { outline: none; }
+
+/* JS sizes/positions per-frame to each card's projected screen rect. See README (Accessibility). */
+.globe-gallery-a11y-cards {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4; /* same layer as the entry widget */
+}
+
+/* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
+   image, not the top-left. JS overwrites left/top/width/height each frame while focused. */
+.globe-gallery-a11y-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.globe-gallery-a11y-card:focus { outline: none; }
+
+/* aria-labelledby target + visible instructions pill on focus. pointer-events:none so it never blocks the canvas. */
+.globe-gallery-a11y-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  max-width: min(78vw, 320px);
+  padding: 12px 20px;
+  border-radius: var(--s2a-border-radius-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--s2a-color-gray-25);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5; /* above the a11y layer (z:4); the modal still covers it */
+}
+
+.globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.globe-gallery-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
+.globe-gallery-a11y:focus-visible,
+.globe-gallery-a11y-card:focus-visible,
+.globe-gallery-modal-close:focus-visible,
+.globe-gallery-modal-nav:focus-visible {
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  /* Smaller quote-pin factor at md; see README. */
+  .globe-gallery { --pq-pin-factor: 0.55; }
+
+  .globe-gallery-arc-copy {
+    width: 382px;
+    max-width: none;
+    bottom: 24px;
+    background: none;
+  }
+
+  /* Full-height left-edge; JS sets top/bottom/inset-inline-start/width. */
+  .globe-gallery-modal-info {
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    padding: 40px 32px;
+  }
+
+  .globe-gallery-modal-role-label { margin-top: 0; }
+
+  .globe-gallery-modal-name {
+    font-size: 24px;
+    line-height: 28px;
+    letter-spacing: -0.6px;
+    margin: 4px 0 12px;
+  }
+
+  .globe-gallery-modal-description {
+    font-size: 15px;
+    line-height: 22px;
+    margin: 0;
+    max-width: none;
+  }
+
+  .globe-gallery-modal-badges { gap: 10px; }
+
+  .globe-gallery-modal-badge-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .globe-gallery-modal-badge-app { font-size: 14px; }
+  .globe-gallery-modal-badge-role { font-size: 14px; }
+
+  .globe-gallery-modal-counter {
+    width: 138px;
+    box-sizing: border-box;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Custom cursor (src/cursor.js); @media mirrors the JS gate (hover+fine only). */
+@media (hover: hover) and (pointer: fine) {
+  .globe-gallery-cursor {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    /* body-level; above the modal band (≤15) to top everything the block draws */
+    z-index: 17;
+  }
+
+  /* Direct body child so mix-blend-mode: difference blends against page content (not an isolated GPU layer). */
+  .globe-gallery-cursor-disc {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 16; /* just below the cursor container */
+    width: 48px;
+    height: 48px;
+    margin: -24px; /* center on the pointer hot-point */
+    border-radius: 50%;
+    background: var(--s2a-color-gray-25);
+    mix-blend-mode: difference;
+    transform: scale(0);
+    visibility: hidden; /* snaps instantly — no disc lingering at the click point on modal open */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor-disc-active {
+    transform: scale(1);
+    visibility: visible;
+  }
+
+  .globe-gallery-cursor-disc-dragging {
+    transform: scale(0.82);
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor-ring-wrap,
+  .globe-gallery-cursor-text-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .globe-gallery-cursor-text-wrap {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.5s ease 0.15s;
+  }
+
+  /* Chevron SVG — no blend mode; own opacity/scale entrance, separate from the disc. */
+  .globe-gallery-cursor-ring {
+    display: block;
+    position: absolute;
+    top: -24px;
+    left: -24px;
+    width: 48px;
+    height: 48px;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5);
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor-active .globe-gallery-cursor-ring {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .globe-gallery-cursor-dragging .globe-gallery-cursor-ring {
+    transform: scale(0.82);
+    transition: opacity 0.35s ease, transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor-chevron-l,
+  .globe-gallery-cursor-chevron-r {
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor-dragging .globe-gallery-cursor-chevron-l { transform: translateX(4px); }
+  .globe-gallery-cursor-dragging .globe-gallery-cursor-chevron-r { transform: translateX(-4px); }
+
+  .globe-gallery-cursor-text {
+    display: block;
+    font-family: var(--heading-font-family);
+    font-size: 12px;
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    line-height: 1;
+    color: var(--s2a-color-gray-25);
+  }
+
+  .globe-gallery-cursor-active .globe-gallery-cursor-text-wrap { opacity: 0.9; }
+
+  .globe-gallery-cursor-hint-dismissed .globe-gallery-cursor-text-wrap { opacity: 0; }
+
+  .globe-gallery-cursor-retiring .globe-gallery-cursor-ring {
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.42s ease, transform 0.42s ease;
+  }
+
+  .globe-gallery-cursor-disc-retiring {
+    transform: scale(0);
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Reduced-motion overrides — grouped here to avoid no-descending-specificity lint errors. See README (Accessibility). */
+
+/* static + relative: scrolls away and anchors the absolute canvas. Height = 8vh + 100vh. */
+.globe-gallery-reduced .globe-gallery-world {
+  position: relative;
+  height: 108vh;
+}
+
+/* No arc phase under RM — a fixed pill would hang over the scrolling page. */
+.globe-gallery-reduced .globe-gallery-arc-copy {
+  display: none;
+}
+
+/* Absolute so it scrolls with the globe; top:58vh re-centres on the sphere. */
+.globe-gallery-reduced .globe-gallery-a11y {
+  position: absolute;
+  top: 58vh;
+}
+
+/* Focus-ring overlay tracks the scrolled canvas (matching its 8vh top + 100vh box). */
+.globe-gallery-reduced .globe-gallery-a11y-cards {
+  position: absolute;
+  inset: 8vh 0 auto;
+  height: 100vh;
+}
+
+/* Pull-quote flows normally after the globe: drop the pin/sticky, show statically, top-aligned with a gap above. */
+.globe-gallery-reduced .globe-gallery-pullquote-pin {
+  position: static;
+  height: auto;
+}
+
+.globe-gallery-reduced .globe-gallery-pullquote {
+  position: static;
+  top: auto;
+  height: auto;
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 10vh 24px 8vh;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Drop nav scale hover animation; colour cue stays. */
+@media (prefers-reduced-motion: reduce) {
+  .globe-gallery-modal-nav:hover,
+  .globe-gallery-modal-nav:active {
+    transform: none;
+  }
+}
+
+html[dir="rtl"] .globe-gallery-modal-nav svg {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] .globe-gallery-modal-badge-app-link::after {
+  transform: scaleX(-1) rotate(45deg) translateY(-1px);
+}

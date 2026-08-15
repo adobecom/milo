@@ -54,11 +54,11 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
-function decorate(block) {
+function decorate(block, el) {
   const [mediaRow, textRow] = block.children;
   if (!mediaRow || !textRow) return;
 
-  const cardType = getCardType(block);
+  const cardType = getCardType(el);
 
   const medias = [...mediaRow.children];
   const texts = [...textRow.children];

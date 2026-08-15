@@ -9,8 +9,8 @@
 
   .rcc-sticky {
     position: sticky;
-    top: var(--gnav-offset, 0px);
-    height: calc(100dvh - var(--gnav-offset, 0px));
+    top: 0;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -207,8 +207,8 @@
     }
 
     .rcc-sticky {
-      top: calc(var(--gnav-offset, 0px) + var(--s2a-layout-sm));
-      height: calc(100dvh - var(--gnav-offset, 0px) - var(--s2a-layout-sm));
+      top: var(--s2a-layout-sm);
+      height: calc(100dvh - var(--s2a-layout-sm));
     }
   }
 
