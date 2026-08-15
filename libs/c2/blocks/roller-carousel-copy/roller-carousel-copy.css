@@ -2,6 +2,7 @@
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
   --gnav-offset: 72px;
+  --bento-stack-top-gap: 40px;
   --rcc-sticky-top: var(--gnav-offset);
 
   .rcc-scroll-wrapper {
@@ -13,6 +14,8 @@
     position: sticky;
     top: var(--rcc-sticky-top);
     height: calc(100dvh - var(--rcc-sticky-top));
+    padding-block-start: var(--bento-stack-top-gap);
+    box-sizing: border-box;
     overflow: hidden;
   }
 
@@ -62,7 +65,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--s2a-layout-md) var(--s2a-spacing-lg) 0;
+    padding: 0 var(--s2a-spacing-lg);
     box-sizing: border-box;
   }
 
@@ -276,10 +279,6 @@ body:has(header.local-nav) .roller-carousel-copy {
 
 @media (width >= 768px) {
   .roller-carousel-copy {
-    .rcc-content {
-      padding-top: var(--s2a-layout-lg);
-    }
-
     .rcc-item {
       font-size: var(--s2a-typography-font-size-heading-1);
       line-height: var(--s2a-typography-line-height-heading-1);
@@ -306,7 +305,7 @@ body:has(header.local-nav) .roller-carousel-copy {
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
-      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
+      padding: 0 var(--s2a-spacing-lg);
       padding-inline-start: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
       gap: 0;
     }
