@@ -351,7 +351,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
   margin: 0 0 var(--s2a-spacing-sm);
-  max-width: 375px;
   min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
   overflow-y: auto;
   touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
@@ -594,10 +593,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
     margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-sm);
   }
 
-  .globe-gallery-modal-description {
-    margin: 0;
-    max-width: none;
-  }
+  .globe-gallery-modal-description { margin: 0; }
 
   .globe-gallery-modal-badges { gap: 10px; }
 
