@@ -66,7 +66,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
-| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares drag velocity by reference via the `drag` object. Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
+| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
@@ -99,12 +99,13 @@ Who writes what:
 
 | | fields |
 | --- | --- |
-| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH`, `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), plus `prevLenisY` — the **only** inter-frame scroll state, carried back from `frame.lenisY` after each derive (and re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel`) |
-| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
+| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH`, `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
+| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
 **Grouped closure state.** Related mutable state lives in small plain objects rather than loose
-`let`s: `drag` (`isDragging`/`velX`/`velY`, shared by reference with `interaction.js`),
+`let`s: `drag` (`isDragging`/`velX`/`velY`/`pendingX`/`pendingY`, shared by reference with
+`interaction.js` — see Drag physics),
 `masonryMorph` (`active`/`t`), `sphereOrient` (`x` pitch / `y` yaw / `z` roll — see Sphere rotation),
 `navNudge` (`active`, `target{X,Y,Z}` destination pose, `start{X,Y,Z}` pose when armed,
 `frame`/`frames` elapsed/total from `KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set
@@ -849,7 +850,7 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 **Breakpoints** resolve once in `init()`: two render profiles split at 768px — `md` (≥768, all
 cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, first 24, 3×8, smaller
 sphere). Per-profile knobs in `BREAKPOINTS`: `N_MAX` (0=uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`,
-`CAM_Z_*`, `GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, plus precise-pointer defaults
+`CAM_Z_*`, `GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `DRAG_GEARING`, plus precise-pointer defaults
 for the shape keys (`CARD_FACE_CAMERA`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
 card count, so `doLayout` triggers a full `destroy()`+`init()` rebuild; resizing within a band takes
@@ -881,7 +882,7 @@ rebuild would otherwise inherit:
   stuck open (its mesh dropped with the old `modalScene`, `modalIdx` reset to -1 so chrome buttons
   are dead, scroll lock stuck). An open modal closes cleanly on crossing; it doesn't re-open.
 - `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereOrient.x/y/z`,
-  `sphereOrient.pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, `navNudge.*`, `wasBrowsing`) to the upright
+  `sphereOrient.pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY/pendingX/pendingY`, `navNudge.*`, `wasBrowsing`) to the upright
   pose — else pitch/yaw dragged before a device change carried into the rebuilt barrel and rendered
   it tilted until a scroll-out zeroed it.
 
@@ -1400,6 +1401,53 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     face.
   - **Scatter → `CARD_ROLL_JITTER` (sm `0.18` ≈ ±5°, md `0.5` ≈ ±14°).** Per-BP: at sm's sparsity
     ±14° reads as debris, while md keeps the collage character.
+- **Drag physics — position-driven while held, velocity-driven once released.** The two halves of a
+  drag want different inputs, so the shared `drag` object carries both and `updateSphereRotation`
+  picks one per frame:
+  - **`pendingX`/`pendingY` — exact unapplied travel (rad).** `interaction.js` *accumulates* every
+    `pointermove` delta into it; the core **drains it every frame** (unconditionally, even while
+    frozen, so it can't pool and dump on resume) and, while `isDragging`, adds it straight to
+    `sphereOrient`. The surface therefore tracks the pointer **1:1 with no smoothing lag**, and no
+    travel is lost when several moves land in one frame.
+  - **`velX`/`velY` — an EMA of pointer speed (`VEL_SMOOTH_MS` 35ms), in rad per 60fps frame.** This
+    is the **release inertia**, and also every drag-driven CA/warp amplitude (normalized by
+    `MAX_VEL`). It's sampled **by elapsed time, not per event** (`flushVel`): the old code assigned
+    `velX` from the *last event's* pixel delta, which made the release velocity a function of the
+    pointer's event rate — the same 0.25 px/ms drag released at 0.020 rad/frame from a 60Hz mouse
+    but 0.00125 from a 1000Hz one (measured), and Chrome coalescing moves to rAF while Safari
+    doesn't is why the momentum felt inconsistent across browsers. Moves sharing a millisecond bank
+    into `sampX`/`sampY` rather than dividing by a zero dt.
+  - **The idle gap before release is part of the measurement.** `endGesture` flushes the EMA one
+    last time with nothing banked, so *slowing to a stop before lifting* decays the inertia toward
+    0 (150ms ≈ e⁻⁴·³) instead of flinging on a stale sample — and *the sample being stale in the
+    other direction* (a still hold, no move event, so the old `velX` kept its pre-pause value) can't
+    fling either. Both were the "sometimes it stops dead / sometimes it lurches" bug.
+  - **Everything per-frame is rescaled by `frame.dtScale`** (`DRAG_FRICTION ** dtScale`, and
+    velocity/ambient-spin integrated as `v * dtScale`). Unscaled, `0.94`/frame coasts for ~270ms at
+    60Hz but ~135ms on a 120Hz display — the same code, half the feel.
+  - **Ambient spin is a separate additive term, not a bias folded into `velX`.** Added into the
+    velocity (as it used to be) it *brakes* a leftward coast while extending a rightward one, so
+    inertia decayed asymmetrically by drag direction. Note the unit change that came with it:
+    accumulating an increment against friction amplified it by `1 / (1 − DRAG_FRICTION)` = 16.67×,
+    so `AUTO_ROT_SPEED` is now the honest rate (`0.0005` ≈ 1.7°/s; the old loop settled at 2.6°/s) —
+    keep the old `0.000045` and the globe barely drifts.
+  - **Gearing is derived, not a baked rad/px** (`dragSensitivity()`, injected as
+    `getDragSensitivity` and re-read per move). True 1:1 surface tracking is **90° per on-screen
+    ball radius** (`SPHERE_R × H / CYL_FRUSTUM_H` px), and `bp.DRAG_GEARING` is a fraction of that:
+    **md `0.6`** (≈54° per radius-drag), **sm `0.53`** (the barrel is only ~167px wide on a phone,
+    so 1:1 would whip it >180° per swipe — 0.53 also reproduces the old fixed `0.005` rad/px to
+    within 0.3%). Deriving it keeps the feel constant across window sizes: a bigger ball on screen
+    needs *fewer* rad/px, which one fixed number got wrong in both directions (the old `0.005` was
+    1.34× over-geared on a 900px-tall desktop and 0.53× under on a phone).
+  - **Inertia coasts below `SPHERE_INTERACTIVE_T`; only `SPHERE_ORIENT_RESET_T` zeroes it.**
+    Hard-zeroing at the interactive gate stopped a released spin dead whenever the page was still
+    settling across it. A drag *started* below the gate stays inert and can't fling on release, and
+    `stopTicker` retires inertia outright (it can't coast while the loop is parked).
+  - **Gesture ownership is `activePointerId`, not `hasPointerCapture()`.** The tap test no longer
+    depends on *when* the browser releases capture relative to `pointerup`. `pointercancel` →
+    `cancelDrag` (no inertia, no tap — routed to `onPointerUp` it let a cancelled press pass the tap
+    test and open a card); `lostpointercapture` → `endGesture`, a no-op after a normal release and a
+    clean exit on a genuine loss (rather than leaving `isDragging` latched true forever).
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On
   touch a vertical drag *is* the page-scroll gesture, so touch gets **yaw only** (horizontal spins,
   vertical scrolls); pitch (`drag.velY`) is written only when `!isTouchDrag && !getYawOnly()` — i.e.
@@ -1433,9 +1481,11 @@ self-explanatory:
 
 | Constant(s) | Value | Role |
 | --- | --- | --- |
-| `DRAG_FRICTION` | `0.94` | per-frame velocity decay after a drag release (spin coastdown) |
+| `DRAG_FRICTION` | `0.94` | velocity decay per 60fps frame after a drag release (spin coastdown); applied as `** dtScale` — see Drag physics |
 | `MAX_VEL` | `0.06` | drag-velocity clamp; the core normalizes speed by it (shared with `interaction.js`) |
-| `AUTO_ROT_SPEED` | `0.000045` | idle yaw drift per frame when not dragging / browsing |
+| `AUTO_ROT_SPEED` | `0.0005` | ambient yaw drift per 60fps frame (≈1.7°/s) when not dragging / browsing — added alongside `velX`, never into it |
+| `DRAG_GEARING` (per band) | md `0.6` / sm `0.53` | pointer→rotation gearing as a fraction of true 1:1 surface tracking; `dragSensitivity()` turns it into rad/px off the live viewport |
+| `VEL_SMOOTH_MS` (`interaction.js`) | `35` | time constant of the release-velocity EMA |
 | `HOVER_RATE` | `0.15` | per-frame lerp toward the hover target (~125ms to 80%) |
 | `CA_STRENGTH` | `0.012` | radial UV shift per channel at transition peaks (Option B bell curve) |
 | `CA_MOTION_STRENGTH` / `…_ARC` | `1.0` / `0.04` | directional (motion-trail) UV-shift max — full during peel/fold/sphere/modal, softly clamped on the arc |
@@ -1469,7 +1519,8 @@ bare names — are:
 | `ENTRY_ROT_MAX` | `0.9` | radians | arc sweep-in rotation at `arcCopyEntryT` = 0; `entryRot` decays from it, and `updateCardTransform` divides by it to renormalize for the per-card entry CA |
 | `ENTRY_SLIDE_H_FRAC` | `0.30` | fraction of `H` | `entryYOffset` at slide 0 — how far below its arc position a card starts |
 | `ARC_COPY_IN_ENTRY_T` | `0.336` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
-| `SPHERE_ORIENT_RESET_T` | `0.01` | `sphereFormT` | below this a scroll-out resets the sphere orientation (a brief dip mid-scroll keeps it) |
+| `SPHERE_ORIENT_RESET_T` | `0.01` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
+| `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | `16.67` / `0.25` / `3` | ms, ratio | the frame every per-frame rate is authored against, and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a >240Hz frame must not underflow a decay (see Drag physics) |
 | `TEXT_ZOOM_FADE_RATE` | `3` | `zoomT` | hint text is fully faded at `zoomT` = 1/rate |
 | `GRID_PEEL_WINDOW` | `0.8` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | `0.30` / `0.283` | — | derived spans: the grid-peel arc range, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |

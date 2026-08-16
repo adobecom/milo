@@ -77,6 +77,12 @@ export const CURSOR_ZOOM_RETIRE_T = 0.40;
 
 export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
 
+// --- Frame pacing (frame.dtScale rescales per-60fps-frame rates; clamped) ---
+
+export const FRAME_MS = 1000 / 60;
+export const DT_SCALE_MIN = 0.25;
+export const DT_SCALE_MAX = 3;
+
 // --- Derived (docs/tests, not per frame) ---
 
 export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
@@ -97,6 +103,7 @@ export function createFrame() {
     lenisY: 0,
     scrollingDown: true,
     scrollVel: 0,
+    dtScale: 1,
     progress: 0,
     arcCopyEntryT: 0,
     arcPanT: 0,
@@ -118,6 +125,8 @@ export function createFrameInput() {
   return {
     scrollY: 0,
     prevLenisY: 0,
+    now: 0,
+    prevNow: 0, // 0 = no previous frame (first tick / resume) → dtScale 1
     reducedMotion: false,
     blockDocTop: 0,
     blockHeight: 0,
@@ -131,6 +140,10 @@ export function createFrameInput() {
 // input.prevLenisY.
 export function deriveFrame(frame, input) {
   const { reducedMotion, blockDocTop, blockHeight, formPx, viewportH } = input;
+
+  // Elapsed time as a multiple of a 60fps frame; the caller carries `now` into `prevNow`.
+  const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
+  frame.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
 
   // Reduced motion pins scroll input to the formed-sphere position; the pin cancels in `progress`
   // but canvas visibility still uses real scroll.

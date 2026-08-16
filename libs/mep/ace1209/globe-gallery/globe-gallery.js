@@ -36,6 +36,7 @@ const BREAKPOINTS = {
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.5, // per-card random roll, radians (±0.25 ≈ ±14°)
     ARC_DENSE_FRACTION: 0.6, // share of cards clustered into the off-screen arc flank
+    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking — see dragSensitivity
   },
   sm: {
     minWidth: 0,
@@ -53,6 +54,7 @@ const BREAKPOINTS = {
     CARD_ROLL_JITTER: 0.18,
     ARC_DENSE_FRACTION: 0,
     CYL_COLS_FIT: 0.65, // phone-only override of the shared wall-height dial
+    DRAG_GEARING: 0.53, // geared down from 1:1 — the phone barrel is only ~167px wide
   },
 };
 
@@ -107,9 +109,10 @@ const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50;
 
 // Drag / auto-rotation. MAX_VEL is shared with interaction.js (it clamps, core normalizes).
+// FRICTION and AUTO_ROT_SPEED are authored per 60fps frame and rescaled by frame.dtScale.
 const DRAG_FRICTION = 0.94;
-const MAX_VEL = 0.06;
-const AUTO_ROT_SPEED = 0.000045;
+const MAX_VEL = 0.06; // rad/frame ≈ 206°/s — the ceiling on a flick
+const AUTO_ROT_SPEED = 0.0005; // ambient yaw RATE (not an increment into velX) ≈ 1.7°/s
 // Keyboard browse pitch cap ±85° (vs ±60° drag); excess eases back at PITCH_RELAX once
 // browsing ends. See updateSphereRotation.
 const KEY_PITCH_CAP = (85 * Math.PI) / 180;
@@ -320,6 +323,7 @@ function createGlobeGalleryRuntime(
       // Frustum height at the cylinder's centre plane — the column solve's vertical budget.
       CYL_FRUSTUM_H: 2 * Math.tan(Math.PI / 6) * cfg.CAM_Z_SPHERE,
       CARD_ROLL_JITTER: cfg.CARD_ROLL_JITTER,
+      DRAG_GEARING: cfg.DRAG_GEARING,
       // Dense-arc cluster as a share of the count (count-independent ratio); clamped below
       // nTotal-1 so the spread region always keeps at least one card.
       ARC_DENSE_COUNT: Math.min(
@@ -363,7 +367,9 @@ function createGlobeGalleryRuntime(
   // Cached node + last-written style strings (DOM writes only on change).
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
-  const drag = { isDragging: false, velX: 0, velY: 0 };
+  // Shared by reference with interaction.js: pendingX/Y = exact unapplied travel (rad), velX/Y =
+  // smoothed velocity per 60fps frame. See README (Drag physics).
+  const drag = { isDragging: false, velX: 0, velY: 0, pendingX: 0, pendingY: 0 };
   let renderReady = false;
   let onScreen = true; // assume visible until the observer's first callback corrects it
   let sphereDragWarp = 0;
@@ -950,6 +956,13 @@ function createGlobeGalleryRuntime(
     drag,
   });
 
+  // Rad per pointer px, live off the viewport + band: bp.DRAG_GEARING as a fraction of true 1:1
+  // surface tracking (90° per on-screen ball radius). See README (Drag physics).
+  const dragSensitivity = () => {
+    const radiusPx = (bp.SPHERE_R * H) / bp.CYL_FRUSTUM_H;
+    return ((Math.PI / 2) * bp.DRAG_GEARING) / Math.max(1, radiusPx);
+  };
+
   interaction = createInteraction({
     getRenderer: () => renderer,
     getCamera: () => camera,
@@ -957,6 +970,7 @@ function createGlobeGalleryRuntime(
     getModalIdx: () => modal.getModalIdx(),
     openModal: (idx, x, y) => openModalFromCanvas(idx, x, y),
     getSphereFormT: () => frameState.sphereFormT,
+    getDragSensitivity: dragSensitivity,
     interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
     maxVel: MAX_VEL,
     drag,
@@ -978,8 +992,10 @@ function createGlobeGalleryRuntime(
     frameInput.formPx = formedScrollPx();
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
+    frameInput.now = performance.now();
     TL.deriveFrame(frameState, frameInput);
     frameInput.prevLenisY = frameState.lenisY;
+    frameInput.prevNow = frameInput.now;
     return frameState;
   }
 
@@ -1017,9 +1033,15 @@ function createGlobeGalleryRuntime(
   // sphereRotActive and refreshes sphereRotQuat. Rotation is applied PER-CARD (scaled by fdE)
   // in updateCardTransform, not to sphereGroup.rotation (kept identity for world-matrix queries).
   function updateSphereRotation(frame) {
-    const { sphereFormT } = frame;
+    const { sphereFormT, dtScale } = frame;
     sphereGroup.rotation.x = 0;
     sphereGroup.rotation.y = 0;
+
+    // Drained unconditionally — pooled travel must never dump on resume.
+    const pendX = drag.pendingX;
+    const pendY = drag.pendingY;
+    drag.pendingX = 0;
+    drag.pendingY = 0;
 
     // Leaving browse: cancel any in-flight nudge so its targets stop fighting resumed
     // auto-spin + the drag clamp. The pitch excess eases back to 60° below.
@@ -1039,64 +1061,71 @@ function createGlobeGalleryRuntime(
       sphereOrient.z = navNudge.startZ + (navNudge.targetZ - navNudge.startZ) * e;
       if (e >= 1) navNudge.active = false;
     }
-    if (sphereFormT >= TL.SPHERE_INTERACTIVE_T) {
-      // Pause auto-rotation + drag while a modal is open — sphere freezes at its current rotation
-      if (modal.getModalIdx() < 0) {
-        if (!drag.isDragging) {
-          drag.velX *= DRAG_FRICTION;
-          drag.velY *= DRAG_FRICTION;
-          // Auto-spin off under reduced motion and while browsing (globe holds the image).
-          if (!reducedMotion && !(a11y && a11y.isBrowsing())) drag.velX += AUTO_ROT_SPEED;
-        }
-        // Inside the globe the far wall moves opposite the same world rotation, so negate the
-        // delta to keep dragging tracking the surface the user sees.
-        const dragDir = cameraInsideSphere ? -1 : 1;
-        // Yaw spins freely; pitch is clamped (absolute angle) so the globe self-levels.
-        sphereOrient.y += drag.velX * dragDir;
-        sphereOrient.x += drag.velY * dragDir;
-        // Pitch cap glides via pitchReleaseCap: ±60° for drag, up to ±85° while browsing, easing
-        // back to 60° (PITCH_RELAX) after browse so leaving a beyond-cap card slides, not snaps.
-        const RESTING_PITCH = Math.PI / 3;
-        if (browsing) {
-          sphereOrient.x = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, sphereOrient.x));
-          pitchReleaseCap = Math.max(RESTING_PITCH, Math.abs(sphereOrient.x)); // prime the glide
+    // frozen (modal open): sphere holds its rotation. !interactive (still folding): no new drag and
+    // no auto-spin, but inertia keeps coasting. See README (Drag physics).
+    const frozen = modal.getModalIdx() >= 0;
+    const interactive = sphereFormT >= TL.SPHERE_INTERACTIVE_T;
+    if (!frozen) {
+      // Inside the globe the far wall moves opposite the same world rotation, so negate the
+      // delta to keep dragging tracking the surface the user sees.
+      const dragDir = cameraInsideSphere ? -1 : 1;
+      // Yaw (y) spins freely; pitch (x) is clamped below so the globe self-levels.
+      if (drag.isDragging) {
+        // Held: position-driven off the exact travel — no smoothing lag.
+        if (interactive) {
+          sphereOrient.y += pendX * dragDir;
+          sphereOrient.x += pendY * dragDir;
         } else {
-          sphereOrient.x = Math.max(-pitchReleaseCap, Math.min(pitchReleaseCap, sphereOrient.x));
-          if (pitchReleaseCap > RESTING_PITCH) {
-            pitchReleaseCap = RESTING_PITCH + (pitchReleaseCap - RESTING_PITCH) * PITCH_RELAX;
-            if (pitchReleaseCap - RESTING_PITCH < 0.001) pitchReleaseCap = RESTING_PITCH;
-          }
-          // Upright roll relaxes to 0 over the same glide (so pitch + roll settle together).
-          if (sphereOrient.z !== 0) {
-            sphereOrient.z *= PITCH_RELAX;
-            if (Math.abs(sphereOrient.z) < 0.001) sphereOrient.z = 0;
-          }
+          drag.velX = 0; drag.velY = 0; // an inert mid-fold drag must not fling on release
+        }
+      } else {
+        // Released: velocity-driven coast. Both rates are per 60fps frame → rescaled by dtScale.
+        const friction = DRAG_FRICTION ** dtScale;
+        drag.velX *= friction;
+        drag.velY *= friction;
+        // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
+        const spin = interactive && !reducedMotion && !(a11y && a11y.isBrowsing())
+          ? AUTO_ROT_SPEED : 0;
+        sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
+        sphereOrient.x += drag.velY * dtScale * dragDir;
+      }
+      // Pitch cap glides via pitchReleaseCap: ±60° for drag, up to ±85° while browsing, easing
+      // back to 60° (PITCH_RELAX) after browse so leaving a beyond-cap card slides, not snaps.
+      const RESTING_PITCH = Math.PI / 3;
+      if (browsing) {
+        sphereOrient.x = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, sphereOrient.x));
+        pitchReleaseCap = Math.max(RESTING_PITCH, Math.abs(sphereOrient.x)); // prime the glide
+      } else {
+        sphereOrient.x = Math.max(-pitchReleaseCap, Math.min(pitchReleaseCap, sphereOrient.x));
+        if (pitchReleaseCap > RESTING_PITCH) {
+          pitchReleaseCap = RESTING_PITCH + (pitchReleaseCap - RESTING_PITCH) * PITCH_RELAX;
+          if (pitchReleaseCap - RESTING_PITCH < 0.001) pitchReleaseCap = RESTING_PITCH;
+        }
+        // Upright roll relaxes to 0 over the same glide (so pitch + roll settle together).
+        if (sphereOrient.z !== 0) {
+          sphereOrient.z *= PITCH_RELAX;
+          if (Math.abs(sphereOrient.z) < 0.001) sphereOrient.z = 0;
         }
       }
+    }
 
-      // Sphere-drag warp: baseline (while held) + velocity burst, eased toward a target rather
-      // than snapped (a hard drop popped the barrel distortion when the modal opened).
-      let warpTarget;
-      if (modal.getModalIdx() < 0) {
-        const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-        const burst = dragSpeed * SPHERE_DRAG_WARP_VEL;
-        const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
-        warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + burst);
-      } else {
-        warpTarget = 0;
-      }
-      sphereDragWarp += (warpTarget - sphereDragWarp) * 0.20;
-      if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
-    } else {
-      // Below interactive threshold: stop accumulating drag/auto-rot. Rotation is preserved
-      // mid-scroll (a brief dip doesn't lose it); zeroed only at the very top of the section.
+    // Sphere-drag warp: baseline (while held) + velocity burst, eased toward a target rather
+    // than snapped (a hard drop popped the barrel distortion when the modal opened).
+    let warpTarget = 0;
+    if (!frozen && interactive) {
+      const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
+      const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
+      warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + dragSpeed * SPHERE_DRAG_WARP_VEL);
+    }
+    sphereDragWarp += (warpTarget - sphereDragWarp) * 0.20;
+    if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
+
+    // Full reset (orientation + inertia) only at the very top of the section — a dip mid-scroll
+    // keeps both.
+    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T) {
+      resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;
-      sphereDragWarp += (0 - sphereDragWarp) * 0.20;
-      if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
-      if (sphereFormT < TL.SPHERE_ORIENT_RESET_T) {
-        resetSphereOrientation();
-      }
     }
 
     // sphereRotActive is a fast-path flag so the rotation math can be skipped when upright.
@@ -1651,11 +1680,18 @@ function createGlobeGalleryRuntime(
   function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
   function startTicker() {
     if (rafId) return;
-    // Reset the velocity baseline so a resume after an off-screen scroll doesn't spike scrollVel.
+    // Re-baseline scroll (no scrollVel spike) + the frame clock (the parked interval isn't dt).
     frameInput.prevLenisY = window.scrollY;
+    frameInput.prevNow = 0;
     rafId = requestAnimationFrame(rafLoop);
   }
-  function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
+  function stopTicker() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    // Inertia can't coast while the loop is parked — retire it rather than resume it later.
+    drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
+  }
   // Run the loop only while renderReady AND onScreen; called whenever either input changes.
   function syncTicker() {
     if (renderReady && onScreen) {
@@ -1992,12 +2028,13 @@ function createGlobeGalleryRuntime(
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
-    frameInput.prevLenisY = 0; frameState.scrollVel = 0;
+    frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     // Reset sphere orientation + drag/nudge state: the closure survives a rebuild, so without
     // this a pre-rebuild tilt carries over. See README (destroy resets).
     resetSphereOrientation();
     sphereDragWarp = 0;
-    drag.isDragging = false; drag.velX = 0; drag.velY = 0;
+    drag.isDragging = false;
+    drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
     wasBrowsing = false;
     // NOTE: `bp` intentionally NOT cleared — doLayout compares it, initRuntime overwrites it.
   }
