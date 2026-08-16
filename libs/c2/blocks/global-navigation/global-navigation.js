@@ -11,16 +11,17 @@ import {
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
-function getFederalDomain(config) {
+export function getFederalDomain(config) {
   const env = getEnv(config);
 
   if (env.name !== 'prod') {
     const queryParams = new URLSearchParams(window.location.search);
-    const federalBranch = queryParams.get('fedsbranch');
-    if (federalBranch?.trim()) {
-      const sanitized = federalBranch.trim().toLowerCase();
-      if (sanitized === 'local') return 'http://localhost:3000/federal';
-      return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+    const federalBranch = queryParams.get('fedsbranch')?.trim().toLowerCase();
+    // Branch names are [a-z0-9-] only; reject other characters so the value
+    // cannot break out of the host position of the import URL built below.
+    if (federalBranch && /^[a-z0-9-]+$/.test(federalBranch)) {
+      if (federalBranch === 'local') return 'http://localhost:3000/federal';
+      return `https://${federalBranch}--federal--adobecom.aem.page/federal`;
     }
   }
 
