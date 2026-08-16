@@ -1,3 +1,20 @@
+// Signed-distance rounded rect (the corner mask). `b` is the FULL half-extent, radius included.
+const RR_SDF = [
+  'float rrSDF(vec2 p, vec2 b, float r) {',
+  '  vec2 q = abs(p) - b + r;',
+  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
+];
+
+// Hash for the particle dissolves; inputs scaled first to dodge precision loss at large coords.
+const HASH21 = [
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
+  '}',
+];
+
 // Modal SDF shader material — rounded rect computed in the fragment shader (sharp
 // at any zoom). uAspect = card world-space width/height; uRadius = fraction of height.
 export const MODAL_VERT = [
@@ -16,15 +33,15 @@ export const MODAL_FRAG = [
   'uniform vec2 uMotionDir;', // card velocity in UV space — drives motion-trail CA; (0,0) = off
   'uniform float uWarp;', // fisheye intensity (0 = none, ~0.4 = strong bulge); used in open/close/drag
   'uniform vec2 uWarpCenter;', // UV anchor for fisheye (0.5, 0.5 default; touch UV during drag)
+  'uniform vec2 uRepeat;', // cover-crop carried from the barrel; eases to (1,1) over the fly-out
+  'uniform vec2 uOffset;',
   'varying vec2 vUv;',
-  'float rrSDF(vec2 p, vec2 b, float r) {',
-  '  vec2 q = abs(p) - b + r;',
-  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
-  '}',
+  ...RR_SDF,
   'void main() {',
-  // SDF rounded-rect clip uses raw vUv so the card's geometry outline doesn't warp.
+  // Raw vUv so the card outline doesn't warp; half-extents are the FULL plane (as CARD_FRAG) —
+  // an inset box would clip uRadius of photo off every edge. See README (Image fit).
   '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
-  '  float d = rrSDF(pos, vec2(uAspect * 0.5 - uRadius, 0.5 - uRadius), uRadius);',
+  '  float d = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float alpha = 1.0 - smoothstep(-px, px, d);',
   // Flip uv.x + warp anchor on back faces so the back reads like the front (matches CARD_FRAG).
@@ -34,10 +51,12 @@ export const MODAL_FRAG = [
   '  vec2 d2 = fUv - wc;',
   '  float r2 = dot(d2, d2);',
   '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + wc;',
+  // Cover-crop (identity once the card has settled at its native-aspect modal size).
+  '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
   // Motion-trail CA: R trails behind, B ghosts ahead.
-  '  float r = texture2D(map, warpedUv - uMotionDir).r;',
-  '  float g = texture2D(map, warpedUv).g;',
-  '  float b = texture2D(map, warpedUv + uMotionDir * 0.5).b;',
+  '  float r = texture2D(map, baseUv - uMotionDir).r;',
+  '  float g = texture2D(map, baseUv).g;',
+  '  float b = texture2D(map, baseUv + uMotionDir * 0.5).b;',
   // Re-encode linear→sRGB.
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, alpha * uOpacity);',
@@ -69,16 +88,8 @@ export const CARD_FRAG = [
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
-  'float rrSDF(vec2 p, vec2 b, float r) {',
-  '  vec2 q = abs(p) - b + r;',
-  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
-  '}',
-  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords.
-  'float hash21(vec2 p) {',
-  '  p = fract(p * vec2(0.1031, 0.1030));',
-  '  p += dot(p, p + 33.33);',
-  '  return fract((p.x + p.y) * p.x);',
-  '}',
+  ...RR_SDF,
+  ...HASH21,
   'void main() {',
   // Flip uv.x on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
@@ -148,12 +159,7 @@ export const TEXT_FRAG = [
   'uniform vec2  uResolution;',
   'uniform vec2  uMotionDir;',
   'varying vec2  vUv;',
-  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords
-  'float hash21(vec2 p) {',
-  '  p = fract(p * vec2(0.1031, 0.1030));',
-  '  p += dot(p, p + 33.33);',
-  '  return fract((p.x + p.y) * p.x);',
-  '}',
+  ...HASH21,
   'void main() {',
   '  vec2 d = vUv - 0.5;',
   // Exit: horizontal stretch (mimics drag direction) + radial scatter (letters fly outward)

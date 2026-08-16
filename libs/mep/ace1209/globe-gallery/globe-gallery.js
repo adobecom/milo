@@ -9,7 +9,7 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createCursor from './src/cursor.js';
 import {
-  easeOutCubic, easeInOutCubic, lerpN,
+  easeOutCubic, easeInOutCubic, lerpN, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -34,7 +34,6 @@ const BREAKPOINTS = {
     GRID_ROWS: 5,
     // 0 = cards face radially outward (true sphere). See applyCardFacing.
     CARD_FACE_CAMERA: 0,
-    SPHERE_AREA_NORM: 0, // 0 = native-aspect sizing. See SPHERE_AREA_NORM in buildCards.
     CARD_ROLL_JITTER: 0.5, // per-card random roll, radians (±0.25 ≈ ±14°)
     ARC_DENSE_FRACTION: 0.6, // share of cards clustered into the off-screen arc flank
   },
@@ -52,7 +51,6 @@ const BREAKPOINTS = {
     // Shape keys unreachable on sm (always cylinder); kept for the uniform contract.
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    SPHERE_AREA_NORM: 0,
     ARC_DENSE_FRACTION: 0,
     CYL_COLS_FIT: 0.65, // phone-only override of the shared wall-height dial
   },
@@ -63,6 +61,7 @@ function resolveBP(w) {
   return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
 
+// Card caps are on texture HEIGHT (fitCardDims); modal caps are on the longest side.
 const CARD_TEX_SM = 256;
 const CARD_TEX_MD = 768;
 const MODAL_TEX_SM = 768;
@@ -79,10 +78,11 @@ const YAW_ONLY_GEOMETRY = {
   CYLINDER: true,
   CYL_COLS_FIT: 0.80, // wall-height dial: fewest columns whose tallest fits this × frustum
   CYL_GAP_RATIO: 0.20, // inter-card gap as a fraction of card width
-  CYL_ASPECT_CAP: 1.5, // clamp on card aspect (cover-crop crops harder past it)
+  // Guard on the aspect a card is LAID OUT at; past it the fit crops. Clears the authored set, so
+  // nothing real is cropped — re-run the column solve before lowering. See README (yaw-only).
+  CYL_ASPECT_CAP: 1.9,
   CYL_BULGE: 0.18, // barrel bulge: r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
   CARD_FACE_CAMERA: 0.1, // limb polish; costs barrel smoothness — read the README before raising
-  SPHERE_AREA_NORM: 0,
 };
 
 // Cylinder-masonry wall vs Fibonacci sphere. True on the sm width band OR a coarse primary
@@ -154,7 +154,6 @@ const SPHERE_DRAG_WARP_MAX = 0.25; // cap on combined value
 // "Click & Drag" hint text (WebGL plane behind the sphere). See README (Behavior notes).
 const TEXT_BEHIND_GAP = 15; // world units behind the sphere's back surface
 const TEXT_WARP_ENTER_MAX = 4.50; // uWarp at entrance
-const TEXT_SCALE_ENTER = 1.0; // plane stays viewport-sized; warp handles the look
 const TEXT_OPACITY_PEAK = 0.15; // opacity at peak fade-in
 const TEXT_OPACITY_RESTING = 0.06; // settled opacity once the sphere is formed
 const TEXT_CA_DIR_STRENGTH = 0.05; // uMotionDir strength for drag CA on the text
@@ -311,7 +310,6 @@ function createGlobeGalleryRuntime(
       GRID_ROWS: cfg.GRID_ROWS,
       // Shape keys listed explicitly (not spread) so the overlay's layout keys can't leak on.
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
-      SPHERE_AREA_NORM: shape.SPHERE_AREA_NORM,
       CYLINDER: !!shape.CYLINDER,
       // A band may override the shared wall-height dial to contain its own near face (sm does).
       CYL_COLS_FIT: cfg.CYL_COLS_FIT !== undefined ? cfg.CYL_COLS_FIT : shape.CYL_COLS_FIT,
@@ -335,7 +333,7 @@ function createGlobeGalleryRuntime(
   let cards = [];
   // Cards + meshes are built up front (with contours); textures fill in progressively via onEach.
   let textures = [];
-  let cardTexData = []; // per-card sphereScaleX + arc UV crop values
+  let cardAspects = []; // per-card native image aspect (index-aligned with CARD_CONTENT)
   let placeholderTex = null; // shared transparent texture for not-yet-loaded cards
   // One-time sm-barrel reflow once all aspects are known (masonry packing is a whole-set solve).
   const masonryMorph = { active: false, t: 0 };
@@ -476,10 +474,15 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  // Native aspect of card i's image; the portrait placeholder until its texture decodes.
+  function cardAspect(i) {
+    return cardAspects[i] || CARD_ASPECT;
+  }
+
   function buildCards() {
     const {
       N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
-      CARD_ROLL_JITTER, SPHERE_AREA_NORM, CYLINDER,
+      CARD_ROLL_JITTER, CYLINDER,
     } = bp;
     if (!placeholderTex) placeholderTex = createPlaceholderTexture();
     sphereGroup = new THREE.Group();
@@ -491,10 +494,7 @@ function createGlobeGalleryRuntime(
     // Masonry is a whole-set solve, run ONCE before the per-card loop. Null on the sphere path.
     const masonry = CYLINDER
       ? cylinderMasonryLayout({
-        aspects: Array.from({ length: N_TOTAL }, (unused, i) => {
-          const d = cardTexData[i] || {};
-          return (d.sphereScaleX !== undefined ? d.sphereScaleX : 1) * CARD_ASPECT;
-        }),
+        aspects: Array.from({ length: N_TOTAL }, (unused, i) => cardAspect(i)),
         radius: SPHERE_R,
         frustumH: bp.CYL_FRUSTUM_H,
         colsFit: bp.CYL_COLS_FIT,
@@ -505,32 +505,15 @@ function createGlobeGalleryRuntime(
       : null;
 
     for (let i = 0; i < N_TOTAL; i += 1) {
-      // cardTexData is fully populated by the time buildCards() fires (called from onDone)
-      const ctd = cardTexData[i] || {};
-      const sphereScaleX = ctd.sphereScaleX !== undefined ? ctd.sphereScaleX : 1;
-      const imgAspect = sphereScaleX * CARD_ASPECT;
-      // Equal-area normalization: scaling both axes by sphereScaleX^-norm equalizes area at
-      // norm=0.5 without distorting aspect; norm=0 = native size. See README.
-      const areaNorm = SPHERE_AREA_NORM
-        ? sphereScaleX ** -SPHERE_AREA_NORM
-        : 1;
+      const srcAspect = cardAspect(i);
       // Masonry solves absolute world w/h; convert to scale factors against the shared geometry.
       const mas = masonry ? masonry[i] : null;
-      // Cover-crop UVs (fall back to the no-crop identity if the texture errored).
-      const repeatX = ctd.arcRepeatX !== undefined ? ctd.arcRepeatX : 1;
-      const repeatY = ctd.arcRepeatY !== undefined ? ctd.arcRepeatY : 1;
-      const offsetX = ctd.arcOffsetX !== undefined ? ctd.arcOffsetX : 0;
-      const offsetY = ctd.arcOffsetY !== undefined ? ctd.arcOffsetY : 0;
 
       const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
       const mat = createCardMaterial({
         // Contour until this card's photo lands (onEach swaps in the real texture).
         texture: textures[i] || placeholderTex,
         aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
-        repeatX,
-        repeatY,
-        offsetX,
-        offsetY,
       });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.renderOrder = N_VISIBLE - i;
@@ -564,20 +547,14 @@ function createGlobeGalleryRuntime(
         gridCol: GRID_COLS - 1 - Math.floor(i / GRID_ROWS),
         gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
-        // Sphere-phase scale factors (equal-area norm folded in). sphereScaleX is the raw
-        // aspect stretch (grid/arc/modal read it); sphereScaleS{X,Y} the sphere/fold apply.
-        sphereScaleX,
-        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : sphereScaleX * areaNorm,
-        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : areaNorm,
+        // The only per-card texture value stored; every phase's fit derives from it. See README.
+        srcAspect,
+        // Sphere-phase scale: native aspect, or the masonry's solved world size as a scale.
+        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : srcAspect / CARD_ASPECT,
+        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : 1,
         // This card's ACTUAL rendered world height — the near fade is in card-heights, and on
         // masonry CARD_H_SPHERE is only the geometry base. See README (near fade).
-        sphereWorldH: mas ? mas.h : CARD_H_SPHERE * areaNorm,
-        // World-space aspect for the rounded-corner SDF — must equal actual rendered w/h.
-        imgAspect: mas ? mas.w / mas.h : imgAspect,
-        arcRepeatX: repeatX,
-        arcRepeatY: repeatY,
-        arcOffsetX: offsetX,
-        arcOffsetY: offsetY,
+        sphereWorldH: mas ? mas.h : CARD_H_SPHERE,
         hoverT: 0, // eased 0→1 hover progress (sphere phase only)
         hoverTarget: 0, // instant 0|1 set by onHover() raycast
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
@@ -617,14 +594,12 @@ function createGlobeGalleryRuntime(
   }
 
   // Sphere-phase sizing for one card from its loaded image aspect (non-masonry path). Read live
-  // each frame by placeSphereCard, so updating these here "morphs" the card into its native shape.
-  function updateCardSphereSizing(card, sphereScaleX) {
-    const areaNorm = bp.SPHERE_AREA_NORM ? sphereScaleX ** -bp.SPHERE_AREA_NORM : 1;
-    card.sphereScaleX = sphereScaleX;
-    card.sphereScaleSX = sphereScaleX * areaNorm;
-    card.sphereScaleSY = areaNorm;
-    card.sphereWorldH = bp.CARD_H_SPHERE * areaNorm;
-    card.imgAspect = sphereScaleX * CARD_ASPECT;
+  // each frame by placeSphereCard, so updating these "morphs" the card into its native shape.
+  function updateCardSphereSizing(card, srcAspect) {
+    card.srcAspect = srcAspect;
+    card.sphereScaleSX = srcAspect / CARD_ASPECT;
+    card.sphereScaleSY = 1;
+    card.sphereWorldH = bp.CARD_H_SPHERE;
   }
 
   // sm barrel only: masonry packing needs every image aspect, so it's solved once with placeholder
@@ -633,10 +608,7 @@ function createGlobeGalleryRuntime(
   function resolveMasonryLayout() {
     const { N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE } = bp;
     const masonry = cylinderMasonryLayout({
-      aspects: Array.from({ length: N_TOTAL }, (unused, i) => {
-        const d = cardTexData[i] || {};
-        return (d.sphereScaleX !== undefined ? d.sphereScaleX : 1) * CARD_ASPECT;
-      }),
+      aspects: Array.from({ length: N_TOTAL }, (unused, i) => cardAspect(i)),
       radius: SPHERE_R,
       frustumH: bp.CYL_FRUSTUM_H,
       colsFit: bp.CYL_COLS_FIT,
@@ -664,8 +636,6 @@ function createGlobeGalleryRuntime(
         ssyTo: mas.h / CARD_H_SPHERE,
         swhFrom: card.sphereWorldH,
         swhTo: mas.h,
-        iaFrom: card.imgAspect,
-        iaTo: mas.w / mas.h,
       };
     }
     masonryMorph.active = true;
@@ -845,15 +815,18 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uMotionDir.value.set(mx, my);
   }
 
-  // UV helper — drives the cover-crop through the card shader's uniforms.
-  function setCardUV(mesh, rx, ry, ox, oy) {
-    mesh.material.uniforms.uRepeat.value.set(rx, ry);
-    mesh.material.uniforms.uOffset.value.set(ox, oy);
-  }
-
-  // Sets the rounded-corner SDF's world-space aspect so corners stay circular as the card scales.
-  function setCardAspect(mesh, aspect) {
-    mesh.material.uniforms.uAspect.value = aspect;
+  // Cover-crop + corner aspect for the shape the card is drawn at THIS frame; `planeAspect`
+  // defaults to the mesh's live scale. See README (Architecture notes).
+  const uvScratch = {};
+  function applyCardFit(mesh, card, planeAspect) {
+    const aspect = planeAspect !== undefined
+      ? planeAspect
+      : CARD_ASPECT * (mesh.scale.x / (mesh.scale.y || 1));
+    const uv = coverFit(card.srcAspect, aspect, uvScratch);
+    const u = mesh.material.uniforms;
+    u.uRepeat.value.set(uv.rx, uv.ry);
+    u.uOffset.value.set(uv.ox, uv.oy);
+    u.uAspect.value = aspect;
   }
 
   // Modal DI module — assigned after the helpers its callbacks depend on. Reads live state via
@@ -1289,8 +1262,7 @@ function createGlobeGalleryRuntime(
     const fadeStart = NEAR_FADE_START * card.sphereWorldH;
     const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
     mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
-    setCardUV(mesh, 1, 1, 0, 0);
-    setCardAspect(mesh, card.imgAspect);
+    applyCardFit(mesh, card);
     if (sphereRotActive) {
       mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
     } else {
@@ -1344,14 +1316,7 @@ function createGlobeGalleryRuntime(
       lerpN(stage.scale, card.sphereScaleSY, fdE),
       1,
     );
-    setCardUV(
-      mesh,
-      lerpN(card.arcRepeatX, 1, fdE),
-      lerpN(card.arcRepeatY, 1, fdE),
-      lerpN(card.arcOffsetX, 0, fdE),
-      lerpN(card.arcOffsetY, 0, fdE),
-    );
-    setCardAspect(mesh, lerpN(CARD_ASPECT, card.imgAspect, fdE));
+    applyCardFit(mesh, card); // reads the scale set just above, so the fold framing stays exact
     // Orientation slerps gridQuat → sphereQuat (upright, not the live peel orientation, which
     // would flip the face through the camera plane). The residual peel spin (stage.rotZ −
     // gridTilt, → 0 at peel end) is reapplied about local Z so it spins in-plane like the peel.
@@ -1381,8 +1346,7 @@ function createGlobeGalleryRuntime(
     mesh.visible = true;
     mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
-    setCardUV(mesh, card.arcRepeatX, card.arcRepeatY, card.arcOffsetX, card.arcOffsetY);
-    setCardAspect(mesh, CARD_ASPECT);
+    applyCardFit(mesh, card, CARD_ASPECT);
     mesh.quaternion.copy(card.gridQuat);
     mesh.renderOrder = N_TOTAL - i;
     mesh.material.opacity = 1;
@@ -1448,7 +1412,7 @@ function createGlobeGalleryRuntime(
   function placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY) {
     const { N_TOTAL, N_VISIBLE } = bp;
     mesh.visible = true;
-    setCardAspect(mesh, CARD_ASPECT);
+    applyCardFit(mesh, card, CARD_ASPECT); // first phase a card renders in — must fit here too
     mesh.position.set(stage.x, stage.y, stage.z);
     mesh.scale.setScalar(stage.scale);
     mesh.rotation.set(0, 0, stage.rotZ);
@@ -1492,7 +1456,6 @@ function createGlobeGalleryRuntime(
       card.sphereScaleSX = lerpN(mo.ssxFrom, mo.ssxTo, e);
       card.sphereScaleSY = lerpN(mo.ssyFrom, mo.ssyTo, e);
       card.sphereWorldH = lerpN(mo.swhFrom, mo.swhTo, e);
-      card.imgAspect = lerpN(mo.iaFrom, mo.iaTo, e);
     }
 
     // Arc → grid peel stagger: i-based cascade + per-card jitter.
@@ -1609,7 +1572,7 @@ function createGlobeGalleryRuntime(
     if (sphereFormT <= TL.TEXT_APPEAR_START) {
       // Hidden until the fold is underway.
       textMesh.visible = false;
-      textMesh.scale.setScalar(TEXT_SCALE_ENTER);
+      textMesh.scale.setScalar(1); // plane is viewport-sized; the warp does the entrance
       return;
     }
 
@@ -1920,43 +1883,36 @@ function createGlobeGalleryRuntime(
     syncTicker();
 
     const loadGeneration = textureLoadGeneration;
-    const onEachTexture = (i, tex, texData) => {
+    const onEachTexture = (i, tex, srcAspect) => {
       if (loadGeneration !== textureLoadGeneration) { tex.dispose(); return; }
       textures[i] = tex;
-      cardTexData[i] = texData;
+      cardAspects[i] = srcAspect;
       const card = cards[i];
       if (!card) return;
       card.mesh.material.map = tex; // property proxy writes uMap
-      // Cover-crop UVs (used by the arc/grid/fold phases; the sphere renders identity UVs).
-      card.arcRepeatX = texData.arcRepeatX;
-      card.arcRepeatY = texData.arcRepeatY;
-      card.arcOffsetX = texData.arcOffsetX;
-      card.arcOffsetY = texData.arcOffsetY;
-      // Native image aspect — the modal reads this on every breakpoint for its plane aspect.
-      card.sphereScaleX = texData.sphereScaleX;
+      card.srcAspect = srcAspect; // every phase's fit derives from it; the modal falls back to it
       // md sphere also sizes the rendered card per-card now (positions are index-based, no reflow);
       // the sm barrel packs against all aspects, so it re-solves its render sizing once in onDone.
-      if (!bp.CYLINDER) updateCardSphereSizing(card, texData.sphereScaleX);
+      if (!bp.CYLINDER) updateCardSphereSizing(card, srcAspect);
       card.hasTexture = true; // revealT eases up in updateCardTransform
     };
-    const onDoneTextures = (loadedTextures, loadedTexData) => {
+    const onDoneTextures = (loadedTextures, loadedAspects) => {
       if (loadGeneration !== textureLoadGeneration) {
         loadedTextures.forEach((t) => t && t.dispose());
         return;
       }
       textures = loadedTextures;
-      cardTexData = loadedTexData;
+      cardAspects = loadedAspects;
       if (bp.CYLINDER) resolveMasonryLayout(); // recomputeDragFlip runs when the morph settles
       else recomputeDragFlip();
     };
-    const cardMaxTex = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
+    const cardMaxTexH = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
     loadCardTextures({
       count: bp.N_TOTAL,
-      // Request the image already sized to our texture cap so slow links download ~tens of KB,
-      // not the full-res source (we downscale to cardMaxTex client-side regardless).
-      getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTex),
-      planeAspect: CARD_ASPECT,
-      maxTex: cardMaxTex,
+      // Ask at the cap so slow links download ~tens of KB, not the full-res source. By HEIGHT,
+      // matching fitCardDims (the service clamps to native — it never upscales).
+      getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTexH, 'height'),
+      maxTexH: cardMaxTexH,
     }, onEachTexture, onDoneTextures);
     return true;
   }
@@ -2023,7 +1979,7 @@ function createGlobeGalleryRuntime(
     masonryMorph.active = false; masonryMorph.t = 0;
     cards = [];
     textures = [];
-    cardTexData = [];
+    cardAspects = [];
     // Free the hint-text GPU resources + reset its exit progress before scene teardown.
     disposeTextMesh();
     textExitProgress = 0;

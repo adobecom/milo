@@ -7,6 +7,21 @@ export function easeOutSine(t) { return Math.sin((t * Math.PI) / 2); }
 
 export function lerpN(a, b, t) { return a + (b - a) * t; }
 
+// Cover-fit crop (UV repeat + offset) that fills `planeAspect` with `imgAspect`, centre-cropping
+// the overflow; identity when they match. Caller owns `out`. See README (Architecture notes).
+export function coverFit(imgAspect, planeAspect, out = {}) {
+  out.rx = 1; out.ry = 1; out.ox = 0; out.oy = 0;
+  if (!(imgAspect > 0) || !(planeAspect > 0)) return out;
+  if (imgAspect > planeAspect) {
+    out.rx = planeAspect / imgAspect; // wider than the plane → crop left/right
+    out.ox = (1 - out.rx) / 2;
+  } else if (imgAspect < planeAspect) {
+    out.ry = imgAspect / planeAspect; // taller than the plane → crop top/bottom
+    out.oy = (1 - out.ry) / 2;
+  }
+  return out;
+}
+
 // Arc rotation ease: quadratic ramp over the first `k`, then linear (C1 at the seam).
 export function arcRotationEase(t) {
   const k = 0.08;

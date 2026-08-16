@@ -61,7 +61,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants (scroll **timing** lives in `timeline.js`) and the stateful core: arc/grid/fold/sphere placement, drag physics, lifecycle. `tick()` orchestrates single-concern stages; `updateCardTransform` dispatches over four placement branch fns. Instantiates the DI modules. See Module layout. |
 | `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
 | `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`), no rasterized mask. The two use *different* box conventions: `CARD_FRAG` fills the plane edge-to-edge, while `MODAL_FRAG` insets the shape by `uRadius` on all four sides (see Modal chrome). `TEXT_FRAG` adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
-| `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTex })` (cover-cropped `CanvasTexture` per card, downscaled to the per-device cap — see Texture memory budget), `loadModalTexture(src, maxTex, onReady)` (lazy, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
+| `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
@@ -278,10 +278,19 @@ textures as uncompressed RGBA + mipmaps: uncapped, the base set (all cards resid
 arc→grid settle) overruns the WebKit per-tab cap and kills the tab with no JS error. Caps live in
 `globe-gallery.js` (`CARD_TEX_SM/MD`, `MODAL_TEX_SM/MD`):
 
-- **Base set** (`loadCardTextures({ maxTex })`), all cards resident — dominates. `256` on sm (just
-  above the ~270 device-px a phone grid card needs, ~6MB for 24), `768` on md (~1:1 with the largest
-  card render, downsampled everywhere smaller). Not an fps cost — mipmapping makes sampling track
-  screen pixels; only memory + upload scale with it.
+- **Base set** (`loadCardTextures({ maxTexH })`), all cards resident — dominates. The cap is on
+  **height**, not the longest side (`fitCardDims`): every card slot is portrait-ish, so the
+  cover-crop discards width and height is the axis that reaches the screen. Capping the longest side
+  instead starves wide sources on exactly that axis — a 16:9 image landed 256×144 and then lost half
+  its width to the arc's crop, ~1.8× softer than a portrait card in the same slot. The request asks
+  by height too (`optimizeImgUrl(src, px, 'height')`; the media service honours a lone `height=`).
+  `WIDE_TEX_RATIO` (2.5) bounds width for a panorama nobody sized for. `256` on sm, `768` on md.
+  Not an fps cost — mipmapping makes sampling track screen pixels; only memory + upload scale.
+  - **Sizing reality check** (measured, DPR 2): the biggest card render is the **arc**, not the grid
+    — `CARD_W_ARC` is 220 CSS px at sm, so 440×608 *device* px against a 256px-tall texture (~0.44
+    texels/device px, i.e. upscaled ~2×). The sm barrel card is ~140 CSS px (~0.6–0.9 texels/device
+    px) and the grid card ~100. md is oversampled everywhere (1.6–4.6). If sm cards ever read as
+    soft, `CARD_TEX_SM` is the dial — and the arc is the frame to judge it on.
 - **Modal** (opened card only), loaded lazily, disposed on close/nav, so ≤1 resident. `768` on sm,
   `2048` on md (the on-screen modal tops ~1400–1600 device px, so 2048 bounds the transient ~17MB vs
   ~64MB for a 4000px original). When the modal cap ≤ the base cap it reuses the base texture
@@ -291,8 +300,13 @@ arc→grid settle) overruns the WebKit per-tab cap and kills the tab with no JS 
 
 **Estimating the cost.** GPU textures store uncompressed regardless of file size: `resident ≈ w × h ×
 4 × 1.333` (RGBA + the mipmap pyramid, converging to +⅓). Dimensions are the *downscaled canvas*
-(longest side = cap), not the source; cover-crop doesn't change residency. A 4:3 source at 256 →
-256×192 → ~0.26MB, ×24 ≈ 6MB; at 768, ~2.3MB (9× area).
+(**height** = cap, width = height × the source aspect), not the source; the cover-crop doesn't
+change residency. So a card costs `cap² × aspect × 5.33` bytes: at 256, a 3:4 source ≈ 0.26MB and a
+16:9 ≈ 0.62MB. Measured against the authored set (aspects 0.57–1.79): **sm 24 cards ≈ 7.6MB**
+(6.4MB under the old longest-side rule, +18%) and **md all 50 ≈ 139MB** (116MB before, +20%) — md
+sets no `N_MAX`, so every authored card is resident there. Watch this on iPad, which takes the md
+profile: if it needs trimming, `CARD_TEX_MD` 768 → 640 lands ~97MB, *below* today's figure, and md
+would still be oversampled (~2.8 texels/device px on the largest card).
 
 The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item: its canvas matches the
 camera aspect, so `TEXT_MAX_SIDE` caps the *longest* side at 2048 — uncapped, a portrait phone derives
@@ -388,6 +402,38 @@ Worth building only if a CJK locale ships this block.
   its `10px sans-serif` default, which would measure a plausible but wrong advance.
 
 ## Architecture notes
+
+**Aspect: one crop rule, derived every frame, never stored.** A decode contributes exactly one
+number per card — `card.srcAspect`, the image's native aspect (`loadCardTextures`' `onEach`). Every
+phase then calls `applyCardFit(mesh, card, planeAspect?)`, which asks `coverFit(srcAspect, aspect)`
+(`math.js`) for the UV repeat/offset and pushes the same `aspect` into the corner SDF's `uAspect`.
+`planeAspect` defaults to the mesh's **live** scale — `CARD_W_SPHERE = CARD_H_SPHERE × CARD_ASPECT`,
+so the geometry's own aspect factors out and `scale.x / scale.y` is the shape on screen. Arc and grid
+pass `CARD_ASPECT` explicitly (uniform scale, so it is the same number, just cheaper).
+
+Consequences worth keeping:
+
+- **Nothing to keep in sync.** Caching a crop is what broke this three times: the fold lerped a
+  cached `imgAspect` independently of the scale it described (distorted mid-flight); `placeArcCard`
+  never pushed the cached crop at all, so a card that decoded while still on the arc rendered
+  stretched to `CARD_ASPECT` until the next phase overwrote the uniforms; and the modal fitted itself
+  from the base texture's rounded dimensions instead of the one it was displaying.
+- **A uniform scale is a no-op**, so the hover scale (`hs` on both axes) and the RM group shrink
+  cancel out, and the md sphere — which sizes each card to its own aspect — resolves to identity: the
+  desktop globe crops nothing, measurably (`repeat = [1, 1]` on every card).
+- **The crop follows the card into the modal, by the same rule.** `MODAL_FRAG` carries the same
+  `uRepeat`/`uOffset` pair, and `pushModalCoverUV` crops the *displayed* texture
+  (`modalUAspect`) to the aspect the plane is drawn at this frame — read from `mesh.scale` straight
+  after the frame's scale write. No eased crop state: it *is* the barrel's crop on the frame the card
+  leaves (mid-fold included — the interactive gate is global `SPHERE_INTERACTIVE_T`, not per-card
+  `fdE`, so a card can be opened part-way through its fold), and identity once the fly lands, because
+  `computeModalTarget` sizes the plane to exactly that aspect. Easing the crop on the animation's `t`
+  instead is *not* equivalent — a linear crop lerp against a ratio-of-lerps scale mismatches by ~2%
+  mid-flight (measured); tracking the scale is 0.00%. Overflow carriers land at their own aspect, so
+  they resolve to identity too.
+- **Where cropping is therefore visible:** the arc/grid deck (every card in a `CARD_ASPECT` slot, so
+  a 16:9 image keeps ~48% of its width) and the sm/coarse barrel *only past* `CYL_ASPECT_CAP`. The
+  desktop globe and the settled modal show the whole photo.
 
 **DOM is JS-built and scoped to the block root.** `init(el)` calls
 `parseAuthoredContent(el)` first (arc-copy, pull-quote, fragment href), then
@@ -498,8 +544,11 @@ loads, so the block paints immediately: `initRuntime` runs `buildCards()`/`build
 — a faint rounded-rect fill + ~1px stroke drawn in `CARD_FRAG` from `rrSDF`, driven by `uReveal`
 (contour→photo crossfade) and `uContourFade` (proxFade, so the contour respects the near-camera cull).
 `loadCardTextures` reports **per image** via `onEach`, plus `onDone` once all settle; the caller owns
-the `textureLoadGeneration` stale-guard in both. `onEach` swaps in the real texture, refreshes
-cover-crop UVs + native `sphereScaleX`, and flips `hasTexture`; `revealT` then eases 0→1 and the photo
+the `textureLoadGeneration` stale-guard in both. `onEach` swaps in the real texture, records its
+native aspect (`card.srcAspect` — the *only* per-card value a decode contributes) and flips
+`hasTexture`; it writes no UV state, because each phase branch calls `applyCardFit` every frame
+(`placeArcCard` included, or a card that lands its texture while still on the arc would keep the
+identity UVs `buildCards` seeded and render stretched to `CARD_ASPECT`); `revealT` then eases 0→1 and the photo
 **un-dissolves** in — the same edge-first particle effect as the near-camera fade (`uDissolve`), so
 the two compose in `placeSphereCard` by **max-dissolve / min-opacity**, neither un-hiding what the
 other hides. On **md** positions are index-based (`fibSpherePos`), so a landed texture only morphs
@@ -801,7 +850,7 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, first 24, 3×8, smaller
 sphere). Per-profile knobs in `BREAKPOINTS`: `N_MAX` (0=uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`,
 `CAM_Z_*`, `GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, plus precise-pointer defaults
-for the shape keys (`CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that `YAW_ONLY_GEOMETRY` overrides. No
+for the shape keys (`CARD_FACE_CAMERA`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
 card count, so `doLayout` triggers a full `destroy()`+`init()` rebuild; resizing within a band takes
 the cheap path (renderer/camera resize). The `resize` handler is the sole driver of the **width**
@@ -842,9 +891,9 @@ rebuild would otherwise inherit:
 an S2A scale uses the token, not the literal — including positional insets (`bottom`,
 `inset-inline-start`) and the `p + p` copy rhythm. Sizes tied to a specific design measurement stay
 literal, because pinning them to a coincidentally-equal token would imply a relationship that isn't
-there: the arc-copy `359px`/`382px` widths, the `138px` counter pill (mirrored by `DT_COUNTER_W`),
-the `375px` description measure, `--gg-pq-height` 583px, the 24/28px badge icons, and the 48px cursor
-disc. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
+there: the arc-copy `359px`/`382px` widths, the `138px` counter pill (`--gg-counter-w`, which the
+md+ nav offsets read), the `316px` scrim (`--gg-scrim-w`), `--gg-pq-height` 583px, the 24/28px badge
+icons, and the 48px cursor disc. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
 snapping it to the nearest token is the cheaper fix:
 
 | value | where | nearest token |
@@ -873,8 +922,7 @@ brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed 
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
 inherit a stranger's value from an ancestor. Props read or written from JS
 (`--gg-pq-pin-factor` in `doLayout`, `--gg-desc-fade-top` / `--gg-desc-fade-bottom` in
-`updateDescFade`, `--gg-modal-edge` in `positionModalChrome`) are the coupling points — grep both
-files before renaming one. Only `--s2a-*` tokens come from upstream, and one of them
+`updateDescFade`) are the coupling points — grep both files before renaming one. Only `--s2a-*` tokens come from upstream, and one of them
 (`--s2a-font-letter-spacing-neg-0_48`) has an underscore, which is why `custom-property-pattern` is
 disabled on that single line rather than file-wide.
 
@@ -1072,38 +1120,52 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   makes its own pair but only the hovered one activates (inactive discs `visibility: hidden`). Label
   copy is the authored hint string (see Localization).
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.**
-  - **Controls.** Prev/next arrows and the counter are independent chrome children (no wrapper),
-    positioned per-frame by `positionModalChrome`, reading as one bottom-centre row at every
-    breakpoint. **Desktop/tablet:** the counter pill centres on the image with an arrow `DT_NAV_GAP`
-    (12px) each side; the pill's fixed `DT_COUNTER_W` (138px, mirroring its CSS `width`) means the
-    flank offset needs no measuring. All three share one `bottom` — `--gg-modal-edge` from the
-    *viewport* bottom, not the image bottom, so the row holds its height whatever the photo's aspect.
-    **Mobile:** the same row spread into the bottom corners inside the scrim. The three frosted
-    controls (both arrows + close) share one style and one 48×48 `--gg-control-size` hit target
-    everywhere; close sits top-right at every breakpoint. Geometry is three locals on
-    `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `-lg` at md+ — the single
-    inset for all four controls *and* the scrim padding; `positionModalChrome` assigns the `var()`
-    string so nothing is duplicated in JS), `--gg-control-size` (mirrored as `NAV_SIZE` only because
-    the desktop flank offset needs a number), and `--gg-control-radius` (6px literal; no S2A step).
-    `--gg-modal-edge` is also the sm scrim's `padding-bottom` reserve (`edge + control + edge`, so the
-    arrows clear the badges); at md+ the arrows sit under the image, so the override drops it to a
-    flat `edge`.
+  - **Controls — placed entirely in CSS** (`revealModalChrome` only fades them in). Prev/next arrows
+    and the counter are independent chrome children (no wrapper, so each one's `:hover` scale
+    survives the reveal fade), reading as one bottom-centre row at every breakpoint. Every offset is
+    a **per-breakpoint constant**: the modal card is always horizontally centred
+    (`computeModalTarget` pins `x` to 0), so "centred under the image" is just `50%` — nothing to
+    project, nothing to track. **Desktop/tablet:** the counter pill sits at `left: 50%` (physical, because its
+    `translateX(-50%)` is physical) with an arrow `--gg-nav-gap` (12px) out each side, offset from
+    the centre by `--gg-counter-w / 2 + gap + --gg-control-size` on `inset-inline-start` so RTL
+    mirrors for free. All three share one `bottom` — `--gg-modal-edge` from the *viewport* bottom,
+    not the image bottom, so the row holds its height whatever the photo's aspect. **Mobile:** the
+    same row spread into the bottom corners inside the scrim (`inset-inline-start`/`-end`). The three
+    frosted controls (both arrows + close) share one style and one 48×48 `--gg-control-size` hit
+    target everywhere; close sits at the top inline-end corner at every breakpoint. Geometry is five
+    locals on `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `-lg` at md+ —
+    the single inset for all four controls *and* the scrim padding), `--gg-control-size`,
+    `--gg-control-radius` (6px literal; no S2A step), `--gg-counter-w` (`auto` at sm, `138px` at md+,
+    where the pill's own `width` reads it) and `--gg-scrim-w` (316px, md+ only). `--gg-modal-edge` is
+    also the sm scrim's `padding-bottom` reserve (`edge + control + edge`, so the arrows clear the
+    badges); at md+ the arrows sit under the image, so the override drops it to a flat `edge`.
   - **Image fit + corner radius.** The **visible image** is contain-fit to the viewport minus a
     symmetric margin (desktop `DT_IMG_MARGIN` 12px; mobile full-bleed, square corners `uRadius=0`),
-    native aspect kept — the sizing math backs the geometry out of the SDF corner inset
-    (`uRadius·cardHPx`) so the *photo*, not the geometry, reaches the margin. Desktop keeps a constant
+    native aspect kept. `MODAL_FRAG`'s rounded-rect is measured against the **full plane**
+    (`vec2(uAspect·0.5, 0.5)`, same as `CARD_FRAG`) — the plane edge *is* the photo edge, so the fit
+    is plain `min(H − 2·margin, (W − 2·margin) / uAspect)` with nothing to back out. An inset box
+    (half-extents minus `uRadius`) would clip `uRadius` worth of photo off all four edges, i.e. the
+    modal would show *less* of the image than the globe does. Desktop keeps a constant
     `MODAL_RADIUS_PX` (16px) **on screen for every card**, not a fraction of height: `uRadius` is
-    normalised to card height, so `modalDesktopFit(uAspect)` solves the plane height as photo + 2·16px
-    and derives `radiusFrac = 16 / cardHPx` — per card, since `cardHPx` depends on whether that card's
-    aspect makes the fit width- or height-limited. `modalRadiusFrac(uAspect)` wraps it with the mobile
-    `0`, taking the **aspect** because that's the only per-card input: `uAspect = cardAspect ×
-    sphereScaleX`, and despite the name `sphereScaleX` is not a sphere-phase transform but the card's
-    native image aspect relative to the base card aspect (set on texture decode). Because the fraction
-    depends on the fit, `computeModalTarget` re-pushes `uRadius` **per-frame** — a resize, or an
-    overflow card's late aspect correction on decode, changes `cardHPx`.
-  - **Scrim + scroll region.** Desktop gets a fixed-width (`DT_SCRIM_W` 316px) dark frosted scrim on
-    the **viewport's left edge, full height**; mobile gets one full-width bottom chunk (content-sized,
-    capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: role + name are
+    normalised to card height, so `modalDesktopFit(uAspect)` derives `radiusFrac = 16 / cardHPx` —
+    per card, since `cardHPx` depends on whether that card's aspect makes the fit width- or
+    height-limited. `modalRadiusFrac(uAspect)` wraps it with the mobile `0`, taking the **aspect**
+    because that's the only per-card input. That aspect is `modalUAspect(card)`: the aspect of the
+    texture the modal is actually *displaying* (`card.modalAspect`, set when the hi-res upgrade
+    decodes and cleared when it's released), falling back to `card.srcAspect`. Preferring the
+    displayed texture matters because `srcAspect` comes from the small *base* texture, whose rounded
+    dimensions are off by a few tenths of a percent, and because a card opened before its base photo
+    lands would otherwise be fitted at the placeholder aspect. Because both values depend on the fit
+    and the live texture, `computeModalTarget` re-pushes `uAspect` + `uRadius` **per-frame**.
+  - **The crop opens up with the fly.** The barrel may cover-crop a card (see `CYL_ASPECT_CAP`) while
+    the flown-out card shows the whole photo, so `MODAL_FRAG` carries the same `uRepeat`/`uOffset`
+    pair as `CARD_FRAG` and `pushModalCoverUV` tracks the plane's live aspect (see *Architecture
+    notes*). Without it, the first frame of the fly would show the *whole* image at the *barrel's*
+    aspect — a visible horizontal squash that resolves over `MODAL_ANIM_DURATION`. A desktop nav
+    cross-warp owns its own cards' uniforms, so the push is skipped while `dnNavActive`.
+  - **Scrim + scroll region.** Desktop gets a fixed-width (`--gg-scrim-w` 316px) dark frosted scrim
+    on the **viewport's inline-start edge, full height**; mobile gets one full-width bottom chunk
+    (content-sized, capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: role + name are
     `flex-shrink:0` at the top, **badges** are `flex-shrink:0` at the bottom (so those tabbable
     controls stay on-screen), and the **description** is the only scroll region (`min-height:0;
     overflow-y:auto`). A `mask-image` scroll-shadow (`updateDescFade`, re-measured on
@@ -1202,10 +1264,19 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   — so yaw brings any card face-on at any height. Reads as the sphere's caps unfolded into a wall.
   Layout is cylindrical **masonry**: fixed columns around the circumference, cards packed down each.
   - **Uniform WIDTH fixes alignment; varying HEIGHT is the effect.** Width = column width (columns
-    read as true verticals); height follows each image's native aspect (the stagger). Makes
-    `SPHERE_AREA_NORM` unnecessary here (0). `CYL_ASPECT_CAP` (1.5) stops one panorama dominating a
-    column (cover-crop UVs crop harder; `imgAspect` derives from the *solved* size so the corner SDF
-    still matches). `CYL_GAP_RATIO` (0.20) sets both gaps (card width = pitch / (1 + ratio)).
+    read as true verticals); height follows each image's native aspect (the stagger) — which is why
+    this path never needed an equal-area dial. `CYL_ASPECT_CAP` (1.5) stops one panorama dominating a
+    column: past the cap the card is laid out at the *clamped* aspect and `applyCardFit` crops the
+    overflow (one `coverFit` call drives the crop and the corner SDF, so they cannot disagree). The
+    cap is a **guard against pathological input**, not a house style — the masonry packs any aspect
+    inside it losslessly, so it is sized to clear the authored set (`1.9` vs a widest 1.79 and a
+    tallest 1/0.57 = 1.75) and nothing real is cropped in the barrel. Re-run the column solve before
+    lowering it: with this content, dropping to 1.5 cropped 4 images ~15% and changed **nothing**
+    about the layout (same column count, same card width, wall height within 1%, column imbalance
+    marginally worse at 1.084 vs 1.073).
+    Without that crop a 3:1 image would be **squashed to half its width** in the wall — the barrel
+    scales the plane per card, it does not letterbox. `CYL_GAP_RATIO` (0.20) sets both gaps (card
+    width = pitch / (1 + ratio)).
   - **Packing: shortest column, tallest card first** (longest-processing-time-first) — holds column
     imbalance at ~1.05 vs 1.64× for source order. Free to reorder: the layout scatters consecutive
     cards, so authored order carries no spatial meaning and modal prev/next walks card *index*. Each
@@ -1274,17 +1345,18 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     pitch error is set by the dial alone — and `FACING_EDGE_ON_BAND` is safe to retune because no
     sphere path reads it. To zero the pop while keeping limb width, make the re-aim **yaw-only** here
     (project `cardNormal` into XZ before `setFromUnitVectors`); the geometry is yaw-only anyway.
-  - **Uneven card SIZE → `SPHERE_AREA_NORM` (`0.5` yaw-only / `0` else).** Native-aspect sizing
-    (height `CARD_H_SPHERE`, width `sphereScaleX`) makes a 16:9 image 2.67× the area of a 2:3 one, so
-    wide cards blot out neighbours. Scaling *both* axes by `sphereScaleX^-norm` equalizes area at
-    `norm=0.5` (area ∝ ssx·ssx⁻¹ = 1) with the aspect — and the image — undistorted (spread
-    2.67×→1.00×). Baked into `card.sphereScaleSX/SY` at build (raw `sphereScaleX` kept for arc/grid/
-    modal); applied at the same three sites **plus** `modal.js`'s close target (needs
-    `applySphereFacing` injected, else it jumps when `snapToSphereSlot` runs). `norm=0` is the
-    unscaled case; uniform scale preserves `uAspect` so corners stay circular.
+  - **Uneven card SIZE (sphere path).** Native-aspect sizing (height `CARD_H_SPHERE`, width = the
+    image's aspect ratio, baked into `card.sphereScaleS{X,Y}` at build) makes a 16:9 image 2.67× the
+    area of a 2:3 one, so wide cards can blot out neighbours. There used to be a `SPHERE_AREA_NORM`
+    dial for it — scale *both* axes by `(srcAspect / CARD_ASPECT)^-norm` and area equalizes at
+    `norm=0.5` (area ∝ ssx·ssx⁻¹ = 1) with the aspect, and the image, undistorted (spread
+    2.67×→1.00×). It shipped `0` on every config, so it was deleted; the yaw-only path solves the
+    same problem with the masonry's uniform column width. Reinstate from git if the sphere path
+    needs it (it also has to be applied in `modal.js`'s close target, or the card jumps when
+    `snapToSphereSlot` runs).
   - **Sparseness → `CARD_H_SPHERE` `11.0` on sm** (sphere path only). Coverage scales with **H²**, so
-    size is a far stronger lever than count and adds no textures/draw calls. Nominal height before
-    `SPHERE_AREA_NORM`; net ~42% of the sphere face.
+    size is a far stronger lever than count and adds no textures/draw calls. Net ~42% of the sphere
+    face.
   - **Scatter → `CARD_ROLL_JITTER` (sm `0.18` ≈ ±5°, md `0.5` ≈ ±14°).** Per-BP: at sm's sparsity
     ±14° reads as debris, while md keeps the collage character.
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On

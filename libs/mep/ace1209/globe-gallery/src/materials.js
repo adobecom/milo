@@ -5,16 +5,15 @@ import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG } from './shade
 
 // Card ShaderMaterial: cover-crop, CA, hover warp, rounded corners (uAspect + uRadius).
 // Property proxies let the tick loop drive it via MeshBasicMaterial's opacity/map API.
-export function createCardMaterial({
-  texture, aspect, repeatX, repeatY, offsetX, offsetY,
-}) {
+// uRepeat/uOffset start identity; each phase pushes the frame's crop (see applyCardFit).
+export function createCardMaterial({ texture, aspect }) {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       uMap: { value: texture },
       uOpacity: { value: 0 },
       uCA: { value: 0 },
-      uRepeat: { value: new THREE.Vector2(repeatX, repeatY) },
-      uOffset: { value: new THREE.Vector2(offsetX, offsetY) },
+      uRepeat: { value: new THREE.Vector2(1, 1) },
+      uOffset: { value: new THREE.Vector2(0, 0) },
       uMotionDir: { value: new THREE.Vector2(0, 0) },
       uWarp: { value: 0 },
       uHoverPos: { value: new THREE.Vector2(0.5, 0.5) },
@@ -50,6 +49,8 @@ export function createModalMaterial(texture, aspect) {
       uMotionDir: { value: new THREE.Vector2(0, 0) },
       uWarp: { value: 0 },
       uWarpCenter: { value: new THREE.Vector2(0.5, 0.5) },
+      uRepeat: { value: new THREE.Vector2(1, 1) },
+      uOffset: { value: new THREE.Vector2(0, 0) },
     },
     vertexShader: MODAL_VERT,
     fragmentShader: MODAL_FRAG,
@@ -93,6 +94,15 @@ function fitDims(w, h, maxTex) {
   return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
 }
 
+// Card textures are capped on HEIGHT (the axis a portrait-ish slot keeps), with WIDE_TEX_RATIO
+// bounding a panorama's width. See README (Texture memory budget).
+const WIDE_TEX_RATIO = 2.5;
+function fitCardDims(w, h, maxH) {
+  const s = Math.min(1, maxH / Math.max(1, h), (maxH * WIDE_TEX_RATIO) / Math.max(1, w));
+  if (s >= 1) return { w, h };
+  return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
+}
+
 // Solid-color canvas — placeholder + untainted fallback (see imageToCanvas).
 function makeCanvas(w, h, color) {
   const cv = document.createElement('canvas');
@@ -103,10 +113,10 @@ function makeCanvas(w, h, color) {
   return cv;
 }
 
-// Draw an image into an aspect-preserving canvas clamped to `maxTex`.
+// Draw an image into an aspect-preserving canvas clamped by `fit` (fitDims / fitCardDims).
 // Loaded via plain Image (no crossOrigin) so file:// works; tainted canvas → solid fallback.
-function imageToCanvas(img, maxTex) {
-  const { w, h } = fitDims(img.naturalWidth || 512, img.naturalHeight || 512, maxTex);
+function imageToCanvas(img, cap, fit = fitDims) {
+  const { w, h } = fit(img.naturalWidth || 512, img.naturalHeight || 512, cap);
   const cv = makeCanvas(w, h, '#555');
   const ctx = cv.getContext('2d');
   try {
@@ -129,52 +139,38 @@ export function createPlaceholderTexture() {
   return tex;
 }
 
-// Cover-fit crop for one loaded texture. Mutates tex.repeat/offset and returns the per-card
-// data (sphereScaleX = native width stretch; arcRepeat/Offset = cover-crop UVs for arc/grid).
-function computeTexData(tex, planeAspect) {
-  tex.colorSpace = THREE.SRGBColorSpace;
+// Native aspect of a decoded texture — the only per-card value a decode contributes.
+function texAspect(tex) {
   const imgW = (tex.image && tex.image.width) || 1;
   const imgH = (tex.image && tex.image.height) || 1;
-  const imgAspect = imgW / imgH;
-  if (imgAspect > planeAspect) {
-    // Image wider than plane → crop left/right, keep center
-    tex.repeat.x = planeAspect / imgAspect;
-    tex.offset.x = (1 - tex.repeat.x) / 2;
-  } else if (imgAspect < planeAspect) {
-    // Image taller than plane → crop top/bottom, keep center
-    tex.repeat.y = imgAspect / planeAspect;
-    tex.offset.y = (1 - tex.repeat.y) / 2;
-  }
-  return {
-    sphereScaleX: imgAspect / planeAspect,
-    arcRepeatX: tex.repeat.x,
-    arcRepeatY: tex.repeat.y,
-    arcOffsetX: tex.offset.x,
-    arcOffsetY: tex.offset.y,
-  };
+  return imgW / imgH;
 }
 
-// Load every card image into a CanvasTexture with a cover-fit crop. `onEach(i, tex, texData)`
-// fires as each image settles (progressive reveal); `onDone(textures, cardTexData)` fires once
-// all `count` have settled. Callers own the stale-load guard in these callbacks.
-export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onEach, onDone) {
+// Load every card image into a CanvasTexture capped at `maxTexH` px tall (fitCardDims).
+// `onEach(i, tex, aspect)` fires per settled image (progressive reveal); `onDone(textures,
+// aspects)` once all `count` settle. Callers own the stale-load guard in these callbacks.
+export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
-  const cardTexData = new Array(count);
+  const aspects = new Array(count);
 
   function done(i, tex) {
-    const texData = computeTexData(tex, planeAspect);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const aspect = texAspect(tex);
     textures[i] = tex;
-    cardTexData[i] = texData;
-    if (onEach) onEach(i, tex, texData);
+    aspects[i] = aspect;
+    if (onEach) onEach(i, tex, aspect);
     loaded += 1;
-    if (loaded === count && onDone) onDone(textures, cardTexData);
+    if (loaded === count && onDone) onDone(textures, aspects);
   }
 
   function tryLoad(i) {
     const img = new Image();
     img.onload = () => {
-      const rasterize = () => done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex)));
+      const rasterize = () => done(
+        i,
+        new THREE.CanvasTexture(imageToCanvas(img, maxTexH, fitCardDims)),
+      );
       if (img.decode) img.decode().then(rasterize, rasterize);
       else rasterize();
     };

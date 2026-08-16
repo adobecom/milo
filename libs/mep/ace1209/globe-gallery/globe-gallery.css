@@ -214,6 +214,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-modal-edge: var(--s2a-spacing-md);
   --gg-control-size: 48px;
   --gg-control-radius: 6px;
+  --gg-counter-w: auto; /* md+ pill is a fixed width; the md offsets below need the number */
+  --gg-nav-gap: 12px; /* counter pill edge → each arrow */
+  --gg-scrim-w: 316px; /* md+ info scrim (sm is full-width) */
 
   position: fixed;
   inset: 0;
@@ -242,7 +245,17 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 /* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
 .globe-gallery-modal-chrome::backdrop { background: transparent; }
 
-/* Position set per-frame by JS; CSS is visual style only. */
+/* Bottom row (arrows + counter): sm spreads it into the corners, md+ centres it as one group under
+   the image. All static — JS only fades the chrome in. See README (Modal chrome). */
+.globe-gallery-modal-nav,
+.globe-gallery-modal-counter {
+  position: absolute;
+  bottom: var(--gg-modal-edge);
+}
+
+.globe-gallery-modal-nav-prev { inset-inline-start: var(--gg-modal-edge); }
+.globe-gallery-modal-nav-next { inset-inline-end: var(--gg-modal-edge); }
+
 .globe-gallery-modal-nav {
   width: var(--gg-control-size);
   height: var(--gg-control-size);
@@ -268,9 +281,12 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 .globe-gallery-modal-nav:active { transform: scale(0.98); }
 
-/* Close button — position set by JS; same frosted treatment as the nav arrows. */
+/* Close button — top inline-end corner of the viewport at every breakpoint; same frosted
+   treatment as the nav arrows. */
 .globe-gallery-modal-close {
   position: absolute;
+  top: var(--gg-modal-edge);
+  inset-inline-end: var(--gg-modal-edge);
   width: var(--gg-control-size);
   height: var(--gg-control-size);
   border-radius: var(--gg-control-radius);
@@ -288,10 +304,11 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 .globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
 
-/* Position set by JS. Badges margin-top:auto pins them to bottom; padding-bottom reserves the sm nav
-   row (edge + control + edge). See README (Modal chrome). */
+/* sm = full-width chunk on the viewport's bottom edge, content-sized. Badges margin-top:auto pins
+   them to bottom; padding-bottom reserves the sm nav row (edge + control + edge). */
 .globe-gallery-modal-info {
   position: absolute;
+  inset: auto 0 0;
   max-height: 60dvh;
   margin: 0;
   padding: var(--gg-modal-edge) var(--gg-modal-edge) calc(var(--gg-modal-edge) * 2 + var(--gg-control-size));
@@ -446,8 +463,11 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   color: var(--s2a-color-gray-400);
 }
 
-/* Counter ("1/N"), positioned by JS. Base (sm) = plain text; min-width:768 = frosted pill. */
+/* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
+   `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
 .globe-gallery-modal-counter {
+  left: 50%;
+  transform: translateX(-50%);
   height: var(--gg-control-size);
   display: flex;
   align-items: center;
@@ -565,7 +585,10 @@ body.globe-gallery-modal-open { overflow: hidden; }
   /* Smaller quote-pin factor at md; see README. */
   .globe-gallery { --gg-pq-pin-factor: 0.55; }
 
-  .globe-gallery-modal-chrome { --gg-modal-edge: var(--s2a-spacing-lg); }
+  .globe-gallery-modal-chrome {
+    --gg-modal-edge: var(--s2a-spacing-lg);
+    --gg-counter-w: 138px;
+  }
 
   /* md+: no pill background, so the copy's own left edge must sit on --gg-content-inset. */
   .globe-gallery-arc-copy {
@@ -576,12 +599,24 @@ body.globe-gallery-modal-open { overflow: hidden; }
     background: none;
   }
 
-  /* Full-height left-edge; JS sets top/bottom/inset-inline-start/width. */
+  /* Full-height scrim on the viewport's inline-start edge. */
   .globe-gallery-modal-info {
+    inset: 0 auto 0;
+    inset-inline-start: 0;
+    width: var(--gg-scrim-w);
     height: auto;
     max-height: none;
     border-radius: 0;
     padding: var(--gg-modal-edge);
+  }
+
+  /* One centred row: counter pill in the middle, an arrow --gg-nav-gap out on each side. */
+  .globe-gallery-modal-nav-prev {
+    inset-inline-start: calc(50% - var(--gg-counter-w) / 2 - var(--gg-nav-gap) - var(--gg-control-size));
+  }
+
+  .globe-gallery-modal-nav-next {
+    inset-inline-start: calc(50% + var(--gg-counter-w) / 2 + var(--gg-nav-gap));
   }
 
   .globe-gallery-modal-role-label { margin-top: 0; }
@@ -606,7 +641,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   .globe-gallery-modal-badge-role { font-size: var(--s2a-font-size-sm); }
 
   .globe-gallery-modal-counter {
-    width: 138px;
+    width: var(--gg-counter-w);
     box-sizing: border-box;
     border-radius: var(--gg-control-radius);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
