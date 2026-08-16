@@ -28,9 +28,7 @@ function badgeIconHtml(url) {
 
 // See README (Authoring contract) for the authored-row layout.
 
-// English fallback for the a11y entry-widget instructions when row 2 has no
-// second paragraph. Authored inline (row 2, 2nd <p>) so it's localizable
-// without the placeholders sheet.
+// English fallback for the a11y instructions; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const LABEL_DIVIDER = '||';
@@ -235,10 +233,8 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// Right-size a helix/DA media image to the dimension we rasterize, so slow connections don't
-// download the full-res source. Requests webp at `px` on `axis` (a lone `height=` is honoured
-// aspect-preservingly); cards ask by height, the modal by width — see README (Texture memory
-// budget). Non-media URLs (external assets that don't honor these params) are returned as-is.
+// Right-size a helix/DA media image to what we rasterize. Cards ask by height, the modal by
+// width; non-media URLs pass through. See README (Texture memory budget).
 export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
   try {
@@ -268,9 +264,8 @@ export function parseAuthoredContent(el) {
   };
 }
 
-// Runtime queries nodes within the block root, so multiple globes can coexist.
-// `gid` makes the two document-wide id refs unique per instance: the CA SVG
-// filter (url(#ca-filter-<gid>)) and the modal's aria-labelledby/describedby.
+// `gid` makes the two document-wide id refs unique per instance: the CA SVG filter and the
+// modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
     <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>

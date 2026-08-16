@@ -55,7 +55,7 @@ export default function createGlobeModal({
   // Sphere-rotation bridge (live THREE object shared by reference).
   sphereRotQuat,
   snapToSphereSlot,
-  // Applies the sphere's camera-facing tilt to a quat in place (no-op when CARD_FACE_CAMERA=0).
+  // Applies the sphere's camera-facing tilt to a quat in place (no-op when CARD_FACE_CAMERA is 0).
   applySphereFacing,
   requestNavNudge,
   applyMotionCA,
@@ -111,9 +111,8 @@ export default function createGlobeModal({
   let dnNavOldCard = null;
   let dnNavNewCard = null;
 
-  // Overflow gallery cards: the modal browses all getCount() images; indices past the barrel
-  // get a lazy modal-only carrier that dissolves in/out instead of flying to a slot.
-  // See README (Card count / Architecture notes). Keyed by gallery index.
+  // Cards past the barrel get a lazy modal-only carrier that dissolves in/out instead of flying
+  // to a slot. Keyed by gallery index. See README (Card count).
   const overflowCards = new Map();
   // Shared 1×1 placeholder for overflow carriers before/after their image texture.
   let overflowPlaceholderTex = null;
@@ -955,9 +954,8 @@ export default function createGlobeModal({
     const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
     const PULL_SCALE_MIN = 0.80;
 
-    // Swipe/pull applies to touch-primary devices, not just the sm width band — tablets at
-    // md (≥768, coarse pointer) get the same gesture nav the globe's yaw-only shape assumes.
-    // Mirrors usesCylinderGeometry's '(pointer: coarse)' check. matchMedia-less → no gestures.
+    // Gestures follow POINTER type, not the width band (tablets at md get them too), mirroring
+    // usesCylinderGeometry. matchMedia-less → none.
     const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
 
     // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
@@ -1029,9 +1027,8 @@ export default function createGlobeModal({
       if (swAxis === 'x') {
         const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
-        // swipe left → next (+1), swipe right → prev (−1). Commit clicks the matching nav
-        // button — same handler, plus it reports (see README, Analytics); a non-commit release
-        // lets the preview warp decay back to 0 in updateAnimation. No canvas slide either way.
+        // Commit clicks the matching nav button (same handler, and it reports);
+        // a non-commit release lets the preview warp decay in updateAnimation.
         if (commit) {
           // Clear the preview warp so it doesn't bleed onto the new card once the transition
           // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
@@ -1077,9 +1074,8 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
-  // Synchronously return the modal DOM + page state to closed. destroy() forces phase to CLOSED
-  // without the close animation, so a breakpoint re-init (same DOM) doesn't leave the modal stuck
-  // open. Uses q() for the main canvas because core destroy() nulls the renderer first.
+  // Synchronously return the modal DOM + page state to closed, so a breakpoint re-init on the
+  // same DOM can't leave it stuck open. q() because core destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');

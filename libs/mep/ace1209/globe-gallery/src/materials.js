@@ -5,9 +5,8 @@ import {
 
 // GPU-asset factories: the card/modal/text ShaderMaterials + the card/modal/hint texture loaders.
 
-// Card ShaderMaterial: cover-crop, CA, hover warp, rounded corners (uAspect + uRadius).
-// Property proxies let the tick loop drive it via MeshBasicMaterial's opacity/map API.
-// uRepeat/uOffset start identity; each phase pushes the frame's crop (see applyCardFit).
+// Card ShaderMaterial: cover-crop, CA, hover warp, rounded corners. Property proxies let the
+// tick loop drive it via MeshBasicMaterial's opacity/map API.
 export function createCardMaterial({ texture, aspect }) {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
@@ -149,9 +148,8 @@ function texAspect(tex) {
   return imgW / imgH;
 }
 
-// Load every card image into a CanvasTexture capped at `maxTexH` px tall (fitCardDims).
-// `onEach(i, tex, aspect)` fires per settled image (progressive reveal); `onDone(textures,
-// aspects)` once all `count` settle. Callers own the stale-load guard in these callbacks.
+// Load every card image into a CanvasTexture capped at `maxTexH` tall. onEach fires per
+// settled image (progressive reveal), onDone once all `count` settle.
 export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
@@ -187,10 +185,8 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   for (let i = 0; i < count; i += 1) tryLoad(i);
 }
 
-// Load one card image at a higher cap for the modal (raw-UV, no cover-crop). onReady fires
-// once decoded; caller owns disposal. onError fires if the load fails so the caller can drop its
-// pending-Image reference (the base texture stays). Returns the Image so a pending load can be
-// cancelled (img.src = '').
+// Higher-cap texture for the modal (raw UV, no cover-crop). Returns the Image so a pending
+// load can be cancelled; caller owns disposal.
 export function loadModalTexture(src, maxTex, onReady, onError) {
   const img = new Image();
   img.onload = () => {

@@ -1,6 +1,5 @@
-// Scroll timeline: every phase constant, every threshold, and the per-frame clock derivation.
-// Pure — no THREE, no DOM, no closure state. See README (Lifecycle timeline) for what each
-// constant gates, the six clocks, and the frame contract.
+// Scroll timeline: every phase constant, threshold, and the per-frame clock derivation.
+// Pure — no THREE, no DOM, no closure state. See README (Lifecycle timeline).
 
 import { easeOutCubic, easeOutSine } from './math.js';
 

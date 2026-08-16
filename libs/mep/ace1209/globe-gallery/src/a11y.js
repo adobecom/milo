@@ -93,10 +93,8 @@ export default function createGalleryA11y({
     widgetEl.setAttribute('daa-ll', ENTER_GALLERY_DAA_LL);
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
 
-    // Instructions serve both audiences from one element: visible :focus-visible popup and
-    // the button's aria-labelledby name. See README (Accessibility).
-    // galleryInstructions is authored inline (row 2, 2nd <p>) with an English code fallback,
-    // so it's always set here. See authoring.js / README (Localization).
+    // One element serves both audiences: the visible :focus-visible popup and the button's
+    // aria-labelledby name. Always set (authored inline + code fallback). See README.
     if (galleryInstructions) {
       const descEl = document.createElement('span');
       descEl.className = 'globe-gallery-a11y-tip';

@@ -73,10 +73,8 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
-// Near-camera dispersion (the card explodes into flying grains). Every piece of this — the two
-// dials, the ramp exponent, the vertex overscan, and why the fragment reads each grain's origin —
-// is documented in the README (Near-camera dissolve EXPLODES past the card box). Read it before
-// touching any of it.
+// Near-camera dispersion. Read README (Near-camera dissolve EXPLODES past the card box)
+// before touching any of it — the dials, ramp, overscan and grain-origin read are all coupled.
 const DISPERSE_EXPAND = '2.00';
 const DISPERSE_JITTER = '0.15';
 const DISPERSE_RAMP = [

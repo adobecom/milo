@@ -58,7 +58,7 @@
 
   position: fixed;
 
-  /* (viewport - 16px), 8px gap each side, capped at 359px; calc(100vw - 32px) clamped to 343 on SE. */
+  /* Full width less a gap each side, capped. See README (CSS) for the literal-vs-token rule. */
   width: calc(100vw - var(--s2a-spacing-xs) * 2);
   max-width: 359px;
   bottom: var(--s2a-spacing-xs);

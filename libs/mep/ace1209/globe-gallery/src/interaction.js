@@ -223,9 +223,8 @@ export default function createInteraction({
     resetDrag();
   }
 
-  // True when the in-flight touch gesture is a page scroll (or hasn't declared its axis):
-  // the globe is inert, so hint-text dismissal must exclude it. See README (Behavior notes).
-  // Gated on drag.isDragging since isTouchDrag persists after pointerup.
+  // True while an in-flight touch gesture is page scroll (or undecided): the globe is inert, so
+  // hint dismissal must skip it. Gated on isDragging — isTouchDrag persists after pointerup.
   const isPageScrollGesture = () => drag.isDragging
     && isTouchDrag
     && axisLock !== AXIS_HORIZONTAL;
