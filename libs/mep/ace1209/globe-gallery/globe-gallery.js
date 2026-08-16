@@ -145,6 +145,7 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
 const NEAR_FADE_START = 2.5; // begin fading below 2.5 card-heights depth
 const NEAR_FADE_END = 1.6; // fully transparent below 1.6 card-heights
+const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (< 1 = fade out later)
 
 // Sphere-drag warp: baseline while dragging + velocity burst that decays via DRAG_FRICTION.
 const SPHERE_DRAG_WARP_BASELINE = 0.05; // constant while isDragging
@@ -1274,8 +1275,9 @@ function createGlobeGalleryRuntime(
     // opacity): take the max dissolve / min opacity so neither un-hides what the other hides.
     const proxDis = 1 - proxFade;
     const revealDis = 1 - card.revealT;
-    mesh.material.opacity = Math.min(proxFade, card.revealT);
+    mesh.material.opacity = Math.min(proxFade ** NEAR_FADE_OPACITY_BIAS, card.revealT);
     mesh.material.uniforms.uDissolve.value = Math.max(proxDis, revealDis);
+    mesh.material.uniforms.uDisperse.value = proxDis;
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = proxFade;
     // Hover composes additively on transition CA. uHoverPos anchors the warp at the cursor UV
@@ -1494,6 +1496,7 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = 1;
     mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
+    mesh.material.uniforms.uDisperse.value = 0;
 
     // Capture position before the branch updates it — delta drives motion CA.
     const prevMeshX = mesh.position.x;

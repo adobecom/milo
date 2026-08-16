@@ -73,6 +73,35 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
+// Near-camera dispersion (the card explodes into flying grains). Every piece of this — the two
+// dials, the ramp exponent, the vertex overscan, and why the fragment reads each grain's origin —
+// is documented in the README (Near-camera dissolve EXPLODES past the card box). Read it before
+// touching any of it.
+const DISPERSE_EXPAND = '2.00';
+const DISPERSE_JITTER = '0.15';
+const DISPERSE_RAMP = [
+  'float dispRamp(float x) {',
+  '  return pow(clamp(x, 0.0, 1.0), 0.9);',
+  '}',
+];
+
+// Card vertex shader: CARD_VERT plus the dispersion overscan. See README.
+export const CARD_DISPERSE_VERT = [
+  'uniform float uDisperse;',
+  'uniform float uAspect;',
+  'varying vec2 vUv;',
+  ...DISPERSE_RAMP,
+  'void main() {',
+  '  float e = dispRamp(uDisperse);',
+  `  float s = 1.0 + e * ${DISPERSE_EXPAND};`,
+  `  float j = 2.0 * ${DISPERSE_JITTER} * e * ${DISPERSE_EXPAND};`,
+  '  vec2 grow = s + j / vec2(max(uAspect, 0.0001), 1.0);',
+  '  vUv = (uv - 0.5) * grow + 0.5;',
+  '  vec3 p = vec3(position.xy * grow, position.z);',
+  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+  '}',
+].join('\n');
+
 export const CARD_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -85,62 +114,85 @@ export const CARD_FRAG = [
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
   'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
+  'uniform float uDisperse;', // near-camera explosion (0 = grains stay put); see README
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
   ...RR_SDF,
   ...HASH21,
+  ...DISPERSE_RAMP,
   'void main() {',
   // Flip uv.x on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
-  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
-  '  vec2 d  = fUv - uHoverPos;',
-  '  float r2 = dot(d, d);',
-  '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // Near-camera dissolve (melt + particle): content expands as the card rushes the lens.
-  '  vec2 mdir = fUv - 0.5;',
-  '  vec2 meltUv = warpedUv;',
-  '  if (uDissolve > 0.0) {',
-  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
-  '  }',
-  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
+  // Grain cells in the card's own uv space (× uAspect so cells stay square) so the grain
+  // travels with the card. Shared by the dispersion offset and the particle mask below.
+  '  vec2 cell = floor(fUv * vec2(uAspect, 1.0) * 160.0);',
+  '  float nR = hash21(cell + vec2(0.00,  0.00));',
+  '  float nG = hash21(cell + vec2(2.10,  1.30));',
+  '  float nB = hash21(cell + vec2(1.70, -0.50));',
   // Rounded-corner alpha: rrSDF in world-proportional UV; box half-size is the full
   // plane (uAspect/2, 0.5) so the rect fills edge-to-edge. fwidth gives ~1px AA.
-  '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
+  '  vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
-  '  float a = 1.0 - smoothstep(-px, px, dsd);',
-  '  float shapeA = a;', // solid rounded-rect alpha, kept before the particle dissolve eats `a`
-  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
-  '  vec2 meltRad = mdir * uDissolve * 0.22;',
-  '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
-  '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
-  '  float g = texture2D(uMap, baseUv).g;',
-  '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
-  // Particle grain eaten edge-first (edgeProx from SDF dist); cells in the card's own
-  // uv space (× uAspect so cells stay square) so the grain travels with the card.
+  '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
+  // Explosion: per-grain lift-off, each detached grain reading its origin. See README.
+  '  float sg = 1.0;',
+  '  vec2 sUv = fUv;',
+  '  if (uDisperse > 0.0) {',
+  '    float e = dispRamp(uDisperse);',
+  '    float det = hash21(cell + vec2(13.10, 71.90));',
+  '    if (det < e) {',
+  '      float spd = hash21(cell + vec2(3.70, 47.10));',
+  '      float t = (e - det) / max(1.0 - det, 1e-4);',
+  `      sg = 1.0 + ${DISPERSE_EXPAND} * spd * t;`,
+  '      vec2 jit = vec2(hash21(cell + vec2(31.70, 11.30)), hash21(cell + vec2(57.30, 91.10)));',
+  `      vec2 wSrc = (pos - (jit * 2.0 - 1.0) * (${DISPERSE_JITTER} * (sg - 1.0))) / sg;`,
+  '      sUv = wSrc / vec2(uAspect, 1.0) + 0.5;',
+  '    }',
+  '  }',
+  // Photo alpha is masked at the grain's ORIGIN (pxs = the AA band back there). See README.
+  '  float pxs = px / sg;',
+  '  float srcSD = rrSDF((sUv - 0.5) * vec2(uAspect, 1.0), vec2(uAspect * 0.5, 0.5), uRadius);',
+  '  float a = 1.0 - smoothstep(-pxs, pxs, srcSD);',
+  // Particle grain eaten edge-first (edgeProx from SDF dist).
+  '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
-  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
-  '    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * 160.0);',
-  '    float nR = hash21(cell + vec2(0.00,  0.00));',
-  '    float nG = hash21(cell + vec2(2.10,  1.30));',
-  '    float nB = hash21(cell + vec2(1.70, -0.50));',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -srcSD);',
   '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.4, 0.0, 1.0);',
   '    float pedge = 0.10;',
-  '    float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
-  '    float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
-  '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
-  '    r *= dR; g *= dG; b *= dB;',
+  '    dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '    dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '    dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
   '    a *= (dR + dG + dB) * 0.3333;',
   '  }',
-  '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   // Contour: faint fill + ~1px edge stroke (reuse dsd/px), shown before the photo un-dissolves in.
   '  float stroke = 1.0 - smoothstep(0.0, px * 1.5, abs(dsd));',
   '  float contourA = (shapeA * 0.06 + stroke * 0.5) * uContourFade;',
   // Crossfade contour → photo as reveal goes 0→1; the photo alpha `a` is already dispersing when
   // uDissolve > 0, so the reveal reads as the same edge-first un-dissolve.
-  '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
   '  float outA = mix(contourA, a * uOpacity, uReveal);',
+  // Bail before the texture fetches — load-bearing for the dispersion's fill cost. See README.
+  '  if (outA < 0.002) discard;',
+  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
+  '  vec2 d  = sUv - uHoverPos;',
+  '  float r2 = dot(d, d);',
+  '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
+  // Near-camera dissolve (melt + particle): content expands as the card rushes the lens.
+  '  vec2 mdir = sUv - 0.5;',
+  '  vec2 meltUv = warpedUv;',
+  '  if (uDissolve > 0.0) {',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
+  '  }',
+  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
+  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
+  '  vec2 meltRad = mdir * uDissolve * 0.22;',
+  '  vec2 radial = mdir * uCA + meltRad;',
+  '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r * dR;',
+  '  float g = texture2D(uMap, baseUv).g * dG;',
+  '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b * dB;',
+  '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
+  '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
   '  gl_FragColor = vec4(outCol, outA);',
   '}',
 ].join('\n');
