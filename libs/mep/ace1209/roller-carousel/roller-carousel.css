@@ -2,7 +2,8 @@
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
   --gnav-offset: 72px;
-  --rcc-sticky-top: var(--gnav-offset);
+  --rcc-top-gap: 40px;
+  --rcc-sticky-top: calc(var(--gnav-offset) + var(--rcc-top-gap));
 
   .rcc-scroll-wrapper {
     position: relative;
@@ -267,11 +268,11 @@
 }
 
 body:has(header.has-breadcrumbs) .roller-carousel {
-  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-height-breadcrumbs, 33px));
+  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-height-breadcrumbs, 33px) + var(--rcc-top-gap));
 }
 
 body:has(header.local-nav) .roller-carousel {
-  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px));
+  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px) + var(--rcc-top-gap));
 }
 
 @media (width >= 768px) {
