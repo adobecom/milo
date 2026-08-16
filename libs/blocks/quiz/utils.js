@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { getMetadata } from '../section-metadata/section-metadata.js';
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, isSameOriginManifestPath } from '../../utils/utils.js';
 
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
@@ -18,7 +18,16 @@ const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  return (filepath) => `${stringsPath || getLocalizedURL(quizConfigPath)}${filepath}`;
+  // quiz-data is an untrusted URL param — keep it same-origin; do not widen to
+  // isTrustedUrl (that gate is for the fragment block's authored input). See MWPW-204595.
+  const safeStringsPath = isSameOriginManifestPath(stringsPath) ? stringsPath : null;
+  if (stringsPath && !safeStringsPath) {
+    window.lana?.log(`Quiz ignoring untrusted quiz-data path: ${stringsPath}`, {
+      tags: 'quiz',
+      severity: 'error',
+    });
+  }
+  return (filepath) => `${safeStringsPath || getLocalizedURL(quizConfigPath)}${filepath}`;
 };
 
 async function fetchContentOfFile(path) {
