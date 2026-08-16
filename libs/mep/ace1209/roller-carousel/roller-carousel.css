@@ -302,9 +302,13 @@ body:has(header.local-nav) .roller-carousel {
 }
 
 @media (width >= 1280px) {
-  .roller-carousel {
+  .roller-carousel,
+  body:has(header.has-breadcrumbs) .roller-carousel,
+  body:has(header.local-nav) .roller-carousel {
     --rcc-sticky-top: 0px;
+  }
 
+  .roller-carousel {
     .rcc-content {
       flex-direction: row;
       align-items: stretch;

@@ -301,9 +301,13 @@ body:has(header.local-nav) .roller-carousel-copy {
 }
 
 @media (width >= 1280px) {
-  .roller-carousel-copy {
+  .roller-carousel-copy,
+  body:has(header.has-breadcrumbs) .roller-carousel-copy,
+  body:has(header.local-nav) .roller-carousel-copy {
     --rcc-sticky-top: 0px;
+  }
 
+  .roller-carousel-copy {
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
