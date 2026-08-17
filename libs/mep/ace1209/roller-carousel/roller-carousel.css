@@ -275,40 +275,6 @@ body:has(header.local-nav) .roller-carousel {
   --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px));
 }
 
-@keyframes rcc-header-fade {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(calc(-1 * var(--rcc-category-translate, 0px))); }
-}
-
-@keyframes rcc-category-rise {
-  from { transform: translateY(0); }
-  to { transform: translateY(calc(-1 * var(--rcc-category-translate, 0px))); }
-}
-
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) and (width < 768px) {
-    .roller-carousel.rcc-scroll-ready:not(.rcc-reflow) {
-      .rcc-header {
-        will-change: opacity;
-        animation: rcc-header-fade linear both;
-        animation-timeline: scroll(root block);
-        animation-range:
-          var(--rcc-scroll-start, 0px)
-          calc(var(--rcc-scroll-start, 0px) + 200px);
-      }
-
-      .rcc-category-wrapper {
-        will-change: transform;
-        animation: rcc-category-rise linear both;
-        animation-timeline: scroll(root block);
-        animation-range:
-          var(--rcc-scroll-start, 0px)
-          calc(var(--rcc-scroll-start, 0px) + 200px);
-      }
-    }
-  }
-}
-
 @media (width >= 768px) {
   .roller-carousel {
     .rcc-item {
