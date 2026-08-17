@@ -453,6 +453,21 @@ describe('preflight diff-onpage', () => {
       clearHighlights(root);
       expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
     });
+
+    it('flips the label copy to "not highlighted" when hidden and back when shown', () => {
+      highlightOnPage(diff, root);
+      const label = document.querySelector('.preflight-diff-highlight-control .preflight-diff-control-label');
+      expect(label).to.exist;
+      expect(label.textContent).to.equal('Unpublished changes highlighted');
+      expect(label.getAttribute('aria-live')).to.equal('polite');
+
+      const toggle = document.querySelector('.preflight-diff-control-hide');
+      toggle.click();
+      expect(label.textContent).to.equal('Unpublished changes not highlighted');
+
+      toggle.click();
+      expect(label.textContent).to.equal('Unpublished changes highlighted');
+    });
   });
 
   describe('autoHighlightOnPage (preview-load auto-apply, FA #1)', () => {

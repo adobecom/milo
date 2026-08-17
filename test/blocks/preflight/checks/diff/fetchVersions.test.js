@@ -11,6 +11,12 @@ describe('preflight fetchVersions', () => {
     expect(live.pathname).to.equal('/a/b');
   });
 
+  it('deriveLiveUrl points localhost at real milo main live (aem up dev)', () => {
+    const live = deriveLiveUrl(new URL('http://localhost:6456/drafts/x/diff-test'));
+    expect(live.hostname).to.equal('main--milo--adobecom.aem.live');
+    expect(live.pathname).to.equal('/drafts/x/diff-test');
+  });
+
   it('returns skipped=true when preview is not newer than live', async () => {
     sinon.stub(window, 'fetch').callsFake((u) => {
       if (String(u).includes('admin.hlx.page')) {

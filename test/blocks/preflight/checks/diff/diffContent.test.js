@@ -101,6 +101,51 @@ describe('preflight diffContent', () => {
       expect(r.added).to.have.length(0);
       expect(r.removed).to.have.length(0);
     });
+
+    const ostMarquee = (offer) => '<div><div class="marquee">'
+      + '<div><p>Create anything you can imagine with our creative tools</p>'
+      + `<p><a href="https://commerce.adobe.com/store?items=${offer}">`
+      + `https://commerce.adobe.com/store?items=${offer}</a></p></div></div></div>`;
+
+    it('classifies a moved-but-edited block as modified, not new, when an edit above shifts its path', () => {
+      // Danni's finding: a marquee whose only change is an OST value shows as "new" because
+      // another unpublished edit above it shifted its sibling-index path.
+      const intro = '<div><div class="text"><div><p>Intro copy that stays the same across versions</p></div></div></div>';
+      const newBlock = '<div><div class="columns"><div><p>A brand new columns block added above</p></div></div></div>';
+      const live = root(`${intro}${ostMarquee('OFFER_A')}`);
+      const preview = root(`${intro}${newBlock}${ostMarquee('OFFER_B')}`);
+      const r = diffContent(preview, live);
+      const marq = (list) => list.filter((c) => c.kind === 'block' && c.blockName === 'marquee');
+      expect(marq(r.modified)).to.have.length(1);
+      expect(marq(r.added)).to.have.length(0);
+      expect(marq(r.removed)).to.have.length(0);
+      // the genuinely new block above is still reported as added
+      expect(r.added.some((c) => c.blockName === 'columns')).to.equal(true);
+    });
+
+    it('keeps a removed block and an unrelated same-name added block separate (no false merge)', () => {
+      const live = root('<div><div class="columns"><p>the old promotional banner text</p></div></div>');
+      const preview = root('<div><div class="columns"><p>meet our brand new leadership team</p></div></div>');
+      const r = diffContent(preview, live);
+      expect(r.modified).to.have.length(0);
+      expect(r.removed.filter((c) => c.blockName === 'columns')).to.have.length(1);
+      expect(r.added.filter((c) => c.blockName === 'columns')).to.have.length(1);
+    });
+
+    it('pairs a modified block with its most-similar counterpart when two same-name blocks both qualify', () => {
+      // Two preview "columns" both share tokens with the removed one; best-match (not first-match)
+      // must attach "modified" to the closest counterpart and leave the other as "added".
+      const live = root('<div><div class="columns"><p>alpha beta gamma delta epsilon</p></div></div>');
+      const preview = root(
+        '<div><div class="columns"><p>alpha beta gamma delta zeta</p></div></div>'
+        + '<div><div class="columns"><p>alpha beta gamma delta epsilon omega</p></div></div>',
+      );
+      const r = diffContent(preview, live);
+      expect(r.modified.filter((c) => c.blockName === 'columns')).to.have.length(1);
+      expect(r.added.filter((c) => c.blockName === 'columns')).to.have.length(1);
+      expect(r.removed).to.have.length(0);
+      expect(r.modified.find((c) => c.blockName === 'columns').previewText).to.contain('omega');
+    });
   });
 
   describe('similarity gate for same-slot leaf pairs', () => {

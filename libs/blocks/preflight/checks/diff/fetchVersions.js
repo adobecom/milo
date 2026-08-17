@@ -1,7 +1,14 @@
 import { getPageStatus } from '../adminStatus.js';
 
+function isLocalHost(hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
 export function deriveLiveUrl(url) {
   const live = new URL(url.href);
+  if (isLocalHost(live.hostname)) {
+    return new URL(`https://main--milo--adobecom.aem.live${live.pathname}`);
+  }
   live.hostname = live.hostname.replace('hlx.page', 'hlx.live').replace('aem.page', 'aem.live');
   return live;
 }
@@ -27,7 +34,8 @@ export default async function fetchVersions(previewUrl) {
 
   const pMod = status?.preview?.lastModified ? Date.parse(status.preview.lastModified) : NaN;
   const lMod = status?.live?.lastModified ? Date.parse(status.live.lastModified) : NaN;
-  if (!Number.isNaN(pMod) && !Number.isNaN(lMod) && pMod <= lMod) {
+  if (!isLocalHost(previewUrl.hostname)
+    && !Number.isNaN(pMod) && !Number.isNaN(lMod) && pMod <= lMod) {
     return { preview: null, live: null, liveStatus: 'ok', status, skipped: true };
   }
 

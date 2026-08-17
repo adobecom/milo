@@ -120,8 +120,18 @@ function lcsPairs(live, preview) {
 }
 
 function isModifiedPair(removedUnit, addedUnit) {
-  if (removedUnit.tag !== addedUnit.tag || removedUnit.path !== addedUnit.path) return false;
-  if (removedUnit.kind === 'block') return removedUnit.blockName === addedUnit.blockName;
+  if (removedUnit.tag !== addedUnit.tag) return false;
+  if (removedUnit.kind === 'block') {
+    // Blocks are coarse and identified by name; their sibling-index path is fragile — any
+    // add/remove/reorder above shifts it. Match on name + content similarity so a genuinely
+    // edited block that moved is still "changed", not new+removed. Leaves keep exact-path
+    // anchoring below: they are high-cardinality/low-distinctiveness, where path is the only
+    // reliable discriminator.
+    return removedUnit.blockName !== ''
+      && removedUnit.blockName === addedUnit.blockName
+      && isSimilarEnough(removedUnit, addedUnit);
+  }
+  if (removedUnit.path !== addedUnit.path) return false;
   return isSimilarEnough(removedUnit, addedUnit);
 }
 
@@ -145,7 +155,13 @@ export default function diffContent(previewRoot, liveRoot) {
   const removed = [];
   const usedAdded = new Set();
   removedCand.forEach((r) => {
-    const mIdx = addedCand.findIndex((a, idx) => !usedAdded.has(idx) && isModifiedPair(r, a));
+    let mIdx = -1;
+    let bestScore = -1;
+    addedCand.forEach((a, idx) => {
+      if (usedAdded.has(idx) || !isModifiedPair(r, a)) return;
+      const score = textSimilarity(r.text, a.text);
+      if (score > bestScore) { bestScore = score; mIdx = idx; }
+    });
     if (mIdx >= 0) {
       usedAdded.add(mIdx);
       const a = addedCand[mIdx];

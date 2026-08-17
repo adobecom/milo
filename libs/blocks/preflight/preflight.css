@@ -1385,8 +1385,7 @@ img:hover ~ .asset-meta,
 
 .preflight-diff-highlight-control {
   position: fixed;
-  inset-inline-start: var(--s2a-spacing-16);
-  inset-block-end: var(--s2a-spacing-16);
+  inset: auto auto calc(var(--s2a-spacing-64) + var(--s2a-spacing-16)) var(--s2a-spacing-32);
   z-index: 1000;
   display: flex;
   align-items: center;
