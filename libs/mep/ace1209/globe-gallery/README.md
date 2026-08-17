@@ -104,7 +104,7 @@ Who writes what:
 | | fields |
 | --- | --- |
 | `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
-| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, `entryStart` (the entry ramp's scroll origin — published so `updateCanvasVisibility` gates the reveal on the *same* threshold rather than re-deriving it), and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
+| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
 **Grouped closure state.** Related mutable state lives in small plain objects rather than loose
@@ -546,74 +546,62 @@ Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation),
 
 ### One viewport height
 
-`H` is **not** `window.innerHeight`. It is 100vh in px as CSS resolved it, measured off the runway's
-own laid-out height (`blockHeight / --gg-runway-height × 100`, `measureViewportH()`), and it is the
-only viewport height in the block — scroll clocks and rendering both use it. `window.innerHeight`
-survives in one place, as that function's fallback.
+`H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
+`.globe-gallery-world`'s `offsetHeight`: that box is `height: 100vh` and it is the canvas' own parent,
+so `measureViewportH()` is a direct read of 100vh in px, straight from CSS. Scroll clocks and rendering
+both use it, and it is the only viewport height here.
 
 **Why not the window.** On iOS the URL bar resizes the *layout* viewport: `innerHeight` shrinks and
 grows mid-scroll — every change of scroll direction collapses or restores it — while `vh` resolves
-against the large viewport and never moves. Two separate failures came out of that, and one number
+against the large viewport and never moves (measured on-device: `100vh` and `worldH` held at 1005 while
+`innerHeight` went 1005 → 952). Two separate failures came out of reading the window, and one number
 fixes both:
 
 | what read `innerHeight` | what the bar did to it |
 | --- | --- |
 | `formPx` + the entry ramps (scroll → `progress`) | `blockHeight` is `vh`-based and `formPx` was not, so they disagreed by the bar × 3.04 (~150–250px of scroll). Each collapse *rewound* `progress`: the barrel visibly re-played. Where in the timeline it landed depended on when that browser moves the bar (Safari mid-run, Chrome iOS right at the start — same cause). |
-| `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter. |
+| `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter, because iOS delivers it all in one `resize` at settle. |
 
-With `H` CSS-derived, a URL-bar resize is a **complete no-op**: `doLayout` re-measures, computes the
-same `H`, and takes its unchanged-`W`/`H` exit. `gg-viewport-hud.js` (harness dir) is the on-device
-check — it overlays `innerHeight` / a live `100vh` probe / `blockHeight` / the drawing buffer / a
-`canvas.width` write counter per resize event, which is how you tell one of ours from a browser-level
-layout pass. Verified (`urlbar-scroll-test.cjs`, `innerHeight`
-shadowed 90px smaller at a fixed `scrollY`): camera z identical in both the formation and tail phases,
-`arcOp` identical, and **zero** writes to `canvas.width`/`height`.
+A URL-bar move is now a **complete no-op**: `doLayout` re-reads the same `H` and takes its
+unchanged-`W`/`H` exit. Verified in the harness (`innerHeight` shadowed 90px smaller at a fixed
+`scrollY`): camera z identical in the formation *and* tail phases, `arcOp` identical, zero writes to
+`canvas.width`/`height`. Confirmed on-device with `gg-viewport-hud.js` (harness dir), which overlays
+`innerHeight` / a live `100vh` probe / `worldH` / the drawing buffer / a `canvas.width` write counter
+per resize event — the settle-time row reads `cvBox` and `buf` unchanged with `writes` flat.
 
 **The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
-its bottom ~90px sits behind the bar and the globe reads slightly larger than the visible area. That
-matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`, the quote rail is
-`top: 50vh`), so the WebGL layer and the DOM chrome now agree instead of being mis-registered by the
-bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
+its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area.
+That matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`, the quote rail
+is `top: 50vh`), so the WebGL layer and the DOM chrome now agree instead of being mis-registered by
+the bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
 artifact being removed. The modal's chrome stays on `100dvh` (its buttons must stay reachable); only
 its photo canvas rides `H`, and the scroll lock means the bar can't move while it's open.
 
 **Consequences worth knowing:**
-- **`doLayout` measures before it decides.** `measureBlock()` + `readCssVars()` run *above* the
-  unchanged-`W`/`H` exit, because `H` derives from them — that exit cannot fire correctly otherwise.
-  They are a `getBoundingClientRect` and a `getComputedStyle`, i.e. what the body `ResizeObserver`
-  already paid on every fire.
-- **The exit carries 1px of tolerance**, and `H` is rounded. `H` is `offsetHeight ÷ 520 × 100`, so a
-  single pixel of subpixel layout wobble in a ~4400px runway moves it by ~0.2px — enough to fail an
-  exact compare and buy a full relayout (buffer realloc + `computeGridLayout`) for nothing, which is
-  precisely the shape of a one-off blink. Verified: +2px and +4px on the runway leave the drawing
-  buffer untouched; +60px resizes it.
-- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. `H` is `0`-safe
-  but not `0`-correct while the section is hidden (`display: none` → `blockHeight` 0 → the
-  `innerHeight` fallback), and the un-hide arrives as a body resize with no window resize behind it.
-  Routing it through `doLayout` is what upgrades `H` at that moment; the exit keeps it as cheap as the
-  bare measure it replaced. Verified with `innerHeight` shadowed *before* init (`HIDDEN=1`): buffer
-  starts at the fallback height and lands on 100vh after the un-hide.
-- **`--gg-runway-height` and `--gg-formation-vh` must both stay in `vh`** — `measureViewportH()` is a
-  ratio between one of them and the px height it produced. `readCssVars()` checks the unit
-  (`cssVhCount`) rather than trusting `parseFloat`, because `520px` or `520dvh` parses to the same
-  plausible `520` and would skew the ratio silently; a unit mismatch reads as unresolved, so the basis
-  degrades to `innerHeight` instead of going quietly wrong.
+- **`1` while the section is hidden.** `display: none` → `offsetHeight` 0, clamped to 1 so nothing
+  divides by zero. Everything sized from `H` is recomputed at the un-hide, and the `IntersectionObserver`
+  keeps the ticker parked until then, so no frame is ever drawn at that size.
+- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand — that un-hide
+  arrives as a body resize with *no window resize behind it*, so it is the only thing that upgrades `H`
+  at that moment. `measureBlock()` + `readCssVars()` sit above the exit so this stays exactly as cheap
+  as the bare measure it replaced. Verified (`HIDDEN=1`): the buffer starts at the clamp and lands on
+  100vh × DPR after the un-hide.
+- **Reduced motion reads 108vh**, because `.globe-gallery-reduced` re-declares `.globe-gallery-world`
+  as `height: 108vh` (its `100vh` canvas sits at `top: 8vh`). So RM renders ~8% large. Accepted rather
+  than branched on: a `reducedMotion` special case in the one function every clock depends on costs
+  more than the imprecision, and RM has no scroll animation for it to disturb. The fix, if it ever
+  matters, is CSS — give that element back its `100vh` and put the 8vh offset somewhere else.
 - A genuine viewport change still lands: 844→600px tall moves `blockHeight` 4389→3120 and the same
   *fraction* of the runway holds the same phase (camera z within 0.02).
 
-**Why not a viewport unit instead?** The mismatch is between a CSS length and a JS number, so no unit
-removes it — JS still has to learn how many px that unit produced:
-- **`lvh`** is what `vh` already means here (spec: `vh` = large viewport), so `520lvh` would be pure
-  documentation; `svh` is constant too. Neither changes the arithmetic.
-- **`dvh`** *would* make CSS agree with `innerHeight` — by making the runway itself grow and shrink
-  mid-scroll (~470px at a 90px bar, over 5.2 units). The divisor moves instead of the dividend: the
-  same rewind, plus a re-scaling runway, moving sticky pin heights, and layout on every frame of the
-  bar animation. Verified with the unit guard in place (`BADUNIT=520dvh`): the value is refused, the
-  basis falls back to `innerHeight`, and the −9.7 camera jump comes straight back.
-- **A hidden probe element** (`height: var(--gg-formation-vh)`, read `offsetHeight`) is the one
-  strictly-less-coupled option: no ratio, no second prop read, no unit assumption. It costs a DOM node
-  per instance whose only job is to be measured. Worth the swap only if a third `vh`-derived length
-  shows up.
+**Why not a viewport unit instead?** No unit choice removes the problem, because the gap is between a
+CSS length and a JS number — JS still has to learn how many px that unit produced:
+- **`lvh`** is what `vh` already means here (spec: `vh` = large viewport), so `100lvh` would be pure
+  documentation; `svh` is constant too. Neither changes anything.
+- **`dvh`** *would* make CSS agree with `innerHeight` — by making the box grow and shrink mid-scroll.
+  Put it on `.globe-gallery-world` and `H` tracks the bar again, pop included; put it on
+  `--gg-runway-height` and the runway rescales under the scroll mapping instead. Either way the
+  artifact returns by a different route. Don't.
 - **Scroll-driven animations** would hand the whole mapping to CSS, but reading progress back per
   frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
   wouldn't help the render side at all.
@@ -634,14 +622,14 @@ properties exist. Two rules make an unresolved read harmless rather than somethi
 substitute value:
 
 - `readCssVars()` **leaves the previous value in place** when a property doesn't resolve, instead of
-  writing a fallback. So `formationVh` / `runwayVh` / `pqAppearZoomT` keep their declared initializers
-  (`0` / `0` / `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
+  writing a fallback. So `formationVh` / `pqAppearZoomT` keep their declared initializers
+  (`0` / `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
   unresolved read would otherwise poison `progress` and silently kill the animation. Its `cssNum`
   helper tests `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
 - **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
   formPx)`, `Math.max(1, blockHeight - formPx)`) and clamped, so a pre-stylesheet frame renders at
   `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn
-  this into a crash. `measureViewportH()` tests `runwayVh > 0` for the same reason: its own divisor.
+  this into a crash. `measureViewportH()` clamps to `1` for the same reason: it is a divisor too.
 
 `layoutObs` → `doLayout()`, whose first act is `measureBlock()` + `readCssVars()`, is what guarantees
 the real values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
@@ -653,9 +641,9 @@ means nothing beyond those two reads runs on a fire that changes neither.
 
 `measureBlock()` (`doLayout`, so also `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
 is plain `offsetHeight`, itself CSS-driven, and needs no fallback either, since `offsetHeight` is `0`
-(never `NaN`) while the section is hidden. `--gg-runway-height` is read only as the *unit count*
-`measureViewportH()` divides that height by (`520` → px per 100vh) — never as a length, so the runway's
-size still comes from one place.
+(never `NaN`) while the section is hidden. `--gg-runway-height` is never read from JS at all — `H` comes
+off `.globe-gallery-world` instead (see **One viewport height**), so the runway's size lives in exactly
+one place.
 
 So **no JS file anywhere holds a copy of these three numbers** — not even for docs. The event table's
 `vh` column needs the runway lengths, but Milo ships `timeline.js` unbundled and byte-for-byte, so a
@@ -1067,16 +1055,24 @@ the cheap path (renderer/camera resize). The `resize` handler is the sole driver
 boundary — no `matchMedia` listener for 768px. The one `matchMedia` `change` listener is for
 reduced motion (see Reduced motion); pointer precision is read at init only (see Shape).
 
-**`doLayout` cost control.** `resize` fires ~once per frame during a desktop window drag, and once
-mid-scroll whenever iOS Safari collapses the URL bar (changing `innerHeight`) — the latter landing
-inside the formation animation. (It can no longer move the scroll clocks: those read `vh` off the
-block, not the window — see **Scroll model**. This is about the render cost only.) So the handler is
-split three ways:
-- Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. Only the
-  `resize` path takes this exit (`doLayout({ fromResize: true })`); the init call and the
+**`doLayout` cost control.** `resize` fires ~once per frame during a desktop window drag. On iOS it
+does **not** fire during the URL-bar animation: `visualViewport` resizes many times as the bar moves
+(and `innerHeight` reports the new value throughout), then `window.resize` fires **once, at settle** —
+so every resize-driven cost lands in a single event, at the one moment the eye is already tracking the
+bar. Measured on-device with `gg-viewport-hud.js`; nothing here listens to `visualViewport`, so the
+animation itself costs zero. So the handler is split four ways:
+- Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. `H` is an
+  `offsetHeight`, so that compare is exact integers. This
+  is the exit an iOS bar move takes, since `H` doesn't depend on `innerHeight` — see **One viewport
+  height**. Only the `resize` path takes it (`doLayout({ fromResize: true })`); the init call and the
   reduced-motion `change` listener run with the viewport unchanged and must still execute the body.
   Both listeners are wrapped rather than passed `doLayout` directly, or the event argument would land
   in its options object.
+- **DPR is re-applied only when it actually changed** (`appliedDpr`, and `appliedModalDpr` in
+  `modal.js`). `setPixelRatio` calls `setSize(_width, _height, false)` internally, so an unconditional
+  call reallocates the drawing buffer at the *old* dimensions immediately before our `setSize`
+  reallocates at the new ones — two full reallocations per resize, per canvas. Measured with a
+  `canvas.width`/`height` write counter: 4 writes → 2 on a genuine resize.
 - Renderer/camera/`computeGridLayout()` stay **synchronous** — a stale `W`/`H` renders the canvas
   stretched and mis-sizes the arc grid against the viewport it's laid out in.
 - `buildTextMesh()` is **trailing-debounced** (`TEXT_REBUILD_DEBOUNCE_MS`), but only while

@@ -341,12 +341,10 @@ function createGlobeGalleryRuntime(
   // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see readCssVars)
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
-  let runwayVh = 0; // from --gg-runway-height (see readCssVars)
-  // H is the CSS viewport height (measureViewportH), NOT innerHeight — it ignores the iOS URL bar.
-  // See README (One viewport height).
   let W = 0;
   let H = 0;
 
+  const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
   let pqShown = false;
 
@@ -858,24 +856,13 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
-    // `vh` counts only: another unit parses fine and skews measureViewportH's ratio. See README.
-    const cssVhCount = (prop) => (/^[\d.]+vh$/i.test(rootStyle.getPropertyValue(prop).trim())
-      ? cssNum(prop)
-      : null);
     const pinFactor = cssNum('--gg-pq-pin-factor');
     if (pinFactor !== null) pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
-    const vh = cssVhCount('--gg-formation-vh');
+    const vh = cssNum('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
-    const runway = cssVhCount('--gg-runway-height');
-    if (runway !== null) runwayVh = runway;
   }
 
-  // 100vh in px as CSS resolved it, off the runway's own height. The one viewport height the block
-  // uses, for scroll AND render. See README (One viewport height).
-  function measureViewportH() {
-    if (!reducedMotion && runwayVh > 0 && blockHeight > 0) return (blockHeight / runwayVh) * 100;
-    return window.innerHeight;
-  }
+  const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
   function formedScrollPx() {
@@ -1147,7 +1134,7 @@ function createGlobeGalleryRuntime(
 
   // Canvas visibility — instantly shown once the section approaches (arc motion is the reveal).
   function updateCanvasVisibility(frame) {
-    const { lenisY, zoomT, entryStart } = frame;
+    const { lenisY, zoomT } = frame;
     const canvas = renderer.domElement;
     // Reduced motion: canvas is in normal flow (scrolls away, clips naturally) — just reveal once.
     if (reducedMotion) {
@@ -1155,7 +1142,8 @@ function createGlobeGalleryRuntime(
       canvas.style.opacity = '1';
       return;
     }
-    if (lenisY < entryStart || zoomT >= TL.CANVAS_HIDE_ZOOM_T) {
+    const showTrigger = blockDocTop - H * TL.ENTRY_LEAD_VH; // matches entryStart in computeFrame
+    if (lenisY < showTrigger || zoomT >= TL.CANVAS_HIDE_ZOOM_T) {
       canvas.style.display = 'none';
     } else {
       canvas.style.display = 'block';
@@ -1723,7 +1711,7 @@ function createGlobeGalleryRuntime(
   // Reduced-motion media query + listener (a mid-session OS toggle rebuilds; see doLayout).
   let reducedMotionMQ = null;
   let reducedMotionHandler = null;
-  let appliedDpr = 0; // last DPR pushed to the renderer — see doLayout
+  let appliedDpr = 0;
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
   let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility
   let textureLoadGeneration = 0;
@@ -1744,10 +1732,8 @@ function createGlobeGalleryRuntime(
       canvas.style.top = '';
     }
 
-    measureBlock();
-    readCssVars();
     W = window.innerWidth;
-    H = Math.round(measureViewportH());
+    H = measureViewportH();
 
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
@@ -1782,15 +1768,11 @@ function createGlobeGalleryRuntime(
 
     // Only the resize path passes fromResize — see README (doLayout cost control).
     function doLayout({ fromResize = false } = {}) {
-      // Metrics first: H derives from them, and an unchanged H is what makes the exit below fire on
-      // an iOS URL-bar resize. See README (One viewport height).
       measureBlock();
       readCssVars();
       const nextW = window.innerWidth;
-      const nextH = Math.round(measureViewportH());
-      // 1px of tolerance: H comes off `offsetHeight`, and a subpixel layout wobble at the end of an
-      // iOS URL-bar move would otherwise buy a full relayout. See README (One viewport height).
-      if (fromResize && nextW === W && Math.abs(nextH - H) <= 1) return;
+      const nextH = measureViewportH();
+      if (fromResize && nextW === W && nextH === H) return;
       W = nextW;
       H = nextH;
 
@@ -1804,8 +1786,6 @@ function createGlobeGalleryRuntime(
         if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
-      // DPR only on a real change (monitor swap): setPixelRatio re-runs setSize internally, so an
-      // unconditional call reallocates the buffer twice per resize.
       const dpr = Math.min(window.devicePixelRatio, 2);
       if (dpr !== appliedDpr) {
         appliedDpr = dpr;
@@ -1852,8 +1832,6 @@ function createGlobeGalleryRuntime(
 
     // Page height changes shift offsetTop; blockHeight=0 at first paint → progress=Infinity.
     if (layoutObs) layoutObs.disconnect();
-    // doLayout re-measures first and exits on an unchanged W/H, so this costs what the bare measure
-    // it replaces cost — but it also refreshes H once the section un-hides. See README.
     layoutObs = new ResizeObserver(() => doLayout({ fromResize: true }));
     layoutObs.observe(document.body);
 

@@ -96,7 +96,6 @@ export function createFrame() {
     scrollVel: 0,
     dtScale: 1,
     progress: 0,
-    entryStart: 0, // entry-ramp origin, in scroll px
     arcCopyEntryT: 0,
     arcPanT: 0,
     gridFormT: 0,
@@ -123,7 +122,7 @@ export function createFrameInput() {
     blockDocTop: 0,
     blockHeight: 0,
     formPx: 0,
-    viewportH: 0, // the core's H (CSS viewport height), NOT innerHeight
+    viewportH: 0,
     arcScale: 1,
   };
 }
@@ -146,7 +145,6 @@ export function deriveFrame(frame, input) {
   frame.scrollVel = rawScrollVel < SCROLL_VEL_DEADBAND ? 0 : rawScrollVel;
 
   const entryStart = blockDocTop - viewportH * ENTRY_LEAD_VH;
-  frame.entryStart = entryStart;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);
   const arcCopyEntryT = clamp01((lenisY - entryStart) / entryRange);
   frame.arcCopyEntryT = arcCopyEntryT;

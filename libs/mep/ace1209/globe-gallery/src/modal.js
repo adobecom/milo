@@ -62,7 +62,7 @@ export default function createGlobeModal({
   restoreFocusOnClose,
 }) {
   let modalRenderer = null;
-  let appliedModalDpr = 0; // last DPR pushed to the modal renderer — see resize()
+  let appliedModalDpr = 0;
   let modalScene = null;
   let modalCanvasEl = null;
   let modalEl = null;
@@ -880,7 +880,6 @@ export default function createGlobeModal({
   // Re-size the modal renderer to match the viewport (called from core doLayout).
   function resize(w, h) {
     if (!modalRenderer) return;
-    // DPR only on a real change — setPixelRatio re-runs setSize, doubling the buffer realloc.
     const dpr = Math.min(window.devicePixelRatio, 2);
     if (dpr !== appliedModalDpr) {
       appliedModalDpr = dpr;
