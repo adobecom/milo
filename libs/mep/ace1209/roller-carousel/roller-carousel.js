@@ -2,7 +2,6 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200;
-const S_BREAKPOINT = 768;
 const M_BREAKPOINT = 1024;
 const L_BREAKPOINT = 1280;
 const MIN_ROLLER_ROOM = 120;
@@ -205,7 +204,6 @@ function createActivate({ items, mediaSlides, bgSlides, categoryLabel, apps }) {
 
 function createUpdatePosition({
   block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,
-  header, categoryWrapper, categoryRef,
 }) {
   return () => {
     const w = window.innerWidth;
@@ -251,17 +249,6 @@ function createUpdatePosition({
 
     list.style.transform = `translateY(${lineY - offset * itemH}px)`;
     activate(Math.min(Math.floor(progress), apps.length - 1));
-
-    if (w < S_BREAKPOINT && !block.classList.contains('rcc-reflow')) {
-      const t = Math.min(1, progress);
-      header.style.opacity = 1 - t;
-      header.style.transform = `translateY(${-t * categoryRef.maxTranslate}px)`;
-      categoryWrapper.style.transform = `translateY(${-t * categoryRef.maxTranslate}px)`;
-    } else {
-      header.style.opacity = '';
-      header.style.transform = '';
-      categoryWrapper.style.transform = '';
-    }
   };
 }
 
@@ -281,6 +268,11 @@ function createReflow({
   };
   return () => {
     const vh = window.innerHeight;
+    const w = window.innerWidth;
+    if (w < L_BREAKPOINT) {
+      setReflow(true);
+      return;
+    }
     if (!block.classList.contains('rcc-reflow')) {
       const dividerOffset = divider.getBoundingClientRect().bottom
         - content.getBoundingClientRect().top;
@@ -306,21 +298,8 @@ function initScroll(block, refs, apps) {
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
 
   const activate = createActivate({ items, mediaSlides, bgSlides, categoryLabel, apps });
-
-  const measureMaxTranslate = () => {
-    header.style.transform = '';
-    categoryWrapper.style.transform = '';
-    const delta = categoryWrapper.getBoundingClientRect().top - sticky.getBoundingClientRect().top;
-    const stickyTopVal = parseInt(getComputedStyle(sticky).top, 10) || 0;
-    return Math.max(0, delta + stickyTopVal - 136);
-  };
-  const categoryRef = {
-    maxTranslate: window.innerWidth < S_BREAKPOINT ? measureMaxTranslate() : 0,
-  };
-
   const updatePosition = createUpdatePosition({
     block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,
-    header, categoryWrapper, categoryRef,
   });
   const evaluateReflow = createReflow({
     block, content, divider, left, header, carousel, scrollWrapper,
@@ -331,11 +310,6 @@ function initScroll(block, refs, apps) {
 
   evaluateReflow();
   window.addEventListener('resize', () => {
-    if (window.innerWidth < S_BREAKPOINT) {
-      categoryRef.maxTranslate = measureMaxTranslate();
-    } else {
-      categoryRef.maxTranslate = 0;
-    }
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
