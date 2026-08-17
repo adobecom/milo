@@ -299,9 +299,11 @@ function initScroll(block, refs, apps) {
     categoryWrapper.style.animationName = 'none';
     const delta = categoryWrapper.getBoundingClientRect().top - sticky.getBoundingClientRect().top;
     categoryWrapper.style.animationName = '';
-    block.style.setProperty('--rcc-category-translate', `${Math.max(0, delta - 64)}px`);
+    const stickyTopVal = parseInt(getComputedStyle(sticky).top, 10) || 0;
+    block.style.setProperty('--rcc-category-translate', `${Math.max(0, delta + stickyTopVal - 136)}px`);
   };
   setupCssAnimationVars();
+  block.classList.add('rcc-scroll-ready');
 
   const updatePosition = createUpdatePosition({
     block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,

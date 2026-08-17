@@ -276,8 +276,8 @@ body:has(header.local-nav) .roller-carousel {
 }
 
 @keyframes rcc-header-fade {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(calc(-1 * var(--rcc-category-translate, 0px))); }
 }
 
 @keyframes rcc-category-rise {
@@ -287,7 +287,7 @@ body:has(header.local-nav) .roller-carousel {
 
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) and (width < 768px) {
-    .roller-carousel:not(.rcc-reflow) {
+    .roller-carousel.rcc-scroll-ready:not(.rcc-reflow) {
       .rcc-header {
         will-change: opacity;
         animation: rcc-header-fade linear both;
