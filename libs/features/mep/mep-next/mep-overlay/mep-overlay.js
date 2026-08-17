@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  safeGetItem,
+  safeSetItem,
   toSlug,
   getPageId,
   getManifestList,
@@ -34,20 +36,8 @@ const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
 
-function safeSetItem(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // storage unavailable; setting just won't persist
-  }
-}
-
 function getStoredAlignLeft() {
-  try {
-    return localStorage.getItem(ALIGN_STORAGE_KEY) === 'true';
-  } catch {
-    return false;
-  }
+  return safeGetItem(ALIGN_STORAGE_KEY) === 'true';
 }
 
 function setStoredAlignLeft(alignLeft) {
