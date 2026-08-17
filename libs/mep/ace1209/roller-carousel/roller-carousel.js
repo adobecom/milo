@@ -98,7 +98,6 @@ function parseContent(rows) {
     }
     const name = cols[0]?.textContent?.trim() ?? '';
     const pics = [...row.querySelectorAll('picture')];
-    // SVG icon from feds: bare <img> not wrapped in <picture>; use .src (browser-resolved) for robustness
     const svgIconImg = [...row.querySelectorAll('img')]
       .find((img) => !img.closest('picture') && isSvgUrl(img.src));
     if (svgIconImg) svgIconImg.src = getFederatedUrl(svgIconImg.getAttribute('src'));
