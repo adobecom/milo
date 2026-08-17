@@ -1723,6 +1723,7 @@ function createGlobeGalleryRuntime(
   // Reduced-motion media query + listener (a mid-session OS toggle rebuilds; see doLayout).
   let reducedMotionMQ = null;
   let reducedMotionHandler = null;
+  let appliedDpr = 0; // last DPR pushed to the renderer — see doLayout
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
   let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility
   let textureLoadGeneration = 0;
@@ -1759,7 +1760,8 @@ function createGlobeGalleryRuntime(
       renderer = null;
       return false;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    appliedDpr = Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(appliedDpr);
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     renderer.sortObjects = false; // we manage order via mesh.renderOrder
@@ -1802,8 +1804,13 @@ function createGlobeGalleryRuntime(
         if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
-      // Re-apply DPR (can change when dragging between monitors of different density).
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      // DPR only on a real change (monitor swap): setPixelRatio re-runs setSize internally, so an
+      // unconditional call reallocates the buffer twice per resize.
+      const dpr = Math.min(window.devicePixelRatio, 2);
+      if (dpr !== appliedDpr) {
+        appliedDpr = dpr;
+        renderer.setPixelRatio(dpr);
+      }
       renderer.setSize(W, H);
       modal.resize(W, H);
       camera.aspect = W / H;
