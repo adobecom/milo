@@ -146,6 +146,7 @@
   --s2a-border-radius-0: 0;
   --s2a-border-radius-2: 2px;
   --s2a-border-radius-4: 4px;
+  --s2a-border-radius-6: 6px;
   --s2a-border-radius-8: 8px;
   --s2a-border-radius-12: 12px;
   --s2a-border-radius-16: 16px;
@@ -331,6 +332,7 @@
   --s2a-blur-sm: var(--s2a-blur-16);
   --s2a-blur-md: var(--s2a-blur-32);
   --s2a-blur-lg: var(--s2a-blur-64);
+  --s2a-layout-none: var(--s2a-spacing-0);
   --s2a-layout-sm: var(--s2a-spacing-80);
   --s2a-layout-md: var(--s2a-spacing-96);
   --s2a-layout-lg: var(--s2a-spacing-128);
@@ -376,13 +378,13 @@
   --s2a-section-spacing-5xs: var(--s2a-spacing-xs);
   --s2a-section-spacing-4xs: var(--s2a-spacing-sm);
   --s2a-section-spacing-3xs: var(--s2a-spacing-md);
-  --s2a-section-spacing-2xs: var(--s2a-spacing-md);
-  --s2a-section-spacing-xs: var(--s2a-spacing-md);
+  --s2a-section-spacing-2xs: var(--s2a-spacing-xs);
+  --s2a-section-spacing-xs: var(--s2a-spacing-lg);
   --s2a-section-spacing-sm: var(--s2a-spacing-lg);
-  --s2a-section-spacing-md: var(--s2a-spacing-md);
-  --s2a-section-spacing-lg: var(--s2a-spacing-lg);
-  --s2a-section-spacing-xl: var(--s2a-spacing-xl);
-  --s2a-section-spacing-2xl: var(--s2a-spacing-2xl);
+  --s2a-section-spacing-md: var(--s2a-spacing-lg);
+  --s2a-section-spacing-lg: var(--s2a-spacing-xl);
+  --s2a-section-spacing-xl: var(--s2a-spacing-2xl);
+  --s2a-section-spacing-2xl: var(--s2a-spacing-lg);
   --s2a-section-spacing-3xl: var(--s2a-spacing-2xl);
   --s2a-section-spacing-4xl: var(--s2a-spacing-4xl);
   --s2a-section-spacing-5xl: var(--s2a-layout-sm);
@@ -1552,14 +1554,11 @@ span.hang-opening-quote {
   :root {
     /* tokens.responsive.md */
     --s2a-section-spacing-2xs: var(--s2a-spacing-lg);
-    --s2a-section-spacing-xs: var(--s2a-spacing-lg);
     --s2a-section-spacing-sm: var(--s2a-spacing-xl);
-    --s2a-section-spacing-md: var(--s2a-spacing-2xl);
-    --s2a-section-spacing-lg: var(--s2a-spacing-2xl);
-    --s2a-section-spacing-xl: var(--s2a-spacing-4xl);
-    --s2a-section-spacing-2xl: var(--s2a-spacing-4xl);
-    --s2a-section-spacing-3xl: var(--s2a-layout-sm);
-    --s2a-section-spacing-4xl: var(--s2a-layout-lg);
+    --s2a-section-spacing-xl: var(--s2a-layout-sm);
+    --s2a-section-spacing-2xl: var(--s2a-layout-sm);
+    --s2a-section-spacing-3xl: var(--s2a-spacing-4xl);
+    --s2a-section-spacing-4xl: var(--s2a-layout-sm);
     --s2a-section-spacing-5xl: var(--s2a-layout-xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-9xl);
     --s2a-typography-font-size-heading-1: var(--s2a-font-size-7xl);
@@ -1589,10 +1588,10 @@ span.hang-opening-quote {
     --s2a-section-spacing-sm: var(--s2a-spacing-2xl);
     --s2a-section-spacing-md: var(--s2a-spacing-3xl);
     --s2a-section-spacing-lg: var(--s2a-spacing-4xl);
-    --s2a-section-spacing-xl: var(--s2a-layout-sm);
-    --s2a-section-spacing-2xl: var(--s2a-layout-md);
+    --s2a-section-spacing-xl: var(--s2a-layout-lg);
+    --s2a-section-spacing-2xl: var(--s2a-layout-lg);
     --s2a-section-spacing-3xl: var(--s2a-layout-lg);
-    --s2a-section-spacing-4xl: var(--s2a-layout-xl);
+    --s2a-section-spacing-4xl: var(--s2a-layout-lg);
     --s2a-section-spacing-5xl: var(--s2a-layout-2xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-11xl);
     --s2a-typography-font-size-heading-1: var(--s2a-font-size-10xl);

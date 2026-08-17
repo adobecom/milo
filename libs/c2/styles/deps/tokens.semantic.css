@@ -107,4 +107,5 @@
   --s2a-layout-lg: var(--s2a-spacing-128);
   --s2a-layout-xl: var(--s2a-spacing-160);
   --s2a-layout-2xl: var(--s2a-spacing-240);
+  --s2a-layout-none: var(--s2a-spacing-0);
 }
