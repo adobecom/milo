@@ -575,9 +575,10 @@ doc-only export would ride along in every page's payload; the derivation snippet
 `globe-gallery.css` instead (see **Re-deriving these numbers**). Don't reintroduce one.
 
 sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
-`≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the fixed 583px
-quote eats more of the pin on a phone (~73vh at 800px vs ~54vh at 1080). md's factor is capped ~0.55:
-above it the fade-in would cross md's globe-clear and land the quote over the globe.
+`≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the quote box fills
+much more of a phone screen (its height is copy-driven, ~490–590px: ~70vh at 800px vs ~54vh at 1080),
+leaving less slack around it. md's factor is capped ~0.55: above it the fade-in would cross md's
+globe-clear and land the quote over the globe.
 
 **Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
 --gg-pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
@@ -592,12 +593,18 @@ a fixed runway); to change both together, move `--gg-runway-height`.
   threshold auto-follows). md is capped ~0.55 (globe-clear); sm can go to ~0.67.
 - *"Click & Drag" cursor lingers too long/short:* `CURSOR_ZOOM_RETIRE_T` — keep it ≥ the md
   camera-clear `zoomT` (≈0.42... it currently fires just before, at camz≈−33, accepted) and, on md,
-  `< pqAppearZoomT` so it retires before the quote. `CURSOR_ZOOM_DISMISS_T` fades the label
-  first. (Cursor is desktop-only, so sm's earlier quote doesn't affect it.)
+  `< pqAppearZoomT` so it retires before the quote. One threshold for both stages on this clock —
+  label and disc go together. (Cursor is desktop-only, so sm's earlier quote doesn't affect it.)
+- *Cursor disc survives too many drags after the label goes:* `CURSOR_DRAG_RETIRE_T` (0.30) vs
+  `CURSOR_DRAG_DISMISS_T` (0.12) — both on drag-accrued `textExitProgress`, so the ratio is how many
+  extra drags the disc outlives the label. `updateHintExitProgress` adds ~0.0022/frame held plus
+  `norm * 0.018` and `norm² * 0.010` per frame of motion, so ~0.12 is a flick and ~0.30 is roughly the
+  same drag continued. Keep `CURSOR_DRAG_RETIRE_T > CURSOR_DRAG_DISMISS_T` or the two steps collapse.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
-Current result (from the progress math; hold is viewport-dependent since the quote is a fixed 583px):
-md gap ≈91vh / hold ≈65vh; sm gap ≈69vh / hold ≈68vh.
+Current result (from the progress math): md gap ≈91vh; sm gap ≈69vh. The centred hold is the whole pin —
+`(520 − 304) × factor` = **≈119vh md / ≈140vh sm**, independent of viewport and copy length, because the
+0-tall rail (see **CSS → Pull-quote box**) keeps the box's own height out of the sticky clamp.
 
 Milo's page-level Lenis keeps `window.scrollY` in sync; the driver is a plain `requestAnimationFrame`
 loop (`startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
@@ -770,8 +777,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 376 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
 | 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
 | 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--gg-pq-pin-factor`) | `updatePullQuote` |
-| 386 | 0.580 | `CURSOR_ZOOM_DISMISS_T` | cursor label fades | `cursor.update` |
-| 390 | 0.593 | `CURSOR_ZOOM_RETIRE_T` | cursor disc retires | `cursor.update` |
+| 390 | 0.593 | `CURSOR_ZOOM_RETIRE_T` | cursor label + disc retire together | `cursor.update` |
 | 509 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` (quote alone to the end) | `updateCanvasVisibility` |
 | 520 | 1.000 | runway end | pull-quote pin exits | CSS (`--gg-pq-pin-factor`) |
 
@@ -836,7 +842,7 @@ read in JS):
 
 The set is `PROGRESS_PAN_END`, `PROGRESS_ARC_PREROLL`, `PROGRESS_GRID_ARC_START` / `_END`,
 `PROGRESS_FOLD_DUR`, `PROGRESS_ZOOM_END`, `GRID_PEEL_STAGGER` and `FOLD_PEEL_OVERLAP`, plus the
-gates (`SPHERE_INTERACTIVE_T`, `PQ_APPEAR_LEAD`, `CURSOR_ZOOM_DISMISS_T` / `_RETIRE_T`). Dump the
+gates (`SPHERE_INTERACTIVE_T`, `PQ_APPEAR_LEAD`, `CURSOR_ZOOM_RETIRE_T`). Dump the
 live values instead of trusting a list here:
 
 ```sh
@@ -1008,7 +1014,7 @@ an S2A scale uses the token, not the literal — including positional insets (`b
 `inset-inline-start`) and the `p + p` copy rhythm. Sizes tied to a specific design measurement stay
 literal, because pinning them to a coincidentally-equal token would imply a relationship that isn't
 there: the arc-copy `359px`/`382px` widths, the counter pill (`--gg-counter-w`, which the
-md+ nav offsets read), the scrim (`--gg-scrim-w`), `--gg-pq-height`, the 24/28px badge icons, and the
+md+ nav offsets read), the scrim (`--gg-scrim-w`), the 24/28px badge icons, and the
 48px cursor disc. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
 snapping it to the nearest token is the cheaper fix:
 
@@ -1060,6 +1066,43 @@ there is no JS involved. At sm it pins 8px from the edge and its own `--gg-arc-p
 copy on the inset; at md+ the pill background is gone, so the box is offset back by that padding
 (`calc(var(--gg-content-inset) - var(--gg-arc-pad))`) to put the *copy*, not the box, on the edge.
 
+### Pull-quote box: content-sized, gap-controlled
+
+The quote box has **no height**. It is a column flex container whose only tunable vertical measure is
+`--gg-pq-gap`, the space between the `blockquote` and the name/role `.globe-gallery-pullquote-attribution`;
+everything else (padding + copy) sizes itself.
+
+`--gg-pq-gap` is `--s2a-layout-xl` (160px) at every breakpoint — one declaration, no media query. A
+larger gap runs the box's top edge into the localnav at lg/xl, so re-check that clearance before
+raising it.
+
+**Three nested elements, and the middle one is why.** `.globe-gallery-pullquote-pin` (the sticky
+window) → `.globe-gallery-pullquote-rail` (`position: sticky; top: 50vh; height: 0`) →
+`.globe-gallery-pullquote` (`position: absolute; top: 0; transform: translateY(-50%) …`). The rail
+is a zero-height line stuck to the viewport middle, and the quote hangs centred on it — `-50%` is
+own-height-relative, so no number is needed anywhere.
+
+Do **not** collapse the rail and stick the quote itself. `transform` is paint-only: a
+`top: 50vh; translateY(-50%)` sticky box still *lays out* starting at 50vh, so its layout box hangs
+half its own height below where you see it, and sticky position is clamped to the containing block.
+That box therefore reaches the pin's bottom edge **half a box-height early** and gets dragged upward
+for the rest of the pin (~110px off centre by mid-pin at 1440×900, worse the taller the box). A 0-tall
+rail keeps the clamp height-blind, so the quote holds dead-centre across the whole pin. (A
+`height: 100vh; place-items: center` sticky wrapper also works, but it spends ~100vh of pin to hold a
+~600px box — same fix, shorter hold.)
+
+Consequences worth knowing before retuning:
+
+- **Both `transform` values must carry the `translateY(-50%)`.** Dropping it from `.is-active` would
+  make the quote jump half its height as it fades in. The reduced-motion variant deliberately resets
+  `transform: none` — it is `position: relative` and flows, so it must *not* be shifted (and its rail
+  goes `position: static; height: auto` alongside the pin).
+- **The centred hold is the whole pin**, independent of viewport and copy length, and the quote holds
+  to the runway end and then scrolls away with the block — there is no upward drift-out. Nothing in JS
+  reads the box height, so a copy change is CSS-only, but re-eyeball pacing. See **Scroll model**.
+- No `overflow` handling: a pathologically long quote spills past the viewport rather than scrolling.
+  Adding a scroller here would need `data-lenis-prevent`.
+
 ### Crosshair frame
 
 `--gg-copy-pad` steps **24px → 48px (≥768) → 64px (≥1440)**, and the pull-quote draws a hairline
@@ -1082,7 +1125,9 @@ and borders its block edges, `::after` insets inline and borders its inline edge
 the full box instead of stopping at the corners, so the runs **cross** and read as a crosshair
 rather than a closed rectangle. They are `position: absolute`, which both keeps them out of the
 flex flow (an abspos child of a flex container is not a flex item) and lets them inherit the
-parent's fade and `scale(.9)→1`, so the frame animates in with the quote.
+parent's fade and `translateY(-50%) scale(.9)→1`, so the frame animates in with the quote. The frame
+tracks the content-sized box: `::after` spans `inset-block: 0` (the full height) and `::before` sits
+on the padding edges, so both follow a copy or `--gg-pq-gap` change with no second number to update.
 
 Two constraints worth not re-deriving:
 
@@ -1234,28 +1279,58 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   constant. Sized to fill the frustum at its live camera
   distance (`textPlaneSize` × a per-frame scale off `frame.foldSphDist`), with warp-proportional
   overflow so letterforms bleed off-screen. On **first drag** it dissolves away permanently:
-  `textExitProgress` (0→1, from drag distance + hold time + velocity) drives the shader's `uExitP`;
-  it resets only on scroll-out (`sphereFormT < SPHERE_INTERACTIVE_T`). Owned by its own tick stage
-  (`updateHintExitProgress`, not `updateClickDragText`, which early-returns before the interactive
-  range — the very scroll-out that must reset it — and the cursor reads it too). Shows on all
-  devices. Built async in `buildTextMesh` (waits for `document.fonts.ready` → Adobe Clean), rebuilt
-  on resize, static-and-faint under RM. Copy is hardcoded (see Localization).
+  `textExitProgress` (0→1, from drag distance + hold time + velocity) drives the shader's `uExitP`.
+  Owned by its own tick stage (`updateHintExitProgress`, not `updateClickDragText`, which
+  early-returns below `TEXT_APPEAR_START` and so can't own the re-arm; the cursor reads it too).
+  Built async in `buildTextMesh` (waits for `document.fonts.ready` → Adobe Clean), rebuilt on resize,
+  static-and-faint under RM. Copy is hardcoded (see Localization).
+
+  **`textExitProgress` is a one-way latch.** It only ever climbs, and nothing re-arms it: once a drag
+  has retired the hint it stays retired for the life of the runtime. This matches what both consumers
+  always claimed — "dissolves away permanently" here, "one-way label dismissal" in `cursor.js` — and
+  it is the reason the stage needs no thresholds beyond the interactive gate.
+
+  It used to reset whenever `sphereFormT` fell below `SPHERE_INTERACTIVE_T`, which broke twice over
+  once that gate moved 0.8 → 0.9. The gate is only ~275px of scroll-back on a 982px viewport
+  (~28vh), so a quarter-viewport nudge brought a dismissed hint straight back. And the plane's
+  opacity and warp are pure functions of `sphereFormT`, already settled at the gate (measured
+  `opacity` 0.06, `uWarp` 0.019) — so the reset popped it back **fully formed in a single frame**,
+  while the cursor label faded in over its CSS `opacity 0.5s ease 0.15s`. That asymmetry is what read
+  as broken. Re-arming on a *lower* threshold with an eased bleed also fixes it, but the latch
+  deletes the whole tuning surface instead, so prefer it.
+
+  Caveat: `destroy()` zeroes `textExitProgress`, so a **rebuild** re-arms the hint — a band crossing
+  (sm↔md), a reduced-motion toggle, or WebGL context-loss recovery. That is "until reload" for every
+  practical purpose, and it is deliberate: a rebuild is a new mesh with a fresh entrance. Making it
+  survive a rebuild would mean hoisting state out of the per-instance closure, which breaks the
+  multi-instance scoping for no user-visible gain.
+
+  Consequence of the latch: a **short drag freezes the dissolve mid-way** for the rest of the session
+  (`uExitP` ~0.3–0.5, letterforms partly scattered) where it used to clear on scroll-out. Accepted —
+  at `TEXT_OPACITY_RESTING` 0.06 it is not perceptible, and the whole plane only contributes a mean
+  ~2.5/255 per channel at full strength. If `TEXT_OPACITY_RESTING` is ever raised, revisit: the fix
+  is to let the dissolve run to completion once started rather than tracking the drag.
 - **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only, over the
   interactive sphere with no modal open: the system cursor becomes a 48px `mix-blend-mode: difference`
   disc (inverts what's beneath) flanked by chevrons that squeeze 4px inward while dragging, plus a
   "Click & Drag" label in a **frosted pill** (the modal-chrome glass, so `backdrop-filter` frosts the
   cards behind it). It **retires in two steps** on the same `textExitProgress` signal as the hint
-  text: at `CURSOR_HINT_DISMISS_T` (`getHintDismissed`) the label fades with the text; at the
-  later `CURSOR_RETIRE_T` (`getCursorRetired`) the disc + chevrons fade over `RETIRE_FADE_MS`
+  text: at `CURSOR_DRAG_DISMISS_T` (`getHintDismissed`) the label fades with the text; at the
+  later `CURSOR_DRAG_RETIRE_T` (`getCursorRetired`) the disc + chevrons fade over `RETIRE_FADE_MS`
   (0.42s, mirrored by `--retiring` CSS), then `active` drops, clearing `cursor: none` so the system
-  cursor takes back over. The disc **shrinks** rather than fades (partial opacity under
+  cursor takes back over. Scrolling out short-circuits the staging: past `CURSOR_ZOOM_RETIRE_T` both
+  getters flip together, so label and disc go at once. The disc **shrinks** rather than fades (partial opacity under
   `mix-blend-mode: difference` is a gray wash). Opening a card sets `textExitProgress = 1` (instant
   retire); both steps reset on scroll-out. Two **body-level** DOM layers: the disc **must** be a
   direct `<body>` child (`mix-blend-mode` only reaches page content from outside a `position: fixed`
   container); chevrons + label live in a fixed container. Sets `cursor: none` while active;
   `interaction.js` cedes its hover cursor via `isActive()`. No-op on touch: `(hover: hover) and
   (pointer: fine)` is read **once at setup** (a device that gains a fine pointer mid-session needs a
-  reload, unless a re-init — e.g. an RM toggle — re-reads it). With multiple globes each
+  reload, unless a re-init — e.g. an RM toggle — re-reads it). Activation also requires
+  `state.hasCoords` — a real `mousemove` must have landed first. Scrolling the canvas under a
+  *stationary* pointer fires `mouseenter` on its own (browsers dispatch boundary events for
+  scroll-induced hover changes), so without that gate the cursor plays its entrance at `0,0` (the
+  coord defaults) and then hard-snaps to the pointer on the next move. With multiple globes each
   makes its own pair but only the hovered one activates (inactive discs `visibility: hidden`). Label
   copy is the authored hint string (see Localization).
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.**
@@ -1771,20 +1846,7 @@ Known follow-ups, not blocking this integration branch:
 - **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
   (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
   the fully-formed, still globe is a scroll-pacing tuning matter still open.
-- **Pull-quote uses a hardcoded `--gg-pq-height`.** It's a shortcut (enables `top: calc(50vh -
-  h/2)` centering + a predictable hold = `pin − h`), but it's brittle to copy length — longer/localized
-  strings overflow the fixed box (no `overflow` handling), shorter copy leaves a dead gap under
-  `justify-content: space-between`. Make it copy-flexible (revisit in a future session). Two options:
-  - **A (recommended) — content-sized, transform-centered.** `position: sticky; top: 50vh;
-    transform: translateY(-50%) scale(…)` (the `-50%` is own-height-relative, so no fixed height);
-    drop `height` + `justify-content: space-between` for a `gap`; add `max-height: 90vh; overflow`
-    for pathologically long quotes. Keeps the "small quote → longer hold, no runway penalty" property;
-    the attribution sits directly under the quote (grouped, not spread). Retune `PQ_APPEAR_LEAD` — the
-    stick/centre point shifts by ~½ the quote height — and re-verify pacing. (A "100vh sticky wrapper +
-    `place-items:center`" variant is bulletproof but costs ~+100vh of runway for the same hold, so it's
-    not preferred.)
-  - **B — keep the top/bottom spread look.** Retain a defined height (`min-height` instead of a hard
-    `height`) so the quote/attribution stay spread; tolerates overflow better than today but partly
-    keeps the rigidity. Only if the spread is a deliberate editorial layout worth preserving.
-  - Decision needed from design: grouped (A) vs spread (B). See **Scroll model** for how
-    `--gg-pq-height` feeds the hold.
+- **Pull-quote pacing and overflow.** The quote is content-sized and holds centred for the whole pin
+  (see **CSS → Pull-quote box**), so `PQ_APPEAR_LEAD` / `--gg-pq-pin-factor` want an eyeball pass per
+  breakpoint against the final copy, and there is no `overflow` handling for a pathologically long or
+  localized quote (it spills rather than scrolls).

@@ -291,11 +291,13 @@ const buildMarkup = (gid, labels) => `
   </div>
 
   <div class="globe-gallery-pullquote-pin">
-    <div class="globe-gallery-pullquote">
-      <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-      <div class="globe-gallery-pullquote-attribution">
-        <p class="globe-gallery-pullquote-name body-lg"></p>
-        <p class="globe-gallery-pullquote-role body-lg"></p>
+    <div class="globe-gallery-pullquote-rail">
+      <div class="globe-gallery-pullquote">
+        <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
+        <div class="globe-gallery-pullquote-attribution">
+          <p class="globe-gallery-pullquote-name body-lg"></p>
+          <p class="globe-gallery-pullquote-role body-lg"></p>
+        </div>
       </div>
     </div>
   </div>

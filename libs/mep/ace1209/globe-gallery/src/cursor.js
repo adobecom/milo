@@ -11,55 +11,65 @@ const RING_SVG = [
 // Must match the --retiring transition durations in globe-gallery.css.
 const RETIRE_FADE_MS = 420;
 
+const initialState = () => ({
+  onCanvas: false, // pointer currently over the globe canvas
+  suppressed: false, // keyboard focus / window blur took over; cleared on next mousemove
+  active: false, // cursor currently shown
+  hintDismissed: false, // label faded out after the user's first drag
+  retireT0: -1, // retirement fade start timestamp; -1 = not retiring
+  mx: 0,
+  my: 0,
+  hasCoords: false, // a real mousemove has landed; gates activation. See README (Behavior notes).
+});
+
 export default function createCursor(deps) {
   const {
     getCanvas, getSphereInteractive, getModalOpen, getReducedMotion,
     getHintDismissed, getCursorRetired, labelText, drag,
   } = deps;
-  let containerEl = null; // fixed container: chevrons + label (no blend mode)
-  let discEl = null; // body-level disc (mix-blend-mode: difference)
-  let ringWrap = null;
-  let textWrap = null;
-  let hasMouse = false; // device supports hover + fine pointer
-  let onCanvas = false; // pointer currently over the globe canvas
-  let suppressed = false; // keyboard focus / window blur took over; cleared on next mousemove
-  let active = false; // cursor currently shown
-  let hintDismissed = false; // label faded out after the user's first drag
-  let retireT0 = -1; // retirement fade start timestamp; -1 = not retiring
-  let mx = 0;
-  let my = 0;
+  let els = null; // { container, disc, ring, text }; null until setup and after teardown
+  let state = initialState();
 
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
-  function onMove(e) { mx = e.clientX; my = e.clientY; suppressed = false; }
-  function onEnter() { onCanvas = true; }
-  function onLeave() { onCanvas = false; }
-  function onSuppress() { suppressed = true; }
+  function onMove(e) {
+    state.mx = e.clientX;
+    state.my = e.clientY;
+    state.hasCoords = true;
+    state.suppressed = false;
+  }
+  function onEnter() { state.onCanvas = true; }
+  function onLeave() { state.onCanvas = false; }
+  function onSuppress() { state.suppressed = true; }
 
   // Capability is read once. A device that gains/loses a fine pointer mid-session is out of scope
   // (a re-init re-reads it — e.g. an RM toggle; otherwise reload). See README (Behavior notes).
   function setup() {
+    if (els) return;
     if (!window.matchMedia) return;
-    hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (!hasMouse) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     // Disc — direct body child so mix-blend-mode blends against real page content.
-    discEl = document.createElement('div');
-    discEl.className = 'globe-gallery-cursor-disc';
-    document.body.appendChild(discEl);
+    const disc = document.createElement('div');
+    disc.className = 'globe-gallery-cursor-disc';
+    document.body.appendChild(disc);
 
     // Chevrons + label — no blend mode, safe inside the fixed container.
-    containerEl = document.createElement('div');
-    containerEl.className = 'globe-gallery-cursor';
+    const container = document.createElement('div');
+    container.className = 'globe-gallery-cursor';
     // Static structure via innerHTML; authored label set as textContent below.
-    containerEl.innerHTML = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
+    container.innerHTML = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
       + '<div class="globe-gallery-cursor-text-wrap">'
       + '<span class="globe-gallery-cursor-text"></span>'
       + '</div>';
-    document.body.appendChild(containerEl);
-    ringWrap = containerEl.querySelector('.globe-gallery-cursor-ring-wrap');
-    textWrap = containerEl.querySelector('.globe-gallery-cursor-text-wrap');
-    containerEl.querySelector('.globe-gallery-cursor-text').textContent = labelText || 'Click & Drag';
+    document.body.appendChild(container);
+    container.querySelector('.globe-gallery-cursor-text').textContent = labelText || 'Click & Drag';
+    els = {
+      container,
+      disc,
+      ring: container.querySelector('.globe-gallery-cursor-ring-wrap'),
+      text: container.querySelector('.globe-gallery-cursor-text-wrap'),
+    };
 
     const canvas = getCanvas();
     if (canvas) {
@@ -74,53 +84,52 @@ export default function createCursor(deps) {
 
   // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on touch.
   function update() {
-    if (!containerEl || !hasMouse) return;
+    if (!els) return;
     const canvas = getCanvas();
 
     // Retirement: start the CSS fade when the signal flips; after RETIRE_FADE_MS drop
     // `active` too, handing the canvas cursor back to the system.
     const wantRetired = getCursorRetired();
-    if (wantRetired !== (retireT0 >= 0)) {
-      retireT0 = wantRetired ? now() : -1;
-      containerEl.classList.toggle('globe-gallery-cursor-retiring', wantRetired);
-      if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-retiring', wantRetired);
+    if (wantRetired !== (state.retireT0 >= 0)) {
+      state.retireT0 = wantRetired ? now() : -1;
+      els.container.classList.toggle('globe-gallery-cursor-retiring', wantRetired);
+      els.disc.classList.toggle('globe-gallery-cursor-disc-retiring', wantRetired);
     }
-    const faded = retireT0 >= 0 && now() - retireT0 >= RETIRE_FADE_MS;
+    const faded = state.retireT0 >= 0 && now() - state.retireT0 >= RETIRE_FADE_MS;
 
     const wantActive = !getReducedMotion()
-      && onCanvas
-      && !suppressed
+      && state.hasCoords
+      && state.onCanvas
+      && !state.suppressed
       && getSphereInteractive()
       && !getModalOpen()
       && !faded;
-    if (wantActive !== active) {
-      active = wantActive;
-      containerEl.classList.toggle('globe-gallery-cursor-active', active);
-      if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-active', active);
+    if (wantActive !== state.active) {
+      state.active = wantActive;
+      els.container.classList.toggle('globe-gallery-cursor-active', state.active);
+      els.disc.classList.toggle('globe-gallery-cursor-disc-active', state.active);
       // Hide the system cursor while ours shows; interaction.js defers to isActive().
-      if (canvas) canvas.style.cursor = active ? 'none' : '';
+      if (canvas) canvas.style.cursor = state.active ? 'none' : '';
     }
     // One-way label dismissal: after the first drag the label fades (disc + chevrons stay).
     const wantDismissed = getHintDismissed();
-    if (wantDismissed !== hintDismissed) {
-      hintDismissed = wantDismissed;
-      containerEl.classList.toggle('globe-gallery-cursor-hint-dismissed', hintDismissed);
+    if (wantDismissed !== state.hintDismissed) {
+      state.hintDismissed = wantDismissed;
+      els.container.classList.toggle('globe-gallery-cursor-hint-dismissed', state.hintDismissed);
     }
     // From `active` so going inactive mid-drag clears the squeeze rather than freezing it.
-    const dragging = active && drag.isDragging;
-    containerEl.classList.toggle('globe-gallery-cursor-dragging', dragging);
-    if (discEl) discEl.classList.toggle('globe-gallery-cursor-disc-dragging', dragging);
-    if (!active) return;
-    if (discEl) {
-      // top/left (not transform) keeps `transform` free for the CSS scale entrance.
-      discEl.style.left = `${mx}px`;
-      discEl.style.top = `${my}px`;
-    }
-    ringWrap.style.transform = `translate(${mx}px, ${my}px)`;
-    textWrap.style.transform = `translate(${mx + 32}px, ${my - 11}px)`;
+    const dragging = state.active && drag.isDragging;
+    els.container.classList.toggle('globe-gallery-cursor-dragging', dragging);
+    els.disc.classList.toggle('globe-gallery-cursor-disc-dragging', dragging);
+    if (!state.active) return;
+    // top/left (not transform) keeps `transform` free for the CSS scale entrance.
+    els.disc.style.left = `${state.mx}px`;
+    els.disc.style.top = `${state.my}px`;
+    els.ring.style.transform = `translate(${state.mx}px, ${state.my}px)`;
+    els.text.style.transform = `translate(${state.mx + 32}px, ${state.my - 11}px)`;
   }
 
-  function isActive() { return active; }
+  function isActive() { return state.active; }
 
   function teardown() {
     const canvas = getCanvas();
@@ -132,11 +141,12 @@ export default function createCursor(deps) {
     window.removeEventListener('mousemove', onMove);
     document.removeEventListener('focusin', onSuppress);
     window.removeEventListener('blur', onSuppress);
-    if (containerEl && containerEl.parentNode) containerEl.parentNode.removeChild(containerEl);
-    if (discEl && discEl.parentNode) discEl.parentNode.removeChild(discEl);
-    containerEl = null; discEl = null; ringWrap = null; textWrap = null;
-    onCanvas = false; suppressed = false; active = false; hintDismissed = false; mx = 0; my = 0;
-    retireT0 = -1;
+    if (els) {
+      els.container.remove();
+      els.disc.remove();
+      els = null;
+    }
+    state = initialState();
   }
 
   return { setup, update, teardown, isActive };

@@ -111,34 +111,40 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   pointer-events: none;
 }
 
+/* Zero-height rail at the viewport mid-line; the quote hangs centred off it. See README. */
+.globe-gallery-pullquote-rail {
+  position: sticky;
+  top: 50vh;
+  height: 0;
+}
+
 /* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
 .globe-gallery-pullquote {
-  --gg-pq-height: 583px;
+  --gg-pq-gap: var(--s2a-layout-xl);
   --gg-pq-pad-block: var(--gg-copy-pad);
 
-  position: sticky;
-  top: calc(50vh - var(--gg-pq-height) / 2);
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
   box-sizing: border-box;
-  width: 100%;
   max-width: var(--gg-copy-max);
-  margin: 0 auto;
-  height: var(--gg-pq-height);
+  margin-inline: auto;
   z-index: 5;
   background: transparent;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: var(--gg-pq-gap);
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.9);
+  transform: translateY(-50%) scale(0.9);
   transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
 .globe-gallery-pullquote.is-active {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(-50%) scale(1);
 }
 
 .globe-gallery-pullquote::before,
@@ -166,11 +172,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   color: var(--s2a-color-gray-25);
   margin: 0;
   hanging-punctuation: first;
-}
-
-/* Gap between quote and name/role; only bites when they cluster (e.g. the RM centred layout). */
-.globe-gallery-pullquote-attribution {
-  margin-top: var(--s2a-spacing-lg);
 }
 
 .globe-gallery-pullquote-name {
@@ -802,8 +803,9 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
   height: 100vh;
 }
 
-/* Pull-quote flows normally after the globe: drop the pin/sticky, show statically, top-aligned with a gap above. */
-.globe-gallery-reduced .globe-gallery-pullquote-pin {
+/* Pull-quote flows normally after the globe: drop the pin/rail/sticky, show statically with a gap above. */
+.globe-gallery-reduced .globe-gallery-pullquote-pin,
+.globe-gallery-reduced .globe-gallery-pullquote-rail {
   position: static;
   height: auto;
 }
@@ -813,9 +815,6 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
 
   position: relative;
   top: auto;
-  height: auto;
-  min-height: 0;
-  justify-content: flex-start;
   opacity: 1;
   transform: none;
   transition: none;

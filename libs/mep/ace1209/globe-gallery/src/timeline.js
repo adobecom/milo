@@ -63,9 +63,9 @@ export const ARC_COPY_OUT_FORM_END = 0.90;
 // zoomT
 export const TEXT_ZOOM_FADE_RATE = 3;
 export const CANVAS_HIDE_ZOOM_T = 0.95;
-export const CURSOR_HINT_DISMISS_T = 0.12;
-export const CURSOR_RETIRE_T = 0.55;
-export const CURSOR_ZOOM_DISMISS_T = 0.38;
+
+export const CURSOR_DRAG_DISMISS_T = 0.12;
+export const CURSOR_DRAG_RETIRE_T = 0.30;
 export const CURSOR_ZOOM_RETIRE_T = 0.40;
 
 export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise

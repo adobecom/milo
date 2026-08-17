@@ -923,16 +923,16 @@ function createGlobeGalleryRuntime(
     getSphereInteractive: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T,
     getModalOpen: () => modal.getModalIdx() >= 0,
     getReducedMotion: () => reducedMotion,
-    // Two-step exit off the shared hint signal (see the threshold constants).
-    getHintDismissed: () => textExitProgress > TL.CURSOR_HINT_DISMISS_T
-      || frameState.zoomT > TL.CURSOR_ZOOM_DISMISS_T,
-    getCursorRetired: () => textExitProgress > TL.CURSOR_RETIRE_T
+    // Two-step exit on drag activity; scrolling out collapses both steps
+    getHintDismissed: () => textExitProgress > TL.CURSOR_DRAG_DISMISS_T
+      || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
+    getCursorRetired: () => textExitProgress > TL.CURSOR_DRAG_RETIRE_T
       || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
     labelText: hintText || 'Click & Drag',
     drag,
   });
 
-  // Rad per pointer px, live off the viewport + band. See README (Drag physics).
+  // Rad per pointer px, live off the viewport + band. See README (Drag physics)
   const dragSensitivity = () => {
     const radiusPx = (bp.SPHERE_R * H) / bp.CYL_FRUSTUM_H;
     return ((Math.PI / 2) * bp.DRAG_GEARING) / Math.max(1, radiusPx);
@@ -1514,16 +1514,16 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // Owns textExitProgress (hint dissolve + cursor retirement). Separate from updateClickDragText
-  // because that stage early-returns before the interactive range, which is what resets this.
+  // Owns textExitProgress (hint dissolve + cursor retirement) for both consumers — the hint plane
+  // and the cursor label. A separate stage because updateClickDragText early-returns below
+  // TEXT_APPEAR_START. Monotonic 0→1 and never re-armed: the first drag retires the hint for the
+  // life of this runtime. See README (hint text).
   function updateHintExitProgress(frame) {
     const { sphereFormT } = frame;
-    // Reset on scroll-out of the interactive range (fresh on re-entry).
-    if (sphereFormT < TL.SPHERE_INTERACTIVE_T) {
-      textExitProgress = 0;
-      return;
-    }
-    if (reducedMotion || !drag.isDragging || textExitProgress >= 1) return;
+    if (textExitProgress >= 1 || reducedMotion || !drag.isDragging) return;
+    // A held drag can scroll out of the live range (pointer capture outlives the gate) — a globe
+    // that isn't interactive must not accrue.
+    if (sphereFormT < TL.SPHERE_INTERACTIVE_T) return;
     // A vertical touch drag is page scroll, not a globe drag — don't accrue during it.
     if (interaction.isPageScrollGesture()) return;
     const spd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
