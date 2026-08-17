@@ -276,11 +276,11 @@ describe('Merch Block', () => {
       });
     });
 
-    it('should use es_PR, es, US for Puerto Rico path', () => {
+    it('should use es_PR, es, PR for Puerto Rico path', () => {
       const s = getMiloLocaleSettings({ prefix: '/pr' });
       expect(s.locale).to.equal('es_PR');
       expect(s.language).to.equal('es');
-      expect(s.country).to.equal('US');
+      expect(s.country).to.equal('PR');
     });
 
     it('should use geo locale for lang-first sites', async () => {

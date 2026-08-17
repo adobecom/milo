@@ -166,7 +166,7 @@ export const GeoMap = {
   ng: 'NG_en',
   cr: 'CR_es',
   ec: 'EC_es',
-  pr: 'US_es', // not a typo, should be US
+  pr: 'PR_es', // Puerto Rico: es content, PR pricing (see EXTRA_MAS_LOCALES for MAS locale)
   gt: 'GT_es',
   cis_en: 'TM_en',
   cis_ru: 'TM_ru',
@@ -174,12 +174,6 @@ export const GeoMap = {
   th_en: 'TH_en',
   th_th: 'TH_th',
 };
-
-/**
- * MAS WCS `locale` when it differs from `${language}_${country}` derived from {@link GeoMap}.
- * @type {Record<string, string>}
- */
-const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
  * MAS locale overrides for markets that share a language but have different country codes
@@ -232,7 +226,7 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: EXTRA_MAS_LOCALES[geo] ?? `${language}_${country}`,
+    locale: `${language}_${country}`,
   };
 }
 
