@@ -226,7 +226,7 @@ export async function replaceText(
   return finalText;
 }
 
-const geoIpPattern = /{{(.*?-geo-ip)}}|%7B%7B(.*?-geo-ip)%7D%7D/g;
+const geoIpPattern = /{{([^{}]*?-geo-ip)}}|%7B%7B((?:(?!%7[BD]).)*?-geo-ip)%7D%7D/g;
 const findGeoIpKeys = (t) => (t ? [...t.matchAll(geoIpPattern)].map((m) => m[1] || m[2]) : []);
 
 async function deferGeoIpUpdate(deferredItems, config, sheet) {

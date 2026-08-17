@@ -171,7 +171,7 @@
     width: 192px;
     height: 230px;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: var(--s2a-border-radius-md);
     will-change: transform, opacity;
     contain: layout style;
 
