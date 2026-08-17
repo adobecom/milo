@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import getUuid from '../../../libs/utils/getUuid.js';
 import {
   caasAutoPublish,
   isDisabledOnPage,
@@ -28,6 +29,32 @@ const PAGE_HTML_WITH_METADATA = `
           <div><div>cardimagealttext</div><div>A descriptive alt</div></div>
           <div><div>country</div><div>us</div></div>
           <div><div>lang</div><div>en</div></div>
+          <div><div>tags</div><div>caas:content-type/article</div></div>
+          <div><div>primaryTag</div><div>caas:content-type/article</div></div>
+        </div>
+      </div>
+    </main>
+  </body></html>`;
+
+// Like PAGE_HTML_WITH_METADATA but omits explicit country/lang card-metadata
+// fields, so the country/lang props actually exercise getCountryAndLang()
+// instead of short-circuiting on the page's own hardcoded values.
+const PAGE_HTML_NO_LOCALE_METADATA = `
+  <!DOCTYPE html><html lang="en"><head>
+    <title>Test article</title>
+    <meta name="og:title" content="Test article">
+    <meta name="og:description" content="A test article description">
+    <meta property="og:image" content="https://example.com/img/card.jpg">
+    <meta name="publication-date" content="2024-01-15T00:00:00Z">
+  </head><body>
+    <main>
+      <img src="https://example.com/img/card.jpg" alt="card alt">
+      <div>
+        <div class="card-metadata">
+          <div><div>title</div><div>Test article</div></div>
+          <div><div>cardtitle</div><div>Test article card</div></div>
+          <div><div>carddescription</div><div>A test article description</div></div>
+          <div><div>cardimagealttext</div><div>A descriptive alt</div></div>
           <div><div>tags</div><div>caas:content-type/article</div></div>
           <div><div>primaryTag</div><div>caas:content-type/article</div></div>
         </div>
@@ -406,7 +433,7 @@ describe('auto-publish: caasAutoPublish gating', () => {
 describe('auto-publish: caasAutoPublish posting', () => {
   // Posts the page through the full pipeline. Verifies the right number of
   // milo-caas calls happen with the right caas-env / draft headers.
-  const setupHappyPath = (origin, ruleOverrides = {}) => {
+  const setupHappyPath = (origin, ruleOverrides = {}, pageHtml = PAGE_HTML_WITH_METADATA) => {
     const postCalls = [];
     fetchStub = sinon.stub(window, 'fetch');
     fetchStub.callsFake(async (input, init) => {
@@ -419,6 +446,7 @@ describe('auto-publish: caasAutoPublish posting', () => {
           caasEnv: init?.headers?.['caas-env'],
           draft: init?.headers?.draft,
           authorization: init?.headers?.Authorization,
+          body: init?.body ? JSON.parse(init.body) : undefined,
         });
         return jsonResponse({ success: true, status: 201 });
       }
@@ -427,7 +455,7 @@ describe('auto-publish: caasAutoPublish posting', () => {
         return new Response('not found', { status: 404 });
       }
       if (u.startsWith(origin)) {
-        return htmlResponse(PAGE_HTML_WITH_METADATA);
+        return htmlResponse(pageHtml);
       }
       return new Response('not found', { status: 404 });
     });
@@ -452,6 +480,39 @@ describe('auto-publish: caasAutoPublish posting', () => {
     expect(postCalls[0].caasEnv).to.equal('prod');
     expect(postCalls[0].draft).to.equal(false);
     expect(postCalls[0].authorization).to.equal('Bearer tok-publish');
+  });
+
+  it('builds card identity from config host + .html, not the aem url', async () => {
+    // Regression for the two-path divergence: the card url/identity must be the
+    // production url the config declares, so this path matches the milo-caas
+    // poller for the same page.
+    const origin = uniqueOrigin();
+    let postedProps;
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async (input, init) => {
+      const u = typeof input === 'string' ? input : input.url;
+      if (u.includes('/.milo/caas/config.json')) {
+        const rule = { url: '/x', enabled: true, host: 'business.adobe.com', repo: 'bacom', htmlExt: true };
+        return jsonResponse({ autoPublish: { data: [rule] } });
+      }
+      if (u.startsWith(POST_XDM_URL)) {
+        postedProps = JSON.parse(init.body);
+        return jsonResponse({ success: true, status: 201 });
+      }
+      if (u.includes('/chimera-api/tags')) return new Response('not found', { status: 404 });
+      if (u.startsWith(origin)) return htmlResponse(PAGE_HTML_WITH_METADATA);
+      return new Response('not found', { status: 404 });
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result.skipped).to.be.false;
+    expect(postedProps.url).to.equal('https://business.adobe.com/x.html');
+    expect(postedProps.contentId).to.equal(await getUuid('https://business.adobe.com/x.html'));
   });
 
   it('posts twice in parallel on preview action (prod-draft + stage-live)', async () => {
@@ -574,5 +635,228 @@ describe('auto-publish: caasAutoPublish posting', () => {
     });
     expect(result.skipped).to.be.false;
     expect(result.error).to.match(/ims down/);
+  });
+
+  // Regression coverage for the bug where every page auto-published through
+  // bulk-publish-v2 got the SAME country/lang, derived from the tool's own
+  // window.location instead of each job resource's own path. `repo: 'news'`
+  // exercises the news-origin shortcut in getLanguageFirstCountryAndLang so
+  // the test doesn't need to mock lingo-site-mapping.json.
+  it('resolves distinct country/lang per page when rule.languageFirst is set', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupHappyPath(origin, { url: '/**', languageFirst: true }, PAGE_HTML_NO_LOCALE_METADATA);
+
+    const esResult = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/es/mx/article-one`,
+      path: '/es/mx/article-one',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'news',
+    });
+    const frResult = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/fr/be/article-two`,
+      path: '/fr/be/article-two',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'news',
+    });
+
+    expect(esResult.skipped).to.be.false;
+    expect(frResult.skipped).to.be.false;
+    expect(postCalls).to.have.lengthOf(2);
+    // Spanish page: lang from path segment 1, country resolved via LOCALES['mx'].
+    expect(postCalls[0].body.language).to.equal('es');
+    expect(postCalls[0].body.country).to.equal('mx');
+    // French page (different page, same batch): its own path, not the first page's.
+    expect(postCalls[1].body.language).to.equal('fr');
+    expect(postCalls[1].body.country).to.equal('be');
+  });
+
+  it('uses plain path-prefix locale (not the news lang/country segments) when languageFirst is unset', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupHappyPath(origin, { url: '/**' }, PAGE_HTML_NO_LOCALE_METADATA);
+
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/es/mx/article`,
+      path: '/es/mx/article',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'news',
+    });
+
+    expect(result.skipped).to.be.false;
+    // getLocale(LOCALES, path) reads only the top-level "/es" prefix, so country
+    // comes from LOCALES.es ('es'), not the news-style "mx" segment.
+    expect(postCalls[0].body.language).to.equal('es');
+    expect(postCalls[0].body.country).to.equal('es');
+  });
+});
+
+describe('auto-publish: caasAutoPublish — autoDetectLingo (fully Lingo-enabled site)', () => {
+  // Mirrors the shape of the real lingo-site-mapping.json for bacom: "/fr" is a
+  // genuine LFL locale, "/" is the root family (with "gb"/"au" as English-regional
+  // satellites that are NOT themselves LFL). "uk" appears nowhere in this mapping,
+  // so — per resolveSiteLocaleStr/isLingoLangFirstPath — it must fall through to
+  // the classic non-LFL locale lookup rather than being swept into the root family.
+  const BACOM_LINGO_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/fr', regionalSites: '/be_fr, /ca_fr' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+      ],
+    },
+  };
+
+  // Like setupHappyPath, but also serves lingo-site-mapping.json so
+  // isLingoLangFirstPath/getLingoSiteLocale can resolve per-page LFL-ness —
+  // the mechanism autoDetectLingo actually exercises.
+  const setupLingoSite = (origin, ruleOverrides, pageHtml = PAGE_HTML_NO_LOCALE_METADATA) => {
+    const postCalls = [];
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async (input, init) => {
+      const u = typeof input === 'string' ? input : input.url;
+      if (u.includes('/.milo/caas/config.json')) {
+        return jsonResponse({ autoPublish: { data: [{ url: '/**', enabled: true, ...ruleOverrides }] } });
+      }
+      if (u.includes('lingo-site-mapping.json')) {
+        return jsonResponse(BACOM_LINGO_MAPPING);
+      }
+      if (u.startsWith(POST_XDM_URL)) {
+        postCalls.push({ body: init?.body ? JSON.parse(init.body) : undefined });
+        return jsonResponse({ success: true, status: 201 });
+      }
+      if (u.includes('/chimera-api/tags')) return new Response('not found', { status: 404 });
+      if (u.startsWith(origin)) return htmlResponse(pageHtml);
+      return new Response('not found', { status: 404 });
+    });
+    return postCalls;
+  };
+
+  it('resolves a /fr/ page as Language-First (lang: fr, country: xx) from rule.autoDetectLingo alone — no manual languageFirst flag set', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupLingoSite(origin, { autoDetectLingo: true, repo: 'bacom' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/fr/products/acrobat-business`,
+      path: '/fr/products/acrobat-business',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'bacom',
+    });
+    expect(result.skipped).to.be.false;
+    expect(postCalls[0].body.language).to.equal('fr');
+    expect(postCalls[0].body.country).to.equal('xx');
+  });
+
+  it('resolves an unprefixed root page as the base Language-First locale (lang: en, country: xx) — not the classic en-US default', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupLingoSite(origin, { autoDetectLingo: true, repo: 'bacom' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/brand-concierge`,
+      path: '/products/brand-concierge',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'bacom',
+    });
+    expect(result.skipped).to.be.false;
+    expect(postCalls[0].body.language).to.equal('en');
+    expect(postCalls[0].body.country).to.equal('xx');
+  });
+
+  it('resolves a /uk/ page as non-LFL (lang: en, country: gb) because "uk" is absent from bacom\'s own mapping', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupLingoSite(origin, { autoDetectLingo: true, repo: 'bacom' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/uk/products/brand-concierge`,
+      path: '/uk/products/brand-concierge',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'bacom',
+    });
+    expect(result.skipped).to.be.false;
+    expect(postCalls[0].body.language).to.equal('en');
+    expect(postCalls[0].body.country).to.equal('gb');
+  });
+
+  it('falls back to non-LFL when an origin is absent from the mapping entirely (isLingoLangFirstPath returns null)', async () => {
+    const origin = uniqueOrigin();
+    // 'other' has no entry in site-query-index-map at all.
+    const postCalls = setupLingoSite(origin, { autoDetectLingo: true, repo: 'other' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/de/products/x`,
+      path: '/de/products/x',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'other',
+    });
+    expect(result.skipped).to.be.false;
+    // getLocale(LOCALES, path) fallback: 'de' -> de-DE.
+    expect(postCalls[0].body.language).to.equal('de');
+    expect(postCalls[0].body.country).to.equal('de');
+  });
+
+  // A page is language-first only if (a) lingo-site-mapping says so, or (b) it's
+  // a news-origin page — and (b) is carved out of auto-detect entirely: news
+  // always defers to the manual languageFirst checkbox, regardless of
+  // autoDetectLingo. This guards against silently changing that behavior while
+  // adding autoDetectLingo support for auto-publish.
+  it('autoDetectLingo has no effect on news — languageFirst must still be set manually for LFL', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupLingoSite(
+      origin,
+      { autoDetectLingo: true, repo: 'news' }, // no languageFirst set
+      PAGE_HTML_NO_LOCALE_METADATA,
+    );
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/es/mx/article`,
+      path: '/es/mx/article',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'news',
+    });
+    expect(result.skipped).to.be.false;
+    // Non-LFL classic lookup (same as the existing "languageFirst is unset" test):
+    // reads only the top-level "/es" prefix via LOCALES, not the news lang/country segments.
+    expect(postCalls[0].body.language).to.equal('es');
+    expect(postCalls[0].body.country).to.equal('es');
+  });
+
+  it('news with languageFirst: true is still Language-First even when autoDetectLingo is also set', async () => {
+    const origin = uniqueOrigin();
+    const postCalls = setupLingoSite(
+      origin,
+      { autoDetectLingo: true, languageFirst: true, repo: 'news' },
+      PAGE_HTML_NO_LOCALE_METADATA,
+    );
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/es/mx/article`,
+      path: '/es/mx/article',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'news',
+    });
+    expect(result.skipped).to.be.false;
+    // News-specific LFL branch: lang/country come from the URL's own segments,
+    // not lingo-site-mapping (news is excluded from the mapping index entirely).
+    expect(postCalls[0].body.language).to.equal('es');
+    expect(postCalls[0].body.country).to.equal('mx');
   });
 });

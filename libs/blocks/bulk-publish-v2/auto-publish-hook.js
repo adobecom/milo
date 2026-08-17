@@ -105,6 +105,12 @@ export const runAutoPublishForJob = async ({
   // library) writes per-page state into a module-level config object, so
   // running these concurrently lets one path's config clobber another's
   // mid-flight.
+  //
+  // `url` is the aem.page/aem.live address the job fired from — used to fetch
+  // the page DOM, and as the `host` fallback for resolving relative image URLs.
+  // The card's production identity (host + .html rule + CaaS source) is declared
+  // per-site in /.milo/caas/config.json and applied by caasAutoPublish; the
+  // `host`/`repo` passed here are only fallbacks when config omits them.
   const results = [];
   for (const path of paths) {
     const result = await publish({

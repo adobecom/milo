@@ -27,6 +27,7 @@
 
 import {
   buildCaasXdmPayload,
+  getProdUrl,
   hasCardMetadata,
   hasContentTypeTag,
   isDisabledOnPage,
@@ -99,6 +100,7 @@ export const caasAutoPublish = async ({
   repo,
   floodgatecolor = 'default',
   languageFirst,
+  autoDetectLingo,
 } = {}) => {
   try {
     if (!action || !DEFAULT_TARGETS[action]) {
@@ -118,6 +120,18 @@ export const caasAutoPublish = async ({
     if (!rule) return { skipped: true, reason: 'no-matching-rule' };
     if (rule.enabled === false) return { skipped: true, reason: 'rule-disabled' };
 
+    // Card identity is the PRODUCTION url, not the aem.page/aem.live url the job
+    // fires from. The site declares its prod host and .html rule in config, so
+    // this path produces the same contentId/entityId as the milo-caas poller.
+    // `repo` (the CaaS source) likewise comes from config when set — e.g. the
+    // bacom blog files under `bacom`, which the aem hostname can't tell us.
+    // Falls back to the caller-supplied url/host/repo when config omits them.
+    const effHost = rule.host || host;
+    const effRepo = rule.repo || repo;
+    const prodUrl = effHost
+      ? getProdUrl({ host: effHost, path, htmlExt: rule.htmlExt })
+      : url;
+
     const { dom, error: fetchErr, lastModified } = await fetchPageDom(url);
     if (fetchErr) return { skipped: false, error: `fetch-failed: ${fetchErr}` };
 
@@ -126,12 +140,19 @@ export const caasAutoPublish = async ({
 
     const { caasProps, errors, tags } = await buildCaasXdmPayload({
       dom,
-      pageUrl: url,
+      pageUrl: prodUrl,
       lastModified,
-      host,
-      repo,
+      host: effHost,
+      repo: effRepo,
       floodgatecolor,
-      languageFirst,
+      // A rule opts a language-first (Lingo) site into per-page locale resolution;
+      // an explicit caller-supplied languageFirst (used by the legacy bulk tool) wins.
+      languageFirst: languageFirst ?? rule.languageFirst,
+      // A fully Lingo-enabled site (e.g. bacom) sets rule.autoDetectLingo: true so
+      // every page's LFL-ness is resolved per-URL from lingo-site-mapping.json —
+      // the same behavior as checking "Auto-detect Lingo" in the bulk publisher —
+      // instead of relying on a single site-wide manual languageFirst flag.
+      autoDetectLingo: autoDetectLingo ?? rule.autoDetectLingo,
     });
     if (errors?.length) return { skipped: false, error: 'metadata-errors', errors };
     // Only pages with a caas:content-type tag participate. Pages without one

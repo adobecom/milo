@@ -15,6 +15,7 @@
 import {
   buildCaasXdmPayload,
   getCaasIds,
+  getProdUrl,
   hasCardMetadata,
   hasContentTypeTag,
   isDisabledOnPage,
@@ -24,6 +25,7 @@ import {
 export {
   buildCaasXdmPayload,
   getCaasIds,
+  getProdUrl,
   hasCardMetadata,
   hasContentTypeTag,
   isDisabledOnPage,

@@ -387,6 +387,16 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   return lingoSiteMappingPromise;
 }
 
+// Analogue of libs/blocks/caas/utils.js's initBulkPublisherLingoMapping. The leaf
+// keeps its own independent lingoSiteMappingPromise (it can't import that module),
+// so pre-warming/resetting THAT module's promise has no effect on the leaf's copy —
+// this is the version the bulk publisher must call to actually affect
+// isLingoLangFirstPath/getBulkPublishLangAttr, which both run through the leaf.
+const initBulkPublisherLingoMapping = () => {
+  lingoSiteMappingPromise = undefined;
+  fetchLingoSiteMapping('bulkpublisher');
+};
+
 // Copied verbatim from libs/blocks/caas/utils.js (isLingoLangFirstPath).
 // Returns true when the path's locale is known to require Language First Localization,
 // false when it is known NOT to (e.g. English regional sites like gb, au, in, jp, kr),
@@ -875,8 +885,21 @@ export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {
   return lastResult;
 }
 
+// options.prodUrl may be a full URL (auto-publish-hook.js passes job.origin + path,
+// which includes the scheme) or a bare "host/path" string (the legacy bulk-publish-
+// to-caas.js tool constructs it without one). getLocale() and the news-origin branch
+// of getLanguageFirstCountryAndLang() both expect a plain pathname, so normalize once.
+const prodUrlToPathname = (prodUrl) => {
+  try {
+    return new URL(prodUrl).pathname;
+  } catch {
+    return `/${prodUrl.split('/').slice(1).join('/')}`;
+  }
+};
+
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale: configGetLocale } = getConfig();
+  const path = prodUrlToPathname(options.prodUrl);
   const repo = (options.repo || '').toLowerCase();
   const origin = LANG_FIRST_SOURCE_MAPPINGS[repo] || repo;
 
@@ -891,23 +914,23 @@ const getBulkPublishLangAttr = async (options) => {
     : (lflDetected ?? false);
 
   if (useLanguageFirst) {
-    const mappedGetLangFirst = (path, r, fqdn) => getLanguageFirstCountryAndLang(
-      path,
+    const mappedGetLangFirst = (p, r, fqdn) => getLanguageFirstCountryAndLang(
+      p,
       LANG_FIRST_SOURCE_MAPPINGS[r.toLowerCase()] || r,
       fqdn,
     );
-    return runLanguageFirstRetry(options, mappedGetLangFirst);
+    return runLanguageFirstRetry({ ...options, prodUrl: path }, mappedGetLangFirst);
   }
   if (!configGetLocale) {
     // Use the leaf-local getLocale (an inlined copy of libs/utils/utils.js).
     configGetLocale = getLocale;
     setConfig({ getLocale: configGetLocale });
   }
-  const { ietf } = configGetLocale(LOCALES, options.prodUrl);
+  const { ietf } = configGetLocale(LOCALES, path);
   // LOCALES uses country codes (jp, kr) but some sites (e.g. news) use language codes (/ja/, /ko/)
   // as URL locale prefixes. When getLocale falls back to the default en-US, try a reverse lookup.
   if (ietf === 'en-US') {
-    const [, localeStr = ''] = options.prodUrl.split('/');
+    const [, localeStr = ''] = path.split('/');
     const lang = LANGS[localeStr];
     if (lang && lang !== 'en') {
       const entry = Object.entries(LOCALES).find(
@@ -920,9 +943,15 @@ const getBulkPublishLangAttr = async (options) => {
   return ietf;
 };
 
+// buildCaasXdmPayload (used by both the legacy bulk-publish-to-caas.js tool and the
+// bulk-publish-v2 auto-publish hook) always sets bulkPublish: true and supplies an
+// explicit per-page options.prodUrl. window.location in that context is wherever the
+// *tool* happens to be hosted, not the page being published, so locale must come from
+// options.prodUrl instead of the ambient window/document — which is only correct for
+// the true single live-page contexts (send-to-caas.js, da-live) that never set it.
 const getCountryAndLang = async (options, origin) => {
-  /* c8 ignore next */
-  if (window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')) {
+  const { bulkPublish } = getConfig();
+  if (bulkPublish) {
     const langStr = await getBulkPublishLangAttr(options);
     const [lang = 'en', country = 'us'] = langStr?.toLowerCase().split('-') || [];
     return { country, lang };
@@ -1246,6 +1275,7 @@ const buildCaasXdmPayload = async ({
   repo,
   floodgatecolor = 'default',
   languageFirst,
+  autoDetectLingo,
 } = {}) => {
   setConfig({
     bulkPublish: true,
@@ -1262,6 +1292,7 @@ const buildCaasXdmPayload = async ({
     repo,
     floodgatecolor,
     languageFirst,
+    autoDetectLingo,
   });
   const caasProps = caasMetadata && !errors?.length
     ? getCaasProps(caasMetadata, pageUrl)
@@ -1275,6 +1306,23 @@ const buildCaasXdmPayload = async ({
 // excluded. `tags` is the array of resolved tag ids from buildCaasXdmPayload.
 const hasContentTypeTag = (tags) => Array.isArray(tags)
   && tags.some((id) => typeof id === 'string' && id.startsWith('caas:content-type'));
+
+// Canonical production-URL builder — the single source of how a card's identity
+// URL is formed, shared by every publisher (the browser bulk-publish hook, the
+// milo-caas poller, and the manual send-to-caas tool). The exact prodUrl string
+// IS the card identity (contentId = uuid(prodUrl)), so all paths MUST build it
+// identically or the same page yields duplicate cards. Mirror of the manual
+// tool's `${prodHost}${pathname}${useHtml ? '.html' : ''}`.
+// `htmlExt` accepts a boolean or the string 'true' (config sheets store strings).
+const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
+  if (!host || !path) return '';
+  const bareHost = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  let cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const wantHtml = htmlExt === true || htmlExt === 'true';
+  if (wantHtml && !cleanPath.endsWith('.html')) cleanPath = `${cleanPath}.html`;
+  if (!wantHtml && cleanPath.endsWith('.html')) cleanPath = cleanPath.slice(0, -'.html'.length);
+  return `https://${bareHost}${cleanPath}`;
+};
 
 // Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
 // Used for removal: a deactivated/deleted page's HTML is gone, but its card
@@ -1298,8 +1346,10 @@ export {
   getCaasProps,
   getConfig,
   getKeyValPairs,
+  getProdUrl,
   hasCardMetadata,
   hasContentTypeTag,
+  initBulkPublisherLingoMapping,
   isDisabledOnPage,
   loadCaasTags,
   setConfig,
