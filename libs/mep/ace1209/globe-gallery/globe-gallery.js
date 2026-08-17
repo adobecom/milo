@@ -341,9 +341,10 @@ function createGlobeGalleryRuntime(
   // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see readCssVars)
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
-  let W = 0; let
-    H = 0;
+  let W = 0;
+  let H = 0;
 
+  const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
   let pqShown = false;
 
@@ -860,6 +861,8 @@ function createGlobeGalleryRuntime(
     const vh = cssNum('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
   }
+
+  const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
   function formedScrollPx() {
@@ -1708,6 +1711,7 @@ function createGlobeGalleryRuntime(
   // Reduced-motion media query + listener (a mid-session OS toggle rebuilds; see doLayout).
   let reducedMotionMQ = null;
   let reducedMotionHandler = null;
+  let appliedDpr = 0;
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
   let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility
   let textureLoadGeneration = 0;
@@ -1720,16 +1724,10 @@ function createGlobeGalleryRuntime(
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
 
     // RM: canvas into normal flow so the globe scrolls away. See README (Reduced motion).
-    if (reducedMotion) {
-      canvas.style.position = 'absolute';
-      canvas.style.top = '8vh';
-    } else {
-      canvas.style.position = '';
-      canvas.style.top = '';
-    }
+    canvas.style.position = reducedMotion ? 'absolute' : '';
 
     W = window.innerWidth;
-    H = window.innerHeight;
+    H = measureViewportH();
 
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
@@ -1742,7 +1740,8 @@ function createGlobeGalleryRuntime(
       renderer = null;
       return false;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    appliedDpr = Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(appliedDpr);
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     renderer.sortObjects = false; // we manage order via mesh.renderOrder
@@ -1763,8 +1762,10 @@ function createGlobeGalleryRuntime(
 
     // Only the resize path passes fromResize — see README (doLayout cost control).
     function doLayout({ fromResize = false } = {}) {
+      measureBlock();
+      readCssVars();
       const nextW = window.innerWidth;
-      const nextH = window.innerHeight;
+      const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) return;
       W = nextW;
       H = nextH;
@@ -1779,10 +1780,11 @@ function createGlobeGalleryRuntime(
         if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
-      measureBlock();
-      readCssVars();
-      // Re-apply DPR (can change when dragging between monitors of different density).
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const dpr = Math.min(window.devicePixelRatio, 2);
+      if (dpr !== appliedDpr) {
+        appliedDpr = dpr;
+        renderer.setPixelRatio(dpr);
+      }
       renderer.setSize(W, H);
       modal.resize(W, H);
       camera.aspect = W / H;
@@ -1824,7 +1826,7 @@ function createGlobeGalleryRuntime(
 
     // Page height changes shift offsetTop; blockHeight=0 at first paint → progress=Infinity.
     if (layoutObs) layoutObs.disconnect();
-    layoutObs = new ResizeObserver(() => { measureBlock(); readCssVars(); });
+    layoutObs = new ResizeObserver(() => doLayout({ fromResize: true }));
     layoutObs.observe(document.body);
 
     if (intersectionObs) intersectionObs.disconnect();

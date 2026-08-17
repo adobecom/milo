@@ -103,7 +103,7 @@ Who writes what:
 
 | | fields |
 | --- | --- |
-| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH`, `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
+| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
 | `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
@@ -413,9 +413,20 @@ authored product links.
 ### Hanging the opening mark
 
 The pull-quote outdents its opening quote into the margin, so the first line's text meets the
-same column the rest of the quote and the name/role below it sit on. `hanging-punctuation: first`
-(`.css`) does this natively but **only in WebKit**; `hangOpeningMark` (`authoring.js`) reproduces
-it everywhere else by measuring the mark and setting a negative `text-indent`.
+same column the rest of the quote and the name/role below it sit on. `hangOpeningMark`
+(`authoring.js`) does this in **every** browser by measuring the mark and setting a negative
+`text-indent` in `em`.
+
+**`hanging-punctuation: first` is deliberately not used.** It's the native spelling of this and it
+was in the CSS, gated by `CSS.supports` so the measurement only ran where the property is missing
+(Chrome, which has never shipped it). That split the behaviour by *character*: **WebKit hangs only
+`Ps`/`Pi`/`Pf`** — `“` `«` `(` all hang — **and not ASCII `"` or `'`**, which the CSS Text hangable
+set includes and this block's regex therefore includes too. So an authored straight `"` (what
+translators and DA authors actually type) outdented in Chrome and sat inline on iOS Safari, while a
+curly `“` worked in both. Measured in Playwright WebKit vs Chromium on a replica of this exact
+structure (`quote-hang-probe.cjs`); `CSS.supports` is `true` in WebKit either way, so no feature
+query can express the difference. The measurement now runs unconditionally and the property stays
+out of the CSS entirely — re-adding it would double-outdent WebKit on the marks it does hang.
 
 **Measured, not tabulated.** The mark and its width both change by locale — `“` (~0.49em), `«`,
 `„`, `「` (a full em) — and *which* mark appears comes from the **authored copy, not the page's
@@ -424,14 +435,14 @@ character and measures that glyph in the font the locale actually resolved, rath
 per-locale table that would be both unmaintainable and keyed on the wrong thing.
 
 **Which characters count** — Unicode general categories, matching the set CSS Text hangs, so the
-fallback and WebKit's native path act on identical characters:
+measured outdent acts on exactly the characters the spec would hang:
 
 | Category | Meaning | Examples |
 | --- | --- | --- |
 | `Ps` | open bracket | `(` `「` `（` — and `„` `‚`, which Unicode files as brackets, not quotes |
 | `Pi` | initial quote | `“` `‘` `«` `‹` |
 | `Pf` | final quote | `”` `’` `»` `›` — several locales **open** on these (sv/fi `”`, da `»`) |
-| + `"` `'` | ASCII | category `Po`, since one character serves as both opener and closer |
+| + `"` `'` | ASCII | category `Po`, since one character serves as both opener and closer — and the one WebKit's native path skips |
 
 Categories rather than a literal list, so a new locale needs no code change. `Pe` closers (`」`),
 dashes, and the rest of `Po` (`!` `¿`) are excluded.
@@ -439,9 +450,9 @@ dashes, and the rest of `Po` (`!` `¿`) are excluded.
 **Full-width CJK brackets are skipped**, on two tests: the mark measuring **≥ 0.8em** (`「『（` run
 ~0.96em vs ~0.55em for the widest Latin quote `«`, so the cutoff isn't delicate), or **exceeding the
 padding**, where it would be shoved past the viewport edge into the block's `overflow-x: clip` and
-sheared. Either test suppresses the hang **including WebKit's native one**, so every browser lands on
-the same result. The width test is what makes that result breakpoint-independent: `--gg-copy-pad`
-(24→48→64) and `heading-1` (40→56→80px) step at *different* widths, so the padding test alone leaves
+sheared. Either test leaves the mark inline. The width test is what makes that result
+breakpoint-independent: `--gg-copy-pad` (24→48→64) and `heading-1` (40→56→80px) step at *different*
+widths, so the padding test alone leaves
 `768–1023` a band where a `「` fits and hangs while being suppressed everywhere else — and since the
 measurement runs once at init, a later resize would strand it and shear.
 
@@ -533,6 +544,67 @@ Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets t
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
 
+### One viewport height
+
+`H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
+`.globe-gallery-world`'s `offsetHeight`: that box is `height: 100vh` and it is the canvas' own parent,
+so `measureViewportH()` is a direct read of 100vh in px, straight from CSS. Scroll clocks and rendering
+both use it, and it is the only viewport height here.
+
+**Why not the window.** On iOS the URL bar resizes the *layout* viewport: `innerHeight` shrinks and
+grows mid-scroll — every change of scroll direction collapses or restores it — while `vh` resolves
+against the large viewport and never moves (measured on-device: `100vh` and `worldH` held at 1005 while
+`innerHeight` went 1005 → 952). Two separate failures came out of reading the window, and one number
+fixes both:
+
+| what read `innerHeight` | what the bar did to it |
+| --- | --- |
+| `formPx` + the entry ramps (scroll → `progress`) | `blockHeight` is `vh`-based and `formPx` was not, so they disagreed by the bar × 3.04 (~150–250px of scroll). Each collapse *rewound* `progress`: the barrel visibly re-played. Where in the timeline it landed depended on when that browser moves the bar (Safari mid-run, Chrome iOS right at the start — same cause). |
+| `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter, because iOS delivers it all in one `resize` at settle. |
+
+A URL-bar move is now a **complete no-op**: `doLayout` re-reads the same `H` and takes its
+unchanged-`W`/`H` exit. Verified in the harness (`innerHeight` shadowed 90px smaller at a fixed
+`scrollY`): camera z identical in the formation *and* tail phases, `arcOp` identical, zero writes to
+`canvas.width`/`height`. Confirmed on-device with `gg-viewport-hud.js` (harness dir), which overlays
+`innerHeight` / a live `100vh` probe / `worldH` / the drawing buffer / a `canvas.width` write counter
+per resize event — the settle-time row reads `cvBox` and `buf` unchanged with `writes` flat.
+
+**The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
+its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area.
+That matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`, the quote rail
+is `top: 50vh`), so the WebGL layer and the DOM chrome now agree instead of being mis-registered by
+the bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
+artifact being removed. The modal's chrome stays on `100dvh` (its buttons must stay reachable); only
+its photo canvas rides `H`, and the scroll lock means the bar can't move while it's open.
+
+**Consequences worth knowing:**
+- **`1` while the section is hidden.** `display: none` → `offsetHeight` 0, clamped to 1 so nothing
+  divides by zero. Everything sized from `H` is recomputed at the un-hide, and the `IntersectionObserver`
+  keeps the ticker parked until then, so no frame is ever drawn at that size.
+- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand — that un-hide
+  arrives as a body resize with *no window resize behind it*, so it is the only thing that upgrades `H`
+  at that moment. `measureBlock()` + `readCssVars()` sit above the exit so this stays exactly as cheap
+  as the bare measure it replaced. Verified (`HIDDEN=1`): the buffer starts at the clamp and lands on
+  100vh × DPR after the un-hide.
+- **Reduced motion needs no branch.** `.globe-gallery-reduced` leaves `.globe-gallery-world` at
+  `height: 100vh` and only un-sticks it, so `measureViewportH()` is exact in both modes (verified: the
+  RM drawing buffer is the same 100vh × DPR as the non-RM one). Keep it that way — a `vh` override on
+  that element would put an imprecision into the one function every clock depends on.
+- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 4389→3120 and the same
+  *fraction* of the runway holds the same phase (camera z within 0.02).
+
+**Why not a viewport unit instead?** No unit choice removes the problem, because the gap is between a
+CSS length and a JS number — JS still has to learn how many px that unit produced:
+- **`lvh`** is what `vh` already means here (spec: `vh` = large viewport), so `100lvh` would be pure
+  documentation; `svh` is constant too. Neither changes anything.
+- **`dvh`** *would* make CSS agree with `innerHeight` — by making the box grow and shrink mid-scroll.
+  Put it on `.globe-gallery-world` and `H` tracks the bar again, pop included; put it on
+  `--gg-runway-height` and the runway rescales under the scroll mapping instead. Either way the
+  artifact returns by a different route. Don't.
+- **Scroll-driven animations** would hand the whole mapping to CSS, but reading progress back per
+  frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
+  wouldn't help the render side at all.
+
 **CSS is the source of truth for all three props**, read per layout in `readCssVars()`, so retuning is
 a CSS-only edit:
 
@@ -549,25 +621,28 @@ properties exist. Two rules make an unresolved read harmless rather than somethi
 substitute value:
 
 - `readCssVars()` **leaves the previous value in place** when a property doesn't resolve, instead of
-  writing a fallback. So `formationVh` / `pqAppearZoomT` keep their declared initializers (`0` /
-  `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
+  writing a fallback. So `formationVh` / `pqAppearZoomT` keep their declared initializers
+  (`0` / `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
   unresolved read would otherwise poison `progress` and silently kill the animation. Its `cssNum`
   helper tests `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
 - **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
   formPx)`, `Math.max(1, blockHeight - formPx)`) and clamped, so a pre-stylesheet frame renders at
   `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn
-  this into a crash.
+  this into a crash. `measureViewportH()` clamps to `1` for the same reason: it is a divisor too.
 
-`layoutObs` then calls `readCssVars()` alongside `measureBlock()`, which is what guarantees the real
-values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
+`layoutObs` → `doLayout()`, whose first act is `measureBlock()` + `readCssVars()`, is what guarantees
+the real values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
 section (`main .section[data-status='pending'] { display: none }`) only after `Promise.all([styleLoaded,
 scriptLoaded])`, and that un-hide changes the body height, so the `ResizeObserver` is guaranteed to
 fire at least once with the stylesheet applied. Re-reading on every body resize is free next to the
-`getBoundingClientRect()` `measureBlock()` already does there.
+`getBoundingClientRect()` `measureBlock()` already does there, and `doLayout`'s unchanged-`W`/`H` exit
+means nothing beyond those two reads runs on a fire that changes neither.
 
-`measureBlock()` (from `doLayout` and `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
-is plain `offsetHeight`, itself CSS-driven, so `--gg-runway-height` is never read from JS at all — and
-needs no fallback either, since `offsetHeight` is `0` (never `NaN`) while the section is hidden.
+`measureBlock()` (`doLayout`, so also `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
+is plain `offsetHeight`, itself CSS-driven, and needs no fallback either, since `offsetHeight` is `0`
+(never `NaN`) while the section is hidden. `--gg-runway-height` is never read from JS at all — `H` comes
+off `.globe-gallery-world` instead (see **One viewport height**), so the runway's size lives in exactly
+one place.
 
 So **no JS file anywhere holds a copy of these three numbers** — not even for docs. The event table's
 `vh` column needs the runway lengths, but Milo ships `timeline.js` unbundled and byte-for-byte, so a
@@ -948,18 +1023,25 @@ resolves the preference, and persists across rebuilds, so a snapshot would go st
 normal flow. The preference is **re-read on every `initRuntime`**, and a
 `matchMedia('(prefers-reduced-motion: reduce)')` `change` listener feeds `doLayout`, so toggling
 the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
-change (no reload; the non-RM path clears the canvas `position`/`top` so a toggle-off reverts
-cleanly). The pieces:
+change (no reload; the non-RM path clears the canvas `position` so a toggle-off reverts cleanly).
 
-- **Canvas** — `position:absolute` + `top:8vh` (not `fixed`), inside the now-`relative`
-  `.globe-gallery-world`, so it scrolls and clips with the page; `updateCanvasVisibility` reveals it
-  once (no coverage math).
-- **`.globe-gallery-world`** — `position:relative` (was sticky); height `108vh` = 8vh + the canvas.
+**RM overrides `position` and nothing else** for the three viewport-sized boxes — no duplicated
+geometry, and `measureViewportH()` reads the same 100vh in both modes. That works because the base
+rules are written against the canvas box rather than the window: `.globe-gallery-a11y` sits at
+`top: 50vh` (not `50%`) and `.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so
+each resolves identically whether it's `fixed` to the viewport or `absolute` inside the
+`100vh` `.globe-gallery-world`. It also fixes the focus-ring overlay on iOS, where `inset: 0` on a
+`fixed` element tracked `innerHeight` and so mis-scaled the ring by the URL bar's height (the ring is
+positioned in canvas px). The pieces:
+
+- **Canvas** — `position:absolute` (not `fixed`), inside the now-`relative` `.globe-gallery-world`, so
+  it scrolls and clips with the page; `updateCanvasVisibility` reveals it once (no coverage math).
+- **`.globe-gallery-world`** — `position:relative` (was sticky); keeps its base `height: 100vh`.
 - **Globe size (desktop)** — the formed `md` sphere fills ~93% of viewport height, so `buildCards`
   scales `sphereGroup` by `RM_GLOBE_SCALE_MD` on md to bring the whole ball in view (rotation
   is per-card, so a group scale is safe). `sm` (~49%) stays 1.
-- **A11y widget** — `position:absolute` (was fixed), re-centred at `top:58vh` since the base
-  `top:50%` would track the taller world.
+- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); the base `top: 50vh` /
+  `100vh` box already centre on the sphere, so neither override carries any offset.
 - **Pull-quote** — drops `absolute`/`sticky` → `static`, forced `opacity:1`, hugs the top of its
   box so it sits under the globe; `updatePullQuote` early-returns (CSS owns it).
 - **Arc-copy** — `display:none` (no arc phase; a fixed pill would hang over the scrolling page).
@@ -979,16 +1061,26 @@ the cheap path (renderer/camera resize). The `resize` handler is the sole driver
 boundary — no `matchMedia` listener for 768px. The one `matchMedia` `change` listener is for
 reduced motion (see Reduced motion); pointer precision is read at init only (see Shape).
 
-**`doLayout` cost control.** `resize` fires ~once per frame during a desktop window drag, and once
-mid-scroll whenever iOS Safari collapses the URL bar (changing `innerHeight`) — the latter landing
-inside the formation animation. So the handler is split three ways:
-- Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. Only the
-  `resize` path takes this exit (`doLayout({ fromResize: true })`); the init call and the
+**`doLayout` cost control.** `resize` fires ~once per frame during a desktop window drag. On iOS it
+does **not** fire during the URL-bar animation: `visualViewport` resizes many times as the bar moves
+(and `innerHeight` reports the new value throughout), then `window.resize` fires **once, at settle** —
+so every resize-driven cost lands in a single event, at the one moment the eye is already tracking the
+bar. Measured on-device with `gg-viewport-hud.js`; nothing here listens to `visualViewport`, so the
+animation itself costs zero. So the handler is split four ways:
+- Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. `H` is an
+  `offsetHeight`, so that compare is exact integers. This
+  is the exit an iOS bar move takes, since `H` doesn't depend on `innerHeight` — see **One viewport
+  height**. Only the `resize` path takes it (`doLayout({ fromResize: true })`); the init call and the
   reduced-motion `change` listener run with the viewport unchanged and must still execute the body.
   Both listeners are wrapped rather than passed `doLayout` directly, or the event argument would land
   in its options object.
+- **DPR is re-applied only when it actually changed** (`appliedDpr`, and `appliedModalDpr` in
+  `modal.js`). `setPixelRatio` calls `setSize(_width, _height, false)` internally, so an unconditional
+  call reallocates the drawing buffer at the *old* dimensions immediately before our `setSize`
+  reallocates at the new ones — two full reallocations per resize, per canvas. Measured with a
+  `canvas.width`/`height` write counter: 4 writes → 2 on a genuine resize.
 - Renderer/camera/`computeGridLayout()` stay **synchronous** — a stale `W`/`H` renders the canvas
-  stretched and desyncs `formedScrollPx()`.
+  stretched and mis-sizes the arc grid against the viewport it's laid out in.
 - `buildTextMesh()` is **trailing-debounced** (`TEXT_REBUILD_DEBOUNCE_MS`), but only while
   `textMesh.visible` is false — it disposes a GPU texture, redraws a 2D canvas and uploads a new one.
   On screen it rebuilds synchronously, since a deferred rebuild would leave it stretched at the old
@@ -1008,6 +1100,21 @@ rebuild would otherwise inherit:
   it tilted until a scroll-out zeroed it.
 
 ## CSS
+
+**Viewport units — one rule per axis.** The block never reads the window in CSS either, for the same
+reason the JS doesn't (see **One viewport height**):
+
+| axis | use | never |
+| --- | --- | --- |
+| vertical | **`vh`** — resolves against the large viewport, so it matches the canvas box and holds still while the iOS URL bar moves | `%` on a `fixed`/`sticky` box (that's the *layout* viewport, which the bar shrinks: `top: 50%` put the a11y widget ~26px off the sphere whenever the bar showed), and `dvh` anywhere the scroll timeline can see |
+| horizontal | **`%`** — the containing block / ICB width, which excludes the classic-scrollbar gutter | `vw`, which *includes* it: a `vw`-sized `fixed` box is ~15px wider than the viewport on desktop, and `--gg-content-inset` built from `100vw` put the arc copy half a scrollbar off the pull-quote's column it is supposed to share |
+
+There is no `vw` left in the block. The one place two axes had to share an expression —
+`.globe-gallery-a11y`'s square — uses `width: min(80%, 80vh)` + `aspect-ratio: 1` rather than
+repeating a `min()` per axis, since `%` on `height` would mean the wrong thing. **`dvh` is the modal
+chrome only** (`.globe-gallery-modal-chrome`, the description's `max-height`): that layer *must* stay
+inside the visible viewport so its buttons stay reachable while the bar is up, and it can't disturb the
+timeline because opening the modal locks the scroll.
 
 **Tokens.** Every spacing, radius, border-width, font-size, font-weight and blur value that lands on
 an S2A scale uses the token, not the literal — including positional insets (`bottom`,
@@ -1045,7 +1152,7 @@ this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`
 brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
 inherit a stranger's value from an ancestor. The only props read from JS are `--gg-formation-vh` /
-`--gg-pq-pin-factor` in `readCssVars()` — grep both files before renaming one. **No prop is written
+`--gg-runway-height` / `--gg-pq-pin-factor` in `readCssVars()` — grep both files before renaming one. **No prop is written
 from JS**: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
 retune stays a CSS-only edit and no magic number is stranded in JS. Only `--s2a-*` tokens come from upstream, and one of them
@@ -1750,6 +1857,10 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     globe drag while `drag.isDragging` is still true — e.g. `updateHintExitProgress` skips it, or its
     hold-time term would retire the hint during ordinary scrolling. Gated on `drag.isDragging`
     (`isTouchDrag` persists after pointerup).
+  - **Both canvases are `user-select: none` + `-webkit-touch-callout: none`** (`.css`). A long press
+    on iOS Safari otherwise selects the canvas as a replaced element — blue overlay, Copy callout —
+    and the selection takes the pointer away, so WebKit fires `pointercancel` and `cancelDrag` drops
+    the in-flight spin. Scoped to the canvases, so the quote and the modal copy stay selectable.
   - No dwell needed: touch scrolling is self-terminating, so on lift the sphere is stationary and
     `sphereFormT >= 0.8` holds — scroll and spin are mutually exclusive in time. (How easy it is to
     *land* on the pristine formed globe is a pacing matter — see Open items.)
