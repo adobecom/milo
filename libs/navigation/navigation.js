@@ -287,11 +287,13 @@ export default async function loadBlock(configs, customLib) {
         try {
           const metaTags = [
             { key: 'footerSource', name: 'footer-source' },
+            { key: 'footerFoundation', name: 'footer-foundation' },
           ];
           const footerConfigs = {
             ...block,
             footerSource,
             isContainerResponsive: configBlock.isContainerResponsive,
+            footerFoundation: isC2Footer ? 'c2' : undefined,
           };
 
           setMetaTags(metaTags, footerConfigs, createTag);
