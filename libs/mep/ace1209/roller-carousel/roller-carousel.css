@@ -206,7 +206,7 @@
     }
 
     .rcc-content {
-      padding-top: var(--rcc-top-ga);
+      padding-top: var(--rcc-top-gap);
     }
 
     .rcc-sticky {
