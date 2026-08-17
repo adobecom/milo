@@ -269,7 +269,7 @@ function createReflow({
   return () => {
     const vh = window.innerHeight;
     const w = window.innerWidth;
-    if (w < L_BREAKPOINT) {
+    if (w < 768) {
       setReflow(true);
       return;
     }
