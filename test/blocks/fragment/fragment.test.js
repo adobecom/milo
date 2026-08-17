@@ -250,7 +250,8 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.setItem('akamai', 'ch');
     stubQueryIndex();
     const currentConfig = getConfig();
-    const a = document.querySelector('a.mep-lingo-frag');
+    const a = document.querySelector('a[href="/fragments/mep-lingo-test#_mep-lingo"]');
+    const section = a.closest('.section');
     await simulateDecorateLinks(a);
     // decorate localized the href with a region prefix and captured the authored href
     expect(a.dataset.mepLingo).to.equal('true');
@@ -283,11 +284,48 @@ describe('MEP Lingo Fragments', () => {
     // so the replacement was not reprocessed through the lingo fetch/fallback path.
     expect(a.dataset.mepLingo).to.be.undefined;
     expect(a.dataset.originalHref).to.be.undefined;
-    const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
     expect(frag.dataset.mepLingoRoc).to.be.undefined;
     expect(frag.dataset.mepLingoFallback).to.be.undefined;
+  });
+
+  it('applies a MEP remove to a mep-lingo link keyed off originalHref', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    const a = document.querySelector('a[href="/fragments/mep-lingo-test#_mep-lingo"]');
+    const parent = a.parentElement;
+    const section = a.closest('.section');
+    await simulateDecorateLinks(a);
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.originalHref).to.exist;
+
+    // Key by the authored path on a different origin — only originalHref match resolves this.
+    const origPath = new URL(a.dataset.originalHref).pathname;
+    const fragKey = `https://main--federal--adobecom.aem.page${origPath}`;
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [fragKey]: {
+            action: 'remove',
+            fragment: fragKey,
+            selector: fragKey,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // Remove won: parent gone, no lingo fragment rendered.
+    expect(parent.isConnected).to.be.false;
+    expect(section.querySelector('a')).to.be.null;
+    expect(section.querySelector('.fragment')).to.be.null;
   });
 
   it('re-resolves a mep-lingo replacement regionally instead of clearing it', async () => {
