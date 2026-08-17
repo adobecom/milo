@@ -177,6 +177,8 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
     left,
     header,
     carousel,
+    sticky,
+    categoryWrapper,
     categoryLabel,
     divider,
     listWrapper,
@@ -266,6 +268,11 @@ function createReflow({
   };
   return () => {
     const vh = window.innerHeight;
+    const w = window.innerWidth;
+    if (w < L_BREAKPOINT) {
+      setReflow(true);
+      return;
+    }
     if (!block.classList.contains('rcc-reflow')) {
       const dividerOffset = divider.getBoundingClientRect().bottom
         - content.getBoundingClientRect().top;
@@ -282,7 +289,7 @@ function createReflow({
 
 function initScroll(block, refs, apps) {
   const {
-    bg, scrollWrapper, content, left, header, carousel,
+    bg, scrollWrapper, content, left, header, carousel, sticky, categoryWrapper,
     categoryLabel, divider, listWrapper, list, media,
   } = refs;
 
