@@ -177,6 +177,8 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
     left,
     header,
     carousel,
+    sticky,
+    categoryWrapper,
     categoryLabel,
     divider,
     listWrapper,
@@ -282,7 +284,7 @@ function createReflow({
 
 function initScroll(block, refs, apps) {
   const {
-    bg, scrollWrapper, content, left, header, carousel,
+    bg, scrollWrapper, content, left, header, carousel, sticky, categoryWrapper,
     categoryLabel, divider, listWrapper, list, media,
   } = refs;
 
@@ -291,6 +293,16 @@ function initScroll(block, refs, apps) {
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
 
   const activate = createActivate({ items, mediaSlides, bgSlides, categoryLabel, apps });
+
+  const setupCssAnimationVars = () => {
+    block.style.setProperty('--rcc-scroll-start', `${Math.round(block.getBoundingClientRect().top + window.scrollY)}px`);
+    categoryWrapper.style.animationName = 'none';
+    const delta = categoryWrapper.getBoundingClientRect().top - sticky.getBoundingClientRect().top;
+    categoryWrapper.style.animationName = '';
+    block.style.setProperty('--rcc-category-translate', `${Math.max(0, delta - 64)}px`);
+  };
+  setupCssAnimationVars();
+
   const updatePosition = createUpdatePosition({
     block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,
   });
@@ -303,6 +315,7 @@ function initScroll(block, refs, apps) {
 
   evaluateReflow();
   window.addEventListener('resize', () => {
+    setupCssAnimationVars();
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
