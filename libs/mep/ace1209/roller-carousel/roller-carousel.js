@@ -4,6 +4,7 @@ import { decorateViewportContent } from '../../../utils/decorate.js';
 const SCROLL_PER_APP = 200;
 const M_BREAKPOINT = 1024;
 const L_BREAKPOINT = 1280;
+const S_BREAKPOINT = 768;
 const MIN_ROLLER_ROOM = 120;
 
 function prepPic(picture) {
@@ -269,7 +270,7 @@ function createReflow({
   return () => {
     const vh = window.innerHeight;
     const w = window.innerWidth;
-    if (w < L_BREAKPOINT) {
+    if (w < S_BREAKPOINT) {
       setReflow(true);
       return;
     }
