@@ -467,6 +467,13 @@ function boxToPercent(box, nodeBox) {
   };
   const t = OUT_OF_RANGE_TOLERANCE;
   if (pct.left < -t || pct.left > 100 + t || pct.top < -t || pct.top > 100 + t) return null;
+  // The day's screenshot captures the tracked frame's box once, but its
+  // changedElements can come from any version that day — if the frame grew
+  // taller/wider later that day, an element's box can land just past the
+  // captured edge. Clamp into the visible image instead of letting it
+  // dangle off the edge as a near-invisible sliver.
+  pct.top = Math.min(Math.max(pct.top, 0), Math.max(100 - pct.height, 0));
+  pct.left = Math.min(Math.max(pct.left, 0), Math.max(100 - pct.width, 0));
   return pct;
 }
 
