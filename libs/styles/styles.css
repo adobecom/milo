@@ -175,17 +175,17 @@
   --body-font-family: adobe-clean-thai, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
-:root header.gnav-c1-host {
+:root header.c2-gnav-c1-host {
   --global-height-nav: 80px;
   --global-height-breadcrumbs: 46px;
 }
 
-:root header.gnav-c1-host.is-compact:has(.feds-localnav-bar) {
+:root header.c2-gnav-c1-host.is-compact:has(.feds-localnav-bar) {
   --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
 }
 
 @media (max-width: 1023px) {
-  :root header.gnav-c1-host:has(.feds-localnav-bar) {
+  :root header.c2-gnav-c1-host:has(.feds-localnav-bar) {
     --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
   }
 }
@@ -782,13 +782,13 @@ header.global-navigation + .feds-localnav {
 }
 
 /*
-  gnav-c1-host (federal gnav mounted on a milo C1 page) excluded: the federal
+  c2-gnav-c1-host (federal gnav mounted on a milo C1 page) excluded: the federal
   bundle's own CSS already makes .feds-promo-aside-wrapper position: fixed and
   drives body padding-top from the promo's real height, so the sticky header
   renders below it natively. These declarations are for milo's legacy gnav
   only and would otherwise fight federal's for the same properties.
 */
-.feds-promo-aside-wrapper:not(:has(+ header.gnav-c1-host)) {
+.feds-promo-aside-wrapper:not(:has(+ header.c2-gnav-c1-host)) {
   position: sticky;
   top: 0;
   z-index: 11;
@@ -812,7 +812,7 @@ sr-only, .sr-only, .feds-sr-only {
   border: 0;
 }
 
-header.global-navigation.has-promo:not(.gnav-c1-host) {
+header.global-navigation.has-promo:not(.c2-gnav-c1-host) {
   top: var(--global-height-navPromo);
 }
 
@@ -828,7 +828,7 @@ body.mweb-enabled {
 }
 
 @media (min-width: 900px) {
-  header.global-navigation.has-breadcrumbs:not(.gnav-c1-host) {
+  header.global-navigation.has-breadcrumbs:not(.c2-gnav-c1-host) {
     padding-bottom: var(--global-height-breadcrumbs);
   }
 
@@ -842,11 +842,6 @@ body.mweb-enabled {
     padding-bottom: var(--global-height-breadcrumbs);
   }
 }
-
-/* header.global-navigation.gnav-c1-host.feds-header-scrolled {
-  padding-bottom: 0;
-  height: 0;
-} */
 
 .breadcrumbs {
   display: none;

@@ -4,7 +4,7 @@
   full C2 pages). On C1 pages using the gnav-foundation override, the gnav
   needs to be opaque and push page content down instead of floating over it.
 */
-header.global-navigation.gnav-c1-host {
+header.global-navigation.c2-gnav-c1-host {
   position: sticky;
   top: 0;
   background-color: var(--feds-background-nav, #fff);
