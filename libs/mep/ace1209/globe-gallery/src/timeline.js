@@ -55,8 +55,9 @@ export const SLIDE_IN_PROGRESS = 0.07;
 
 // --- Gates, each in its own clock's space ---
 
-// sphereFormT
-export const SPHERE_INTERACTIVE_T = 0.8;
+// sphereFormT. One gate for everything that says or does "the globe is live": hover, click, drag,
+// auto-rotate, desktop cursor, hint-plane entrance. Sits just past the first card landing (0.884).
+export const SPHERE_INTERACTIVE_T = 0.9;
 export const DEPTH_SORT_FORM_T = 0.5;
 export const SPHERE_ORIENT_RESET_T = 0.01;
 export const TEXT_APPEAR_START = 0.10;

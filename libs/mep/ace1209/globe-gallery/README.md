@@ -666,9 +666,9 @@ cards       ###arc##|#####peel to grid######|..........peel done............
                        |##################fold to sphere####################
 camera      ..ortho.|#############perspective -> CAM_Z_SPHERE###############
 arc-copy    ######visible######|~~~~~~~~~~~~~~fade out~~~~~~~~~~~~~~~|gone..
-hint text   ....hidden...|##############warp in -> faint rest###############
+hint text   ....hidden...|#############warp in -> faint##############|#rest#
 depth sort  ................off................|############on##############
-input       ........................inert.......................|###live####
+input       ..........................inert..........................|#live#
 ```
 
 The overlap in the top two lanes is the point of `FOLD_PEEL_OVERLAP`: the first cards begin folding
@@ -706,8 +706,9 @@ constant moves, don't hand-edit. `vh` assumes the `CSS_FALLBACK` runway/formatio
 | 90 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
 | 156 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
 | 170 | 0.180 | `sphereFormT > DEPTH_SORT_FORM_T` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
-| 251 | 0.265 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled | `updateSphereRotation`, `updateCardTransform` |
+| 273 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.884) | `updateCardTransform` |
 | 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
+| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `updateClickDragText` |
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
 | 376 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
 | 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
@@ -751,6 +752,7 @@ row('fold starts / sphereFormT>0', T.FOLD_FIRST_PROGRESS);
 row('hint text appears', T.progressAtFormT(T.TEXT_APPEAR_START));
 row('arc-copy fade start', T.ARC_COPY_OUT_START);
 row('depth sort on', T.progressAtFormT(T.DEPTH_SORT_FORM_T));
+row('first card on the shell', T.cardFoldStartProgress(0) + T.PROGRESS_FOLD_DUR);
 row('interactive', T.progressAtFormT(T.SPHERE_INTERACTIVE_T));
 row('arc-copy gone', T.ARC_COPY_OUT_END);
 row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
@@ -1143,7 +1145,14 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = -1`), so it rotates with the globe and
   draws behind the cards. Hidden until `sphereFormT > TEXT_APPEAR_START`, then warps in (barrel
   warp + particle dissolve via `TEXT_FRAG`), settles to a faint resting opacity (`TEXT_OPACITY_PEAK
-  0.15 → RESTING 0.06`), fades out over the zoom. Sized to fill the frustum at its live camera
+  0.15 → RESTING 0.06`), fades out over the zoom. **The entrance resolves on
+  `SPHERE_INTERACTIVE_T`, not at `sphereFormT` 1**: `sfT` remaps `[TEXT_APPEAR_START,
+  SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes live and the cursor
+  arrives. Running it to 1 (the original) left the hint still visibly warping in for 27vh *after* the
+  thing it names was already draggable — measured `uWarp` 0.946 of `TEXT_WARP_ENTER_MAX` 4.5 still
+  active at the gate, now 0.002. The plane's *scale* is unaffected and keeps tracking `foldSphDist`
+  to 1.0 at `sphereFormT` 1; that is distance compensation, not entrance, and holds apparent size
+  constant. Sized to fill the frustum at its live camera
   distance (`textPlaneSize` × a per-frame scale off `frame.foldSphDist`), with warp-proportional
   overflow so letterforms bleed off-screen. On **first drag** it dissolves away permanently:
   `textExitProgress` (0→1, from drag distance + hold time + velocity) drives the shader's `uExitP`;
@@ -1420,9 +1429,20 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     (0.25 → −0.20 clearance). `0` is an exact cylinder. The layout returns a per-card **`normal`**
     and `buildCards` aims each card along it (target = `pos − normal`, since `lookAt` points local +Z
     from target toward eye) — a plain `lookAt` at the axis would ignore the slope.
-  - **Near-camera fade scales with each card's OWN rendered height** (`card.sphereWorldH`), not
-    `bp.CARD_H_SPHERE` (only the `PlaneGeometry` base on this path; solved heights run 8.7–19.6). Per
-    card gives every card the intended ~1.85× fill-margin at any band/count/bulge.
+  - **Near-camera fade bands off ONE wall-wide height** (`fadeRefH`, the mean `sphereWorldH`,
+    recomputed alongside `dragFlipZ`) — **not** each card's own height, and not `bp.CARD_H_SPHERE`
+    (only the `PlaneGeometry` base on this path). Per-card was the original choice, for a constant
+    fill-margin, but it makes the trigger a function of *size* while the metric is *depth*, and on
+    this layout those fight: heights span ~2.4× (measured 6.5–15.9), so a tall card starts dissolving
+    ~2.4× farther out than a short one at the same azimuth. Since `pack` places **tallest-first at
+    `offset = 0`** — the top of each column — the tall cards ARE the top row, so the top row always
+    went first and the physically nearest card often went last (measured at `camZ 39.5`: the closest
+    card, depth 23.6, was 31% dispersed while one 5 units *farther* was 96%). One shared band restores
+    the read the fly-through wants: nearest goes first, and since a barrel column shares one azimuth
+    (hence one `z`), the whole column — top, middle and bottom — comes apart together. The cost is
+    that a tall card is a bigger share of the frame when it finally vanishes; `NEAR_FADE_START`/`_END`
+    are the dial if that goes too far. `dragFlipZ` uses `fadeRefH` too, so the flip still lands
+    exactly where cards vanish.
   - **Drag-flip threshold is DERIVED, not `SPHERE_R`** (`dragFlipZ = maxRadial + NEAR_FADE_END ×
     CARD_H_SPHERE`, in `buildCards`, read by `updateActiveCamera`). Once the camera is inside the
     shell the far wall moves opposite the same rotation, so the drag delta is negated. Firing at the
@@ -1541,6 +1561,16 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     constant across window sizes: a bigger ball on screen needs *fewer* rad/px, which one fixed
     number got wrong in both directions — over-geared on a tall desktop window, under-geared on a
     phone. Drag by the ball's on-screen radius and it turns `90° × DRAG_GEARING`.
+  - **`SPHERE_INTERACTIVE_T` is 0.9, not 0.8, because 0.8 is ahead of every card.** Cards land
+    between `sphereFormT` 0.884 (the first) and exactly 1 (the last — its fold end *is*
+    `SPHERE_FORMED_PROGRESS`), so at 0.8 the drag was spinning a swarm still mid-assembly and a tap
+    was being refused on cards that already read as part of the globe. Both went through the same
+    gate, in opposite kinds of wrong. 0.9 sits just past the first landing: something is on the shell
+    to grab and to click. ONE constant for **everything** that says or does "the globe is live":
+    hover, click, drag, auto-rotate, the desktop cursor, and the GL hint plane's entrance. A separate
+    earlier gate for the cursor was tried and reverted — it put the affordance 26vh ahead of the
+    input it advertises, which reads worse than a late cursor. Raycasting was never the problem at
+    any value: a tap below the gate hits (`hits: 1`, harness-measured), `onPointerUp` discards it.
   - **Inertia coasts below `SPHERE_INTERACTIVE_T`; only `SPHERE_ORIENT_RESET_T` zeroes it.**
     Hard-zeroing at the interactive gate stopped a released spin dead whenever the page was still
     settling across it. A drag *started* below the gate stays inert and can't fling on release, and

@@ -361,6 +361,7 @@ function createGlobeGalleryRuntime(
   let sphereDragWarp = 0;
   let cameraInsideSphere = false;
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
+  let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   // "Click & Drag" hint text mesh (built async, null until fonts load) + one-way exit progress.
   let textMesh = null;
   let textExitProgress = 0;
@@ -560,7 +561,7 @@ function createGlobeGalleryRuntime(
   }
 
   // Camera z below which drag inverts, anchored to where cards VANISH so the flip lands with the
-  // dissolve. Recomputed once textures land (sphereWorldH starts at a placeholder).
+  // dissolve; also sets fadeRefH. Recomputed once textures land (sphereWorldH is a placeholder).
   function recomputeDragFlip() {
     if (!sphereGroup || cards.length === 0) return;
     const groupScale = sphereGroup.scale.x || 1;
@@ -568,10 +569,10 @@ function createGlobeGalleryRuntime(
       (m, c) => Math.max(m, Math.hypot(c.spherePos.x, c.spherePos.z)),
       0,
     ) * groupScale;
-    const maxCardH = cards.reduce((m, c) => Math.max(m, c.sphereWorldH), 0) * groupScale;
+    fadeRefH = cards.reduce((s, c) => s + c.sphereWorldH, 0) / cards.length;
     // Clamped below the zoom-start distance so the flip stays inside the zoom-through.
     dragFlipZ = Math.min(
-      maxRadial + NEAR_FADE_END * maxCardH,
+      maxRadial + NEAR_FADE_END * fadeRefH * groupScale,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
     );
   }
@@ -1240,9 +1241,9 @@ function createGlobeGalleryRuntime(
     // transform stale, which scroll jitter shows as a flash.
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
     if (depth <= 0) { mesh.visible = false; return; }
-    // Thresholds scale with THIS card's rendered height (card.sphereWorldH), not the geometry base.
-    const fadeEnd = NEAR_FADE_END * card.sphereWorldH;
-    const fadeStart = NEAR_FADE_START * card.sphereWorldH;
+    // One band for the whole wall (fadeRefH), so the order is purely by depth. See README.
+    const fadeEnd = NEAR_FADE_END * fadeRefH;
+    const fadeStart = NEAR_FADE_START * fadeRefH;
     const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
     // Skip the DRAW (not the state updates) once fully faded. See README (near-camera dissolve).
     mesh.visible = proxFade > 0;
@@ -1550,8 +1551,9 @@ function createGlobeGalleryRuntime(
     }
 
     const { CAM_Z_SPHERE, SPHERE_R } = bp;
-    // Remap so 0→1 covers [TEXT_APPEAR_START, 1].
-    const sfRaw = (sphereFormT - TL.TEXT_APPEAR_START) / (1 - TL.TEXT_APPEAR_START);
+    // Entrance resolves ON the interactive gate, not at sphereFormT 1. See README (hint text).
+    const sfRaw = (sphereFormT - TL.TEXT_APPEAR_START)
+      / (TL.SPHERE_INTERACTIVE_T - TL.TEXT_APPEAR_START);
     const sfT = Math.max(0, Math.min(1, sfRaw));
     const txtT = easeOutCubic(sfT);
     // Warp: strong at entrance, 0 at rest.
