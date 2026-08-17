@@ -64,6 +64,11 @@ export function createSusiComponentForModal({
 }
 
 async function openSusiLightModal() {
+  window.history.replaceState(
+    {},
+    document.title,
+    `${window.location.pathname}${window.location.search}`,
+  );
   const config = getConfig();
   const { env, locale, imsClientId } = config || {};
   const isStage = env?.name !== 'prod';
@@ -316,7 +321,8 @@ export async function openModal(initialMessage, bootstrap) {
   if (susiListener !== 'signIn:decorateNav') {
     window.addEventListener('signIn:decorateNav', async () => {
       await window.adobeIMS?.refreshToken();
-      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+      const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+      globalNavigation?.reloadUnav?.();
     });
     susiListener = 'signIn:decorateNav';
   }
@@ -356,7 +362,8 @@ export async function openSideModal(initialMessage, bootstrap) {
   if (susiListener !== 'signIn:decorateNav') {
     window.addEventListener('signIn:decorateNav', async () => {
       await window.adobeIMS?.refreshToken();
-      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+      const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+      globalNavigation?.reloadUnav?.();
     });
     susiListener = 'signIn:decorateNav';
   }
