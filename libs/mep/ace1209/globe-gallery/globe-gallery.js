@@ -1724,13 +1724,7 @@ function createGlobeGalleryRuntime(
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
 
     // RM: canvas into normal flow so the globe scrolls away. See README (Reduced motion).
-    if (reducedMotion) {
-      canvas.style.position = 'absolute';
-      canvas.style.top = '8vh';
-    } else {
-      canvas.style.position = '';
-      canvas.style.top = '';
-    }
+    canvas.style.position = reducedMotion ? 'absolute' : '';
 
     W = window.innerWidth;
     H = measureViewportH();

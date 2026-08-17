@@ -586,11 +586,10 @@ its photo canvas rides `H`, and the scroll lock means the bar can't move while i
   at that moment. `measureBlock()` + `readCssVars()` sit above the exit so this stays exactly as cheap
   as the bare measure it replaced. Verified (`HIDDEN=1`): the buffer starts at the clamp and lands on
   100vh × DPR after the un-hide.
-- **Reduced motion reads 108vh**, because `.globe-gallery-reduced` re-declares `.globe-gallery-world`
-  as `height: 108vh` (its `100vh` canvas sits at `top: 8vh`). So RM renders ~8% large. Accepted rather
-  than branched on: a `reducedMotion` special case in the one function every clock depends on costs
-  more than the imprecision, and RM has no scroll animation for it to disturb. The fix, if it ever
-  matters, is CSS — give that element back its `100vh` and put the 8vh offset somewhere else.
+- **Reduced motion needs no branch.** `.globe-gallery-reduced` leaves `.globe-gallery-world` at
+  `height: 100vh` and only un-sticks it, so `measureViewportH()` is exact in both modes (verified: the
+  RM drawing buffer is the same 100vh × DPR as the non-RM one). Keep it that way — a `vh` override on
+  that element would put an imprecision into the one function every clock depends on.
 - A genuine viewport change still lands: 844→600px tall moves `blockHeight` 4389→3120 and the same
   *fraction* of the runway holds the same phase (camera z within 0.02).
 
@@ -1024,18 +1023,25 @@ resolves the preference, and persists across rebuilds, so a snapshot would go st
 normal flow. The preference is **re-read on every `initRuntime`**, and a
 `matchMedia('(prefers-reduced-motion: reduce)')` `change` listener feeds `doLayout`, so toggling
 the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
-change (no reload; the non-RM path clears the canvas `position`/`top` so a toggle-off reverts
-cleanly). The pieces:
+change (no reload; the non-RM path clears the canvas `position` so a toggle-off reverts cleanly).
 
-- **Canvas** — `position:absolute` + `top:8vh` (not `fixed`), inside the now-`relative`
-  `.globe-gallery-world`, so it scrolls and clips with the page; `updateCanvasVisibility` reveals it
-  once (no coverage math).
-- **`.globe-gallery-world`** — `position:relative` (was sticky); height `108vh` = 8vh + the canvas.
+**RM overrides `position` and nothing else** for the three viewport-sized boxes — no duplicated
+geometry, and `measureViewportH()` reads the same 100vh in both modes. That works because the base
+rules are written against the canvas box rather than the window: `.globe-gallery-a11y` sits at
+`top: 50vh` (not `50%`) and `.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so
+each resolves identically whether it's `fixed` to the viewport or `absolute` inside the
+`100vh` `.globe-gallery-world`. It also fixes the focus-ring overlay on iOS, where `inset: 0` on a
+`fixed` element tracked `innerHeight` and so mis-scaled the ring by the URL bar's height (the ring is
+positioned in canvas px). The pieces:
+
+- **Canvas** — `position:absolute` (not `fixed`), inside the now-`relative` `.globe-gallery-world`, so
+  it scrolls and clips with the page; `updateCanvasVisibility` reveals it once (no coverage math).
+- **`.globe-gallery-world`** — `position:relative` (was sticky); keeps its base `height: 100vh`.
 - **Globe size (desktop)** — the formed `md` sphere fills ~93% of viewport height, so `buildCards`
   scales `sphereGroup` by `RM_GLOBE_SCALE_MD` on md to bring the whole ball in view (rotation
   is per-card, so a group scale is safe). `sm` (~49%) stays 1.
-- **A11y widget** — `position:absolute` (was fixed), re-centred at `top:58vh` since the base
-  `top:50%` would track the taller world.
+- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); the base `top: 50vh` /
+  `100vh` box already centre on the sphere, so neither override carries any offset.
 - **Pull-quote** — drops `absolute`/`sticky` → `static`, forced `opacity:1`, hugs the top of its
   box so it sits under the globe; `updatePullQuote` early-returns (CSS owns it).
 - **Arc-copy** — `display:none` (no arc phase; a fixed pill would hang over the scrolling page).
@@ -1094,6 +1100,21 @@ rebuild would otherwise inherit:
   it tilted until a scroll-out zeroed it.
 
 ## CSS
+
+**Viewport units — one rule per axis.** The block never reads the window in CSS either, for the same
+reason the JS doesn't (see **One viewport height**):
+
+| axis | use | never |
+| --- | --- | --- |
+| vertical | **`vh`** — resolves against the large viewport, so it matches the canvas box and holds still while the iOS URL bar moves | `%` on a `fixed`/`sticky` box (that's the *layout* viewport, which the bar shrinks: `top: 50%` put the a11y widget ~26px off the sphere whenever the bar showed), and `dvh` anywhere the scroll timeline can see |
+| horizontal | **`%`** — the containing block / ICB width, which excludes the classic-scrollbar gutter | `vw`, which *includes* it: a `vw`-sized `fixed` box is ~15px wider than the viewport on desktop, and `--gg-content-inset` built from `100vw` put the arc copy half a scrollbar off the pull-quote's column it is supposed to share |
+
+There is no `vw` left in the block. The one place two axes had to share an expression —
+`.globe-gallery-a11y`'s square — uses `width: min(80%, 80vh)` + `aspect-ratio: 1` rather than
+repeating a `min()` per axis, since `%` on `height` would mean the wrong thing. **`dvh` is the modal
+chrome only** (`.globe-gallery-modal-chrome`, the description's `max-height`): that layer *must* stay
+inside the visible viewport so its buttons stay reachable while the bar is up, and it can't disturb the
+timeline because opening the modal locks the scroll.
 
 **Tokens.** Every spacing, radius, border-width, font-size, font-weight and blur value that lands on
 an S2A scale uses the token, not the literal — including positional insets (`bottom`,

@@ -263,7 +263,7 @@ export function parseAuthoredContent(el) {
 // modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
-    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
   </div>
 
   <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -301,7 +301,7 @@ const buildMarkup = (gid, labels) => `
     <div class="globe-gallery-modal-backdrop"></div>
   </div>
 
-  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
     <div class="globe-gallery-modal-info">

@@ -15,7 +15,7 @@
   /* Shared copy edge: the pull-quote's own left text edge, reused by the arc copy. See README. */
   --gg-copy-max: 1920px;
   --gg-copy-pad: var(--s2a-spacing-lg);
-  --gg-content-inset: calc(max(0px, 100vw - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
+  --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
 
   height: var(--gg-runway-height);
@@ -66,7 +66,7 @@
   position: fixed;
 
   /* Full width less a gap each side, capped. See README (CSS) for the literal-vs-token rule. */
-  width: calc(100vw - var(--s2a-spacing-xs) * 2);
+  width: calc(100% - var(--s2a-spacing-xs) * 2);
   max-width: 359px;
   bottom: var(--s2a-spacing-xs);
 
@@ -228,7 +228,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   position: fixed;
   inset: 0;
   z-index: 15;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   height: 100dvh;
   max-width: none;
@@ -499,10 +499,10 @@ body.globe-gallery-modal-open { overflow: hidden; }
 /* pointer-events:none — never intercepts canvas drag; tabbable only while interactive (JS). */
 .globe-gallery-a11y {
   position: fixed;
-  top: 50%;
+  top: 50vh;
   left: 50%;
-  width: min(80vw, 80vh);
-  height: min(80vw, 80vh);
+  width: min(80%, 80vh);
+  aspect-ratio: 1;
   transform: translate(-50%, -50%);
   padding: 0;
   margin: 0;
@@ -517,7 +517,10 @@ body.globe-gallery-modal-open { overflow: hidden; }
 /* JS sizes/positions per-frame to each card's projected screen rect. See README (Accessibility). */
 .globe-gallery-a11y-cards {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   pointer-events: none;
   z-index: 4; /* same layer as the entry widget */
 }
@@ -545,7 +548,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.96);
-  max-width: min(78vw, 320px);
+  max-width: min(78%, 320px);
   padding: var(--s2a-spacing-sm) var(--s2a-spacing-20);
   border-radius: var(--s2a-border-radius-sm);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
@@ -784,10 +787,9 @@ body.globe-gallery-modal-open { overflow: hidden; }
 
 /* Reduced-motion overrides — grouped here to avoid no-descending-specificity lint errors. See README (Accessibility). */
 
-/* static + relative: scrolls away and anchors the absolute canvas. Height = 8vh + 100vh. */
+/* relative: scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
 .globe-gallery-reduced .globe-gallery-world {
   position: relative;
-  height: 108vh;
 }
 
 /* No arc phase under RM — a fixed pill would hang over the scrolling page.
@@ -796,17 +798,14 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
   display: none;
 }
 
-/* Absolute so it scrolls with the globe; top:58vh re-centres on the sphere. */
+/* Absolute so it scrolls with the globe; the base 50vh still centres on the sphere. */
 .globe-gallery-reduced .globe-gallery-a11y {
   position: absolute;
-  top: 58vh;
 }
 
-/* Focus-ring overlay tracks the scrolled canvas (matching its 8vh top + 100vh box). */
+/* Focus-ring overlay tracks the scrolled canvas; the base box already matches it. */
 .globe-gallery-reduced .globe-gallery-a11y-cards {
   position: absolute;
-  inset: 8vh 0 auto;
-  height: 100vh;
 }
 
 /* Pull-quote flows normally after the globe: drop the pin/rail/sticky, show statically with a gap above. */
