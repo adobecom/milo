@@ -1857,7 +1857,8 @@ function createGlobeGalleryRuntime(
 
     // Build up front so the block paints immediately; photos un-dissolve in as they land.
     buildCards();
-    buildTextMesh();
+
+    if (!bp.CYLINDER) buildTextMesh();
     a11y.setup();
     renderReady = true;
     syncTicker();

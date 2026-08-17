@@ -331,9 +331,47 @@ sets no `N_MAX`, so every authored card is resident there. Watch this on iPad, w
 profile: if it needs trimming, dropping `CARD_TEX_MD` to 640 lands ~97MB, *below* today's figure, and md
 would still be oversampled (~2.8 texels/device px on the largest card).
 
-The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item: its canvas matches the
-camera aspect, so `TEXT_MAX_SIDE` caps the *longest* side — uncapped, a portrait phone derives
-a 2048×4180 ≈ 45MB canvas, mostly empty. Capped, portrait tops ~1004×2048 (~11MB).
+The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item, but **only on sphere
+geometry** — the barrel path never builds it (see Behavior notes), which is what removes it from the
+phone budget entirely. Where it is built, its canvas matches the camera aspect, so `TEXT_MAX_SIDE`
+caps the *longest* side: uncapped, a portrait phone derived a 2048×4180 ≈ 45MB canvas, mostly empty.
+Capped, portrait topped ~1004×2048 (~11MB); a 1512-wide desktop lands 2048×1330 (10.9MB).
+
+**Every `CanvasTexture` costs its pixels twice** — once on the GPU, once in the `<canvas>` 2D backing
+store Three keeps referenced as `texture.image`. `releaseCanvasAfterUpload` (`materials.js`) reclaims
+the CPU half by zeroing the canvas from `texture.onUpdate`, which Three fires immediately after
+`texImage2D` + `generateMipmap`. **Only the hint texture meets its preconditions**, and that is the
+only place it is applied — worth a measured **10.39MiB** (2048×1330) on a 1512-wide desktop, the
+third-largest canvas on the page and about double the biggest card. It is a desktop-only win now
+that the barrel skips the hint plane altogether.
+
+Three preconditions, all load-bearing. Check them before applying it anywhere else:
+
+1. **Exactly one `WebGLRenderer` may ever upload it.** Renderers upload independently, so a texture
+   shared across contexts re-uploads from a 0×0 canvas and renders empty.
+2. **Nothing may set `needsUpdate` on it afterwards** — same re-upload trap. A resize is fine: it
+   rebuilds mesh *and* texture from scratch (`doLayout` → `buildTextMesh`).
+3. **Nothing may read `texture.image.width/height` afterwards** — the aspect is gone. `modal.js`'s
+   two reads are guarded and run pre-render, but tooling that probes `.image` goes blind to it.
+
+It also pays off **lazily**: Three uploads a texture only when a visible object using it is drawn,
+so the canvas survives at full size until the hint first renders (verified — 2048×1330 at scroll 0,
+0×0 once formed). A visitor who never scrolls into the globe keeps the whole 10.39MiB. Forcing it
+earlier would mean `renderer.initTexture()` at build time, i.e. eagerly uploading ~13.8MB to the GPU
+for a plane that may never show — a worse trade.
+
+Deliberately **not** applied elsewhere:
+
+- **The base card set** — where the win would actually be (~105MB on md). `getModalMaterial` hands a
+  card's base texture to the *modal* renderer as its fly-out placeholder, so two contexts upload it
+  independently, and freeing the canvas after the first would blank the opening card until its
+  hi-res decode lands. Claiming it needs the modal card drawn by the main renderer (separate today
+  because CSS blurs the main canvas and the modal card must stay sharp above it), or the placeholder
+  decoupled from the base texture. Do **not** "fix" this by calling `releaseCanvasAfterUpload` in
+  `loadCardTextures`.
+- **The modal upgrade** — it would work, but ≤1 is ever resident and it is disposed on close/nav, so
+  the ~11MB is transient; and it blinds `aspect-probe-harness.cjs`, which measures the opened card's
+  aspect distortion through `map.image`. A bad trade for the block's main correctness probe.
 
 `ANTIALIAS_SM`/`ANTIALIAS_MD` toggle MSAA per band (set at renderer creation): on for md (card
 silhouettes alias without it), off for sm to save framebuffer memory (MSAA is the largest GPU cost
@@ -721,7 +759,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 37 | 0.039 | `FOLD_FIRST_PROGRESS` | `sphereFormT` leaves 0 → camera switches **ortho → perspective** | `updateActiveCamera` |
 | ~41 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `ARC_PEEL_JITTER`) | `updateCardTransform` |
 | ~54 | ~0.057 | `gpLocalT ≥ FOLD_START_LOCAL_T` | first card actually starts **folding** to the sphere | `updateCardTransform` |
-| 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in | `updateClickDragText` |
+| 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in (**sphere geometry only** — the barrel never builds it) | `updateClickDragText` |
 | 90 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
 | 156 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
 | 170 | 0.180 | `sphereFormT > DEPTH_SORT_FORM_T` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
@@ -1170,7 +1208,19 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
 ## Behavior notes
 
-- **"Click & Drag" hint text (WebGL).** A `PlaneGeometry` in `sphereGroup` behind the sphere's back
+- **"Click & Drag" hint text (WebGL).** **Sphere geometry only** — `initRuntime` skips
+  `buildTextMesh()` when `bp.CYLINDER`. The plane sits behind *both* walls, and the masonry barrel is
+  near-solid (`CYL_GAP_RATIO` 0.20, columns wrapping 360°), so it is occluded to nothing there:
+  A/B'd against the drawing buffer with an on/on control for the noise floor, the barrel's whole-frame
+  contribution is a mean **≤0.08/255** per channel with <1% of channels past a just-noticeable Δ8,
+  versus **mean 2.5 across 8.6%** of the frame on the sphere. Invisible, but it still cost a
+  viewport-filling transparent quad every frame plus ~17MB (7.4MB canvas + ~9.9MB texture).
+  The gate is on the **geometry, not the pointer**, so a narrow desktop window skips it too — its
+  custom cursor is independent (`textExitProgress` still drives cursor retirement). Nothing needs to
+  add it back on a resize: a band crossing rebuilds the whole runtime (`doLayout`), and `doLayout`'s
+  own rebuild branch is already `if (textMesh)`. Verified across sm-touch / md-fine / md-coarse
+  (iPad → barrel → skipped) / narrow-desktop, and across repeated sm↔md resizes.
+  A `PlaneGeometry` in `sphereGroup` behind the sphere's back
   surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = -1`), so it rotates with the globe and
   draws behind the cards. Hidden until `sphereFormT > TEXT_APPEAR_START`, then warps in (barrel
   warp + particle dissolve via `TEXT_FRAG`), settles to a faint resting opacity (`TEXT_OPACITY_PEAK

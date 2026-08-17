@@ -131,6 +131,10 @@ function imageToCanvas(img, cap, fit = fitDims) {
   return cv;
 }
 
+function releaseCanvasAfterUpload(tex, cv) {
+  tex.onUpdate = () => { cv.width = 0; cv.height = 0; };
+}
+
 // A tiny transparent texture so a card mesh can be built (and its contour rendered) before its
 // real photo has loaded. Its pixels are never shown — the contour hides them until uReveal > 0.
 export function createPlaceholderTexture() {
@@ -149,7 +153,8 @@ function texAspect(tex) {
 }
 
 // Load every card image into a CanvasTexture capped at `maxTexH` tall. onEach fires per
-// settled image (progressive reveal), onDone once all `count` settle.
+// settled image (progressive reveal), onDone once all `count` settle. These deliberately do NOT
+// releaseCanvasAfterUpload — two renderers upload them. See README (Texture memory budget).
 export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
@@ -250,5 +255,6 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
+  releaseCanvasAfterUpload(tex, canvas); // sphere-only, single renderer — see README
   return tex;
 }
