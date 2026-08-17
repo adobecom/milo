@@ -34,8 +34,24 @@ const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
 
+function getStoredAlignLeft() {
+  try {
+    return localStorage.getItem(ALIGN_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setStoredAlignLeft(alignLeft) {
+  try {
+    localStorage.setItem(ALIGN_STORAGE_KEY, String(alignLeft));
+  } catch {
+    // storage unavailable; alignment choice just won't persist
+  }
+}
+
 function applyStoredAlignment() {
-  document.body.classList.toggle(ALIGN_STORAGE_KEY, localStorage.getItem(ALIGN_STORAGE_KEY) === 'true');
+  document.body.classList.toggle(ALIGN_STORAGE_KEY, getStoredAlignLeft());
 }
 
 const CARD_DATA = {
@@ -539,7 +555,7 @@ function setEventListeners() {
   drawerEl.addEventListener('click', (event) => {
     if (event.target.closest('.mep-align-toggle')) {
       const alignLeft = document.body.classList.toggle(ALIGN_STORAGE_KEY);
-      localStorage.setItem(ALIGN_STORAGE_KEY, String(alignLeft));
+      setStoredAlignLeft(alignLeft);
       return;
     }
     const tab = event.target.closest('.mep-tab');
