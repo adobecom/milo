@@ -2,6 +2,7 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+// change here
 
 const SCROLL_PER_APP = 200;
 const M_BREAKPOINT = 1024;
