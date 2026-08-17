@@ -42,7 +42,7 @@ if (!customElements.get('mas-field')) {
   });
 }
 
-const { default: init } = await import('../../../libs/blocks/merch/mas-field.js');
+const { initMasField: init } = await import('../../../libs/blocks/merch/merch.js');
 
 const originalFetch = window.fetch;
 const { adobeIMS } = window;

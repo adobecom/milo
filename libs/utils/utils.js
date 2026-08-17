@@ -2763,7 +2763,7 @@ const STATIC_BLOCK_DEPS = {
   ],
   merch: [
     getMasDepUrl('commerce.js'),
-    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/mas-field.js`,
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
   ],
 };
 
