@@ -341,8 +341,10 @@ function createGlobeGalleryRuntime(
   // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see readCssVars)
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
-  let W = 0; let
-    H = 0;
+  let runwayVh = 0; // from --gg-runway-height (see readCssVars)
+  // W/H = RENDER space; cssViewportH() = SCROLL space. See README (The two viewport heights).
+  let W = 0;
+  let H = 0;
 
   const pqEl = q('.globe-gallery-pullquote');
   let pqShown = false;
@@ -855,15 +857,27 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
+    // `vh` counts only: another unit parses fine and skews cssViewportH's ratio. See README.
+    const cssVhCount = (prop) => (/^[\d.]+vh$/i.test(rootStyle.getPropertyValue(prop).trim())
+      ? cssNum(prop)
+      : null);
     const pinFactor = cssNum('--gg-pq-pin-factor');
     if (pinFactor !== null) pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
-    const vh = cssNum('--gg-formation-vh');
+    const vh = cssVhCount('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
+    const runway = cssVhCount('--gg-runway-height');
+    if (runway !== null) runwayVh = runway;
+  }
+
+  // 100vh in px as CSS resolved it — the basis for every scroll clock, not innerHeight. See README.
+  function cssViewportH() {
+    if (!reducedMotion && runwayVh > 0 && blockHeight > 0) return (blockHeight / runwayVh) * 100;
+    return H;
   }
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
   function formedScrollPx() {
-    return Math.min((formationVh / 100) * H, blockHeight);
+    return Math.min((formationVh / 100) * cssViewportH(), blockHeight);
   }
 
   // Focus snaps the page to the interactive globe state, deferred a frame so focus settles.
@@ -964,7 +978,7 @@ function createGlobeGalleryRuntime(
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
     frameInput.formPx = formedScrollPx();
-    frameInput.viewportH = H;
+    frameInput.viewportH = cssViewportH();
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.now = performance.now();
     TL.deriveFrame(frameState, frameInput);
@@ -1131,7 +1145,7 @@ function createGlobeGalleryRuntime(
 
   // Canvas visibility — instantly shown once the section approaches (arc motion is the reveal).
   function updateCanvasVisibility(frame) {
-    const { lenisY, zoomT } = frame;
+    const { lenisY, zoomT, entryStart } = frame;
     const canvas = renderer.domElement;
     // Reduced motion: canvas is in normal flow (scrolls away, clips naturally) — just reveal once.
     if (reducedMotion) {
@@ -1139,8 +1153,7 @@ function createGlobeGalleryRuntime(
       canvas.style.opacity = '1';
       return;
     }
-    const showTrigger = blockDocTop - H * TL.ENTRY_LEAD_VH; // matches entryStart in computeFrame
-    if (lenisY < showTrigger || zoomT >= TL.CANVAS_HIDE_ZOOM_T) {
+    if (lenisY < entryStart || zoomT >= TL.CANVAS_HIDE_ZOOM_T) {
       canvas.style.display = 'none';
     } else {
       canvas.style.display = 'block';

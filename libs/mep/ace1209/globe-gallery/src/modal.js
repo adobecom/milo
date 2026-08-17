@@ -1001,17 +1001,18 @@ export default function createGlobeModal({
       }
       swLastX = x; swLastY = y; swLastT = now;
 
+      const { W: vpW, H: vpH } = getViewport();
       if (swAxis === 'x') {
         // Warp-only preview (no slide): the fisheye grows with drag, capped at MODAL_WARP_SWIPE.
         // Release commits the same cross-warp transition as the nav buttons.
-        modalWarp = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.30)) * MODAL_WARP_SWIPE;
+        modalWarp = Math.min(1, Math.abs(dx) / (vpW * 0.30)) * MODAL_WARP_SWIPE;
       } else {
         // Pull-down only — upward drag does nothing (clamped to 0).
         const pullY = Math.max(0, dy);
         const scale = Math.max(PULL_SCALE_MIN, 1 - pullY / PULL_SCALE_DAMPING);
         modalCanvasEl.style.transform = `translate3d(0, ${pullY}px, 0) scale(${scale.toFixed(3)})`;
         // Pull-down warp: scales with pull / 20% viewport height, capped at MODAL_WARP_PULL.
-        modalWarp = Math.min(1, pullY / (window.innerHeight * 0.20)) * MODAL_WARP_PULL;
+        modalWarp = Math.min(1, pullY / (vpH * 0.20)) * MODAL_WARP_PULL;
       }
       pushModalWarpUniforms();
     }, { passive: true });
@@ -1023,9 +1024,10 @@ export default function createGlobeModal({
       if (e.changedTouches.length !== 1) return;
       const dx = e.changedTouches[0].clientX - swStartX;
       const dy = e.changedTouches[0].clientY - swStartY;
+      const { W: vpW, H: vpH } = getViewport();
 
       if (swAxis === 'x') {
-        const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
+        const commit = Math.abs(dx) > vpW * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
         // Commit clicks the matching nav button (same handler, and it reports);
         // a non-commit release lets the preview warp decay in updateAnimation.
@@ -1039,13 +1041,12 @@ export default function createGlobeModal({
           if (btn?.hidden === false) btn.click(); else navigate(dir);
         }
       } else {
-        const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
+        const pullCommit = dy > vpH * COMMIT_DIST_Y_FRAC
                       || swVelY > COMMIT_VEL_Y;
         if (pullCommit) {
           // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close —
           // so the fly-back starts from where the user dragged, not center. No snap.
           if (modalCard) {
-            const { H: vpH } = getViewport();
             const pxPerWorld = vpH / (2 * MODAL_CAM_DIST * Math.tan(Math.PI / 6));
             const pulledY = Math.max(0, dy);
             const gestureScale = Math.max(PULL_SCALE_MIN, 1 - pulledY / PULL_SCALE_DAMPING);

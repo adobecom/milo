@@ -70,14 +70,9 @@ function hangOpeningMark(quoteEl) {
   // Canvas ignores letter-spacing, and heading-1 has some.
   const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
   const room = parseFloat(getComputedStyle(container).paddingInlineStart) || 0;
-  // Too wide to hang — a CJK bracket, or just past the padding. Stop WebKit as well.
-  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) {
-    quoteEl.style.hangingPunctuation = 'none';
-    return;
-  }
-  if (advance > 0 && !CSS.supports('hanging-punctuation', 'first')) {
-    quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
-  }
+  // Too wide to hang — a CJK bracket, or just past the padding.
+  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
+  if (advance > 0) quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
 }
 
 function applyQuoteHang(quoteEl) {

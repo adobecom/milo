@@ -42,6 +42,13 @@
   .globe-gallery { --gg-copy-pad: var(--s2a-spacing-4xl); }
 }
 
+.globe-gallery-canvas,
+.globe-gallery-modal-canvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* z-index bands: hero 2–5, modal 13–17. See README. */
 
 .globe-gallery-world {
@@ -167,11 +174,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   border-inline-width: var(--gg-crosshair-width);
 }
 
-/* WebKit hangs the opening quote; authoring.js does the rest. See README (Hanging the opening mark). */
+/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See README. */
 .globe-gallery-pullquote-quote {
   color: var(--s2a-color-gray-25);
   margin: 0;
-  hanging-punctuation: first;
 }
 
 .globe-gallery-pullquote-name {
