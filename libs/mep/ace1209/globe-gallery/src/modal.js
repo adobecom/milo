@@ -422,15 +422,15 @@ export default function createGlobeModal({
     });
   }
 
-  // Set the description's mask fade lengths from scroll position; focusable only when it scrolls.
+  // Flag which description edges have more copy; focusable only when it scrolls.
   function updateDescFade(descEl) {
     if (!descEl) return;
     const overflow = descEl.scrollHeight - descEl.clientHeight;
     const canScroll = overflow > 1;
     const top = canScroll && descEl.scrollTop > 1;
     const bottom = canScroll && descEl.scrollTop < overflow - 1;
-    descEl.style.setProperty('--gg-desc-fade-top', top ? '20px' : '0');
-    descEl.style.setProperty('--gg-desc-fade-bottom', bottom ? '20px' : '0');
+    descEl.classList.toggle('is-faded-top', top);
+    descEl.classList.toggle('is-faded-bottom', bottom);
     if (canScroll) descEl.tabIndex = 0;
     else if (document.activeElement !== descEl) descEl.removeAttribute('tabindex');
   }

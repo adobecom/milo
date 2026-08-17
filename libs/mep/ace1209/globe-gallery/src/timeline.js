@@ -35,13 +35,6 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 ) + PROGRESS_FOLD_DUR;
 export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-// CSS owns these; only read when the custom property doesn't resolve. See README (Scroll model).
-export const CSS_FALLBACK = {
-  FORMATION_VH: 304,
-  RUNWAY_VH: 520,
-  PQ_PIN_FACTOR: 0.65,
-};
-
 export const PQ_APPEAR_LEAD = 0.03;
 
 // --- Entry (raw-scroll space, before `progress` exists) ---
@@ -83,11 +76,9 @@ export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
 export const DT_SCALE_MAX = 3;
 
-// --- Derived (docs/tests, not per frame) ---
+// --- Derived ---
 
 export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
-export const progressAtZoomT = (t) => SPHERE_FORMED_PROGRESS
-  + t * (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS);
 
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);

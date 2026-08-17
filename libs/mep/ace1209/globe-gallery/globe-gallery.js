@@ -338,9 +338,9 @@ function createGlobeGalleryRuntime(
 
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
-  // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see doLayout)
+  // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see readCssVars)
   let pqAppearZoomT = 0.5;
-  let formationVh = 0; // from --gg-formation-vh (see doLayout)
+  let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0; let
     H = 0;
 
@@ -845,7 +845,20 @@ function createGlobeGalleryRuntime(
   // Block top in document space + full scroll length.
   function measureBlock() {
     blockDocTop = root.getBoundingClientRect().top + window.scrollY;
-    blockHeight = root.offsetHeight || (TL.CSS_FALLBACK.RUNWAY_VH / 100) * H;
+    blockHeight = root.offsetHeight;
+  }
+
+  // Reads the runway props. See README (CSS is the source of truth).
+  function readCssVars() {
+    const rootStyle = getComputedStyle(root);
+    const cssNum = (prop) => {
+      const n = parseFloat(rootStyle.getPropertyValue(prop));
+      return Number.isFinite(n) ? n : null;
+    };
+    const pinFactor = cssNum('--gg-pq-pin-factor');
+    if (pinFactor !== null) pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
+    const vh = cssNum('--gg-formation-vh');
+    if (vh !== null) formationVh = vh;
   }
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
@@ -1767,14 +1780,7 @@ function createGlobeGalleryRuntime(
         return;
       }
       measureBlock();
-      const rootStyle = getComputedStyle(root);
-      const cssNum = (prop, fallback) => {
-        const n = parseFloat(rootStyle.getPropertyValue(prop));
-        return Number.isFinite(n) ? n : fallback;
-      };
-      const pinFactor = cssNum('--gg-pq-pin-factor', TL.CSS_FALLBACK.PQ_PIN_FACTOR);
-      pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
-      formationVh = cssNum('--gg-formation-vh', TL.CSS_FALLBACK.FORMATION_VH);
+      readCssVars();
       // Re-apply DPR (can change when dragging between monitors of different density).
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
@@ -1818,7 +1824,7 @@ function createGlobeGalleryRuntime(
 
     // Page height changes shift offsetTop; blockHeight=0 at first paint → progress=Infinity.
     if (layoutObs) layoutObs.disconnect();
-    layoutObs = new ResizeObserver(() => { measureBlock(); });
+    layoutObs = new ResizeObserver(() => { measureBlock(); readCssVars(); });
     layoutObs.observe(document.body);
 
     if (intersectionObs) intersectionObs.disconnect();

@@ -374,12 +374,16 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   scrollbar-width: thin;
   scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
 
-  /* Scroll-shadow fade cue; JS (updateDescFade) sets each length to 0 (no fade) or 20px. */
+  /* Scroll-shadow fade cue; JS (updateDescFade) toggles .is-faded-top/-bottom. */
+  --gg-desc-fade-len: 20px;
   --gg-desc-fade-top: 0;
   --gg-desc-fade-bottom: 0;
 
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
+
+  &.is-faded-top { --gg-desc-fade-top: var(--gg-desc-fade-len); }
+  &.is-faded-bottom { --gg-desc-fade-bottom: var(--gg-desc-fade-len); }
 }
 
 .globe-gallery-arc-copy-body p,

@@ -495,8 +495,8 @@ Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets t
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
 
-**CSS is the source of truth for all three props**, read per layout in `doLayout`, so retuning is a
-CSS-only edit:
+**CSS is the source of truth for all three props**, read per layout in `readCssVars()`, so retuning is
+a CSS-only edit:
 
 | prop | per breakpoint | effect |
 |---|---|---|
@@ -504,18 +504,37 @@ CSS-only edit:
 | `--gg-formation-vh` | same at both | locked formation length |
 | `--gg-pq-pin-factor` | **lower at md+** | share of the tail the (bottom-anchored) quote pin occupies → its hold |
 
-`timeline.js`'s exported `CSS_FALLBACK` is the **only** JS copy of these numbers, read only when a
-property fails to resolve — possible because `loadBlock` races a block's stylesheet against its script
-(`libs/utils/utils.js:1369`), and an unresolved property parses to `NaN`, which would propagate into
-`progress` and kill the animation silently. It is not a second source of truth: if it and CSS
-disagree, CSS wins and `CSS_FALLBACK` is simply stale. Nothing else in JS may re-inline these values.
-`timeline.js` stays pure (no DOM), so `doLayout` does the reading, via a `cssNum(prop, fallback)`
-helper testing `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
+**No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale
+literal. That takes some care, because `loadBlock` races a block's stylesheet against its script
+(`libs/utils/utils.js:1370`), so the `readCssVars()` call in `initRuntime` can run before the
+properties exist. Two rules make an unresolved read harmless rather than something needing a
+substitute value:
+
+- `readCssVars()` **leaves the previous value in place** when a property doesn't resolve, instead of
+  writing a fallback. So `formationVh` / `pqAppearZoomT` keep their declared initializers (`0` /
+  `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
+  unresolved read would otherwise poison `progress` and silently kill the animation. Its `cssNum`
+  helper tests `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
+- **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
+  formPx)`, `Math.max(1, blockHeight - formPx)`) and clamped, so a pre-stylesheet frame renders at
+  `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn
+  this into a crash.
+
+`layoutObs` then calls `readCssVars()` alongside `measureBlock()`, which is what guarantees the real
+values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
+section (`main .section[data-status='pending'] { display: none }`) only after `Promise.all([styleLoaded,
+scriptLoaded])`, and that un-hide changes the body height, so the `ResizeObserver` is guaranteed to
+fire at least once with the stylesheet applied. Re-reading on every body resize is free next to the
+`getBoundingClientRect()` `measureBlock()` already does there.
 
 `measureBlock()` (from `doLayout` and `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
-is `offsetHeight`, itself CSS-driven, so `--gg-runway-height` is never read directly; `offsetHeight`
-is `0` only before the stylesheet applies, when the property wouldn't resolve either — hence the
-fallback there is `CSS_FALLBACK.RUNWAY_VH`.
+is plain `offsetHeight`, itself CSS-driven, so `--gg-runway-height` is never read from JS at all — and
+needs no fallback either, since `offsetHeight` is `0` (never `NaN`) while the section is hidden.
+
+So **no JS file anywhere holds a copy of these three numbers** — not even for docs. The event table's
+`vh` column needs the runway lengths, but Milo ships `timeline.js` unbundled and byte-for-byte, so a
+doc-only export would ride along in every page's payload; the derivation snippet reads them out of
+`globe-gallery.css` instead (see **Re-deriving these numbers**). Don't reintroduce one.
 
 sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
 `≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the fixed 583px
@@ -525,7 +544,7 @@ above it the fade-in would cross md's globe-clear and land the quote over the gl
 **Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
 --gg-pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
 threshold `pqAppearZoomT = (1 − --gg-pq-pin-factor) − PQ_APPEAR_LEAD` is **read from the CSS var in
-`doLayout`** — so the pin geometry and the opacity trigger can't drift, per breakpoint or across a
+`readCssVars()`** — so the pin geometry and the opacity trigger can't drift, per breakpoint or across a
 768px resize. Higher `--gg-pq-pin-factor` → quote appears earlier **and** holds longer (they trade off at
 a fixed runway); to change both together, move `--gg-runway-height`.
 
@@ -691,8 +710,8 @@ canvas      ###########################visible##########################|...
 ### Event table
 
 The `vh` and `progress` columns are **derived** — regenerate them with the snippet below when a
-constant moves, don't hand-edit. `vh` assumes the `CSS_FALLBACK` runway/formation defaults;
-`progress` and the gate columns are runway-independent.
+constant moves, don't hand-edit. `vh` is relative to the runway/formation lengths the snippet scrapes
+from `globe-gallery.css`; `progress` and the gate columns are runway-independent.
 
 | vh | `progress` | gate | what happens | where |
 | ---: | ---: | --- | --- | --- |
@@ -736,13 +755,21 @@ to "the fold has started" should gate on `gridFormT`/`fdE` if it must match the 
 ### Re-deriving these numbers
 
 `timeline.js` is importable on its own (no THREE, no DOM), so this reads the **live** constants
-rather than restating them — it cannot drift from the code:
+rather than restating them — it cannot drift from the code. The two runway lengths are scraped out of
+the stylesheet for the same reason: they belong to CSS, and shipping a JS copy of them just to
+generate a table would put doc-only bytes in every page's payload.
 
 ```sh
 cd libs/mep/ace1209/globe-gallery && node --input-type=module -e "
+import { readFileSync } from 'node:fs';
 import * as T from './src/timeline.js';
-const { RUNWAY_VH, FORMATION_VH } = T.CSS_FALLBACK; // = the CSS defaults
+const css = readFileSync('./globe-gallery.css', 'utf8');
+const cssVh = (p) => parseFloat(css.match(new RegExp(p + ':\\\\s*([0-9.]+)vh'))[1]);
+const FORMATION_VH = cssVh('--gg-formation-vh');
+const RUNWAY_VH = cssVh('--gg-runway-height');
 const tail = RUNWAY_VH - FORMATION_VH;
+const atZoomT = (t) => T.SPHERE_FORMED_PROGRESS
+  + t * (T.PROGRESS_ZOOM_END - T.SPHERE_FORMED_PROGRESS);
 const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
   ? (p / T.SPHERE_FORMED_PROGRESS) * FORMATION_VH
   : FORMATION_VH
@@ -756,9 +783,9 @@ row('first card on the shell', T.cardFoldStartProgress(0) + T.PROGRESS_FOLD_DUR)
 row('interactive', T.progressAtFormT(T.SPHERE_INTERACTIVE_T));
 row('arc-copy gone', T.ARC_COPY_OUT_END);
 row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
-row('hint text faded', T.progressAtZoomT(1 / T.TEXT_ZOOM_FADE_RATE));
-row('cursor label / retire', T.progressAtZoomT(T.CURSOR_ZOOM_RETIRE_T));
-row('canvas hidden', T.progressAtZoomT(T.CANVAS_HIDE_ZOOM_T));
+row('hint text faded', atZoomT(1 / T.TEXT_ZOOM_FADE_RATE));
+row('cursor label / retire', atZoomT(T.CURSOR_ZOOM_RETIRE_T));
+row('canvas hidden', atZoomT(T.CANVAS_HIDE_ZOOM_T));
 "
 ```
 
@@ -973,9 +1000,11 @@ with a reader's browser font-size setting — the intended C2 behaviour, and why
 this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`--bc-` in
 brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
-inherit a stranger's value from an ancestor. Props read or written from JS
-(`--gg-pq-pin-factor` in `doLayout`, `--gg-desc-fade-top` / `--gg-desc-fade-bottom` in
-`updateDescFade`) are the coupling points — grep both files before renaming one. Only `--s2a-*` tokens come from upstream, and one of them
+inherit a stranger's value from an ancestor. The only props read from JS are `--gg-formation-vh` /
+`--gg-pq-pin-factor` in `readCssVars()` — grep both files before renaming one. **No prop is written
+from JS**: where JS decides a *state*, it toggles a class and CSS owns the resulting value
+(`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
+retune stays a CSS-only edit and no magic number is stranded in JS. Only `--s2a-*` tokens come from upstream, and one of them
 (`--s2a-font-letter-spacing-neg-0_48`) has an underscore, which is why `custom-property-pattern` is
 disabled on that single line rather than file-wide.
 
@@ -1658,8 +1687,8 @@ self-evident from the name:
 ### `timeline.js` constants
 
 Most of this file's exports are documented where they matter: the `P_*` phase constants and
-`FOLD_PEEL_OVERLAP` under Phase constants; `CSS_FALLBACK` /
-`PQ_APPEAR_LEAD` under Scroll model; `ENTRY_LEAD_VH` / `ENTRY_RAMP_VH` under Entry timing; and
+`FOLD_PEEL_OVERLAP` under Phase constants; `PQ_APPEAR_LEAD` under Scroll model;
+`ENTRY_LEAD_VH` / `ENTRY_RAMP_VH` under Entry timing; and
 every gate threshold in the Lifecycle timeline event table. The remainder — carried in code as
 bare names — are:
 
@@ -1675,7 +1704,7 @@ bare names — are:
 | `TEXT_ZOOM_FADE_RATE` | `zoomT` | hint text is fully faded at `zoomT` = `1 / RATE` |
 | `GRID_PEEL_WINDOW` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
-| `progressAtFormT` / `progressAtZoomT` | — | helpers mapping a `sphereFormT` / `zoomT` back to progress. For docs and tests — not called per frame |
+| `progressAtFormT` | — | maps a `sphereFormT` back to progress; used to derive `ARC_COPY_OUT_START` / `_END`. Nothing here exists only for docs — Milo ships these files unbundled, so a doc-only export is pure payload (the `zoomT` inverse lives in the derivation snippet instead) |
 
 ## Open items / backlog
 
