@@ -210,8 +210,8 @@
     }
 
     .rcc-sticky {
-      top: calc(var(--rcc-sticky-top) + var(--s2a-layout-sm));
-      height: calc(100dvh - var(--rcc-sticky-top) - var(--s2a-layout-sm));
+      top: var(--rcc-sticky-top);
+      height: calc(100dvh - var(--rcc-sticky-top));
     }
   }
 
