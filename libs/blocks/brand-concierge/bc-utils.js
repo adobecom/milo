@@ -191,7 +191,7 @@ export function decorateMarqueeBackground(el, background) {
   if (pictures.length === 1) {
     backgroundLayer.append(pictures[0]);
   } else {
-    const viewports = ['desktop-only', 'tablet-only', 'mobile-only'];
+    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
     pictures.forEach((picture, index) => {
       backgroundLayer.append(createTag('div', { class: viewports[index] || 'mobile-only' }, picture));
     });
