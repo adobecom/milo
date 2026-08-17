@@ -10,7 +10,11 @@ const MIN_ROLLER_ROOM = 120;
 function prepPic(picture) {
   if (!picture) return null;
   const clone = picture.cloneNode(true);
-  clone.querySelectorAll('img').forEach((img) => img.removeAttribute('loading'));
+  if (clone.tagName === 'IMG') {
+    clone.removeAttribute('loading');
+  } else {
+    clone.querySelectorAll('img').forEach((img) => img.removeAttribute('loading'));
+  }
   return clone;
 }
 
@@ -91,8 +95,9 @@ function parseContent(rows) {
     }
     const name = cols[0]?.textContent?.trim() ?? '';
     const pics = [...row.querySelectorAll('picture')];
-    const icon = pics.length > 1 ? pics[0] : null;
-    const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
+    const svgIconImg = row.querySelector('p img[src*=".svg"]');
+    const icon = svgIconImg || (pics.length > 1 ? pics[0] : null);
+    const picture = svgIconImg ? (pics[0] ?? null) : (pics.length > 1 ? pics[1] : (pics[0] ?? null));
     if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
 
