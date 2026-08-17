@@ -321,7 +321,8 @@ export async function openModal(initialMessage, bootstrap) {
   if (susiListener !== 'signIn:decorateNav') {
     window.addEventListener('signIn:decorateNav', async () => {
       await window.adobeIMS?.refreshToken();
-      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+      const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+      globalNavigation?.reloadUnav?.();
     });
     susiListener = 'signIn:decorateNav';
   }
