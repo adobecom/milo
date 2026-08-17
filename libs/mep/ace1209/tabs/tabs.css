@@ -129,56 +129,61 @@
         margin: 0;
       }
 
-      button.tab-button {
+      .btn-wrapper {
         display: flex;
+        flex-direction: row;
         align-items: center;
         gap: var(--s2a-spacing-xs);
-        height: auto;
+      }
+
+      input.tab-button {
+        appearance: none;
+        box-sizing: border-box;
+        margin: 0;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
         flex: 0 0 auto;
-        padding: 0;
+        border: 2px solid var(--s2a-color-gray-400);
+        border-radius: 100%;
         background: transparent;
-        border: none;
+        cursor: pointer;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: border 150ms;
+      }
+
+      .tab-button-label {
         color: var(--s2a-color-content-subtle);
         cursor: pointer;
         font-family: var(--body-font-family);
         text-decoration: none;
-        outline: none;
-        -webkit-tap-highlight-color: transparent;
         white-space: nowrap;
+      }
 
-        &::before {
-          content: '';
-          box-sizing: border-box;
-          width: 20px;
-          height: 20px;
-          min-width: 20px;
-          border: 2px solid var(--s2a-color-gray-400);
-          border-radius: 100%;
-          transition: border 150ms;
+      .btn-wrapper:hover {
+        input.tab-button {
+          border-color: var(--pill-bg-color-selected);
         }
 
-        &:hover {
+        .tab-button-label {
           color: var(--s2a-color-content-default);
-
-          &::before {
-            border-color: var(--pill-bg-color-selected);
-          }
         }
+      }
 
-        &[aria-checked="true"] {
+      input.tab-button:checked {
+        border-color: var(--pill-bg-color-selected);
+        background: var(--pill-bg-color-selected);
+        box-shadow: inset 0 0 0 4px var(--s2a-color-background-subtle);
+
+        + .tab-button-label {
           color: var(--s2a-color-content-default);
-
-          &::before {
-            border-color: var(--pill-bg-color-selected);
-            background: var(--pill-bg-color-selected);
-            box-shadow: inset 0 0 0 4px var(--s2a-color-background-subtle);
-          }
         }
+      }
 
-        &:focus-visible {
-          outline: 2px solid var(--s2a-color-blue-800);
-          outline-offset: 2px;
-        }
+      input.tab-button:focus-visible {
+        outline: 2px solid var(--s2a-color-blue-800);
+        outline-offset: 2px;
       }
     }
   }
@@ -189,13 +194,13 @@
         background: var(--s2a-color-background-default);
       }
 
-      button.tab-button[aria-checked="true"]::before {
+      input.tab-button:checked {
         border-color: var(--s2a-color-background-inverse);
         background: var(--s2a-color-background-inverse);
         box-shadow: inset 0 0 0 4px var(--s2a-color-background-default);
       }
 
-      button.tab-button:hover::before {
+      .btn-wrapper:hover input.tab-button {
         border-color: var(--s2a-color-background-inverse);
       }
     }
