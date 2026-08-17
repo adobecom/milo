@@ -2824,6 +2824,167 @@ describe('Utils', () => {
     });
   });
 
+  describe('Lingo query index gating on non-Lingo locales', () => {
+    let originalFetch;
+    let originalLana;
+    let fetchStub;
+    let lingoUtils;
+    let testAnchors;
+
+    const QUERY_INDEX_PATH = 'assets/lingo/query-index';
+    const CLEAR_COUNTRY = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+
+    // Monotonic, so two sub-millisecond beforeEach calls can't share a cached module.
+    let moduleId = 0;
+    const nextModuleId = () => { moduleId += 1; return `lingo-gating-${moduleId}`; };
+
+    const addAnchor = (href) => {
+      const a = document.createElement('a');
+      a.href = href;
+      document.body.appendChild(a);
+      testAnchors.push(a);
+      return a;
+    };
+
+    // No locale declares `base`, so no locale is part of a base/regional pair. This is the
+    // shape of every legacy locale-based site, e.g. da-bacom-blog.
+    const nonLingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        uk: { ietf: 'en-GB', tk: 'hah7vzn.css' },
+        jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+      },
+      prodDomains: ['business.adobe.com'],
+      pathname: '/uk/blog/',
+      contentRoot: '/blog',
+      codeRoot: '/libs',
+    };
+
+    // `sg` declares `base: ''`, so `''` is a real Lingo base locale with one region.
+    const lingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        sg: { ietf: 'en-SG', tk: 'hah7vzn.css', base: '' },
+      },
+      prodDomains: ['www.adobe.com'],
+      pathname: '/',
+      uniqueSiteId: 'cc',
+      contentRoot: '/cc-shared',
+      codeRoot: '/libs',
+    };
+
+    const fetchedUrls = (needle) => fetchStub.getCalls()
+      .map((call) => `${call.args[0]}`)
+      .filter((url) => url.includes(needle));
+
+    beforeEach(async () => {
+      originalFetch = window.fetch;
+      fetchStub = sinon.stub();
+      fetchStub.callsFake((url) => {
+        const href = `${url}`;
+        if (href.includes('lingo-site-mapping')) {
+          return mockRes({
+            payload: {
+              'site-locales': { data: [{ uniqueSiteId: 'cc', baseSite: '/', regionalSites: '/sg' }] },
+              'site-query-index-map': {
+                data: [{
+                  uniqueSiteId: 'cc',
+                  queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+                }],
+              },
+            },
+          });
+        }
+        if (href.includes(QUERY_INDEX_PATH) && href.includes('/sg/')) {
+          return mockRes({ payload: { data: [{ path: '/sg/products/photoshop' }] } });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+      window.fetch = fetchStub;
+      originalLana = window.lana;
+      testAnchors = [];
+      // `akamai` feeds the lowest-priority slot in computeDetectedMarketCountry, so a
+      // leaked `country` cookie from an earlier test would win and break region lookup.
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.setItem('akamai', 'sg');
+      lingoUtils = await import(`../../libs/utils/utils.js?t=${nextModuleId()}`);
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+    });
+
+    afterEach(() => {
+      window.fetch = originalFetch;
+      if (originalLana) window.lana = originalLana; else delete window.lana;
+      testAnchors.forEach((a) => a.remove());
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('does not attach regions to a locale with no regional children', () => {
+      const locale = lingoUtils.getLocale(nonLingoConfig.locales, '/uk/blog/');
+      expect(locale.prefix).to.equal('/uk');
+      expect(locale.base).to.be.undefined;
+      expect('regions' in locale).to.be.false;
+    });
+
+    it('attaches regions to a base locale that does have regional children', () => {
+      const locale = lingoUtils.getLocale(lingoConfig.locales, '/');
+      expect(locale.prefix).to.equal('');
+      expect(Object.keys(locale.regions)).to.deep.equal(['sg']);
+    });
+
+    it('does not fetch a lingo query index on a regional locale when no locale declares a base', async () => {
+      lingoUtils.setConfig(nonLingoConfig);
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      // Ordinary locale prefixing must still happen.
+      expect(localized).to.equal('/uk/blog/basics/marketing-personalization');
+    });
+
+    it('does not fetch a lingo query index on the root locale of a non-Lingo site', async () => {
+      // The reported case: business.adobe.com/blog, where matchedKey is '' - the same key
+      // that would carry `regions` on a real Lingo site.
+      lingoUtils.setConfig({ ...nonLingoConfig, pathname: '/blog/' });
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      expect(localized).to.equal('/blog/basics/marketing-personalization');
+    });
+
+    it('still fetches the lingo query index and localizes on a real Lingo base locale', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      lingoUtils.setConfig(lingoConfig);
+      const href = 'https://www.adobe.com/products/photoshop';
+      const a = addAnchor(href);
+
+      a.href = await lingoUtils.localizeLinkAsync(href, 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH).length).to.be.greaterThan(0);
+      expect(new URL(a.href).pathname).to.equal('/sg/products/photoshop');
+    });
+  });
+
   describe('computeDetectedMarketCountry', () => {
     it('prefers country query param over country cookie', () => {
       expect(utils.computeDetectedMarketCountry('?country=lu', 'be', null)).to.equal('lu');
