@@ -34,6 +34,14 @@ const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
 
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable; setting just won't persist
+  }
+}
+
 function getStoredAlignLeft() {
   try {
     return localStorage.getItem(ALIGN_STORAGE_KEY) === 'true';
@@ -43,11 +51,7 @@ function getStoredAlignLeft() {
 }
 
 function setStoredAlignLeft(alignLeft) {
-  try {
-    localStorage.setItem(ALIGN_STORAGE_KEY, String(alignLeft));
-  } catch {
-    // storage unavailable; alignment choice just won't persist
-  }
+  safeSetItem(ALIGN_STORAGE_KEY, String(alignLeft));
 }
 
 function applyStoredAlignment() {
@@ -156,7 +160,7 @@ function toggleExpandedCard(cardEl) {
   const isExpanded = cardEl.classList.toggle('expanded');
   const expanded = getExpandedCards();
   expanded[isExpanded ? 'add' : 'delete'](key);
-  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+  safeSetItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
 function buildManifestCard(manifest, { mmm = false } = {}) {
