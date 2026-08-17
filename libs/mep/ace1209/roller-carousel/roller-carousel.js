@@ -1,5 +1,7 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
+
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 const SCROLL_PER_APP = 200;
 const M_BREAKPOINT = 1024;
@@ -95,7 +97,10 @@ function parseContent(rows) {
     }
     const name = cols[0]?.textContent?.trim() ?? '';
     const pics = [...row.querySelectorAll('picture')];
-    const svgIconImg = row.querySelector('p img[src*=".svg"]');
+    // SVG icon from feds: bare <img> not wrapped in <picture>; use .src (browser-resolved) for robustness
+    const svgIconImg = [...row.querySelectorAll('img')]
+      .find((img) => !img.closest('picture') && isSvgUrl(img.src));
+    if (svgIconImg) svgIconImg.src = getFederatedUrl(svgIconImg.getAttribute('src'));
     const icon = svgIconImg || (pics.length > 1 ? pics[0] : null);
     const picture = svgIconImg ? (pics[0] ?? null) : (pics.length > 1 ? pics[1] : (pics[0] ?? null));
     if (name) apps.push({ category: currentCategory, name, picture, icon });
