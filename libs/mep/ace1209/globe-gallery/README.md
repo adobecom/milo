@@ -562,7 +562,10 @@ fixes both:
 | `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter. |
 
 With `H` CSS-derived, a URL-bar resize is a **complete no-op**: `doLayout` re-measures, computes the
-same `H`, and takes its unchanged-`W`/`H` exit. Verified (`urlbar-scroll-test.cjs`, `innerHeight`
+same `H`, and takes its unchanged-`W`/`H` exit. `gg-viewport-hud.js` (harness dir) is the on-device
+check — it overlays `innerHeight` / a live `100vh` probe / `blockHeight` / the drawing buffer / a
+`canvas.width` write counter per resize event, which is how you tell one of ours from a browser-level
+layout pass. Verified (`urlbar-scroll-test.cjs`, `innerHeight`
 shadowed 90px smaller at a fixed `scrollY`): camera z identical in both the formation and tail phases,
 `arcOp` identical, and **zero** writes to `canvas.width`/`height`.
 
@@ -579,6 +582,11 @@ its photo canvas rides `H`, and the scroll lock means the bar can't move while i
   unchanged-`W`/`H` exit, because `H` derives from them — that exit cannot fire correctly otherwise.
   They are a `getBoundingClientRect` and a `getComputedStyle`, i.e. what the body `ResizeObserver`
   already paid on every fire.
+- **The exit carries 1px of tolerance**, and `H` is rounded. `H` is `offsetHeight ÷ 520 × 100`, so a
+  single pixel of subpixel layout wobble in a ~4400px runway moves it by ~0.2px — enough to fail an
+  exact compare and buy a full relayout (buffer realloc + `computeGridLayout`) for nothing, which is
+  precisely the shape of a one-off blink. Verified: +2px and +4px on the runway leave the drawing
+  buffer untouched; +60px resizes it.
 - **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. `H` is `0`-safe
   but not `0`-correct while the section is hidden (`display: none` → `blockHeight` 0 → the
   `innerHeight` fallback), and the un-hide arrives as a body resize with no window resize behind it.

@@ -1746,7 +1746,7 @@ function createGlobeGalleryRuntime(
     measureBlock();
     readCssVars();
     W = window.innerWidth;
-    H = measureViewportH();
+    H = Math.round(measureViewportH());
 
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
@@ -1785,8 +1785,10 @@ function createGlobeGalleryRuntime(
       measureBlock();
       readCssVars();
       const nextW = window.innerWidth;
-      const nextH = measureViewportH();
-      if (fromResize && nextW === W && nextH === H) return;
+      const nextH = Math.round(measureViewportH());
+      // 1px of tolerance: H comes off `offsetHeight`, and a subpixel layout wobble at the end of an
+      // iOS URL-bar move would otherwise buy a full relayout. See README (One viewport height).
+      if (fromResize && nextW === W && Math.abs(nextH - H) <= 1) return;
       W = nextW;
       H = nextH;
 
