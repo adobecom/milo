@@ -462,6 +462,7 @@ function buildDrawer(gnavOffset, pageId) {
     id: 'mep-drawer',
     class: 'mep-drawer',
     popover: 'manual',
+    'data-lenis-prevent': '',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
   }, children);
 }

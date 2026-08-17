@@ -183,6 +183,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 .mep-drawer .mep-body {
   flex-grow: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mep-drawer .mep-body::-webkit-scrollbar {
