@@ -103,7 +103,7 @@ Who writes what:
 
 | | fields |
 | --- | --- |
-| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `cssViewportH()`, **not** `innerHeight` — see The two viewport heights), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
+| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
 | `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, `entryStart` (the entry ramp's scroll origin — published so `updateCanvasVisibility` gates the reveal on the *same* threshold rather than re-deriving it), and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
@@ -544,58 +544,71 @@ Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets t
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
 
-### The two viewport heights
+### One viewport height
 
-There are **two** of them and they are not interchangeable. `window.innerHeight` is read in exactly
-two places (`initRuntime` and `doLayout`, both assigning `W`/`H`); nothing downstream reads the window
-again:
+`H` is **not** `window.innerHeight`. It is 100vh in px as CSS resolved it, measured off the runway's
+own laid-out height (`blockHeight / --gg-runway-height × 100`, `measureViewportH()`), and it is the
+only viewport height in the block — scroll clocks and rendering both use it. `window.innerHeight`
+survives in one place, as that function's fallback.
 
-| | value | who reads it | why that one |
-| --- | --- | --- | --- |
-| **render space** | `H` — live `innerHeight`; `getViewport()` hands the same pair to `modal.js` | renderer size + DPR, both cameras (`arcCamZ`), `cssToWorld` / `buildArcCtx` / `rotateArcPoint`, the focus-ring projection, `dragSensitivity`, the modal's swipe/pull thresholds | these size things *against the glass*. When the URL bar takes 90px the glass really is 90px shorter, so tracking it is correct. |
-| **scroll space** | `cssViewportH()` — 100vh as CSS resolved it: `blockHeight / --gg-runway-height × 100` | `formedScrollPx()` and `frameInput.viewportH`, i.e. **every** clock in `deriveFrame` | these map document scroll onto a runway sized in `vh`, so they must use the *same* `vh` the runway did. |
+**Why not the window.** On iOS the URL bar resizes the *layout* viewport: `innerHeight` shrinks and
+grows mid-scroll — every change of scroll direction collapses or restores it — while `vh` resolves
+against the large viewport and never moves. Two separate failures came out of that, and one number
+fixes both:
 
-**Why the split exists at all.** On iOS `vh` resolves against the **large** viewport (URL bar
-collapsed) and never changes, while `innerHeight` shrinks by the bar and flips mid-scroll — every
-change of scroll direction collapses or restores it. `blockHeight` is `vh`-based and `formPx` used to
-be `innerHeight`-based, so the two disagreed by the bar's height × 3.04 (~150–250px of scroll) and
-each collapse *rewound* `progress`: the barrel visibly re-played the camera's entry. It also skewed
-`tailPx` off the CSS pin geometry, drifting the quote's fade against its own sticky exit. Measured
-at a fixed `scrollY` with `innerHeight` shadowed 90px smaller (`urlbar-scroll-test.cjs`): before,
-the tail's camera z jumped −31.7 → −41.4 and the formation's arc-copy opacity 0.53 → 0.24; after,
-both are unchanged to the digit.
+| what read `innerHeight` | what the bar did to it |
+| --- | --- |
+| `formPx` + the entry ramps (scroll → `progress`) | `blockHeight` is `vh`-based and `formPx` was not, so they disagreed by the bar × 3.04 (~150–250px of scroll). Each collapse *rewound* `progress`: the barrel visibly re-played. Where in the timeline it landed depended on when that browser moves the bar (Safari mid-run, Chrome iOS right at the start — same cause). |
+| `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter. |
 
-**Keeping it consolidated:**
-- One writer for the scroll basis: `computeFrame` sets `frameInput.viewportH = cssViewportH()`. Any
-  new scroll-space threshold reads `frameInput.viewportH` (or takes the value off `frame`) — never
-  `H`, and never `window.innerHeight`. `frame.entryStart` exists for exactly this reason:
-  `updateCanvasVisibility` used to re-derive `blockDocTop - H × ENTRY_LEAD_VH` and drifted the moment
-  the basis changed.
-- One writer for render space: `doLayout`. `modal.js` gets it through `getViewport()` and reads the
-  window nowhere, so its gesture distances can't diverge from the renderer's.
-- `--gg-runway-height` and `--gg-formation-vh` must both stay in `vh` — `cssViewportH()` is a ratio
-  between one of them and the px height it produced. `readCssVars()` **checks the unit** (`cssVhCount`)
-  rather than trusting `parseFloat`, because `520px` or `520dvh` would parse to the same plausible
-  `520` and skew the ratio silently; a unit mismatch reads as unresolved, so the basis degrades to `H`
-  (pre-fix behaviour) instead of going quietly wrong. It also falls back to `H` while `blockHeight`
-  is `0` (section still hidden) and under reduced motion (`height: auto` — no runway to measure).
+With `H` CSS-derived, a URL-bar resize is a **complete no-op**: `doLayout` re-measures, computes the
+same `H`, and takes its unchanged-`W`/`H` exit. Verified (`urlbar-scroll-test.cjs`, `innerHeight`
+shadowed 90px smaller at a fixed `scrollY`): camera z identical in both the formation and tail phases,
+`arcOp` identical, and **zero** writes to `canvas.width`/`height`.
 
-**Why not just a viewport unit?** The mismatch is between a CSS length and a JS number, so no choice
-of unit removes it — JS still has to learn how many px that unit produced:
+**The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
+its bottom ~90px sits behind the bar and the globe reads slightly larger than the visible area. That
+matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`, the quote rail is
+`top: 50vh`), so the WebGL layer and the DOM chrome now agree instead of being mis-registered by the
+bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
+artifact being removed. The modal's chrome stays on `100dvh` (its buttons must stay reachable); only
+its photo canvas rides `H`, and the scroll lock means the bar can't move while it's open.
+
+**Consequences worth knowing:**
+- **`doLayout` measures before it decides.** `measureBlock()` + `readCssVars()` run *above* the
+  unchanged-`W`/`H` exit, because `H` derives from them — that exit cannot fire correctly otherwise.
+  They are a `getBoundingClientRect` and a `getComputedStyle`, i.e. what the body `ResizeObserver`
+  already paid on every fire.
+- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. `H` is `0`-safe
+  but not `0`-correct while the section is hidden (`display: none` → `blockHeight` 0 → the
+  `innerHeight` fallback), and the un-hide arrives as a body resize with no window resize behind it.
+  Routing it through `doLayout` is what upgrades `H` at that moment; the exit keeps it as cheap as the
+  bare measure it replaced. Verified with `innerHeight` shadowed *before* init (`HIDDEN=1`): buffer
+  starts at the fallback height and lands on 100vh after the un-hide.
+- **`--gg-runway-height` and `--gg-formation-vh` must both stay in `vh`** — `measureViewportH()` is a
+  ratio between one of them and the px height it produced. `readCssVars()` checks the unit
+  (`cssVhCount`) rather than trusting `parseFloat`, because `520px` or `520dvh` parses to the same
+  plausible `520` and would skew the ratio silently; a unit mismatch reads as unresolved, so the basis
+  degrades to `innerHeight` instead of going quietly wrong.
+- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 4389→3120 and the same
+  *fraction* of the runway holds the same phase (camera z within 0.02).
+
+**Why not a viewport unit instead?** The mismatch is between a CSS length and a JS number, so no unit
+removes it — JS still has to learn how many px that unit produced:
 - **`lvh`** is what `vh` already means here (spec: `vh` = large viewport), so `520lvh` would be pure
-  documentation, and `svh` is constant too — neither changes the arithmetic.
-- **`dvh`** *would* make CSS agree with `innerHeight`… by making the runway itself grow and shrink
-  mid-scroll (~470px at a 90px bar, over 5.2 units). The divisor then moves instead of the dividend:
-  the same discrete rewind, plus a re-scaling runway, moving sticky pin heights, and layout work on
-  every frame of the bar animation. Verified with the guard in place (`BADUNIT=520dvh`): the basis
-  correctly refuses the value, falls back to `H`, and the −9.7 camera jump comes straight back.
+  documentation; `svh` is constant too. Neither changes the arithmetic.
+- **`dvh`** *would* make CSS agree with `innerHeight` — by making the runway itself grow and shrink
+  mid-scroll (~470px at a 90px bar, over 5.2 units). The divisor moves instead of the dividend: the
+  same rewind, plus a re-scaling runway, moving sticky pin heights, and layout on every frame of the
+  bar animation. Verified with the unit guard in place (`BADUNIT=520dvh`): the value is refused, the
+  basis falls back to `innerHeight`, and the −9.7 camera jump comes straight back.
 - **A hidden probe element** (`height: var(--gg-formation-vh)`, read `offsetHeight`) is the one
   strictly-less-coupled option: no ratio, no second prop read, no unit assumption. It costs a DOM node
   per instance whose only job is to be measured. Worth the swap only if a third `vh`-derived length
   shows up.
 - **Scroll-driven animations** would hand the whole mapping to CSS, but reading progress back per
   frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
-  wouldn't remove `H` from render space. That's a rewrite of the clock pipeline, not a consolidation.
+  wouldn't help the render side at all.
 
 **CSS is the source of truth for all three props**, read per layout in `readCssVars()`, so retuning is
 a CSS-only edit:
@@ -620,19 +633,20 @@ substitute value:
 - **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
   formPx)`, `Math.max(1, blockHeight - formPx)`) and clamped, so a pre-stylesheet frame renders at
   `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn
-  this into a crash. `cssViewportH()` tests `runwayVh > 0` for the same reason: its own divisor.
+  this into a crash. `measureViewportH()` tests `runwayVh > 0` for the same reason: its own divisor.
 
-`layoutObs` then calls `readCssVars()` alongside `measureBlock()`, which is what guarantees the real
-values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
+`layoutObs` → `doLayout()`, whose first act is `measureBlock()` + `readCssVars()`, is what guarantees
+the real values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
 section (`main .section[data-status='pending'] { display: none }`) only after `Promise.all([styleLoaded,
 scriptLoaded])`, and that un-hide changes the body height, so the `ResizeObserver` is guaranteed to
 fire at least once with the stylesheet applied. Re-reading on every body resize is free next to the
-`getBoundingClientRect()` `measureBlock()` already does there.
+`getBoundingClientRect()` `measureBlock()` already does there, and `doLayout`'s unchanged-`W`/`H` exit
+means nothing beyond those two reads runs on a fire that changes neither.
 
-`measureBlock()` (from `doLayout` and `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
+`measureBlock()` (`doLayout`, so also `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
 is plain `offsetHeight`, itself CSS-driven, and needs no fallback either, since `offsetHeight` is `0`
 (never `NaN`) while the section is hidden. `--gg-runway-height` is read only as the *unit count*
-`cssViewportH()` divides that height by (`520` → px per 100vh) — never as a length, so the runway's
+`measureViewportH()` divides that height by (`520` → px per 100vh) — never as a length, so the runway's
 size still comes from one place.
 
 So **no JS file anywhere holds a copy of these three numbers** — not even for docs. The event table's

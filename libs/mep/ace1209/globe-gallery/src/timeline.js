@@ -123,7 +123,7 @@ export function createFrameInput() {
     blockDocTop: 0,
     blockHeight: 0,
     formPx: 0,
-    viewportH: 0, // the core's cssViewportH(), NOT innerHeight
+    viewportH: 0, // the core's H (CSS viewport height), NOT innerHeight
     arcScale: 1,
   };
 }

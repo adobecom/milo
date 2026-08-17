@@ -342,7 +342,8 @@ function createGlobeGalleryRuntime(
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let runwayVh = 0; // from --gg-runway-height (see readCssVars)
-  // W/H = RENDER space; cssViewportH() = SCROLL space. See README (The two viewport heights).
+  // H is the CSS viewport height (measureViewportH), NOT innerHeight — it ignores the iOS URL bar.
+  // See README (One viewport height).
   let W = 0;
   let H = 0;
 
@@ -857,7 +858,7 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
-    // `vh` counts only: another unit parses fine and skews cssViewportH's ratio. See README.
+    // `vh` counts only: another unit parses fine and skews measureViewportH's ratio. See README.
     const cssVhCount = (prop) => (/^[\d.]+vh$/i.test(rootStyle.getPropertyValue(prop).trim())
       ? cssNum(prop)
       : null);
@@ -869,15 +870,16 @@ function createGlobeGalleryRuntime(
     if (runway !== null) runwayVh = runway;
   }
 
-  // 100vh in px as CSS resolved it — the basis for every scroll clock, not innerHeight. See README.
-  function cssViewportH() {
+  // 100vh in px as CSS resolved it, off the runway's own height. The one viewport height the block
+  // uses, for scroll AND render. See README (One viewport height).
+  function measureViewportH() {
     if (!reducedMotion && runwayVh > 0 && blockHeight > 0) return (blockHeight / runwayVh) * 100;
-    return H;
+    return window.innerHeight;
   }
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
   function formedScrollPx() {
-    return Math.min((formationVh / 100) * cssViewportH(), blockHeight);
+    return Math.min((formationVh / 100) * H, blockHeight);
   }
 
   // Focus snaps the page to the interactive globe state, deferred a frame so focus settles.
@@ -978,7 +980,7 @@ function createGlobeGalleryRuntime(
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
     frameInput.formPx = formedScrollPx();
-    frameInput.viewportH = cssViewportH();
+    frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.now = performance.now();
     TL.deriveFrame(frameState, frameInput);
@@ -1741,8 +1743,10 @@ function createGlobeGalleryRuntime(
       canvas.style.top = '';
     }
 
+    measureBlock();
+    readCssVars();
     W = window.innerWidth;
-    H = window.innerHeight;
+    H = measureViewportH();
 
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
@@ -1776,8 +1780,12 @@ function createGlobeGalleryRuntime(
 
     // Only the resize path passes fromResize — see README (doLayout cost control).
     function doLayout({ fromResize = false } = {}) {
+      // Metrics first: H derives from them, and an unchanged H is what makes the exit below fire on
+      // an iOS URL-bar resize. See README (One viewport height).
+      measureBlock();
+      readCssVars();
       const nextW = window.innerWidth;
-      const nextH = window.innerHeight;
+      const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) return;
       W = nextW;
       H = nextH;
@@ -1792,8 +1800,6 @@ function createGlobeGalleryRuntime(
         if (initRuntime() === false) root.classList.add('globe-gallery-empty');
         return;
       }
-      measureBlock();
-      readCssVars();
       // Re-apply DPR (can change when dragging between monitors of different density).
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
@@ -1837,7 +1843,9 @@ function createGlobeGalleryRuntime(
 
     // Page height changes shift offsetTop; blockHeight=0 at first paint → progress=Infinity.
     if (layoutObs) layoutObs.disconnect();
-    layoutObs = new ResizeObserver(() => { measureBlock(); readCssVars(); });
+    // doLayout re-measures first and exits on an unchanged W/H, so this costs what the bare measure
+    // it replaces cost — but it also refreshes H once the section un-hides. See README.
+    layoutObs = new ResizeObserver(() => doLayout({ fromResize: true }));
     layoutObs.observe(document.body);
 
     if (intersectionObs) intersectionObs.disconnect();
