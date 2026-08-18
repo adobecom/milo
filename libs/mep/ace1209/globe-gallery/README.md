@@ -964,7 +964,9 @@ interactivity stay aligned. `0` restores "settle, then fold."
 fold constants move: `ARC_COPY_OUT_FORM_START` → `ARC_COPY_OUT_FORM_END` of that window (the event
 table's derived progress column shows where they land). It therefore starts only once the
 fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finishes forming — one
-window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
+window for both profiles, since the fold constants are shared. Where the handoff morph engages the
+window drives the *collapse* rather than the pill's opacity, and the pill survives to the end of it
+to become the chip; the fade itself moves to `--gg-arc-handoff`. The out-ease is `easeInOutCubic`,
 **not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
 midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
 spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
@@ -974,7 +976,8 @@ spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
 `gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
 cannot drift apart.
 
-**Arc-copy placement is all CSS**; `updateArcCopy` owns only the opacity and the 24px entry slide.
+**Arc-copy placement is all CSS**; `updateArcCopy` owns the opacity, the 24px entry slide, and —
+on the phone barrel only — the collapse onto the rotate row (see Globe controls → Arc-copy handoff).
 CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
 and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
 below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
@@ -1046,6 +1049,60 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   breadcrumbs the fixed layer sits under.
 - **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
   nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
+
+### Arc-copy handoff (phone barrel)
+
+On the phone barrel the arc-copy pill and the rotate row are both pinned to the bottom edge, and
+the row's box sits **wholly inside** the pill's — 390px viewport, in CSS px:
+
+| | inline | block |
+| --- | --- | --- |
+| `.globe-gallery-arc-copy` | 8 → 367 | 635 → 772 (h **137**) |
+| `.globe-gallery-hint-text` | 80 → 310 | 710 → 764 (h **54**) |
+
+So they are not two neighbours that have to trade places — the chip is a sub-rect of the pill. The
+pill therefore **collapses onto the chip** instead of fading out beside it: `applyArcMorph` crops it
+with `clip-path: inset(… round …)` down to exactly the chip's box while its material densifies into
+the chip's, and the copy inside fades over the first `ARC_MORPH_COPY_T` of the same window.
+
+Why it is built this way:
+
+- **`clip-path`, not `scale`/`height`.** Scaling would make the corner radii elliptical and shear
+  the copy; animating `height` would reflow it every frame. Cropping reveals less of a box that
+  never moves, so the radius stays circular at every size and nothing relayouts. It also means the
+  crop **cannot invent geometry** — which is what gates the whole effect (below).
+- **Self-gating on measurement, not on a breakpoint.** `measureArcMorph` returns `null` if any of
+  the four insets is negative, i.e. if the chip is not inside the pill. That is true at md+ (the
+  pill is 382px wide and has no background at all there, while the row spans the viewport) and on
+  the sphere, and those paths keep the plain cross-fade untouched. No breakpoint constant is
+  duplicated into JS, and a future CSS change to either box re-gates itself.
+- **Material comes off the stylesheet.** The radius and background are read from
+  `getComputedStyle` of *both* elements at measure time and lerped, so `--s2a-border-radius-md` /
+  `--gg-controls-radius` / the two transparent-black tokens stay the single source of truth. Blur is
+  deliberately **not** interpolated: at the swap instant it is visually indistinguishable from the
+  interpolated version, and it is the one per-frame write that would re-blur a backdrop at a
+  changing radius.
+- **The swap rides one shared curve.** The chip lands on top (z 5 vs 4), so if the pill's exit and
+  the layer's entry ran on different clocks the bar would either double-darken or blink. Both now
+  run on `--gg-chrome-fade`: `controls.js` toggles `.is-visible`, and `updateArcCopy` toggles
+  `.globe-gallery-arc-copy-handoff` off **the same predicate** (`controlsVisible`, shared by
+  construction rather than by copy).
+- **Two opacity channels, one property.** `opacity: calc(var(--gg-arc-op, 0) * var(--gg-arc-handoff))`.
+  JS writes `--gg-arc-op` every frame (scroll-driven, must not lag); `--gg-arc-handoff` is a
+  **registered** `@property` so the transition can target it alone. Putting the transition on
+  `opacity` itself would make every per-frame write lag by `--gg-chrome-fade`; leaving the handoff
+  untransitioned would pop on scroll-back. The `, 0` fallback keeps the pill hidden before the first
+  frame writes anything.
+
+Re-measured on `doLayout` (both boxes are width-dependent) and once on `document.fonts.ready` —
+webfont metrics change the chip's wrapped height without resizing the body, so the block's
+`ResizeObserver` does not see it.
+
+**Not verified on device.** The per-frame `clip-path` on a `backdrop-filter`ed element runs during
+the heaviest part of the scroll. A desktop headless probe showed no cost, but it was vsync-pinned
+and nowhere near saturation, so it proves nothing about a mid-range phone. If this needs to go, the
+whole effect is `applyArcMorph` + the two CSS rules; deleting them restores the plain fade.
+
 
 ## Accessibility
 
@@ -2044,6 +2101,7 @@ bare names — are:
 | `ENTRY_ROT_MAX` | radians | arc sweep-in rotation at `arcCopyEntryT` = 0; `entryRot` decays from it, and `updateCardTransform` divides by it to renormalize for the per-card entry CA |
 | `ENTRY_SLIDE_H_FRAC` | fraction of `H` | `entryYOffset` at slide 0 — how far below its arc position a card starts |
 | `ARC_COPY_IN_ENTRY_T` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
+| `ARC_MORPH_COPY_T` | fraction of the out window | share of it the arc copy's *words* get before the pill has collapsed onto the rotate row (see Arc-copy handoff) |
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
 | `TEXT_ZOOM_FADE_RATE` | `zoomT` | hint text is fully faded at `zoomT` = `1 / RATE` |

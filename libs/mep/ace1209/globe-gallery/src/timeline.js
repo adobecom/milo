@@ -59,6 +59,8 @@ export const TEXT_APPEAR_START = 0.10;
 export const ARC_COPY_IN_ENTRY_T = 0.336;
 export const ARC_COPY_OUT_FORM_START = 0.20;
 export const ARC_COPY_OUT_FORM_END = 0.90;
+// Fraction of the out window the arc copy's words get before the pill collapses onto the chip.
+export const ARC_MORPH_COPY_T = 0.55;
 
 // zoomT
 export const TEXT_ZOOM_FADE_RATE = 3;

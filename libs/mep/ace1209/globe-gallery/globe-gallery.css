@@ -23,6 +23,9 @@
   --gg-controls-nav: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
   --gg-controls-top: calc(var(--gg-controls-nav) + var(--gg-controls-inset));
 
+  /* One fade for all on-canvas chrome. The arc-copy handoff rides it too — see README. */
+  --gg-chrome-fade: 0.35s;
+
   height: var(--gg-runway-height);
   position: relative;
   background: var(--s2a-color-gray-900);
@@ -78,13 +81,15 @@
 
   /* visibility flips AFTER the fade, never during: an interpolated `visible` would leave the
      buttons tappable and tabbable at opacity 0 for the whole 0.35s. */
-  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+  transition:
+    opacity var(--gg-chrome-fade) ease,
+    visibility 0s linear var(--gg-chrome-fade);
 }
 
 .globe-gallery-controls.is-visible {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.35s ease, visibility 0s;
+  transition: opacity var(--gg-chrome-fade) ease, visibility 0s;
 }
 
 .globe-gallery-control {
@@ -147,7 +152,6 @@
   text-align: center;
   text-wrap: balance;
   user-select: none;
-
   box-sizing: border-box;
   padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
   border-radius: var(--gg-controls-radius);
@@ -177,7 +181,9 @@
   backdrop-filter: blur(var(--s2a-blur-lg));
   border-radius: var(--s2a-border-radius-md);
   pointer-events: none;
-  opacity: 0;
+  opacity: calc(var(--gg-arc-op, 0) * var(--gg-arc-handoff));
+  /* stylelint-disable-next-line custom-property-no-missing-var-function -- transition target */
+  transition: --gg-arc-handoff var(--gg-chrome-fade) ease;
   will-change: opacity, transform;
   transform-origin: left bottom;
   z-index: 4;
@@ -185,6 +191,18 @@
 
 html[dir="rtl"] .globe-gallery-arc-copy {
   transform-origin: right bottom;
+}
+
+@property --gg-arc-handoff {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+/* Phone barrel: the pill has already collapsed onto the hint chip, so it cross-fades out on the
+   control layer's own curve and the swap is seamless. See README (Arc-copy handoff). */
+.globe-gallery-arc-copy-handoff {
+  --gg-arc-handoff: 0;
 }
 
 .globe-gallery-arc-copy-title {

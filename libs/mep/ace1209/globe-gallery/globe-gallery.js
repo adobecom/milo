@@ -356,7 +356,18 @@ function createGlobeGalleryRuntime(
   let caFilterB = null; // SVG feOffset element for blue channel
   let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
   // Cached node + last-written style strings (DOM writes only on change).
-  const arcCopy = { el: null, opStr: '', transformStr: '' };
+  const arcCopy = {
+    el: null,
+    chipEl: null,
+    copyEls: [],
+    opStr: '',
+    transformStr: '',
+    clipStr: '',
+    bgStr: '',
+    copyStr: '',
+    morph: undefined, // undefined = unmeasured, null = no morph at this breakpoint
+    handedOff: null,
+  };
 
   // Shared by reference with interaction.js: pendingX/Y = exact unapplied travel (rad), velX/Y =
   // smoothed velocity per 60fps frame. See README (Drag physics).
@@ -982,14 +993,12 @@ function createGlobeGalleryRuntime(
     drag,
   });
 
-  controls = createGlobeControls({
-    q,
-    labels,
-    getVisible: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
-      && frameState.zoomT < TL.CONTROLS_ZOOM_HIDE_T
-      && modal.getModalIdx() < 0,
-    rotate: rotateStep,
-  });
+  // Shared with updateArcCopy: the pill hands its scrim to the chip on exactly this flip.
+  const controlsVisible = () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
+    && frameState.zoomT < TL.CONTROLS_ZOOM_HIDE_T
+    && modal.getModalIdx() < 0;
+
+  controls = createGlobeControls({ q, labels, getVisible: controlsVisible, rotate: rotateStep });
 
   // Rad per pointer px, live off the viewport + band. See README (Drag physics)
   const dragSensitivity = () => {
@@ -1273,23 +1282,82 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  // Can the pill collapse onto the hint chip? Only where the chip's box sits wholly inside the
+  // pill's — the phone barrel. A negative inset anywhere means no morph. See README.
+  function measureArcMorph() {
+    const { el, chipEl } = arcCopy;
+    if (!chipEl) return null;
+    // Measure at rest: the entry slide's transform would otherwise bake itself into the crop.
+    el.style.clipPath = ''; el.style.background = ''; el.style.transform = '';
+    arcCopy.clipStr = ''; arcCopy.bgStr = ''; arcCopy.transformStr = ''; // next frame rewrites
+    const a = el.getBoundingClientRect();
+    const c = chipEl.getBoundingClientRect();
+    const crop = [c.top - a.top, a.right - c.right, a.bottom - c.bottom, c.left - a.left];
+    if (!a.width || !c.width || crop.some((v) => v < 0)) return null;
+    // Both materials come off the stylesheet, so the tokens stay the single source of truth.
+    const rgba = (str) => {
+      const n = (str.match(/[\d.]+/g) || []).map(Number);
+      return [n[0] || 0, n[1] || 0, n[2] || 0, n[3] ?? 1];
+    };
+    const from = getComputedStyle(el);
+    const to = getComputedStyle(chipEl);
+    return {
+      crop,
+      radius: [parseFloat(from.borderTopLeftRadius) || 0, parseFloat(to.borderTopLeftRadius) || 0],
+      bg: [rgba(from.backgroundColor), rgba(to.backgroundColor)],
+    };
+  }
+
+  // Crop the pill down onto the chip's box while its material densifies into the chip's.
+  function applyArcMorph(m, outT, outE) {
+    const copyStr = (1 - easeInOutCubic(Math.min(1, outT / TL.ARC_MORPH_COPY_T))).toFixed(3);
+    if (copyStr !== arcCopy.copyStr) {
+      arcCopy.copyEls.forEach((c) => { c.style.opacity = copyStr; });
+      arcCopy.copyStr = copyStr;
+    }
+    const [t, r, b, l] = m.crop;
+    const px = (v) => `${(v * outE).toFixed(1)}px`;
+    const radius = lerpN(m.radius[0], m.radius[1], outE).toFixed(1);
+    const clipStr = `inset(${px(t)} ${px(r)} ${px(b)} ${px(l)} round ${radius}px)`;
+    if (clipStr !== arcCopy.clipStr) {
+      arcCopy.el.style.clipPath = clipStr;
+      arcCopy.clipStr = clipStr;
+    }
+    const ch = m.bg[0].map((v, i) => lerpN(v, m.bg[1][i], outE));
+    const bgStr = `rgb(${ch.slice(0, 3).map(Math.round).join(' ')} / ${ch[3].toFixed(3)})`;
+    if (bgStr !== arcCopy.bgStr) { arcCopy.el.style.background = bgStr; arcCopy.bgStr = bgStr; }
+    // The chip arrives on top: swap the two scrims on one shared curve (CSS owns the timing).
+    const handed = controlsVisible();
+    if (handed !== arcCopy.handedOff) {
+      arcCopy.el.classList.toggle('globe-gallery-arc-copy-handoff', handed);
+      arcCopy.handedOff = handed;
+    }
+  }
+
   function updateArcCopy(frame) {
     if (!arcCopy.el) return;
+    if (arcCopy.morph === undefined) arcCopy.morph = measureArcMorph();
+    const m = arcCopy.morph;
     const arcCopyInE = easeOutCubic(Math.min(1, frame.arcCopyEntryT / TL.ARC_COPY_IN_ENTRY_T));
     const arcCopyOutT = Math.max(0, Math.min(
       1,
       (frame.progress - TL.ARC_COPY_OUT_START) / (TL.ARC_COPY_OUT_END - TL.ARC_COPY_OUT_START),
     ));
     const arcCopyOutE = easeInOutCubic(arcCopyOutT);
-    const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
+    // Morphing, the pill survives the window to become the chip, so only its copy fades here.
+    const arcCopyOp = arcCopyInE * (m ? 1 : 1 - arcCopyOutE);
     const arcCopySlide = 24 * (1 - arcCopyInE);
     const opStr = arcCopyOp.toFixed(3);
     const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
-    if (opStr !== arcCopy.opStr) { arcCopy.el.style.opacity = opStr; arcCopy.opStr = opStr; }
+    if (opStr !== arcCopy.opStr) {
+      arcCopy.el.style.setProperty('--gg-arc-op', opStr);
+      arcCopy.opStr = opStr;
+    }
     if (transformStr !== arcCopy.transformStr) {
       arcCopy.el.style.transform = transformStr;
       arcCopy.transformStr = transformStr;
     }
+    if (m) applyArcMorph(m, arcCopyOutT, arcCopyOutE);
   }
 
   // Draw the main scene, plus the modal card on its own canvas when active.
@@ -1835,6 +1903,7 @@ function createGlobeGalleryRuntime(
       if (fromResize && nextW === W && nextH === H) return;
       W = nextW;
       H = nextH;
+      arcCopy.morph = undefined; // chip + pill boxes are width-dependent
 
       // A band crossing or an RM toggle rebuilds (geometry is baked at build time); resizing
       // within a band takes the cheap path. See README (Breakpoints & rebuilds).
@@ -1919,8 +1988,13 @@ function createGlobeGalleryRuntime(
     caFilterR = q('.globe-gallery-ca-r-offset');
     caFilterB = q('.globe-gallery-ca-b-offset');
     arcCopy.el = q('.globe-gallery-arc-copy');
-    arcCopy.opStr = '';
-    arcCopy.transformStr = '';
+    arcCopy.chipEl = q('.globe-gallery-hint-text');
+    arcCopy.copyEls = [...arcCopy.el.children];
+    arcCopy.opStr = ''; arcCopy.transformStr = ''; arcCopy.clipStr = '';
+    arcCopy.bgStr = ''; arcCopy.copyStr = ''; arcCopy.handedOff = null;
+    arcCopy.morph = undefined;
+    // Webfont metrics move the chip's height without resizing the body: ResizeObserver misses it.
+    document.fonts?.ready?.then(() => { arcCopy.morph = undefined; });
 
     modal.setup();
 
@@ -2036,7 +2110,11 @@ function createGlobeGalleryRuntime(
     renderer = null; scene = null; camera = null; cameraOrtho = null; sphereGroup = null;
     modal.destroy();
     a11y.teardown();
-    if (arcCopy.el) arcCopy.el.style.cssText = '';
+    if (arcCopy.el) {
+      arcCopy.el.style.cssText = '';
+      arcCopy.el.classList.remove('globe-gallery-arc-copy-handoff');
+      arcCopy.copyEls.forEach((c) => { c.style.opacity = ''; });
+    }
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
