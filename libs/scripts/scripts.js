@@ -63,7 +63,7 @@ const config = {
   brandConciergeAA: 'app-reco',
   // taxonomyRoot: '/your-path-here',
   peregrine: {
-    serviceEp: 'http://localhost:8081',
+    serviceEp: 'https://localhost:8081',
   },
 };
 
