@@ -40,7 +40,7 @@ const BREAKPOINTS = {
   },
   sm: {
     minWidth: 0,
-    N_MAX: 24,
+    N_MAX: 0, // EXPERIMENT: was 24 — uncapped to see the full set in the barrel
     ARC_SPAN: 3.6,
     SPHERE_R: 16,
     CARD_H_SPHERE: 11.0, // sm: only the PlaneGeometry base (masonry sets visible size)
@@ -274,7 +274,7 @@ function createGlobeGalleryRuntime(
 
   // Resolve a band's cfg into the active profile (pure, frozen). `cylinder` picks the shape keys.
   function resolveBpProfile(name, cfg, cylinder) {
-    // N_TOTAL follows the authored count, capped only where a band sets N_MAX (sm: 24).
+    // N_TOTAL follows the authored count, capped only where a band sets N_MAX (none today).
     const nTotal = cfg.N_MAX > 0
       ? Math.min(CARD_CONTENT.length, cfg.N_MAX)
       : CARD_CONTENT.length;
