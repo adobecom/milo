@@ -187,7 +187,7 @@ function preserveInlineCommerceContext(masField, content) {
  * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
  * sibling isn't matched by 'em a'/'strong a' with the wrong parent (its content span).
  */
-function decorateInlineCtas(masField, content) {
+function decorateInlineCtas(masField, content, el) {
   const container = masField.closest('p, div');
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
@@ -238,6 +238,11 @@ function decorateInlineCtas(masField, content) {
       container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
     }
   }
+  [...el.href.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
+    container?.querySelectorAll('a').forEach((link) => {
+      link.classList.add(match[1]);
+    });
+  });
 }
 
 /**
@@ -245,7 +250,7 @@ function decorateInlineCtas(masField, content) {
  * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
  */
 let masReadyWatched = false;
-function watchMasFieldCtas() {
+function watchMasFieldCtas(el) {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
@@ -256,7 +261,7 @@ function watchMasFieldCtas() {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
-      decorateInlineCtas(mf, content);
+      decorateInlineCtas(mf, content, el);
     }
   });
 }
@@ -286,12 +291,12 @@ async function createInline(el, options) {
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-    decorateInlineCtas(masField, content);
+    decorateInlineCtas(masField, content, el);
   }
 }
 
 export default async function init(el) {
-  watchMasFieldCtas();
+  watchMasFieldCtas(el);
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return;
