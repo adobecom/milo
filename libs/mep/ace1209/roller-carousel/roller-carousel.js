@@ -316,26 +316,13 @@ function initScroll(block, refs, apps) {
     block, content, divider, left, header, carousel, scrollWrapper,
   });
 
-  const gnav = document.querySelector('header');
-  const updateHeaderVisibility = () => {
-    if (block.classList.contains('rcc-reflow')) {
-      const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 0;
-      header.style.visibility = header.getBoundingClientRect().bottom < navBottom ? 'hidden' : '';
-    } else {
-      header.style.visibility = '';
-    }
-  };
-
   window.requestAnimationFrame(updatePosition);
   new ResizeObserver(updatePosition).observe(listWrapper);
 
   evaluateReflow();
   window.addEventListener('resize', () => {
     evaluateReflow();
-    window.requestAnimationFrame(() => {
-      updatePosition();
-      updateHeaderVisibility();
-    });
+    window.requestAnimationFrame(updatePosition);
   }, { passive: true });
   let ticking = false;
   window.addEventListener('scroll', () => {
@@ -344,7 +331,6 @@ function initScroll(block, refs, apps) {
     window.requestAnimationFrame(() => {
       updatePosition();
       evaluateReflow();
-      updateHeaderVisibility();
       ticking = false;
     });
   }, { passive: true });
