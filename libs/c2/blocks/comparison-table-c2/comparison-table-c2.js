@@ -604,8 +604,8 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-  if (nav) new ResizeObserver(syncTop).observe(nav);
+  const header = document.querySelector('header');
+  if (header) new ResizeObserver(syncTop).observe(header);
 
   new ResizeObserver(() => {
     if (!isExpanding) syncHeaderHeight();
