@@ -36,18 +36,16 @@ function buildChicletRow(iconEl, heading) {
 }
 
 function buildMerchCard(col) {
+  decorateButtons(col);
+
   const allParas = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  const ctaEls = allParas.filter((el) => el.querySelector('em a, strong a'));
-  const contentEls = allParas.filter((el) => !ctaEls.includes(el));
+  const contentEls = allParas.filter((el) => !el.querySelector('.con-button'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   contentEls.forEach((el) => cardContent.append(el));
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  ctaEls.forEach((el) => ctaWrapper.append(el));
-  decorateButtons(ctaWrapper);
-  [...ctaWrapper.querySelectorAll('.con-button')].forEach((btn) => ctaWrapper.append(btn));
-  [...ctaWrapper.querySelectorAll('p')].forEach((p) => p.remove());
+  [...col.querySelectorAll('.con-button')].forEach((btn) => ctaWrapper.append(btn));
 
   return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
 }
