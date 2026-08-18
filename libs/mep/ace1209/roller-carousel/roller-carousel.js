@@ -316,25 +316,13 @@ function initScroll(block, refs, apps) {
     block, content, divider, left, header, carousel, scrollWrapper,
   });
 
-  const updateHeaderVisibility = () => {
-    if (!block.classList.contains('rcc-reflow')) {
-      header.style.visibility = '';
-      return;
-    }
-    const stickyTop = parseFloat(getComputedStyle(sticky).top) || 0;
-    header.style.visibility = header.getBoundingClientRect().bottom <= stickyTop ? 'hidden' : '';
-  };
-
   window.requestAnimationFrame(updatePosition);
   new ResizeObserver(updatePosition).observe(listWrapper);
 
   evaluateReflow();
   window.addEventListener('resize', () => {
     evaluateReflow();
-    window.requestAnimationFrame(() => {
-      updatePosition();
-      updateHeaderVisibility();
-    });
+    window.requestAnimationFrame(updatePosition);
   }, { passive: true });
   let ticking = false;
   window.addEventListener('scroll', () => {
@@ -343,7 +331,6 @@ function initScroll(block, refs, apps) {
     window.requestAnimationFrame(() => {
       updatePosition();
       evaluateReflow();
-      updateHeaderVisibility();
       ticking = false;
     });
   }, { passive: true });
