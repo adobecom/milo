@@ -1095,6 +1095,7 @@ export const getConfig = async (originalState, strs = {}) => {
         onDemand: { description: strs.onDemandText || 'On Demand' },
       },
       useLightText: state.useLightText,
+      useLongDescription: state.useLongDescription,
       disableBanners: state.disableBanners,
       reservoir: {
         sample: state.sortReservoirSample,
@@ -1400,6 +1401,7 @@ export const defaultState = {
   totalCardsToShow: 10,
   useCenterVideoPlay: false,
   useLightText: false,
+  useLongDescription: false,
   useOverlayLinks: false,
   useRoundedCorners: false,
   collectionButtonStyle: 'primary',

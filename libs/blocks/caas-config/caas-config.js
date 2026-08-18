@@ -460,6 +460,7 @@ const UiPanel = () => {
     <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
     <${Input} label="Use Center Video Play Button" prop="useCenterVideoPlay" type="checkbox" />
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Input} label="Use Long Description [new]" prop="useLongDescription" type="checkbox" />
     <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
     <${Input} label="Use Rounded Corners [new]" prop="useRoundedCorners" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
