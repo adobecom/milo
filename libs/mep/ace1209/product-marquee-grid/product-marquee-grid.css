@@ -108,7 +108,7 @@
       flex-direction: column;
       justify-content: flex-end;
       padding-block-start: var(--s2a-spacing-4xl);
-      width: 370px;
+      width: min(370px, 45%);
     }
 
     .pm-merch-card {
