@@ -31,25 +31,42 @@ function badgeIconHtml(url) {
 // English fallback for the a11y instructions; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
-const LABEL_DIVIDER = '||';
-const DEFAULT_LABELS = ['Previous card', '{index} of {count}', 'Next card', 'Close'];
+const DEFAULT_HINT = 'Click & Drag';
+const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
-function buildLabels(labelPara) {
-  const parts = labelPara
-    ? labelPara.textContent.split(LABEL_DIVIDER).map((s) => s.trim())
-    : [];
-  const [prevCard, cardTplRaw, nextCard, closeBtn] = parts;
+const LABEL_DIVIDER = '||';
+const DEFAULT_LABELS = [
+  DEFAULT_GALLERY_INSTRUCTIONS,
+  'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
+  'Previous card', '{index} of {count}', 'Next card', 'Close',
+];
+const CARD_TPL_INDEX = 6;
+
+function buildLabels(parts) {
+  const at = (i) => parts[i] || DEFAULT_LABELS[i];
+  const cardTplRaw = parts[CARD_TPL_INDEX];
   const cardTpl = cardTplRaw?.includes('{index}') && cardTplRaw?.includes('{count}')
     ? cardTplRaw
-    : DEFAULT_LABELS[1];
+    : DEFAULT_LABELS[CARD_TPL_INDEX];
   return {
-    prevCard: prevCard || DEFAULT_LABELS[0],
-    nextCard: nextCard || DEFAULT_LABELS[2],
-    closeBtn: closeBtn || DEFAULT_LABELS[3],
+    rotateLeft: at(1),
+    rotateRight: at(2),
+    pauseSpin: at(3),
+    resumeSpin: at(4),
+    prevCard: at(5),
+    nextCard: at(7),
+    closeBtn: at(8),
     cardLabel: (index, count) => cardTpl
       .replace('{index}', String(index))
       .replace('{count}', String(count)),
   };
+}
+
+// One cell's text: its <p>s joined, or the bare cell text when unwrapped.
+function cellText(cell) {
+  if (!cell) return '';
+  const paras = [...cell.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  return (paras.length ? paras.join(' ') : cell.textContent).trim();
 }
 
 // Move the authored <p>s into a container. See README (Reusing authored paragraphs).
@@ -244,18 +261,19 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 // Positional rows (see README, Authoring contract). Fragment links are authored
 // with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
-  const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
+  const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  const hintParas = hintTextRow ? [...hintTextRow.querySelectorAll('p')] : [];
-  const hintText = (hintParas[0]?.textContent ?? hintTextRow?.textContent ?? '').trim();
-  const instructions = hintParas[1]?.textContent.trim() || DEFAULT_GALLERY_INSTRUCTIONS;
+  // Row 2 is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
+  const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
+  const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     arcCopy: parseArcCopy(arcCopyRow),
     pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
-    hintText,
-    instructions,
-    labels: buildLabels(hintParas[2]),
+    touchHint: cellText(cells[0]) || DEFAULT_TOUCH_HINT,
+    hintText: cellText(cells[1]) || DEFAULT_HINT,
+    instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,
+    labels: buildLabels(parts),
   };
 }
 
@@ -264,6 +282,21 @@ export function parseAuthoredContent(el) {
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
     <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <div class="globe-gallery-controls">
+      <button class="globe-gallery-control globe-gallery-spin-toggle" type="button" daa-ll="pause_spin--globe_gallery" aria-label="${escapeHtml(labels.pauseSpin)}">
+        <svg class="globe-gallery-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
+        <svg class="globe-gallery-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+      </button>
+      <div class="globe-gallery-hint">
+        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <p class="globe-gallery-hint-text"></p>
+        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12h16m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -331,10 +364,11 @@ const buildMarkup = (gid, labels) => `
 let globeInstanceSeq = 0;
 
 // Build the block's DOM; returns the `gid` for this instance's unique ids.
-export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
+export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
+  el.querySelector('.globe-gallery-hint-text').textContent = touchHint;
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
   renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
   if (pullQuote) {

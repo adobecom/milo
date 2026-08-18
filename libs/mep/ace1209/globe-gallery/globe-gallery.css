@@ -17,6 +17,11 @@
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
+  --gg-controls-size: 48px;
+  --gg-controls-radius: 6px;
+  --gg-controls-inset: var(--s2a-spacing-md);
+  --gg-controls-nav: 124px;
+  --gg-controls-top: calc(var(--gg-controls-nav) + var(--gg-controls-inset));
 
   height: var(--gg-runway-height);
   position: relative;
@@ -35,7 +40,10 @@
 }
 
 @media (width >= 768px) {
-  .globe-gallery { --gg-copy-pad: var(--s2a-spacing-3xl); }
+  .globe-gallery {
+    --gg-copy-pad: var(--s2a-spacing-3xl);
+    --gg-controls-inset: var(--s2a-spacing-lg);
+  }
 }
 
 @media (width >= 1440px) {
@@ -58,6 +66,87 @@
   overflow: visible;
   pointer-events: none;
   z-index: 2;
+}
+
+.globe-gallery-controls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* not intercepting canvas drag */
+  z-index: 5;
+  opacity: 0;
+  visibility: hidden; /* pulls the buttons out of the tab order while the globe isn't live */
+
+  /* visibility flips AFTER the fade, never during: an interpolated `visible` would leave the
+     buttons tappable and tabbable at opacity 0 for the whole 0.35s. */
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.globe-gallery-controls.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0s;
+}
+
+.globe-gallery-control {
+  width: var(--gg-controls-size);
+  height: var(--gg-controls-size);
+  flex: none;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: var(--gg-controls-radius);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.globe-gallery-control:hover {
+  background: var(--s2a-color-transparent-black-80);
+  transform: scale(1.05);
+}
+
+.globe-gallery-control:active { transform: scale(0.98); }
+
+.globe-gallery-spin-toggle {
+  position: absolute;
+  top: var(--gg-controls-top);
+  inset-inline-end: var(--gg-controls-inset);
+}
+
+.globe-gallery-spin-toggle .globe-gallery-icon-play { display: none; }
+.globe-gallery-spin-toggle.is-paused .globe-gallery-icon-pause { display: none; }
+.globe-gallery-spin-toggle.is-paused .globe-gallery-icon-play { display: block; }
+
+.globe-gallery-hint { display: none; } /* barrel only */
+
+.globe-gallery-barrel .globe-gallery-hint {
+  position: absolute;
+  inset-inline: var(--gg-controls-inset);
+  bottom: var(--gg-controls-inset);
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-md);
+}
+
+.globe-gallery-hint-text {
+  flex: 1;
+  margin: 0;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-body);
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  user-select: none;
 }
 
 .globe-gallery-arc-copy {
@@ -589,6 +678,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
 /* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
 .globe-gallery-a11y:focus-visible,
 .globe-gallery-a11y-card:focus-visible,
+.globe-gallery-control:focus-visible,
 .globe-gallery-modal-close:focus-visible,
 .globe-gallery-modal-nav:focus-visible {
   outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
@@ -808,6 +898,14 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
   position: absolute;
 }
 
+.globe-gallery-reduced .globe-gallery-controls {
+  position: absolute;
+}
+
+html .globe-gallery-reduced .globe-gallery-spin-toggle {
+  display: none;
+}
+
 /* Pull-quote flows normally after the globe: drop the pin/rail/sticky, show statically with a gap above. */
 .globe-gallery-reduced .globe-gallery-pullquote-pin,
 .globe-gallery-reduced .globe-gallery-pullquote-rail {
@@ -829,7 +927,9 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
 /* Drop nav scale hover animation; colour cue stays. */
 @media (prefers-reduced-motion: reduce) {
   .globe-gallery-modal-nav:hover,
-  .globe-gallery-modal-nav:active {
+  .globe-gallery-modal-nav:active,
+  .globe-gallery-control:hover,
+  .globe-gallery-control:active {
     transform: none;
   }
 }

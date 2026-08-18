@@ -54,7 +54,8 @@ Sphere rotation + Touch gesture arbitration.
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
-Behavior notes), and a **two-level a11y gallery** (see Accessibility below): a single
+Behavior notes), **globe controls** (an auto-spin play/pause toggle everywhere plus a
+rotate/hint/rotate row on the barrel — see Globe controls), and a **two-level a11y gallery** (see Accessibility below): a single
 focusable entry widget whose Enter opens a keyboard/screen-reader browse mode that tabs
 through each image (centring it on the globe) rather than exposing a flat per-card list.
 
@@ -63,7 +64,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | File | What it is |
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants (scroll **timing** lives in `timeline.js`) and the stateful core: arc/grid/fold/sphere placement, drag physics, lifecycle. `tick()` orchestrates single-concern stages; `updateCardTransform` dispatches over four placement branch fns. Instantiates the DI modules. See Module layout. |
-| `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
+| `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
 | `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`), no rasterized mask. The two use *different* box conventions: `CARD_FRAG` fills the plane edge-to-edge, while `MODAL_FRAG` insets the shape by `uRadius` on all four sides (see Modal chrome). `TEXT_FRAG` adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
@@ -71,6 +72,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
+| `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
 | `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
@@ -112,8 +114,9 @@ Who writes what:
 `interaction.js` — see Drag physics),
 `masonryMorph` (`active`/`t`), `sphereOrient` (`x` pitch / `y` yaw / `z` roll — see Sphere rotation),
 `navNudge` (`active`, `target{X,Y,Z}` destination pose, `start{X,Y,Z}` pose when armed,
-`frame`/`frames` elapsed/total from `KEY_BROWSE_FRAMES` or `KEY_MODAL_FRAMES`; `targetZ` is roll, set
-by keyboard centring only), `arcCopy` (`el` + last-written style strings, so `updateArcCopy` only
+`frame`/`frames` elapsed/total from `KEY_BROWSE_FRAMES`, `KEY_MODAL_FRAMES` or
+`ROTATE_STEP_FRAMES`; `targetZ` is roll, *changed* by keyboard centring only — the other two
+callers pin it), `arcCopy` (`el` + last-written style strings, so `updateArcCopy` only
 touches the DOM on change), and `ctxLoss` (see WebGL context loss).
 
 **`tick()`'s stage order is load-bearing** — producers before consumers, and two stages read *last*
@@ -129,9 +132,9 @@ their inputs only change on a rebuild or a texture landing: `dragFlipZ` (`recomp
 masonry solve.
 
 Per-card placement (the largest stage) is a dispatcher over four runtime-scope branch fns — kept in
-this file because they read deeply from the closure and run in the hot loop. Five DI modules are
-injected with live-state getters: `materials.js`, the a11y widget, the modal, `interaction.js`, and
-the cursor. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
+this file because they read deeply from the closure and run in the hot loop. Six DI modules are
+injected with live-state getters: `materials.js`, the a11y widget, the modal, `interaction.js`, the
+cursor, and the globe controls. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
 only through the shared `sphereRotQuat` / `snapToSphereSlot` / `requestNavNudge` callbacks.
 
 ## Rebuilding Three.js
@@ -141,20 +144,34 @@ After adding a new `THREE.*` call, add the symbol to `src/three-src.js`, then
 
 ## Authoring contract
 
-The block expects up to **four direct child rows** (the hint and pull-quote rows
-are optional):
+The block expects up to **five direct child rows** (the pull-quote row is optional):
 
 | Row | Purpose | Content |
 | --- | --- | --- |
 | 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; remaining `<p>`s → `.globe-gallery-arc-copy-body` (each authored paragraph is reused as-is, inline markup included) |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
-| 2 | **Hint + instructions + labels** | first `<p>` → WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent); optional second `<p>` → a11y entry-widget instructions (English fallback); optional third `<p>` → the four UI labels, `\|\|`-separated in on-screen order **prev-arrow \|\| card-position template \|\| next-arrow \|\| close** (each part falls back to English) |
-| 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
+| 2 | **Hint copy** — two cells | **cell 0** → the barrel's visible bottom row (mobile), the sentence between the rotate arrows; **cell 1** → the WebGL hint plane + desktop cursor label (the short one). Either cell may be authored as several `<p>`s — they're joined with a space — or as bare cell text |
+| 3 | **A11y strings** | one cell, `\|\|`-separated in on-screen order: **instructions \|\| rotate-left \|\| rotate-right \|\| pause-spin \|\| resume-spin \|\| prev-arrow \|\| card-position template \|\| next-arrow \|\| close** — nine parts, the entry-widget instructions first. Each part falls back to English independently |
+| 4 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
 
 Rows are positional. `parseAuthoredContent(el)` returns
-`{ arcCopy, pullQuote, fragmentHref, hintText, instructions, labels }` (`labels` =
-`{ prevCard, nextCard, closeBtn, cardLabel }`, built by `buildLabels` from row 2's
-third `<p>`); cards are loaded separately from the fragment link by `fetchFragmentCards`.
+`{ arcCopy, pullQuote, fragmentHref, hintText, touchHint, instructions, labels }` (`labels` =
+`{ rotateLeft, rotateRight, pauseSpin, resumeSpin, prevCard, nextCard, closeBtn, cardLabel }`, built
+by `buildLabels` from row 3's parts — which it indexes 1:1, so `DEFAULT_LABELS[0]` is the
+instructions slot even though `buildLabels` itself doesn't expose it); cards are loaded separately
+from the fragment link by `fetchFragmentCards`.
+
+**Two cells, not one `||` pair.** The hint strings render in two unrelated places — a WebGL texture
+and an HTML row — at different breakpoints and different lengths, so they get a column each rather
+than sharing a divider. The divider now means exactly one thing: "this is row 3."
+
+**No back-compat path.** An earlier contract packed rows 2 and 3 into a single row (a `<p>` of
+`<cursor label> \|\| <touch instruction>`, an instructions `<p>`, a label-list `<p>`) with the
+pull-quote at row 3, and content published before the globe controls shipped carried only the four
+modal labels. None of that is read any more: the parse is **strictly positional**, because on this
+block re-authoring the table is cheaper than carrying a second parse shape forever. A page still on
+an old shape doesn't half-work — it mis-assigns strings — so **republish the content and the code
+together**.
 
 ### Fragment loading
 
@@ -386,20 +403,25 @@ The block ships **no hardcoded user-facing copy** and reads **no placeholders sh
 user-facing string is authored (block rows + card fragment) and localized with the page; hardcoded
 literals in the code are only fallbacks that never show on a correctly-authored page.
 
-**Row 2 carries all the block-chrome copy** in up to three `<p>`s, each localized inline:
+**Rows 2 and 3 carry all the block-chrome copy**, each string localized inline:
 
-| Row 2 `<p>` | String | Used for | Fallback |
+| Where | String | Used for | Fallback |
 | --- | --- | --- | --- |
-| 1st | "Click & Drag" | WebGL hint + desktop cursor label (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font) | `Click & Drag` (empty-cell) |
-| 2nd | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
-| 3rd | `prev \|\| {index} of {count} \|\| next \|\| close` | the four UI labels: modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen left→right order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
+| Row 2, cell 0 | touch instruction | the barrel's visible bottom-row copy, between the rotate arrows (see Globe controls). Real on-screen prose, so it's a sentence, not a label — author it as one `<p>` per sentence if you like, they're joined | `Click and drag to rotate. Tap to dive deep into the artwork.` (`DEFAULT_TOUCH_HINT`) |
+| Row 2, cell 1 | "Click & Drag" | WebGL hint + desktop cursor label (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font, so keep it short) | `Click & Drag` (`DEFAULT_HINT`) |
+| Row 3, part 1 | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
+| Row 3, parts 2–9 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close` | the eight UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
+
+The instructions lead row 3 because they are the a11y row's subject: one cell holding every string
+a screen-reader or keyboard user hears, in the order they meet them — the entry announcement first,
+then the controls it tells them about.
 
 The card-position part is a **tokenized template**: single-brace ICU-style `{index}`/`{count}`
 substituted at runtime so each locale controls word order. Single brace keeps them distinct from
 Milo's `{{key}}` placeholder syntax; a value missing either token falls back to `{index} of {count}`.
 The `\|\|` divider is safe because the pipe is not natural-language punctuation in any locale.
 
-The entry widget has **no separate name label**: its authored **instructions** (row 2, 2nd `<p>`)
+The entry widget has **no separate name label**: its authored **instructions** (row 3, 1st part)
 ARE its accessible name (one hidden-until-focus element serving as both the popup and the
 `aria-labelledby` target), so a screen reader announces exactly the on-page instruction — no
 redundant "N images" prefix. The modal announcement is position only (the creator name is already
@@ -847,8 +869,9 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 170 | 0.180 | `sphereFormT > DEPTH_SORT_FORM_T` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
 | 273 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.884) | `updateCardTransform` |
 | 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
-| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `updateClickDragText` |
+| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `controls.update`, `updateClickDragText` |
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
+| 358 | 0.491 | `CONTROLS_ZOOM_HIDE_T` | globe controls fade out (also leave the tab order) | `controls.update` |
 | 376 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
 | 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
 | 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--gg-pq-pin-factor`) | `updatePullQuote` |
@@ -962,6 +985,64 @@ block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll b
 over content above), and `ENTRY_RAMP_VH` the ramp over which `arcCopyEntryT` goes 0→1
 (arc-copy fade, arc pre-roll speed, text→arc gap).
 
+## Globe controls
+
+HTML chrome over the live globe (`controls.js`, markup from `buildGlobeDom`, styled from the
+`--gg-controls-*` custom properties): a **spin play/pause** toggle in the top inline-end corner and,
+on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom edge.
+
+| | Where | Why |
+| --- | --- | --- |
+| Spin toggle | every breakpoint / shape | Auto-spin is motion that starts on its own and never stops. WCAG **2.2.2** wants a pause mechanism, so this ships on the sphere too, not just the barrel. |
+| Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh` is skipped) nor the custom cursor (hover+fine only), so touch users otherwise get **no** affordance at all. The arrows also make the copy's "click and drag" claim actionable without a drag. |
+
+- **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
+  open, `zoomT < CONTROLS_ZOOM_HIDE_T` — i.e. exactly while the globe is draggable. `controls.js`
+  writes the `is-visible` class only when that boolean flips. CSS transitions `opacity` **and
+  `visibility`**; the latter is what pulls the buttons out of the tab order while hidden, so the
+  block's tab stops never point at invisible chrome.
+- **Tab order is entry widget → spin → rotate ← → rotate →.** `a11y.js` appends its nodes during
+  its own setup, which would leave the controls *ahead* of them in the DOM — where a
+  forward-tabbing user would walk past them while they're still hidden and never come back.
+  `controls.setup()` therefore runs after `a11y.setup()` and re-appends its layer last. Focusing
+  the entry widget snaps the page to the formed globe, so the controls are visible by the time the
+  next Tab lands on them.
+- **The spin toggle names the action it performs**, so both the `aria-label` and the `daa-ll` swap
+  with the state (authored `pause spinning` / `resume spinning`). No `aria-pressed` — a toggle whose
+  label already changes would announce twice.
+- **A rotate press is a `navNudge`**, the same eased tween keyboard centring uses, with pitch and
+  roll pinned to their current values so a tap can never tilt the globe off level. `navNudge.kind`
+  records who armed it: the browse-exit edge in `updateSphereRotation` cancels only `'browse'`
+  tweens, because a pointer press on a rotate button collapses browse mode (`focusout` → `collapse`)
+  in the same event turn it arms its own nudge — without the tag, the next frame would silently eat
+  the press and the button would look dead. `dir −1` = the
+  surface travels screen-left, matching a leftward drag.
+- **A press eases to the next column BOUNDARY, it does not add a column pitch.** Ambient spin
+  leaves the barrel at an arbitrary angle, so `y += 2π/cols` carries that offset forward forever
+  — face 1.5 columns, press, face 2.5. Snapping instead means a column lands front-centre from any
+  starting yaw, and the first press absorbs the drift. The boundaries come from the **cards**, not
+  the layout: every card in a column shares an azimuth and therefore a `yawDeltaToCenter`, so the
+  distinct deltas across `cards` *are* the boundaries — which makes their count the column count
+  too, so nothing has to be threaded out of `cylinderMasonryLayout`. `ROTATE_DEADZONE` (a fraction
+  of a pitch) skips a boundary we're already sitting on, so ambient drift can't turn a press into a
+  twitch; travel is therefore 0.15–1.15 columns. Repeat taps **queue**: the boundary search measures
+  from `navNudge.targetY` while a rotate tween is in flight, so a second tap adds a column instead of
+  re-picking the one already in motion (which made a double-tap slower than a single one). **Mid-morph the read switches to `morph.posTo`**:
+  `resolveMasonryLayout` runs off the async texture callback, so on a slow connection the reflow can
+  start while the controls are already live, and during it `spherePos` is a per-frame lerp off the
+  sphere — no shared azimuths, so the distinct-delta count reads as one column per card and the step
+  collapses. The target slot outlives the morph and is what the tween should land on anyway.
+- **Auto-spin keeps running through a press.** `AUTO_ROT_SPEED` is ≈1.7°/s against a ~45° pitch
+  (8 columns on sm), so an aligned column holds for ~25s and each press re-snaps. Pausing on press
+  would make the arrows silently flip the play/pause button — two controls sharing one state.
+- **Spacing.** One gap off every viewport edge, `--gg-controls-inset`, stepping `--s2a-spacing-md`
+  (sm) → `--s2a-spacing-lg` (md+) in lockstep with the modal's `--gg-modal-edge`, so the two chrome
+  layers never disagree about how far off the edge a control sits. The spin toggle's `top` adds that
+  same gap to `--gg-controls-nav` (124px, measured — see CSS, Tokens), clearing the sticky gnav +
+  breadcrumbs the fixed layer sits under.
+- **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
+  nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
+
 ## Accessibility
 
 The globe is exposed as a **two-level gallery** (`a11y.js`), not a flat per-card list. Both levels
@@ -1025,7 +1106,7 @@ normal flow. The preference is **re-read on every `initRuntime`**, and a
 the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
 change (no reload; the non-RM path clears the canvas `position` so a toggle-off reverts cleanly).
 
-**RM overrides `position` and nothing else** for the three viewport-sized boxes — no duplicated
+**RM overrides `position` and nothing else** for the four viewport-sized boxes — no duplicated
 geometry, and `measureViewportH()` reads the same 100vh in both modes. That works because the base
 rules are written against the canvas box rather than the window: `.globe-gallery-a11y` sits at
 `top: 50vh` (not `50%`) and `.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so
@@ -1042,6 +1123,8 @@ positioned in canvas px). The pieces:
   is per-card, so a group scale is safe). `sm` (~49%) stays 1.
 - **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); the base `top: 50vh` /
   `100vh` box already centre on the sphere, so neither override carries any offset.
+- **Globe controls** — `position:absolute` (was fixed), so the layer scrolls with the static globe;
+  the spin toggle is additionally `display:none` (nothing to pause). See Globe controls.
 - **Pull-quote** — drops `absolute`/`sticky` → `static`, forced `opacity:1`, hugs the top of its
   box so it sits under the globe; `updatePullQuote` early-returns (CSS owns it).
 - **Arc-copy** — `display:none` (no arc phase; a fixed pill would hang over the scrolling page).
@@ -1135,8 +1218,10 @@ the var is its home):
 | `-0.6px` letter-spacing | modal name, both breakpoints | none (−0.48 / −0.96) |
 | `10px` gap | badge-left, badges at md+ | `--s2a-spacing-xs` 8 / `--s2a-spacing-sm` 12 |
 | `10px` padding-inline | cursor text pill | same |
-| `--gg-control-radius` | modal controls | `--s2a-border-radius-xs` / `-sm` |
-| `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, cursor label | `--s2a-blur-xs` / `--s2a-blur-sm` |
+| `--gg-control-radius` / `--gg-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
+| `--gg-controls-size` 48px | globe controls | none (matches `--gg-control-size`) |
+| `--gg-controls-nav` 124px | globe controls' top offset | none — a *measured* value (top of screen → bottom of the breadcrumbs bar), not a design step. Re-measure it if the gnav or localnav changes height; the `--feds-*` vars can't be trusted for this (see Naming below) |
+| `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, cursor label, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
 | `18px` blur | modal backdrop | `--s2a-blur-sm` 16 |
 
 `--gg-chrome-blur` exists because that one blur appeared six times across those places. It is declared on `.globe-gallery` **and**
@@ -1155,7 +1240,15 @@ inherit a stranger's value from an ancestor. The only props read from JS are `--
 `--gg-runway-height` / `--gg-pq-pin-factor` in `readCssVars()` — grep both files before renaming one. **No prop is written
 from JS**: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
-retune stays a CSS-only edit and no magic number is stranded in JS. Only `--s2a-*` tokens come from upstream, and one of them
+retune stays a CSS-only edit and no magic number is stranded in JS. **No upstream (`--feds-*`)
+property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
+gnav, so `--gg-controls-top` has to clear it — but `var(--feds-height-nav, 63px)` +
+`var(--feds-height-breadcrumbs, 33px)` is the wrong instrument for that, and the earlier version of
+this file used it. Both vars are declared upstream (`libs/styles/styles.css` `:root` and
+`global-navigation/base.css`), so the px fallbacks never fire and the calc resolves to a fixed 96px
+whatever the live nav paints; `--feds-height-breadcrumbs` isn't even a bar height, it's the
+`line-height` of breadcrumb links. `--gg-controls-nav` is therefore a **measured literal** (see the
+literals inventory above). One of the tokens
 (`--s2a-font-letter-spacing-neg-0_48`) has an underscore, which is why `custom-property-pattern` is
 disabled on that single line rather than file-wide.
 
@@ -1296,6 +1389,8 @@ working around it.**
 | Card open (canvas tap) | `a11y.trackCardOpen` clicks the card's button | `card_open--globe_gallery` |
 | Card open (keyboard) | real click on that same button | `card_open--globe_gallery` |
 | Enter keyboard gallery (BROWSE) | `daa-ll` on the entry widget | `enter_gallery_kbd--globe_gallery` |
+| Rotate the globe a step | `daa-ll` in `buildMarkup` | `rotate_left--globe_gallery` / `rotate_right--globe_gallery` |
+| Pause / resume auto-spin | `daa-ll` rewritten with the state (`controls.js`) — one button, two meanings, so a fixed label would merge them | `pause_spin--globe_gallery` / `resume_spin--globe_gallery` |
 | Badge CTA | `daa-ll`, minted in `populateModal` | `Photoshop--globe_card_modal` |
 | Prev (button or swipe) | `daa-ll` in `buildMarkup` | `prev_card-1--globe_card_modal` |
 | Next (button or swipe) | `daa-ll` in `buildMarkup` | `next_card-2--globe_card_modal` |
@@ -1678,7 +1773,9 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **Column count is DERIVED** (`CYL_COLS_FIT`, the wall-HEIGHT dial): fewest columns whose tallest
     fits that fraction of frustum height (must scale with count). The shared default is in
     `YAW_ONLY_GEOMETRY`; **sm overrides it lower** (`BREAKPOINTS.sm.CYL_COLS_FIT`) — iPad's md
-    cylinder keeps the shared one.
+    cylinder keeps the shared one. The solve does **not** return the count — the rotate buttons
+    recover it from the cards' distinct yaw-deltas instead (see Globe controls), so the layout keeps
+    returning a flat placements array.
   - **Barrel size is the RADIUS** — the width lever. The wall sizes against the centre-plane frustum,
     but viewers see the FRONT cards at the near radius, magnified
     `CAM_Z_SPHERE / (CAM_Z_SPHERE − SPHERE_R)`. sm runs a much smaller `SPHERE_R` (less near magnification) so
@@ -1919,6 +2016,7 @@ self-evident from the name:
 | `TEXT_DRAG_WARP_MUL` | × | hint drag-warp vs sphere cards (more violent) |
 | `TEXT_CA_DIR_STRENGTH` / `_WARP_MUL` | UV / × | drag-CA strength on the hint text / warp-driven CA boost |
 | `TEXT_WARP_OVERFLOW` | mesh scale per uWarp | extra scale so letterforms bleed off-screen |
+| `ROTATE_STEP_FRAMES` / `ROTATE_DEADZONE` | 60fps frames / fraction of a column pitch | one rotate-button press: the `navNudge` tween length, and how close to a column boundary counts as already there — see Globe controls |
 
 ### `timeline.js` constants
 
@@ -1938,6 +2036,7 @@ bare names — are:
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
 | `TEXT_ZOOM_FADE_RATE` | `zoomT` | hint text is fully faded at `zoomT` = `1 / RATE` |
+| `CONTROLS_ZOOM_HIDE_T` | `zoomT` | globe controls fade out here — they steer a globe the camera is already flying through (see Globe controls) |
 | `GRID_PEEL_WINDOW` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
 | `progressAtFormT` | — | maps a `sphereFormT` back to progress; used to derive `ARC_COPY_OUT_START` / `_END`. Nothing here exists only for docs — Milo ships these files unbundled, so a doc-only export is pure payload (the `zoomT` inverse lives in the derivation snippet instead) |

@@ -63,6 +63,7 @@ export const ARC_COPY_OUT_FORM_END = 0.90;
 // zoomT
 export const TEXT_ZOOM_FADE_RATE = 3;
 export const CANVAS_HIDE_ZOOM_T = 0.95;
+export const CONTROLS_ZOOM_HIDE_T = 0.25;
 
 export const CURSOR_DRAG_DISMISS_T = 0.12;
 export const CURSOR_DRAG_RETIRE_T = 0.30;

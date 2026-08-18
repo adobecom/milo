@@ -8,6 +8,7 @@ import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createCursor from './src/cursor.js';
+import createGlobeControls from './src/controls.js';
 import {
   easeOutCubic, easeInOutCubic, lerpN, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
@@ -115,6 +116,9 @@ const PITCH_RELAX = 0.85;
 // Frame counts for the sphere-centring tweens: browse slow (anti-dizziness), modal faster.
 const KEY_BROWSE_FRAMES = 90;
 const KEY_MODAL_FRAMES = 20;
+const ROTATE_STEP_FRAMES = 34;
+const ROTATE_DEADZONE = 0.15;
+const COLUMN_EPS = 1e-6;
 const RING_TANHALF = Math.tan(Math.PI / 6); // tan(30°) — projects a card for the focus ring
 
 // Chromatic aberration.
@@ -397,6 +401,7 @@ function createGlobeGalleryRuntime(
   // Sphere-to-card alignment tween.
   const navNudge = {
     active: false,
+    kind: '', // 'browse' | 'modal' | 'rotate' — who armed it; see the browse-exit edge + rotateStep
     targetX: 0,
     targetY: 0,
     targetZ: 0,
@@ -430,6 +435,7 @@ function createGlobeGalleryRuntime(
   let a11y = null;
   let interaction = null;
   let cursor = null;
+  let controls = null;
 
   // Suppresses the focus→snap-scroll while the tab is backgrounded (pdf-space pattern).
   let suppressFocusSnap = false;
@@ -655,7 +661,7 @@ function createGlobeGalleryRuntime(
       const { SPHERE_R } = bp;
       const sz = textPlaneSize();
       const mat = createTextMaterial({
-        texture: createClickDragTexture(aspect, hintText || 'Click & Drag'),
+        texture: createClickDragTexture(aspect, hintText),
         aspect,
         resolution: { x: W * dpr, y: H * dpr },
       });
@@ -712,20 +718,25 @@ function createGlobeGalleryRuntime(
 
   // Shared solve: the yaw + pitch bringing card `idx` to screen centre (yawOnly holds pitch — a
   // cylinder can't centre vertically). Inside the globe both flip to the far wall.
-  function cardCenterYawPitch(idx, pitchCap, yawOnly) {
-    const { spherePos } = cards[idx];
-    const cy = Math.cos(sphereOrient.y);
-    const sy = Math.sin(sphereOrient.y);
+  // Shortest signed yaw that brings a slot front-centre. Scale-invariant, so on the barrel it
+  // depends only on azimuth — i.e. only on the column. rotateStep relies on that.
+  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y) {
+    const cy = Math.cos(fromYaw);
+    const sy = Math.sin(fromYaw);
     const px = spherePos.x * cy + spherePos.z * sy;
     const pz = -spherePos.x * sy + spherePos.z * cy;
-    const inside = cameraInsideSphere;
     let deltaY = -Math.atan2(px, pz); // → +Z (near wall, camera outside)
-    if (inside) deltaY += Math.PI; // → −Z (far wall, camera inside)
-    deltaY = Math.atan2(Math.sin(deltaY), Math.cos(deltaY)); // shortest signed spin
-    const targetYaw = sphereOrient.y + deltaY;
+    if (cameraInsideSphere) deltaY += Math.PI; // → −Z (far wall, camera inside)
+    return Math.atan2(Math.sin(deltaY), Math.cos(deltaY));
+  }
+
+  function cardCenterYawPitch(idx, pitchCap, yawOnly) {
+    const { spherePos } = cards[idx];
+    const targetYaw = sphereOrient.y + yawDeltaToCenter(spherePos);
     if (yawOnly) return { targetYaw, targetPitch: sphereOrient.x };
-    const h = Math.sqrt(px * px + pz * pz); // horizontal radius after yaw alignment
+    const h = Math.hypot(spherePos.x, spherePos.z);
     const pitchMag = Math.atan2(spherePos.y, h); // drives the card's height → centre
+    const inside = cameraInsideSphere;
     const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, inside ? -pitchMag : pitchMag));
     return { targetYaw, targetPitch };
   }
@@ -741,7 +752,42 @@ function createGlobeGalleryRuntime(
     navNudge.startZ = sphereOrient.z;
     navNudge.frames = KEY_MODAL_FRAMES;
     navNudge.frame = reducedMotion ? KEY_MODAL_FRAMES : 0;
+    navNudge.kind = 'modal';
     navNudge.active = true;
+  }
+
+  // One rotate-button press: ease to the next column BOUNDARY (never `y += pitch`), dir −1 = the
+  // surface travels screen-left. Pitch/roll pinned. See README (Globe controls).
+  function rotateStep(dir) {
+    // Measure from where the last press is HEADED, not where we are, so taps queue instead of
+    // re-targeting the boundary already in flight (which made a double-tap slower than a single).
+    const from = navNudge.active && navNudge.kind === 'rotate' ? navNudge.targetY : sphereOrient.y;
+    const deltas = [];
+    cards.forEach((card) => {
+      // Mid-morph spherePos is a per-frame lerp with no column structure yet — read the target.
+      const slot = masonryMorph.active && card.morph ? card.morph.posTo : card.spherePos;
+      const d = yawDeltaToCenter(slot, from);
+      if (!deltas.some((seen) => Math.abs(seen - d) < COLUMN_EPS)) deltas.push(d);
+    });
+    if (!deltas.length) return;
+    // Skip a boundary we're already on, else ambient drift eats the press.
+    const deadzone = ((2 * Math.PI) / deltas.length) * ROTATE_DEADZONE;
+    const ahead = deltas.filter((d) => d * dir > deadzone);
+    if (!ahead.length) return; // one column: nothing to step to
+    const delta = ahead.reduce((a, b) => (Math.abs(a) < Math.abs(b) ? a : b));
+    navNudge.targetY = from + delta;
+    navNudge.targetX = sphereOrient.x;
+    navNudge.targetZ = sphereOrient.z;
+    navNudge.startY = sphereOrient.y;
+    navNudge.startX = sphereOrient.x;
+    navNudge.startZ = sphereOrient.z;
+    navNudge.frames = ROTATE_STEP_FRAMES;
+    navNudge.frame = reducedMotion ? ROTATE_STEP_FRAMES : 0;
+    navNudge.kind = 'rotate';
+    navNudge.active = true;
+    // Kill residual spin (auto-rotate/drag inertia) so it can't fight the ease.
+    drag.velX = 0;
+    drag.velY = 0;
   }
 
   // Keyboard-gallery centring (a11y.js's centerCard): the shared yaw/pitch solve plus the
@@ -767,6 +813,7 @@ function createGlobeGalleryRuntime(
     navNudge.startZ = sphereOrient.z;
     navNudge.frames = KEY_BROWSE_FRAMES;
     navNudge.frame = reducedMotion ? KEY_BROWSE_FRAMES : 0;
+    navNudge.kind = 'browse';
     navNudge.active = true;
     // Kill residual spin (auto-rotate/drag inertia) so it can't fight the ease.
     drag.velX = 0;
@@ -931,8 +978,17 @@ function createGlobeGalleryRuntime(
       || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
     getCursorRetired: () => textExitProgress > TL.CURSOR_DRAG_RETIRE_T
       || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
-    labelText: hintText || 'Click & Drag',
+    labelText: hintText,
     drag,
+  });
+
+  controls = createGlobeControls({
+    q,
+    labels,
+    getVisible: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
+      && frameState.zoomT < TL.CONTROLS_ZOOM_HIDE_T
+      && modal.getModalIdx() < 0,
+    rotate: rotateStep,
   });
 
   // Rad per pointer px, live off the viewport + band. See README (Drag physics)
@@ -1008,9 +1064,10 @@ function createGlobeGalleryRuntime(
     sphereGroup.rotation.x = 0;
     sphereGroup.rotation.y = 0;
 
-    // Leaving browse: cancel the nudge so its targets stop fighting resumed auto-spin.
+    // Leaving browse: cancel browse's own tween so it stops fighting resumed auto-spin. A rotate
+    // press collapses browse (focusout) in the same turn it arms its nudge — don't eat that.
     const browsing = a11y && a11y.isBrowsing();
-    if (wasBrowsing && !browsing) {
+    if (wasBrowsing && !browsing && navNudge.kind === 'browse') {
       navNudge.active = false;
     }
     wasBrowsing = browsing;
@@ -1064,6 +1121,7 @@ function createGlobeGalleryRuntime(
         drag.velY *= friction;
         // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
         const spin = interactive && !reducedMotion && !(a11y && a11y.isBrowsing())
+          && !controls.isSpinPaused()
           ? AUTO_ROT_SPEED : 0;
         sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
         sphereOrient.x += drag.velY * dtScale * dragDir;
@@ -1628,6 +1686,7 @@ function createGlobeGalleryRuntime(
 
     updateClickDragText(frame);
     cursor.update();
+    controls.update();
     updateArcCopy(frame);
     renderScene(frame.activeCamera);
   }
@@ -1840,6 +1899,7 @@ function createGlobeGalleryRuntime(
 
     interaction.setup(canvas);
     cursor.setup();
+    root.classList.toggle('globe-gallery-barrel', bp.CYLINDER);
 
     // Focus-snap guard listeners (see snapToInteractive).
     window.addEventListener('blur', armFocusGuard);
@@ -1862,6 +1922,8 @@ function createGlobeGalleryRuntime(
 
     if (!bp.CYLINDER) buildTextMesh();
     a11y.setup();
+    controls.setup();
+
     renderReady = true;
     syncTicker();
 
@@ -1932,6 +1994,7 @@ function createGlobeGalleryRuntime(
     interaction.teardown();
     // Cursor cleanup — runs while renderer exists so getCanvas() resolves.
     cursor.teardown();
+    controls.teardown();
     if (renderer) {
       renderer.domElement.style.filter = '';
       globalCaFilterOn = false;
@@ -1989,11 +2052,11 @@ export default async function init(el) {
 
   // Extract authored content (incl. the UI labels) before buildGlobeDom() wipes the children.
   const {
-    arcCopy, pullQuote, hintText, instructions, labels, fragmentHref,
+    arcCopy, pullQuote, hintText, touchHint, instructions, labels, fragmentHref,
   } = parseAuthoredContent(el);
 
   // Returns the per-instance id suffix (CA filter ref) and fills the copy slots.
-  const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote });
+  const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint });
 
   // Cards come from the authored fragment link.
   const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
