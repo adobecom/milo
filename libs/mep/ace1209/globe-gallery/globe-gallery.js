@@ -772,7 +772,7 @@ function createGlobeGalleryRuntime(
     if (!deltas.length) return;
     // Skip a boundary we're already on, else ambient drift eats the press.
     const deadzone = ((2 * Math.PI) / deltas.length) * ROTATE_DEADZONE;
-    const ahead = deltas.filter((d) => d * dir > deadzone);
+    const ahead = deltas.filter((d) => d * (cameraInsideSphere ? -dir : dir) > deadzone);
     if (!ahead.length) return; // one column: nothing to step to
     const delta = ahead.reduce((a, b) => (Math.abs(a) < Math.abs(b) ? a : b));
     navNudge.targetY = from + delta;

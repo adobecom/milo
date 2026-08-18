@@ -1016,7 +1016,11 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   tweens, because a pointer press on a rotate button collapses browse mode (`focusout` → `collapse`)
   in the same event turn it arms its own nudge — without the tag, the next frame would silently eat
   the press and the button would look dead. `dir −1` = the
-  surface travels screen-left, matching a leftward drag.
+  surface travels screen-left, matching a leftward drag — **including inside the barrel**, where the
+  visible wall moves opposite and `rotateStep` negates `dir` exactly as drag negates via `dragDir`.
+  That window is real, not theoretical: `dragFlipZ` is clamped to `[SPHERE_R, 0.95 · CAM_Z_SPHERE]`,
+  so the camera is inside from `zoomT` ≈ 0.09–0.16 at the latest while the controls stay up until
+  `CONTROLS_ZOOM_HIDE_T` = 0.25.
 - **A press eases to the next column BOUNDARY, it does not add a column pitch.** Ambient spin
   leaves the barrel at an arbitrary angle, so `y += 2π/cols` carries that offset forward forever
   — face 1.5 columns, press, face 2.5. Snapping instead means a column lands front-centre from any
