@@ -3,7 +3,11 @@
 
   const usp = new URLSearchParams(window.location.search);
   const COLLAB_ID = usp.get('peregrine-collab-id') || '';
-  const SERVICE = (document.querySelector('meta[name="collab-service-ep"]')?.content || '').replace(/\/$/, '');
+  const SERVICE = (
+    usp.get('peregrine-service-ep') ||
+    document.querySelector('meta[name="collab-service-ep"]')?.content ||
+    ''
+  ).replace(/\/$/, '');
   const ME = { email: '', name: 'You', profileId: '', imsEmail: '' };
 
   if (!SERVICE || !COLLAB_ID) {

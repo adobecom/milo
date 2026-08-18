@@ -151,7 +151,7 @@ const loadDelayed = ([
   loadScript,
   loadStyle,
   loadIms,
-], DELAY = 3000) => new Promise((resolve) => {
+], DELAY = 5000) => new Promise((resolve) => {
   setTimeout(() => {
     if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript);
     loadAriaAutomation();
