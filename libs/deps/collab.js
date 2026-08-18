@@ -476,12 +476,27 @@
         const body = getValue();
         if (!body) return;
         sendBtn.disabled = true;
+        const optimistic = {
+          id: `opt-${Date.now()}`,
+          authorProfileId: ME.profileId,
+          username: ME.name || 'You',
+          text: body,
+          kind: 'reply',
+          createdAt: new Date().toISOString(),
+        };
+        const localThread = state.threads.find(tt => tt.id === t.id);
+        if (localThread) localThread.messages.push(optimistic);
+        textarea.value = '';
+        refreshOpenPopup(t.id);
         try {
           await api.createReply(t.id, body);
-          textarea.value = '';
           await refresh();
           refreshOpenPopup(t.id);
-        } catch (e) { console.error('[collab] createReply', e); }
+        } catch (e) {
+          console.error('[collab] createReply', e);
+          if (localThread) localThread.messages = localThread.messages.filter(m => m.id !== optimistic.id);
+          refreshOpenPopup(t.id);
+        }
         finally { sendBtn.disabled = false; }
       });
 
@@ -730,15 +745,18 @@
     const body = newCommentGetValue ? newCommentGetValue().trim() : newCommentTextarea.value.trim();
     if (!body || !clickTarget) return;
 
+    const savedTarget = clickTarget;
     const anchor = {
-      elementPath: buildElementPath(clickTarget),
-      quotedText: (clickTarget.textContent || '').slice(0, 200).trim(),
+      elementPath: buildElementPath(savedTarget),
+      quotedText: (savedTarget.textContent || '').slice(0, 200).trim(),
     };
 
     try {
       await api.createThread(anchor, body);
       closeNewCommentPopup();
       await refresh();
+      const newThread = state.threads.find(t => resolveElement(t.elementPath) === savedTarget);
+      if (newThread) openThreadPopup(newThread, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
     } catch (e) { console.error('[collab] createThread', e); }
   }
 
@@ -1090,8 +1108,8 @@
     buildNewCommentPopup();
     setupElementInteraction();
     setupScrollSync();
-    await fetchImsProfile();
     startPolling();
+    fetchImsProfile().then(() => renderPresence());
   }
 
   init();
