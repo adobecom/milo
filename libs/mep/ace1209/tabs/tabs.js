@@ -196,9 +196,7 @@ function initTabs(elm, config, rootElem) {
   tabLists.forEach((tabList) => {
     const isRadioGroup = tabList.getAttribute('role') === 'radiogroup';
     tabList.addEventListener('keydown', (e) => {
-      // Left/Right on radio inputs are left to the browser: Chrome and Firefox already flip
-      // them for RTL natively. Up/Down aren't part of that native Left/Right mapping, so they're
-      // handled here, driving the same focus+select behavior manually via focus() + click().
+      // Left/Right are native (Chrome/Firefox flip for RTL) - only Up/Down need manual handling.
       if (isRadioGroup) {
         if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
         e.preventDefault();
