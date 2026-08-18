@@ -239,7 +239,7 @@ function createUpdatePosition({
     const itemH = items[0]?.offsetHeight || 32;
     let lineY;
     let bottomAlign;
-    if (block.classList.contains('rcc-reflow') || mediaHidden) {
+    if (mediaHidden || (block.classList.contains('rcc-reflow') && w >= S_BREAKPOINT)) {
       lineY = itemH * 0.5;
       bottomAlign = false;
     } else if (w >= L_BREAKPOINT) {
