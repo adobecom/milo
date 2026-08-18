@@ -489,8 +489,6 @@
         refreshOpenPopup(t.id);
         try {
           await api.createReply(t.id, body);
-          await refresh();
-          refreshOpenPopup(t.id);
         } catch (e) {
           console.error('[collab] createReply', e);
           if (localThread) localThread.messages = localThread.messages.filter(m => m.id !== optimistic.id);
