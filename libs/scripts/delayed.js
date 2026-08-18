@@ -130,13 +130,19 @@ export const loadPeregrineCollab = async (getConfig, loadScript, loadStyle) => {
   if (!collabId) return;
   const { miloLibs, codeRoot, peregrine } = getConfig();
   const base = miloLibs || codeRoot;
-  // Inject service endpoint as a meta tag so collab.js can read it without imports.
   const serviceEp = peregrine?.serviceEp || '';
   if (serviceEp && !document.querySelector('meta[name="collab-service-ep"]')) {
     const meta = document.createElement('meta');
     meta.name = 'collab-service-ep';
     meta.content = serviceEp;
     document.head.appendChild(meta);
+  }
+  // Load as soon as window.load fires; fall back to 5s max if it already passed or is slow.
+  if (document.readyState !== 'complete') {
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, 5000);
+      window.addEventListener('load', () => { clearTimeout(timer); resolve(); }, { once: true });
+    });
   }
   loadStyle(`${base}/deps/collab.css`);
   await loadScript(`${base}/deps/collab.js`);
@@ -152,6 +158,10 @@ const loadDelayed = ([
   loadStyle,
   loadIms,
 ], DELAY = 5000) => new Promise((resolve) => {
+  // Collab is loaded immediately (blocks are already hydrated when loadDelayed runs).
+  // It waits for window.load internally, or proceeds after 5s max.
+  loadPeregrineCollab(getConfig, loadScript, loadStyle);
+
   setTimeout(() => {
     if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript);
     loadAriaAutomation();

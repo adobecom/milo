@@ -15,10 +15,7 @@ import {
   loadLana,
   setConfig,
   getMetadata,
-  loadScript,
-  loadStyle,
 } from '../utils/utils.js';
-import { loadPeregrineCollab } from './delayed.js';
 import locales from '../utils/locales.js';
 
 // Production Domain
@@ -107,17 +104,5 @@ function loadStyles() {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
-
-  if (new URLSearchParams(window.location.search).get('peregrine-collab-id')) {
-    // Start page load without waiting — load collab.js/css once the page fires
-    // window.load (all resources ready) or after 5 seconds, whichever is first.
-    loadArea();
-    await new Promise((resolve) => {
-      const timer = setTimeout(resolve, 5000);
-      window.addEventListener('load', () => { clearTimeout(timer); resolve(); }, { once: true });
-    });
-    loadPeregrineCollab(() => config, loadScript, loadStyle);
-  } else {
-    await loadArea();
-  }
+  await loadArea();
 }());
