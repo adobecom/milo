@@ -338,6 +338,10 @@
     cursor: pointer;
     margin-block-end: var(--grid-item-spacing);
 
+    &[data-cloned="true"] {
+      display: none;
+    }
+
     .foreground {
       align-items: flex-start;
       text-align: unset;
@@ -476,21 +480,19 @@
 }
 
 :root:has(meta[name="foundation"][content="c2"]) {
-  @media (width >= 768px) {
-    .split-aside-grid-stack {
-      --btn-spacing: var(--s2a-spacing-lg);
-      --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
-      --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
-      button.play-pause-button {
-        right: unset;
-        inset-inline-end: var(--btn-position);
-      }
+  .split-aside-grid-stack {
+    --btn-spacing: var(--s2a-spacing-lg);
+    --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
+    --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
+    button.play-pause-button {
+      right: unset;
+      inset-inline-end: var(--btn-position);
     }
+  }
 
-    @media (width >= 1280px) {
-      .split-aside-grid-stack {
-        --btn-spacing: var(--s2a-spacing-xl);
-      }
+  @media (width >= 1280px) {
+    .split-aside-grid-stack {
+      --btn-spacing: var(--s2a-spacing-xl);
     }
   }
 
