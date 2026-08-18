@@ -21,7 +21,11 @@
   if (window.parent !== window) {
     window.addEventListener('message', (e) => {
       if (e.data?.type === 'collab:token-response' && e.data.token) {
+        const hadToken = !!_parentToken;
         _parentToken = e.data.token;
+        // Token just became available — load data now instead of waiting for the
+        // next poll (or forever, if the first fetch already failed unauthenticated).
+        if (!hadToken && uiReady) refresh();
       }
     });
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
@@ -50,6 +54,7 @@
     updateStatus:  (threadId, state)    => apiFetch(`/api/threads/${threadId}`, { method: 'PATCH', body: JSON.stringify({ state }) }),
     updateComment: (commentId, body)    => apiFetch(`/api/comments/${commentId}`, { method: 'PATCH', body: JSON.stringify({ body }) }),
     searchUsers:   (q)                  => apiFetch(`/api/search/groups-or-users?q=${encodeURIComponent(q)}`),
+    listParticipants: ()                => apiFetch(`/api/collabs/${COLLAB_ID}/participants`),
   };
 
   const COLORS = ['#4a3ddb','#d4380d','#1565c0','#6d4c41','#1b5e20','#4a148c','#880e4f','#e65100'];
@@ -133,6 +138,7 @@
   let threadPopupEl;
   let markersVisible = true;
   let pageInfoResolved = false;
+  let uiReady = false;
 
   const SVG_EYE_OPEN   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
   const SVG_EYE_CLOSED = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
@@ -1032,13 +1038,26 @@
     try {
       const collab = await api.getCollab();
       const collabData = collab.collab || collab;
-      state.participants = (collabData.participants || []).map(p => ({
+
+      // getCollab may omit (or return empty) participants/threads depending on the
+      // backend version — fall back to the dedicated endpoints so the UI still fills.
+      let participants = Array.isArray(collabData.participants) ? collabData.participants : [];
+      if (!participants.length) {
+        try { const p = await api.listParticipants(); if (Array.isArray(p)) participants = p; }
+        catch (e) { console.warn('[collab] listParticipants fallback failed', e); }
+      }
+      state.participants = participants.map(p => ({
         name: p.displayName || p.name || p.email || '',
         profileId: p.profileId || p.id || p.email || '',
         email: p.email || '',
       }));
-      const rawThreads = collabData.threads || await api.listThreads();
-      state.threads = (Array.isArray(rawThreads) ? rawThreads : []).map(normalizeThread);
+
+      let rawThreads = Array.isArray(collabData.threads) ? collabData.threads : [];
+      if (!rawThreads.length) {
+        try { const t = await api.listThreads(); if (Array.isArray(t)) rawThreads = t; }
+        catch (e) { console.warn('[collab] listThreads fallback failed', e); }
+      }
+      state.threads = rawThreads.map(normalizeThread);
       if (!pageInfoResolved) {
         updatePageInfo(collabData.title, collabData.pageUrl || collabData.previewUrl);
       }
@@ -1060,9 +1079,21 @@
     if (_parentToken || getToken()) return;
     if (window.adobeIMS?.isSignedInUser?.()) return;
     await new Promise((resolve) => {
-      const onReady = () => { window.removeEventListener('ims:ready', onReady); resolve(); };
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        window.removeEventListener('ims:ready', onReady);
+        window.removeEventListener('message', onMsg);
+        resolve();
+      };
+      const onReady = () => finish();
+      // In an iframe the token arrives via postMessage, not ims:ready — wake on either
+      // so we don't stall the full 5s before the first authenticated fetch.
+      const onMsg = (e) => { if (e.data?.type === 'collab:token-response' && e.data.token) finish(); };
       window.addEventListener('ims:ready', onReady);
-      setTimeout(resolve, 5000);
+      window.addEventListener('message', onMsg);
+      setTimeout(finish, 5000);
     });
   }
 
@@ -1108,9 +1139,13 @@
     buildNewCommentPopup();
     setupElementInteraction();
     setupScrollSync();
+    uiReady = true;
+    // Render the presence bar right away (at least "you") so it is never blank while
+    // we wait for a token / the first fetch.
+    renderPresence();
     await waitForImsReady();
     startPolling();
-    fetchImsProfile().then(() => renderPresence());
+    fetchImsProfile().then(() => { renderPresence(); refresh(); });
   }
 
   init();
