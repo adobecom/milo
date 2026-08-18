@@ -199,18 +199,23 @@
 
   function renderPresence() {
     presenceRow.innerHTML = '';
-    const seen  = new Set();
+    // Show only other collaborators (not myself), deduped by email or display name.
+    const seenEmails = new Set();
+    const seenNames  = new Set();
     const others = state.participants.filter(p => {
-      if (matchesMe(p.email, p.name)) return false; // don't render myself twice
-      const key = String(p.email || p.name || p.profileId || '').toLowerCase();
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
+      if (matchesMe(p.email, p.name)) return false; // exclude self
+      const email = String(p.email || '').toLowerCase();
+      const name  = String(p.name || '').trim().toLowerCase();
+      if (!email && !name) return false;
+      if (email && seenEmails.has(email)) return false;
+      if (name && seenNames.has(name)) return false;
+      if (email) seenEmails.add(email);
+      if (name)  seenNames.add(name);
       return true;
     });
-    const all = [{ name: ME.name || ME.imsEmail, profileId: ME.profileId, isYou: true }, ...others];
-    const shown = all.slice(0, 5);
-    const rest  = all.slice(5);
-    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, p.isYou)));
+    const shown = others.slice(0, 5);
+    const rest  = others.slice(5);
+    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, false)));
     if (rest.length) {
       const overflow = el('span', 'collab-avatar-overflow');
       overflow.textContent = `+${rest.length}`;
