@@ -107,9 +107,25 @@ function loadStyles() {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
-  await loadArea();
-  // Load collab immediately after page area (not delayed) when the collab param is present.
+
   if (new URLSearchParams(window.location.search).get('peregrine-collab-id')) {
+    // Don't await loadArea — start it and load collab as soon as viewport content is
+    // in the DOM (page is visually ready), with a 5-second max wait.
+    loadArea();
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, 5000);
+      const check = () => {
+        if (document.querySelector('main > div')) {
+          clearTimeout(timer);
+          resolve();
+        } else {
+          requestAnimationFrame(check);
+        }
+      };
+      requestAnimationFrame(check);
+    });
     loadPeregrineCollab(() => config, loadScript, loadStyle);
+  } else {
+    await loadArea();
   }
 }());
