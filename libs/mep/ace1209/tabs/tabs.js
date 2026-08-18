@@ -314,16 +314,14 @@ const init = async (block) => {
       const btnId = `tab-${tabId}-${tabName}`;
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
 
+      const sharedAttrs = { id: btnId, 'data-block-id': `tabs-${tabId}`, 'daa-state': 'true', 'daa-ll': btnId };
       if (isRadio) {
         const radioAttributes = {
+          ...sharedAttrs,
           type: 'radio',
           class: 'tab-button',
-          id: btnId,
           name: radioGroupName,
-          'data-block-id': `tabs-${tabId}`,
           'data-control-id': controlId,
-          'daa-state': 'true',
-          'daa-ll': btnId,
           ...(i === 0 ? { checked: '' } : {}),
         };
         const radioInput = createTag('input', radioAttributes);
@@ -331,14 +329,11 @@ const init = async (block) => {
         btnWrapper.append(radioInput, radioLabel);
       } else {
         const tabBtnAttributes = {
+          ...sharedAttrs,
           role: 'tab',
           class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
-          id: btnId,
           tabindex: (i === 0) ? '0' : '-1',
           'aria-selected': (i === 0) ? 'true' : 'false',
-          'data-block-id': `tabs-${tabId}`,
-          'daa-state': 'true',
-          'daa-ll': btnId,
           'aria-controls': controlId,
         };
         const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
