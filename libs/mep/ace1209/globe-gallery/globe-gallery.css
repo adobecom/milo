@@ -946,6 +946,10 @@ html[dir="rtl"] .globe-gallery-modal-nav svg {
   transform: scaleX(-1);
 }
 
+html[dir="rtl"] .globe-gallery-hint {
+  flex-direction: row-reverse;
+}
+
 html[dir="rtl"] .globe-gallery-modal-badge-app-link::after {
   transform: scaleX(-1) rotate(45deg) translateY(-1px);
 }

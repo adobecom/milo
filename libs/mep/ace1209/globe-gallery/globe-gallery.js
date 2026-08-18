@@ -342,7 +342,8 @@ function createGlobeGalleryRuntime(
 
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
-  // zoomT the pull-quote fades in at; from the camera (see publishPqAppearZoomT)
+  // zoomT the camera clears the shell's far wall at; from the geometry (see
+  // publishPqAppearZoomT). TWO consumers: the pull-quote's reveal and the globe controls' hide.
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0;
@@ -996,7 +997,7 @@ function createGlobeGalleryRuntime(
     q,
     labels,
     getVisible: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
-      && frameState.zoomT < TL.CONTROLS_ZOOM_HIDE_T
+      && frameState.zoomT < pqAppearZoomT
       && modal.getModalIdx() < 0,
     rotate: rotateStep,
   });

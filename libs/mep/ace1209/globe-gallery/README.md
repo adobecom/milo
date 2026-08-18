@@ -917,11 +917,10 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `controls.update`, `updateClickDragText` |
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
 | ~338 | ~0.470 | camera passes the shell's centre | shell is **effectively empty** — only far-pole cards left in frame (`zoomT` ≈ 0.22) | `updateActiveCamera` |
-| 343 | 0.491 | `CONTROLS_ZOOM_HIDE_T` | globe controls fade out (also leave the tab order) | `controls.update` |
-| 352 | 0.529 | `zoomT ≥ pqAppearZoomT` (sm 0.3057) | **sm**: camera clears the barrel's far wall → quote revealed centred **and** un-stuck the same frame | `updatePullQuote` + CSS |
+| 352 | 0.529 | `zoomT ≥ pqAppearZoomT` (sm 0.3057) | **sm**: camera clears the barrel's far wall → quote revealed centred **and** un-stuck the same frame; globe controls fade out (also leave the tab order) | `updatePullQuote` + CSS, `controls.update` |
 | 356 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
 | 359 | 0.559 | `CURSOR_ZOOM_RETIRE_T` | cursor label + disc retire together (desktop only, so ahead of md's reveal) | `cursor.update` |
-| 369 | 0.605 | `zoomT ≥ pqAppearZoomT` (md 0.4170) | **md**: same, one card-shell radius later; next section's top is 91vh down the viewport | `updatePullQuote` + CSS |
+| 369 | 0.605 | `zoomT ≥ pqAppearZoomT` (md 0.4170) | **md**: same, one card-shell radius later, controls included; next section's top is 91vh down the viewport | `updatePullQuote` + CSS, `controls.update` |
 | 452 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` | `updateCanvasVisibility` |
 | 460 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
@@ -1056,16 +1055,35 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 | Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh` is skipped) nor the custom cursor (hover+fine only), so touch users otherwise get **no** affordance at all. The arrows also make the copy's "click and drag" claim actionable without a drag. |
 
 - **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
-  open, `zoomT < CONTROLS_ZOOM_HIDE_T` — i.e. exactly while the globe is draggable. `controls.js`
+  open, `zoomT < pqAppearZoomT` — i.e. exactly while the globe is draggable. `controls.js`
   writes the `is-visible` class only when that boolean flips. CSS transitions `opacity` **and
   `visibility`**; the latter is what pulls the buttons out of the tab order while hidden, so the
   block's tab stops never point at invisible chrome.
+- **The hide edge is a place in the scene, not a scalar** — the same cue the pull-quote rides, so
+  the two share one number and can't drift apart. It used to be its own constant,
+  `CONTROLS_ZOOM_HIDE_T` = 0.25, which was **band-independent while every input to the cue is
+  per-band**: `publishPqAppearZoomT` derives the clear point from `SPHERE_R`, the card's radial
+  extent, `CAM_Z_SPHERE` and `CAM_Z_END`, landing on **0.306 on sm but 0.417 on md**. So 0.25 fit
+  the barrel to within 0.056 — you couldn't see it — and retired the sphere's controls a third of
+  the way early, leaving a stretch where the globe was still in frame and still auto-spinning with
+  its pause button already gone (a WCAG **2.2.2** hole, since the ambient spin is the one motion in
+  the zoom-through that *isn't* scroll-driven). md is the band that exposes it because its shell is
+  proportionally far deeper into the camera's travel — `SPHERE_R/CAM_Z_SPHERE` is 0.538 against
+  sm's 0.229 — and because its cards mount radially, so the extent term is the card's full
+  diagonal rather than the cylinder's `CARD_W/2`. Anything else keyed to "the globe has left" wants
+  `pqAppearZoomT` too, not a fresh constant.
 - **Tab order is entry widget → spin → rotate ← → rotate →.** `a11y.js` appends its nodes during
   its own setup, which would leave the controls *ahead* of them in the DOM — where a
   forward-tabbing user would walk past them while they're still hidden and never come back.
   `controls.setup()` therefore runs after `a11y.setup()` and re-appends its layer last. Focusing
   the entry widget snaps the page to the formed globe, so the controls are visible by the time the
-  next Tab lands on them.
+  next Tab lands on them. **Hiding does NOT hand focus anywhere, deliberately.** When the fade takes
+  a focused control unfocusable, `document.activeElement` goes to `<body>` — which looks like a
+  dropped tab stop but isn't: the browser keeps its *sequential focus navigation starting point*
+  where the control was, so Tab continues into the sections below and Shift+Tab returns to the entry
+  stop. Verified in-browser. Re-focusing the entry widget here would be a regression, not a fix — the
+  scroll that hides the controls is the user leaving the block, so pulling focus back would put them
+  behind where they were and walk them through the globe chrome a second time.
 - **The spin toggle names the action it performs**, so both the `aria-label` and the `daa-ll` swap
   with the state (authored `pause spinning` / `resume spinning`). No `aria-pressed` — a toggle whose
   label already changes would announce twice.
@@ -1079,7 +1097,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   visible wall moves opposite and `rotateStep` negates `dir` exactly as drag negates via `dragDir`.
   That window is real, not theoretical: `dragFlipZ` is clamped to `[SPHERE_R, 0.95 · CAM_Z_SPHERE]`,
   so the camera is inside from `zoomT` ≈ 0.09–0.16 at the latest while the controls stay up until
-  `CONTROLS_ZOOM_HIDE_T` = 0.25.
+  `pqAppearZoomT` (sm 0.306 / md 0.417).
 - **A press eases to the next column BOUNDARY, it does not add a column pitch.** Ambient spin
   leaves the barrel at an arbitrary angle, so `y += 2π/cols` carries that offset forward forever
   — face 1.5 columns, press, face 2.5. Snapping instead means a column lands front-centre from any
@@ -1105,6 +1123,11 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   breadcrumbs the fixed layer sits under.
 - **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
   nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
+- **RTL pins the row's visual order, and does NOT flip the arrow icons.** The modal's prev/next are
+  reading-order, so their SVGs mirror; rotate is *spatial* — `dir −1` sends the surface screen-left
+  in every locale — so a mirrored ← would lie about which way the globe goes. Left alone, though,
+  the flex row mirrors under `dir="rtl"` and parks the ← button on the right, so
+  `html[dir="rtl"] .globe-gallery-hint` sets `flex-direction: row-reverse` to cancel it.
 
 ## Accessibility
 
@@ -2113,7 +2136,6 @@ bare names — are:
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
 | `TEXT_ZOOM_FADE_RATE` | `zoomT` | hint text is fully faded at `zoomT` = `1 / RATE` |
-| `CONTROLS_ZOOM_HIDE_T` | `zoomT` | globe controls fade out here — they steer a globe the camera is already flying through (see Globe controls) |
 | `GRID_PEEL_WINDOW` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
 | `progressAtFormT` | — | maps a `sphereFormT` back to progress; used to derive `ARC_COPY_OUT_START` / `_END`. Nothing here exists only for docs — Milo ships these files unbundled, so a doc-only export is pure payload (the `zoomT` inverse lives in the derivation snippet instead) |
