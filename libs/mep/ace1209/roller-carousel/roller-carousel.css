@@ -155,6 +155,7 @@
     max-width: 70vw;
     border-radius: var(--s2a-border-radius-sm);
     overflow: hidden;
+    background: #000;
   }
 
   .rcc-media-icon {
