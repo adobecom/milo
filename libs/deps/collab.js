@@ -1059,16 +1059,19 @@
     }
   }
 
+  async function waitForImsReady() {
+    if (_parentToken || getToken()) return;
+    if (window.adobeIMS?.isSignedInUser?.()) return;
+    await new Promise((resolve) => {
+      const onReady = () => { window.removeEventListener('ims:ready', onReady); resolve(); };
+      window.addEventListener('ims:ready', onReady);
+      setTimeout(resolve, 5000);
+    });
+  }
+
   async function fetchImsProfile() {
     try {
-      // Wait for IMS to be ready if needed
-      if (!window.adobeIMS?.isSignedInUser?.()) {
-        await new Promise((resolve) => {
-          const onReady = () => { window.removeEventListener('ims:ready', onReady); resolve(); };
-          window.addEventListener('ims:ready', onReady);
-          setTimeout(resolve, 5000);
-        });
-      }
+      await waitForImsReady();
       const profile = await window.adobeIMS?.getProfile?.();
       if (!profile) return;
       if (profile.email)           { ME.imsEmail = profile.email; ME.email = ME.email || profile.email; }
@@ -1108,6 +1111,7 @@
     buildNewCommentPopup();
     setupElementInteraction();
     setupScrollSync();
+    await waitForImsReady();
     startPolling();
     fetchImsProfile().then(() => renderPresence());
   }
