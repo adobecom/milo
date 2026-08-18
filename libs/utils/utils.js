@@ -66,7 +66,6 @@ const C1_BLOCKS = [
   'merch-card-autoblock',
   'merch-card-collection-autoblock',
   'merch-offers',
-  'milo-dashboard',
   'mmm',
   'mnemonic-list',
   'mobile-app-banner',

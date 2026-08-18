@@ -1,6 +1,3 @@
-/* Project Tracking — styling matched to the milo-dashboard block (DA Spectrum 2
-   light mode). Values hardcoded: in DA the block runs cross-origin, so DA :root
-   tokens are out of scope. */
 .project-tracking {
   --pt-accent: #3b63fb;
   --pt-good: #079355;
@@ -131,11 +128,11 @@
     padding: 16px 20px;
   }
 
-  & .pt-stat--previewed { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-previewed {
     background: #eaeeff;
   }
 
-  & .pt-stat--published { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-published {
     background: #edfcf1;
   }
 
@@ -165,11 +162,11 @@
     margin-block-start: 2px;
   }
 
-  & .pt-stat--previewed .pt-stat-pct { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-previewed .pt-stat-pct {
     color: var(--pt-accent);
   }
 
-  & .pt-stat--published .pt-stat-pct { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-published .pt-stat-pct {
     color: var(--pt-good);
   }
 
@@ -187,11 +184,11 @@
     height: 100%;
   }
 
-  & .pt-stat--previewed .pt-bar-fill { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-previewed .pt-bar-fill {
     background: var(--pt-accent);
   }
 
-  & .pt-stat--published .pt-bar-fill { /* stylelint-disable-line selector-class-pattern */
+  & .pt-stat-published .pt-bar-fill {
     background: var(--pt-good);
   }
 
@@ -292,17 +289,17 @@
     white-space: nowrap;
   }
 
-  & .pt-badge--live { /* stylelint-disable-line selector-class-pattern */
+  & .pt-badge-live {
     background: #e6f4ea;
     color: #1e7e34;
   }
 
-  & .pt-badge--previewed { /* stylelint-disable-line selector-class-pattern */
+  & .pt-badge-previewed {
     background: #fff4e5;
     color: #a15c00;
   }
 
-  & .pt-badge--draft { /* stylelint-disable-line selector-class-pattern */
+  & .pt-badge-draft {
     background: #eee;
     color: #555;
   }

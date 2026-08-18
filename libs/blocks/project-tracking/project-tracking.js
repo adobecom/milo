@@ -1,7 +1,7 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
-import { resolveContext, createClient, loadDaSdk, signIn } from '../milo-dashboard/api.js';
+import { resolveContext, createClient, signIn } from './api.js';
 import { computeRollup, deriveStatus, computeStatusCounts } from './rollup.js';
-import { applyView } from './view.js';
+import applyView from './view.js';
 
 const PLACEHOLDER = [
   'https://main--da-bacom--adobecom.aem.page/de/some-campaign-page',
@@ -26,7 +26,7 @@ function createStatusCell(when) {
   return cell;
 }
 
-const STATUS_CLASS = { Draft: 'pt-badge--draft', Previewed: 'pt-badge--previewed', Live: 'pt-badge--live' };
+const STATUS_CLASS = { Draft: 'pt-badge-draft', Previewed: 'pt-badge-previewed', Live: 'pt-badge-live' };
 
 function createBadgeCell(status) {
   const cell = createTag('td', { class: 'pt-cell' });
@@ -35,7 +35,7 @@ function createBadgeCell(status) {
 }
 
 function createStatCard(label, pctValue, n, total, variant) {
-  const card = createTag('div', { class: `pt-stat pt-stat--${variant}` });
+  const card = createTag('div', { class: `pt-stat pt-stat-${variant}` });
   const head = createTag('div', { class: 'pt-stat-head' });
   head.append(
     createTag('span', { class: 'pt-stat-label' }, label),
@@ -65,9 +65,9 @@ function renderResults(mount, rows, since, view = {}) {
 
   const countStrip = createTag('div', { class: 'pt-status-counts' });
   countStrip.append(
-    createTag('span', { class: 'pt-badge pt-badge--draft' }, `Draft ${counts.draft}`),
-    createTag('span', { class: 'pt-badge pt-badge--previewed' }, `Previewed ${counts.previewed}`),
-    createTag('span', { class: 'pt-badge pt-badge--live' }, `Live ${counts.live}`),
+    createTag('span', { class: 'pt-badge pt-badge-draft' }, `Draft ${counts.draft}`),
+    createTag('span', { class: 'pt-badge pt-badge-previewed' }, `Previewed ${counts.previewed}`),
+    createTag('span', { class: 'pt-badge pt-badge-live' }, `Live ${counts.live}`),
   );
 
   const visible = applyView(rows, view);
@@ -103,8 +103,6 @@ function renderResults(mount, rows, since, view = {}) {
   }
 }
 
-// 401 → not signed in (offer Adobe sign-in); 403 → signed in but lacks access;
-// anything else → the raw reach/network message.
 function renderError(mount, status, message) {
   mount.replaceChildren();
   if (status === 403) {
@@ -126,7 +124,7 @@ function renderError(mount, status, message) {
 export default async function init(block) {
   await new Promise((resolve) => { loadStyle(import.meta.url.replace('.js', '.css'), resolve); });
 
-  const ctx = await resolveContext(block, { loadDaSdk });
+  const ctx = await resolveContext(block);
   const client = createClient(ctx);
 
   block.replaceChildren();

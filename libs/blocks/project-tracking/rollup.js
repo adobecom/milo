@@ -1,7 +1,3 @@
-// Pure rollup logic for GWP Project Tracking. A page "counts" as previewed/
-// published if it has that event timestamp and — when a start-tracking date is
-// given — the event is on/after it. The denominator is always the total pasted
-// links (locked scope: "% of the copied links").
 function counts(when, sinceMs) {
   if (!when) return false;
   if (sinceMs == null) return true;
