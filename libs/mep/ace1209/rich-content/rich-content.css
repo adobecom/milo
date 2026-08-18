@@ -491,8 +491,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--s2a-spacing-lg);
-  padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
-  padding-bottom: var(--s2a-layout-lg);
+  padding-block: calc(var(--s2a-spacing-4xl) + var(--rc-pull-offset)) var(--s2a-spacing-4xl);
   overflow: clip;
   --grid-margin-width: 0px; /* Keep unit for calc */
 
@@ -592,6 +591,7 @@
     @media (width >= 768px) {
       --glass-frame-width: 6.5px;
       --glass-stroke: 1px;
+      box-sizing: unset;
     }
 
     @media (width >= 1280px) {
@@ -613,6 +613,8 @@
 
 @media (width >= 768px) {
   .rich-content.media {
+    padding-block: var(--s2a-layout-sm);
+
     img {
       max-width: unset;
     }
@@ -734,7 +736,8 @@
 
 @media (width >= 1024px) {
   .rich-content.media {
-    gap: var(--s2a-spacing-xl);
+    gap: var(--s2a-spacing-3xl);
+    padding-block: var(--s2a-layout-lg);
   }
 
   .rich-content.media img {
