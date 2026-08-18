@@ -16,6 +16,11 @@
  * Usage — replace the @playwright/test import in MEP test files:
  *   import { test, expect } from './mep-test.js';
  *
+ * Navigation note: prefer `page.goto(url, { waitUntil: 'domcontentloaded' })`. The default
+ * 'load' waits for the full load event, which under this pacer means waiting for the
+ * throttled subresource queue to drain — that can exceed the test budget on slow workers.
+ *
+
  * Env overrides:
  *   MEP_NALA_THROTTLE_DISABLED=1   disable pacing entirely
  *   MEP_NALA_MAX_RPS=<n>           force a specific per-worker cap
