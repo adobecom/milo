@@ -316,9 +316,10 @@ function initScroll(block, refs, apps) {
     block, content, divider, left, header, carousel, scrollWrapper,
   });
 
+  const gnav = document.querySelector('header');
   const updateHeaderVisibility = () => {
     if (block.classList.contains('rcc-reflow')) {
-      const navBottom = parseFloat(getComputedStyle(sticky).top) || 0;
+      const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 0;
       header.style.visibility = header.getBoundingClientRect().bottom < navBottom ? 'hidden' : '';
     } else {
       header.style.visibility = '';
