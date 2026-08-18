@@ -31,9 +31,14 @@
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
   }
 
+  function getRawToken() {
+    // In an iframe the token comes from the parent; adobeIMS is not usable there.
+    if (_parentToken) return _parentToken;
+    return window.adobeIMS?.getAccessToken()?.token || '';
+  }
+
   function getToken() {
-    if (_parentToken) return `Bearer ${_parentToken}`;
-    const t = window.adobeIMS?.getAccessToken()?.token || '';
+    const t = getRawToken();
     return t ? `Bearer ${t}` : '';
   }
 
@@ -177,20 +182,27 @@
 
     const actions = el('div', '');
     actions.id = 'collab-topbar-actions';
-    actions.append(commentsBtn, visibilityBtn);
+    actions.append(presenceRow, commentsBtn, visibilityBtn);
 
-    topbar.append(presenceRow, pageInfo, spacer, actions);
+    topbar.append(pageInfo, spacer, actions);
     document.body.prepend(topbar);
     document.body.classList.add('collab-active');
   }
 
+  // Identify the current user: match by email first, fall back to display name.
+  function matchesMe(email, name) {
+    const meEmails = [ME.email, ME.imsEmail].filter(Boolean).map(e => String(e).toLowerCase());
+    if (email && meEmails.includes(String(email).toLowerCase())) return true;
+    const meName = (ME.name || '').trim().toLowerCase();
+    return !!name && meName.length > 1 && meName === String(name).trim().toLowerCase();
+  }
+
   function renderPresence() {
     presenceRow.innerHTML = '';
-    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean).map(v => String(v).toLowerCase()));
     const seen  = new Set();
     const others = state.participants.filter(p => {
-      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(String(v).toLowerCase()))) return false;
-      const key = p.profileId || p.email || p.name;
+      if (matchesMe(p.email, p.name)) return false; // don't render myself twice
+      const key = String(p.email || p.name || p.profileId || '').toLowerCase();
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -1016,13 +1028,9 @@
   function isMine(t) {
     const first = t.messages[0];
     if (!first) return false;
-    const candidates = [ME.imsEmail, ME.email, ME.profileId].filter(Boolean);
-    const threadIds  = [first.authorProfileId, first.username].filter(Boolean);
-    const byEmail = candidates.some(c => threadIds.some(tid => tid === c));
-    const meName     = (ME.name || '').trim().toLowerCase();
-    const threadName = (first.username || '').trim().toLowerCase();
-    const byName = !byEmail && meName.length > 1 && meName === threadName;
-    return byEmail || byName;
+    // Comments carry a display name (authorName), not an email — matchesMe uses the
+    // email when present and falls back to the display name.
+    return matchesMe(first.authorEmail, first.username);
   }
 
   function updatePageInfo(title, url) {
@@ -1099,15 +1107,27 @@
     });
   }
 
+  // Fetch the signed-in user's profile straight from IMS using the access token.
+  // Works in an iframe (where window.adobeIMS is unavailable) because the token is
+  // passed down from the parent frame; the same path also works standalone.
+  const IMS_PROFILE_URL = 'https://ims-na1.adobelogin.com/ims/profile/v1';
+
   async function fetchImsProfile() {
     try {
       await waitForImsReady();
-      const profile = await window.adobeIMS?.getProfile?.();
+      const token = getRawToken();
+      if (!token) return;
+      const res = await fetch(IMS_PROFILE_URL, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const profile = await res.json();
       if (!profile) return;
-      if (profile.email)           { ME.imsEmail = profile.email; ME.email = ME.email || profile.email; }
-      if (profile.displayName)     ME.name = profile.displayName;
-      else if (profile.first_name) ME.name = `${profile.first_name} ${profile.last_name || ''}`.trim();
-      if (profile.userId)          ME.profileId = ME.profileId || String(profile.userId);
+      const email = profile.email || '';
+      const name = profile.displayName
+        || (profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '')
+        || profile.name || '';
+      if (email) { ME.imsEmail = email; ME.email = email; }
+      if (name)  ME.name = name;
+      if (profile.userId) ME.profileId = ME.profileId || String(profile.userId);
     } catch (e) {
       console.warn('[collab] IMS profile fetch failed:', e.message);
     }
