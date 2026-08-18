@@ -54,6 +54,7 @@
   const api = {
     getCollab:     ()                   => apiFetch(`/api/collabs/${COLLAB_ID}`),
     listThreads:   ()                   => apiFetch(`/api/collabs/${COLLAB_ID}/threads`),
+    getThread:     (threadId)           => apiFetch(`/api/threads/${threadId}`),
     createThread:  (anchor, body)       => apiFetch(`/api/collabs/${COLLAB_ID}/threads`, { method: 'POST', body: JSON.stringify({ anchor, body }) }),
     createReply:   (threadId, body)     => apiFetch(`/api/collabs/${COLLAB_ID}/threads/${threadId}/comments`, { method: 'POST', body: JSON.stringify({ body }) }),
     updateStatus:  (threadId, state)    => apiFetch(`/api/threads/${threadId}`, { method: 'PATCH', body: JSON.stringify({ state }) }),
@@ -512,6 +513,8 @@
         refreshOpenPopup(t.id);
         try {
           await api.createReply(t.id, body);
+          // Immediately pull the thread so the popup shows the saved reply.
+          await pullThread(t.id);
         } catch (e) {
           console.error('[collab] createReply', e);
           if (localThread) localThread.messages = localThread.messages.filter(m => m.id !== optimistic.id);
@@ -660,6 +663,27 @@
     if (oldBody) oldBody.replaceWith(buildExpandedThread(updated));
   }
 
+  // Pull a single thread from the server and refresh its open popup — called right
+  // after creating a thread or reply so the popup reflects the saved comment
+  // (the POST has already resolved, so the fetched thread includes it).
+  async function pullThread(threadId) {
+    try {
+      const raw = await api.getThread(threadId);
+      const t = raw?.thread || raw;
+      if (!t || !t.id) return;
+      const normalized = normalizeThread(t);
+      const idx = state.threads.findIndex(x => x.id === threadId);
+      if (idx >= 0) state.threads[idx] = normalized;
+      else state.threads.push(normalized);
+      updateBadge();
+      renderMarkers();
+      refreshOpenPopup(threadId);
+      if (state.panelOpen) renderPanel();
+    } catch (e) {
+      console.warn('[collab] pullThread failed', e);
+    }
+  }
+
   function positionPopup(popup, anchor) {
     const ar = anchor.getBoundingClientRect();
     const pw = popup.offsetWidth  || 300;
@@ -772,11 +796,26 @@
     };
 
     try {
-      await api.createThread(anchor, body);
+      const created = await api.createThread(anchor, body);
       closeNewCommentPopup();
-      await refresh();
-      const newThread = state.threads.find(t => resolveElement(t.elementPath) === savedTarget);
-      if (newThread) openThreadPopup(newThread, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
+      const createdThread = created?.thread || created;
+      if (createdThread?.id) {
+        // Use the created thread directly (reliable id) instead of matching by
+        // element, open its popup, then pull it so the popup shows server state.
+        const normalized = normalizeThread(createdThread);
+        const idx = state.threads.findIndex(x => x.id === normalized.id);
+        if (idx >= 0) state.threads[idx] = normalized;
+        else state.threads.push(normalized);
+        updateBadge();
+        renderMarkers();
+        if (state.panelOpen) renderPanel();
+        openThreadPopup(normalized, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
+        await pullThread(normalized.id);
+      } else {
+        await refresh();
+        const newThread = state.threads.find(t => resolveElement(t.elementPath) === savedTarget);
+        if (newThread) openThreadPopup(newThread, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
+      }
     } catch (e) { console.error('[collab] createThread', e); }
   }
 
