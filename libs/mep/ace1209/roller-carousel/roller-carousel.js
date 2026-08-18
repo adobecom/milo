@@ -318,8 +318,8 @@ function initScroll(block, refs, apps) {
 
   const updateHeaderVisibility = () => {
     if (block.classList.contains('rcc-reflow')) {
-      const stickyBound = sticky.getBoundingClientRect().top;
-      header.style.visibility = header.getBoundingClientRect().bottom <= stickyBound ? 'hidden' : '';
+      const navBottom = parseFloat(getComputedStyle(sticky).top) || 0;
+      header.style.visibility = header.getBoundingClientRect().bottom < navBottom ? 'hidden' : '';
     } else {
       header.style.visibility = '';
     }
