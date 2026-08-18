@@ -180,10 +180,10 @@
 
   function renderPresence() {
     presenceRow.innerHTML = '';
-    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean));
+    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean).map(v => v.toLowerCase()));
     const seen  = new Set();
     const others = state.participants.filter(p => {
-      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(v))) return false;
+      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(v.toLowerCase()))) return false;
       const key = p.profileId || p.email || p.name;
       if (!key || seen.has(key)) return false;
       seen.add(key);
@@ -1004,11 +1004,11 @@
     return byEmail || byName;
   }
 
-  function updatePageInfo(url) {
+  function updatePageInfo(title, url) {
     if (!url || url.includes('localhost')) return;
     const urlEl = topbar?.querySelector('.collab-topbar-url');
     if (!urlEl) return;
-    urlEl.textContent = `${url} [${COLLAB_ID.slice(0, 8)}]`;
+    urlEl.textContent = title || url;
     urlEl.title = `${url}  [${COLLAB_ID}]`;
     pageInfoResolved = true;
   }
@@ -1025,7 +1025,7 @@
       const rawThreads = collabData.threads || await api.listThreads();
       state.threads = (Array.isArray(rawThreads) ? rawThreads : []).map(normalizeThread);
       if (!pageInfoResolved) {
-        updatePageInfo(collabData.pageUrl || collabData.previewUrl);
+        updatePageInfo(collabData.title, collabData.pageUrl || collabData.previewUrl);
       }
     } catch (e) {
       console.warn('[collab] refresh error', e);
