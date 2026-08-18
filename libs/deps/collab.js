@@ -186,10 +186,10 @@
 
   function renderPresence() {
     presenceRow.innerHTML = '';
-    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean).map(v => v.toLowerCase()));
+    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean).map(v => String(v).toLowerCase()));
     const seen  = new Set();
     const others = state.participants.filter(p => {
-      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(v.toLowerCase()))) return false;
+      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(String(v).toLowerCase()))) return false;
       const key = p.profileId || p.email || p.name;
       if (!key || seen.has(key)) return false;
       seen.add(key);
@@ -1048,7 +1048,9 @@
       }
       state.participants = participants.map(p => ({
         name: p.displayName || p.name || p.email || '',
-        profileId: p.profileId || p.id || p.email || '',
+        // profileId can come back as a number from the backend — keep it a string so
+        // downstream string ops (toLowerCase, avatarColor) never throw.
+        profileId: String(p.profileId ?? p.id ?? p.email ?? ''),
         email: p.email || '',
       }));
 
@@ -1105,7 +1107,7 @@
       if (profile.email)           { ME.imsEmail = profile.email; ME.email = ME.email || profile.email; }
       if (profile.displayName)     ME.name = profile.displayName;
       else if (profile.first_name) ME.name = `${profile.first_name} ${profile.last_name || ''}`.trim();
-      if (profile.userId)          ME.profileId = ME.profileId || profile.userId;
+      if (profile.userId)          ME.profileId = ME.profileId || String(profile.userId);
     } catch (e) {
       console.warn('[collab] IMS profile fetch failed:', e.message);
     }
