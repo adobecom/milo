@@ -69,6 +69,10 @@ function cellText(cell) {
   return (paras.length ? paras.join(' ') : cell.textContent).trim();
 }
 
+function cellParas(cell) {
+  return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
+}
+
 // Move the authored <p>s into a container. See README (Reusing authored paragraphs).
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
@@ -270,7 +274,7 @@ export function parseAuthoredContent(el) {
     arcCopy: parseArcCopy(arcCopyRow),
     pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
-    touchHint: cellText(cells[0]) || DEFAULT_TOUCH_HINT,
+    touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
     hintText: cellText(cells[1]) || DEFAULT_HINT,
     instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,
     labels: buildLabels(parts),
@@ -291,7 +295,7 @@ const buildMarkup = (gid, labels) => `
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <p class="globe-gallery-hint-text"></p>
+        <div class="globe-gallery-hint-text"></div>
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12h16m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -368,7 +372,9 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
-  el.querySelector('.globe-gallery-hint-text').textContent = touchHint;
+  const hintEl = el.querySelector('.globe-gallery-hint-text');
+  if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
+  else hintEl.textContent = touchHint.text;
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
   renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
   if (pullQuote) {

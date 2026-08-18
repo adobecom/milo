@@ -147,6 +147,8 @@
   text-align: center;
   text-wrap: balance;
   user-select: none;
+
+  & > p { margin: 0; }
 }
 
 .globe-gallery-arc-copy {
