@@ -185,6 +185,9 @@
     position: absolute;
     top: 0;
     transform-origin: 50% 100%;
+  }
+
+  .hover-list-media picture.is-active {
     will-change: transform, opacity;
   }
 }
