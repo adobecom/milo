@@ -54,10 +54,6 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
 
-    p {
-      display: contents;
-    }
-
     .con-button {
       flex: 1;
       justify-content: center;

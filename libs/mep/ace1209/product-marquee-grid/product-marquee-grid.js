@@ -46,6 +46,8 @@ function buildMerchCard(col) {
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   ctaEls.forEach((el) => ctaWrapper.append(el));
   decorateButtons(ctaWrapper);
+  [...ctaWrapper.querySelectorAll('.con-button')].forEach((btn) => ctaWrapper.append(btn));
+  [...ctaWrapper.querySelectorAll('p')].forEach((p) => p.remove());
 
   return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
 }
