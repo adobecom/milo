@@ -112,10 +112,9 @@ function changeTabs(e, config) {
 
   if (isRadio) {
     if (Object.keys(tabColor).length) {
-      parent.querySelectorAll(`input[type="radio"][data-block-id="${blockId}"]`).forEach((t) => {
+      parent.querySelectorAll('input[type="radio"]').forEach((t) => {
         if (t !== target) t.style.backgroundColor = '';
       });
-      if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
     }
   } else {
     parent.querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`).forEach((t) => {
@@ -125,8 +124,8 @@ function changeTabs(e, config) {
     });
     target.setAttribute('aria-selected', 'true');
     target.setAttribute('tabindex', '0');
-    if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
   }
+  if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
 
   const indicator = parent.querySelector('.tab-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
@@ -191,16 +190,28 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper input[type="radio"]');
+  const tabs = [...elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper input[type="radio"]')];
   const tabLists = elm.querySelectorAll(':scope > .tabs-wrapper [role="tablist"], :scope > .tabs-wrapper [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
-    // Radiogroups get keyboard nav, focus roving, and RTL support natively via <input type="radio">
-    // elements, so no custom keydown handling is attached for them here.
-    if (tabList.getAttribute('role') === 'radiogroup') return;
+    const isRadioGroup = tabList.getAttribute('role') === 'radiogroup';
     tabList.addEventListener('keydown', (e) => {
-      if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) return;
-      const forward = e.key === 'ArrowRight';
+      // Left/Right on radio inputs are left to the browser: Chrome and Firefox already flip
+      // them for RTL natively. Up/Down aren't part of that native Left/Right mapping, so they're
+      // handled here, driving the same focus+select behavior manually via focus() + click().
+      if (isRadioGroup) {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        const forward = e.key === 'ArrowDown';
+        const currentFocus = tabs.indexOf(e.target);
+        const nextFocus = (currentFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[nextFocus].focus();
+        tabs[nextFocus].click();
+        return;
+      }
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const isRtl = document.dir === 'rtl';
+      const forward = e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight');
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');
