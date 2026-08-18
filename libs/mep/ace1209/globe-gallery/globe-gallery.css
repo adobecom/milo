@@ -20,7 +20,7 @@
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
-  --gg-controls-nav: 124px;
+  --gg-controls-nav: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
   --gg-controls-top: calc(var(--gg-controls-nav) + var(--gg-controls-inset));
 
   height: var(--gg-runway-height);
@@ -147,6 +147,13 @@
   text-align: center;
   text-wrap: balance;
   user-select: none;
+
+  box-sizing: border-box;
+  padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+  border-radius: var(--gg-controls-radius);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
 
   & > p { margin: 0; }
 }

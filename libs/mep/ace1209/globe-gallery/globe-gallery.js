@@ -1339,15 +1339,9 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uDisperse.value = proxDis ** NEAR_FADE_DISPERSE_RAMP;
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = proxFade;
-    // Hover CA is additive on transition CA; uHoverPos anchors the warp at the cursor UV.
+    // Hover uniforms come from updateCardTransform; this phase only adds the drag warp.
     if (CA_ENABLED) {
-      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
       mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
-      if (card.hoverT > 0.01) {
-        mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
-      } else {
-        mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
-      }
     }
     // CA smear: approximate world delta as depth × angular velocity (front cards smear more).
     applyMotionCA(mesh, card.spherePos.z * drag.velX, -card.spherePos.z * drag.velY);
@@ -1370,9 +1364,12 @@ function createGlobeGalleryRuntime(
       lerpN(stage.y, sY, fdE),
       lerpN(stage.z, sZ, fdE),
     );
+    // Hover lands before the fold ends, so scale for it here too or the card pops at fdE 1.
+    // Both axes, so applyCardFit's aspect is unchanged.
+    const hs = 1 + card.hoverT * HOVER_SCALE;
     mesh.scale.set(
-      lerpN(stage.scale, card.sphereScaleSX, fdE),
-      lerpN(stage.scale, card.sphereScaleSY, fdE),
+      lerpN(stage.scale, card.sphereScaleSX, fdE) * hs,
+      lerpN(stage.scale, card.sphereScaleSY, fdE) * hs,
       1,
     );
     applyCardFit(mesh, card); // reads the scale set just above, so the fold framing stays exact
@@ -1530,14 +1527,24 @@ function createGlobeGalleryRuntime(
         entryRot / TL.ENTRY_ROT_MAX,
         gpE * (1 - gpE) * 4,
         fdE * (1 - fdE) * 4,
-      ) * CA_STRENGTH;
-      mesh.material.uniforms.uCA.value = cardCA;
-      mesh.material.uniforms.uWarp.value = 0; // sphere block re-applies from hoverT below
+      ) * CA_STRENGTH; // written to uCA with the hover term below
     }
 
     // Hover ease gates on the GLOBAL interactive threshold, not per-card fdE.
     if (sphereFormT < TL.SPHERE_INTERACTIVE_T || reducedMotion) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
+
+    // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
+    // card still folding at fdE 0.999 would raise hoverT and render nothing. See README.
+    if (CA_ENABLED) {
+      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
+      mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP;
+      if (card.hoverT > 0.01) {
+        mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
+      } else {
+        mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
+      }
+    }
 
     // Contour/reveal defaults for the non-sphere phases. uDissolve is shared with the sphere
     // phase's near-camera dissolve, so it must be (re)set every frame.

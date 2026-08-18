@@ -1933,6 +1933,13 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     earlier gate for the cursor was tried and reverted — it put the affordance 26vh ahead of the
     input it advertises, which reads worse than a late cursor. Raycasting was never the problem at
     any value: a tap below the gate hits (`hits: 1`, harness-measured), `onPointerUp` discards it.
+  - **Hover uniforms are applied in `updateCardTransform`, not `placeSphereCard`** — that gate is
+    global, `fdE` is per-card. Between `sphereFormT` 0.9 and 1 the late-staggered cards sit at `fdE`
+    0.999: seated to the eye, but routed to `placeFoldingCard`, which sets `opacity = 1` (so they
+    pick, show `cursor: pointer`, and open on click) and wrote no `uWarp` — they raised `hoverT` and
+    rendered nothing, for ~9% of the formation scroll. The broken set follows `gpDelay` (index
+    cascade + `peelJitter`), not depth, which is what made it read as random. `placeSphereCard` now
+    only adds `sphereDragWarp`; `placeFoldingCard` applies `hs` so nothing pops at `fdE` 1.
   - **Inertia coasts below `SPHERE_INTERACTIVE_T`; only `SPHERE_ORIENT_RESET_T` zeroes it.**
     Hard-zeroing at the interactive gate stopped a released spin dead whenever the page was still
     settling across it. A drag *started* below the gate stays inert and can't fling on release, and
