@@ -71,6 +71,7 @@
   z-index: 1;
   max-width: var(--quote-copy-max-width);
   margin: 0;
+  text-wrap: pretty;
 }
 
 .quote-attribution {
