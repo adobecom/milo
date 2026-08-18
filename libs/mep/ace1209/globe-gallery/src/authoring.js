@@ -18,12 +18,9 @@ function isSvgAnchor(a) {
   return !!badgeSvgUrl(a);
 }
 
-// Inline <picture> markup for an authored SVG-logo anchor, or null. The assets live under
-// /federal on the federated content root (NOT the consumer origin), so resolve through
-// getFederatedUrl rather than decorateSVG — which would strip the host to a bare pathname.
-// The logo is decorative (the badge name is the labelled link), hence aria-hidden + empty alt.
-function badgeIconHtml(anchor) {
-  const url = badgeSvgUrl(anchor);
+// Inline <picture> markup for a badge logo URL, or null. getFederatedUrl (not decorateSVG) and
+// aria-hidden: see README (Card shape).
+function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
   return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
@@ -31,42 +28,88 @@ function badgeIconHtml(anchor) {
 
 // See README (Authoring contract) for the authored-row layout.
 
-// English fallback for the a11y entry-widget instructions when row 2 has no
-// second paragraph. Authored inline (row 2, 2nd <p>) so it's localizable
-// without the placeholders sheet.
+// English fallback for the a11y instructions; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
-const LABEL_DIVIDER = '||';
-const DEFAULT_LABELS = ['Previous card', '{index} of {count}', 'Next card', 'Close'];
+const DEFAULT_HINT = 'Click & Drag';
+const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
-function buildLabels(labelPara) {
-  const parts = labelPara
-    ? labelPara.textContent.split(LABEL_DIVIDER).map((s) => s.trim())
-    : [];
-  const [prevCard, cardTplRaw, nextCard, closeBtn] = parts;
+const LABEL_DIVIDER = '||';
+const DEFAULT_LABELS = [
+  DEFAULT_GALLERY_INSTRUCTIONS,
+  'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
+  'Previous card', '{index} of {count}', 'Next card', 'Close',
+];
+const CARD_TPL_INDEX = 6;
+
+function buildLabels(parts) {
+  const at = (i) => parts[i] || DEFAULT_LABELS[i];
+  const cardTplRaw = parts[CARD_TPL_INDEX];
   const cardTpl = cardTplRaw?.includes('{index}') && cardTplRaw?.includes('{count}')
     ? cardTplRaw
-    : DEFAULT_LABELS[1];
+    : DEFAULT_LABELS[CARD_TPL_INDEX];
   return {
-    prevCard: prevCard || DEFAULT_LABELS[0],
-    nextCard: nextCard || DEFAULT_LABELS[2],
-    closeBtn: closeBtn || DEFAULT_LABELS[3],
+    rotateLeft: at(1),
+    rotateRight: at(2),
+    pauseSpin: at(3),
+    resumeSpin: at(4),
+    prevCard: at(5),
+    nextCard: at(7),
+    closeBtn: at(8),
     cardLabel: (index, count) => cardTpl
       .replace('{index}', String(index))
       .replace('{count}', String(count)),
   };
 }
 
+// One cell's text: its <p>s joined, or the bare cell text when unwrapped.
+function cellText(cell) {
+  if (!cell) return '';
+  const paras = [...cell.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  return (paras.length ? paras.join(' ') : cell.textContent).trim();
+}
+
+function cellParas(cell) {
+  return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
+}
+
+// Move the authored <p>s into a container. See README (Reusing authored paragraphs).
+export function renderParagraphs(container, paras) {
+  if (container) container.replaceChildren(...paras);
+}
+
+const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
+
+function hangOpeningMark(quoteEl) {
+  const text = quoteEl.textContent.trim();
+  const container = quoteEl.closest('.globe-gallery-pullquote');
+  if (!container || !OPENING_MARK.test(text)) return;
+  const cs = getComputedStyle(quoteEl);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
+  // Canvas ignores letter-spacing, and heading-1 has some.
+  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
+  const room = parseFloat(getComputedStyle(container).paddingInlineStart) || 0;
+  // Too wide to hang — a CJK bracket, or just past the padding.
+  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
+  if (advance > 0) quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+}
+
+function applyQuoteHang(quoteEl) {
+  if (!quoteEl) return;
+  const run = () => hangOpeningMark(quoteEl);
+  document.fonts?.ready?.then(run, run);
+}
+
 function parseArcCopy(row) {
-  if (!row) return { title: '', body: '' };
+  if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('picture,img'))
-    .map((p) => p.textContent)
-    .filter(Boolean);
+    .filter((p) => !p.querySelector('picture,img') && p.textContent.trim());
   return {
-    title: heading ? heading.textContent : paras.shift() || '',
-    body: paras.join(' '),
+    title: heading ? heading.textContent : paras.shift()?.textContent.trim() || '',
+    body: paras,
   };
 }
 
@@ -80,69 +123,79 @@ function parsePullQuote(row) {
   };
 }
 
+// The <em>/<strong> text, but only when it IS the whole paragraph. See README (Card shape).
+function wholeParaChild(p, selector) {
+  const child = p.querySelector(selector);
+  const text = child?.textContent.trim();
+  return text && text === p.textContent.trim() ? text : '';
+}
+
 function parseFragmentCardSegment(nodes) {
   let img = null;
-  let role = ''; let name = ''; let description = '';
+  let role = ''; let name = '';
+  const description = [];
   const badges = [];
 
   nodes.forEach((node) => {
     const tag = node.nodeName && node.nodeName.toUpperCase();
     if (!tag) return;
 
-    if (tag === 'P') {
-      const pic = node.querySelector('picture');
-      if (pic) {
-        img = pic.querySelector('img');
-        return;
-      }
-      const inlineImg = node.querySelector('img');
+    if (/^H[1-6]$/.test(tag)) {
+      if (!name) name = node.textContent.trim();
+    } else if (tag === 'P') {
+      const inlineImg = node.querySelector('img'); // <picture> or bare <img>; first wins
       if (inlineImg) {
-        img = inlineImg;
+        if (!img) img = inlineImg;
         return;
       }
-      const em = node.querySelector('em');
-      if (em) {
-        role = em.textContent.trim();
-        return;
+      if (!role) {
+        const em = wholeParaChild(node, 'em');
+        if (em) { role = em; return; }
       }
-      const strong = node.querySelector('strong');
-      if (strong) {
-        name = strong.textContent.trim();
-        return;
+      if (!name) {
+        const strong = wholeParaChild(node, 'strong');
+        if (strong) { name = strong; return; }
       }
-      const text = node.textContent.trim();
-      if (text && !description) description = text;
+      if (node.textContent.trim()) description.push(node); // everything else is description
+    } else if (tag === 'PICTURE' || tag === 'IMG') {
+      const bare = tag === 'IMG' ? node : node.querySelector('img');
+      if (!img && bare) img = bare;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
-        // A row may carry two direct-child links: an optional .svg logo and the product
-        // link that labels it. Either may be absent.
-        const anchors = [...li.childNodes].filter((n) => n.nodeName === 'A');
+        // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
+        const row = li.cloneNode(true);
+        const featureLi = row.querySelector(':scope > ul > li');
+        row.querySelector(':scope > ul')?.remove();
+
+        const anchors = [...row.querySelectorAll('a')];
         const svgAnchor = anchors.find(isSvgAnchor) || null;
         const linkAnchor = anchors.find((a) => a !== svgAnchor) || null;
-        const icon = svgAnchor ? badgeIconHtml(svgAnchor) : null;
-        const href = linkAnchor ? (linkAnchor.getAttribute('href') || null) : null;
+        const icon = badgeIconHtml(
+          svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src'),
+        );
+        svgAnchor?.remove(); // its URL text is markup, never part of the name
 
-        const nestedLi = li.querySelector('ul > li');
-        if (nestedLi) {
-          const badgeName = linkAnchor
-            ? linkAnchor.textContent.trim()
-            : [...li.childNodes]
-              .filter((n) => n.nodeType === Node.TEXT_NODE)
-              .map((n) => n.textContent.trim())
-              .join('').trim();
-          const badgeRole = nestedLi.textContent.trim();
-          if (badgeName) badges.push({ name: badgeName, role: badgeRole, href, icon });
-        } else {
-          // Legacy pipe-separated format: "Photoshop | Compositing".
-          const source = linkAnchor ? linkAnchor.textContent : li.textContent;
-          const parts = source.split('|').map((s) => s.trim()).filter(Boolean);
-          if (parts[0]) badges.push({ name: parts[0], role: parts.slice(1).join(' '), href, icon });
+        const badgeName = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
+        if (badgeName) {
+          badges.push({
+            name: badgeName,
+            role: featureLi?.textContent.trim() || '',
+            href: linkAnchor?.getAttribute('href') || null,
+            icon,
+          });
         }
       });
     }
   });
 
-  if (!img) return null;
+  if (!img) {
+    const label = nodes.map((n) => n.textContent || '').join(' ').trim().slice(0, 60);
+    window.lana?.log?.(
+      `globe-gallery: fragment section skipped, no image — "${label}"`,
+      { tags: 'globe-gallery', severity: 'info' },
+    );
+    return null;
+  }
   return {
     img: img.currentSrc || img.getAttribute('src') || img.src,
     alt: (img.getAttribute('alt') || '').trim(),
@@ -153,8 +206,10 @@ function parseFragmentCardSegment(nodes) {
   };
 }
 
+const CARD_CONTENT_TAGS = /^(P|UL|PICTURE|IMG|H[1-6])$/;
+
 function parseFragmentCards(row) {
-  const hasDirectContent = [...row.children].some((n) => n.nodeName === 'P' || n.nodeName === 'UL');
+  const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
 
   if (!hasDirectContent) {
     // Children are section divs (each fragment section = one card).
@@ -194,16 +249,14 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// Right-size a helix/DA media image to the width we actually rasterize, so slow connections
-// don't download the full-res source only for us to downscale it client-side. Requests webp at
-// `width`px (mirrors the width/format convention in libs/utils/decorate.js's decoratePictures).
-// Non-media URLs (external assets that don't honor these params) are returned as-is.
-export function optimizeImgUrl(src, width) {
+// Right-size a helix/DA media image to what we rasterize. Cards ask by height, the modal by
+// width; non-media URLs pass through. See README (Texture memory budget).
+export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
   try {
     const url = new URL(src, window.location.href);
     if (!/(^|\/)media_[0-9a-f]/i.test(url.pathname)) return src;
-    return `${url.origin}${url.pathname}?width=${Math.round(width)}&format=webply`;
+    return `${url.origin}${url.pathname}?${axis}=${Math.round(px)}&format=webply`;
   } catch (e) {
     return src;
   }
@@ -212,27 +265,42 @@ export function optimizeImgUrl(src, width) {
 // Positional rows (see README, Authoring contract). Fragment links are authored
 // with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
-  const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
+  const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  const hintParas = hintTextRow ? [...hintTextRow.querySelectorAll('p')] : [];
-  const hintText = (hintParas[0]?.textContent ?? hintTextRow?.textContent ?? '').trim();
-  const instructions = hintParas[1]?.textContent.trim() || DEFAULT_GALLERY_INSTRUCTIONS;
+  // Row 2 is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
+  const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
+  const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     arcCopy: parseArcCopy(arcCopyRow),
     pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
-    hintText,
-    instructions,
-    labels: buildLabels(hintParas[2]),
+    touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
+    hintText: cellText(cells[1]) || DEFAULT_HINT,
+    instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,
+    labels: buildLabels(parts),
   };
 }
 
-// Runtime queries nodes within the block root, so multiple globes can coexist.
-// `gid` makes the two document-wide id refs unique per instance: the CA SVG
-// filter (url(#ca-filter-<gid>)) and the modal's aria-labelledby/describedby.
+// `gid` makes the two document-wide id refs unique per instance: the CA SVG filter and the
+// modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
-    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <div class="globe-gallery-controls">
+      <button class="globe-gallery-control globe-gallery-spin-toggle" type="button" daa-ll="pause_spin--globe_gallery" aria-label="${escapeHtml(labels.pauseSpin)}">
+        <svg class="globe-gallery-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
+        <svg class="globe-gallery-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+      </button>
+      <div class="globe-gallery-hint">
+        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="globe-gallery-hint-text"></div>
+        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12h16m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -251,15 +319,17 @@ const buildMarkup = (gid, labels) => `
 
   <div class="globe-gallery-arc-copy">
     <h2 class="globe-gallery-arc-copy-title"></h2>
-    <p class="globe-gallery-arc-copy-body body-md"></p>
+    <div class="globe-gallery-arc-copy-body body-md"></div>
   </div>
 
   <div class="globe-gallery-pullquote-pin">
-    <div class="globe-gallery-pullquote">
-      <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-      <div class="globe-gallery-pullquote-attribution">
-        <p class="globe-gallery-pullquote-name body-lg"></p>
-        <p class="globe-gallery-pullquote-role body-lg"></p>
+    <div class="globe-gallery-pullquote-rail">
+      <div class="globe-gallery-pullquote">
+        <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
+        <div class="globe-gallery-pullquote-attribution">
+          <p class="globe-gallery-pullquote-name body-lg"></p>
+          <p class="globe-gallery-pullquote-role body-lg"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -268,26 +338,26 @@ const buildMarkup = (gid, labels) => `
     <div class="globe-gallery-modal-backdrop"></div>
   </div>
 
-  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
     <div class="globe-gallery-modal-info">
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <p class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></p>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="globe-gallery-modal-image globe-gallery-sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" aria-label="${escapeHtml(labels.prevCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" aria-label="${escapeHtml(labels.nextCard)}">
+    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
-    <button class="globe-gallery-modal-close" type="button" aria-label="${escapeHtml(labels.closeBtn)}">
+    <button class="globe-gallery-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
     <span class="globe-gallery-modal-position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
@@ -298,16 +368,21 @@ const buildMarkup = (gid, labels) => `
 let globeInstanceSeq = 0;
 
 // Build the block's DOM; returns the `gid` for this instance's unique ids.
-export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
+export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
+  const hintEl = el.querySelector('.globe-gallery-hint-text');
+  if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
+  else hintEl.textContent = touchHint.text;
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
-  el.querySelector('.globe-gallery-arc-copy-body').textContent = arcCopy.body;
+  renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
   if (pullQuote) {
-    el.querySelector('.globe-gallery-pullquote-quote').textContent = pullQuote.quote;
+    const quoteEl = el.querySelector('.globe-gallery-pullquote-quote');
+    quoteEl.textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
     el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
+    applyQuoteHang(quoteEl);
   } else {
     el.querySelector('.globe-gallery-pullquote-pin').remove();
   }
