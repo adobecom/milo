@@ -35,8 +35,6 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 ) + PROGRESS_FOLD_DUR;
 export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-export const PQ_APPEAR_LEAD = 0.03;
-
 // --- Entry (raw-scroll space, before `progress` exists) ---
 
 export const ENTRY_LEAD_VH = 0.4;
@@ -67,7 +65,7 @@ export const CONTROLS_ZOOM_HIDE_T = 0.25;
 
 export const CURSOR_DRAG_DISMISS_T = 0.12;
 export const CURSOR_DRAG_RETIRE_T = 0.30;
-export const CURSOR_ZOOM_RETIRE_T = 0.40;
+export const CURSOR_ZOOM_RETIRE_T = 0.35;
 
 export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
 
@@ -83,6 +81,15 @@ export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
+
+// Inverse of the zoom camera's easeOutCubic ramp (see updateActiveCamera): the zoomT at which the
+// camera reaches world z. Lets a threshold be stated as a place in the scene, not a scroll number.
+export function zoomTAtCamZ(z, camZSphere, camZEnd) {
+  const span = camZSphere - camZEnd;
+  if (!(span > 0)) return 0;
+  const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
+  return 1 - ((1 - eased) ** (1 / 3));
+}
 
 // --- Frame ---
 

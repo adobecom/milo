@@ -7,10 +7,9 @@
 
 /* Scroll model (see README). .globe-gallery-reduced and .globe-gallery-empty overrides are at the end of this file. */
 .globe-gallery {
-  /* Full scroll-runway model: README. */
-  --gg-runway-height: 520vh;
+  /* Full scroll-runway model: README. --gg-pq-appear-t is published by the JS, off the camera. */
+  --gg-runway-height: 460vh;
   --gg-formation-vh: 304vh;
-  --gg-pq-pin-factor: 0.65;
 
   /* Shared copy edge: the pull-quote's own left text edge, reused by the arc copy. See README. */
   --gg-copy-max: 1920px;
@@ -206,13 +205,16 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Absolute at runway bottom; sticky quote inside reveals/holds/exits without JS. */
+/* Ends 50vh past the camera-clear point, so the sticky rail inside lets go on the frame the quote
+   fades in: revealed dead-centre, then free to scroll. Nothing is held. See README. */
 .globe-gallery-pullquote-pin {
   position: absolute;
-  bottom: 0;
+  top: var(--gg-formation-vh);
+  bottom: max(0px, calc(
+    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh)) - 50vh
+  ));
   left: 0;
   right: 0;
-  height: max(1px, calc((var(--gg-runway-height) - var(--gg-formation-vh)) * var(--gg-pq-pin-factor)));
   pointer-events: none;
 }
 
@@ -244,7 +246,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-50%) scale(0.9);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
 .globe-gallery-pullquote.is-active {
@@ -695,9 +697,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
 }
 
 @media (min-width: 768px) {
-  /* Smaller quote-pin factor at md; see README. */
-  .globe-gallery { --gg-pq-pin-factor: 0.55; }
-
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;

@@ -342,7 +342,7 @@ function createGlobeGalleryRuntime(
 
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
-  // zoomT the pull-quote fades in at; from --gg-pq-pin-factor (see readCssVars)
+  // zoomT the pull-quote fades in at; from the camera (see publishPqAppearZoomT)
   let pqAppearZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0;
@@ -903,13 +903,23 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
-    const pinFactor = cssNum('--gg-pq-pin-factor');
-    if (pinFactor !== null) pqAppearZoomT = Math.max(0, (1 - pinFactor) - TL.PQ_APPEAR_LEAD);
     const vh = cssNum('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
   }
 
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
+
+  // The quote's cue is a place in the scene, not a scroll number: the zoomT the camera clears the
+  // shell's far wall at, so it can never land while cards are still in frame. Cards mount radially,
+  // so the deepest one sits hypot(R, half its in-plane extent) back. Published to CSS — see README.
+  function publishPqAppearZoomT() {
+    const halfExtent = bp.CYLINDER
+      ? bp.CARD_W_SPHERE / 2
+      : Math.hypot(bp.CARD_W_SPHERE, bp.CARD_H_SPHERE) / 2;
+    const clearZ = -Math.hypot(bp.SPHERE_R, halfExtent);
+    pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
+    root.style.setProperty('--gg-pq-appear-t', pqAppearZoomT.toFixed(4));
+  }
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
   function formedScrollPx() {
@@ -1216,7 +1226,7 @@ function createGlobeGalleryRuntime(
     if (reducedMotion) return;
     if (pqEl) {
       if (zoomT >= pqAppearZoomT && !pqShown) {
-        pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
+        pqEl.style.transition = ''; // restore CSS default (0.45s, set in .css)
         pqShown = true;
         pqEl.classList.add('is-active');
       } else if (zoomT < pqAppearZoomT && pqShown) {
@@ -1798,6 +1808,7 @@ function createGlobeGalleryRuntime(
     // Resolve the breakpoint profile before anything reads bp.*.
     const band = resolveBP(W);
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
+    publishPqAppearZoomT();
 
     try {
       const aa = bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD;

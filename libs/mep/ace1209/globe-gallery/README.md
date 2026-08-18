@@ -612,7 +612,7 @@ its photo canvas rides `H`, and the scroll lock means the bar can't move while i
   `height: 100vh` and only un-sticks it, so `measureViewportH()` is exact in both modes (verified: the
   RM drawing buffer is the same 100vh × DPR as the non-RM one). Keep it that way — a `vh` override on
   that element would put an imprecision into the one function every clock depends on.
-- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 4389→3120 and the same
+- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 3882→2760 and the same
   *fraction* of the runway holds the same phase (camera z within 0.02).
 
 **Why not a viewport unit instead?** No unit choice removes the problem, because the gap is between a
@@ -627,14 +627,17 @@ CSS length and a JS number — JS still has to learn how many px that unit produ
   frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
   wouldn't help the render side at all.
 
-**CSS is the source of truth for all three props**, read per layout in `readCssVars()`, so retuning is
-a CSS-only edit:
+**CSS is the source of truth for both lengths**, `--gg-formation-vh` read per layout in
+`readCssVars()`, so retuning is a CSS-only edit:
 
 | prop | per breakpoint | effect |
 |---|---|---|
-| `--gg-runway-height` | same at both | total height = formation + tail; ↓ = shorter stretch after the globe (shrinks gap **and** hold together) |
+| `--gg-runway-height` | same at both | total height = formation + tail; ↓ = shorter stretch after the globe — it scales the whole tail, including the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | same at both | locked formation length |
-| `--gg-pq-pin-factor` | **lower at md+** | share of the tail the (bottom-anchored) quote pin occupies → its hold |
+
+A third prop, `--gg-pq-appear-t`, is on the same element but is **not authored** — the runtime
+publishes it (see below), and CSS only declares a `var(…, 0.42)` fallback inline on the pin for the
+frames before the script runs. It is the one prop written from JS, and the exception is deliberate.
 
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale
 literal. That takes some care, because `loadBlock` races a block's stylesheet against its script
@@ -643,8 +646,8 @@ properties exist. Two rules make an unresolved read harmless rather than somethi
 substitute value:
 
 - `readCssVars()` **leaves the previous value in place** when a property doesn't resolve, instead of
-  writing a fallback. So `formationVh` / `pqAppearZoomT` keep their declared initializers
-  (`0` / `0.5`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
+  writing a fallback. So `formationVh` keeps its declared initializer
+  (`0`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
   unresolved read would otherwise poison `progress` and silently kill the animation. Its `cssNum`
   helper tests `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
 - **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
@@ -666,32 +669,67 @@ is plain `offsetHeight`, itself CSS-driven, and needs no fallback either, since 
 off `.globe-gallery-world` instead (see **One viewport height**), so the runway's size lives in exactly
 one place.
 
-So **no JS file anywhere holds a copy of these three numbers** — not even for docs. The event table's
+So **no JS file anywhere holds a copy of these two lengths** — not even for docs. The event table's
 `vh` column needs the runway lengths, but Milo ships `timeline.js` unbundled and byte-for-byte, so a
 doc-only export would ride along in every page's payload; the derivation snippet reads them out of
 `globe-gallery.css` instead (see **Re-deriving these numbers**). Don't reintroduce one.
 
-sm uses a **bigger** pin factor than md on purpose: its globe clears earlier (`zoomT≈0.30` vs md
-`≈0.42`), so the quote can start sooner *and* hold longer — which sm needs, because the quote box fills
-much more of a phone screen (its height is copy-driven, ~490–590px: ~70vh at 800px vs ~54vh at 1080),
-leaving less slack around it. md's factor is capped ~0.55: above it the fade-in would cross md's
-globe-clear and land the quote over the globe.
+**The pull-quote's cue is the camera, not a scroll number.** Earlier versions hand-set the fade-in as
+a share of the tail (a `--gg-pq-pin-factor`, then an authored `--gg-pq-appear-t`), which meant a
+threshold *about the scene* was written in *scroll* units: too late and the reader waits out a blank
+screen, too early and the quote lands on cards still sweeping past, and either could silently drift
+when a camera or radius constant moved. It is now derived, in `publishPqAppearZoomT()`, from where the
+camera is:
 
-**Pull-quote timing is derived, not hand-set.** The pin height is `(runway − formation) ×
---gg-pq-pin-factor`, so it always exits exactly at the runway end (no dead scroll), and the JS fade-in
-threshold `pqAppearZoomT = (1 − --gg-pq-pin-factor) − PQ_APPEAR_LEAD` is **read from the CSS var in
-`readCssVars()`** — so the pin geometry and the opacity trigger can't drift, per breakpoint or across a
-768px resize. Higher `--gg-pq-pin-factor` → quote appears earlier **and** holds longer (they trade off at
-a fixed runway); to change both together, move `--gg-runway-height`.
+```
+clearZ = −hypot(SPHERE_R, half the card's in-plane extent)   // deepest a card can sit behind centre
+pqAppearZoomT = zoomTAtCamZ(clearZ, CAM_Z_SPHERE, CAM_Z_END)  // timeline.js, inverse of easeOutCubic
+```
+
+`zoomTAtCamZ` inverts the same `easeOutCubic` ramp `updateActiveCamera` drives the zoom with, so the
+threshold is exactly *"the frame the camera passes the shell's far wall"* — **0.3057 sm / 0.4170 md**
+with today's constants. The cards are mounted radially, so the deepest point of the outermost card is
+`hypot(R, halfExtent)`: half its width on the yaw-only barrel (sm), half its diagonal on the freely
+rolled sphere (md). Nothing about it is authored, and it re-derives itself for free if `SPHERE_R`,
+`CARD_H_SPHERE` or either `CAM_Z_*` changes. It is computed in `initRuntime` right after `bp` resolves
+— a band crossing rebuilds the runtime, so that is exactly when it can move.
+
+**The pin's release edge rides the same number, which is why nothing is stuck.** `publishPqAppearZoomT`
+writes the value to `--gg-pq-appear-t` on the block, and the pin's bottom edge is
+`(1 − appear-t) × tail − 50vh` above the runway end — i.e. the sticky rail hits the pin's bottom
+**exactly as the quote fades in**. So the quote is revealed dead-centre (the sticky did the centring
+while it was invisible) and is free the same instant: it scrolls with the page from its first frame,
+and there is no held stretch where scrolling does nothing. The reveal transition is `0.45s` for the
+same reason — a `0.7s` fade belongs to a quote that stays put.
+
+This also closes the overlap for good. At the reveal the runway end (= the next section's top) is
+`(1 − appear-t) × tail` down the viewport — **91vh md / 108vh sm** — comfortably below the quote's own
+bottom edge (`50vh + half the box`: ~71vh md, ~92vh sm for a tall one). From there the quote and the
+section travel up together at 1:1, so the gap between them is frozen and the section can never climb
+over the quote. Verified in Chromium at 1440×900 and 390×844 (probe: quote centre pinned at 50vh up to
+the reveal scroll, then `centre = 50vh − (r − r_a)`, section top never above the quote's bottom).
+
+**What the runway still controls.** Whatever is left is the stretch where the camera has passed the
+shell's centre but not yet its far wall — a few far-pole cards, then nothing. That is `≈0.20` of the
+tail on md by the camera curve, so it shrinks only with `--gg-runway-height`: **31vh md / 12vh sm** at
+460vh (it was 43vh / 26vh at 520). The floor on the runway is the other side of the same coin — the
+tail after the reveal must stay longer than half the quote box, or the section arrives on top of it.
 
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
-- *Whole stretch after the globe too long:* lower `--gg-runway-height` (both breakpoints).
-- *Quote hold too short/long, or appears too early/late:* `--gg-pq-pin-factor` for that breakpoint (JS
-  threshold auto-follows). md is capped ~0.55 (globe-clear); sm can go to ~0.67.
+- *Whole stretch after the globe too long, or too much blank before the quote:* lower
+  `--gg-runway-height` (both breakpoints). It is the only knob for either — the quote's own timing is
+  camera-derived and rides along. Floor: `(1 − appear-t) × tail` must stay above half the quote box
+  (at 460vh that is 91vh md / 108vh sm against a ~43–92vh box), or the next section lands on the quote.
+- *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune —
+  it is `zoomTAtCamZ` of the shell's far wall. If it reads early, the card extent is the term to
+  revisit (`publishPqAppearZoomT`), not a scroll number.
+- *Quote should linger instead of scrolling straight off:* that is a held frame, and it is what the pin
+  used to do — extend the pin's bottom edge past the reveal and lengthen the reveal transition to
+  match, but keep the clearance above.
 - *"Click & Drag" cursor lingers too long/short:* `CURSOR_ZOOM_RETIRE_T` — keep it ≥ the md
-  camera-clear `zoomT` (≈0.42... it currently fires just before, at camz≈−33, accepted) and, on md,
-  `< pqAppearZoomT` so it retires before the quote. One threshold for both stages on this clock —
-  label and disc go together. (Cursor is desktop-only, so sm's earlier quote doesn't affect it.)
+  camera-clear `zoomT` (≈0.42... it fires just before, at camz≈−26, accepted) and, on md,
+  `< --gg-pq-appear-t` so it retires before the quote (0.35 vs 0.417 — 10vh of clearance). One
+  threshold for both stages on this clock — label and disc go together. (Cursor is desktop-only, so sm's earlier quote doesn't affect it.)
 - *Cursor disc survives too many drags after the label goes:* `CURSOR_DRAG_RETIRE_T` (0.30) vs
   `CURSOR_DRAG_DISMISS_T` (0.12) — both on drag-accrued `textExitProgress`, so the ratio is how many
   extra drags the disc outlives the label. `updateHintExitProgress` adds ~0.0022/frame held plus
@@ -699,9 +737,12 @@ a fixed runway); to change both together, move `--gg-runway-height`.
   same drag continued. Keep `CURSOR_DRAG_RETIRE_T > CURSOR_DRAG_DISMISS_T` or the two steps collapse.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
-Current result (from the progress math): md gap ≈91vh; sm gap ≈69vh. The centred hold is the whole pin —
-`(520 − 304) × factor` = **≈119vh md / ≈140vh sm**, independent of viewport and copy length, because the
-0-tall rail (see **CSS → Pull-quote box**) keeps the box's own height out of the sticky clamp.
+Current result (runway 460 / formation 304, tail 156): the quote is revealed centred and released at
+**369vh md / 352vh sm** — the frame the camera clears the shell — and scrolls away from there over the
+remaining **91vh md / 108vh sm**. Held scroll: **none**. The sparse-shell stretch before it (camera
+between centre and far wall) is ≈31vh md / ≈12vh sm. The 0-tall rail (see **CSS → Pull-quote box**)
+is what keeps the box's own height out of the sticky clamp, so the centring at the reveal holds for any
+copy length.
 
 Milo's page-level Lenis keeps `window.scrollY` in sync; the driver is a plain `requestAnimationFrame`
 loop (`startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
@@ -835,19 +876,23 @@ input       ..........................inert..........................|#live#
 The overlap in the top two lanes is the point of `FOLD_PEEL_OVERLAP`: the first cards begin folding
 (54vh) long before the last cards finish peeling (156vh), so the grid never visibly "resolves".
 
-### Tail — `zoomT` 0 → 1, scroll 304 → 520vh
+### Tail — `zoomT` 0 → 1, scroll 304 → 460vh
 
 ```
-            0.00             0.30   0.42                              0.95
-            |                  |      |                                 |  |
+            0.00        0.22   0.31       0.42                            0.95
+            |             |      |          |                               |  |
 camera      ###################CAM_Z_SPHERE -> CAM_Z_END####################
-globe       #sweeps past viewer|.........gone (sm 0.30 / md 0.42)...........
-hint text   ~~~~~~~~~fade~~~~~~~~|..................gone....................
-cursor      ##########live##########||...............retired................
-quote (sm)  .......hidden.......|############in -> hold -> exit#############
-quote (md)  ..........hidden..........|#########in -> hold -> exit##########
+globe       #sweeps past viewer|.far-pole cards.|......past the far wall......
+hint text   ~~~~~~~~fade~~~~~~~~~|.................gone......................
+cursor      ##########live###########|..............retired..................
+quote (sm)  ......hidden........|###revealed centred, scrolls up + off#######
+quote (md)  ..........hidden...............|###revealed centred, scrolls up###
+next sect.  ...................below the fold.........|#####rises in#########
 canvas      ###########################visible##########################|...
 ```
+
+Each breakpoint's reveal *is* its camera-clear (`zoomTAtCamZ`), and the pin's bottom edge is 50vh
+past it, so the reveal and the un-stick are the same frame at both — no held scroll on either.
 
 ### Event table
 
@@ -871,13 +916,14 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
 | 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `controls.update`, `updateClickDragText` |
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
-| 358 | 0.491 | `CONTROLS_ZOOM_HIDE_T` | globe controls fade out (also leave the tab order) | `controls.update` |
-| 376 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
-| 369 / 395 | 0.525 / 0.607 | camera passes the cards | globe clears the viewport — sm ≈ `zoomT` 0.30, md ≈ 0.42 | `updateActiveCamera` |
-| 373 / 395 | 0.539 / 0.607 | `zoomT ≥ pqAppearZoomT` | pull-quote fades in — sm 0.32, md 0.42 (from `--gg-pq-pin-factor`) | `updatePullQuote` |
-| 390 | 0.593 | `CURSOR_ZOOM_RETIRE_T` | cursor label + disc retire together | `cursor.update` |
-| 509 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` (quote alone to the end) | `updateCanvasVisibility` |
-| 520 | 1.000 | runway end | pull-quote pin exits | CSS (`--gg-pq-pin-factor`) |
+| ~338 | ~0.470 | camera passes the shell's centre | shell is **effectively empty** — only far-pole cards left in frame (`zoomT` ≈ 0.22) | `updateActiveCamera` |
+| 343 | 0.491 | `CONTROLS_ZOOM_HIDE_T` | globe controls fade out (also leave the tab order) | `controls.update` |
+| 352 | 0.529 | `zoomT ≥ pqAppearZoomT` (sm 0.3057) | **sm**: camera clears the barrel's far wall → quote revealed centred **and** un-stuck the same frame | `updatePullQuote` + CSS |
+| 356 | 0.548 | `zoomT ≥ 1 / TEXT_ZOOM_FADE_RATE` | hint text fully faded | `updateClickDragText` |
+| 359 | 0.559 | `CURSOR_ZOOM_RETIRE_T` | cursor label + disc retire together (desktop only, so ahead of md's reveal) | `cursor.update` |
+| 369 | 0.605 | `zoomT ≥ pqAppearZoomT` (md 0.4170) | **md**: same, one card-shell radius later; next section's top is 91vh down the viewport | `updatePullQuote` + CSS |
+| 452 | 0.966 | `zoomT ≥ 0.95` | canvas `display:none` | `updateCanvasVisibility` |
+| 460 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
 Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
 (contours → un-dissolve, plus the one-time sm masonry re-solve on `onDone`), the modal
@@ -910,6 +956,18 @@ const cssVh = (p) => parseFloat(css.match(new RegExp(p + ':\\\\s*([0-9.]+)vh'))[
 const FORMATION_VH = cssVh('--gg-formation-vh');
 const RUNWAY_VH = cssVh('--gg-runway-height');
 const tail = RUNWAY_VH - FORMATION_VH;
+// The quote's cue is computed from BREAKPOINTS, which globe-gallery.js does not export — this is the
+// one place the doc restates runtime logic (publishPqAppearZoomT), so keep the two in step.
+const js = readFileSync('./globe-gallery.js', 'utf8');
+const asp = js.match(new RegExp('CARD_ASPECT = ([0-9]+) / ([0-9]+)'));
+const appearT = (band) => {
+  const body = js.split('\n  ' + band + ': {')[1].split('\n  },')[0];
+  const num = (k) => +body.match(new RegExp(k + ': (-?[0-9.]+)'))[1];
+  const h = num('CARD_H_SPHERE');
+  const w = h * (asp[1] / asp[2]);
+  const half = band === 'sm' ? w / 2 : Math.hypot(w, h) / 2; // sm is the yaw-only barrel
+  return T.zoomTAtCamZ(-Math.hypot(num('SPHERE_R'), half), num('CAM_Z_SPHERE'), num('CAM_Z_END'));
+};
 const atZoomT = (t) => T.SPHERE_FORMED_PROGRESS
   + t * (T.PROGRESS_ZOOM_END - T.SPHERE_FORMED_PROGRESS);
 const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
@@ -927,6 +985,7 @@ row('arc-copy gone', T.ARC_COPY_OUT_END);
 row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
 row('hint text faded', atZoomT(1 / T.TEXT_ZOOM_FADE_RATE));
 row('cursor label / retire', atZoomT(T.CURSOR_ZOOM_RETIRE_T));
+['sm', 'md'].forEach((b) => row('quote in + un-stuck (' + b + ')', atZoomT(appearT(b))));
 row('canvas hidden', atZoomT(T.CANVAS_HIDE_ZOOM_T));
 "
 ```
@@ -940,7 +999,7 @@ read in JS):
 
 The set is `PROGRESS_PAN_END`, `PROGRESS_ARC_PREROLL`, `PROGRESS_GRID_ARC_START` / `_END`,
 `PROGRESS_FOLD_DUR`, `PROGRESS_ZOOM_END`, `GRID_PEEL_STAGGER` and `FOLD_PEEL_OVERLAP`, plus the
-gates (`SPHERE_INTERACTIVE_T`, `PQ_APPEAR_LEAD`, `CURSOR_ZOOM_RETIRE_T`). Dump the
+gates (`SPHERE_INTERACTIVE_T`, `CURSOR_ZOOM_RETIRE_T`). Dump the
 live values instead of trusting a list here:
 
 ```sh
@@ -1240,11 +1299,15 @@ with a reader's browser font-size setting — the intended C2 behaviour, and why
 this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`--bc-` in
 brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
-inherit a stranger's value from an ancestor. The only props read from JS are `--gg-formation-vh` /
-`--gg-runway-height` / `--gg-pq-pin-factor` in `readCssVars()` — grep both files before renaming one. **No prop is written
-from JS**: where JS decides a *state*, it toggles a class and CSS owns the resulting value
+inherit a stranger's value from an ancestor. The only prop read from JS is `--gg-formation-vh`, in
+`readCssVars()` (`--gg-runway-height` stays CSS-only) — grep both files before renaming one. **JS
+writes exactly one prop, `--gg-pq-appear-t`** (`publishPqAppearZoomT`, once per `initRuntime`), and the
+narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
-retune stays a CSS-only edit and no magic number is stranded in JS. **No upstream (`--feds-*`)
+retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue is the one
+value CSS cannot compute — it comes off the WebGL camera curve and the shell radius — so it travels the
+other way, and CSS derives the pin's release edge from it rather than restating it. Anything that
+*could* be a CSS number must not follow it out of the stylesheet. **No upstream (`--feds-*`)
 property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
 gnav, so `--gg-controls-top` has to clear it — but `var(--feds-height-nav, 63px)` +
 `var(--feds-height-breadcrumbs, 33px)` is the wrong instrument for that, and the earlier version of
@@ -1301,9 +1364,12 @@ Consequences worth knowing before retuning:
   make the quote jump half its height as it fades in. The reduced-motion variant deliberately resets
   `transform: none` — it is `position: relative` and flows, so it must *not* be shifted (and its rail
   goes `position: static; height: auto` alongside the pin).
-- **The centred hold is the whole pin**, independent of viewport and copy length, and the quote holds
-  to the runway end and then scrolls away with the block — there is no upward drift-out. Nothing in JS
-  reads the box height, so a copy change is CSS-only, but re-eyeball pacing. See **Scroll model**.
+- **The pin centres the quote while it is invisible, and lets go the frame it appears.** The sticky is
+  what guarantees the reveal happens dead-centre whatever the copy length, but it releases on that same
+  frame (pin bottom = reveal + 50vh), so nothing is held and the quote scrolls away with the block —
+  there is no upward drift-out either. Nothing in JS reads the box height, so a copy change is CSS-only
+  — but the tail left after the reveal must stay longer than half the box, or the next section arrives
+  on top of it. See **Scroll model**.
 - No `overflow` handling: a pathologically long quote spills past the viewport rather than scrolling.
   Adding a scroller here would need `data-lenis-prevent`.
 
@@ -2032,7 +2098,7 @@ self-evident from the name:
 ### `timeline.js` constants
 
 Most of this file's exports are documented where they matter: the `P_*` phase constants and
-`FOLD_PEEL_OVERLAP` under Phase constants; `PQ_APPEAR_LEAD` under Scroll model;
+`FOLD_PEEL_OVERLAP` under Phase constants; the runway split under Scroll model;
 `ENTRY_LEAD_VH` / `ENTRY_RAMP_VH` under Entry timing; and
 every gate threshold in the Lifecycle timeline event table. The remainder — carried in code as
 bare names — are:
@@ -2067,7 +2133,8 @@ Known follow-ups, not blocking this integration branch:
 - **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
   (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
   the fully-formed, still globe is a scroll-pacing tuning matter still open.
-- **Pull-quote pacing and overflow.** The quote is content-sized and holds centred for the whole pin
-  (see **CSS → Pull-quote box**), so `PQ_APPEAR_LEAD` / `--gg-pq-pin-factor` want an eyeball pass per
-  breakpoint against the final copy, and there is no `overflow` handling for a pathologically long or
-  localized quote (it spills rather than scrolls).
+- **Pull-quote pacing and overflow.** The reveal is camera-derived and needs no tuning, but the quote
+  is content-sized (see **CSS → Pull-quote box**), so the *clearance* wants an eyeball pass per
+  breakpoint against the final copy: the tail after the reveal (91vh md / 108vh sm) must stay longer
+  than half the box, and `--gg-runway-height` is the lever. There is no `overflow` handling for a
+  pathologically long or localized quote (it spills rather than scrolls).
