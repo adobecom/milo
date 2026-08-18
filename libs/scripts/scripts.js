@@ -62,6 +62,9 @@ const config = {
   breadcrumbs: 'on',
   brandConciergeAA: 'app-reco',
   // taxonomyRoot: '/your-path-here',
+  peregrine: {
+    serviceEp: 'http://localhost:8081',
+  },
 };
 
 const miloLibs = '/libs';

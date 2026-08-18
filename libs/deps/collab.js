@@ -1,0 +1,1081 @@
+(function () {
+  'use strict';
+
+  const usp = new URLSearchParams(window.location.search);
+  const COLLAB_ID = usp.get('peregrine-collab-id') || '';
+  const SERVICE = (document.querySelector('meta[name="collab-service-ep"]')?.content || '').replace(/\/$/, '');
+  const ME = { email: '', name: 'You', profileId: '', imsEmail: '' };
+
+  if (!SERVICE || !COLLAB_ID) {
+    console.warn('[collab] missing collab-service-ep meta or peregrine-collab-id param — collab tool disabled');
+    return;
+  }
+
+  function getToken() {
+    const t = window.adobeIMS?.getAccessToken()?.token || '';
+    return t ? `Bearer ${t}` : '';
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    const token = getToken();
+    if (token) headers['Authorization'] = token;
+    const res = await fetch(`${SERVICE}${path}`, { ...opts, headers });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${path}`);
+    return res.json();
+  }
+
+  const api = {
+    getCollab:     ()                   => apiFetch(`/api/collabs/${COLLAB_ID}`),
+    listThreads:   ()                   => apiFetch(`/api/collabs/${COLLAB_ID}/threads`),
+    createThread:  (anchor, body)       => apiFetch(`/api/collabs/${COLLAB_ID}/threads`, { method: 'POST', body: JSON.stringify({ anchor, body }) }),
+    createReply:   (threadId, body)     => apiFetch(`/api/collabs/${COLLAB_ID}/threads/${threadId}/comments`, { method: 'POST', body: JSON.stringify({ body }) }),
+    updateStatus:  (threadId, state)    => apiFetch(`/api/threads/${threadId}`, { method: 'PATCH', body: JSON.stringify({ state }) }),
+    updateComment: (commentId, body)    => apiFetch(`/api/comments/${commentId}`, { method: 'PATCH', body: JSON.stringify({ body }) }),
+    searchUsers:   (q)                  => apiFetch(`/api/search/groups-or-users?q=${encodeURIComponent(q)}`),
+  };
+
+  const COLORS = ['#4a3ddb','#d4380d','#1565c0','#6d4c41','#1b5e20','#4a148c','#880e4f','#e65100'];
+  function avatarColor(key) {
+    let h = 0;
+    for (let i = 0; i < (key || '').length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+    return COLORS[h % COLORS.length];
+  }
+
+  function avatarInitials(name) {
+    const parts = (name || '?').trim().split(/\s+/);
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (name[0] || '?').toUpperCase();
+  }
+
+  function relativeTime(iso) {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    if (diff < 10000)  return 'now';
+    if (diff < 60000)  return `${Math.floor(diff / 1000)}s ago`;
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return `${Math.floor(diff / 86400000)}d ago`;
+  }
+
+  function renderMentions(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/@\[([^\]]+)\]\(([^)]+)\)/g,
+        (_, name, email) => `<span class="collab-mention" title="${esc(email)}">@${esc(name)}</span>`);
+  }
+
+  function statusClass(s) {
+    const m = { open: 'collab-status-open', accepted: 'collab-status-accepted', rejected: 'collab-status-rejected', closed: 'collab-status-closed' };
+    return m[(s || '').toLowerCase()] || 'collab-status-open';
+  }
+
+  function esc(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function el(tag, cls, html) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function txt(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function avatarEl(name, profileId, isYou) {
+    const a = el('span', 'collab-avatar');
+    a.style.cssText = `background:${avatarColor(profileId || name)};width:30px;height:30px;font-size:11px`;
+    a.textContent = avatarInitials(name);
+    a.title = name + (isYou ? ' (you)' : '');
+    if (isYou) a.dataset.you = '1';
+    return a;
+  }
+
+  let state = { threads: [], participants: [], activeTab: 'all', searchQ: '', panelOpen: false };
+  let pollTimer = null;
+  let activeThreadId = null;
+  let popupThreadId = null;
+  let popupAnchor = null;
+  let popupPageElement = null;
+  let clickTarget = null;
+
+  let topbar, presenceRow, commentsBtnBadge, commentsBtn, visibilityBtn, userChip;
+  let panel, threadList;
+  let floatingLayer;
+  let newCommentPopup, newCommentTextarea, newCommentGetValue;
+  let threadPopupEl;
+  let markersVisible = true;
+  let pageInfoResolved = false;
+
+  const SVG_EYE_OPEN   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const SVG_EYE_CLOSED = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+  function toggleMarkersVisibility() {
+    markersVisible = !markersVisible;
+    document.body.classList.toggle('collab-markers-hidden', !markersVisible);
+    visibilityBtn.innerHTML = markersVisible ? SVG_EYE_OPEN : SVG_EYE_CLOSED;
+    visibilityBtn.title     = markersVisible ? 'Hide annotation markers' : 'Show annotation markers';
+    visibilityBtn.classList.toggle('active', !markersVisible);
+  }
+
+  function buildTopbar() {
+    topbar = el('div', '');
+    topbar.id = 'collab-topbar';
+
+    const pageInfo = el('div', 'collab-topbar-pageinfo');
+    pageInfo.innerHTML = `<span class="collab-topbar-url">… [${COLLAB_ID.slice(0, 8)}]</span>`;
+
+    const spacer = el('div', '');
+    spacer.style.flex = '1';
+
+    presenceRow = el('div', '');
+    presenceRow.id = 'collab-topbar-presence';
+
+    commentsBtn = el('button', 'collab-topbar-btn');
+    commentsBtn.innerHTML = `💬 Comments <span id="collab-badge" class="collab-badge" style="display:none">0</span>`;
+    commentsBtn.title = 'Toggle comments panel';
+    commentsBtn.addEventListener('click', togglePanel);
+    commentsBtnBadge = commentsBtn.querySelector('#collab-badge');
+
+    visibilityBtn = el('button', 'collab-topbar-btn collab-visibility-btn');
+    visibilityBtn.title = 'Hide annotation markers';
+    visibilityBtn.innerHTML = SVG_EYE_OPEN;
+    visibilityBtn.addEventListener('click', toggleMarkersVisibility);
+
+    const actions = el('div', '');
+    actions.id = 'collab-topbar-actions';
+    actions.append(presenceRow, commentsBtn, visibilityBtn);
+
+    topbar.append(pageInfo, spacer, actions);
+    document.body.prepend(topbar);
+    document.body.classList.add('collab-active');
+  }
+
+  function renderPresence() {
+    presenceRow.innerHTML = '';
+    const meIds = new Set([ME.profileId, ME.email, ME.imsEmail].filter(Boolean));
+    const seen  = new Set();
+    const others = state.participants.filter(p => {
+      if ([p.profileId, p.email, p.name].some(v => v && meIds.has(v))) return false;
+      const key = p.profileId || p.email || p.name;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const all = [{ name: ME.name || ME.imsEmail, profileId: ME.profileId, isYou: true }, ...others];
+    const shown = all.slice(0, 5);
+    const rest  = all.slice(5);
+    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, p.isYou)));
+    if (rest.length) {
+      const overflow = el('span', 'collab-avatar-overflow');
+      overflow.textContent = `+${rest.length}`;
+      overflow.dataset.tooltip = rest.map(p => p.name).join(', ');
+      presenceRow.appendChild(overflow);
+    }
+  }
+
+  function updateBadge() {
+    const count = state.threads.filter(t => !isResolved(t)).length;
+    commentsBtnBadge.textContent = count;
+    commentsBtnBadge.style.display = count ? '' : 'none';
+    const hasMention = state.threads.some(hasMentionUnreplied);
+    commentsBtn.classList.toggle('has-mention', hasMention);
+  }
+
+  function buildPanel() {
+    panel = el('div', '');
+    panel.id = 'collab-panel';
+
+    const header = el('div', 'collab-panel-header');
+    const dragHandle = el('span', 'collab-drag-handle');
+    dragHandle.innerHTML = '⠿';
+    dragHandle.title = 'Drag to move';
+    const title = el('span', 'collab-panel-title', '<span>Annotations</span><span class="collab-panel-title-dot"></span>');
+    const dockToggle = el('button', 'collab-dock-toggle');
+    dockToggle.title = 'Switch dock side';
+    dockToggle.textContent = '⇄';
+    dockToggle.addEventListener('click', toggleDock);
+    const closeBtn = el('button', 'collab-panel-close');
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', togglePanel);
+    header.append(dragHandle, title, dockToggle, closeBtn);
+
+    const searchWrap = el('div', 'collab-panel-search');
+    const searchIcon = el('span', 'collab-search-icon', '🔍');
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search comments…';
+    searchInput.addEventListener('input', e => { state.searchQ = e.target.value; renderPanel(); });
+    searchWrap.append(searchIcon, searchInput);
+
+    const tabs = el('div', 'collab-tabs');
+    ['Mentions', 'All', 'Mine'].forEach(label => {
+      const tab = el('button', 'collab-tab');
+      tab.dataset.tab = label.toLowerCase();
+      tab.innerHTML = label;
+      if (label === 'Mentions' || label === 'All') {
+        tab.innerHTML += '<span class="collab-tab-dot" style="display:none"></span>';
+      }
+      if (label === 'All') tab.classList.add('active');
+      tab.addEventListener('click', () => {
+        state.activeTab = label.toLowerCase();
+        panel.querySelectorAll('.collab-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderPanel();
+      });
+      tabs.appendChild(tab);
+    });
+
+    threadList = el('div', 'collab-thread-list');
+
+    panel.append(header, searchWrap, tabs, threadList);
+    document.body.appendChild(panel);
+
+    setupPanelDrag(dragHandle);
+    restorePanelPlacement();
+  }
+
+  function togglePanel() {
+    state.panelOpen = !state.panelOpen;
+    panel.classList.toggle('open', state.panelOpen);
+    commentsBtn.classList.toggle('active', state.panelOpen);
+    if (state.panelOpen) renderPanel();
+  }
+
+  function toggleDock() {
+    panel.classList.toggle('collab-panel-left');
+    panel.classList.remove('collab-panel-float');
+    savePanelPlacement();
+  }
+
+  function setupPanelDrag(handle) {
+    const SNAP = 60;
+    let dragging = false, startX, startY, startLeft, startTop;
+
+    handle.addEventListener('pointerdown', e => {
+      dragging = true;
+      handle.setPointerCapture(e.pointerId);
+      const rect = panel.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      startLeft = rect.left; startTop = rect.top;
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+      panel.classList.add('collab-panel-float');
+      panel.classList.remove('collab-panel-left', 'open');
+      panel.style.left = `${Math.max(0, startLeft + dx)}px`;
+      panel.style.top  = `${Math.max(54, startTop + dy)}px`;
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.display = 'flex';
+    });
+
+    handle.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      if (!panel.classList.contains('collab-panel-float')) return;
+      const rect = panel.getBoundingClientRect();
+      if (rect.left < SNAP) {
+        panel.classList.remove('collab-panel-float');
+        panel.classList.add('collab-panel-left', 'open');
+        panel.style.cssText = '';
+      } else if (window.innerWidth - rect.right < SNAP) {
+        panel.classList.remove('collab-panel-float', 'collab-panel-left');
+        panel.classList.add('open');
+        panel.style.cssText = '';
+      }
+      savePanelPlacement();
+    });
+  }
+
+  function savePanelPlacement() {
+    const isLeft  = panel.classList.contains('collab-panel-left');
+    const isFloat = panel.classList.contains('collab-panel-float');
+    localStorage.setItem('collab-panel-placement', JSON.stringify({
+      side: isLeft ? 'left' : 'right',
+      float: isFloat,
+      left: panel.style.left,
+      top: panel.style.top,
+    }));
+  }
+
+  function restorePanelPlacement() {
+    try {
+      const p = JSON.parse(localStorage.getItem('collab-panel-placement') || 'null');
+      if (!p) return;
+      if (p.float) {
+        panel.classList.add('collab-panel-float');
+        panel.style.left = p.left;
+        panel.style.top = p.top;
+        panel.style.right = 'auto';
+        panel.style.bottom = 'auto';
+      } else if (p.side === 'left') {
+        panel.classList.add('collab-panel-left');
+      }
+    } catch { /* ignore */ }
+  }
+
+  function filterThreads() {
+    let threads = [...state.threads];
+    const q = state.searchQ.trim().toLowerCase();
+
+    if (state.activeTab === 'mentions') threads = threads.filter(hasMentionUnreplied);
+    else if (state.activeTab === 'mine') threads = threads.filter(isMine);
+
+    if (q) {
+      threads = threads.filter(t =>
+        t.username.toLowerCase().includes(q) ||
+        t.messages.some(m => m.text.toLowerCase().includes(q))
+      );
+    }
+    return threads;
+  }
+
+  function renderPanel() {
+    const mentionCount = state.threads.filter(hasMentionUnreplied).length;
+    const mentionsDot = panel.querySelector('[data-tab="mentions"] .collab-tab-dot');
+    const allDot = panel.querySelector('[data-tab="all"] .collab-tab-dot');
+    if (mentionsDot) mentionsDot.style.display = mentionCount ? '' : 'none';
+    if (allDot) allDot.style.display = mentionCount ? '' : 'none';
+
+    const threads = filterThreads();
+    threadList.innerHTML = '';
+
+    if (!threads.length) {
+      threadList.appendChild(el('div', 'collab-empty', 'No comments yet.'));
+      return;
+    }
+
+    threads.forEach(t => {
+      const card = buildThreadCard(t);
+      if (t.id === activeThreadId) {
+        card.appendChild(buildExpandedThread(t, true));
+      }
+      threadList.appendChild(card);
+    });
+  }
+
+  function buildThreadCard(t) {
+    const first = t.messages[0] || {};
+    const card = el('article', 'collab-thread-card');
+    if (t.id === activeThreadId) card.classList.add('active-card');
+
+    const header = el('div', 'collab-thread-card-header');
+
+    const authorEl = txt('span', 'collab-thread-card-author', first.username || 'Unknown');
+    const timeEl = txt('span', 'collab-thread-card-time', relativeTime(first.createdAt));
+
+    const statusSel = document.createElement('select');
+    statusSel.className = `collab-status-select ${statusClass(t.status)}`;
+    ['open','accepted','rejected','closed'].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+      if (s === t.status) opt.selected = true;
+      statusSel.appendChild(opt);
+    });
+    statusSel.addEventListener('mousedown', e => e.stopPropagation());
+    statusSel.addEventListener('change', async e => {
+      e.stopPropagation();
+      try { await api.updateStatus(t.id, statusSel.value); await refresh(); }
+      catch (err) { console.error('[collab] updateStatus', err); }
+    });
+
+    header.append(authorEl, timeEl, statusSel);
+
+    if (hasMentionUnreplied(t)) {
+      header.appendChild(el('span', 'collab-mention-dot'));
+    }
+
+    card.appendChild(header);
+
+    const commentBox = el('div', 'collab-comment-box');
+    commentBox.innerHTML = renderMentions(first.text || '');
+    card.appendChild(commentBox);
+
+    card.addEventListener('click', e => {
+      if (e.target.closest('.collab-thread-expanded') || e.target.closest('select') || e.target.closest('button')) return;
+      scrollToElement(t);
+      activeThreadId = activeThreadId === t.id ? null : t.id;
+      renderPanel();
+    });
+
+    return card;
+  }
+
+  function buildExpandedThread(t, skipFirst = false) {
+    const wrap = el('div', 'collab-thread-expanded');
+
+    const repliesSection = el('div', 'collab-replies-section');
+    const msgs = skipFirst ? t.messages.slice(1) : t.messages;
+    msgs.forEach(m => {
+      const row = el('div', 'collab-reply-row');
+      const replyHeader = el('div', 'collab-reply-header');
+      replyHeader.appendChild(txt('span', 'collab-reply-author', m.username || 'Unknown'));
+      replyHeader.appendChild(txt('span', 'collab-reply-time', relativeTime(m.createdAt)));
+
+      if (m.authorProfileId === ME.profileId) {
+        const editBtn = el('button', 'collab-btn collab-btn-ghost collab-btn-sm', '✏');
+        editBtn.title = 'Edit';
+        editBtn.style.marginLeft = '4px';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showEditForm(row, m, t);
+        });
+        replyHeader.appendChild(editBtn);
+      }
+
+      row.appendChild(replyHeader);
+      const replyText = el('div', 'collab-reply-text');
+      replyText.innerHTML = renderMentions(m.text);
+      row.appendChild(replyText);
+      repliesSection.appendChild(row);
+    });
+    wrap.appendChild(repliesSection);
+
+    if (t.status !== 'closed') {
+      const composer = el('div', 'collab-reply-composer');
+      const { wrap: mentionWrap, textarea, getValue } = buildMentionField('Reply…');
+      const sendBtn = el('button', 'collab-send-btn', '➤');
+
+      textarea.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendBtn.click(); }
+      });
+
+      sendBtn.addEventListener('click', async () => {
+        const body = getValue();
+        if (!body) return;
+        sendBtn.disabled = true;
+        try {
+          await api.createReply(t.id, body);
+          textarea.value = '';
+          await refresh();
+          refreshOpenPopup(t.id);
+        } catch (e) { console.error('[collab] createReply', e); }
+        finally { sendBtn.disabled = false; }
+      });
+
+      composer.append(mentionWrap, sendBtn);
+      wrap.appendChild(composer);
+    }
+
+    return wrap;
+  }
+
+  function showEditForm(bodyEl, message, thread) {
+    const existing = bodyEl.querySelector('.collab-edit-form');
+    if (existing) { existing.remove(); return; }
+
+    const form = el('div', 'collab-edit-form');
+    const ta = document.createElement('textarea');
+    ta.value = message.text.replace(/@\[([^\]]+)\]\([^)]+\)/g, '@$1');
+    form.appendChild(ta);
+
+    const actions = el('div', 'collab-edit-actions');
+    const saveBtn = el('button', 'collab-btn collab-btn-primary collab-btn-sm', 'Save');
+    const discardBtn = el('button', 'collab-btn collab-btn-ghost collab-btn-sm', 'Discard');
+    discardBtn.addEventListener('click', () => form.remove());
+    saveBtn.addEventListener('click', async () => {
+      const body = ta.value.trim();
+      if (!body) return;
+      try {
+        await api.updateComment(message.id, body);
+        await refresh();
+      } catch (e) { console.error('[collab] updateComment', e); }
+    });
+    actions.append(saveBtn, discardBtn);
+    form.appendChild(actions);
+    bodyEl.appendChild(form);
+    ta.focus();
+  }
+
+  function buildFloatingLayer() {
+    floatingLayer = el('div', '');
+    floatingLayer.id = 'collab-floating-layer';
+    document.body.appendChild(floatingLayer);
+  }
+
+  function renderMarkers(fromScroll = false) {
+    floatingLayer.innerHTML = '';
+
+    const byElement = new Map();
+    state.threads.forEach(t => {
+      const target = resolveElement(t.elementPath);
+      if (!target) return;
+      if (!byElement.has(target)) byElement.set(target, []);
+      byElement.get(target).push(t);
+    });
+
+    byElement.forEach((threads, target) => {
+      target.classList.add('collab-has-comments');
+      const rect = target.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return;
+
+      const allResolved = threads.every(isResolved);
+      const first = threads[0].messages[0] || {};
+      const marker = el('button', 'collab-thread-marker');
+
+      let markerIcon, markerBg, markerColor;
+      if (allResolved) {
+        markerIcon  = threads[0].status === 'rejected' ? '!' : '✓';
+        markerBg    = '';
+        markerColor = '';
+      } else {
+        markerIcon  = threads.length > 1 ? String(threads.length) : avatarInitials(first.username || '?');
+        markerBg    = avatarColor(first.authorProfileId || first.username);
+        markerColor = '#fff';
+      }
+
+      marker.style.cssText = `top:${rect.top - 8}px;left:${rect.right - 20}px;background:${markerBg};color:${markerColor}`;
+      marker.textContent = markerIcon;
+      if (allResolved) {
+        marker.classList.add('resolved');
+        if (threads[0].status === 'rejected') marker.classList.add('rejected');
+      }
+      marker.title = threads.map(t => t.messages[0]?.username).filter(Boolean).join(', ');
+
+      marker.addEventListener('click', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        openThreadPopup(threads[0], marker);
+      });
+
+      floatingLayer.appendChild(marker);
+    });
+
+    if (fromScroll && threadPopupEl && popupPageElement) {
+      positionPopup(threadPopupEl, { getBoundingClientRect: () => popupPageElement.getBoundingClientRect() });
+    }
+  }
+
+  function resolveElement(elementPath) {
+    if (!elementPath) return null;
+    try {
+      const desc = typeof elementPath === 'string' ? JSON.parse(elementPath) : elementPath;
+      if (desc.selector) return document.querySelector(desc.selector);
+    } catch { /* not JSON, try as CSS selector */ }
+    if (typeof elementPath === 'string' && elementPath) {
+      try { return document.querySelector(elementPath); } catch { return null; }
+    }
+    return null;
+  }
+
+  function scrollToElement(thread) {
+    const el = resolveElement(thread.elementPath);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function openThreadPopup(thread, anchorEl) {
+    closeThreadPopup();
+    if (state.panelOpen) togglePanel();
+    const popup = buildThreadPopup(thread);
+    document.body.appendChild(popup);
+    threadPopupEl = popup;
+    popupThreadId = thread.id;
+    popupAnchor = anchorEl;
+    popupPageElement = resolveElement(thread.elementPath);
+    positionPopup(popup, anchorEl);
+  }
+
+  function closeThreadPopup() {
+    if (threadPopupEl) {
+      threadPopupEl.remove();
+      threadPopupEl = null;
+      popupThreadId = null;
+      popupAnchor = null;
+      popupPageElement = null;
+    }
+  }
+
+  function refreshOpenPopup(threadId) {
+    if (!threadPopupEl || popupThreadId !== threadId) return;
+    const updated = state.threads.find(t => t.id === threadId);
+    if (!updated) return;
+    const oldBody = threadPopupEl.querySelector('.collab-thread-expanded');
+    if (oldBody) oldBody.replaceWith(buildExpandedThread(updated));
+  }
+
+  function positionPopup(popup, anchor) {
+    const ar = anchor.getBoundingClientRect();
+    const pw = popup.offsetWidth  || 300;
+    const ph = popup.offsetHeight || 320;
+    let left = ar.right + 8;
+    let top  = ar.top;
+    if (left + pw > window.innerWidth - 8) left = ar.left - pw - 8;
+    if (left < 8) left = 8;
+    if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+    top = Math.max(60, top);
+    popup.style.left = `${left}px`;
+    popup.style.top  = `${top}px`;
+  }
+
+  function buildThreadPopup(t) {
+    const popup = el('div', 'collab-thread-popup');
+
+    const header = el('div', 'collab-thread-popup-header');
+    const label = el('span', 'collab-thread-popup-label', 'THREAD');
+    const spacer = el('div', '');
+    spacer.style.flex = '1';
+    const select = document.createElement('select');
+    select.className = 'collab-status-select';
+    ['open','accepted','rejected','closed'].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+      if (s === t.status) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', async () => {
+      try { await api.updateStatus(t.id, select.value); await refresh(); }
+      catch (e) { console.error('[collab] updateStatus', e); }
+    });
+    const closeBtn = el('button', 'collab-popup-close', '×');
+    closeBtn.addEventListener('click', closeThreadPopup);
+    header.append(label, spacer, select, closeBtn);
+    popup.appendChild(header);
+
+    popup.appendChild(buildExpandedThread(t));
+
+    return popup;
+  }
+
+  function buildNewCommentPopup() {
+    newCommentPopup = el('div', '');
+    newCommentPopup.id = 'collab-new-comment-popup';
+
+    const header = el('div', 'collab-thread-popup-header');
+    const label = el('span', 'collab-thread-popup-label', 'COMMENT');
+    const closeBtn = el('button', 'collab-popup-close', '×');
+    closeBtn.addEventListener('click', closeNewCommentPopup);
+    header.append(label, closeBtn);
+
+    const composer = el('div', 'collab-new-comment-composer');
+    const { wrap, textarea, getValue } = buildMentionField('Write a comment…');
+    textarea.rows = 4;
+    textarea.className = 'collab-new-comment-textarea';
+    newCommentTextarea  = textarea;
+    newCommentGetValue  = getValue;
+
+    const sendBtn = el('button', 'collab-send-btn collab-new-comment-send', '➤');
+    sendBtn.title = 'Submit comment (Cmd+Enter)';
+    sendBtn.addEventListener('click', submitNewComment);
+
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { e.stopPropagation(); closeNewCommentPopup(); }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendBtn.click(); }
+    });
+
+    composer.append(wrap, sendBtn);
+    newCommentPopup.append(header, composer);
+    document.body.appendChild(newCommentPopup);
+  }
+
+  function openNewCommentPopup(targetEl) {
+    clickTarget = targetEl;
+    newCommentTextarea.value = '';
+    newCommentPopup.classList.add('open');
+
+    const rect = targetEl.getBoundingClientRect();
+    const pw = newCommentPopup.offsetWidth  || 340;
+    const ph = newCommentPopup.offsetHeight || 220;
+    let left = rect.right + 12;
+    let top  = rect.top;
+    if (left + pw > window.innerWidth  - 12) left = rect.left - pw - 12;
+    if (left < 12) left = 12;
+    if (top  + ph > window.innerHeight - 12) top  = window.innerHeight - ph - 12;
+    top = Math.max(60, top);
+    newCommentPopup.style.left = `${left}px`;
+    newCommentPopup.style.top  = `${top}px`;
+    newCommentTextarea.focus();
+  }
+
+  function closeNewCommentPopup() {
+    newCommentPopup.classList.remove('open');
+    if (clickTarget) {
+      clickTarget.classList.remove('collab-block-hover');
+      clickTarget = null;
+    }
+  }
+
+  async function submitNewComment() {
+    const body = newCommentGetValue ? newCommentGetValue().trim() : newCommentTextarea.value.trim();
+    if (!body || !clickTarget) return;
+
+    const anchor = {
+      elementPath: buildElementPath(clickTarget),
+      quotedText: (clickTarget.textContent || '').slice(0, 200).trim(),
+    };
+
+    try {
+      await api.createThread(anchor, body);
+      closeNewCommentPopup();
+      await refresh();
+    } catch (e) { console.error('[collab] createThread', e); }
+  }
+
+  function buildElementPath(el) {
+    const parts = [];
+    let node = el;
+    while (node && node !== document.body) {
+      let sel = node.tagName.toLowerCase();
+      if (node.id) { sel += `#${node.id}`; parts.unshift(sel); break; }
+      const siblings = node.parentElement ? [...node.parentElement.children].filter(c => c.tagName === node.tagName) : [];
+      if (siblings.length > 1) sel += `:nth-of-type(${siblings.indexOf(node) + 1})`;
+      parts.unshift(sel);
+      node = node.parentElement;
+    }
+    return JSON.stringify({ selector: parts.join(' > ') });
+  }
+
+  function setupElementInteraction() {
+    let hovered = null;
+
+    document.addEventListener('mousemove', e => {
+      if (newCommentPopup.classList.contains('open')) return;
+      const target = findCommentableElement(e.target);
+      if (target === hovered) return;
+      if (hovered) hovered.classList.remove('collab-block-hover');
+      hovered = target;
+      if (hovered) hovered.classList.add('collab-block-hover');
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.isTrusted) return;
+      const anchor = e.target.closest('a[href]');
+      if (!anchor) return;
+      if (anchor.closest('#collab-topbar,#collab-panel,#collab-new-comment-popup,.collab-thread-popup')) return;
+      e.preventDefault();
+    }, true);
+
+    document.addEventListener('click', e => {
+      if (!e.isTrusted) return;
+
+      if (threadPopupEl && !threadPopupEl.contains(e.target)) closeThreadPopup();
+
+      if (newCommentPopup.classList.contains('open') && !newCommentPopup.contains(e.target)) {
+        closeNewCommentPopup(); return;
+      }
+
+      if (e.target.closest('.collab-thread-marker') || e.target.closest('#collab-topbar') ||
+          e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
+          e.target.closest('.collab-thread-popup')) return;
+
+      const target = findCommentableElement(e.target);
+      if (target) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+
+        const existing = state.threads.find(t => resolveElement(t.elementPath) === target);
+        if (existing) {
+          closeNewCommentPopup();
+          openThreadPopup(existing, { getBoundingClientRect: () => target.getBoundingClientRect() });
+        } else {
+          openNewCommentPopup(target);
+        }
+      }
+    }, true);
+  }
+
+  function findCommentableElement(el) {
+    if (!el || el === document.body || el.id === 'collab-floating-layer') return null;
+    const skip = ['#collab-topbar','#collab-panel','#collab-new-comment-popup','.collab-thread-popup','.collab-thread-marker'];
+    if (skip.some(s => el.closest?.(s))) return null;
+    const main = document.querySelector('main') || document.body;
+    const block = el.closest('main > div > div, main > div, section, article, p, h1, h2, h3, h4, h5, li, figure');
+    return block && main.contains(block) ? block : null;
+  }
+
+  function buildMentionField(placeholder) {
+    const wrap = el('div', 'collab-mention-wrap');
+    const backdrop = el('div', 'collab-mention-backdrop');
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = placeholder;
+    textarea.rows = 2;
+    textarea.style.width = '100%';
+    wrap.append(backdrop, textarea);
+
+    let dropdown = null;
+    let focusedIdx = -1;
+    let debounceTimer = null;
+    let mentionStart = -1;
+    const mentionMap = {};
+
+    function updateBackdrop() {
+      const text = textarea.value
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/(@\S+)/g, '<mark>$1</mark>');
+      backdrop.innerHTML = text;
+    }
+
+    function closeDropdown() {
+      if (dropdown) { dropdown.remove(); dropdown = null; }
+      focusedIdx = -1;
+    }
+
+    function resolveEmail(user) {
+      const raw = user.email || user.id || '';
+      return raw.includes('@') ? raw : raw ? `${raw}@adobe.com` : '';
+    }
+
+    function openDropdown(results) {
+      closeDropdown();
+      if (!results.length) return;
+      dropdown = el('div', 'collab-mention-dropdown');
+      results.forEach(user => {
+        const item = el('div', 'collab-mention-item');
+        const email = resolveEmail(user);
+        item.appendChild(txt('span', 'collab-mention-name', user.displayName || user.name || ''));
+        item.appendChild(txt('span', 'collab-mention-email', email));
+        item.addEventListener('mousedown', e => { e.preventDefault(); selectMention(user); });
+        dropdown.appendChild(item);
+      });
+      const rect = textarea.getBoundingClientRect();
+      dropdown.style.left = `${rect.left}px`;
+      dropdown.style.top  = `${rect.bottom + 4}px`;
+      dropdown.style.width = `${rect.width}px`;
+      document.body.appendChild(dropdown);
+    }
+
+    function focusItem(idx) {
+      const items = dropdown?.querySelectorAll('.collab-mention-item');
+      if (!items) return;
+      items.forEach((it, i) => it.classList.toggle('focused', i === idx));
+      focusedIdx = idx;
+    }
+
+    function selectMention(user) {
+      const email = resolveEmail(user);
+      const ldap  = email.split('@')[0];
+      const name  = user.displayName || user.name;
+      mentionMap[ldap] = { name, email };
+
+      const val    = textarea.value;
+      const before = val.slice(0, mentionStart);
+      const after  = val.slice(textarea.selectionEnd);
+      textarea.value = `${before}@${ldap} ${after}`;
+      const newPos = mentionStart + 1 + ldap.length + 1;
+      textarea.setSelectionRange(newPos, newPos);
+      updateBackdrop();
+      closeDropdown();
+      mentionStart = -1;
+      textarea.focus();
+    }
+
+    function getValue() {
+      return textarea.value.replace(/@(\S+)/g, (match, ldap) => {
+        const info = mentionMap[ldap];
+        return info ? `@[${info.name}](${info.email})` : match;
+      });
+    }
+
+    textarea.addEventListener('input', () => {
+      updateBackdrop();
+      const pos    = textarea.selectionStart;
+      const before = textarea.value.slice(0, pos);
+
+      const atMatch = before.match(/@([^@]*)$/);
+      if (!atMatch) { mentionStart = -1; closeDropdown(); return; }
+      mentionStart = pos - atMatch[0].length;
+      const query = atMatch[1].trimEnd();
+      if (query.length < 2) { closeDropdown(); return; }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        try {
+          const data = await api.searchUsers(query);
+          const users = (Array.isArray(data) ? data : data.result || [])
+            .filter(u => u.type === 'user' && u.id)
+            .slice(0, 8);
+          openDropdown(users);
+        } catch { closeDropdown(); }
+      }, 250);
+    });
+
+    textarea.addEventListener('keydown', e => {
+      if (!dropdown) return;
+      const items = dropdown.querySelectorAll('.collab-mention-item');
+      if (e.key === 'ArrowDown') { e.preventDefault(); focusItem(Math.min(focusedIdx + 1, items.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); focusItem(Math.max(focusedIdx - 1, 0)); }
+      else if (e.key === 'Enter' && focusedIdx >= 0) {
+        e.preventDefault();
+        items[focusedIdx].dispatchEvent(new MouseEvent('mousedown'));
+      }
+      else if (e.key === 'Escape') { closeDropdown(); mentionStart = -1; }
+    });
+
+    textarea.addEventListener('blur', () => setTimeout(closeDropdown, 150));
+
+    return { wrap, textarea, getValue };
+  }
+
+  function normalizeThread(t) {
+    const messages = (t.comments || t.messages || []).map(m => ({
+      id: m.id,
+      authorProfileId: m.authorProfileId || m.profileId || '',
+      username: m.authorName || m.username || m.displayName || m.author || '',
+      text: m.body || m.text || '',
+      kind: m.kind || (m.replyToCommentId ? 'reply' : 'comment'),
+      createdAt: m.createdAt || m.created || null,
+    }));
+    return {
+      id: t.id,
+      status: (t.state || t.status || 'open').toLowerCase(),
+      elementPath: t.anchor?.elementPath || t.elementPath || '',
+      username: messages[0]?.username || '',
+      messages,
+    };
+  }
+
+  function isResolved(t) { return t.status === 'accepted' || t.status === 'closed' || t.status === 'rejected'; }
+
+  function extractMentionEmails(text) {
+    const emails = [];
+    if (!text) return emails;
+    const re = /@\[[^\]]*\]\(([^)]+)\)/g;
+    let m;
+    while ((m = re.exec(text)) !== null) emails.push(m[1]);
+    return emails;
+  }
+
+  function myIds() {
+    return [ME.imsEmail, ME.email, ME.profileId, ME.name].filter(Boolean);
+  }
+
+  function isMentioned(t) {
+    const ids = myIds();
+    return t.messages.some(msg => {
+      const mentioned = extractMentionEmails(msg.text);
+      return mentioned.some(e => ids.some(id => id === e));
+    });
+  }
+
+  function hasMentionUnreplied(t) {
+    const ids = myIds();
+    let lastMentionIdx = -1;
+    t.messages.forEach((msg, i) => {
+      const mentioned = extractMentionEmails(msg.text);
+      if (mentioned.some(e => ids.some(id => id === e))) lastMentionIdx = i;
+    });
+    if (lastMentionIdx === -1) return false;
+    const repliedAfter = t.messages.slice(lastMentionIdx + 1).some(msg =>
+      ids.some(id => msg.authorProfileId === id || msg.username === id)
+    );
+    return !repliedAfter;
+  }
+
+  function isMine(t) {
+    const first = t.messages[0];
+    if (!first) return false;
+    const candidates = [ME.imsEmail, ME.email, ME.profileId].filter(Boolean);
+    const threadIds  = [first.authorProfileId, first.username].filter(Boolean);
+    const byEmail = candidates.some(c => threadIds.some(tid => tid === c));
+    const meName     = (ME.name || '').trim().toLowerCase();
+    const threadName = (first.username || '').trim().toLowerCase();
+    const byName = !byEmail && meName.length > 1 && meName === threadName;
+    return byEmail || byName;
+  }
+
+  function updatePageInfo(url) {
+    if (!url || url.includes('localhost')) return;
+    const urlEl = topbar?.querySelector('.collab-topbar-url');
+    if (!urlEl) return;
+    urlEl.textContent = `${url} [${COLLAB_ID.slice(0, 8)}]`;
+    urlEl.title = `${url}  [${COLLAB_ID}]`;
+    pageInfoResolved = true;
+  }
+
+  async function refresh() {
+    try {
+      const collab = await api.getCollab();
+      const collabData = collab.collab || collab;
+      state.participants = (collabData.participants || []).map(p => ({
+        name: p.displayName || p.name || p.email || '',
+        profileId: p.profileId || p.id || p.email || '',
+        email: p.email || '',
+      }));
+      const rawThreads = collabData.threads || await api.listThreads();
+      state.threads = (Array.isArray(rawThreads) ? rawThreads : []).map(normalizeThread);
+      if (!pageInfoResolved) {
+        updatePageInfo(collabData.pageUrl || collabData.previewUrl);
+      }
+    } catch (e) {
+      console.warn('[collab] refresh error', e);
+    }
+
+    renderPresence();
+    updateBadge();
+    renderMarkers();
+    if (state.panelOpen) {
+      const userIsTyping = panel.contains(document.activeElement)
+        || (threadPopupEl && threadPopupEl.contains(document.activeElement));
+      if (!userIsTyping) renderPanel();
+    }
+  }
+
+  async function fetchImsProfile() {
+    try {
+      // Wait for IMS to be ready if needed
+      if (!window.adobeIMS?.isSignedInUser?.()) {
+        await new Promise((resolve) => {
+          const onReady = () => { window.removeEventListener('ims:ready', onReady); resolve(); };
+          window.addEventListener('ims:ready', onReady);
+          setTimeout(resolve, 5000);
+        });
+      }
+      const profile = await window.adobeIMS?.getProfile?.();
+      if (!profile) return;
+      if (profile.email)           { ME.imsEmail = profile.email; ME.email = ME.email || profile.email; }
+      if (profile.displayName)     ME.name = profile.displayName;
+      else if (profile.first_name) ME.name = `${profile.first_name} ${profile.last_name || ''}`.trim();
+      if (profile.userId)          ME.profileId = ME.profileId || profile.userId;
+    } catch (e) {
+      console.warn('[collab] IMS profile fetch failed:', e.message);
+    }
+  }
+
+  function startPolling() {
+    refresh();
+    pollTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, 10000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refresh();
+    });
+  }
+
+  function setupScrollSync() {
+    let ticking = false;
+    const sync = () => { if (!ticking) { requestAnimationFrame(() => { renderMarkers(true); ticking = false; }); ticking = true; } };
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+    window.addEventListener('load', () => renderMarkers());
+    setTimeout(() => renderMarkers(), 800);
+    setTimeout(() => renderMarkers(), 2500);
+  }
+
+  async function init() {
+    buildTopbar();
+    buildPanel();
+    togglePanel();
+    buildFloatingLayer();
+    buildNewCommentPopup();
+    setupElementInteraction();
+    setupScrollSync();
+    await fetchImsProfile();
+    startPolling();
+  }
+
+  init();
+})();

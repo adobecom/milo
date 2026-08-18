@@ -125,6 +125,23 @@ export const loadPreflightResults = async () => {
   }
 };
 
+export const loadPeregrineCollab = async (getConfig, loadScript, loadStyle) => {
+  const collabId = new URLSearchParams(window.location.search).get('peregrine-collab-id');
+  if (!collabId) return;
+  const { miloLibs, codeRoot, peregrine } = getConfig();
+  const base = miloLibs || codeRoot;
+  // Inject service endpoint as a meta tag so collab.js can read it without imports.
+  const serviceEp = peregrine?.serviceEp || '';
+  if (serviceEp && !document.querySelector('meta[name="collab-service-ep"]')) {
+    const meta = document.createElement('meta');
+    meta.name = 'collab-service-ep';
+    meta.content = serviceEp;
+    document.head.appendChild(meta);
+  }
+  loadStyle(`${base}/deps/collab.css`);
+  await loadScript(`${base}/deps/collab.js`);
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -141,6 +158,7 @@ const loadDelayed = ([
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     loadBlockNotifications(getConfig, loadStyle);
+    loadPeregrineCollab(getConfig, loadScript, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;
