@@ -67,16 +67,20 @@ function scrollTabFocusedElIntoView() {
     const elFromPointTop = getElementFromPoint(centerX, rect.top);
     const elFromPointBottom = getElementFromPoint(centerX, bottomPointY);
 
-    if (shouldntScroll(element, elFromPointTop)
+    const isPlayBtn = element.classList.contains('consonant-play-btn')
+      && element.closest('.modal-img-link');
+    if (!isPlayBtn && shouldntScroll(element, elFromPointTop)
       && shouldntScroll(element, elFromPointBottom)) return;
-    // TODO: There may also be a need to add support for the bottom section,
-    // e.g. parallax-move-down-fast
-    const hasPrallaxMvUp = element.closest('.parallax-move-up-fast.section');
-    if (hasPrallaxMvUp) {
-      const nextSection = hasPrallaxMvUp.nextElementSibling;
-      if (!nextSection) return;
-      const scrollPosition = Math.max(nextSection.offsetTop - window.innerHeight - 1, 0);
-      window.scrollTo({ top: scrollPosition });
+    if (!isPlayBtn) {
+      // TODO: There may also be a need to add support for the bottom section,
+      // e.g. parallax-move-down-fast
+      const hasPrallaxMvUp = element.closest('.parallax-move-up-fast.section');
+      if (hasPrallaxMvUp) {
+        const nextSection = hasPrallaxMvUp.nextElementSibling;
+        if (!nextSection) return;
+        const scrollPosition = Math.max(nextSection.offsetTop - window.innerHeight - 1, 0);
+        window.scrollTo({ top: scrollPosition });
+      }
     }
 
     element.scrollIntoView({ behavior: 'instant', block: 'center' });
