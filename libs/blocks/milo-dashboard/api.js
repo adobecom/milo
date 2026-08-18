@@ -1,26 +1,78 @@
-import { getConfig, loadIms } from '../../utils/utils.js';
-
 const DEFAULT_LOCAL = 'http://localhost:8080';
 const PROD_BACKEND = 'https://milo-core-prod.adobe.io';
 
-// Pick the backend from the host: localhost in dev, otherwise milo-core prod.
-// (Milo's page env maps .aem.page/.aem.live to "stage", but the dashboard wants
-// real prod data everywhere it's hosted — an authored `api` row can override.)
+const MILO_CORE_IMS_CLIENT_ID = 'milo-logs-claude-mcp';
+const MILO_CORE_IMS_INSTANCE = 'miloCoreIms';
+
 function defaultBase() {
   if (window.location.hostname.includes('localhost')) return DEFAULT_LOCAL;
   return PROD_BACKEND;
 }
 
-// milo-core's requireAuth validates the token against the clientId query param,
-// so the clientId MUST match the token's own client_id (e.g. 'darkalley' for a
-// DA SDK token) or IMS rejects it as invalid. Read it straight from the JWT.
-function tokenClientId(token) {
+function imsEnv() {
+  const override = new URLSearchParams(window.location.search).get('ims_env');
+  if (override === 'prod' || override === 'stg1') return override;
+  const host = window.location.hostname;
+  return (host === 'localhost' || host.includes('stage')) ? 'stg1' : 'prod';
+}
+
+function imsRelayOrigin(env) {
+  return env === 'prod' ? PROD_BACKEND : 'https://milo-core-stage.adobe.io';
+}
+
+let relayedToken = null;
+let relayListenerAdded = false;
+function addRelayListener(relayOrigin) {
+  if (relayListenerAdded) return;
+  relayListenerAdded = true;
+  window.addEventListener('message', (e) => {
+    if (e.origin !== relayOrigin) return;
+    if (e.data?.type === 'pc-ims-token' && e.data.access_token) relayedToken = e.data.access_token;
+  });
+}
+
+let miloCoreImsPromise;
+async function loadMiloCoreIms() {
+  miloCoreImsPromise = miloCoreImsPromise || (async () => {
+    const env = imsEnv();
+    const relayOrigin = imsRelayOrigin(env);
+    addRelayListener(relayOrigin);
+    if (!window.adobeImsFactory) {
+      await new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = 'https://auth.services.adobe.com/imslib/imslib.min.js';
+        el.addEventListener('load', () => resolve(), { once: true });
+        el.addEventListener('error', () => reject(new Error('imslib failed to load')), { once: true });
+        document.head.appendChild(el);
+      });
+    }
+    if (!window[MILO_CORE_IMS_INSTANCE]) {
+      window.adobeImsFactory.createIMSLib({
+        client_id: MILO_CORE_IMS_CLIENT_ID,
+        scope: 'AdobeID,openid,email',
+        environment: env,
+        autoValidateToken: true,
+        useLocalStorage: false,
+        modalMode: true,
+        redirect_uri: `${relayOrigin}/imslib-callback?origin=${encodeURIComponent(window.location.origin)}`,
+      }, MILO_CORE_IMS_INSTANCE);
+    }
+    await window[MILO_CORE_IMS_INSTANCE].initialize();
+    return window[MILO_CORE_IMS_INSTANCE];
+  })();
+  return miloCoreImsPromise;
+}
+
+function miloCoreToken() {
   try {
-    const seg = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(seg)).client_id;
-  } catch (e) {
-    return undefined;
+    return window[MILO_CORE_IMS_INSTANCE]?.getAccessToken?.()?.token ?? relayedToken;
+  } catch {
+    return relayedToken;
   }
+}
+
+export function signIn() {
+  window[MILO_CORE_IMS_INSTANCE]?.signIn?.();
 }
 
 export function readConfig(block) {
@@ -37,37 +89,36 @@ export async function resolveContext(
   { loadDaSdk, inIframe = window.self !== window.top } = {},
 ) {
   const cfg = readConfig(block);
-  const { imsClientId } = getConfig();
   const base = cfg.api || defaultBase();
-  // clientId must match the token; an explicit config row wins, otherwise we
-  // derive it from the token and fall back to Milo's imsClientId.
-  const pickClientId = (token) => cfg.clientid || tokenClientId(token) || imsClientId;
   if (inIframe && loadDaSdk) {
     try {
       const sdk = await Promise.race([
         loadDaSdk(),
         new Promise((_, reject) => { setTimeout(() => reject(new Error('da-timeout')), 1500); }),
       ]);
-      return { mode: 'da', base, token: sdk.token, clientId: pickClientId(sdk.token), daContext: sdk.context };
+      return {
+        mode: 'da', base, token: sdk.token, getToken: () => sdk.token, clientId: cfg.clientid || MILO_CORE_IMS_CLIENT_ID, daContext: sdk.context,
+      };
     } catch (e) { /* fall through to non-DA */ }
   }
 
   if (!cfg.token && base !== DEFAULT_LOCAL) {
-    try { await loadIms(); } catch { /* no ims client / not signed in — proceed tokenless */ }
+    try { await loadMiloCoreIms(); } catch { /* proceed tokenless -> 401 -> sign-in button */ }
   }
-  const token = cfg.token || window.adobeIMS?.getAccessToken()?.token;
-  return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token, clientId: pickClientId(token) };
+  const getToken = () => cfg.token || miloCoreToken();
+  return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token: getToken(), getToken, clientId: cfg.clientid || MILO_CORE_IMS_CLIENT_ID };
 }
 
-export function createClient({ base, token, clientId }) {
+export function createClient({ base, token, clientId, getToken }) {
   async function request(path, params = {}, { method = 'GET', body, extraHeaders } = {}) {
     const url = new URL(`${base}${path}`);
     Object.entries(params).forEach(([k, v]) => {
       if (v != null && v !== '') url.searchParams.set(k, v);
     });
     const headers = { ...extraHeaders };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    const tok = getToken ? getToken() : token;
+    if (tok) {
+      headers.Authorization = `Bearer ${tok}`;
       if (clientId) url.searchParams.set('clientId', clientId);
     }
     const res = await fetch(url, { method, headers, body });

@@ -1,5 +1,5 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
-import { resolveContext, createClient, loadDaSdk } from '../milo-dashboard/api.js';
+import { resolveContext, createClient, loadDaSdk, signIn } from '../milo-dashboard/api.js';
 import { computeRollup, deriveStatus, computeStatusCounts } from './rollup.js';
 import { applyView } from './view.js';
 
@@ -115,11 +115,9 @@ function renderError(mount, status, message) {
   if (status === 401) {
     const m = 'Not signed in to Adobe. Sign in, then check again.';
     mount.append(createTag('p', { class: 'pt-error' }, m));
-    if (window.adobeIMS?.signIn) {
-      const btn = createTag('button', { type: 'button', class: 'pt-check-btn pt-signin' }, 'Sign in to Adobe');
-      btn.addEventListener('click', () => window.adobeIMS.signIn());
-      mount.append(btn);
-    }
+    const btn = createTag('button', { type: 'button', class: 'pt-check-btn pt-signin' }, 'Sign in to Adobe');
+    btn.addEventListener('click', () => signIn());
+    mount.append(btn);
     return;
   }
   mount.append(createTag('p', { class: 'pt-error' }, message));
