@@ -1,4 +1,4 @@
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, loadIms } from '../../utils/utils.js';
 
 const DEFAULT_LOCAL = 'http://localhost:8080';
 const PROD_BACKEND = 'https://milo-core-prod.adobe.io';
@@ -50,6 +50,10 @@ export async function resolveContext(
       ]);
       return { mode: 'da', base, token: sdk.token, clientId: pickClientId(sdk.token), daContext: sdk.context };
     } catch (e) { /* fall through to non-DA */ }
+  }
+
+  if (!cfg.token && base !== DEFAULT_LOCAL) {
+    try { await loadIms(); } catch { /* no ims client / not signed in — proceed tokenless */ }
   }
   const token = cfg.token || window.adobeIMS?.getAccessToken()?.token;
   return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token, clientId: pickClientId(token) };
