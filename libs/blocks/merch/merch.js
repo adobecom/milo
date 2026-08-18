@@ -1708,16 +1708,17 @@ function upgradeCommerceLinks(content) {
   });
 }
 
-function getFieldTimeoutPromise() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve('timeout'), FIELD_TIMEOUT);
-  });
+function withTimeout(promise) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => { setTimeout(() => resolve('timeout'), FIELD_TIMEOUT); }),
+  ]);
 }
 
 async function loadFieldDependencies() {
   const servicePromise = initService();
-  const success = await Promise.race([servicePromise, getFieldTimeoutPromise()]);
-  if (!success) {
+  const success = await withTimeout(servicePromise);
+  if (success === 'timeout' || !success) {
     throw new Error('Failed to initialize mas commerce service');
   }
   const service = await servicePromise;
@@ -1737,10 +1738,9 @@ async function checkFieldReady(masField, fragment) {
     }
   }
 
-  const readyPromise = masField.checkReady();
-  const success = await Promise.race([readyPromise, getFieldTimeoutPromise()]);
+  const success = await withTimeout(masField.checkReady());
   if (success === 'timeout') {
-    fieldLog.error(`${masField.tagName} did not initialize withing give timeout`);
+    fieldLog.error(`${masField.tagName} did not initialize within given timeout`);
   } else if (!success) {
     fieldLog.error(`${masField.tagName} failed to initialize`);
   }
