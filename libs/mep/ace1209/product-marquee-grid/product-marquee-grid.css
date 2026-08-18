@@ -66,14 +66,19 @@
 }
 
 @media (width < 768px) {
+  /* justify-between pushes card to bottom; foreground stays at natural height */
+  .product-marquee-grid .pm-content {
+    justify-content: space-between;
+  }
+
   .product-marquee-grid .pm-foreground {
+    flex: none;
     gap: var(--s2a-spacing-lg);
     justify-content: flex-start;
   }
 
   .product-marquee-grid .pm-promo-area {
     margin-block-start: 0;
-    padding-block: var(--s2a-spacing-lg);
   }
 }
 
