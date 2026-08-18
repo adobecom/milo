@@ -277,7 +277,7 @@ function initAnimation(block) {
     const eyebrowH = eyebrow.offsetHeight;
     const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
     layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
-    const threshold = isMobile() ? 0.15 : 0.6;
+    const threshold = isMobile() ? 0.05 : 0.3;
     const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
     eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
   }

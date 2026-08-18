@@ -67,7 +67,7 @@
   }
 
   .hero-eyebrow {
-    --hero-eyebrow-gap: var(--s2a-spacing-lg);
+    --hero-eyebrow-gap: var(--s2a-spacing-2xl);
 
     position: fixed;
     top: 0;
@@ -335,7 +335,7 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
+      --hero-eyebrow-gap: var(--s2a-spacing-96);
     }
 
     .hero-cards {
