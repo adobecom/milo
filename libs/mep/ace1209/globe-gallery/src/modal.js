@@ -870,10 +870,17 @@ export default function createGlobeModal({
     }
   }
 
-  // Render the flown-out modal card on its own canvas (called after the main scene).
+  // Render the flown-out modal card on its own canvas
   function render() {
-    if (modalRenderer && modalScene && modalCard) {
-      modalRenderer.render(modalScene, getCamera());
+    if (!(modalRenderer && modalScene && modalCard)) return;
+    const cam = getCamera();
+    const { view } = cam;
+    const skewed = view?.enabled === true;
+    if (skewed) cam.clearViewOffset();
+    modalRenderer.render(modalScene, cam);
+    if (skewed) {
+      view.enabled = true;
+      cam.updateProjectionMatrix();
     }
   }
 

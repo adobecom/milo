@@ -168,7 +168,13 @@ export default function createInteraction({
     }
   }
 
+  function clearHover() {
+    const cards = getCards();
+    for (let i = 0; i < cards.length; i += 1) cards[i].hoverTarget = 0;
+  }
+
   function onHover(e) {
+    if (e.pointerType !== 'mouse') return;
     const renderer = getRenderer();
     const camera = getCamera();
     if (!renderer || !camera) return;
@@ -179,7 +185,7 @@ export default function createInteraction({
     // Out of sphere phase: clear all hoverTargets so the ease-out kicks in.
     if (getSphereFormT() < interactiveThreshold || getModalIdx() >= 0) {
       if (!cursorActive) canvas.style.cursor = '';
-      for (let ci = 0; ci < cards.length; ci += 1) cards[ci].hoverTarget = 0;
+      clearHover();
       return;
     }
     const hits = pickCards(e);
@@ -205,7 +211,8 @@ export default function createInteraction({
     canvas.addEventListener('pointercancel', cancelDrag);
     canvas.addEventListener('lostpointercapture', endGesture);
     canvas.addEventListener('contextmenu', cancelDrag);
-    canvas.addEventListener('mousemove', onHover);
+    canvas.addEventListener('pointermove', onHover);
+    canvas.addEventListener('pointerleave', clearHover);
   }
 
   function teardown() {
@@ -216,7 +223,8 @@ export default function createInteraction({
       canvasEl.removeEventListener('pointercancel', cancelDrag);
       canvasEl.removeEventListener('lostpointercapture', endGesture);
       canvasEl.removeEventListener('contextmenu', cancelDrag);
-      canvasEl.removeEventListener('mousemove', onHover);
+      canvasEl.removeEventListener('pointermove', onHover);
+      canvasEl.removeEventListener('pointerleave', clearHover);
       canvasEl.style.cursor = '';
       canvasEl = null;
     }
