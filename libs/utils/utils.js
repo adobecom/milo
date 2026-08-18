@@ -2710,6 +2710,39 @@ export function partition(arr, fn) {
   );
 }
 
+const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
+
+/**
+ * Validates a repo/owner pair intended for use in an *.aem.live host and
+ * returns the resulting origin, or null if either value is missing or does
+ * not look like a safe AEM repo/owner segment. Guards against arbitrary host
+ * injection via the `repo`/`owner` query params (VULN-38270).
+ * @param {string} repo raw repo query parameter value
+ * @param {string} owner raw owner query parameter value
+ * @returns {string|null} origin, or null if repo/owner are missing or invalid
+ */
+export function getValidatedRepoOwnerOrigin(repo, owner) {
+  if (!repo || !owner) return null;
+  const cleanRepo = repo.trim().toLowerCase();
+  const cleanOwner = owner.trim().toLowerCase();
+  if (
+    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
+  ) return null;
+  let url;
+  try {
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
