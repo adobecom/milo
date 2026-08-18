@@ -104,8 +104,10 @@
     }
 
     .pm-promo-area {
-      align-self: flex-end;
-      margin-block-start: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block-start: var(--s2a-spacing-4xl);
       width: 370px;
     }
 
