@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { getMetadata as getSectionMetadata } from '../section-metadata/section-metadata.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -542,18 +543,18 @@ function setupCollapsingHeader(el) {
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
-  const getNavHeight = () => {
-    const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-    if (!nav) return 0;
-    const pos = getComputedStyle(nav).position;
-    const bottom = (pos === 'fixed' || pos === 'sticky')
-      ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
-    return bottom + (document.querySelector('.feds-localnav')?.offsetHeight ?? 0);
-  };
-
-  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
-
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
+
+  // getStickyTop() only ever changes when syncTop() runs (nav height/
+  // breakpoint change) — it's a static CSS value the rest of the time, not
+  // something that needs a fresh getComputedStyle read on every scroll
+  // event. Cache it here and refresh only when syncTop() actually runs.
+  let stickyTopCache = getStickyTop();
+
+  const syncTop = () => {
+    cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
+    stickyTopCache = getStickyTop();
+  };
 
   const syncHeaderHeight = () => {
     if (isMobile()) { headerContent.style.minHeight = ''; return; }
@@ -582,8 +583,14 @@ function setupCollapsingHeader(el) {
     syncHeaderHeight();
   });
 
+  let resizeRafPending = false;
   window.addEventListener('resize', () => {
-    removeCollapsed();
+    if (resizeRafPending) return;
+    resizeRafPending = true;
+    requestAnimationFrame(() => {
+      resizeRafPending = false;
+      removeCollapsed();
+    });
   });
 
   window.addEventListener('scroll', () => {
@@ -591,7 +598,7 @@ function setupCollapsingHeader(el) {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;
-    const isStuck = cardsContainer.getBoundingClientRect().top <= getStickyTop();
+    const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
     if (!isStuck) { removeCollapsed(); return; }
     if (goingDown && !wasCollapsed) applyCollapsed();
     if (!goingDown && wasCollapsed) removeCollapsed();
