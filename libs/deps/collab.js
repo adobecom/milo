@@ -15,7 +15,20 @@
     return;
   }
 
+  // Token received from parent frame via postMessage (used when running inside an iframe,
+  // since third-party cookie blocking prevents IMS from restoring the session cross-origin).
+  let _parentToken = '';
+  if (window.parent !== window) {
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'collab:token-response' && e.data.token) {
+        _parentToken = e.data.token;
+      }
+    });
+    window.parent.postMessage({ type: 'collab:request-token' }, '*');
+  }
+
   function getToken() {
+    if (_parentToken) return `Bearer ${_parentToken}`;
     const t = window.adobeIMS?.getAccessToken()?.token || '';
     return t ? `Bearer ${t}` : '';
   }
