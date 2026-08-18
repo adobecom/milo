@@ -159,7 +159,7 @@
     presenceRow.id = 'collab-topbar-presence';
 
     commentsBtn = el('button', 'collab-topbar-btn');
-    commentsBtn.innerHTML = `💬 Comments <span id="collab-badge" class="collab-badge" style="display:none">0</span>`;
+    commentsBtn.innerHTML = `💬 Comments <span id="collab-badge" class="collab-badge">0</span>`;
     commentsBtn.title = 'Toggle comments panel';
     commentsBtn.addEventListener('click', togglePanel);
     commentsBtnBadge = commentsBtn.querySelector('#collab-badge');
@@ -171,9 +171,9 @@
 
     const actions = el('div', '');
     actions.id = 'collab-topbar-actions';
-    actions.append(presenceRow, commentsBtn, visibilityBtn);
+    actions.append(commentsBtn, visibilityBtn);
 
-    topbar.append(pageInfo, spacer, actions);
+    topbar.append(presenceRow, pageInfo, spacer, actions);
     document.body.prepend(topbar);
     document.body.classList.add('collab-active');
   }
@@ -204,7 +204,6 @@
   function updateBadge() {
     const count = state.threads.filter(t => !isResolved(t)).length;
     commentsBtnBadge.textContent = count;
-    commentsBtnBadge.style.display = count ? '' : 'none';
     const hasMention = state.threads.some(hasMentionUnreplied);
     commentsBtn.classList.toggle('has-mention', hasMention);
   }
