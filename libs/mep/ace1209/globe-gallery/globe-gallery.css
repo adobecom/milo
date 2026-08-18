@@ -1,5 +1,11 @@
 /* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
 
+@property --gg-nav-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 124px;
+}
+
 .globe-gallery,
 .globe-gallery-cursor {
   --gg-chrome-blur: 12px;
@@ -19,8 +25,10 @@
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
-  --gg-controls-nav: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
-  --gg-controls-top: calc(var(--gg-controls-nav) + var(--gg-controls-inset));
+  --gg-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
+  --gg-band-h: calc(100vh - var(--gg-nav-h));
+  --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
+  --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
 
   height: var(--gg-runway-height);
   position: relative;
@@ -211,7 +219,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   position: absolute;
   top: var(--gg-formation-vh);
   bottom: max(0px, calc(
-    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh)) - 50vh
+    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
+      - var(--gg-optical-center)
   ));
   left: 0;
   right: 0;
@@ -221,13 +230,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 /* Zero-height rail at the viewport mid-line; the quote hangs centred off it. See README. */
 .globe-gallery-pullquote-rail {
   position: sticky;
-  top: 50vh;
+  top: var(--gg-optical-center);
   height: 0;
 }
 
 /* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
 .globe-gallery-pullquote {
-  --gg-pq-gap: var(--s2a-layout-xl);
+  /* Yields on short viewports so a long quote can't outgrow the band. See README. */
+  --gg-pq-gap: min(var(--s2a-layout-xl), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
 
   position: absolute;
@@ -599,7 +609,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
 /* pointer-events:none — never intercepts canvas drag; tabbable only while interactive (JS). */
 .globe-gallery-a11y {
   position: fixed;
-  top: 50vh;
+  top: var(--gg-optical-center);
   left: 50%;
   width: min(80%, 80vh);
   aspect-ratio: 1;
@@ -883,7 +893,11 @@ body.globe-gallery-modal-open { overflow: hidden; }
   }
 }
 
-/* Reduced-motion overrides — grouped here to avoid no-descending-specificity lint errors. See README (Accessibility). */
+/* Reduced-motion overrides. See README (Accessibility). */
+
+.globe-gallery-reduced {
+  --gg-nav-h: 0;
+}
 
 /* relative: scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
 .globe-gallery-reduced .globe-gallery-world {

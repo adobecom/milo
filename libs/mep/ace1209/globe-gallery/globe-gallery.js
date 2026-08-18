@@ -348,6 +348,7 @@ function createGlobeGalleryRuntime(
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0;
   let H = 0;
+  let navH = 0; // --gg-nav-h; see README (The nav band)
 
   const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
@@ -906,6 +907,8 @@ function createGlobeGalleryRuntime(
     };
     const vh = cssNum('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
+    const nav = cssNum('--gg-nav-h');
+    if (nav !== null) navH = nav;
   }
 
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
@@ -1043,6 +1046,16 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
+  // Projection skew that re-centres the formed globe under the nav. See README (The nav band).
+  let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
+  function applyCentringOffset(sphereFormT) {
+    const offY = (navH / 2) * sphereFormT;
+    if (offY === appliedViewOffsetY) return;
+    appliedViewOffsetY = offY;
+    if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
+    else camera.clearViewOffset();
+  }
+
   // Pick + position the camera: ortho on the arc, perspective from the fold on. See README
   // (Lifecycle timeline).
   function updateActiveCamera(frame) {
@@ -1063,6 +1076,7 @@ function createGlobeGalleryRuntime(
       camera.position.z = camZ;
       camera.updateProjectionMatrix();
     }
+    applyCentringOffset(sphereFormT);
     // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
     cameraInsideSphere = zoomT > 0 && Math.abs(camera.position.z) < dragFlipZ;
     return activeCamera;
@@ -1195,7 +1209,7 @@ function createGlobeGalleryRuntime(
     const halfViewH = viewZ * RING_TANHALF;
     const halfViewW = halfViewH * (W / H);
     const cx = ((ringWorld.x / halfViewW) * 0.5 + 0.5) * W;
-    const cy = ((-ringWorld.y / halfViewH) * 0.5 + 0.5) * H;
+    const cy = ((-ringWorld.y / halfViewH) * 0.5 + 0.5) * H + (appliedViewOffsetY || 0);
     const wPx = (halfWWorld / halfViewW) * W;
     const hPx = (halfHWorld / halfViewH) * H;
     a11y.setFocusRect(cx, cy, wPx, hPx);
@@ -1832,6 +1846,7 @@ function createGlobeGalleryRuntime(
     camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 5000);
     camera.position.set(0, 0, arcCamZ(H));
     camera.lookAt(0, 0, 0);
+    appliedViewOffsetY = null;
 
     // Orthographic camera — arc phase, flat 2D (1 world unit = 1 CSS pixel).
     cameraOrtho = new THREE.OrthographicCamera(-W / 2, W / 2, H / 2, -H / 2, 1, 5000);
@@ -1847,6 +1862,7 @@ function createGlobeGalleryRuntime(
       if (fromResize && nextW === W && nextH === H) return;
       W = nextW;
       H = nextH;
+      appliedViewOffsetY = null;
 
       // A band crossing or an RM toggle rebuilds (geometry is baked at build time); resizing
       // within a band takes the cheap path. See README (Breakpoints & rebuilds).

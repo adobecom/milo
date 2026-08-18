@@ -573,6 +573,11 @@ Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation),
 so `measureViewportH()` is a direct read of 100vh in px, straight from CSS. Scroll clocks and rendering
 both use it, and it is the only viewport height here.
 
+Note that **nav-centring does not add a second one** (see **The nav band**): the canvas stays
+full-bleed `100vh`, and the globe is re-centred by skewing the perspective camera's projection, not
+by handing anything a shorter height. Anything that gives the renderer, either camera, or the scroll
+clock a height other than this `H` will re-fit the composition — that failure is catalogued below.
+
 **Why not the window.** On iOS the URL bar resizes the *layout* viewport: `innerHeight` shrinks and
 grows mid-scroll — every change of scroll direction collapses or restores it — while `vh` resolves
 against the large viewport and never moves (measured on-device: `100vh` and `worldH` held at 1005 while
@@ -593,8 +598,8 @@ per resize event — the settle-time row reads `cvBox` and `buf` unchanged with 
 
 **The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
 its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area.
-That matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`, the quote rail
-is `top: 50vh`), so the WebGL layer and the DOM chrome now agree instead of being mis-registered by
+That matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`), so the WebGL
+layer and the DOM chrome now agree instead of being mis-registered by
 the bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
 artifact being removed. The modal's chrome stays on `100dvh` (its buttons must stay reachable); only
 its photo canvas rides `H`, and the scroll lock means the bar can't move while it's open.
@@ -1119,8 +1124,8 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 - **Spacing.** One gap off every viewport edge, `--gg-controls-inset`, stepping `--s2a-spacing-md`
   (sm) → `--s2a-spacing-lg` (md+) in lockstep with the modal's `--gg-modal-edge`, so the two chrome
   layers never disagree about how far off the edge a control sits. The spin toggle's `top` adds that
-  same gap to `--gg-controls-nav` (124px, measured — see CSS, Tokens), clearing the sticky gnav +
-  breadcrumbs the fixed layer sits under.
+  same gap to `--gg-nav-h` (124px today, from measured fallbacks — see CSS, Tokens), clearing the sticky gnav +
+  breadcrumbs the fixed layer sits under. It is no longer the only nav-aware rule — see **The nav band**.
 - **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
   nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
 - **RTL pins the row's visual order, and does NOT flip the arrow icons.** The modal's prev/next are
@@ -1192,12 +1197,20 @@ normal flow. The preference is **re-read on every `initRuntime`**, and a
 the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
 change (no reload; the non-RM path clears the canvas `position` so a toggle-off reverts cleanly).
 
-**RM overrides `position` and nothing else** for the four viewport-sized boxes — no duplicated
-geometry, and `measureViewportH()` reads the same 100vh in both modes. That works because the base
-rules are written against the canvas box rather than the window: `.globe-gallery-a11y` sits at
-`top: 50vh` (not `50%`) and `.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so
-each resolves identically whether it's `fixed` to the viewport or `absolute` inside the
-`100vh` `.globe-gallery-world`. It also fixes the focus-ring overlay on iOS, where `inset: 0` on a
+**RM overrides `position` — plus one custom property — and nothing else** for the four
+viewport-sized boxes: no duplicated geometry, and `measureViewportH()` reads the same 100vh in both
+modes. That works because the base rules are written against the canvas box rather than the window:
+`.globe-gallery-a11y` sits at `top: var(--gg-optical-center)` (not `50%`) and
+`.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so each resolves identically
+whether it's `fixed` to the viewport or `absolute` inside the `100vh` `.globe-gallery-world`.
+
+The one property is `--gg-nav-h: 0px` on `.globe-gallery-reduced` (see **The nav band**). Nothing is
+pinned under RM — the globe scrolls past the gnav like any section, so there is no fixed band to
+centre against — and that single declaration retires every consumer at once: the optical centre the
+quote rail and a11y widget ride, the controls' top offset, and (through `readCssVars`) the camera's
+centring offset, which falls to 0 and clears. The unit on the `0px` is load-bearing — it feeds
+`calc(100vh - var(--gg-nav-h))`, which a unitless zero would make invalid — hence the one-line
+`length-zero-no-unit` disable. It also fixes the focus-ring overlay on iOS, where `inset: 0` on a
 `fixed` element tracked `innerHeight` and so mis-scaled the ring by the URL bar's height (the ring is
 positioned in canvas px). The pieces:
 
@@ -1207,8 +1220,9 @@ positioned in canvas px). The pieces:
 - **Globe size (desktop)** — the formed `md` sphere fills ~93% of viewport height, so `buildCards`
   scales `sphereGroup` by `RM_GLOBE_SCALE_MD` on md to bring the whole ball in view (rotation
   is per-card, so a group scale is safe). `sm` (~49%) stays 1.
-- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); the base `top: 50vh` /
-  `100vh` box already centre on the sphere, so neither override carries any offset.
+- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); with `--gg-nav-h` zeroed
+  the base optical centre / `100vh` box already centre on the sphere, so neither override carries
+  any offset of its own.
 - **Globe controls** — `position:absolute` (was fixed), so the layer scrolls with the static globe;
   the spin toggle is additionally `display:none` (nothing to pause). See Globe controls.
 - **Pull-quote** — drops `absolute`/`sticky` → `static`, forced `opacity:1`, hugs the top of its
@@ -1279,7 +1293,7 @@ reason the JS doesn't (see **One viewport height**):
 | horizontal | **`%`** — the containing block / ICB width, which excludes the classic-scrollbar gutter | `vw`, which *includes* it: a `vw`-sized `fixed` box is ~15px wider than the viewport on desktop, and `--gg-content-inset` built from `100vw` put the arc copy half a scrollbar off the pull-quote's column it is supposed to share |
 
 There is no `vw` left in the block. The one place two axes had to share an expression —
-`.globe-gallery-a11y`'s square — uses `width: min(80%, 80vh)` + `aspect-ratio: 1` rather than
+`.globe-gallery-a11y`'s square — uses `width: min(80%, calc(var(--gg-band-h) * 0.8))` + `aspect-ratio: 1` rather than
 repeating a `min()` per axis, since `%` on `height` would mean the wrong thing. **`dvh` is the modal
 chrome only** (`.globe-gallery-modal-chrome`, the description's `max-height`): that layer *must* stay
 inside the visible viewport so its buttons stay reachable while the bar is up, and it can't disturb the
@@ -1306,7 +1320,7 @@ the var is its home):
 | `10px` padding-inline | cursor text pill | same |
 | `--gg-control-radius` / `--gg-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
 | `--gg-controls-size` 48px | globe controls | none (matches `--gg-control-size`) |
-| `--gg-controls-nav` 124px | globe controls' top offset | none — a *measured* value (top of screen → bottom of the breadcrumbs bar), not a design step. Re-measure it if the gnav or localnav changes height; the `--feds-*` vars can't be trusted for this (see Naming below) |
+| `--gg-nav-h` 124px (fallbacks) | the sticky-chrome band: optical centre, controls' top offset, the camera's centring offset, the pull-quote gap ceiling | none — *measured* values (top of screen → bottom of the breadcrumbs bar), not design steps. They are the fallbacks inside a live `calc()`, so re-measure them if the gnav or localnav changes height while the vars stay undefined; the `--feds-height-*` pair still can't be trusted for this (see Naming below) |
 | `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, cursor label, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
 | `18px` blur | modal backdrop | `--s2a-blur-sm` 16 |
 
@@ -1323,7 +1337,11 @@ this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`
 brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
 inherit a stranger's value from an ancestor. The only prop read from JS is `--gg-formation-vh`, in
-`readCssVars()` (`--gg-runway-height` stays CSS-only) — grep both files before renaming one. **JS
+`readCssVars()` (`--gg-runway-height` stays CSS-only) — grep both files before renaming one.
+`--gg-nav-h` is the **second** prop read, added in the same `readCssVars()` — the camera's centring
+offset is half of it, and a projection matrix is not something CSS can build. It is the block's one
+`@property`, registered precisely so that read returns a length rather than `NaN`; see **The nav
+band** for why, and do not un-register it without moving the JS off `parseFloat`. **JS
 writes exactly one prop, `--gg-pq-appear-t`** (`publishPqAppearZoomT`, once per `initRuntime`), and the
 narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
@@ -1332,13 +1350,18 @@ value CSS cannot compute — it comes off the WebGL camera curve and the shell r
 other way, and CSS derives the pin's release edge from it rather than restating it. Anything that
 *could* be a CSS number must not follow it out of the stylesheet. **No upstream (`--feds-*`)
 property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
-gnav, so `--gg-controls-top` has to clear it — but `var(--feds-height-nav, 63px)` +
+gnav, so the whole nav band has to be reckoned with — but `var(--feds-height-nav, 63px)` +
 `var(--feds-height-breadcrumbs, 33px)` is the wrong instrument for that, and the earlier version of
 this file used it. Both vars are declared upstream (`libs/styles/styles.css` `:root` and
 `global-navigation/base.css`), so the px fallbacks never fire and the calc resolves to a fixed 96px
 whatever the live nav paints; `--feds-height-breadcrumbs` isn't even a bar height, it's the
-`line-height` of breadcrumb links. `--gg-controls-nav` is therefore a **measured literal** (see the
-literals inventory above). One of the tokens
+`line-height` of breadcrumb links. `--gg-nav-h` names the *other* pair
+(`--gnav-height-nav` / `--feds-breadcrumbs-height`), which nothing currently defines, so today the
+**measured px fallbacks** are what resolve — 124px, the value in the literals inventory above. It is
+still written as the `calc()` rather than baked flat, because those stylesheets load at runtime: if
+the nav ever does publish its real heights, the block picks them up instead of holding a stale
+number. Re-measure the fallbacks if the gnav or localnav changes height and the vars are still
+absent. One of the tokens
 (`--s2a-font-letter-spacing-neg-0_48`) has an underscore, which is why `custom-property-pattern` is
 disabled on that single line rather than file-wide.
 
@@ -1356,24 +1379,96 @@ there is no JS involved. At sm it pins 8px from the edge and its own `--gg-arc-p
 copy on the inset; at md+ the pill background is gone, so the box is offset back by that padding
 (`calc(var(--gg-content-inset) - var(--gg-arc-pad))`) to put the *copy*, not the box, on the edge.
 
+### The nav band
+
+The C2 gnav (`12`) is sticky and paints over the hero band (`2–5`), so the top `--gg-nav-h` of the
+viewport always has chrome in front of it. **This is not a keep-out box.** The nav is a blurred,
+translucent scrim and the hero is *meant* to run under it — cropping the scene to avoid the overlap
+throws away the effect and shrinks everything. The only real problem is that "centred" was being
+measured against the whole viewport, so anything centred read `--gg-nav-h / 2` too high.
+
+So the fix is a **centring offset, and nothing else**:
+
+| token | value | used by |
+| --- | --- | --- |
+| `--gg-nav-h` | `calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px))` → 124px today | `--gg-controls-top`, `--gg-optical-center`, `--gg-pq-gap`'s ceiling; read into JS as `navH` |
+| `--gg-band-h` | `calc(100vh - var(--gg-nav-h))` | the visible strip — a *measure*, not a clip |
+| `--gg-optical-center` | `calc(var(--gg-nav-h) + var(--gg-band-h) / 2)` | where "centred" means: `50vh + 62px` |
+
+**`--gg-nav-h` is the block's one `@property`**, and the registration exists purely so JS can read
+it. An *unregistered* custom property computes as-specified, so `getPropertyValue` returns the
+substituted token stream — the literal string `calc(72px + 52px)` — which `parseFloat`s to `NaN`.
+(The fallbacks resolve fine for CSS either way; this is only about the JS read.) Registered with a
+`<length>` syntax, the cascade hands JS `124px`. That is what lets the value stay a live `calc()`
+off the gnav's own vars, which ship in stylesheets that load at runtime: define
+`--gnav-height-nav: 100px` and the token becomes `152px` and everything re-centres (verified).
+`initial-value` is `124px`, mirroring the fallback sum, because that is what a *broken* calc
+degrades to: if either source var is ever defined as a non-length the declaration is invalid at
+computed-value time, and an initial of `0` would silently drop the centring instead (verified both
+ways). It cannot be a `calc()` or a `var()` — an initial value must be computationally independent,
+and Chrome drops the whole `@property` rule if it isn't. Keep it equal to `72 + 52`.
+
+**DOM chrome** just moves down: the pull-quote rail's `top` and the a11y entry widget's centre both
+ride `--gg-optical-center`. Their *sizes* are untouched.
+
+**The WebGL scene** moves down via `applyCentringOffset` → `camera.setViewOffset(W, H, 0, -navH/2,
+W, H)`. That is a projection skew: the sub-window is the same size as the virtual frame, so it
+translates the image in screen space and changes nothing else. Verified: every world point, at every
+depth and every x, moves exactly `+62px` in y with `dx = 0`, and the screen distance between two
+world points is bit-identical before and after. The canvas stays `position:fixed; top:0;
+height:100vh`, so nothing is scaled, nothing is cropped, and the scene still runs under the scrim.
+
+Three things it deliberately does **not** touch:
+
+- **The arc and grid phases.** They render through `cameraOrtho`, and the offset is ramped by
+  `sphereFormT` (0 for the whole arc), so the fan is left exactly where it was — its copy is
+  registered to the untouched viewport, and it reads as full-bleed by design.
+- **The modal.** It shares the main camera (`getCamera`) but sits *above* the gnav at `13` and
+  covers it, so it owns the whole viewport and squares up to it. `modal.render()` suspends the skew
+  for its own pass (`cam.view.enabled`) and restores it after; the blurred globe behind keeps its
+  own. **This coupling is the trap**: an earlier attempt re-centred by shrinking `H`, which changed
+  `camera.aspect`, and because the modal renders through that same camera its photo came out
+  squashed with black gutters. Anything done to the main camera must be checked against
+  `modalRenderer.render(modalScene, getCamera())`.
+- **The projected focus rings.** `updateFocusRect` computes canvas px by hand, so `setViewOffset`
+  moves the rendered card but not that arithmetic — it adds `appliedViewOffsetY` to `cy` itself.
+
+A late change to the token propagates on its own: `readCssVars()` sits *before* `doLayout`'s
+unchanged-`W`/`H` early exit, so the body `ResizeObserver` refreshes `navH` even on a no-op layout,
+and `applyCentringOffset` recomputes from it every frame. The CSS consumers need no help at all. The
+one gap is a nav whose height changes with no effect on body size and no resize — CSS still tracks
+it instantly, the camera catches up on the next `doLayout`.
+
+`appliedViewOffsetY` caches the applied value so `setViewOffset` (which rebuilds the projection
+matrix) only fires when it moves; it is reset wherever the camera object or `W`/`H` changes, since
+both are baked into the call. Reduced motion sets `--gg-nav-h: 0` — nothing is pinned there, so
+the offset falls to 0 and `clearViewOffset()` runs, with no JS branch.
+
+**Also not nav-aware, on purpose:** the arc copy and the barrel's hint row are bottom-anchored;
+nothing occludes the bottom of the viewport.
+
 ### Pull-quote box: content-sized, gap-controlled
 
 The quote box has **no height**. It is a column flex container whose only tunable vertical measure is
 `--gg-pq-gap`, the space between the `blockquote` and the name/role `.globe-gallery-pullquote-attribution`;
 everything else (padding + copy) sizes itself.
 
-`--gg-pq-gap` is `--s2a-layout-xl` (160px) at every breakpoint — one declaration, no media query. A
-larger gap runs the box's top edge into the localnav at lg/xl, so re-check that clearance before
-raising it.
+`--gg-pq-gap` is `min(--s2a-layout-xl, --gg-band-h × 0.2)` — one declaration, no media query. It is
+the full 160px on any viewport taller than ~924px and tapers below that, because the box is
+content-sized while the band it centres in is not: on a short, wide laptop (1280×720 is the worst
+case) a five-line quote at `heading-1`'s 80/76 makes a 684px box for a 596px band, and without the
+taper the first line lands under the nav no matter where the box is centred. The gap is the only pure
+whitespace in the box, so it is what yields. Raising the ceiling above 160px runs the top edge into
+the localnav at lg/xl, so re-check that clearance first.
 
 **Three nested elements, and the middle one is why.** `.globe-gallery-pullquote-pin` (the sticky
-window) → `.globe-gallery-pullquote-rail` (`position: sticky; top: 50vh; height: 0`) →
+window) → `.globe-gallery-pullquote-rail` (`position: sticky; top: var(--gg-optical-center); height: 0`) →
 `.globe-gallery-pullquote` (`position: absolute; top: 0; transform: translateY(-50%) …`). The rail
 is a zero-height line stuck to the viewport middle, and the quote hangs centred on it — `-50%` is
 own-height-relative, so no number is needed anywhere.
 
 Do **not** collapse the rail and stick the quote itself. `transform` is paint-only: a
-`top: 50vh; translateY(-50%)` sticky box still *lays out* starting at 50vh, so its layout box hangs
+`top: var(--gg-optical-center); translateY(-50%)` sticky box still *lays out* starting at the optical centre, so its layout box hangs
 half its own height below where you see it, and sticky position is clamped to the containing block.
 That box therefore reaches the pin's bottom edge **half a box-height early** and gets dragged upward
 for the rest of the pin (~110px off centre by mid-pin at 1440×900, worse the taller the box). A 0-tall
@@ -2158,5 +2253,8 @@ Known follow-ups, not blocking this integration branch:
 - **Pull-quote pacing and overflow.** The reveal is camera-derived and needs no tuning, but the quote
   is content-sized (see **CSS → Pull-quote box**), so the *clearance* wants an eyeball pass per
   breakpoint against the final copy: the tail after the reveal (91vh md / 108vh sm) must stay longer
-  than half the box, and `--gg-runway-height` is the lever. There is no `overflow` handling for a
-  pathologically long or localized quote (it spills rather than scrolls).
+  than half the box, and `--gg-runway-height` is the lever. The box now centres on
+  `--gg-optical-center` and its gap tapers with `--gg-band-h`, which clears the nav for a five-line
+  quote down to 1280×720 (worst measured case: 15px of headroom above, 24px below) — but there is
+  still no `overflow` handling for a pathologically long or localized quote, and past the taper's
+  reach it spills rather than scrolls.
