@@ -249,6 +249,7 @@ export default async function loadBlock(configs, customLib) {
             productEntryCta: configBlock.productEntryCta || 'off',
             promoSource,
             gnavFoundation: isC2Gnav ? 'c2' : undefined,
+            darkFont: configBlock.darkFont || 'false',
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -258,6 +259,8 @@ export default async function loadBlock(configs, customLib) {
             { key: 'productEntryCta', name: 'product-entry-cta' },
             { key: 'promoSource', name: 'gnav-promo-source' },
             { key: 'gnavFoundation', name: 'gnav-foundation' },
+            { key: 'darkFont', name: 'gnav-dark-font' },
+            { key: 'isLocalNav', name: 'localnav' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
           let init;

@@ -113,6 +113,10 @@ export default async function init(el) {
 
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
+  const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
+  const unavEnabled = universalNavMeta === 'on'
+    || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
+
   const gnavPromise = main({
     localizeLink,
     // Lingo link transformation only — skip when lingo is off so federal doesn't
@@ -122,7 +126,7 @@ export default async function init(el) {
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
-    unavEnabled: getMetadata('unav') === 'on',
+    unavEnabled,
     placeholders: placeholdersPromise,
     miloConfig: config,
     mepMartech: config.mep?.martech || '',
