@@ -227,7 +227,7 @@
         border-radius: 0;
         border-width: 0;
         border-bottom: var(--s2a-border-width-md) solid transparent;
-        padding: var(--s2a-spacing-3xs) 0;
+        padding: var(--s2a-spacing-3xs) 0 var(--s2a-spacing-2xs);
         height: auto;
         flex: 0 0 auto;
         color: var(--s2a-color-content-subtle);
@@ -236,7 +236,6 @@
           background: transparent;
           color: var(--s2a-color-content-default);
           border-bottom-color: var(--s2a-color-blue-800);
-          padding-bottom: var(--s2a-spacing-2xs);
         }
       }
     }
