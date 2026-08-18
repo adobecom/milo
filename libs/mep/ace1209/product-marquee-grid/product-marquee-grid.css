@@ -54,9 +54,14 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
 
+    p {
+      display: contents;
+    }
+
     .con-button {
       flex: 1;
       justify-content: center;
+      text-align: center;
     }
   }
 }
@@ -102,7 +107,7 @@
     .pm-promo-area {
       align-self: flex-end;
       margin-block-start: 0;
-      width: 242px;
+      width: 370px;
     }
 
     .pm-merch-card {
@@ -110,11 +115,5 @@
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
     }
-  }
-}
-
-@media (width >= 1280px) {
-  .product-marquee-grid .pm-promo-area {
-    width: 370px;
   }
 }
