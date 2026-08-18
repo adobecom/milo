@@ -1,6 +1,7 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { resolveContext, createClient, loadDaSdk } from '../milo-dashboard/api.js';
-import { computeRollup } from './rollup.js';
+import { computeRollup, deriveStatus, computeStatusCounts } from './rollup.js';
+import { applyView } from './view.js';
 
 const PLACEHOLDER = [
   'https://main--da-bacom--adobecom.aem.page/de/some-campaign-page',
@@ -8,7 +9,6 @@ const PLACEHOLDER = [
   'https://main--da-bacom--adobecom.aem.page/jp/some-campaign-page',
 ].join('\n');
 
-// Split a pasted blob into trimmed, non-empty URL lines (newline- or comma-separated).
 export function parseUrls(text) {
   return (text || '')
     .split(/\n|,/)
@@ -16,7 +16,6 @@ export function parseUrls(text) {
     .filter(Boolean);
 }
 
-// Only render http(s) URLs as real links; anything else (javascript:, data:) → '#'.
 const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '#');
 
 function createStatusCell(when) {
@@ -24,6 +23,14 @@ function createStatusCell(when) {
   const date = new Date(when).toLocaleDateString();
   const cell = createTag('td', { class: 'pt-cell pt-ok', title: when });
   cell.append(createTag('span', { class: 'pt-check' }, '✓'), ` ${date}`);
+  return cell;
+}
+
+const STATUS_CLASS = { Draft: 'pt-badge--draft', Previewed: 'pt-badge--previewed', Live: 'pt-badge--live' };
+
+function createBadgeCell(status) {
+  const cell = createTag('td', { class: 'pt-cell' });
+  cell.append(createTag('span', { class: `pt-badge ${STATUS_CLASS[status] || ''}` }, status));
   return cell;
 }
 
@@ -41,13 +48,14 @@ function createStatCard(label, pctValue, n, total, variant) {
   return card;
 }
 
-function renderResults(mount, rows, since) {
+function renderResults(mount, rows, since, view = {}) {
   mount.replaceChildren();
   if (rows.length === 0) {
     mount.append(createTag('p', { class: 'pt-muted' }, 'No URLs to check.'));
     return;
   }
   const rollup = computeRollup(rows, { since: since || undefined });
+  const counts = computeStatusCounts(rows);
 
   const stats = createTag('div', { class: 'pt-stats' });
   stats.append(
@@ -55,26 +63,44 @@ function renderResults(mount, rows, since) {
     createStatCard('Published', rollup.publishedPct, rollup.published, rollup.total, 'published'),
   );
 
+  const countStrip = createTag('div', { class: 'pt-status-counts' });
+  countStrip.append(
+    createTag('span', { class: 'pt-badge pt-badge--draft' }, `Draft ${counts.draft}`),
+    createTag('span', { class: 'pt-badge pt-badge--previewed' }, `Previewed ${counts.previewed}`),
+    createTag('span', { class: 'pt-badge pt-badge--live' }, `Live ${counts.live}`),
+  );
+
+  const visible = applyView(rows, view);
+
   const table = createTag('table', { class: 'pt-table' });
   const headRow = createTag('tr');
   headRow.append(
     createTag('th', { scope: 'col' }, 'Page'),
+    createTag('th', { scope: 'col' }, 'Status'),
     createTag('th', { scope: 'col' }, 'Previewed'),
     createTag('th', { scope: 'col' }, 'Published'),
   );
   table.append(createTag('thead', {}, headRow));
   const tbody = createTag('tbody');
-  rows.forEach((r) => {
+  visible.forEach((r) => {
     const tr = createTag('tr');
     const href = safeUrl(r.url);
     const linkCell = createTag('td', { class: 'pt-cell pt-url' });
     linkCell.append(createTag('a', { class: 'pt-link', href, target: '_blank', rel: 'noopener noreferrer' }, r.url));
-    tr.append(linkCell, createStatusCell(r.lastPreview), createStatusCell(r.lastPublish));
+    tr.append(
+      linkCell,
+      createBadgeCell(deriveStatus(r)),
+      createStatusCell(r.lastPreview),
+      createStatusCell(r.lastPublish),
+    );
     tbody.append(tr);
   });
   table.append(tbody);
 
-  mount.append(stats, createTag('div', { class: 'pt-table-wrap' }, table));
+  mount.append(stats, countStrip, createTag('div', { class: 'pt-table-wrap' }, table));
+  if (visible.length === 0) {
+    mount.append(createTag('p', { class: 'pt-muted' }, 'No pages match the current filter or search.'));
+  }
 }
 
 // 401 → not signed in (offer Adobe sign-in); 403 → signed in but lacks access;
@@ -120,10 +146,21 @@ export default async function init(block) {
   const sinceLabel = createTag('label', { class: 'pt-since-label' }, 'Count from date ');
   sinceLabel.append(since);
 
+  const view = { filter: 'all', sort: 'url', search: '' };
+  const toolbar = createTag('div', { class: 'pt-toolbar' });
+  const filterSel = createTag('select', { class: 'pt-filter', 'aria-label': 'Filter by status' });
+  [['all', 'All statuses'], ['Draft', 'Draft'], ['Previewed', 'Previewed'], ['Live', 'Live']]
+    .forEach(([v, l]) => filterSel.append(createTag('option', { value: v }, l)));
+  const sortSel = createTag('select', { class: 'pt-sort', 'aria-label': 'Sort by' });
+  [['url', 'Sort: URL'], ['status', 'Sort: Status'], ['lastPublish', 'Sort: Last published'], ['lastPreview', 'Sort: Last previewed']]
+    .forEach(([v, l]) => sortSel.append(createTag('option', { value: v }, l)));
+  const searchInput = createTag('input', { type: 'search', class: 'pt-search', placeholder: 'Search URL…', 'aria-label': 'Search URL' });
+  toolbar.append(filterSel, sortSel, searchInput);
+
   const resultsInit = createTag('p', { class: 'pt-muted' }, 'Results will appear here after you check status.');
   const results = createTag('div', { class: 'pt-results', 'aria-live': 'polite' }, resultsInit);
 
-  block.append(header, label, hint, textarea, count, sinceLabel, results);
+  block.append(header, label, hint, textarea, count, sinceLabel, toolbar, results);
 
   let rows = null;
 
@@ -133,7 +170,7 @@ export default async function init(block) {
   };
 
   const rerender = () => {
-    if (rows) renderResults(results, rows, since.value);
+    if (rows) renderResults(results, rows, since.value, view);
   };
 
   const check = async () => {
@@ -144,7 +181,7 @@ export default async function init(block) {
     results.replaceChildren(createTag('p', { class: 'pt-muted' }, 'Checking…'));
     try {
       rows = await client.post('/page-status', { urls });
-      renderResults(results, rows, since.value);
+      renderResults(results, rows, since.value, view);
     } catch (e) {
       rows = null;
       renderError(results, e.status, `Could not reach page-status (${e.message}).`);
@@ -160,4 +197,7 @@ export default async function init(block) {
   });
   checkBtn.addEventListener('click', check);
   since.addEventListener('change', rerender);
+  filterSel.addEventListener('change', () => { view.filter = filterSel.value; rerender(); });
+  sortSel.addEventListener('change', () => { view.sort = sortSel.value; rerender(); });
+  searchInput.addEventListener('input', () => { view.search = searchInput.value; rerender(); });
 }
