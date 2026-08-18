@@ -76,6 +76,7 @@ const C1_BLOCKS = [
   'notification',
   'nps-csat-form',
   'pdf-viewer',
+  'project-tracking',
   'quote',
   'read-more',
   'recommended-articles',
