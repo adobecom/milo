@@ -15,7 +15,10 @@ import {
   loadLana,
   setConfig,
   getMetadata,
+  loadScript,
+  loadStyle,
 } from '../utils/utils.js';
+import { loadPeregrineCollab } from './delayed.js';
 import locales from '../utils/locales.js';
 
 // Production Domain
@@ -105,4 +108,8 @@ function loadStyles() {
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
+  // Load collab immediately after page area (not delayed) when the collab param is present.
+  if (new URLSearchParams(window.location.search).get('peregrine-collab-id')) {
+    loadPeregrineCollab(() => config, loadScript, loadStyle);
+  }
 }());

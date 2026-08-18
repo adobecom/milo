@@ -158,7 +158,6 @@ const loadDelayed = ([
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     loadBlockNotifications(getConfig, loadStyle);
-    loadPeregrineCollab(getConfig, loadScript, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;
