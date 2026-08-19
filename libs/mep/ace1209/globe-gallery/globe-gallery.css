@@ -20,8 +20,6 @@
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
-  --gg-pq-lap-width: 2px;
-  --gg-pq-lap-color: var(--s2a-color-gray-700);
 
   /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. */
   --gg-pq-hold: 52vh;
@@ -242,7 +240,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --gg-pq-line-bleed-inline: 0.8em; /* sideways: the widest outdent hangOpeningMark will apply */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
-  --gg-pq-rule-width: var(--gg-crosshair-width);
 
   position: absolute;
   top: 0;
@@ -261,12 +258,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   transform: translateY(-50%);
 }
 
-/* Shared by the frame and by the lap that overlays it: same four rules at the same insets,
-   differing only in colour, width, and which element the progress vars are written to. */
+/* Four rules at the same insets, drawn by masking. */
 .globe-gallery-pullquote::before,
-.globe-gallery-pullquote::after,
-.globe-gallery-pullquote-lap::before,
-.globe-gallery-pullquote-lap::after {
+.globe-gallery-pullquote::after {
   content: '';
   position: absolute;
   pointer-events: none;
@@ -282,20 +276,19 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* Each rule is masked to the fraction of itself that is drawn, measured along its OWN clockwise
    direction — top runs left→right, right top→bottom, bottom right→left, left bottom→top. The
-   gradient's direction encodes that clockwise sense, which is why the four vars never need to know
-   which edge they are on. JS writes them per frame; the 100% fallbacks mean a no-JS or
-   pre-first-frame render is the complete crosshair. */
-.globe-gallery-pullquote::before,
-.globe-gallery-pullquote-lap::before {
+   gradient's direction encodes that clockwise sense, so a var never needs to know which edge it is
+   on — and since the horizontals always share a fraction, as do the verticals, two vars cover four
+   rules. JS writes them per frame; the 100% fallbacks mean no-JS renders the complete crosshair. */
+.globe-gallery-pullquote::before {
   inset-block: var(--gg-pq-pad-block);
   inset-inline: 0;
-  border-block-width: var(--gg-pq-rule-width);
+  border-block-width: var(--gg-crosshair-width);
   -webkit-mask-image:
-    linear-gradient(to right, #000 var(--gg-pq-t, 100%), transparent var(--gg-pq-t, 100%)),
-    linear-gradient(to left, #000 var(--gg-pq-b, 100%), transparent var(--gg-pq-b, 100%));
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
   mask-image:
-    linear-gradient(to right, #000 var(--gg-pq-t, 100%), transparent var(--gg-pq-t, 100%)),
-    linear-gradient(to left, #000 var(--gg-pq-b, 100%), transparent var(--gg-pq-b, 100%));
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
   -webkit-mask-position: left top, left bottom;
   mask-position: left top, left bottom;
   -webkit-mask-size: 100% 51%;
@@ -304,40 +297,20 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 /* 51% per half so a subpixel box height can't leave a rule half-masked; the halves overlap across
    the middle, where there is nothing to draw. */
-.globe-gallery-pullquote::after,
-.globe-gallery-pullquote-lap::after {
+.globe-gallery-pullquote::after {
   inset-block: 0;
   inset-inline: var(--gg-copy-pad);
-  border-inline-width: var(--gg-pq-rule-width);
+  border-inline-width: var(--gg-crosshair-width);
   -webkit-mask-image:
-    linear-gradient(to bottom, #000 var(--gg-pq-r, 100%), transparent var(--gg-pq-r, 100%)),
-    linear-gradient(to top, #000 var(--gg-pq-l, 100%), transparent var(--gg-pq-l, 100%));
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
   mask-image:
-    linear-gradient(to bottom, #000 var(--gg-pq-r, 100%), transparent var(--gg-pq-r, 100%)),
-    linear-gradient(to top, #000 var(--gg-pq-l, 100%), transparent var(--gg-pq-l, 100%));
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
   -webkit-mask-position: right top, left top;
   mask-position: right top, left top;
   -webkit-mask-size: 51% 100%;
   mask-size: 51% 100%;
-}
-
-/* The hold's progress lap: a heavier, brighter line retracing the finished frame clockwise and
-   closing as the rail un-sticks. inset:0 is the box the frame's pseudos resolve against, so the two
-   align exactly. */
-.globe-gallery-pullquote-lap {
-  --gg-pq-rule-color: var(--gg-pq-lap-color);
-  --gg-pq-rule-width: var(--gg-pq-lap-width);
-
-  /* Declared, not inherited: fallbacks never apply to an inherited property, so without these the
-     lap would take the frame's progress from its parent. 0% also means no lap without JS. */
-  --gg-pq-t: 0%;
-  --gg-pq-r: 0%;
-  --gg-pq-b: 0%;
-  --gg-pq-l: 0%;
-
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
 }
 
 /* Each line's arrival is one 0..1 var written per frame, already eased and staggered in JS; the 1
@@ -1035,10 +1008,6 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote::after {
   -webkit-mask-image: none;
   mask-image: none;
-}
-
-.globe-gallery-reduced .globe-gallery-pullquote-lap {
-  display: none;
 }
 
 .globe-gallery-reduced .globe-gallery-pullquote-quote,

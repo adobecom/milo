@@ -803,9 +803,8 @@ md is the tight breakpoint despite having the *later* reveal — the derived `--
 re-deriving:
 
 - **The runway is 540vh, not 460vh, because of this.** At 460 the ceiling capped the hold at 8–12vh
-  on desktop — a fraction of a second at normal scroll speed, so the lap closed before anyone could
-  read it as progress and the affordance was pointless. The whole crosshair sequence lives inside the
-  hold, so the runway is the single knob for both the hold and the blank stretch before it, in
+  on desktop — a fraction of a second at normal scroll speed, so the quote was gone before it could be
+  read. The whole crosshair sequence lives inside the hold, so the runway is the single knob for both the hold and the blank stretch before it, in
   opposite directions. The exchange rate: every 1vh of hold costs ~1.7vh of tail
   (`Δtail = Δhold / (1 − appear-t)` on md), and ~0.20 of every vh of tail lands in the blank — so
   **~0.34vh of extra blank buys 1vh of extra hold.** Budget with that before reaching for either.
@@ -1002,7 +1001,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
 | 356 | 0.471 | `zoomT ≥ pqAppearZoomT` (sm 0.2204) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); desktop cursor label + disc retire together; **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `cursor.update`, `updateClickDragText` |
 | ~356 | ~0.470 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~29vh | `updateActiveCamera` |
-| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls, desktop cursor **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — draw, then copy, then lap — and un-stick as the lap closes | `updatePullQuote` + CSS, `controls.update` |
+| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls, desktop cursor **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy over the first half, then dead scroll with nothing moving — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
 | 368 / 397 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 368vh, md at 397vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 640vh (the observer's `100%` rootMargin), so the skip covers that tail too, plus the 160vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
 | 540 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
@@ -1629,9 +1628,7 @@ crosshair on it — so the quote's own text edge lands on the vertical line, and
 mark is the one thing outside it. Because that var also feeds `--gg-content-inset`, **the arc copy
 widens with it** — the two share one edge by design, so they still cannot drift.
 
-**Line weights.** The frame is 1px (`--gg-crosshair-width`); the progress lap over it is 2px
-(`--gg-pq-lap-width`) in `--gg-pq-lap-color` (gray-700 today, gray-500…700 being the usable range).
-The lap's prominence is meant to come from the doubled thickness rather than brightness, since it
+**Line weight.** The frame is 1px (`--gg-crosshair-width`) in `--gg-pq-rule-color` (gray-800). It
 sits beside the quote and must not out-shout it — gray-400 `#c6c6c6` is close enough to the copy's
 own `#fafafa` to read as a second headline. **Do not use fractional widths:** `border-width` snaps
 to device pixels *per edge*, so 1.5px lands as 1px on some rules and 2px on others at 1dppx and the
@@ -1663,18 +1660,18 @@ chosen so the whole thing runs **clockwise**: top →, right ↓, bottom ←, le
 continuous stroke tracing the frame rather than four unrelated wipes.
 
 **One threshold, one window.** Everything the pull-quote does is a share of the **hold**, which
-begins on `pqAppearZoomT` — the frame the camera geometrically clears the shell. There are two
-phases, and they never overlap:
+begins on `pqAppearZoomT` — the frame the camera geometrically clears the shell. The hold has two
+halves, and only the first one animates:
 
 | Phase | Share of the hold | md (52vh) | sm (52vh) | What |
 | --- | --- | --- | --- | --- |
 | reveal | `0 → PQ_REVEAL_END` (0.50) | 26.0vh | 26.0vh | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
-| lap | `PQ_REVEAL_END → 1` | 26.0vh | 26.0vh | the brighter line retraces the frame clockwise, closing as the rail un-sticks |
+| dead scroll | `PQ_REVEAL_END → 1` | 26.0vh | 26.0vh | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
 
 **The frame and the copy share one window** rather than queueing, and share the *clock* that runs
 it (the follower below), so "the same length" is structural rather than intended. The lines' stagger
-spans the window (see **The stagger**), so the last one lands as the verticals close and the lap
-takes over.
+spans the window (see **The stagger**), so the last one lands as the verticals close and the dead
+half begins.
 
 **Why nothing starts before `pqAppearZoomT`.** Starting the draw earlier, to fill the sparse
 stretch ahead of the reveal, fails in two ways:
@@ -1697,8 +1694,8 @@ Two consequences:
   has emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also
   shrinks the hold (see **Scroll model**), so the two trade directly. This is the open tuning
   question, not a bug to fix in the crosshair.
-- **The copy still must not move during the lap** — that is what people are reading. It is finished
-  before the lap starts, by construction, off the same `PQ_REVEAL_END`.
+- **Nothing moves during the dead half** — that is when people are reading. The reveal is finished
+  before it starts, by construction, off the same `PQ_REVEAL_END`.
 
 **The hold is followed, not read.** `followHold` is the one clock every phase reads, and it answers
 three failures of a raw scroll-derived value with one rule each:
@@ -1712,8 +1709,8 @@ three failures of a raw scroll-derived value with one rule each:
   450ms back), so the reveal takes ~700ms however hard the reader throws it.
 - **A dead stop mid-reveal strands it half-done.** After `PQ_HOLD_STALL_MS` with no new ground the
   phase **plays itself out** at that same rate — which is why a nudge-and-stop reveals the whole
-  quote rather than parking it part-rolled. Stalled inside the **lap** it holds position instead:
-  that is the affordance, and it must not play out under a stationary reader.
+  quote rather than parking it part-rolled. Past `PQ_REVEAL_END` there is nothing left to play, so
+  a stall there is simply the reader reading.
 
 Two smaller rules keep the smoothing from becoming drift. **Direction needs `PQ_HOLD_FLIP` (0.01 of
 the hold) of retrace to turn**, since Lenis's eased position wobbles by less than that and every
@@ -1805,27 +1802,28 @@ which is why the name/role lags below them never need re-tuning against the line
 already-eased `--gg-pq-line-v` per line; the `1` fallbacks are the rest state, which is also the
 no-JS and reduced-motion render.
 
-#### The hold affordance
+#### The hold's second half
 
-During the hold, a **brighter line (gray-400) retraces the finished frame clockwise**, closing on the
-exact frame the rail un-sticks. It is a progress ring: held scroll otherwise reads as a stuck page,
-and this makes the pause self-evidently finite and earned. The copy is deliberately untouched — that
-is what people are trying to read during the hold.
+Once the reveal is done the hold keeps going, and **nothing on screen changes** for its second half:
+the rail stays stuck, the finished quote sits still, and the reader reads. The dead scroll itself is
+unchanged from when a progress lap ran over it — a brighter, 2px line retracing the frame clockwise
+and closing as the rail un-sticks. It was built as a progress affordance and removed: it sat right
+beside the copy people were reading, and a stuck page for half the hold turned out to need no
+narration. Four treatments were compared in total (fill, the frame depleting instead, a single
+travelling runner, and none); **none** is what ships, and the losing paths are gone rather than left
+behind a flag. If it comes back, it needs its own element over the frame's pseudo selectors and its
+own copy of the four edge vars, plus the perimeter split by real edge length so the clockwise head
+travels at constant speed.
 
-It lives on `.globe-gallery-pullquote-lap`, a decorative child that shares the frame's own pseudo
-selectors wholesale and redeclares only the colour and its own copy of the four edge vars. Three
-other treatments were built and compared (the frame depleting instead, a single travelling runner,
-and no affordance at all); `fill` won because it keeps the frame intact while it is being read, and
-the losing paths are gone rather than left behind a flag.
-
-Mechanics and the reasons they are what they are:
+Mechanics of the frame itself, and the reasons they are what they are:
 
 - **Every rule is masked to the fraction of itself that is drawn, along its own clockwise
-  direction.** One mechanism serves both the frame and the lap — they share the pseudo selectors and
-  differ only in colour and in which element the vars are written to. The gradient's *direction*
-  (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense, which is why the
-  four vars never need to know which edge they are on. JS writes them per frame; the CSS fallbacks
-  are `100%`, so a no-JS or pre-first-frame render is the complete crosshair.
+  direction.** The gradient's *direction*
+  (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense, which is why a var
+  never needs to know which edge it is on. There are **two** of them, not four — `--gg-pq-h` for
+  both horizontals, `--gg-pq-v` for both verticals — because horizontals lead verticals and that is
+  the only split the draw makes. JS writes them per frame; the CSS fallbacks are `100%`, so a no-JS
+  or pre-first-frame render is the complete crosshair.
 - **A pair is one element, so the two rules are separated by the mask, not the DOM.** This is the
   trick worth not re-deriving. `::before` paints *both* horizontals; give each of its two mask
   layers **half the box height** and pin it to a diagonal corner, and the `left top` layer can only
@@ -1835,14 +1833,12 @@ Mechanics and the reasons they are what they are:
 - **The halves are 51%, not 50%,** so a subpixel box height can't leave a rule half-masked. They
   overlap across the middle, where there is nothing to draw; mask layers composite with `add`, so
   the overlap costs nothing.
-- **The perimeter is split by real edge length**, not into quarters, so the clockwise head travels at
-  constant speed instead of racing along the short edges. Computed in `publishPqMetrics` from the
-  quote's own box, alongside the hold ceiling.
-- **Border colour comes from `--gg-pq-rule-color`, never from a second `border:` shorthand.** The
-  overlay originally set its colour with `border: 0 solid …`, which silently reset the
-  `border-block-width` / `border-inline-width` the shared rules had already set, and the lap
-  rendered as nothing at all. If a rule vanishes, suspect a shorthand before you suspect the mask.
-- **Style writes are memoised** on the joined interval string, per element — the `arcCopy` pattern
+- **Border colour comes from `--gg-pq-rule-color` and width from `--gg-crosshair-width`, never from
+  a second `border:` shorthand.** An
+  overlay once set its colour with `border: 0 solid …`, which silently reset the
+  `border-block-width` / `border-inline-width` the shared rules had already set, and it rendered as
+  nothing at all. If a rule vanishes, suspect a shorthand before you suspect the mask.
+- **Style writes are memoised** on the joined interval string — the `arcCopy` pattern
   (`globe-gallery.js`), so a frame that moves nothing costs no writes.
 - **The container has no opacity or transform of its own** — the frame is masked to zero-length
   intervals and the copy vars sit at 0, so there is nothing for a container fade to hide, and a
