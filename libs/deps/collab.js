@@ -63,6 +63,16 @@
       if (e.data?.type === 'collab:new-comment-cancel') {
         if (clickTarget) { clickTarget.classList.remove('collab-block-hover'); clickTarget = null; }
       }
+      if (e.data?.type === 'collab:reply-created') {
+        if (e.data.thread) {
+          const normalized = normalizeThread(e.data.thread);
+          const idx = state.threads.findIndex(x => x.id === normalized.id);
+          if (idx >= 0) state.threads[idx] = normalized;
+          else state.threads.push(normalized);
+        }
+        refreshOpenViews(e.data.threadId);
+        notifyParent();
+      }
     });
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
   }
@@ -511,6 +521,13 @@
         const body = getValue();
         if (!body) return;
         sendBtn.disabled = true;
+        // When inside an iframe, delegate reply saving to the parent app.
+        if (window.parent !== window) {
+          textarea.value = '';
+          window.parent.postMessage({ type: 'collab:new-reply-request', threadId: t.id, body }, '*');
+          sendBtn.disabled = false;
+          return;
+        }
         const optimistic = {
           id: `opt-${Date.now()}`,
           authorProfileId: ME.profileId,
@@ -791,16 +808,6 @@
 
   function openNewCommentPopup(targetEl) {
     clickTarget = targetEl;
-    // When hosted in a parent frame, delegate comment creation to the parent.
-    if (window.parent !== window) {
-      const anchor = {
-        elementPath: buildElementPath(targetEl),
-        quotedText: (targetEl.textContent || '').slice(0, 200).trim(),
-      };
-      window.parent.postMessage({ type: 'collab:new-comment-request', anchor }, '*');
-      return;
-    }
-    // Standalone mode — show native popup.
     newCommentTextarea.value = '';
     newCommentPopup.classList.add('open');
 
@@ -835,6 +842,13 @@
       elementPath: buildElementPath(savedTarget),
       quotedText: (savedTarget.textContent || '').slice(0, 200).trim(),
     };
+
+    // In iframe mode, delegate to the parent app — it holds the auth token and saves to the API.
+    if (window.parent !== window) {
+      closeNewCommentPopup();
+      window.parent.postMessage({ type: 'collab:new-comment-request', anchor, body }, '*');
+      return;
+    }
 
     try {
       const created = await api.createThread(anchor, body);
