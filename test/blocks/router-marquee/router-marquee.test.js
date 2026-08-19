@@ -121,6 +121,58 @@ describe('Router Marquee', () => {
     expect(cards[1].getAttribute('daa-ll')).to.equal('rm-nav-2--Slide two title');
   });
 
+  it('defers every slide video so none is eager-fetched', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/video.html' });
+    const block = document.querySelector('.router-marquee');
+    init(block);
+
+    // Assert synchronously after init: the mock video URLs are non-loadable, so an
+    // async `error` would kick autoplay and load slide[1]'s video. Do not add awaits
+    // before these assertions without stubbing play()/requestVideoFrameCallback.
+    // second slide is never the active slide, so its video stays fully deferred
+    const slide = mobileVp(block).querySelectorAll('.rm-slide')[1];
+    const video = slide.querySelector('video');
+    expect(video).to.exist;
+    // the .video-container wrapper (and its pause/play controls) is unwrapped
+    expect(slide.querySelector('.video-container')).to.not.exist;
+    expect(slide.querySelector('.pause-play-wrapper')).to.not.exist;
+    expect(video.parentElement.classList.contains('rm-background')).to.be.true;
+
+    // nothing that would trigger a network fetch is left on the element
+    expect(video.preload).to.equal('none');
+    expect(video.hasAttribute('autoplay')).to.be.false;
+    expect(video.getAttribute('src')).to.equal(null);
+    expect(video.querySelector('source')).to.not.exist;
+    // the real source is stashed for loadVideo to restore later
+    expect(video.dataset.lazySrc).to.equal('https://www.adobe.com/hero-two.mp4');
+    // autoplay-safe attributes are still applied
+    expect(video.muted).to.be.true;
+    expect(video.hasAttribute('playsinline')).to.be.true;
+    expect(video.hasAttribute('loop')).to.be.true;
+  });
+
+  it('loads exactly the active viewport hero video, restoring source and poster', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/video.html' });
+    const block = document.querySelector('.router-marquee');
+    init(block);
+
+    // Assert synchronously (see note above): an awaited video `error` would kick
+    // autoplay and preload a second video, making loaded.length 2.
+    // loadViewportVideos promotes only the active viewport's active-slide video
+    const loaded = [...block.querySelectorAll('video')].filter((v) => v.dataset.loaded === 'true');
+    expect(loaded.length).to.equal(1);
+
+    const video = loaded[0];
+    expect(video.preload).to.equal('auto');
+    // the stashed source is re-appended and the deferred poster is promoted
+    const source = video.querySelector('source');
+    expect(source).to.exist;
+    expect(source.getAttribute('src')).to.equal('https://www.adobe.com/hero-one.mp4');
+    expect(video.getAttribute('poster')).to.equal('https://www.adobe.com/hero-one-poster.jpg');
+    // it belongs to the first (active) slide
+    expect(video.closest('.rm-slide').classList.contains('is-active')).to.be.true;
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');
