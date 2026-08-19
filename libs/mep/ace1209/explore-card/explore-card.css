@@ -3,6 +3,8 @@
     top: var(--s2a-spacing-lg);
     right: var(--s2a-spacing-lg);
     bottom: initial;
+    width: var(--s2a-spacing-32);
+    height: var(--s2a-spacing-32);
     z-index: 2;
   }
 }
