@@ -14,7 +14,7 @@
 /* Scroll model (see README). .globe-gallery-reduced and .globe-gallery-empty overrides are at the end of this file. */
 .globe-gallery {
   /* Full scroll-runway model: README. --gg-pq-appear-t is published by the JS, off the camera. */
-  --gg-runway-height: 460vh;
+  --gg-runway-height: 540vh;
   --gg-formation-vh: 304vh;
 
   /* Shared copy edge: the pull-quote's own left text edge, reused by the arc copy. See README. */
@@ -22,6 +22,12 @@
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
+  --gg-pq-lap-width: 2px;
+
+  --gg-pq-lap-color: var(--s2a-color-gray-700);
+
+  /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. See README. */
+  --gg-pq-hold: 52vh;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
@@ -213,14 +219,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Ends 50vh past the camera-clear point, so the sticky rail inside lets go on the frame the quote
-   fades in: revealed dead-centre, then free to scroll. Nothing is held. See README. */
+/* Ends one hold past the reveal, so the sticky rail holds the quote centred for that much scroll
+   before letting go. --gg-pq-hold-max defaults to 0, so no JS means no hold. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   top: var(--gg-formation-vh);
   bottom: max(0px, calc(
     (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
-      - var(--gg-optical-center)
+      - var(--gg-optical-center) - min(var(--gg-pq-hold), var(--gg-pq-hold-max, 0vh))
   ));
   left: 0;
   right: 0;
@@ -234,11 +240,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   height: 0;
 }
 
-/* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
+/* Revealed by JS from scroll, as three shares of the hold: draw, copy, lap. See README. */
 .globe-gallery-pullquote {
   /* Yields on short viewports so a long quote can't outgrow the band. See README. */
   --gg-pq-gap: min(var(--s2a-layout-xl), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
+  --gg-pq-copy-rise: 14px;
+  --gg-pq-rule-color: var(--s2a-color-gray-800);
+  --gg-pq-rule-width: var(--gg-crosshair-width);
 
   position: absolute;
   top: 0;
@@ -253,50 +262,112 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   gap: var(--gg-pq-gap);
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
-  opacity: 0;
   pointer-events: none;
-  transform: translateY(-50%) scale(0.9);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+
+  /* Centring only — visibility is the masks plus the copy vars, so no fade belongs here. */
+  transform: translateY(-50%);
 }
 
-.globe-gallery-pullquote.is-active {
-  opacity: 1;
-  transform: translateY(-50%) scale(1);
-}
-
+/* Shared by the frame and by the lap that overlays it: same four rules at the same insets,
+   differing only in colour, width, and which element the progress vars are written to. */
 .globe-gallery-pullquote::before,
-.globe-gallery-pullquote::after {
+.globe-gallery-pullquote::after,
+.globe-gallery-pullquote-lap::before,
+.globe-gallery-pullquote-lap::after {
   content: '';
   position: absolute;
   pointer-events: none;
-  border: 0 solid var(--s2a-color-gray-800);
+
+  /* Longhands, not the `border` shorthand: an unresolvable var() colour inside a shorthand is
+     invalid at computed-value time and resets border-style to none, erasing every rule. */
+  border-style: solid;
+  border-width: 0;
+  border-color: var(--gg-pq-rule-color, currentcolor);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
-.globe-gallery-pullquote::before {
+/* Each rule is masked to the fraction of itself that is drawn, measured along its OWN clockwise
+   direction — top runs left→right, right top→bottom, bottom right→left, left bottom→top. The
+   gradient's direction encodes that clockwise sense, which is why the four vars never need to know
+   which edge they are on. JS writes them per frame; the 100% fallbacks mean a no-JS or
+   pre-first-frame render is the complete crosshair. */
+.globe-gallery-pullquote::before,
+.globe-gallery-pullquote-lap::before {
   inset-block: var(--gg-pq-pad-block);
   inset-inline: 0;
-  border-block-width: var(--gg-crosshair-width);
+  border-block-width: var(--gg-pq-rule-width);
+  -webkit-mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-t, 100%), transparent var(--gg-pq-t, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-b, 100%), transparent var(--gg-pq-b, 100%));
+  mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-t, 100%), transparent var(--gg-pq-t, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-b, 100%), transparent var(--gg-pq-b, 100%));
+  -webkit-mask-position: left top, left bottom;
+  mask-position: left top, left bottom;
+  -webkit-mask-size: 100% 51%;
+  mask-size: 100% 51%;
 }
 
-.globe-gallery-pullquote::after {
+/* 51% per half so a subpixel box height can't leave a rule half-masked; the halves overlap across
+   the middle, where there is nothing to draw. */
+.globe-gallery-pullquote::after,
+.globe-gallery-pullquote-lap::after {
   inset-block: 0;
   inset-inline: var(--gg-copy-pad);
-  border-inline-width: var(--gg-crosshair-width);
+  border-inline-width: var(--gg-pq-rule-width);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-r, 100%), transparent var(--gg-pq-r, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-l, 100%), transparent var(--gg-pq-l, 100%));
+  mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-r, 100%), transparent var(--gg-pq-r, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-l, 100%), transparent var(--gg-pq-l, 100%));
+  -webkit-mask-position: right top, left top;
+  mask-position: right top, left top;
+  -webkit-mask-size: 51% 100%;
+  mask-size: 51% 100%;
 }
 
-/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See README. */
+/* The hold's progress lap: a heavier, brighter line retracing the finished frame clockwise and
+   closing as the rail un-sticks. inset:0 is the box the frame's pseudos resolve against, so the two
+   align exactly. */
+.globe-gallery-pullquote-lap {
+  --gg-pq-rule-color: var(--gg-pq-lap-color);
+  --gg-pq-rule-width: var(--gg-pq-lap-width);
+
+  /* Declared, not inherited: fallbacks never apply to an inherited property, so without these the
+     lap would take the frame's progress from its parent. 0% also means no lap without JS. */
+  --gg-pq-t: 0%;
+  --gg-pq-r: 0%;
+  --gg-pq-b: 0%;
+  --gg-pq-l: 0%;
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Each line's arrival is one 0..1 var written per frame, already eased and staggered in JS; the 1
+   fallbacks are the rest state. Opening mark is outdented by authoring.js; `hanging-punctuation`
+   deliberately unused. See README. */
 .globe-gallery-pullquote-quote {
+  opacity: var(--gg-pq-copy-q, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-q, 1))));
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
 .globe-gallery-pullquote-name {
+  opacity: var(--gg-pq-copy-n, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-n, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
 .globe-gallery-pullquote-role {
+  opacity: var(--gg-pq-copy-r, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-r, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-400);
   margin: 0;
@@ -942,6 +1013,23 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   top: auto;
   opacity: 1;
   transform: none;
+}
+
+/* Full reveal. The copy needs no override: updatePullQuote returns early, so its vars stay unset
+   at their 1 fallback. */
+.globe-gallery-reduced .globe-gallery-pullquote::before,
+.globe-gallery-reduced .globe-gallery-pullquote::after {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.globe-gallery-reduced .globe-gallery-pullquote-lap {
+  display: none;
+}
+
+.globe-gallery-reduced .globe-gallery-pullquote-quote,
+.globe-gallery-reduced .globe-gallery-pullquote-name,
+.globe-gallery-reduced .globe-gallery-pullquote-role {
   transition: none;
 }
 

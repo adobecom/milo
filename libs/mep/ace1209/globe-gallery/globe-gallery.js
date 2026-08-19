@@ -99,6 +99,28 @@ const RM_GLOBE_SCALE_MD = 0.9;
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
+// Gap kept between the held quote's bottom edge and the next section's top.
+const PQ_HOLD_CLEARANCE_VH = 4;
+
+// The whole pull-quote sequence is three sequential shares of the hold. See README.
+const PQ_DRAW_END = 0.32; // frame drawn by 32% of the hold
+const PQ_COPY_END = 0.50; // ...copy in by 50%; the lap owns the rest
+
+// Share of the draw window each pair gets, so the horizontals still lead the verticals.
+const PQ_DRAW_H_SPAN = 0.82;
+const PQ_DRAW_V_START = 0.26;
+
+const PQ_EDGE_KEYS = ['t', 'r', 'b', 'l']; // clockwise: top, right, bottom, left
+
+const PQ_COPY_MS = 620; // copy's time floor, from when its share starts — see updatePullQuoteCopy
+const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — the stagger, as a share of the sweep
+const PQ_COPY_KEYS = ['q', 'n', 'r'];
+
+const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN -> 0
+
+// Fraction of one edge that a clockwise head at perimeter position `q` has passed.
+const edgeProgress = (q, edge) => clamp01((q - edge[0]) / (edge[1] - edge[0]));
+
 // Grid peel / fold.
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 // fanT boundary: low-i cards cluster below it off-screen and peel first.
@@ -352,7 +374,17 @@ function createGlobeGalleryRuntime(
 
   const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
-  let pqShown = false;
+  // Scroll-driven crosshair. `edges` is the clockwise perimeter split, by real edge length so the
+  // head travels at constant speed; the cached strings elide unchanged style writes.
+  const pq = {
+    lapEl: q('.globe-gallery-pullquote-lap'),
+    holdT: 0,
+    edges: null,
+    copyMs: 0,
+    baseStr: '',
+    lapStr: '',
+    copyStr: '',
+  };
 
   let caFilterR = null; // SVG feOffset element for red channel
   let caFilterB = null; // SVG feOffset element for blue channel
@@ -584,6 +616,11 @@ function createGlobeGalleryRuntime(
       maxRadial + NEAR_FADE_END * fadeRefH * groupScale,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
     );
+    // Only place fadeRefH is written, and the quote's cue is derived from it.
+    // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
+    publishPqAppearZoomT();
+    // eslint-disable-next-line no-use-before-define -- same
+    publishPqMetrics(); // guards no-op before layout
   }
 
   // Sphere-phase sizing from the loaded aspect (non-masonry). Read live each frame, so writing
@@ -913,16 +950,60 @@ function createGlobeGalleryRuntime(
 
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
 
-  // The quote's cue is a place in the scene, not a scroll number: the zoomT the camera clears the
-  // shell's far wall at, so it can never land while cards are still in frame. Cards mount radially,
-  // so the deepest one sits hypot(R, half its in-plane extent) back. Published to CSS — see README.
+  // The quote's cue is the zoomT at which the last card leaves the SCREEN, which is a prox-fade
+  // band before the camera clears the shell (updateCardTransforms hides a card at NEAR_FADE_END
+  // card-heights of depth). The deepest card centre sits at -SPHERE_R under any rotation and the
+  // fade keys off the centre, so nothing is left to draw past -SPHERE_R + NEAR_FADE_END * fadeRefH.
+  // Re-published from recomputeDragFlip, the only writer of fadeRefH; 0 falls back to -SPHERE_R,
+  // which errs late. See README.
   function publishPqAppearZoomT() {
-    const halfExtent = bp.CYLINDER
-      ? bp.CARD_W_SPHERE / 2
-      : Math.hypot(bp.CARD_W_SPHERE, bp.CARD_H_SPHERE) / 2;
-    const clearZ = -Math.hypot(bp.SPHERE_R, halfExtent);
+    const clearZ = -bp.SPHERE_R + NEAR_FADE_END * fadeRefH;
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
     root.style.setProperty('--gg-pq-appear-t', pqAppearZoomT.toFixed(4));
+  }
+
+  // How much held scroll the quote can afford, plus the crosshair's perimeter split. The hold
+  // spends the gap between the quote's bottom edge and the next section's top, and that gap depends
+  // on the authored quote's height — hence a derived ceiling rather than a fixed length. Publishes
+  // 0 when there is no room. See README.
+  function publishPqMetrics() {
+    if (!pqEl || !pqEl.isConnected) return;
+    const toVh = (px) => (px / H) * 100;
+    const tailVh = toVh(blockHeight) - formationVh;
+    if (!(tailVh > 0)) return;
+    const nextSectionTopVh = (1 - pqAppearZoomT) * tailVh;
+    const opticalCenterPx = navH + (H - navH) / 2;
+    const box = pqEl.getBoundingClientRect();
+    const quoteBottomVh = toVh(opticalCenterPx + box.height / 2);
+    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - PQ_HOLD_CLEARANCE_VH);
+    root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
+
+    // Mirror what CSS resolves for the pin, so the lap closes exactly on the un-stick frame.
+    const prefVh = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-hold')) || 0;
+    pq.holdT = Math.min(prefVh, freeVh) / tailVh;
+
+    const wq = box.width;
+    const hq = box.height;
+    const per = 2 * (wq + hq);
+    // Clockwise, by real edge length: top left->right, right top->bottom, bottom right->left,
+    // left bottom->top.
+    pq.edges = per > 0 ? [
+      [0, wq / per],
+      [wq / per, (wq + hq) / per],
+      [(wq + hq) / per, (2 * wq + hq) / per],
+      [(2 * wq + hq) / per, 1],
+    ] : null;
+  }
+
+  // Memoised on the joined string, so a frame that moves nothing costs no style writes.
+  function writeEdgeVars(el, fracs, cacheKey) {
+    let str = '';
+    for (let i = 0; i < 4; i += 1) str += `${fracs[i].toFixed(4)};`;
+    if (str === pq[cacheKey]) return;
+    pq[cacheKey] = str;
+    for (let i = 0; i < 4; i += 1) {
+      el.style.setProperty(`--gg-pq-${PQ_EDGE_KEYS[i]}`, `${(fracs[i] * 100).toFixed(2)}%`);
+    }
   }
 
   // Scroll px from the block top where the sphere is formed. See README (Scroll model).
@@ -1234,24 +1315,60 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // JS only adds .is-active past pqAppearZoomT; CSS sticky handles the exit.
-  function updatePullQuote(frame) {
-    const { zoomT, scrollingDown } = frame;
-    // Reduced motion: CSS owns it (opacity:1, no reveal) — no JS toggling.
-    if (reducedMotion) return;
-    if (pqEl) {
-      if (zoomT >= pqAppearZoomT && !pqShown) {
-        pqEl.style.transition = ''; // restore CSS default (0.45s, set in .css)
-        pqShown = true;
-        pqEl.classList.add('is-active');
-      } else if (zoomT < pqAppearZoomT && pqShown) {
-        if (!scrollingDown) {
-          pqEl.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
-        }
-        pqShown = false;
-        pqEl.classList.remove('is-active');
-      }
+  // Three staggered lines as three 0..1 vars, driven by whichever of scroll or time is further
+  // along: scroll alone strands the text mid-fade if the reader stops, time alone lets a fast flick
+  // run the lap around empty. `scrollT` is the copy's share of the hold; the timer starts when that
+  // share opens, so a slow scroll can't let the copy overtake the draw. See README.
+  function updatePullQuoteCopy(started, scrollT) {
+    const now = performance.now();
+    if (!started) pq.copyMs = 0;
+    else if (!pq.copyMs) pq.copyMs = now;
+    const byTime = pq.copyMs ? (now - pq.copyMs) / PQ_COPY_MS : 0;
+    const p = clamp01(Math.max(scrollT, byTime));
+    let str = '';
+    const vals = [];
+    for (let i = 0; i < 3; i += 1) {
+      const v = easeOutCubic(clamp01((p - PQ_COPY_LAG[i]) / (1 - PQ_COPY_LAG[i])));
+      vals.push(v);
+      str += `${v.toFixed(3)};`;
     }
+    if (str === pq.copyStr) return;
+    pq.copyStr = str;
+    for (let i = 0; i < 3; i += 1) {
+      pqEl.style.setProperty(`--gg-pq-copy-${PQ_COPY_KEYS[i]}`, vals[i].toFixed(3));
+    }
+  }
+
+  // Draw, then copy, then lap — sequential shares of the hold, never overlapping, with the lap
+  // closing as the rail un-sticks. With no hold to spend (a very long quote on a short viewport)
+  // the sequence collapses onto the reveal frame. See README.
+  function updatePullQuoteFrame(zoomT) {
+    const { edges } = pq;
+    if (!edges) return;
+    const past = zoomT >= pqAppearZoomT;
+    let hold = past ? 1 : 0;
+    if (pq.holdT > 0) hold = clamp01((zoomT - pqAppearZoomT) / pq.holdT);
+
+    const draw = clamp01(hold / PQ_DRAW_END);
+    // Horizontals lead, verticals follow.
+    const hDrawn = easeOutCubic(clamp01(draw / PQ_DRAW_H_SPAN));
+    const vDrawn = easeOutCubic(clamp01((draw - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
+    writeEdgeVars(pqEl, [hDrawn, vDrawn, hDrawn, vDrawn], 'baseStr');
+
+    const copySpan = PQ_COPY_END - PQ_DRAW_END;
+    updatePullQuoteCopy(past && hold >= PQ_DRAW_END, clamp01((hold - PQ_DRAW_END) / copySpan));
+
+    if (!pq.lapEl) return;
+    const lapT = clamp01((hold - PQ_COPY_END) / (1 - PQ_COPY_END));
+    const lap = [];
+    for (let i = 0; i < 4; i += 1) lap.push(edgeProgress(lapT, edges[i]));
+    writeEdgeVars(pq.lapEl, lap, 'lapStr');
+  }
+
+  function updatePullQuote(frame) {
+    // Reduced motion: CSS owns it (everything at rest, no reveal) — no JS driving.
+    if (reducedMotion || !pqEl) return;
+    updatePullQuoteFrame(frame.zoomT);
   }
 
   // Slides sphereGroup forward over the fold (cards not yet on the sphere subtract sphGroupZ).
@@ -1902,8 +2019,13 @@ function createGlobeGalleryRuntime(
           }, TEXT_REBUILD_DEBOUNCE_MS);
         }
       }
+      publishPqMetrics();
     }
     doLayout();
+    // A webfont landing after first layout retypesets the quote, so re-derive the ceiling.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(publishPqMetrics);
+    }
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = () => doLayout({ fromResize: true });
     window.addEventListener('resize', resizeHandler, { passive: true });
@@ -2054,6 +2176,9 @@ function createGlobeGalleryRuntime(
     }
     if (placeholderTex) { placeholderTex.dispose(); placeholderTex = null; }
     masonryMorph.active = false; masonryMorph.t = 0;
+    // Outlives the closure otherwise: a band crossing would pair the old band's card height with
+    // the new band's SPHERE_R in publishPqAppearZoomT, which runs before any card exists.
+    fadeRefH = 0;
     cards = [];
     textures = [];
     cardAspects = [];
@@ -2065,7 +2190,15 @@ function createGlobeGalleryRuntime(
     modal.destroy();
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
-    if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
+    if (pqEl) {
+      pqEl.style.cssText = '';
+      if (pq.lapEl) pq.lapEl.style.cssText = '';
+      pq.baseStr = '';
+      pq.lapStr = '';
+      pq.copyStr = '';
+      pq.edges = null;
+      pq.copyMs = 0;
+    }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();
