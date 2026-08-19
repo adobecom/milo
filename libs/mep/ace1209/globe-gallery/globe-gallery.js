@@ -105,11 +105,12 @@ const PQ_DRAW_V_START = 0.26;
 
 const PQ_EDGE_KEYS = ['t', 'r', 'b', 'l']; // clockwise: top, right, bottom, left
 
-// Caps on how fast followHold may play the hold, forwards and back.
-const PQ_HOLD_IN_MS = 1400;
-const PQ_HOLD_OUT_MS = 450;
+const PQ_HOLD_EASE = 0.08; // per 60fps frame, rescaled by dtScale at the use site
+const PQ_HOLD_IN_MS = 1400; // fastest the hold may play, forwards
+const PQ_HOLD_OUT_MS = 450; // and back
 const PQ_HOLD_MAX_DT = 100; // a tab-away must not arrive as one step
-const PQ_HOLD_EPS = 1e-4; // scroll noise below this is not movement
+const PQ_HOLD_STALL_MS = 140; // no new ground for this long and the scroll counts as stopped
+const PQ_HOLD_FLIP = 0.01; // retrace that is a real reversal, not noise; also how a stop is seen
 const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
@@ -367,12 +368,13 @@ function createGlobeGalleryRuntime(
   const pq = {
     lapEl: q('.globe-gallery-pullquote-lap'),
     quoteEl: q('.globe-gallery-pullquote-quote'),
-    lineEls: [], // one per rendered line, re-split on every layout
+    lineEls: [], // one per rendered line
+    splitW: 0, // box width they were split at
     holdT: 0,
     edges: null,
     holdV: 0, // followHold's output — the hold every phase reads
-    holdMs: 0, // when it was last stepped
-    holdTo: 0, // the scroll's own hold, to tell movement from a stall
+    holdPeak: 0, // furthest the scroll's own hold has reached in the current direction
+    holdMoveMs: 0, // when it last reached a new one; nothing for PQ_HOLD_STALL_MS means stopped
     holdDir: -1,
     baseStr: '',
     lapStr: '',
@@ -1281,23 +1283,35 @@ function createGlobeGalleryRuntime(
     lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
   }
 
-  // The one clock the pull-quote runs on: the scroll's hold, rate-limited so a flick still plays
-  // the sequence, and run on to the reveal's end when the scroll stalls inside it. See README.
+  // The one clock the pull-quote runs on: the scroll's hold, eased rather than read. scrollY
+  // arrives quantised, so a slow scroll delivers a staircase, and the sweep amplifies each step
+  // into several pixels of line travel — the ease is what turns that back into motion. It is
+  // capped at the play-out rate so a flick cannot skip the sequence, direction needs PQ_HOLD_FLIP
+  // of retrace to turn, and each direction only gains ground, so noise cannot walk the sweep back.
+  // With the scroll stopped inside the reveal the phase plays itself out; stopped inside the lap
+  // it holds position. See README.
   function followHold(target) {
     const now = performance.now();
-    const dt = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
+    const dtMs = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
     pq.holdMs = now;
-    if (target > pq.holdTo + PQ_HOLD_EPS) pq.holdDir = 1;
-    else if (target < pq.holdTo - PQ_HOLD_EPS) pq.holdDir = -1;
-    const stalled = Math.abs(target - pq.holdTo) <= PQ_HOLD_EPS;
-    pq.holdTo = target;
-    // Stalled in the lap the goal stays the scroll's own value, so the lap holds position.
-    const runOn = stalled && pq.holdV < PQ_REVEAL_END;
-    let goal = target;
-    if (runOn) goal = pq.holdDir > 0 ? PQ_REVEAL_END : 0;
-    const up = goal > pq.holdV;
-    const step = dt / (up ? PQ_HOLD_IN_MS : PQ_HOLD_OUT_MS);
-    pq.holdV = up ? Math.min(goal, pq.holdV + step) : Math.max(goal, pq.holdV - step);
+    const fwd = pq.holdDir > 0;
+    const gained = fwd ? target > pq.holdPeak : target < pq.holdPeak;
+    const turned = fwd ? target < pq.holdPeak - PQ_HOLD_FLIP : target > pq.holdPeak + PQ_HOLD_FLIP;
+    if (gained || turned) {
+      if (turned) pq.holdDir = -pq.holdDir;
+      pq.holdPeak = target;
+      pq.holdMoveMs = now;
+    }
+    const up = pq.holdDir > 0;
+    const step = dtMs / (up ? PQ_HOLD_IN_MS : PQ_HOLD_OUT_MS);
+    if (now - pq.holdMoveMs > PQ_HOLD_STALL_MS && pq.holdV < PQ_REVEAL_END) {
+      pq.holdV = up ? Math.min(PQ_REVEAL_END, pq.holdV + step) : Math.max(0, pq.holdV - step);
+      return pq.holdV;
+    }
+    const goal = up ? Math.max(target, pq.holdV) : Math.min(target, pq.holdV);
+    const delta = goal - pq.holdV;
+    const eased = delta * (1 - (1 - PQ_HOLD_EASE) ** frameState.dtScale);
+    pq.holdV += Math.abs(eased) > step ? Math.sign(delta) * step : eased;
     return pq.holdV;
   }
 
@@ -1326,8 +1340,13 @@ function createGlobeGalleryRuntime(
 
   // Re-split from scratch: line breaks move with the box width and the resolved font. The fresh
   // elements carry no progress var, so the cache is dropped and the current frame rewritten.
-  function relayoutQuote() {
+  // Width-gated, since the box can change without the viewport doing so (a scrollbar arriving) and
+  // can equally stay put across a viewport change that only alters height.
+  function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
+    const w = pqEl.clientWidth;
+    if (!force && w === pq.splitW) return;
+    pq.splitW = w;
     pq.lineEls = layoutQuote(pq.quoteEl);
     pq.copyStr = '';
     if (!reducedMotion) updatePullQuoteFrame(frameState.zoomT);
@@ -1915,7 +1934,8 @@ function createGlobeGalleryRuntime(
       const nextW = window.innerWidth;
       const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) {
-        publishPqMetrics(); // blockHeight / quote box can move without the viewport moving
+        relayoutQuote(); // the quote box can change width without the viewport doing so
+        publishPqMetrics();
         return;
       }
       W = nextW;
@@ -1966,7 +1986,7 @@ function createGlobeGalleryRuntime(
     doLayout();
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
-      const afterFonts = () => { relayoutQuote(); publishPqMetrics(); };
+      const afterFonts = () => { relayoutQuote(true); publishPqMetrics(); };
       document.fonts.ready.then(afterFonts, afterFonts);
     }
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);

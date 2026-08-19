@@ -1678,14 +1678,10 @@ phases, and they never overlap:
 | reveal | `0 → PQ_REVEAL_END` (0.50) | 26.0vh | 26.0vh | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
 | lap | `PQ_REVEAL_END → 1` | 26.0vh | 26.0vh | the brighter line retraces the frame clockwise, closing as the rail un-sticks |
 
-**The frame and the copy share one window** rather than queueing. They were two phases (`draw`
-0 → 0.32, then `copy` 0.32 → 0.50), which meant the reader crossed the camera's exit from the shell
-and then watched an empty rectangle draw itself for 16vh before the quote it framed showed up. The
-quote is what the section is for, so it now arrives *with* its frame off the same `reveal` value —
-one constant fewer, one phase fewer, and `updatePullQuoteFrame` reads as the two things it does.
-Sharing the window means sharing the *clock*, not just the start — see the follower below, which is
-what makes "the same length" true rather than merely intended. The lines' stagger spans the window
-(see **The stagger**), so the last one lands as the verticals close and the lap takes over.
+**The frame and the copy share one window** rather than queueing, and share the *clock* that runs
+it (the follower below), so "the same length" is structural rather than intended. The lines' stagger
+spans the window (see **The stagger**), so the last one lands as the verticals close and the lap
+takes over.
 
 **Why nothing starts before `pqAppearZoomT`.** Starting the draw earlier, to fill the sparse
 stretch ahead of the reveal, fails in two ways:
@@ -1711,47 +1707,47 @@ Two consequences:
 - **The copy still must not move during the lap** — that is what people are reading. It is finished
   before the lap starts, by construction, off the same `PQ_REVEAL_END`.
 
-**The hold is followed, not read.** `followHold` is the one clock every phase reads, and it exists
-because a scroll-derived value alone fails at both ends:
+**The hold is followed, not read.** `followHold` is the one clock every phase reads, and it answers
+three failures of a raw scroll-derived value with one rule each:
 
-- **A flick crosses the whole reveal in a couple of frames.** The rules and the copy are then
-  *correct* on every frame and have no animation left in them — the quote blinks into existence.
-  The follower moves at most one frame's share of `PQ_HOLD_IN_MS` (1400ms), so the sequence has a
-  floor on how fast it can play no matter how hard the reader flicks.
-- **A dead stop mid-reveal strands both half-done.** While the scroll is stalled *inside the
-  reveal*, the follower heads for that phase's end rather than for where the scroll stopped.
-  Stalled inside the **lap** it heads for the scroll's own value instead, so the lap stays put and
-  keeps saying "there is more scroll here" — that is the affordance, and it must not play itself
-  out under a stationary reader.
+- **`window.scrollY` arrives quantised.** At 22px/s a whole pixel lands about every third frame, and
+  the sweep amplifies each step into ~3px of line travel — the vertical stutter. The follower
+  **eases** toward the scroll (`PQ_HOLD_EASE`, per 60fps frame, rescaled by `dtScale` like every
+  other rate in the block), spreading each step across the frames between them.
+- **A flick crosses the whole reveal in a couple of frames**, leaving nothing animating. The eased
+  step is **capped** at the play-out rate (`PQ_HOLD_IN_MS` 1400ms for the full hold, `PQ_HOLD_OUT_MS`
+  450ms back), so the reveal takes ~700ms however hard the reader throws it.
+- **A dead stop mid-reveal strands it half-done.** After `PQ_HOLD_STALL_MS` with no new ground the
+  phase **plays itself out** at that same rate — which is why a nudge-and-stop reveals the whole
+  quote rather than parking it part-rolled. Stalled inside the **lap** it holds position instead:
+  that is the affordance, and it must not play out under a stationary reader.
 
-A slow scroll drives it exactly, since the scroll's own steps are the smaller ones. Going backwards
-is the same follower on `PQ_HOLD_OUT_MS`, which is where the reverse comes from: the rules
-un-draw and the lines drop back under their masks together, bottom line first, because a larger lag
-means an element trails the sweep in *either* direction — no second set of lags to keep in sync.
+Two smaller rules keep the smoothing from becoming drift. **Direction needs `PQ_HOLD_FLIP` (0.01 of
+the hold) of retrace to turn**, since Lenis's eased position wobbles by less than that and every
+wobble would otherwise flip the run and swap the rate with it; the cost is a ~6px deadband before
+the sequence starts, spent while the copy is still under its mask. And **each direction only gains
+ground** (`max` going in, `min` coming out), so a dipping target cannot walk the sweep backwards.
+`dt` is clamped (`PQ_HOLD_MAX_DT`) so a backgrounded tab does not return and land the sequence in one
+step.
 
-**The way out is half the way in** (450ms against 1400ms), and the asymmetry is the point. Reversing
-past the cue puts the camera back inside the shell with the cards and the controls already returned,
-so a symmetric retreat leaves the copy folding away over a scene that has moved on — read as lag,
-not as choreography. Anything that wants to trade against that trades on this one constant; nothing
-else knows the direction.
+The reverse is the same follower on `PQ_HOLD_OUT_MS`: the rules un-draw and the lines drop back under
+their masks together, bottom line first, because a larger lag means an element trails the sweep in
+*either* direction — no second set of lags to keep in sync. **The way out is roughly a third of the
+way in** (450ms against 1400ms) because reversing past the cue puts the camera back inside the shell
+with the cards and controls already returned, and a symmetric retreat leaves the copy folding away
+over a scene that has moved on.
 
-Two things this buys that are easy to lose in a refactor:
+`updatePullQuoteCopy` is a pure function of the reveal — **the copy must not get a clock of its
+own**, or the two are free to disagree about when they finish.
 
-- **The copy has no clock of its own.** `updatePullQuoteCopy` is a pure function of the reveal. An
-  earlier version gave it a private `max(scroll, time)` floor, which is how it came to finish while
-  the rules were still drawing: any second clock is free to disagree with the first.
-- **`dt` is clamped** (`PQ_HOLD_MAX_DT`). A backgrounded tab returns with an enormous gap, and an
-  unclamped follower would take it as one step and land the whole sequence in a frame.
+**The lines composite.** `translate3d` rather than `translateY`, so each line gets its own layer and
+travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every frame and they shimmer as
+they move.
 
-Two older attempts, kept because both look reasonable until they run:
-
-- **A CSS `transition` on the reveal.** It broke the moment the lap went scroll-bound: on a fast
-  flick the hold passes in ~0.2s, so a 0.42s delay meant **the lap ran its whole circuit around an
-  empty frame**. The stagger being a share of the sweep rather than a `transition-delay` is what
-  replaced it — it scales with the clock instead of desynchronising from it.
-- **A private `max(scroll, time)` floor on the copy.** It fixed the stranding, but the floor ran
-  from the reveal opening, so on any scroll slower than its 900ms the copy was finished while the
-  rules were still drawing. Rate-limiting the one shared clock does that job for both of them.
+**The quantisation is block-wide, not a pull-quote problem.** Every scroll-derived value here comes
+off the same `window.scrollY`, so the cards' arc-phase stutter is the same staircase reaching a
+different consumer. The general fix is to ease `progress` once in `deriveFrame` rather than at each
+use site — deliberately, since it re-times every consumer at once.
 
 **With no hold at all** (a very long quote on a short viewport) `hold` jumps 0 → 1 in a frame. The
 follower still spends `PQ_HOLD_IN_MS` crossing it, so the sequence plays once rather than popping.
@@ -1763,53 +1759,58 @@ mask and starts one line-height *below* it, so it rolls up into place and the re
 line at half opacity — only a line arriving. Name and role keep the plain 14px rise; three rolling
 blocks in a row would be noise, and the attribution is not the line people are reading.
 
-**Measured off a reference, not guessed.** The pattern is the one on
-`alexfrisondeisla.com` (its "( ABOUT ME )" copy). Recorded per frame in Playwright, each line there
-is an `inline-block` inside an `overflow: hidden` block, tweened from `transform: translate(0, 115%)`
-to `0` — **no rotation, no opacity, ~1.2s, ~40ms between lines**, on an ease whose tail decays
-exponentially. A 3D `rotateX` fold was tried first and is *not* what the effect is; the mask plus a
-straight vertical translate is the whole trick. `easeOutExpo` is the block's stand-in for that
-tween's shape: it puts most of a line's travel in the first tenth of *its own share* of the sweep,
-which is why the shares are staggered across the window rather than overlapped — a line snaps, then
-the next one does, for as long as the rules are still drawing.
+**Measured off a reference, not guessed.** The pattern is the one on `alexfrisondeisla.com` (its
+"( ABOUT ME )" copy): an `inline-block` inside an `overflow: hidden` block, tweened from
+`translate(0, 115%)` to `0` — **no rotation, no opacity, ~1.2s, ~40ms between lines**. The mask plus
+a straight vertical translate is the whole trick. `easeOutExpo` stands in for that tween's shape: it
+puts most of a line's travel in the first tenth of *its own share* of the sweep, which is why the
+shares are staggered across the window rather than overlapped — a line snaps, then the next one
+does, for as long as the rules are still drawing.
 
 **Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a
 probe span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block
-per line. It runs from scratch on build, on `fonts.ready`, and on every `doLayout` — the break
-points move with the box width and with whichever font finally resolved, so a patched split would
-be wrong within one resize. `relayoutQuote` drops the copy cache and rewrites the current frame
-straight after, because fresh line elements carry no progress var and would otherwise render at
-rest for a frame.
+per line. Break points move with the box width and with whichever font finally resolved, so it is
+always redone from the authored text rather than patched. `relayoutQuote` **gates on the quote box's
+width**, not on the viewport's: a scrollbar arriving changes the box without changing
+`innerWidth` (the body `ResizeObserver` is what catches it), and a viewport change that only alters
+height leaves the split correct. `fonts.ready` forces one regardless. It drops the copy cache and
+rewrites the current frame straight after, because fresh line elements carry no progress var and
+would otherwise render at rest for a frame.
 
-Three details that are load-bearing:
+Details that are load-bearing:
 
 - **The split must not change the box.** `publishPqMetrics` measures the quote to derive the hold
   and the crosshair's edge splits, so any height the split introduced would feed straight back into
   the choreography. Each line pads itself by `--gg-pq-line-bleed` and takes the same amount back as
   a negative margin; the quote is a **flex column** so those negative margins meet without
   collapsing (sibling margins collapse to the single most-negative one, which would leave the quote
-  one bleed taller per line). Verified: identical `getBoundingClientRect().height` before and after.
+  one bleed taller per line), and the lines are separated by whitespace text nodes, which generate
+  no flex items.
+- **Those separators are also the text.** Without them `textContent` runs the lines together
+  (`the differentapps.`) for anything reading the quote as a string.
+- **A script that does not break on spaces is one "word"**, so a CJK or Thai quote measures as a
+  single line and rolls as one block rather than line by line.
 - **The mask bleeds sideways too.** `overflow: hidden` clips both axes, and the hung opening mark
   sits *outside* the line's content box (see **Hanging the opening mark**), so an inline bleed is
-  what keeps the mask from cropping it. The vertical bleed is the descender headroom, and it is why
-  `--gg-pq-line-start` is 120% rather than 100% — a line has to wait *below* the padded mask, not
-  just below its own line box.
+  what keeps the mask from cropping it. `--gg-pq-line-bleed-inline` is **0.8em because that is the
+  widest outdent `hangOpeningMark` will apply** — it declines anything at or past `0.8em` — so the
+  two numbers have to move together. The vertical bleed is the descender headroom, and it is why
+  `--gg-pq-line-start` is 120% rather than 100%: a line waits *below the padded mask*, not just
+  below its own line box, which needs `0.2 × line-height > bleed`.
 - **The outdent becomes a margin, and only on the first line.** `text-indent` is still what
   `hangOpeningMark` sets while measuring, since the outdent can change where the first line breaks
   — but it must not survive into the split. It is an **inherited** property, and each line's inner
   is an `inline-block`, i.e. its own block container: the line indents the inline-block, then the
   inline-block re-indents its own first line, and the quote hangs the opening mark *and the first
-  letter*. Measured: first glyph at `84 − 20.81 × 2` against a content edge of 84. So the first
-  line's inner carries the same distance as `margin-inline-start`, which does not inherit and
-  applies exactly once.
+  letter*. So the first line's inner carries the same distance as `margin-inline-start`, which does
+  not inherit and applies exactly once.
 
 **The stagger** is a share of the sweep, not a per-line delay. Each line owns
 `PQ_COPY_LINE_SPAN` (0.55) of the sweep and the lags divide what is left, so the last line starts
 around where the first one finishes and the set spans the whole reveal — for two lines or for six,
-which is why the name/role lags below them never need re-tuning against the line count. A per-line
-delay would have to be recomputed against both. JS writes one already-eased `--gg-pq-line-v` per
-line, same as the rest of the copy; the `1` fallbacks are the rest state, which is also the no-JS
-and reduced-motion render.
+which is why the name/role lags below them never need re-tuning against the line count. JS writes one
+already-eased `--gg-pq-line-v` per line; the `1` fallbacks are the rest state, which is also the
+no-JS and reduced-motion render.
 
 #### The hold affordance
 
