@@ -29,6 +29,40 @@
       }
       if (e.data?.type === 'collab:toggle-panel') togglePanel();
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
+      if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
+      if (e.data?.type === 'collab:select-thread') {
+        const t = state.threads.find(x => x.id === e.data.threadId);
+        if (t) {
+          scrollToElement(t);
+          const target = resolveElement(t.elementPath);
+          if (target) {
+            target.style.outline = '3px solid #1d4ed8';
+            target.style.outlineOffset = '3px';
+            target.style.borderRadius = '3px';
+            target.style.transition = 'outline 0.3s';
+            setTimeout(() => {
+              target.style.outline = '';
+              target.style.outlineOffset = '';
+              target.style.borderRadius = '';
+            }, 2000);
+          }
+        }
+      }
+      if (e.data?.type === 'collab:thread-created') {
+        if (e.data.thread) {
+          const normalized = normalizeThread(e.data.thread);
+          const idx = state.threads.findIndex(x => x.id === normalized.id);
+          if (idx >= 0) state.threads[idx] = normalized;
+          else state.threads.push(normalized);
+        }
+        updateBadge();
+        renderMarkers();
+        notifyParent();
+        if (clickTarget) { clickTarget.classList.remove('collab-block-hover'); clickTarget = null; }
+      }
+      if (e.data?.type === 'collab:new-comment-cancel') {
+        if (clickTarget) { clickTarget.classList.remove('collab-block-hover'); clickTarget = null; }
+      }
     });
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
   }
@@ -186,6 +220,7 @@
       participants,
       pageTitle: state.pageTitle,
       pageUrl:   state.pageUrl,
+      threads: state.threads,
     }, '*');
   }
 
@@ -259,6 +294,14 @@
     panel.classList.toggle('open', state.panelOpen);
     if (state.panelOpen) renderPanel();
     notifyParent();
+  }
+
+  function setPanelMode(mode) {
+    if (!panel) return;
+    panel.classList.remove('collab-panel-float', 'collab-panel-left');
+    panel.style.cssText = '';
+    if (mode === 'left') panel.classList.add('collab-panel-left');
+    savePanelPlacement();
   }
 
   function toggleDock() {
@@ -575,6 +618,9 @@
         e.stopPropagation();
         e.preventDefault();
         openThreadPopup(threads[0], marker);
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'collab:thread-selected', threadId: threads[0].id }, '*');
+        }
       });
 
       floatingLayer.appendChild(marker);
@@ -745,6 +791,16 @@
 
   function openNewCommentPopup(targetEl) {
     clickTarget = targetEl;
+    // When hosted in a parent frame, delegate comment creation to the parent.
+    if (window.parent !== window) {
+      const anchor = {
+        elementPath: buildElementPath(targetEl),
+        quotedText: (targetEl.textContent || '').slice(0, 200).trim(),
+      };
+      window.parent.postMessage({ type: 'collab:new-comment-request', anchor }, '*');
+      return;
+    }
+    // Standalone mode — show native popup.
     newCommentTextarea.value = '';
     newCommentPopup.classList.add('open');
 
