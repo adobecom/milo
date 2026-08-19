@@ -358,6 +358,22 @@ describe('Brand Concierge', () => {
       expect(background.querySelectorAll('picture').length).to.equal(1);
       expect(background.querySelector('.desktop-only, .tablet-only, .mobile-only')).to.be.null;
     });
+
+    it('renders the title (not an eyebrow) when only a single heading is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-no-eyebrow.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const header = block.querySelector('.bc-header');
+      expect(header).to.exist;
+      expect(header.querySelector('.bc-header-eyebrow')).to.be.null;
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      const kids = [...header.children];
+      expect(kids[0].classList.contains('bc-header-title')).to.be.true;
+      expect(kids[1].classList.contains('bc-header-subtitle')).to.be.true;
+    });
   });
 
   it('does not render an eyebrow when a single heading is authored', async () => {
