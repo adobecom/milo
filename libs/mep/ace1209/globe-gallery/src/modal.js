@@ -105,11 +105,6 @@ export default function createGlobeModal({
   let dnNavOldCard = null;
   let dnNavNewCard = null;
 
-  // Cards past the barrel get a lazy modal-only carrier that dissolves in/out instead of flying
-  // to a slot. Keyed by gallery index.
-  const overflowCards = new Map();
-  let overflowPlaceholderTex = null;
-
   // Shared by close-finalize and destroy().
   function closeModalIdentity() {
     modalPhase = MODAL_PHASE.CLOSED;
@@ -147,83 +142,6 @@ export default function createGlobeModal({
     return (card && (card.modalAspect || card.srcAspect)) || cardAspect;
   }
 
-  function barrelCount() { return getCards().length; }
-  function isOverflowIdx(idx) { return idx >= barrelCount(); }
-  function isOverflowCard(card) { return !!(card && card.isOverflow); }
-
-  function ensureOverflowPlaceholder() {
-    if (overflowPlaceholderTex) return overflowPlaceholderTex;
-    const cv = document.createElement('canvas');
-    cv.width = 1; cv.height = 1;
-    const cx = cv.getContext('2d');
-    cx.fillStyle = '#1a1a1a';
-    cx.fillRect(0, 0, 1, 1);
-    overflowPlaceholderTex = new THREE.CanvasTexture(cv);
-    return overflowPlaceholderTex;
-  }
-
-  // Aspect stays at the base card aspect until the image decodes.
-  function createOverflowCard(idx) {
-    const { w, h } = getCardDims();
-    const mat = createModalMaterial(ensureOverflowPlaceholder(), cardAspect);
-    mat.uniforms.uRadius.value = modalRadiusFrac(cardAspect);
-    const geo = new THREE.PlaneGeometry(w, h, 1, 1);
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.material.depthTest = true;
-    mesh.visible = false;
-    mesh.renderOrder = 0;
-    return {
-      mesh,
-      modalMat: mat,
-      isOverflow: true,
-      idx,
-      // Dummy sphere-phase fields so defensive reads don't hit undefined.
-      sphereScaleSX: 1,
-      sphereScaleSY: 1,
-      ownTex: null,
-      pendingImg: null,
-    };
-  }
-
-  function getGalleryCard(idx) {
-    if (!isOverflowIdx(idx)) return getCards()[idx];
-    let card = overflowCards.get(idx);
-    if (!card) { card = createOverflowCard(idx); overflowCards.set(idx, card); }
-    return card;
-  }
-
-  // Owns its texture per-card (disposed in retireOverflowCard) so a cross-fade keeps the
-  // outgoing image.
-  function loadOverflowTexture(card, idx) {
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-    if (!loadModalUpgrade) return;
-    card.pendingImg = loadModalUpgrade(idx, (tex) => {
-      card.pendingImg = null;
-      if (card.ownTex) card.ownTex.dispose();
-      card.ownTex = tex;
-      card.modalMat.uniforms.map.value = tex;
-      if (tex.image && tex.image.width && tex.image.height) {
-        card.modalAspect = tex.image.width / tex.image.height;
-        card.modalMat.uniforms.uAspect.value = card.modalAspect;
-      }
-    }, () => { card.pendingImg = null; });
-  }
-
-  function retireOverflowCard(card) {
-    if (!isOverflowCard(card)) return;
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-    if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
-    card.mesh.visible = false;
-    card.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
-    if (card.ownTex) { card.ownTex.dispose(); card.ownTex = null; }
-    card.modalAspect = 0; // aspect belonged to the texture we just dropped
-    // Inlined to avoid a forward ref to resetModalMaterialUniforms.
-    const u = card.modalMat.uniforms;
-    u.uOpacity.value = 1;
-    u.uWarp.value = 0;
-    u.uMotionDir.value.set(0, 0);
-  }
-
   // Active modal card or a swipe-neighbour in modalScene; the core loop skips these.
   function isCardManaged(card) {
     return card === modalCard || (!!modalScene && card.mesh.parent === modalScene);
@@ -239,12 +157,8 @@ export default function createGlobeModal({
     }
     if (modalTexOwned) {
       if (modalTexCard && modalTexCard.modalMat) {
-        if (modalTexCard.isOverflow) {
-          modalTexCard.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
-        } else {
-          const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
-          if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
-        }
+        const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
+        if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
         modalTexCard.modalAspect = 0; // back to the base texture, so back to the barrel's aspect
       }
       modalTexOwned.dispose();
@@ -254,12 +168,6 @@ export default function createGlobeModal({
   }
 
   function getModalMaterial(card) {
-    // Overflow carriers ARE the modal material.
-    if (card.isOverflow) {
-      const u = card.modalMat.uniforms;
-      u.uRadius.value = modalRadiusFrac(u.uAspect.value);
-      return card.modalMat;
-    }
     if (!card.modalMat) {
       card.modalMat = createModalMaterial(card.mesh.material.map, modalUAspect(card));
     } else {
@@ -273,9 +181,7 @@ export default function createGlobeModal({
 
   // ACTIVE modal card only, not swipe-neighbours.
   function requestModalUpgrade(card, idx) {
-    // Free any resident barrel hi-res first; overflow carriers own theirs per-card.
     releaseModalTexture();
-    if (card.isOverflow) { loadOverflowTexture(card, idx); return; }
     if (!loadModalUpgrade) return;
     modalTexImg = loadModalUpgrade(idx, (tex) => {
       modalTexImg = null;
@@ -468,20 +374,15 @@ export default function createGlobeModal({
     if (!dnNavActive) return;
     const sphereGroup = getSphereGroup();
     if (dnNavOldCard) {
-      if (isOverflowCard(dnNavOldCard)) {
-        // No sphere slot — the cross-fade already faded it out.
-        retireOverflowCard(dnNavOldCard);
-      } else {
-        resetModalMaterialUniforms(dnNavOldCard.modalMat, 1);
-        if (dnNavOldCard.mesh.origMaterial) {
-          dnNavOldCard.mesh.material = dnNavOldCard.mesh.origMaterial;
-          dnNavOldCard.mesh.origMaterial = null;
-        }
-        sphereGroup.attach(dnNavOldCard.mesh);
-        snapToSphereSlot(dnNavOldCard);
-        dnNavOldCard.mesh.material.depthTest = true;
-        dnNavOldCard.mesh.renderOrder = 0;
+      resetModalMaterialUniforms(dnNavOldCard.modalMat, 1);
+      if (dnNavOldCard.mesh.origMaterial) {
+        dnNavOldCard.mesh.material = dnNavOldCard.mesh.origMaterial;
+        dnNavOldCard.mesh.origMaterial = null;
       }
+      sphereGroup.attach(dnNavOldCard.mesh);
+      snapToSphereSlot(dnNavOldCard);
+      dnNavOldCard.mesh.material.depthTest = true;
+      dnNavOldCard.mesh.renderOrder = 0;
     }
     if (dnNavNewCard) {
       resetModalMaterialUniforms(dnNavNewCard.mesh.material, 1);
@@ -496,7 +397,7 @@ export default function createGlobeModal({
   // controls draw order during the blend.
   function startDesktopNavTransition(newIdx) {
     const oldCard = modalCard;
-    const newCard = getGalleryCard(newIdx);
+    const newCard = getCards()[newIdx];
     if (!oldCard || !newCard || !modalScene) return;
 
     // Finalize any in-flight transition first, or the old-old card leaks.
@@ -504,7 +405,7 @@ export default function createGlobeModal({
 
     modalScene.attach(newCard.mesh);
     newCard.mesh.visible = true;
-    if (!newCard.isOverflow) newCard.mesh.origMaterial = newCard.mesh.material;
+    newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
     requestModalUpgrade(newCard, newIdx);
     // Also clears stale warp/motion.
@@ -533,8 +434,7 @@ export default function createGlobeModal({
     modalCard = newCard;
     modalPhase = MODAL_PHASE.OPEN;
     populateModal(newIdx);
-    // Only when it HAS a slot; no-op for overflow.
-    if (!isOverflowIdx(newIdx)) requestNavNudge(newIdx);
+    requestNavNudge(newIdx);
 
     dnNavOldCard = oldCard;
     dnNavNewCard = newCard;
@@ -727,16 +627,6 @@ export default function createGlobeModal({
               ? Math.max(0, Math.min(1, (now - modalChromeRevealT0) / CHROME_REVEAL_DUR))
               : 0;
           }
-        }
-      } else if (modalPhase === MODAL_PHASE.CLOSING && modalCard.isOverflow) {
-        // No slot to fly back to — dissolve to 0, then retire.
-        const u = modalCard.mesh.material.uniforms;
-        if (u && u.uOpacity) u.uOpacity.value = 1 - aE;
-        if (aT >= 1) {
-          retireOverflowCard(modalCard);
-          releaseModalTexture();
-          if (modalCanvasEl) modalCanvasEl.style.display = 'none';
-          closeModalIdentity();
         }
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
         // sphereGroup.rotation is identity, so apply the drag rotation manually.
@@ -1061,16 +951,6 @@ export default function createGlobeModal({
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
     resetModalDom();
     releaseModalTexture();
-    // Three frees GPU memory only on explicit dispose.
-    overflowCards.forEach((card) => {
-      if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-      if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
-      card.mesh.geometry.dispose();
-      card.modalMat.dispose();
-      if (card.ownTex) { card.ownTex.dispose(); card.ownTex = null; }
-    });
-    overflowCards.clear();
-    if (overflowPlaceholderTex) { overflowPlaceholderTex.dispose(); overflowPlaceholderTex = null; }
     if (modalRenderer) {
       modalRenderer.dispose();
       modalRenderer = null;
