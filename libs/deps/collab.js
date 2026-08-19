@@ -15,20 +15,18 @@
     return;
   }
 
-  // Token received from parent frame via postMessage (used when running inside an iframe,
-  // since third-party cookie blocking prevents IMS from restoring the session cross-origin).
-  let _parentToken = '';
   // Pending API proxy requests keyed by reqId — resolved/rejected when collab:api-response arrives.
   const _pendingApiRequests = {};
 
   if (window.parent !== window) {
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'collab:token-response' && e.data.token) {
-        const hadToken = !!_parentToken;
-        _parentToken = e.data.token;
-        // Token just became available — load data now instead of waiting for the
-        // next poll (or forever, if the first fetch already failed unauthenticated).
-        if (!hadToken && uiReady) refresh();
+      // Only accept messages from the direct parent frame.
+      if (e.source !== window.parent) return;
+      if (e.data?.type === 'collab:set-user') {
+        // Receive user profile from parent — no token ever leaves the parent frame.
+        if (e.data.name)      ME.name      = e.data.name;
+        if (e.data.profileId) ME.profileId = e.data.profileId;
+        if (e.data.email)     { ME.email = e.data.email; ME.imsEmail = e.data.email; }
       }
       if (e.data?.type === 'collab:toggle-panel') togglePanel();
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
@@ -85,7 +83,6 @@
         }
       }
     });
-    window.parent.postMessage({ type: 'collab:request-token' }, '*');
   }
 
   function apiFetchViaParent(path, opts = {}) {
@@ -109,8 +106,6 @@
   }
 
   function getRawToken() {
-    // In an iframe the token comes from the parent; adobeIMS is not usable there.
-    if (_parentToken) return _parentToken;
     return window.adobeIMS?.getAccessToken()?.token || '';
   }
 
@@ -699,6 +694,11 @@
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  function scrollPopupRepliesToBottom(popup) {
+    const section = popup?.querySelector('.collab-replies-section');
+    if (section) section.scrollTop = section.scrollHeight;
+  }
+
   function openThreadPopup(thread, anchorEl) {
     closeThreadPopup();
     if (state.panelOpen) togglePanel();
@@ -709,6 +709,8 @@
     popupAnchor = anchorEl;
     popupPageElement = resolveElement(thread.elementPath);
     positionPopup(popup, anchorEl);
+    // Scroll to the latest reply immediately on open.
+    requestAnimationFrame(() => scrollPopupRepliesToBottom(threadPopupEl));
   }
 
   function closeThreadPopup() {
@@ -726,7 +728,11 @@
     const updated = state.threads.find(t => t.id === threadId);
     if (!updated) return;
     const oldBody = threadPopupEl.querySelector('.collab-thread-expanded');
-    if (oldBody) oldBody.replaceWith(buildExpandedThread(updated));
+    if (oldBody) {
+      oldBody.replaceWith(buildExpandedThread(updated));
+      // Keep the latest reply visible after the DOM update.
+      requestAnimationFrame(() => scrollPopupRepliesToBottom(threadPopupEl));
+    }
   }
 
   // Refresh wherever this thread is currently being viewed — the floating popup
@@ -1238,7 +1244,24 @@
   }
 
   async function waitForImsReady() {
-    if (_parentToken || getToken()) return;
+    if (window.parent !== window) {
+      // In iframe mode, auth is handled by the parent. Wait for collab:set-user
+      // which the parent sends after the iframe loads (5 s safety fallback).
+      await new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          window.removeEventListener('message', onMsg);
+          resolve();
+        };
+        const onMsg = (e) => { if (e.data?.type === 'collab:set-user') finish(); };
+        window.addEventListener('message', onMsg);
+        setTimeout(finish, 5000);
+      });
+      return;
+    }
+    if (getToken()) return;
     if (window.adobeIMS?.isSignedInUser?.()) return;
     await new Promise((resolve) => {
       let done = false;
@@ -1246,25 +1269,20 @@
         if (done) return;
         done = true;
         window.removeEventListener('ims:ready', onReady);
-        window.removeEventListener('message', onMsg);
         resolve();
       };
       const onReady = () => finish();
-      // In an iframe the token arrives via postMessage, not ims:ready — wake on either
-      // so we don't stall the full 5s before the first authenticated fetch.
-      const onMsg = (e) => { if (e.data?.type === 'collab:token-response' && e.data.token) finish(); };
       window.addEventListener('ims:ready', onReady);
-      window.addEventListener('message', onMsg);
       setTimeout(finish, 5000);
     });
   }
 
-  // Fetch the signed-in user's profile straight from IMS using the access token.
-  // Works in an iframe (where window.adobeIMS is unavailable) because the token is
-  // passed down from the parent frame; the same path also works standalone.
+  // Fetch the signed-in user's profile straight from IMS — standalone mode only.
+  // In iframe mode ME is populated by the collab:set-user message from the parent.
   const IMS_PROFILE_URL = 'https://ims-na1.adobelogin.com/ims/profile/v1';
 
   async function fetchImsProfile() {
+    if (window.parent !== window) return;
     try {
       await waitForImsReady();
       const token = getRawToken();

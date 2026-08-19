@@ -325,6 +325,9 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
   border: 1px solid #e0edff;
   border-radius: 10px;
   padding: 0 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .collab-reply-row {
