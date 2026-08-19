@@ -1850,6 +1850,8 @@ function decorateInlineCtas(masField, content) {
   copyMasFieldIdToParent(masField, 'fragment-id');
   copyMasFieldIdToParent(masField, 'variation-id');
   preserveInlineCommerceContext(masField, content);
+  // masField is removed from the DOM here; hand callers the hoisted anchor instead.
+  const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
   masField.replaceWith(...content.childNodes);
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
@@ -1859,6 +1861,7 @@ function decorateInlineCtas(masField, content) {
       container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
     }
   }
+  return hoisted;
 }
 
 /**
@@ -1897,7 +1900,7 @@ async function createInlineField(el, options) {
   await localizePreviewLinks(masField);
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
-  if (!content) return;
+  if (!content) return masField;
 
   // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
   // them. Applies to both CTA (<a>) and price (<span>) fields.
@@ -1907,18 +1910,19 @@ async function createInlineField(el, options) {
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-    decorateInlineCtas(masField, content);
+    return decorateInlineCtas(masField, content) ?? masField;
   }
+  return masField;
 }
 
 export async function initMasField(el) {
   watchMasFieldCtas();
   let options = getOptions(el);
   const { fragment } = options;
-  if (!fragment) return;
+  if (!fragment) return el;
   options = overrideOptions(fragment, options);
   await loadFieldDependencies();
-  await createInlineField(el, options);
+  return createInlineField(el, options);
 }
 
 export default async function init(el) {
