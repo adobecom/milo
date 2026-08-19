@@ -1,4 +1,4 @@
-// Custom "Click & Drag" cursor for the globe (DI module). See README (Behavior notes).
+// Custom "Click & Drag" cursor for the globe.
 
 // 48px disc centered on the pointer via the −24px viewBox origin.
 const RING_SVG = [
@@ -17,9 +17,12 @@ const initialState = () => ({
   active: false, // cursor currently shown
   hintDismissed: false, // label faded out after the user's first drag
   retireT0: -1, // retirement fade start timestamp; -1 = not retiring
+  dragging: false, // last-written drag class state
   mx: 0,
   my: 0,
-  hasCoords: false, // a real mousemove has landed; gates activation. See README (Behavior notes).
+  wroteX: -1, // last position written to the DOM; -1 = none, so re-activation always writes
+  wroteY: -1,
+  hasCoords: false, // a real mousemove has landed; gates activation
 });
 
 export default function createCursor(deps) {
@@ -42,22 +45,18 @@ export default function createCursor(deps) {
   function onLeave() { state.onCanvas = false; }
   function onSuppress() { state.suppressed = true; }
 
-  // Capability is read once. A device that gains/loses a fine pointer mid-session is out of scope
-  // (a re-init re-reads it — e.g. an RM toggle; otherwise reload). See README (Behavior notes).
+  // Capability is read ONCE; only a re-init re-reads it.
   function setup() {
     if (els) return;
     if (!window.matchMedia) return;
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    // Disc — direct body child so mix-blend-mode blends against real page content.
     const disc = document.createElement('div');
     disc.className = 'globe-gallery-cursor-disc';
     document.body.appendChild(disc);
 
-    // Chevrons + label — no blend mode, safe inside the fixed container.
     const container = document.createElement('div');
     container.className = 'globe-gallery-cursor';
-    // Static structure via innerHTML; authored label set as textContent below.
     container.innerHTML = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
       + '<div class="globe-gallery-cursor-text-wrap">'
       + '<span class="globe-gallery-cursor-text"></span>'
@@ -76,19 +75,18 @@ export default function createCursor(deps) {
       canvas.addEventListener('mouseenter', onEnter);
       canvas.addEventListener('mouseleave', onLeave);
     }
-    // Window-level so coords stay live even if the pointer briefly leaves the canvas.
+    // Window-level so coords stay live if the pointer briefly leaves the canvas.
     window.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('focusin', onSuppress);
     window.addEventListener('blur', onSuppress);
   }
 
-  // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on touch.
   function update() {
     if (!els) return;
     const canvas = getCanvas();
 
-    // Retirement: start the CSS fade when the signal flips; after RETIRE_FADE_MS drop
-    // `active` too, handing the canvas cursor back to the system.
+    // Start the CSS fade when the signal flips; after RETIRE_FADE_MS drop `active` too,
+    // handing the canvas cursor back to the system.
     const wantRetired = getCursorRetired();
     if (wantRetired !== (state.retireT0 >= 0)) {
       state.retireT0 = wantRetired ? now() : -1;
@@ -108,21 +106,25 @@ export default function createCursor(deps) {
       state.active = wantActive;
       els.container.classList.toggle('globe-gallery-cursor-active', state.active);
       els.disc.classList.toggle('globe-gallery-cursor-disc-active', state.active);
-      // Hide the system cursor while ours shows; interaction.js defers to isActive().
+      // interaction.js defers to isActive().
       if (canvas) canvas.style.cursor = state.active ? 'none' : '';
     }
-    // One-way label dismissal: after the first drag the label fades (disc + chevrons stay).
     const wantDismissed = getHintDismissed();
     if (wantDismissed !== state.hintDismissed) {
       state.hintDismissed = wantDismissed;
       els.container.classList.toggle('globe-gallery-cursor-hint-dismissed', state.hintDismissed);
     }
-    // From `active` so going inactive mid-drag clears the squeeze rather than freezing it.
     const dragging = state.active && drag.isDragging;
-    els.container.classList.toggle('globe-gallery-cursor-dragging', dragging);
-    els.disc.classList.toggle('globe-gallery-cursor-disc-dragging', dragging);
-    if (!state.active) return;
-    // top/left (not transform) keeps `transform` free for the CSS scale entrance.
+    if (dragging !== state.dragging) {
+      state.dragging = dragging;
+      els.container.classList.toggle('globe-gallery-cursor-dragging', dragging);
+      els.disc.classList.toggle('globe-gallery-cursor-disc-dragging', dragging);
+    }
+    if (!state.active) { state.wroteX = -1; state.wroteY = -1; return; }
+    if (state.mx === state.wroteX && state.my === state.wroteY) return;
+    state.wroteX = state.mx;
+    state.wroteY = state.my;
+    // top/left, not transform, keeps `transform` free for the CSS scale entrance.
     els.disc.style.left = `${state.mx}px`;
     els.disc.style.top = `${state.my}px`;
     els.ring.style.transform = `translate(${state.mx}px, ${state.my}px)`;

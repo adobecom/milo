@@ -6,7 +6,6 @@ export function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
 }
 
-// The authored SVG URL (href, or the visible URL text) if this anchor is a badge logo.
 function badgeSvgUrl(a) {
   const href = a.getAttribute('href') || '';
   if (href.includes('.svg')) return href;
@@ -18,17 +17,14 @@ function isSvgAnchor(a) {
   return !!badgeSvgUrl(a);
 }
 
-// Inline <picture> markup for a badge logo URL, or null. getFederatedUrl (not decorateSVG) and
-// aria-hidden: see README (Card shape).
+// Inline <picture> markup for a badge logo URL, or null.
 function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
   return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
-// See README (Authoring contract) for the authored-row layout.
-
-// English fallback for the a11y instructions; authored inline so it stays localizable.
+// Fallback only; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const DEFAULT_HINT = 'Click & Drag';
@@ -62,7 +58,6 @@ function buildLabels(parts) {
   };
 }
 
-// One cell's text: its <p>s joined, or the bare cell text when unwrapped.
 function cellText(cell) {
   if (!cell) return '';
   const paras = [...cell.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
@@ -73,7 +68,7 @@ function cellParas(cell) {
   return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
 }
 
-// Move the authored <p>s into a container. See README (Reusing authored paragraphs).
+// Move the authored <p>s into a container.
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }
@@ -123,7 +118,7 @@ function parsePullQuote(row) {
   };
 }
 
-// The <em>/<strong> text, but only when it IS the whole paragraph. See README (Card shape).
+// The <em>/<strong> text, but only when it IS the whole paragraph.
 function wholeParaChild(p, selector) {
   const child = p.querySelector(selector);
   const text = child?.textContent.trim();
@@ -162,7 +157,7 @@ function parseFragmentCardSegment(nodes) {
       if (!img && bare) img = bare;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
-        // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
+        // Cloned, so the authored DOM is untouched.
         const row = li.cloneNode(true);
         const featureLi = row.querySelector(':scope > ul > li');
         row.querySelector(':scope > ul')?.remove();
@@ -212,12 +207,10 @@ function parseFragmentCards(row) {
   const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
 
   if (!hasDirectContent) {
-    // Children are section divs (each fragment section = one card).
     const divs = [...row.querySelectorAll(':scope > div')];
     return divs.flatMap((div) => parseFragmentCards(div));
   }
 
-  // Flat content — split by <hr> for multiple cards in one section.
   const segments = [];
   let current = [];
   [...row.childNodes].forEach((node) => {
@@ -231,14 +224,13 @@ function parseFragmentCards(row) {
   return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
 }
 
-// Fetch the fragment's .plain.html and parse all card sections from it.
 export async function fetchFragmentCards(href) {
   try {
     const resp = await fetch(`${href}.plain.html`);
     if (!resp.ok) return null;
     const html = await resp.text();
-    // DOMParser yields an inert document (no browsing context), so card <img>/<picture>
-    // never fetch here — only the right-sized texture URL (optimizeImgUrl) is downloaded.
+    // DOMParser yields an inert document, so card <img>/<picture> never fetch here — only the
+    // right-sized texture URL is downloaded.
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const cards = [...doc.body.querySelectorAll(':scope > div')]
       .flatMap((section) => parseFragmentCards(section))
@@ -249,8 +241,7 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// Right-size a helix/DA media image to what we rasterize. Cards ask by height, the modal by
-// width; non-media URLs pass through. See README (Texture memory budget).
+// Cards ask by height, the modal by width; non-media URLs pass through.
 export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
   try {
@@ -262,8 +253,8 @@ export function optimizeImgUrl(src, px, axis = 'width') {
   }
 }
 
-// Positional rows (see README, Authoring contract). Fragment links are authored
-// with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
+// Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
+// the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
@@ -365,10 +356,8 @@ const buildMarkup = (gid, labels) => `
   </dialog>
 `;
 
-// Per-page instance counter → unique id suffix per globe.
 let globeInstanceSeq = 0;
 
-// Build the block's DOM; returns the `gid` for this instance's unique ids.
 export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;

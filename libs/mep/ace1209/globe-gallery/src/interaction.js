@@ -1,13 +1,12 @@
-// Pointer interaction for the globe (DI module). See README (Behavior notes).
+// Pointer interaction for the globe.
 import * as THREE from '../three.module.min.js';
 
-// Release-velocity model (flushVel + endGesture): see README (Drag physics).
 const FRAME_MS = 1000 / 60; // velX/velY are per-60fps-frame; the core rescales by real frame dt
 const VEL_SMOOTH_MS = 35; // EMA time constant
 const CLICK_MAX_MOVE = 10; // px
 const CLICK_MAX_TIME = 500; // ms
 const PICK_MIN_OPACITY = 0.1;
-// Touch axis lock: touch gets yaw only (vertical drag = page scroll). See README.
+// Touch axis lock: touch gets yaw only; a vertical drag is page scroll.
 const AXIS_LOCK_THRESHOLD = 8; // px of travel before the axis is decided
 const AXIS_UNDECIDED = 0;
 const AXIS_HORIZONTAL = 1; // spinning the globe — we consume the deltas
@@ -20,9 +19,9 @@ export default function createInteraction({
   getSphereFormT, getDragSensitivity, interactiveThreshold, maxVel, drag, isCursorActive,
   getYawOnly,
 }) {
-  // Raycaster + NDC scratch for canvas picking.
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
+  const pickable = []; // reused per pick; pointermove outruns rAF, so don't allocate here
 
   let canvasEl = null;
   let activePointerId = -1; // owner of the in-flight gesture (-1 = none), not hasPointerCapture()
@@ -34,11 +33,10 @@ export default function createInteraction({
   let pointerDownX = 0;
   let pointerDownY = 0;
   let pointerDownT = 0;
-  // isTouchDrag: this gesture is touch/pen, so the axis lock applies per-gesture on hybrids.
+  // Per-gesture, so the axis lock still applies correctly on hybrids.
   let isTouchDrag = false;
   let axisLock = AXIS_UNDECIDED;
 
-  // Resolve the touch axis lock from total travel since pointerdown. No-op for mouse.
   function resolveAxisLock(e) {
     if (!isTouchDrag || axisLock !== AXIS_UNDECIDED) return;
     const tdx = Math.abs(e.clientX - pointerDownX);
@@ -49,7 +47,7 @@ export default function createInteraction({
 
   const ownsDrag = (e) => activePointerId === e.pointerId;
 
-  // Zero the shared drag object. NOT called on pointerup — release keeps velX/velY (inertia).
+  // NOT called on pointerup — release keeps velX/velY as inertia.
   function resetDrag() {
     drag.isDragging = false;
     drag.velX = 0;
@@ -62,13 +60,13 @@ export default function createInteraction({
     axisLock = AXIS_UNDECIDED;
   }
 
-  // Abort the gesture outright: no inertia, no tap. For pointercancel / context menu.
+  // Abort outright: no inertia, no tap.
   function cancelDrag() {
     if (!drag.isDragging) return;
     resetDrag();
   }
 
-  // Fold the banked travel into the velocity EMA, sampled by elapsed time (not per event).
+  // Fold banked travel into the velocity EMA, sampled by elapsed time, not per event.
   const clampVel = (v) => Math.max(-maxVel, Math.min(maxVel, v));
   function flushVel(t) {
     const dtMs = t - lastMoveT;
@@ -80,8 +78,8 @@ export default function createInteraction({
     lastMoveT = t;
   }
 
-  // Release: keep velX/velY as inertia, decayed across the idle gap since the last move (the final
-  // flush banks nothing). False when there was no gesture to end.
+  // Keeps velX/velY as inertia, decayed across the idle gap since the last move. False when
+  // there was no gesture to end.
   function endGesture() {
     if (!drag.isDragging) return false;
     drag.isDragging = false;
@@ -91,7 +89,6 @@ export default function createInteraction({
     return true;
   }
 
-  // Raycast the cards under the pointer; returns intersections (nearest first).
   function pickCards(e) {
     const renderer = getRenderer();
     const camera = getCamera();
@@ -100,10 +97,13 @@ export default function createInteraction({
     mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouseNDC, camera);
-    const meshes = getCards()
-      .map((c) => c.mesh)
-      .filter((m) => m.visible && m.material.opacity >= PICK_MIN_OPACITY);
-    return raycaster.intersectObjects(meshes, false);
+    const cards = getCards();
+    pickable.length = 0;
+    for (let i = 0; i < cards.length; i += 1) {
+      const m = cards[i].mesh;
+      if (m.visible && m.material.opacity >= PICK_MIN_OPACITY) pickable.push(m);
+    }
+    return raycaster.intersectObjects(pickable, false);
   }
 
   function onPointerDown(e) {
@@ -120,7 +120,6 @@ export default function createInteraction({
     pointerDownY = e.clientY;
     pointerDownT = now();
     lastMoveT = pointerDownT;
-    // Pen grouped with touch: direct contact, drives the page scroll gesture too.
     isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
     axisLock = AXIS_UNDECIDED;
   }
@@ -128,13 +127,13 @@ export default function createInteraction({
   function onPointerMove(e) {
     if (!ownsDrag(e)) return;
     resolveAxisLock(e);
-    // Touch: inert until the axis latches horizontal. lastMX/MY/lastMoveT are NOT advanced here,
-    // so neither the travel nor the elapsed time is lost.
+    // Inert until the axis latches horizontal. lastMX/MY/lastMoveT are NOT advanced here, so
+    // neither the travel nor the elapsed time is lost.
     if (isTouchDrag && axisLock !== AXIS_HORIZONTAL) return;
     const t = now();
     const sens = getDragSensitivity(); // rad/px, live off the viewport + band
     const dx = (e.clientX - lastMX) * sens;
-    // Pitch only for a mouse on the sphere; +Y delta (drag down) tips the front down.
+    // Pitch only for a mouse on the sphere.
     const dy = !isTouchDrag && !getYawOnly() ? (e.clientY - lastMY) * sens : 0;
     // pendingX/Y: exact travel, applied 1:1. velX/Y: smoothed, for the release.
     drag.pendingX += dx;
@@ -180,9 +179,8 @@ export default function createInteraction({
     if (!renderer || !camera) return;
     const canvas = renderer.domElement;
     const cards = getCards();
-    // Defer cursor writes to cursor.js while it's active (it sets `cursor: none`).
+    // cursor.js owns the cursor style while it is active.
     const cursorActive = typeof isCursorActive === 'function' && isCursorActive();
-    // Out of sphere phase: clear all hoverTargets so the ease-out kicks in.
     if (getSphereFormT() < interactiveThreshold || getModalIdx() >= 0) {
       if (!cursorActive) canvas.style.cursor = '';
       clearHover();
@@ -191,7 +189,6 @@ export default function createInteraction({
     const hits = pickCards(e);
     if (!cursorActive) canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
 
-    // Front-most card gets hoverTarget 1; capture its UV so the shader anchors the fisheye.
     const hitMesh = hits.length > 0 ? hits[0].object : null;
     const hitUV = hits.length > 0 ? hits[0].uv : null;
     for (let i = 0; i < cards.length; i += 1) {
@@ -206,8 +203,8 @@ export default function createInteraction({
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
-    // pointercancel = taken away, not released: no inertia, no tap. lostpointercapture is a no-op
-    // after a normal release and the escape hatch on a real loss. See README (Drag physics).
+    // pointercancel = taken away, not released: no inertia, no tap. lostpointercapture is a
+    // no-op after a normal release, and the escape hatch on a real loss.
     canvas.addEventListener('pointercancel', cancelDrag);
     canvas.addEventListener('lostpointercapture', endGesture);
     canvas.addEventListener('contextmenu', cancelDrag);
@@ -231,8 +228,8 @@ export default function createInteraction({
     resetDrag();
   }
 
-  // True while an in-flight touch gesture is page scroll (or undecided): the globe is inert, so
-  // hint dismissal must skip it. Gated on isDragging — isTouchDrag persists after pointerup.
+  // True while an in-flight touch gesture is page scroll or undecided. Gated on isDragging —
+  // isTouchDrag persists after pointerup.
   const isPageScrollGesture = () => drag.isDragging
     && isTouchDrag
     && axisLock !== AXIS_HORIZONTAL;
