@@ -195,17 +195,7 @@
     return e;
   }
 
-  function avatarEl(name, profileId, isYou) {
-    const a = el('span', 'collab-avatar');
-    a.style.cssText = `background:${avatarColor(profileId || name)};width:30px;height:30px;font-size:11px`;
-    a.textContent = avatarInitials(name);
-    a.title = name + (isYou ? ' (you)' : '');
-    if (isYou) a.dataset.you = '1';
-    return a;
-  }
-
   let state = { threads: [], participants: [], activeTab: 'all', searchQ: '', panelOpen: false, pageTitle: '', pageUrl: '' };
-  let pollTimer = null;
   let activeThreadId = null;
   let popupThreadId = null;
   let popupAnchor = null;
@@ -218,10 +208,6 @@
   let threadPopupEl;
   let markersVisible = true;
   let pageInfoResolved = false;
-  let uiReady = false;
-
-  const SVG_EYE_OPEN   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const SVG_EYE_CLOSED = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
   function toggleMarkersVisibility() {
     markersVisible = !markersVisible;
@@ -1163,14 +1149,6 @@
     return [ME.imsEmail, ME.email, ME.profileId, ME.name].filter(Boolean);
   }
 
-  function isMentioned(t) {
-    const ids = myIds();
-    return t.messages.some(msg => {
-      const mentioned = extractMentionEmails(msg.text);
-      return mentioned.some(e => ids.some(id => id === e));
-    });
-  }
-
   function hasMentionUnreplied(t) {
     const ids = myIds();
     let lastMentionIdx = -1;
@@ -1305,7 +1283,7 @@
 
   function startPolling() {
     refresh();
-    pollTimer = setInterval(() => {
+    setInterval(() => {
       if (document.visibilityState === 'visible') refresh();
     }, 10000);
     document.addEventListener('visibilitychange', () => {
@@ -1330,7 +1308,6 @@
     buildNewCommentPopup();
     setupElementInteraction();
     setupScrollSync();
-    uiReady = true;
     notifyParent();
     if (window.parent !== window) {
       // In iframe mode all API calls are proxied through the parent — no need to
