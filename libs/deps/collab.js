@@ -683,6 +683,8 @@
   function scrollPopupRepliesToBottom(popup) {
     const section = popup?.querySelector('.collab-replies-section');
     if (section) section.scrollTop = section.scrollHeight;
+    // Scroll the popup container so the reply composer stays visible.
+    if (popup) popup.scrollTop = popup.scrollHeight;
   }
 
   function openThreadPopup(thread, anchorEl) {
@@ -695,8 +697,7 @@
     popupAnchor = anchorEl;
     popupPageElement = resolveElement(thread.elementPath);
     positionPopup(popup, anchorEl);
-    // Scroll to the latest reply immediately on open.
-    requestAnimationFrame(() => scrollPopupRepliesToBottom(threadPopupEl));
+    scrollPopupRepliesToBottom(threadPopupEl);
   }
 
   function closeThreadPopup() {
@@ -716,8 +717,7 @@
     const oldBody = threadPopupEl.querySelector('.collab-thread-expanded');
     if (oldBody) {
       oldBody.replaceWith(buildExpandedThread(updated));
-      // Keep the latest reply visible after the DOM update.
-      requestAnimationFrame(() => scrollPopupRepliesToBottom(threadPopupEl));
+      scrollPopupRepliesToBottom(threadPopupEl);
     }
   }
 
