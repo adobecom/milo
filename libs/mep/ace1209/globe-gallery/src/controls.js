@@ -1,4 +1,4 @@
-// On-canvas globe chrome: auto-spin play/pause + the barrel's rotate row. See README.
+// On-canvas globe chrome: auto-spin play/pause + the barrel's rotate row.
 const SPIN_DAA_PAUSE = 'pause_spin--globe_gallery';
 const SPIN_DAA_RESUME = 'resume_spin--globe_gallery';
 
@@ -28,7 +28,7 @@ export default function createGlobeControls({ q, labels, getVisible, rotate }) {
   function setup() {
     layerEl = q('.globe-gallery-controls');
     if (!layerEl) return;
-    // Tab order, not layout: must land AFTER a11y.setup's nodes. See README (Globe controls).
+    // Tab order, not layout: must land AFTER a11y.setup's nodes.
     layerEl.parentNode?.appendChild(layerEl);
     spinBtn = layerEl.querySelector('.globe-gallery-spin-toggle');
     rotateBtns = [...layerEl.querySelectorAll('.globe-gallery-rotate')];
@@ -38,7 +38,6 @@ export default function createGlobeControls({ q, labels, getVisible, rotate }) {
     renderSpinState();
   }
 
-  // Per-frame: fade the layer in/out with the globe's interactive window.
   function update() {
     if (!layerEl) return;
     const visible = getVisible();
