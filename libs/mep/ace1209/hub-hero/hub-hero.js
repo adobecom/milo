@@ -10,6 +10,8 @@ const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+const federateSvgSrc = (img) => { if (isSvgUrl(img?.src)) img.src = getFederatedUrl(img.src); };
+const unwrapParagraphs = (el) => el.querySelectorAll('p').forEach((p) => p.replaceWith(...p.childNodes));
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
 
@@ -170,9 +172,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const children = [...slide.children];
   const left = children[0];
   const right = children[1] ?? children[0];
-  right.querySelectorAll('p').forEach((p) => {
-    p.replaceWith(...p.childNodes);
-  });
+  unwrapParagraphs(right);
 
   const [eyebrow, heading] = left.children;
   const asset = right.children[0];
@@ -187,9 +187,8 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     asset.removeAttribute('controls');
   }
 
-  if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
-  const iconImg = icon?.querySelector('img');
-  if (isSvgUrl(iconImg?.src)) iconImg.src = getFederatedUrl(iconImg.src);
+  federateSvgSrc(asset);
+  federateSvgSrc(icon?.querySelector('img'));
 
   decorateBlockText(left);
   const content = `
@@ -318,9 +317,7 @@ const setCarouselSlideOffsets = (grid, carousel) => {
 const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
   [...imageContainers[0].children]?.forEach((cntr) => {
-    cntr.querySelectorAll('p').forEach((p) => {
-      p.replaceWith(...p.childNodes);
-    });
+    unwrapParagraphs(cntr);
     container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, cntr));
   });
 
@@ -339,9 +336,7 @@ const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
   if (leftClone) gridColumns[1]?.append(leftClone);
   if (rightClone) gridColumns[3]?.append(rightClone);
-  container.querySelectorAll('img').forEach((img) => {
-    if (isSvgUrl(img.src)) img.src = getFederatedUrl(img.src);
-  });
+  container.querySelectorAll('img').forEach(federateSvgSrc);
 
   return container;
 };
