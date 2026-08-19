@@ -27,6 +27,8 @@
         // next poll (or forever, if the first fetch already failed unauthenticated).
         if (!hadToken && uiReady) refresh();
       }
+      if (e.data?.type === 'collab:toggle-panel') togglePanel();
+      if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
     });
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
   }
@@ -129,7 +131,7 @@
     return a;
   }
 
-  let state = { threads: [], participants: [], activeTab: 'all', searchQ: '', panelOpen: false };
+  let state = { threads: [], participants: [], activeTab: 'all', searchQ: '', panelOpen: false, pageTitle: '', pageUrl: '' };
   let pollTimer = null;
   let activeThreadId = null;
   let popupThreadId = null;
@@ -137,7 +139,6 @@
   let popupPageElement = null;
   let clickTarget = null;
 
-  let topbar, presenceRow, commentsBtnBadge, commentsBtn, visibilityBtn, userChip;
   let panel, threadList;
   let floatingLayer;
   let newCommentPopup, newCommentTextarea, newCommentGetValue;
@@ -152,42 +153,40 @@
   function toggleMarkersVisibility() {
     markersVisible = !markersVisible;
     document.body.classList.toggle('collab-markers-hidden', !markersVisible);
-    visibilityBtn.innerHTML = markersVisible ? SVG_EYE_OPEN : SVG_EYE_CLOSED;
-    visibilityBtn.title     = markersVisible ? 'Hide annotation markers' : 'Show annotation markers';
-    visibilityBtn.classList.toggle('active', !markersVisible);
+    notifyParent();
   }
 
-  function buildTopbar() {
-    topbar = el('div', '');
-    topbar.id = 'collab-topbar';
-
-    const pageInfo = el('div', 'collab-topbar-pageinfo');
-    pageInfo.innerHTML = `<span class="collab-topbar-url">… [${COLLAB_ID.slice(0, 8)}]</span>`;
-
-    const spacer = el('div', '');
-    spacer.style.flex = '1';
-
-    presenceRow = el('div', '');
-    presenceRow.id = 'collab-topbar-presence';
-
-    commentsBtn = el('button', 'collab-topbar-btn');
-    commentsBtn.innerHTML = `💬 Comments <span id="collab-badge" class="collab-badge">0</span>`;
-    commentsBtn.title = 'Toggle comments panel';
-    commentsBtn.addEventListener('click', togglePanel);
-    commentsBtnBadge = commentsBtn.querySelector('#collab-badge');
-
-    visibilityBtn = el('button', 'collab-topbar-btn collab-visibility-btn');
-    visibilityBtn.title = 'Hide annotation markers';
-    visibilityBtn.innerHTML = SVG_EYE_OPEN;
-    visibilityBtn.addEventListener('click', toggleMarkersVisibility);
-
-    const actions = el('div', '');
-    actions.id = 'collab-topbar-actions';
-    actions.append(presenceRow, commentsBtn, visibilityBtn);
-
-    topbar.append(pageInfo, spacer, actions);
-    document.body.prepend(topbar);
-    document.body.classList.add('collab-active');
+  function notifyParent() {
+    if (window.parent === window) return;
+    const count = state.threads.filter(t => !isResolved(t)).length;
+    const hasMention = state.threads.some(hasMentionUnreplied);
+    const seenEmails = new Set();
+    const seenNames  = new Set();
+    const others = state.participants.filter(p => {
+      if (matchesMe(p.email, p.name)) return false;
+      const email = String(p.email || '').toLowerCase();
+      const name  = String(p.name  || '').trim().toLowerCase();
+      if (!email && !name) return false;
+      if (email && seenEmails.has(email)) return false;
+      if (name  && seenNames.has(name))   return false;
+      if (email) seenEmails.add(email);
+      if (name)  seenNames.add(name);
+      return true;
+    });
+    const participants = [
+      { name: ME.name || ME.imsEmail, profileId: ME.profileId, isYou: true },
+      ...others.map(p => ({ name: p.name, profileId: p.profileId, isYou: false })),
+    ];
+    window.parent.postMessage({
+      type: 'collab:state-update',
+      threadCount: count,
+      hasMention,
+      panelOpen: state.panelOpen,
+      markersVisible,
+      participants,
+      pageTitle: state.pageTitle,
+      pageUrl:   state.pageUrl,
+    }, '*');
   }
 
   // Identify the current user: match by email first, fall back to display name.
@@ -198,39 +197,8 @@
     return !!name && meName.length > 1 && meName === String(name).trim().toLowerCase();
   }
 
-  function renderPresence() {
-    presenceRow.innerHTML = '';
-    // Show me plus other collaborators, deduped by email or display name.
-    const seenEmails = new Set();
-    const seenNames  = new Set();
-    const others = state.participants.filter(p => {
-      if (matchesMe(p.email, p.name)) return false; // self is added separately below
-      const email = String(p.email || '').toLowerCase();
-      const name  = String(p.name || '').trim().toLowerCase();
-      if (!email && !name) return false;
-      if (email && seenEmails.has(email)) return false;
-      if (name && seenNames.has(name)) return false;
-      if (email) seenEmails.add(email);
-      if (name)  seenNames.add(name);
-      return true;
-    });
-    const all   = [{ name: ME.name || ME.imsEmail, profileId: ME.profileId, isYou: true }, ...others];
-    const shown = all.slice(0, 5);
-    const rest  = all.slice(5);
-    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, p.isYou)));
-    if (rest.length) {
-      const overflow = el('span', 'collab-avatar-overflow');
-      overflow.textContent = `+${rest.length}`;
-      overflow.dataset.tooltip = rest.map(p => p.name).join(', ');
-      presenceRow.appendChild(overflow);
-    }
-  }
-
   function updateBadge() {
-    const count = state.threads.filter(t => !isResolved(t)).length;
-    commentsBtnBadge.textContent = count;
-    const hasMention = state.threads.some(hasMentionUnreplied);
-    commentsBtn.classList.toggle('has-mention', hasMention);
+    notifyParent();
   }
 
   function buildPanel() {
@@ -289,8 +257,8 @@
   function togglePanel() {
     state.panelOpen = !state.panelOpen;
     panel.classList.toggle('open', state.panelOpen);
-    commentsBtn.classList.toggle('active', state.panelOpen);
     if (state.panelOpen) renderPanel();
+    notifyParent();
   }
 
   function toggleDock() {
@@ -873,7 +841,7 @@
       if (!e.isTrusted) return;
       const anchor = e.target.closest('a[href]');
       if (!anchor) return;
-      if (anchor.closest('#collab-topbar,#collab-panel,#collab-new-comment-popup,.collab-thread-popup')) return;
+      if (anchor.closest('#collab-panel,#collab-new-comment-popup,.collab-thread-popup')) return;
       e.preventDefault();
     }, true);
 
@@ -886,7 +854,7 @@
         closeNewCommentPopup(); return;
       }
 
-      if (e.target.closest('.collab-thread-marker') || e.target.closest('#collab-topbar') ||
+      if (e.target.closest('.collab-thread-marker') ||
           e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
           e.target.closest('.collab-thread-popup')) return;
 
@@ -909,7 +877,7 @@
 
   function findCommentableElement(el) {
     if (!el || el === document.body || el.id === 'collab-floating-layer') return null;
-    const skip = ['#collab-topbar','#collab-panel','#collab-new-comment-popup','.collab-thread-popup','.collab-thread-marker'];
+    const skip = ['#collab-panel','#collab-new-comment-popup','.collab-thread-popup','.collab-thread-marker'];
     if (skip.some(s => el.closest?.(s))) return null;
     const main = document.querySelector('main') || document.body;
     const block = el.closest('main > div > div, main > div, section, article, p, h1, h2, h3, h4, h5, li, figure');
@@ -1103,11 +1071,10 @@
 
   function updatePageInfo(title, url) {
     if (!url || url.includes('localhost')) return;
-    const urlEl = topbar?.querySelector('.collab-topbar-url');
-    if (!urlEl) return;
-    urlEl.textContent = title || url;
-    urlEl.title = `${url}  [${COLLAB_ID}]`;
+    state.pageTitle = title || url;
+    state.pageUrl   = url;
     pageInfoResolved = true;
+    notifyParent();
   }
 
   async function refresh() {
@@ -1143,8 +1110,7 @@
       console.warn('[collab] refresh error', e);
     }
 
-    renderPresence();
-    updateBadge();
+    notifyParent();
     renderMarkers();
     if (state.panelOpen) {
       const userIsTyping = panel.contains(document.activeElement)
@@ -1222,20 +1188,17 @@
   }
 
   async function init() {
-    buildTopbar();
+    document.body.classList.add('collab-active');
     buildPanel();
-    togglePanel();
     buildFloatingLayer();
     buildNewCommentPopup();
     setupElementInteraction();
     setupScrollSync();
     uiReady = true;
-    // Render the presence bar right away (at least "you") so it is never blank while
-    // we wait for a token / the first fetch.
-    renderPresence();
+    notifyParent();
     await waitForImsReady();
     startPolling();
-    fetchImsProfile().then(() => { renderPresence(); refresh(); });
+    fetchImsProfile().then(() => { refresh(); });
   }
 
   init();
