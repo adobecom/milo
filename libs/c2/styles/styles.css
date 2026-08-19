@@ -1179,20 +1179,28 @@ span.hang-opening-quote {
 
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
+    --parallax-scale-grid-margin: var(--grid-margin-width);
+    --grid-scale-multiplier: tan(atan2(
+      min(var(--grid-max-width-fluid), 100vw),
+      min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
+    ));
+
     animation-name: enable-grid-parallax;
-    overflow: clip;
+    transform-origin: top center;
+    overflow-x: clip;
+    will-change: scale;
+
+    @media (width >= 768px) {
+      /* 8.333% grid margin as a length (a % can't resolve inside atan2) */
+      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
+    }
+
+    :has(> &) { overflow-x: clip; }
   }
 
   @keyframes enable-grid-parallax {
-    from {
-      --grid-max-width: var(--grid-max-width-fluid);
-      --grid-margin-width: 0px;
-    }
-
-    to {
-      --grid-max-width: var(--grid-max-width-target);
-      --grid-margin-width: var(--grid-margin-width-target);
-    }
+    from { scale: var(--grid-scale-multiplier, 1); }
+    to   { scale: 1; }
   }
 
   /* Stagger parallax declarations */
