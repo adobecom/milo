@@ -1,6 +1,9 @@
 .roller-carousel {
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
+  --gnav-offset: 72px;
+  --rcc-top-gap: 40px;
+  --rcc-sticky-top: var(--gnav-offset);
 
   .rcc-scroll-wrapper {
     position: relative;
@@ -9,8 +12,8 @@
 
   .rcc-sticky {
     position: sticky;
-    top: 0;
-    height: 100dvh;
+    top: var(--rcc-sticky-top);
+    height: calc(100dvh - var(--rcc-sticky-top));
     overflow: hidden;
   }
 
@@ -43,7 +46,7 @@
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: fill;
       filter: blur(145px);
     }
   }
@@ -60,7 +63,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--s2a-layout-md) var(--s2a-spacing-lg) 0;
+    padding: var(--rcc-top-gap) var(--s2a-spacing-lg) 0;
     box-sizing: border-box;
   }
 
@@ -152,6 +155,7 @@
     max-width: 70vw;
     border-radius: var(--s2a-border-radius-sm);
     overflow: hidden;
+    background: #000;
   }
 
   .rcc-media-icon {
@@ -203,12 +207,12 @@
     }
 
     .rcc-content {
-      padding-top: 0;
+      padding-top: var(--rcc-top-gap);
     }
 
     .rcc-sticky {
-      top: var(--s2a-layout-sm);
-      height: calc(100dvh - var(--s2a-layout-sm));
+      top: var(--rcc-sticky-top);
+      height: calc(100dvh - var(--rcc-sticky-top));
     }
   }
 
@@ -264,12 +268,16 @@
   }
 }
 
+body:has(header.has-breadcrumbs) .roller-carousel {
+  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-height-breadcrumbs, 33px));
+}
+
+body:has(header.local-nav) .roller-carousel {
+  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px));
+}
+
 @media (width >= 768px) {
   .roller-carousel {
-    .rcc-content {
-      padding-top: var(--s2a-layout-lg);
-    }
-
     .rcc-item {
       font-size: var(--s2a-typography-font-size-heading-1);
       line-height: var(--s2a-typography-line-height-heading-1);
@@ -292,6 +300,12 @@
 }
 
 @media (width >= 1280px) {
+  .roller-carousel,
+  body:has(header.has-breadcrumbs) .roller-carousel,
+  body:has(header.local-nav) .roller-carousel {
+    --rcc-sticky-top: 0px;
+  }
+
   .roller-carousel {
     .rcc-content {
       flex-direction: row;
