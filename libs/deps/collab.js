@@ -1332,9 +1332,15 @@
     setupScrollSync();
     uiReady = true;
     notifyParent();
-    await waitForImsReady();
-    startPolling();
-    fetchImsProfile().then(() => { refresh(); });
+    if (window.parent !== window) {
+      // In iframe mode all API calls are proxied through the parent — no need to
+      // wait for user identity before fetching data.
+      startPolling();
+    } else {
+      await waitForImsReady();
+      startPolling();
+      fetchImsProfile().then(() => { refresh(); });
+    }
   }
 
   init();
