@@ -88,6 +88,7 @@ describe('mas-field', () => {
 
     after(() => {
       unmockIms();
+      sinon.restore();
     });
 
     it('mep replace on one headless field does not affect other fields sharing the same source fragment', async () => {
