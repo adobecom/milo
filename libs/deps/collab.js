@@ -200,11 +200,11 @@
 
   function renderPresence() {
     presenceRow.innerHTML = '';
-    // Show only other collaborators (not myself), deduped by email or display name.
+    // Show me plus other collaborators, deduped by email or display name.
     const seenEmails = new Set();
     const seenNames  = new Set();
     const others = state.participants.filter(p => {
-      if (matchesMe(p.email, p.name)) return false; // exclude self
+      if (matchesMe(p.email, p.name)) return false; // self is added separately below
       const email = String(p.email || '').toLowerCase();
       const name  = String(p.name || '').trim().toLowerCase();
       if (!email && !name) return false;
@@ -214,9 +214,10 @@
       if (name)  seenNames.add(name);
       return true;
     });
-    const shown = others.slice(0, 5);
-    const rest  = others.slice(5);
-    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, false)));
+    const all   = [{ name: ME.name || ME.imsEmail, profileId: ME.profileId, isYou: true }, ...others];
+    const shown = all.slice(0, 5);
+    const rest  = all.slice(5);
+    shown.forEach(p => presenceRow.appendChild(avatarEl(p.name, p.profileId, p.isYou)));
     if (rest.length) {
       const overflow = el('span', 'collab-avatar-overflow');
       overflow.textContent = `+${rest.length}`;
@@ -510,15 +511,15 @@
         const localThread = state.threads.find(tt => tt.id === t.id);
         if (localThread) localThread.messages.push(optimistic);
         textarea.value = '';
-        refreshOpenPopup(t.id);
+        refreshOpenViews(t.id);
         try {
           await api.createReply(t.id, body);
-          // Immediately pull the thread so the popup shows the saved reply.
+          // Immediately pull the thread so the popup/panel shows the saved reply.
           await pullThread(t.id);
         } catch (e) {
           console.error('[collab] createReply', e);
           if (localThread) localThread.messages = localThread.messages.filter(m => m.id !== optimistic.id);
-          refreshOpenPopup(t.id);
+          refreshOpenViews(t.id);
         }
         finally { sendBtn.disabled = false; }
       });
@@ -663,6 +664,23 @@
     if (oldBody) oldBody.replaceWith(buildExpandedThread(updated));
   }
 
+  // Refresh wherever this thread is currently being viewed — the floating popup
+  // and/or its expanded card in the comments panel — so optimistic updates (and
+  // pulled server state) show up immediately in both places, not just one.
+  function refreshOpenViews(threadId) {
+    refreshOpenPopup(threadId);
+    if (state.panelOpen && activeThreadId === threadId) {
+      const card = threadList.querySelector('.collab-thread-card.active-card');
+      const updated = state.threads.find(t => t.id === threadId);
+      if (card && updated) {
+        const oldBody = card.querySelector('.collab-thread-expanded');
+        if (oldBody) oldBody.replaceWith(buildExpandedThread(updated, true));
+      } else if (updated) {
+        renderPanel(); // card not found (e.g. filtered by search) — fall back to a full render
+      }
+    }
+  }
+
   // Pull a single thread from the server and refresh its open popup — called right
   // after creating a thread or reply so the popup reflects the saved comment
   // (the POST has already resolved, so the fetched thread includes it).
@@ -677,8 +695,7 @@
       else state.threads.push(normalized);
       updateBadge();
       renderMarkers();
-      refreshOpenPopup(threadId);
-      if (state.panelOpen) renderPanel();
+      refreshOpenViews(threadId);
     } catch (e) {
       console.warn('[collab] pullThread failed', e);
     }
@@ -797,11 +814,12 @@
 
     try {
       const created = await api.createThread(anchor, body);
-      closeNewCommentPopup();
       const createdThread = created?.thread || created;
       if (createdThread?.id) {
         // Use the created thread directly (reliable id) instead of matching by
-        // element, open its popup, then pull it so the popup shows server state.
+        // element. Open its popup where the composer sat (no visible close/reopen —
+        // it just refreshes into the thread view), then pull the server state.
+        const composeRect = newCommentPopup.getBoundingClientRect();
         const normalized = normalizeThread(createdThread);
         const idx = state.threads.findIndex(x => x.id === normalized.id);
         if (idx >= 0) state.threads[idx] = normalized;
@@ -810,8 +828,14 @@
         renderMarkers();
         if (state.panelOpen) renderPanel();
         openThreadPopup(normalized, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
+        if (threadPopupEl) {
+          threadPopupEl.style.left = `${composeRect.left}px`;
+          threadPopupEl.style.top  = `${composeRect.top}px`;
+        }
+        closeNewCommentPopup();
         await pullThread(normalized.id);
       } else {
+        closeNewCommentPopup();
         await refresh();
         const newThread = state.threads.find(t => resolveElement(t.elementPath) === savedTarget);
         if (newThread) openThreadPopup(newThread, { getBoundingClientRect: () => savedTarget.getBoundingClientRect() });
