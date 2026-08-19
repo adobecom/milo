@@ -193,7 +193,7 @@ export const CARD_FRAG = [
   '}',
 ].join('\n');
 
-// A CARD_FRAG variant over a text canvas, no corner SDF. uExitP (0→1) drives the one-way exit.
+// A CARD_FRAG variant over a text canvas, no corner SDF.
 export const TEXT_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -202,25 +202,19 @@ export const TEXT_FRAG = [
   'uniform float uZoom;',
   'uniform float uUVScale;',
   'uniform float uAspect;',
-  'uniform float uExitP;',
   'uniform vec2  uResolution;',
-  'uniform vec2  uMotionDir;',
   'varying vec2  vUv;',
   ...HASH21,
   'void main() {',
   '  vec2 d = vUv - 0.5;',
-  // Horizontal stretch + radial scatter.
-  '  d.x *= 1.0 + uExitP * 1.6;',
-  '  d    += d * uExitP * 0.7;',
   '  vec2 dA = vec2(d.x * uAspect, d.y);', // scale x to world-proportional space
   '  float r2 = dot(dA, dA);', // isotropic radius in world space
-  '  float exitWarp = uWarp + uExitP * 3.0;',
-  '  vec2 warpedVUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
+  '  vec2 warpedVUv = d / (1.0 + uWarp * r2 * 4.0) + 0.5;',
   '  vec2 finalUv = (warpedVUv - 0.5) / uUVScale + 0.5;',
   '  vec2 radial = (vUv - 0.5) * uCA;',
-  '  float r = texture2D(uMap, finalUv + radial - uMotionDir).r;',
+  '  float r = texture2D(uMap, finalUv + radial).r;',
   '  float g = texture2D(uMap, finalUv).g;',
-  '  float b = texture2D(uMap, finalUv - radial + uMotionDir * 0.5).b;',
+  '  float b = texture2D(uMap, finalUv - radial).b;',
   '  float a = texture2D(uMap, finalUv).a;',
   // Sample alpha at 4 offsets so dissolve fires at glyph edges first.
   '  float _bl  = 0.020;',
@@ -234,7 +228,7 @@ export const TEXT_FRAG = [
   '  float nR      = hash21(cell + vec2(0.00,  0.00));',
   '  float nG      = hash21(cell + vec2(2.10,  1.30));',
   '  float nB      = hash21(cell + vec2(1.70, -0.50));',
-  '  float dissolve  = clamp(uWarp * 0.2 + uZoom * 2.0 + uExitP * 0.97, 0.0, 0.97);',
+  '  float dissolve  = clamp(uWarp * 0.2 + uZoom * 2.0, 0.0, 0.97);',
   '  float localDis  = clamp(dissolve + edgeProx * dissolve * 2.0, 0.0, 0.97);',
   '  float pedge     = 0.06;',
   '  float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
@@ -247,7 +241,6 @@ export const TEXT_FRAG = [
   '  float fz   = max(0.005, uWarp * 0.025);',
   '  float fadeX = smoothstep(0.0, fz,       sc.x) * smoothstep(1.0, 1.0 - fz,       sc.x);',
   '  float fadeY = smoothstep(0.0, fz * 0.5, sc.y) * smoothstep(1.0, 1.0 - fz * 0.5, sc.y);',
-  '  float exitFade = 1.0 - smoothstep(0.0, 0.85, uExitP);',
-  '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY * exitFade);',
+  '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY);',
   '}',
 ].join('\n');

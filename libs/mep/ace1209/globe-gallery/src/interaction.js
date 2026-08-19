@@ -16,7 +16,7 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
-  getSphereFormT, getDragSensitivity, interactiveThreshold, maxVel, drag, isCursorActive,
+  getSphereFormT, getDragSensitivity, interactiveThreshold, maxVel, drag,
   getYawOnly,
 }) {
   const raycaster = new THREE.Raycaster();
@@ -36,6 +36,21 @@ export default function createInteraction({
   // Per-gesture, so the axis lock still applies correctly on hybrids.
   let isTouchDrag = false;
   let axisLock = AXIS_UNDECIDED;
+  let hoveringCard = false;
+  let appliedCursor = null; // last value written to canvas.style.cursor
+
+  // Sole writer of the canvas cursor. Also called per-frame: the gate flips on scroll alone.
+  function applyCursor() {
+    if (!canvasEl) return;
+    let want = '';
+    if (getSphereFormT() >= interactiveThreshold && getModalIdx() < 0) {
+      if (drag.isDragging) want = 'grabbing';
+      else want = hoveringCard ? 'pointer' : 'grab';
+    }
+    if (want === appliedCursor) return;
+    appliedCursor = want;
+    canvasEl.style.cursor = want;
+  }
 
   function resolveAxisLock(e) {
     if (!isTouchDrag || axisLock !== AXIS_UNDECIDED) return;
@@ -58,6 +73,7 @@ export default function createInteraction({
     sampY = 0;
     activePointerId = -1;
     axisLock = AXIS_UNDECIDED;
+    applyCursor();
   }
 
   // Abort outright: no inertia, no tap.
@@ -86,6 +102,7 @@ export default function createInteraction({
     activePointerId = -1;
     axisLock = AXIS_UNDECIDED; // cleared for the next gesture; the tap test doesn't read it
     flushVel(now());
+    applyCursor();
     return true;
   }
 
@@ -122,6 +139,7 @@ export default function createInteraction({
     lastMoveT = pointerDownT;
     isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
     axisLock = AXIS_UNDECIDED;
+    applyCursor();
   }
 
   function onPointerMove(e) {
@@ -168,26 +186,25 @@ export default function createInteraction({
   }
 
   function clearHover() {
+    hoveringCard = false;
     const cards = getCards();
     for (let i = 0; i < cards.length; i += 1) cards[i].hoverTarget = 0;
   }
 
   function onHover(e) {
     if (e.pointerType !== 'mouse') return;
-    const renderer = getRenderer();
     const camera = getCamera();
-    if (!renderer || !camera) return;
-    const canvas = renderer.domElement;
+    if (!getRenderer() || !camera) return;
     const cards = getCards();
-    // cursor.js owns the cursor style while it is active.
-    const cursorActive = typeof isCursorActive === 'function' && isCursorActive();
     if (getSphereFormT() < interactiveThreshold || getModalIdx() >= 0) {
-      if (!cursorActive) canvas.style.cursor = '';
+      hoveringCard = false;
+      applyCursor();
       clearHover();
       return;
     }
     const hits = pickCards(e);
-    if (!cursorActive) canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
+    hoveringCard = hits.length > 0;
+    applyCursor();
 
     const hitMesh = hits.length > 0 ? hits[0].object : null;
     const hitUV = hits.length > 0 ? hits[0].uv : null;
@@ -223,6 +240,7 @@ export default function createInteraction({
       canvasEl.removeEventListener('pointermove', onHover);
       canvasEl.removeEventListener('pointerleave', clearHover);
       canvasEl.style.cursor = '';
+      appliedCursor = null;
       canvasEl = null;
     }
     resetDrag();
@@ -234,5 +252,5 @@ export default function createInteraction({
     && isTouchDrag
     && axisLock !== AXIS_HORIZONTAL;
 
-  return { setup, teardown, isPageScrollGesture };
+  return { setup, teardown, isPageScrollGesture, applyCursor };
 }

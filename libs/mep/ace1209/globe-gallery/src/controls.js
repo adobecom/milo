@@ -2,12 +2,14 @@
 const SPIN_DAA_PAUSE = 'pause_spin--globe_gallery';
 const SPIN_DAA_RESUME = 'resume_spin--globe_gallery';
 
-export default function createGlobeControls({ q, labels, getVisible, rotate }) {
+export default function createGlobeControls({ q, labels, getVisible, getHintDismissed, rotate }) {
   let layerEl = null;
   let spinBtn = null;
+  let hintEl = null;
   let rotateBtns = [];
   let paused = false; // survives breakpoint rebuilds — the closure outlives them
   let appliedVisible = null; // last-written class state; update() only writes on a flip
+  let appliedDismissed = null;
 
   function renderSpinState() {
     if (!spinBtn) return;
@@ -31,19 +33,27 @@ export default function createGlobeControls({ q, labels, getVisible, rotate }) {
     // Tab order, not layout: must land AFTER a11y.setup's nodes.
     layerEl.parentNode?.appendChild(layerEl);
     spinBtn = layerEl.querySelector('.globe-gallery-spin-toggle');
+    hintEl = layerEl.querySelector('.globe-gallery-hint');
     rotateBtns = [...layerEl.querySelectorAll('.globe-gallery-rotate')];
     spinBtn?.addEventListener('click', onSpinClick);
     rotateBtns.forEach((btn) => btn.addEventListener('click', onRotateClick));
     appliedVisible = null;
+    appliedDismissed = null;
     renderSpinState();
   }
 
   function update() {
     if (!layerEl) return;
     const visible = getVisible();
-    if (visible === appliedVisible) return;
-    appliedVisible = visible;
-    layerEl.classList.toggle('is-visible', visible);
+    if (visible !== appliedVisible) {
+      appliedVisible = visible;
+      layerEl.classList.toggle('is-visible', visible);
+    }
+    const dismissed = typeof getHintDismissed === 'function' && getHintDismissed();
+    if (dismissed !== appliedDismissed) {
+      appliedDismissed = dismissed;
+      hintEl?.classList.toggle('is-dismissed', dismissed);
+    }
   }
 
   function isSpinPaused() { return paused; }
@@ -52,10 +62,13 @@ export default function createGlobeControls({ q, labels, getVisible, rotate }) {
     spinBtn?.removeEventListener('click', onSpinClick);
     rotateBtns.forEach((btn) => btn.removeEventListener('click', onRotateClick));
     layerEl?.classList.remove('is-visible');
+    hintEl?.classList.remove('is-dismissed');
     layerEl = null;
     spinBtn = null;
+    hintEl = null;
     rotateBtns = [];
     appliedVisible = null;
+    appliedDismissed = null;
   }
 
   return { setup, update, teardown, isSpinPaused };

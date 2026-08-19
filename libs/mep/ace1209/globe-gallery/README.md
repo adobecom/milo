@@ -64,16 +64,15 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs `createGlobeGalleryRuntime()` → `{ init, destroy }`. Holds the *visual* tuning constants (scroll **timing** lives in `timeline.js`) and the stateful core: arc/grid/fold/sphere placement, drag physics, lifecycle. `tick()` orchestrates single-concern stages; `updateCardTransform` dispatches over four placement branch fns. Instantiates the DI modules. See Module layout. |
 | `authoring.js` | `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint })` (+ internal parsers). Reads the block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix, filling the arc-copy / pull-quote slots. Badge logos are `/federal` assets resolved via Milo's `getFederatedUrl`. |
-| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`), no rasterized mask. The two use *different* box conventions: `CARD_FRAG` fills the plane edge-to-edge, while `MODAL_FRAG` insets the shape by `uRadius` on all four sides (see Modal chrome). `TEXT_FRAG` adds a barrel warp + particle dissolve + the `uExitP` one-way exit. |
+| `shaders.js` | GLSL: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. Card/modal frags round corners with one analytic SDF (`rrSDF`), no rasterized mask. The two use *different* box conventions: `CARD_FRAG` fills the plane edge-to-edge, while `MODAL_FRAG` insets the shape by `uRadius` on all four sides (see Modal chrome). `TEXT_FRAG` adds a barrel warp + particle dissolve, both driven by scroll clocks only. |
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
 | `FINDINGS.md` | The tuning/robustness backlog left after the scroll-model work: the runway/camera-pacing coupling, undocumented arc constants, and the scroll-model probe worth rebuilding. Each entry carries its confirmation step. Read it before retuning any `zoomT` threshold. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
-| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Cedes its hover cursor to the custom cursor via `isCursorActive()`. |
+| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Sole owner of the canvas cursor — native `grab`/`grabbing`/`pointer`, written through `applyCursor()` (see Behavior notes). |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
-| `cursor.js` | `createCursor(deps)` → `{ setup, update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the two-step retirement, `isActive()` gating interaction's cursor. No-op on touch. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
@@ -122,8 +121,8 @@ touches the DOM on change), and `ctxLoss` (see WebGL context loss).
 **`tick()`'s stage order is load-bearing** — producers before consumers, and two stages read *last*
 frame's value on purpose: `modal.updateAnimation` wants the previous `sphereGroup.position` with this
 frame's refreshed `sphereRotQuat`, and `updateA11yFocusRing` must run after the card transforms so it
-projects fresh world positions. `updateHintExitProgress` owns `textExitProgress` and precedes its two
-consumers (the hint plane and the cursor). Reordering is a silent one-frame-lag bug, not a crash.
+projects fresh world positions. `updateHintExitProgress` owns `hintDismissProgress` and precedes its one
+consumer (`controls.update`). Reordering is a silent one-frame-lag bug, not a crash.
 
 **Per-frame vs. baked.** Anything the sphere's rotation can change is recomputed every frame rather
 than stored: the facing tilt (`applyCardFacing` — a baked tilt rotates away from the camera), the
@@ -132,9 +131,9 @@ their inputs only change on a rebuild or a texture landing: `dragFlipZ` (`recomp
 masonry solve.
 
 Per-card placement (the largest stage) is a dispatcher over four runtime-scope branch fns — kept in
-this file because they read deeply from the closure and run in the hot loop. Six DI modules are
-injected with live-state getters: `materials.js`, the a11y widget, the modal, `interaction.js`, the
-cursor, and the globe controls. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
+this file because they read deeply from the closure and run in the hot loop. Five DI modules are
+injected with live-state getters: `materials.js`, the a11y widget, the modal, `interaction.js`, and
+the globe controls. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
 only through the shared `sphereRotQuat` / `snapToSphereSlot` / `requestNavNudge` callbacks.
 
 ## Rebuilding Three.js
@@ -150,7 +149,7 @@ The block expects up to **five direct child rows** (the pull-quote row is option
 | --- | --- | --- |
 | 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; remaining `<p>`s → `.globe-gallery-arc-copy-body` (each authored paragraph is reused as-is, inline markup included) |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
-| 2 | **Hint copy** — two cells | **cell 0** → the barrel's visible bottom row (mobile), the sentence between the rotate arrows; **cell 1** → the WebGL hint plane + desktop cursor label (the short one). Cell 0 keeps its authored `<p>`s, one per line; cell 1 is a canvas texture, so its `<p>`s are joined with a space. Either may be bare cell text |
+| 2 | **Hint copy** — two cells | **cell 0** → the barrel's visible bottom row (mobile), the sentence between the rotate arrows; **cell 1** → the WebGL hint plane (the short one). Cell 0 keeps its authored `<p>`s, one per line; cell 1 is a canvas texture, so its `<p>`s are joined with a space. Either may be bare cell text |
 | 3 | **A11y strings** | one cell, `\|\|`-separated in on-screen order: **instructions \|\| rotate-left \|\| rotate-right \|\| pause-spin \|\| resume-spin \|\| prev-arrow \|\| card-position template \|\| next-arrow \|\| close** — nine parts, the entry-widget instructions first. Each part falls back to English independently |
 | 4 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
 
@@ -166,7 +165,7 @@ and an HTML row — at different breakpoints and different lengths, so they get 
 than sharing a divider. The divider now means exactly one thing: "this is row 3."
 
 **No back-compat path.** An earlier contract packed rows 2 and 3 into a single row (a `<p>` of
-`<cursor label> \|\| <touch instruction>`, an instructions `<p>`, a label-list `<p>`) with the
+`<hint-plane label> \|\| <touch instruction>`, an instructions `<p>`, a label-list `<p>`) with the
 pull-quote at row 3, and content published before the globe controls shipped carried only the four
 modal labels. None of that is read any more: the parse is **strictly positional**, because on this
 block re-authoring the table is cheaper than carrying a second parse shape forever. A page still on
@@ -402,7 +401,7 @@ literals in the code are only fallbacks that never show on a correctly-authored 
 | Where | String | Used for | Fallback |
 | --- | --- | --- | --- |
 | Row 2, cell 0 | touch instruction | the barrel's visible bottom-row copy, between the rotate arrows (see Globe controls). Real on-screen prose, so it's a sentence, not a label. **The authored `<p>`s are kept as nodes, one per line**, so the author owns the line break; a cell with no `<p>` renders as plain text | `Click and drag to rotate. Tap to dive deep into the artwork.` (`DEFAULT_TOUCH_HINT`) |
-| Row 2, cell 1 | "Click & Drag" | WebGL hint + desktop cursor label (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font, so keep it short) | `Click & Drag` (`DEFAULT_HINT`) |
+| Row 2, cell 1 | "Click & Drag" | WebGL hint plane copy (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font, so keep it short) | `Click & Drag` (`DEFAULT_HINT`) |
 | Row 3, part 1 | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
 | Row 3, parts 2–9 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close` | the eight UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
 
@@ -552,12 +551,12 @@ speeding up the globe:
 | segment | raw scroll | → progress | owns |
 |---|---|---|---|
 | **formation** (arc→grid→fold→settle) | `0 → --gg-formation-vh` | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
-| **tail** (zoom-through + pull-quote) | `--gg-formation-vh → --gg-runway-height` | `foldLast → 1` | `zoomT`, cursor retire, pull-quote |
+| **tail** (zoom-through + pull-quote) | `--gg-formation-vh → --gg-runway-height` | `foldLast → 1` | `zoomT`, hint-text + controls retire, pull-quote |
 
 Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets tail length only.
 `formedScrollPx()` is the single source used by the remap, the reduced-motion pin, and the focus-snap.
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
-(`CAM_Z_SPHERE → CAM_Z_END`), the cursor retirement, and the pull-quote.
+(`CAM_Z_SPHERE → CAM_Z_END`), the hint-text and controls retirement, and the pull-quote.
 
 ### One viewport height
 
@@ -759,16 +758,15 @@ or the section arrives on top of it.
 - *Quote should linger instead of scrolling straight off:* that is a held frame — extend the pin's
   bottom edge past the reveal and lengthen the reveal transition to match, keeping the clearance
   above.
-- *"Click & Drag" cursor or hint text lingers too long/short:* there is no constant for either —
-  the cursor retires **on** `pqAppearZoomT` (with the globe controls) and the hint text's linear
-  fade reaches 0 **at** it, so the whole affordance layer leaves as the quote arrives and none of
-  the three can drift apart. To move any of them, move the cue. One threshold for both cursor
-  stages on this clock — label and disc go together. (Cursor is desktop-only.)
-- *Cursor disc survives too many drags after the label goes:* `CURSOR_DRAG_RETIRE_T` (0.30) vs
-  `CURSOR_DRAG_DISMISS_T` (0.12) — both on drag-accrued `textExitProgress`, so the ratio is how many
-  extra drags the disc outlives the label. `updateHintExitProgress` adds `HINT_EXIT_HOLD_RATE` per
-  60fps frame held plus `norm × HINT_EXIT_DIST_RATE` and `norm² × HINT_EXIT_BURST_RATE` per frame of
-  motion (all `× dtScale`), so ~0.12 is a flick and ~0.30 is roughly the same drag continued. Keep `CURSOR_DRAG_RETIRE_T > CURSOR_DRAG_DISMISS_T` or the two steps collapse.
+- *"Click & Drag" hint text lingers too long/short:* there is no constant — the globe controls
+  retire **on** `pqAppearZoomT` and the hint text's linear fade reaches 0 **at** it, so the whole
+  affordance layer leaves as the quote arrives and the two can't drift apart. To move either, move
+  the cue.
+- *Barrel hint copy fades too early/late after a spin:* `HINT_DISMISS_T` (0.12) on drag-accrued
+  `hintDismissProgress`. `updateHintExitProgress` adds `HINT_EXIT_HOLD_RATE` per 60fps frame held
+  plus `norm × HINT_EXIT_DIST_RATE` and `norm² × HINT_EXIT_BURST_RATE` per frame of motion (all
+  `× dtScale`), so ~0.12 is about one flick. A rotate-chevron tap or a card open sets it to 1
+  outright — both are the interaction the copy asks for.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
 Current result (runway 540 / formation 304, tail 236): the quote is revealed centred at
@@ -898,7 +896,7 @@ for whichever globe is actually on screen. The resumed loop's `updateCanvasVisib
 styles in `authoring.js`). Two bands in the page-root stacking context:
 
 - **Hero — 2–5:** world `2`, main canvas `3`, arc-copy / a11y widgets `4`, pull-quote / a11y tip `5`.
-- **Modal — 13–17:** backdrop `13`, modal canvas `14`, chrome `15`, cursor disc `16`, cursor container `17`.
+- **Modal — 13–15:** backdrop `13`, modal canvas `14`, chrome `15`.
 
 The modal band sits just above the **C2 gnav (`12`)** so the card view covers the nav, and
 deliberately **below** the interrupts that should appear over the globe — caas (`200`),
@@ -929,7 +927,7 @@ do **not** share a zero:
 | `arcPanT` | arc pre-roll → arc fully panned | `progress / PROGRESS_PAN_END + PROGRESS_ARC_PREROLL · arcCopyEntryT` | arc geometry (`buildArcCtx`), `gridFormT` |
 | `gridFormT` | peel start → all cards in grid | `(arcPanT − 0.30) / 0.30` | per-card peel (`gpLocalT` after per-card delay + jitter) |
 | `sphereFormT` | `FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS` | `(progress − 0.039) / (0.322 − 0.039)` | camera, depth sort, interactivity, hint text, arc-copy fade-out |
-| `zoomT` | sphere formed → runway end | `(progress − 0.322) / (1 − 0.322)` | zoom camera, cursor retire, pull-quote, canvas hide |
+| `zoomT` | sphere formed → runway end | `(progress − 0.322) / (1 − 0.322)` | zoom camera, hint-text fade, controls retire, pull-quote, canvas hide |
 
 Two consequences worth internalizing: `arcPanT` is the only clock that depends on
 `arcCopyEntryT`, so arc/grid timing shifts with *how the user entered the block*; and `sphereFormT`
@@ -962,7 +960,7 @@ camera      ######################CAM_Z_SPHERE -> CAM_Z_END#####################
 globe (sm)  ###sweeps by###...................past the far wall...................
 globe (md)  #######sweeps by########..............past the far wall...............
 hint text   ~~~~~fade~~~~~~~~~~~~~~~.....................gone.....................
-cursor      ##########live##########...................retired....................
+controls    ##########live##########...................retired....................
 quote (sm)  ...............##########revealed centred, scrolls up + off###########
 quote (md)  .........hidden.........#########revealed centred, scrolls up#########
 canvas (sm) ######visible######.................off, draw skipped.................
@@ -997,19 +995,19 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 170 | 0.180 | `sphereFormT > DEPTH_SORT_FORM_T` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
 | 273 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.884) | `updateCardTransform` |
 | 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
-| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; desktop cursor appears; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `controls.update`, `updateClickDragText` |
+| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; canvas cursor becomes `grab`; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
-| 356 | 0.471 | `zoomT ≥ pqAppearZoomT` (sm 0.2204) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); desktop cursor label + disc retire together; **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `cursor.update`, `updateClickDragText` |
+| 356 | 0.471 | `zoomT ≥ pqAppearZoomT` (sm 0.2204) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `updateClickDragText` |
 | ~356 | ~0.470 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~29vh | `updateActiveCamera` |
-| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls, desktop cursor **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy over the first half, then dead scroll with nothing moving — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
+| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy over the first half, then dead scroll with nothing moving — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
 | 368 / 397 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 368vh, md at 397vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 640vh (the observer's `100%` rootMargin), so the skip covers that tail too, plus the 160vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
 | 540 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
 Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
 (contours → un-dissolve, plus the one-time sm masonry re-solve on `onDone`), the modal
-(`sphereFormT ≥ SPHERE_INTERACTIVE_T` is its only scroll gate), and `textExitProgress` — the hint
-dissolve / cursor retirement accrue from **drag activity**, not scroll, and reset whenever
-`sphereFormT` drops below the interactive threshold.
+(`sphereFormT ≥ SPHERE_INTERACTIVE_T` is its only scroll gate), and `hintDismissProgress` — the
+barrel hint's dismissal accrues from **drag activity**, not scroll, and is a one-way latch that
+nothing but a rebuild re-arms.
 
 ### Known wrinkle: `sphereFormT` leads the cards during entry
 
@@ -1119,7 +1117,7 @@ row('first card on the shell', T.cardFoldStartProgress(0) + T.PROGRESS_FOLD_DUR)
 row('interactive', T.progressAtFormT(T.SPHERE_INTERACTIVE_T));
 row('arc-copy gone', T.ARC_COPY_OUT_END);
 row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
-['sm', 'md'].forEach((b) => row('quote in + text/cursor/controls out + un-stuck (' + b + ')', atZoomT(appearT(b))));
+['sm', 'md'].forEach((b) => row('quote in + text/controls out + un-stuck (' + b + ')', atZoomT(appearT(b))));
 ['sm', 'md'].forEach((b) => row('canvas hidden (' + b + ')', atZoomT(appearT(b) + T.CANVAS_HIDE_MARGIN_T)));
 "
 ```
@@ -1128,7 +1126,7 @@ row('SPHERE FORMED', T.SPHERE_FORMED_PROGRESS);
 
 All in **`src/timeline.js`** — these are the *inputs*; **Lifecycle timeline** above shows what they
 add up to. The `P_*` values live in **progress-space** (0→1) and shape formation + zoom; the runway
-split, pull-quote, and cursor retirement are covered under **Scroll model** (driven by the CSS props,
+split, pull-quote, and controls retirement are covered under **Scroll model** (driven by the CSS props,
 read in JS):
 
 The set is `PROGRESS_PAN_END`, `PROGRESS_ARC_PREROLL`, `PROGRESS_GRID_ARC_START` / `_END`,
@@ -1187,7 +1185,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 | | Where | Why |
 | --- | --- | --- |
 | Spin toggle | every breakpoint / shape | Auto-spin is motion that starts on its own and never stops. WCAG **2.2.2** wants a pause mechanism, so this ships on the sphere too, not just the barrel. |
-| Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh` is skipped) nor the custom cursor (hover+fine only), so touch users otherwise get **no** affordance at all. The arrows also make the copy's "click and drag" claim actionable without a drag. |
+| Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has no WebGL hint plane (`buildTextMesh` is skipped) and no hover cursor to read, so touch users otherwise get **no** affordance at all. The chevrons also make the copy's "click and drag" claim actionable without a drag. The **hint copy** beside them fades out once the user has actually spun the globe (see Behavior notes) — the barrel's bottom edge is too busy to keep it forever; the chevrons stay. |
 
 - **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
   open, `zoomT < pqAppearZoomT` — i.e. exactly while the globe is draggable. `controls.js`
@@ -1434,8 +1432,7 @@ an S2A scale uses the token, not the literal — including positional insets (`b
 `inset-inline-start`) and the `p + p` copy rhythm. Sizes tied to a specific design measurement stay
 literal, because pinning them to a coincidentally-equal token would imply a relationship that isn't
 there: the arc-copy `359px`/`382px` widths, the counter pill (`--gg-counter-w`, which the
-md+ nav offsets read), the scrim (`--gg-scrim-w`), the 24/28px badge icons, and the
-48px cursor disc. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
+md+ nav offsets read), the scrim (`--gg-scrim-w`), and the 24/28px badge icons. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
 snapping it to the nearest token is the cheaper fix:
 
 Inventory of the literals themselves (a snapshot — the CSS is authoritative; where a value has a var,
@@ -1447,16 +1444,15 @@ the var is its home):
 | `28px` line-height | modal name at md+ | none (24 / 32) |
 | `-0.6px` letter-spacing | modal name, both breakpoints | none (−0.48 / −0.96) |
 | `10px` gap | badge-left, badges at md+ | `--s2a-spacing-xs` 8 / `--s2a-spacing-sm` 12 |
-| `10px` padding-inline | cursor text pill | same |
 | `--gg-control-radius` / `--gg-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
 | `--gg-controls-size` 48px | globe controls | none (matches `--gg-control-size`) |
 | `--gg-nav-h` 124px (fallbacks) | the sticky-chrome band: optical centre, controls' top offset, the camera's centring offset, the pull-quote gap ceiling | none — *measured* values (top of screen → bottom of the breadcrumbs bar), not design steps. They are the fallbacks inside a live `calc()`, so re-measure them if the gnav or localnav changes height while the vars stay undefined; the `--feds-height-*` pair still can't be trusted for this (see Naming below) |
-| `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, cursor label, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
+| `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, barrel hint scrim, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
 | `18px` blur | modal backdrop | `--s2a-blur-sm` 16 |
 
-`--gg-chrome-blur` exists because that one blur appeared six times across those places. It is declared on `.globe-gallery` **and**
-`.globe-gallery-cursor` — `cursor.js` appends the cursor container to `<body>`, outside the block, so
-it cannot inherit. The same is true of any future local var the cursor needs.
+`--gg-chrome-blur` exists because that one blur appeared six times across those places. It is
+declared once, on `.globe-gallery` — everything that reads it now lives inside the block, so
+everything inherits it.
 
 Note the font-size tokens are **rem** (`--s2a-font-size-sm` is `0.875rem`). Neither `libs/styles` nor
 `libs/c2/styles` overrides the root font-size, so they resolve to their nominal px while still scaling
@@ -1986,9 +1982,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   contribution is a mean **≤0.08/255** per channel with <1% of channels past a just-noticeable Δ8,
   versus **mean 2.5 across 8.6%** of the frame on the sphere. Invisible, but it still cost a
   viewport-filling transparent quad every frame plus ~17MB (7.4MB canvas + ~9.9MB texture).
-  The gate is on the **geometry, not the pointer**, so a narrow desktop window skips it too — its
-  custom cursor is independent (`textExitProgress` still drives cursor retirement). Nothing needs to
-  add it back on a resize: a band crossing rebuilds the whole runtime (`doLayout`), and `doLayout`'s
+  The gate is on the **geometry, not the pointer**, so a narrow desktop window skips it too — the
+  barrel's own DOM hint row covers that case. Nothing needs to add it back on a resize: a band crossing rebuilds the whole runtime (`doLayout`), and `doLayout`'s
   own rebuild branch is already `if (textMesh)`. Verified across sm-touch / md-fine / md-coarse
   (iPad → barrel → skipped) / narrow-desktop, and across repeated sm↔md resizes.
   A `PlaneGeometry` in `sphereGroup` behind the sphere's back
@@ -1997,68 +1992,64 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   warp + particle dissolve via `TEXT_FRAG`), settles to a faint resting opacity (`TEXT_OPACITY_PEAK
   0.15 → RESTING 0.06`), fades out over the zoom. **The entrance resolves on
   `SPHERE_INTERACTIVE_T`, not at `sphereFormT` 1**: `sfT` remaps `[TEXT_APPEAR_START,
-  SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes live and the cursor
-  arrives. Running it to 1 (the original) left the hint still visibly warping in for 27vh *after* the
+  SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes live and the `grab`
+  cursor arrives. Running it to 1 (the original) left the hint still visibly warping in for 27vh *after* the
   thing it names was already draggable — measured `uWarp` 0.946 of `TEXT_WARP_ENTER_MAX` 4.5 still
   active at the gate, now 0.002. The plane's *scale* is unaffected and keeps tracking `foldSphDist`
   to 1.0 at `sphereFormT` 1; that is distance compensation, not entrance, and holds apparent size
   constant. Sized to fill the frustum at its live camera
   distance (`textPlaneSize` × a per-frame scale off `frame.foldSphDist`), with warp-proportional
-  overflow so letterforms bleed off-screen. On **first drag** it dissolves away permanently:
-  `textExitProgress` (0→1, from drag distance + hold time + velocity) drives the shader's `uExitP`.
-  Owned by its own tick stage (`updateHintExitProgress`, not `updateClickDragText`, which
-  early-returns below `TEXT_APPEAR_START` and so can't own the re-arm; the cursor reads it too).
+  overflow so letterforms bleed off-screen. **Nothing about it reacts to input.** Once the entrance
+  resolves it holds still: `uWarp` is `txtWarpEntrance` alone, `uCA` is that same term × `TEXT_CA_WARP_MUL`,
+  and the mesh scale tracks only `foldSphDist`. Every clock it reads is scroll-driven, so the plane
+  is a static backdrop that fades out on the zoom to `pqAppearZoomT` and nothing else.
+
   Built async in `buildTextMesh` (waits for `document.fonts.ready` → Adobe Clean), rebuilt on resize,
   static-and-faint under RM. Copy is hardcoded (see Localization).
 
-  **`textExitProgress` is a one-way latch.** It only ever climbs, and nothing re-arms it: once a drag
-  has retired the hint it stays retired for the life of the runtime. This matches what both consumers
-  always claimed — "dissolves away permanently" here, "one-way label dismissal" in `cursor.js` — and
-  it is the reason the stage needs no thresholds beyond the interactive gate.
+- **Canvas cursor — browser-native (`interaction.js`).** The block draws no cursor of its own. Over
+  the interactive sphere with no modal open the canvas gets `grab`, `grabbing` while `drag.isDragging`,
+  and `pointer` when the raycast hits a card — a card opens a modal, which is a click, not a drag.
+  Anything else clears the style back to the page default.
+  `applyCursor()` is the **sole writer** and diffs against `appliedCursor`, so a `pointermove` storm
+  writes nothing. It is called from the two drag edges (`onPointerDown` / `endGesture`, neither of
+  which is necessarily followed by a move) **and once per frame from `tick()`** — the interactive
+  gate and the modal flip on scroll alone, with no pointer event to hang the update on.
 
-  Do **not** re-arm it on `sphereFormT` falling below `SPHERE_INTERACTIVE_T`. That gate is only
-  ~275px of scroll-back on a 982px viewport (~28vh), so a quarter-viewport nudge brings a dismissed
-  hint straight back. And the plane's opacity and warp are pure functions of `sphereFormT`, already
-  settled at the gate (`opacity` 0.06, `uWarp` 0.019) — so the reset pops it back **fully formed in
-  a single frame**,
-  while the cursor label faded in over its CSS `opacity 0.5s ease 0.15s`. That asymmetry is what read
-  as broken. Re-arming on a *lower* threshold with an eased bleed also fixes it, but the latch
-  deletes the whole tuning surface instead, so prefer it.
+- **Barrel hint copy retires after interaction.** Touch has no hover cursor and (below md) no WebGL
+  hint plane, so the barrel's bottom row is the whole affordance until the user has spun the globe.
+  Past `HINT_DISMISS_T` (0.12, about one flick) `controls.update()` puts `.is-dismissed` on
+  `.globe-gallery-hint`, fading only `.globe-gallery-hint-text` over 0.5s; the chevrons stay, so
+  the non-drag path never disappears. A chevron tap or a card open sets the progress to 1.
 
-  Caveat: `destroy()` zeroes `textExitProgress`, so a **rebuild** re-arms the hint — a band crossing
-  (sm↔md), a reduced-motion toggle, or WebGL context-loss recovery. That is "until reload" for every
-  practical purpose, and it is deliberate: a rebuild is a new mesh with a fresh entrance. Making it
-  survive a rebuild would mean hoisting state out of the per-instance closure, which breaks the
-  multi-instance scoping for no user-visible gain.
+  **`hintDismissProgress` is a one-way latch.** Nothing re-arms it short of `destroy()` (band
+  crossing, RM toggle, context-loss recovery), which is per-instance state and stays that way. Do
+  not re-arm it on `sphereFormT` dropping below `SPHERE_INTERACTIVE_T`: that gate is ~28vh of
+  scroll-back, so a small nudge would bring a dismissed hint straight back.
 
-  Consequence of the latch: a **short drag freezes the dissolve mid-way** for the rest of the
-  session (`uExitP` ~0.3–0.5, letterforms partly scattered). Accepted — at `TEXT_OPACITY_RESTING`
-  0.06 it is not perceptible, and the whole plane only contributes a mean
-  ~2.5/255 per channel at full strength. If `TEXT_OPACITY_RESTING` is ever raised, revisit: the fix
-  is to let the dissolve run to completion once started rather than tracking the drag.
-- **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only, over the
-  interactive sphere with no modal open: the system cursor becomes a 48px `mix-blend-mode: difference`
-  disc (inverts what's beneath) flanked by chevrons that squeeze 4px inward while dragging, plus a
-  "Click & Drag" label in a **frosted pill** (the modal-chrome glass, so `backdrop-filter` frosts the
-  cards behind it). It **retires in two steps** on the same `textExitProgress` signal as the hint
-  text: at `CURSOR_DRAG_DISMISS_T` (`getHintDismissed`) the label fades with the text; at the
-  later `CURSOR_DRAG_RETIRE_T` (`getCursorRetired`) the disc + chevrons fade over `RETIRE_FADE_MS`
-  (0.42s, mirrored by `--retiring` CSS), then `active` drops, clearing `cursor: none` so the system
-  cursor takes back over. Scrolling out short-circuits the staging: past `pqAppearZoomT` both
-  getters flip together, so label and disc go at once. The disc **shrinks** rather than fades (partial opacity under
-  `mix-blend-mode: difference` is a gray wash). Opening a card sets `textExitProgress = 1` (instant
-  retire); both steps reset on scroll-out. Two **body-level** DOM layers: the disc **must** be a
-  direct `<body>` child (`mix-blend-mode` only reaches page content from outside a `position: fixed`
-  container); chevrons + label live in a fixed container. Sets `cursor: none` while active;
-  `interaction.js` cedes its hover cursor via `isActive()`. No-op on touch: `(hover: hover) and
-  (pointer: fine)` is read **once at setup** (a device that gains a fine pointer mid-session needs a
-  reload, unless a re-init — e.g. an RM toggle — re-reads it). Activation also requires
-  `state.hasCoords` — a real `mousemove` must have landed first. Scrolling the canvas under a
-  *stationary* pointer fires `mouseenter` on its own (browsers dispatch boundary events for
-  scroll-induced hover changes), so without that gate the cursor plays its entrance at `0,0` (the
-  coord defaults) and then hard-snaps to the pointer on the next move. With multiple globes each
-  makes its own pair but only the hovered one activates (inactive discs `visibility: hidden`). Label
-  copy is the authored hint string (see Localization).
+  The row's scrim matches **`.globe-gallery-modal-info`** — `transparent-black-64` +
+  `--gg-chrome-blur` + a `transparent-white-00` border — not the lighter arc-copy pill, which
+  floats over the arc phase with no chrome around it. The radius is the exception, taken from the
+  buttons it abuts (`--gg-controls-radius`).
+
+  **The chevrons read as the modal's prev/next.** Same glyphs (`M15 5l-7 7 7 7` / `M9 5l7 7-7 7`,
+  14px, stroke 2), and `.globe-gallery-control` and `.globe-gallery-modal-nav` share every box
+  property: 48px, radius 6 (`--gg-controls-radius` / `--gg-control-radius`, separate vars, equal
+  values), `transparent-white-24` border, `black-64` + `--gg-chrome-blur`, `scale(1.05)` hover,
+  `scale(0.98)` active.
+
+  **Positions are not matched, and the pair blinks across a modal open.** The barrel's chevrons are
+  centred against the two-line hint copy between them, so they ride above the inset the modal's
+  arrows pin to; and the controls layer drops the frame `modalIdx` goes non-negative while the
+  modal's chrome only starts its fade at 90% of the 350ms fly. Both are accepted. Pinning the
+  buttons to the inset (`flex-end`, or a fixed row height) misplaces the copy instead, and holding
+  the chevrons across the swap needs `modal.js` and `controls.js` to agree per frame on which pair
+  is painting. Check any change here on a device.
+
+  At md-coarse they diverge further (an iPad is a barrel — `usesCylinderGeometry` is
+  `sm || (pointer: coarse)`): the modal centres its arrows around the 138px counter pill there,
+  while the barrel row stays in the corners.
+
 - **Modal chrome — edge-anchored nav arrows + counter; desktop adds a screen-edge scrim.**
   - **Controls — placed entirely in CSS** (`revealModalChrome` only fades them in). Prev/next arrows
     and the counter are independent chrome children (no wrapper, so each one's `:hover` scale
@@ -2456,10 +2447,9 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     was being refused on cards that already read as part of the globe. Both went through the same
     gate, in opposite kinds of wrong. 0.9 sits just past the first landing: something is on the shell
     to grab and to click. ONE constant for **everything** that says or does "the globe is live":
-    hover, click, drag, auto-rotate, the desktop cursor, and the GL hint plane's entrance. A separate
-    earlier gate for the cursor was tried and reverted — it put the affordance 26vh ahead of the
-    input it advertises, which reads worse than a late cursor. Raycasting was never the problem at
-    any value: a tap below the gate hits (`hits: 1`, harness-measured), `onPointerUp` discards it.
+    hover, click, drag, auto-rotate, the `grab` cursor, and the GL hint plane's entrance. Do not give
+    the cursor its own earlier gate: it puts the affordance 26vh ahead of the input it advertises.
+    Raycasting is not the constraint at any value: a tap below the gate hits (`hits: 1`, harness-measured), `onPointerUp` discards it.
   - **Hover uniforms are applied in `updateCardTransform`, not `placeSphereCard`** — that gate is
     global, `fdE` is per-card. Between `sphereFormT` 0.9 and 1 the late-staggered cards sit at `fdE`
     0.999: seated to the eye, but routed to `placeFoldingCard`, which sets `opacity = 1` (so they
@@ -2551,8 +2541,7 @@ self-evident from the name:
 | `SPHERE_DRAG_WARP_BASELINE` / `_VEL` / `_MAX` / `_EASE` | uWarp, last per 60fps frame | barrel-warp while dragging: constant baseline + a velocity-driven burst (decays with `DRAG_FRICTION`), capped, then eased toward that target |
 | `TEXT_BEHIND_GAP` | world units | how far the hint plane sits behind the sphere's back surface |
 | `TEXT_WARP_ENTER_MAX` | uWarp | at the hint's entrance (barrel distortion) |
-| `TEXT_DRAG_WARP_MUL` | × | hint drag-warp vs sphere cards (more violent) |
-| `TEXT_CA_DIR_STRENGTH` / `_WARP_MUL` | UV / × | drag-CA strength on the hint text / warp-driven CA boost |
+| `TEXT_CA_WARP_MUL` | × | warp-driven CA boost on the hint text (entrance only — the plane is inert to drag) |
 | `TEXT_WARP_OVERFLOW` | mesh scale per uWarp | extra scale so letterforms bleed off-screen |
 | `ROTATE_STEP_FRAMES` / `ROTATE_DEADZONE` | 60fps frames / fraction of a column pitch | one rotate-button press: the `navNudge` tween length, and how close to a column boundary counts as already there — see Globe controls |
 
@@ -2573,7 +2562,7 @@ bare names — are:
 | `ARC_COPY_IN_ENTRY_T` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
-| `CANVAS_HIDE_MARGIN_T` | offset on `pqAppearZoomT` | the only `zoomT` threshold near the reveal that is still a number, because the canvas is a hard cut rather than a fade and wants slack: it is dropped (and the draw skipped) this far **past** the point the scene is empty. Hint text, cursor and controls take `pqAppearZoomT` itself |
+| `CANVAS_HIDE_MARGIN_T` | offset on `pqAppearZoomT` | the only `zoomT` threshold near the reveal that is still a number, because the canvas is a hard cut rather than a fade and wants slack: it is dropped (and the draw skipped) this far **past** the point the scene is empty. Hint text and controls take `pqAppearZoomT` itself |
 | `ZOOM_TO_TAIL_T` | ratio | converts a `zoomT` fraction into a fraction of the whole **tail**, which is the space the CSS pin and `--gg-pq-hold-max` reason in. `1` while `PROGRESS_ZOOM_END` is `1`; applied at the one boundary (`publishPqAppearZoomT`) so the pin can't quietly release at the wrong scroll position if it ever isn't |
 | `GRID_PEEL_WINDOW` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
