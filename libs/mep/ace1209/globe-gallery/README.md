@@ -33,8 +33,7 @@ change something, *replace* the old explanation instead of appending to it. Spec
 ## What it is
 
 Over a tall, pinned scroll range (`--gg-runway-height` in the CSS), the authored photo cards
-(any count on desktop; first 24 on mobile — but the **modal browses all** authored images on
-mobile, see Card count) animate through four phases:
+(any count, every card on every breakpoint — see Card count) animate through four phases:
 
 ```
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
@@ -282,30 +281,24 @@ nodes, and only one modal shows one card at a time. Re-rendering the same card i
 re-rendering the same nodes into the same container is a no-op. Cloning would only be needed to
 render one card's paragraphs into two live containers at once.
 
-**Card count.** `N_TOTAL` follows the authored count, capped per breakpoint by `N_MAX`:
+**Card count.** `N_TOTAL` is the authored count. Every authored card gets a real sphere slot at
+every breakpoint, so barrel, modal, and the keyboard/SR browse gallery all run over the same index
+range.
 
-- **md (≥768) — uncapped.** Every authored card renders. Sphere (Fibonacci) and arc (normalized
-  `fanT`) are count-agnostic; the grid's 9×5 is only *nominal* (fixes card size, gap, centering
-  origin) and already overflows ~1.44× as a "more cards beyond" cue, so authored cards beyond the
-  nominal grid continue into further off-screen columns. `totalW`/`totalH` derive from the nominal
-  dims, so **adding cards never shifts already-placed cards**. Practical ceiling is texture memory, not layout.
-- **sm (<768) — barrel hard cap of 24, modal gallery uncapped.** The 3×8 grid already exceeds a
-  667px viewport, so mobile renders only the first 24 on the arc/grid/barrel (`bp.N_TOTAL`, logged
-  via `lana`), loading only their 24 base textures. The modal still browses ALL images (below) —
-  touch users get a smaller *arrangement*, not less *content*.
+- **md (≥768).** Sphere (Fibonacci) and arc (normalized `fanT`) are count-agnostic; the grid's 9×5
+  is only *nominal* (fixes card size, gap, centering origin) and already overflows ~1.44× as a
+  "more cards beyond" cue, so authored cards beyond the nominal grid continue into further
+  off-screen columns. `totalW`/`totalH` derive from the nominal dims, so **adding cards never
+  shifts already-placed cards**. Practical ceiling is texture memory, not layout.
+- **sm (<768).** The 3×8 grid is likewise nominal and exceeds a 667px viewport by design; the
+  barrel carries the full set, and the same memory ceiling applies at the sm texture cap.
 
-**Modal gallery = all authored images.** The modal's `getCount()` is `CARD_CONTENT.length`, not
-`bp.N_TOTAL` (equal on md). On sm the modal navigates past the 24 barrel cards into **overflow
-images** (24…N-1) with no sphere slot: it mints a lazy **modal-only carrier** per overflow index (a
-quad + SDF material in `modalScene`, its texture disposed on nav-away so ≤1 resident) that
-**dissolves** in/out instead of flying to/from the globe. Barrel-slot cards still fly. Overflow is
-reached only via modal **navigation** — `open()` is always a barrel card (tap / a11y browse). **All**
-modal nav — on-screen arrows and touch swipe — routes through the same cross-warp transition on
-**every** breakpoint (`navigate` → `startDesktopNavTransition`); touch swipe just builds a warp
-preview during the drag, then commits that transition on release. (A slotless overflow card can only
-cross-warp, so there is no instant-swap path.)
-The **keyboard/SR browse gallery stays at 24** (its centring targets real sphere cards); SR users
-reach every image through modal ←→ nav. Overflow carriers + textures are disposed on `destroy`.
+**Modal gallery = all authored images.** The modal's `getCount()` and the a11y gallery's both read
+`CARD_CONTENT.length`, which equals `bp.N_TOTAL`. **All** modal nav — on-screen arrows and touch
+swipe — routes through the same cross-warp transition on **every** breakpoint (`navigate` →
+`startDesktopNavTransition`); touch swipe just builds a warp preview during the drag, then commits
+that transition on release. Every modal card has a sphere slot, so it flies to/from the globe on
+open/close.
 
 Fewer cards than the nominal grid → the last column is partially filled (no modulo;
 `getCardMetadata(i)` indexes directly). `ARC_DENSE_COUNT` = `ARC_DENSE_FRACTION × N_TOTAL`, so the
@@ -343,11 +336,11 @@ arc→grid settle) overruns the WebKit per-tab cap and kills the tab with no JS 
 4 × 1.333` (RGBA + the mipmap pyramid, converging to +⅓). Dimensions are the *downscaled canvas*
 (**height** = cap, width = height × the source aspect), not the source; the cover-crop doesn't
 change residency. So a card costs `cap² × aspect × 5.33` bytes: at 256, a 3:4 source ≈ 0.26MB and a
-16:9 ≈ 0.62MB. Measured against the authored set (aspects 0.57–1.79): **sm 24 cards ≈ 7.6MB**
-(6.4MB under the old longest-side rule, +18%) and **md all 50 ≈ 139MB** (116MB before, +20%) — md
-sets no `N_MAX`, so every authored card is resident there. Watch this on iPad, which takes the md
-profile: if it needs trimming, dropping `CARD_TEX_MD` to 640 lands ~97MB, *below* today's figure, and md
-would still be oversampled (~2.8 texels/device px on the largest card).
+16:9 ≈ 0.62MB. Every authored card is resident at both breakpoints. Against the authored set
+(aspects 0.57–1.79, 50 cards): **sm ≈ 16MB** and **md ≈ 139MB**. Re-measure before growing the set
+much past 50. Watch md on iPad, which takes the md profile: if it needs trimming, dropping
+`CARD_TEX_MD` to 640 lands ~97MB, and md would still be oversampled (~2.8 texels/device px on the
+largest card).
 
 The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item, but **only on sphere
 geometry** — the barrel path never builds it (see Behavior notes), which is what removes it from the
@@ -524,8 +517,7 @@ Consequences worth keeping:
   `fdE`, so a card can be opened part-way through its fold), and identity once the fly lands, because
   `computeModalTarget` sizes the plane to exactly that aspect. Easing the crop on the animation's `t`
   instead is *not* equivalent — a linear crop lerp against a ratio-of-lerps scale mismatches by ~2%
-  mid-flight (measured); tracking the scale is 0.00%. Overflow carriers land at their own aspect, so
-  they resolve to identity too.
+  mid-flight (measured); tracking the scale is 0.00%.
 - **Where cropping is therefore visible:** the arc/grid deck (every card in a `CARD_ASPECT` slot, so
   a 16:9 image keeps ~48% of its width) and the sm/coarse barrel *only past* `CYL_ASPECT_CAP`. The
   desktop globe and the settled modal show the whole photo.
@@ -1372,13 +1364,14 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 ## Breakpoints & rebuilds
 
 **Breakpoints** resolve once in `init()`: two render profiles split at 768px — `md` (≥768, all
-cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, first 24, 3×8, smaller
-sphere). Per-profile knobs in `BREAKPOINTS`: `N_MAX` (`0` = uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`,
-`CAM_Z_*`, `GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `DRAG_GEARING`, plus precise-pointer defaults
+cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, all cards, 3×8, smaller
+sphere). Per-profile knobs in `BREAKPOINTS`: `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
+`GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `DRAG_GEARING`, plus precise-pointer defaults
 for the shape keys (`CARD_FACE_CAMERA`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
-card count, so `doLayout` triggers a full `destroy()`+`init()` rebuild; resizing within a band takes
-the cheap path (renderer/camera resize). The `resize` handler is the sole driver of the **width**
+geometry, card dimensions, and grid shape, so `doLayout` triggers a full `destroy()`+`init()`
+rebuild; resizing within a band takes the cheap path (renderer/camera resize). The `resize` handler
+is the sole driver of the **width**
 boundary — no `matchMedia` listener for 768px. The one `matchMedia` `change` listener is for
 reduced motion (see Reduced motion); pointer precision is read at init only (see Shape).
 
@@ -2525,8 +2518,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 > live values out of the source (`globe-gallery.js` module scope, `src/timeline.js`, or the
 > per-module blocks in `interaction.js` / `modal.js` / `shaders.js`).
 >
-> Three deliberate exceptions: **sentinels**, where the number *is* the meaning (`N_MAX` `0` =
-> uncapped, `CARD_FACE_CAMERA` `0` = faces radially outward); **cross-system contracts**, where the
+> Three deliberate exceptions: **sentinels**, where the number *is* the meaning
+> (`CARD_FACE_CAMERA` `0` = faces radially outward); **cross-system contracts**, where the
 > number is the interface, not our choice (the 768px Milo band split, the 456/631 card aspect, c2's
 > z-index tiers); and **worked examples** — the memory budget, the sizing reality check, the event
 > table's `vh`/`progress` columns — which are snapshots measured at the values in code when written.

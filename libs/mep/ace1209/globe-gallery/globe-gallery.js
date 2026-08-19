@@ -25,7 +25,6 @@ const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motio
 const BREAKPOINTS = {
   md: {
     minWidth: 768,
-    N_MAX: 0,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
     CARD_H_SPHERE: 6.5,
@@ -41,7 +40,6 @@ const BREAKPOINTS = {
   },
   sm: {
     minWidth: 0,
-    N_MAX: 24,
     ARC_SPAN: 3.6,
     SPHERE_R: 16,
     CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
@@ -290,15 +288,7 @@ function createGlobeGalleryRuntime(
   let bp = null;
 
   function resolveBpProfile(name, cfg, cylinder) {
-    const nTotal = cfg.N_MAX > 0
-      ? Math.min(CARD_CONTENT.length, cfg.N_MAX)
-      : CARD_CONTENT.length;
-    if (cfg.N_MAX > 0 && CARD_CONTENT.length > cfg.N_MAX) {
-      window.lana?.log?.(
-        `globe-gallery: ${CARD_CONTENT.length} cards authored, rendering the first ${cfg.N_MAX} at breakpoint "${name}"`,
-        { tags: 'globe-gallery', severity: 'info' },
-      );
-    }
+    const nTotal = CARD_CONTENT.length;
     const shape = cylinder ? YAW_ONLY_GEOMETRY : cfg;
     const sphereCardH = cfg.CARD_H_SPHERE;
     return Object.freeze({
@@ -1002,7 +992,7 @@ function createGlobeGalleryRuntime(
 
   a11y = createGalleryA11y({
     q,
-    getCount: () => bp.N_TOTAL,
+    getCount: () => CARD_CONTENT.length,
     getSphereFormT: () => frameState.sphereFormT,
     getModalIdx: () => modal.getModalIdx(),
     interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
