@@ -94,14 +94,12 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const PQ_HOLD_CLEARANCE_VH = 4; // between the held quote's bottom and the next section's top
 
-// Two shares of the hold: the reveal (rules and copy together), then the lap. See README.
+// The reveal's share of the hold; the rest is dead scroll, nothing changing. See README.
 const PQ_REVEAL_END = 0.50;
 
 // Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
-
-const PQ_EDGE_KEYS = ['t', 'r', 'b', 'l']; // clockwise: top, right, bottom, left
 
 const PQ_HOLD_EASE = 0.08; // per 60fps frame, rescaled by dtScale at the use site
 const PQ_HOLD_IN_MS = 1400; // fastest the hold may play, forwards
@@ -114,8 +112,6 @@ const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
 const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN -> 0
-
-const edgeProgress = (q, edge) => clamp01((q - edge[0]) / (edge[1] - edge[0]));
 
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
@@ -353,21 +349,18 @@ function createGlobeGalleryRuntime(
 
   const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
-  // `edges` is the clockwise perimeter split, by real edge length so the head travels at
-  // constant speed. The cached strings elide unchanged style writes.
+  // The cached strings elide unchanged style writes.
   const pq = {
-    lapEl: q('.globe-gallery-pullquote-lap'),
     quoteEl: q('.globe-gallery-pullquote-quote'),
     lineEls: [], // one per rendered line
     splitW: 0, // box width they were split at
     holdT: 0,
-    edges: null,
     holdV: 0, // followHold's output — the hold every phase reads
+    holdMs: 0,
     holdPeak: 0, // furthest the scroll's own hold has reached in the current direction
     holdMoveMs: 0, // when it last reached a new one; nothing for PQ_HOLD_STALL_MS means stopped
     holdDir: -1,
-    baseStr: '',
-    lapStr: '',
+    frameStr: '',
     copyStr: '',
   };
 
@@ -930,30 +923,18 @@ function createGlobeGalleryRuntime(
     const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - PQ_HOLD_CLEARANCE_VH);
     root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
 
-    // Mirror what CSS resolves for the pin, so the lap closes on the un-stick frame.
+    // Mirror what CSS resolves for the pin, so the hold spans exactly the pinned scroll.
     const prefVh = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-hold')) || 0;
     pq.holdT = Math.min(prefVh, freeVh) / tailVh;
-
-    const wq = box.width;
-    const hq = box.height;
-    const per = 2 * (wq + hq);
-    // Clockwise by real edge length: top L->R, right T->B, bottom R->L, left B->T.
-    pq.edges = per > 0 ? [
-      [0, wq / per],
-      [wq / per, (wq + hq) / per],
-      [(wq + hq) / per, (2 * wq + hq) / per],
-      [(2 * wq + hq) / per, 1],
-    ] : null;
   }
 
-  function writeEdgeVars(el, fracs, cacheKey) {
-    let str = '';
-    for (let i = 0; i < 4; i += 1) str += `${fracs[i].toFixed(4)};`;
-    if (str === pq[cacheKey]) return;
-    pq[cacheKey] = str;
-    for (let i = 0; i < 4; i += 1) {
-      el.style.setProperty(`--gg-pq-${PQ_EDGE_KEYS[i]}`, `${(fracs[i] * 100).toFixed(2)}%`);
-    }
+  // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
+  function writeFrameVars(h, v) {
+    const str = `${h.toFixed(4)};${v.toFixed(4)}`;
+    if (str === pq.frameStr) return;
+    pq.frameStr = str;
+    pqEl.style.setProperty('--gg-pq-h', `${(h * 100).toFixed(2)}%`);
+    pqEl.style.setProperty('--gg-pq-v', `${(v * 100).toFixed(2)}%`);
   }
 
   function formedScrollPx() {
@@ -1278,8 +1259,8 @@ function createGlobeGalleryRuntime(
   // into several pixels of line travel — the ease is what turns that back into motion. It is
   // capped at the play-out rate so a flick cannot skip the sequence, direction needs PQ_HOLD_FLIP
   // of retrace to turn, and each direction only gains ground, so noise cannot walk the sweep back.
-  // With the scroll stopped inside the reveal the phase plays itself out; stopped inside the lap
-  // it holds position. See README.
+  // Stopped inside the reveal, the phase plays itself out; past it there is nothing to play.
+  // See README.
   function followHold(target) {
     const now = performance.now();
     const dtMs = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
@@ -1305,27 +1286,20 @@ function createGlobeGalleryRuntime(
     return pq.holdV;
   }
 
-  // The lap closes as the rail un-sticks. With no hold to spend, the sequence plays on the cue.
+  // PQ_REVEAL_END splits the hold: reveal, then dead scroll. With no hold to spend — a viewport
+  // with no room for one — the cue itself is the whole target.
   function updatePullQuoteFrame(zoomT) {
-    const { edges } = pq;
-    if (!edges) return;
-    const past = zoomT >= pqAppearZoomT;
-    let scrolled = past ? 1 : 0;
-    if (pq.holdT > 0) scrolled = clamp01((zoomT - pqAppearZoomT) / pq.holdT);
+    const scrolled = pq.holdT > 0
+      ? clamp01((zoomT - pqAppearZoomT) / pq.holdT)
+      : Number(zoomT >= pqAppearZoomT);
     const hold = followHold(scrolled);
 
     const reveal = clamp01(hold / PQ_REVEAL_END);
     const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
     const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
-    writeEdgeVars(pqEl, [hDrawn, vDrawn, hDrawn, vDrawn], 'baseStr');
+    writeFrameVars(hDrawn, vDrawn);
 
     updatePullQuoteCopy(reveal);
-
-    if (!pq.lapEl) return;
-    const lapT = clamp01((hold - PQ_REVEAL_END) / (1 - PQ_REVEAL_END));
-    const lap = [];
-    for (let i = 0; i < 4; i += 1) lap.push(edgeProgress(lapT, edges[i]));
-    writeEdgeVars(pq.lapEl, lap, 'lapStr');
   }
 
   // Re-split from scratch: line breaks move with the box width and the resolved font. The fresh
@@ -2141,12 +2115,8 @@ function createGlobeGalleryRuntime(
     if (arcCopy.el) arcCopy.el.style.cssText = '';
     if (pqEl) {
       pqEl.style.cssText = '';
-      if (pq.lapEl) pq.lapEl.style.cssText = '';
-      pq.baseStr = '';
-      pq.lapStr = '';
+      pq.frameStr = '';
       pq.copyStr = '';
-      pq.edges = null;
-      pq.copyMs = 0;
     }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     canvasHidden = false;

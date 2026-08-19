@@ -375,7 +375,6 @@ const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-pullquote-pin">
     <div class="globe-gallery-pullquote-rail">
       <div class="globe-gallery-pullquote">
-        <div class="globe-gallery-pullquote-lap" aria-hidden="true"></div>
         <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
         <div class="globe-gallery-pullquote-attribution">
           <p class="globe-gallery-pullquote-name body-lg"></p>
