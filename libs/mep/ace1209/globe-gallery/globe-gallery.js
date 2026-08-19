@@ -1,5 +1,8 @@
 import * as THREE from './three.module.min.js';
-import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom, optimizeImgUrl } from './src/authoring.js';
+import {
+  parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
+  optimizeImgUrl, layoutQuote,
+} from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
@@ -10,7 +13,7 @@ import createInteraction from './src/interaction.js';
 import createCursor from './src/cursor.js';
 import createGlobeControls from './src/controls.js';
 import {
-  easeOutCubic, easeInOutCubic, lerpN, coverFit,
+  easeOutCubic, easeInOutCubic, easeOutExpo, lerpN, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -93,19 +96,23 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const PQ_HOLD_CLEARANCE_VH = 4; // between the held quote's bottom and the next section's top
 
-// Three sequential shares of the hold: draw, copy, lap.
-const PQ_DRAW_END = 0.32;
-const PQ_COPY_END = 0.50; // the lap owns the rest
+// Two shares of the hold: the reveal (rules and copy together), then the lap. See README.
+const PQ_REVEAL_END = 0.50;
 
-// Shares of the draw window; horizontals lead verticals.
+// Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
 
 const PQ_EDGE_KEYS = ['t', 'r', 'b', 'l']; // clockwise: top, right, bottom, left
 
-const PQ_COPY_MS = 620; // copy's time floor, from when its share starts
+// Caps on how fast followHold may play the hold, forwards and back.
+const PQ_HOLD_IN_MS = 1400;
+const PQ_HOLD_OUT_MS = 450;
+const PQ_HOLD_MAX_DT = 100; // a tab-away must not arrive as one step
+const PQ_HOLD_EPS = 1e-4; // scroll noise below this is not movement
 const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
+const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
 const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN -> 0
 
@@ -359,9 +366,14 @@ function createGlobeGalleryRuntime(
   // constant speed. The cached strings elide unchanged style writes.
   const pq = {
     lapEl: q('.globe-gallery-pullquote-lap'),
+    quoteEl: q('.globe-gallery-pullquote-quote'),
+    lineEls: [], // one per rendered line, re-split on every layout
     holdT: 0,
     edges: null,
-    copyMs: 0,
+    holdV: 0, // followHold's output — the hold every phase reads
+    holdMs: 0, // when it was last stepped
+    holdTo: 0, // the scroll's own hold, to tell movement from a stall
+    holdDir: -1,
     baseStr: '',
     lapStr: '',
     copyStr: '',
@@ -1244,51 +1256,81 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // Driven by whichever of scroll or time is further along: scroll alone strands the text
-  // mid-fade if the reader stops, time alone lets a fast flick run the lap around empty. The
-  // timer starts when the copy's share opens, so a slow scroll can't overtake the draw.
-  function updatePullQuoteCopy(started, scrollT) {
-    const now = performance.now();
-    if (!started) pq.copyMs = 0;
-    else if (!pq.copyMs) pq.copyMs = now;
-    const byTime = pq.copyMs ? (now - pq.copyMs) / PQ_COPY_MS : 0;
-    const p = clamp01(Math.max(scrollT, byTime));
+  function updatePullQuoteCopy(reveal) {
+    const p = reveal;
+    const arrive = (lag) => easeOutCubic(clamp01((p - lag) / (1 - lag)));
+    const lines = pq.lineEls;
+    const last = lines.length - 1;
     let str = '';
     const vals = [];
     for (let i = 0; i < 3; i += 1) {
-      const v = easeOutCubic(clamp01((p - PQ_COPY_LAG[i]) / (1 - PQ_COPY_LAG[i])));
-      vals.push(v);
-      str += `${v.toFixed(3)};`;
+      vals.push(arrive(PQ_COPY_LAG[i]));
+      str += `${vals[i].toFixed(3)};`;
     }
+    // Each line snaps inside its own share; the shares stagger across the sweep.
+    const lineVals = lines.map((_, i) => {
+      const lag = last > 0 ? ((1 - PQ_COPY_LINE_SPAN) * i) / last : 0;
+      return easeOutExpo(clamp01((p - lag) / PQ_COPY_LINE_SPAN));
+    });
+    lineVals.forEach((v) => { str += `${v.toFixed(3)};`; });
     if (str === pq.copyStr) return;
     pq.copyStr = str;
     for (let i = 0; i < 3; i += 1) {
       pqEl.style.setProperty(`--gg-pq-copy-${PQ_COPY_KEYS[i]}`, vals[i].toFixed(3));
     }
+    lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
   }
 
-  // Draw, then copy, then lap — sequential shares of the hold, the lap closing as the rail
-  // un-sticks. With no hold to spend the sequence collapses onto the reveal frame.
+  // The one clock the pull-quote runs on: the scroll's hold, rate-limited so a flick still plays
+  // the sequence, and run on to the reveal's end when the scroll stalls inside it. See README.
+  function followHold(target) {
+    const now = performance.now();
+    const dt = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
+    pq.holdMs = now;
+    if (target > pq.holdTo + PQ_HOLD_EPS) pq.holdDir = 1;
+    else if (target < pq.holdTo - PQ_HOLD_EPS) pq.holdDir = -1;
+    const stalled = Math.abs(target - pq.holdTo) <= PQ_HOLD_EPS;
+    pq.holdTo = target;
+    // Stalled in the lap the goal stays the scroll's own value, so the lap holds position.
+    const runOn = stalled && pq.holdV < PQ_REVEAL_END;
+    let goal = target;
+    if (runOn) goal = pq.holdDir > 0 ? PQ_REVEAL_END : 0;
+    const up = goal > pq.holdV;
+    const step = dt / (up ? PQ_HOLD_IN_MS : PQ_HOLD_OUT_MS);
+    pq.holdV = up ? Math.min(goal, pq.holdV + step) : Math.max(goal, pq.holdV - step);
+    return pq.holdV;
+  }
+
+  // The lap closes as the rail un-sticks. With no hold to spend, the sequence plays on the cue.
   function updatePullQuoteFrame(zoomT) {
     const { edges } = pq;
     if (!edges) return;
     const past = zoomT >= pqAppearZoomT;
-    let hold = past ? 1 : 0;
-    if (pq.holdT > 0) hold = clamp01((zoomT - pqAppearZoomT) / pq.holdT);
+    let scrolled = past ? 1 : 0;
+    if (pq.holdT > 0) scrolled = clamp01((zoomT - pqAppearZoomT) / pq.holdT);
+    const hold = followHold(scrolled);
 
-    const draw = clamp01(hold / PQ_DRAW_END);
-    const hDrawn = easeOutCubic(clamp01(draw / PQ_DRAW_H_SPAN));
-    const vDrawn = easeOutCubic(clamp01((draw - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
+    const reveal = clamp01(hold / PQ_REVEAL_END);
+    const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
+    const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
     writeEdgeVars(pqEl, [hDrawn, vDrawn, hDrawn, vDrawn], 'baseStr');
 
-    const copySpan = PQ_COPY_END - PQ_DRAW_END;
-    updatePullQuoteCopy(past && hold >= PQ_DRAW_END, clamp01((hold - PQ_DRAW_END) / copySpan));
+    updatePullQuoteCopy(reveal);
 
     if (!pq.lapEl) return;
-    const lapT = clamp01((hold - PQ_COPY_END) / (1 - PQ_COPY_END));
+    const lapT = clamp01((hold - PQ_REVEAL_END) / (1 - PQ_REVEAL_END));
     const lap = [];
     for (let i = 0; i < 4; i += 1) lap.push(edgeProgress(lapT, edges[i]));
     writeEdgeVars(pq.lapEl, lap, 'lapStr');
+  }
+
+  // Re-split from scratch: line breaks move with the box width and the resolved font. The fresh
+  // elements carry no progress var, so the cache is dropped and the current frame rewritten.
+  function relayoutQuote() {
+    if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
+    pq.lineEls = layoutQuote(pq.quoteEl);
+    pq.copyStr = '';
+    if (!reducedMotion) updatePullQuoteFrame(frameState.zoomT);
   }
 
   function updatePullQuote(frame) {
@@ -1918,12 +1960,14 @@ function createGlobeGalleryRuntime(
           }, TEXT_REBUILD_DEBOUNCE_MS);
         }
       }
+      relayoutQuote(); // before the metrics: the split settles the box they measure
       publishPqMetrics();
     }
     doLayout();
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(publishPqMetrics, publishPqMetrics);
+      const afterFonts = () => { relayoutQuote(); publishPqMetrics(); };
+      document.fonts.ready.then(afterFonts, afterFonts);
     }
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = () => doLayout({ fromResize: true });

@@ -3,6 +3,7 @@
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
 export function easeOutSine(t) { return Math.sin((t * Math.PI) / 2); }
+export function easeOutExpo(t) { return t >= 1 ? 1 : 1 - 2 ** (-10 * t); }
 
 export function lerpN(a, b, t) { return a + (b - a) * t; }
 

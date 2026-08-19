@@ -238,6 +238,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-pq-gap: min(var(--s2a-layout-xl), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
   --gg-pq-copy-rise: 14px;
+  --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
+  --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
+  --gg-pq-line-bleed-inline: 0.7em; /* and sideways, so the mask can't crop the hung opening mark */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
   --gg-pq-rule-width: var(--gg-crosshair-width);
 
@@ -345,6 +348,31 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-q, 1))));
   color: var(--s2a-color-gray-25);
   margin: 0;
+}
+
+/* Written by the split; an unsplit quote keeps the plain flow and the fade/rise below. Flex so the
+   lines' negative bleed margins meet without collapsing. */
+.globe-gallery-pullquote-lines {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: none;
+}
+
+/* One mask per rendered line, so each rolls up into place from under it. JS writes
+   --gg-pq-line-v per line, already eased and staggered; the 1 fallbacks are the rest state. */
+.globe-gallery-pullquote-line {
+  display: block;
+  overflow: hidden;
+
+  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
+  padding: var(--gg-pq-line-bleed) var(--gg-pq-line-bleed-inline);
+  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-pq-line-bleed-inline) * -1);
+}
+
+.globe-gallery-pullquote-line-inner {
+  display: inline-block;
+  transform: translateY(calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)));
 }
 
 .globe-gallery-pullquote-name {
@@ -1017,6 +1045,11 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote-name,
 .globe-gallery-reduced .globe-gallery-pullquote-role {
   transition: none;
+}
+
+/* RM can be toggled after the lines already carry a written progress var. */
+.globe-gallery-reduced .globe-gallery-pullquote-line-inner {
+  transform: none;
 }
 
 

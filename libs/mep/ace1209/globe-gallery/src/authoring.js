@@ -91,10 +91,62 @@ function hangOpeningMark(quoteEl) {
   if (advance > 0) quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
 }
 
-function applyQuoteHang(quoteEl) {
-  if (!quoteEl) return;
-  const run = () => hangOpeningMark(quoteEl);
-  document.fonts?.ready?.then(run, run);
+const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
+
+// Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
+function measureLines(quoteEl, words) {
+  const probes = words.map((w) => {
+    const s = document.createElement('span');
+    s.textContent = w;
+    return s;
+  });
+  const nodes = [];
+  probes.forEach((s, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(s);
+  });
+  quoteEl.replaceChildren(...nodes);
+  const lines = [];
+  let top = null;
+  probes.forEach((s, i) => {
+    const y = s.offsetTop;
+    if (top === null || y - top > 1) {
+      lines.push([]);
+      top = y;
+    }
+    lines[lines.length - 1].push(words[i]);
+  });
+  return lines;
+}
+
+// Re-typeset the quote as one masked block per rendered line, and return those lines for the
+// caller to write progress vars to. Idempotent; plain text if there is nothing to split.
+export function layoutQuote(quoteEl) {
+  if (!quoteEl) return [];
+  if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
+  const text = QUOTE_TEXT.get(quoteEl).trim();
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.remove('globe-gallery-pullquote-lines');
+  quoteEl.textContent = text;
+  if (!text) return [];
+  hangOpeningMark(quoteEl); // before measuring: the outdent can move the first line's break
+  const indent = quoteEl.style.textIndent;
+  const lines = measureLines(quoteEl, text.split(/\s+/));
+  const lineEls = lines.map((wordsOnLine, i) => {
+    const line = document.createElement('span');
+    line.className = 'globe-gallery-pullquote-line';
+    const inner = document.createElement('span');
+    inner.className = 'globe-gallery-pullquote-line-inner';
+    inner.textContent = wordsOnLine.join(' ');
+    line.append(inner);
+    // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
+    if (i === 0 && indent) inner.style.marginInlineStart = indent;
+    return line;
+  });
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.add('globe-gallery-pullquote-lines');
+  quoteEl.replaceChildren(...lineEls);
+  return lineEls;
 }
 
 function parseArcCopy(row) {
@@ -372,7 +424,7 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
     quoteEl.textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
     el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
-    applyQuoteHang(quoteEl);
+    layoutQuote(quoteEl);
   } else {
     el.querySelector('.globe-gallery-pullquote-pin').remove();
   }
