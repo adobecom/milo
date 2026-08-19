@@ -8,7 +8,7 @@
     document.querySelector('meta[name="collab-service-ep"]')?.content ||
     ''
   ).replace(/\/$/, '');
-  const ME = { email: '', name: 'You', profileId: '', imsEmail: '' };
+  const ME = { email: '', name: 'You', profileId: '', imsEmail: '', parentOrigin: '' };
 
   if (!SERVICE || !COLLAB_ID) {
     console.warn('[collab] missing collab-service-ep meta or peregrine-collab-id param — collab tool disabled');
@@ -27,6 +27,7 @@
         if (e.data.name)      ME.name      = e.data.name;
         if (e.data.profileId) ME.profileId = e.data.profileId;
         if (e.data.email)     { ME.email = e.data.email; ME.imsEmail = e.data.email; }
+        ME.parentOrigin = e.origin;
       }
       if (e.data?.type === 'collab:toggle-panel') togglePanel();
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
@@ -95,7 +96,7 @@
         path,
         method: opts.method || 'GET',
         body: opts.body ?? null,
-      }, '*');
+      }, ME.parentOrigin || '*');
       setTimeout(() => {
         if (_pendingApiRequests[reqId]) {
           delete _pendingApiRequests[reqId];
