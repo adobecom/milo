@@ -48,6 +48,8 @@ export const reloadPage = stub();
 
 export const getCountry = stub().resolves('us');
 
+export const loadIms = stub().resolves();
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
