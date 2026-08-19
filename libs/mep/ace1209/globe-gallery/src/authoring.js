@@ -343,11 +343,11 @@ const buildMarkup = (gid, labels) => `
       </button>
       <div class="globe-gallery-hint">
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="globe-gallery-hint-text"></div>
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12h16m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </div>

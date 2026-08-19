@@ -10,7 +10,6 @@ import {
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
-import createCursor from './src/cursor.js';
 import createGlobeControls from './src/controls.js';
 import {
   easeOutCubic, easeInOutCubic, easeOutExpo, lerpN, coverFit,
@@ -171,11 +170,9 @@ const TEXT_BEHIND_GAP = 15; // world units behind the sphere back surface
 const TEXT_WARP_ENTER_MAX = 4.50;
 const TEXT_OPACITY_PEAK = 0.15;
 const TEXT_OPACITY_RESTING = 0.06;
-const TEXT_CA_DIR_STRENGTH = 0.05;
 const TEXT_CA_WARP_MUL = 1.5;
-const TEXT_DRAG_WARP_MUL = 3.0;
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
-// textExitProgress accrual per 60fps frame of drag.
+// hintDismissProgress accrual per 60fps frame of drag.
 const HINT_EXIT_DIST_RATE = 0.018;
 const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
 const HINT_EXIT_BURST_RATE = 0.010;
@@ -380,7 +377,7 @@ function createGlobeGalleryRuntime(
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   let textMesh = null;
-  let textExitProgress = 0;
+  let hintDismissProgress = 0; // 0→1 over drag activity; retires the barrel's DOM hint
 
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
@@ -441,7 +438,6 @@ function createGlobeGalleryRuntime(
   let modal = null;
   let a11y = null;
   let interaction = null;
-  let cursor = null;
   let controls = null;
 
   let suppressFocusSnap = false;
@@ -961,7 +957,7 @@ function createGlobeGalleryRuntime(
   };
 
   const openModalAndDismissHint = (idx, x, y) => {
-    textExitProgress = 1;
+    hintDismissProgress = 1;
     modal.open(idx, x, y);
   };
 
@@ -988,28 +984,18 @@ function createGlobeGalleryRuntime(
     gid,
   });
 
-  // Created before interaction so isActive() can gate its hover-cursor writes.
-  cursor = createCursor({
-    getCanvas: () => (renderer ? renderer.domElement : null),
-    getSphereInteractive: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T,
-    getModalOpen: () => modal.getModalIdx() >= 0,
-    getReducedMotion: () => reducedMotion,
-    // Two-step exit on drag activity; scrolling out collapses both steps
-    getHintDismissed: () => textExitProgress > TL.CURSOR_DRAG_DISMISS_T
-      || frameState.zoomT >= pqAppearZoomT,
-    getCursorRetired: () => textExitProgress > TL.CURSOR_DRAG_RETIRE_T
-      || frameState.zoomT >= pqAppearZoomT,
-    labelText: hintText,
-    drag,
-  });
-
   controls = createGlobeControls({
     q,
     labels,
     getVisible: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
       && frameState.zoomT < pqAppearZoomT
       && modal.getModalIdx() < 0,
-    rotate: rotateStep,
+    getHintDismissed: () => hintDismissProgress > TL.HINT_DISMISS_T,
+    rotate: (dir) => {
+      hintDismissProgress = 1;
+
+      rotateStep(dir);
+    },
   });
 
   const dragSensitivity = () => {
@@ -1028,7 +1014,6 @@ function createGlobeGalleryRuntime(
     interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
     maxVel: MAX_VEL,
     drag,
-    isCursorActive: () => cursor.isActive(),
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
   });
@@ -1659,21 +1644,19 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // Sole writer of textExitProgress, read by the hint plane and the cursor. A separate stage
-  // because updateClickDragText early-returns below TEXT_APPEAR_START. Monotonic 0→1, never
-  // re-armed.
+  // Sole writer of hintDismissProgress.
   function updateHintExitProgress(frame) {
     const { sphereFormT, dtScale } = frame;
-    if (textExitProgress >= 1 || reducedMotion || !drag.isDragging) return;
+    if (hintDismissProgress >= 1 || reducedMotion || !drag.isDragging) return;
     // Pointer capture outlives the gate, so a held drag can scroll out of the live range.
     if (sphereFormT < TL.SPHERE_INTERACTIVE_T) return;
     // A vertical touch drag is page scroll, not a globe drag.
     if (interaction.isPageScrollGesture()) return;
     const spd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
     const norm = spd / MAX_VEL; // 0–1
-    textExitProgress = Math.min(
+    hintDismissProgress = Math.min(
       1,
-      textExitProgress + dtScale * (
+      hintDismissProgress + dtScale * (
         norm * HINT_EXIT_DIST_RATE
         + HINT_EXIT_HOLD_RATE
         + norm * norm * HINT_EXIT_BURST_RATE
@@ -1681,7 +1664,7 @@ function createGlobeGalleryRuntime(
     );
   }
 
-  // Reads frame.foldSphDist + live sphereDragWarp, so it runs after both.
+  // Reads frame.foldSphDist, so it runs after the fold.
   function updateClickDragText(frame) {
     if (!textMesh) return;
     const { sphereFormT, zoomT, foldSphDist } = frame;
@@ -1694,7 +1677,6 @@ function createGlobeGalleryRuntime(
       uniforms.uWarp.value = 0;
       uniforms.uZoom.value = 0;
       uniforms.uCA.value = 0;
-      uniforms.uMotionDir.value.set(0, 0);
       return;
     }
     if (sphereFormT <= TL.TEXT_APPEAR_START) {
@@ -1713,28 +1695,16 @@ function createGlobeGalleryRuntime(
     // Fill the viewport at the current camera distance + warp-proportional overflow.
     const restDist = CAM_Z_SPHERE + SPHERE_R + TEXT_BEHIND_GAP;
     const currDist = foldSphDist + SPHERE_R + TEXT_BEHIND_GAP;
-    const warpTot = txtWarpEntrance + sphereDragWarp * TEXT_DRAG_WARP_MUL;
-    textMesh.scale.setScalar(currDist / restDist + warpTot * TEXT_WARP_OVERFLOW);
-    // Settles peak→resting over the fold, then fades linearly to 0 across the run to the quote's
-    // reveal — the same cue the cursor and controls retire on.
+    textMesh.scale.setScalar(currDist / restDist + txtWarpEntrance * TEXT_WARP_OVERFLOW);
     const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
       * (1 - clamp01(zoomT / pqAppearZoomT));
 
-    textMesh.visible = txtOp > 0.001 && textExitProgress < 0.999;
+    textMesh.visible = txtOp > 0.001;
     uniforms.uOpacity.value = txtOp;
     uniforms.uZoom.value = zoomT;
-    uniforms.uExitP.value = textExitProgress;
-    uniforms.uWarp.value = txtWarpEntrance + sphereDragWarp * TEXT_DRAG_WARP_MUL;
+    uniforms.uWarp.value = txtWarpEntrance;
 
-    if (CA_ENABLED) {
-      const dragSpd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-      uniforms.uCA.value = (dragSpd / MAX_VEL) * CA_STRENGTH * 5
-        + (sphereDragWarp + txtWarpEntrance) * TEXT_CA_WARP_MUL;
-      uniforms.uMotionDir.value.set(
-        drag.velX * TEXT_CA_DIR_STRENGTH,
-        -drag.velY * TEXT_CA_DIR_STRENGTH,
-      );
-    }
+    if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
   }
 
   // Stage order is FIXED and load-bearing.
@@ -1759,10 +1729,10 @@ function createGlobeGalleryRuntime(
     updateGlobalCA();
     updateCardTransforms(frame);
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
-    updateHintExitProgress(frame); // owns textExitProgress — before its two consumers
+    updateHintExitProgress(frame); // before controls.update reads it
 
     updateClickDragText(frame);
-    cursor.update();
+    interaction.applyCursor();
     controls.update();
     updateArcCopy(frame);
     renderScene(frame.activeCamera);
@@ -1982,7 +1952,6 @@ function createGlobeGalleryRuntime(
     }
 
     interaction.setup(canvas);
-    cursor.setup();
     root.classList.toggle('globe-gallery-barrel', bp.CYLINDER);
 
     window.addEventListener('blur', armFocusGuard);
@@ -2073,8 +2042,6 @@ function createGlobeGalleryRuntime(
     window.removeEventListener('focus', disarmFocusGuard);
     document.removeEventListener('visibilitychange', onVisibilityChange);
     interaction.teardown();
-    // Runs while renderer exists so getCanvas() resolves.
-    cursor.teardown();
     controls.teardown();
     if (renderer) {
       renderer.domElement.style.filter = '';
@@ -2107,7 +2074,7 @@ function createGlobeGalleryRuntime(
     textures = [];
     cardAspects = [];
     disposeTextMesh();
-    textExitProgress = 0;
+    hintDismissProgress = 0;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; cameraOrtho = null; sphereGroup = null;
     modal.destroy();

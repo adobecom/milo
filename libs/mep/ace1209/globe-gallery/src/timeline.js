@@ -52,13 +52,9 @@ export const ARC_COPY_IN_ENTRY_T = 0.336;
 export const ARC_COPY_OUT_FORM_START = 0.20;
 export const ARC_COPY_OUT_FORM_END = 0.90;
 
-// zoomT. The hint text, desktop cursor and globe controls key off the derived `pqAppearZoomT`
-// directly. The canvas needs slack, being a hard cut rather than a fade, so it goes a margin
-// PAST the point the scene is empty.
 export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-export const CURSOR_DRAG_DISMISS_T = 0.12;
-export const CURSOR_DRAG_RETIRE_T = 0.30;
+export const HINT_DISMISS_T = 0.12; // hintDismissProgress at which the barrel hint retires
 
 export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
 
