@@ -88,6 +88,7 @@ function decorate(block, el) {
     const variant = cardType[i];
     if (variant === 'card-stacked') decorateCardStackedIcon(media);
     const card = createTag('div', { class: `card ${variant}` });
+    if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
     card.append(media, foreground);
     cards.push(card);
   }
