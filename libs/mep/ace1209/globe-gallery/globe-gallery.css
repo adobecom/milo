@@ -240,7 +240,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-pq-copy-rise: 14px;
   --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
   --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
-  --gg-pq-line-bleed-inline: 0.7em; /* and sideways, so the mask can't crop the hung opening mark */
+  --gg-pq-line-bleed-inline: 0.8em; /* sideways: the widest outdent hangOpeningMark will apply */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
   --gg-pq-rule-width: var(--gg-crosshair-width);
 
@@ -372,7 +372,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 .globe-gallery-pullquote-line-inner {
   display: inline-block;
-  transform: translateY(calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)));
+  transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
 }
 
 .globe-gallery-pullquote-name {

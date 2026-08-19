@@ -145,7 +145,14 @@ export function layoutQuote(quoteEl) {
   });
   quoteEl.style.textIndent = '';
   quoteEl.classList.add('globe-gallery-pullquote-lines');
-  quoteEl.replaceChildren(...lineEls);
+  // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
+  // flex items generates no box, so the layout is untouched.
+  const nodes = [];
+  lineEls.forEach((line, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(line);
+  });
+  quoteEl.replaceChildren(...nodes);
   return lineEls;
 }
 
