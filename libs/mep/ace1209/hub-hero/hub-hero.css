@@ -47,7 +47,7 @@
   --grid-col-five-offset: 0px;
 
   --col1OffsetAdjuster: 0%;
-  --col5OffsetAdjuster: 60%;
+  --col5OffsetAdjuster: 0%;
 
   width: 100%;
   overflow-x: clip;
@@ -958,7 +958,7 @@
 
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
-    max-width: calc(var(--hub-hero-carousel-item-max-width) * var(--hub-hero-carousel-item-hover-grow-index));
+    max-width: calc(var(--carousel-item-media-height) * 1.25);
     width: 150%;
     background-color: var(--s2a-color-gray-1000);
   }
@@ -1310,6 +1310,7 @@
 
   75% {
     max-width: var(--grid-img-width);
+    min-width: 0%;
     margin-inline: calc(var(--end-gap)/2 * -1);
   }
 
@@ -1445,7 +1446,7 @@
 
 @keyframes carouselSlideOffset1 {
   0% {
-    transform: translate(0px, calc(var(--grid-col-one-offset) + var(--carousel-slide-1-correction, 0px)));
+    transform: translate(0px, calc(var(--grid-col-one-offset) + var(--start-gap)));
   }
 
   20% {
