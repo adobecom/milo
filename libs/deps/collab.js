@@ -18,6 +18,9 @@
   // Token received from parent frame via postMessage (used when running inside an iframe,
   // since third-party cookie blocking prevents IMS from restoring the session cross-origin).
   let _parentToken = '';
+  // Pending API proxy requests keyed by reqId — resolved/rejected when collab:api-response arrives.
+  const _pendingApiRequests = {};
+
   if (window.parent !== window) {
     window.addEventListener('message', (e) => {
       if (e.data?.type === 'collab:token-response' && e.data.token) {
@@ -73,8 +76,36 @@
         refreshOpenViews(e.data.threadId);
         notifyParent();
       }
+      if (e.data?.type === 'collab:api-response') {
+        const pending = _pendingApiRequests[e.data.reqId];
+        if (pending) {
+          delete _pendingApiRequests[e.data.reqId];
+          if (e.data.ok) pending.resolve(e.data.data);
+          else pending.reject(new Error(e.data.error || 'API error'));
+        }
+      }
     });
     window.parent.postMessage({ type: 'collab:request-token' }, '*');
+  }
+
+  function apiFetchViaParent(path, opts = {}) {
+    return new Promise((resolve, reject) => {
+      const reqId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      _pendingApiRequests[reqId] = { resolve, reject };
+      window.parent.postMessage({
+        type: 'collab:api-request',
+        reqId,
+        path,
+        method: opts.method || 'GET',
+        body: opts.body ?? null,
+      }, '*');
+      setTimeout(() => {
+        if (_pendingApiRequests[reqId]) {
+          delete _pendingApiRequests[reqId];
+          reject(new Error(`[collab] api-request timed out: ${path}`));
+        }
+      }, 15000);
+    });
   }
 
   function getRawToken() {
@@ -89,6 +120,9 @@
   }
 
   async function apiFetch(path, opts = {}) {
+    // When running inside an iframe, proxy all API calls through the parent app
+    // so auth tokens and CORS are handled there.
+    if (window.parent !== window) return apiFetchViaParent(path, opts);
     const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
     const token = getToken();
     if (token) headers['Authorization'] = token;
@@ -722,11 +756,18 @@
       if (!t || !t.id) return;
       const normalized = normalizeThread(t);
       const idx = state.threads.findIndex(x => x.id === threadId);
+      const existing = idx >= 0 ? state.threads[idx] : null;
+      const changed = !existing
+        || existing.status !== normalized.status
+        || existing.messages.length !== normalized.messages.length
+        || existing.messages.at(-1)?.id !== normalized.messages.at(-1)?.id;
       if (idx >= 0) state.threads[idx] = normalized;
       else state.threads.push(normalized);
-      updateBadge();
-      renderMarkers();
-      refreshOpenViews(threadId);
+      if (changed) {
+        updateBadge();
+        renderMarkers();
+        refreshOpenViews(threadId);
+      }
     } catch (e) {
       console.warn('[collab] pullThread failed', e);
     }
@@ -1085,6 +1126,13 @@
       kind: m.kind || (m.replyToCommentId ? 'reply' : 'comment'),
       createdAt: m.createdAt || m.created || null,
     }));
+    // Always sort ascending so the latest message is at the bottom.
+    messages.sort((a, b) => {
+      if (!a.createdAt && !b.createdAt) return 0;
+      if (!a.createdAt) return -1;
+      if (!b.createdAt) return 1;
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
     return {
       id: t.id,
       status: (t.state || t.status || 'open').toLowerCase(),
