@@ -12,7 +12,7 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import {
-  easeOutCubic, easeInOutCubic, easeOutExpo, lerpN, coverFit,
+  easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -34,7 +34,7 @@ const BREAKPOINTS = {
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.6, // share clustered into the off-screen arc flank
+    ARC_DENSE_FRACTION: 0.5, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
   },
   sm: {
@@ -49,7 +49,7 @@ const BREAKPOINTS = {
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    ARC_DENSE_FRACTION: 0.7,
+    ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
   },
@@ -402,6 +402,7 @@ function createGlobeGalleryRuntime(
   const fanScratch = {};
   const wpScratch = {};
   const stageScratch = {};
+  const entryScratch = {};
 
   const navNudge = {
     active: false,
@@ -1476,25 +1477,28 @@ function createGlobeGalleryRuntime(
 
   // Transform on the arc→grid continuum at peel ease gpE (0 = arc, 1 = grid). Serves the
   // arc/peel render AND the origin of the fold lerp.
-  function computeCardStage(card, i, gpE, frame) {
-    const { entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
+  function computeCardEntry(i, frame, out) {
     const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
-    const slot = i; // no conveyor: all cards on arc simultaneously
-    const rawT = Math.max(0, Math.min(1, slot / Math.max(1, N_VISIBLE - 1)));
-    // Non-uniform fanT split: cluster low-i off-screen, spread the rest.
+    const rawT = Math.max(0, Math.min(1, i / Math.max(1, N_VISIBLE - 1)));
     const splitR = ARC_DENSE_COUNT / Math.max(1, N_VISIBLE - 1);
-    let fanT;
-    if (rawT < splitR) {
-      fanT = (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT;
-    } else {
-      fanT = ARC_DENSE_SPLIT
-           + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
-    }
+    out.fanT = rawT < splitR
+      ? (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT
+      : ARC_DENSE_SPLIT + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
+    const delay = TL.ARC_ENTRY_STAGGER
+      * Math.min(1, (1 - out.fanT) / (1 - ARC_DENSE_SPLIT));
+    const span = Math.max(0.01, 1 - TL.ARC_ENTRY_STAGGER);
+    const rotT = Math.max(0, Math.min(1, (frame.arcCopyEntryT - delay) / span));
+    out.rot = (1 - easeInOutQuint(rotT)) * TL.ENTRY_ROT_MAX;
+    return out;
+  }
+
+  function computeCardStage(card, i, gpE, frame, entry) {
+    const { arcScale, sphGroupZ } = frame;
+    const { fanT, rot: entryRot } = entry;
     const fan = getFanData(fanT, arcCtx, fanScratch);
     const wp = entryRot > 0.001
       ? rotateArcPoint(fan.px, fan.py, entryRot, arcCtx, W, H, wpScratch)
       : cssToWorld(fan.px, fan.py, W, H, wpScratch);
-    const arcY = wp.y - entryYOffset;
     const webglRot = -fan.cssRot - entryRot;
 
     // First peel frame's rotation, normalized within ±π of gridTilt. Direct z-angle lerp,
@@ -1508,9 +1512,9 @@ function createGlobeGalleryRuntime(
       card.peelStartRot = startRot;
     }
 
-    stageScratch.slot = slot;
+    stageScratch.slot = i;
     stageScratch.x = lerpN(wp.x, card.gridPos.x, gpE);
-    stageScratch.y = lerpN(arcY, card.gridPos.y, gpE);
+    stageScratch.y = lerpN(wp.y, card.gridPos.y, gpE);
     stageScratch.z = lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE);
     stageScratch.scale = lerpN(arcScale, card.gridScale, gpE);
     stageScratch.rotZ = card.peelStartRot == null
@@ -1543,9 +1547,7 @@ function createGlobeGalleryRuntime(
   }
 
   function updateCardTransform(i, frame) {
-    const {
-      progress, gridFormT, gpWin, sphereFormT, entryRot, dtScale,
-    } = frame;
+    const { progress, gridFormT, gpWin, sphereFormT, dtScale } = frame;
     const { N_TOTAL } = bp;
     const card = cards[i];
     const { mesh } = card;
@@ -1578,10 +1580,12 @@ function createGlobeGalleryRuntime(
     const fdLocalT = Math.max(0, Math.min(1, (progress - foldStartProg) / TL.PROGRESS_FOLD_DUR));
     const fdE = gpLocalT >= TL.FOLD_START_LOCAL_T ? easeInOutCubic(fdLocalT) : 0;
 
+    const entry = computeCardEntry(i, frame, entryScratch);
+
     let cardCA = 0;
     if (CA_ENABLED) {
       cardCA = Math.max(
-        entryRot / TL.ENTRY_ROT_MAX,
+        entry.rot / TL.ENTRY_ROT_MAX,
         gpE * (1 - gpE) * 4,
         fdE * (1 - fdE) * 4,
       ) * CA_STRENGTH; // written to uCA with the hover term below
@@ -1619,7 +1623,7 @@ function createGlobeGalleryRuntime(
       placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame);
       return;
     }
-    const stage = computeCardStage(card, i, gpE, frame);
+    const stage = computeCardStage(card, i, gpE, frame, entry);
     if (fdE > 0) { placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame); return; }
     placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
   }
