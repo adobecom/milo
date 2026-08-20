@@ -1,7 +1,7 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: calc(494px + var(--global-height-nav, 80px));
+  min-block-size: calc(494px + var(--global-height-nav, 64px));
 
   .pm-content {
     display: flex;
@@ -65,13 +65,11 @@
   }
 }
 
-/* local-nav adds a breadcrumbs/local-nav bar below the global nav */
 body:has(header.local-nav) .product-marquee-grid {
-  min-block-size: calc(494px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
+  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-breadcrumbs-height, 33px));
 }
 
 @media (width < 768px) {
-  /* justify-between pushes card to bottom; foreground stays at natural height */
   .product-marquee-grid .pm-content {
     justify-content: space-between;
   }
@@ -89,7 +87,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
 @media (width >= 768px) {
   .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 80px));
+    min-block-size: calc(500px + var(--global-height-nav, 64px));
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
@@ -129,6 +127,6 @@ body:has(header.local-nav) .product-marquee-grid {
   }
 
   body:has(header.local-nav) .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
+    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-breadcrumbs-height, 33px));
   }
 }

@@ -14,7 +14,7 @@ function getSubtextStyle(block) {
 
 function parseLeftColumn(col) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
-  if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
+  if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('heading-super');
@@ -47,7 +47,10 @@ function buildMerchCard(col) {
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   [...col.querySelectorAll('.con-button')].forEach((btn) => ctaWrapper.append(btn));
 
-  return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
+  const merchCard = createTag('div', { class: 'pm-merch-card' });
+  merchCard.append(cardContent);
+  if (ctaWrapper.children.length) merchCard.append(ctaWrapper);
+  return merchCard;
 }
 
 function decorate(block) {
