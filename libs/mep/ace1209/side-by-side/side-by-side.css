@@ -60,9 +60,14 @@
     --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
     overflow: hidden;
-    aspect-ratio: 33/37;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+
+    .content-aux {
+      aspect-ratio: 1 / 1.1;
+      width: 100%;
+      height: auto;
+    }
 
     &.dark {
       background-color: unset;
@@ -84,20 +89,15 @@
 
     .foreground {
       --card-overlay-padding: var(--s2a-spacing-lg);
-      /* Play/pause button size + current padding */
-      --card-overlay-padding-bottom: calc(var(--play-pause-size, 0px) + var(--card-overlay-padding));
 
       position: relative;
-      padding: var(--card-overlay-padding) var(--card-overlay-padding) var(--card-overlay-padding-bottom);
+      padding-block: 0 var(--card-overlay-padding);
+      padding-inline: var(--card-overlay-padding);
       z-index: 1;
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-      max-width: 320px;
-    }
-
-    &:has(video) .foreground {
-      --play-pause-size: 32px;
+      max-width: 450px;
     }
   }
 
@@ -130,8 +130,6 @@
   &.featured {
     .card-overlay {
       display: flex;
-      align-items: flex-end;
-      aspect-ratio: 72 / 113;
       border: none;
     }
 
@@ -155,12 +153,17 @@
     .card-overlay {
       --card-overlay-gradient: var(--card-overlay-gradient-top);
 
+      flex-direction: row;
+      aspect-ratio: 33/37;
       align-items: flex-start;
       .foreground {
         --card-overlay-padding-bottom: var(--card-overlay-padding);
 
         max-width: 480px;
+        padding: var(--card-overlay-padding);
       }
+
+      .content-aux { display: none; }
     }
 
     .card-stacked {
@@ -197,6 +200,7 @@
       .card-overlay {
         --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
+        align-items: flex-end;
         aspect-ratio: 3 / 2;
       }
     }
@@ -230,5 +234,11 @@
   .side-by-side.featured .card-overlay {
     height: 1200px;
     aspect-ratio: unset;
+  }
+}
+
+@media (width < 768px) {
+  .side-by-side .card-overlay button.play-pause-button {
+    inset-block-start: var(--s2a-spacing-md);
   }
 }

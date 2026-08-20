@@ -179,6 +179,7 @@ const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
+  'hub-hero',
 ];
 
 const ENVS = {
