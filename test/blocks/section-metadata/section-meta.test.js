@@ -160,4 +160,38 @@ describe('Section Metdata', () => {
       expect(child.getAttribute('role')).to.be.null;
     });
   });
+
+  it('dials: applies --s2a token rebind to a child element', async () => {
+    const sec = document.querySelector('.section.dials');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    await new Promise((r) => requestAnimationFrame(r));
+    const h1 = sec.querySelector('h1');
+    expect(h1.style.getPropertyValue('--s2a-color-content-heading'))
+      .to.equal('var(--s2a-color-brand-adobe-red)');
+  });
+
+  it('dials: applies --s2a token rebind to the section itself when no sel', async () => {
+    const sec = document.querySelector('.section.dials-section-level');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    await new Promise((r) => requestAnimationFrame(r));
+    expect(sec.style.getPropertyValue('--s2a-color-bg')).to.equal('var(--s2a-color-brand-dark)');
+  });
+
+  it('dials: is a no-op for malformed JSON (fail-open)', async () => {
+    const sec = document.querySelector('.section.dials-malformed');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    await new Promise((r) => requestAnimationFrame(r));
+    expect(sec.style.length).to.equal(0);
+  });
+
+  it('dials: skips null entries, applies valid entries', async () => {
+    const sec = document.querySelector('.section.dials-null-entry');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    await new Promise((r) => requestAnimationFrame(r));
+    expect(sec.style.getPropertyValue('--s2a-color-bg')).to.equal('var(--s2a-color-brand-dark)');
+  });
 });

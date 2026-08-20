@@ -184,6 +184,39 @@ function handleImages(imageOptions, section) {
   decoratePictures(section, imageOptions);
 }
 
+/**
+ * Forge Dials — render-time --s2a token rebind (MWPW-203770).
+ * Reads a JSON array from the first content cell's raw textContent (NOT the lowercased
+ * .text) and applies CSS custom property overrides to target elements within the section.
+ */
+function handleDials(dialsMeta, section) {
+  if (!section) return;
+  const raw = dialsMeta.content[0]?.textContent?.trim();
+  if (!raw) return;
+  let entries;
+  try {
+    entries = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  if (!Array.isArray(entries)) return;
+  const tokenRe = /^--s2a-[a-z0-9-]+$/;
+  const valid = entries.filter((entry) => {
+    if (!entry || typeof entry !== 'object') return false;
+    return tokenRe.test(entry.var) && tokenRe.test(entry.to);
+  });
+  if (!valid.length) return;
+  requestAnimationFrame(() => {
+    valid.forEach((entry) => {
+      let target;
+      if (entry.sel) {
+        try { target = section.querySelector(entry.sel); } catch { target = null; }
+      }
+      (target || section).style.setProperty(entry.var, `var(${entry.to})`);
+    });
+  });
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -203,5 +236,6 @@ export default async function init(el) {
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
   if (metadata.images) handleImages(metadata.images?.text[0], section);
+  if (metadata.dials) handleDials(metadata.dials, section);
   handleStickyFocus(section);
 }

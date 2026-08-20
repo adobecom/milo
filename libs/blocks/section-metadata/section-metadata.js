@@ -100,6 +100,39 @@ function handleAnchor(anchor, section) {
   section.classList.add('section-anchor');
 }
 
+/**
+ * Forge Dials — render-time --s2a token rebind (MWPW-203770).
+ * Reads a JSON array from the metadata value node's raw textContent (NOT the lowercased
+ * .text) and applies CSS custom property overrides to target elements within the section.
+ */
+function handleDials(dialsMeta, section) {
+  if (!section) return;
+  const raw = dialsMeta.content?.textContent?.trim();
+  if (!raw) return;
+  let entries;
+  try {
+    entries = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  if (!Array.isArray(entries)) return;
+  const tokenRe = /^--s2a-[a-z0-9-]+$/;
+  const valid = entries.filter((entry) => {
+    if (!entry || typeof entry !== 'object') return false;
+    return tokenRe.test(entry.var) && tokenRe.test(entry.to);
+  });
+  if (!valid.length) return;
+  requestAnimationFrame(() => {
+    valid.forEach((entry) => {
+      let target;
+      if (entry.sel) {
+        try { target = section.querySelector(entry.sel); } catch { target = null; }
+      }
+      (target || section).style.setProperty(entry.var, `var(${entry.to})`);
+    });
+  });
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -167,5 +200,6 @@ export default async function init(el) {
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
   if (metadata['collapse-ups-mobile']?.text === 'on') await handleCollapseSection(section);
+  if (metadata.dials) handleDials(metadata.dials, section);
   addListAttrToSection(section);
 }
