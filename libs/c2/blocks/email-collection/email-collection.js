@@ -211,7 +211,7 @@ function addErrorElement(container, key) {
   const input = container.querySelector('input, select');
   const shouldAdd = input.getAttribute('disabled') === null;
   if (!shouldAdd) return;
-  const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
+  const error = createTag('div', { id: `error-${key}`, class: 'body-sm hidden' });
   container.append(error);
 }
 
@@ -305,7 +305,7 @@ async function decorateInput(key, value) {
 
   const label = createTag(
     'label',
-    { for: key, class: 'body-xs' },
+    { for: key, class: 'body-sm' },
     labelText.trim(),
   );
   const input = await decorateFunction({ key, placeholder, labelText, inputValue });
@@ -417,7 +417,7 @@ function setMaxHeightToForm(formContainer, restore) {
 async function decorateConsentString() {
   const { consentDiv } = await getFormData('consent');
   if (!consentDiv) return null;
-  consentDiv.classList.add('body-xxs', 'consent-string');
+  consentDiv.classList.add('caption', 'consent-string');
 
   const { subscriptionName } = getFormData('metadata');
   const regex = /{{subscription-name}}/g;
@@ -511,7 +511,7 @@ function transformCtaToBtn(el) {
 
 function decorateSubscribedMessage(text) {
   const showForm = text.querySelector('a[href$="#show-form"]');
-  const email = createTag('p', { class: 'subscribed-email hidden body-m' });
+  const email = createTag('p', { class: 'subscribed-email hidden body-md' });
   text.appendChild(email);
 
   if (!showForm) return;
@@ -535,7 +535,7 @@ function decorateSubscribedMessage(text) {
   });
 
   const parent = showForm.parentElement ?? span;
-  parent.classList.replace('body-m', 'body-xs');
+  parent.classList.replace('body-md', 'body-sm');
   showForm.replaceWith(span);
   text.appendChild(parent);
 }
@@ -554,9 +554,9 @@ function decorateText(elChildren) {
       } else if (textEl.childElementCount === 1 && textEl.firstElementChild.tagName === 'PICTURE') {
         textEl.classList.add('icon-area');
       } else if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(textEl.tagName)) {
-        textEl.classList.add('heading-l');
+        textEl.classList.add('heading-3');
       } else {
-        textEl.classList.add('body-m');
+        textEl.classList.add('body-md');
       }
     });
 
@@ -581,7 +581,7 @@ async function checkIsSubscribed() {
   const { email } = await getIMSProfile();
 
   const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest });
-  const { subscribed } = data;
+  const { subscribed } = data || {};
 
   if (subscribed) showHideMessage({ subscribed, email });
 
