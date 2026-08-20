@@ -252,6 +252,30 @@ const loadSlideMedia = (slide) => {
   loadVideo(slide?.querySelector('video'));
 };
 
+const promotePoster = (video) => {
+  if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
+    video.setAttribute('poster', video.dataset.rmPoster);
+  }
+};
+
+// Once the page has settled, warm the background image and video poster for every
+// slide the user hasn't seen yet, so hovering a card reveals its art immediately
+// instead of a blank/white slide while the network fetch is still in flight. This
+// runs on idle time (well after the hero's own LCP fetch), and deliberately skips
+// the video's own source - that stays lazy and only loads on real activation - so
+// it doesn't reintroduce the eager-fetch cost this lazy-loading was added to avoid.
+const preloadRemainingSlides = (slides) => {
+  const warm = () => {
+    slides.forEach((slide) => {
+      if (slide.classList.contains('is-active')) return;
+      loadSlideImage(slide);
+      promotePoster(slide.querySelector('video'));
+    });
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 5000 });
+  else setTimeout(warm, 2000);
+};
+
 const playActiveVideo = (video) => {
   loadVideo(video);
   if (!prefersReducedMotion()) video.play().catch(() => {});
@@ -778,6 +802,7 @@ export default function init(el) {
     setSlideObserver(slides);
     setAnalytics(slides, cards, container, el);
     autoplayControllers.push(startAutoplay(slides, cards, container, el));
+    preloadRemainingSlides([...slides]);
   };
 
   loadViewportVideos(el);
