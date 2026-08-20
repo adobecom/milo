@@ -2810,4 +2810,4 @@ export function loadLana(options = {}) {
   window.addEventListener('unhandledrejection', lanaError);
 }
 
-export const reloadPage = () => window.location.reload();
+export const reloadPage = () => window.location.reload(); 
