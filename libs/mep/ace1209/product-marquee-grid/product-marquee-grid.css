@@ -1,7 +1,7 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: calc(494px + var(--global-height-nav, 56px));
+  min-block-size: calc(494px + var(--global-height-nav, 80px));
 
   .pm-content {
     display: flex;
@@ -65,6 +65,11 @@
   }
 }
 
+/* local-nav adds a breadcrumbs/local-nav bar below the global nav */
+body:has(header.local-nav) .product-marquee-grid {
+  min-block-size: calc(494px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
+}
+
 @media (width < 768px) {
   /* justify-between pushes card to bottom; foreground stays at natural height */
   .product-marquee-grid .pm-content {
@@ -84,7 +89,7 @@
 
 @media (width >= 768px) {
   .product-marquee-grid {
-    min-block-size: 500px;
+    min-block-size: calc(500px + var(--global-height-nav, 80px));
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
@@ -121,5 +126,9 @@
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
     }
+  }
+
+  body:has(header.local-nav) .product-marquee-grid {
+    min-block-size: calc(500px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
   }
 }
