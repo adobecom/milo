@@ -477,18 +477,6 @@
   margin: 0;
 }
 
-.email-collection-c2.mailing-list .con-button.blue {
-  background-color: var(--s2a-color-gray-1000);
-  border-color: var(--s2a-color-gray-1000);
-  color: var(--s2a-color-gray-25);
-}
-
-.email-collection-c2.mailing-list .con-button.blue:hover,
-.email-collection-c2.mailing-list .con-button.blue:active {
-  background-color: var(--s2a-color-transparent-black-64);
-  border-color: var(--s2a-color-transparent-black-64);
-}
-
 @media (width >= 700px) {
   .email-collection-c2.mailing-list .foreground {
     padding: var(--s2a-spacing-xs) var(--s2a-spacing-2xl) var(--s2a-spacing-xs) var(--s2a-spacing-xs);
