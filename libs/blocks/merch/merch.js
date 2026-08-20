@@ -1486,8 +1486,19 @@ export async function buildCta(el, params) {
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
   if (isMasGeoDetectionEnabled() && service.settings.country) {
-    const country = await resolveCheckoutCountry(service);
-    if (country) cta.setAttribute('data-ims-country', country);
+    // Non-blocking data-ims-country stamp. Awaiting resolveCheckoutCountry here (which awaits
+    // service.imsCountryPromise -- the IMS profile fetch) holds this block's init(), and thus
+    // the section's reveal, which can regress LCP by several seconds when a checkout link
+    // shares an LCP section (e.g. a personalized promo fragment). Stamp the validated market
+    // country synchronously, then upgrade to the IMS country only if it differs. Intended to
+    // stamp before the link's first render so MAS's own IMS re-stamp is not armed; deferring
+    // to M@S to confirm that ordering holds.
+    cta.setAttribute('data-ims-country', service.settings.country);
+    resolveCheckoutCountry(service).then((country) => {
+      if (country && country !== service.settings.country) {
+        cta.setAttribute('data-ims-country', country);
+      }
+    });
   }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
