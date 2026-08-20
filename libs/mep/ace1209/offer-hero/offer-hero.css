@@ -381,7 +381,6 @@
   .offer-hero {
     .hero-card {
       &.is-settled {
-        border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
         border-radius: var(--s2a-border-radius-24);
       }
     }
