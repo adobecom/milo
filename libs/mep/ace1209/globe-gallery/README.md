@@ -1614,9 +1614,9 @@ the localnav at lg/xl, so re-check that clearance first.
 
 **Three nested elements, and the middle one is why.** `.globe-gallery-pullquote-pin` (the sticky
 window) → `.globe-gallery-pullquote-rail` (`position: sticky; top: var(--gg-optical-center); height: 0`) →
-`.globe-gallery-pullquote` (`position: absolute; top: 0; transform: translateY(-50%) …`). The rail
-is a zero-height line stuck to the viewport middle, and the quote hangs centred on it — `-50%` is
-own-height-relative, so no number is needed anywhere.
+`.globe-gallery-pullquote` (`position: absolute; top: 0; transform: translateY(max(-50%, …)) …`).
+The rail is a zero-height line stuck to the viewport middle, and the quote hangs centred on it —
+`-50%` is own-height-relative, so no number is needed anywhere.
 
 Do **not** collapse the rail and stick the quote itself. `transform` is paint-only: a
 `top: var(--gg-optical-center); translateY(-50%)` sticky box still *lays out* starting at the optical centre, so its layout box hangs
@@ -1629,10 +1629,16 @@ rail keeps the clamp height-blind, so the quote holds dead-centre across the who
 
 Consequences worth knowing before retuning:
 
-- **The container's `transform` must keep its `translateY(-50%)`.** That is what centres the quote on
-  the rail; losing it drops the quote half its height. The reduced-motion variant deliberately resets
-  `transform: none` — it is `position: relative` and flows, so it must *not* be shifted (and its rail
-  goes `position: static; height: auto` alongside the pin).
+- **The container's `transform` must keep its `translateY(-50%)` term.** That is what centres the
+  quote on the rail; losing it drops the quote half its height. It is written
+  `translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: both terms are negative, so `max()` takes
+  the *less* negative one. A box shorter than the band uses `-50%` and is optically centred exactly
+  as before; once the box exceeds the band, `-band/2` wins and pins the box's top edge to the bottom
+  of the nav, so a quote too long for the taper **overflows downward only** instead of also running
+  up under the chrome. The boundary is exact — at `box === band` both terms agree. The
+  reduced-motion variant deliberately resets `transform: none` — it is `position: relative` and
+  flows, so it must *not* be shifted (and its rail goes `position: static; height: auto` alongside
+  the pin).
 - **The pin centres the quote while it is invisible, and lets go the frame it appears.** The sticky is
   what guarantees the reveal happens dead-centre whatever the copy length, but it releases on that same
   frame (pin bottom = reveal + 50vh), so nothing is held and the quote scrolls away with the block —
@@ -2598,77 +2604,27 @@ bare names — are:
 
 Known follow-ups, not blocking this integration branch:
 
-- **Bundle-drift isn't CI-checked.** `package.json`'s build step (esbuild → `three.module.min.js`
-  from `src/three-src.js` + the pinned `three`) is a manual local step; nothing in CI verifies the
-  committed minified bundle still matches its source. As more `THREE.*` symbols are added the
-  bundle can silently drift from the pin. Worth a CI check (rebuild + diff) before this leaves the
-  experimental wave.
+- **Bundle-drift isn't CI-checked.** `three.module.min.js` is built manually
+  (`npm run build`: esbuild over `src/three-src.js` + the pinned `three`), and nothing in CI or lint
+  verifies the committed artifact still matches its source — the file is in `.eslintrc.js`'s ignore
+  list, and no workflow builds this block. **Re-run `npm run build` and commit the result whenever
+  `src/three-src.js` or the `three` pin changes.** The check that belongs in CI is:
+
+  ```sh
+  cd libs/mep/ace1209/globe-gallery && npm ci --silent && npm run build
+  git diff --exit-code -- three.module.min.js   # non-zero = the committed bundle is stale
+  ```
+
+  **The `.eslintrc.js` ignore entry for this file is load-bearing.** Running `eslint --fix` over the
+  bundle (a repo-wide fix, or an editor doing it on save) re-inflates it by ~72KB with no error:
+  `one-var` splits esbuild's merged declarators, `prefer-const` rewrites `var`→`const`, and
+  `space-infix-ops` pads the `=`. The output still works, so nothing catches it.
+
+  Adding a `THREE.*` symbol to the code without adding it to `src/three-src.js` gives `undefined` at
+  runtime, not a build error, so it is worth cross-checking the two lists when either moves. Note
+  that trimming *unused* exports is not worth doing for size: dropping all four currently-unused
+  ones (`LinearFilter`, `LinearMipmapLinearFilter`, `MeshBasicMaterial`, `Texture`) saves 88 bytes,
+  because `Texture` is `CanvasTexture`'s base class and the filter names are numeric constants.
 - **No automated tests.** The block ships without unit or Nala E2E coverage. The initial pass leans
   on the planned VQA; a test suite (at least the authoring/parse paths, the N=0/N=1 edge cases, and
   a modal open/nav/close smoke) should land before it graduates from the experimental wave.
-- **Pacing: landing on the pristine formed globe.** On touch, scroll-spin arbitration is correct
-  (see Behavior notes → Touch gesture arbitration), but how easily a user *comes to rest* exactly on
-  the fully-formed, still globe is a scroll-pacing tuning matter still open.
-- **Pull-quote pacing and overflow.** The reveal is camera-derived and needs no tuning, but the quote
-  is content-sized (see **CSS → Pull-quote box**), so the *clearance* wants an eyeball pass per
-  breakpoint against the final copy: the tail after the reveal (155vh md / 184vh sm) must stay longer
-  than half the box, and `--gg-runway-height` is the lever. `--gg-pq-hold-max` now derives from that
-  same clearance, so a too-long quote shows up first as the **hold silently going to 0** on md — a
-  useful early warning, and worth reading as one rather than as a hold bug. The box now centres on
-  `--gg-optical-center` and its gap tapers with `--gg-band-h`, which clears the nav for a five-line
-  quote down to 1280×720 (worst measured case: 15px of headroom above, 24px below) — but there is
-  still no `overflow` handling for a pathologically long or localized quote, and past the taper's
-  reach it spills rather than scrolls.
-
-### Constraints on the scroll model and the nav band
-
-Two changes look obviously worth making from a reading of the code. Both are blocked by constraints
-that are not visible at the point you would make them.
-
-#### `zoomT` spans the whole tail, and retargeting `CAM_Z_END` will not fix it cheaply
-
-`--gg-runway-height` (540vh) minus `--gg-formation-vh` (304vh) leaves a 236vh tail, and `zoomT`
-spans **all** of it, so one number sets both the camera's fly-through pace and the pull-quote's
-scroll room. Splitting that into named segments (`formation` + `flythrough` + `quote`) with `zoomT`
-over the flythrough only, and `CAM_Z_END` retargeted from `-60` to the geometric clear point, runs
-into three things:
-
-1. **The camera curve is eased**, `camZ = lerpN(CAM_Z_SPHERE, CAM_Z_END, easeOutCubic(zoomT))`, so
-   re-parameterising it over a shorter span with a nearer endpoint does not preserve `camZ(scroll)`.
-   At md it moves the camera ~24 world units of a 125-unit travel — at 20vh into the flythrough,
-   from `+35.5` (outside the R=35 shell) to `+13.2` (inside it). The whole flythrough is the visible
-   region, since it ends when the last card goes.
-2. **`--gg-flythrough-vh` has to track `fadeRefH`**, which is measured after textures land, so the
-   JS→CSS handshake this is meant to delete (`--gg-pq-appear-t`) returns under a new name.
-3. **The retarget figures (`-24.6` md, `+1.6` sm) come from `CARD_H_SPHERE`, which is authored,
-   while the runtime clear point uses `fadeRefH`, which is measured.** Baking the authored value
-   makes `pqAppearZoomT ≡ 1` hold only approximately — a threshold reasoning about geometry while
-   the renderer has already decided otherwise.
-
-Canvas-hide also has to be re-expressed: `zoomT >= pqAppearZoomT + CANVAS_HIDE_MARGIN_T` becomes
-`>= 1 + margin`, which is unreachable.
-
-**To break the coupling**, lower `PROGRESS_ZOOM_END` below `1` and leave `CAM_Z_END`, the ease and
-the segments alone. `ZOOM_TO_TAIL_T` already handles the conversion. It is currently `=== 1`
-exactly, a no-op multiply, and **must stay** — it is what keeps `zoomT`-space and tail-space
-distinct, and it becomes load-bearing the moment `PROGRESS_ZOOM_END` is not 1.
-
-#### `--gg-nav-h`'s fallbacks are measured chrome heights
-
-`calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px))`. Nothing defines either
-var today, so the fallbacks resolve. They are *measured* heights of Adobe chrome, not design tokens,
-and re-measuring them is part of the work whenever the gnav or localnav changes height while the
-vars stay absent — see **The nav band**.
-
-Two things not to do about it:
-
-- **Do not measure the chrome in JS and publish it.** JS writes exactly one custom property
-  (`--gg-pq-appear-t`), and only because it is the one value CSS cannot compute. `--gg-nav-h` stays
-  a live `calc()` over the gnav's own vars so that the moment those stylesheets publish real
-  heights the block picks them up with no JS involved.
-- **Do not add a dev-mode assertion.** The shipped block has no `console.*`, no debug flag and no
-  query-param read; use `ggprobe.patch` instead.
-
-Drift here is tolerable because everything keyed off `--gg-nav-h` moves *together* — optical centre,
-controls offset, camera centring, hold ceiling — so it surfaces as a uniformly mis-centred
-composition rather than as two halves disagreeing.
