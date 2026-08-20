@@ -549,12 +549,13 @@ function setupCollapsingHeader(el) {
   // breakpoint change) — it's a static CSS value the rest of the time, not
   // something that needs a fresh getComputedStyle read on every scroll
   // event. Cache it here and refresh only when syncTop() actually runs.
-  let stickyTopCache = getStickyTop();
+  let stickyTopCache = 0;
 
   const syncTop = () => {
     cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
     stickyTopCache = getStickyTop();
   };
+  syncTop();
 
   const syncHeaderHeight = () => {
     if (isMobile()) { headerContent.style.minHeight = ''; return; }
