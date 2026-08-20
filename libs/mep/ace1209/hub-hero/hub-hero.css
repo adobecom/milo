@@ -29,6 +29,7 @@
   --carousel-items-top: 35%;
   --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: calc(var(--hub-hero-carousel-item-max-width) * 1.35);
+  --slide-max-width: var(--hub-hero-carousel-item-max-width);
   --slide-from-card-slide-range: contain 0% contain 30%;
   --elastic-mobile-first-slide-offset: -290px;
   --start-gap: 6rem;
@@ -401,7 +402,7 @@
   --hub-hero-carousel-item-hover-grow-index: 1.7;
   --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 116px);
   --slide-media-available-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
-  --hub-hero-carousel-item-max-width: min(392px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)), calc(var(--slide-media-available-height) * 0.75));
+  --slide-max-width: min(var(--hub-hero-carousel-item-max-width), calc(var(--slide-media-available-height) * 0.75));
   --carousel-item-media-height: var(--slide-media-available-height);
   --carousel-header-top: max(
     calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
@@ -950,7 +951,7 @@
   }
 
   .hub-hero-carousel-item {
-    max-width: var(--hub-hero-carousel-item-max-width);
+    max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
 
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
@@ -1785,7 +1786,7 @@
 
   100% {
     max-height: var(--hub-hero-carousel-container-height);
-    max-width: var(--hub-hero-carousel-item-max-width);
+    max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
   }
 }
@@ -1915,7 +1916,7 @@
     }
 
     .hub-hero-carousel-container {
-      max-width: var(--hub-hero-carousel-item-max-width);
+      max-width: var(--slide-max-width);
       min-width: var(--hub-hero-carousel-item-min-width);
       display: flex;
       flex-direction: column;
