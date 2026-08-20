@@ -30,11 +30,12 @@ const BREAKPOINTS = {
     CARD_W_ARC: 456,
     CAM_Z_SPHERE: 65,
     CAM_Z_END: -60,
-    GRID_COLS: 9,
+    GRID_WINDOW_COLS: 9,
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.6, // share clustered into the off-screen arc flank
+    ARC_DENSE_FRACTION: 0.7, // share clustered into the off-screen arc flank
+    ARC_PUSH_PX: 60,
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
   },
   sm: {
@@ -45,11 +46,12 @@ const BREAKPOINTS = {
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
-    GRID_COLS: 3,
+    GRID_WINDOW_COLS: 3,
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    ARC_DENSE_FRACTION: 0,
+    ARC_DENSE_FRACTION: 0.7,
+    ARC_PUSH_PX: 60,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
   },
@@ -293,11 +295,12 @@ function createGlobeGalleryRuntime(
       CARD_H_SPHERE: sphereCardH,
       CARD_W_SPHERE: sphereCardH * CARD_ASPECT,
       CARD_W_ARC: cfg.CARD_W_ARC,
+      ARC_PUSH_PX: cfg.ARC_PUSH_PX,
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
       // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
-      GRID_COLS: cfg.GRID_COLS,
+      GRID_WINDOW_COLS: cfg.GRID_WINDOW_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
       // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
@@ -442,22 +445,23 @@ function createGlobeGalleryRuntime(
 
   let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
 
-  // GRID_COLS/ROWS are NOMINAL (size, gap, origin) so adding cards never shifts placed ones.
   function computeGridLayout() {
     if (cards.length === 0) return;
-    const { GRID_COLS, GRID_ROWS, CARD_W_SPHERE } = bp;
+    const { GRID_WINDOW_COLS, GRID_ROWS, CARD_W_SPHERE } = bp;
     gridCardW = (bp.name === 'sm')
-      ? W / (GRID_COLS + (GRID_COLS - 1) * GRID_GAP_RATIO)
-      : W / GRID_COLS;
+      ? W / (GRID_WINDOW_COLS + (GRID_WINDOW_COLS - 1) * GRID_GAP_RATIO)
+      : W / GRID_WINDOW_COLS;
     const gridGap = gridCardW * GRID_GAP_RATIO;
     const gridCardH = gridCardW / CARD_ASPECT;
-    const totalW = GRID_COLS * gridCardW + (GRID_COLS - 1) * gridGap;
+    const gridCols = Math.max(GRID_WINDOW_COLS, Math.ceil(cards.length / GRID_ROWS));
+    const colShift = Math.round((gridCols - GRID_WINDOW_COLS) / 2);
+    const totalW = GRID_WINDOW_COLS * gridCardW + (GRID_WINDOW_COLS - 1) * gridGap;
     const totalH = GRID_ROWS * gridCardH + (GRID_ROWS - 1) * gridGap;
     const tiltEuler = new THREE.Euler(0, 0, 0);
     // Column-major: i=0 → lower-right, sweeping bottom-to-top then right-to-left.
     for (let i = 0; i < cards.length; i += 1) {
       const card = cards[i];
-      const col = GRID_COLS - 1 - Math.floor(i / GRID_ROWS);
+      const col = GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS) + colShift;
       const row = GRID_ROWS - 1 - (i % GRID_ROWS);
       const gx = -totalW / 2 + col * (gridCardW + gridGap) + gridCardW / 2;
       const gy = totalH / 2 - row * (gridCardH + gridGap) - gridCardH / 2;
@@ -478,7 +482,7 @@ function createGlobeGalleryRuntime(
 
   function buildCards() {
     const {
-      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
+      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_WINDOW_COLS, GRID_ROWS,
       CARD_ROLL_JITTER, CYLINDER,
     } = bp;
     if (!placeholderTex) placeholderTex = createPlaceholderTexture();
@@ -535,7 +539,7 @@ function createGlobeGalleryRuntime(
         gridScale: 1,
         gridTilt: 0,
         gridQuat: new THREE.Quaternion(),
-        gridCol: GRID_COLS - 1 - Math.floor(i / GRID_ROWS),
+        gridCol: GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS),
         gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
         srcAspect,
@@ -1477,7 +1481,7 @@ function createGlobeGalleryRuntime(
   // arc/peel render AND the origin of the fold lerp.
   function computeCardStage(card, i, gpE, frame) {
     const { arcPanT, entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
-    const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
+    const { N_VISIBLE, ARC_DENSE_COUNT, ARC_PUSH_PX } = bp;
     const slot = i; // no conveyor: all cards on arc simultaneously
     const rawT = Math.max(0, Math.min(1, slot / Math.max(1, N_VISIBLE - 1)));
     // Non-uniform fanT split: cluster low-i off-screen, spread the rest.
@@ -1496,8 +1500,8 @@ function createGlobeGalleryRuntime(
       Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - TL.ARC_STAGGER)),
     );
     const arcLocalE = easeInOutCubic(arcLocalT);
-    const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
-    const pyPushed = fan.py + fan.ry * 60 * arcLocalE;
+    const pxPushed = fan.px + fan.rx * ARC_PUSH_PX * arcLocalE;
+    const pyPushed = fan.py + fan.ry * ARC_PUSH_PX * arcLocalE;
     const wp = entryRot > 0.001
       ? rotateArcPoint(pxPushed, pyPushed, entryRot, arcCtx, W, H, wpScratch)
       : cssToWorld(pxPushed, pyPushed, W, H, wpScratch);

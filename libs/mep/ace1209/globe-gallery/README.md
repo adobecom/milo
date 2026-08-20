@@ -283,13 +283,37 @@ render one card's paragraphs into two live containers at once.
 every breakpoint, so barrel, modal, and the keyboard/SR browse gallery all run over the same index
 range.
 
-- **md (≥768).** Sphere (Fibonacci) and arc (normalized `fanT`) are count-agnostic; the grid's 9×5
-  is only *nominal* (fixes card size, gap, centering origin) and already overflows ~1.44× as a
-  "more cards beyond" cue, so authored cards beyond the nominal grid continue into further
-  off-screen columns. `totalW`/`totalH` derive from the nominal dims, so **adding cards never
-  shifts already-placed cards**. Practical ceiling is texture memory, not layout.
-- **sm (<768).** The 3×8 grid is likewise nominal and exceeds a 667px viewport by design; the
-  barrel carries the full set, and the same memory ceiling applies at the sm texture cap.
+Sphere (Fibonacci) and arc (normalized `fanT`) are count-agnostic, and so is the grid. Every
+authored card renders at both breakpoints. `GRID_WINDOW_COLS` and `GRID_ROWS` are not two halves of
+one nominal dimension — they control different things:
+
+- **`GRID_WINDOW_COLS`** sets card size and gap (`gridCardW`) and the framing window (`totalW`). It
+  is **not** the layout's column count, and it does not mean the same thing on both bands: sm's
+  `gridCardW` includes the gap term, so its 3 columns span the viewport exactly; md's omits it, so
+  its 9 columns span 1.44× the viewport and only 6.33 columns are actually across the screen.
+- **`GRID_ROWS`** is the column wrap point. The layout is `ceil(N / GRID_ROWS)` columns wide, floored
+  at `GRID_WINDOW_COLS` — 47 cards is 6×8 on sm and 10×5 on md, not 3×8 and 9×5.
+
+`totalW` stays derived from `GRID_WINDOW_COLS`, never from the occupied count: it sets the column
+phase against the viewport, and that phase is the framing. Deriving it from the occupied count moves
+the phase by half a pitch whenever the count flips parity (at 47 cards sm re-frames from 3 full
+columns to 2 full plus two slivers).
+
+`colShift = round((occupied − GRID_WINDOW_COLS) / 2)` slides the occupied range across that fixed
+window in whole columns, so the visible columns are the middle of the set and the off-screen
+overflow splits both ways. Whole columns is what keeps the framing intact. From 24 to 64 cards sm
+holds 3 full columns and md 5 full + a half each side, with overflow balanced to within one column;
+the residue is ≤1 column when `occupied − GRID_WINDOW_COLS` is odd.
+
+`colShift` steps only when the occupied count changes by two columns (16 cards on sm, 10 on md). A
+step slides the whole set one column pitch, so the framing and relative layout hold but the visible
+window shows a different slice.
+
+- **md (≥768).** The grid overflows the viewport ~1.44× as a "more cards beyond" cue. Practical
+  ceiling is texture memory, not layout.
+- **sm (<768).** `GRID_WINDOW_COLS` columns fit the viewport exactly, so every additional column is
+  off-screen. The barrel carries the full set, and the same memory ceiling applies at the sm texture
+  cap.
 
 **Modal gallery = all authored images.** The modal's `getCount()` and the a11y gallery's both read
 `CARD_CONTENT.length`, which equals `bp.N_TOTAL`. **All** modal nav — on-screen arrows and touch
@@ -1175,6 +1199,16 @@ the remaining `0.406`, so the last card starts at `0.594` and lands exactly at `
 value with no derivation, and it is **unrelated to `PROGRESS_GRID_ARC_END` (0.60)** despite sitting
 near it; do not couple them.
 
+It gates exactly one thing: `ARC_PUSH_PX` (`BREAKPOINTS`), the radial outward drift a card collects
+across the pan. `arcLocalE` is pinned at `0` for every card at `arcPanT = 0` and at `1` for every
+card at `arcPanT = 1` **for any stagger value**, so the arc's first and last frames are identical at
+any setting — it reshapes only the middle of the pan, within a range of `ARC_PUSH_PX / R` (2.8% at
+md's `R` of 2160). A low value reads as a uniform radius bump, a high one as a faint mid-pan spiral.
+
+The push is also scheduled against the full `arcPanT` range while the arc is only live to
+`PROGRESS_GRID_ARC_END` (0.60), and the on-screen cards are the high-`fanT` ones carrying the latest
+delays. At the default 0.594 they realise ~0.5% of `ARC_PUSH_PX` on screen; at 0.894, ~0.1%.
+
 **Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
 fold constants move: `ARC_COPY_OUT_FORM_START` → `ARC_COPY_OUT_FORM_END` of that window (the event
@@ -1388,7 +1422,7 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 **Breakpoints** resolve once in `init()`: two render profiles split at 768px — `md` (≥768, all
 cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, all cards, 3×8, smaller
 sphere). Per-profile knobs in `BREAKPOINTS`: `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
-`GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `DRAG_GEARING`, plus precise-pointer defaults
+`GRID_WINDOW_COLS`, `GRID_ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `ARC_PUSH_PX`, `DRAG_GEARING`, plus precise-pointer defaults
 for the shape keys (`CARD_FACE_CAMERA`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
 geometry, card dimensions, and grid shape, so `doLayout` triggers a full `destroy()`+`init()`
@@ -2564,6 +2598,7 @@ self-evident from the name:
 | `ARC_STAGGER` | fanT | span of the per-card peel-time stagger along the arc |
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
+| `ARC_PUSH_PX` (per band) | CSS px | radial outward drift a card collects across the arc pan, phased per-card by `ARC_STAGGER` (`timeline.js`), eased with `easeInOutCubic`. Absolute px, so its weight differs per band: 13% of `CARD_W_ARC` on md (60/456), 27% on sm (60/220) |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |
 | `NEAR_FADE_OPACITY_BIAS` | exponent | on the prox opacity ramp; `< 1` holds the card visible longer so the dispersing grains read (the grain mask carries the fade) |
 | `NEAR_FADE_DISPERSE_RAMP` | exponent | on `uDisperse`; `< 1` front-loads lift-off. Applied here, not in the shader — it's uniform-valued, so a per-fragment `pow` bought nothing |
