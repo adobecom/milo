@@ -262,7 +262,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
   pointer-events: none;
-  transform: translateY(-50%);
+
+  /* Centred on the optical centre until the box is taller than the band, then top-anchored: a
+     long quote overflows downward only, never under the nav. */
+  transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)));
 }
 
 /* Four rules at the same insets, drawn by masking. */
