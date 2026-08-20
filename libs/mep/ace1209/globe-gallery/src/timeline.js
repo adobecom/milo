@@ -1,8 +1,6 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
-import { easeOutCubic, easeOutSine } from './math.js';
-
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
 export const PROGRESS_GRID_ARC_START = 0.30;
@@ -36,10 +34,8 @@ export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 export const ENTRY_LEAD_VH = 0.4;
 export const ENTRY_RAMP_VH = 1.05;
-export const ARC_ENTRY_HOLD_T = 0.05;
 export const ENTRY_ROT_MAX = 0.9;
-export const ENTRY_SLIDE_H_FRAC = 0.30;
-export const SLIDE_IN_PROGRESS = 0.07;
+export const ARC_ENTRY_STAGGER = 0.45;
 
 // sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
 // auto-rotate, desktop cursor, hint-plane entrance. Just past the first card landing (0.884).
@@ -99,8 +95,6 @@ export function createFrame() {
     gpWin: GRID_PEEL_WINDOW,
     sphereFormT: 0,
     zoomT: 0,
-    entryRot: ENTRY_ROT_MAX,
-    entryYOffset: 0,
     arcScale: 1,
     activeCamera: null,
     sphereRotActive: false,
@@ -161,10 +155,6 @@ export function deriveFrame(frame, input) {
     (progress - SPHERE_FORMED_PROGRESS) / (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS),
   );
 
-  const slideT = Math.max(arcCopyEntryT, clamp01(progress / SLIDE_IN_PROGRESS));
-  const arcEntryT = clamp01((arcCopyEntryT - ARC_ENTRY_HOLD_T) / (1 - ARC_ENTRY_HOLD_T));
-  frame.entryRot = (1 - easeOutCubic(arcEntryT)) * ENTRY_ROT_MAX;
-  frame.entryYOffset = (1 - easeOutSine(slideT)) * viewportH * ENTRY_SLIDE_H_FRAC;
   frame.arcScale = input.arcScale;
 
   return frame;

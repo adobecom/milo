@@ -68,7 +68,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
-| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
+| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `easeOutExpo`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Sole owner of the canvas cursor — native `grab`/`grabbing`/`pointer`, written through `applyCursor()` (see Behavior notes). |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
@@ -104,7 +104,7 @@ Who writes what:
 | | fields |
 | --- | --- |
 | `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
-| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, and the arc-branch entry transforms `entryRot` / `entryYOffset` / `arcScale` |
+| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, `arcScale` — the entry rotation is per-card off `arcCopyEntryT`, see Arc entry cascade |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
 **Grouped closure state.** Related mutable state lives in small plain objects rather than loose
@@ -1193,6 +1193,68 @@ interactivity stay aligned. `0` restores "settle, then fold."
 is exactly the whole stagger window and any card can be displaced to either end of the peel order
 (less, and the shuffle becomes a smear; more, and the clamp eats the tails). It applies to the
 **grid** peel delay, not the arc.
+
+### Arc entry cascade
+
+`entryRot` is **per-card**, computed in `computeCardEntry` off the frame's `arcCopyEntryT`. The
+launch delay is
+`ARC_ENTRY_STAGGER × min(1, (1 - fanT) / (1 - ARC_DENSE_SPLIT))`, so it follows position along the
+fan: the leading card launches first. No jitter — ordered, unlike the grid peel.
+
+**Only ~17 of 50 cards are ever on screen during the entry.** The entry clock ends exactly at
+`arcPanT` = `PROGRESS_GRID_ARC_START`, where the peel begins; everything past that is carried into
+frame by the pan, at its settled position. The delay therefore ramps to its full span by
+`fanT` = `ARC_DENSE_SPLIT` and flattens below it: the whole budget lands on the spread cards, which
+are the visible ones, rather than being diluted across the clustered flank nobody sees during the
+entry. That boundary is `ARC_DENSE_SPLIT` itself — the same split that defines which cards are
+clustered — so it is derived, not a separate constant. Cards arrive in
+frame ~0.041 apart in `arcCopyEntryT` while a spread-over-everything delay advances only ~0.016 per card,
+so without this the later cards' flights are over before they appear: at `FOCUS` = 1 cards 13–15
+enter frame at `τ` = 1.0, having already finished. At `2` every one of the first 15 is still
+mid-flight when it appears, and peak pair separation rises from ~620px to ~860px at no cost to flight
+duration or velocity.
+
+`ARC_DENSE_FRACTION` moves entry gap size too, but as a density trade rather than a free one: 0.5 →
+224px resting fan spacing / 526px entry peak gap / 26 cards seen during the entry; 0.7 → 384 / 871 /
+17; 0.8 → 597 / 1223 / 12, with returns flattening past 0.8. `ENTRY_ROT_MAX` buys entry gap without
+touching the resting arc.
+
+The delay must stay **linear** in `fanT`. Adjacent-pair separation is `f'(τ) × Δdelay`, and every pair
+sweeps the whole velocity curve during its flight, so with `Δdelay` equal for all pairs every pair
+peaks at the same separation (~520px at the shipped values) whatever the easing is. Bending the delay
+— an exponent on `(1 - fanT)`, say — buys a larger opening gap by starving the rest: at `^0.6` the
+first pair peaks at 926px and the ninth at 522px, a 1.77× taper across exactly the cards most visible
+during the entry.
+
+**`ENTRY_ROT_MAX` is the dial for gap size**, and it scales every pair equally (1.01× spread at any
+value): 0.9 → ~520px peak gap, 1.2 → ~580px, 1.6 → ~650px, 2.0 → ~720px, at 1944 / 2592 / 3456 /
+4320px of travel. `ARC_ENTRY_STAGGER` is not that dial — `ARC_ENTRY_STAGGER + flight window = 1`
+exactly in `arcCopyEntryT` space, so raising it buys launch spread out of flight duration and speeds every
+card up.
+
+Gaps are still wider among the first cards to arrive, one tier up: `ARC_DENSE_FRACTION` 0.7 packs 35
+of 50 cards into `fanT` 0–0.5, so the 15 spread cards get 2.5× the delay step of the clustered 35, and
+the spread cards arrive first. Keying the delay to index instead of `fanT` flattens that, at ~15%
+smaller gaps throughout.
+
+**Every card flies the same trajectory over the same duration**: the window is a constant
+`1 - ARC_ENTRY_STAGGER`, not `1 - delay`. Cards never catch up to each other — the set is one rigid
+offset in time — so no card is ever visibly faster than its neighbour. Adjacent on-screen cards sit a
+uniform ~510px apart mid-entry (mean ≈ max), against a settled fan spacing of 256px.
+
+The rotation eases with `easeInOutQuint`. A card is off-screen for the first third of its own flight
+— it enters frame at `τ` 0.32–0.61 depending on its `fanT`, and stays visible to `τ` 0.65–1.0 — so the
+whole visible stretch sits in the ease's decay phase, and what matters is the velocity profile over
+that stretch rather than the ease's name. Cards launch from **below and right** of the viewport (`y`
+1881–4299 against a 900px viewport) and swing up, so the off-screen stretch is not clearance for the
+section above. A plain ease-out is the weakest option there, not the
+strongest: it spends 83% of its travel off-screen (`easeInOutQuint` 30%) and enters frame already
+slow, so adjacent cards both spread less and converge less. Peak velocity 5× average puts cards into
+frame fast, then decelerates hard, so each card is visibly reeled in by the next: an adjacent pair
+peaks ~620px apart and closes ~240px (38%) while both are on screen, against ~520px / 118px (23%)
+under `easeInOutCubic` and ~435px / 62px (14%) under `easeOutCubic`.
+
+The card's entry CA reads its own `entry.rot`, so each card gets its own CA burst as it launches.
 
 **Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
@@ -2605,10 +2667,8 @@ bare names — are:
 
 | Constant | Space | Role |
 | --- | --- | --- |
-| `SLIDE_IN_PROGRESS` | progress | progress by which the card entry slide-up has completed |
-| `ARC_ENTRY_HOLD_T` | `arcCopyEntryT` | hold before the arc starts sweeping in |
-| `ENTRY_ROT_MAX` | radians | arc sweep-in rotation at `arcCopyEntryT` = 0; `entryRot` decays from it, and `updateCardTransform` divides by it to renormalize for the per-card entry CA |
-| `ENTRY_SLIDE_H_FRAC` | fraction of `H` | `entryYOffset` at slide 0 — how far below its arc position a card starts |
+| `ENTRY_ROT_MAX` | radians | arc sweep-in rotation at each card's launch; its `entryRot` decays from it, and `updateCardTransform` divides by it to renormalize that card's entry CA. Also the dial for entry gap size — it scales every pair equally |
+| `ARC_ENTRY_STAGGER` | `arcCopyEntryT` | span of the per-card launch delay; also sets every card's flight window (`1 - ARC_ENTRY_STAGGER`) |
 | `ARC_COPY_IN_ENTRY_T` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
