@@ -1194,21 +1194,6 @@ is exactly the whole stagger window and any card can be displaced to either end 
 (less, and the shuffle becomes a smear; more, and the clamp eats the tails). It applies to the
 **grid** peel delay, not the arc.
 
-`ARC_STAGGER = 0.594` partitions the arc pan — starts spread over it, each card's own peel lasting
-the remaining `0.406`, so the last card starts at `0.594` and lands exactly at `1.0`. It is a tuned
-value with no derivation, and it is **unrelated to `PROGRESS_GRID_ARC_END` (0.60)** despite sitting
-near it; do not couple them.
-
-It gates exactly one thing: `ARC_PUSH_PX` (`BREAKPOINTS`), the radial outward drift a card collects
-across the pan. `arcLocalE` is pinned at `0` for every card at `arcPanT = 0` and at `1` for every
-card at `arcPanT = 1` **for any stagger value**, so the arc's first and last frames are identical at
-any setting — it reshapes only the middle of the pan, within a range of `ARC_PUSH_PX / R` (2.8% at
-md's `R` of 2160). A low value reads as a uniform radius bump, a high one as a faint mid-pan spiral.
-
-The push is also scheduled against the full `arcPanT` range while the arc is only live to
-`PROGRESS_GRID_ARC_END` (0.60), and the on-screen cards are the high-`fanT` ones carrying the latest
-delays. At the default 0.594 they realise ~0.5% of `ARC_PUSH_PX` on screen; at 0.894, ~0.1%.
-
 **Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
 fold constants move: `ARC_COPY_OUT_FORM_START` → `ARC_COPY_OUT_FORM_END` of that window (the event
@@ -1422,7 +1407,7 @@ The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no
 **Breakpoints** resolve once in `init()`: two render profiles split at 768px — `md` (≥768, all
 cards, 9×5 grid, large sphere; covers Milo md *and* lg) and `sm` (<768, all cards, 3×8, smaller
 sphere). Per-profile knobs in `BREAKPOINTS`: `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
-`GRID_WINDOW_COLS`, `GRID_ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `ARC_PUSH_PX`, `DRAG_GEARING`, plus precise-pointer defaults
+`GRID_WINDOW_COLS`, `GRID_ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, `DRAG_GEARING`, plus precise-pointer defaults
 for the shape keys (`CARD_FACE_CAMERA`) that `YAW_ONLY_GEOMETRY` overrides. No
 md↔lg split — they render identically (code branches only on `'sm'`). Crossing 768px changes the
 geometry, card dimensions, and grid shape, so `doLayout` triggers a full `destroy()`+`init()`
@@ -2595,10 +2580,8 @@ self-evident from the name:
 | `CA_MOTION_STRENGTH` / `…_ARC` | UV | directional (motion-trail) shift max — full during peel/fold/sphere/modal, softly clamped on the arc |
 | `SCROLL_VEL_MAX` / `_DEADBAND` | px/frame | scroll speed that saturates the motion trail / below which Lenis settle-noise is ignored (anti-shimmer) |
 | `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter (Option C, md only) |
-| `ARC_STAGGER` | fanT | span of the per-card peel-time stagger along the arc |
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
-| `ARC_PUSH_PX` (per band) | CSS px | radial outward drift a card collects across the arc pan, phased per-card by `ARC_STAGGER` (`timeline.js`), eased with `easeInOutCubic`. Absolute px, so its weight differs per band: 13% of `CARD_W_ARC` on md (60/456), 27% on sm (60/220) |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |
 | `NEAR_FADE_OPACITY_BIAS` | exponent | on the prox opacity ramp; `< 1` holds the card visible longer so the dispersing grains read (the grain mask carries the fade) |
 | `NEAR_FADE_DISPERSE_RAMP` | exponent | on `uDisperse`; `< 1` front-loads lift-off. Applied here, not in the shader — it's uniform-valued, so a per-fragment `pow` bought nothing |
