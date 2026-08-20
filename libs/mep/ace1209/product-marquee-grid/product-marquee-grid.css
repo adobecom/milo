@@ -1,7 +1,7 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: 494px;
+  min-block-size: calc(494px + var(--global-height-nav, 56px));
 
   .pm-content {
     display: flex;
