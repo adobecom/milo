@@ -71,6 +71,11 @@
     .video-holder {
       width: 100%;
       pointer-events: none;
+
+      button.play-pause-button,
+      .pause-play-wrapper {
+        pointer-events: auto;
+      }
     }
 
     video {
