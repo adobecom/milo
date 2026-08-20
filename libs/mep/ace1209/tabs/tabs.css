@@ -231,6 +231,7 @@
         height: auto;
         flex: 0 0 auto;
         color: var(--s2a-color-content-subtle);
+        font-family: var(--heading-font-family);
 
         &[aria-selected="true"] {
           background: transparent;
