@@ -77,6 +77,14 @@ export default async function init(el) {
 
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
+  const countryCodePromise = (async () => {
+    const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
+    if (!isMasGeoDetectionEnabled()) return undefined;
+    const base = config.miloLibs || config.codeRoot;
+    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    return (await getValidatedMarket())?.toUpperCase();
+  })().catch(() => undefined);
+
   const gnavPromise = main({
     localizeLink,
     // Lingo link transformation only — skip when lingo is off so federal doesn't
@@ -89,6 +97,7 @@ export default async function init(el) {
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: config,
+    countryCode: countryCodePromise,
     mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {
