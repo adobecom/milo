@@ -237,10 +237,8 @@
   }
 }
 
-:root:has(meta[name="foundation"][content="c2"]) {
-  @media (width < 768px) {
-    .side-by-side .card-overlay button.play-pause-button {
-      inset-block-start: var(--s2a-spacing-md);
-    }
+@media (width < 768px) {
+  .side-by-side .card-overlay button.play-pause-button {
+    inset-block-start: var(--s2a-spacing-md);
   }
 }
