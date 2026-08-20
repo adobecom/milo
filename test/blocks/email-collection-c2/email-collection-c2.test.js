@@ -11,7 +11,7 @@ import {
   getPhoneFieldConfig,
   fetchConsentString,
   getPageLocale,
-} from '../../../libs/c2/blocks/email-collection/utils.js';
+} from '../../../libs/c2/blocks/email-collection-c2/utils.js';
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -27,7 +27,7 @@ const config = {
 
 setConfig(config);
 
-const emailCollectionModule = await import('../../../libs/c2/blocks/email-collection/email-collection.js');
+const emailCollectionModule = await import('../../../libs/c2/blocks/email-collection-c2/email-collection-c2.js');
 const { default: init, overrideForegroundContent } = emailCollectionModule;
 
 async function sleep(time = 10) {
@@ -854,7 +854,7 @@ describe('setFormData validation', () => {
   function createBlock(rows) {
     const section = document.createElement('div');
     const block = document.createElement('div');
-    block.className = 'email-collection';
+    block.className = 'email-collection-c2';
     const sectionMeta = document.createElement('div');
     sectionMeta.className = 'section-metadata';
     rows.forEach(([key, value]) => {

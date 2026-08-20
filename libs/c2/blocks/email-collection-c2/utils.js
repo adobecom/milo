@@ -102,7 +102,7 @@ export const FORM_FIELDS = {
 
 function getPhoneIconUrl(name) {
   const { base } = getConfig();
-  return `${base}/c2/blocks/email-collection/icons/${name}`;
+  return `${base}/c2/blocks/email-collection-c2/icons/${name}`;
 }
 
 export function getPageLocale() {

@@ -116,7 +116,7 @@ const C2_BLOCKS = [
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
-  'email-collection',
+  'email-collection-c2',
   'explore-card',
   'faq',
   'floating-cta',
