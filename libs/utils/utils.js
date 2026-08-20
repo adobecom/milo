@@ -7,6 +7,7 @@ const MILO_TEMPLATES = [
   'featured-story',
   'stream-preflight',
   'stream-sidekick',
+  'stream-login-controller',
 ];
 const C1_BLOCKS = [
   'accordion',
