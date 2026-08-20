@@ -35,6 +35,8 @@ const createTag = (tag, attributes = {}) => {
 
 const loadArea = () => Promise.resolve();
 
+const loadIms = () => Promise.resolve();
+
 const localizeLinkAsync = () => Promise.resolve();
 
 const loadLink = () => Promise.resolve();
@@ -166,6 +168,7 @@ export {
   getLocale,
   getMetadata,
   loadArea,
+  loadIms,
   loadScript,
   loadStyle,
   getCountry,
