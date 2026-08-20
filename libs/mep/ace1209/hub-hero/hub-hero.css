@@ -562,7 +562,6 @@
       animation-name: carouselSlidesThreeSlideOffset, carouselSlideExpandSize, carouselSlideExpandLayout;
       z-index: auto;
       visibility: visible;
-      min-width: var(--hub-hero-carousel-item-min-width);
       flex-basis: auto;
     }
   }
@@ -954,34 +953,40 @@
     max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
 
-    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
+    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), min-width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
   .hub-hero-carousel-item.hovered,
+  .hub-hero-carousel-item.focused,
   .hub-hero-carousel-item:focus-visible {
-    max-width: calc(var(--carousel-item-media-height) * 1.25);
-    width: 150%;
+    width: calc(var(--carousel-item-media-height) * 1.25);
+    min-width: calc(var(--carousel-item-media-height) * 1.25);
     background-color: var(--s2a-color-gray-1000);
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
+  .hub-hero-carousel-item.focused .hub-hero-carousel-item-media img,
   .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-media img {
     transform: scale(1.2);
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header *,
+  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *,
+  .hub-hero-carousel-item.focused .hub-hero-carousel-item-header *,
   .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *,
   .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header * {
     color: var(--s2a-color-gray-25);
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
+  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg),
   .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
     max-width: 80%;
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span,
+  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer span {
     transition: all 0s .2s;
     opacity: 1;
     max-width: 20%;
@@ -1002,7 +1007,7 @@
     animation-fill-mode: forwards, backwards, forwards;
   }
 
-  .hub-hero-carousel-item:nth-child(3) {
+  .hub-hero:not(.slides-3) .hub-hero-carousel-item:nth-child(3) {
     z-index: -1;
     visibility: hidden;
     min-width: 0;
@@ -1152,10 +1157,6 @@
     transform: translateX(-50%);
   }
 
-  .hub-hero-carousel-item:nth-child(3) {
-    display: none;
-  }
-
   .hub-hero-carousel {
     padding-top: calc(var(--grid-col-three-offset) + var(--s2a-layout-lg));
     height: auto;
@@ -1194,6 +1195,7 @@
   }
 
   .hub-hero-carousel-item.hovered,
+  .hub-hero-carousel-item.focused,
   .hub-hero-carousel-item:focus-visible {
     width: var(--grid-img-width);
   }
@@ -1863,10 +1865,6 @@
 
     .hub-hero-carousel-item {
       animation: none !important;
-    }
-
-    .hub-hero-carousel-item:nth-child(3) {
-      display: none;
     }
 
     .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
