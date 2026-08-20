@@ -413,7 +413,7 @@ export function applyAccessibilityEvents(videoEl) {
       videoEl.pause();
       return;
     }
-    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
+    videoEl.addEventListener('canplay', () => !videoEl.hasAttribute(USER_PAUSED_ATTR) && isVideoReady(videoEl) && videoEl.play());
   }
 }
 
