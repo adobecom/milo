@@ -1,5 +1,10 @@
 // Keyboard + screen-reader gallery for the globe (DI module). See README (Accessibility).
 
+// Explicit, uniform analytics labels — never per card. Each `-`-separated segment must stay
+// within 20 chars or Milo truncates it. See README (Analytics).
+const CARD_OPEN_DAA_LL = 'card_open--globe_gallery';
+const ENTER_GALLERY_DAA_LL = 'enter_gallery_kbd--globe_gallery';
+
 export default function createGalleryA11y({
   q,
   getCount,
@@ -50,6 +55,8 @@ export default function createGalleryA11y({
     if (focusedIdx === Number(e.currentTarget.dataset.idx)) focusedIdx = -1;
   }
   function onCardClick(e) {
+    // Untrusted = synthesized by trackCardOpen(), report-only. See README (Analytics).
+    if (!e.isTrusted) return;
     if (isInteractive()) openCard(Number(e.currentTarget.dataset.idx));
   }
   function onCardKeydown(e) {
@@ -83,12 +90,11 @@ export default function createGalleryA11y({
     widgetEl = document.createElement('button');
     widgetEl.type = 'button';
     widgetEl.className = 'globe-gallery-a11y';
+    widgetEl.setAttribute('daa-ll', ENTER_GALLERY_DAA_LL);
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
 
-    // Instructions serve both audiences from one element: visible :focus-visible popup and
-    // the button's aria-labelledby name. See README (Accessibility).
-    // galleryInstructions is authored inline (row 2, 2nd <p>) with an English code fallback,
-    // so it's always set here. See authoring.js / README (Localization).
+    // One element serves both audiences: the visible :focus-visible popup and the button's
+    // aria-labelledby name. Always set (authored inline + code fallback). See README.
     if (galleryInstructions) {
       const descEl = document.createElement('span');
       descEl.className = 'globe-gallery-a11y-tip';
@@ -112,6 +118,7 @@ export default function createGalleryA11y({
       btn.className = 'globe-gallery-a11y-card';
       btn.tabIndex = -1; // joins the tab order only while entered
       btn.dataset.idx = String(i);
+      btn.setAttribute('daa-ll', CARD_OPEN_DAA_LL);
       btn.setAttribute('aria-label', getCardLabel(i));
       btn.addEventListener('focus', onCardFocus);
       btn.addEventListener('blur', onCardBlur);
@@ -165,6 +172,11 @@ export default function createGalleryA11y({
     if (btn) btn.focus();
   }
 
+  // Report a canvas card open by clicking that card's button. See README (Analytics).
+  function trackCardOpen(idx) {
+    cardButtons[idx]?.click();
+  }
+
   // The image the focus ring should trace, -1 if none.
   function getFocusedIdx() {
     return focusedIdx;
@@ -194,6 +206,13 @@ export default function createGalleryA11y({
   }
 
   return {
-    setup, updateTabStops, teardown, isBrowsing, getFocusedIdx, setFocusRect, focusCard,
+    setup,
+    updateTabStops,
+    teardown,
+    isBrowsing,
+    getFocusedIdx,
+    setFocusRect,
+    focusCard,
+    trackCardOpen,
   };
 }

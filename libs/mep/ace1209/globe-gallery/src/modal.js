@@ -1,7 +1,11 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
-import { easeInOutCubic, easeOutCubic } from './math.js';
-import { escapeHtml } from './authoring.js';
+import { easeInOutCubic, easeOutCubic, coverFit } from './math.js';
+import { escapeHtml, renderParagraphs } from './authoring.js';
+/* eslint-disable import/no-relative-packages */
+import { processTrackingLabels } from '../../../../martech/attributes.js';
+import { getConfig } from '../../../../utils/utils.js';
+/* eslint-enable import/no-relative-packages */
 
 const perfNow = () => performance?.now() ?? Date.now();
 
@@ -14,8 +18,7 @@ const MODAL_PHASE = Object.freeze({
 });
 // Camera→card distance the modal card flies to (perspective FOV 60°).
 const MODAL_CAM_DIST = 16.4;
-// SDF corner radius: 22px on the 631px-tall source; materials.js mirrors it.
-const SDF_CORNER_RADIUS = 22 / 631;
+const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
 const MODAL_ANIM_DURATION = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
 // Fisheye warp peaks (sin bell curve) per modal interaction.
@@ -26,11 +29,8 @@ const MODAL_WARP_SWIPE = 0.25;
 // Desktop/tablet modal-nav cross-warp transition.
 const DN_NAV_DUR = 500; // ms
 const DN_NAV_WARP = 0.40; // peak warp
-// Desktop/tablet modal layout — see computeModalTarget / positionModalChrome.
+// Desktop/tablet image fit — see computeModalTarget. Chrome placement is CSS.
 const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
-const DT_SCRIM_W = 316; // info scrim fixed width
-const DT_NAV_GAP = 12; // gap between counter pill and each arrow
-const DT_COUNTER_W = 138; // .globe-gallery-modal-counter fixed width (md+ CSS)
 
 export default function createGlobeModal({
   q,
@@ -55,13 +55,14 @@ export default function createGlobeModal({
   // Sphere-rotation bridge (live THREE object shared by reference).
   sphereRotQuat,
   snapToSphereSlot,
-  // Applies the sphere's camera-facing tilt to a quat in place (no-op when CARD_FACE_CAMERA=0).
+  // Applies the sphere's camera-facing tilt to a quat in place (no-op when CARD_FACE_CAMERA is 0).
   applySphereFacing,
   requestNavNudge,
   applyMotionCA,
   restoreFocusOnClose,
 }) {
   let modalRenderer = null;
+  let appliedModalDpr = 0;
   let modalScene = null;
   let modalCanvasEl = null;
   let modalEl = null;
@@ -81,11 +82,11 @@ export default function createGlobeModal({
   let modalCloseStartPos = null;
   let modalCloseStartQuat = null;
   let modalCloseStartScale = null;
-  let chromeProjV = null; // reusable Vector3 for chrome positioning projection
   const scratchPos = new THREE.Vector3();
   const scratchQuat = new THREE.Quaternion();
   const scratchScale = new THREE.Vector3();
-  let chromeNodes = null;
+  const coverScratch = {}; // coverFit output (see pushModalCoverUV)
+  let chromeNodes = null; // { chromeEl, els, settled } — see revealModalChrome
 
   // Chrome reveal — elements fade + slide in after card is 90% settled.
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
@@ -97,6 +98,11 @@ export default function createGlobeModal({
   let closeTimeoutId = null;
   // click/touch listeners wired once — DOM persists across re-inits so re-adding would stack.
   let listenersWired = false;
+  // Held so Escape + the touch gestures can click them rather than call navigate()/close().
+  // See README (Analytics).
+  let prevBtn = null;
+  let nextBtn = null;
+  let closeBtn = null;
 
   let modalWarp = 0;
   const modalWarpCenter = new THREE.Vector2(0.5, 0.5);
@@ -106,9 +112,8 @@ export default function createGlobeModal({
   let dnNavOldCard = null;
   let dnNavNewCard = null;
 
-  // Overflow gallery cards: the modal browses all getCount() images; indices past the barrel
-  // get a lazy modal-only carrier that dissolves in/out instead of flying to a slot.
-  // See README (Card count / Architecture notes). Keyed by gallery index.
+  // Cards past the barrel get a lazy modal-only carrier that dissolves in/out instead of flying
+  // to a slot. Keyed by gallery index. See README (Card count).
   const overflowCards = new Map();
   // Shared 1×1 placeholder for overflow carriers before/after their image texture.
   let overflowPlaceholderTex = null;
@@ -124,11 +129,32 @@ export default function createGlobeModal({
   function resetChromeReveal() {
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 0;
+    if (chromeNodes) chromeNodes.settled = false; // else the next reveal would early-out at once
   }
 
   function getModalIdx() { return modalIdx; }
 
   const isRtl = () => document.documentElement.dir === 'rtl';
+
+  // Desktop/tablet plane fit + the uRadius fraction for a constant MODAL_RADIUS_PX. See README.
+  function modalDesktopFit(uAspect) {
+    const { W, H } = getViewport();
+    const cardHPx = Math.min(
+      H - 2 * DT_IMG_MARGIN,
+      (W - 2 * DT_IMG_MARGIN) / uAspect,
+    );
+    return { cardHPx, radiusFrac: MODAL_RADIUS_PX / cardHPx };
+  }
+
+  function modalRadiusFrac(uAspect) {
+    if (getBP() === 'sm') return 0;
+    return modalDesktopFit(uAspect).radiusFrac;
+  }
+
+  // Aspect the modal renders at: the DISPLAYED texture's, else the base texture's. See README.
+  function modalUAspect(card) {
+    return (card && (card.modalAspect || card.srcAspect)) || cardAspect;
+  }
 
   // Barrel = cards with a real sphere slot; indices ≥ this are overflow.
   function barrelCount() { return getCards().length; }
@@ -147,11 +173,11 @@ export default function createGlobeModal({
   }
 
   // Lazily build + cache a modal-only carrier for an index past the barrel.
-  // aspect (sphereScaleX) seeded to 1 until the image decodes (loadOverflowTexture).
+  // Aspect stays at the base card aspect until the image decodes (loadOverflowTexture).
   function createOverflowCard(idx) {
     const { w, h } = getCardDims();
     const mat = createModalMaterial(ensureOverflowPlaceholder(), cardAspect);
-    mat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+    mat.uniforms.uRadius.value = modalRadiusFrac(cardAspect);
     const geo = new THREE.PlaneGeometry(w, h, 1, 1);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.material.depthTest = true;
@@ -162,7 +188,6 @@ export default function createGlobeModal({
       modalMat: mat,
       isOverflow: true,
       idx,
-      sphereScaleX: 1,
       // Dummy sphere-phase fields so defensive reads don't hit undefined (never flies to a slot).
       sphereScaleSX: 1,
       sphereScaleSY: 1,
@@ -190,9 +215,8 @@ export default function createGlobeModal({
       card.ownTex = tex;
       card.modalMat.uniforms.map.value = tex;
       if (tex.image && tex.image.width && tex.image.height) {
-        const asp = tex.image.width / tex.image.height;
-        card.sphereScaleX = asp / cardAspect;
-        card.modalMat.uniforms.uAspect.value = asp; // = cardAspect × sphereScaleX
+        card.modalAspect = tex.image.width / tex.image.height;
+        card.modalMat.uniforms.uAspect.value = card.modalAspect;
       }
     }, () => { card.pendingImg = null; });
   }
@@ -205,6 +229,7 @@ export default function createGlobeModal({
     card.mesh.visible = false;
     card.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
     if (card.ownTex) { card.ownTex.dispose(); card.ownTex = null; }
+    card.modalAspect = 0; // aspect belonged to the texture we just dropped
     // Reset animated uniforms (inlined to avoid a forward ref to resetModalMaterialUniforms).
     const u = card.modalMat.uniforms;
     u.uOpacity.value = 1;
@@ -233,6 +258,7 @@ export default function createGlobeModal({
           const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
           if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
         }
+        modalTexCard.modalAspect = 0; // back to the base texture, so back to the barrel's aspect
       }
       modalTexOwned.dispose();
       modalTexOwned = null;
@@ -244,17 +270,18 @@ export default function createGlobeModal({
   function getModalMaterial(card) {
     // Overflow carriers ARE the modal material — just refresh the corner radius.
     if (card.isOverflow) {
-      card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+      const u = card.modalMat.uniforms;
+      u.uRadius.value = modalRadiusFrac(u.uAspect.value);
       return card.modalMat;
     }
     if (!card.modalMat) {
-      card.modalMat = createModalMaterial(card.mesh.material.map, card.sphereScaleX * cardAspect);
+      card.modalMat = createModalMaterial(card.mesh.material.map, modalUAspect(card));
     } else {
       // Reset to base in case a prior open left a since-disposed hi-res texture.
       card.modalMat.uniforms.map.value = card.mesh.material.map;
+      card.modalMat.uniforms.uAspect.value = modalUAspect(card);
     }
-    // Mobile: no corner radius; set each call so a breakpoint change is honored.
-    card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
+    card.modalMat.uniforms.uRadius.value = modalRadiusFrac(modalUAspect(card));
     return card.modalMat;
   }
 
@@ -274,6 +301,9 @@ export default function createGlobeModal({
       modalTexOwned = tex;
       modalTexCard = card;
       card.modalMat.uniforms.map.value = tex;
+      if (tex.image && tex.image.width && tex.image.height) {
+        card.modalAspect = tex.image.width / tex.image.height;
+      }
     }, () => { modalTexImg = null; });
   }
 
@@ -284,7 +314,20 @@ export default function createGlobeModal({
     if (u.uOpacity) u.uOpacity.value = (typeof opacity === 'number' ? opacity : 1);
     if (u.uWarp) u.uWarp.value = 0;
     if (u.uMotionDir) u.uMotionDir.value.set(0, 0);
+    if (u.uRepeat) u.uRepeat.value.set(1, 1);
+    if (u.uOffset) u.uOffset.value.set(0, 0);
     // uWarpCenter intentionally NOT reset — callers set it right after.
+  }
+
+  // Crop the displayed texture to the aspect the plane is drawn at THIS frame (the core's
+  // applyCardFit rule). Call after the frame's scale write. See README (Architecture notes).
+  function pushModalCoverUV(card) {
+    const u = card && card.mesh.material && card.mesh.material.uniforms;
+    if (!u || !u.uRepeat) return;
+    const { x, y } = card.mesh.scale;
+    const c = coverFit(modalUAspect(card), cardAspect * (x / (y || 1)), coverScratch);
+    u.uRepeat.value.set(c.rx, c.ry);
+    u.uOffset.value.set(c.ox, c.oy);
   }
 
   // Map a viewport touch/click position to an approximate asset UV (screen Y inverts).
@@ -306,7 +349,7 @@ export default function createGlobeModal({
   }
 
   // Target world pos/quat/scale for the modal card: visible photo contain-fit to the viewport
-  // with native aspect kept (via sphereScaleX). Recomputed per-frame. See README (Behavior notes).
+  // with native aspect kept (via modalUAspect). Recomputed per-frame. See README (Behavior notes).
   function computeModalTarget(outPos, outQuat, outScale, cardOverride) {
     // cardOverride: compute for this card (swipe-neighbors); defaults to modalCard.
     const card = cardOverride || modalCard;
@@ -319,176 +362,76 @@ export default function createGlobeModal({
     // CSS pixels per world unit at 'dist' from the perspective camera (FOV 60°).
     const pxPerWorld = H / (2 * dist * Math.tan(Math.PI / 6));
 
-    // Width is proportional via sphereScaleX (aspect kept); branches below diverge mobile/desktop.
+    // Width is proportional to the image aspect (kept); the branches diverge mobile/desktop.
     const isMobile = (getBP() === 'sm');
-    const sScaleX = (card && card.sphereScaleX) ? card.sphereScaleX : 1;
+    const uAspect = modalUAspect(card);
+    const sScaleX = uAspect / cardAspect;
     let scaleY; let
       scaleX;
 
     if (isMobile) {
       // Mobile: full-bleed width, top-aligned, square corners; height follows aspect.
-      const uAspect = cardAspect * sScaleX;
       const cardHPx = W / uAspect;
       scaleX = W / (CARD_W_SPHERE * pxPerWorld);
       scaleY = scaleX / sScaleX;
       outPos.set(0, (H / 2 - cardHPx / 2) / pxPerWorld, camZ - dist);
     } else {
       // Desktop/tablet: visible photo contain-fit to the viewport minus DT_IMG_MARGIN, aspect
-      // kept. Geometry is backed out of the SDF corner inset (uRadius·cardHPx on all four sides)
-      // so the visible photo — not the geometry — reaches the margin. See README (Behavior notes).
-      const uAspect = cardAspect * sScaleX;
-      const SDF_RADIUS = SDF_CORNER_RADIUS;
-      const cardHPxFillH = (H - 2 * DT_IMG_MARGIN) / (1 - 2 * SDF_RADIUS);
-      const cardHPxFillW = (W - 2 * DT_IMG_MARGIN) / (uAspect - 2 * SDF_RADIUS);
-      const cardHPx = Math.min(cardHPxFillH, cardHPxFillW);
-
+      // kept — see README (Behavior notes).
+      const { cardHPx } = modalDesktopFit(uAspect);
       scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
 
       // Centered at viewport center.
       outPos.set(0, 0, camZ - dist);
     }
+    // uRadius tracks the fit, so it is re-pushed every frame — see README (Behavior notes).
+    // uAspect rides along: it changes when the hi-res texture decodes mid-flight.
+    if (card && card.modalMat) {
+      card.modalMat.uniforms.uAspect.value = uAspect;
+      card.modalMat.uniforms.uRadius.value = modalRadiusFrac(uAspect);
+    }
     outQuat.identity();
     outScale.set(scaleX, scaleY, 1.0);
   }
 
-  // Project the modal card's screen bounds and lock chrome (close/info/nav) to it each frame.
-  function positionModalChrome() {
+  // Reveal fade only (opacity + an 8px slide-up), driven by modalChromeFadeT. Placement is pure
+  // CSS — every offset is a per-breakpoint constant. See README (Modal chrome).
+  function revealModalChrome() {
     const chromeEl = q('.globe-gallery-modal-chrome');
-    const camera = getCamera();
-    if (!chromeEl || !camera) return;
-    const { W } = getViewport();
-    const { w: CARD_W_SPHERE } = getCardDims();
+    if (!chromeEl) return;
     if (!chromeNodes || chromeNodes.chromeEl !== chromeEl) {
       chromeNodes = {
         chromeEl,
-        infoEl: chromeEl.querySelector('.globe-gallery-modal-info'),
-        closeEl: chromeEl.querySelector('.globe-gallery-modal-close'),
-        prevEl: chromeEl.querySelector('.globe-gallery-modal-nav-prev'),
-        nextEl: chromeEl.querySelector('.globe-gallery-modal-nav-next'),
-        counterEl: chromeEl.querySelector('.globe-gallery-modal-counter'),
+        els: [...chromeEl.querySelectorAll('.globe-gallery-modal-info, .globe-gallery-modal-close,'
+          + ' .globe-gallery-modal-nav, .globe-gallery-modal-counter')],
       };
     }
-    const { infoEl, closeEl, prevEl, nextEl, counterEl } = chromeNodes;
-
-    const tgtPos = scratchPos;
-    const tgtQuat = scratchQuat;
-    const tgtScale = scratchScale;
-    computeModalTarget(tgtPos, tgtQuat, tgtScale);
-
-    const halfW = CARD_W_SPHERE * tgtScale.x * 0.5;
-
-    if (!chromeProjV) chromeProjV = new THREE.Vector3();
-    const pv = chromeProjV;
-
-    // Project the card's horizontal edges to screen pixels (used to centre the desktop control row
-    // under the image). Vertical placement is intentionally NOT derived from the card — see below.
-    pv.set(tgtPos.x - halfW, tgtPos.y, tgtPos.z).project(camera);
-    const cardLeftPx = (pv.x + 1) * 0.5 * W;
-
-    pv.set(tgtPos.x + halfW, tgtPos.y, tgtPos.z).project(camera);
-    const cardRightPx = (pv.x + 1) * 0.5 * W;
-
-    // Clamp to visible viewport (card may bleed off edges at large scale).
-    const visLeft = Math.max(0, cardLeftPx);
-    const visRight = Math.min(W, cardRightPx);
-
-    const isMobile = (getBP() === 'sm');
-    const rtl = isRtl();
-
-    // Close button → top inline-end corner of the viewport (24px inset) at every breakpoint.
-    if (closeEl) {
-      closeEl.style.position = 'absolute';
-      closeEl.style.top = '24px';
-      closeEl.style.insetInlineEnd = '24px';
-    }
-
-    // Nav arrows + counter positioned individually (no wrapper) so :hover scale survives the fade.
-    // Mobile → arrows bottom corners, counter bottom-center. Desktop → one row at the image bottom.
-    const NAV_SIZE = 44; // matches the .globe-gallery-modal-nav width/height in CSS
-    const EDGE = 24;
-    const counterBase = 'translateX(-50%)';
-    if (prevEl) prevEl.style.position = 'absolute';
-    if (nextEl) nextEl.style.position = 'absolute';
-    if (counterEl) counterEl.style.position = 'absolute';
-
-    const setBottomEdge = (elx, side) => {
-      elx.style[side] = `${EDGE}px`; elx.style[side === 'left' ? 'right' : 'left'] = 'auto';
-      elx.style.top = 'auto'; elx.style.bottom = `${EDGE}px`;
-    };
-    if (isMobile) {
-      if (prevEl) setBottomEdge(prevEl, rtl ? 'right' : 'left');
-      if (nextEl) setBottomEdge(nextEl, rtl ? 'left' : 'right');
-      if (counterEl) {
-        counterEl.style.left = '50%'; counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
-      }
-    } else {
-      const rowBottom = `${EDGE}px`;
-      const centerX = (visLeft + visRight) / 2;
-      const flank = DT_COUNTER_W / 2 + DT_NAV_GAP; // pill edge → arrow's near edge
-      if (counterEl) {
-        counterEl.style.left = `${Math.round(centerX)}px`; counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto'; counterEl.style.bottom = rowBottom;
-      }
-      const prevX = rtl ? centerX + flank : centerX - flank - NAV_SIZE;
-      const nextX = rtl ? centerX - flank - NAV_SIZE : centerX + flank;
-      if (prevEl) {
-        prevEl.style.left = `${Math.round(prevX)}px`; prevEl.style.right = 'auto';
-        prevEl.style.top = 'auto'; prevEl.style.bottom = rowBottom;
-      }
-      if (nextEl) {
-        nextEl.style.left = `${Math.round(nextX)}px`; nextEl.style.right = 'auto';
-        nextEl.style.top = 'auto'; nextEl.style.bottom = rowBottom;
-      }
-    }
-
-    // Info scrim: mobile = full-width bottom chunk; desktop = full-height left edge.
-    if (infoEl) {
-      infoEl.style.position = 'absolute';
-      if (isMobile) {
-        infoEl.style.top = 'auto';
-        infoEl.style.bottom = '0';
-        infoEl.style.left = '0';
-        infoEl.style.right = '0';
-        infoEl.style.width = 'auto';
-        infoEl.style.height = '';
-      } else {
-        infoEl.style.top = '0';
-        infoEl.style.bottom = '0';
-        infoEl.style.insetInlineStart = '0';
-        infoEl.style.width = `${DT_SCRIM_W}px`;
-        infoEl.style.height = '';
-      }
-    }
-
-    // Chrome fade + slide-up via modalChromeFadeT; transition:none so CSS hover doesn't fight JS.
-    const cFade = easeOutCubic(modalChromeFadeT);
-    const cShift = Math.round((1 - cFade) * 8);
+    // transition:none while animating so CSS hover can't fight the per-frame write; cleared on the
+    // settled frame so :hover animates again, then bail — nothing changes after.
     const settled = modalChromeFadeT >= 1;
-    const cTrans = settled ? '' : 'none';
-    const applyFade = (el, base) => {
-      if (!el) return;
+    if (settled && chromeNodes.settled) return;
+    chromeNodes.settled = settled;
+    const cFade = easeOutCubic(modalChromeFadeT);
+    const shift = settled ? '' : ` translateY(${Math.round((1 - cFade) * 8)}px)`;
+    chromeNodes.els.forEach((el) => {
       el.style.opacity = String(cFade);
-      el.style.transform = settled ? base : `${base} translateY(${cShift}px)`.trim();
-      el.style.transition = cTrans;
-    };
-    applyFade(infoEl, '');
-    applyFade(closeEl, '');
-    applyFade(prevEl, '');
-    applyFade(nextEl, '');
-    applyFade(counterEl, counterBase);
+      // The counter's CSS centring transform must survive the slide (it has no wrapper).
+      const base = el.classList.contains('globe-gallery-modal-counter') ? 'translateX(-50%)' : '';
+      el.style.transform = settled ? '' : `${base}${shift}`.trim();
+      el.style.transition = settled ? '' : 'none';
+    });
   }
 
-  // Set the description's mask fade lengths from scroll position; focusable only when it scrolls.
+  // Flag which description edges have more copy; focusable only when it scrolls.
   function updateDescFade(descEl) {
     if (!descEl) return;
     const overflow = descEl.scrollHeight - descEl.clientHeight;
     const canScroll = overflow > 1;
     const top = canScroll && descEl.scrollTop > 1;
     const bottom = canScroll && descEl.scrollTop < overflow - 1;
-    descEl.style.setProperty('--desc-fade-top', top ? '20px' : '0');
-    descEl.style.setProperty('--desc-fade-bottom', bottom ? '20px' : '0');
+    descEl.classList.toggle('is-faded-top', top);
+    descEl.classList.toggle('is-faded-bottom', bottom);
     if (canScroll) descEl.tabIndex = 0;
     else if (document.activeElement !== descEl) descEl.removeAttribute('tabindex');
   }
@@ -516,7 +459,7 @@ export default function createGlobeModal({
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-    targetEl.querySelector('.globe-gallery-modal-description').textContent = meta.description;
+    renderParagraphs(targetEl.querySelector('.globe-gallery-modal-description'), meta.description);
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
@@ -527,11 +470,14 @@ export default function createGlobeModal({
     if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
+    const config = getConfig();
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal-badge';
+      // Labelled by product, not by card, and unindexed. See README (Analytics).
+      const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
       const nameHtml = b.href
-        ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}">${escapeHtml(b.name)}</a>`
+        ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
         : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
       // The logo is authored per row; rows without one just render the name (no empty chip).
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
@@ -602,6 +548,7 @@ export default function createGlobeModal({
     newCard.mesh.position.copy(tgtPos);
     newCard.mesh.quaternion.copy(tgtQuat);
     newCard.mesh.scale.copy(tgtScale);
+    pushModalCoverUV(newCard); // at its modal size already → identity
 
     // Lock old card warp center to (0.5, 0.5) so the bell curve emanates from center.
     if (oldCard.mesh.material && oldCard.mesh.material.uniforms
@@ -658,8 +605,10 @@ export default function createGlobeModal({
     modalCard.mesh.origMaterial = modalCard.mesh.material;
     modalCard.mesh.material = getModalMaterial(modalCard);
     requestModalUpgrade(modalCard, i);
-    // Reset cached SDF uniforms (stale mid-fade would ghost the image).
+    // Reset cached SDF uniforms (stale mid-fade would ghost the image); the crop then comes from
+    // the mesh's live scale — still the shape it had on the globe, mid-fold included.
     resetModalMaterialUniforms(modalCard.mesh.material, 1);
+    pushModalCoverUV(modalCard);
 
     // Reset depth test/order — modal scene has only this one mesh.
     modalCard.mesh.renderOrder = 0;
@@ -679,7 +628,7 @@ export default function createGlobeModal({
     if (chromeEl && !chromeEl.open) {
       try { chromeEl.showModal(); } catch (e) { /* already open / not connected; ignore */ }
     }
-    positionModalChrome();
+    revealModalChrome();
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
@@ -753,6 +702,11 @@ export default function createGlobeModal({
     if (canvas) canvas.classList.remove('is-modal-active');
   }
 
+  // Close via the button so Escape / pull-to-close report it. See README (Analytics).
+  function clickClose() {
+    if (closeBtn) closeBtn.click(); else close();
+  }
+
   function navigate(direction) {
     if (modalIdx < 0 || !modalCard) return;
     // Don't navigate while closing, or startDesktopNavTransition would flip CLOSING→OPEN and orphan
@@ -795,6 +749,8 @@ export default function createGlobeModal({
           modalCard.mesh.quaternion.copy(modalStartQuat).slerp(tgtQuat, aE);
           modalCard.mesh.scale.lerpVectors(modalStartScale, tgtScale, aE);
         }
+        // Crop tracks that scale; a nav cross-warp owns its own cards' uniforms.
+        if (!dnNavActive) pushModalCoverUV(modalCard);
 
         // Chrome reveal: start fade once card is 90% to target (skip at 1 — navigate snaps).
         if (modalChromeFadeT < 1) {
@@ -837,6 +793,7 @@ export default function createGlobeModal({
         modalCard.mesh.position.lerpVectors(modalCloseStartPos, tgtPos, aE);
         modalCard.mesh.quaternion.copy(modalCloseStartQuat).slerp(tgtQuat, aE);
         modalCard.mesh.scale.lerpVectors(modalCloseStartScale, tgtScale, aE);
+        pushModalCoverUV(modalCard); // closes back down to the slot's crop, tracking the scale
 
         if (aT >= 1) {
           // Reset cached SDF uniforms before restoring the basic material (else it ghosts later).
@@ -885,7 +842,7 @@ export default function createGlobeModal({
 
       // Keep chrome locked to the card's projected position each frame (OPENING sets fade target).
       if (modalPhase === MODAL_PHASE.OPENING || modalPhase === MODAL_PHASE.OPEN) {
-        positionModalChrome();
+        revealModalChrome();
       }
     }
   }
@@ -923,7 +880,11 @@ export default function createGlobeModal({
   // Re-size the modal renderer to match the viewport (called from core doLayout).
   function resize(w, h) {
     if (!modalRenderer) return;
-    modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    if (dpr !== appliedModalDpr) {
+      appliedModalDpr = dpr;
+      modalRenderer.setPixelRatio(dpr);
+    }
     modalRenderer.setSize(w, h);
     // Resize can change whether the description overflows — re-measure the fade cue.
     if (modalIdx >= 0) scheduleDescFade();
@@ -938,7 +899,8 @@ export default function createGlobeModal({
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
-      modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      appliedModalDpr = Math.min(window.devicePixelRatio, 2);
+      modalRenderer.setPixelRatio(appliedModalDpr);
       modalRenderer.setSize(W, H);
       modalRenderer.setClearColor(0x000000, 0);
       modalScene = new THREE.Scene();
@@ -959,9 +921,12 @@ export default function createGlobeModal({
     const alreadyWired = listenersWired;
     listenersWired = true;
     if (!alreadyWired) {
-      evtRoot.querySelector('.globe-gallery-modal-close').addEventListener('click', () => close(true));
-      const prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
-      const nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
+      closeBtn = evtRoot.querySelector('.globe-gallery-modal-close');
+      // isTrusted is exactly viaPointer: the guard exists to swallow the browser's synthetic
+      // click after a touch pointerup (trusted); ours from clickClose() are not.
+      closeBtn.addEventListener('click', (e) => close(e.isTrusted));
+      prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
+      nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
       prevBtn.addEventListener('click', () => { navigate(-1); });
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
@@ -970,7 +935,7 @@ export default function createGlobeModal({
       if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
       if (chromeEl) {
-        chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+        chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); clickClose(); });
       }
     }
 
@@ -995,9 +960,8 @@ export default function createGlobeModal({
     const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
     const PULL_SCALE_MIN = 0.80;
 
-    // Swipe/pull applies to touch-primary devices, not just the sm width band — tablets at
-    // md (≥768, coarse pointer) get the same gesture nav the globe's yaw-only shape assumes.
-    // Mirrors usesCylinderGeometry's '(pointer: coarse)' check. matchMedia-less → no gestures.
+    // Gestures follow POINTER type, not the width band (tablets at md get them too), mirroring
+    // usesCylinderGeometry. matchMedia-less → none.
     const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
 
     // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
@@ -1043,17 +1007,18 @@ export default function createGlobeModal({
       }
       swLastX = x; swLastY = y; swLastT = now;
 
+      const { W: vpW, H: vpH } = getViewport();
       if (swAxis === 'x') {
         // Warp-only preview (no slide): the fisheye grows with drag, capped at MODAL_WARP_SWIPE.
         // Release commits the same cross-warp transition as the nav buttons.
-        modalWarp = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.30)) * MODAL_WARP_SWIPE;
+        modalWarp = Math.min(1, Math.abs(dx) / (vpW * 0.30)) * MODAL_WARP_SWIPE;
       } else {
         // Pull-down only — upward drag does nothing (clamped to 0).
         const pullY = Math.max(0, dy);
         const scale = Math.max(PULL_SCALE_MIN, 1 - pullY / PULL_SCALE_DAMPING);
         modalCanvasEl.style.transform = `translate3d(0, ${pullY}px, 0) scale(${scale.toFixed(3)})`;
         // Pull-down warp: scales with pull / 20% viewport height, capped at MODAL_WARP_PULL.
-        modalWarp = Math.min(1, pullY / (window.innerHeight * 0.20)) * MODAL_WARP_PULL;
+        modalWarp = Math.min(1, pullY / (vpH * 0.20)) * MODAL_WARP_PULL;
       }
       pushModalWarpUniforms();
     }, { passive: true });
@@ -1065,27 +1030,29 @@ export default function createGlobeModal({
       if (e.changedTouches.length !== 1) return;
       const dx = e.changedTouches[0].clientX - swStartX;
       const dy = e.changedTouches[0].clientY - swStartY;
+      const { W: vpW, H: vpH } = getViewport();
 
       if (swAxis === 'x') {
-        const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
+        const commit = Math.abs(dx) > vpW * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
-        // swipe left → next (+1), swipe right → prev (−1). Commit fires the same cross-warp
-        // transition as the nav buttons; a non-commit release lets the preview warp decay
-        // back to 0 in updateAnimation. No canvas slide to reset either way.
+        // Commit clicks the matching nav button (same handler, and it reports);
+        // a non-commit release lets the preview warp decay in updateAnimation.
         if (commit) {
           // Clear the preview warp so it doesn't bleed onto the new card once the transition
           // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
           modalWarp = 0;
-          navigate((dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1));
+          const dir = (dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1);
+          const btn = dir < 0 ? prevBtn : nextBtn;
+          // hidden on a single-card gallery — clicking would report a no-op nav.
+          if (btn?.hidden === false) btn.click(); else navigate(dir);
         }
       } else {
-        const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
+        const pullCommit = dy > vpH * COMMIT_DIST_Y_FRAC
                       || swVelY > COMMIT_VEL_Y;
         if (pullCommit) {
-          // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close() —
+          // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close —
           // so the fly-back starts from where the user dragged, not center. No snap.
           if (modalCard) {
-            const { H: vpH } = getViewport();
             const pxPerWorld = vpH / (2 * MODAL_CAM_DIST * Math.tan(Math.PI / 6));
             const pulledY = Math.max(0, dy);
             const gestureScale = Math.max(PULL_SCALE_MIN, 1 - pulledY / PULL_SCALE_DAMPING);
@@ -1094,7 +1061,7 @@ export default function createGlobeModal({
           }
           modalCanvasEl.style.transition = 'none';
           modalCanvasEl.style.transform = '';
-          close();
+          clickClose();
         } else {
           // Rubber-band back.
           modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
@@ -1114,9 +1081,8 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
-  // Synchronously return the modal DOM + page state to closed. destroy() forces phase to CLOSED
-  // without the close animation, so a breakpoint re-init (same DOM) doesn't leave the modal stuck
-  // open. Uses q() for the main canvas because core destroy() nulls the renderer first.
+  // Synchronously return the modal DOM + page state to closed, so a breakpoint re-init on the
+  // same DOM can't leave it stuck open. q() because core destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');

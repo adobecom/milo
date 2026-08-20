@@ -1,3 +1,20 @@
+// Signed-distance rounded rect (the corner mask). `b` is the FULL half-extent, radius included.
+const RR_SDF = [
+  'float rrSDF(vec2 p, vec2 b, float r) {',
+  '  vec2 q = abs(p) - b + r;',
+  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
+];
+
+// Hash for the particle dissolves; inputs scaled first to dodge precision loss at large coords.
+const HASH21 = [
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
+  '}',
+];
+
 // Modal SDF shader material — rounded rect computed in the fragment shader (sharp
 // at any zoom). uAspect = card world-space width/height; uRadius = fraction of height.
 export const MODAL_VERT = [
@@ -16,15 +33,15 @@ export const MODAL_FRAG = [
   'uniform vec2 uMotionDir;', // card velocity in UV space — drives motion-trail CA; (0,0) = off
   'uniform float uWarp;', // fisheye intensity (0 = none, ~0.4 = strong bulge); used in open/close/drag
   'uniform vec2 uWarpCenter;', // UV anchor for fisheye (0.5, 0.5 default; touch UV during drag)
+  'uniform vec2 uRepeat;', // cover-crop carried from the barrel; eases to (1,1) over the fly-out
+  'uniform vec2 uOffset;',
   'varying vec2 vUv;',
-  'float rrSDF(vec2 p, vec2 b, float r) {',
-  '  vec2 q = abs(p) - b + r;',
-  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
-  '}',
+  ...RR_SDF,
   'void main() {',
-  // SDF rounded-rect clip uses raw vUv so the card's geometry outline doesn't warp.
+  // Raw vUv so the card outline doesn't warp; half-extents are the FULL plane (as CARD_FRAG) —
+  // an inset box would clip uRadius of photo off every edge. See README (Image fit).
   '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
-  '  float d = rrSDF(pos, vec2(uAspect * 0.5 - uRadius, 0.5 - uRadius), uRadius);',
+  '  float d = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float alpha = 1.0 - smoothstep(-px, px, d);',
   // Flip uv.x + warp anchor on back faces so the back reads like the front (matches CARD_FRAG).
@@ -34,10 +51,12 @@ export const MODAL_FRAG = [
   '  vec2 d2 = fUv - wc;',
   '  float r2 = dot(d2, d2);',
   '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + wc;',
+  // Cover-crop (identity once the card has settled at its native-aspect modal size).
+  '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
   // Motion-trail CA: R trails behind, B ghosts ahead.
-  '  float r = texture2D(map, warpedUv - uMotionDir).r;',
-  '  float g = texture2D(map, warpedUv).g;',
-  '  float b = texture2D(map, warpedUv + uMotionDir * 0.5).b;',
+  '  float r = texture2D(map, baseUv - uMotionDir).r;',
+  '  float g = texture2D(map, baseUv).g;',
+  '  float b = texture2D(map, baseUv + uMotionDir * 0.5).b;',
   // Re-encode linear→sRGB.
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, alpha * uOpacity);',
@@ -54,6 +73,32 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
+// Card dissolve + near-camera dispersion dials. Units and roles: README (Tuning reference);
+// how they interact: README (Near-camera dissolve EXPLODES past the card box).
+const GRAIN_CELLS = 160;
+const DISPERSE_EXPAND = 2.5;
+const DISPERSE_JITTER = 0.2;
+const DISPERSE_CHUNKS = 44;
+const DISPERSE_ERODE = 0.22;
+const DISPERSE_EDGE_LEAD = 1.4;
+const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
+const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
+
+// CARD_VERT plus the dispersion overscan. See README.
+export const CARD_DISPERSE_VERT = [
+  'uniform float uDisperse;',
+  'uniform float uAspect;',
+  'varying vec2 vUv;',
+  'void main() {',
+  `  float s = 1.0 + uDisperse * ${glf(DISPERSE_EXPAND)};`,
+  `  float j = uDisperse * ${glf(DISPERSE_MARGIN)};`,
+  '  vec2 grow = s + j / vec2(max(uAspect, 0.0001), 1.0);',
+  '  vUv = (uv - 0.5) * grow + 0.5;',
+  '  vec3 p = vec3(position.xy * grow, position.z);',
+  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+  '}',
+].join('\n');
+
 export const CARD_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -66,70 +111,89 @@ export const CARD_FRAG = [
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
   'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
+  'uniform float uDisperse;', // near-camera explosion (0 = grains stay put); see README
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
-  'float rrSDF(vec2 p, vec2 b, float r) {',
-  '  vec2 q = abs(p) - b + r;',
-  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
-  '}',
-  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords.
-  'float hash21(vec2 p) {',
-  '  p = fract(p * vec2(0.1031, 0.1030));',
-  '  p += dot(p, p + 33.33);',
-  '  return fract((p.x + p.y) * p.x);',
-  '}',
+  ...RR_SDF,
+  ...HASH21,
   'void main() {',
   // Flip uv.x on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
-  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
-  '  vec2 d  = fUv - uHoverPos;',
-  '  float r2 = dot(d, d);',
-  '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // Near-camera dissolve (melt + particle): content expands as the card rushes the lens.
-  '  vec2 mdir = fUv - 0.5;',
-  '  vec2 meltUv = warpedUv;',
-  '  if (uDissolve > 0.0) {',
-  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
-  '  }',
-  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
   // Rounded-corner alpha: rrSDF in world-proportional UV; box half-size is the full
   // plane (uAspect/2, 0.5) so the rect fills edge-to-edge. fwidth gives ~1px AA.
-  '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
+  '  vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
-  '  float a = 1.0 - smoothstep(-px, px, dsd);',
-  '  float shapeA = a;', // solid rounded-rect alpha, kept before the particle dissolve eats `a`
-  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
-  '  vec2 meltRad = mdir * uDissolve * 0.22;',
-  '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
-  '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
-  '  float g = texture2D(uMap, baseUv).g;',
-  '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
-  // Particle grain eaten edge-first (edgeProx from SDF dist); cells in the card's own
-  // uv space (× uAspect so cells stay square) so the grain travels with the card.
+  '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
+  // Explosion (uniform-gated, so other phases pay nothing). See README.
+  '  vec2 sUv = fUv;',
+  '  float srcSD = dsd;',
+  '  float a = shapeA;',
+  '  if (uDisperse > 0.0) {',
+  `    vec2 chunk = floor(fUv * vec2(uAspect, 1.0) * ${glf(DISPERSE_CHUNKS)});`,
+  '    float h1 = hash21(chunk + vec2(13.10, 71.90));',
+  '    float h2 = hash21(chunk + vec2(3.70, 47.10));',
+  '    float rim = 1.0 - smoothstep(0.0, 0.35, -dsd);',
+  `    float det = h1 / (1.0 + rim * ${glf(DISPERSE_EDGE_LEAD)});`,
+  `    float erode = ${glf(DISPERSE_ERODE)} * uDisperse * fract(h1 * 43.7);`,
+  '    float sg = 1.0;',
+  '    if (det < uDisperse) {',
+  '      float spd = 0.25 + 0.75 * h2;',
+  '      float t = (uDisperse - det) / max(1.0 - det, 1e-4);',
+  `      sg = 1.0 + ${glf(DISPERSE_EXPAND)} * spd * t;`,
+  '      vec2 jit = fract(vec2(h1, h2) * vec2(97.13, 61.70)) * 2.0 - 1.0;',
+  `      vec2 wSrc = (pos - jit * (${glf(DISPERSE_JITTER)} * (sg - 1.0))) / sg;`,
+  '      sUv = wSrc / vec2(uAspect, 1.0) + 0.5;',
+  '    }',
+  '    float pxs = px / sg;',
+  '    srcSD = rrSDF((sUv - 0.5) * vec2(uAspect, 1.0), vec2(uAspect * 0.5, 0.5), uRadius) + erode;',
+  '    a = 1.0 - smoothstep(-pxs, pxs, srcSD);',
+  '  }',
+  // Particle grain, eaten edge-first. See README.
+  '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
-  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
-  '    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * 160.0);',
+  `    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * ${glf(GRAIN_CELLS)});`,
   '    float nR = hash21(cell + vec2(0.00,  0.00));',
   '    float nG = hash21(cell + vec2(2.10,  1.30));',
   '    float nB = hash21(cell + vec2(1.70, -0.50));',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -srcSD);',
   '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.4, 0.0, 1.0);',
   '    float pedge = 0.10;',
-  '    float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
-  '    float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
-  '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
-  '    r *= dR; g *= dG; b *= dB;',
+  '    dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '    dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '    dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
   '    a *= (dR + dG + dB) * 0.3333;',
   '  }',
-  '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   // Contour: faint fill + ~1px edge stroke (reuse dsd/px), shown before the photo un-dissolves in.
   '  float stroke = 1.0 - smoothstep(0.0, px * 1.5, abs(dsd));',
   '  float contourA = (shapeA * 0.06 + stroke * 0.5) * uContourFade;',
   // Crossfade contour → photo as reveal goes 0→1; the photo alpha `a` is already dispersing when
   // uDissolve > 0, so the reveal reads as the same edge-first un-dissolve.
-  '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
   '  float outA = mix(contourA, a * uOpacity, uReveal);',
+  // Bail before the texture fetches — load-bearing for the dispersion's fill cost. See README.
+  '  if (outA < 0.002) discard;',
+  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
+  '  vec2 d  = sUv - uHoverPos;',
+  '  float r2 = dot(d, d);',
+  '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
+  // Melt (content swells as the card rushes the lens) — net of uDisperse, so the explosion owns
+  // the motion in the sphere phase and this is left to the texture-ready reveal. See README.
+  '  vec2 mdir = sUv - 0.5;',
+  '  vec2 meltUv = warpedUv;',
+  '  float melt = max(uDissolve - uDisperse, 0.0);',
+  '  if (melt > 0.0) {',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
+  '  }',
+  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
+  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
+  '  vec2 meltRad = mdir * uDissolve * 0.22;',
+  '  vec2 radial = mdir * uCA + meltRad;',
+  '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r * dR;',
+  '  float g = texture2D(uMap, baseUv).g * dG;',
+  '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b * dB;',
+  '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
+  '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
   '  gl_FragColor = vec4(outCol, outA);',
   '}',
 ].join('\n');
@@ -148,12 +212,7 @@ export const TEXT_FRAG = [
   'uniform vec2  uResolution;',
   'uniform vec2  uMotionDir;',
   'varying vec2  vUv;',
-  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords
-  'float hash21(vec2 p) {',
-  '  p = fract(p * vec2(0.1031, 0.1030));',
-  '  p += dot(p, p + 33.33);',
-  '  return fract((p.x + p.y) * p.x);',
-  '}',
+  ...HASH21,
   'void main() {',
   '  vec2 d = vUv - 0.5;',
   // Exit: horizontal stretch (mimics drag direction) + radial scatter (letters fly outward)

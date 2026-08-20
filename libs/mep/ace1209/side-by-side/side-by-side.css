@@ -25,6 +25,7 @@
   }
 
   .media {
+    position: relative;
     border-radius: inherit;
 
     picture,
@@ -43,6 +44,15 @@
 
     video, img {
       object-fit: cover;
+    }
+
+    .icon {
+      position: absolute;
+      width: 32px;
+      height: auto;
+      z-index: 1;
+      inset-block-start: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
     }
   }
 
@@ -158,6 +168,11 @@
 
       .media {
         min-height: 306px;
+
+        .icon {
+          inset-block-start: var(--s2a-spacing-lg);
+          inset-inline-start: var(--s2a-spacing-lg);
+        }
       }
 
       .foreground {
@@ -182,7 +197,7 @@
       .card-overlay {
         --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
-        aspect-ratio: 41 / 35;
+        aspect-ratio: 3 / 2;
       }
     }
   }
@@ -194,8 +209,15 @@
       --card-overlay-padding: var(--s2a-spacing-xl);
     }
 
-    .card-stacked .foreground {
-      padding: var(--s2a-spacing-xl);
+    .card-stacked {
+      .foreground {
+        padding: var(--s2a-spacing-xl);
+      }
+
+      .media .icon {
+        inset-block-start: var(--s2a-spacing-xl);
+        inset-inline-start: var(--s2a-spacing-xl);
+      }
     }
 
     &.featured .card-overlay .foreground {

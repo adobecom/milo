@@ -1,7 +1,9 @@
 // Pointer interaction for the globe (DI module). See README (Behavior notes).
 import * as THREE from '../three.module.min.js';
 
-const DRAG_SENSITIVITY = 0.005; // pointer px → rad/frame drag velocity
+// Release-velocity model (flushVel + endGesture): see README (Drag physics).
+const FRAME_MS = 1000 / 60; // velX/velY are per-60fps-frame; the core rescales by real frame dt
+const VEL_SMOOTH_MS = 35; // EMA time constant
 const CLICK_MAX_MOVE = 10; // px
 const CLICK_MAX_TIME = 500; // ms
 const PICK_MIN_OPACITY = 0.1;
@@ -11,17 +13,24 @@ const AXIS_UNDECIDED = 0;
 const AXIS_HORIZONTAL = 1; // spinning the globe — we consume the deltas
 const AXIS_VERTICAL = 2; // page scroll — we ignore the gesture entirely
 
+const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
-  getSphereFormT, interactiveThreshold, maxVel, drag, isCursorActive, getYawOnly,
+  getSphereFormT, getDragSensitivity, interactiveThreshold, maxVel, drag, isCursorActive,
+  getYawOnly,
 }) {
   // Raycaster + NDC scratch for canvas picking.
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
 
   let canvasEl = null;
+  let activePointerId = -1; // owner of the in-flight gesture (-1 = none), not hasPointerCapture()
   let lastMX = 0;
   let lastMY = 0;
+  let lastMoveT = 0;
+  let sampX = 0; // travel (rad) banked since the last velocity sample — see flushVel
+  let sampY = 0;
   let pointerDownX = 0;
   let pointerDownY = 0;
   let pointerDownT = 0;
@@ -38,20 +47,48 @@ export default function createInteraction({
     axisLock = tdx > tdy ? AXIS_HORIZONTAL : AXIS_VERTICAL;
   }
 
-  function ownsDrag(e) {
-    return drag.isDragging && canvasEl != null && canvasEl.hasPointerCapture(e.pointerId);
-  }
+  const ownsDrag = (e) => activePointerId === e.pointerId;
 
   // Zero the shared drag object. NOT called on pointerup — release keeps velX/velY (inertia).
   function resetDrag() {
     drag.isDragging = false;
     drag.velX = 0;
     drag.velY = 0;
+    drag.pendingX = 0;
+    drag.pendingY = 0;
+    sampX = 0;
+    sampY = 0;
+    activePointerId = -1;
+    axisLock = AXIS_UNDECIDED;
   }
 
+  // Abort the gesture outright: no inertia, no tap. For pointercancel / context menu.
   function cancelDrag() {
     if (!drag.isDragging) return;
     resetDrag();
+  }
+
+  // Fold the banked travel into the velocity EMA, sampled by elapsed time (not per event).
+  const clampVel = (v) => Math.max(-maxVel, Math.min(maxVel, v));
+  function flushVel(t) {
+    const dtMs = t - lastMoveT;
+    if (dtMs <= 0) return;
+    const a = 1 - Math.exp(-dtMs / VEL_SMOOTH_MS);
+    drag.velX = clampVel(drag.velX + ((sampX / dtMs) * FRAME_MS - drag.velX) * a);
+    drag.velY = clampVel(drag.velY + ((sampY / dtMs) * FRAME_MS - drag.velY) * a);
+    sampX = 0; sampY = 0;
+    lastMoveT = t;
+  }
+
+  // Release: keep velX/velY as inertia, decayed across the idle gap since the last move (the final
+  // flush banks nothing). False when there was no gesture to end.
+  function endGesture() {
+    if (!drag.isDragging) return false;
+    drag.isDragging = false;
+    activePointerId = -1;
+    axisLock = AXIS_UNDECIDED; // cleared for the next gesture; the tap test doesn't read it
+    flushVel(now());
+    return true;
   }
 
   // Raycast the cards under the pointer; returns intersections (nearest first).
@@ -73,12 +110,16 @@ export default function createInteraction({
     if (e.button !== 0 || !e.isPrimary) return;
     if (getModalIdx() >= 0) return;
     canvasEl.setPointerCapture(e.pointerId);
+    activePointerId = e.pointerId;
     drag.isDragging = true;
     lastMX = e.clientX; lastMY = e.clientY;
     drag.velX = 0; drag.velY = 0;
+    drag.pendingX = 0; drag.pendingY = 0;
+    sampX = 0; sampY = 0;
     pointerDownX = e.clientX;
     pointerDownY = e.clientY;
-    pointerDownT = Date.now();
+    pointerDownT = now();
+    lastMoveT = pointerDownT;
     // Pen grouped with touch: direct contact, drives the page scroll gesture too.
     isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
     axisLock = AXIS_UNDECIDED;
@@ -87,18 +128,19 @@ export default function createInteraction({
   function onPointerMove(e) {
     if (!ownsDrag(e)) return;
     resolveAxisLock(e);
-    // Touch, axis not yet resolved → consume nothing (lastMX/MY NOT advanced, so no delta lost).
-    if (isTouchDrag && axisLock === AXIS_UNDECIDED) return;
-    // Touch, vertical → the page owns this gesture; leave the sphere inert.
-    if (isTouchDrag && axisLock === AXIS_VERTICAL) return;
-    drag.velX = Math.max(-maxVel, Math.min(maxVel, (e.clientX - lastMX) * DRAG_SENSITIVITY));
-    // Pitch is enabled only for a mouse on the sphere. Touch never pitches (vertical = scroll);
-    // the yaw-only barrel never pitches for anyone (a cylinder can't centre vertically — matches
-    // the keyboard/modal centring path, which holds pitch when bp.YAW_ONLY). +Y delta (drag down)
-    // tips the front down so the globe follows.
-    if (!isTouchDrag && !getYawOnly()) {
-      drag.velY = Math.max(-maxVel, Math.min(maxVel, (e.clientY - lastMY) * DRAG_SENSITIVITY));
-    }
+    // Touch: inert until the axis latches horizontal. lastMX/MY/lastMoveT are NOT advanced here,
+    // so neither the travel nor the elapsed time is lost.
+    if (isTouchDrag && axisLock !== AXIS_HORIZONTAL) return;
+    const t = now();
+    const sens = getDragSensitivity(); // rad/px, live off the viewport + band
+    const dx = (e.clientX - lastMX) * sens;
+    // Pitch only for a mouse on the sphere; +Y delta (drag down) tips the front down.
+    const dy = !isTouchDrag && !getYawOnly() ? (e.clientY - lastMY) * sens : 0;
+    // pendingX/Y: exact travel, applied 1:1. velX/Y: smoothed, for the release.
+    drag.pendingX += dx;
+    drag.pendingY += dy;
+    sampX += dx; sampY += dy;
+    flushVel(t);
     lastMX = e.clientX; lastMY = e.clientY;
   }
 
@@ -116,14 +158,10 @@ export default function createInteraction({
   }
 
   function onPointerUp(e) {
-    if (!ownsDrag(e)) return;
-    drag.isDragging = false;
-    // Clear the lock for the next gesture. The tap test below is independent of axisLock
-    // (CLICK_MAX_MOVE 10px > AXIS_LOCK_THRESHOLD 8px, so a jittery tap may have latched one).
-    axisLock = AXIS_UNDECIDED;
+    if (!ownsDrag(e) || !endGesture()) return;
     const dx = Math.abs(e.clientX - pointerDownX);
     const dy = Math.abs(e.clientY - pointerDownY);
-    const dt = Date.now() - pointerDownT;
+    const dt = now() - pointerDownT;
     if (dx < CLICK_MAX_MOVE && dy < CLICK_MAX_MOVE && dt < CLICK_MAX_TIME
       && getSphereFormT() >= interactiveThreshold && getModalIdx() < 0) {
       handleCardClick(e);
@@ -162,8 +200,10 @@ export default function createInteraction({
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
-    canvas.addEventListener('pointercancel', onPointerUp);
-    canvas.addEventListener('lostpointercapture', cancelDrag);
+    // pointercancel = taken away, not released: no inertia, no tap. lostpointercapture is a no-op
+    // after a normal release and the escape hatch on a real loss. See README (Drag physics).
+    canvas.addEventListener('pointercancel', cancelDrag);
+    canvas.addEventListener('lostpointercapture', endGesture);
     canvas.addEventListener('contextmenu', cancelDrag);
     canvas.addEventListener('mousemove', onHover);
   }
@@ -173,8 +213,8 @@ export default function createInteraction({
       canvasEl.removeEventListener('pointerdown', onPointerDown);
       canvasEl.removeEventListener('pointermove', onPointerMove);
       canvasEl.removeEventListener('pointerup', onPointerUp);
-      canvasEl.removeEventListener('pointercancel', onPointerUp);
-      canvasEl.removeEventListener('lostpointercapture', cancelDrag);
+      canvasEl.removeEventListener('pointercancel', cancelDrag);
+      canvasEl.removeEventListener('lostpointercapture', endGesture);
       canvasEl.removeEventListener('contextmenu', cancelDrag);
       canvasEl.removeEventListener('mousemove', onHover);
       canvasEl.style.cursor = '';
@@ -183,9 +223,8 @@ export default function createInteraction({
     resetDrag();
   }
 
-  // True when the in-flight touch gesture is a page scroll (or hasn't declared its axis):
-  // the globe is inert, so hint-text dismissal must exclude it. See README (Behavior notes).
-  // Gated on drag.isDragging since isTouchDrag persists after pointerup.
+  // True while an in-flight touch gesture is page scroll (or undecided): the globe is inert, so
+  // hint dismissal must skip it. Gated on isDragging — isTouchDrag persists after pointerup.
   const isPageScrollGesture = () => drag.isDragging
     && isTouchDrag
     && axisLock !== AXIS_HORIZONTAL;
