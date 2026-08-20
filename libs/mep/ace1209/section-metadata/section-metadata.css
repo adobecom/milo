@@ -232,17 +232,11 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     }
 
     .explore-card-foreground {
-      aspect-ratio: 1 / 1.2;
       transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
-      will-change: transform;
 
-      img {
-        object-fit: cover;
-        object-position: top;
-      }
-
+      img,
       video {
-        object-fit: contain;
+        object-fit: cover;
         object-position: top;
       }
     }
@@ -276,28 +270,6 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   &.bento .body-color-solid .explore-card-content [class*='body-'],
   &.bento .body-color-solid.dark .explore-card-content [class*='body-'] {
     color: inherit;
-  }
-
-  &.bento .scrim {
-    .explore-card-container {
-      &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(255 255 255 / 0%) 60.93%, rgba(255 255 255 / 59%) 90%);
-        z-index: 1;
-      }
-    }
-
-    &.dark {
-      .explore-card-container::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0 0 0 / 0%) 60.93%, rgba(0 0 0 / 59%) 90%);
-        z-index: 1;
-      }
-    }
   }
 
   &.bento .grid-full-width {
@@ -364,7 +336,8 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     content: none;
   }
 
-  &.bento .explore-card-background {
+  &.bento .explore-card-background,
+  &.bento .explore-card-foreground {
     border-radius: inherit;
 
     img,
@@ -378,6 +351,30 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     video {
       transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
       height: auto;
+    }
+  }
+
+  &.bento .scrim {
+    .explore-card-container:not(:has(.explore-card-foreground)) .explore-card-background,
+    .explore-card-foreground {
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255 255 255 / 0%) 60.93%, rgba(255 255 255 / 59%) 90%);
+      }
+    }
+
+    &.dark {
+      .explore-card-container:not(:has(.explore-card-foreground)) .explore-card-background,
+      .explore-card-foreground {
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(0 0 0 / 0%) 60.93%, rgba(0 0 0 / 59%) 90%);
+        }
+      }
     }
   }
 }
