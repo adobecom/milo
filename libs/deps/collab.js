@@ -17,6 +17,7 @@
 
   // Pending API proxy requests keyed by reqId — resolved/rejected when collab:api-response arrives.
   const _pendingApiRequests = {};
+  const _pendingSearchRequests = {};
 
   if (window.parent !== window) {
     window.addEventListener('message', (e) => {
@@ -83,6 +84,27 @@
           else pending.reject(new Error(e.data.error || 'API error'));
         }
       }
+      if (e.data?.type === 'collab:user-search-response') {
+        const pending = _pendingSearchRequests[e.data.reqId];
+        if (pending) {
+          delete _pendingSearchRequests[e.data.reqId];
+          pending.resolve(Array.isArray(e.data.result) ? e.data.result : []);
+        }
+      }
+    });
+  }
+
+  function searchUsersViaParent(q) {
+    return new Promise((resolve) => {
+      const reqId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      _pendingSearchRequests[reqId] = { resolve };
+      window.parent.postMessage({ type: 'collab:user-search-request', reqId, q }, ME.parentOrigin || '*');
+      setTimeout(() => {
+        if (_pendingSearchRequests[reqId]) {
+          delete _pendingSearchRequests[reqId];
+          resolve([]);
+        }
+      }, 10000);
     });
   }
 
@@ -135,7 +157,7 @@
     createReply:   (threadId, body)     => apiFetch(`/api/collabs/${COLLAB_ID}/threads/${threadId}/comments`, { method: 'POST', body: JSON.stringify({ body }) }),
     updateStatus:  (threadId, state)    => apiFetch(`/api/threads/${threadId}`, { method: 'PATCH', body: JSON.stringify({ state }) }),
     updateComment: (commentId, body)    => apiFetch(`/api/comments/${commentId}`, { method: 'PATCH', body: JSON.stringify({ body }) }),
-    searchUsers:   (q)                  => apiFetch(`/api/search/groups-or-users?q=${encodeURIComponent(q)}`),
+    searchUsers:   (q)                  => window.parent !== window ? searchUsersViaParent(q) : apiFetch(`/api/search/groups-or-users?q=${encodeURIComponent(q)}`),
     listParticipants: ()                => apiFetch(`/api/collabs/${COLLAB_ID}/participants`),
   };
 
