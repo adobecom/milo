@@ -10,7 +10,6 @@ export const PROGRESS_GRID_ARC_END = 0.60;
 export const PROGRESS_FOLD_DUR = 0.25;
 export const PROGRESS_ZOOM_END = 1.00;
 export const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
-export const ARC_STAGGER = 0.594;
 
 export const GRID_PEEL_STAGGER = 0.20;
 export const GRID_PEEL_JITTER = 2 * GRID_PEEL_STAGGER;

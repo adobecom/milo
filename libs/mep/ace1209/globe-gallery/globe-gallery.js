@@ -34,8 +34,7 @@ const BREAKPOINTS = {
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.7, // share clustered into the off-screen arc flank
-    ARC_PUSH_PX: 60,
+    ARC_DENSE_FRACTION: 0.6, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
   },
   sm: {
@@ -51,7 +50,6 @@ const BREAKPOINTS = {
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
     ARC_DENSE_FRACTION: 0.7,
-    ARC_PUSH_PX: 60,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
   },
@@ -295,7 +293,6 @@ function createGlobeGalleryRuntime(
       CARD_H_SPHERE: sphereCardH,
       CARD_W_SPHERE: sphereCardH * CARD_ASPECT,
       CARD_W_ARC: cfg.CARD_W_ARC,
-      ARC_PUSH_PX: cfg.ARC_PUSH_PX,
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
       // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
@@ -1480,8 +1477,8 @@ function createGlobeGalleryRuntime(
   // Transform on the arc→grid continuum at peel ease gpE (0 = arc, 1 = grid). Serves the
   // arc/peel render AND the origin of the fold lerp.
   function computeCardStage(card, i, gpE, frame) {
-    const { arcPanT, entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
-    const { N_VISIBLE, ARC_DENSE_COUNT, ARC_PUSH_PX } = bp;
+    const { entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
+    const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
     const slot = i; // no conveyor: all cards on arc simultaneously
     const rawT = Math.max(0, Math.min(1, slot / Math.max(1, N_VISIBLE - 1)));
     // Non-uniform fanT split: cluster low-i off-screen, spread the rest.
@@ -1494,17 +1491,9 @@ function createGlobeGalleryRuntime(
            + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
     }
     const fan = getFanData(fanT, arcCtx, fanScratch);
-    const arcDelay = fanT * TL.ARC_STAGGER;
-    const arcLocalT = Math.max(
-      0,
-      Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - TL.ARC_STAGGER)),
-    );
-    const arcLocalE = easeInOutCubic(arcLocalT);
-    const pxPushed = fan.px + fan.rx * ARC_PUSH_PX * arcLocalE;
-    const pyPushed = fan.py + fan.ry * ARC_PUSH_PX * arcLocalE;
     const wp = entryRot > 0.001
-      ? rotateArcPoint(pxPushed, pyPushed, entryRot, arcCtx, W, H, wpScratch)
-      : cssToWorld(pxPushed, pyPushed, W, H, wpScratch);
+      ? rotateArcPoint(fan.px, fan.py, entryRot, arcCtx, W, H, wpScratch)
+      : cssToWorld(fan.px, fan.py, W, H, wpScratch);
     const arcY = wp.y - entryYOffset;
     const webglRot = -fan.cssRot - entryRot;
 
