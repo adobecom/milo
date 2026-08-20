@@ -85,13 +85,11 @@ function usesCylinderGeometry(bandName) {
   return !!window.matchMedia?.('(pointer: coarse)').matches;
 }
 
-const ARC_STAGGER = 0.594;
-
 const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_HOLD_CLEARANCE_VH = 4; // between the held quote's bottom and the next section's top
+const PQ_HOLD_CLEARANCE_BAND_FRAC = 0.045; // of band; quote bottom → next section top
 
 // The reveal's share of the hold; the rest is dead scroll, nothing changing. See README.
 const PQ_REVEAL_END = 0.50;
@@ -916,7 +914,8 @@ function createGlobeGalleryRuntime(
     const opticalCenterPx = navH + (H - navH) / 2;
     const box = pqEl.getBoundingClientRect();
     const quoteBottomVh = toVh(opticalCenterPx + box.height / 2);
-    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - PQ_HOLD_CLEARANCE_VH);
+    const clearanceVh = (100 - toVh(navH)) * PQ_HOLD_CLEARANCE_BAND_FRAC;
+    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - clearanceVh);
     root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
 
     // Mirror what CSS resolves for the pin, so the hold spans exactly the pinned scroll.
@@ -1491,10 +1490,10 @@ function createGlobeGalleryRuntime(
            + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
     }
     const fan = getFanData(fanT, arcCtx, fanScratch);
-    const arcDelay = fanT * ARC_STAGGER;
+    const arcDelay = fanT * TL.ARC_STAGGER;
     const arcLocalT = Math.max(
       0,
-      Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - ARC_STAGGER)),
+      Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - TL.ARC_STAGGER)),
     );
     const arcLocalE = easeInOutCubic(arcLocalT);
     const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
@@ -1576,7 +1575,7 @@ function createGlobeGalleryRuntime(
     }
 
     const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * TL.GRID_PEEL_STAGGER;
-    const jitter = (card.peelJitter - 0.5) * TL.ARC_PEEL_JITTER;
+    const jitter = (card.peelJitter - 0.5) * TL.GRID_PEEL_JITTER;
     const gpDelay = Math.max(0, Math.min(TL.GRID_PEEL_STAGGER, baseDelay + jitter));
     const gpLocalT = Math.max(0, Math.min(1, (gridFormT - gpDelay) / Math.max(0.01, gpWin)));
     const gpE = easeOutCubic(gpLocalT);
@@ -1717,7 +1716,7 @@ function createGlobeGalleryRuntime(
     a11y.updateTabStops();
     frame.activeCamera = updateActiveCamera(frame);
     frame.sphereRotActive = updateSphereRotation(frame);
-    modal.updateAnimation(frame.sphereRotActive);
+    modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
     updatePullQuote(frame);

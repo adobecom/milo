@@ -68,7 +68,6 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
-| `FINDINGS.md` | The tuning/robustness backlog left after the scroll-model work: the runway/camera-pacing coupling, undocumented arc constants, and the scroll-model probe worth rebuilding. Each entry carries its confirmation step. Read it before retuning any `zoomT` threshold. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. **Arc-phase geometry:** `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Sole owner of the canvas cursor — native `grab`/`grabbing`/`pointer`, written through `applyCursor()` (see Behavior notes). |
@@ -775,20 +774,25 @@ draw gets its moment, then released and scrolled away over what is left.
 
 #### The hold, and why its length is derived
 
-`--gg-pq-hold` (20vh) is a *preference*, not the hold. The pin subtracts
+`--gg-pq-hold` (52vh) is a *preference*, not the hold. The pin subtracts
 `min(--gg-pq-hold, --gg-pq-hold-max)`, and `--gg-pq-hold-max` is published per layout by
-`publishPqHoldMax()`. **A fixed hold is not safe here**, because holding spends the one thing the
+`publishPqMetrics()`. **A fixed hold is not safe here**, because holding spends the one thing the
 runway has already committed: the gap between the quote's bottom edge and the next section's top.
 That gap is *authored* — it shrinks with the quote's own height — so it is not a constant anyone can
 write down:
 
 ```
-holdMax = (1 − pqAppearZoomT) · tail        // next section's top at the reveal
+holdMax = (1 − pqAppearTailT) · tail        // next section's top at the reveal
           − (optical-centre + box/2)        // the quote's own bottom edge
-          − PQ_HOLD_CLEARANCE_VH            // 4vh, so the two never land flush
+          − band · PQ_HOLD_CLEARANCE_BAND_FRAC   // so the two never land flush
 ```
 
-Measured (Chromium, `PQ_HOLD_CLEARANCE_VH = 4`, preference 52vh, runway 540):
+The clearance is a **share of the band** (`100vh − --gg-nav-h`), not a fixed vh: it is the same
+space `--gg-optical-center` halves and `--gg-pq-gap` already takes `0.2` of, so it shrinks with the
+band when the chrome grows or the viewport shortens — which is precisely when the gap is tightest.
+At the reference 1080p desktop (nav 124px → band ~88.5vh) it resolves to ~4vh.
+
+Measured (Chromium, clearance ≈4vh at 1080p, preference 52vh, runway 540):
 
 With the corrected cue the reveal lands 16–22vh earlier, so the post-reveal runway grows and the
 derived ceilings move well clear of the preference — 71–100vh for a normal quote against a 52vh
@@ -987,7 +991,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | −40→65 | — | `arcCopyEntryT` 0→1 over `ENTRY_RAMP_VH` | arc pre-roll speeds up, cards slide up, arc-copy fades **in** (done at `ARC_COPY_IN_ENTRY_T`) | `computeFrame`, `updateArcCopy` |
 | 0 | 0.000 | block top | `progress` starts; cards on the arc | — |
 | 37 | 0.039 | `FOLD_FIRST_PROGRESS` | `sphereFormT` leaves 0 → camera switches **ortho → perspective** | `updateActiveCamera` |
-| ~41 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `ARC_PEEL_JITTER`) | `updateCardTransform` |
+| ~41 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `GRID_PEEL_JITTER`) | `updateCardTransform` |
 | ~54 | ~0.057 | `gpLocalT ≥ FOLD_START_LOCAL_T` | first card actually starts **folding** to the sphere | `updateCardTransform` |
 | 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in (**sphere geometry only** — the barrel never builds it) | `updateClickDragText` |
 | 90 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
@@ -1029,15 +1033,21 @@ It is what caught the reveal-cue bug. `pqAppearZoomT` was computing the frame th
 proximity-fade band earlier — a 16.5vh md / 22vh sm discrepancy that no amount of reading the code
 had surfaced, because both halves were individually correct. One reading of the HUD settled it.
 
-**The shape.** A `<pre>` appended to `document.body`, `position: fixed`, created in `initRuntime`
-only when a query param is present (so it cannot reach production), removed in `destroy`, and
-updated from the end of `tick()` — after `updateCardTransforms`, so it reads this frame's positions.
-Memoise on the joined string and bail when unchanged, like `arcCopy` does.
+**It is already written — as a patch, deliberately uncommitted.** `ggprobe.patch` in the block
+directory, listed in `.git/info/exclude` so it cannot be committed. `git apply ggprobe.patch` to
+arm it, `git apply -R ggprobe.patch` to remove it, then load any page with `?ggprobe`. It stays out
+of the tree because **the shipped block has no debug code, no `console.*` and no query-param read** —
+keep it that way.
+
+**The shape**, to preserve if it has to be re-cut against a moved `tick()`: a `<pre>` appended to `document.body`, `position: fixed`, created lazily on the first
+gated frame, removed in `destroy` via `destroyProbe()`, and updated from the **end** of `tick()` —
+after `updateCardTransforms`, so it reads this frame's positions. Memoised on the joined string, so
+it bails when unchanged, like `arcCopy` does.
 
 **What made it useful, beyond printing numbers:**
 
 - **Latch the transition, don't just show the state.** Keep a running max of `zoomT` over frames
-  where a card was still visible. That survives scrubbing back and forth, and subtracting it from
+  where a card was still visible (`probeLatch`). That survives scrubbing back and forth, and subtracting it from
   `pqAppearZoomT` prints the answer directly (`× tailVh` for vh) instead of making you catch a
   moment by eye.
 - **Colour the whole readout by state** — red while cards are on screen, green once empty, white
@@ -1074,7 +1084,7 @@ normally refreshes those, so without it you read the previous frame.
 Also skip `m.visible === false` meshes — that flag is exactly how the proximity fade removes cards,
 and it is the signal you are usually looking for.
 
-### Re-deriving these numbers### Re-deriving these numbers
+### Re-deriving these numbers
 
 `timeline.js` is importable on its own (no THREE, no DOM), so this reads the **live** constants
 rather than restating them — it cannot drift from the code. The two runway lengths are scraped out of
@@ -1131,7 +1141,8 @@ read in JS):
 
 The set is `PROGRESS_PAN_END`, `PROGRESS_ARC_PREROLL`, `PROGRESS_GRID_ARC_START` / `_END`,
 `PROGRESS_FOLD_DUR`, `PROGRESS_ZOOM_END`, `GRID_PEEL_STAGGER` and `FOLD_PEEL_OVERLAP`, plus the
-gates (`SPHERE_INTERACTIVE_T`, `CANVAS_HIDE_MARGIN_T`). Dump the
+gates (`SPHERE_INTERACTIVE_T`, `CANVAS_HIDE_MARGIN_T`). `GRID_PEEL_JITTER` is **derived** from
+`GRID_PEEL_STAGGER` (below) and `GRID_PEEL_WINDOW` is its complement, so neither is a knob. Dump the
 live values instead of trusting a list here:
 
 ```sh
@@ -1145,10 +1156,24 @@ console.log(Object.entries(T).filter(([, v]) => typeof v === 'number')
 `FOLD_PEEL_OVERLAP` (0–1) makes each card begin folding to the sphere that far — in peel
 position-space — **before** it fully lands in the grid (folding from its live peel position, no
 snap), so the grid never visibly "resolves" and the sphere forms earlier. The fold opens at peel
-localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold window
+localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)` — the **cube root is the inverse of the
+peel's `easeOutCubic`**, so `easeOutCubic(FOLD_START_LOCAL_T) === 1 − FOLD_PEEL_OVERLAP` exactly.
+That is what makes `0.35` a number about *what the viewer sees* — the share of the peel still
+visibly to run when the fold opens — rather than a raw-progress figure; the gate compares raw
+`gpLocalT`, so the root is the conversion out of eased space. The global fold window
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`) and the per-card fold timer
 (`cardFoldStartProgress`) both derive from it in `timeline.js`, so camera / depth-sort /
 interactivity stay aligned. `0` restores "settle, then fold."
+
+`GRID_PEEL_JITTER` is likewise not free — it is `2 × GRID_PEEL_STAGGER`, so the jitter's half-range
+is exactly the whole stagger window and any card can be displaced to either end of the peel order
+(less, and the shuffle becomes a smear; more, and the clamp eats the tails). It applies to the
+**grid** peel delay, not the arc.
+
+`ARC_STAGGER = 0.594` partitions the arc pan — starts spread over it, each card's own peel lasting
+the remaining `0.406`, so the last card starts at `0.594` and lands exactly at `1.0`. It is a tuned
+value with no derivation, and it is **unrelated to `PROGRESS_GRID_ARC_END` (0.60)** despite sitting
+near it; do not couple them.
 
 **Arc-copy fade-out** (`updateArcCopy`) is expressed as a *fraction of the grid→globe fold window*
 (`FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS`), not as raw progress, so it stays aligned if the
@@ -2421,11 +2446,12 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     | --- | --- |
     | `rate × dtScale` (linear) | velocity/ambient-spin integration, `REVEAL_RATE`, `MASONRY_MORPH_RATE`, the `HINT_EXIT_*` rates, `navNudge.frame` |
     | `1 − (1 − rate) ** dtScale` (exponential ease) | `HOVER_RATE`, `SPHERE_DRAG_WARP_EASE` |
-    | `rate ** dtScale` (exponential decay) | `DRAG_FRICTION`, `PITCH_RELAX`, `DRAG_CATCHUP`'s backlog term |
+    | `rate ** dtScale` (exponential decay) | `DRAG_FRICTION`, `PITCH_RELAX`, `DRAG_CATCHUP`'s backlog term, `MODAL_WARP_DECAY` |
 
-    Coast time constant is `−FRAME_MS / ln(DRAG_FRICTION)` ms, independent of refresh rate. The one
-    rate still frame-locked is `modal.js`'s settled-warp decay — `updateAnimation` is not handed the
-    frame. Everything else in `modal.js` is already time-based off `performance.now()`.
+    Coast time constant is `−FRAME_MS / ln(DRAG_FRICTION)` ms, independent of refresh rate. **No
+    rate in the block is frame-locked**, `modal.js` included: `updateAnimation(sphereRotActive,
+    dtScale)` carries the scale in for `MODAL_WARP_DECAY`, and everything else there is time-based
+    off `performance.now()`.
   - **Ambient spin is a separate additive term, never a bias folded into `velX`.** Folded in, it
     *brakes* a leftward coast while extending a rightward one, so inertia decays asymmetrically by
     drag direction. `AUTO_ROT_SPEED` is a true rate: accumulating an increment against friction
@@ -2530,7 +2556,7 @@ self-evident from the name:
 | `SCROLL_VEL_MAX` / `_DEADBAND` | px/frame | scroll speed that saturates the motion trail / below which Lenis settle-noise is ignored (anti-shimmer) |
 | `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter (Option C, md only) |
 | `ARC_STAGGER` | fanT | span of the per-card peel-time stagger along the arc |
-| `ARC_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade) |
+| `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |
 | `NEAR_FADE_OPACITY_BIAS` | exponent | on the prox opacity ramp; `< 1` holds the card visible longer so the dispersing grains read (the grain mask carries the fade) |
@@ -2593,3 +2619,56 @@ Known follow-ups, not blocking this integration branch:
   quote down to 1280×720 (worst measured case: 15px of headroom above, 24px below) — but there is
   still no `overflow` handling for a pathologically long or localized quote, and past the taper's
   reach it spills rather than scrolls.
+
+### Constraints on the scroll model and the nav band
+
+Two changes look obviously worth making from a reading of the code. Both are blocked by constraints
+that are not visible at the point you would make them.
+
+#### `zoomT` spans the whole tail, and retargeting `CAM_Z_END` will not fix it cheaply
+
+`--gg-runway-height` (540vh) minus `--gg-formation-vh` (304vh) leaves a 236vh tail, and `zoomT`
+spans **all** of it, so one number sets both the camera's fly-through pace and the pull-quote's
+scroll room. Splitting that into named segments (`formation` + `flythrough` + `quote`) with `zoomT`
+over the flythrough only, and `CAM_Z_END` retargeted from `-60` to the geometric clear point, runs
+into three things:
+
+1. **The camera curve is eased**, `camZ = lerpN(CAM_Z_SPHERE, CAM_Z_END, easeOutCubic(zoomT))`, so
+   re-parameterising it over a shorter span with a nearer endpoint does not preserve `camZ(scroll)`.
+   At md it moves the camera ~24 world units of a 125-unit travel — at 20vh into the flythrough,
+   from `+35.5` (outside the R=35 shell) to `+13.2` (inside it). The whole flythrough is the visible
+   region, since it ends when the last card goes.
+2. **`--gg-flythrough-vh` has to track `fadeRefH`**, which is measured after textures land, so the
+   JS→CSS handshake this is meant to delete (`--gg-pq-appear-t`) returns under a new name.
+3. **The retarget figures (`-24.6` md, `+1.6` sm) come from `CARD_H_SPHERE`, which is authored,
+   while the runtime clear point uses `fadeRefH`, which is measured.** Baking the authored value
+   makes `pqAppearZoomT ≡ 1` hold only approximately — a threshold reasoning about geometry while
+   the renderer has already decided otherwise.
+
+Canvas-hide also has to be re-expressed: `zoomT >= pqAppearZoomT + CANVAS_HIDE_MARGIN_T` becomes
+`>= 1 + margin`, which is unreachable.
+
+**To break the coupling**, lower `PROGRESS_ZOOM_END` below `1` and leave `CAM_Z_END`, the ease and
+the segments alone. `ZOOM_TO_TAIL_T` already handles the conversion. It is currently `=== 1`
+exactly, a no-op multiply, and **must stay** — it is what keeps `zoomT`-space and tail-space
+distinct, and it becomes load-bearing the moment `PROGRESS_ZOOM_END` is not 1.
+
+#### `--gg-nav-h`'s fallbacks are measured chrome heights
+
+`calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px))`. Nothing defines either
+var today, so the fallbacks resolve. They are *measured* heights of Adobe chrome, not design tokens,
+and re-measuring them is part of the work whenever the gnav or localnav changes height while the
+vars stay absent — see **The nav band**.
+
+Two things not to do about it:
+
+- **Do not measure the chrome in JS and publish it.** JS writes exactly one custom property
+  (`--gg-pq-appear-t`), and only because it is the one value CSS cannot compute. `--gg-nav-h` stays
+  a live `calc()` over the gnav's own vars so that the moment those stylesheets publish real
+  heights the block picks them up with no JS involved.
+- **Do not add a dev-mode assertion.** The shipped block has no `console.*`, no debug flag and no
+  query-param read; use `ggprobe.patch` instead.
+
+Drift here is tolerable because everything keyed off `--gg-nav-h` moves *together* — optical centre,
+controls offset, camera centring, hold ceiling — so it surfaces as a uniformly mis-centred
+composition rather than as two halves disagreeing.

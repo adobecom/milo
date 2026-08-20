@@ -25,6 +25,7 @@ const MODAL_WARP_OPEN = 0.30;
 const MODAL_WARP_CLOSE = 0.30;
 const MODAL_WARP_PULL = 0.40;
 const MODAL_WARP_SWIPE = 0.25;
+const MODAL_WARP_DECAY = 0.85;
 const DN_NAV_DUR = 500; // ms
 const DN_NAV_WARP = 0.40; // peak warp
 // Desktop/tablet image fit; chrome placement is CSS.
@@ -587,7 +588,7 @@ export default function createGlobeModal({
 
   // Captured world transform → target near camera (open), or back to the live sphere slot
   // (close), which tracks the slot as the sphere keeps rotating.
-  function updateAnimation(sphereRotActive) {
+  function updateAnimation(sphereRotActive, dtScale = 1) {
     if (modalCard && modalPhase) {
       const sphereGroup = getSphereGroup();
       const now = perfNow();
@@ -685,7 +686,7 @@ export default function createGlobeModal({
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
         modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_CLOSE;
       } else if (modalPhase === MODAL_PHASE.OPEN) {
-        modalWarp *= 0.85;
+        modalWarp *= MODAL_WARP_DECAY ** dtScale;
         if (modalWarp < 0.001) modalWarp = 0;
       }
       // updateDesktopNav drives both cards' uWarp directly.
