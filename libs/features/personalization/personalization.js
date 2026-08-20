@@ -1202,6 +1202,12 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
+function recordManifestError(name, manifestPath) {
+  const config = getConfig();
+  config.mep.manifestErrors ??= [];
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath });
+}
+
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
@@ -1225,7 +1231,10 @@ async function getManifestConfig(info, variantOverride) {
   }
 
   const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
+  if (!persData) {
+    recordManifestError(name, manifestPath);
+    return null;
+  }
   const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
@@ -1236,8 +1245,9 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 3 */
+    /* c8 ignore next 4 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
+    recordManifestError(name, manifestPath);
     return null;
   }
   const infoKeyMap = {

@@ -137,6 +137,36 @@ function toggleExpandedCard(cardEl) {
   localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
+function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Disabled', reasons: ['Manifest failed to load or has an invalid structure.'] };
+  }
+
+  const errors = [];
+  if (!manifest.withinDateRange) errors.push('Outside of promo date range.');
+  if (manifest.manifestGeoRestricted) errors.push('User country is geo restricted.');
+  if (errors.length) return { level: 'error', label: 'Disabled', reasons: errors };
+
+  const warnings = [];
+  if (warnings.length) return { level: 'warning', label: 'Warning', reasons: warnings };
+
+  return null;
+}
+
+function applyManifestStatus(card, manifest) {
+  const status = getManifestStatus(manifest);
+  if (!status) return;
+
+  const { level, label, reasons } = status;
+  const list = createTag(
+    'ul',
+    { class: `mep-manifest-${level}-tooltip` },
+    reasons.map((reason) => createTag('li', {}, reason)),
+  );
+  card.classList.add(`manifest-${level}`);
+  card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
+}
+
 function buildManifestCard(manifest, { mmm = false } = {}) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
@@ -148,6 +178,15 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     createTag('span', { class: 'mep-overline' }, mmm ? '7 Day Manifest' : 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
+
+  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
+  markExpanded(card, manifest.editUrl);
+
+  if (manifest.malformed) {
+    card.append(header);
+    applyManifestStatus(card, manifest);
+    return card;
+  }
 
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
@@ -179,18 +218,9 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     select.append(optEl);
   });
 
-  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
-  markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
 
-  const reasons = [];
-  if (!manifest.withinDateRange) reasons.push('Outside of promo date range.');
-  if (manifest.manifestGeoRestricted) reasons.push('User country is geo restricted.');
-  if (reasons.length) {
-    const list = createTag('ul', { class: 'mep-manifest-error-tooltip' }, reasons.map((reason) => createTag('li', {}, reason)));
-    card.classList.add('manifest-disabled');
-    card.prepend(createTag('div', { class: 'mep-manifest-error' }, [svgIcon('icon-alert'), 'Disabled', list]));
-  }
+  applyManifestStatus(card, manifest);
 
   return card;
 }

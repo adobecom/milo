@@ -455,6 +455,79 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
 });
 
 // ============================================================
+// Malformed manifests (mep.manifestErrors): a manifest that failed to load
+// or parse never becomes a full experiment, so it's rendered as a lean card
+// via the same error tooltip used by buildManifestCard's getManifestStatus.
+// ============================================================
+describe('init: buildManifestCard — malformed manifest via mep.manifestErrors', () => {
+  let mainEl;
+  let headerEl;
+
+  const malformedConfig = {
+    ...BASE_CONFIG,
+    mep: {
+      ...BASE_CONFIG.mep,
+      experiments: [
+        {
+          name: 'Valid Campaign',
+          manifest: '/frags/mep/valid.json',
+          variantNames: ['v-a'],
+          selectedVariantName: 'v-a',
+          source: 'helix',
+          disabled: false,
+        },
+      ],
+      manifestErrors: [{ name: 'broken-manifest', manifestPath: '/frags/mep/broken.json' }],
+    },
+  };
+
+  before(async () => {
+    setConfig(malformedConfig);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+  });
+
+  it('renders one card per valid experiment plus one per malformed manifest', () => {
+    expect(mainEl.querySelectorAll('.mep-manifest-card').length).to.equal(2);
+  });
+
+  it('renders the malformed manifest name and marks the card as an error', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard, 'malformed manifest card rendered').to.exist;
+    expect(malformedCard.classList.contains('manifest-error')).to.be.true;
+  });
+
+  it('lists the malformed reason in the error tooltip', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    const tooltip = malformedCard.querySelector('.mep-manifest-error-tooltip');
+    expect(tooltip.textContent).to.include('Manifest failed to load or has an invalid structure.');
+  });
+
+  it('does not render a variant select or body rows for the malformed card', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard.querySelector('select.mep-manifest-variants')).to.be.null;
+    expect(malformedCard.querySelector('.mep-card-body')).to.be.null;
+  });
+
+  it('still renders the valid manifest card without an error class', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const validCard = cards.find((c) => c.textContent.includes('Valid Campaign'));
+    expect(validCard, 'valid manifest card rendered').to.exist;
+    expect(validCard.classList.contains('manifest-error')).to.be.false;
+  });
+});
+
+// ============================================================
 // GROUP 3: buildAdditionalManifests — with activities returned
 // Config includes one experiment so the drawer has a base manifest card.
 // auth state: true → true (early return)

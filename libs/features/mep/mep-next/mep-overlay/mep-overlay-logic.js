@@ -224,18 +224,31 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
+function buildMalformedManifestEntry({ name, manifestPath }, mIdx) {
+  return {
+    index: mIdx + 1,
+    editUrl: manifestPath,
+    fileName: name,
+    malformed: true,
+  };
+}
+
 export function getManifestList() {
   const mepConfig = parseMepConfig();
-  if (!mepConfig) return { manifests: [], manifestParameter: [] };
-  const { activities, page } = mepConfig;
-  const { pageId = 0 } = page;
+  const manifestErrors = getConfig().mep?.manifestErrors ?? [];
+  const { activities, page } = mepConfig ?? {};
+  const { pageId = 0 } = page ?? {};
   const manifestParameter = [];
 
-  const manifests = activities.map(
+  const manifests = activities?.map(
     (manifest, mIdx) => buildManifestEntry(manifest, mIdx, pageId, manifestParameter),
+  ) ?? [];
+
+  const malformedManifests = manifestErrors.map(
+    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx),
   );
 
-  return { manifests, manifestParameter };
+  return { manifests: [...manifests, ...malformedManifests], manifestParameter };
 }
 
 function getManifestsFound() {
