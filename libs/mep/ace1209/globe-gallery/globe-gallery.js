@@ -1204,9 +1204,11 @@ function createGlobeGalleryRuntime(
     }
     const showTrigger = blockDocTop - H * TL.ENTRY_LEAD_VH; // matches entryStart in computeFrame
     // Past the reveal every card is prox-faded out and the hint text has finished; the scene
-    // holds nothing else, so the draw is skipped too.
-    canvasHidden = lenisY < showTrigger
-      || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
+    // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
+    // blurs this canvas, so hiding it would leave the blur with nothing to sample.
+    canvasHidden = modal.getModalIdx() < 0
+      && (lenisY < showTrigger
+        || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
     if (canvasHidden) {
       canvas.style.display = 'none';
     } else {
@@ -1821,8 +1823,9 @@ function createGlobeGalleryRuntime(
     reducedMotion = prefersReducedMotion();
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
 
-    // RM: canvas into normal flow so the globe scrolls away.
-    canvas.style.position = reducedMotion ? 'absolute' : '';
+    // RM: canvas into normal flow so the globe scrolls away. Non-RM must restate `fixed` — the
+    // only other place it is set is the inline style this would otherwise clear.
+    canvas.style.position = reducedMotion ? 'absolute' : 'fixed';
 
     W = window.innerWidth;
     H = measureViewportH();

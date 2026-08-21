@@ -59,22 +59,20 @@
   -webkit-touch-callout: none;
 }
 
-/* z-index bands: hero 2–5, modal 13–17. */
-
 .globe-gallery-world {
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: visible;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
 .globe-gallery-controls {
   position: fixed;
   inset: 0;
   pointer-events: none; /* not intercepting canvas drag */
-  z-index: 5;
+  z-index: 1;
   opacity: 0;
   visibility: hidden; /* pulls the buttons out of the tab order while the globe isn't live */
 
@@ -192,7 +190,6 @@
   opacity: 0;
   will-change: opacity, transform;
   transform-origin: left bottom;
-  z-index: 4;
 }
 
 html[dir="rtl"] .globe-gallery-arc-copy {
@@ -254,7 +251,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   box-sizing: border-box;
   max-width: var(--gg-copy-max);
   margin-inline: auto;
-  z-index: 5;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -408,7 +404,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
   position: fixed;
   inset: 0;
-  z-index: 15;
   width: 100%;
   height: 100vh;
   height: 100dvh;
@@ -690,7 +685,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   background: transparent;
   border-radius: 50%;
   pointer-events: none; /* never intercept canvas drag */
-  z-index: 4; /* above the world subtree (z:2); the modal still covers it */
 }
 .globe-gallery-a11y:focus { outline: none; }
 
@@ -702,7 +696,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   right: 0;
   height: 100vh;
   pointer-events: none;
-  z-index: 4; /* same layer as the entry widget */
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -745,7 +738,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 5; /* above the a11y layer (z:4); the modal still covers it */
 }
 
 .globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
