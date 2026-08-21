@@ -32,7 +32,7 @@ export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 // Entry: raw-scroll space, before `progress` exists.
 
-export const ENTRY_LEAD_VH = 0.6;
+export const ENTRY_LEAD_VH = 0.45;
 export const ENTRY_RAMP_VH = 1.05;
 export const ENTRY_ROT_MAX = 0.9;
 export const ARC_ENTRY_STAGGER = 0.45;
