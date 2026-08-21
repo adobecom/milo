@@ -68,7 +68,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (a `CanvasTexture` per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
-| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `easeOutExpo`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` (60) + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two, so the angle is stated once; it used to be seven hand-written `Math.tan(Math.PI / 6)`s across three files. |
+| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `easeOutExpo`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` (60) + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, isPageScrollGesture, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock** and exports `isPageScrollGesture()` (see Behavior notes). Sole owner of the canvas cursor — native `grab`/`grabbing`/`pointer`, written through `applyCursor()` (see Behavior notes). |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
@@ -1311,12 +1311,11 @@ the `PROGRESS_*` family, which `SPHERE_FORMED_PROGRESS` and `cardFoldStartProgre
 load-time constants — those cannot go per-band without re-deriving the chain. The lead has
 exactly two runtime consumers, `entryStart` in `deriveFrame` and `showTrigger` in
 `updateCanvasVisibility`, and they **must agree**: the canvas has to be shown by the time entry
-starts, or the pre-roll draws into a `display:none` canvas. Both read the one `bp` value; they
-used to be kept in step by a comment.
+starts, or the pre-roll draws into a `display:none` canvas. Both read the one `bp` value.
 
 **The ceiling is 1.0**, from the ticker's `IntersectionObserver` `rootMargin: '100% 0px'` — the
 loop wakes one viewport-height above the block, so a lead past that would begin entry while rAF
-is still gated off. 0.45 sits well inside it.
+is still gated off. `ENTRY_LEAD_VH` is in viewport-heights.
 
 **Sweep pacing is `ARC_RAMP_T`, also per-band.** `arcRotationEase` ramps quadratically over the
 first `ARC_RAMP_T` of the pan then goes linear, and its `a` coefficient is *solved* so the curve
@@ -1327,10 +1326,18 @@ pre-roll (`arcPanT` 0 → `PROGRESS_ARC_PREROLL`) it is the *only* thing pacing 
 curves have reconverged to within ~7% by `PROGRESS_GRID_ARC_END`, where the cards are in the grid
 anyway. Radians swept by the end of the pre-roll, sm (`ARC_SPAN` 3.6):
 
-| `ARC_RAMP_T` | 0.08 | 0.15 | 0.20 | 0.25 | 0.35 |
-| --- | --- | --- | --- | --- | --- |
-| radians | 1.46 | 1.31 | 1.20 | 1.08 | 0.84 |
-| share of `0.08` | 100% | 90% | 82% | 74% | 58% |
+| `ARC_RAMP_T` | 0.08 | 0.15 | 0.20 | 0.35 | 0.5 | 0.8 | 1.0 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| radians | 1.46 | 1.31 | 1.20 | 0.84 | 0.65 | 0.51 | 0.49 |
+| share of `0.08` | 100% | 90% | 82% | 58% | 44% | 35% | 33% |
+
+**`ARC_RAMP_T` is valid in `(0, 1]` only, and saturates near 0.8.** `a = 1/(k(2 − k))` is solved
+so `ease(1) = 1`, but that identity holds only while `t = 1` falls in the *linear* branch. At
+`k ≥ 1` the quadratic branch covers all of `[0, 1]` and `ease(1)` is just `a`, which equals 1 only
+at `k = 1`, diverges at `k = 2`, and is **negative** beyond — a fan that sweeps backward. Nor is
+there anything to gain: `k(2 − k)` peaks at `k = 1`, so `a` is minimised there and symmetric about
+it, making `k = 1` (pure `t²`) simultaneously the slowest possible start and the last correct
+value. Past it the sweep speeds back up *and* overshoots.
 
 **`ARC_RAMP_T` also slows the card-to-card spread**, because `arcRot0` drives both `rotOffset`
 (how far the fan has swung) and `effectiveSpan` (how far it has *opened*). At a high ramp the
@@ -1745,22 +1752,25 @@ One thing it deliberately does **not** touch: **the arc and grid phases.** They 
 exactly where it was — its copy is registered to the untouched viewport, and it reads as full-bleed
 by design.
 
-Everything else needs no help, because **nothing re-derives the projection by hand**. The two
-places that used to — the modal's fly and the a11y focus ring — now go through the camera itself,
-and that is the rule to keep: a `setViewOffset` skew is invisible to arithmetic written against
-`camera.position.z` and a hand-rolled frustum, so anything that measures the scene in screen px
-must `project()` rather than restate the frustum. `updateA11yFocusRing` projects the card's centre
-and one corner-offset point and reads the NDC gap; it had been doing the arithmetic itself and
-adding `appliedViewOffsetY` back to `cy` to compensate.
+Everything else needs no help, because **nothing re-derives the projection by hand**, and that is
+the rule to keep: a `setViewOffset` skew is invisible to arithmetic written against
+`camera.position.z` and a hand-rolled frustum, so anything measuring the scene in screen px must
+`project()` rather than restate the frustum.
+
+`updateA11yFocusRing` projects the card's centre and one corner-offset point and reads the NDC
+gap — the gap spans a *half* extent and NDC is 2 wide, so `× W` / `× H` yields the **full** size.
+It calls `camera.updateMatrixWorld()` first, and that call is load-bearing: `updateActiveCamera`
+moves the camera earlier in the same tick and `renderScene` (which normally refreshes
+`matrixWorldInverse`) has not run yet, so without it the ring reads the previous frame. It takes
+world-axis half-extents, so the card's own tilt is not reflected in the ring.
 
 **The modal renders through the skew, not around it.** It shares the main camera (`getCamera`)
 and `modal.render()` hands that camera straight to `modalRenderer` — same projection matrix, skew
 included. That is load-bearing rather than incidental: the open/close fly begins and ends on a
 *main-scene* world transform (the snapshot of the card on the globe at open; its live sphere slot
 at close) while being drawn by the *modal* renderer, so the two passes have to agree
-pixel-for-pixel. An earlier version un-skewed for the modal pass, and that is exactly the bug it
-bought — the card blinked up by `navH / 2` on the first modal frame and dropped back on the last
-one, because one world point had two screen positions.
+pixel-for-pixel. Un-skew this pass and one world point has two screen positions: the card jumps
+`navH / 2` on the first modal frame and drops back on the last.
 
 The modal does still sit *above* the gnav at `13` and cover it, so its photo wants the **viewport**
 centre rather than the band's. `computeModalTarget` lifts the target position by `skewOffsetPx() /
@@ -1771,11 +1781,11 @@ between the two scenes is correct for free. Note the pull-to-close nudge nearby
 (`modalCard.mesh.position.y -= pulledY / pxPerWorld`) needs nothing — a constant projection skew
 does not change px-per-world, so *relative* screen deltas are unaffected.
 
-**The shared camera is still the trap for anything else.** An earlier attempt re-centred by
-shrinking `H`, which changed `camera.aspect`, and because the modal renders through that same
-camera its photo came out squashed with black gutters. Anything done to the main camera must be
-checked against `modalRenderer.render(modalScene, getCamera())` — a *projection skew* is safe there
-(it is a pure screen-space translate), a change of `aspect`, `fov`, or `position` is not.
+**The shared camera is the trap for anything else.** Re-centring by shrinking `H` changes
+`camera.aspect`, and the modal renders through that same camera, so its photo comes out squashed
+with black gutters. Anything done to the main camera must be checked against
+`modalRenderer.render(modalScene, getCamera())` — a *projection skew* is safe there (it is a pure
+screen-space translate), a change of `aspect`, `fov`, or `position` is not.
 
 A late change to the token propagates on its own: `readCssVars()` sits *before* `doLayout`'s
 unchanged-`W`/`H` early exit, so the body `ResizeObserver` refreshes `navH` even on a no-op layout,
@@ -1785,8 +1795,7 @@ it instantly, the camera catches up on the next `doLayout`.
 
 `appliedViewOffsetY` is **write elision and nothing more**: `setViewOffset` rebuilds the projection
 matrix, so it fires only when the offset actually moves, and the cache is reset wherever the camera
-object or `W`/`H` changes since both are baked into the call. No consumer reads it back any more —
-that it once had a second life as the focus ring's fudge factor is what made the ring drift.
+object or `W`/`H` changes since both are baked into the call. No consumer reads it back.
 Reduced motion sets `--gg-nav-h: 0` — nothing is pinned there, so the offset falls to 0 and
 `clearViewOffset()` runs, with no JS branch.
 

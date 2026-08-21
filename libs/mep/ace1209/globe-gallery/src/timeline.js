@@ -32,8 +32,6 @@ export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 // Entry: raw-scroll space, before `progress` exists.
 
-// The lead is NOT here — it differs per band, so it lives in BREAKPOINTS with ARC_SPAN and
-// reaches this module as `input.entryLeadVh`. Nothing at module scope may derive from it.
 export const ENTRY_RAMP_VH = 1.05;
 export const ENTRY_ROT_MAX = 0.9;
 export const ARC_ENTRY_STAGGER = 0.45;
@@ -116,7 +114,7 @@ export function createFrameInput() {
     formPx: 0,
     viewportH: 0,
     arcScale: 1,
-    entryLeadVh: 0, // bp.ENTRY_LEAD_VH; the core writes it every tick
+    entryLeadVh: 0,
   };
 }
 

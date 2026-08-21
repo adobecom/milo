@@ -36,8 +36,8 @@ const BREAKPOINTS = {
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.5, // viewport-heights of pre-roll above the block top; keep under 1.0
-    ARC_RAMP_T: 0.1, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
+    ENTRY_LEAD_VH: 0.5,
+    ARC_RAMP_T: 0.1,
   },
   sm: {
     minWidth: 0,
@@ -54,8 +54,8 @@ const BREAKPOINTS = {
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.55, // viewport-heights of pre-roll above the block top; keep under 1.0
-    ARC_RAMP_T: 0.30, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
+    ENTRY_LEAD_VH: 0.55,
+    ARC_RAMP_T: 0.20,
   },
 };
 
@@ -1038,10 +1038,7 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
-  // Write-elision only: setViewOffset rebuilds the projection matrix, so it fires only when the
-  // offset moves. W and H are baked into the call, hence null on any change to either. Nothing
-  // outside applyCentringOffset reads it back any more — consumers project through the camera.
-  let appliedViewOffsetY = null;
+  let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
   function applyCentringOffset(sphereFormT) {
     const offY = (navH / 2) * sphereFormT;
     if (offY === appliedViewOffsetY) return;
@@ -1180,32 +1177,23 @@ function createGlobeGalleryRuntime(
 
   const ringWorld = new THREE.Vector3();
   const ringEdge = new THREE.Vector3();
-  // Projects THROUGH the camera instead of restating its frustum. The hand-rolled version baked
-  // in four things the camera already knows — fov, aspect, "it looks down -Z from
-  // position.z", and the nav-band skew, which is invisible to arithmetic and so had to have
-  // `appliedViewOffsetY` added back to `cy` by hand. project() carries all four, so the ring
-  // cannot drift from the card it outlines. Same class of fix as the modal's fly.
   function updateA11yFocusRing() {
     const idx = a11y.getFocusedIdx();
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
     if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
-    // The card's own tilt is ignored, as before: world-axis half-extents at the card's depth.
     const groupScale = sphereGroup.scale.x;
     ringEdge.set(
       ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
       ringWorld.y + 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale,
       ringWorld.z,
     );
-    // updateActiveCamera moved the camera this frame and renderScene has not run yet, so
-    // matrixWorldInverse is a frame stale until this call. project() is the only reader.
     camera.updateMatrixWorld();
     ringWorld.project(camera);
     ringEdge.project(camera);
     const cx = (ringWorld.x * 0.5 + 0.5) * W;
     const cy = (-ringWorld.y * 0.5 + 0.5) * H;
-    // The NDC gap spans a HALF extent, and NDC is 2 wide, so * W / * H is the FULL size.
     const wPx = Math.abs(ringEdge.x - ringWorld.x) * W;
     const hPx = Math.abs(ringEdge.y - ringWorld.y) * H;
     a11y.setFocusRect(cx, cy, wPx, hPx);
@@ -1221,7 +1209,6 @@ function createGlobeGalleryRuntime(
       canvas.style.opacity = '1';
       return;
     }
-    // Same value deriveFrame builds entryStart from, so the two cannot drift apart.
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
     // Past the reveal every card is prox-faded out and the hint text has finished; the scene
     // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop

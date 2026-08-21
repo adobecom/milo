@@ -18,10 +18,7 @@ const MODAL_PHASE = Object.freeze({
 });
 const MODAL_CAM_DIST = 16.4;
 const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
-// ms open/close fly time. The fallback only; the live value is --gg-modal-anim-ms, read at
-// setup — CSS owns it because CSS has the other two consumers (the backdrop and chrome fades),
-// and all three have to land on the same frame or the modal pops mid-fade.
-const MODAL_ANIM_FALLBACK = 350;
+const MODAL_ANIM_FALLBACK = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
 // Fisheye warp peaks (sin bell curve).
 const MODAL_WARP_OPEN = 0.30;
@@ -65,7 +62,7 @@ export default function createGlobeModal({
   let modalScene = null;
   let modalCanvasEl = null;
   let modalEl = null;
-  let chromeEl = null; // the native <dialog>; cached at setup like every other node
+  let chromeEl = null;
 
   let modalIdx = -1; // currently open card index, -1 if closed
   let modalCard = null; // card whose mesh is animating
@@ -86,7 +83,7 @@ export default function createGlobeModal({
   const scratchQuat = new THREE.Quaternion();
   const scratchScale = new THREE.Vector3();
   const coverScratch = {}; // coverFit output (see pushModalCoverUV)
-  let chromeNodes = null; // { els, settled } — see revealModalChrome; reset with chromeEl
+  let chromeNodes = null; // { els, settled } — see revealModalChrome
 
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
   let modalChromeFadeT = 0; // 0→1 fade progress for chrome elements
@@ -243,10 +240,6 @@ export default function createGlobeModal({
     u.uWarpCenter.value.copy(modalWarpCenter);
   }
 
-  // px the main camera's skew pushes the image DOWN this frame — the nav-band centring offset
-  // (setViewOffset; see README, The nav band), read off the camera rather than re-derived from
-  // --gg-nav-h so it cannot drift from what is actually being projected. 0 under reduced
-  // motion, and on the arc, where the offset is ramped out.
   function skewOffsetPx() {
     const { view } = getCamera();
     return view && view.enabled === true ? -view.offsetY : 0;
@@ -730,13 +723,6 @@ export default function createGlobeModal({
     }
   }
 
-  // Deliberately the SAME projection as the main pass, nav-band skew included. The open/close
-  // fly starts and ends on a main-scene world transform (the card's slot on the globe) while
-  // being drawn here, so the two passes must agree pixel-for-pixel or the card jumps by half
-  // the nav band at both ends. Un-skewing for this pass is what used to cause exactly that.
-  // The modal covers the nav and so still wants the photo on the VIEWPORT centre, not the
-  // band's — computeModalTarget lifts the target position back by the skew, which is the one
-  // place that correction now lives.
   function render() {
     if (!(modalRenderer && modalScene && modalCard)) return;
     modalRenderer.render(modalScene, getCamera());
@@ -771,7 +757,6 @@ export default function createGlobeModal({
 
     modalEl = q('.globe-gallery-modal');
     if (!modalEl) return;
-    // Inherited from .globe-gallery; unitless, so this is a plain number.
     const declaredMs = parseFloat(
       getComputedStyle(modalEl).getPropertyValue('--gg-modal-anim-ms'),
     );
@@ -783,7 +768,7 @@ export default function createGlobeModal({
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
     chromeEl = q('.globe-gallery-modal-chrome');
-    chromeNodes = null; // re-derived from the fresh chromeEl on the next reveal
+    chromeNodes = null;
     const evtRoot = chromeEl || modalEl;
     const alreadyWired = listenersWired;
     listenersWired = true;
@@ -936,9 +921,8 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
-  // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. The main
-  // canvas is re-queried because core destroy() nulls the renderer first; the modal's own nodes
-  // are the ones setup() cached, and outlive it.
+  // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. q() because
+  // core destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');
