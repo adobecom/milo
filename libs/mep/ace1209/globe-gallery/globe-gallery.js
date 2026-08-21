@@ -12,8 +12,8 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import {
-  easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, coverFit,
-  buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
+  easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, clamp01, coverFit,
+  buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, CAM_FOV, TAN_HALF_FOV,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
 
@@ -36,6 +36,8 @@ const BREAKPOINTS = {
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.5, // viewport-heights of pre-roll above the block top; keep under 1.0
+    ARC_RAMP_T: 0.1, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
   },
   sm: {
     minWidth: 0,
@@ -52,6 +54,8 @@ const BREAKPOINTS = {
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.55, // viewport-heights of pre-roll above the block top; keep under 1.0
+    ARC_RAMP_T: 0.30, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
   },
 };
 
@@ -108,8 +112,6 @@ const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the 
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
-const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN -> 0
-
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
 
@@ -129,7 +131,6 @@ const KEY_MODAL_FRAMES = 20;
 const ROTATE_STEP_FRAMES = 34;
 const ROTATE_DEADZONE = 0.15;
 const COLUMN_EPS = 1e-6;
-const RING_TANHALF = Math.tan(Math.PI / 6);
 
 // Chromatic aberration.
 const CA_ENABLED = true;
@@ -296,7 +297,7 @@ function createGlobeGalleryRuntime(
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
       // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
-      FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
+      FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * TAN_HALF_FOV)),
       GRID_WINDOW_COLS: cfg.GRID_WINDOW_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
       // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
@@ -307,9 +308,11 @@ function createGlobeGalleryRuntime(
       CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
       CYL_BULGE: shape.CYL_BULGE,
       // Frustum height at the cylinder's centre plane — the column solve's vertical budget.
-      CYL_FRUSTUM_H: 2 * Math.tan(Math.PI / 6) * cfg.CAM_Z_SPHERE,
+      CYL_FRUSTUM_H: 2 * TAN_HALF_FOV * cfg.CAM_Z_SPHERE,
       CARD_ROLL_JITTER: cfg.CARD_ROLL_JITTER,
       DRAG_GEARING: cfg.DRAG_GEARING,
+      ENTRY_LEAD_VH: cfg.ENTRY_LEAD_VH,
+      ARC_RAMP_T: cfg.ARC_RAMP_T,
       // Clamped so the spread keeps ≥1 card.
       ARC_DENSE_COUNT: Math.min(
         Math.round(cfg.ARC_DENSE_FRACTION * nTotal),
@@ -633,7 +636,7 @@ function createGlobeGalleryRuntime(
   function textPlaneSize() {
     const { SPHERE_R, CAM_Z_SPHERE } = bp;
     const dist = CAM_Z_SPHERE - (-(SPHERE_R + TEXT_BEHIND_GAP));
-    const visH = 2 * Math.tan(Math.PI / 6) * dist; // fov=60 → half-angle 30°
+    const visH = 2 * TAN_HALF_FOV * dist;
     const visW = visH * (camera ? camera.aspect : W / H);
     return { w: visW, h: visH };
   }
@@ -1027,6 +1030,7 @@ function createGlobeGalleryRuntime(
     frameInput.formPx = formedScrollPx();
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
+    frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
     frameInput.now = performance.now();
     TL.deriveFrame(frameState, frameInput);
     frameInput.prevLenisY = frameState.lenisY;
@@ -1034,7 +1038,10 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
-  let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
+  // Write-elision only: setViewOffset rebuilds the projection matrix, so it fires only when the
+  // offset moves. W and H are baked into the call, hence null on any change to either. Nothing
+  // outside applyCentringOffset reads it back any more — consumers project through the camera.
+  let appliedViewOffsetY = null;
   function applyCentringOffset(sphereFormT) {
     const offY = (navH / 2) * sphereFormT;
     if (offY === appliedViewOffsetY) return;
@@ -1172,23 +1179,35 @@ function createGlobeGalleryRuntime(
   }
 
   const ringWorld = new THREE.Vector3();
+  const ringEdge = new THREE.Vector3();
+  // Projects THROUGH the camera instead of restating its frustum. The hand-rolled version baked
+  // in four things the camera already knows — fov, aspect, "it looks down -Z from
+  // position.z", and the nav-band skew, which is invisible to arithmetic and so had to have
+  // `appliedViewOffsetY` added back to `cy` by hand. project() carries all four, so the ring
+  // cannot drift from the card it outlines. Same class of fix as the modal's fly.
   function updateA11yFocusRing() {
     const idx = a11y.getFocusedIdx();
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
-    const viewZ = camera.position.z - ringWorld.z; // distance in front of the camera
-    if (viewZ <= 0.01) return; // behind/at the camera — nothing sensible to draw
+    if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
+    // The card's own tilt is ignored, as before: world-axis half-extents at the card's depth.
     const groupScale = sphereGroup.scale.x;
-    const halfWWorld = 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale;
-    const halfHWorld = 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale;
-    // Half the frustum's world height/width at this depth (fov 60° → tan(30°) = TANHALF).
-    const halfViewH = viewZ * RING_TANHALF;
-    const halfViewW = halfViewH * (W / H);
-    const cx = ((ringWorld.x / halfViewW) * 0.5 + 0.5) * W;
-    const cy = ((-ringWorld.y / halfViewH) * 0.5 + 0.5) * H + (appliedViewOffsetY || 0);
-    const wPx = (halfWWorld / halfViewW) * W;
-    const hPx = (halfHWorld / halfViewH) * H;
+    ringEdge.set(
+      ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
+      ringWorld.y + 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale,
+      ringWorld.z,
+    );
+    // updateActiveCamera moved the camera this frame and renderScene has not run yet, so
+    // matrixWorldInverse is a frame stale until this call. project() is the only reader.
+    camera.updateMatrixWorld();
+    ringWorld.project(camera);
+    ringEdge.project(camera);
+    const cx = (ringWorld.x * 0.5 + 0.5) * W;
+    const cy = (-ringWorld.y * 0.5 + 0.5) * H;
+    // The NDC gap spans a HALF extent, and NDC is 2 wide, so * W / * H is the FULL size.
+    const wPx = Math.abs(ringEdge.x - ringWorld.x) * W;
+    const hPx = Math.abs(ringEdge.y - ringWorld.y) * H;
     a11y.setFocusRect(cx, cy, wPx, hPx);
   }
 
@@ -1202,7 +1221,8 @@ function createGlobeGalleryRuntime(
       canvas.style.opacity = '1';
       return;
     }
-    const showTrigger = blockDocTop - H * TL.ENTRY_LEAD_VH; // matches entryStart in computeFrame
+    // Same value deriveFrame builds entryStart from, so the two cannot drift apart.
+    const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
     // Past the reveal every card is prox-faded out and the hint text has finished; the scene
     // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
     // blurs this canvas, so hiding it would leave the blur with nothing to sample.
@@ -1392,7 +1412,7 @@ function createGlobeGalleryRuntime(
     // One band for the whole wall, so the order is purely by depth.
     const fadeEnd = NEAR_FADE_END * fadeRefH;
     const fadeStart = NEAR_FADE_START * fadeRefH;
-    const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
+    const proxFade = clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
     // Skip the DRAW, not the state updates, once fully faded.
     mesh.visible = proxFade > 0;
     mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
@@ -1481,7 +1501,7 @@ function createGlobeGalleryRuntime(
   // arc/peel render AND the origin of the fold lerp.
   function computeCardEntry(i, frame, out) {
     const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
-    const rawT = Math.max(0, Math.min(1, i / Math.max(1, N_VISIBLE - 1)));
+    const rawT = clamp01(i / Math.max(1, N_VISIBLE - 1));
     const splitR = ARC_DENSE_COUNT / Math.max(1, N_VISIBLE - 1);
     out.fanT = rawT < splitR
       ? (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT
@@ -1489,7 +1509,7 @@ function createGlobeGalleryRuntime(
     const delay = TL.ARC_ENTRY_STAGGER
       * Math.min(1, (1 - out.fanT) / (1 - ARC_DENSE_SPLIT));
     const span = Math.max(0.01, 1 - TL.ARC_ENTRY_STAGGER);
-    const rotT = Math.max(0, Math.min(1, (frame.arcCopyEntryT - delay) / span));
+    const rotT = clamp01((frame.arcCopyEntryT - delay) / span);
     out.rot = (1 - easeInOutQuint(rotT)) * TL.ENTRY_ROT_MAX;
     return out;
   }
@@ -1574,12 +1594,12 @@ function createGlobeGalleryRuntime(
     const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * TL.GRID_PEEL_STAGGER;
     const jitter = (card.peelJitter - 0.5) * TL.GRID_PEEL_JITTER;
     const gpDelay = Math.max(0, Math.min(TL.GRID_PEEL_STAGGER, baseDelay + jitter));
-    const gpLocalT = Math.max(0, Math.min(1, (gridFormT - gpDelay) / Math.max(0.01, gpWin)));
+    const gpLocalT = clamp01((gridFormT - gpDelay) / Math.max(0.01, gpWin));
     const gpE = easeOutCubic(gpLocalT);
 
     // Gated on the RAW peel localT, not the eased gpE.
     const foldStartProg = TL.cardFoldStartProgress(gpDelay);
-    const fdLocalT = Math.max(0, Math.min(1, (progress - foldStartProg) / TL.PROGRESS_FOLD_DUR));
+    const fdLocalT = clamp01((progress - foldStartProg) / TL.PROGRESS_FOLD_DUR);
     const fdE = gpLocalT >= TL.FOLD_START_LOCAL_T ? easeInOutCubic(fdLocalT) : 0;
 
     const entry = computeCardEntry(i, frame, entryScratch);
@@ -1687,7 +1707,7 @@ function createGlobeGalleryRuntime(
     // Entrance resolves ON the interactive gate, not at sphereFormT 1.
     const sfRaw = (sphereFormT - TL.TEXT_APPEAR_START)
       / (TL.SPHERE_INTERACTIVE_T - TL.TEXT_APPEAR_START);
-    const sfT = Math.max(0, Math.min(1, sfRaw));
+    const sfT = clamp01(sfRaw);
     const txtT = easeOutCubic(sfT);
     const txtWarpEntrance = lerpN(TEXT_WARP_ENTER_MAX, 0, sfT * sfT);
     // Fill the viewport at the current camera distance + warp-proportional overflow.
@@ -1710,7 +1730,7 @@ function createGlobeGalleryRuntime(
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
     const frame = computeFrame();
-    arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN);
+    arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN, bp.ARC_RAMP_T);
 
     a11y.updateTabStops();
     frame.activeCamera = updateActiveCamera(frame);
@@ -1851,7 +1871,7 @@ function createGlobeGalleryRuntime(
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 5000);
+    camera = new THREE.PerspectiveCamera(CAM_FOV, W / H, 0.1, 5000);
     camera.position.set(0, 0, arcCamZ(H));
     camera.lookAt(0, 0, 0);
     appliedViewOffsetY = null;

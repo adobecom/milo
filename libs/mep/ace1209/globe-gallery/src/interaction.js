@@ -1,7 +1,9 @@
 // Pointer interaction for the globe.
 import * as THREE from '../three.module.min.js';
+// velX/velY are per-60fps-frame and the core rescales by real frame dt, so this MUST be the
+// same 60 the core paces against — it was a second, independent declaration of it.
+import { FRAME_MS } from './timeline.js';
 
-const FRAME_MS = 1000 / 60; // velX/velY are per-60fps-frame; the core rescales by real frame dt
 const VEL_SMOOTH_MS = 35; // EMA time constant
 const CLICK_MAX_MOVE = 10; // px
 const CLICK_MAX_TIME = 500; // ms
