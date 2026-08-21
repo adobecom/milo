@@ -690,7 +690,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   background: transparent;
   border-radius: 50%;
   pointer-events: none; /* never intercept canvas drag */
-  z-index: 4; /* above the WebGL canvas (z:3); the modal still covers it */
+  z-index: 4; /* above the world subtree (z:2); the modal still covers it */
 }
 .globe-gallery-a11y:focus { outline: none; }
 
