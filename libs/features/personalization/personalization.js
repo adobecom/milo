@@ -834,9 +834,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        let { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
-        blockTarget = blockTarget.includes('ace1205/hub-hero') ? blockTarget.replace('ace1205', 'ace1209') : blockTarget;
-        
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
