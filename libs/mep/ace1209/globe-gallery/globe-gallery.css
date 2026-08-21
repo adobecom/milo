@@ -8,8 +8,8 @@
 
 .globe-gallery {
   --gg-chrome-blur: 12px;
-  --gg-runway-height: 540vh;
-  --gg-formation-vh: 304vh;
+  --gg-runway-height: 520vh;
+  --gg-formation-vh: 340vh;
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
@@ -18,7 +18,7 @@
   --gg-crosshair-width: 1px;
 
   /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. */
-  --gg-pq-hold: 52vh;
+  --gg-pq-hold: 40vh;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
@@ -44,6 +44,9 @@
 
 @media (width >= 768px) {
   .globe-gallery {
+    --gg-runway-height: 520vh;
+    --gg-formation-vh: 320vh;
+    --gg-pq-hold: 45vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -769,7 +772,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
+@media (min-width >= 768px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;

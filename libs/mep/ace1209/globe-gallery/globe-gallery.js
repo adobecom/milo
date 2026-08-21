@@ -22,23 +22,6 @@ const CARD_ASPECT = 456 / 631;
 const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const BREAKPOINTS = {
-  md: {
-    minWidth: 768,
-    ARC_SPAN: 4.50,
-    SPHERE_R: 35,
-    CARD_H_SPHERE: 6.5,
-    CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 65,
-    CAM_Z_END: -60,
-    GRID_WINDOW_COLS: 9,
-    GRID_ROWS: 5,
-    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
-    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
-    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.5,
-    ARC_RAMP_T: 0.1,
-  },
   sm: {
     minWidth: 0,
     ARC_SPAN: 3.6,
@@ -56,6 +39,23 @@ const BREAKPOINTS = {
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.55,
     ARC_RAMP_T: 0.20,
+  },
+  md: {
+    minWidth: 768,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 6.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 65,
+    CAM_Z_END: -60,
+    GRID_WINDOW_COLS: 9,
+    GRID_ROWS: 5,
+    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
+    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
+    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.5,
+    ARC_RAMP_T: 0.1,
   },
 };
 

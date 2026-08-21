@@ -647,15 +647,24 @@ CSS length and a JS number — JS still has to learn how many px that unit produ
   frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
   wouldn't help the render side at all.
 
-**CSS is the source of truth for both lengths**, `--gg-formation-vh` read per layout in
+**CSS is the source of truth for the scroll budget**, `--gg-formation-vh` read per layout in
 `readCssVars()`, so retuning is a CSS-only edit:
 
-| prop | per breakpoint | effect |
-|---|---|---|
-| `--gg-runway-height` | same at both | total height = formation + tail; ↓ = shorter stretch after the globe — it scales the whole tail, including the sparse-shell stretch before the quote |
-| `--gg-formation-vh` | same at both | locked formation length |
+The CSS is **mobile-first**: the base `.globe-gallery` rule is sm, `@media (width >= 768px)`
+overrides md. All three budget props are authored at both.
 
-A third prop, `--gg-pq-appear-t`, is on the same element but is **not authored** — the runtime
+| prop | effect | ↑ does |
+|---|---|---|
+| `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
+| `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
+| `--gg-pq-hold` | how much tail the held quote spends | lengthens the hold, and with it the crosshair reveal (the draw is the first `PQ_REVEAL_END` of it) |
+
+> **The measured vh figures below were taken at a single 540 / 304 budget (tail 236) shared by both
+> breakpoints.** The budget is now split per breakpoint and being tuned, so read them as worked
+> examples of the formulas, not as current values. The formulas hold at any budget; re-measure
+> before quoting a number.
+
+A fourth prop, `--gg-pq-appear-t`, is on the same element but is **not authored** — the runtime
 publishes it (see below), and CSS only declares a `var(…, 0.42)` fallback inline on the pin for the
 frames before the script runs. It is the one prop written from JS, and the exception is deliberate.
 
@@ -760,8 +769,8 @@ the reveal scroll, then `centre = 50vh − (r − r_a)`, section top never above
 
 **What the runway still controls.** Whatever is left is the stretch where the camera has passed the
 shell's centre but not yet its far wall — a few far-pole cards, then nothing. That is `≈0.20` of the
-tail on md by the camera curve, so it shrinks only with `--gg-runway-height`: **47vh md / 18vh sm** at
-540vh (it was 31vh / 12vh at 460). **This is the block's main open tuning question.** Nothing draws
+tail on md by the camera curve, so it shrinks with the tail: **47vh md / 18vh sm** at a 540/304
+budget (it was 31vh / 12vh at 460/304). **This is the block's main open tuning question.** Nothing draws
 over it any more — the crosshair deliberately waits for the far-wall clear, for reasons set out under
 **Crosshair frame → Reveal choreography** — so it is genuinely blank, and it trades directly against
 the hold: shortening the runway shrinks the blank and the hold together. The floor on the runway is
@@ -769,12 +778,24 @@ the other side of the same coin — the tail after the reveal must stay longer t
 or the section arrives on top of it.
 
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
-- *Whole stretch after the globe too long, or too much blank before the quote:* lower
-  `--gg-runway-height` (both breakpoints). It is the only knob for either — the quote's own timing is
-  camera-derived and rides along. Floor: `(1 − appear-t) × tail` must stay above half the quote box
-  *plus the hold* (at 540vh that is 155vh md / 184vh sm against a ~31–114vh box), or the next section
-  lands on the quote. Shrinking the runway also shrinks `--gg-pq-hold-max`, so the hold quietly goes
-  first — check it is still non-zero on md before shipping a lower runway.
+- *Whole stretch after the globe too long, or too much blank before the quote:* shorten the tail.
+  The quote's own timing is camera-derived and rides along, so there is nothing to tune on it
+  directly — only the tail it sits in. Three ways, and they are **per breakpoint**: the CSS is
+  mobile-first, so the base rule is sm and `@media (width >= 768px)` overrides md.
+  - `--gg-runway-height` down: removes tail outright, the strongest per vh. Compresses everything
+    fraction-based in the tail at once — the zoom, the controls retiring, the hint fade, the reveal
+    point — and the zoom speeds up faster than the gap closes, since the gap is only
+    `(1 − appear-t)` of what is removed.
+  - `--gg-formation-vh` up: moves scroll from tail into formation, leaving the block's total length
+    alone, so nothing after the globe shifts except the gap. Costs formation pacing: arc → grid →
+    fold all play slower.
+  - `--gg-pq-hold` down: spends less tail on the held frame, so it *widens* the gap — the knob for
+    reveal pacing, not for length. The draw is the first `PQ_REVEAL_END` (0.5) of it.
+
+  Floor on all three: `(1 − appear-t) × tail` must stay above half the quote box *plus the hold*, or
+  the next section lands on the quote. Shrinking the tail also shrinks `--gg-pq-hold-max`, so the
+  hold quietly goes first — log it off the block with the longest authored quote and check it still
+  clears `--gg-pq-hold` before shipping.
 - *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune —
   it is `zoomTAtCamZ` of the shell's far wall. If it reads early, the card extent is the term to
   revisit (`publishPqAppearZoomT`), not a scroll number.
@@ -792,13 +813,12 @@ or the section arrives on top of it.
   outright — both are the interaction the copy asks for.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
-Current result (runway 540 / formation 304, tail 236): the quote is revealed centred at
-**385vh md / 356vh sm** — the frame the camera clears the shell — **held there** so the crosshair
-draw gets its moment, then released and scrolled away over what is left.
+The quote is revealed centred — the frame the camera clears the shell — **held there** so the
+crosshair draw gets its moment, then released and scrolled away over what is left.
 
 #### The hold, and why its length is derived
 
-`--gg-pq-hold` (52vh) is a *preference*, not the hold. The pin subtracts
+`--gg-pq-hold` is a *preference*, not the hold. The pin subtracts
 `min(--gg-pq-hold, --gg-pq-hold-max)`, and `--gg-pq-hold-max` is published per layout by
 `publishPqMetrics()`. **A fixed hold is not safe here**, because holding spends the one thing the
 runway has already committed: the gap between the quote's bottom edge and the next section's top.
@@ -995,7 +1015,7 @@ input       ..........................inert..........................|#live#
 The overlap in the top two lanes is the point of `FOLD_PEEL_OVERLAP`: the first cards begin folding
 (54vh) long before the last cards finish peeling (156vh), so the grid never visibly "resolves".
 
-### Tail — `zoomT` 0 → 1, scroll 304 → 540vh
+### Tail — `zoomT` 0 → 1, scroll `--gg-formation-vh` → `--gg-runway-height`
 
 ```
             0.00           0.22     0.34                                          1.00
@@ -1280,7 +1300,7 @@ fold is underway and is fully gone *before* the sphere (md) / barrel (sm) finish
 window for both profiles, since the fold constants are shared. The out-ease is `easeInOutCubic`,
 **not** the `easeOutCubic` used for the fade-in: `easeOutCubic` is ~88% done at the window's
 midpoint, which would collapse the copy to invisible almost as soon as it began; `easeInOutCubic`
-spreads the fade over the whole window and still lands exactly on 0 at `outEnd`.
+spreads the fade over the whole window and still lands exactly on 0 at `ARC_COPY_OUT_END`.
 
 `FOLD_FIRST_PROGRESS` and `SPHERE_FORMED_PROGRESS` are the fold window's two ends, and
 `cardFoldStartProgress(gpDelay)` is the same computation per card — `FOLD_FIRST_PROGRESS` is its
