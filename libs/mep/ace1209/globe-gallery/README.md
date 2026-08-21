@@ -921,10 +921,33 @@ across the whole viewport, which with **multiple globes per page** silently swal
 for whichever globe is actually on screen. The resumed loop's `updateCanvasVisibility` restores it.
 
 **z-index / stacking order.** All values live in `globe-gallery.css` (plus the two canvas inline
-styles in `authoring.js`). Two bands in the page-root stacking context:
+styles in `authoring.js`). They are **not one flat band** — `.globe-gallery-world` is
+`position: sticky` with `z-index: 2`, which makes it a stacking context, so the two values inside
+it never reach the page.
 
-- **Hero — 2–5:** world `2`, main canvas `3`, arc-copy / a11y widgets `4`, pull-quote / a11y tip `5`.
+Page root (children of `.globe-gallery`, which is `position: relative; z-index: auto` and so adds
+no context of its own):
+
+- **Hero — 2–5:** world `2`, arc-copy `4`, pull-quote `5`.
 - **Modal — 13–15:** backdrop `13`, modal canvas `14`, chrome `15`.
+
+Inside `.globe-gallery-world` — and so all painting against the page at **`2`**: main canvas `3`,
+a11y widget / a11y cards `4`, controls `5`. `a11y.js` appends its two layers to
+`canvas.parentNode`, which is the world, so they are *not* page-root `4` despite sharing the
+number with the arc copy. The a11y tip's `5` is nested one deeper still, inside the a11y widget's
+own context.
+
+**The cards' effective page-root level is therefore `2`, not `3`.** Anything on the page at `3` or
+above covers them while leaving the arc copy (`4`) and pull-quote (`5`) on top — that split is the
+signature to look for. C2 sections normally paint below the band (`.section` is
+`position: relative; z-index: auto`, and `.section-background` is `0`), but
+`.section.rounded-corners`, `.rounded-corners-top`, and `.rounded-corners-bottom` take `z-index: 3`
+in `libs/c2/blocks/section-metadata/section-metadata.css`, and the C2 parallax rules assign `0`,
+`1`, and `2`. A section carrying any of those sits at or above the cards.
+
+The band cannot be collapsed by isolating `.globe-gallery`: the modal is a sibling *inside* it and
+must clear the gnav (below), so `isolation: isolate` there would drag `13`–`15` down with it. The
+hero and modal bands have to stay separate page-root participants.
 
 The modal band sits just above the **C2 gnav (`12`)** so the card view covers the nav, and
 deliberately **below** the interrupts that should appear over the globe — caas (`200`),
@@ -1281,6 +1304,15 @@ handles RTL, so no JS is involved in the side-swap.
 block top that entry begins (`0` late; `0.85` is the prototype's hero pre-roll but sweeps meshes
 over content above), and `ENTRY_RAMP_VH` the ramp over which `arcCopyEntryT` goes 0→1
 (arc-copy fade, arc pre-roll speed, text→arc gap).
+
+`ENTRY_LEAD_VH` alone fixes where the copy starts fading in: the previous section still
+occupies `ENTRY_LEAD_VH` of the viewport at `arcCopyEntryT = 0`. Everything after that is
+`ENTRY_RAMP_VH` scroll away, so shortening the ramp pulls the cards toward the copy without
+moving the copy. At 1440x900 the first card crosses the viewport edge at `arcCopyEntryT`
+0.214 regardless of the ramp; the ramp only decides how much scroll that costs. It also
+advances the peel, because `arcPanT` reaches `PROGRESS_GRID_ARC_START` partly on the
+`PROGRESS_ARC_PREROLL` term: ramp 1.05 peels 0.39 viewport-heights below the block top,
+ramp 0.75 peels at 0.24.
 
 ## Globe controls
 
