@@ -920,40 +920,33 @@ it when out of range — runs *inside* `tick()`. So when `syncTicker()` stops th
 across the whole viewport, which with **multiple globes per page** silently swallows the clicks meant
 for whichever globe is actually on screen. The resumed loop's `updateCanvasVisibility` restores it.
 
-**z-index / stacking order.** All values live in `globe-gallery.css` (plus the two canvas inline
-styles in `authoring.js`). They are **not one flat band** — `.globe-gallery-world` is
-`position: sticky` with `z-index: 2`, which makes it a stacking context, so the two values inside
-it never reach the page.
+**z-index / stacking order.** The hero claims **nothing at page level** — world, arc copy,
+pull-quote, and the a11y layers are all positioned and already in paint order in the DOM, so tree
+order alone produces the intended stack. What is left, in `globe-gallery.css` plus the modal
+canvas's inline style in `authoring.js`:
 
-Page root (children of `.globe-gallery`, which is `position: relative; z-index: auto` and so adds
-no context of its own):
+- `.globe-gallery-controls` — `1`, scoped inside the world. `a11y.js` appends its two layers to
+  `canvas.parentNode` (the world) *after* this markup, so DOM order alone would put them over the
+  buttons. `.globe-gallery-world` carries `z-index: 0` purely to scope it — `0` ties with `auto`,
+  so DOM order still decides everything at page level. Not `isolation: isolate`, which would make
+  the world a **backdrop root** and stop the modal backdrop sampling the canvas beneath it.
+- **Modal — `13` backdrop, `14` modal canvas.** The chrome needs none: `showModal()` puts the
+  `<dialog>` in the top layer, above every stacking context. The backdrop and the modal canvas are
+  ordinary fixed siblings and do need numbers, because they must cover the gnav.
 
-- **Hero — 2–5:** world `2`, arc-copy `4`, pull-quote `5`.
-- **Modal — 13–15:** backdrop `13`, modal canvas `14`, chrome `15`.
+Consequence: the hero paints in DOM order against the page, so **any section carrying a z-index
+covers it** — `.section.rounded-corners{,-top,-bottom}` is `3` in
+`libs/c2/blocks/section-metadata/section-metadata.css`, and the C2 parallax rules assign `0`–`2`.
+That is accepted; this block does not contend for section layering.
 
-Inside `.globe-gallery-world` — and so all painting against the page at **`2`**: main canvas `3`,
-a11y widget / a11y cards `4`, controls `5`. `a11y.js` appends its two layers to
-`canvas.parentNode`, which is the world, so they are *not* page-root `4` despite sharing the
-number with the arc copy. The a11y tip's `5` is nested one deeper still, inside the a11y widget's
-own context.
-
-**The cards' effective page-root level is therefore `2`, not `3`.** Anything on the page at `3` or
-above covers them while leaving the arc copy (`4`) and pull-quote (`5`) on top — that split is the
-signature to look for. C2 sections normally paint below the band (`.section` is
-`position: relative; z-index: auto`, and `.section-background` is `0`), but
-`.section.rounded-corners`, `.rounded-corners-top`, and `.rounded-corners-bottom` take `z-index: 3`
-in `libs/c2/blocks/section-metadata/section-metadata.css`, and the C2 parallax rules assign `0`,
-`1`, and `2`. A section carrying any of those sits at or above the cards.
-
-The band cannot be collapsed by isolating `.globe-gallery`: the modal is a sibling *inside* it and
-must clear the gnav (below), so `isolation: isolate` there would drag `13`–`15` down with it. The
-hero and modal bands have to stay separate page-root participants.
+Do not put `isolation` or a `z-index` on `.globe-gallery` itself to tidy this up. The modal is a
+sibling *inside* it, so either one would trap `13`/`14` in a new stacking context and drop them
+under the gnav.
 
 The modal band sits just above the **C2 gnav (`12`)** so the card view covers the nav, and
 deliberately **below** the interrupts that should appear over the globe — caas (`200`),
 market-selector (`9999`), georouting / Milo modals (`100000`), and the consent banner. It can't
-collapse into the 1–10 range precisely because it must clear the gnav. The modal chrome is a native
-`<dialog>`/`showModal()` in the top layer, so its z-index is only a non-supporting-browser fallback.
+collapse into the 1–10 range precisely because it must clear the gnav.
 
 ## Lifecycle timeline
 
@@ -1645,7 +1638,7 @@ copy on the inset; at md+ the pill background is gone, so the box is offset back
 
 ### The nav band
 
-The C2 gnav (`12`) is sticky and paints over the hero band (`2–5`), so the top `--gg-nav-h` of the
+The C2 gnav (`12`) is sticky and paints over the hero, so the top `--gg-nav-h` of the
 viewport always has chrome in front of it. **This is not a keep-out box.** The nav is a blurred,
 translucent scrim and the hero is *meant* to run under it — cropping the scene to avoid the overlap
 throws away the effect and shrinks everything. The only real problem is that "centred" was being

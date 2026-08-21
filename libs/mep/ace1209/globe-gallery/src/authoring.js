@@ -335,7 +335,7 @@ export function parseAuthoredContent(el) {
 // modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
-    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
     <div class="globe-gallery-controls">
       <button class="globe-gallery-control globe-gallery-spin-toggle" type="button" daa-ll="pause_spin--globe_gallery" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="globe-gallery-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
