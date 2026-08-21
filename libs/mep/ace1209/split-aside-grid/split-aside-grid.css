@@ -124,6 +124,10 @@
       }
     }
 
+    .split-aside-grid-controls {
+      margin-top: var(--s2a-spacing-md);
+    }
+
     .split-aside-grid-items {
       display: flex;
       gap: calc(100% + var(--split-aside-grid-gap));
