@@ -22,6 +22,11 @@
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
+
+  /* The modal's one duration: the WebGL fly, the backdrop/chrome fades, and the JS teardown
+     timer must all land together or the modal pops mid-fade. Unitless so JS can parseFloat it
+     (see modal.js setup); CSS multiplies it back into a time. */
+  --gg-modal-anim-ms: 350;
   --gg-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
   --gg-band-h: calc(100vh - var(--gg-nav-h));
   --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
@@ -377,7 +382,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: none;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.35s linear;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) linear;
 }
 .globe-gallery-modal.is-visible { display: block; }
 .globe-gallery-modal.is-open    { opacity: 1; }
@@ -417,7 +422,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   pointer-events: auto;
   touch-action: none;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) ease;
 }
 .globe-gallery-modal-chrome.is-open { opacity: 1; }
 
