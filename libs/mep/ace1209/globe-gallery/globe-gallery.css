@@ -772,7 +772,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (min-width >= 768px) {
+@media (min-width: 768px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;
