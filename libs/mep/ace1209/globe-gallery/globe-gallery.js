@@ -46,15 +46,20 @@ const BREAKPOINTS = {
     minWidth: 768,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 6.5,
+    CARD_H_SPHERE: 7.5,
     CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 65,
+    CAM_Z_SPHERE: 60,
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.2,
     NEAR_FADE_END: 1.4,
     GRID_WINDOW_COLS: 9,
     GRID_ROWS: 5,
-    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
+    // 0 = radially outward (true sphere). Tried 0.4 to lift the limb slivers and reverted: the
+    // cards visibly turn on their own. The README pins that symptom on the barrel, but its cause
+    // is the edge-on band, not the barrel — the re-aim unwinds faster than it winds up as |n.z|
+    // crosses FACING_EDGE_ON_BAND, and the sphere path gets that for free. Don't raise without
+    // fixing the band asymmetry first.
+    CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
@@ -174,6 +179,7 @@ const HINT_EXIT_DIST_RATE = 0.018;
 const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
 // See README (yaw-only geometry) for the packing + column-count rules.
 function cylinderMasonryLayout({
@@ -243,8 +249,18 @@ function cylinderMasonryLayout({
   });
 }
 
+// Polar offset for the Fibonacci spiral. 0.5 samples cell CENTRES — the standard form. The old
+// `1 - 2i/n` put card 0 exactly ON the north pole and left the south pole bare, so the set was
+// asymmetric AND that card hit Matrix4.lookAt's degeneracy guard (cross(up, normal) == 0), taking
+// its roll off a 1e-4 nudge. Centring fixes both: the most polar card now sits 16.6° out at n=24,
+// leaving |cross(up, normal)| >= 0.16 for any count up to 80 — so world up stays well-conditioned
+// and needs no pole special-casing. Raising this toward ~1.33 opens a wider bald cap at both poles,
+// buying minimum-separation at low counts (Marques et al.) at the cost of coverage.
+const FIB_POLE_EPS = 0.5;
+
 function fibSpherePos(i, total, radius) {
-  const polarAngle = Math.acos(Math.max(-1, Math.min(1, 1 - (2 * i) / total)));
+  const y = 1 - (2 * (i + FIB_POLE_EPS)) / (total - 1 + 2 * FIB_POLE_EPS);
+  const polarAngle = Math.acos(Math.max(-1, Math.min(1, y)));
   const azimuth = GOLDEN_ANGLE * i;
   return new THREE.Vector3(
     radius * Math.sin(polarAngle) * Math.cos(azimuth),
@@ -521,7 +537,7 @@ function createGlobeGalleryRuntime(
         ? sp.clone().sub(mas.normal)
         : new THREE.Vector3(0, 0, 0);
       const m = new THREE.Matrix4()
-        .lookAt(sp, faceTarget, new THREE.Vector3(0, 1, 0));
+        .lookAt(sp, faceTarget, WORLD_UP);
       const sq = new THREE.Quaternion().setFromRotationMatrix(m);
       const rz = CYLINDER ? 0 : (Math.random() - 0.5) * CARD_ROLL_JITTER;
       sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
