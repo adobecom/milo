@@ -1,7 +1,7 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
-import { clamp01 } from './math.js';
+import { clamp01, easeOutCubic, lerpN } from './math.js';
 
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
@@ -69,7 +69,14 @@ export const ZOOM_TO_TAIL_T = (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS)
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
-// Inverse of the zoom camera's easeOutCubic ramp: the zoomT at which the camera reaches world z.
+// The zoom camera's world z at zoomT, and its inverse. An inverse pair: neither is derivable
+// from the other at runtime, so they must be edited together — hence they live side by side.
+// Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
+// the canvas hide and the pull-quote reveal with it.
+export function camZAtZoomT(t, camZSphere, camZEnd) {
+  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+}
+
 export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
