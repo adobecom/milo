@@ -140,6 +140,9 @@ only through the shared `sphereRotQuat` / `snapToSphereSlot` / `requestNavNudge`
 After adding a new `THREE.*` call, add the symbol to `src/three-src.js`, then
 `cd libs/mep/ace1209/globe-gallery && npm install && npm run build`.
 
+`three.module.min.js` is tree-shaken, so most of the library is simply absent — no `Frustum`,
+`Sphere` or `Box3`. Check the bundle exports the symbol before writing against it.
+
 ## Authoring contract
 
 The block expects up to **five direct child rows** (the pull-quote row is optional):
@@ -403,8 +406,8 @@ Deliberately **not** applied elsewhere:
   decoupled from the base texture. Do **not** "fix" this by calling `releaseCanvasAfterUpload` in
   `loadCardTextures`.
 - **The modal upgrade** — it would work, but ≤1 is ever resident and it is disposed on close/nav, so
-  the ~11MB is transient; and it blinds `aspect-probe-harness.cjs`, which measures the opened card's
-  aspect distortion through `map.image`. A bad trade for the block's main correctness probe.
+  the ~11MB is transient; and it puts the opened card's aspect out of reach of anything reading
+  `map.image`.
 
 `ANTIALIAS_SM`/`ANTIALIAS_MD` toggle MSAA per band (set at renderer creation): on for md (card
 silhouettes alias without it), off for sm to save framebuffer memory (MSAA is the largest GPU cost
@@ -461,9 +464,8 @@ was in the CSS, gated by `CSS.supports` so the measurement only ran where the pr
 `Ps`/`Pi`/`Pf`** — `“` `«` `(` all hang — **and not ASCII `"` or `'`**, which the CSS Text hangable
 set includes and this block's regex therefore includes too. So an authored straight `"` (what
 translators and DA authors actually type) outdented in Chrome and sat inline on iOS Safari, while a
-curly `“` worked in both. Measured in Playwright WebKit vs Chromium on a replica of this exact
-structure (`quote-hang-probe.cjs`); `CSS.supports` is `true` in WebKit either way, so no feature
-query can express the difference. The measurement now runs unconditionally and the property stays
+curly `“` worked in both. `CSS.supports` is `true` in WebKit either way, so no feature query can
+express the difference. The measurement now runs unconditionally and the property stays
 out of the CSS entirely — re-adding it would double-outdent WebKit on the marks it does hang.
 
 **Measured, not tabulated.** The mark and its width both change by locale — `“` (~0.49em), `«`,
@@ -618,11 +620,10 @@ fixes both:
 | `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter, because iOS delivers it all in one `resize` at settle. |
 
 A URL-bar move is now a **complete no-op**: `doLayout` re-reads the same `H` and takes its
-unchanged-`W`/`H` exit. Verified in the harness (`innerHeight` shadowed 90px smaller at a fixed
-`scrollY`): camera z identical in the formation *and* tail phases, `arcOp` identical, zero writes to
-`canvas.width`/`height`. Confirmed on-device with `gg-viewport-hud.js` (harness dir), which overlays
-`innerHeight` / a live `100vh` probe / `worldH` / the drawing buffer / a `canvas.width` write counter
-per resize event — the settle-time row reads `cvBox` and `buf` unchanged with `writes` flat.
+unchanged-`W`/`H` exit. With `innerHeight` 90px smaller than `100vh` at a fixed `scrollY`, camera z
+is identical in the formation *and* tail phases, `arcOp` is identical, and there are zero writes to
+`canvas.width`/`height`; on-device, the drawing buffer and canvas box are unchanged across the URL
+bar's collapse.
 
 **The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
 its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area.
@@ -716,12 +717,9 @@ So **no JS file anywhere holds a copy of these two lengths** — not even for do
 doc-only export would ride along in every page's payload; the derivation snippet reads them out of
 `globe-gallery.css` instead (see **Re-deriving these numbers**). Don't reintroduce one.
 
-**The pull-quote's cue is the camera, not a scroll number.** Earlier versions hand-set the fade-in as
-a share of the tail (a `--gg-pq-pin-factor`, then an authored `--gg-pq-appear-t`), which meant a
-threshold *about the scene* was written in *scroll* units: too late and the reader waits out a blank
-screen, too early and the quote lands on cards still sweeping past, and either could silently drift
-when a camera or radius constant moved. It is derived, in `publishPqAppearZoomT()`, from where the
-cards are:
+**The pull-quote's cue is the camera, not a scroll number.** It is derived, in
+`publishPqAppearZoomT()`, from where the cards are — a threshold about the scene, so it cannot drift
+when a camera or radius constant moves:
 
 ```
 clearZ = −SPHERE_R + NEAR_FADE_END × fadeRefH        // where the LAST CARD VANISHES
@@ -752,9 +750,9 @@ Two consequences of depending on `fadeRefH`:
   the safe direction.
 - **The doc snippet below can only approximate it**, using `CARD_H_SPHERE` in place of the measured
   mean. That lands within ~1vh of reality (measured 6.29 vs 6.5 on md, 11.64 vs 11.0 on sm). For the
-  real number, log `fadeRefH` or rebuild the probe (see **Rebuilding the scroll-model probe**).
+  real number, log `fadeRefH`.
 
-Verified against the probe at both breakpoints: the formula predicts the frame the HUD turns green
+Verified at both breakpoints: the formula predicts the frame the screen goes empty
 to a fraction of a vh, at two very different geometries (md sphere R 35, sm barrel R 16 — where
 `clearZ` is *positive*, i.e. the last card vanishes before the camera even reaches the barrel
 centre).
@@ -777,7 +775,7 @@ edge (`optical-centre + half the box`: ~78vh md, ~102vh sm for a tall one). **Du
 quote stays put while the section keeps rising, so that gap is spent, not frozen** — which is
 precisely what `--gg-pq-hold-max` is derived from (see above). Only after the release do the two
 travel up together at 1:1 with the remaining gap frozen, so the section can never climb over the
-quote from there. Verified in Chromium at 1440×900 and 390×844 (probe: quote centre pinned at 50vh up to
+quote from there. Verified in Chromium at 1440×900 and 390×844 (quote centre pinned at 50vh up to
 the reveal scroll, then `centre = 50vh − (r − r_a)`, section top never above the quote's bottom).
 
 **What the runway still controls.** Whatever is left is the stretch where the camera has passed the
@@ -1097,68 +1095,6 @@ reads the **live** `gridFormT`, which is still ramping. Entering the block from 
 limited to the camera flipping ortho → perspective ~17vh early (existing, accepted behavior). Anything newly keyed
 to "the fold has started" should gate on `gridFormT`/`fdE` if it must match the cards exactly.
 
-### Rebuilding the scroll-model probe
-
-There is **no debug HUD in the code** — it was built to answer one question, answered it, and was
-removed rather than left to rot. This is the recipe to recreate it, because the class of question it
-answers keeps coming back: *is what I think is on screen actually on screen?*
-
-It is what caught the reveal-cue bug. `pqAppearZoomT` was computing the frame the camera
-**geometrically passes** the deepest card, while `updateCardTransforms` **hides** a card a whole
-proximity-fade band earlier — a 16.5vh md / 22vh sm discrepancy that no amount of reading the code
-had surfaced, because both halves were individually correct. One reading of the HUD settled it.
-
-**It is already written — as a patch, deliberately uncommitted.** `ggprobe.patch` in the block
-directory, listed in `.git/info/exclude` so it cannot be committed. `git apply ggprobe.patch` to
-arm it, `git apply -R ggprobe.patch` to remove it, then load any page with `?ggprobe`. It stays out
-of the tree because **the shipped block has no debug code, no `console.*` and no query-param read** —
-keep it that way.
-
-**The shape**, to preserve if it has to be re-cut against a moved `tick()`: a `<pre>` appended to `document.body`, `position: fixed`, created lazily on the first
-gated frame, removed in `destroy` via `destroyProbe()`, and updated from the **end** of `tick()` —
-after `updateCardTransforms`, so it reads this frame's positions. Memoised on the joined string, so
-it bails when unchanged, like `arcCopy` does.
-
-**What made it useful, beyond printing numbers:**
-
-- **Latch the transition, don't just show the state.** Keep a running max of `zoomT` over frames
-  where a card was still visible (`probeLatch`). That survives scrubbing back and forth, and subtracting it from
-  `pqAppearZoomT` prints the answer directly (`× tailVh` for vh) instead of making you catch a
-  moment by eye.
-- **Colour the whole readout by state** — red while cards are on screen, green once empty, white
-  past the reveal. The length of the green period *is* the finding; you can see it without reading a
-  digit.
-- **Print both the measured and the derived value side by side.** Divergence is the bug.
-
-**Counting what is on screen.** Test each card's centre in NDC:
-
-```js
-v.setFromMatrixPosition(mesh.matrixWorld);
-v.applyMatrix4(cam.matrixWorldInverse);   // -> view space; camera looks down -z
-if (v.z < 0) {                             // in front of the camera
-  v.applyMatrix4(cam.projectionMatrix);    // -> NDC; applyMatrix4 does the perspective divide
-  onScreen = Math.abs(v.x) <= 1.25 && Math.abs(v.y) <= 1.25;
-}
-```
-
-Call `cam.updateMatrixWorld()` and `scene.updateMatrixWorld(true)` first — `renderScene` is what
-normally refreshes those, so without it you read the previous frame.
-
-**Three traps, all hit the first time:**
-
-1. **`THREE.Frustum` does not exist here.** `three.module.min.js` is a tree-shaken custom build and
-   exports no `Frustum`, `Sphere` or `Box3` — only `Matrix4`, `Vector3`, `PerspectiveCamera`, `Mesh`,
-   `PlaneGeometry`, `Quaternion`. Hence the manual NDC test above. Probe the bundle before assuming
-   any three API is available.
-2. **The ±1.25 margin is a fudge for a real bounds test.** A card whose centre has left the frame
-   while it still covers half the screen reads as gone slightly early.
-3. **It counts presence, not legibility.** One far-pole card counts as one, so "empty" and "sparse"
-   look identical. The colour tells you when the screen is *technically* clear; only your eye
-   distinguishes that from "boring".
-
-Also skip `m.visible === false` meshes — that flag is exactly how the proximity fade removes cards,
-and it is the signal you are usually looking for.
-
 ### Re-deriving these numbers
 
 `timeline.js` is importable on its own (no THREE, no DOM), so this reads the **live** constants
@@ -1258,12 +1194,8 @@ frame by the pan, at its settled position. The delay therefore ramps to its full
 `fanT` = `ARC_DENSE_SPLIT` and flattens below it: the whole budget lands on the spread cards, which
 are the visible ones, rather than being diluted across the clustered flank nobody sees during the
 entry. That boundary is `ARC_DENSE_SPLIT` itself — the same split that defines which cards are
-clustered — so it is derived, not a separate constant. Cards arrive in
-frame ~0.041 apart in `arcCopyEntryT` while a spread-over-everything delay advances only ~0.016 per card,
-so without this the later cards' flights are over before they appear: at `FOCUS` = 1 cards 13–15
-enter frame at `τ` = 1.0, having already finished. At `2` every one of the first 15 is still
-mid-flight when it appears, and peak pair separation rises from ~620px to ~860px at no cost to flight
-duration or velocity.
+clustered — so it is derived, not a separate constant. Cards arrive in frame ~0.041 apart in
+`arcCopyEntryT`, and every one of the first 15 is still mid-flight when it appears.
 
 `ARC_DENSE_FRACTION` moves entry gap size too, but as a density trade rather than a free one: 0.5 →
 224px resting fan spacing / 526px entry peak gap / 26 cards seen during the entry; 0.7 → 384 / 871 /
@@ -1604,8 +1536,7 @@ reduced motion (see Reduced motion); pointer precision is read at init only (see
 does **not** fire during the URL-bar animation: `visualViewport` resizes many times as the bar moves
 (and `innerHeight` reports the new value throughout), then `window.resize` fires **once, at settle** —
 so every resize-driven cost lands in a single event, at the one moment the eye is already tracking the
-bar. Measured on-device with `gg-viewport-hud.js`; nothing here listens to `visualViewport`, so the
-animation itself costs zero. So the handler is split four ways:
+bar. Nothing here listens to `visualViewport`, so the animation itself costs zero. So the handler is split four ways:
 - Unchanged `W` **and** `H` → return immediately, skipping two WebGL buffer reallocations. `H` is an
   `offsetHeight`, so that compare is exact integers. This
   is the exit an iOS bar move takes, since `H` doesn't depend on `innerHeight` — see **One viewport
@@ -1940,20 +1871,8 @@ length is derived**. It buys reading time; it does not pace the reveal.
 (`advanceReveal`, below), so "the same length" is structural rather than intended. The lines' stagger
 spans the window (see **The stagger**), so the last one lands as the verticals close.
 
-**Why nothing starts before `pqAppearZoomT`.** Starting the draw earlier, to fill the sparse
-stretch ahead of the reveal, fails in two ways:
-
-- a fixed `PQ_DRAW_VH` of 37vh began **20.7vh before the camera even reached the shell's centre** on
-  sm, whose whole sparse stretch is only ~16vh — the crosshair drew straight across a full shell;
-- bounding it at the centre pass (`camZ` 0) fixed sm's arithmetic but not the premise: at the centre
-  the camera is *inside* the shell, and far-pole cards keep sweeping past all the way to the far
-  wall. The rules were still landing over moving cards, just fewer of them.
-
-The lesson is that **there is no derivable moment meaning "the screen is empty"**. The shell thins
-out gradually and asymmetrically, and every cue short of the geometric far-wall pass is a guess about
-when cards stop being *noticeable* — a guess that breaks at some breakpoint, card count, or runway
-length. `pqAppearZoomT` is the one moment that is actually true, so it is now the only one used. Do
-not reintroduce a second threshold; if the draw needs more room, it needs more hold.
+**Nothing starts before `pqAppearZoomT`.** There is no second threshold: if the draw needs more
+room, it needs more hold.
 
 Two consequences:
 
@@ -2333,7 +2252,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     the flown-out card shows the whole photo, so `MODAL_FRAG` carries the same `uRepeat`/`uOffset`
     pair as `CARD_FRAG` and `pushModalCoverUV` tracks the plane's live aspect (see *Architecture
     notes*). Without it, the first frame of the fly would show the *whole* image at the *barrel's*
-    aspect — a visible horizontal squash that resolves over `MODAL_ANIM_DURATION`. A desktop nav
+    aspect — a visible horizontal squash that resolves over the modal's fly (`modalAnimMs`). A desktop nav
     cross-warp owns its own cards' uniforms, so the push is skipped while `dnNavActive`.
   - **Scrim + scroll region.** Desktop gets a fixed-width (`--gg-scrim-w`) dark frosted scrim
     on the **viewport's inline-start edge, full height**; mobile gets one full-width bottom chunk
@@ -2691,7 +2610,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     to grab and to click. ONE constant for **everything** that says or does "the globe is live":
     hover, click, drag, auto-rotate, the `grab` cursor, and the GL hint plane's entrance. Do not give
     the cursor its own earlier gate: it puts the affordance 26vh ahead of the input it advertises.
-    Raycasting is not the constraint at any value: a tap below the gate hits (`hits: 1`, harness-measured), `onPointerUp` discards it.
+    Raycasting is not the constraint at any value: a tap below the gate still hits, and
+    `onPointerUp` discards it.
   - **Hover uniforms are applied in `updateCardTransform`, not `placeSphereCard`** — that gate is
     global, `fdE` is per-card. Between `sphereFormT` 0.9 and 1 the late-staggered cards sit at `fdE`
     0.999: seated to the eye, but routed to `placeFoldingCard`, which sets `opacity = 1` (so they
