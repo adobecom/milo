@@ -1,7 +1,7 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt } from './math.js';
-import { escapeHtml, renderParagraphs } from './authoring.js';
+import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -360,7 +360,9 @@ export default function createGlobeModal({
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-    renderParagraphs(targetEl.querySelector('.globe-gallery-modal-description'), meta.description);
+    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+    renderParagraphs(descEl, meta.description);
+    hangParagraphs(descEl);
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
@@ -383,7 +385,6 @@ export default function createGlobeModal({
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
-    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
     if (descEl) descEl.scrollTop = 0;
     scheduleDescFade();
   }

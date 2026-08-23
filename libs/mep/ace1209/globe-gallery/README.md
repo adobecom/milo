@@ -232,12 +232,17 @@ Each fragment section is flat P/UL elements:
 | `<ul>`, one `<li>` per badge | **badges** | see below — nested `<ul><li>` = the product feature |
 | `<p><picture>…</picture></p>` | **image** (+ its `<img alt>` → **alt**) | required — sections without one are skipped (and logged to `lana`); a `<picture>`/`<img>` **direct child** of the section works too (see below), as does a bare inline `<img>`; the **first** image wins, later ones are ignored; `alt` falls back to an `alt text to be authored` placeholder when the image has none |
 
+**Authored order does not matter.** Every row above is matched by *markup*, never by position: the
+`<em>` paragraph is the role and the `<strong>` paragraph (or a heading) is the name, whichever
+comes first. The modal renders **name above role** either way — that stacking is
+`.globe-gallery-modal-info` DOM order, not the parse.
+
 **A card with no copy is a lone unwrapped image.** When the image is the section's *only* content
 the pipeline drops the `<p>`, so `.plain.html` serves `<div><picture>…</picture></div>`. Both the
 section/container dispatch (`CARD_CONTENT_TAGS`) and the segment reader must therefore accept
 `PICTURE`/`IMG`, not just `P`/`UL` — otherwise the section reads as a *container*, yields no cards,
 and drops silently. An imageless section logs to `lana`. A card with no copy renders on the globe
-and opens a modal with empty role/name/description/badges — there is no non-clickable-card path.
+and opens a modal with empty name/role/description/badges — there is no non-clickable-card path.
 
 **Badge rows.** A badge `<li>` splits into exactly two parts: the **nested `<ul>`** is the
 product feature, and **everything else in the row** is the product — an optional logo plus the
@@ -458,6 +463,27 @@ same column the rest of the quote and the name/role below it sit on. `hangOpenin
 (`authoring.js`) does this in **every** browser by measuring the mark and setting a negative
 `text-indent` in `em`.
 
+**Two callers.** `hangOpeningMark(el, room)` takes the gutter in px; `gutterOf(el)` reads it off an
+element's `padding-inline-start`. `layoutQuote` passes the pull-quote's; the **modal description**
+goes through `hangParagraphs(container)`, which hangs **every** paragraph that opens with a mark,
+not just the first, and runs from `populateModal` after `renderParagraphs`. `hangOpeningMark` clears
+`text-indent` before measuring, so it is idempotent over the authored `<p>`s, which
+`renderParagraphs` moves rather than clones. It needs **no resize or breakpoint hook** — the outdent
+is the first glyph's advance and does not depend on where lines wrap.
+
+**Both hang sites clip, so both reserve a gutter.** `--gg-hang-max` is `0.8em` — the ceiling
+`hangOpeningMark` enforces, since it declines any advance at or past `0.8 × font-size`, so the two
+move together. It is `em` and **unregistered on purpose**: a custom property substitutes as tokens,
+so the `em` resolves against each *use site's* font-size, matching whatever text is being measured.
+Give it an `@property` `<length>` syntax and it would resolve once against `.globe-gallery` instead.
+
+Each site applies it as padding and takes the same amount straight back off as a negative margin, so
+the text column does not move: the pull-quote **line** in both axes (`--gg-pq-line-bleed` is the
+vertical half), the modal **description** as `padding-inline-start` plus `margin-inline-start`. The
+description needs it because its `overflow-y: auto` makes `overflow-x` compute to `auto`; only its
+start margin is negative, so the end edge and the scrollbar on it stay put. Its md+ rule resets with
+`margin-block` — a `margin` shorthand there zeroes the gutter.
+
 **`hanging-punctuation: first` is deliberately not used.** It's the native spelling of this and it
 was in the CSS, gated by `CSS.supports` so the measurement only ran where the property is missing
 (Chrome, which has never shipped it). That split the behaviour by *character*: **WebKit hangs only
@@ -559,7 +585,7 @@ per-instance unique-id suffix it mints from a module-level counter in
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal role-label/heading/description (the
-`<dialog>`'s `aria-labelledby` (role + name) / `aria-describedby` IDREFs). `el` itself is the scroll runway
+`<dialog>`'s `aria-labelledby` (name + role) / `aria-describedby` IDREFs). `el` itself is the scroll runway
 (height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-gallery-modal-open` scroll lock.
@@ -1462,7 +1488,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
 - **Screen reader:** the entry button has **no separate label** — its instructions popup IS its
   accessible name. Each browse image's `aria-label` is its authored **alt**. On modal open focus is
   on the **name heading** (a child), so VoiceOver reads the heading + its `aria-describedby` (role +
-  position); forward-nav then walks role → name → description → badges → photo before the controls.
+  position); forward-nav then walks name → role → description → badges → photo before the controls.
   The photo is a `role="img"` sr-only element placed AFTER the info block (so the heading reads
   first), carrying the card's alt as a real text alternative. The card **position** ("N of M") lives
   in one sr-only element referenced by BOTH the dialog's `aria-labelledby` and the heading's
@@ -1599,9 +1625,7 @@ the var is its home):
 
 | value | where | nearest token |
 | --- | --- | --- |
-| `13px` font-size | modal role-label, badge app + role (sm) | none (scale is 12 / 14) |
-| `28px` line-height | modal name at md+ | none (24 / 32) |
-| `-0.6px` letter-spacing | modal name, both breakpoints | none (−0.48 / −0.96) |
+| `13px` font-size | badge app + role (sm) | none (scale is 12 / 14) |
 | `10px` gap | badge-left, badges at md+ | `--s2a-spacing-xs` 8 / `--s2a-spacing-sm` 12 |
 | `--gg-control-radius` / `--gg-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
 | `--gg-controls-size` 48px | globe controls | none (matches `--gg-control-size`) |
@@ -1937,10 +1961,9 @@ Details that are load-bearing:
 - **A script that does not break on spaces is one "word"**, so a CJK or Thai quote measures as a
   single line and rolls as one block rather than line by line.
 - **The mask bleeds sideways too.** `overflow: hidden` clips both axes, and the hung opening mark
-  sits *outside* the line's content box (see **Hanging the opening mark**), so an inline bleed is
-  what keeps the mask from cropping it. `--gg-pq-line-bleed-inline` is **0.8em because that is the
-  widest outdent `hangOpeningMark` will apply** — it declines anything at or past `0.8em` — so the
-  two numbers have to move together. The vertical bleed is the descender headroom, and it is why
+  sits *outside* the line's content box, so the inline bleed is what keeps the mask from cropping
+  it. That bleed is `--gg-hang-max`, shared with the modal description — see **Hanging the opening
+  mark**. The vertical bleed is the descender headroom, and it is why
   `--gg-pq-line-start` is 120% rather than 100%: a line waits *below the padded mask*, not just
   below its own line box, which needs `0.2 × line-height > bleed`.
 - **The outdent becomes a margin, and only on the first line.** `text-indent` is still what
@@ -2256,7 +2279,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     cross-warp owns its own cards' uniforms, so the push is skipped while `dnNavActive`.
   - **Scrim + scroll region.** Desktop gets a fixed-width (`--gg-scrim-w`) dark frosted scrim
     on the **viewport's inline-start edge, full height**; mobile gets one full-width bottom chunk
-    (content-sized, capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: role + name are
+    (content-sized, capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: name + role are
     `flex-shrink:0` at the top, **badges** are `flex-shrink:0` at the bottom (so those tabbable
     controls stay on-screen), and the **description** is the only scroll region (`min-height:0;
     overflow-y:auto`). A `mask-image` scroll-shadow (`updateDescFade`, re-measured on

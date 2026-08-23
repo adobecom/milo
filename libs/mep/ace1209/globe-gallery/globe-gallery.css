@@ -8,6 +8,7 @@
 
 .globe-gallery {
   --gg-chrome-blur: 12px;
+  --gg-hang-max: 0.8em;
   --gg-runway-height: 520vh;
   --gg-formation-vh: 340vh;
 
@@ -246,7 +247,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-pq-copy-rise: 14px;
   --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
   --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
-  --gg-pq-line-bleed-inline: 0.8em; /* sideways: the widest outdent hangOpeningMark will apply */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
 
   position: absolute;
@@ -349,8 +349,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   overflow: hidden;
 
   /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
-  padding: var(--gg-pq-line-bleed) var(--gg-pq-line-bleed-inline);
-  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-pq-line-bleed-inline) * -1);
+  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
+  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
 }
 
 .globe-gallery-pullquote-line-inner {
@@ -512,8 +512,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   box-sizing: border-box;
 }
 
-.globe-gallery-modal-role-label,
 .globe-gallery-modal-name,
+.globe-gallery-modal-role-label,
 .globe-gallery-modal-badges { flex-shrink: 0; }
 
 .globe-gallery-modal-badges {
@@ -530,22 +530,23 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin-top: auto;
 }
 
-.globe-gallery-modal-role-label {
-  font-family: var(--body-font-family);
-  font-size: 13px;
-  font-weight: var(--s2a-font-weight-body);
-  color: var(--s2a-color-gray-400);
-  margin: 0;
-}
-
 .globe-gallery-modal-name {
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: var(--s2a-font-size-xl);
   line-height: var(--s2a-font-line-height-md);
-  letter-spacing: -0.6px;
+  letter-spacing: var(--s2a-font-letter-spacing-5xl);
   color: var(--s2a-color-gray-25);
-  margin: var(--s2a-spacing-3xs) 0 var(--s2a-spacing-xs);
+  margin: 0 0 var(--s2a-spacing-3xs);
+}
+
+.globe-gallery-modal-role-label {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
+  font-weight: var(--s2a-font-weight-body);
+  color: var(--s2a-color-gray-400);
+  margin: 0 0 var(--s2a-spacing-xs);
 }
 
 .globe-gallery-modal-description {
@@ -553,7 +554,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   font-size: var(--s2a-font-size-sm);
   line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
-  margin: 0 0 var(--s2a-spacing-sm);
+  padding-inline-start: var(--gg-hang-max);
+  margin-block: 0 var(--s2a-spacing-sm);
+  margin-inline-start: calc(var(--gg-hang-max) * -1);
   min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
   overflow-y: auto;
   touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
@@ -807,16 +810,11 @@ body.globe-gallery-modal-open { overflow: hidden; }
     inset-inline-start: calc(50% + var(--gg-counter-w) / 2 + var(--gg-nav-gap));
   }
 
-  .globe-gallery-modal-role-label { margin-top: 0; }
+  .globe-gallery-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
 
-  .globe-gallery-modal-name {
-    font-size: var(--s2a-font-size-2xl);
-    line-height: 28px;
-    letter-spacing: -0.6px;
-    margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-sm);
-  }
+  .globe-gallery-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
 
-  .globe-gallery-modal-description { margin: 0; }
+  .globe-gallery-modal-description { margin-block: 0; }
 
   .globe-gallery-modal-badges { gap: 10px; }
 

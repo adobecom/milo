@@ -75,20 +75,29 @@ export function renderParagraphs(container, paras) {
 
 const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
 
-function hangOpeningMark(quoteEl) {
-  const text = quoteEl.textContent.trim();
-  const container = quoteEl.closest('.globe-gallery-pullquote');
-  if (!container || !OPENING_MARK.test(text)) return;
-  const cs = getComputedStyle(quoteEl);
+function gutterOf(el) {
+  return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
+}
+
+function hangOpeningMark(el, room) {
+  el.style.textIndent = '';
+  const text = el.textContent.trim();
+  if (!room || !OPENING_MARK.test(text)) return;
+  const cs = getComputedStyle(el);
   const ctx = document.createElement('canvas').getContext('2d');
   ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
   // Canvas ignores letter-spacing, and heading-1 has some.
   const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
-  const room = parseFloat(getComputedStyle(container).paddingInlineStart) || 0;
   // Too wide to hang — a CJK bracket, or just past the padding.
   if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
-  if (advance > 0) quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+}
+
+export function hangParagraphs(container) {
+  if (!container) return;
+  const room = gutterOf(container);
+  [...container.children].forEach((p) => hangOpeningMark(p, room));
 }
 
 const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
@@ -129,7 +138,7 @@ export function layoutQuote(quoteEl) {
   quoteEl.classList.remove('globe-gallery-pullquote-lines');
   quoteEl.textContent = text;
   if (!text) return [];
-  hangOpeningMark(quoteEl); // before measuring: the outdent can move the first line's break
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-gallery-pullquote')));
   const indent = quoteEl.style.textIndent;
   const lines = measureLines(quoteEl, text.split(/\s+/));
   const lineEls = lines.map((wordsOnLine, i) => {
@@ -390,10 +399,10 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
+  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-name-${gid} globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
     <div class="globe-gallery-modal-info">
-      <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
+      <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
