@@ -287,6 +287,19 @@ export default function createGlobeModal({
     outScale.set(scaleX, scaleY, 1.0);
   }
 
+  function photoRectPx() {
+    if (!modalCard || modalPhase !== MODAL_PHASE.OPEN) return null;
+    const { W, H } = getViewport();
+    const { w: cardW, h: cardH } = getCardDims();
+    const pxPerWorld = pxPerWorldAt(MODAL_CAM_DIST, H);
+    const { position, scale } = modalCard.mesh;
+    const halfW = 0.5 * cardW * scale.x * pxPerWorld;
+    const halfH = 0.5 * cardH * scale.y * pxPerWorld;
+    const cx = W / 2 + position.x * pxPerWorld;
+    const cy = H / 2 - position.y * pxPerWorld; // world +Y is screen-up
+    return { left: cx - halfW, right: cx + halfW, top: cy - halfH, bottom: cy + halfH };
+  }
+
   // Reveal fade only (opacity + an 8px slide-up). Placement is pure CSS.
   function revealModalChrome() {
     if (!chromeEl) return;
@@ -574,6 +587,17 @@ export default function createGlobeModal({
   // Close via the button so Escape / pull-to-close report it.
   function clickClose() {
     if (closeBtn) closeBtn.click(); else close();
+  }
+
+  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info';
+  function backdropTap(touch) {
+    const rect = photoRectPx();
+    if (!rect) return;
+    const x = touch.clientX;
+    const y = touch.clientY;
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return;
+    if (touch.target?.closest?.(TAP_KEEP_SEL)) return;
+    clickClose();
   }
 
   function navigate(direction) {
@@ -870,7 +894,12 @@ export default function createGlobeModal({
     evtRoot.addEventListener('touchend', (e) => {
       if (!swActive) return;
       swActive = false;
-      if (!modalCanvasEl || swAxis === null) { swAxis = null; return; }
+      if (!modalCanvasEl || swAxis === null) {
+        // No axis lock means the finger never travelled AXIS_LOCK_PX: a tap, not a gesture.
+        if (swAxis === null && e.changedTouches.length === 1) backdropTap(e.changedTouches[0]);
+        swAxis = null;
+        return;
+      }
       if (e.changedTouches.length !== 1) return;
       const dx = e.changedTouches[0].clientX - swStartX;
       const dy = e.changedTouches[0].clientY - swStartY;
