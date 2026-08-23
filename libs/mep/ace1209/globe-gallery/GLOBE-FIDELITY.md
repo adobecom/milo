@@ -37,10 +37,10 @@ can't be expressed this way, it's a different tier of cost.
 
 | # | Item | Complexity | Perf | Benefit | Status |
 |---|------|-----------|------|---------|--------|
-| 1 | Per-card directional shading (N·L) | ~8 lines | negligible | very high | todo |
-| 2 | Depth fog / atmospheric recession | ~6 lines | negligible | very high | todo |
-| 3 | Radius jitter — break the perfect shell | 1 line | slight overdraw ↑ | high | todo |
-| 4 | Cheap DOF via texture mip bias | ~4 lines | net **win** | high | todo |
+| 1 | Per-card directional shading (N·L) | ~8 lines | negligible | **uncertain** — see per-card-flat risk | todo |
+| 2 | ~~Depth fog / atmospheric recession~~ | 19 lines | negligible | — | **rejected** — reads as dimming on a near-black bg |
+| 3 | Radius jitter — break the perfect shell | 1 line | slight overdraw ↑ | **high — works on black** | todo |
+| 4 | Cheap DOF via texture mip bias | ~4 lines | net **win** | **high — works on black** | todo |
 | 5 | Fake edge / thickness (lit rim) | ~10 lines | negligible | medium-high | todo |
 | 6 | Inner-shadow AO at card edges | ~3 lines | negligible | medium | todo |
 | 7 | Specular sheen sweep | ~12 lines | negligible | medium (gimmick risk) | todo |
@@ -48,12 +48,33 @@ can't be expressed this way, it's a different tier of cost.
 | 9 | ~~Card size ↑ on md (sparseness lever)~~ | 1 constant | fill ∝ H² | very high | **shipped** (`CARD_H_SPHERE: 8.5`) |
 | 10 | Deliberate per-card size variety | ~5 lines + modal mirror | negligible | medium-high | todo |
 | 11 | Border / "button-ish" treatment | ~6 lines | negligible | medium | todo |
-| 12 | Fibonacci pole sampling (midpoint) | **1 line** | none | high | **shipped** (`FIB_POLE_EPS 0.5`) |
+| 12 | Fibonacci pole sampling (midpoint) | **1 line** | none | high | **shipped** |
 | 13 | ~~`CARD_FACE_CAMERA` > 0 on the md sphere~~ | 1 constant | none | — | **rejected** — cards visibly self-spin |
 
-**9 + 12 shipped; 13 rejected.** Remaining order: **2 → 1 → 3**. 13 and 12 jump the queue because they are
+**9 + 12 shipped; 2 + 13 rejected.** Remaining order: **3 → 4 → 5+6+11**, with **1 last and at risk** (see below). 13 and 12 jump the queue because they are
 both one-to-five-line fixes to *defects* rather than enhancements, and both land on the north-pole
 region that currently reads worst. Expectation after that pass: 5+6+11 still wanted, 4 and 10 optional.
+
+---
+
+## The background is `#131313` — this governs the whole list
+
+`--s2a-color-gray-900` is near-black. That rules out an entire family of depth cues, and it is why
+item 2 failed:
+
+**Aerial perspective works because distant objects shift toward a BRIGHT sky and lose contrast
+against it.** Mixing toward near-black is arithmetically identical to turning the brightness down, so
+it reads as dimming — because it is dimming. No amount of implementation quality changes that.
+
+**Cues that DO work on a black field:** occlusion, parallax, size, blur, and anything that *adds*
+light (a rim, a border, a specular). That promotes items **3** (real overlap + parallax), **4** (DOF
+blur), and **5/6/11** (edge treatments, which add light against the dark rather than subtracting it).
+
+**The per-card-flat risk.** Cards are large relative to the sphere, so any brightness driven by a
+per-object uniform quantizes into hard-edged tiles that step independently as the sphere turns —
+measured on item 2: a **0.185 step (34% of the range) across a touching-neighbour seam**. This reads
+as cards "lighting on/off one by one." It applies to **any** per-object brightness, so it is a
+standing hazard for item 1.
 
 ---
 
@@ -131,7 +152,7 @@ tinting toward the background colour rather than toward black.
 
 ---
 
-## 2. Depth fog / atmospheric recession
+## 2. Depth fog / atmospheric recession — REJECTED
 
 **What.** Mix card colour toward `--s2a-color-gray-900` as a function of camera depth, so the back
 of the sphere recedes.
@@ -149,6 +170,54 @@ which is a large part of what flattens the sphere into a scatter.
 the way the existing code already does (`Math.min(proxFade ** NEAR_FADE_OPACITY_BIAS, revealT)`).
 
 **Touches.** `globe-gallery.js` `placeSphereCard`; `src/shaders.js` `CARD_FRAG`; `src/materials.js`.
+
+### As built
+
+`uFog` (scalar) + `uFogColor` (vec3) on the card material; the frag folds the mix into the existing
+`gl_FragColor` line. `uFog` is reset to 0 in the same per-frame block as `uDisperse`, so every other
+phase is untouched. Ramp is `bp.FOG × clamp01((depth - fogNear) / fogSpan)`, with `fogNear` and
+`fogSpan` derived in `recomputeDragFlip` off the `maxRadial` it already computes.
+
+At rest (`CAM_Z_SPHERE 60`, `SPHERE_R 35`): front `fog 0.000`, centre `0.275`, back `0.550`.
+
+**Four decisions worth not re-litigating:**
+
+- **Colour mix, not alpha fade.** Alpha fade was one line and needed no shader change, but
+  overlapping cards accumulate transparency — and overlap is about to *increase* (`CARD_H_SPHERE` is
+  now 8.5, and item 3 adds radius jitter). Colour fog makes cards recede without dissolving.
+- **Fog colour is read from the live computed background**, not hardcoded from
+  `--s2a-color-gray-900` (`#131313`), so it cannot drift from CSS.
+- **Plain `Vector3` uniform, not `THREE.Color`.** `THREE.Color.setStyle` converts to linear working
+  space by default; the mix happens *after* the frag's `pow(1/2.2)`, i.e. in display space, so raw
+  components are what is wanted. Using a Vector3 sidesteps the colour-space question rather than
+  commenting around it. One shared instance backs every card material.
+- **Scoped through `shape`, not `cfg`.** `FOG: cfg.FOG` would have fogged the **iPad barrel**
+  (md-touch reads `BREAKPOINTS.md`). Routed through `shape` like `CARD_FACE_CAMERA`, so
+  `YAW_ONLY_GEOMETRY.FOG = 0` keeps both barrel paths untouched.
+
+**Free side-effect:** keying off camera depth rather than sphere-local z means fog *lifts* during the
+fly-through as depths shrink — the far side brightens as you approach it.
+
+**Dial:** `BREAKPOINTS.md.FOG`.
+
+### Outcome: built, reviewed, reverted
+
+Two independent problems, only one of which was fixable:
+
+1. **Per-object uniform, but fog is per-fragment.** Each card took one flat value from its centre
+   depth. Measured at rest, n=24: touching neighbours differed by up to **0.185 — a hard-edged 34%
+   brightness jump across a card seam** — and each card stepped independently as the sphere turned.
+   Visible as cards "lighting on/off one by one." **Fixable** (pass view-space z as a varying; it
+   would have *removed* the per-card per-frame uniform write, so not more code).
+2. **The cue is structurally weak on a `#131313` background** — see the section at the top. Fogging
+   toward near-black is dimming. Per-fragment would have fixed the popping, not the "just darker"
+   read.
+
+Reverted rather than fixed: (2) does not go away, and the lines are better spent on 3 / 4 / 5.
+The implementation is in git if the background ever changes.
+
+**My error in the original ranking:** rated "very high" benefit without accounting for the background
+colour. The reasoning ("strongest depth cue available on a dark background") had it exactly backwards.
 
 ---
 
@@ -455,7 +524,9 @@ as `|normal.y| → 1`). ~4 lines.
 **(c) The cards up there are edge-on slivers — see item 13.** Probably the largest visual
 contributor, and not a placement problem at all.
 
-**Cost.** ~5 lines total. No perf cost. `fibSpherePos` is build-time only.
+**Cost.** One line, no constant: `y = 1 - (2 * i + 1) / total`. No perf cost — `fibSpherePos` is
+build-time only. The tunable ε form (`(i + eps)` over `(n - 1 + 2*eps)`, ~1.33 for a wider bald cap
+at low counts, Marques et al.) collapses to exactly this at eps = 0.5 and is not in the code.
 
 **Risk.** (a) changes every card's position, so anything cached off `spherePos` re-solves — but
 `maxRadial`, `fadeRefH` and `dragFlipZ` are all derived, and there is no persisted layout.
@@ -557,3 +628,6 @@ different mechanism.
 | 2026-08-23 | **13 — rejected** | `CARD_FACE_CAMERA` 0.4 → back to **0**. Cards visibly self-spin. My call that the README's barrel-specific costs wouldn't apply to the sphere was half wrong: the vertical-slope cause is barrel-only, but the edge-on-band wind-up/unwind asymmetry is not, and that is the one that shows. Needs a mechanism change, not a value. |
 | 2026-08-23 | **12 — kept** | Pole sampling + `sphereUp` blend retained. |
 | 2026-08-23 | **12 — simplified** | Deleted `POLE_UP_BAND` / `sphereUp()` (12b); kept midpoint sampling (12a). 12b was justified on a `lookAt` degeneracy that **12a already removes** — with centre sampling the most polar card sits 16.6° out, leaving `\|cross(up, normal)\| >= 0.16` up to n=80, never 0. Measured neighbour twist-mismatch also failed to support it: top-4 max got **worse** (135° → 153°) for a 6° mean gain. Net −12 lines, 3 constants gone. |
+| 2026-08-23 | comments | Stripped every comment our changes added to `globe-gallery.js` (shipped unminified). `FIB_POLE_EPS` collapsed to the inline `1 - (2i + 1)/n`; `CARD_FACE_CAMERA` line restored verbatim. One current-behaviour bullet moved to README (cell-centred sampling ↔ world-up coupling). **Standing rule for the rest of this list: no comments in js/css; README gets only tricky current behaviour, never rationale or history; this doc holds the archaeology.** |
+| 2026-08-23 | **2 — implemented, awaiting visual check** | Depth fog. 19 lines, zero comments. `BREAKPOINTS.md.FOG 0.55`; barrel paths gated to 0 via `shape`. Fog colour read from the computed background. |
+| 2026-08-23 | **2 — rejected** | Built, reviewed, reverted. Per-object fog quantized into flat tiles (0.185 step across a touching-neighbour seam) that step independently as the sphere turns — fixable. Not fixable: on `#131313`, fog toward the background IS dimming. Code reverted from all three files; doc keeps the reasoning. Re-ranked the remaining list around what works on a black field. |

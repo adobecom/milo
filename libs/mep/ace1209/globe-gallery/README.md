@@ -2558,6 +2558,12 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **Sparseness → `BREAKPOINTS.sm.CARD_H_SPHERE`** (sphere path only). Coverage scales with **H²**, so
     size is a far stronger lever than count and adds no textures/draw calls. Net ~42% of the sphere
     face.
+  - **Sphere sampling is cell-centred** (`fibSpherePos`: `y = 1 − (2i + 1)/n`) — symmetric about the
+    equator, and **no card lands on ±Y**. That second property is load-bearing and non-local:
+    `buildCards` orients sphere cards with a world up, and `Matrix4.lookAt` degenerates when the
+    normal is parallel to it, taking that card's roll off Three's 1e-4 fallback nudge instead. The
+    most polar card sits 16.6° out at n=24 and 9.1° at n=80 — `|cross(up, normal)| ≥ 0.16` across
+    that range, so world up needs no pole special-casing.
   - **Scatter → `CARD_ROLL_JITTER`** (radians, the roll spans ±half its value). Per-BP, and much
     tighter on sm: at that sparsity md's spread reads as debris, while md keeps the collage
     character.
