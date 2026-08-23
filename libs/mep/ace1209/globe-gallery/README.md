@@ -103,8 +103,8 @@ Who writes what:
 
 | | fields |
 | --- | --- |
-| `frameInput` ← the runtime, each tick | `scrollY`, `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (= `performance.now()`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
-| `frame` ← `deriveFrame` | `lenisY`, `scrollingDown`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, `arcScale` — the entry rotation is per-card off `arcCopyEntryT`, see Arc entry cascade |
+| `frameInput` ← the runtime, each tick | `scrollY` (via `readScrollY` — Lenis's un-quantised `animatedScroll` when it agrees with the document, else `window.scrollY`; see Scroll model), `reducedMotion`, `blockDocTop`, `blockHeight`, `formPx` (= `formedScrollPx()`), `viewportH` (= `H`, the CSS viewport height — **not** `innerHeight`; see One viewport height), `arcScale` (= `CARD_W_ARC / CARD_W_SPHERE`), `now` (rAF's frame timestamp, threaded through `tick`), plus `prevLenisY` / `prevNow` — the **only** inter-frame state, carried back after each derive (both re-baselined in `startTicker`, so a resume after an off-screen scroll doesn't spike `scrollVel` or charge the parked interval to `dtScale`) |
+| `frame` ← `deriveFrame` | `lenisY`, `scrollVel`, `dtScale` (real frame time ÷ 16.67ms, clamped `[0.25, 3]`), the six clocks (`progress`, `arcCopyEntryT`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`), `gpWin`, `arcScale` — the entry rotation is per-card off `arcCopyEntryT`, see Arc entry cascade |
 | `frame` ← the producer stages | `activeCamera` (`updateActiveCamera`), `sphereRotActive` (`updateSphereRotation`), `sphGroupZ` (`updateSphereGroupDepth`), `foldSphDist` (same) — declared in `createFrame` so the object's shape stays monomorphic |
 
 **Grouped closure state.** Related mutable state lives in small plain objects rather than loose
@@ -581,6 +581,19 @@ Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets t
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the hint-text and controls retirement, and the pull-quote.
 
+**The scroll clock is `lenis.animatedScroll`, not `window.scrollY`.** `readScrollY` takes Lenis's
+own float position while it agrees with the document to within `LENIS_TRUST_PX` (2px), and the DOM
+value otherwise — a stopped Lenis, or one outrun by something else moving the window, can hold a
+stale value. Two consequences:
+
+- **With no Lenis on the page the input is quantised** to a device pixel. At reading pace that is one
+  step every few frames, and the phases amplify it (~3px of pull-quote line travel per scrolled
+  pixel): the arc cards stutter and the quote shakes.
+- **Motion outlives the page.** `animatedScroll` converges on its target exponentially (τ ≈ 200ms at
+  milo's `lerp: 0.08`), and Lenis resyncs it to the quantised value on any scroll event it did not
+  drive. So the block is still moving for a few hundred ms after the DOM has stopped — visible in the
+  arc phase as a final small nod, and in the scroll-velocity CA as a fringe fading out over ~370ms.
+
 ### One viewport height
 
 `H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
@@ -657,7 +670,7 @@ overrides md. All three budget props are authored at both.
 |---|---|---|
 | `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
-| `--gg-pq-hold` | how much tail the held quote spends | lengthens the hold, and with it the crosshair reveal (the draw is the first `PQ_REVEAL_END` of it) |
+| `--gg-pq-hold` | how much tail the held quote spends | lengthens the pin, so the finished quote sits still for longer. It does **not** change the reveal, which runs on its own clock |
 
 > **The measured vh figures below were taken at a single 540 / 304 budget (tail 236) shared by both
 > breakpoints.** The budget is now split per breakpoint and being tuned, so read them as worked
@@ -790,7 +803,7 @@ or the section arrives on top of it.
     alone, so nothing after the globe shifts except the gap. Costs formation pacing: arc → grid →
     fold all play slower.
   - `--gg-pq-hold` down: spends less tail on the held frame, so it *widens* the gap — the knob for
-    reveal pacing, not for length. The draw is the first `PQ_REVEAL_END` (0.5) of it.
+    how long the finished quote sits still, not for the reveal, which is timed (`PQ_REVEAL_IN_MS`).
 
   Floor on all three: `(1 − appear-t) × tail` must stay above half the quote box *plus the hold*, or
   the next section lands on the quote. Shrinking the tail also shrinks `--gg-pq-hold-max`, so the
@@ -808,8 +821,10 @@ or the section arrives on top of it.
   the cue.
 - *Barrel hint copy fades too early/late after a spin:* `HINT_DISMISS_T` (0.12) on drag-accrued
   `hintDismissProgress`. `updateHintExitProgress` adds `HINT_EXIT_HOLD_RATE` per 60fps frame held
-  plus `norm × HINT_EXIT_DIST_RATE` and `norm² × HINT_EXIT_BURST_RATE` per frame of motion (all
-  `× dtScale`), so ~0.12 is about one flick. A rotate-chevron tap or a card open sets it to 1
+  plus `norm × HINT_EXIT_DIST_RATE` per frame of motion (both `× dtScale`), so ~0.12 is about one
+  flick — 99ms at full drag speed, 909ms for a finger held still. Only the crossing is read
+  (`getHintDismissed` is a boolean), and only the barrel renders the hint at all, so this tunes
+  sm/touch only. A rotate-chevron tap or a card open sets it to 1
   outright — both are the interaction the copy asks for.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
@@ -1063,7 +1078,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
 | 356 | 0.471 | `zoomT ≥ pqAppearZoomT` (sm 0.2204) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `updateClickDragText` |
 | ~356 | ~0.470 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~29vh | `updateActiveCamera` |
-| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy over the first half, then dead scroll with nothing moving — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
+| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy play out over 700ms from the cue, and the rest of the pin is still — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
 | 368 / 397 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 368vh, md at 397vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 640vh (the observer's `100%` rootMargin), so the skip covers that tail too, plus the 160vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
 | 540 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
@@ -1910,19 +1925,20 @@ The frame is **drawn**, not faded — and each of the four rules is drawn in a d
 chosen so the whole thing runs **clockwise**: top →, right ↓, bottom ←, left ↑. It reads as one
 continuous stroke tracing the frame rather than four unrelated wipes.
 
-**One threshold, one window.** Everything the pull-quote does is a share of the **hold**, which
-begins on `pqAppearZoomT` — the frame the camera geometrically clears the shell. The hold has two
-halves, and only the first one animates:
+**One threshold, one window.** `pqAppearZoomT` — the frame the camera geometrically clears the shell
+— is the only thing scroll decides. Crossing it starts the reveal; everything after that is time:
 
-| Phase | Share of the hold | md (52vh) | sm (52vh) | What |
-| --- | --- | --- | --- | --- |
-| reveal | `0 → PQ_REVEAL_END` (0.50) | 26.0vh | 26.0vh | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
-| dead scroll | `PQ_REVEAL_END → 1` | 26.0vh | 26.0vh | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
+| Phase | Clock | What |
+| --- | --- | --- |
+| reveal | `0 → 1` over `PQ_REVEAL_IN_MS` (700ms) | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
+| held | the rest of the pinned band | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
 
-**The frame and the copy share one window** rather than queueing, and share the *clock* that runs
-it (the follower below), so "the same length" is structural rather than intended. The lines' stagger
-spans the window (see **The stagger**), so the last one lands as the verticals close and the dead
-half begins.
+The **hold** (`min(--gg-pq-hold, --gg-pq-hold-max)`) pins the rail — see **The hold, and why its
+length is derived**. It buys reading time; it does not pace the reveal.
+
+**The frame and the copy share one window** rather than queueing, and share the *clock* that runs it
+(`advanceReveal`, below), so "the same length" is structural rather than intended. The lines' stagger
+spans the window (see **The stagger**), so the last one lands as the verticals close.
 
 **Why nothing starts before `pqAppearZoomT`.** Starting the draw earlier, to fill the sparse
 stretch ahead of the reveal, fails in two ways:
@@ -1945,38 +1961,16 @@ Two consequences:
   has emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also
   shrinks the hold (see **Scroll model**), so the two trade directly. This is the open tuning
   question, not a bug to fix in the crosshair.
-- **Nothing moves during the dead half** — that is when people are reading. The reveal is finished
-  before it starts, by construction, off the same `PQ_REVEAL_END`.
+- **Nothing moves once the reveal has played.** It finishes 700ms after the cue however the reader
+  got there, so the rest of the pinned band is always still.
 
-**The hold is followed, not read.** `followHold` is the one clock every phase reads, and it answers
-three failures of a raw scroll-derived value with one rule each:
-
-- **`window.scrollY` arrives quantised.** At 22px/s a whole pixel lands about every third frame, and
-  the sweep amplifies each step into ~3px of line travel — the vertical stutter. The follower
-  **eases** toward the scroll (`PQ_HOLD_EASE`, per 60fps frame, rescaled by `dtScale` like every
-  other rate in the block), spreading each step across the frames between them.
-- **A flick crosses the whole reveal in a couple of frames**, leaving nothing animating. The eased
-  step is **capped** at the play-out rate (`PQ_HOLD_IN_MS` 1400ms for the full hold, `PQ_HOLD_OUT_MS`
-  450ms back), so the reveal takes ~700ms however hard the reader throws it.
-- **A dead stop mid-reveal strands it half-done.** After `PQ_HOLD_STALL_MS` with no new ground the
-  phase **plays itself out** at that same rate — which is why a nudge-and-stop reveals the whole
-  quote rather than parking it part-rolled. Past `PQ_REVEAL_END` there is nothing left to play, so
-  a stall there is simply the reader reading.
-
-Two smaller rules keep the smoothing from becoming drift. **Direction needs `PQ_HOLD_FLIP` (0.01 of
-the hold) of retrace to turn**, since Lenis's eased position wobbles by less than that and every
-wobble would otherwise flip the run and swap the rate with it; the cost is a ~6px deadband before
-the sequence starts, spent while the copy is still under its mask. And **each direction only gains
-ground** (`max` going in, `min` coming out), so a dipping target cannot walk the sweep backwards.
-`dt` is clamped (`PQ_HOLD_MAX_DT`) so a backgrounded tab does not return and land the sequence in one
-step.
-
-The reverse is the same follower on `PQ_HOLD_OUT_MS`: the rules un-draw and the lines drop back under
-their masks together, bottom line first, because a larger lag means an element trails the sweep in
-*either* direction — no second set of lags to keep in sync. **The way out is roughly a third of the
-way in** (450ms against 1400ms) because reversing past the cue puts the camera back inside the shell
-with the cards and controls already returned, and a symmetric retreat leaves the copy folding away
-over a scene that has moved on.
+**The reveal is a tween, not a scrub.** `advanceReveal` is the whole clock: past the cue it steps
+forward by `dtScale · FRAME_MS / PQ_REVEAL_IN_MS`, before it steps back over `PQ_REVEAL_OUT_MS`,
+clamped to `[0, 1]`. Scroll picks the direction and nothing else, so the reveal takes 700ms from the
+cue however far or fast the reader scrolled, and a quote whose viewport leaves no hold at all
+(`--gg-pq-hold-max` 0) plays exactly like any other. On the way out the rules un-draw and the lines
+drop back under their masks together, **bottom line first**: a larger lag trails the sweep in
+*either* direction.
 
 `updatePullQuoteCopy` is a pure function of the reveal — **the copy must not get a clock of its
 own**, or the two are free to disagree about when they finish.
@@ -1984,14 +1978,6 @@ own**, or the two are free to disagree about when they finish.
 **The lines composite.** `translate3d` rather than `translateY`, so each line gets its own layer and
 travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every frame and they shimmer as
 they move.
-
-**The quantisation is block-wide, not a pull-quote problem.** Every scroll-derived value here comes
-off the same `window.scrollY`, so the cards' arc-phase stutter is the same staircase reaching a
-different consumer. The general fix is to ease `progress` once in `deriveFrame` rather than at each
-use site — deliberately, since it re-times every consumer at once.
-
-**With no hold at all** (a very long quote on a short viewport) `hold` jumps 0 → 1 in a frame. The
-follower still spends `PQ_HOLD_IN_MS` crossing it, so the sequence plays once rather than popping.
 
 #### The quote rolls in line by line
 
@@ -2053,13 +2039,13 @@ which is why the name/role lags below them never need re-tuning against the line
 already-eased `--gg-pq-line-v` per line; the `1` fallbacks are the rest state, which is also the
 no-JS and reduced-motion render.
 
-#### The hold's second half
+#### The hold after the reveal
 
-Once the reveal is done the hold keeps going, and **nothing on screen changes** for its second half:
-the rail stays stuck, the finished quote sits still, and the reader reads. The dead scroll itself is
+Once the reveal has played the hold keeps going, and **nothing on screen changes**: the rail stays
+stuck, the finished quote sits still, and the reader reads. The still stretch itself is
 unchanged from when a progress lap ran over it — a brighter, 2px line retracing the frame clockwise
 and closing as the rail un-sticks. It was built as a progress affordance and removed: it sat right
-beside the copy people were reading, and a stuck page for half the hold turned out to need no
+beside the copy people were reading, and a stuck page for the length of the hold turned out to need no
 narration. Four treatments were compared in total (fill, the frame depleting instead, a single
 travelling runner, and none); **none** is what ships, and the losing paths are gone rather than left
 behind a flag. If it comes back, it needs its own element over the frame's pseudo selectors and its

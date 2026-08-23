@@ -95,19 +95,12 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const PQ_HOLD_CLEARANCE_BAND_FRAC = 0.045; // of band; quote bottom → next section top
 
-// The reveal's share of the hold; the rest is dead scroll, nothing changing. See README.
-const PQ_REVEAL_END = 0.50;
+const PQ_REVEAL_IN_MS = 700;
+const PQ_REVEAL_OUT_MS = 225;
 
 // Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
-
-const PQ_HOLD_EASE = 0.08; // per 60fps frame, rescaled by dtScale at the use site
-const PQ_HOLD_IN_MS = 1400; // fastest the hold may play, forwards
-const PQ_HOLD_OUT_MS = 450; // and back
-const PQ_HOLD_MAX_DT = 100; // a tab-away must not arrive as one step
-const PQ_HOLD_STALL_MS = 140; // no new ground for this long and the scroll counts as stopped
-const PQ_HOLD_FLIP = 0.01; // retrace that is a real reversal, not noise; also how a stop is seen
 const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
@@ -174,7 +167,6 @@ const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
 // hintDismissProgress accrual per 60fps frame of drag.
 const HINT_EXIT_DIST_RATE = 0.018;
 const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
-const HINT_EXIT_BURST_RATE = 0.010;
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
@@ -352,12 +344,7 @@ function createGlobeGalleryRuntime(
     quoteEl: q('.globe-gallery-pullquote-quote'),
     lineEls: [], // one per rendered line
     splitW: 0, // box width they were split at
-    holdT: 0,
-    holdV: 0, // followHold's output — the hold every phase reads
-    holdMs: 0,
-    holdPeak: 0, // furthest the scroll's own hold has reached in the current direction
-    holdMoveMs: 0, // when it last reached a new one; nothing for PQ_HOLD_STALL_MS means stopped
-    holdDir: -1,
+    revealT: 0,
     frameStr: '',
     copyStr: '',
   };
@@ -472,8 +459,6 @@ function createGlobeGalleryRuntime(
       card.gridScale = gridCardW / CARD_W_SPHERE;
       card.gridTilt = tilt;
       card.gridQuat.setFromEuler(tiltEuler.set(0, 0, tilt));
-      card.gridCol = col;
-      card.gridRow = row;
     }
   }
 
@@ -483,8 +468,7 @@ function createGlobeGalleryRuntime(
 
   function buildCards() {
     const {
-      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_WINDOW_COLS, GRID_ROWS,
-      CARD_ROLL_JITTER, CYLINDER,
+      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
     } = bp;
     if (!placeholderTex) placeholderTex = createPlaceholderTexture();
     sphereGroup = new THREE.Group();
@@ -540,8 +524,6 @@ function createGlobeGalleryRuntime(
         gridScale: 1,
         gridTilt: 0,
         gridQuat: new THREE.Quaternion(),
-        gridCol: GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS),
-        gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
         srcAspect,
         sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : srcAspect / CARD_ASPECT,
@@ -922,10 +904,6 @@ function createGlobeGalleryRuntime(
     const clearanceVh = (100 - toVh(navH)) * PQ_HOLD_CLEARANCE_BAND_FRAC;
     const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - clearanceVh);
     root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
-
-    // Mirror what CSS resolves for the pin, so the hold spans exactly the pinned scroll.
-    const prefVh = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-hold')) || 0;
-    pq.holdT = Math.min(prefVh, freeVh) / tailVh;
   }
 
   // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
@@ -1022,8 +1000,16 @@ function createGlobeGalleryRuntime(
     getYawOnly: () => bp.YAW_ONLY,
   });
 
-  function computeFrame() {
-    frameInput.scrollY = window.scrollY;
+  const LENIS_TRUST_PX = 2;
+  function readScrollY() {
+    const domY = window.scrollY;
+    const lenisY = window.lenis?.animatedScroll;
+    if (!Number.isFinite(lenisY) || Math.abs(lenisY - domY) > LENIS_TRUST_PX) return domY;
+    return lenisY;
+  }
+
+  function computeFrame(now) {
+    frameInput.scrollY = readScrollY();
     frameInput.reducedMotion = reducedMotion;
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
@@ -1031,7 +1017,7 @@ function createGlobeGalleryRuntime(
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
-    frameInput.now = performance.now();
+    frameInput.now = now || performance.now();
     TL.deriveFrame(frameState, frameInput);
     frameInput.prevLenisY = frameState.lenisY;
     frameInput.prevNow = frameInput.now;
@@ -1206,7 +1192,6 @@ function createGlobeGalleryRuntime(
     if (reducedMotion) {
       canvasHidden = false;
       canvas.style.display = 'block';
-      canvas.style.opacity = '1';
       return;
     }
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
@@ -1216,12 +1201,7 @@ function createGlobeGalleryRuntime(
     canvasHidden = modal.getModalIdx() < 0
       && (lenisY < showTrigger
         || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
-    if (canvasHidden) {
-      canvas.style.display = 'none';
-    } else {
-      canvas.style.display = 'block';
-      canvas.style.opacity = '1';
-    }
+    canvas.style.display = canvasHidden ? 'none' : 'block';
   }
 
   function updatePullQuoteCopy(reveal) {
@@ -1249,51 +1229,17 @@ function createGlobeGalleryRuntime(
     lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
   }
 
-  // The one clock the pull-quote runs on: the scroll's hold, eased rather than read. scrollY
-  // arrives quantised, so a slow scroll delivers a staircase, and the sweep amplifies each step
-  // into several pixels of line travel — the ease is what turns that back into motion. It is
-  // capped at the play-out rate so a flick cannot skip the sequence, direction needs PQ_HOLD_FLIP
-  // of retrace to turn, and each direction only gains ground, so noise cannot walk the sweep back.
-  // Stopped inside the reveal, the phase plays itself out; past it there is nothing to play.
-  // See README.
-  function followHold(target) {
-    const now = performance.now();
-    const dtMs = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
-    pq.holdMs = now;
-    const fwd = pq.holdDir > 0;
-    const gained = fwd ? target > pq.holdPeak : target < pq.holdPeak;
-    const turned = fwd ? target < pq.holdPeak - PQ_HOLD_FLIP : target > pq.holdPeak + PQ_HOLD_FLIP;
-    if (gained || turned) {
-      if (turned) pq.holdDir = -pq.holdDir;
-      pq.holdPeak = target;
-      pq.holdMoveMs = now;
-    }
-    const up = pq.holdDir > 0;
-    const step = dtMs / (up ? PQ_HOLD_IN_MS : PQ_HOLD_OUT_MS);
-    if (now - pq.holdMoveMs > PQ_HOLD_STALL_MS && pq.holdV < PQ_REVEAL_END) {
-      pq.holdV = up ? Math.min(PQ_REVEAL_END, pq.holdV + step) : Math.max(0, pq.holdV - step);
-      return pq.holdV;
-    }
-    const goal = up ? Math.max(target, pq.holdV) : Math.min(target, pq.holdV);
-    const delta = goal - pq.holdV;
-    const eased = delta * (1 - (1 - PQ_HOLD_EASE) ** frameState.dtScale);
-    pq.holdV += Math.abs(eased) > step ? Math.sign(delta) * step : eased;
-    return pq.holdV;
+  function advanceReveal(zoomT) {
+    const fwd = zoomT >= pqAppearZoomT;
+    const step = (frameState.dtScale * TL.FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
+    pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
+    return pq.revealT;
   }
 
-  // PQ_REVEAL_END splits the hold: reveal, then dead scroll. With no hold to spend — a viewport
-  // with no room for one — the cue itself is the whole target.
-  function updatePullQuoteFrame(zoomT) {
-    const scrolled = pq.holdT > 0
-      ? clamp01((zoomT - pqAppearZoomT) / pq.holdT)
-      : Number(zoomT >= pqAppearZoomT);
-    const hold = followHold(scrolled);
-
-    const reveal = clamp01(hold / PQ_REVEAL_END);
+  function writePullQuoteFrame(reveal) {
     const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
     const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
     writeFrameVars(hDrawn, vDrawn);
-
     updatePullQuoteCopy(reveal);
   }
 
@@ -1308,13 +1254,13 @@ function createGlobeGalleryRuntime(
     pq.splitW = w;
     pq.lineEls = layoutQuote(pq.quoteEl);
     pq.copyStr = '';
-    if (!reducedMotion) updatePullQuoteFrame(frameState.zoomT);
+    if (!reducedMotion) writePullQuoteFrame(pq.revealT);
   }
 
   function updatePullQuote(frame) {
     // RM: CSS owns it — no JS driving.
     if (reducedMotion || !pqEl) return;
-    updatePullQuoteFrame(frame.zoomT);
+    writePullQuoteFrame(advanceReveal(frame.zoomT));
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -1661,11 +1607,7 @@ function createGlobeGalleryRuntime(
     const norm = spd / MAX_VEL; // 0–1
     hintDismissProgress = Math.min(
       1,
-      hintDismissProgress + dtScale * (
-        norm * HINT_EXIT_DIST_RATE
-        + HINT_EXIT_HOLD_RATE
-        + norm * norm * HINT_EXIT_BURST_RATE
-      ),
+      hintDismissProgress + dtScale * (norm * HINT_EXIT_DIST_RATE + HINT_EXIT_HOLD_RATE),
     );
   }
 
@@ -1713,10 +1655,10 @@ function createGlobeGalleryRuntime(
   }
 
   // Stage order is FIXED and load-bearing.
-  function tick() {
+  function tick(now) {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
-    const frame = computeFrame();
+    const frame = computeFrame(now);
     arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN, bp.ARC_RAMP_T);
 
     a11y.updateTabStops();
@@ -1744,11 +1686,11 @@ function createGlobeGalleryRuntime(
   }
 
   let rafId = 0;
-  function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
+  function rafLoop(now) { tick(now); rafId = requestAnimationFrame(rafLoop); }
   function startTicker() {
     if (rafId) return;
     // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
-    frameInput.prevLenisY = window.scrollY;
+    frameInput.prevLenisY = readScrollY();
     frameInput.prevNow = 0;
     rafId = requestAnimationFrame(rafLoop);
   }
@@ -2090,6 +2032,7 @@ function createGlobeGalleryRuntime(
       pqEl.style.cssText = '';
       pq.frameStr = '';
       pq.copyStr = '';
+      pq.revealT = 0;
     }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     canvasHidden = false;

@@ -1,6 +1,8 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
+import { clamp01 } from './math.js';
+
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
 export const PROGRESS_GRID_ARC_START = 0.30;
@@ -51,8 +53,6 @@ export const CANVAS_HIDE_MARGIN_T = 0.05;
 
 export const HINT_DISMISS_T = 0.12; // hintDismissProgress at which the barrel hint retires
 
-export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
-
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 
 export const FRAME_MS = 1000 / 60;
@@ -77,14 +77,11 @@ export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   return 1 - ((1 - eased) ** (1 / 3));
 }
 
-const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN → 0
-
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
 // monomorphic; activeCamera and below are written by tick()'s producer stages.
 export function createFrame() {
   return {
     lenisY: 0,
-    scrollingDown: true,
     scrollVel: 0,
     dtScale: 1,
     progress: 0,
@@ -131,9 +128,7 @@ export function deriveFrame(frame, input) {
   // canvas visibility still uses real scroll.
   const lenisY = reducedMotion ? blockDocTop + formPx : input.scrollY;
   frame.lenisY = lenisY;
-  frame.scrollingDown = lenisY >= input.prevLenisY;
-  const rawScrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
-  frame.scrollVel = rawScrollVel < SCROLL_VEL_DEADBAND ? 0 : rawScrollVel;
+  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
 
   const entryStart = blockDocTop - viewportH * entryLeadVh;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);
