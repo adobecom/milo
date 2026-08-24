@@ -475,6 +475,35 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
+  let parsed;
+  try {
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+export function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 function isPathMatch(path, href) {
   if (path.includes('*')) {
     const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
@@ -2810,4 +2839,4 @@ export function loadLana(options = {}) {
   window.addEventListener('unhandledrejection', lanaError);
 }
 
-export const reloadPage = () => window.location.reload(); 
+export const reloadPage = () => window.location.reload();
