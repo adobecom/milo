@@ -439,7 +439,8 @@
     --icon-size: 18px;
 
     .hub-hero-image-grid-container-col div img,
-    .hub-hero-image-grid-container-col div video {
+    .hub-hero-image-grid-container-col div video,
+    .hub-hero-carousel-item-media {
       border-radius: var(--s2a-border-radius-sm);
     }
 
@@ -837,6 +838,7 @@
   .hub-hero-carousel-item-media {
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
+    border-radius: inherit;
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media video {
@@ -1406,12 +1408,14 @@
     transform: translateY(var(--elastic-mobile-first-slide-offset));
     opacity: 1;
     filter: contrast(1);
+    border-radius: var(--s2a-border-radius-sm);
   }
 
   30% {
     transform: translateY(calc(var(--stack-offset)));
     opacity: 1;
     filter: contrast(1);
+    border-radius: var(--s2a-border-radius-md);
   }
 
   75% {
@@ -1531,7 +1535,7 @@
 @keyframes elasticItemsShrink {
   0% {
     scale: 1;
-    border-radius: var(--s2a-border-radius-xs);
+    border-radius: var(--s2a-border-radius-sm);
   }
 
   30% {
