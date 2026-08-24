@@ -1102,9 +1102,7 @@ class Gnav {
     }
     const config = getConfig();
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
-    const locale = lingoRegion?.ietf
-      ? lingoRegion.ietf.replace('-', '_')
-      : getUniversalNavLocale(config.locale);
+    const locale = getUniversalNavLocale(lingoRegion ?? config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
