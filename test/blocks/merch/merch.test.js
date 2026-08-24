@@ -42,7 +42,7 @@ import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/bl
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -872,7 +872,6 @@ describe('Merch Block', () => {
         delete getConfig().marketsConfig;
       }
     });
-
   });
 
   describe('Download flow', () => {
