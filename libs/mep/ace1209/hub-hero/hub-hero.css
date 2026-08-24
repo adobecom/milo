@@ -361,8 +361,7 @@
 
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div {
   position: relative;
-  border-radius: var(--s2a-border-radius-md);
-  img {
+  img, video {
     border-radius: var(--s2a-border-radius-md);
   }
 }
@@ -371,8 +370,8 @@
 .hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(2),
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div picture:nth-child(2) {
   position: absolute;
-  top: var(--s2a-spacing-md);
-  left: var(--s2a-spacing-md);
+  top: var(--icon-padding, var(--s2a-spacing-md));
+  left: var(--icon-padding, var(--s2a-spacing-md));
   width: auto;
   min-width: unset;
   max-width: unset;
@@ -382,8 +381,8 @@
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img,
 .hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(2) img,
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div picture:nth-child(2) img {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size, 24px);
+  height: var(--icon-size, 24px);
   min-width: unset;
   max-width: unset;
   border-radius: 0;
@@ -419,6 +418,9 @@
   }
 
   @media (768px <= width < 1024px) {
+    --icon-padding: 12px;
+    --icon-size: 18px;
+
     .hub-hero-image-grid-container-col div {
       position: relative;
 
@@ -433,12 +435,31 @@
   }
 
   @media (width < 768px) {
+    --icon-padding: var(--s2a-spacing-sm);
+    --icon-size: 18px;
+
+    .hub-hero-image-grid-container-col div img,
+    .hub-hero-image-grid-container-col div video {
+      border-radius: var(--s2a-border-radius-sm);
+    }
+
     .hub-hero-carousel-item {
       background: transparent;
     }
 
     .hub-hero-carousel-item:nth-child(1) {
       --stack-contrast: .5;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
+      aspect-ratio: 3 / 4;
+      width: 100%;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media picture:nth-child(1) img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
     }
 
     .hub-hero-carousel-item:nth-child(2) {
@@ -452,6 +473,7 @@
       --stack-scale-x: 0.94;
       margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
     }
+
 
     .hub-hero-carousel-item-footer * {
       white-space: wrap;
@@ -531,7 +553,6 @@
 
     .hub-hero-carousel-item:nth-child(1) {
       --carousel-slide-start-y: var(--grid-col-two-offset);
-
       animation-name: carouselSlidesThreeSlideOffset, carouselSlideExpandSize, carouselSlideExpandLayout;
     }
 
@@ -1510,14 +1531,17 @@
 @keyframes elasticItemsShrink {
   0% {
     scale: 1;
+    border-radius: var(--s2a-border-radius-xs);
   }
 
   30% {
     scale: 1;
+    border-radius: var(--s2a-border-radius-md);
   }
 
   100% {
     scale: var(--stack-scale-x, 1);
+    border-radius: var(--s2a-border-radius-md);
   }
 }
 
