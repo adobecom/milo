@@ -128,9 +128,27 @@
   }
 
   &.featured {
-    .card-overlay {
+    .content-aux {
+      display: none;
+    }
+
+    div.card-overlay {
       display: flex;
       border: none;
+      aspect-ratio: unset;
+      flex-direction: column;
+      align-items: flex-start;
+
+      .foreground {
+        max-width: unset;
+        min-width: 100%;
+        box-sizing: border-box;
+        background-color: black;
+      }
+    }
+
+    .media {
+      position: unset;
     }
 
     &:has(+ .side-by-side.equal) {
@@ -232,7 +250,6 @@
 
 @media (width >= 1440px) {
   .side-by-side.featured .card-overlay {
-    height: 1200px;
     aspect-ratio: unset;
   }
 }
