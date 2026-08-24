@@ -240,8 +240,10 @@ async function checkWcsElements() {
       const tagName = elem.tagName.toLowerCase();
       const href = elem.getAttribute('href');
       const ariaLabel = elem.getAttribute('aria-label');
-      const displayText = ariaLabel || textContent || `<${tagName}> element`;
+      const isPrice = elem.getAttribute('is') === 'inline-price';
+      const displayText = ariaLabel || textContent || (isPrice ? 'Price' : `<${tagName}> element`);
       const promoCode = elem.getAttribute('data-promotion-code');
+      const priceUnavailable = elem.classList.contains('placeholder-failed');
 
       const elementData = {
         type: tagName,
@@ -255,7 +257,18 @@ async function checkWcsElements() {
         checking: false,
         promoCode,
         promoCodeStatus: null,
+        priceUnavailable,
       };
+
+      if (priceUnavailable) {
+        elem.classList.add('preflight-merch-error', 'preflight-price-unavailable');
+        if (!elem.querySelector('.preflight-price-unavailable-label')) {
+          const label = document.createElement('span');
+          label.className = 'preflight-price-unavailable-label';
+          label.textContent = 'Price unavailable';
+          elem.append(label);
+        }
+      }
 
       elements.push(elementData);
     }
@@ -351,7 +364,7 @@ function WcsElementItem({ wcsElem }) {
   let statusIconClass = '';
   if (wcsElem.checking) {
     statusIconClass = 'result-icon purple';
-  } else if (wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') {
+  } else if (wcsElem.priceUnavailable || wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') {
     statusIconClass = 'result-icon red';
   } else if (wcsElem.urlStatus === 'undetermined') {
     statusIconClass = 'result-icon orange';
@@ -361,7 +374,7 @@ function WcsElementItem({ wcsElem }) {
   const showUrlInfo = wcsElem.href;
 
   return html`
-    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') ? 'has-url-error' : ''}">
+    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.priceUnavailable || wcsElem.urlStatus === 'error' || wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
         <p class="preflight-item-title">
           ${statusIconClass && html`<span class="${statusIconClass}"></span>`}
@@ -369,6 +382,9 @@ function WcsElementItem({ wcsElem }) {
         </p>
         <p class="preflight-item-description">
           <strong>WCS OSI:</strong> <code class="wcs-osi-code">${wcsElem.wcsOsi}</code>
+          ${wcsElem.priceUnavailable && html`
+            <br/><span class="url-error-message">Price unavailable</span>
+          `}
           ${wcsElem.promoCode && html`
             <br/><br/>
             <strong>Promotion Code:</strong> <code class="wcs-osi-code">${wcsElem.promoCode}</code>
@@ -501,9 +517,11 @@ function UnpublishedFragmentsSection() {
 
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
-  const passedCount = wcsElements.value.filter((elem) => (elem.urlStatus === 'success' || !elem.href)
+  const passedCount = wcsElements.value.filter((elem) => !elem.priceUnavailable
+    && (elem.urlStatus === 'success' || !elem.href)
     && (!elem.promoCode || elem.promoCodeStatus === 'valid')).length;
-  const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error'
+  const failedCount = wcsElements.value.filter((elem) => elem.priceUnavailable
+    || elem.urlStatus === 'error'
     || elem.promoCodeStatus === 'expired'
     || elem.promoCodeStatus === 'not-found').length;
   const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;

@@ -1769,6 +1769,16 @@ img:hover ~ .asset-meta,
   outline-offset: 2px !important;
 }
 
+/* Page-injected: reveal price elements stuck in a failed placeholder state. */
+.preflight-price-unavailable {
+  visibility: visible !important;
+}
+
+.preflight-price-unavailable-label {
+  color: var(--s2a-color-red-800);
+  font-weight: 700;
+}
+
 /* Page-injected: blocks with multiple M@S fragment IDs (preflight warning). */
 .preflight-mas-multiple-fragments {
   border: 3px solid var(--s2a-color-orange-700) !important;
