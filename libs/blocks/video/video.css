@@ -56,7 +56,7 @@ video {
   }
 }
 
-.video-container .pause-play-wrapper .offset-filler {  
+.video-container .pause-play-wrapper .offset-filler {
   display: inherit;
   justify-content: center;
   align-items: center;
@@ -149,7 +149,7 @@ video {
     left: 2%;
   }
 
-  :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 
+  :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1))
   .video-container .pause-play-wrapper {
     left: auto;
     right: 2%;
@@ -174,7 +174,7 @@ video {
   button.play-pause-button {
     width: 32px;
     height: 32px;
-    border-radius: var(--s2a-border-radius-xs);
+    border-radius: var(--s2a-border-radius-2xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
     backdrop-filter: blur(4px);
