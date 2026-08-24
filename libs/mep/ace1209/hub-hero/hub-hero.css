@@ -1104,7 +1104,7 @@
 @media (1440px > width) {
   .hub-hero {
     --hub-hero-carousel-item-min-width: 146px;
-    --hub-hero-carousel-container-height: min(70vh, 580px);
+    --hub-hero-carousel-container-height: min(60vh, 580px);
   }
 }
 
@@ -1116,7 +1116,7 @@
     --grid-col-three-offset: 292px;
     --grid-col-four-offset: 184px;
     --hub-hero-carousel-item-max-width: min(392px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
-    --hub-hero-carousel-container-height: min(70vh, 690px);
+    --hub-hero-carousel-container-height: min(60vh, 690px);
   }
 
 }
