@@ -31,11 +31,12 @@ const BREAKPOINTS = {
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.2,
+    NEAR_FADE_END: 1.5,
     GRID_WINDOW_COLS: 3,
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
+    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
@@ -46,16 +47,17 @@ const BREAKPOINTS = {
     minWidth: 768,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 7.5,
+    CARD_H_SPHERE: 9,
     CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 60,
+    CAM_Z_SPHERE: 57,
     CAM_Z_END: -60,
-    NEAR_FADE_START: 2.2,
-    NEAR_FADE_END: 1.4,
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.6,
     GRID_WINDOW_COLS: 9,
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.5,
@@ -142,6 +144,8 @@ const HOVER_CA = 0.025;
 const HOVER_WARP = 0.4;
 const HOVER_SCALE = 0.25; // added, not replacing: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target
+const RIM_FACE_ON = 0.3;
+const RIM_HOVER = 0.5;
 
 // Per-card un-dissolve once its photo lands.
 const REVEAL_RATE = 0.06; // per-frame
@@ -305,6 +309,7 @@ function createGlobeGalleryRuntime(
       GRID_ROWS: cfg.GRID_ROWS,
       // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
+      RIM: cfg.RIM,
       CYLINDER: !!shape.CYLINDER,
       CYL_COLS_FIT: cfg.CYL_COLS_FIT ?? shape.CYL_COLS_FIT,
       CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
@@ -431,6 +436,7 @@ function createGlobeGalleryRuntime(
   }
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
+  const viewDir = new THREE.Vector3();
   const facingAlign = new THREE.Quaternion();
   const facingPartial = new THREE.Quaternion();
   const IDENTITY_QUAT = new THREE.Quaternion();
@@ -1533,6 +1539,21 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  function applyRim(card, mesh, frame) {
+    if (!bp.RIM) return;
+    let rimT = RIM_FACE_ON + card.hoverT * RIM_HOVER;
+    if (frame.activeCamera === camera) {
+      cardNormal.set(0, 0, 1).applyQuaternion(mesh.quaternion);
+      viewDir.set(
+        -mesh.position.x,
+        -mesh.position.y,
+        camera.position.z - (frame.sphGroupZ + mesh.position.z),
+      ).normalize();
+      rimT += (1 - RIM_FACE_ON) * (1 - Math.abs(cardNormal.dot(viewDir)));
+    }
+    mesh.material.uniforms.uRim.value = bp.RIM * Math.min(1, rimT);
+  }
+
   function updateCardTransform(i, frame) {
     const { progress, gridFormT, gpWin, dtScale } = frame;
     const { N_TOTAL } = bp;
@@ -1607,14 +1628,16 @@ function createGlobeGalleryRuntime(
     const prevMeshY = mesh.position.y;
 
     // Latest phase first. Sphere + settled-grid skip the stage compute.
-    if (fdE >= 1) { placeSphereCard(card, mesh, frame); return; }
-    if (gpE >= 1 && fdE === 0) {
+    if (fdE >= 1) {
+      placeSphereCard(card, mesh, frame);
+    } else if (gpE >= 1 && fdE === 0) {
       placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame);
-      return;
+    } else {
+      const stage = computeCardStage(card, i, gpE, frame, entry);
+      if (fdE > 0) placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame);
+      else placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
     }
-    const stage = computeCardStage(card, i, gpE, frame, entry);
-    if (fdE > 0) { placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame); return; }
-    placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
+    applyRim(card, mesh, frame);
   }
 
   function updateCardTransforms(frame) {
