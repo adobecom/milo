@@ -20,7 +20,7 @@
   --grid-img-width-min: 164px;
   --slide-width: 292px;
   --hub-hero-carousel-item-max-width: min(var(--slide-width), calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
-  --hub-hero-carousel-item-min-width: min(256px, var(--slide-max-width));
+  --hub-hero-carousel-item-min-width: min(256px, var(--slide-max-width), calc(var(--hub-hero-carousel-container-width) * 0.5 / (var(--slides) - 1) - var(--end-gap)));
   --header-animation-range: contain 30% contain 50%;
   --slide-animation-range: contain 0% contain 100%;
   --slide-layout-animation-range: contain 10% contain 100%;
