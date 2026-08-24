@@ -31,11 +31,12 @@ const BREAKPOINTS = {
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.2,
+    NEAR_FADE_END: 1.5,
     GRID_WINDOW_COLS: 3,
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
+    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
@@ -46,16 +47,17 @@ const BREAKPOINTS = {
     minWidth: 768,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 6.5,
+    CARD_H_SPHERE: 9,
     CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 65,
+    CAM_Z_SPHERE: 57,
     CAM_Z_END: -60,
-    NEAR_FADE_START: 2.2,
-    NEAR_FADE_END: 1.4,
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.6,
     GRID_WINDOW_COLS: 9,
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.5,
@@ -131,17 +133,19 @@ const COLUMN_EPS = 1e-6;
 
 // Chromatic aberration.
 const CA_ENABLED = true;
-const CA_STRENGTH = 0.012; // radial UV shift per channel
+const CA_STRENGTH = 0.020; // radial UV shift per channel
 const CA_MOTION_STRENGTH = 1.0; // directional UV shift max
-const CA_MOTION_STRENGTH_ARC = 0.04;
-const SCROLL_VEL_MAX = 14; // px/frame scroll speed that saturates the motion trail
-const CA_PX_MAX = 4; // max vertical px shift for the canvas SVG filter
+const CA_MOTION_STRENGTH_ARC = 0.10;
+const SCROLL_VEL_MAX = 8; // px/frame scroll speed that saturates the motion trail
+const CA_PX_MAX = 8; // max vertical px shift for the canvas SVG filter
 
 // Hover (sphere phase only).
 const HOVER_CA = 0.025;
 const HOVER_WARP = 0.4;
 const HOVER_SCALE = 0.25; // added, not replacing: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target
+const RIM_FACE_ON = 0.3;
+const RIM_HOVER = 0.5;
 
 // Per-card un-dissolve once its photo lands.
 const REVEAL_RATE = 0.06; // per-frame
@@ -161,6 +165,7 @@ const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
 const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed
 const SPHERE_DRAG_WARP_MAX = 0.25; // cap on the combined value
 const SPHERE_DRAG_WARP_EASE = 0.20; // per-frame ease toward the target
+const SPHERE_DRAG_CA_MUL = 0.10; // uCA per unit of sphereDragWarp
 
 // "Click & Drag" hint text: a WebGL plane behind the sphere.
 const TEXT_BEHIND_GAP = 15; // world units behind the sphere back surface
@@ -174,6 +179,7 @@ const HINT_EXIT_DIST_RATE = 0.018;
 const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
 // See README (yaw-only geometry) for the packing + column-count rules.
 function cylinderMasonryLayout({
@@ -244,7 +250,8 @@ function cylinderMasonryLayout({
 }
 
 function fibSpherePos(i, total, radius) {
-  const polarAngle = Math.acos(Math.max(-1, Math.min(1, 1 - (2 * i) / total)));
+  const y = 1 - (2 * i + 1) / total;
+  const polarAngle = Math.acos(Math.max(-1, Math.min(1, y)));
   const azimuth = GOLDEN_ANGLE * i;
   return new THREE.Vector3(
     radius * Math.sin(polarAngle) * Math.cos(azimuth),
@@ -303,6 +310,7 @@ function createGlobeGalleryRuntime(
       GRID_ROWS: cfg.GRID_ROWS,
       // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
+      RIM: cfg.RIM,
       CYLINDER: !!shape.CYLINDER,
       CYL_COLS_FIT: cfg.CYL_COLS_FIT ?? shape.CYL_COLS_FIT,
       CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
@@ -429,6 +437,7 @@ function createGlobeGalleryRuntime(
   }
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
+  const viewDir = new THREE.Vector3();
   const facingAlign = new THREE.Quaternion();
   const facingPartial = new THREE.Quaternion();
   const IDENTITY_QUAT = new THREE.Quaternion();
@@ -521,7 +530,7 @@ function createGlobeGalleryRuntime(
         ? sp.clone().sub(mas.normal)
         : new THREE.Vector3(0, 0, 0);
       const m = new THREE.Matrix4()
-        .lookAt(sp, faceTarget, new THREE.Vector3(0, 1, 0));
+        .lookAt(sp, faceTarget, WORLD_UP);
       const sq = new THREE.Quaternion().setFromRotationMatrix(m);
       const rz = CYLINDER ? 0 : (Math.random() - 0.5) * CARD_ROLL_JITTER;
       sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
@@ -812,7 +821,7 @@ function createGlobeGalleryRuntime(
     drag.velY = 0;
   }
 
-  // dx/dy: world-space delta this frame. ampOverride defaults to max(scrollVel, dragSpeed).
+  // dx/dy: world-space delta this frame. ampOverride defaults to sqrt(scroll/drag speed ratio).
   function applyMotionCA(mesh, dx, dy, ampOverride, strength) {
     if (!CA_ENABLED) return;
     const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
@@ -822,9 +831,11 @@ function createGlobeGalleryRuntime(
     const uvDX = dx / (CARD_W_SPHERE * sX);
     const uvDY = dy / (CARD_H_SPHERE * sY);
     const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-    const amp = ampOverride !== undefined
-      ? ampOverride
-      : Math.min(1.0, Math.max(frameState.scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL));
+    const ampRaw = Math.min(
+      1.0,
+      Math.max(frameState.scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL),
+    );
+    const amp = ampOverride !== undefined ? ampOverride : Math.sqrt(ampRaw);
     const mx = Math.max(-s, Math.min(s, uvDX * amp));
     const my = Math.max(-s, Math.min(s, uvDY * amp));
     mesh.material.uniforms.uMotionDir.value.set(mx, my);
@@ -1531,6 +1542,21 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  function applyRim(card, mesh, frame) {
+    if (!bp.RIM) return;
+    let rimT = RIM_FACE_ON + card.hoverT * RIM_HOVER;
+    if (frame.activeCamera === camera) {
+      cardNormal.set(0, 0, 1).applyQuaternion(mesh.quaternion);
+      viewDir.set(
+        -mesh.position.x,
+        -mesh.position.y,
+        camera.position.z - (frame.sphGroupZ + mesh.position.z),
+      ).normalize();
+      rimT += (1 - RIM_FACE_ON) * (1 - Math.abs(cardNormal.dot(viewDir)));
+    }
+    mesh.material.uniforms.uRim.value = bp.RIM * Math.min(1, rimT);
+  }
+
   function updateCardTransform(i, frame) {
     const { progress, gridFormT, gpWin, dtScale } = frame;
     const { N_TOTAL } = bp;
@@ -1585,7 +1611,8 @@ function createGlobeGalleryRuntime(
     // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
     // card still folding at fdE 0.999 would raise hoverT and render nothing.
     if (CA_ENABLED) {
-      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
+      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA
+        + sphereDragWarp * SPHERE_DRAG_CA_MUL;
       mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP;
       if (card.hoverT > 0.01) {
         mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
@@ -1605,14 +1632,16 @@ function createGlobeGalleryRuntime(
     const prevMeshY = mesh.position.y;
 
     // Latest phase first. Sphere + settled-grid skip the stage compute.
-    if (fdE >= 1) { placeSphereCard(card, mesh, frame); return; }
-    if (gpE >= 1 && fdE === 0) {
+    if (fdE >= 1) {
+      placeSphereCard(card, mesh, frame);
+    } else if (gpE >= 1 && fdE === 0) {
       placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame);
-      return;
+    } else {
+      const stage = computeCardStage(card, i, gpE, frame, entry);
+      if (fdE > 0) placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame);
+      else placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
     }
-    const stage = computeCardStage(card, i, gpE, frame, entry);
-    if (fdE > 0) { placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame); return; }
-    placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
+    applyRim(card, mesh, frame);
   }
 
   function updateCardTransforms(frame) {

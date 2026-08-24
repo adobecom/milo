@@ -241,8 +241,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 
 .globe-gallery-pullquote {
+  --gg-pq-ideal-gap: var(--s2a-layout-lg);
+
   /* Yields on short viewports so a long quote can't outgrow the band. */
-  --gg-pq-gap: min(var(--s2a-layout-xl), calc(var(--gg-band-h) * 0.2));
+  --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
   --gg-pq-copy-rise: 14px;
   --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
@@ -834,6 +836,16 @@ body.globe-gallery-modal-open { overflow: hidden; }
     background: var(--s2a-color-transparent-black-64);
     -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
     backdrop-filter: blur(var(--gg-chrome-blur));
+  }
+
+  .globe-gallery-pullquote {
+    --gg-pq-ideal-gap: var(--s2a-layout-xl);
+  }
+}
+
+@media (min-width: 1280px) {
+  .globe-gallery-pullquote {
+    --gg-pq-ideal-gap: var(--s2a-layout-2xl);
   }
 }
 

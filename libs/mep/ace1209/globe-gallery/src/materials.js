@@ -23,6 +23,7 @@ export function createCardMaterial({ texture, aspect }) {
       uDisperse: { value: 0 }, // near-camera explosion (near-camera only; 0 in other phases)
       uReveal: { value: 0 }, // texture-ready reveal (0 = contour only, 1 = full photo)
       uContourFade: { value: 1 }, // near-camera gate for the contour (mirrors proxFade)
+      uRim: { value: 0 },
     },
     vertexShader: CARD_DISPERSE_VERT,
     fragmentShader: CARD_FRAG,
@@ -201,7 +202,7 @@ export function loadModalTexture(src, maxTex, onReady, onError) {
 const TEXT_MAX_SIDE = 2048;
 
 // Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
-const HINT_FILL = 0.8;
+const HINT_FILL = 0.9;
 
 // `aspect` is the camera aspect, so texture pixels stay square.
 export function createClickDragTexture(aspect, hintText = 'Click & Drag') {

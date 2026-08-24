@@ -2558,9 +2558,49 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **Sparseness → `BREAKPOINTS.sm.CARD_H_SPHERE`** (sphere path only). Coverage scales with **H²**, so
     size is a far stronger lever than count and adds no textures/draw calls. Net ~42% of the sphere
     face.
+  - **Sphere sampling is cell-centred** (`fibSpherePos`: `y = 1 − (2i + 1)/n`) — symmetric about the
+    equator, and **no card lands on ±Y**. That second property is load-bearing and non-local:
+    `buildCards` orients sphere cards with a world up, and `Matrix4.lookAt` degenerates when the
+    normal is parallel to it, taking that card's roll off Three's 1e-4 fallback nudge instead. The
+    most polar card sits 16.6° out at n=24 and 9.1° at n=80 — `|cross(up, normal)| ≥ 0.16` across
+    that range, so world up needs no pole special-casing.
   - **Scatter → `CARD_ROLL_JITTER`** (radians, the roll spans ±half its value). Per-BP, and much
     tighter on sm: at that sparsity md's spread reads as debris, while md keeps the collage
     character.
+- **Card edge light (`uRim`)** — a lit band inside the rounded-rect boundary, scaled by how edge-on
+  the card is viewed. Five things about it are not visible from any one call site:
+  - **Applied once, after the phase dispatch.** `applyRim` is called at the end of
+    `updateCardTransform`, not inside the `place*` functions, so it reads whatever transform the
+    phase just produced — including a part-folded card. Adding a sixth phase needs no rim wiring.
+  - **Obliquity is skipped under the ortho camera.** Arc and settled grid run `cameraOrtho`, and
+    both place cards with a pure z-roll, which leaves the local `+Z` normal fixed — so every card
+    there is exactly face-on and sits at `RIM × RIM_FACE_ON`. The normal/dot work only runs when
+    `frame.activeCamera` is the perspective camera. Off-axis cards still in the grid *do* pick up
+    real obliquity once the fold starts and the camera switches; that step is the camera model
+    changing, not the rim.
+  - **`uContourFade` doubles as the rim's fade gate.** It is already `proxFade` in the sphere phase
+    and `1` everywhere else, which is exactly what the rim wants, so the shader multiplies by it
+    rather than carrying a second uniform. Repurposing or renaming it moves the rim with it.
+  - **The band is clamped to the card interior with `* shapeA`.** Without that, the dispersion's
+    vertex overscan puts grains outside the original outline, where the SDF reports "past the edge"
+    and the band reads at full strength.
+  - **The effect is content-dependent, by construction.** Contrast against the card is
+    `uRim × (RIM_TARGET − c)`, so it is strongest on content far from `RIM_TARGET` and **zero on
+    content at it**. Bright cards get little; on a near-black stage their silhouette is already the
+    highest-contrast edge in the scene. `RIM_DARK_GAIN` steepens the darkening half without moving
+    that dead zone. Anything that guarantees a visible edge on *every* card has to darken the photo
+    inboard of the boundary, which reads as a band across the image rather than an edge.
+  - **`RIM` is routed off `cfg`, not `shape`** (unlike `CARD_FACE_CAMERA`), so each band carries its
+    own dial and the md-touch barrel shares md's.
+  - **Which "card height" `RIM_WIDTH` is a fraction of, per phase.** The SDF space is world position
+    over card *height* and is isotropic, so the band is the same physical width on all four edges of
+    a card. Across cards it depends on what sets height in that phase: the **full-sphere path pins
+    `sphereScaleSY` to 1**, so every card is `CARD_H_SPHERE` tall and source aspect goes entirely
+    into `scaleX` — portrait and landscape get the *same* rim. **Grid and arc** scale uniformly
+    (`setScalar`) with `uAspect` forced to `CARD_ASPECT`, so grid cards all match and an arc card's
+    band tracks its own animated size. **Only the barrel varies**: `sphereScaleSY = mas.h /
+    CARD_H_SPHERE`, so band width spans up to `CYL_ASPECT_CAP²`. Equalizing that would mean
+    normalizing against `fadeRefH` and promoting `RIM_WIDTH` to a per-card uniform.
 - **Drag physics — position-driven while held, velocity-driven once released.** The two halves of a
   drag want different inputs, so the shared `drag` object carries both and `updateSphereRotation`
   picks one per frame:
@@ -2710,10 +2750,11 @@ self-evident from the name:
 | `DRAG_GEARING` (per band) | fraction | pointer→rotation gearing as a fraction of true 1:1 surface tracking; `dragSensitivity()` turns it into rad/px off the live viewport. `1` = the surface follows the pointer exactly |
 | `VEL_SMOOTH_MS` (`interaction.js`) | ms | time constant of the release-velocity EMA |
 | `HOVER_RATE` | per 60fps frame | ease toward the hover target, applied as `1 − (1 − RATE) ** dtScale`; reaches 80% in `ln(0.2) / ln(1 − RATE)` frames |
-| `CA_STRENGTH` | UV | radial shift per channel at transition peaks (Option B bell curve) |
-| `CA_MOTION_STRENGTH` / `…_ARC` | UV | directional (motion-trail) shift max — full during peel/fold/sphere/modal, softly clamped on the arc |
-| `SCROLL_VEL_MAX` / `_DEADBAND` | px/frame | scroll speed that saturates the motion trail / below which Lenis settle-noise is ignored (anti-shimmer) |
-| `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter (Option C, md only) |
+| `CA_STRENGTH` | UV | radial shift per channel at transition peaks (bell curve) |
+| `CA_MOTION_STRENGTH` / `…_ARC` | UV | directional (motion-trail) shift max — full during peel/fold/sphere/modal, softly clamped on the arc. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself |
+| `SPHERE_DRAG_CA_MUL` | uCA per unit of `sphereDragWarp` | adds to `uCA` while spinning the sphere, on top of the transition bell and hover terms |
+| `SCROLL_VEL_MAX` | px/frame | scroll speed that saturates the motion-trail amplitude and the global canvas filter (`CA_PX_MAX`) |
+| `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter. Gated by `GLOBAL_CA_SM`/`_MD` — **sm stays off**: a CSS `filter` over the full canvas forces an offscreen composite every repainted frame, and falls off the GPU-accelerated path on mobile Safari in particular |
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |
@@ -2722,6 +2763,12 @@ self-evident from the name:
 | `DISPERSE_EXPAND` / `_JITTER` (`shaders.js`) | × card radius / fraction of own flight | how far the fastest chunk flies (the "how dramatic" dial) / its sideways wander. Both feed the vertex overscan AND the fragment scatter, via `DISPERSE_MARGIN` (derived — never hand-copy it, or the two stages drift and chunks clip at the quad edge) |
 | `DISPERSE_CHUNKS` / `_ERODE` / `_EDGE_LEAD` (`shaders.js`) | per card height / card-heights / ratio | debris grid the flight is decided on / random bite out of the silhouette, so no clean border survives the explosion / extra lift-off odds at the rim vs the middle |
 | `GRAIN_CELLS` (`shaders.js`) | per card height | the dissolve's RGB grain grid — finer than `DISPERSE_CHUNKS`. Both grids are laid out in the card's OWN uv (× `uAspect`, so cells stay square and travel with the card rather than swimming in screen space) |
+| `RIM` (per band) | mix amount | card edge-light strength at full obliquity. `0` disables the effect *and* skips the per-card normal/dot work. Identical to `RIM_TARGET` in effect on black content — reach for this one to scale the whole effect, that one to rebalance dark against light |
+| `RIM_FACE_ON` | fraction of `RIM` | floor on the obliquity term — what a face-on card keeps, and therefore the sole rim dial for the arc and grid phases. `1` makes the rim angle-independent, which also makes the obliquity computation dead |
+| `RIM_HOVER` | fraction of `RIM` | added to the rim on hover, on top of the floor and the obliquity term. Sphere-phase only in practice — `hoverT` is force-zeroed off the globe and under reduced motion. The sum is **clamped at 1**, so hover can lift a face-on card to the fully-lit value but never past it — which also means a card already at the limb gets no rim change from hover |
+| `RIM_WIDTH` (`shaders.js`) | fraction of card height | how far the lit band reaches inward. Being a fraction of card *height* means the on-screen width tracks the card: widest on the arc's full-size cards, narrowest at the back of the sphere — where it approaches the ~1px floor below which it aliases, since this term carries no `fwidth` AA. Keep it under the corner radius (`uRadius`) or the corners read brighter than the straight edges |
+| `RIM_TARGET` (`shaders.js`) | edge value | what the band mixes toward. Content *at* this value gets no rim at all, so keep the crossover near white, where photo edges are rarest — moving it toward mid-grey parks the dead zone on the most common content there is |
+| `RIM_DARK_GAIN` (`shaders.js`) | × | extra gain on the darkening side only (content above `RIM_TARGET`), so bright cards get an edge without changing dark cards or moving the dead zone. `1` collapses to a plain symmetric mix |
 | `SPHERE_DRAG_WARP_BASELINE` / `_VEL` / `_MAX` / `_EASE` | uWarp, last per 60fps frame | barrel-warp while dragging: constant baseline + a velocity-driven burst (decays with `DRAG_FRICTION`), capped, then eased toward that target |
 | `TEXT_BEHIND_GAP` | world units | how far the hint plane sits behind the sphere's back surface |
 | `TEXT_WARP_ENTER_MAX` | uWarp | at the hint's entrance (barrel distortion) |
