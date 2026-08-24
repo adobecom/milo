@@ -945,6 +945,7 @@
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item.focused,
   .hub-hero-carousel-item:focus-visible {
+    --slide-min-w: calc(var(--carousel-item-media-height) * 1.25);
     width: calc(var(--carousel-item-media-height) * 1.25);
     min-width: calc(var(--carousel-item-media-height) * 1.25);
     background-color: var(--s2a-color-gray-1000);
@@ -1099,7 +1100,7 @@
 }
 
 /* below large */
-@media (1400px > width) {
+@media (1440px > width) {
   .hub-hero {
     --hub-hero-carousel-item-min-width: 146px;
     --hub-hero-carousel-container-height: min(60vh, 580px);
@@ -1107,7 +1108,7 @@
 }
 
 /* XL desktop */
-@media (1400px < width) {
+@media (1440px <= width) {
   .hub-hero {
     --slide-width: 392px;
     --grid-col-two-offset: 184px;
@@ -1783,18 +1784,18 @@
 @keyframes carouselSlideExpandSize {
   0% {
     max-width: var(--grid-img-width);
-    min-width: var(--grid-img-width-min);
+    min-width: var(--slide-min-w, var(--grid-img-width-min));
     max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
   }
 
   40% {
-    min-width: var(--grid-img-width-min);
+    min-width: var(--slide-min-w, var(--grid-img-width-min));
   }
 
   100% {
     max-height: var(--hub-hero-carousel-container-height);
     max-width: var(--slide-max-width);
-    min-width: var(--hub-hero-carousel-item-min-width);
+    min-width: var(--slide-min-w, var(--hub-hero-carousel-item-min-width));
   }
 }
 
