@@ -431,7 +431,7 @@ const dynamicLayoutUpdates = (el) => {
   updateContentSpacing(el);
 };
 
-const startAutoplay = (slides, cards, container, block) => {
+const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true) => {
   const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
@@ -496,14 +496,16 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
-  const activate = (index, direction = 1, { skipTrack = false } = {}) => {
+  const activate = (index, direction = 1, { skipTrack = false, instant = false } = {}) => {
     finishSlideTransition();
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
     const vid = newSlide.querySelector('video');
     loadSlideMedia(newSlide);
-    const reducedMotion = prefersReducedMotion();
+    // instant skips the slide-transition animation - used when a hidden viewport is
+    // synced to another viewport's slide, so it's already correct once revealed.
+    const reducedMotion = prefersReducedMotion() || instant;
 
     oldSlide.classList.remove('is-active');
     newSlide.classList.add('is-active');
@@ -699,7 +701,7 @@ const startAutoplay = (slides, cards, container, block) => {
   // on the heading instead of being dragged to the late video paint. It also keeps
   // the progress bar honest: it begins when the video is actually playing.
   const heroVideo = slides[active]?.querySelector('video');
-  if (heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
+  if (gateOnFirstFrame && heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
     let started = false;
     let fallbackTimer = null;
     const kick = () => {
@@ -717,7 +719,16 @@ const startAutoplay = (slides, cards, container, block) => {
     requestAnimationFrame(beginAutoplay);
   }
 
-  return { pause, resume };
+  const getActive = () => active;
+  // Jump straight to a slide with no transition, so a hidden viewport can be lined up
+  // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
+  const syncTo = (index) => {
+    if (index === active) return;
+    clearFill(active);
+    activate(index, 1, { instant: true });
+  };
+
+  return { pause, resume, getActive, syncTo };
 };
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
@@ -767,27 +778,34 @@ export default function init(el) {
   el.replaceChildren(...containers);
   const controllersByVp = new Map();
   let activeVpName = null;
-  // Only the currently visible viewport's controller should ever run. Previously, switching
-  // breakpoints (mobile/tablet/desktop) left the outgoing viewport's autoplay timer and hero
-  // video running forever inside a display:none container - this pauses the outgoing viewport
-  // and resumes (or lazily creates) the incoming one instead of leaving both running.
+  // Only the currently visible viewport's controller should ever run. Switching breakpoints
+  // (mobile/tablet/desktop) pauses the outgoing viewport - so its autoplay timer and hero
+  // video don't keep running inside a display:none container - and resumes (or lazily creates)
+  // the incoming one, carrying the outgoing viewport's active slide across so the breakpoints
+  // stay in sync instead of each tracking its own index.
   const syncViewportAutoplay = () => {
     const activeVp = getActiveViewport();
     if (activeVp === activeVpName) return;
-    if (activeVpName) controllersByVp.get(activeVpName)?.pause();
+    const outgoing = activeVpName ? controllersByVp.get(activeVpName) : null;
+    const carryIndex = outgoing?.getActive();
+    outgoing?.pause();
     activeVpName = activeVp;
-    const existing = controllersByVp.get(activeVp);
-    if (existing) {
-      existing.resume();
-      return;
+
+    let controller = controllersByVp.get(activeVp);
+    if (!controller) {
+      const container = containers.find((c) => c.dataset.viewport === activeVp);
+      if (!container) return;
+      const slides = container.querySelectorAll('.rm-slide');
+      const cards = container.querySelector('.rm-cards');
+      setSlideObserver(slides);
+      setAnalytics(slides, cards, container, el);
+      // Gate autoplay on the hero's first frame only for the initial viewport (LCP);
+      // viewports created later on resize don't affect LCP, so start them right away.
+      controller = startAutoplay(slides, cards, container, el, controllersByVp.size === 0);
+      controllersByVp.set(activeVp, controller);
     }
-    const container = containers.find((c) => c.dataset.viewport === activeVp);
-    if (!container) return;
-    const slides = container.querySelectorAll('.rm-slide');
-    const cards = container.querySelector('.rm-cards');
-    setSlideObserver(slides);
-    setAnalytics(slides, cards, container, el);
-    controllersByVp.set(activeVp, startAutoplay(slides, cards, container, el));
+    if (carryIndex != null) controller.syncTo(carryIndex);
+    controller.resume();
   };
 
   loadViewportVideos(el);
