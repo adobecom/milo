@@ -217,9 +217,39 @@
     }
   }
 
+  /* Merch-moment isn't a real garage-door reveal: the section must not grow
+     up from -50vh and overlap the previous section like the shared behavior
+     does. Only the background image keeps its scroll-linked scale; text is
+     triggered once on intersection (see rich-content.js), fading in with
+     almost no motion, well before the section has scrolled into place. */
   &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    .foreground {
-      animation-range: cover -10% cover 90%;
+    animation: none;
+    transform: none;
+  }
+
+  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground {
+    animation: none;
+
+    .content > * {
+      animation: none;
+      opacity: 0;
+      transition: opacity 1.2s ease-out;
+    }
+
+    &.is-revealed .content > * {
+      opacity: 1;
+    }
+
+    .content > :nth-child(2) { transition-delay: 120ms; }
+    .content > :nth-child(3) { transition-delay: 240ms; }
+    .content > :nth-child(4) { transition-delay: 360ms; }
+    .content > :nth-child(5) { transition-delay: 480ms; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > * {
+      transition: none;
+      opacity: 1;
     }
   }
 
@@ -238,6 +268,12 @@
     }
 
     &.has-background .section-background {
+      /* Distance the bg image travels up (see rc-merch-bg-parallax). The image
+         also gets a negative bottom margin of the same amount, so it overflows
+         its (clipped) box by exactly this much — the spare image below slides
+         up into view as it translates, so the bottom stays covered and no hole
+         is exposed. */
+      --merch-bg-shift: 80px;
 
       &,
       & > * {
@@ -296,6 +332,10 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-shift: 340px;
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
@@ -792,6 +832,54 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    /* Independent, continuous Y-speed parallax for the merch-moment text groups —
+       separate from the once-triggered fade-in above, and left off in Firefox
+       (no animation-timeline: view() support there; scroll-animations.js owns
+       that fallback and is untouched). */
+    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content {
+      > .eyebrow, > [class*="heading-"] {
+        animation: rc-merch-parallax-fast linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+        will-change: translate;
+      }
+
+      > [class*="body-"], > .action-area {
+        animation: rc-merch-parallax-slow linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+        will-change: translate;
+      }
+    }
+
+    @keyframes rc-merch-parallax-fast {
+      from { translate: 0 20px; }
+      to { translate: 0 -20px; }
+    }
+
+    @keyframes rc-merch-parallax-slow {
+      from { translate: 0 8px; }
+      to { translate: 0 -8px; }
+    }
+
+    /* Background image parallax: the image slides straight up as you scroll
+       down (and back on scroll up, since it's tied to the view() timeline both
+       ways). The negative bottom margin makes the full-size image overflow its
+       clipped box by --merch-bg-shift, and it travels up by exactly that same
+       amount — so the spare image below fills the space as it moves and the
+       bottom is never left empty. Replaces the shared garage-door-bg-scale. */
+    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .section-background img {
+      margin-block-end: calc(-1 * var(--merch-bg-shift));
+      animation: rc-merch-bg-parallax ease-out both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 60%;
+    }
+
+    @keyframes rc-merch-bg-parallax {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(-1 * var(--merch-bg-shift))); }
+    }
+
     @keyframes rc-video-top-door {
       from { transform: translateY(-20vh); }
       to { transform: translateY(0); }

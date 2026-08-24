@@ -150,6 +150,22 @@ function decorate(block, root = block) {
   decorateJumpLinks(content, foreground);
 }
 
+function revealMerchMomentText(block) {
+  const foreground = block.querySelector('.foreground');
+  if (!foreground || foreground.dataset.revealObserved) return;
+  foreground.dataset.revealObserved = '1';
+
+  // Fires as soon as the foreground starts entering the viewport, so the fade
+  // actually plays on screen — independent of the section's own scroll-linked
+  // grow/scale, which is much slower to complete.
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    foreground.classList.add('is-revealed');
+    observer.disconnect();
+  }, { threshold: 0 });
+  observer.observe(foreground);
+}
+
 function applyHeroOverlay(el) {
   const section = el.closest('.section');
   if (!section) return;
@@ -160,6 +176,10 @@ function applyHeroOverlay(el) {
 
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
+
+  if (el.classList.contains('merch-moment')) {
+    revealMerchMomentText(el);
+  }
 
   if (!el.classList.contains('hero')) return;
 
