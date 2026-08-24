@@ -96,7 +96,9 @@ function parseContent(rows) {
     const prodIcon = row.querySelector('img');
     const isSvgIcon = prodIcon && isSvgUrl(prodIcon.src);
     if (isSvgIcon) prodIcon.src = getFederatedUrl(prodIcon.src);
-    const icon = isSvgIcon ? prodIcon : (pics.length > 1 ? pics[0] : null);
+    let icon = null;
+    if (isSvgIcon) icon = prodIcon;
+    else if (pics.length > 1) icon = pics[0];
     const picture = pics[pics.length - 1] ?? null;
     if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
@@ -295,7 +297,7 @@ function createReflow({
 
 function initScroll(block, refs, apps) {
   const {
-    bg, scrollWrapper, content, left, header, carousel, sticky, categoryWrapper,
+    bg, scrollWrapper, content, left, header, carousel,
     categoryLabel, divider, listWrapper, list, media,
   } = refs;
 
