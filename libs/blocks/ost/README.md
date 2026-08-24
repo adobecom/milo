@@ -14,6 +14,10 @@ Offer Selector Tool is loaded in Milo as external JS and CSS files hosted in Sta
 
 For more info on Tacocat.js or Offer Selector Tool visit https://git.corp.adobe.com/Dexter/tacocat.js/tree/develop/packages/offer-selector-tool
 
+## IMS authentication
+
+OST authenticates through the shared `loadIms` helper (`libs/utils/utils.js`) instead of loading imslib itself. AOS requires the `aos_milo_commerce` IMS client, so `loadOstEnv` sets `imsClientId`/`imsScope` in the config **before dynamically importing `merch.js`** — merch eagerly initializes IMS (via `loadIms`) at module-evaluation time, and `loadIms` is memoized on its first call, so the client id must be in place beforehand.
+
 ## Development
 
 To prevent IMS from redirecting to sign-in page and back,

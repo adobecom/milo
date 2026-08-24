@@ -89,6 +89,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
   window.adobeIMS = {
     isSignedInUser: sinon.stub().returns(false),
     signIn: sinon.stub(),
+    getAccessToken: sinon.stub(),
   };
   window.ost = { openOfferSelectorTool: sinon.spy() };
   window.tacocat = {

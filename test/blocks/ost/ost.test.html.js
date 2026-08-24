@@ -204,10 +204,12 @@ describe('OST: init', () => {
     });
   });
 
-  it('waits for IMS callback to open OST if query string does not include token', async () => {
+  it('opens OST with the IMS token when query string has no token and user is signed in', async () => {
     const { options: { country, language, workflow } } = mockOstDeps({ mockToken: false });
 
     const token = 'test-token';
+    window.adobeIMS.isSignedInUser.returns(true);
+    window.adobeIMS.getAccessToken.returns({ token });
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
@@ -216,9 +218,6 @@ describe('OST: init', () => {
       default: init,
     } = await import('../../../libs/blocks/ost/ost.js');
     await init(document.body.firstChild);
-
-    expect(window.ost.openOfferSelectorTool.called).to.be.false;
-    window.adobeid.onAccessToken({ token });
 
     expect(window.ost.openOfferSelectorTool.called).to.be.true;
     expect(window.ost.openOfferSelectorTool.getCall(0).args[0]).to.include({
@@ -238,7 +237,7 @@ describe('OST: init', () => {
 
     const { default: init } = await import('../../../libs/blocks/ost/ost.js');
     await init(document.body.firstChild);
-    window.adobeid.onReady();
+    expect(window.ost.openOfferSelectorTool.called).to.be.false;
     expect(window.adobeIMS.signIn.called).to.be.true;
   });
 

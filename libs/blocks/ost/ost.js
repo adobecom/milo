@@ -1,15 +1,8 @@
 import ctaTextOption from './ctaTextOption.js';
 import {
-  getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
+  getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag, loadIms,
+  getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
-import {
-  initService,
-  loadMasComponent,
-  getMasLibs,
-  getMiloLocaleSettings,
-  COMMERCE_LIBRARY,
-  getMasComponentUrl,
-} from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -17,7 +10,6 @@ export const DEFAULT_CTA_TEXT = 'buy-now';
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
-const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const OST_SCRIPT_URL = '/studio/ost/index.js';
 const OST_STYLE_URL = '/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
@@ -73,8 +65,8 @@ export function getMasLibsBase() {
 
   if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
 
-  // invalid maslibs values are rejected by getMasLibs and fall back to the default
-  return getMasLibs()?.replace('/web-components/dist', '') ?? 'https://mas.adobe.com';
+  // invalid maslibs values are rejected by getValidatedMasLibsUrl and fall back to the default
+  return getValidatedMasLibsUrl(masLibs) ?? 'https://mas.adobe.com';
 }
 
 /**
@@ -167,6 +159,24 @@ export async function loadOstEnv() {
     attributes['data-mas-ff-defaults'] = 'on';
   }
   if (countryParam) attributes.country = countryParam.toUpperCase();
+
+  // Set the AOS IMS client before merch.js is imported: merch eagerly initializes IMS
+  // (via loadIms) at module-evaluation time, and loadIms is memoized on first call.
+  // AOS is prod-only, so force the prod IMS environment regardless of the page env.
+  const config = getConfig();
+  config.imsClientId = IMS_COMMERCE_CLIENT_ID;
+  config.imsScope = IMS_SCOPE;
+  config.adobeid = { ...config.adobeid, environment: IMS_ENV };
+
+  const {
+    initService,
+    loadMasComponent,
+    getMasLibs,
+    getMiloLocaleSettings,
+    COMMERCE_LIBRARY,
+    getMasComponentUrl,
+  } = await import('../merch/merch.js');
+
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
   masCommerceService = await loadMasComponent(COMMERCE_LIBRARY);
@@ -383,24 +393,14 @@ export default async function init(el) {
 
   if (ostEnv.aosAccessToken) {
     openOst();
-  } else {
-    window.adobeid = {
-      client_id: IMS_COMMERCE_CLIENT_ID,
-      environment: IMS_ENV,
-      optimizations: { fastEvents: true },
-      autoValidateToken: true,
-      scope: IMS_SCOPE,
-      onAccessToken: ({ token }) => {
-        ostEnv.aosAccessToken = token;
-        openOst();
-      },
-      onReady: () => {
-        if (!window.adobeIMS.isSignedInUser()) {
-          window.adobeIMS.signIn();
-        }
-      },
-    };
+    return;
+  }
 
-    await loadScript(IMS_PROD_URL);
+  await loadIms();
+  if (window.adobeIMS.isSignedInUser()) {
+    ostEnv.aosAccessToken = window.adobeIMS.getAccessToken()?.token;
+    openOst();
+  } else {
+    window.adobeIMS.signIn();
   }
 }
