@@ -138,13 +138,7 @@
       aspect-ratio: unset;
       flex-direction: column;
       align-items: flex-start;
-
-      .foreground {
-        max-width: unset;
-        min-width: 100%;
-        box-sizing: border-box;
-        background-color: var(--s2a-color-content-default);
-      }
+      background-color: var(--s2a-color-gray-1000);
     }
 
     .media {
