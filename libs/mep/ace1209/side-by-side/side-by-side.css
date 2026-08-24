@@ -143,6 +143,7 @@
 
     .media {
       position: unset;
+      margin: 0 auto;
     }
 
     &:has(+ .side-by-side.equal) {
