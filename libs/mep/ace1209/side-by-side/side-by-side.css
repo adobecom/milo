@@ -143,7 +143,7 @@
         max-width: unset;
         min-width: 100%;
         box-sizing: border-box;
-        background-color: black;
+        background-color: var(--s2a-color-content-default);
       }
     }
 
