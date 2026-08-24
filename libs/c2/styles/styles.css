@@ -425,6 +425,7 @@
   --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  --feds-language-banner-height: 44px;
 
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -438,6 +439,8 @@
   --grid-margin-width-target: var(--grid-margin-width-base);
   --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
+
+  --global-height-nav: 80px;
 
   /* Regional font variations */
   &:lang(ar) {
@@ -477,6 +480,12 @@
 
   &:lang(th) {
     --body-font-family: adobe-clean-thai, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
+  }
+
+  &:lang(vi-VN),
+  &:lang(vi),
+  &:lang(he) {
     --heading-font-family: var(--body-font-family);
   }
 }
@@ -554,6 +563,14 @@ body {
   &:has(.dialog-modal) #onetrust-consent-sdk {
     display: none;
   }
+}
+
+header.global-navigation {
+  min-height: var(--global-height-nav);
+}
+
+body:has(.global-navigation) main {
+  margin-top: calc(-1 * var(--global-height-nav));
 }
 
 main > div,
@@ -869,8 +886,9 @@ p {
     color 300ms var(--parallax-easing);
 
   &:focus-visible {
-    outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
     outline-offset: var(--s2a-border-width-2);
+    box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
   }
 
   &:is(:disabled, [aria-disabled="true"], .disabled) {
@@ -1242,23 +1260,23 @@ span.hang-opening-quote {
     &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
     &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
     &.two-up   > :nth-child(2n of :not([class*="section-"])),
     &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 3.25; }
 
     &.three-up > :nth-child(3n of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
     &.four-up  > :nth-child(4n of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 7.75; }
 
-    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 10; }
 
-    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 12.25; }
 
     /* Row stagger indices per -up class */
     /* Row 1 */
@@ -1306,21 +1324,15 @@ span.hang-opening-quote {
         animation-timeline: view(block);
       }
 
-      /* Prolong animation for 2 rows */
+      /* End at the viewport top so multi-row cards settle level on short viewports. */
       &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
       &.four-up:has(> :nth-child(5 of :not([class*="section-"]))),
       &.six-up:has(> :nth-child(7 of :not([class*="section-"]))) {
-        --parallax-range-end-name: cover;
-        --parallax-range-end-length: 70%;
-      }
+        --parallax-range-end-name: exit-crossing;
+        --parallax-range-end-length: 0%;
 
-      /* Prolong animation for 3+ rows */
-      &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
-      &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
-      &.four-up:has(> :nth-child(9 of :not([class*="section-"]))),
-      &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
-        --parallax-range-end-length: 80%;
+        view-timeline-inset: 0 10%;
       }
     }
   }
@@ -1358,28 +1370,30 @@ span.hang-opening-quote {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
 
-    overflow: clip;
     transform-origin: top center;
     animation: garage-door-grow ease-out both;
     animation-timeline: view();
-    animation-range: entry 0% cover 40%;
+    animation-range: entry 0% cover 36%;
 
     @media (width >= 1280px) {
-      --gd-grow-from: -110vh;
-      --gd-reveal-from: 50vh;
-      animation-range: entry 0% cover 50%;
+      --gd-grow-from: -90vh;
+      --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 48%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
-      --gd-reveal-from: 30vh;
       animation-range: entry 0% cover 36%;
     }
 
-    .section-background img {
-      animation: garage-door-bg-scale ease-out both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 70%;
+    .section-background {
+      overflow: hidden;
+
+      img {
+        animation: garage-door-bg-scale ease-out both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 70%;
+      }
     }
 
     .foreground {
@@ -1418,14 +1432,21 @@ span.hang-opening-quote {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 35vh);
+
     will-change: transform;
     position: sticky;
     top: 0;
     z-index: 0;
     animation-name: parallax-move-up-fast;
     animation-timeline: scroll(root block);
-    animation-range: 0 80vh;
+    animation-range: var(--feds-promo-bar-height, 0px) calc(var(--feds-promo-bar-height, 0px) + 80vh);
     animation-timing-function: ease-out;
+
+    /* Shorter viewports in the common laptop width band need more travel */
+    @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+      --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
+    }
 
     &::after {
       content: '';
@@ -1436,14 +1457,14 @@ span.hang-opening-quote {
       pointer-events: none;
       animation: parallax-fade-to-dark linear both;
       animation-timeline: scroll(root block);
-      animation-range: 0 80vh;
+      animation-range: var(--feds-promo-bar-height, 0px) calc(var(--feds-promo-bar-height, 0px) + 80vh);
       z-index: 2;
     }
   }
 
   @keyframes parallax-move-up-fast {
     from { transform: translateY(0); }
-    to { transform: translateY(-35vh); }
+    to { transform: translateY(var(--parallax-move-up-to)); }
   }
 
   @keyframes parallax-fade-to-dark {
@@ -1473,19 +1494,6 @@ span.hang-opening-quote {
     from { transform: translateY(0); }
     to { transform: translateY(20vh); }
   }
-
-  /* Line height parallax declarations */
-  /* TODO: Adapt authoring to move and rename class */
-  .parallax-line-height * {
-    animation: text-reveal-up var(--parallax-easing) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-    will-change: line-height;
-  }
-
-  @keyframes text-reveal-up {
-    from { line-height: 300%; }
-  }
 }
 
 .dark {
@@ -1500,6 +1508,11 @@ span.hang-opening-quote {
       color: var(--color-white); /* TODO: Replace with an S2A variable */
     }
   }
+}
+
+.language-banner {
+  height: var(--feds-language-banner-height);
+  visibility: hidden;
 }
 
 @media (width >= 768px) {

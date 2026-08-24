@@ -166,17 +166,6 @@ A sticky section that scrolls away quickly while darkening.
 - Two keyframes: `parallax-move-up-fast` (translateY to -35vh)
   and `parallax-fade-to-dark`
 
-### Line height reveal (`parallax-line-height`)
-
-Text children animate from `line-height: 3` to default, creating
-a text "spreading apart then settling" reveal effect.
-
-- Applied to: a container element
-- Animates all `*` children
-- Uses `animation-timeline: view()`
-- Range: `entry 10% cover 40%`
-- Keyframe: `text-reveal-up`
-
 ---
 
 ## Reduced motion

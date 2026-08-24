@@ -482,3 +482,9 @@
     }
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .split-aside-grid * {
+    transition: none !important;
+  }
+}

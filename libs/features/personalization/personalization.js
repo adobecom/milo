@@ -11,6 +11,8 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
+  isTrustedUrl,
+  isSameOriginManifestPath,
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
@@ -88,35 +90,6 @@ export const DATA_TYPE = {
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
-
-const TRUSTED_DOMAINS = ['.adobe.com'];
-const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
-
-export function isTrustedUrl(url) {
-  if (typeof url !== 'string' || !url) return false;
-  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
-  let parsed;
-  try {
-    parsed = new URL(url, window.location.origin);
-  } catch {
-    return false;
-  }
-  if (parsed.origin === window.location.origin) return true;
-  if (parsed.protocol !== 'https:') return false;
-  return TRUSTED_DOMAINS.some(
-    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
-  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
-}
-
-function isSameOriginManifestPath(manifestPath) {
-  if (typeof manifestPath !== 'string' || !manifestPath) return false;
-  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
-  try {
-    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
-  } catch {
-    return false;
-  }
-}
 
 export const normalizePath = (p, localize = true) => {
   let path = p;
@@ -198,7 +171,11 @@ const COMMANDS_KEYS = {
 };
 
 function addIds(el, manifestId, targetManifestId) {
-  if (manifestId) el.dataset.manifestId = manifestId;
+  if (manifestId) {
+    el.dataset.manifestId = manifestId;
+    const { path } = el.dataset;
+    el.dataset.manifestDisplay = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+  }
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
 }
 
@@ -512,18 +489,23 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (blockSelector.startsWith('https://mas.adobe.com/')) {
-      const getFragmentId = (masUrl) => {
+      const getFragmentParams = (masUrl) => {
         const { hash } = new URL(masUrl);
         const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
         const searchParams = new URLSearchParams(hashValue);
-        return searchParams.get('fragment') || searchParams.get('query');
+        return {
+          fragment: searchParams.get('fragment') || searchParams.get('query'),
+          field: searchParams.get('field') || '',
+        };
       };
-      blockSelector = getFragmentId(blockSelector);
+      const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
+      blockSelector = sourceFragment;
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentId(command.content);
-        fragments[blockSelector] = command;
+        command.content = getFragmentParams(command.content).fragment;
+        fragments[blockSelector] ??= {};
+        fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
         if (!overridesParent) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
@@ -717,7 +699,12 @@ const setDataIdOnChildren = (sections, id, value) => {
 export const updateFragDataProps = (a, inline, sections, fragment) => {
   const { manifestId, adobeTargetTestid } = a.dataset;
   if (inline) {
-    if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
+    if (manifestId) {
+      setDataIdOnChildren(sections, 'manifestId', manifestId);
+      const { path } = fragment.dataset;
+      const display = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+      setDataIdOnChildren(sections, 'manifestDisplay', display);
+    }
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
     if (fragment.dataset.mepLingoRoc) setDataIdOnChildren(sections, 'mepLingoRoc', fragment.dataset.mepLingoRoc);
     if (fragment.dataset.mepLingoFallback) {
@@ -1017,17 +1004,22 @@ const getXLGListURL = (config) => {
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const entitlementUrl = getXLGListURL(config);
-  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
-  if (!fetchedData) return config.consumerEntitlements || {};
-  const entitlements = {};
-  fetchedData?.data?.forEach((ent) => {
-    const { id, tagname } = ent;
-    entitlements[id] = tagname;
-  });
   config.mep ??= {};
-  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
-  return config.mep.entitlementMap;
+  if (config.mep.entitlementMapFetch) return config.mep.entitlementMapFetch;
+  config.mep.entitlementMapFetch = (async () => {
+    const entitlementUrl = getXLGListURL(config);
+    const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!fetchedData) return config.consumerEntitlements || {};
+    const entitlements = {};
+    fetchedData?.data?.forEach((ent) => {
+      const { id, tagname } = ent;
+      entitlements[id] = tagname;
+    });
+    config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+    config.mep.entitlementMapFetch = null;
+    return config.mep.entitlementMap;
+  })();
+  return config.mep.entitlementMapFetch;
 };
 
 export const getEntitlements = async (data) => {
@@ -1426,22 +1418,19 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
-  for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getManifestConfig(
-      experiments[i],
-      config.mep?.variantOverride,
-    );
-  }
+  experiments = await Promise.all(
+    experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
+  );
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
   let results = [];
 
-  for (const experiment of experiments) {
-    const result = await categorizeActions(experiment, config);
-    if (result) results.push(result);
-  }
-  results = results.filter(Boolean);
+  // Safe to parallelize only because categorizeActions has no internal awaits —
+  // adding one would break last-write-wins order for replacepage/updateframework.
+  results = (await Promise.all(
+    experiments.map((exp) => categorizeActions(exp, config)),
+  )).filter(Boolean);
 
   config.mep.experiments = [...config.mep.experiments, ...experiments];
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
@@ -1706,7 +1695,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(normalizePath(getXLGListURL(config)), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
@@ -1722,7 +1711,19 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+    if (config.mep?.preview) {
+      loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
+      loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on'
+        ? '../mep/mep-next/mep-next.js' : './preview.js';
+      import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+        log(`MEP save error: ${e.toString()}`);
+        window.lana?.log(`MEP save error: ${e.toString()}`);
+      });
+    }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

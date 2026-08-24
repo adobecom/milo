@@ -556,6 +556,36 @@ const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   );
 };
 
+// A page with no locale prefix (e.g. bacom's base English pages, which live
+// directly at /products/... with no /en/) still has its first path segment
+// extracted positionally by callers below — but that segment is real content,
+// not a locale, and must not be mistaken for one just because it occupies
+// that position in the URL. Trust it as a locale when either:
+//  - it's one of this site's own known codes (a family's own base code, or
+//    any family's regionalSites codes), or
+//  - it's a real locale code in Milo's classic locale table (LOCALES) — e.g.
+//    bacom's /uk/ pages: 'uk' isn't onboarded to bacom's Lingo mapping, but
+//    it IS a real locale prefix, so it must fall through to the classic
+//    non-LFL lookup rather than being swept into the unprefixed root family.
+// Otherwise the path is unprefixed and belongs to the site's root ('/') family.
+const resolveSiteLocaleStr = (siteLocalesData, uniqueSiteId, rawLocaleStr) => {
+  if (!rawLocaleStr) return '';
+  if (rawLocaleStr in LOCALES) return rawLocaleStr;
+  const knownCodes = new Set();
+  siteLocalesData
+    .filter((entry) => entry.uniqueSiteId === uniqueSiteId)
+    .forEach(({ baseSite, regionalSites }) => {
+      const baseLocale = baseSite?.split('/')[1];
+      if (baseLocale) knownCodes.add(baseLocale);
+      (regionalSites || '')
+        .split(',')
+        .map((site) => site.trim().replace(/^\//, ''))
+        .filter(Boolean)
+        .forEach((code) => knownCodes.add(code));
+    });
+  return knownCodes.has(rawLocaleStr) ? rawLocaleStr : '';
+};
+
 let lingoSiteMappingPromise;
 function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   if (!lingoSiteMappingPromise) {
@@ -575,6 +605,57 @@ export function initBulkPublisherLingoMapping() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
   });
+}
+
+/**
+ * Returns true when the path's locale is known to require Language First Localization,
+ * false when it is known NOT to (e.g. English regional sites like gb, au, in, jp, kr),
+ * null when the origin is not present in the lingo-site-mapping at all (unboarded data
+ * stream — caller should default to non-LFL), or throws when the mapping fetch fails
+ * (caller should surface the error rather than silently misclassifying the page).
+ */
+export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
+  const configJson = await fetchLingoSiteMapping(fqdn);
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
+
+  const matched = siteQueryIndexMap.find(
+    ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
+  );
+  if (!matched) return null;
+
+  const { uniqueSiteId } = matched;
+
+  let pathname = path;
+  if (!path.startsWith('/')) {
+    try {
+      pathname = new URL(path.startsWith('http') ? path : `https://${path}`).pathname;
+    } catch {
+      pathname = `/${path.split('/').slice(1).join('/')}`;
+    }
+  }
+  const rawLocaleStr = pathname.split('/')[1] || '';
+  const localeStr = resolveSiteLocaleStr(siteLocalesData, uniqueSiteId, rawLocaleStr);
+
+  let foundInMapping = false;
+  let isEnglishRegional = false;
+
+  for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
+    if (sid === uniqueSiteId) {
+      const baseLocale = baseSite.split('/')[1] || '';
+      if (localeStr === baseLocale) {
+        foundInMapping = true;
+        break;
+      }
+      if (isLocaleInRegionalSites(regionalSites, localeStr)) {
+        foundInMapping = true;
+        if (baseSite === '/') isEnglishRegional = true;
+        break;
+      }
+    }
+  }
+
+  return foundInMapping && !isEnglishRegional;
 }
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
@@ -652,7 +733,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       }
     }
   }
-  const localeStr = pathname.split('/')[1];
+  const rawLocaleStr = pathname.split('/')[1] || '';
 
   try {
     let siteId;
@@ -666,10 +747,15 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
     if (matchedByOrigin) {
       siteId = matchedByOrigin.uniqueSiteId;
     }
+    const localeStr = resolveSiteLocaleStr(siteLocalesData, siteId, rawLocaleStr);
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
     if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || isLocaleInRegionalSites(regionalSites, localeStr)))) {
-      const locale = LOCALES[localeStr]?.ietf || 'en-US';
+      // Not part of this site's Lingo mapping — fall back to the classic
+      // Milo locale lookup using the raw (unresolved) path segment, since it
+      // may still be a valid geo-locale prefix even though it isn't one of
+      // this site's own Lingo codes.
+      const locale = LOCALES[rawLocaleStr]?.ietf || 'en-US';
       /* eslint-disable-next-line prefer-const */
       let [currLang, currCountry] = locale.split('-');
       return {
@@ -681,10 +767,14 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
-        if (localeStr === baseSite.split('/')[1]) {
+        const baseLocale = baseSite.split('/')[1];
+        // baseLocale is '' for the root ('/') family, which has no code of its
+        // own — skip it here and let the pre-initialized {xx, en} default
+        // (above) stand, rather than overwriting it with a blank language.
+        if (baseLocale && localeStr === baseLocale) {
           lingoSiteMapping = {
             country: 'xx',
-            language: baseSite.split('/')[1],
+            language: baseLocale,
           };
           return;
         }
@@ -694,10 +784,11 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
               country: localeStr,
               language: 'en',
             };
+            return;
           }
           lingoSiteMapping = {
             country: localeStr,
-            language: baseSite.split('/')[1],
+            language: baseLocale,
           };
         }
       });
@@ -946,6 +1037,16 @@ export const getGrayboxExperienceId = (
   return null;
 };
 
+export const getProducts = async (state) => {
+  try {
+    const { tags } = await getTags(state.tagsUrl);
+    return tags?.mnemonics?.tags || {};
+  } catch (e) {
+    window.lana?.log(`Failed to fetch CaaS products: ${e.message}`, { tags: 'caas' });
+    return {};
+  }
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1008,6 +1109,8 @@ export const getConfig = async (originalState, strs = {}) => {
   } else {
     excludedCardsWithCurrent = excludedCards;
   }
+
+  const products = state.detailsTextOption === 'productName' ? await getProducts(state) : {};
 
   const config = {
     collection: {
@@ -1105,6 +1208,28 @@ export const getConfig = async (originalState, strs = {}) => {
       // Include editorialOpenVariant if necessary
       ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
         && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
+
+      // Include flexCardOptions when configured
+      ...((state.cardStyle === 'flex-card'
+        && (state.flexCardImageOptions !== 'default'
+          || state.flexCardTextAlign !== 'text-left'
+          || state.flexCardTextSize !== 'default'
+          || state.flexCardHideDetails
+          || state.flexCardHideTitle
+          || state.flexCardHideDescription
+          || state.flexCardShowDateOnFooter))
+        && {
+          flexCard: {
+            imageOption: state.flexCardImageOptions,
+            textAlign: state.flexCardTextAlign,
+            textSize: state.flexCardTextSize,
+            hideDetails: !!state.flexCardHideDetails,
+            hideTitle: !!state.flexCardHideTitle,
+            hideDescription: !!state.flexCardHideDescription,
+            showDateOnFooter: !!state.flexCardShowDateOnFooter,
+          },
+        }
+      ),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
@@ -1228,6 +1353,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
+    products,
   };
   return config;
 };
@@ -1353,6 +1479,13 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  flexCardTextSize: 'default',
+  flexCardImageOptions: 'default',
+  flexCardTextAlign: 'default',
+  flexCardHideDetails: false,
+  flexCardHideTitle: false,
+  flexCardHideDescription: false,
+  flexCardShowDateOnFooter: false,
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
