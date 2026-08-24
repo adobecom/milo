@@ -96,9 +96,8 @@ function parseContent(rows) {
     const prodIcon = row.querySelector('img');
     const isSvgIcon = prodIcon && isSvgUrl(prodIcon.src);
     if (isSvgIcon) prodIcon.src = getFederatedUrl(prodIcon.src);
-    let icon = null;
-    if (isSvgIcon) icon = prodIcon;
-    else if (pics.length > 1) icon = pics[0];
+    // eslint-disable-next-line no-nested-ternary
+    const icon = isSvgIcon ? prodIcon : (pics.length > 1 ? pics[0] : null);
     const picture = pics[pics.length - 1] ?? null;
     if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
