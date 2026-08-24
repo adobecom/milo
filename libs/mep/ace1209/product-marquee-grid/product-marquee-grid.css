@@ -63,6 +63,14 @@
       text-align: center;
     }
   }
+
+  .price.price-strikethrough {
+    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
+  }
+
+  .price {
+    color: red;
+  }
 }
 
 body:has(header.has-breadcrumbs) .product-marquee-grid {
