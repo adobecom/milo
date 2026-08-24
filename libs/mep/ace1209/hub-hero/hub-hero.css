@@ -26,7 +26,6 @@
   --slide-layout-animation-range: contain 10% contain 100%;
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
-  --carousel-items-top: 35%;
   --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: calc(var(--hub-hero-carousel-item-max-width) * 1.35);
   --slide-max-width: var(--hub-hero-carousel-item-max-width);
@@ -813,10 +812,12 @@
     padding: var(--s2a-spacing-lg);
     text-align: start;
   }
-        .hub-hero-carousel-item-media {
-          --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
-          --carousel-item-media-height: calc(var(--width) * .8);
-        }
+  
+  .hub-hero-carousel-item-media {
+    --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
+    --carousel-item-media-height: calc(var(--width) * .8);
+  }
+
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media video {
     border-radius: var(--s2a-border-radius-0);
     width: 100%;
