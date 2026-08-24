@@ -1,9 +1,8 @@
 .roller-carousel {
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
-  --gnav-offset: 72px;
   --rcc-top-gap: 40px;
-  --rcc-sticky-top: var(--gnav-offset);
+  --rcc-sticky-top: var(--global-height-nav, 64px);
 
   .rcc-scroll-wrapper {
     position: relative;
