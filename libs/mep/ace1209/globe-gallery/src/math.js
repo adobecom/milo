@@ -7,11 +7,6 @@ export function easeOutExpo(t) { return t >= 1 ? 1 : 1 - 2 ** (-10 * t); }
 
 export function lerpN(a, b, t) { return a + (b - a) * t; }
 
-// Every normalized progress in the block is clamped, and it was being done TWO ways: a local
-// `clamp01` in the core (14 calls) and 13 hand-written `Math.max(0, Math.min(1, x))`s. Those
-// disagree on exactly one input — NaN, which the inline form propagates and this one absorbs —
-// so a divide-by-zero progress reached a transform through some call sites and not others.
-// NaN -> 0 is the safe half: a NaN scale or position blanks the geometry it reaches.
 export function clamp01(t) { return t > 0 ? Math.min(1, t) : 0; }
 
 // UV repeat + offset that fills `planeAspect` with `imgAspect`, centre-cropping the overflow.
@@ -29,18 +24,7 @@ export function coverFit(imgAspect, planeAspect, out = {}) {
   return out;
 }
 
-// Quadratic ramp over the first `k` of the pan, then linear (C1 at the seam). `k` is the ONE
-// lever on how the fan's sweep is distributed in time: raising it slows the opening sweep and
-// lets the rest catch up, without touching where the arc starts, where it ends, or how long it
-// takes.
-//
-// `k` MUST be in (0, 1]. `a` is solved so the curve passes through (1, 1), but that only holds
-// while t=1 falls in the LINEAR branch: there `ease(1) = a*k*(2 - k) = 1` identically. At k >= 1
-// the quadratic branch covers all of [0, 1] and `ease(1)` is just `a = 1/(k(2 - k))`, which is 1
-// only at k = 1, diverges to +inf at k = 2, and goes NEGATIVE beyond — a fan that sweeps
-// backward. Nothing is gained by trying: k(2 - k) peaks at k = 1, so `a` is minimised there and
-// is symmetric about it, making k = 1 (pure t^2) both the slowest possible start and the last
-// correct value. Past it the sweep speeds back up AND overshoots.
+// Quadratic ramp over the first `k`, then linear (C1 at the seam).
 export function arcRotationEase(t, k) {
   const a = 1 / (k * (2 - k));
   const v0 = a * k * k;
@@ -49,9 +33,6 @@ export function arcRotationEase(t, k) {
 }
 
 // The fan circle (centre + radius) plus rotation offset / effective span, driven by arcPanT.
-// `arcRot0` drives BOTH the sweep (rotOffset) and the spread (effectiveSpan), so ARC_RAMP_T
-// slows the card-to-card separation along with the travel — deliberate for now; split the two
-// if the stagger ever needs to hold at a high ramp.
 export function buildArcCtx(arcPanT, W, H, arcSpan, rampT) {
   const arcRot0 = arcRotationEase(arcPanT, rampT);
   const R = Math.max(W, H) * 1.5; // smaller radius = more visible arc curvature
@@ -97,15 +78,9 @@ export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
   return cssToWorld(rpx, rpy, W, H, out);
 }
 
-// The perspective camera's vertical FOV, and the half-angle tangent every px<->world
-// conversion in the block is a function of. One declaration: the camera is CONSTRUCTED with
-// CAM_FOV and every frustum measure reads TAN_HALF_FOV, so the angle is never restated. It used
-// to be seven hand-written `Math.tan(Math.PI / 6)`s across three files, each silently wrong the
-// moment the camera changed.
 export const CAM_FOV = 60;
 export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 
-// CSS px per world unit at `dist` in front of the camera, on an `H`-px-tall viewport.
 export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
 // Frustum height = H at z=0, so 1 world unit = 1 CSS pixel.

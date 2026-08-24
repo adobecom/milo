@@ -8,9 +8,8 @@ const ENTER_GALLERY_DAA_LL = 'enter_gallery_kbd--globe_gallery';
 export default function createGalleryA11y({
   q,
   getCount,
-  getSphereFormT,
   getModalIdx,
-  interactiveThreshold,
+  isGlobeFormed,
   getCardLabel,
   centerCard,
   openCard,
@@ -32,10 +31,6 @@ export default function createGalleryA11y({
     appliedEntered = null;
   }
 
-  function isInteractive() {
-    return getSphereFormT() >= interactiveThreshold && getModalIdx() < 0;
-  }
-
   function collapse() {
     entered = false;
     focusedIdx = -1;
@@ -55,7 +50,7 @@ export default function createGalleryA11y({
   function onCardClick(e) {
     // Untrusted = synthesized by trackCardOpen(), report-only.
     if (!e.isTrusted) return;
-    if (isInteractive()) openCard(Number(e.currentTarget.dataset.idx));
+    if (isGlobeFormed()) openCard(Number(e.currentTarget.dataset.idx));
   }
   function onCardKeydown(e) {
     if (e.key !== 'Escape') return;
@@ -65,7 +60,7 @@ export default function createGalleryA11y({
   }
 
   function enterBrowse() {
-    if (!isInteractive() || !cardButtons.length) return;
+    if (!isGlobeFormed() || !cardButtons.length) return;
     entered = true;
     if (widgetEl) widgetEl.tabIndex = -1;
     cardButtons.forEach((btn) => { btn.tabIndex = 0; });

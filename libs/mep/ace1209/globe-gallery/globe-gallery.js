@@ -22,23 +22,6 @@ const CARD_ASPECT = 456 / 631;
 const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const BREAKPOINTS = {
-  md: {
-    minWidth: 768,
-    ARC_SPAN: 4.50,
-    SPHERE_R: 35,
-    CARD_H_SPHERE: 6.5,
-    CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 65,
-    CAM_Z_END: -60,
-    GRID_WINDOW_COLS: 9,
-    GRID_ROWS: 5,
-    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
-    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
-    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.5, // viewport-heights of pre-roll above the block top; keep under 1.0
-    ARC_RAMP_T: 0.1, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
-  },
   sm: {
     minWidth: 0,
     ARC_SPAN: 3.6,
@@ -47,6 +30,8 @@ const BREAKPOINTS = {
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.2,
     GRID_WINDOW_COLS: 3,
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
@@ -54,8 +39,27 @@ const BREAKPOINTS = {
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.55, // viewport-heights of pre-roll above the block top; keep under 1.0
-    ARC_RAMP_T: 0.30, // (0, 1] ONLY — see arcRotationEase. Higher = slower opening sweep
+    ENTRY_LEAD_VH: 0.55,
+    ARC_RAMP_T: 0.20,
+  },
+  md: {
+    minWidth: 768,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 6.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 65,
+    CAM_Z_END: -60,
+    NEAR_FADE_START: 2.2,
+    NEAR_FADE_END: 1.4,
+    GRID_WINDOW_COLS: 9,
+    GRID_ROWS: 5,
+    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
+    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
+    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.5,
+    ARC_RAMP_T: 0.1,
   },
 };
 
@@ -95,19 +99,12 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const PQ_HOLD_CLEARANCE_BAND_FRAC = 0.045; // of band; quote bottom → next section top
 
-// The reveal's share of the hold; the rest is dead scroll, nothing changing. See README.
-const PQ_REVEAL_END = 0.50;
+const PQ_REVEAL_IN_MS = 700;
+const PQ_REVEAL_OUT_MS = 225;
 
 // Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
-
-const PQ_HOLD_EASE = 0.08; // per 60fps frame, rescaled by dtScale at the use site
-const PQ_HOLD_IN_MS = 1400; // fastest the hold may play, forwards
-const PQ_HOLD_OUT_MS = 450; // and back
-const PQ_HOLD_MAX_DT = 100; // a tab-away must not arrive as one step
-const PQ_HOLD_STALL_MS = 140; // no new ground for this long and the scroll counts as stopped
-const PQ_HOLD_FLIP = 0.01; // retrace that is a real reversal, not noise; also how a stop is seen
 const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
@@ -154,8 +151,9 @@ const MASONRY_MORPH_RATE = 0.05; // per-frame
 // Near-camera proximity fade, in card-heights of depth.
 const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-out band
 const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
-const NEAR_FADE_START = 2.5; // depth where the fade begins
-const NEAR_FADE_END = 1.6; // depth at which the card is fully transparent
+// Near-camera fade. The BAND is per breakpoint (bp.NEAR_FADE_START/END, in mean card-heights of
+// camera depth) — sm cards are far larger against the viewport, so the two can want a different
+// feel. The RAMP SHAPE below is shared: it is how the band is spent, not how wide it is.
 const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
 const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
 
@@ -174,7 +172,6 @@ const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
 // hintDismissProgress accrual per 60fps frame of drag.
 const HINT_EXIT_DIST_RATE = 0.018;
 const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
-const HINT_EXIT_BURST_RATE = 0.010;
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
@@ -296,6 +293,10 @@ function createGlobeGalleryRuntime(
       CARD_W_ARC: cfg.CARD_W_ARC,
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
+      // Near-camera fade band, in mean card-heights of camera depth. START is purely visual; END
+      // also anchors dragFlipZ and the pull-quote cue — see cardVanishDepth.
+      NEAR_FADE_START: cfg.NEAR_FADE_START,
+      NEAR_FADE_END: cfg.NEAR_FADE_END,
       // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * TAN_HALF_FOV)),
       GRID_WINDOW_COLS: cfg.GRID_WINDOW_COLS,
@@ -352,12 +353,7 @@ function createGlobeGalleryRuntime(
     quoteEl: q('.globe-gallery-pullquote-quote'),
     lineEls: [], // one per rendered line
     splitW: 0, // box width they were split at
-    holdT: 0,
-    holdV: 0, // followHold's output — the hold every phase reads
-    holdMs: 0,
-    holdPeak: 0, // furthest the scroll's own hold has reached in the current direction
-    holdMoveMs: 0, // when it last reached a new one; nothing for PQ_HOLD_STALL_MS means stopped
-    holdDir: -1,
+    revealT: 0,
     frameStr: '',
     copyStr: '',
   };
@@ -443,6 +439,7 @@ function createGlobeGalleryRuntime(
   let controls = null;
 
   let suppressFocusSnap = false;
+  let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
 
   let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
 
@@ -472,8 +469,6 @@ function createGlobeGalleryRuntime(
       card.gridScale = gridCardW / CARD_W_SPHERE;
       card.gridTilt = tilt;
       card.gridQuat.setFromEuler(tiltEuler.set(0, 0, tilt));
-      card.gridCol = col;
-      card.gridRow = row;
     }
   }
 
@@ -483,8 +478,7 @@ function createGlobeGalleryRuntime(
 
   function buildCards() {
     const {
-      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_WINDOW_COLS, GRID_ROWS,
-      CARD_ROLL_JITTER, CYLINDER,
+      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
     } = bp;
     if (!placeholderTex) placeholderTex = createPlaceholderTexture();
     sphereGroup = new THREE.Group();
@@ -540,8 +534,6 @@ function createGlobeGalleryRuntime(
         gridScale: 1,
         gridTilt: 0,
         gridQuat: new THREE.Quaternion(),
-        gridCol: GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS),
-        gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
         srcAspect,
         sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : srcAspect / CARD_ASPECT,
@@ -567,6 +559,12 @@ function createGlobeGalleryRuntime(
     computeGridLayout();
   }
 
+  // Depth (world units, from the camera) at which a card has faded out completely. placeSphereCard
+  // owns the rule; dragFlipZ and the pull-quote cue are both anchored to it. NOTE: those two apply
+  // sphereGroup.scale differently — see the call sites. Only reduced motion on md+ scales the group
+  // at all, and RM pins zoomT to 0, so nothing reads either value there today.
+  const cardVanishDepth = () => bp.NEAR_FADE_END * fadeRefH;
+
   // Camera z below which drag inverts, anchored to where cards VANISH. Sole writer of fadeRefH.
   // Rerun once textures land (sphereWorldH starts as a placeholder).
   function recomputeDragFlip() {
@@ -578,7 +576,7 @@ function createGlobeGalleryRuntime(
     ) * groupScale;
     fadeRefH = cards.reduce((s, c) => s + c.sphereWorldH, 0) / cards.length;
     dragFlipZ = Math.min(
-      maxRadial + NEAR_FADE_END * fadeRefH * groupScale,
+      maxRadial + cardVanishDepth() * groupScale,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
     );
     // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
@@ -716,23 +714,22 @@ function createGlobeGalleryRuntime(
 
   // Shortest signed yaw bringing a slot front-centre. Scale-invariant, so on the barrel it
   // depends only on the column — rotateStep relies on that.
-  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y) {
+  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y, inside = cameraInsideSphere) {
     const cy = Math.cos(fromYaw);
     const sy = Math.sin(fromYaw);
     const px = spherePos.x * cy + spherePos.z * sy;
     const pz = -spherePos.x * sy + spherePos.z * cy;
     let deltaY = -Math.atan2(px, pz); // → +Z (near wall, camera outside)
-    if (cameraInsideSphere) deltaY += Math.PI; // → −Z (far wall, camera inside)
+    if (inside) deltaY += Math.PI; // → −Z (far wall, camera inside)
     return Math.atan2(Math.sin(deltaY), Math.cos(deltaY));
   }
 
-  function cardCenterYawPitch(idx, pitchCap, yawOnly) {
+  function cardCenterYawPitch(idx, pitchCap, yawOnly, inside = cameraInsideSphere) {
     const { spherePos } = cards[idx];
-    const targetYaw = sphereOrient.y + yawDeltaToCenter(spherePos);
+    const targetYaw = sphereOrient.y + yawDeltaToCenter(spherePos, sphereOrient.y, inside);
     if (yawOnly) return { targetYaw, targetPitch: sphereOrient.x };
     const h = Math.hypot(spherePos.x, spherePos.z);
     const pitchMag = Math.atan2(spherePos.y, h); // drives the card's height → centre
-    const inside = cameraInsideSphere;
     const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, inside ? -pitchMag : pitchMag));
     return { targetYaw, targetPitch };
   }
@@ -783,11 +780,15 @@ function createGlobeGalleryRuntime(
   }
 
   // a11y.js's centerCard: the shared yaw/pitch solve plus the screen-Z roll that cancels the
-  // card's residual tilt.
-  function centerCardOnScreen(idx) {
+  // card's residual tilt. snapPending = focus is about to scroll us back to the formed position,
+  // where the camera sits OUTSIDE the sphere: solve for THERE, not for wherever the user scrolled
+  // to. Trusting the live flag from inside the zoom aims at the far wall (yaw + π, pitch negated)
+  // and the card lands out of view.
+  function centerCardOnScreen(idx, snapPending = false) {
     if (!cards[idx]) return;
     const { sphereQuat } = cards[idx];
-    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, KEY_PITCH_CAP, bp.YAW_ONLY);
+    const inside = snapPending ? false : cameraInsideSphere;
+    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, KEY_PITCH_CAP, bp.YAW_ONLY, inside);
     // The card's world up at that (pitch, yaw), pre screen-roll.
     kbTargetEuler.set(targetPitch, targetYaw, 0);
     kbTargetQuat.setFromEuler(kbTargetEuler).multiply(sphereQuat);
@@ -898,10 +899,10 @@ function createGlobeGalleryRuntime(
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
 
   // The cue is where the last card leaves the SCREEN, not where the camera clears the shell:
-  // placeSphereCard hides a card NEAR_FADE_END card-heights out, and the deepest card centre
+  // placeSphereCard hides a card bp.NEAR_FADE_END card-heights out, and the deepest card centre
   // sits at -SPHERE_R under any rotation. fadeRefH 0 falls back to -SPHERE_R, which errs late.
   function publishPqAppearZoomT() {
-    const clearZ = -bp.SPHERE_R + NEAR_FADE_END * fadeRefH;
+    const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
     // CSS pins against the tail, not the zoom span.
     pqAppearTailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
@@ -922,10 +923,6 @@ function createGlobeGalleryRuntime(
     const clearanceVh = (100 - toVh(navH)) * PQ_HOLD_CLEARANCE_BAND_FRAC;
     const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - clearanceVh);
     root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
-
-    // Mirror what CSS resolves for the pin, so the hold spans exactly the pinned scroll.
-    const prefVh = parseFloat(getComputedStyle(root).getPropertyValue('--gg-pq-hold')) || 0;
-    pq.holdT = Math.min(prefVh, freeVh) / tailVh;
   }
 
   // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
@@ -946,9 +943,14 @@ function createGlobeGalleryRuntime(
     const top = reducedMotion
       ? blockDocTop
       : blockDocTop + formedScrollPx();
+    // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
+    // before the callback below lands. Above the block that tick would reset the orientation and
+    // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
+    focusSnapPending = true;
     requestAnimationFrame(() => {
       if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
       else window.scrollTo(0, top);
+      focusSnapPending = false;
     });
   }
 
@@ -971,29 +973,38 @@ function createGlobeGalleryRuntime(
     if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
   };
 
+  // The globe is on screen and nothing is covering it. The keyboard path stays on THIS even past
+  // the pull-quote cue: focusing a card runs snapToInteractive, which scrolls back into range, so
+  // retiring the tab stops early would remove the entry point before the snap could use it.
+  const globeFormed = () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
+    && modal.getModalIdx() < 0;
+
   a11y = createGalleryA11y({
     q,
     getCount: () => CARD_CONTENT.length,
-    getSphereFormT: () => frameState.sphereFormT,
     getModalIdx: () => modal.getModalIdx(),
-    interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
+    isGlobeFormed: globeFormed,
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
       return (m && m.alt) || `Image ${i + 1}`;
     },
-    centerCard: centerCardOnScreen,
+    // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
+    centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
     onFocus: snapToInteractive,
     galleryInstructions: instructions,
     gid,
   });
 
+  // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
+  // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
+  // actually ends the pointer-interactive stretch.
+  const globeLive = () => globeFormed() && frameState.zoomT < pqAppearZoomT;
+
   controls = createGlobeControls({
     q,
     labels,
-    getVisible: () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
-      && frameState.zoomT < pqAppearZoomT
-      && modal.getModalIdx() < 0,
+    getVisible: globeLive,
     getHintDismissed: () => hintDismissProgress > TL.HINT_DISMISS_T,
     rotate: (dir) => {
       hintDismissProgress = 1;
@@ -1011,19 +1022,25 @@ function createGlobeGalleryRuntime(
     getRenderer: () => renderer,
     getCamera: () => camera,
     getCards: () => cards,
-    getModalIdx: () => modal.getModalIdx(),
     openModal: (idx, x, y) => openModalFromCanvas(idx, x, y),
-    getSphereFormT: () => frameState.sphereFormT,
     getDragSensitivity: dragSensitivity,
-    interactiveThreshold: TL.SPHERE_INTERACTIVE_T,
+    isGlobeLive: globeLive,
     maxVel: MAX_VEL,
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
   });
 
-  function computeFrame() {
-    frameInput.scrollY = window.scrollY;
+  const LENIS_TRUST_PX = 2;
+  function readScrollY() {
+    const domY = window.scrollY;
+    const lenisY = window.lenis?.animatedScroll;
+    if (!Number.isFinite(lenisY) || Math.abs(lenisY - domY) > LENIS_TRUST_PX) return domY;
+    return lenisY;
+  }
+
+  function computeFrame(now) {
+    frameInput.scrollY = readScrollY();
     frameInput.reducedMotion = reducedMotion;
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
@@ -1031,17 +1048,14 @@ function createGlobeGalleryRuntime(
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
-    frameInput.now = performance.now();
+    frameInput.now = now || performance.now();
     TL.deriveFrame(frameState, frameInput);
     frameInput.prevLenisY = frameState.lenisY;
     frameInput.prevNow = frameInput.now;
     return frameState;
   }
 
-  // Write-elision only: setViewOffset rebuilds the projection matrix, so it fires only when the
-  // offset moves. W and H are baked into the call, hence null on any change to either. Nothing
-  // outside applyCentringOffset reads it back any more — consumers project through the camera.
-  let appliedViewOffsetY = null;
+  let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
   function applyCentringOffset(sphereFormT) {
     const offY = (navH / 2) * sphereFormT;
     if (offY === appliedViewOffsetY) return;
@@ -1064,7 +1078,7 @@ function createGlobeGalleryRuntime(
       // easeInCubic matches the zoom's easeOutCubic; apparent size is held by sphereGroup.z.
       const camZ = zoomT === 0
         ? lerpN(camZArc, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT)
-        : lerpN(CAM_Z_SPHERE, CAM_Z_END, easeOutCubic(zoomT));
+        : TL.camZAtZoomT(zoomT, CAM_Z_SPHERE, CAM_Z_END);
       camera.position.z = camZ;
     }
     applyCentringOffset(sphereFormT);
@@ -1131,8 +1145,7 @@ function createGlobeGalleryRuntime(
         drag.velX *= friction;
         drag.velY *= friction;
         // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
-        const spin = interactive && !reducedMotion && !(a11y && a11y.isBrowsing())
-          && !controls.isSpinPaused()
+        const spin = interactive && !reducedMotion && !browsing && !controls.isSpinPaused()
           ? AUTO_ROT_SPEED : 0;
         sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
         sphereOrient.x += drag.velY * dtScale * dragDir;
@@ -1166,7 +1179,7 @@ function createGlobeGalleryRuntime(
     if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
 
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
-    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T) {
+    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T && !focusSnapPending) {
       resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;
@@ -1180,32 +1193,23 @@ function createGlobeGalleryRuntime(
 
   const ringWorld = new THREE.Vector3();
   const ringEdge = new THREE.Vector3();
-  // Projects THROUGH the camera instead of restating its frustum. The hand-rolled version baked
-  // in four things the camera already knows — fov, aspect, "it looks down -Z from
-  // position.z", and the nav-band skew, which is invisible to arithmetic and so had to have
-  // `appliedViewOffsetY` added back to `cy` by hand. project() carries all four, so the ring
-  // cannot drift from the card it outlines. Same class of fix as the modal's fly.
   function updateA11yFocusRing() {
     const idx = a11y.getFocusedIdx();
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
     if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
-    // The card's own tilt is ignored, as before: world-axis half-extents at the card's depth.
     const groupScale = sphereGroup.scale.x;
     ringEdge.set(
       ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
       ringWorld.y + 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale,
       ringWorld.z,
     );
-    // updateActiveCamera moved the camera this frame and renderScene has not run yet, so
-    // matrixWorldInverse is a frame stale until this call. project() is the only reader.
     camera.updateMatrixWorld();
     ringWorld.project(camera);
     ringEdge.project(camera);
     const cx = (ringWorld.x * 0.5 + 0.5) * W;
     const cy = (-ringWorld.y * 0.5 + 0.5) * H;
-    // The NDC gap spans a HALF extent, and NDC is 2 wide, so * W / * H is the FULL size.
     const wPx = Math.abs(ringEdge.x - ringWorld.x) * W;
     const hPx = Math.abs(ringEdge.y - ringWorld.y) * H;
     a11y.setFocusRect(cx, cy, wPx, hPx);
@@ -1218,10 +1222,8 @@ function createGlobeGalleryRuntime(
     if (reducedMotion) {
       canvasHidden = false;
       canvas.style.display = 'block';
-      canvas.style.opacity = '1';
       return;
     }
-    // Same value deriveFrame builds entryStart from, so the two cannot drift apart.
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
     // Past the reveal every card is prox-faded out and the hint text has finished; the scene
     // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
@@ -1229,12 +1231,7 @@ function createGlobeGalleryRuntime(
     canvasHidden = modal.getModalIdx() < 0
       && (lenisY < showTrigger
         || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
-    if (canvasHidden) {
-      canvas.style.display = 'none';
-    } else {
-      canvas.style.display = 'block';
-      canvas.style.opacity = '1';
-    }
+    canvas.style.display = canvasHidden ? 'none' : 'block';
   }
 
   function updatePullQuoteCopy(reveal) {
@@ -1262,51 +1259,17 @@ function createGlobeGalleryRuntime(
     lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
   }
 
-  // The one clock the pull-quote runs on: the scroll's hold, eased rather than read. scrollY
-  // arrives quantised, so a slow scroll delivers a staircase, and the sweep amplifies each step
-  // into several pixels of line travel — the ease is what turns that back into motion. It is
-  // capped at the play-out rate so a flick cannot skip the sequence, direction needs PQ_HOLD_FLIP
-  // of retrace to turn, and each direction only gains ground, so noise cannot walk the sweep back.
-  // Stopped inside the reveal, the phase plays itself out; past it there is nothing to play.
-  // See README.
-  function followHold(target) {
-    const now = performance.now();
-    const dtMs = pq.holdMs ? Math.min(now - pq.holdMs, PQ_HOLD_MAX_DT) : 0;
-    pq.holdMs = now;
-    const fwd = pq.holdDir > 0;
-    const gained = fwd ? target > pq.holdPeak : target < pq.holdPeak;
-    const turned = fwd ? target < pq.holdPeak - PQ_HOLD_FLIP : target > pq.holdPeak + PQ_HOLD_FLIP;
-    if (gained || turned) {
-      if (turned) pq.holdDir = -pq.holdDir;
-      pq.holdPeak = target;
-      pq.holdMoveMs = now;
-    }
-    const up = pq.holdDir > 0;
-    const step = dtMs / (up ? PQ_HOLD_IN_MS : PQ_HOLD_OUT_MS);
-    if (now - pq.holdMoveMs > PQ_HOLD_STALL_MS && pq.holdV < PQ_REVEAL_END) {
-      pq.holdV = up ? Math.min(PQ_REVEAL_END, pq.holdV + step) : Math.max(0, pq.holdV - step);
-      return pq.holdV;
-    }
-    const goal = up ? Math.max(target, pq.holdV) : Math.min(target, pq.holdV);
-    const delta = goal - pq.holdV;
-    const eased = delta * (1 - (1 - PQ_HOLD_EASE) ** frameState.dtScale);
-    pq.holdV += Math.abs(eased) > step ? Math.sign(delta) * step : eased;
-    return pq.holdV;
+  function advanceReveal(zoomT) {
+    const fwd = zoomT >= pqAppearZoomT;
+    const step = (frameState.dtScale * TL.FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
+    pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
+    return pq.revealT;
   }
 
-  // PQ_REVEAL_END splits the hold: reveal, then dead scroll. With no hold to spend — a viewport
-  // with no room for one — the cue itself is the whole target.
-  function updatePullQuoteFrame(zoomT) {
-    const scrolled = pq.holdT > 0
-      ? clamp01((zoomT - pqAppearZoomT) / pq.holdT)
-      : Number(zoomT >= pqAppearZoomT);
-    const hold = followHold(scrolled);
-
-    const reveal = clamp01(hold / PQ_REVEAL_END);
+  function writePullQuoteFrame(reveal) {
     const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
     const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
     writeFrameVars(hDrawn, vDrawn);
-
     updatePullQuoteCopy(reveal);
   }
 
@@ -1321,13 +1284,13 @@ function createGlobeGalleryRuntime(
     pq.splitW = w;
     pq.lineEls = layoutQuote(pq.quoteEl);
     pq.copyStr = '';
-    if (!reducedMotion) updatePullQuoteFrame(frameState.zoomT);
+    if (!reducedMotion) writePullQuoteFrame(pq.revealT);
   }
 
   function updatePullQuote(frame) {
     // RM: CSS owns it — no JS driving.
     if (reducedMotion || !pqEl) return;
-    updatePullQuoteFrame(frame.zoomT);
+    writePullQuoteFrame(advanceReveal(frame.zoomT));
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -1410,8 +1373,8 @@ function createGlobeGalleryRuntime(
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
     if (depth <= 0) { mesh.visible = false; return; }
     // One band for the whole wall, so the order is purely by depth.
-    const fadeEnd = NEAR_FADE_END * fadeRefH;
-    const fadeStart = NEAR_FADE_START * fadeRefH;
+    const fadeEnd = cardVanishDepth();
+    const fadeStart = bp.NEAR_FADE_START * fadeRefH;
     const proxFade = clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
     // Skip the DRAW, not the state updates, once fully faded.
     mesh.visible = proxFade > 0;
@@ -1569,7 +1532,7 @@ function createGlobeGalleryRuntime(
   }
 
   function updateCardTransform(i, frame) {
-    const { progress, gridFormT, gpWin, sphereFormT, dtScale } = frame;
+    const { progress, gridFormT, gpWin, dtScale } = frame;
     const { N_TOTAL } = bp;
     const card = cards[i];
     const { mesh } = card;
@@ -1613,8 +1576,10 @@ function createGlobeGalleryRuntime(
       ) * CA_STRENGTH; // written to uCA with the hover term below
     }
 
-    // Gates on the GLOBAL interactive threshold, not per-card fdE.
-    if (sphereFormT < TL.SPHERE_INTERACTIVE_T || reducedMotion) card.hoverTarget = 0;
+    // Gates on the GLOBAL live predicate, not per-card fdE. Must match interaction.js: hoverTarget
+    // is only rewritten on pointermove, so a pointer parked over a card while the page scrolls past
+    // the cue would otherwise hold its hover.
+    if (!globeLive() || reducedMotion) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * (1 - (1 - HOVER_RATE) ** dtScale);
 
     // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
@@ -1674,11 +1639,7 @@ function createGlobeGalleryRuntime(
     const norm = spd / MAX_VEL; // 0–1
     hintDismissProgress = Math.min(
       1,
-      hintDismissProgress + dtScale * (
-        norm * HINT_EXIT_DIST_RATE
-        + HINT_EXIT_HOLD_RATE
-        + norm * norm * HINT_EXIT_BURST_RATE
-      ),
+      hintDismissProgress + dtScale * (norm * HINT_EXIT_DIST_RATE + HINT_EXIT_HOLD_RATE),
     );
   }
 
@@ -1726,10 +1687,10 @@ function createGlobeGalleryRuntime(
   }
 
   // Stage order is FIXED and load-bearing.
-  function tick() {
+  function tick(now) {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
-    const frame = computeFrame();
+    const frame = computeFrame(now);
     arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN, bp.ARC_RAMP_T);
 
     a11y.updateTabStops();
@@ -1757,11 +1718,11 @@ function createGlobeGalleryRuntime(
   }
 
   let rafId = 0;
-  function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
+  function rafLoop(now) { tick(now); rafId = requestAnimationFrame(rafLoop); }
   function startTicker() {
     if (rafId) return;
     // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
-    frameInput.prevLenisY = window.scrollY;
+    frameInput.prevLenisY = readScrollY();
     frameInput.prevNow = 0;
     rafId = requestAnimationFrame(rafLoop);
   }
@@ -2103,6 +2064,7 @@ function createGlobeGalleryRuntime(
       pqEl.style.cssText = '';
       pq.frameStr = '';
       pq.copyStr = '';
+      pq.revealT = 0;
     }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     canvasHidden = false;

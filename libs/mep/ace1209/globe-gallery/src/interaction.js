@@ -1,7 +1,5 @@
 // Pointer interaction for the globe.
 import * as THREE from '../three.module.min.js';
-// velX/velY are per-60fps-frame and the core rescales by real frame dt, so this MUST be the
-// same 60 the core paces against — it was a second, independent declaration of it.
 import { FRAME_MS } from './timeline.js';
 
 const VEL_SMOOTH_MS = 35; // EMA time constant
@@ -17,8 +15,8 @@ const AXIS_VERTICAL = 2; // page scroll — we ignore the gesture entirely
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
 export default function createInteraction({
-  getRenderer, getCamera, getCards, getModalIdx, openModal,
-  getSphereFormT, getDragSensitivity, interactiveThreshold, maxVel, drag,
+  getRenderer, getCamera, getCards, openModal,
+  getDragSensitivity, isGlobeLive, maxVel, drag,
   getYawOnly,
 }) {
   const raycaster = new THREE.Raycaster();
@@ -45,10 +43,10 @@ export default function createInteraction({
   function applyCursor() {
     if (!canvasEl) return;
     let want = '';
-    if (getSphereFormT() >= interactiveThreshold && getModalIdx() < 0) {
-      if (drag.isDragging) want = 'grabbing';
-      else want = hoveringCard ? 'pointer' : 'grab';
-    }
+    // A gesture already in flight keeps 'grabbing' until release: pointer capture outlives the
+    // live gate, and the rotation it is still driving is real.
+    if (drag.isDragging) want = 'grabbing';
+    else if (isGlobeLive()) want = hoveringCard ? 'pointer' : 'grab';
     if (want === appliedCursor) return;
     appliedCursor = want;
     canvasEl.style.cursor = want;
@@ -127,7 +125,7 @@ export default function createInteraction({
 
   function onPointerDown(e) {
     if (e.button !== 0 || !e.isPrimary) return;
-    if (getModalIdx() >= 0) return;
+    if (!isGlobeLive()) return;
     canvasEl.setPointerCapture(e.pointerId);
     activePointerId = e.pointerId;
     drag.isDragging = true;
@@ -181,8 +179,7 @@ export default function createInteraction({
     const dx = Math.abs(e.clientX - pointerDownX);
     const dy = Math.abs(e.clientY - pointerDownY);
     const dt = now() - pointerDownT;
-    if (dx < CLICK_MAX_MOVE && dy < CLICK_MAX_MOVE && dt < CLICK_MAX_TIME
-      && getSphereFormT() >= interactiveThreshold && getModalIdx() < 0) {
+    if (dx < CLICK_MAX_MOVE && dy < CLICK_MAX_MOVE && dt < CLICK_MAX_TIME && isGlobeLive()) {
       handleCardClick(e);
     }
   }
@@ -198,7 +195,7 @@ export default function createInteraction({
     const camera = getCamera();
     if (!getRenderer() || !camera) return;
     const cards = getCards();
-    if (getSphereFormT() < interactiveThreshold || getModalIdx() >= 0) {
+    if (!isGlobeLive()) {
       hoveringCard = false;
       applyCursor();
       clearHover();

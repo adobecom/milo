@@ -1,6 +1,8 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
+import { clamp01, easeOutCubic, lerpN } from './math.js';
+
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
 export const PROGRESS_GRID_ARC_START = 0.30;
@@ -32,8 +34,6 @@ export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 // Entry: raw-scroll space, before `progress` exists.
 
-// The lead is NOT here — it differs per band, so it lives in BREAKPOINTS with ARC_SPAN and
-// reaches this module as `input.entryLeadVh`. Nothing at module scope may derive from it.
 export const ENTRY_RAMP_VH = 1.05;
 export const ENTRY_ROT_MAX = 0.9;
 export const ARC_ENTRY_STAGGER = 0.45;
@@ -53,8 +53,6 @@ export const CANVAS_HIDE_MARGIN_T = 0.05;
 
 export const HINT_DISMISS_T = 0.12; // hintDismissProgress at which the barrel hint retires
 
-export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
-
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 
 export const FRAME_MS = 1000 / 60;
@@ -71,7 +69,14 @@ export const ZOOM_TO_TAIL_T = (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS)
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
-// Inverse of the zoom camera's easeOutCubic ramp: the zoomT at which the camera reaches world z.
+// The zoom camera's world z at zoomT, and its inverse. An inverse pair: neither is derivable
+// from the other at runtime, so they must be edited together — hence they live side by side.
+// Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
+// the canvas hide and the pull-quote reveal with it.
+export function camZAtZoomT(t, camZSphere, camZEnd) {
+  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+}
+
 export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
@@ -79,14 +84,11 @@ export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   return 1 - ((1 - eased) ** (1 / 3));
 }
 
-const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN → 0
-
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
 // monomorphic; activeCamera and below are written by tick()'s producer stages.
 export function createFrame() {
   return {
     lenisY: 0,
-    scrollingDown: true,
     scrollVel: 0,
     dtScale: 1,
     progress: 0,
@@ -116,7 +118,7 @@ export function createFrameInput() {
     formPx: 0,
     viewportH: 0,
     arcScale: 1,
-    entryLeadVh: 0, // bp.ENTRY_LEAD_VH; the core writes it every tick
+    entryLeadVh: 0,
   };
 }
 
@@ -133,9 +135,7 @@ export function deriveFrame(frame, input) {
   // canvas visibility still uses real scroll.
   const lenisY = reducedMotion ? blockDocTop + formPx : input.scrollY;
   frame.lenisY = lenisY;
-  frame.scrollingDown = lenisY >= input.prevLenisY;
-  const rawScrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
-  frame.scrollVel = rawScrollVel < SCROLL_VEL_DEADBAND ? 0 : rawScrollVel;
+  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
 
   const entryStart = blockDocTop - viewportH * entryLeadVh;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);

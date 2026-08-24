@@ -1,7 +1,7 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
 import { easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt } from './math.js';
-import { escapeHtml, renderParagraphs } from './authoring.js';
+import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -18,10 +18,7 @@ const MODAL_PHASE = Object.freeze({
 });
 const MODAL_CAM_DIST = 16.4;
 const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
-// ms open/close fly time. The fallback only; the live value is --gg-modal-anim-ms, read at
-// setup — CSS owns it because CSS has the other two consumers (the backdrop and chrome fades),
-// and all three have to land on the same frame or the modal pops mid-fade.
-const MODAL_ANIM_FALLBACK = 350;
+const MODAL_ANIM_FALLBACK = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
 // Fisheye warp peaks (sin bell curve).
 const MODAL_WARP_OPEN = 0.30;
@@ -65,7 +62,7 @@ export default function createGlobeModal({
   let modalScene = null;
   let modalCanvasEl = null;
   let modalEl = null;
-  let chromeEl = null; // the native <dialog>; cached at setup like every other node
+  let chromeEl = null;
 
   let modalIdx = -1; // currently open card index, -1 if closed
   let modalCard = null; // card whose mesh is animating
@@ -86,7 +83,7 @@ export default function createGlobeModal({
   const scratchQuat = new THREE.Quaternion();
   const scratchScale = new THREE.Vector3();
   const coverScratch = {}; // coverFit output (see pushModalCoverUV)
-  let chromeNodes = null; // { els, settled } — see revealModalChrome; reset with chromeEl
+  let chromeNodes = null; // { els, settled } — see revealModalChrome
 
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
   let modalChromeFadeT = 0; // 0→1 fade progress for chrome elements
@@ -243,10 +240,6 @@ export default function createGlobeModal({
     u.uWarpCenter.value.copy(modalWarpCenter);
   }
 
-  // px the main camera's skew pushes the image DOWN this frame — the nav-band centring offset
-  // (setViewOffset; see README, The nav band), read off the camera rather than re-derived from
-  // --gg-nav-h so it cannot drift from what is actually being projected. 0 under reduced
-  // motion, and on the arc, where the offset is ramped out.
   function skewOffsetPx() {
     const { view } = getCamera();
     return view && view.enabled === true ? -view.offsetY : 0;
@@ -292,6 +285,19 @@ export default function createGlobeModal({
     }
     outQuat.identity();
     outScale.set(scaleX, scaleY, 1.0);
+  }
+
+  function photoRectPx() {
+    if (!modalCard || modalPhase !== MODAL_PHASE.OPEN) return null;
+    const { W, H } = getViewport();
+    const { w: cardW, h: cardH } = getCardDims();
+    const pxPerWorld = pxPerWorldAt(MODAL_CAM_DIST, H);
+    const { position, scale } = modalCard.mesh;
+    const halfW = 0.5 * cardW * scale.x * pxPerWorld;
+    const halfH = 0.5 * cardH * scale.y * pxPerWorld;
+    const cx = W / 2 + position.x * pxPerWorld;
+    const cy = H / 2 - position.y * pxPerWorld; // world +Y is screen-up
+    return { left: cx - halfW, right: cx + halfW, top: cy - halfH, bottom: cy + halfH };
   }
 
   // Reveal fade only (opacity + an 8px slide-up). Placement is pure CSS.
@@ -354,7 +360,9 @@ export default function createGlobeModal({
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-    renderParagraphs(targetEl.querySelector('.globe-gallery-modal-description'), meta.description);
+    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+    renderParagraphs(descEl, meta.description);
+    hangParagraphs(descEl);
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
@@ -377,7 +385,6 @@ export default function createGlobeModal({
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
-    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
     if (descEl) descEl.scrollTop = 0;
     scheduleDescFade();
   }
@@ -583,6 +590,17 @@ export default function createGlobeModal({
     if (closeBtn) closeBtn.click(); else close();
   }
 
+  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info';
+  function backdropTap(touch) {
+    const rect = photoRectPx();
+    if (!rect) return;
+    const x = touch.clientX;
+    const y = touch.clientY;
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return;
+    if (touch.target?.closest?.(TAP_KEEP_SEL)) return;
+    clickClose();
+  }
+
   function navigate(direction) {
     if (modalIdx < 0 || !modalCard) return;
     // Navigating while closing would flip CLOSING→OPEN and orphan the close animation, leaving
@@ -730,13 +748,6 @@ export default function createGlobeModal({
     }
   }
 
-  // Deliberately the SAME projection as the main pass, nav-band skew included. The open/close
-  // fly starts and ends on a main-scene world transform (the card's slot on the globe) while
-  // being drawn here, so the two passes must agree pixel-for-pixel or the card jumps by half
-  // the nav band at both ends. Un-skewing for this pass is what used to cause exactly that.
-  // The modal covers the nav and so still wants the photo on the VIEWPORT centre, not the
-  // band's — computeModalTarget lifts the target position back by the skew, which is the one
-  // place that correction now lives.
   function render() {
     if (!(modalRenderer && modalScene && modalCard)) return;
     modalRenderer.render(modalScene, getCamera());
@@ -771,7 +782,6 @@ export default function createGlobeModal({
 
     modalEl = q('.globe-gallery-modal');
     if (!modalEl) return;
-    // Inherited from .globe-gallery; unitless, so this is a plain number.
     const declaredMs = parseFloat(
       getComputedStyle(modalEl).getPropertyValue('--gg-modal-anim-ms'),
     );
@@ -783,7 +793,7 @@ export default function createGlobeModal({
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
     chromeEl = q('.globe-gallery-modal-chrome');
-    chromeNodes = null; // re-derived from the fresh chromeEl on the next reveal
+    chromeNodes = null;
     const evtRoot = chromeEl || modalEl;
     const alreadyWired = listenersWired;
     listenersWired = true;
@@ -885,7 +895,12 @@ export default function createGlobeModal({
     evtRoot.addEventListener('touchend', (e) => {
       if (!swActive) return;
       swActive = false;
-      if (!modalCanvasEl || swAxis === null) { swAxis = null; return; }
+      if (!modalCanvasEl || swAxis === null) {
+        // No axis lock means the finger never travelled AXIS_LOCK_PX: a tap, not a gesture.
+        if (swAxis === null && e.changedTouches.length === 1) backdropTap(e.changedTouches[0]);
+        swAxis = null;
+        return;
+      }
       if (e.changedTouches.length !== 1) return;
       const dx = e.changedTouches[0].clientX - swStartX;
       const dy = e.changedTouches[0].clientY - swStartY;
@@ -936,9 +951,8 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
-  // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. The main
-  // canvas is re-queried because core destroy() nulls the renderer first; the modal's own nodes
-  // are the ones setup() cached, and outlive it.
+  // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. q() because
+  // core destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');
