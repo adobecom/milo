@@ -765,23 +765,33 @@ export default function init(el) {
   const containers = Object.entries(viewports)
     .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
   el.replaceChildren(...containers);
-  const initializedVps = new Set();
-  const autoplayControllers = [];
-  const initViewportAutoplay = () => {
+  const controllersByVp = new Map();
+  let activeVpName = null;
+  // Only the currently visible viewport's controller should ever run. Previously, switching
+  // breakpoints (mobile/tablet/desktop) left the outgoing viewport's autoplay timer and hero
+  // video running forever inside a display:none container - this pauses the outgoing viewport
+  // and resumes (or lazily creates) the incoming one instead of leaving both running.
+  const syncViewportAutoplay = () => {
     const activeVp = getActiveViewport();
-    if (initializedVps.has(activeVp)) return;
-    initializedVps.add(activeVp);
+    if (activeVp === activeVpName) return;
+    if (activeVpName) controllersByVp.get(activeVpName)?.pause();
+    activeVpName = activeVp;
+    const existing = controllersByVp.get(activeVp);
+    if (existing) {
+      existing.resume();
+      return;
+    }
     const container = containers.find((c) => c.dataset.viewport === activeVp);
     if (!container) return;
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
     setSlideObserver(slides);
     setAnalytics(slides, cards, container, el);
-    autoplayControllers.push(startAutoplay(slides, cards, container, el));
+    controllersByVp.set(activeVp, startAutoplay(slides, cards, container, el));
   };
 
   loadViewportVideos(el);
-  initViewportAutoplay();
+  syncViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
   let resizeRaf;
   window.addEventListener('resize', () => {
@@ -789,7 +799,7 @@ export default function init(el) {
     resizeRaf = requestAnimationFrame(() => {
       dynamicLayoutUpdates(el);
       loadViewportVideos(el);
-      initViewportAutoplay();
+      syncViewportAutoplay();
     });
   });
 
@@ -798,7 +808,7 @@ export default function init(el) {
     new IntersectionObserver(([entry]) => {
       const action = entry.isIntersecting ? 'pause' : 'resume';
       if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
-        autoplayControllers.forEach((ctrl) => ctrl[action]());
+        controllersByVp.get(activeVpName)?.[action]();
       }
     }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
   }
