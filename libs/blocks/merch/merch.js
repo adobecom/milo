@@ -1,10 +1,8 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata, loadIms,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-
-loadIms();
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
