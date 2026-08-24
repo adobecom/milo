@@ -1,9 +1,12 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
+
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 const SCROLL_PER_APP = 200;
 const M_BREAKPOINT = 1024;
 const L_BREAKPOINT = 1280;
+const S_BREAKPOINT = 768;
 const MIN_ROLLER_ROOM = 120;
 
 function prepPic(picture) {
@@ -90,8 +93,12 @@ function parseContent(rows) {
     }
     const name = cols[0]?.textContent?.trim() ?? '';
     const pics = [...row.querySelectorAll('picture')];
-    const icon = pics.length > 1 ? pics[0] : null;
-    const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
+    const prodIcon = row.querySelector('img');
+    const isSvgIcon = prodIcon && isSvgUrl(prodIcon.src);
+    if (isSvgIcon) prodIcon.src = getFederatedUrl(prodIcon.src);
+    // eslint-disable-next-line no-nested-ternary
+    const icon = isSvgIcon ? prodIcon : (pics.length > 1 ? pics[0] : null);
+    const picture = pics[pics.length - 1] ?? null;
     if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
 
@@ -177,6 +184,8 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
     left,
     header,
     carousel,
+    sticky,
+    categoryWrapper,
     categoryLabel,
     divider,
     listWrapper,
@@ -226,7 +235,7 @@ function createUpdatePosition({
     const itemH = items[0]?.offsetHeight || 32;
     let lineY;
     let bottomAlign;
-    if (block.classList.contains('rcc-reflow') || mediaHidden) {
+    if (mediaHidden || (block.classList.contains('rcc-reflow') && w >= S_BREAKPOINT)) {
       lineY = itemH * 0.5;
       bottomAlign = false;
     } else if (w >= L_BREAKPOINT) {
@@ -266,6 +275,11 @@ function createReflow({
   };
   return () => {
     const vh = window.innerHeight;
+    const w = window.innerWidth;
+    if (w < S_BREAKPOINT) {
+      setReflow(true);
+      return;
+    }
     if (!block.classList.contains('rcc-reflow')) {
       const dividerOffset = divider.getBoundingClientRect().bottom
         - content.getBoundingClientRect().top;
