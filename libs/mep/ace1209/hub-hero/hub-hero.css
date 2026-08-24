@@ -37,7 +37,7 @@
   --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --gap-shrink-timeline: ease;
-  --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 116px);
+  --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 90px);
   --slide-max-width: min(var(--hub-hero-carousel-item-max-width), calc(var(--slide-media-available-height) * 0.75));
   --slide-media-available-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
   --carousel-item-media-height: var(--slide-media-available-height);
