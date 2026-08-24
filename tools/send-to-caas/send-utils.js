@@ -1,10 +1,12 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
 import {
+  LANGS,
   LOCALES,
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
+  isLingoLangFirstPath,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -14,7 +16,7 @@ const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
-const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
+export const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
@@ -350,10 +352,23 @@ export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {
 
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
-  if (options.languageFirst) {
-    const mappedGetLangFirst = (path, repo, fqdn) => getLanguageFirstCountryAndLang(
+  const repo = (options.repo || '').toLowerCase();
+  const origin = LANG_FIRST_SOURCE_MAPPINGS[repo] || repo;
+
+  // news operates separately from the lingo mapping and always uses the manual checkbox.
+  // auto-detect on (non-news): mapping wins; origin not in mapping → non-LFL
+  // auto-detect off or news: use manual languageFirst checkbox
+  const lflDetected = options.autoDetectLingo && origin !== 'news'
+    ? await isLingoLangFirstPath(origin, options.prodUrl, 'bulkpublisher')
+    : null;
+  const useLanguageFirst = !options.autoDetectLingo || origin === 'news'
+    ? options.languageFirst
+    : (lflDetected ?? false);
+
+  if (useLanguageFirst) {
+    const mappedGetLangFirst = (path, r, fqdn) => getLanguageFirstCountryAndLang(
       path,
-      LANG_FIRST_SOURCE_MAPPINGS[repo.toLowerCase()] || repo,
+      LANG_FIRST_SOURCE_MAPPINGS[r.toLowerCase()] || r,
       fqdn,
     );
     return runLanguageFirstRetry(options, mappedGetLangFirst);
@@ -365,31 +380,41 @@ const getBulkPublishLangAttr = async (options) => {
     getLocale = utilsGetLocale;
     setConfig({ getLocale });
   }
-  return getLocale(LOCALES, options.prodUrl).ietf;
+  const { ietf } = getLocale(LOCALES, options.prodUrl);
+  // LOCALES uses country codes (jp, kr) but some sites (e.g. news) use language codes (/ja/, /ko/)
+  // as URL locale prefixes. When getLocale falls back to the default en-US, try a reverse lookup.
+  if (ietf === 'en-US') {
+    const [, localeStr = ''] = options.prodUrl.split('/');
+    const lang = LANGS[localeStr];
+    if (lang && lang !== 'en') {
+      const entry = Object.entries(LOCALES).find(
+        ([key, val]) => !key.includes('_') && key !== '' && typeof val === 'object'
+          && val.ietf?.toLowerCase().startsWith(`${lang}-`),
+      );
+      if (entry) return `${lang}-${entry[0]}`;
+    }
+  }
+  return ietf;
 };
 
 const getCountryAndLang = async (options, origin) => {
+  /* c8 ignore next */
+  if (window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')) {
+    const langStr = await getBulkPublishLangAttr(options);
+    const [lang = 'en', country = 'us'] = langStr?.toLowerCase().split('-') || [];
+    return { country, lang };
+  }
+
   const langFirst = lingoActive();
   if (langFirst) {
-    const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
-    const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin,
-      fqdn,
+      window.location.hostname,
     );
   }
-  /* c8 ignore next */
-  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
-    ? await getBulkPublishLangAttr(options)
-    : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
-  const langAttr = langStr?.toLowerCase().split('-') || [];
-
-  const [lang = 'en', country = 'us'] = langAttr;
-  return {
-    country,
-    lang,
-  };
+  const [lang = 'en', country = 'us'] = (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf?.toLowerCase().split('-') || [];
+  return { country, lang };
 };
 
 const parseCardMetadata = () => {
@@ -695,6 +720,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 
 export {
   checkUrl,
+  getBulkPublishLangAttr,
   getCardMetadata,
   getCaasProps,
   getConfig,

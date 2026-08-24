@@ -641,7 +641,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — floating-input bar remains attached', async () => {
@@ -656,7 +656,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal — floating-input bar remains attached', async () => {
@@ -746,7 +746,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — floating-input dark bar remains attached', async () => {
@@ -761,7 +761,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal — floating-input dark bar remains attached', async () => {
@@ -853,7 +853,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — bar remains attached', async () => {
@@ -868,7 +868,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.inputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal via Escape — bar remains attached', async () => {
@@ -965,7 +965,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — bar remains attached', async () => {
@@ -982,7 +982,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal via Escape — bar remains attached', async () => {
@@ -1006,6 +1006,138 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       await test.step('step-13: Run accessibility test', async () => {
         // skipA11yTest: pill text contrast fails on dark delay bar currently.
         await runAccessibilityTest({ page, testScope: bc.floatingInputInnerBar, skipA11yTest: true });
+      });
+    },
+  );
+
+  // Tests 18 & 19: Marquee (multi-image hero) dark + light render.
+  // Shared render assertions, parameterized by variant via the spec data.
+  [18, 19].forEach((idx) => {
+    test(
+      `[Test Id - ${features[idx].tcid}] ${features[idx].name},${features[idx].tags}`,
+      async ({ page, baseURL }) => {
+        console.info(`[Test Page]: ${baseURL}${features[idx].path}${miloLibs}`);
+        const { data } = features[idx];
+
+        await test.step('step-1: Go to Brand Concierge marquee page', async () => {
+          await page.goto(`${baseURL}${features[idx].path}${miloLibs}`);
+          await page.waitForLoadState('domcontentloaded');
+          await expect(page).toHaveURL(`${baseURL}${features[idx].path}${miloLibs}`);
+        });
+
+        await test.step(`step-2: Verify marquee ${data.variantClass} variant class`, async () => {
+          await expect(bc.marquee).toBeVisible();
+          await expect(bc.marquee).toHaveClass(new RegExp(`\\b${data.variantClass}\\b`));
+        });
+
+        await test.step('step-3: Verify eyebrow, headline, subheadline', async () => {
+          await expect(bc.marqueeEyebrow).toBeVisible();
+          await expect(bc.marqueeEyebrow).toContainText(data.eyebrowText);
+          await expect(bc.marqueeHeadline).toBeVisible();
+          await expect(bc.marqueeHeadline).toContainText(data.headlineText);
+          await expect(bc.marqueeSubheadline).toBeVisible();
+          await expect(bc.marqueeSubheadline).toContainText(data.subheadlineText);
+        });
+
+        await test.step('step-4: Verify chat input + placeholder', async () => {
+          await bc.marqueeTextarea.waitFor({ state: 'attached', timeout: 15000 });
+          await expect(bc.marqueeTextarea).toBeVisible({ timeout: 10000 });
+          await expect(bc.marqueeTextarea).toHaveAttribute('placeholder', data.inputPlaceholder);
+        });
+
+        await test.step('step-5: Verify chips (prompt cards) present', async () => {
+          await expect(bc.marqueeChips.first()).toBeVisible();
+          expect(await bc.marqueeChips.count()).toBeGreaterThanOrEqual(data.minimumChipCount);
+        });
+
+        await test.step('step-6: Verify legal disclaimer', async () => {
+          await expect(bc.marqueeLegal).toBeVisible();
+          await expect(bc.marqueeLegal).toContainText(data.legalText);
+        });
+
+        await test.step('step-7: Verify marquee background images render', async () => {
+          expect(await bc.marqueeImages.count()).toBeGreaterThanOrEqual(data.minimumImageCount);
+          await expect(bc.marqueeImages.first()).toBeVisible();
+        });
+
+        await test.step('step-8: Run accessibility test on the marquee', async () => {
+          await runAccessibilityTest({ page, testScope: bc.marquee });
+        });
+      },
+    );
+  });
+
+  // Test 20: Marquee chat - Enter key submits and opens the modal.
+  test(
+    `[Test Id - ${features[20].tcid}] ${features[20].name},${features[20].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[20].path}${miloLibs}`);
+      const { data } = features[20];
+
+      await test.step('step-1: Go to Brand Concierge marquee page', async () => {
+        await page.goto(`${baseURL}${features[20].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+      });
+
+      await test.step('step-2: Type a query and press Enter', async () => {
+        await bc.marqueeTextarea.waitFor({ state: 'attached', timeout: 15000 });
+        await bc.marqueeTextarea.fill(data.inputText);
+        await bc.marqueeTextarea.press('Enter');
+      });
+
+      await test.step('step-3: Verify conversation modal opens', async () => {
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+    },
+  );
+
+  // Test 21: Marquee chat - Send button submits and opens the modal.
+  test(
+    `[Test Id - ${features[21].tcid}] ${features[21].name},${features[21].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[21].path}${miloLibs}`);
+      const { data } = features[21];
+
+      await test.step('step-1: Go to Brand Concierge marquee page', async () => {
+        await page.goto(`${baseURL}${features[21].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+      });
+
+      await test.step('step-2: Type a query and click the send button', async () => {
+        await bc.marqueeTextarea.waitFor({ state: 'attached', timeout: 15000 });
+        await bc.marqueeTextarea.fill(data.inputText);
+        await bc.marqueeSendButton.click();
+      });
+
+      await test.step('step-3: Verify conversation modal opens', async () => {
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+    },
+  );
+
+  // Test 22: Marquee chip - clicking a chip pre-populates and submits its text.
+  test(
+    `[Test Id - ${features[22].tcid}] ${features[22].name},${features[22].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[22].path}${miloLibs}`);
+
+      await test.step('step-1: Go to Brand Concierge marquee page', async () => {
+        await page.goto(`${baseURL}${features[22].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+      });
+
+      await test.step('step-2: Click the first chip', async () => {
+        await expect(bc.marqueeChips.first()).toBeVisible({ timeout: 15000 });
+        const chipText = (await bc.marqueeChips.first().textContent())?.trim();
+        expect(chipText, 'chip should have text').toBeTruthy();
+        await bc.marqueeChips.first().click();
+      });
+
+      await test.step('step-3: Verify conversation modal opens', async () => {
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
       });
     },
   );

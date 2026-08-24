@@ -5,6 +5,10 @@
 .section {
   &.has-background {
     background-color: unset;
+
+    > .content {
+      z-index: 0;
+    }
   }
 
   &.divider {

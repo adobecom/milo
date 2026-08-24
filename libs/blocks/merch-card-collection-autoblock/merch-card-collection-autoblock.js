@@ -318,9 +318,10 @@ export async function createCollection(el, options) {
   let attributes;
   if (Object.keys(mepFragments).length > 0) {
     const overrides = Object.entries(mepFragments)
-      .map(([fragment, data]) => `${fragment}:${data.content}`)
+      .filter(([, data]) => data['']?.content)
+      .map(([fragment, data]) => `${fragment}:${data[''].content}`)
       .join(',');
-    attributes = { overrides };
+    if (overrides) attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
@@ -331,7 +332,7 @@ export async function createCollection(el, options) {
     // immediately after dispatching aem:load. Dynamic import keeps
     // preview-only code out of the production bundle.
     const { attachAemLoadListener } = await import(
-      '../../features/personalization/preview-mas-subcollection.js'
+      '../../features/mep/mep-next/mep-mas-subcollection.js'
     );
     attachAemLoadListener(aemFragment, container);
   }
