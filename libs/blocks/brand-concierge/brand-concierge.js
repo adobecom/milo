@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { bcAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -87,6 +88,30 @@ export default async function init(el) {
   });
 
   setCssGnavHeight();
+
+  // bfcache restore — page is brought back from memory, init does not re-run.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    const clickType = window.history.state?.bcClickType;
+    if (!clickType) return;
+    bcAnalytics({
+      eventType: 'navigation:historyChange',
+      data: {
+        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
+        precedingClickType: clickType,
+      },
+    });
+  });
+  // Full-page back/forward load — init re-runs, navigation type is back_forward.
+  if (window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+    bcAnalytics({
+      eventType: 'navigation:historyChange',
+      data: {
+        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
+        precedingClickType: window.history.state?.bcClickType ?? 'unknown',
+      },
+    });
+  }
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;

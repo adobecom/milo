@@ -281,6 +281,8 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
       selector: `#${mountId}`,
       onBeforeEventSend,
       onEvent: (event) => {
+        if (event.eventType === 'card:clicked') window.history.replaceState({ ...window.history.state, bcClickType: 'card' }, '');
+        else if (event.eventType === 'cta:clicked') window.history.replaceState({ ...window.history.state, bcClickType: 'cta' }, '');
         bcAnalytics(event);
       },
     });

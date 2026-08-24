@@ -112,6 +112,15 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
+      case 'navigation:historyChange':
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `BC-navigation_history_change|loginStatus:${event.data?.loginStatus}|precedingClick:${event.data?.precedingClickType}` } },
+            // eslint-disable-next-line max-len
+            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { click: `BC-navigation_history_change|loginStatus:${event.data?.loginStatus}|precedingClick:${event.data?.precedingClickType}` } } } } },
+          },
+        });
+        break;
       default:
         break;
     }
