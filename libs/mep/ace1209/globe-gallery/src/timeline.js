@@ -41,7 +41,6 @@ export const ARC_ENTRY_STAGGER = 0.45;
 // sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
 // auto-rotate, desktop cursor, hint-plane entrance. Just past the first card landing (0.884).
 export const SPHERE_INTERACTIVE_T = 0.9;
-export const DEPTH_SORT_FORM_T = 0.5;
 export const SPHERE_ORIENT_RESET_T = 0.01;
 export const TEXT_APPEAR_START = 0.10;
 

@@ -161,6 +161,11 @@ const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CA
 const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
 const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
 
+const CARD_ORDER_STEPS = 1000;
+const CARD_ORDER_HANDOVER_T = 0.5;
+const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
+const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
+
 const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
 const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed
 const SPHERE_DRAG_WARP_MAX = 0.25; // cap on the combined value
@@ -487,7 +492,7 @@ function createGlobeGalleryRuntime(
 
   function buildCards() {
     const {
-      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
+      N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
     } = bp;
     if (!placeholderTex) placeholderTex = createPlaceholderTexture();
     sphereGroup = new THREE.Group();
@@ -508,6 +513,11 @@ function createGlobeGalleryRuntime(
       })
       : null;
 
+    const fibSlots = masonry ? null : Array.from(
+      { length: N_TOTAL },
+      (unused, k) => fibSpherePos(k, N_TOTAL, SPHERE_R),
+    ).sort((a, b) => a.z - b.z);
+
     for (let i = 0; i < N_TOTAL; i += 1) {
       const srcAspect = cardAspect(i);
       const mas = masonry ? masonry[i] : null;
@@ -518,12 +528,9 @@ function createGlobeGalleryRuntime(
         aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
       });
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.renderOrder = N_VISIBLE - i;
       sphereGroup.add(mesh);
 
-      const sp = mas
-        ? mas.pos.clone()
-        : fibSpherePos(i, N_TOTAL, SPHERE_R);
+      const sp = mas ? mas.pos.clone() : fibSlots[i].clone();
 
       // lookAt target is INSIDE the surface so local +Z points out.
       const faceTarget = mas
@@ -674,7 +681,7 @@ function createGlobeGalleryRuntime(
       });
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(sz.w, sz.h), mat);
       mesh.position.set(0, 0, -(SPHERE_R + TEXT_BEHIND_GAP));
-      mesh.renderOrder = -1; // behind the sphere cards
+      mesh.renderOrder = TEXT_ORDER;
       mesh.visible = false; // the tick stage reveals it once the fold is underway
       textMesh = mesh;
       sphereGroup.add(mesh);
@@ -1397,7 +1404,6 @@ function createGlobeGalleryRuntime(
       mesh.quaternion.copy(card.sphereQuat);
     }
     applyCardFacing(mesh);
-    mesh.renderOrder = 0;
     // Max dissolve, min opacity, so neither un-hides what the other hides.
     const proxDis = 1 - proxFade;
     const revealDis = 1 - card.revealT;
@@ -1453,20 +1459,17 @@ function createGlobeGalleryRuntime(
     }
     // Blend by fdE so it lands continuous with placeSphereCard.
     applyCardFacing(mesh, fdE);
-    mesh.renderOrder = 0;
     mesh.material.opacity = 1;
     applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
 
-  function placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame) {
+  function placeGridCard(card, mesh, prevMeshX, prevMeshY, frame) {
     const { sphGroupZ } = frame;
-    const { N_TOTAL } = bp;
     mesh.visible = true;
     mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
     applyCardFit(mesh, card, CARD_ASPECT);
     mesh.quaternion.copy(card.gridQuat);
-    mesh.renderOrder = N_TOTAL - i;
     mesh.material.opacity = 1;
     applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
@@ -1508,7 +1511,6 @@ function createGlobeGalleryRuntime(
       card.peelStartRot = startRot;
     }
 
-    stageScratch.slot = i;
     stageScratch.x = lerpN(wp.x, card.gridPos.x, gpE);
     stageScratch.y = lerpN(wp.y, card.gridPos.y, gpE);
     stageScratch.z = lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE);
@@ -1519,8 +1521,7 @@ function createGlobeGalleryRuntime(
     return stageScratch;
   }
 
-  function placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY) {
-    const { N_TOTAL, N_VISIBLE } = bp;
+  function placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY) {
     mesh.visible = true;
     applyCardFit(mesh, card, CARD_ASPECT); // first phase a card renders in — must fit here too
     mesh.position.set(stage.x, stage.y, stage.z);
@@ -1528,7 +1529,6 @@ function createGlobeGalleryRuntime(
     mesh.rotation.set(0, 0, stage.rotZ);
     mesh.material.opacity = 1;
     if (gpE <= 0) {
-      mesh.renderOrder = N_VISIBLE - Math.round(stage.slot);
       applyMotionCA(
         mesh,
         mesh.position.x - prevMeshX,
@@ -1537,9 +1537,22 @@ function createGlobeGalleryRuntime(
         CA_MOTION_STRENGTH_ARC,
       );
     } else {
-      mesh.renderOrder = N_TOTAL + N_VISIBLE - i;
       applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
     }
+  }
+
+  function applyCardOrder(card, mesh, i, frame) {
+    if (frame.sphereFormT <= CARD_ORDER_HANDOVER_T) {
+      mesh.renderOrder = CARD_ORDER_BASE + i;
+      return;
+    }
+    let { z } = card.spherePos;
+    if (frame.sphereRotActive) {
+      tmpVec3.copy(card.spherePos).applyQuaternion(sphereRotQuat);
+      z = tmpVec3.z;
+    }
+    const n = Math.max(-1, Math.min(1, z / bp.SPHERE_R));
+    mesh.renderOrder = CARD_ORDER_BASE + Math.round(n * CARD_ORDER_STEPS);
   }
 
   function applyRim(card, mesh, frame) {
@@ -1635,12 +1648,13 @@ function createGlobeGalleryRuntime(
     if (fdE >= 1) {
       placeSphereCard(card, mesh, frame);
     } else if (gpE >= 1 && fdE === 0) {
-      placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame);
+      placeGridCard(card, mesh, prevMeshX, prevMeshY, frame);
     } else {
       const stage = computeCardStage(card, i, gpE, frame, entry);
       if (fdE > 0) placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame);
-      else placeArcCard(card, mesh, i, gpE, stage, prevMeshX, prevMeshY);
+      else placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY);
     }
+    applyCardOrder(card, mesh, i, frame);
     applyRim(card, mesh, frame);
   }
 
@@ -1730,8 +1744,7 @@ function createGlobeGalleryRuntime(
     updateCanvasVisibility(frame);
     updatePullQuote(frame);
 
-    // Arc needs manual render order; sphere needs camera-distance sorting.
-    renderer.sortObjects = frame.sphereFormT > TL.DEPTH_SORT_FORM_T;
+    renderer.sortObjects = true;
 
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateGlobalCA();

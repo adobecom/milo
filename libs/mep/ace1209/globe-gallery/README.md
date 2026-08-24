@@ -622,6 +622,48 @@ stale value. Two consequences:
   drive. So the block is still moving for a few hundred ms after the DOM has stopped — visible in the
   arc phase as a final small nod, and in the scroll-velocity CA as a fringe fading out over ~370ms.
 
+### Card draw order
+
+`renderer.sortObjects` is always `true`, and `applyCardOrder` is the only writer of a card's
+`renderOrder` — it runs after whichever `place*` shaped the card, so it wins over all of them.
+Three's transparent comparator is `renderOrder` → `z` descending → `id`, so `renderOrder` alone
+decides the wall; a card's live depth never does.
+
+Two regimes, switching once at `CARD_ORDER_HANDOVER_T` (0.5, just past the last peel landing at
+`sphereFormT` 0.445, so the whole arc→grid settle is inside the first):
+
+| `sphereFormT` | key | order |
+| --- | --- | --- |
+| ≤ 0.5 | `CARD_ORDER_BASE + i` | index — card *i* paints over card *i−1*, the entrance stack |
+| > 0.5 | quantised `spherePos.z` | destination depth, back to front |
+
+The second key is the card's **destination**, not where it currently is, so it is constant for the
+whole fold (`sphereRotQuat` is identity until the globe goes live) and no card can overtake another
+mid-flight. At `fdE` 1 a card *is* its destination, so the same key is the formed globe's
+back-to-front order; drag rotates it and it stays correct.
+
+**On the sphere the switch is a no-op.** `buildCards` sorts the Fibonacci slots by `z` before
+handing them out, so a card's index is its depth rank and both keys produce the identical order.
+
+**On the barrel it is a real reorder**, and unavoidable. `cylinderMasonryLayout` sizes each slot
+from its own card's aspect, so slot and card are a matched pair — permuting them re-crops the
+photos. The barrel keeps the packer's pairing and pays one reorder at the handover instead.
+
+Two things the numbers rely on:
+
+- **`|spherePos.z| ≤ SPHERE_R`**, which keeps `renderOrder` inside `[CARD_ORDER_BASE ±
+  CARD_ORDER_STEPS]` — below `modal.js`'s 0/1 and above `TEXT_ORDER`. It holds because the sphere's
+  slots are all at radius `R`, and the barrel is yaw-only (`interaction.js` zeroes `dy`), so its
+  rotation cannot lift a slot's `z` past its ring radius. A barrel slot's distance from centre is
+  `hypot(ringR, y)`, up to ~2.3 R on sm, so enabling pitch there would need the clamp widened and
+  the band resized with it.
+- **The index key must be per-card, not a shared constant.** A shared value ties, and the tiebreak
+  falls through to live `z` — equal while the arc is coplanar, but divergent the moment cards fold,
+  which resurrects the live depth sort mid-fold.
+
+`resolveMasonryLayout` (sm, once every texture has loaded) morphs `spherePos`, so cards can reorder
+during that morph. It is not scroll-driven and cannot oscillate.
+
 ### One viewport height
 
 `H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
@@ -1095,7 +1137,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in (**sphere geometry only** — the barrel never builds it) | `updateClickDragText` |
 | 90 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
 | 156 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
-| 170 | 0.180 | `sphereFormT > DEPTH_SORT_FORM_T` | `renderer.sortObjects` on (arc needs manual order, sphere needs depth sort) | `tick` |
+| 170 | 0.180 | `sphereFormT > CARD_ORDER_HANDOVER_T` | card draw order switches from index order to destination depth (see **Card draw order**) | `applyCardOrder` |
 | 273 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.884) | `updateCardTransform` |
 | 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
 | 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; canvas cursor becomes `grab`; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
@@ -1159,7 +1201,6 @@ const row = (n, p) => console.log(String(Math.round(vh(p))).padStart(4) + 'vh', 
 row('fold starts / sphereFormT>0', T.FOLD_FIRST_PROGRESS);
 row('hint text appears', T.progressAtFormT(T.TEXT_APPEAR_START));
 row('arc-copy fade start', T.ARC_COPY_OUT_START);
-row('depth sort on', T.progressAtFormT(T.DEPTH_SORT_FORM_T));
 row('first card on the shell', T.cardFoldStartProgress(0) + T.PROGRESS_FOLD_DUR);
 row('interactive', T.progressAtFormT(T.SPHERE_INTERACTIVE_T));
 row('arc-copy gone', T.ARC_COPY_OUT_END);
@@ -2170,7 +2211,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   own rebuild branch is already `if (textMesh)`. Verified across sm-touch / md-fine / md-coarse
   (iPad → barrel → skipped) / narrow-desktop, and across repeated sm↔md resizes.
   A `PlaneGeometry` in `sphereGroup` behind the sphere's back
-  surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = -1`), so it rotates with the globe and
+  surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = TEXT_ORDER`), so it rotates with the globe and
   draws behind the cards. Hidden until `sphereFormT > TEXT_APPEAR_START`, then warps in (barrel
   warp + particle dissolve via `TEXT_FRAG`), settles to a faint resting opacity (`TEXT_OPACITY_PEAK
   0.15 → RESTING 0.06`), fades out over the zoom. **The entrance resolves on
