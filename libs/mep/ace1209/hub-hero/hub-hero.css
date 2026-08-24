@@ -20,7 +20,7 @@
   --grid-img-width-min: 164px;
   --slide-width: 292px;
   --hub-hero-carousel-item-max-width: min(var(--slide-width), calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
-  --hub-hero-carousel-item-min-width: 256px;
+  --hub-hero-carousel-item-min-width: min(256px, var(--slide-max-width));
   --header-animation-range: contain 30% contain 50%;
   --slide-animation-range: contain 0% contain 100%;
   --slide-layout-animation-range: contain 10% contain 100%;
@@ -44,7 +44,7 @@
   --carousel-header-top: max(calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
       calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px) + var(--s2a-spacing-md)));
 
-  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))));
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-max-width)) + ((var(--end-gap) * (var(--slides) - 1))));
 
   --grid-col-one-offset: 0px;
   --grid-col-two-offset: 94px;
@@ -945,9 +945,10 @@
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item.focused,
   .hub-hero-carousel-item:focus-visible {
-    --slide-min-w: calc(var(--carousel-item-media-height) * 1.25);
-    width: calc(var(--carousel-item-media-height) * 1.25);
-    min-width: calc(var(--carousel-item-media-height) * 1.25);
+    --hover-w: min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5));
+    --slide-min-w: var(--hover-w);
+    width: var(--hover-w);
+    min-width: var(--hover-w);
     background-color: var(--s2a-color-gray-1000);
   }
 
@@ -1103,7 +1104,7 @@
 @media (1440px > width) {
   .hub-hero {
     --hub-hero-carousel-item-min-width: 146px;
-    --hub-hero-carousel-container-height: min(60vh, 580px);
+    --hub-hero-carousel-container-height: min(70vh, 580px);
   }
 }
 
@@ -1115,7 +1116,7 @@
     --grid-col-three-offset: 292px;
     --grid-col-four-offset: 184px;
     --hub-hero-carousel-item-max-width: min(392px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
-    --hub-hero-carousel-container-height: min(60vh, 690px);
+    --hub-hero-carousel-container-height: min(70vh, 690px);
   }
 
 }
