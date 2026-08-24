@@ -1041,39 +1041,21 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function isMasImsLoginEnabled() {
-  const queryParam = new URLSearchParams(window.location.search).get('mas-ims-login');
-  const metaValue = getMetadata('mas-ims-login');
-  const imsLogin = queryParam ?? metaValue;
-  return imsLogin?.toLowerCase() === 'on';
-}
-
-export function computeDetectedMarketCountry(
-  search,
-  cookieCountry,
-  countryFromGeo,
-  coFromIMS,
-  imsLoginEnabled,
-) {
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  const geoCountry = normCountryCode(countryFromGeo);
-  const imsCountry = imsLoginEnabled ? normCountryCode(coFromIMS) : undefined;
-  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
+  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
-  const coFromIMS = getCookie('ims_country_code');
   const countryFromGeo = await getCountry();
   return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
-    coFromIMS,
-    isMasImsLoginEnabled(),
   );
 }
 

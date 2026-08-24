@@ -2836,78 +2836,6 @@ describe('Utils', () => {
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
-
-    it('prefers akamaiLocale over IMS country when no country cookie and mas-ims-login is enabled', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca', true)).to.equal('fr');
-    });
-
-    it('prefers country cookie over IMS country even when mas-ims-login is enabled', () => {
-      expect(utils.computeDetectedMarketCountry('', 'be', null, 'ca', true)).to.equal('be');
-    });
-
-    it('falls through to akamaiLocale when cookie and IMS country are absent', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, null)).to.equal('fr');
-    });
-
-    it('uses IMS country as last resort when mas-ims-login is enabled', () => {
-      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', true)).to.equal('ca');
-    });
-
-    it('ignores IMS country and falls back to geo hint when mas-ims-login is not enabled', () => {
-      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', false)).to.equal('ng');
-    });
-
-    it('ignores IMS country when imsLoginEnabled is omitted', () => {
-      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca')).to.equal('ng');
-    });
-  });
-
-  describe('isMasImsLoginEnabled', () => {
-    const originalHref = window.location.href;
-
-    afterEach(() => {
-      document.querySelector('meta[name="mas-ims-login"]')?.remove();
-      window.history.pushState({}, '', originalHref);
-    });
-
-    it('returns false when the mas-ims-login metadata is absent', () => {
-      expect(utils.isMasImsLoginEnabled()).to.be.false;
-    });
-
-    it('returns false when the mas-ims-login metadata is not "on"', () => {
-      const meta = document.createElement('meta');
-      meta.setAttribute('name', 'mas-ims-login');
-      meta.setAttribute('content', 'off');
-      document.head.append(meta);
-      expect(utils.isMasImsLoginEnabled()).to.be.false;
-    });
-
-    it('returns true when the mas-ims-login metadata is "on"', () => {
-      const meta = document.createElement('meta');
-      meta.setAttribute('name', 'mas-ims-login');
-      meta.setAttribute('content', 'on');
-      document.head.append(meta);
-      expect(utils.isMasImsLoginEnabled()).to.be.true;
-    });
-
-    it('returns true when the mas-ims-login query param is "on"', () => {
-      window.history.pushState({}, '', '/?mas-ims-login=on');
-      expect(utils.isMasImsLoginEnabled()).to.be.true;
-    });
-
-    it('returns false when the mas-ims-login query param is not "on"', () => {
-      window.history.pushState({}, '', '/?mas-ims-login=off');
-      expect(utils.isMasImsLoginEnabled()).to.be.false;
-    });
-
-    it('prefers the mas-ims-login query param over the metadata value', () => {
-      const meta = document.createElement('meta');
-      meta.setAttribute('name', 'mas-ims-login');
-      meta.setAttribute('content', 'on');
-      document.head.append(meta);
-      window.history.pushState({}, '', '/?mas-ims-login=off');
-      expect(utils.isMasImsLoginEnabled()).to.be.false;
-    });
   });
 
   describe('getCountry query params', () => {
@@ -3332,41 +3260,6 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'ch');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.be.null;
-    });
-  });
-
-  describe('resolveDetectedMarketCountry with ims_country_code cookie', () => {
-    afterEach(() => {
-      sessionStorage.removeItem('akamai');
-      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      document.cookie = 'ims_country_code=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      document.querySelector('meta[name="mas-ims-login"]')?.remove();
-    });
-
-    it('uses ims_country_code cookie when no country cookie and mas-ims-login is enabled', async () => {
-      const meta = document.createElement('meta');
-      meta.setAttribute('name', 'mas-ims-login');
-      meta.setAttribute('content', 'on');
-      document.head.append(meta);
-      document.cookie = 'ims_country_code=CA; path=/';
-      sessionStorage.setItem('akamai', 'fr');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('ca');
-    });
-
-    it('ignores ims_country_code cookie when mas-ims-login is not enabled', async () => {
-      document.cookie = 'ims_country_code=CA; path=/';
-      sessionStorage.setItem('akamai', 'fr');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('fr');
-    });
-
-    it('prefers country cookie over ims_country_code cookie', async () => {
-      document.cookie = 'country=be; path=/';
-      document.cookie = 'ims_country_code=CA; path=/';
-      sessionStorage.setItem('akamai', 'fr');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('be');
     });
   });
 });

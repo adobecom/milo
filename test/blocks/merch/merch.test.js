@@ -42,7 +42,7 @@ import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/bl
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -781,30 +781,6 @@ describe('Merch Block', () => {
       expect(result.classList.contains('con-button')).to.be.true;
     });
 
-    it('pins data-ims-country to the validated market country when mas-geo-detection is on', async () => {
-      const geoDetectionMeta = document.createElement('meta');
-      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
-      geoDetectionMeta.setAttribute('content', 'on');
-      document.head.append(geoDetectionMeta);
-      sessionStorage.setItem('akamai', 'US');
-      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us' }] };
-      try {
-        const service = await initService(true);
-        const el = document.createElement('a');
-        el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl');
-        const params = new URLSearchParams({ osi: '123' });
-        const result = await buildCta(el, params);
-        // Signed-in IMS profile in this suite is mocked to 'CH' (see beforeEach), which must
-        // not leak into the checkout link when geo-detection already validated a country.
-        expect(result.dataset.imsCountry).to.equal(service.settings.country);
-        expect(result.dataset.imsCountry).to.not.equal('CH');
-      } finally {
-        geoDetectionMeta.remove();
-        sessionStorage.removeItem('akamai');
-        delete getConfig().marketsConfig;
-      }
-    });
-
     [
       { akamai: 'AU', expectedCountry: 'AU', expectedLocale: 'en_GB' },
       { akamai: 'IN', expectedCountry: 'IN', expectedLocale: 'en_GB' },
@@ -897,13 +873,6 @@ describe('Merch Block', () => {
       }
     });
 
-    it('does not set data-ims-country when mas-geo-detection is off', async () => {
-      const el = document.createElement('a');
-      el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl');
-      const params = new URLSearchParams({ osi: '123' });
-      const result = await buildCta(el, params);
-      expect(result.dataset.imsCountry).to.be.undefined;
-    });
   });
 
   describe('Download flow', () => {
