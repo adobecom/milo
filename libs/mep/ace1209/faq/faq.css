@@ -27,6 +27,7 @@
   }
 
   > .faq-panel {
+    color: var(--s2a-color-content-subtle);
     display: grid;
     grid-template-rows: 0fr;
     visibility: hidden;
