@@ -16,6 +16,7 @@ import merch, {
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
+  getUpgradeAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
@@ -1143,6 +1144,67 @@ describe('Merch Block', () => {
 
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);
+    });
+
+    describe('upgrade offer lookup (MWPW-205215)', () => {
+      const OSI = 'UPGRADE_TARGET_OSI';
+      const OFFERS = [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }];
+      let stashedOffers;
+      let prevUpgradeOffer;
+
+      const createUpgradeOffer = () => {
+        const offer = createTag('a', {
+          'data-wcs-osi': OSI,
+          href: `/tools/ost?osi=${OSI}&type=checkoutUrl`,
+        });
+        offer.onceSettled = () => Promise.resolve(offer);
+        offer.value = [{ offerId: 'UPGRADE_TARGET_OFFER_ID' }];
+        const container = createTag('div', { class: 'merch-offers upgrade' }, offer);
+        document.body.append(container);
+        return container;
+      };
+
+      const callGetUpgradeAction = () => getUpgradeAction(
+        { upgrade: true },
+        Promise.resolve(true),
+        OFFERS,
+        createCtaInMerchCard(),
+      );
+
+      beforeEach(() => {
+        prevUpgradeOffer = getUpgradeAction.upgradeOffer;
+        getUpgradeAction.upgradeOffer = undefined;
+        // Detach the fixture's upgrade offers so each test controls the DOM state.
+        stashedOffers = [...document.querySelectorAll('.merch-offers.upgrade')]
+          .map((node) => ({ node, parent: node.parentNode, next: node.nextSibling }));
+        stashedOffers.forEach(({ node }) => node.remove());
+        // A signed-out call clears the entitlements cache; then sign in.
+        mockIms();
+        getUserEntitlements();
+        mockIms('US');
+        setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
+      });
+
+      afterEach(() => {
+        getUpgradeAction.upgradeOffer = prevUpgradeOffer;
+        document.querySelectorAll('.merch-offers.upgrade').forEach((node) => node.remove());
+        stashedOffers.forEach(({ node, parent, next }) => parent.insertBefore(node, next));
+      });
+
+      it('returns undefined when no upgrade offer is in the DOM, then retries', async () => {
+        expect(await callGetUpgradeAction()).to.be.undefined;
+        createUpgradeOffer();
+        const action = await callGetUpgradeAction();
+        expect(action.className).to.equal('upgrade');
+        expect(action.url).to.include('toOfferId=UPGRADE_TARGET_OFFER_ID');
+      });
+
+      it('resolves concurrent calls without throwing', async () => {
+        createUpgradeOffer();
+        const actions = await Promise.all([callGetUpgradeAction(), callGetUpgradeAction()]);
+        expect(actions).to.have.length(2);
+        actions.forEach((action) => expect(action.className).to.equal('upgrade'));
+      });
     });
   });
 

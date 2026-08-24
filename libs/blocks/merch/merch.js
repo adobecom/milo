@@ -397,7 +397,6 @@ const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
-let upgradeOffer = null;
 
 /**
  * Parses the maslibs URL parameter and returns a validated base URL.
@@ -713,13 +712,15 @@ export async function getUpgradeAction(
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
-  if (upgradeOffer === null) {
-    upgradeOffer = undefined;
-    // will enter only once
-    upgradeOffer = await document.querySelector(
-      '.merch-offers.upgrade [data-wcs-osi]',
-    );
+  // Memoized on the function (like fetchEntitlements.promise) so tests can reset it.
+  // Must stay synchronous: getUpgradeAction runs concurrently for every CTA, and an
+  // await between the check and the assignment would let another call observe a
+  // half-initialized memo. A miss is retried on the next call.
+  if (!getUpgradeAction.upgradeOffer) {
+    getUpgradeAction.upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
   }
+  const { upgradeOffer } = getUpgradeAction;
+  if (!upgradeOffer) return undefined;
 
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
@@ -728,8 +729,8 @@ export async function getUpgradeAction(
     SOURCE_PF = CC_SINGLE_APPS_ALL;
     TARGET_PF = CC_ALL_APPS;
   }
-  await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && offerFamily) {
+  await upgradeOffer.onceSettled();
+  if (entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
       offerFamily,
