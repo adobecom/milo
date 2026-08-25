@@ -183,6 +183,7 @@ function setupBlock(el) {
       const { playedOnce = false } = video.dataset;
       if (playedOnce) return;
       if (isActive) {
+        if (video.hasAttribute(USER_PAUSED_ATTR)) return;
         video.play();
         syncPausePlayIcon(video, { type: 'playing' });
         return;

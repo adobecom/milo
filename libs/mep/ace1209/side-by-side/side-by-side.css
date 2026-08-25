@@ -25,6 +25,7 @@
   }
 
   .media {
+    position: relative;
     border-radius: inherit;
 
     picture,
@@ -44,15 +45,29 @@
     video, img {
       object-fit: cover;
     }
+
+    .icon {
+      position: absolute;
+      width: 32px;
+      height: auto;
+      z-index: 1;
+      inset-block-start: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
+    }
   }
 
   .card-overlay {
     --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
     overflow: hidden;
-    aspect-ratio: 33/37;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+
+    .content-aux {
+      aspect-ratio: 1 / 1.1;
+      width: 100%;
+      height: auto;
+    }
 
     &.dark {
       background-color: unset;
@@ -74,20 +89,15 @@
 
     .foreground {
       --card-overlay-padding: var(--s2a-spacing-lg);
-      /* Play/pause button size + current padding */
-      --card-overlay-padding-bottom: calc(var(--play-pause-size, 0px) + var(--card-overlay-padding));
 
       position: relative;
-      padding: var(--card-overlay-padding) var(--card-overlay-padding) var(--card-overlay-padding-bottom);
+      padding-block: 0 var(--card-overlay-padding);
+      padding-inline: var(--card-overlay-padding);
       z-index: 1;
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-      max-width: 320px;
-    }
-
-    &:has(video) .foreground {
-      --play-pause-size: 32px;
+      max-width: 450px;
     }
   }
 
@@ -118,11 +128,22 @@
   }
 
   &.featured {
-    .card-overlay {
+    .content-aux {
+      display: none;
+    }
+
+    div.card-overlay {
       display: flex;
-      align-items: flex-end;
-      aspect-ratio: 72 / 113;
       border: none;
+      aspect-ratio: unset;
+      flex-direction: column;
+      align-items: flex-start;
+      background-color: var(--s2a-color-gray-1000);
+    }
+
+    .media {
+      position: unset;
+      margin: 0 auto;
     }
 
     &:has(+ .side-by-side.equal) {
@@ -145,12 +166,17 @@
     .card-overlay {
       --card-overlay-gradient: var(--card-overlay-gradient-top);
 
+      flex-direction: row;
+      aspect-ratio: 33/37;
       align-items: flex-start;
       .foreground {
         --card-overlay-padding-bottom: var(--card-overlay-padding);
 
         max-width: 480px;
+        padding: var(--card-overlay-padding);
       }
+
+      .content-aux { display: none; }
     }
 
     .card-stacked {
@@ -158,6 +184,11 @@
 
       .media {
         min-height: 306px;
+
+        .icon {
+          inset-block-start: var(--s2a-spacing-lg);
+          inset-inline-start: var(--s2a-spacing-lg);
+        }
       }
 
       .foreground {
@@ -182,7 +213,8 @@
       .card-overlay {
         --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
-        aspect-ratio: 41 / 35;
+        align-items: flex-end;
+        aspect-ratio: 3 / 2;
       }
     }
   }
@@ -194,8 +226,15 @@
       --card-overlay-padding: var(--s2a-spacing-xl);
     }
 
-    .card-stacked .foreground {
-      padding: var(--s2a-spacing-xl);
+    .card-stacked {
+      .foreground {
+        padding: var(--s2a-spacing-xl);
+      }
+
+      .media .icon {
+        inset-block-start: var(--s2a-spacing-xl);
+        inset-inline-start: var(--s2a-spacing-xl);
+      }
     }
 
     &.featured .card-overlay .foreground {
@@ -206,7 +245,12 @@
 
 @media (width >= 1440px) {
   .side-by-side.featured .card-overlay {
-    height: 1200px;
     aspect-ratio: unset;
+  }
+}
+
+@media (width < 768px) {
+  .side-by-side .card-overlay button.play-pause-button {
+    inset-block-start: var(--s2a-spacing-md);
   }
 }

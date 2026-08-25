@@ -2,11 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl, fetchData, DATA_TYPE,
+  fetchData, DATA_TYPE, categorizeActions,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -804,6 +804,41 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl([])).to.be.false;
     });
   });
+  describe('isSameOriginManifestPath', () => {
+    it('allows same-origin absolute paths', () => {
+      expect(isSameOriginManifestPath('/path/to/data/')).to.be.true;
+      expect(isSameOriginManifestPath('/content/dam/cc/')).to.be.true;
+      expect(isSameOriginManifestPath('/drafts/x/')).to.be.true;
+    });
+    it('rejects absolute URLs, even same-origin or trusted', () => {
+      expect(isSameOriginManifestPath(`${window.location.origin}/x`)).to.be.false;
+      expect(isSameOriginManifestPath('https://www.adobe.com/x')).to.be.false;
+      expect(isSameOriginManifestPath('http://www.adobe.com/x')).to.be.false;
+    });
+    it('rejects protocol-relative paths', () => {
+      expect(isSameOriginManifestPath('//evil.com/')).to.be.false;
+    });
+    it('rejects paths that normalize to a cross-origin host', () => {
+      expect(isSameOriginManifestPath('/\\evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('\\/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\t/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\n/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\r/evil.com/')).to.be.false;
+    });
+    it('rejects non-path schemes', () => {
+      // eslint-disable-next-line no-script-url
+      expect(isSameOriginManifestPath('javascript:alert(1)')).to.be.false;
+      expect(isSameOriginManifestPath('data:text/html,x')).to.be.false;
+    });
+    it('rejects null/empty and non-string inputs', () => {
+      expect(isSameOriginManifestPath(null)).to.be.false;
+      expect(isSameOriginManifestPath(undefined)).to.be.false;
+      expect(isSameOriginManifestPath('')).to.be.false;
+      expect(isSameOriginManifestPath(123)).to.be.false;
+      expect(isSameOriginManifestPath({})).to.be.false;
+      expect(isSameOriginManifestPath([])).to.be.false;
+    });
+  });
   describe('fetchData', () => {
     it('forwards redirect option to underlying fetch', async () => {
       const originalFetch = window.fetch;
@@ -929,5 +964,43 @@ describe('analyticifseen', () => {
     expect(window._satellite.track.calledOnce).to.be.true;
     const [, payload] = window._satellite.track.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+  });
+});
+
+describe('categorizeActions ordering (parallelization-safe)', () => {
+  const mkExp = (name, page, fw) => ({
+    manifestPath: `/m-${name}.json`,
+    selectedVariant: {
+      name,
+      replacepage: page ? [{ val: page }] : undefined,
+      updateframework: fw ? [fw] : undefined,
+    },
+  });
+
+  it('applies the later experiment replacepage/updateframework (last write wins)', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    delete config.mep.updateframework;
+
+    // applyPers runs categorizeActions via Promise.all(experiments.map(...)).
+    // categorizeActions has no internal awaits, so .map invokes each body
+    // synchronously in execution order and the last manifest's writes win —
+    // identical to the old sequential loop. Pin that observable contract.
+    const experiments = [mkExp('a', '/page-a', 'fw-a'), mkExp('b', '/page-b', 'fw-b')];
+    await Promise.all(experiments.map((exp) => categorizeActions(exp, config)));
+
+    expect(config.mep.replacepage).to.deep.equal({ val: '/page-b' });
+    expect(config.mep.updateframework).to.equal('fw-b');
+  });
+
+  it('returns { experiment } for a default variant without touching shared config', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    const experiment = { manifestPath: '/d.json', selectedVariant: 'default' };
+    const result = await categorizeActions(experiment, config);
+    expect(result).to.deep.equal({ experiment });
+    expect(config.mep.replacepage).to.be.undefined;
   });
 });

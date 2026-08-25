@@ -92,9 +92,8 @@ function moveIndicator(indicator, target, container) {
 
 function changeTabs(e, config) {
   const { target } = e;
-  const isRadio = target.getAttribute('role') === 'radio';
-  const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
-  if (target.getAttribute(attributeName) === 'true') return;
+  const isRadio = target.matches('input[type="radio"]');
+  if (!isRadio && target.getAttribute('aria-selected') === 'true') return;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
@@ -111,17 +110,25 @@ function changeTabs(e, config) {
     ? content.querySelector(`#${target.getAttribute('data-control-id')}`)
     : content.querySelector(`#${target.getAttribute('aria-controls')}`);
 
-  parent.querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`).forEach((t) => {
-    t.setAttribute(attributeName, 'false');
-    t.setAttribute('tabindex', '-1');
-    if (Object.keys(tabColor).length) t.style.backgroundColor = '';
-  });
-  target.setAttribute(attributeName, 'true');
-  target.setAttribute('tabindex', '0');
+  if (isRadio) {
+    if (Object.keys(tabColor).length) {
+      parent.querySelectorAll('input[type="radio"]').forEach((t) => {
+        if (t !== target) t.style.backgroundColor = '';
+      });
+    }
+  } else {
+    parent.querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`).forEach((t) => {
+      t.setAttribute('aria-selected', 'false');
+      t.setAttribute('tabindex', '-1');
+      if (Object.keys(tabColor).length) t.style.backgroundColor = '';
+    });
+    target.setAttribute('aria-selected', 'true');
+    target.setAttribute('tabindex', '0');
+  }
+  if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
 
   const indicator = parent.querySelector('.tab-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
-  if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
   scrollTabIntoView(target);
   content.querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`).forEach((p) => {
     p.setAttribute('hidden', true);
@@ -183,13 +190,26 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper [role="radio"]');
+  const tabs = [...elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper input[type="radio"]')];
   const tabLists = elm.querySelectorAll(':scope > .tabs-wrapper [role="tablist"], :scope > .tabs-wrapper [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
+    const isRadioGroup = tabList.getAttribute('role') === 'radiogroup';
     tabList.addEventListener('keydown', (e) => {
+      // Left/Right are native (Chrome/Firefox flip for RTL) - only Up/Down need manual handling.
+      if (isRadioGroup) {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        const forward = e.key === 'ArrowDown';
+        const currentFocus = tabs.indexOf(e.target);
+        const nextFocus = (currentFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[nextFocus].focus();
+        tabs[nextFocus].click();
+        return;
+      }
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const forward = e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      const isRtl = document.dir === 'rtl';
+      const forward = e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight');
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');
@@ -197,7 +217,8 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', (e) => changeTabs(e, config));
+    const isRadio = tab.matches('input[type="radio"]');
+    tab.addEventListener(isRadio ? 'change' : 'click', (e) => changeTabs(e, config));
     tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
   configTabs(config, rootElem);
@@ -282,26 +303,40 @@ const init = async (block) => {
     if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
   }
 
+  const radioGroupName = `tabs-radio-${tabId}`;
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
       const btnId = `tab-${tabId}-${tabName}`;
-      const tabBtnAttributes = {
-        role: isRadio ? 'radio' : 'tab',
-        class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
-        id: btnId,
-        tabindex: (i === 0) ? '0' : '-1',
-        [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
-        'data-block-id': `tabs-${tabId}`,
-        'daa-state': 'true',
-        'daa-ll': btnId,
-        ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
-      };
-      const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
-      btnWrapper.append(tabBtn);
+
+      const sharedAttrs = { id: btnId, 'data-block-id': `tabs-${tabId}`, 'daa-state': 'true', 'daa-ll': btnId };
+      if (isRadio) {
+        const radioAttributes = {
+          ...sharedAttrs,
+          type: 'radio',
+          class: 'tab-button',
+          name: radioGroupName,
+          'data-control-id': controlId,
+          ...(i === 0 ? { checked: '' } : {}),
+        };
+        const radioInput = createTag('input', radioAttributes);
+        const radioLabel = createTag('label', { for: btnId, class: 'tab-button-label label' }, item.textContent);
+        btnWrapper.append(radioInput, radioLabel);
+      } else {
+        const tabBtnAttributes = {
+          ...sharedAttrs,
+          role: 'tab',
+          class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
+          tabindex: (i === 0) ? '0' : '-1',
+          'aria-selected': (i === 0) ? 'true' : 'false',
+          'aria-controls': controlId,
+        };
+        const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
+        btnWrapper.append(tabBtn);
+      }
       tabListContainer.append(btnWrapper);
 
       const tabContentAttributes = {
@@ -365,7 +400,7 @@ const init = async (block) => {
   initTabs(block, config, rootElem);
 
   requestAnimationFrame(() => {
-    const activeTab = tabListContainer.querySelector('[aria-selected="true"], [aria-checked="true"]');
+    const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
     if (activeTab) {
       if (indicator) {
         indicator.style.transition = 'none';

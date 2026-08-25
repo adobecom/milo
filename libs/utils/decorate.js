@@ -55,6 +55,7 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
 
   buttons.forEach((button) => {
+    if (button.classList.contains('merch-card-autoblock') && button.classList.contains('link-block')) return;
     const parent = button.parentElement;
     if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
@@ -413,7 +414,7 @@ export function applyAccessibilityEvents(videoEl) {
       videoEl.pause();
       return;
     }
-    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
+    videoEl.addEventListener('canplay', () => !videoEl.hasAttribute(USER_PAUSED_ATTR) && isVideoReady(videoEl) && videoEl.play());
   }
 }
 

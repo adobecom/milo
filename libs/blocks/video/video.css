@@ -49,6 +49,13 @@ video {
   cursor: pointer;
 }
 
+@media (max-width: 599px) {
+  [dir="rtl"] .video-container .pause-play-wrapper {
+    right: auto;
+    left: 2%;
+  }
+}
+
 .video-container .pause-play-wrapper .offset-filler {  
   display: inherit;
   justify-content: center;
@@ -177,8 +184,8 @@ video {
     justify-content: center;
     position: absolute;
     z-index: 1;
-    right: var(--s2a-spacing-lg);
-    bottom: var(--s2a-spacing-lg);
+    inset-inline-end: var(--s2a-spacing-md);
+    inset-block-end: var(--s2a-spacing-md);
 
     svg path {
       fill: var(--s2a-color-gray-25);
@@ -214,10 +221,17 @@ video {
     }
   }
 
+  @media (width >= 768px) {
+    button.play-pause-button {
+      inset-inline-end: var(--s2a-spacing-lg);
+      inset-block-end: var(--s2a-spacing-lg);
+    }
+  }
+
   @media (width >= 1280px) {
     button.play-pause-button {
-      right: var(--s2a-spacing-xl);
-      bottom: var(--s2a-spacing-xl);
+      inset-inline-end: var(--s2a-spacing-xl);
+      inset-block-end: var(--s2a-spacing-xl);
     }
   }
 

@@ -1,8 +1,10 @@
 import { decorateBlockText, decorateViewportContent, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../../utils/decorate.js';
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 const DEFAULT_TEXT_CONFIG = { heading: '6', body: 'md' };
 let videoObserver = null;
+
+function isSvgUrl(url) { return /\.svg(\?.*)?$/i.test(url || ''); }
 
 function decorateCardText(foreground) {
   decorateBlockText(foreground, DEFAULT_TEXT_CONFIG);
@@ -54,6 +56,18 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
+function decorateCardStackedIcon(mediaContainer) {
+  const medias = mediaContainer.querySelectorAll('img, video');
+  if (medias.length <= 1) return;
+  const icon = medias[0];
+  const iconContainer = icon.closest('p');
+  iconContainer.classList.add('icon');
+  if (isSvgUrl(icon.src)) icon.src = getFederatedUrl(icon.src);
+  const imgVideoContainer = medias[1].closest('p');
+  mediaContainer.append(...imgVideoContainer.children);
+  imgVideoContainer.remove();
+}
+
 function decorate(block, el) {
   const [mediaRow, textRow] = block.children;
   if (!mediaRow || !textRow) return;
@@ -72,7 +86,9 @@ function decorate(block, el) {
     decorateCardText(foreground);
 
     const variant = cardType[i];
+    if (variant === 'card-stacked') decorateCardStackedIcon(media);
     const card = createTag('div', { class: `card ${variant}` });
+    if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
     card.append(media, foreground);
     cards.push(card);
   }

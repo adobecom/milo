@@ -1542,6 +1542,35 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadLink stylesheet dedup', () => {
+    afterEach(() => {
+      document.head.querySelectorAll('link[data-milo-preload-test]').forEach((l) => l.remove());
+    });
+
+    it('loadStyle applies a stylesheet even when a preload for the same href exists', () => {
+      const href = 'data:text/css,x';
+      const preload = utils.loadLink(href, { rel: 'preload', as: 'style' });
+      preload.setAttribute('data-milo-preload-test', '');
+
+      let cbType;
+      const styleLink = utils.loadStyle(href, (type) => { cbType = type; });
+      styleLink.setAttribute('data-milo-preload-test', '');
+
+      // The preload must not shadow the stylesheet: a distinct rel=stylesheet
+      // link is created so the CSS actually applies (the #6210 icon regression).
+      expect(styleLink).to.not.equal(preload);
+      expect(styleLink.getAttribute('rel')).to.equal('stylesheet');
+      expect(preload.getAttribute('rel')).to.equal('preload');
+      expect(document.head.querySelectorAll(`link[href="${href}"]`).length).to.equal(2);
+
+      // A second loadStyle dedups against the stylesheet: no duplicate, noop callback.
+      const again = utils.loadStyle(href, (type) => { cbType = type; });
+      expect(again).to.equal(styleLink);
+      expect(cbType).to.equal('noop');
+      expect(document.head.querySelectorAll(`link[href="${href}"][rel="stylesheet"]`).length).to.equal(1);
+    });
+  });
+
   describe('Lingo Link Transformation', () => {
     let originalFetch;
     let fetchStub;
@@ -2029,6 +2058,86 @@ describe('Utils', () => {
       expect(anchors[1].href).to.include('/de/creativecloud/pricing');
       expect(anchors[2].href).to.include('/ch_de/creativecloud/features');
       anchors.forEach((a) => a.remove());
+    });
+
+    it('fetches fetchPriority-flagged cross-site indexes before the low-priority remainder', async () => {
+      // `dc` is flagged fetchPriority: 'yes'; `da-bacom` is not. The flagged
+      // entry must be fetched in the priority wave (before the barrier, at
+      // default priority), while the rest are deferred at { priority: 'low' }.
+      const priorityMapping = {
+        'site-locales': lingoSiteMapping['site-locales'],
+        'site-query-index-map': {
+          data: [
+            {
+              uniqueSiteId: 'cc',
+              queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+            },
+            {
+              uniqueSiteId: 'dc',
+              queryIndexWebPath: 'www.adobe.com/*/dc-shared/assets/lingo/query-index.json',
+              fetchPriority: 'yes',
+            },
+            {
+              uniqueSiteId: 'da-bacom',
+              queryIndexWebPath: 'business.adobe.com/*/assets/lingo/query-index.json',
+            },
+          ],
+        },
+      };
+
+      fetchStub.callsFake((url) => {
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: priorityMapping });
+        }
+        if (url.includes('cc-shared') && url.includes('/ch_de/')) {
+          return mockRes({ payload: createQueryIndexData(['/ch_de/creativecloud/product']) });
+        }
+        if (url.includes('cc-shared') && url.includes('/de/')) {
+          return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('dc-shared')) {
+          return mockRes({ payload: dcRegionalQueryIndex });
+        }
+        if (url.includes('business.adobe.com')) {
+          return mockRes({ payload: daBacomRegionalQueryIndex });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product',
+        'www.adobe.com',
+        false,
+        a,
+      );
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const calls = fetchStub.getCalls();
+      const dcIdx = calls.findIndex((c) => c.args[0].includes('dc-shared'));
+      const daBacomIdx = calls.findIndex(
+        (c) => c.args[0].includes('business.adobe.com') && c.args[0].includes('/ch_de/'),
+      );
+
+      // Both cross-site indexes were fetched.
+      expect(dcIdx).to.be.greaterThan(-1);
+      expect(daBacomIdx).to.be.greaterThan(-1);
+      // The flagged (`dc`) index is issued before the barrier resolves — i.e.
+      // before the low-priority remainder (`da-bacom`) is even requested.
+      expect(dcIdx).to.be.lessThan(daBacomIdx);
+      // Flagged entry fetched with no explicit priority hint (default);
+      // the remainder is deferred at low priority.
+      expect(calls[dcIdx].args[1]?.priority).to.be.undefined;
+      expect(calls[daBacomIdx].args[1]?.priority).to.equal('low');
+
+      a.remove();
     });
   });
 
@@ -2727,6 +2836,117 @@ describe('Utils', () => {
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
+
+    it('prefers akamaiLocale over IMS country when no country cookie and mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca', true)).to.equal('fr');
+    });
+
+    it('prefers country cookie over IMS country even when mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', 'be', null, 'ca', true)).to.equal('be');
+    });
+
+    it('falls through to akamaiLocale when cookie and IMS country are absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, null)).to.equal('fr');
+    });
+
+    it('uses IMS country as last resort when mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', true)).to.equal('ca');
+    });
+
+    it('ignores IMS country and falls back to geo hint when mas-ims-login is not enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', false)).to.equal('ng');
+    });
+
+    it('ignores IMS country when imsLoginEnabled is omitted', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca')).to.equal('ng');
+    });
+  });
+
+  describe('isMasImsLoginEnabled', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      document.querySelector('meta[name="mas-ims-login"]')?.remove();
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns false when the mas-ims-login metadata is absent', () => {
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('returns false when the mas-ims-login metadata is not "on"', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'off');
+      document.head.append(meta);
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('returns true when the mas-ims-login metadata is "on"', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      expect(utils.isMasImsLoginEnabled()).to.be.true;
+    });
+
+    it('returns true when the mas-ims-login query param is "on"', () => {
+      window.history.pushState({}, '', '/?mas-ims-login=on');
+      expect(utils.isMasImsLoginEnabled()).to.be.true;
+    });
+
+    it('returns false when the mas-ims-login query param is not "on"', () => {
+      window.history.pushState({}, '', '/?mas-ims-login=off');
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('prefers the mas-ims-login query param over the metadata value', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      window.history.pushState({}, '', '/?mas-ims-login=off');
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+  });
+
+  describe('getCountry query params', () => {
+    // getCountry reads PAGE_URL.searchParams (frozen at module load); the optional
+    // searchParams arg is the test seam. skipFallback=true avoids the geo import.
+    const params = (qs) => new URLSearchParams(qs);
+    const country = (qs) => utils.getCountry(true, params(qs));
+
+    beforeEach(() => sessionStorage.removeItem('akamai'));
+    afterEach(() => sessionStorage.removeItem('akamai'));
+
+    it('reads the country param (country-only)', async () => {
+      expect(await country('country=sg')).to.equal('sg');
+    });
+
+    it('reads the akamaiLocale param (akamaiLocale-only)', async () => {
+      expect(await country('akamaiLocale=sg')).to.equal('sg');
+    });
+
+    it('resolves ?country=sg the same as ?akamaiLocale=sg', async () => {
+      expect(await country('country=sg')).to.equal(await country('akamaiLocale=sg'));
+    });
+
+    it('prefers country over akamaiLocale when both are set', async () => {
+      expect(await country('country=sg&akamaiLocale=fr')).to.equal('sg');
+    });
+
+    it('falls through to akamaiLocale when country is invalid', async () => {
+      expect(await country('country=123&akamaiLocale=fr')).to.equal('fr');
+    });
+
+    it('falls through to sessionStorage when neither param is valid', async () => {
+      sessionStorage.setItem('akamai', 'de');
+      expect(await country('country=1&akamaiLocale=99')).to.equal('de');
+    });
+
+    it('lowercases the resolved value', async () => {
+      expect(await country('country=SG')).to.equal('sg');
+    });
   });
 
   describe('getLingoRegion', () => {
@@ -2797,31 +3017,31 @@ describe('Utils', () => {
       expect(region.prefix).to.equal('/ch_de');
     });
 
-    it('with useGeoLocation honors the international cookie (explicit pick) over geo', async () => {
+    it('with useGeoLocation ignores the international cookie and resolves from geo', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       lingoModule.setConfig(lingoRegionConfig);
-      // Explicit CH region pick; geo says US (no region) — the pick wins.
+      // The `international` cookie is no longer consulted; geo (US, no region) wins.
       document.cookie = 'international=ch_de; path=/';
       sessionStorage.setItem('akamai', 'us');
       const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
-      expect(region).to.not.be.null;
-      expect(region.prefix).to.equal('/ch_de');
+      expect(region).to.be.null;
     });
 
-    it('with useGeoLocation, an explicit base/root pick is not overridden by geo', async () => {
+    it('with useGeoLocation, geo picks the region even when the international cookie diverges', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       lingoModule.setConfig(lingoRegionConfig);
-      // User explicitly chose the root (us) — geo CH must NOT pull them to ch_de.
+      // `international=us` is ignored; geo (CH) resolves to ch_de.
       document.cookie = 'international=us; path=/';
       sessionStorage.setItem('akamai', 'ch');
       const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
-      expect(region).to.be.null;
+      expect(region).to.not.be.null;
+      expect(region.prefix).to.equal('/ch_de');
     });
 
     it('by default honors the market cookie over geo (mep/content callers)', async () => {
@@ -3008,8 +3228,8 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
     });
 
-    // Explicit region pick (international cookie) wins over a divergent geo.
-    it('uses the international cookie over geo for the Adobe Home redirect_uri', async () => {
+    // The international cookie is no longer consulted; geo picks the region.
+    it('ignores the international cookie and uses geo for the Adobe Home redirect_uri', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
@@ -3019,12 +3239,12 @@ describe('Utils', () => {
       ahomeMeta.setAttribute('content', 'on');
       document.head.append(ahomeMeta);
       lingoModule.setConfig(imsLingoConfig);
-      // Explicitly picked CA French; physically in CH — the pick wins over geo.
+      // international=ca_fr is ignored; geo (CH) resolves to ch_fr.
       document.cookie = 'international=ca_fr; path=/';
       sessionStorage.setItem('akamai', 'ch');
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
-      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ch_fr');
     });
 
     it('builds a bare /home redirect_uri (no acomLocale) on the root locale', async () => {
@@ -3112,6 +3332,41 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'ch');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.be.null;
+    });
+  });
+
+  describe('resolveDetectedMarketCountry with ims_country_code cookie', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'ims_country_code=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.querySelector('meta[name="mas-ims-login"]')?.remove();
+    });
+
+    it('uses ims_country_code cookie when no country cookie and mas-ims-login is enabled', async () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('ca');
+    });
+
+    it('ignores ims_country_code cookie when mas-ims-login is not enabled', async () => {
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('fr');
+    });
+
+    it('prefers country cookie over ims_country_code cookie', async () => {
+      document.cookie = 'country=be; path=/';
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('be');
     });
   });
 });
