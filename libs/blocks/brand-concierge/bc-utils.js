@@ -27,6 +27,18 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+export function hasChatCookie() {
+  const cookies = document.cookie.split(';');
+  const cookieName = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+  for (let i = 0; i < cookies.length; i += 1) {
+    const cookie = cookies[i].trim();
+    if (cookie.includes(cookieName)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function setCssGnavHeight() {
   const gnav = document.querySelector('header.global-navigation');
   if (!gnav) return;
@@ -201,14 +213,10 @@ export function decorateMarqueeBackground(el, background) {
 
 export function decorateHeader(el, header, { eyebrow: withEyebrow = false } = {}) {
   const headerSection = createTag('section', { class: 'bc-header' });
-  let title;
-  let eyebrow = null;
 
-  if (withEyebrow) {
-    [eyebrow, title] = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  } else {
-    title = header.querySelector('h1, h2, h3, h4, h5, h6');
-  }
+  const headings = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const useEyebrow = withEyebrow && headings.length > 1;
+  const [eyebrow, title] = useEyebrow ? headings : [null, headings[0]];
   const subTitle = header.querySelector('p');
 
   if (eyebrow) {

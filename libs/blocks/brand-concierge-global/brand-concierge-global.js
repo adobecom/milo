@@ -6,6 +6,7 @@ import {
   updateReplicatedValue,
   handleConsent,
   setCssGnavHeight,
+  hasChatCookie,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -149,6 +150,7 @@ export default function init(el) {
     el.removeChild(row);
   });
 
+  if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
     openSideModal(null, bcBootstrap);
   }

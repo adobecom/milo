@@ -116,6 +116,13 @@ export default async function init(el) {
   const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
   const unavEnabled = universalNavMeta === 'on'
     || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
+  const countryCodePromise = (async () => {
+    const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
+    if (!isMasGeoDetectionEnabled()) return undefined;
+    const base = config.miloLibs || config.codeRoot;
+    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    return (await getValidatedMarket())?.toUpperCase();
+  })().catch(() => undefined);
 
   const gnavPromise = main({
     localizeLink,
@@ -129,6 +136,7 @@ export default async function init(el) {
     unavEnabled,
     placeholders: placeholdersPromise,
     miloConfig: config,
+    countryCode: countryCodePromise,
     mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {

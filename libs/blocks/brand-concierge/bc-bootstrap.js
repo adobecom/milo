@@ -64,6 +64,11 @@ export function createSusiComponentForModal({
 }
 
 async function openSusiLightModal() {
+  window.history.replaceState(
+    {},
+    document.title,
+    `${window.location.pathname}${window.location.search}`,
+  );
   const config = getConfig();
   const { env, locale, imsClientId } = config || {};
   const isStage = env?.name !== 'prod';
