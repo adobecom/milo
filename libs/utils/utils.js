@@ -1537,6 +1537,7 @@ export function isTrustedAutoBlock(autoBlock, url) {
 }
 
 export function decorateAutoBlock(a) {
+  if (a.hasAttribute('data-wcs-osi')) return false;
   const config = getConfig();
   let url;
   try {
