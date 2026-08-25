@@ -4,12 +4,27 @@
     position: sticky;
     z-index: 4;
   }
+
   &.rounded-corners-bottom,
   &.rounded-corners {
     & + .section {
       &:has(.floating-cta) {
         margin-block: var(--s2a-spacing-xl) calc(-1 * var(--s2a-spacing-xl));
+
+        /* cancel section-metadata's generic rounded-corners overlap spacer
+           so the two don't stack */
+        &::before {
+          content: none;
+        }
       }
+    }
+  }
+
+  /* the reverse adjacency: cancel section-metadata's generic overlap spacer the same way. */
+  &:has(.floating-cta):has(+ .rounded-corners),
+  &:has(.floating-cta):has(+ .rounded-corners-top) {
+    &::after {
+      content: none;
     }
   }
 }
