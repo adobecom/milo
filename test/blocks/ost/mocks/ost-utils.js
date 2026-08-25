@@ -35,6 +35,8 @@ const createTag = (tag, attributes = {}) => {
 
 const loadArea = () => Promise.resolve();
 
+const loadIms = () => Promise.resolve();
+
 const localizeLinkAsync = () => Promise.resolve();
 
 const loadLink = () => Promise.resolve();
@@ -139,6 +141,15 @@ const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
 
+// Unused by ost.js itself; only needed because merch.js statically imports
+// decorate.js and autoblock.js, which import these from utils.js.
+const createIntersectionObserver = () => {};
+const getFederatedContentRoot = () => '';
+const getFedsPlaceholderConfig = () => ({});
+const shouldBlockFreeTrialLinks = () => false;
+const decorateLinksAsync = () => Promise.resolve();
+const loadBlock = () => Promise.resolve();
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
@@ -166,6 +177,7 @@ export {
   getLocale,
   getMetadata,
   loadArea,
+  loadIms,
   loadScript,
   loadStyle,
   getCountry,
@@ -181,4 +193,10 @@ export {
   getGeoLocalePrefix,
   getPlaceholderPaths,
   getValidatedMasLibsUrl,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
+  decorateLinksAsync,
+  loadBlock,
 };

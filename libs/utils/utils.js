@@ -493,6 +493,35 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
+  let parsed;
+  try {
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+export function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 function isPathMatch(path, href) {
   if (path.includes('*')) {
     const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
@@ -1571,6 +1600,14 @@ export function decorateAutoBlock(a) {
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
       return false;
+    }
+
+    // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
+    // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
+    // dependencies out of the critical path when only a field is authored (e.g. in marquee).
+    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+      a.className = 'merch link-block';
+      return true;
     }
 
     a.className = `${key} link-block`;
@@ -2752,10 +2789,10 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
-    getMasDepUrl('mas-field.js'),
   ],
   merch: [
     getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
   ],
 };
 
@@ -2776,7 +2813,8 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
-    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
