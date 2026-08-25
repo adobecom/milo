@@ -136,7 +136,7 @@ function formatDate(dateTime, format = 'local') {
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
-function checkManifestConsent({ eventStart, eventEnd, geoRestriction }) {
+function checkPromoRange({ eventStart, eventEnd, geoRestriction }) {
   const now = new Date();
   const withinDateRange = !eventStart || !eventEnd || (now >= eventStart && now <= eventEnd);
 
@@ -198,7 +198,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   const {
     withinDateRange,
     manifestGeoRestricted,
-  } = checkManifestConsent({ eventStart, eventEnd, geoRestriction });
+  } = checkPromoRange({ eventStart, eventEnd, geoRestriction });
 
   return {
     index: mIdx + 1,
