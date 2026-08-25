@@ -138,30 +138,57 @@ function toggleExpandedCard(cardEl) {
 }
 
 function getManifestStatus(manifest) {
-  if (manifest.malformed) {
-    return { level: 'error', label: 'Disabled', reasons: ['Manifest failed to load or has an invalid structure.'] };
-  }
+  const statusChecks = [
+    {
+      reason: manifest.malformed,
+      msg: 'Manifest failed to load or has an invalid structure.',
+      level: 'Error',
+    },
+    {
+      reason: manifest.noChangeOfferValue,
+      msg: 'Manifest has no manifest-changes-offers value',
+      level: 'Warning',
+    },
+    {
+      reason: !manifest.malformed && manifest.manifestGeoRestricted,
+      msg: 'User country is geo restricted.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: !manifest.malformed && !manifest.withinDateRange,
+      msg: 'Outside of promo date range.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+  ];
+  const severity = { Warning: 0, Error: 1 };
+  const messages = [];
+  let finalLabel = null;
+  let finalLevel = null;
 
-  const errors = [];
-  if (!manifest.withinDateRange) errors.push('Outside of promo date range.');
-  if (manifest.manifestGeoRestricted) errors.push('User country is geo restricted.');
-  if (errors.length) return { level: 'error', label: 'Disabled', reasons: errors };
+  statusChecks.forEach(({ reason, msg, level, label }) => {
+    if (!reason) return;
+    messages.push(msg);
+    if (!finalLevel || severity[level] > severity[finalLevel]) {
+      finalLevel = level;
+      finalLabel = label || level;
+    }
+  });
 
-  const warnings = [];
-  if (warnings.length) return { level: 'warning', label: 'Warning', reasons: warnings };
-
-  return null;
+  if (!finalLabel) return null;
+  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
 }
 
 function applyManifestStatus(card, manifest) {
   const status = getManifestStatus(manifest);
   if (!status) return;
 
-  const { level, label, reasons } = status;
+  const { level, label, messages } = status;
   const list = createTag(
     'ul',
     { class: `mep-manifest-${level}-tooltip` },
-    reasons.map((reason) => createTag('li', {}, reason)),
+    messages.map((message) => createTag('li', {}, message)),
   );
   card.classList.add(`manifest-${level}`);
   card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
