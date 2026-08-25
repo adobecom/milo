@@ -11,8 +11,10 @@ function decorateMasField(cardContent) {
     const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
     if (classes) masField.classList.add(...classes);
   });
-  const commitmentEl = cardContent.querySelector(':has(> .mas-price) + p');
-  if (commitmentEl?.children.length === 0 && commitmentEl.textContent.trim()) {
+  const priceParent = cardContent.querySelector(':has(> .mas-price)');
+  const commitmentEl = priceParent?.nextElementSibling;
+  if (commitmentEl?.matches('p') && commitmentEl.children.length === 0 && commitmentEl.textContent.trim()) {
+    priceParent.append(commitmentEl);
     commitmentEl.classList.add('mas-price-commitment');
   }
 }
