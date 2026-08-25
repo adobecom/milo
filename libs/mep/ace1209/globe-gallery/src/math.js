@@ -1,14 +1,16 @@
-// Pure stateless helpers: generic easings + the arc-phase geometry (fanned-arc card layout +
-// CSS↔WebGL coordinate bridge). The runtime owns the per-frame arcCtx from buildArcCtx().
+// Pure stateless helpers: easings + arc-phase geometry. The runtime owns the per-frame arcCtx.
 
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
-export function easeOutSine(t) { return Math.sin((t * Math.PI) / 2); }
+export function easeInOutQuint(t) { return t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2; }
+export function easeOutExpo(t) { return t >= 1 ? 1 : 1 - 2 ** (-10 * t); }
 
 export function lerpN(a, b, t) { return a + (b - a) * t; }
 
-// Cover-fit crop (UV repeat + offset) that fills `planeAspect` with `imgAspect`, centre-cropping
-// the overflow; identity when they match. Caller owns `out`. See README (Architecture notes).
+export function clamp01(t) { return t > 0 ? Math.min(1, t) : 0; }
+
+// UV repeat + offset that fills `planeAspect` with `imgAspect`, centre-cropping the overflow.
+// Caller owns `out`.
 export function coverFit(imgAspect, planeAspect, out = {}) {
   out.rx = 1; out.ry = 1; out.ox = 0; out.oy = 0;
   if (!(imgAspect > 0) || !(planeAspect > 0)) return out;
@@ -22,19 +24,17 @@ export function coverFit(imgAspect, planeAspect, out = {}) {
   return out;
 }
 
-// Arc rotation ease: quadratic ramp over the first `k`, then linear (C1 at the seam).
-export function arcRotationEase(t) {
-  const k = 0.08;
+// Quadratic ramp over the first `k`, then linear (C1 at the seam).
+export function arcRotationEase(t, k) {
   const a = 1 / (k * (2 - k));
   const v0 = a * k * k;
   const s = 2 * a * k;
   return t <= k ? a * t * t : v0 + s * (t - k);
 }
 
-// Per-frame arc context: the fan circle (centre + radius) plus rotation offset /
-// effective span driven by arcPanT.
-export function buildArcCtx(arcPanT, W, H, arcSpan) {
-  const arcRot0 = arcRotationEase(arcPanT);
+// The fan circle (centre + radius) plus rotation offset / effective span, driven by arcPanT.
+export function buildArcCtx(arcPanT, W, H, arcSpan, rampT) {
+  const arcRot0 = arcRotationEase(arcPanT, rampT);
   const R = Math.max(W, H) * 1.5; // smaller radius = more visible arc curvature
   const alpha = Math.atan2(H, W);
   const fanCX = W * 0.5 - R * Math.sin(alpha);
@@ -51,26 +51,23 @@ export function getFanData(t, arcCtx, out = {}) {
   const angle = arcCtx.thetaM + arcCtx.effectiveSpan / 2
             - t * arcCtx.effectiveSpan
             + arcCtx.rotOffset;
-  // Radial direction (CSS screen space, Y-down)
   const rx = Math.cos(angle);
   const ry = Math.sin(angle);
   out.px = arcCtx.fanCX + arcCtx.R * rx;
   out.py = arcCtx.fanCY + arcCtx.R * ry;
   out.rx = rx;
   out.ry = ry;
-  // CSS card rotation (in radians) — tangent to arc circle
   out.cssRot = Math.atan2(rx, -ry);
   return out;
 }
 
-// CSS screen coords → WebGL world coords (origin at screen center, Y flipped).
+// CSS screen coords → world coords (origin at screen centre, Y flipped).
 export function cssToWorld(px, py, W, H, out = {}) {
   out.x = px - W / 2;
   out.y = -(py - H / 2);
   return out;
 }
 
-// Rotate a CSS-space point around (fanCX, fanCY) by angle A (CW), then to world space.
 export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
   const dx = px - arcCtx.fanCX;
   const dy = py - arcCtx.fanCY;
@@ -81,7 +78,12 @@ export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
   return cssToWorld(rpx, rpy, W, H, out);
 }
 
-// Arc-phase camera Z: frustum height = H at z=0, so 1 world unit = 1 CSS pixel.
+export const CAM_FOV = 60;
+export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
+
+export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
+
+// Frustum height = H at z=0, so 1 world unit = 1 CSS pixel.
 export function arcCamZ(H) {
-  return H / (2 * Math.tan(Math.PI / 6)); // fov=60, half-angle=30°
+  return H / (2 * TAN_HALF_FOV);
 }
