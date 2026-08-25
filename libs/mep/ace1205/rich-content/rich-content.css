@@ -178,7 +178,7 @@
       justify-content: center;
       width: 30px;
       height: 30px;
-      border-radius: var(--s2a-border-radius-xs);
+      border-radius: var(--s2a-border-radius-2xs);
       background: var(--s2a-color-transparent-white-32);
       border: 1px solid var(--s2a-color-transparent-white-24);
       transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
@@ -572,7 +572,7 @@
 .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
   --rc-pull-offset: 80px;
   --rc-sweep-offset: 200px;
-  --rc-sweep-peek: var(--s2a-border-radius-lg);
+  --rc-sweep-peek: var(--s2a-border-radius-xl);
   --rc-video-enter-scale: 1.15;
   --rc-video-enter-y: 30px;
 }
@@ -591,12 +591,12 @@
   }
 
   .rich-content.media img {
-    max-width: 1200px; 
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .rich-content.media .media-cell .video-container { 
-    max-width: 1200px; 
+  .rich-content.media .media-cell .video-container {
+    max-width: 1200px;
     margin: 0 auto;
   }
 

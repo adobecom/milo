@@ -454,7 +454,7 @@
 
     @media (width >= 1280px) {
       .no-motion-grid-section {
-        padding: var(--s2a-spacing-124) var(--s2a-spacing-64) 0;
+        padding: var(--s2a-spacing-128) var(--s2a-spacing-64) 0;
       }
 
       .text-block {

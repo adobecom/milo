@@ -3,10 +3,9 @@ import {
   CARD_VERT, CARD_DISPERSE_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG,
 } from './shaders.js';
 
-// GPU-asset factories: the card/modal/text ShaderMaterials + the card/modal/hint texture loaders.
+// GPU-asset factories: the ShaderMaterials + the texture loaders.
 
-// Card ShaderMaterial: cover-crop, CA, hover warp, rounded corners. Property proxies let the
-// tick loop drive it via MeshBasicMaterial's opacity/map API.
+// Property proxies let the tick loop drive this via MeshBasicMaterial's opacity/map API.
 export function createCardMaterial({ texture, aspect }) {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
@@ -39,8 +38,8 @@ export function createCardMaterial({ texture, aspect }) {
   return mat;
 }
 
-// Modal SDF material for the flown-out card. `aspect` is the card's world-space
-// width/height; uRadius is a fraction of card height, owned by modal.js (see README).
+// `aspect` is the card's world-space width/height; uRadius is a fraction of card height and is
+// owned by modal.js.
 export function createModalMaterial(texture, aspect) {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -64,8 +63,7 @@ export function createModalMaterial(texture, aspect) {
   });
 }
 
-// "Click & Drag" hint-text material (TEXT_FRAG), driven via uniforms. `aspect` is the
-// camera aspect (x-axis warp); `resolution` is the device-pixel canvas size (edge fade).
+// `aspect` is the camera aspect (x-axis warp); `resolution` is the device-pixel canvas size.
 export function createTextMaterial({ texture, aspect, resolution }) {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -76,9 +74,7 @@ export function createTextMaterial({ texture, aspect, resolution }) {
       uZoom: { value: 0 },
       uUVScale: { value: 1.0 },
       uAspect: { value: aspect },
-      uExitP: { value: 0 },
       uResolution: { value: new THREE.Vector2(resolution.x, resolution.y) },
-      uMotionDir: { value: new THREE.Vector2(0, 0) },
     },
     vertexShader: CARD_VERT,
     fragmentShader: TEXT_FRAG,
@@ -88,7 +84,7 @@ export function createTextMaterial({ texture, aspect, resolution }) {
   });
 }
 
-// Clamp the longest side to `maxTex` (px), preserving aspect. See README (Texture memory budget).
+// Clamp the longest side to `maxTex` px, preserving aspect.
 function fitDims(w, h, maxTex) {
   const longest = Math.max(w, h);
   if (longest <= maxTex) return { w, h };
@@ -96,8 +92,8 @@ function fitDims(w, h, maxTex) {
   return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
 }
 
-// Card textures are capped on HEIGHT (the axis a portrait-ish slot keeps), with WIDE_TEX_RATIO
-// bounding a panorama's width. See README (Texture memory budget).
+// Capped on HEIGHT (the axis a portrait-ish slot keeps), with WIDE_TEX_RATIO bounding a
+// panorama's width.
 const WIDE_TEX_RATIO = 2.5;
 function fitCardDims(w, h, maxH) {
   const s = Math.min(1, maxH / Math.max(1, h), (maxH * WIDE_TEX_RATIO) / Math.max(1, w));
@@ -105,7 +101,6 @@ function fitCardDims(w, h, maxH) {
   return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
 }
 
-// Solid-color canvas — placeholder + untainted fallback (see imageToCanvas).
 function makeCanvas(w, h, color) {
   const cv = document.createElement('canvas');
   cv.width = w || 4; cv.height = h || 6;
@@ -115,8 +110,7 @@ function makeCanvas(w, h, color) {
   return cv;
 }
 
-// Draw an image into an aspect-preserving canvas clamped by `fit` (fitDims / fitCardDims).
-// Loaded via plain Image (no crossOrigin) so file:// works; tainted canvas → solid fallback.
+// Loaded via plain Image (no crossOrigin) so file:// works; a tainted canvas falls back solid.
 function imageToCanvas(img, cap, fit = fitDims) {
   const { w, h } = fit(img.naturalWidth || 512, img.naturalHeight || 512, cap);
   const cv = makeCanvas(w, h, '#555');
@@ -135,8 +129,8 @@ function releaseCanvasAfterUpload(tex, cv) {
   tex.onUpdate = () => { cv.width = 0; cv.height = 0; };
 }
 
-// A tiny transparent texture so a card mesh can be built (and its contour rendered) before its
-// real photo has loaded. Its pixels are never shown — the contour hides them until uReveal > 0.
+// Lets a card mesh be built before its photo loads. Its pixels are never shown — the contour
+// hides them until uReveal > 0.
 export function createPlaceholderTexture() {
   const cv = document.createElement('canvas');
   cv.width = 1; cv.height = 1;
@@ -145,16 +139,14 @@ export function createPlaceholderTexture() {
   return tex;
 }
 
-// Native aspect of a decoded texture — the only per-card value a decode contributes.
 function texAspect(tex) {
   const imgW = (tex.image && tex.image.width) || 1;
   const imgH = (tex.image && tex.image.height) || 1;
   return imgW / imgH;
 }
 
-// Load every card image into a CanvasTexture capped at `maxTexH` tall. onEach fires per
-// settled image (progressive reveal), onDone once all `count` settle. These deliberately do NOT
-// releaseCanvasAfterUpload — two renderers upload them. See README (Texture memory budget).
+// onEach fires per settled image, onDone once all `count` settle. These deliberately do NOT
+// releaseCanvasAfterUpload — two renderers upload them.
 export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
@@ -190,8 +182,7 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   for (let i = 0; i < count; i += 1) tryLoad(i);
 }
 
-// Higher-cap texture for the modal (raw UV, no cover-crop). Returns the Image so a pending
-// load can be cancelled; caller owns disposal.
+// Returns the Image so a pending load can be cancelled; caller owns disposal.
 export function loadModalTexture(src, maxTex, onReady, onError) {
   const img = new Image();
   img.onload = () => {
@@ -209,13 +200,11 @@ export function loadModalTexture(src, maxTex, onReady, onError) {
 
 const TEXT_MAX_SIDE = 2048;
 
-// Fraction of canvas width the text fills at rest; font auto-scales to hit this for any string.
-const HINT_FILL = 0.8;
+// Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
+const HINT_FILL = 0.9;
 
-// Render the hint copy to a CanvasTexture, centered, white-on-transparent. `aspect` is the
-// camera aspect so texture pixels stay square. Font auto-sized to HINT_FILL of the width.
+// `aspect` is the camera aspect, so texture pixels stay square.
 export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
-  // Cap the longest side to TEXT_MAX_SIDE, preserving the camera aspect.
   let canvasW; let canvasH;
   if (aspect >= 1) {
     canvasW = TEXT_MAX_SIDE;
@@ -233,10 +222,8 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
 
-  // Adobe Clean Display covers Latin; other scripts fall back to a system font.
   const setFont = (px) => {
     ctx.font = `900 ${px}px 'Adobe Clean Display', sans-serif`;
-    // Negative letter spacing (−0.04em) matches the Figma tracking.
     if (typeof ctx.letterSpacing !== 'undefined') {
       ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
     }
