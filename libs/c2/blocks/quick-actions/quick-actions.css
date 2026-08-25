@@ -53,11 +53,11 @@
   display: block;
   inline-size: 100%;
   min-block-size: 180px;
-  will-change: transform;
   transition: transform 0.3s ease-out;
 }
 
 .quick-actions-tile:hover .quick-actions-media {
+  will-change: transform;
   transform: scale(1.015);
 }
 

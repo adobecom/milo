@@ -27,7 +27,7 @@
       opacity 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
       clip-path 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
       transform 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53);
-    will-change: opacity, clip-path, transform;
+    will-change: opacity, transform;
     &.active {
       clip-path: inset(0% round var(--s2a-border-radius-12));
       opacity: 1;
