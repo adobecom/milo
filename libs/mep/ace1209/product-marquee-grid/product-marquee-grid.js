@@ -6,17 +6,14 @@ const MAS_FIELD_CLASSES = {
   prices: ['mas-price', 'heading-5'],
 };
 
-function decorateMasField(el) {
-  const masField = el.querySelector('mas-field[field]');
-  if (!masField) return;
-  const field = masField.getAttribute('field');
-  const classes = MAS_FIELD_CLASSES[field];
-  if (classes) masField.classList.add(...classes);
-  if (field === 'prices') {
-    const next = el.nextElementSibling;
-    if (next && !next.querySelector('mas-field')) {
-      next.classList.add('mas-price-commitment');
-    }
+function decorateMasField(cardContent) {
+  cardContent.querySelectorAll('mas-field[field]').forEach((masField) => {
+    const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
+    if (classes) masField.classList.add(...classes);
+  });
+  const commitmentEl = cardContent.querySelector(':has(> .mas-price) + p');
+  if (commitmentEl?.children.length === 0 && commitmentEl.textContent.trim()) {
+    commitmentEl.classList.add('mas-price-commitment');
   }
 }
 
@@ -52,10 +49,8 @@ function buildMerchCard(col) {
   const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')].filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  allParas.forEach((el) => {
-    decorateMasField(el);
-    cardContent.append(el);
-  });
+  allParas.forEach((el) => cardContent.append(el));
+  decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   buttons.forEach((btn) => ctaWrapper.append(btn));
