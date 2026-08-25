@@ -176,9 +176,9 @@
   img {
     border-radius: var(--s2a-border-radius-md);
   }
-  
+
   .video-holder {
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
   }
 }
 
@@ -362,7 +362,7 @@
   }
 }
 
-.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2), 
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2),
 .hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(2),
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div picture:nth-child(2) {
   position: absolute;
@@ -424,17 +424,17 @@
   @media (768px <= width < 1024px) {
     .hub-hero-image-grid-container-col div {
       position: relative;
-  
+
       img {
-        border-radius: var(--s2a-border-radius-sm);
+        border-radius: var(--s2a-border-radius-xs);
       }
     }
 
     .hub-hero-carousel-item, .hub-hero-carousel-item-media {
-      border-radius: var(--s2a-border-radius-sm);
+      border-radius: var(--s2a-border-radius-xs);
     }
   }
-  
+
   @media (width < 768px) {
     .hub-hero-carousel-item {
       background: transparent;
@@ -466,7 +466,7 @@
     }
   }
 
-  
+
   .hub-hero-carousel-item-media>p:nth-child(2),
   .hub-hero-carousel-item-media>p:has(picture),
   .hub-hero-carousel-item-media>picture:nth-child(2) {

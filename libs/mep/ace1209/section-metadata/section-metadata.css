@@ -126,14 +126,14 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   &.rounded-corners,
   &.rounded-corners-top,
   &.rounded-corners-bottom {
-    border-radius: var(--s2a-border-radius-lg);
+    border-radius: var(--s2a-border-radius-xl);
     overflow: clip;
     z-index: 3;
-    margin-block: calc(-1 * var(--s2a-border-radius-lg));
+    margin-block: calc(-1 * var(--s2a-border-radius-xl));
   }
 
   &.rounded-corners-top {
-    border-radius: var(--s2a-border-radius-lg) var(--s2a-border-radius-lg) 0 0;
+    border-radius: var(--s2a-border-radius-xl) var(--s2a-border-radius-xl) 0 0;
     margin-bottom: initial;
   }
 
@@ -152,16 +152,16 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     display: block;
     grid-column: 1 / -1;
     width: 100%;
-    height: var(--s2a-border-radius-lg);
+    height: var(--s2a-border-radius-xl);
   }
 
   &.rounded-corners-bottom {
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
     margin-top: initial;
   }
 
   /* Fix for consecutive rounded corner sections in order
-    to have the first section overlay on to the following section 
+    to have the first section overlay on to the following section
     For later - need to find a more elegant solution */
   &.rounded-corners:has(+ .section[class*='rounded-corners']),
   &.rounded-corners-bottom:has(+ .section[class*='rounded-corners']) {
@@ -315,7 +315,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 
   &.bento .explore-card.dark,
-  &.bento .explore-card.light {background-color: transparent;} 
+  &.bento .explore-card.light {background-color: transparent;}
 
   &.bento .explore-card {
     border-radius: var(--s2a-border-radius-md);
