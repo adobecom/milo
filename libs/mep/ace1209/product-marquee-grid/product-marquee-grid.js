@@ -1,6 +1,24 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent, decorateButtons } from '../../../utils/decorate.js';
 
+const MAS_FIELD_CLASSES = {
+  description: ['mas-description'],
+  prices: ['mas-price', 'heading-5'],
+};
+
+function decorateMasField(cardContent) {
+  cardContent.querySelectorAll('mas-field[field]').forEach((masField) => {
+    const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
+    if (classes) masField.classList.add(...classes);
+  });
+  const priceParent = cardContent.querySelector(':has(> .mas-price)');
+  const commitmentEl = priceParent?.nextElementSibling;
+  if (commitmentEl?.matches('p') && commitmentEl.children.length === 0 && commitmentEl.textContent.trim()) {
+    priceParent.append(commitmentEl);
+    commitmentEl.classList.add('mas-price-commitment');
+  }
+}
+
 function parseLeftColumn(col) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
@@ -30,10 +48,12 @@ function buildMerchCard(col) {
   const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
   buttons.forEach((btn) => btn.remove());
 
-  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')].filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
+  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+    .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   allParas.forEach((el) => cardContent.append(el));
+  decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   buttons.forEach((btn) => ctaWrapper.append(btn));
