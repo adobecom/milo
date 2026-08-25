@@ -2616,14 +2616,16 @@ export async function decorateLanguageBanner() {
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
     if (useBannerFlow) {
+      // Exclude en-US unless it explicitly lists the geo
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = pickPreferredMarket(marketsForGeo, prefLang, geoIp);
+        prefMarketForGeo = pickPreferredMarket(marketsForGeoFiltered, prefLang, geoIp);
         if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
       if (!prefMarketForGeo) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeoFiltered[0]]));
       }
     } else {
       // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
