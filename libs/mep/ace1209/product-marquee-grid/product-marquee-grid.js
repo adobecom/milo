@@ -6,10 +6,6 @@ const MAS_FIELD_CLASSES = {
   prices: ['mas-price', 'heading-5'],
 };
 
-function hasVisibleContent(el) {
-  return el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]');
-}
-
 function decorateMasField(el) {
   const masField = el.querySelector('mas-field[field]');
   if (!masField) return;
@@ -32,7 +28,7 @@ function parseLeftColumn(col) {
   heading?.classList.add('heading-super');
 
   const allTextEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
-    .filter((el) => el !== heading && hasVisibleContent(el));
+    .filter((el) => el !== heading && el.textContent.trim());
 
   return { iconEl, heading, bodyEls: allTextEls };
 }
@@ -53,8 +49,7 @@ function buildMerchCard(col) {
   const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
   buttons.forEach((btn) => btn.remove());
 
-  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
-    .filter(hasVisibleContent);
+  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')].filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   allParas.forEach((el) => {
