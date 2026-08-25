@@ -15,6 +15,14 @@ function decorateMasField(el) {
   if (!masField) return;
   const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
   if (classes) masField.classList.add(...classes);
+  if (masField.getAttribute('field') === 'prices') {
+    const parent = masField.parentElement;
+    [...parent.childNodes].forEach((node) => {
+      if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
+      const span = createTag('span', { class: 'mas-price-commitment' }, node.textContent);
+      node.replaceWith(span);
+    });
+  }
 }
 
 function parseLeftColumn(col) {
