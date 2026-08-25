@@ -73,6 +73,19 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+const SPACING_CLASS_RE = /^spacing-([a-z0-9]+)(-top|-bottom)?$/;
+
+function applyMediaSpacing(root) {
+  [...root.classList].forEach((cls) => {
+    const match = cls.match(SPACING_CLASS_RE);
+    if (!match) return;
+    const [, size, direction] = match;
+    const value = `var(--s2a-section-spacing-${size})`;
+    if (direction !== '-bottom') root.style.setProperty('--rc-media-spacing-top', value);
+    if (direction !== '-top') root.style.setProperty('--rc-media-spacing-bottom', value);
+  });
+}
+
 const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
 
 function isMediaCell(cell) {
@@ -120,6 +133,7 @@ function decorateMediaVariant(container) {
 
 function decorate(block, root = block) {
   if (root.classList.contains('media')) {
+    applyMediaSpacing(root);
     decorateMediaVariant(block);
     return;
   }
