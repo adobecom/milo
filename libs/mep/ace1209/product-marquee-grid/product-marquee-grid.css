@@ -156,11 +156,13 @@ body:has(header.local-nav) .product-marquee-grid {
       padding: var(--s2a-spacing-lg);
     }
 
-    .mas-description,
-    .mas-price-commitment {
-      font-size: var(--s2a-typography-font-size-body-md);
-      line-height: var(--s2a-typography-line-height-body-md);
-      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+    .pm-merch-content {
+      .mas-description,
+      .mas-price-commitment {
+        font-size: var(--s2a-typography-font-size-body-md);
+        line-height: var(--s2a-typography-line-height-body-md);
+        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+      }
     }
   }
 
