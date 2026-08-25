@@ -145,11 +145,6 @@ function getManifestStatus(manifest) {
       level: 'Error',
     },
     {
-      reason: manifest.noChangeOfferValue,
-      msg: 'Manifest has no manifest-changes-offers value',
-      level: 'Warning',
-    },
-    {
       reason: !manifest.malformed && manifest.manifestGeoRestricted,
       msg: 'User country is geo restricted.',
       level: 'Warning',
