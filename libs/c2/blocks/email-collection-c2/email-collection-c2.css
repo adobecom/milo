@@ -245,6 +245,11 @@
   font-family: inherit;
 }
 
+.email-collection-c2 .button-container a,
+.email-collection-c2 .button-container button {
+  width: 100%;
+}
+
 .email-collection-c2 .subscribed-email {
   margin: var(--s2a-spacing-lg) 0;
 }
@@ -344,6 +349,11 @@
 
   .email-collection-c2 .button-container {
     margin-bottom: var(--focus-outline-margin);
+  }
+
+  .email-collection-c2 .button-container a,
+  .email-collection-c2 .button-container button {
+    width: auto;
   }
 
   .email-collection-c2.large-image .text {
