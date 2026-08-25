@@ -777,7 +777,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;
@@ -843,7 +843,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   }
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .globe-gallery-pullquote {
     --gg-pq-ideal-gap: var(--s2a-layout-2xl);
   }

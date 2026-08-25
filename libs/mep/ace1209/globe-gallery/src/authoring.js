@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-relative-packages
-import { getFederatedUrl } from '../../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../../utils/utils.js';
 
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -142,15 +142,11 @@ export function layoutQuote(quoteEl) {
   const indent = quoteEl.style.textIndent;
   const lines = measureLines(quoteEl, text.split(/\s+/));
   const lineEls = lines.map((wordsOnLine, i) => {
-    const line = document.createElement('span');
-    line.className = 'globe-gallery-pullquote-line';
-    const inner = document.createElement('span');
-    inner.className = 'globe-gallery-pullquote-line-inner';
+    const inner = createTag('span', { class: 'globe-gallery-pullquote-line-inner' });
     inner.textContent = wordsOnLine.join(' ');
-    line.append(inner);
     // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
     if (i === 0 && indent) inner.style.marginInlineStart = indent;
-    return line;
+    return createTag('span', { class: 'globe-gallery-pullquote-line' }, inner);
   });
   quoteEl.style.textIndent = '';
   quoteEl.classList.add('globe-gallery-pullquote-lines');
