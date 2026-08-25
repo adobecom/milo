@@ -344,7 +344,12 @@ export default function createGlobeModal({
     if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
   }
 
-  function populateModal(i) {
+  function announce(text) {
+    const el = chromeEl && chromeEl.querySelector('.globe-gallery-modal-announce');
+    if (el) el.textContent = text;
+  }
+
+  function populateModal(i, speak) {
     const targetEl = chromeEl || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
@@ -371,7 +376,9 @@ export default function createGlobeModal({
       counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
     const posEl = targetEl.querySelector('.globe-gallery-modal-position');
-    if (posEl) posEl.textContent = cardLabel(authoredNo(i), getCount());
+    const position = cardLabel(authoredNo(i), getCount());
+    if (posEl) posEl.textContent = position;
+    announce(speak ? [meta.name, meta.role, position].filter(Boolean).join('. ') : '');
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
     const config = getConfig();
@@ -454,7 +461,7 @@ export default function createGlobeModal({
     modalIdx = newIdx;
     modalCard = newCard;
     modalPhase = MODAL_PHASE.OPEN;
-    populateModal(newIdx);
+    populateModal(newIdx, true);
     requestNavNudge(newIdx);
 
     dnNavOldCard = oldCard;
@@ -520,9 +527,6 @@ export default function createGlobeModal({
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
-      const nameEl = chromeEl && chromeEl.querySelector('.globe-gallery-modal-name');
-      const focusEl = nameEl || chromeEl;
-      if (focusEl) { try { focusEl.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
     const renderer = getRenderer();

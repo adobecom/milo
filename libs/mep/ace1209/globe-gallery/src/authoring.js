@@ -34,7 +34,7 @@ const LABEL_DIVIDER = '||';
 const DEFAULT_LABELS = [
   DEFAULT_GALLERY_INSTRUCTIONS,
   'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
-  'Previous card', '{index} of {count}', 'Next card', 'Close',
+  'Previous card', '{index} of {count}', 'Next card', 'Close', 'Card details',
 ];
 const CARD_TPL_INDEX = 6;
 
@@ -52,6 +52,7 @@ function buildLabels(parts) {
     prevCard: at(5),
     nextCard: at(7),
     closeBtn: at(8),
+    modalTitle: at(9),
     cardLabel: (index, count) => cardTpl
       .replace('{index}', String(index))
       .replace('{count}', String(count)),
@@ -146,8 +147,10 @@ export function layoutQuote(quoteEl) {
     inner.textContent = wordsOnLine.join(' ');
     // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
     if (i === 0 && indent) inner.style.marginInlineStart = indent;
-    return createTag('span', { class: 'globe-gallery-pullquote-line' }, inner);
+    return createTag('span', { class: 'globe-gallery-pullquote-line', 'aria-hidden': 'true' }, inner);
   });
+  const srEl = createTag('span', { class: 'sr-only globe-gallery-pullquote-sr' });
+  srEl.textContent = text;
   quoteEl.style.textIndent = '';
   quoteEl.classList.add('globe-gallery-pullquote-lines');
   // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
@@ -157,6 +160,7 @@ export function layoutQuote(quoteEl) {
     if (i) nodes.push(document.createTextNode(' '));
     nodes.push(line);
   });
+  nodes.push(srEl);
   quoteEl.replaceChildren(...nodes);
   return lineEls;
 }
@@ -380,13 +384,13 @@ const buildMarkup = (gid, labels) => `
 
   <div class="globe-gallery-pullquote-pin">
     <div class="globe-gallery-pullquote-rail">
-      <div class="globe-gallery-pullquote">
+      <figure class="globe-gallery-pullquote">
         <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-        <div class="globe-gallery-pullquote-attribution">
+        <figcaption class="globe-gallery-pullquote-attribution">
           <p class="globe-gallery-pullquote-name body-lg"></p>
           <p class="globe-gallery-pullquote-role body-lg"></p>
-        </div>
-      </div>
+        </figcaption>
+      </figure>
     </div>
   </div>
 
@@ -396,27 +400,28 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-name-${gid} globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
+  <dialog class="globe-gallery-modal-chrome" aria-label="${escapeHtml(labels.modalTitle)}">
     <div class="globe-gallery-modal-info">
-      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
+      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
-      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></div>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
-    <span class="globe-gallery-modal-image globe-gallery-sr-only" role="img"></span>
+    <span class="globe-gallery-modal-image sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
+    <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
     <button class="globe-gallery-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <span class="globe-gallery-modal-position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
+    <span class="globe-gallery-modal-announce sr-only" aria-live="polite"></span>
   </dialog>
 `;
 

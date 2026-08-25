@@ -1013,11 +1013,11 @@ function createGlobeGalleryRuntime(
     return Math.min((formationVh / 100) * H, blockHeight);
   }
 
-  function snapToInteractive() {
+  function snapToBrowseView() {
     if (suppressFocusSnap) return;
     const top = reducedMotion
       ? blockDocTop
-      : blockDocTop + formedScrollPx();
+      : blockDocTop + formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC;
     // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
     // before the callback below lands. Above the block that tick would reset the orientation and
     // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
@@ -1049,7 +1049,7 @@ function createGlobeGalleryRuntime(
   };
 
   // The globe is on screen and nothing is covering it. The keyboard path stays on THIS even past
-  // the pull-quote cue: focusing a card runs snapToInteractive, which scrolls back into range, so
+  // the pull-quote cue: focusing a card runs snapToBrowseView, which scrolls back into range, so
   // retiring the tab stops early would remove the entry point before the snap could use it.
   const globeFormed = () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
     && modal.getModalIdx() < 0;
@@ -1067,7 +1067,7 @@ function createGlobeGalleryRuntime(
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
     centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
-    onFocus: snapToInteractive,
+    onFocus: snapToBrowseView,
     galleryInstructions: instructions,
     gid,
   });
