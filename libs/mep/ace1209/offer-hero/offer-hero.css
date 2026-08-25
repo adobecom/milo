@@ -10,7 +10,7 @@
 
   > .section-background {
     overflow: clip;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 }
 
@@ -69,7 +69,7 @@
     position: relative;
     padding-block: 0 var(--s2a-spacing-lg);
     z-index: 2;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 
   .hero-eyebrow {

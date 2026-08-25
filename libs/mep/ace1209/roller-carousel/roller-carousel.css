@@ -152,7 +152,7 @@
     aspect-ratio: 650 / 766;
     height: clamp(265px, 100dvh - 382px, 360px);
     max-width: 70vw;
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
     overflow: hidden;
     background: #000;
   }
