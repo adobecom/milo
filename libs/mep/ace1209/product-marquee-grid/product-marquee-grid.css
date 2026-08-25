@@ -67,6 +67,22 @@
   .price.price-strikethrough {
     color: var(--s2a-color-button-background-primary-solid-on-light-hover);
   }
+
+  .mas-description {
+    color: var(--s2a-color-content-inverse);
+    /* s2a/typography/body-sm */
+    font-family: var(--s2a-font-family-body);
+    font-size: var(--s2a-typography-font-size-body-sm);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--s2a-typography-line-height-body-sm); /* 128.571% */
+    letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+  }
+
+  .mas-price {
+    color: var(--s2a-color-content-inverse);
+    letter-spacing: var(--s2a-font-letter-spacing-4xl);
+  }
 }
 
 body:has(header.has-breadcrumbs) .product-marquee-grid {
@@ -131,6 +147,17 @@ body:has(header.local-nav) .product-marquee-grid {
       background: var(--s2a-color-background-subtle);
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
+
+      .mas-description {
+        color: var(--s2a-color-content-default);
+        /* s2a/typography/body-md */
+        font-family: var(--s2a-font-family-body);
+        font-size: var(--s2a-typography-font-size-body-md);
+        font-style: normal;
+        font-weight: 400;
+        line-height: var(--s2a-typography-line-height-body-md); /* 125% */
+        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+      }
     }
   }
 

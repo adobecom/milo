@@ -14,7 +14,7 @@ function decorateMasField(el) {
   const masField = el.querySelector('mas-field[field]');
   if (!masField) return;
   const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
-  if (classes) el.classList.add(...classes);
+  if (classes) masField.classList.add(...classes);
 }
 
 function parseLeftColumn(col) {
