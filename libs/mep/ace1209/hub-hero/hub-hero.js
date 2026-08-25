@@ -159,7 +159,8 @@ const onHover = (event) => {
   const maxIndex = isThree ? 3 : slideCount;
   const slideWidth = parseFloat(styles.getPropertyValue('--slide-width')) || 0;
   const endGap = parseFloat(styles.getPropertyValue('--end-gap')) || 0;
-  const unhoveredTotal = slideWidth * slideCount + (endGap * 16) * (slideCount - 1);
+  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const unhoveredTotal = slideWidth * slideCount + (endGap * rootFontSize) * (slideCount - 1);
   const needsStick = unhoveredTotal > window.innerWidth;
 
   slideEl.classList.add(isFocus ? 'focused' : 'hovered');

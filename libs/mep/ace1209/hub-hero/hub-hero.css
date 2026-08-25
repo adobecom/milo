@@ -26,9 +26,6 @@
   --slide-layout-animation-range: contain 10% contain 100%;
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
-  --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
-  --carousel-item-media-height: calc(var(--hub-hero-carousel-item-max-width) * 1.35);
-  --slide-max-width: var(--hub-hero-carousel-item-max-width);
   --slide-from-card-slide-range: contain 0% contain 30%;
   --elastic-mobile-first-slide-offset: -290px;
   --start-gap: 6rem;
