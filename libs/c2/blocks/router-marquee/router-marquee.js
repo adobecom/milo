@@ -580,7 +580,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   };
 
   const resume = () => {
-    if (!paused) return;
+    if (!paused || prefersReducedMotion()) return;
     paused = false;
     setPlayingState(true);
     startFill(active);
