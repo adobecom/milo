@@ -13,10 +13,10 @@ function decorateMasField(el) {
   const classes = MAS_FIELD_CLASSES[field];
   if (classes) masField.classList.add(...classes);
   if (field === 'prices') {
-    [...el.childNodes].forEach((node) => {
-      if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
-      node.replaceWith(createTag('span', { class: 'mas-price-commitment' }, node.textContent));
-    });
+    const next = el.nextElementSibling;
+    if (next && !next.querySelector('mas-field')) {
+      next.classList.add('mas-price-commitment');
+    }
   }
 }
 
