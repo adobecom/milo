@@ -11,6 +11,7 @@
   position: relative;
   box-sizing: border-box;
   padding: var(--quote-pad);
+  margin-inline: calc(-1 * var(--grid-padding));
   color: var(--s2a-color-content-default);
 
   .foreground {
