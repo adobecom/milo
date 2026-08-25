@@ -1,7 +1,7 @@
 import * as THREE from './three.module.min.js';
 import {
   parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
-  optimizeImgUrl, layoutQuote,
+  optimizeImgUrl, layoutQuote, scatterCards,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -19,13 +19,19 @@ import * as TL from './src/timeline.js';
 
 const CARD_ASPECT = 456 / 631;
 
+function sphereCardScale(srcAspect) {
+  const a = Number.isFinite(srcAspect) && srcAspect > 0 ? srcAspect : CARD_ASPECT;
+  const stretch = Math.sqrt(a / CARD_ASPECT);
+  return { sX: stretch, sY: 1 / stretch };
+}
+
 const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const BREAKPOINTS = {
   sm: {
     minWidth: 0,
     ARC_SPAN: 3.6,
-    SPHERE_R: 16,
+    SPHERE_R: 18,
     CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
@@ -36,7 +42,6 @@ const BREAKPOINTS = {
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
@@ -47,7 +52,7 @@ const BREAKPOINTS = {
     minWidth: 768,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 9,
+    CARD_H_SPHERE: 10.5,
     CARD_W_ARC: 456,
     CAM_Z_SPHERE: 57,
     CAM_Z_END: -60,
@@ -57,7 +62,6 @@ const BREAKPOINTS = {
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
     CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    RIM: 0.5,
     ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
     DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.5,
@@ -84,7 +88,8 @@ const GLOBAL_CA_MD = true;
 const YAW_ONLY_GEOMETRY = {
   CYLINDER: true,
   CYL_COLS_FIT: 0.80, // wall-height dial: fewest columns whose tallest fits this × frustum
-  CYL_GAP_RATIO: 0.20, // inter-card gap as a fraction of card width
+  CYL_COL_GAP_RATIO: 0.20, // column gap as a fraction of card width; also sets cardW
+  CYL_ROW_GAP_RATIO: 0.10, // row gap as a fraction of card width
   CYL_ASPECT_CAP: 1.9, // on the LAID-OUT aspect; past it the fit crops
   CYL_BULGE: 0.18, // r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
   CARD_FACE_CAMERA: 0.1, // >0 costs barrel smoothness
@@ -144,8 +149,6 @@ const HOVER_CA = 0.025;
 const HOVER_WARP = 0.4;
 const HOVER_SCALE = 0.25; // added, not replacing: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target
-const RIM_FACE_ON = 0.3;
-const RIM_HOVER = 0.5;
 
 // Per-card un-dissolve once its photo lands.
 const REVEAL_RATE = 0.06; // per-frame
@@ -185,10 +188,44 @@ const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const BALANCE_PASSES = 20;
+
+function balanceColumns(heights, gap, cols) {
+  const n = heights.length;
+  const load = new Array(cols).fill(0);
+  const col = new Array(n);
+  const tallestFirst = Array.from({ length: n }, (unused, i) => i)
+    .sort((a, b) => heights[b] - heights[a] || a - b);
+  for (let k = 0; k < n; k += 1) {
+    const i = tallestFirst[k];
+    let best = 0;
+    for (let c = 1; c < cols; c += 1) if (load[c] < load[best]) best = c;
+    col[i] = best;
+    load[best] += heights[i] + gap;
+  }
+  for (let pass = 0; pass < BALANCE_PASSES; pass += 1) {
+    let swapped = false;
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        const [a, b, d] = [col[i], col[j], heights[i] - heights[j]];
+        if (a !== b && d * (load[b] - load[a] + d) < 0) {
+          load[a] -= d;
+          load[b] += d;
+          col[i] = b;
+          col[j] = a;
+          swapped = true;
+        }
+      }
+    }
+    if (!swapped) break;
+  }
+  return col;
+}
+
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
 // See README (yaw-only geometry) for the packing + column-count rules.
 function cylinderMasonryLayout({
-  aspects, radius, frustumH, colsFit, gapRatio, aspectCap, bulge = 0,
+  aspects, radius, frustumH, colsFit, colGapRatio, rowGapRatio = colGapRatio, aspectCap, bulge = 0,
 }) {
   const n = aspects.length;
   // Clamp extremes so one panorama can't dominate a column (cover-crop handles the rest).
@@ -199,21 +236,20 @@ function cylinderMasonryLayout({
 
   const pack = (cols) => {
     const pitch = (2 * Math.PI * radius) / cols;
-    const cardW = pitch / (1 + gapRatio);
-    const gap = cardW * gapRatio;
+    const cardW = pitch / (1 + colGapRatio);
+    const rowGap = cardW * rowGapRatio;
+    const hs = clamped.map((a) => cardW / a);
+    const col = balanceColumns(hs, rowGap, cols);
     const colH = new Array(cols).fill(0);
     const placed = new Array(n);
-    const order = Array.from({ length: n }, (unused, i) => i)
-      .sort((a, b) => clamped[a] - clamped[b]); // ascending aspect = descending height
-    for (let k = 0; k < n; k += 1) {
-      const i = order[k];
-      const h = cardW / clamped[i];
-      let best = 0;
-      for (let c = 1; c < cols; c += 1) if (colH[c] < colH[best]) best = c;
-      placed[i] = { col: best, offset: colH[best], w: cardW, h };
-      colH[best] += h + gap;
+    for (let c = 0; c < cols; c += 1) {
+      for (let i = 0; i < n; i += 1) {
+        if (col[i] !== c) continue; // eslint-disable-line no-continue
+        placed[i] = { col: c, offset: colH[c], w: cardW, h: hs[i] };
+        colH[c] += hs[i] + rowGap;
+      }
     }
-    const totals = colH.map((h) => Math.max(0, h - gap));
+    const totals = colH.map((h) => Math.max(0, h - rowGap));
     return { placed, totals, wallH: Math.max(...totals) };
   };
 
@@ -279,8 +315,24 @@ function createGlobeGalleryRuntime(
 
   const CARD_CONTENT = authoredCards || [];
 
+  function authoredIdx(i) {
+    return CARD_CONTENT[i]?.authoredIndex ?? i;
+  }
+
+  const AUTHORED_ORDER = [];
+  CARD_CONTENT.forEach((_, i) => { AUTHORED_ORDER[authoredIdx(i)] = i; });
+
   function getCardMetadata(i) {
     return CARD_CONTENT[i];
+  }
+
+  function authoredNo(i) {
+    return authoredIdx(i) + 1;
+  }
+
+  function stepCard(i, dir) {
+    const n = AUTHORED_ORDER.length;
+    return AUTHORED_ORDER[(authoredIdx(i) + dir + n) % n];
   }
 
   let reducedMotion = false;
@@ -315,10 +367,10 @@ function createGlobeGalleryRuntime(
       GRID_ROWS: cfg.GRID_ROWS,
       // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
-      RIM: cfg.RIM,
       CYLINDER: !!shape.CYLINDER,
       CYL_COLS_FIT: cfg.CYL_COLS_FIT ?? shape.CYL_COLS_FIT,
-      CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
+      CYL_COL_GAP_RATIO: shape.CYL_COL_GAP_RATIO,
+      CYL_ROW_GAP_RATIO: shape.CYL_ROW_GAP_RATIO,
       CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
       CYL_BULGE: shape.CYL_BULGE,
       // Frustum height at the cylinder's centre plane — the column solve's vertical budget.
@@ -442,7 +494,6 @@ function createGlobeGalleryRuntime(
   }
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
-  const viewDir = new THREE.Vector3();
   const facingAlign = new THREE.Quaternion();
   const facingPartial = new THREE.Quaternion();
   const IDENTITY_QUAT = new THREE.Quaternion();
@@ -507,7 +558,8 @@ function createGlobeGalleryRuntime(
         radius: SPHERE_R,
         frustumH: bp.CYL_FRUSTUM_H,
         colsFit: bp.CYL_COLS_FIT,
-        gapRatio: bp.CYL_GAP_RATIO,
+        colGapRatio: bp.CYL_COL_GAP_RATIO,
+        rowGapRatio: bp.CYL_ROW_GAP_RATIO,
         aspectCap: bp.CYL_ASPECT_CAP,
         bulge: bp.CYL_BULGE,
       })
@@ -521,6 +573,7 @@ function createGlobeGalleryRuntime(
     for (let i = 0; i < N_TOTAL; i += 1) {
       const srcAspect = cardAspect(i);
       const mas = masonry ? masonry[i] : null;
+      const sphereScale = sphereCardScale(srcAspect);
 
       const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
       const mat = createCardMaterial({
@@ -552,10 +605,9 @@ function createGlobeGalleryRuntime(
         gridQuat: new THREE.Quaternion(),
         peelJitter: Math.random(),
         srcAspect,
-        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : srcAspect / CARD_ASPECT,
-        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : 1,
-        // ACTUAL rendered height: on masonry CARD_H_SPHERE is only the geometry base.
-        sphereWorldH: mas ? mas.h : CARD_H_SPHERE,
+        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : sphereScale.sX,
+        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : sphereScale.sY,
+        sphereWorldH: mas ? mas.h : CARD_H_SPHERE * sphereScale.sY,
         hoverT: 0, // eased 0→1 hover progress (sphere phase only)
         hoverTarget: 0, // instant 0|1 set by onHover() raycast
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
@@ -603,10 +655,11 @@ function createGlobeGalleryRuntime(
 
   // Read live each frame, so writing these morphs the card into its native shape.
   function updateCardSphereSizing(card, srcAspect) {
+    const { sX, sY } = sphereCardScale(srcAspect);
     card.srcAspect = srcAspect;
-    card.sphereScaleSX = srcAspect / CARD_ASPECT;
-    card.sphereScaleSY = 1;
-    card.sphereWorldH = bp.CARD_H_SPHERE;
+    card.sphereScaleSX = sX;
+    card.sphereScaleSY = sY;
+    card.sphereWorldH = bp.CARD_H_SPHERE * sY;
   }
 
   // sm barrel: re-solve the packing once every aspect is known; each card morphs to its slot.
@@ -617,7 +670,8 @@ function createGlobeGalleryRuntime(
       radius: SPHERE_R,
       frustumH: bp.CYL_FRUSTUM_H,
       colsFit: bp.CYL_COLS_FIT,
-      gapRatio: bp.CYL_GAP_RATIO,
+      colGapRatio: bp.CYL_COL_GAP_RATIO,
+      rowGapRatio: bp.CYL_ROW_GAP_RATIO,
       aspectCap: bp.CYL_ASPECT_CAP,
       bulge: bp.CYL_BULGE,
     });
@@ -870,6 +924,8 @@ function createGlobeGalleryRuntime(
     getCards: () => cards,
     getCount: () => CARD_CONTENT.length,
     getCardMetadata,
+    authoredNo,
+    stepCard,
     // Returns the pending Image (cancellable), or null when the base cap already meets it.
     loadModalUpgrade: (idx, onReady, onError) => {
       const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
@@ -1000,11 +1056,12 @@ function createGlobeGalleryRuntime(
   a11y = createGalleryA11y({
     q,
     getCount: () => CARD_CONTENT.length,
+    cardOrder: AUTHORED_ORDER,
     getModalIdx: () => modal.getModalIdx(),
     isGlobeFormed: globeFormed,
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
-      return (m && m.alt) || `Image ${i + 1}`;
+      return (m && m.alt) || `Image ${authoredNo(i)}`;
     },
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
     centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
@@ -1555,21 +1612,6 @@ function createGlobeGalleryRuntime(
     mesh.renderOrder = CARD_ORDER_BASE + Math.round(n * CARD_ORDER_STEPS);
   }
 
-  function applyRim(card, mesh, frame) {
-    if (!bp.RIM) return;
-    let rimT = RIM_FACE_ON + card.hoverT * RIM_HOVER;
-    if (frame.activeCamera === camera) {
-      cardNormal.set(0, 0, 1).applyQuaternion(mesh.quaternion);
-      viewDir.set(
-        -mesh.position.x,
-        -mesh.position.y,
-        camera.position.z - (frame.sphGroupZ + mesh.position.z),
-      ).normalize();
-      rimT += (1 - RIM_FACE_ON) * (1 - Math.abs(cardNormal.dot(viewDir)));
-    }
-    mesh.material.uniforms.uRim.value = bp.RIM * Math.min(1, rimT);
-  }
-
   function updateCardTransform(i, frame) {
     const { progress, gridFormT, gpWin, dtScale } = frame;
     const { N_TOTAL } = bp;
@@ -1655,7 +1697,6 @@ function createGlobeGalleryRuntime(
       else placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY);
     }
     applyCardOrder(card, mesh, i, frame);
-    applyRim(card, mesh, frame);
   }
 
   function updateCardTransforms(frame) {
@@ -2134,13 +2175,13 @@ export default async function init(el) {
 
   const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint });
 
-  const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
-  if (!cards || cards.length === 0) {
+  const authored = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  if (!authored || authored.length === 0) {
     el.classList.add('globe-gallery-empty');
     return el;
   }
   const runtime = createGlobeGalleryRuntime(
-    cards,
+    scatterCards(authored),
     hintText,
     instructions,
     el,

@@ -23,7 +23,6 @@ export function createCardMaterial({ texture, aspect }) {
       uDisperse: { value: 0 }, // near-camera explosion (near-camera only; 0 in other phases)
       uReveal: { value: 0 }, // texture-ready reveal (0 = contour only, 1 = full photo)
       uContourFade: { value: 1 }, // near-camera gate for the contour (mirrors proxFade)
-      uRim: { value: 0 },
     },
     vertexShader: CARD_DISPERSE_VERT,
     fragmentShader: CARD_FRAG,

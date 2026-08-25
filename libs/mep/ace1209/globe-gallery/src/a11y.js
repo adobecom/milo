@@ -8,6 +8,7 @@ const ENTER_GALLERY_DAA_LL = 'enter_gallery_kbd--globe_gallery';
 export default function createGalleryA11y({
   q,
   getCount,
+  cardOrder,
   getModalIdx,
   isGlobeFormed,
   getCardLabel,
@@ -64,7 +65,7 @@ export default function createGalleryA11y({
     entered = true;
     if (widgetEl) widgetEl.tabIndex = -1;
     cardButtons.forEach((btn) => { btn.tabIndex = 0; });
-    cardButtons[0].focus();
+    cardButtons[cardOrder[0]].focus();
   }
 
   // Call after buildCards() so getCount() is final.
@@ -102,7 +103,8 @@ export default function createGalleryA11y({
     cardsEl.className = 'globe-gallery-a11y-cards';
     const count = getCount();
     cardButtons = [];
-    for (let i = 0; i < count; i += 1) {
+    for (let n = 0; n < count; n += 1) {
+      const i = cardOrder[n];
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'globe-gallery-a11y-card';
@@ -114,7 +116,7 @@ export default function createGalleryA11y({
       btn.addEventListener('blur', onCardBlur);
       btn.addEventListener('click', onCardClick);
       btn.addEventListener('keydown', onCardKeydown);
-      cardButtons.push(btn);
+      cardButtons[i] = btn;
       cardsEl.appendChild(btn);
     }
 

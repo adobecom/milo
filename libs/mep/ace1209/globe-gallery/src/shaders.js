@@ -78,9 +78,6 @@ const DISPERSE_CHUNKS = 44;
 const DISPERSE_ERODE = 0.22;
 const DISPERSE_EDGE_LEAD = 1.4;
 const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
-const RIM_WIDTH = 0.02;
-const RIM_TARGET = 0.7;
-const RIM_DARK_GAIN = 3.0;
 const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
 // CARD_VERT plus the dispersion overscan.
@@ -113,7 +110,6 @@ export const CARD_FRAG = [
   'uniform float uDisperse;', // near-camera explosion (0 = grains stay put); see README
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
-  'uniform float uRim;',
   'varying vec2 vUv;',
   ...RR_SDF,
   ...HASH21,
@@ -193,10 +189,7 @@ export const CARD_FRAG = [
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b * dB;',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  vec3 outCol = mix(vec3(1.0), srgb, uReveal);',
-  `  float rim = smoothstep(${glf(-RIM_WIDTH)}, 0.0, dsd) * shapeA;`,
-  `  vec3 rimD = vec3(${glf(RIM_TARGET)}) - outCol;`,
-  `  vec3 rimG = mix(vec3(${glf(RIM_DARK_GAIN)}), vec3(1.0), step(0.0, rimD));`,
-  '  gl_FragColor = vec4(outCol + rimD * rimG * uRim * rim * uContourFade, outA);',
+  '  gl_FragColor = vec4(outCol, outA);',
   '}',
 ].join('\n');
 

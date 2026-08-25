@@ -40,6 +40,8 @@ export default function createGlobeModal({
   getCards,
   getCount,
   getCardMetadata,
+  authoredNo,
+  stepCard,
   loadModalUpgrade,
   getViewport,
   getBP,
@@ -366,10 +368,10 @@ export default function createGlobeModal({
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
-      counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
+      counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
     const posEl = targetEl.querySelector('.globe-gallery-modal-position');
-    if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
+    if (posEl) posEl.textContent = cardLabel(authoredNo(i), getCount());
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
     const config = getConfig();
@@ -606,9 +608,8 @@ export default function createGlobeModal({
     // Navigating while closing would flip CLOSING→OPEN and orphan the close animation, leaving
     // the card floating in modalScene.
     if (modalPhase === MODAL_PHASE.CLOSING) return;
-    const count = getCount();
-    if (count <= 1) return;
-    const next = (modalIdx + direction + count) % count;
+    if (getCount() <= 1) return;
+    const next = stepCard(modalIdx, direction);
     startDesktopNavTransition(next);
   }
 

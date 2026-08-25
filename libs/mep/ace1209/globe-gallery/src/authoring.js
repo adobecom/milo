@@ -445,3 +445,23 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   }
   return gid;
 }
+
+const SCATTER_KEY = 'One day I will return to your side';
+const SCATTER_MOD = 2147483647;
+
+function seedFrom(key) {
+  let h = 0;
+  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) % SCATTER_MOD;
+  return h || 1;
+}
+
+export function scatterCards(cards) {
+  const out = cards.map((card, i) => ({ ...card, authoredIndex: i }));
+  let rand = seedFrom(SCATTER_KEY);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    rand = (rand * 48271) % SCATTER_MOD;
+    const j = Math.floor((rand / SCATTER_MOD) * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}

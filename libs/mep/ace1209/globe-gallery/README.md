@@ -622,6 +622,40 @@ stale value. Two consequences:
   drive. So the block is still moving for a few hundred ms after the DOM has stopped — visible in the
   arc phase as a final small nod, and in the scroll-velocity CA as a fringe fading out over ~370ms.
 
+### Card scatter
+
+`scatterCards` (authoring.js) permutes the parsed fragment cards once, in `init`, before the
+runtime ever sees them. The permutation is a Fisher-Yates driven by a MINSTD LCG seeded with the
+string `SCATTER_KEY`, so the order is identical for every user and every reload — a QA report
+reproduces. Editing `SCATTER_KEY` to any other string re-scatters everything. `seedFrom` is a
+polynomial hash rather than a sum of char codes: a sum collides on anagrams, and its small result
+makes the LCG's first output tiny, which pins the first swap near `j = 0`.
+
+**Two orders exist, and the index you hold is always the display one.** A card's array position
+is its *display* index: it drives arc entry order, grid slot, globe depth rank, and barrel column,
+which have no inherent first or last. Its `authoredIndex` field is its pre-shuffle position, which
+drives everything the reader can count.
+
+| Reads display order | Reads authored order |
+| --- | --- |
+| arc / grid / globe / barrel placement | modal next/prev (`stepCard`) |
+| `getCardMetadata(i)`, `cards[i]`, `cardAspects[i]` | modal counter and `cardLabel` (`authoredNo`) |
+| `applyCardOrder`, `cardButtons[i]`, `dataset.idx` | a11y button DOM order, so tab order matches |
+
+`AUTHORED_ORDER[authoredIndex] = displayIndex` is the inverse map, built once in
+`createGlobeGalleryRuntime`; `authoredNo(i)` is the 1-based number to show for display index `i`,
+and `stepCard(i, dir)` is the display index one step away *in authored order*. The a11y list keeps
+`cardButtons` keyed by display index but appends the buttons in `cardOrder`, so tab order and the
+"n of 47" the modal shows agree.
+
+On the barrel the scatter is damped: `cylinderMasonryLayout` assigns columns by load, so a card's
+height is driven by its aspect and its column by the balance solve, not by input order. Within a
+column cards then sit in index order. The permutation still breaks up same-aspect horizontal bands,
+but arc and grid — which key off the index directly — scatter far more.
+
+Cards without an `authoredIndex` fall back to identity, so an unshuffled array behaves as it did
+before the scatter existed.
+
 ### Card draw order
 
 `renderer.sortObjects` is always `true`, and `applyCardOrder` is the only writer of a card's
@@ -2201,7 +2235,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
 - **"Click & Drag" hint text (WebGL).** **Sphere geometry only** — `initRuntime` skips
   `buildTextMesh()` when `bp.CYLINDER`. The plane sits behind *both* walls, and the masonry barrel is
-  near-solid (`CYL_GAP_RATIO` 0.20, columns wrapping 360°), so it is occluded to nothing there:
+  near-solid (`CYL_COL_GAP_RATIO` 0.20, columns wrapping 360°), so it is occluded to nothing there:
   A/B'd against the drawing buffer with an on/on control for the noise floor, the barrel's whole-frame
   contribution is a mean **≤0.08/255** per channel with <1% of channels past a just-noticeable Δ8,
   versus **mean 2.5 across 8.6%** of the frame on the sphere. Invisible, but it still cost a
@@ -2503,12 +2537,28 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     about the layout (same column count, same card width, wall height within 1%, column imbalance
     marginally worse at 1.084 vs 1.073).
     Without that crop a 3:1 image would be **squashed to half its width** in the wall — the barrel
-    scales the plane per card, it does not letterbox. `CYL_GAP_RATIO` sets both gaps (card
-    width = pitch / (1 + ratio)).
-  - **Packing: shortest column, tallest card first** (longest-processing-time-first) — holds column
-    imbalance at ~1.05 vs 1.64× for source order. Free to reorder: the layout scatters consecutive
-    cards, so authored order carries no spatial meaning and modal prev/next walks card *index*. Each
+    scales the plane per card, it does not letterbox. **The two gaps are separate dials.**
+    `CYL_COL_GAP_RATIO` is the COLUMN gap and also sets card width (= pitch / (1 + ratio)), so lowering
+    it *grows* the cards — pitch is fixed by the column count, and the gap comes out of the card.
+    `CYL_ROW_GAP_RATIO` is the ROW gap, a fraction of that same card width, and is the only one free
+    to move without resizing anything.
+  - **Packing: LPT seed, then swap descent** (`balanceColumns`). Longest-processing-time-first fills
+    the shortest column, then pairs of cards in different columns are swapped while that lowers
+    `Σ(column load)²`, which holds column spread near 3–10% (LPT alone leaves 17–24%). Free to
+    reorder: authored order carries no spatial meaning and modal prev/next walks card *index*. Each
     column's stack is centred about y=0.
+  - **The swap test is a closed-form delta, not a recomputed cost.** Swapping `i,j` across columns
+    `a,b` moves `d = h[i] − h[j]` between them, so `Δ = 2d(load[b] − load[a] + d)` and the guard is
+    just its sign. Cost strictly decreases per accepted swap and is bounded below, so it terminates
+    on its own — `BALANCE_PASSES` is a ceiling that is never reached (3–5 actual). `O(passes·n²)`,
+    0.2 ms at n=24. Equal heights give `d = 0` and swap out by the same test.
+  - **A single-card move pass would be dead code.** LPT's output is already move-optimal, so
+    re-homing one card never improves on it — every gain comes from swaps. Swaps preserve each
+    column's card *count*, which is why the LPT seed matters and a round-robin one will not do: with
+    bimodally extreme aspects the balanced answer needs uneven counts, and only the seed can set
+    them.
+  - **Within a column, cards sit in index order.** The offset loop walks `i` ascending per column,
+    so the packer's tallest-first sequence does not leak into vertical position.
   - **Column count is DERIVED** (`CYL_COLS_FIT`, the wall-HEIGHT dial): fewest columns whose tallest
     fits that fraction of frustum height (must scale with count). The shared default is in
     `YAW_ONLY_GEOMETRY`; **sm overrides it lower** (`BREAKPOINTS.sm.CYL_COLS_FIT`) — iPad's md
@@ -2521,9 +2571,14 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     the barrel clears a narrow phone's screen edges, paired with `CYL_COLS_FIT` for height.
   - **`CYL_BULGE` barrels the wall** — `r = R·(1 − bulge·t²)`, `t = 2y/wallH` — so the
     silhouette curves like a globe while every column keeps a constant azimuth (still projects to a
-    vertical line; only radial displacement). Costs ~9° normal tilt on sm / ~14° on md. **Don't push
-    past ~0.2**: the inter-column chord shrinks with `r` while card width doesn't, so edges overlap
-    (0.25 → −0.20 clearance). `0` is an exact cylinder. The layout returns a per-card **`normal`**
+    vertical line; only radial displacement). Costs ~9° normal tilt on sm / ~14° on md.
+    **Its safe ceiling is coupled to `CYL_COL_GAP_RATIO`**: the inter-column chord shrinks with `r`
+    while card width doesn't, so the top/bottom rows are where columns collide. Clearance there is
+    `2R(1−bulge)·sin(π/cols) − cardW·cos(π/cols)`, and at `CYL_COL_GAP_RATIO` 0.20 it is only ~0.46 on
+    sm / ~0.19 on md-touch — near zero already. Widening cards by lowering `CYL_COL_GAP_RATIO` spends
+    that margin directly: at 0.10 it goes to −0.64 / −1.27 and the corner rows overlap. Tighten rows
+    with `CYL_ROW_GAP_RATIO` instead, or drop `CYL_BULGE` (≤0.138 buys back zero clearance at
+    ratio 0.10, ≤0.105 buys 0.5). `0` is an exact cylinder. The layout returns a per-card **`normal`**
     and `buildCards` aims each card along it (target = `pos − normal`, since `lookAt` points local +Z
     from target toward eye) — a plain `lookAt` at the axis would ignore the slope.
   - **Near-camera fade bands off ONE wall-wide height** (`fadeRefH`, the mean `sphereWorldH`,
@@ -2588,14 +2643,14 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     pitch error is set by the dial alone — and `FACING_EDGE_ON_BAND` is safe to retune because no
     sphere path reads it. To zero the pop while keeping limb width, make the re-aim **yaw-only** here
     (project `cardNormal` into XZ before `setFromUnitVectors`); the geometry is yaw-only anyway.
-  - **Uneven card SIZE (sphere path).** Native-aspect sizing (height `CARD_H_SPHERE`, width = the
-    image's aspect ratio, baked into `card.sphereScaleS{X,Y}` at build) makes a 16:9 image 2.67× the
-    area of a 2:3 one, so wide cards can blot out neighbours. The yaw-only path solves this with
-    the masonry's uniform column width. On the sphere path the fix is an area-normalizing dial:
-    scale *both* axes by `(srcAspect / CARD_ASPECT)^-norm`, and area equalizes at `norm=0.5`
-    (area ∝ ssx·ssx⁻¹ = 1) with the aspect, and the image, undistorted (spread 2.67×→1.00×). Add it if the sphere path
-    needs it (it also has to be applied in `modal.js`'s close target, or the card jumps when
-    `snapToSphereSlot` runs).
+  - **Card SIZE is equal-AREA on the sphere path, not equal-height.** `sphereCardScale` splits the
+    native aspect across both axes — `sX = √(srcAspect / CARD_ASPECT)`, `sY = 1/sX` — so `sX·sY`
+    is exactly 1 and every card covers the same solid angle regardless of aspect. Fibonacci slots
+    are isotropic, so equal-*height* sizing would put all of the aspect into width and let a 16:9
+    card cover 2.5× a portrait one. Two sites write it (`buildCards`, and `updateCardSphereSizing`
+    once a texture reveals the real aspect); both go through the helper, and `modal.js`'s close
+    target reads the fields live. The yaw-only path is unaffected — the masonry solves real `w`/`h`
+    per slot.
   - **Sparseness → `BREAKPOINTS.sm.CARD_H_SPHERE`** (sphere path only). Coverage scales with **H²**, so
     size is a far stronger lever than count and adds no textures/draw calls. Net ~42% of the sphere
     face.
@@ -2608,40 +2663,6 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **Scatter → `CARD_ROLL_JITTER`** (radians, the roll spans ±half its value). Per-BP, and much
     tighter on sm: at that sparsity md's spread reads as debris, while md keeps the collage
     character.
-- **Card edge light (`uRim`)** — a lit band inside the rounded-rect boundary, scaled by how edge-on
-  the card is viewed. Five things about it are not visible from any one call site:
-  - **Applied once, after the phase dispatch.** `applyRim` is called at the end of
-    `updateCardTransform`, not inside the `place*` functions, so it reads whatever transform the
-    phase just produced — including a part-folded card. Adding a sixth phase needs no rim wiring.
-  - **Obliquity is skipped under the ortho camera.** Arc and settled grid run `cameraOrtho`, and
-    both place cards with a pure z-roll, which leaves the local `+Z` normal fixed — so every card
-    there is exactly face-on and sits at `RIM × RIM_FACE_ON`. The normal/dot work only runs when
-    `frame.activeCamera` is the perspective camera. Off-axis cards still in the grid *do* pick up
-    real obliquity once the fold starts and the camera switches; that step is the camera model
-    changing, not the rim.
-  - **`uContourFade` doubles as the rim's fade gate.** It is already `proxFade` in the sphere phase
-    and `1` everywhere else, which is exactly what the rim wants, so the shader multiplies by it
-    rather than carrying a second uniform. Repurposing or renaming it moves the rim with it.
-  - **The band is clamped to the card interior with `* shapeA`.** Without that, the dispersion's
-    vertex overscan puts grains outside the original outline, where the SDF reports "past the edge"
-    and the band reads at full strength.
-  - **The effect is content-dependent, by construction.** Contrast against the card is
-    `uRim × (RIM_TARGET − c)`, so it is strongest on content far from `RIM_TARGET` and **zero on
-    content at it**. Bright cards get little; on a near-black stage their silhouette is already the
-    highest-contrast edge in the scene. `RIM_DARK_GAIN` steepens the darkening half without moving
-    that dead zone. Anything that guarantees a visible edge on *every* card has to darken the photo
-    inboard of the boundary, which reads as a band across the image rather than an edge.
-  - **`RIM` is routed off `cfg`, not `shape`** (unlike `CARD_FACE_CAMERA`), so each band carries its
-    own dial and the md-touch barrel shares md's.
-  - **Which "card height" `RIM_WIDTH` is a fraction of, per phase.** The SDF space is world position
-    over card *height* and is isotropic, so the band is the same physical width on all four edges of
-    a card. Across cards it depends on what sets height in that phase: the **full-sphere path pins
-    `sphereScaleSY` to 1**, so every card is `CARD_H_SPHERE` tall and source aspect goes entirely
-    into `scaleX` — portrait and landscape get the *same* rim. **Grid and arc** scale uniformly
-    (`setScalar`) with `uAspect` forced to `CARD_ASPECT`, so grid cards all match and an arc card's
-    band tracks its own animated size. **Only the barrel varies**: `sphereScaleSY = mas.h /
-    CARD_H_SPHERE`, so band width spans up to `CYL_ASPECT_CAP²`. Equalizing that would mean
-    normalizing against `fadeRefH` and promoting `RIM_WIDTH` to a per-card uniform.
 - **Drag physics — position-driven while held, velocity-driven once released.** The two halves of a
   drag want different inputs, so the shared `drag` object carries both and `updateSphereRotation`
   picks one per frame:
@@ -2804,12 +2825,6 @@ self-evident from the name:
 | `DISPERSE_EXPAND` / `_JITTER` (`shaders.js`) | × card radius / fraction of own flight | how far the fastest chunk flies (the "how dramatic" dial) / its sideways wander. Both feed the vertex overscan AND the fragment scatter, via `DISPERSE_MARGIN` (derived — never hand-copy it, or the two stages drift and chunks clip at the quad edge) |
 | `DISPERSE_CHUNKS` / `_ERODE` / `_EDGE_LEAD` (`shaders.js`) | per card height / card-heights / ratio | debris grid the flight is decided on / random bite out of the silhouette, so no clean border survives the explosion / extra lift-off odds at the rim vs the middle |
 | `GRAIN_CELLS` (`shaders.js`) | per card height | the dissolve's RGB grain grid — finer than `DISPERSE_CHUNKS`. Both grids are laid out in the card's OWN uv (× `uAspect`, so cells stay square and travel with the card rather than swimming in screen space) |
-| `RIM` (per band) | mix amount | card edge-light strength at full obliquity. `0` disables the effect *and* skips the per-card normal/dot work. Identical to `RIM_TARGET` in effect on black content — reach for this one to scale the whole effect, that one to rebalance dark against light |
-| `RIM_FACE_ON` | fraction of `RIM` | floor on the obliquity term — what a face-on card keeps, and therefore the sole rim dial for the arc and grid phases. `1` makes the rim angle-independent, which also makes the obliquity computation dead |
-| `RIM_HOVER` | fraction of `RIM` | added to the rim on hover, on top of the floor and the obliquity term. Sphere-phase only in practice — `hoverT` is force-zeroed off the globe and under reduced motion. The sum is **clamped at 1**, so hover can lift a face-on card to the fully-lit value but never past it — which also means a card already at the limb gets no rim change from hover |
-| `RIM_WIDTH` (`shaders.js`) | fraction of card height | how far the lit band reaches inward. Being a fraction of card *height* means the on-screen width tracks the card: widest on the arc's full-size cards, narrowest at the back of the sphere — where it approaches the ~1px floor below which it aliases, since this term carries no `fwidth` AA. Keep it under the corner radius (`uRadius`) or the corners read brighter than the straight edges |
-| `RIM_TARGET` (`shaders.js`) | edge value | what the band mixes toward. Content *at* this value gets no rim at all, so keep the crossover near white, where photo edges are rarest — moving it toward mid-grey parks the dead zone on the most common content there is |
-| `RIM_DARK_GAIN` (`shaders.js`) | × | extra gain on the darkening side only (content above `RIM_TARGET`), so bright cards get an edge without changing dark cards or moving the dead zone. `1` collapses to a plain symmetric mix |
 | `SPHERE_DRAG_WARP_BASELINE` / `_VEL` / `_MAX` / `_EASE` | uWarp, last per 60fps frame | barrel-warp while dragging: constant baseline + a velocity-driven burst (decays with `DRAG_FRICTION`), capped, then eased toward that target |
 | `TEXT_BEHIND_GAP` | world units | how far the hint plane sits behind the sphere's back surface |
 | `TEXT_WARP_ENTER_MAX` | uWarp | at the hint's entrance (barrel distortion) |
