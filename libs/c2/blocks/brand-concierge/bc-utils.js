@@ -382,12 +382,17 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
+  let resizeRaf;
   const updateLayout = () => {
-    updatePillVisibility(floatingInput);
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      resizeRaf = null;
+      updatePillVisibility(floatingInput);
+    });
   };
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;
