@@ -258,12 +258,6 @@ const promotePoster = (video) => {
   }
 };
 
-// Once the page has settled, warm the background image and video poster for every
-// slide the user hasn't seen yet, so hovering a card reveals its art immediately
-// instead of a blank/white slide while the network fetch is still in flight. This
-// runs on idle time (well after the hero's own LCP fetch), and deliberately skips
-// the video's own source - that stays lazy and only loads on real activation - so
-// it doesn't reintroduce the eager-fetch cost this lazy-loading was added to avoid.
 const preloadRemainingSlides = (slides) => {
   const warm = () => {
     slides.forEach((slide) => {
