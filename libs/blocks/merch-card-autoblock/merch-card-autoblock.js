@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadStyle, loadIms } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
 import {
@@ -14,8 +14,6 @@ import {
   MAS_MERCH_QUANTITY_SELECT,
   MAS_FIELD,
 } from '../merch/merch.js';
-
-loadIms();
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 const seenFragments = new Set();
@@ -167,21 +165,31 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
-function copyMasFieldIdToParent(masField, name) {
-  if (masField.getAttribute(name)) {
-    masField.parentElement.setAttribute(`data-mas-field-${name}`, masField.getAttribute(name));
-  }
-}
-
-function preserveInlineCommerceContext(masField, content) {
-  const promotionCode = masField.getAttribute('data-promotion-code');
-  if (promotionCode) {
-    content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code]), a[is="checkout-link"]:not([data-promotion-code]), button[is="checkout-button"]:not([data-promotion-code])')
-      .forEach((commerceEl) => commerceEl.setAttribute('data-promotion-code', promotionCode));
-  }
+// Unwrapped inline prices still need merch.css, which the card would have loaded.
+// (Promo/id context rides on the elements themselves — mas-field stamps it.)
+function ensureInlinePriceStyle(content) {
   if (content.querySelector('span[is="inline-price"]')) {
     loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
   }
+}
+
+// The unwrapped CTA is static markup and paints before the card's still-wrapped
+// price resolves, briefly sitting above it. Hold the action area until the
+// nearest ancestor's price mas-field is ready (reveal anyway after a timeout).
+export function holdCtaUntilPrice(container) {
+  if (!container?.style) return;
+  let scope = container.parentElement;
+  let price = null;
+  while (scope && !scope.classList?.contains('section')) {
+    price = scope.querySelector('mas-field[field="prices"]');
+    if (price) break;
+    scope = scope.parentElement;
+  }
+  if (!price?.checkReady) return;
+  container.style.visibility = 'hidden';
+  const reveal = () => { container.style.visibility = ''; };
+  const timer = setTimeout(reveal, 3000);
+  price.checkReady().catch(() => {}).then(() => { clearTimeout(timer); reveal(); });
 }
 
 /**
@@ -191,6 +199,7 @@ function preserveInlineCommerceContext(masField, content) {
  */
 function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
+  holdCtaUntilPrice(container);
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
   // lookup so a foreign block's button can't dictate this CTA's size.
@@ -228,9 +237,7 @@ function decorateInlineCtas(masField, content) {
       size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
     }
   }
-  copyMasFieldIdToParent(masField, 'fragment-id');
-  copyMasFieldIdToParent(masField, 'variation-id');
-  preserveInlineCommerceContext(masField, content);
+  ensureInlinePriceStyle(content);
   masField.replaceWith(...content.childNodes);
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
