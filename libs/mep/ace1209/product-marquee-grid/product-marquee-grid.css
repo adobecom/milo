@@ -80,7 +80,7 @@
   }
 
   .mas-price {
-    color: var(--s2a-color-content-inverse);
+    color: var(--s2a-color-content-default);
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
 }
