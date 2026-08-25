@@ -253,6 +253,58 @@ export function isMasGeoDetectionEnabled() {
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
 }
 
+/**
+ * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
+ * user's real IMS profile country when it's a supported market, otherwise Milo's own
+ * geo-validated market country. Prevents MAS's checkout-mixin from substituting an
+ * unsupported/unvalidated IMS profile country at render time.
+ */
+export async function resolveCheckoutCountry(service) {
+  const fallback = service.settings.country;
+  try {
+    const imsCountry = await service.imsCountryPromise;
+    if (imsCountry) {
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(imsCountry)) return imsCountry;
+    }
+  } catch { /* ignore, fall back to validated market country */ }
+  return fallback;
+}
+
+let checkoutLinkImsCountryObserver;
+
+/**
+ * MAS's own checkout-mixin re-stamps `data-ims-country` asynchronously, after the checkout
+ * link has already rendered, with the signed-in user's raw IMS profile country -- with no
+ * validation against the page's supported markets. Milo doesn't own that code (it ships
+ * from the external MAS web-components package), so instead of pre-empting it, this watches
+ * for those re-stamps and corrects any unsupported country back to the page's validated
+ * market, re-triggering MAS's re-render with the corrected value.
+ */
+function guardCheckoutLinkImsCountry(service) {
+  if (typeof MutationObserver === 'undefined') return;
+  checkoutLinkImsCountryObserver?.disconnect();
+  checkoutLinkImsCountryObserver = new MutationObserver((mutations) => {
+    mutations.forEach(async (mutation) => {
+      const cta = mutation.target;
+      if (!cta.matches?.('a[is="checkout-link"]')) return;
+      const country = cta.dataset.imsCountry;
+      const fallback = service.settings.country;
+      // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
+      // bailing out here (value already matches fallback) is what stops the loop.
+      if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(country)) return;
+      cta.dataset.imsCountry = fallback;
+    });
+  });
+  checkoutLinkImsCountryObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-ims-country'],
+    subtree: true,
+  });
+}
+
 export async function getLocaleSettings(miloLocale) {
   if (!isMasGeoDetectionEnabled()) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
@@ -1147,6 +1199,7 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
+        if (useGeoMarket) guardCheckoutLinkImsCountry(service);
       } else if (useGeoMarket) {
         if (countryFromMarket !== country) {
           if (countryFromMarket) service.setAttribute('country', countryFromMarket);
@@ -1432,6 +1485,10 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  if (isMasGeoDetectionEnabled() && service.settings.country) {
+    const country = await resolveCheckoutCountry(service);
+    if (country) cta.setAttribute('data-ims-country', country);
+  }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
