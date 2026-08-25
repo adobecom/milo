@@ -2354,9 +2354,19 @@ async function loadPostLCP(config) {
       const startLenisRaf = () => {
         if (lenisRaf === null) lenisRaf = requestAnimationFrame(runLenisFrame);
       };
-      ['wheel', 'touchstart', 'touchmove', 'keydown', 'scroll'].forEach((evt) => {
+
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+      const onScrollKey = (e) => {
+        if (!scrollKeys.includes(e.key)) return;
+        if (document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) return;
+        startLenisRaf();
+      };
+      window.addEventListener('keydown', onScrollKey, { passive: true });
+
+      ['wheel', 'touchstart', 'touchmove', 'scroll'].forEach((evt) => {
         window.addEventListener(evt, startLenisRaf, { passive: true });
       });
+
       const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
       window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
 
