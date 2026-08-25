@@ -52,27 +52,23 @@
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
 
-    .mas-description {
+    .mas-description,
+    .mas-price-commitment {
       color: var(--s2a-color-content-default);
       font-family: var(--s2a-font-family-body);
       font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: 400;
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
       line-height: var(--s2a-typography-line-height-body-sm);
       letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price-commitment {
+      color: var(--s2a-color-content-subtle);
     }
 
     .mas-price {
       color: var(--s2a-color-content-default);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
-    }
-
-    .mas-price-commitment {
-      color: var(--s2a-color-content-subtle);
-      font-family: var(--s2a-font-family-body);
-      font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: 400;
-      line-height: var(--s2a-typography-line-height-body-sm);
-      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
     }
   }
 

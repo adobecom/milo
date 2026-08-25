@@ -45,8 +45,8 @@ function buildChicletRow(iconEl, heading) {
 function buildMerchCard(col) {
   decorateButtons(col);
 
-  const ctaPara = col.querySelector('p.action-area');
-  ctaPara?.remove();
+  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
+  buttons.forEach((btn) => btn.remove());
 
   const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
     .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
@@ -56,7 +56,7 @@ function buildMerchCard(col) {
   decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  if (ctaPara) ctaWrapper.append(...[...ctaPara.children]);
+  buttons.forEach((btn) => ctaWrapper.append(btn));
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
   merchCard.append(cardContent);
