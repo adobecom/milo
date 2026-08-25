@@ -17,7 +17,7 @@
     justify-content: space-between;
 
     .pm-subtext {
-      max-width: 400px;
+      max-inline-size: 400px;
     }
   }
 
@@ -51,6 +51,29 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
+
+    .mas-description {
+      color: var(--s2a-color-content-default);
+      font-family: var(--s2a-font-family-body);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: 400;
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price {
+      color: var(--s2a-color-content-default);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+
+    .mas-price-commitment {
+      color: var(--s2a-color-content-subtle);
+      font-family: var(--s2a-font-family-body);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: 400;
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
   }
 
   .pm-merch-ctas {
@@ -70,12 +93,10 @@
 
   .mas-description {
     color: var(--s2a-color-content-default);
-    /* s2a/typography/body-sm */
     font-family: var(--s2a-font-family-body);
     font-size: var(--s2a-typography-font-size-body-sm);
-    font-style: normal;
     font-weight: 400;
-    line-height: var(--s2a-typography-line-height-body-sm); /* 128.571% */
+    line-height: var(--s2a-typography-line-height-body-sm);
     letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
   }
 
@@ -86,12 +107,10 @@
 
   .mas-price-commitment {
     color: var(--s2a-color-content-subtle);
-    /* s2a/typography/body-sm */
     font-family: var(--s2a-font-family-body);
     font-size: var(--s2a-typography-font-size-body-sm);
-    font-style: normal;
     font-weight: 400;
-    line-height: var(--s2a-typography-line-height-body-sm); /* 128.571% */
+    line-height: var(--s2a-typography-line-height-body-sm);
     letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
   }
 }
@@ -142,7 +161,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
     .pm-foreground {
       .pm-subtext {
-        max-width: min(467px, 80%);
+        max-inline-size: min(467px, 80%);
       }
     }
 
@@ -151,36 +170,20 @@ body:has(header.local-nav) .product-marquee-grid {
       flex-direction: column;
       justify-content: flex-end;
       padding-block-start: var(--s2a-spacing-4xl);
-      width: min(370px, 45%);
+      inline-size: min(370px, 45%);
     }
 
     .pm-merch-card {
       background: var(--s2a-color-background-subtle);
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
+    }
 
-      .mas-description {
-        color: var(--s2a-color-content-default);
-        /* s2a/typography/body-md */
-        font-family: var(--s2a-font-family-body);
-        font-size: var(--s2a-typography-font-size-body-md);
-        font-style: normal;
-        font-weight: 400;
-        line-height: var(--s2a-typography-line-height-body-md); /* 125% */
-        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
-      }
-
-      .mas-price-commitment {
-        color: var(--s2a-color-content-subtle);
-
-        /* s2a/typography/body-md */
-        font-family: var(--s2a-font-family-body);
-        font-size: var(--s2a-typography-font-size-body-md);
-        font-style: normal;
-        font-weight: 400;
-        line-height: var(--s2a-typography-line-height-body-md); /* 125% */
-        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
-      }
+    .mas-description,
+    .mas-price-commitment {
+      font-size: var(--s2a-typography-font-size-body-md);
+      line-height: var(--s2a-typography-line-height-body-md);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     }
   }
 

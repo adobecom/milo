@@ -13,14 +13,13 @@ function hasVisibleContent(el) {
 function decorateMasField(el) {
   const masField = el.querySelector('mas-field[field]');
   if (!masField) return;
-  const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
+  const field = masField.getAttribute('field');
+  const classes = MAS_FIELD_CLASSES[field];
   if (classes) masField.classList.add(...classes);
-  if (masField.getAttribute('field') === 'prices') {
-    const parent = masField.parentElement;
-    [...parent.childNodes].forEach((node) => {
+  if (field === 'prices') {
+    [...el.childNodes].forEach((node) => {
       if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
-      const span = createTag('span', { class: 'mas-price-commitment' }, node.textContent);
-      node.replaceWith(span);
+      node.replaceWith(createTag('span', { class: 'mas-price-commitment' }, node.textContent));
     });
   }
 }
