@@ -545,10 +545,6 @@ function setupCollapsingHeader(el) {
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
-  // getStickyTop() only ever changes when syncTop() runs (nav height/
-  // breakpoint change) — it's a static CSS value the rest of the time, not
-  // something that needs a fresh getComputedStyle read on every scroll
-  // event. Cache it here and refresh only when syncTop() actually runs.
   let stickyTopCache = 0;
 
   const syncTop = () => {
