@@ -42,7 +42,7 @@ const BREAKPOINTS = {
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    ARC_DENSE_FRACTION: 0.4,
+    ARC_DENSE_FRACTION: 0.55,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.55,
@@ -81,8 +81,6 @@ const MODAL_TEX_SM = 768;
 const MODAL_TEX_MD = 2048;
 const ANTIALIAS_SM = false;
 const ANTIALIAS_MD = true;
-const GLOBAL_CA_SM = false;
-const GLOBAL_CA_MD = true;
 
 // Yaw-only drags (touch / narrow): a cylindrical masonry wall replaces the Fibonacci sphere.
 const YAW_ONLY_GEOMETRY = {
@@ -138,14 +136,17 @@ const COLUMN_EPS = 1e-6;
 
 // Chromatic aberration.
 const CA_ENABLED = true;
-const CA_STRENGTH = 0.020; // radial UV shift per channel
-const CA_MOTION_STRENGTH = 1.0; // directional UV shift max
-const CA_MOTION_STRENGTH_ARC = 0.10;
-const SCROLL_VEL_MAX = 8; // px/frame scroll speed that saturates the motion trail
-const CA_PX_MAX = 8; // max vertical px shift for the canvas SVG filter
+const CA_STRENGTH = 0.01; // radial UV shift per channel
+const CA_MOTION_CAP = 0.03; // directional UV shift max
+const SCROLL_VEL_MAX = 18; // px/frame scroll speed that saturates the motion trail
+const CA_PX_MAX = 1; // max vertical px shift for the canvas SVG filter
+const GLOBAL_CA_SM = false;
+const GLOBAL_CA_MD = true;
+const HOVER_CA = 0.0125;
+const SPHERE_DRAG_CA_MUL = 0.2; // uCA per unit of sphereDragWarp
+const TEXT_CA_WARP_MUL = 0.75;
 
 // Hover (sphere phase only).
-const HOVER_CA = 0.025;
 const HOVER_WARP = 0.4;
 const HOVER_SCALE = 0.25; // added, not replacing: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target
@@ -173,14 +174,12 @@ const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
 const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed
 const SPHERE_DRAG_WARP_MAX = 0.25; // cap on the combined value
 const SPHERE_DRAG_WARP_EASE = 0.20; // per-frame ease toward the target
-const SPHERE_DRAG_CA_MUL = 0.10; // uCA per unit of sphereDragWarp
 
 // "Click & Drag" hint text: a WebGL plane behind the sphere.
 const TEXT_BEHIND_GAP = 15; // world units behind the sphere back surface
 const TEXT_WARP_ENTER_MAX = 4.50;
 const TEXT_OPACITY_PEAK = 0.15;
 const TEXT_OPACITY_RESTING = 0.06;
-const TEXT_CA_WARP_MUL = 1.5;
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
 // hintDismissProgress accrual per 60fps frame of drag.
 const HINT_EXIT_DIST_RATE = 0.018;
@@ -883,22 +882,24 @@ function createGlobeGalleryRuntime(
   }
 
   // dx/dy: world-space delta this frame. ampOverride defaults to sqrt(scroll/drag speed ratio).
-  function applyMotionCA(mesh, dx, dy, ampOverride, strength) {
+  function applyMotionCA(mesh, dx, dy, ampOverride, cap) {
     if (!CA_ENABLED) return;
     const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
-    const s = strength !== undefined ? strength : CA_MOTION_STRENGTH;
+    const s = cap !== undefined ? cap : CA_MOTION_CAP;
     const sX = Math.max(mesh.scale.x, 0.01);
     const sY = Math.max(mesh.scale.y, 0.01);
-    const uvDX = dx / (CARD_W_SPHERE * sX);
-    const uvDY = dy / (CARD_H_SPHERE * sY);
+    const dt = frameState.dtScale;
+    const uvDX = dx / (CARD_W_SPHERE * sX * dt);
+    const uvDY = dy / (CARD_H_SPHERE * sY * dt);
     const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
     const ampRaw = Math.min(
       1.0,
       Math.max(frameState.scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL),
     );
     const amp = ampOverride !== undefined ? ampOverride : Math.sqrt(ampRaw);
-    const mx = Math.max(-s, Math.min(s, uvDX * amp));
-    const my = Math.max(-s, Math.min(s, uvDY * amp));
+    const rep = mesh.material.uniforms.uRepeat.value;
+    const mx = Math.max(-s, Math.min(s, uvDX * amp)) * rep.x;
+    const my = Math.max(-s, Math.min(s, uvDY * amp)) * rep.y;
     mesh.material.uniforms.uMotionDir.value.set(mx, my);
   }
 
@@ -1473,7 +1474,12 @@ function createGlobeGalleryRuntime(
       mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
     }
     // World delta approximated as depth × angular velocity.
-    applyMotionCA(mesh, card.spherePos.z * drag.velX, -card.spherePos.z * drag.velY);
+    const dragDt = frameState.dtScale;
+    applyMotionCA(
+      mesh,
+      card.spherePos.z * drag.velX * dragDt,
+      -card.spherePos.z * drag.velY * dragDt,
+    );
   }
 
   function placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame) {
@@ -1585,17 +1591,7 @@ function createGlobeGalleryRuntime(
     mesh.scale.setScalar(stage.scale);
     mesh.rotation.set(0, 0, stage.rotZ);
     mesh.material.opacity = 1;
-    if (gpE <= 0) {
-      applyMotionCA(
-        mesh,
-        mesh.position.x - prevMeshX,
-        mesh.position.y - prevMeshY,
-        undefined,
-        CA_MOTION_STRENGTH_ARC,
-      );
-    } else {
-      applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-    }
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
 
   function applyCardOrder(card, mesh, i, frame) {

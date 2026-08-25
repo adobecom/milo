@@ -134,7 +134,7 @@ export function deriveFrame(frame, input) {
   // canvas visibility still uses real scroll.
   const lenisY = reducedMotion ? blockDocTop + formPx : input.scrollY;
   frame.lenisY = lenisY;
-  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
+  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY) / frame.dtScale;
 
   const entryStart = blockDocTop - viewportH * entryLeadVh;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);
