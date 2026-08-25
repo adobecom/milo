@@ -121,6 +121,14 @@ export async function loadDecorateMenu() {
   resolve(menu.default);
   return cachedDecorateMenu;
 }
+
+const [setThinVersion, getThinVersion] = (() => {
+  let thinVersion = false;
+  return [
+    (url) => { thinVersion = url.includes('#thin'); },
+    () => thinVersion,
+  ];
+})();
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -322,6 +330,8 @@ class Footer {
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
     const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+    setThinVersion(url);
+    this.block.classList.toggle('thin', getThinVersion());
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
@@ -337,17 +347,19 @@ class Footer {
       onFooterError?.(error);
       return;
     }
-
-    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
-    const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
-    // We remove and add again the region and social elements from the body to make sure
+    const [region, social, brand] = ['.region-selector', '.social', '.brand'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent, brandParent] = [
+      region?.parentElement, social?.parentElement, brand?.parentElement,
+    ];
+    // We remove and add again the region, social and brand elements from the body to make sure
     // they don't get decorated twice
-    [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
+    [regionParent, socialParent, brandParent].forEach((parent) => parent?.replaceChildren());
 
     await decorateLinksAsync(this.body);
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+    brandParent?.appendChild(brand);
 
     // Support auto populated modal
     await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
@@ -669,21 +681,40 @@ class Footer {
       </span>`;
   };
 
+  decorateAuthoredLogo = () => {
+    const brandBlock = this.body.querySelector('.brand');
+    if (!brandBlock) return null;
+
+    const link = brandBlock.querySelector('a');
+    if (!link) return null;
+
+    const [srcText, alt = ''] = link.textContent.split('|').map((s) => s.trim());
+    const src = srcText?.endsWith('.svg') ? srcText : null;
+    if (!src) return null;
+
+    return { src, alt };
+  };
+
   decorateFooter = () => {
+    const isThinVersion = getThinVersion();
     this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
       ${this.elements.regionPicker}
+      ${isThinVersion ? this.elements.social : ''}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
         ${this.decorateLogo()}
       </div>
-      ${this.elements.social}
+      ${!isThinVersion ? this.elements.social : ''}
       </div>
     </div>`;
+    const authoredLogo = this.decorateAuthoredLogo();
+    const logoSrc = authoredLogo?.src || FOOTER_LOGO_FULL_SRC;
+    const logoAlt = authoredLogo?.alt || 'Footer logo';
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Footer logo" />
+        <img src="${logoSrc}" alt="${logoAlt}" />
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
