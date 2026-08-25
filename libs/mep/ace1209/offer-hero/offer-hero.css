@@ -241,6 +241,11 @@
     min-height: unset;
     padding-bottom: 74px;
   }
+
+  .offer-hero .hero-eyebrow {
+    position: static;
+    opacity: 1;
+  }
 }
 
 @supports not (animation-timeline: scroll()) {
@@ -250,6 +255,11 @@
   }
 
   .offer-hero :is(.hero-card-title, .hero-card-body-text, .learn-more) {
+    opacity: 1;
+  }
+
+  .offer-hero .hero-eyebrow {
+    position: static;
     opacity: 1;
   }
 }
