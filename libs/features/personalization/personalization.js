@@ -1227,15 +1227,15 @@ async function getManifestConfig(info, variantOverride) {
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchData) data = fetchedData;
+    if (fetchedData) data = fetchedData;
   }
 
   const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) {
+  const infoTab = manifestInfo || data?.info?.data;
+  if (!data || !persData || !infoTab) {
     recordManifestError(name, manifestPath);
     return null;
   }
-  const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;
