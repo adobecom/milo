@@ -4,15 +4,15 @@ export const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, 
 
 const SIMILARITY_THRESHOLD = 0.3;
 
-function ownText(el) {
+function elementText(el) {
   if (el.tagName === 'IMG') return normalizeText(el.getAttribute('alt') || '');
   return normalizeText(el.textContent);
 }
 
 function identity(el) {
   if (el.tagName === 'IMG') return `img|${el.getAttribute('src') || ''}`;
-  if (el.tagName === 'A') return `a|${el.getAttribute('href') || ''}|${ownText(el)}`;
-  return `${el.tagName.toLowerCase()}|${ownText(el)}`;
+  if (el.tagName === 'A') return `a|${el.getAttribute('href') || ''}|${elementText(el)}`;
+  return `${el.tagName.toLowerCase()}|${elementText(el)}`;
 }
 
 function tokenize(text) {
@@ -28,10 +28,6 @@ export function textSimilarity(a, b) {
   setA.forEach((token) => { if (setB.has(token)) intersection += 1; });
   const union = new Set([...setA, ...setB]).size;
   return union === 0 ? 0 : intersection / union;
-}
-
-function isSimilarEnough(unitA, unitB) {
-  return textSimilarity(unitA.text, unitB.text) >= SIMILARITY_THRESHOLD;
 }
 
 function firstClass(el) {
@@ -58,13 +54,13 @@ function collectLeaf(el, root) {
     el,
     path: getXPath(el, root),
     tag: el.tagName,
-    text: ownText(el),
+    text: elementText(el),
     sig: identity(el),
   };
 }
 
 function isEmptyWrapper(el) {
-  return el.tagName !== 'IMG' && ownText(el) === '';
+  return el.tagName !== 'IMG' && elementText(el) === '';
 }
 
 function collectFromSection(section, root, units) {
@@ -73,13 +69,13 @@ function collectFromSection(section, root, units) {
       units.push(collectBlock(child, root));
       return;
     }
-    const candidates = child.matches(CONTENT_SELECTOR)
+    const matches = child.matches(CONTENT_SELECTOR)
       ? [child, ...child.querySelectorAll(CONTENT_SELECTOR)]
       : [...child.querySelectorAll(CONTENT_SELECTOR)];
-    candidates.forEach((leaf) => {
-      if (isEmptyWrapper(leaf)) return;
-      units.push(collectLeaf(leaf, root));
-    });
+    const leaves = matches.filter((el) => !isEmptyWrapper(el));
+    leaves
+      .filter((el) => !leaves.some((other) => other !== el && other.contains(el)))
+      .forEach((leaf) => units.push(collectLeaf(leaf, root)));
   });
 }
 
@@ -119,20 +115,18 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
-function isModifiedPair(removedUnit, addedUnit) {
+function isSameSlot(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag) return false;
   if (removedUnit.kind === 'block') {
-    // Blocks are coarse and identified by name; their sibling-index path is fragile — any
-    // add/remove/reorder above shifts it. Match on name + content similarity so a genuinely
-    // edited block that moved is still "changed", not new+removed. Leaves keep exact-path
-    // anchoring below: they are high-cardinality/low-distinctiveness, where path is the only
-    // reliable discriminator.
-    return removedUnit.blockName !== ''
-      && removedUnit.blockName === addedUnit.blockName
-      && isSimilarEnough(removedUnit, addedUnit);
+    return removedUnit.blockName !== '' && removedUnit.blockName === addedUnit.blockName;
   }
-  if (removedUnit.path !== addedUnit.path) return false;
-  return isSimilarEnough(removedUnit, addedUnit);
+  return removedUnit.path === addedUnit.path;
+}
+
+function modifiedScore(removedUnit, addedUnit) {
+  if (!isSameSlot(removedUnit, addedUnit)) return -1;
+  const score = textSimilarity(removedUnit.text, addedUnit.text);
+  return score >= SIMILARITY_THRESHOLD ? score : -1;
 }
 
 function toChange(type, unit) {
@@ -158,8 +152,8 @@ export default function diffContent(previewRoot, liveRoot) {
     let mIdx = -1;
     let bestScore = -1;
     addedCand.forEach((a, idx) => {
-      if (usedAdded.has(idx) || !isModifiedPair(r, a)) return;
-      const score = textSimilarity(r.text, a.text);
+      if (usedAdded.has(idx)) return;
+      const score = modifiedScore(r, a);
       if (score > bestScore) { bestScore = score; mIdx = idx; }
     });
     if (mIdx >= 0) {

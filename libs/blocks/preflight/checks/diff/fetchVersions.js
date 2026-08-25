@@ -4,6 +4,11 @@ function isLocalHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1';
 }
 
+function toModifiedMs(value) {
+  const ms = Date.parse(value ?? '');
+  return Number.isNaN(ms) ? null : ms;
+}
+
 export function deriveLiveUrl(url) {
   const live = new URL(url.href);
   if (isLocalHost(live.hostname)) {
@@ -15,7 +20,7 @@ export function deriveLiveUrl(url) {
 
 async function fetchPlain(url) {
   const plain = new URL(url.href);
-  plain.pathname = `${plain.pathname.replace(/\/$/, '')}.plain.html`;
+  plain.pathname = `${plain.pathname.replace(/\/$/, '') || '/index'}.plain.html`;
   try {
     const resp = await fetch(plain.href, { cache: 'no-store' });
     if (!resp.ok) return { html: null, fetchStatus: resp.status === 404 ? 'missing' : 'error' };
@@ -32,10 +37,10 @@ export default async function fetchVersions(previewUrl) {
     return null;
   });
 
-  const pMod = status?.preview?.lastModified ? Date.parse(status.preview.lastModified) : NaN;
-  const lMod = status?.live?.lastModified ? Date.parse(status.live.lastModified) : NaN;
+  const pMod = toModifiedMs(status?.preview?.lastModified);
+  const lMod = toModifiedMs(status?.live?.lastModified);
   if (!isLocalHost(previewUrl.hostname)
-    && !Number.isNaN(pMod) && !Number.isNaN(lMod) && pMod <= lMod) {
+    && pMod !== null && lMod !== null && pMod <= lMod) {
     return { preview: null, live: null, liveStatus: 'ok', status, skipped: true };
   }
 

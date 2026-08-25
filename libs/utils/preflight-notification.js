@@ -16,11 +16,12 @@ export async function autoHighlightUnpublished() {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
     await Promise.all([
-      new Promise((res) => { loadStyle(`${base}/blocks/preflight/preflight.css`, res); }),
+      new Promise((res) => { loadStyle(`${base}/blocks/preflight/panels/diff-onpage.css`, res); }),
       loadC2Tokens(base),
     ]);
     const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
-    autoHighlightOnPage(content, root);
+    const cleanup = autoHighlightOnPage(content, root);
+    if (cleanup) window.addEventListener('popstate', cleanup, { once: true });
   } catch (e) {
     window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
   }

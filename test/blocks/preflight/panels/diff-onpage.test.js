@@ -13,7 +13,7 @@ import {
 // loadStyle uses a load/error callback, not a promise — wrap it so getComputedStyle assertions
 // below don't race the stylesheet's network fetch.
 await new Promise((resolve) => {
-  loadStyle('../../../../libs/blocks/preflight/preflight.css', resolve);
+  loadStyle('../../../../libs/blocks/preflight/panels/diff-onpage.css', resolve);
 });
 
 describe('preflight diff-onpage', () => {

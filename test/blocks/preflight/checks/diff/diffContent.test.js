@@ -108,8 +108,6 @@ describe('preflight diffContent', () => {
       + `https://commerce.adobe.com/store?items=${offer}</a></p></div></div></div>`;
 
     it('classifies a moved-but-edited block as modified, not new, when an edit above shifts its path', () => {
-      // Danni's finding: a marquee whose only change is an OST value shows as "new" because
-      // another unpublished edit above it shifted its sibling-index path.
       const intro = '<div><div class="text"><div><p>Intro copy that stays the same across versions</p></div></div></div>';
       const newBlock = '<div><div class="columns"><div><p>A brand new columns block added above</p></div></div></div>';
       const live = root(`${intro}${ostMarquee('OFFER_A')}`);
@@ -119,7 +117,6 @@ describe('preflight diffContent', () => {
       expect(marq(r.modified)).to.have.length(1);
       expect(marq(r.added)).to.have.length(0);
       expect(marq(r.removed)).to.have.length(0);
-      // the genuinely new block above is still reported as added
       expect(r.added.some((c) => c.blockName === 'columns')).to.equal(true);
     });
 
@@ -133,8 +130,6 @@ describe('preflight diffContent', () => {
     });
 
     it('pairs a modified block with its most-similar counterpart when two same-name blocks both qualify', () => {
-      // Two preview "columns" both share tokens with the removed one; best-match (not first-match)
-      // must attach "modified" to the closest counterpart and leave the other as "added".
       const live = root('<div><div class="columns"><p>alpha beta gamma delta epsilon</p></div></div>');
       const preview = root(
         '<div><div class="columns"><p>alpha beta gamma delta zeta</p></div></div>'
