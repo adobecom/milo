@@ -140,9 +140,11 @@ describe('mas-compare-chart-autoblock', () => {
           mas: {
             fragments: {
               'compare-chart-original': {
-                action: 'replace',
-                manifestId: 'promo1.json',
-                content: 'compare-chart-promo',
+                '': {
+                  action: 'replace',
+                  manifestId: 'promo1.json',
+                  content: 'compare-chart-promo',
+                },
               },
             },
           },

@@ -1,3 +1,6 @@
+// TEMP: legacy MEP preview helper, retained as part of the ?mepnext fallback for prod validation.
+// Remove with preview.js once mep-next is validated.
+//
 // MEP "Highlight M@S Content" — sub-collection edit badges.
 //
 // A <merch-card-collection> can host sub-collections surfaced in the

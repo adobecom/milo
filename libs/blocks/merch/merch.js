@@ -1,9 +1,8 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { mepMasStudioUrls } from './mas-mep-utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -183,6 +182,11 @@ export const GeoMap = {
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
+ * MAS locale overrides for markets that share a language but have different country codes
+ */
+const MARKET_LOCALE_OVERRIDES = { en: { AU: 'en_GB', IN: 'en_GB', GB: 'en_GB' } };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -247,6 +251,58 @@ export function isMasGeoDetectionEnabled() {
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+/**
+ * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
+ * user's real IMS profile country when it's a supported market, otherwise Milo's own
+ * geo-validated market country. Prevents MAS's checkout-mixin from substituting an
+ * unsupported/unvalidated IMS profile country at render time.
+ */
+export async function resolveCheckoutCountry(service) {
+  const fallback = service.settings.country;
+  try {
+    const imsCountry = await service.imsCountryPromise;
+    if (imsCountry) {
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(imsCountry)) return imsCountry;
+    }
+  } catch { /* ignore, fall back to validated market country */ }
+  return fallback;
+}
+
+let checkoutLinkImsCountryObserver;
+
+/**
+ * MAS's own checkout-mixin re-stamps `data-ims-country` asynchronously, after the checkout
+ * link has already rendered, with the signed-in user's raw IMS profile country -- with no
+ * validation against the page's supported markets. Milo doesn't own that code (it ships
+ * from the external MAS web-components package), so instead of pre-empting it, this watches
+ * for those re-stamps and corrects any unsupported country back to the page's validated
+ * market, re-triggering MAS's re-render with the corrected value.
+ */
+function guardCheckoutLinkImsCountry(service) {
+  if (typeof MutationObserver === 'undefined') return;
+  checkoutLinkImsCountryObserver?.disconnect();
+  checkoutLinkImsCountryObserver = new MutationObserver((mutations) => {
+    mutations.forEach(async (mutation) => {
+      const cta = mutation.target;
+      if (!cta.matches?.('a[is="checkout-link"]')) return;
+      const country = cta.dataset.imsCountry;
+      const fallback = service.settings.country;
+      // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
+      // bailing out here (value already matches fallback) is what stops the loop.
+      if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(country)) return;
+      cta.dataset.imsCountry = fallback;
+    });
+  });
+  checkoutLinkImsCountryObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-ims-country'],
+    subtree: true,
+  });
 }
 
 export async function getLocaleSettings(miloLocale) {
@@ -342,57 +398,16 @@ let log;
 let upgradeOffer = null;
 
 /**
- * Given a url, calculates the hostname of MAS platform.
- * Supports, www prod, stage, local and feature branches.
- * if params are missing, it will return the latest calculated or default value.
- * @param {string} hostname optional
- * @param {string} maslibs optional
- * @returns base url for mas platform
+ * Parses the maslibs URL parameter and returns a validated base URL.
+ * Ignored on www.adobe.com; elsewhere the value must be a branch,
+ * branch--repo or branch--repo--owner shape (VULN-36379).
+ * @param {string} [hostname] hostname to evaluate the prod guard against
+ * @returns {string | null} Base URL or null if maslibs not present or invalid
  */
-export function getMasBase(hostname, maslibs) {
-  let { baseUrl } = getMasBase;
-  if (!baseUrl) {
-    if (maslibs === 'stage') {
-      baseUrl = 'https://www.stage.adobe.com/mas';
-    } else if (maslibs === 'local') {
-      baseUrl = 'http://localhost:9001';
-    } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.aem.${extension}`;
-    } else {
-      baseUrl = 'https://www.adobe.com/mas';
-    }
-    getMasBase.baseUrl = baseUrl;
-  }
-  return baseUrl;
-}
-
-/**
- * Parses maslibs URL parameter and returns base URL
- * @returns {string | null} Base URL or null if maslibs not present
- */
-export function getMasLibsBaseUrl() {
+export function getMasLibsBaseUrl(hostname = window.location.hostname) {
+  if (hostname === 'www.adobe.com') return null;
   const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitized = masLibs.trim().toLowerCase();
-
-  if (sanitized === 'local') {
-    return 'http://localhost:3000';
-  }
-
-  if (sanitized === 'main') {
-    return 'https://main--mas--adobecom.aem.live';
-  }
-
-  let branch = sanitized;
-  if (!sanitized.includes('--')) {
-    branch = `${sanitized}--mas--adobecom`;
-  }
-
-  return `https://${branch}.aem.live`;
+  return getValidatedMasLibsUrl(urlParams.get('maslibs'));
 }
 
 /**
@@ -1116,34 +1131,50 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(COMMERCE_LIBRARY);
-
-      // Load fragment-client.js when maslibs is present
-      const fragmentClientUrl = getFragmentClientUrl();
-      if (fragmentClientUrl) {
-        const { loadScript: loadScriptUtil } = await import('../../utils/utils.js');
-        try {
-          await loadScriptUtil(fragmentClientUrl, 'module');
-        } catch (e) {
-          log?.error('Failed to load fragment-client.js:', e);
-        }
-      }
-
-      const { language, locale, country } = await getLocaleSettings(miloLocale);
       const useGeoMarket = isMasGeoDetectionEnabled();
+
+      // Load all independent resources in parallel
+      const fragmentClientUrl = getFragmentClientUrl();
+      const localeSettingsPromise = getLocaleSettings(miloLocale);
+      const [, , { language, locale, country }, validatedMarket] = await Promise.all([
+        loadMasComponent(COMMERCE_LIBRARY),
+        fragmentClientUrl
+          ? loadScript(fragmentClientUrl, 'module').catch((e) => {
+            log?.error('Failed to load fragment-client.js:', e);
+          })
+          : Promise.resolve(),
+        localeSettingsPromise,
+        useGeoMarket
+          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          : Promise.resolve(null),
+      ]);
+
       let countryFromMarket = country;
-      if (useGeoMarket) {
-        const { getValidatedMarket } = await import('../../utils/market.js');
-        const validatedMarket = await getValidatedMarket();
-        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      let localeFromMarket = locale;
+      if (useGeoMarket && validatedMarket) {
+        const market = validatedMarket.toUpperCase();
+        countryFromMarket = market;
+        // `country` above is already geo-adjusted; the page's own market comes from its native
+        // milo locale. Only fall back to a market's Global-EN locale when the page isn't
+        // already that market's localized site: e.g. the / EN site (en_US) serving an AU/IN/GB
+        // visitor, never /au, /in or /uk, which keep their native locale.
+        const { country: pageCountry } = getMiloLocaleSettings(miloLocale);
+        if (market !== pageCountry) {
+          const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+          if (localeOverride) {
+            localeFromMarket = localeOverride;
+            // en_GB already resolves the GB market; don't also stamp a (non-GB) country.
+            if (localeOverride.endsWith(`_${market}`)) countryFromMarket = undefined;
+          }
+        }
       }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
-          locale,
+          locale: localeFromMarket,
           language,
-          country: countryFromMarket,
+          ...(countryFromMarket ? { country: countryFromMarket } : {}),
           ...attributes,
           ...commerce,
         });
@@ -1168,8 +1199,13 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-      } else if (useGeoMarket && countryFromMarket !== country) {
-        service.setAttribute('country', countryFromMarket);
+        if (useGeoMarket) guardCheckoutLinkImsCountry(service);
+      } else if (useGeoMarket) {
+        if (countryFromMarket !== country) {
+          if (countryFromMarket) service.setAttribute('country', countryFromMarket);
+          else service.removeAttribute('country');
+        }
+        if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
@@ -1449,6 +1485,10 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  if (isMasGeoDetectionEnabled() && service.settings.country) {
+    const country = await resolveCheckoutCountry(service);
+    if (country) cta.setAttribute('data-ims-country', country);
+  }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
@@ -1497,15 +1537,32 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.removeAttribute('data-hide-kr-free-trial');
-      return;
+  const localePrefix = getConfig()?.locale?.prefix;
+  if (localePrefix === '/kr') {
+    const hasAllowKrTrial = shouldAllowKrTrial(el, localePrefix);
+    const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+    const elAlreadyHasAllow = el.getAttribute('data-allow-kr-free-trial') === 'true';
+
+    if (hasAllowKrTrial || hasAllowKrTrialMeta || elAlreadyHasAllow) {
+      cta.setAttribute('data-allow-kr-free-trial', 'true');
+      return cta;
     }
-    cta.remove();
-  });
+
+    cta.setAttribute('data-hide-kr-free-trial', crypto.randomUUID());
+    cta.onceSettled().then(() => {
+      const uuid = cta.getAttribute('data-hide-kr-free-trial');
+      const { offerType: ctaOfferType } = cta.value?.[0] || {};
+      if (ctaOfferType === OFFER_TYPE_TRIAL) cta.remove();
+      else cta.removeAttribute('data-hide-kr-free-trial');
+
+      const ctaClone = [...document.querySelectorAll(`[data-hide-kr-free-trial="${uuid}"]`)]
+        .find((clone) => clone !== cta);
+      if (!ctaClone) return;
+      const { offerType: cloneOfferType } = ctaClone.value?.[0] || {};
+      if (!cloneOfferType || cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
+      else ctaClone.removeAttribute('data-hide-kr-free-trial');
+    });
+  }
 
   return cta;
 }
@@ -1542,11 +1599,9 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  if (fragments) {
-    const command = fragments[fragment];
-    if (command && command.action === 'replace') {
-      return { ...options, fragment: command.content };
-    }
+  const command = fragments?.[fragment]?.[options.field || ''];
+  if (command && command.action === 'replace') {
+    return { ...options, fragment: command.content };
   }
   return options;
 }
@@ -1606,6 +1661,7 @@ export default async function init(el) {
     // Rebuilt merch href keeps only the OSI; stash the original for
     // the "Edit OSI" badge.
     if (getConfig()?.mep?.preview) {
+      const { mepMasStudioUrls } = await import('./mas-mep-utils.js');
       mepMasStudioUrls.set(merch, el.href);
       merch.dataset.masBlock = 'ost';
     }
