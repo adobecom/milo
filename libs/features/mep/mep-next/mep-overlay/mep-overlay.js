@@ -138,20 +138,18 @@ function toggleExpandedCard(cardEl) {
 }
 
 function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Error', messages: ['Manifest malformed or not found.'] };
+  }
   const statusChecks = [
     {
-      reason: manifest.malformed,
-      msg: 'Manifest failed to load or has an invalid structure.',
-      level: 'Error',
-    },
-    {
-      reason: !manifest.malformed && manifest.manifestGeoRestricted,
+      reason: manifest.manifestGeoRestricted,
       msg: 'User country is geo restricted.',
       level: 'Warning',
       label: 'Ineligible',
     },
     {
-      reason: !manifest.malformed && !manifest.withinDateRange,
+      reason: !manifest.withinDateRange,
       msg: 'Outside of promo date range.',
       level: 'Warning',
       label: 'Ineligible',
