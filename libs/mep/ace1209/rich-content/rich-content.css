@@ -721,7 +721,7 @@
 .section:has(+ .section.parallax-video-garage-door .rich-content.media),
 .section.parallax-video-garage-door:has(.rich-content.media),
 .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
-  --rc-pull-offset: 80px;
+  --rc-pull-offset: 0px;
   --rc-sweep-offset: 200px;
   --rc-sweep-peek: var(--s2a-border-radius-lg);
   --rc-video-enter-scale: 1.15;
