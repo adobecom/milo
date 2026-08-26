@@ -22,6 +22,24 @@ async function getTranscriptLabel() {
 /**
  * @param {HTMLVideoElement} videoEl the decorated video element
  */
+function labelTranscriptModal() {
+  const dialog = document.querySelector('.dialog-modal[id^="transcript"]:not([data-transcript-a11y])');
+  if (!dialog) return;
+  dialog.dataset.transcriptA11y = 'true';
+  const content = dialog.querySelector('.content');
+  const heading = content?.querySelector('h1, h2, h3, h4, h5, h6');
+  if (heading) {
+    if (!heading.id) heading.id = `${dialog.id}-title`;
+    dialog.setAttribute('aria-labelledby', heading.id);
+  }
+  if (content) {
+    if (!content.id) content.id = `${dialog.id}-content`;
+    dialog.setAttribute('aria-describedby', content.id);
+  }
+}
+
+window.addEventListener('milo:modal:loaded', labelTranscriptModal);
+
 export default async function decorateVideoTranscript(videoEl) {
   const container = videoEl?.closest('.video-container');
   if (!container) return;
