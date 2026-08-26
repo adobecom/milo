@@ -2863,9 +2863,18 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
-  await resolveHighPriorityFragments(section);
+async function processSection(section, config, isDoc, lcpSectionId, skipPostLcp = false) {
   const isLcpSection = lcpSectionId === section.idx;
+  // PROTOTYPE (?earlylcp=on): this section's blocks were already decorated +
+  // loaded in parallel with MEP (see loadArea). Nothing left but the post-LCP
+  // handoff, which was deliberately deferred out of the early pass to here.
+  if (section.el.dataset.earlyLcp === 'loaded') {
+    delete section.el.dataset.status;
+    if (isDoc && isLcpSection) await loadPostLCP(config);
+    delete section.el.dataset.idx;
+    return section.blocks;
+  }
+  await resolveHighPriorityFragments(section);
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
@@ -2887,9 +2896,35 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
+  if (!skipPostLcp && isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
+}
+
+// PROTOTYPE (?earlylcp=on): decorate + load the first section's blocks in
+// parallel with the MEP round-trip, instead of waiting for applyPers to finish.
+// This starts the block chain (incl. mas-field/merch + WCS price fetch) ~1s+
+// earlier. loadPostLCP is deliberately skipped here and runs post-MEP via the
+// main loop's processSection (the section is marked earlyLcp='loaded'). If MEP
+// later replaces/removes the first section, the element-identity check in
+// loadArea falls back to a normal decorate of whatever MEP produced, discarding
+// the early work. Content-within-block MEP overrides (config.mep.inBlock) are
+// the one thing an early-decorated block can miss — acceptable behind this flag
+// while we measure; a production version must gate on first-section MEP impact.
+async function processFirstSectionEarly(area) {
+  const config = getConfig();
+  if (!langConfig && (config.languages || hasLanguageLinks(area))) {
+    await loadLanguageConfig();
+  }
+  const firstEl = area.querySelector('body > main > div');
+  if (!firstEl) return null;
+  firstEl.className = 'section';
+  firstEl.dataset.status = 'pending';
+  const section = await decorateSection(firstEl, 0);
+  if (!section.blocks.length) return null;
+  await processSection(section, config, true, 0, true);
+  firstEl.dataset.earlyLcp = 'loaded';
+  return section;
 }
 
 function loadLingoIndexes(area = document) {
@@ -2908,6 +2943,9 @@ function loadLingoIndexes(area = document) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  const earlyLcp = isDoc
+    && (PAGE_URL.searchParams.get('earlylcp') === 'on' || getMetadata('earlylcp') === 'on');
+  let earlySection = null;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
@@ -2915,7 +2953,12 @@ export async function loadArea(area = document) {
     // Fire LCP-section block asset preloads in parallel with the MEP round-trip
     // below, instead of waiting for it. Preload only — decoration stays post-MEP.
     preloadLcpBlocks(area);
-    await checkForPageMods();
+    // PROTOTYPE (?earlylcp=on): run the first section's decoration + block load
+    // concurrently with MEP instead of blocking the whole section pipeline on
+    // applyPers. checkForPageMods stays in flight; we await both below.
+    const pageMods = checkForPageMods();
+    if (earlyLcp) earlySection = await processFirstSectionEarly(area);
+    await pageMods;
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
   }
@@ -2944,7 +2987,11 @@ export async function loadArea(area = document) {
   let lcpSectionId = null;
 
   for (const htmlSection of htmlSections) {
-    const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
+    const isEarly = earlySection && htmlSection === earlySection.el
+      && htmlSection.dataset.earlyLcp === 'loaded';
+    const section = isEarly
+      ? earlySection
+      : await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
     const isLastSection = section.idx === htmlSections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
