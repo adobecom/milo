@@ -32,10 +32,14 @@ export default function createGalleryA11y({
     appliedEntered = null;
   }
 
+  function setBrowseActive(active) {
+    if (cardsEl) cardsEl.inert = !active;
+  }
+
   function collapse() {
     entered = false;
     focusedIdx = -1;
-    cardButtons.forEach((btn) => { btn.tabIndex = -1; });
+    setBrowseActive(false);
     if (widgetEl) widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
   }
 
@@ -64,7 +68,7 @@ export default function createGalleryA11y({
     if (!isGlobeFormed() || !cardButtons.length) return;
     entered = true;
     if (widgetEl) widgetEl.tabIndex = -1;
-    cardButtons.forEach((btn) => { btn.tabIndex = 0; });
+    setBrowseActive(true);
     cardButtons[cardOrder[0]].focus();
   }
 
@@ -92,6 +96,7 @@ export default function createGalleryA11y({
       descEl.className = 'globe-gallery-a11y-tip';
       descEl.id = `globe-gallery-a11y-desc-${gid}`;
       descEl.textContent = galleryInstructions;
+      descEl.setAttribute('aria-hidden', 'true');
       widgetEl.appendChild(descEl);
       widgetEl.setAttribute('aria-labelledby', descEl.id);
     }
@@ -101,6 +106,7 @@ export default function createGalleryA11y({
 
     cardsEl = document.createElement('div');
     cardsEl.className = 'globe-gallery-a11y-cards';
+    cardsEl.inert = true;
     const count = getCount();
     cardButtons = [];
     for (let n = 0; n < count; n += 1) {
@@ -108,7 +114,6 @@ export default function createGalleryA11y({
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'globe-gallery-a11y-card';
-      btn.tabIndex = -1; // joins the tab order only while entered
       btn.dataset.idx = String(i);
       btn.setAttribute('daa-ll', CARD_OPEN_DAA_LL);
       btn.setAttribute('aria-label', getCardLabel(i));
@@ -140,16 +145,8 @@ export default function createGalleryA11y({
     if (modalOpen === appliedModalOpen && entered === appliedEntered) return;
     appliedModalOpen = modalOpen;
     appliedEntered = entered;
-    if (modalOpen) {
-      widgetEl.tabIndex = -1;
-      cardButtons.forEach((btn) => { btn.tabIndex = -1; });
-    } else if (entered) {
-      widgetEl.tabIndex = -1;
-      cardButtons.forEach((btn) => { btn.tabIndex = 0; });
-    } else {
-      widgetEl.tabIndex = 0;
-      cardButtons.forEach((btn) => { btn.tabIndex = -1; });
-    }
+    widgetEl.tabIndex = !modalOpen && !entered ? 0 : -1;
+    setBrowseActive(!modalOpen && entered);
   }
 
   // The core reads this to pause auto-spin so the globe holds the centred image.
@@ -160,12 +157,19 @@ export default function createGalleryA11y({
   function focusCard(idx) {
     if (!entered) return;
     const btn = cardButtons[idx];
-    if (btn) btn.focus();
+    if (!btn) return;
+    setBrowseActive(true);
+    btn.focus();
   }
 
   // Report a canvas card open by clicking that card's button.
   function trackCardOpen(idx) {
-    cardButtons[idx]?.click();
+    const btn = cardButtons[idx];
+    if (!btn || !cardsEl) return;
+    const wasInert = cardsEl.inert;
+    cardsEl.inert = false;
+    btn.click();
+    cardsEl.inert = wasInert;
   }
 
   function getFocusedIdx() {

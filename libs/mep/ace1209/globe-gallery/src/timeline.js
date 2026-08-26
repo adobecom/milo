@@ -41,6 +41,7 @@ export const ARC_ENTRY_STAGGER = 0.45;
 // sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
 // auto-rotate, desktop cursor, hint-plane entrance
 export const SPHERE_INTERACTIVE_T = 0.94;
+export const BROWSE_VIEW_T = 0.96;
 export const SPHERE_ORIENT_RESET_T = 0.01;
 export const TEXT_APPEAR_START = 0.10;
 
@@ -59,6 +60,8 @@ export const DT_SCALE_MIN = 0.25;
 export const DT_SCALE_MAX = 3;
 
 export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
+
+export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
 
 // zoomT is a fraction of the ZOOM span; the CSS pin and hold ceiling reason in fractions of the
 // whole tail. Identical only while PROGRESS_ZOOM_END is 1, so convert at the boundary.
@@ -134,7 +137,7 @@ export function deriveFrame(frame, input) {
   // canvas visibility still uses real scroll.
   const lenisY = reducedMotion ? blockDocTop + formPx : input.scrollY;
   frame.lenisY = lenisY;
-  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
+  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY) / frame.dtScale;
 
   const entryStart = blockDocTop - viewportH * entryLeadVh;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);

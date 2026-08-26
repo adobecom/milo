@@ -157,7 +157,8 @@ The block expects up to **five direct child rows** (the pull-quote row is option
 
 Rows are positional. `parseAuthoredContent(el)` returns
 `{ arcCopy, pullQuote, fragmentHref, hintText, touchHint, instructions, labels }` (`labels` =
-`{ rotateLeft, rotateRight, pauseSpin, resumeSpin, prevCard, nextCard, closeBtn, cardLabel }`, built
+`{ rotateLeft, rotateRight, pauseSpin, resumeSpin, prevCard, nextCard, closeBtn, modalTitle,
+cardLabel }`, built
 by `buildLabels` from row 3's parts — which it indexes 1:1, so `DEFAULT_LABELS[0]` is the
 instructions slot even though `buildLabels` itself doesn't expose it); cards are loaded separately
 from the fragment link by `fetchFragmentCards`.
@@ -434,7 +435,7 @@ literals in the code are only fallbacks that never show on a correctly-authored 
 | Row 2, cell 0 | touch instruction | the barrel's visible bottom-row copy, between the rotate arrows (see Globe controls). Real on-screen prose, so it's a sentence, not a label. **The authored `<p>`s are kept as nodes, one per line**, so the author owns the line break; a cell with no `<p>` renders as plain text | `Click and drag to rotate. Tap to dive deep into the artwork.` (`DEFAULT_TOUCH_HINT`) |
 | Row 2, cell 1 | "Click & Drag" | WebGL hint plane copy (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font, so keep it short) | `Click & Drag` (`DEFAULT_HINT`) |
 | Row 3, part 1 | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
-| Row 3, parts 2–9 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close` | the eight UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
+| Row 3, parts 2–10 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close \|\| card details` | the nine UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** + the `<dialog>`'s `aria-label` — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
 
 The instructions lead row 3 because they are the a11y row's subject: one cell holding every string
 a screen-reader or keyboard user hears, in the order they meet them — the entry announcement first,
@@ -584,8 +585,8 @@ per-instance unique-id suffix it mints from a module-level counter in
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
-`filter: url(#ca-filter-<gid>)`) and the modal role-label/heading/description (the
-`<dialog>`'s `aria-labelledby` (name + role) / `aria-describedby` IDREFs). `el` itself is the scroll runway
+`filter: url(#ca-filter-<gid>)`) and the modal heading/role-label/position (the heading's own id
+plus its `aria-describedby` IDREFs). `el` itself is the scroll runway
 (height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-gallery-modal-open` scroll lock.
@@ -1162,25 +1163,26 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 
 | vh | `progress` | gate | what happens | where |
 | ---: | ---: | --- | --- | --- |
-| −40 | — | `lenisY ≥ blockDocTop − ENTRY_LEAD_VH·H` | canvas `display:block`; `arcCopyEntryT` starts | `updateCanvasVisibility` |
-| −40→65 | — | `arcCopyEntryT` 0→1 over `ENTRY_RAMP_VH` | arc pre-roll speeds up, cards slide up, arc-copy fades **in** (done at `ARC_COPY_IN_ENTRY_T`) | `computeFrame`, `updateArcCopy` |
+| −55 / −50 | — | `lenisY ≥ blockDocTop − ENTRY_LEAD_VH·H` (sm / md) | canvas `display:block`; `arcCopyEntryT` starts | `updateCanvasVisibility` |
+| −55→50 / −50→55 | — | `arcCopyEntryT` 0→1 over `ENTRY_RAMP_VH` (sm / md) | arc pre-roll speeds up, cards slide up, arc-copy fades **in** (done at `ARC_COPY_IN_ENTRY_T`) | `computeFrame`, `updateArcCopy` |
 | 0 | 0.000 | block top | `progress` starts; cards on the arc | — |
-| 37 | 0.039 | `FOLD_FIRST_PROGRESS` | `sphereFormT` leaves 0 → camera switches **ortho → perspective** | `updateActiveCamera` |
-| ~41 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `GRID_PEEL_JITTER`) | `updateCardTransform` |
-| ~54 | ~0.057 | `gpLocalT ≥ FOLD_START_LOCAL_T` | first card actually starts **folding** to the sphere | `updateCardTransform` |
-| 64 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in (**sphere geometry only** — the barrel never builds it) | `updateClickDragText` |
-| 90 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
-| 156 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
-| 170 | 0.180 | `sphereFormT > CARD_ORDER_HANDOVER_T` | card draw order switches from index order to destination depth (see **Card draw order**) | `applyCardOrder` |
-| 273 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.884) | `updateCardTransform` |
-| 277 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
-| 277 | 0.294 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; canvas cursor becomes `grab`; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
-| 304 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0; keyboard focus snaps here | `computeFrame` |
-| 356 | 0.471 | `zoomT ≥ pqAppearZoomT` (sm 0.2204) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `updateClickDragText` |
-| ~356 | ~0.470 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~29vh | `updateActiveCamera` |
-| 385 | 0.555 | `zoomT ≥ pqAppearZoomT` (md 0.3433) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 155vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy play out over 700ms from the cue, and the rest of the pin is still — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
-| 368 / 397 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 368vh, md at 397vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 640vh (the observer's `100%` rootMargin), so the skip covers that tail too, plus the 160vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
-| 540 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
+| 41 | 0.039 | `FOLD_FIRST_PROGRESS` | `sphereFormT` leaves 0 → camera switches **ortho → perspective** | `updateActiveCamera` |
+| ~43 | ~0.041 | `arcPanT ≥ PROGRESS_GRID_ARC_START` | arc → grid **peel** begins (staggered by `i` + `GRID_PEEL_JITTER`) | `updateCardTransform` |
+| ~60 | ~0.057 | `gpLocalT ≥ FOLD_START_LOCAL_T` | first card actually starts **folding** to the sphere | `updateCardTransform` |
+| 71 | 0.067 | `sphereFormT > TEXT_APPEAR_START` | "Click & Drag" hint plane un-hides, warps in (**sphere geometry only** — the barrel never builds it) | `updateClickDragText` |
+| 101 | 0.096 | `ARC_COPY_OUT_FORM_START` of the fold window | **arc-copy starts fading out** | `updateArcCopy` |
+| 174 | 0.165 | `arcPanT = PROGRESS_GRID_ARC_END` | last card lands in the grid (`gridFormT` = 1) | `updateCardTransform` |
+| 190 | 0.180 | `sphereFormT > CARD_ORDER_HANDOVER_T` | card draw order switches from index order to destination depth (see **Card draw order**) | `applyCardOrder` |
+| 305 | 0.289 | first card's `fdE` hits 1 | earliest card actually **on the shell** (`sphereFormT` ≈ 0.883) | `updateCardTransform` |
+| 310 | 0.294 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
+| 322 | 0.305 | `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; canvas cursor becomes `grab`; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
+| 328 | 0.311 | `BROWSE_VIEW_T` | where a keyboard focus snap lands (`snapToBrowseView`) | `snapToBrowseView` |
+| 340 | 0.322 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0 | `computeFrame` |
+| ~376 | ~0.457 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~16vh | `updateActiveCamera` |
+| 382 | 0.480 | `zoomT ≥ pqAppearZoomT` (sm 0.2337) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `updateClickDragText` |
+| 392 | 0.519 | `zoomT ≥ pqAppearZoomT` (md 0.2904) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 128vh down the viewport. Both breakpoints then hold centred for `min(--gg-pq-hold, --gg-pq-hold-max)` — the draw and the copy play out over 700ms from the cue, and the rest of the pin is still — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
+| 391 / 401 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 391vh, md at 401vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 620vh (the observer's `100%` rootMargin puts its window at −200vh..620vh), so the skip covers that tail too, plus the ~150vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
+| 520 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
 Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
 (contours → un-dissolve, plus the one-time sm masonry re-solve on `onDone`), the modal
@@ -1216,13 +1218,12 @@ const tail = RUNWAY_VH - FORMATION_VH;
 // The quote's cue is computed from BREAKPOINTS, which globe-gallery.js does not export — this is the
 // one place the doc restates runtime logic (publishPqAppearZoomT), so keep the two in step.
 const js = readFileSync('./globe-gallery.js', 'utf8');
-const NEAR_FADE_END = +js.match(new RegExp('NEAR_FADE_END = ([0-9.]+)'))[1];
 // APPROXIMATE: the runtime uses fadeRefH (mean per-card sphereWorldH, measured after build);
 // CARD_H_SPHERE stands in for it here and lands within ~1vh. Log fadeRefH for the real value.
 const appearT = (band) => {
   const body = js.split('\n  ' + band + ': {')[1].split('\n  },')[0];
   const num = (k) => +body.match(new RegExp(k + ': (-?[0-9.]+)'))[1];
-  const clearZ = -num('SPHERE_R') + NEAR_FADE_END * num('CARD_H_SPHERE');
+  const clearZ = -num('SPHERE_R') + num('NEAR_FADE_END') * num('CARD_H_SPHERE');
   return T.zoomTAtCamZ(clearZ, num('CAM_Z_SPHERE'), num('CAM_Z_END'));
 };
 const atZoomT = (t) => T.SPHERE_FORMED_PROGRESS
@@ -1253,7 +1254,7 @@ read in JS):
 
 The set is `PROGRESS_PAN_END`, `PROGRESS_ARC_PREROLL`, `PROGRESS_GRID_ARC_START` / `_END`,
 `PROGRESS_FOLD_DUR`, `PROGRESS_ZOOM_END`, `GRID_PEEL_STAGGER` and `FOLD_PEEL_OVERLAP`, plus the
-gates (`SPHERE_INTERACTIVE_T`, `CANVAS_HIDE_MARGIN_T`). `GRID_PEEL_JITTER` is **derived** from
+gates (`SPHERE_INTERACTIVE_T`, `BROWSE_VIEW_T`, `CANVAS_HIDE_MARGIN_T`). `GRID_PEEL_JITTER` is **derived** from
 `GRID_PEEL_STAGGER` (below) and `GRID_PEEL_WINDOW` is its complement, so neither is a knob. Dump the
 live values instead of trusting a list here:
 
@@ -1536,9 +1537,37 @@ are real `<button>`s over the sphere (`pointer-events:none` so they never block 
    frame-counted `easeInOutCubic` tween (`KEY_BROWSE_FRAMES`; see Behavior notes → Sphere rotation).
    RM snaps. Enter opens the detail modal for **that** image.
 
-Focusing the entry button or any browse image runs `snapToInteractive` (`window.lenis.scrollTo` to
+The entry widget's `.globe-gallery-a11y-tip` is `aria-hidden` **and** the `aria-labelledby` target:
+name computation traverses hidden referenced subtrees, so the button keeps the instructions as its
+accessible name while the span stops being a node of its own. Without it the button is not a leaf —
+a screen-reader cursor can land on the text inside it, where Enter has nowhere to go, while Tab onto
+the button itself works. The span still renders, so the `:focus-visible` pill is unaffected.
+
+**`.globe-gallery-a11y-cards` is `inert` unless browsing** (`setBrowseActive`). That one flag is the
+whole browse gate: it keeps the N image buttons out of the tab order **and** out of the accessibility
+tree, so the buttons carry no `tabindex` of their own. Collapsed, a screen-reader virtual cursor runs
+entry widget → globe controls. Two platform behaviors it rests on: an inert button cannot take focus, so `enterBrowse()`
+clears `inert` before `focus()`, and so does `focusCard` (the modal's close-time focus restore can
+land before `updateTabStops` has re-run); `trackCardOpen` clears and restores `inert` around its
+synthetic `.click()` rather than relying on inert click semantics.
+
+Focusing the entry button or any browse image runs `snapToFormed` (`window.lenis.scrollTo` to
 `SPHERE_FORMED_PROGRESS`), bringing the block into its interactive state *and* into view before the
-ring shows (the pdf-space focus pattern). A focus guard (`suppressFocusSnap`, armed on window blur /
+ring shows (the pdf-space focus pattern). It lands at **`BROWSE_VIEW_T`** (`sphereFormT` 0.96,
+328vh), not at `sphereFormT` 1: `BROWSE_VIEW_SCROLL_FRAC` is that formT re-expressed as a fraction
+of `formedScrollPx()`, which works because `deriveFrame` maps scroll to progress linearly below
+`formPx`. `centerCardOnScreen`'s `snapPending` still solves for it — `zoomT` is 0 there, so the
+camera is outside the sphere.
+
+Apparent size through the formation is set by `foldSphDist`, **not** by `camera.position.z`:
+`updateSphereGroupDepth` holds `sphereGroup` at `camera.position.z − foldSphDist` for the whole
+`zoomT === 0` span, so the group tracks the camera and only that distance matters. It runs
+`FOLD_SPHERE_DIST → CAM_Z_SPHERE` over `sphereFormT³` — on **md** 173 → 57, so landing at
+`sphereFormT` 1 put the globe **1.34x bigger** than at `SPHERE_INTERACTIVE_T`; 0.96 lands at 70.4
+and takes most of that back. On **sm** the whole span is 89 → 70, so it barely reads either way.
+`BROWSE_VIEW_T` must stay **above** `SPHERE_INTERACTIVE_T` with margin: `globeFormed()` gates on
+`sphereFormT >= SPHERE_INTERACTIVE_T`, so a landing on the threshold could round under it and
+`enterBrowse()` would refuse to enter. A focus guard (`suppressFocusSnap`, armed on window blur /
 `visibilitychange:hidden`) stops a tab-return from re-snapping. While browsing the core pauses
 auto-spin (`a11y.isBrowsing()`); mouse drag still works.
 
@@ -1556,6 +1585,16 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
+- **Modal counter reading order:** the visible `.globe-gallery-modal-counter` ("05 / 47") is
+  `aria-hidden`; the spoken form lives in the sr-only `.globe-gallery-modal-position` ("5 of 47",
+  from `cardLabel`), which is also the heading's `aria-describedby` target. Both sit in the markup
+  **between Prev and Next**, so a virtual cursor reads Prev → position → Next → Close, matching the
+  on-screen row. The whole bottom row is `position: absolute`, so that markup order is free.
+  The span carries **`role="note"`**: NVDA does not descend into a `note` when it sweeps the dialog
+  on open, so the position is spoken once (with the heading) instead of twice, while the span stays
+  a virtual-cursor stop for VoiceOver. `aria-hidden` would also silence the sweep but kills the
+  stop; `group` does not stop the sweep at all; `article`/`region` do, but VoiceOver announces
+  entering/leaving them.
 - **Instructions popup:** on focus the entry widget shows a **visible pill** so sighted keyboard
   users get the affordance (a11y audit). ONE element (`.globe-gallery-a11y-tip`) — hidden by
   default, shown on `:focus-visible`, and simultaneously the button's `aria-labelledby` target, so
@@ -1566,11 +1605,48 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   position); forward-nav then walks name → role → description → badges → photo before the controls.
   The photo is a `role="img"` sr-only element placed AFTER the info block (so the heading reads
   first), carrying the card's alt as a real text alternative. The card **position** ("N of M") lives
-  in one sr-only element referenced by BOTH the dialog's `aria-labelledby` and the heading's
-  `aria-describedby` — **no `aria-live`** — so it's deterministic on both paths: on open it's read
-  with the focused heading; on nav (focus stays on Prev/Next) the accessible-name text changes, so
-  VoiceOver re-announces the dialog name. A live region would be more portable across AT but can't
-  reliably cover the open case.
+  in one sr-only element referenced by the heading's `aria-describedby`, so it is read with the
+  focused heading on open.
+- **The `<dialog>`'s name is static and is not card text.** `aria-label` is `labels.modalTitle`,
+  row 3 part 10, defaulting to English like every other label. Two rules follow from this, and both
+  were learned the hard way:
+  1. It must not be **card** text (`aria-labelledby` → the heading, role or position). The dialog
+     name and the focused heading are two separate announcements on open; if they overlap, the card
+     is read twice. Leaving the dialog unnamed is not an escape — VoiceOver then falls back to
+     reading the contents, which overlaps too. An empty or whitespace `aria-label` is the same as
+     unnamed: name computation ignores it.
+  2. It must not **change** per card. VoiceOver re-announces a dialog whose name changed; NVDA never
+     does. A changing name is therefore a channel that double-speaks on one AT and is silent on the
+     other — it cannot be the carrier for anything.
+- **`role="document"` on `.globe-gallery-modal-description` is load-bearing for NVDA.** Opening a
+  **native `<dialog>`** makes NVDA read the dialog's prose aloud; the same markup as a
+  `div[role="dialog"][aria-modal="true"]` does not, so this is the element's behavior and not the
+  role's. NVDA does not descend into a `document` subtree, so the attribute opts the long copy out.
+  Measured in NVDA, not inferred. Three things that do **not** help: focusing a control instead of
+  the heading, inserting the copy a frame after the dialog is shown (NVDA re-reads live rather than
+  snapshotting at appear-time), and making the copy focusable. Putting it in the dialog's
+  `aria-describedby` makes it read **twice**.
+- **Only two announcement primitives are portable**: focus moving into a named dialog, and a live
+  region's text changing. Each event uses exactly one of them — open → the focused heading, nav →
+  the live region — and nothing here relies on an AT re-reading a changed name or falling back to
+  contents.
+- **Focus on open is declarative** — `open()` never calls `focus()`. The heading carries `autofocus`
+  and the `<dialog>` has no `tabindex`, so `showModal()` lands on the heading itself. Measured:
+  NVDA announces the heading identically whether focus arrives via `autofocus` or via an explicit
+  post-`showModal()` `focus()`, so the explicit move earns nothing. Any JS `focus()` here must stay
+  in the same task as `showModal()` — a `requestAnimationFrame` later is a separate AX event and
+  VoiceOver announces it as one.
+- **Prev/Next announcement:** nav keeps focus on the button, so the new card is spoken only through
+  `.globe-gallery-modal-announce` — an sr-only `aria-live="polite"` span, last child of the dialog,
+  written as `"Name. Role. N of M"` by `populateModal(i, speak)` when `speak` is true (the nav call
+  site only; `open()` passes nothing and so clears it, keeping the open path single-read — and it
+  clears **before** `showModal()`, so a stale nav line can never be spoken as the dialog appears). It
+  carries the **whole** card, position included, because it is the only thing that speaks on nav —
+  focus stays on the button and the dialog's name is static by design.
+  The text is **not** cleared on a timer — it holds the current card until the next nav or the next
+  open, so a queued announcement can never be truncated. Cost: after navigating, a virtual cursor
+  reading to the very end hears the current card's name and role once more, after Close.
+  `assertive` also works and interrupts the previous card, but VoiceOver prefixes it with a tone.
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive** globe
 instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery-reduced`):
@@ -1873,6 +1949,10 @@ The quote box has **no height**. It is a column flex container whose only tunabl
 `--gg-pq-gap`, the space between the `blockquote` and the name/role `.globe-gallery-pullquote-attribution`;
 everything else (padding + copy) sizes itself.
 
+`.globe-gallery-pullquote` is a **`<figure>`** and the attribution its **`<figcaption>`**, which is
+what associates the name/role with the `<blockquote>` for AT. Its `margin: 0 auto` zeroes the UA
+`margin-block`, which the pin math takes as zero.
+
 `--gg-pq-gap` is `min(--s2a-layout-xl, --gg-band-h × 0.2)` — one declaration, no media query. It is
 the full 160px on any viewport taller than ~924px and tapers below that, because the box is
 content-sized while the band it centres in is not: on a short, wide laptop (1280×720 is the worst
@@ -2020,7 +2100,15 @@ width**, not on the viewport's: a scrollbar arriving changes the box without cha
 `innerWidth` (the body `ResizeObserver` is what catches it), and a viewport change that only alters
 height leaves the split correct. `fonts.ready` forces one regardless. It drops the copy cache and
 rewrites the current frame straight after, because fresh line elements carry no progress var and
-would otherwise render at rest for a frame.
+would otherwise render at rest for a frame. Line text is assigned with `textContent`; `createTag`'s
+third argument parses a string as markup.
+
+**The split is presentational, and AT gets the unsplit text.** Each `.globe-gallery-pullquote-line`
+is `aria-hidden`, and `layoutQuote` appends one `.sr-only.globe-gallery-pullquote-sr` span holding
+the whole quote. Block-level line spans otherwise land in the accessibility tree as one static-text
+node **per visual line**, so a screen reader stops mid-phrase at break points that move with the box
+width; the sr-only span restores the single node a plain `<blockquote>` produces. It carries
+`user-select: none` so selecting the quote copies the visible lines only, never both copies.
 
 Details that are load-bearing:
 
@@ -2213,7 +2301,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   so reporting there too would double-count.
 - **`enter_gallery` is the one engagement signal here** — one label, ~one event per keyboard session,
   answering whether the two-level gallery is ever entered at all. The widget is only *clicked* to
-  enter BROWSE; merely focusing it (which scrolls via `snapToInteractive`) is not reported.
+  enter BROWSE; merely focusing it (which scrolls via `snapToFormed`) is not reported.
 - **Caveat inherent to `daa-ll` on any button:** a real click reports even when the handler declines
   to act — `enterBrowse()` bails if the sphere isn't formed, `onCardClick` if `isInteractive()` is
   false. Expect a small over-count on both.
@@ -2251,7 +2339,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   0.15 → RESTING 0.06`), fades out over the zoom. **The entrance resolves on
   `SPHERE_INTERACTIVE_T`, not at `sphereFormT` 1**: `sfT` remaps `[TEXT_APPEAR_START,
   SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes live and the `grab`
-  cursor arrives. Running it to 1 (the original) left the hint still visibly warping in for 27vh *after* the
+  cursor arrives. Running it to 1 (the original) left the hint still visibly warping in for 18vh *after* the
   thing it names was already draggable — measured `uWarp` 0.946 of `TEXT_WARP_ENTER_MAX` 4.5 still
   active at the gate, now 0.002. The plane's *scale* is unaffected and keeps tracking `foldSphDist`
   to 1.0 at `sphereFormT` 1; that is distance compensation, not entrance, and holds apparent size
@@ -2282,7 +2370,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
   **`hintDismissProgress` is a one-way latch.** Nothing re-arms it short of `destroy()` (band
   crossing, RM toggle, context-loss recovery), which is per-instance state and stays that way. Do
-  not re-arm it on `sphereFormT` dropping below `SPHERE_INTERACTIVE_T`: that gate is ~28vh of
+  not re-arm it on `sphereFormT` dropping below `SPHERE_INTERACTIVE_T`: that gate is ~18vh of
   scroll-back, so a small nudge would bring a dismissed hint straight back.
 
   The row's scrim matches **`.globe-gallery-modal-info`** — `transparent-black-64` +
@@ -2727,11 +2815,11 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     constant across window sizes: a bigger ball on screen needs *fewer* rad/px, which one fixed
     number got wrong in both directions — over-geared on a tall desktop window, under-geared on a
     phone. Drag by the ball's on-screen radius and it turns `90° × DRAG_GEARING`.
-  - **`SPHERE_INTERACTIVE_T` is 0.9, not 0.8, because 0.8 is ahead of every card.** Cards land
-    between `sphereFormT` 0.884 (the first) and exactly 1 (the last — its fold end *is*
+  - **`SPHERE_INTERACTIVE_T` is 0.94, not 0.8, because 0.8 is ahead of every card.** Cards land
+    between `sphereFormT` 0.883 (the first) and exactly 1 (the last — its fold end *is*
     `SPHERE_FORMED_PROGRESS`), so at 0.8 the drag was spinning a swarm still mid-assembly and a tap
     was being refused on cards that already read as part of the globe. Both went through the same
-    gate, in opposite kinds of wrong. 0.9 sits just past the first landing: something is on the shell
+    gate, in opposite kinds of wrong. 0.94 sits just past the first landing: something is on the shell
     to grab and to click. ONE constant for **everything** that says or does "the globe is live":
     hover, click, drag, auto-rotate, the `grab` cursor, and the GL hint plane's entrance. Do not give
     the cursor its own earlier gate: it puts the affordance 26vh ahead of the input it advertises.
@@ -2813,7 +2901,7 @@ self-evident from the name:
 | `VEL_SMOOTH_MS` (`interaction.js`) | ms | time constant of the release-velocity EMA |
 | `HOVER_RATE` | per 60fps frame | ease toward the hover target, applied as `1 − (1 − RATE) ** dtScale`; reaches 80% in `ln(0.2) / ln(1 − RATE)` frames |
 | `CA_STRENGTH` | UV | radial shift per channel at transition peaks (bell curve) |
-| `CA_MOTION_STRENGTH` / `…_ARC` | UV | directional (motion-trail) shift max — full during peel/fold/sphere/modal, softly clamped on the arc. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself |
+| `CA_MOTION_CAP` | UV | directional (motion-trail) shift max. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself |
 | `SPHERE_DRAG_CA_MUL` | uCA per unit of `sphereDragWarp` | adds to `uCA` while spinning the sphere, on top of the transition bell and hover terms |
 | `SCROLL_VEL_MAX` | px/frame | scroll speed that saturates the motion-trail amplitude and the global canvas filter (`CA_PX_MAX`) |
 | `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter. Gated by `GLOBAL_CA_SM`/`_MD` — **sm stays off**: a CSS `filter` over the full canvas forces an offscreen composite every repainted frame, and falls off the GPU-accelerated path on mobile Safari in particular |

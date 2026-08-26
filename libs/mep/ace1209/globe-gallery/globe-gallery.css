@@ -256,7 +256,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   inset-inline: 0;
   box-sizing: border-box;
   max-width: var(--gg-copy-max);
-  margin-inline: auto;
+  margin: 0 auto;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -358,6 +358,11 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-pullquote-line-inner {
   display: inline-block;
   transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
+}
+
+.globe-gallery-pullquote-sr {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .globe-gallery-pullquote-name {
@@ -755,18 +760,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   transform: translate(-50%, -50%) scale(1);
 }
 
-.globe-gallery-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
 .globe-gallery-a11y:focus-visible,
 .globe-gallery-a11y-card:focus-visible,
@@ -777,7 +770,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;
@@ -843,7 +836,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   }
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .globe-gallery-pullquote {
     --gg-pq-ideal-gap: var(--s2a-layout-2xl);
   }
