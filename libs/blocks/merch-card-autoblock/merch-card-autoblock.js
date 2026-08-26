@@ -1,5 +1,6 @@
-import { createTag, getConfig, loadIms } from '../../utils/utils.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
 import {
   initService,
   createAemFragment,
@@ -12,8 +13,6 @@ import {
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
 } from '../merch/merch.js';
-
-loadIms();
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 const seenFragments = new Set();
