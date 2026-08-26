@@ -13,7 +13,7 @@ function imsEnv(base) {
   if (override === 'prod' || override === 'stg1') return override;
   let host;
   try { host = new URL(base).hostname; } catch { host = window.location.hostname; }
-  return (host === 'localhost' || host.includes('stage')) ? 'stg1' : 'prod';
+  return (host === 'localhost' || host === 'forge-dev.adobe.io' || host.includes('stage')) ? 'stg1' : 'prod';
 }
 
 function relayOriginFor(env) {

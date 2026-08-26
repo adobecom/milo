@@ -74,6 +74,49 @@
     outline: none;
   }
 
+  & .pt-file {
+    display: none;
+  }
+
+  & .pt-drop {
+    align-items: center;
+    background: #fafafa;
+    border: 1px dashed var(--pt-line);
+    border-radius: var(--pt-radius);
+    color: var(--pt-ink-soft);
+    cursor: pointer;
+    display: flex;
+    font-size: 13px;
+    font-weight: 600;
+    justify-content: center;
+    margin-block-end: 10px;
+    min-height: 64px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  & .pt-drop:hover,
+  & .pt-drop:focus-visible,
+  & .pt-drop-over {
+    background: #eaeeff;
+    border-color: var(--pt-accent);
+    color: var(--pt-accent);
+    outline: none;
+  }
+
+  & .pt-drop-busy {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  & .pt-drop-status {
+    color: var(--pt-ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    min-height: 18px;
+  }
+
   & .pt-count {
     color: var(--pt-ink-soft);
     font-size: 13px;
@@ -136,6 +179,10 @@
     background: #edfcf1;
   }
 
+  & .pt-stat-preflight {
+    background: #f3eefe;
+  }
+
   & .pt-stat-head {
     align-items: baseline;
     display: flex;
@@ -170,6 +217,10 @@
     color: var(--pt-good);
   }
 
+  & .pt-stat-preflight .pt-stat-pct {
+    color: #7326d3;
+  }
+
   & .pt-bar {
     background: #fff;
     border: 1px solid var(--pt-line);
@@ -190,6 +241,35 @@
 
   & .pt-stat-published .pt-bar-fill {
     background: var(--pt-good);
+  }
+
+  & .pt-stat-preflight .pt-bar-fill {
+    background: #7326d3;
+  }
+
+  & .pt-pf {
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 34px;
+    padding: 2px 8px;
+    text-align: center;
+  }
+
+  & .pt-pf-pass {
+    background: #e6f4ea;
+    color: #1e7e34;
+  }
+
+  & .pt-pf-warn {
+    background: #fff4e5;
+    color: #a15c00;
+  }
+
+  & .pt-pf-fail {
+    background: #fde7e9;
+    color: #d32011;
   }
 
   & .pt-table-wrap {
@@ -302,5 +382,37 @@
   & .pt-badge-draft {
     background: #eee;
     color: #555;
+  }
+
+  & .pt-pager {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-block-start: 12px;
+  }
+
+  & .pt-page-btn {
+    background: #fff;
+    border: 1px solid var(--pt-line);
+    border-radius: 8px;
+    color: var(--pt-ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  & .pt-page-btn:disabled {
+    color: #b0b0b0;
+    cursor: default;
+  }
+
+  & .pt-page-info {
+    color: var(--pt-ink-soft);
+    font-size: 13px;
+    font-weight: 600;
   }
 }

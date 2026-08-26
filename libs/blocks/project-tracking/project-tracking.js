@@ -1,6 +1,6 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { resolveContext, createClient, signIn } from './api.js';
-import { computeRollup, deriveStatus, computeStatusCounts } from './rollup.js';
+import { computeRollup, deriveStatus, computeStatusCounts, computePreflightRollup, preflightTier } from './rollup.js';
 import applyView from './view.js';
 
 const PLACEHOLDER = [
@@ -14,6 +14,26 @@ export function parseUrls(text) {
     .split(/\n|,/)
     .map((u) => u.trim())
     .filter(Boolean);
+}
+
+const PAGE_SIZE = 25;
+
+const EDS_HOST_RE = /\.aem\.(page|live)$/i;
+const HOST_REPO = {
+  'business.adobe.com': 'da-bacom',
+  'business.stage.adobe.com': 'da-bacom',
+};
+
+export function normalizeUrl(input) {
+  let u;
+  try { u = new URL(input); } catch { return input; }
+  const host = u.hostname.toLowerCase();
+  if (EDS_HOST_RE.test(host)) return input;
+  const repo = HOST_REPO[host];
+  if (!repo) return input;
+  let path = u.pathname.replace(/\.html$/i, '');
+  if (path.length > 1) path = path.replace(/\/$/, '');
+  return `https://main--${repo}--adobecom.aem.page${path}`;
 }
 
 const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '#');
@@ -40,6 +60,21 @@ function createCommentsCell(annotations) {
   return createTag('td', { class: 'pt-cell' }, `💬 ${open ? `${threads} · ${open} open` : threads}`);
 }
 
+function createPreflightCell(preflight) {
+  const score = preflight?.score;
+  if (score == null) return createTag('td', { class: 'pt-cell pt-empty' }, '—');
+  const parts = [];
+  if (preflight.seo != null) parts.push(`SEO ${preflight.seo}`);
+  if (preflight.accessibility != null) parts.push(`A11y ${preflight.accessibility}`);
+  if (preflight.assets != null) parts.push(`Assets ${preflight.assets}`);
+  if (preflight.brokenLinks) parts.push(`${preflight.brokenLinks} broken link${preflight.brokenLinks === 1 ? '' : 's'}`);
+  if (preflight.a11yIssues) parts.push(`${preflight.a11yIssues} a11y issue${preflight.a11yIssues === 1 ? '' : 's'}`);
+  if (preflight.lastRun) parts.push(`run ${new Date(preflight.lastRun).toLocaleDateString()}`);
+  const cell = createTag('td', { class: 'pt-cell' });
+  cell.append(createTag('span', { class: `pt-pf pt-pf-${preflightTier(score)}`, title: parts.join(' · ') }, String(score)));
+  return cell;
+}
+
 function createStatCard(label, pctValue, n, total, variant) {
   const card = createTag('div', { class: `pt-stat pt-stat-${variant}` });
   const head = createTag('div', { class: 'pt-stat-head' });
@@ -54,6 +89,19 @@ function createStatCard(label, pctValue, n, total, variant) {
   return card;
 }
 
+function renderPager(view, pages, total, start, shown, onChange) {
+  const pager = createTag('div', { class: 'pt-pager' });
+  const prev = createTag('button', { type: 'button', class: 'pt-page-btn', 'aria-label': 'Previous page' }, '‹ Prev');
+  const next = createTag('button', { type: 'button', class: 'pt-page-btn', 'aria-label': 'Next page' }, 'Next ›');
+  prev.disabled = view.page <= 1;
+  next.disabled = view.page >= pages;
+  const info = createTag('span', { class: 'pt-page-info' }, `${start + 1}–${start + shown} of ${total} · Page ${view.page} of ${pages}`);
+  prev.addEventListener('click', () => { view.page -= 1; onChange(); });
+  next.addEventListener('click', () => { view.page += 1; onChange(); });
+  pager.append(prev, info, next);
+  return pager;
+}
+
 function renderResults(mount, rows, since, view = {}) {
   mount.replaceChildren();
   if (rows.length === 0) {
@@ -62,12 +110,16 @@ function renderResults(mount, rows, since, view = {}) {
   }
   const rollup = computeRollup(rows, { since: since || undefined });
   const counts = computeStatusCounts(rows);
+  const preflight = computePreflightRollup(rows);
 
   const stats = createTag('div', { class: 'pt-stats' });
   stats.append(
     createStatCard('Previewed', rollup.previewedPct, rollup.previewed, rollup.total, 'previewed'),
     createStatCard('Published', rollup.publishedPct, rollup.published, rollup.total, 'published'),
   );
+  if (preflight.checked) {
+    stats.append(createStatCard('Preflight OK', preflight.passingPct, preflight.passing, preflight.checked, 'preflight'));
+  }
 
   const countStrip = createTag('div', { class: 'pt-status-counts' });
   countStrip.append(
@@ -77,6 +129,12 @@ function renderResults(mount, rows, since, view = {}) {
   );
 
   const visible = applyView(rows, view);
+  const total = visible.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (view.page > pages) view.page = pages;
+  if (view.page < 1) view.page = 1;
+  const start = (view.page - 1) * PAGE_SIZE;
+  const pageRows = visible.slice(start, start + PAGE_SIZE);
 
   const table = createTag('table', { class: 'pt-table' });
   const headRow = createTag('tr');
@@ -85,11 +143,12 @@ function renderResults(mount, rows, since, view = {}) {
     createTag('th', { scope: 'col' }, 'Status'),
     createTag('th', { scope: 'col' }, 'Previewed'),
     createTag('th', { scope: 'col' }, 'Published'),
+    createTag('th', { scope: 'col' }, 'Preflight'),
     createTag('th', { scope: 'col' }, 'Comments'),
   );
   table.append(createTag('thead', {}, headRow));
   const tbody = createTag('tbody');
-  visible.forEach((r) => {
+  pageRows.forEach((r) => {
     const tr = createTag('tr');
     const href = safeUrl(r.url);
     const linkCell = createTag('td', { class: 'pt-cell pt-url' });
@@ -99,6 +158,7 @@ function renderResults(mount, rows, since, view = {}) {
       createBadgeCell(deriveStatus(r)),
       createStatusCell(r.lastPreview),
       createStatusCell(r.lastPublish),
+      createPreflightCell(r.preflight),
       createCommentsCell(r.annotations),
     );
     tbody.append(tr);
@@ -106,18 +166,16 @@ function renderResults(mount, rows, since, view = {}) {
   table.append(tbody);
 
   mount.append(stats, countStrip, createTag('div', { class: 'pt-table-wrap' }, table));
-  if (visible.length === 0) {
+  if (total === 0) {
     mount.append(createTag('p', { class: 'pt-muted' }, 'No pages match the current filter or search.'));
+  } else if (pages > 1) {
+    const onPage = () => renderResults(mount, rows, since, view);
+    mount.append(renderPager(view, pages, total, start, pageRows.length, onPage));
   }
 }
 
 function renderError(mount, status, message) {
   mount.replaceChildren();
-  if (status === 403) {
-    const m = 'Not authorized: your account needs the statistics role on milo-core.';
-    mount.append(createTag('p', { class: 'pt-error' }, m));
-    return;
-  }
   if (status === 401) {
     const m = 'Not signed in to Adobe. Sign in, then check again.';
     mount.append(createTag('p', { class: 'pt-error' }, m));
@@ -142,7 +200,11 @@ export default async function init(block) {
   header.append(createTag('h2', { class: 'pt-title' }, 'Project Tracking'), checkBtn);
 
   const label = createTag('label', { class: 'pt-label', for: 'pt-urls' }, 'Pages to track');
-  const hint = createTag('p', { class: 'pt-hint' }, 'Paste one URL per line, then Check status.');
+  const hint = createTag('p', { class: 'pt-hint' }, 'Paste page URLs (business.adobe.com or …aem.page), one per line — or drop a sheet below.');
+  const fileInput = createTag('input', { type: 'file', accept: '.xlsx,.csv', class: 'pt-file' });
+  const dropZone = createTag('div', { class: 'pt-drop', role: 'button', tabindex: '0' }, 'Drop an .xlsx or .csv here, or click to choose — we’ll pull the page URLs out for you');
+  dropZone.append(fileInput);
+  const dropStatus = createTag('p', { class: 'pt-drop-status' });
   const textarea = createTag('textarea', { id: 'pt-urls', class: 'pt-textarea', placeholder: PLACEHOLDER, inputmode: 'url' });
   const count = createTag('p', { class: 'pt-count' }, '0 URLs entered');
 
@@ -150,7 +212,7 @@ export default async function init(block) {
   const sinceLabel = createTag('label', { class: 'pt-since-label' }, 'Count from date ');
   sinceLabel.append(since);
 
-  const view = { filter: 'all', sort: 'url', search: '' };
+  const view = { filter: 'all', sort: 'url', search: '', page: 1 };
   const toolbar = createTag('div', { class: 'pt-toolbar' });
   const filterSel = createTag('select', { class: 'pt-filter', 'aria-label': 'Filter by status' });
   [['all', 'All statuses'], ['Draft', 'Draft'], ['Previewed', 'Previewed'], ['Live', 'Live']]
@@ -164,7 +226,18 @@ export default async function init(block) {
   const resultsInit = createTag('p', { class: 'pt-muted' }, 'Results will appear here after you check status.');
   const results = createTag('div', { class: 'pt-results', 'aria-live': 'polite' }, resultsInit);
 
-  block.append(header, label, hint, textarea, count, sinceLabel, toolbar, results);
+  block.append(
+    header,
+    label,
+    hint,
+    dropZone,
+    dropStatus,
+    textarea,
+    count,
+    sinceLabel,
+    toolbar,
+    results,
+  );
 
   let rows = null;
 
@@ -178,13 +251,21 @@ export default async function init(block) {
   };
 
   const check = async () => {
-    const urls = parseUrls(textarea.value);
-    if (urls.length === 0 || checkBtn.disabled) return;
+    const inputs = parseUrls(textarea.value);
+    if (inputs.length === 0 || checkBtn.disabled) return;
+    const seen = new Set();
+    const pairs = [];
+    inputs.forEach((original) => {
+      const api = normalizeUrl(original);
+      if (!seen.has(api)) { seen.add(api); pairs.push({ original, api }); }
+    });
     checkBtn.disabled = true;
     checkBtn.textContent = 'Checking…';
     results.replaceChildren(createTag('p', { class: 'pt-muted' }, 'Checking…'));
     try {
-      rows = await client.post('/project-status', { urls });
+      const data = await client.post('/project-status', { urls: pairs.map((p) => p.api) });
+      rows = data.map((r, i) => ({ ...r, url: pairs[i]?.original ?? r.url }));
+      view.page = 1;
       renderResults(results, rows, since.value, view);
     } catch (e) {
       rows = null;
@@ -195,13 +276,48 @@ export default async function init(block) {
     }
   };
 
+  const loadFile = async (file) => {
+    if (!file) return;
+    dropZone.classList.add('pt-drop-busy');
+    dropStatus.textContent = 'Reading sheet…';
+    try {
+      const { extractUrlsFromFile } = await import('./xlsx.js');
+      const urls = await extractUrlsFromFile(file);
+      if (!urls.length) {
+        dropStatus.textContent = 'No trackable page URLs found in that file.';
+        return;
+      }
+      textarea.value = urls.join('\n');
+      updateCount();
+      const plural = urls.length === 1 ? '' : 's';
+      dropStatus.textContent = `Loaded ${urls.length} URL${plural} from ${file.name}.`;
+    } catch (e) {
+      dropStatus.textContent = `Could not read that file (${e.message}).`;
+    } finally {
+      dropZone.classList.remove('pt-drop-busy');
+    }
+  };
+
+  fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
+  dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('pt-drop-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('pt-drop-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('pt-drop-over');
+    loadFile(e.dataTransfer?.files?.[0]);
+  });
+
   textarea.addEventListener('input', updateCount);
   textarea.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
   });
   checkBtn.addEventListener('click', check);
-  since.addEventListener('change', rerender);
-  filterSel.addEventListener('change', () => { view.filter = filterSel.value; rerender(); });
-  sortSel.addEventListener('change', () => { view.sort = sortSel.value; rerender(); });
-  searchInput.addEventListener('input', () => { view.search = searchInput.value; rerender(); });
+  since.addEventListener('change', () => { view.page = 1; rerender(); });
+  filterSel.addEventListener('change', () => { view.filter = filterSel.value; view.page = 1; rerender(); });
+  sortSel.addEventListener('change', () => { view.sort = sortSel.value; view.page = 1; rerender(); });
+  searchInput.addEventListener('input', () => { view.search = searchInput.value; view.page = 1; rerender(); });
 }

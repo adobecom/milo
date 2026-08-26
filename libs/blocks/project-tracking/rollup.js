@@ -37,6 +37,28 @@ export function deriveStatus(row = {}) {
   return 'Draft';
 }
 
+export const PREFLIGHT_PASS = 90;
+export const PREFLIGHT_WARN = 70;
+
+export function preflightTier(score) {
+  if (score == null) return null;
+  if (score >= PREFLIGHT_PASS) return 'pass';
+  if (score >= PREFLIGHT_WARN) return 'warn';
+  return 'fail';
+}
+
+export function computePreflightRollup(rows = []) {
+  let checked = 0;
+  let passing = 0;
+  rows.forEach((r) => {
+    const score = r.preflight?.score;
+    if (score == null) return;
+    checked += 1;
+    if (score >= PREFLIGHT_WARN) passing += 1;
+  });
+  return { checked, passing, passingPct: pct(passing, checked) };
+}
+
 export function computeStatusCounts(rows = []) {
   let draft = 0;
   let previewed = 0;
