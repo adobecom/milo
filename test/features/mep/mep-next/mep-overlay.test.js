@@ -509,7 +509,7 @@ describe('init: buildManifestCard — malformed manifest via mep.manifestErrors'
     const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
     const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
     const tooltip = malformedCard.querySelector('.mep-manifest-error-tooltip');
-    expect(tooltip.textContent).to.include('Manifest failed to load or has an invalid structure.');
+    expect(tooltip.textContent).to.include('Manifest malformed or not found.');
   });
 
   it('does not render a variant select or body rows for the malformed card', () => {
