@@ -1593,8 +1593,6 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
-        // Transcript modals are relocated into the paired video's controls by
-        // libs/features/video-transcript.js; tag + hide the source link here.
         if (url.hash.startsWith('#transcript')) a.classList.add('video-transcript-source');
         return true;
       }

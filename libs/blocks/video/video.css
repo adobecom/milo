@@ -235,7 +235,6 @@ video {
     }
   }
 
-  /* Transcript control: sits to the left of the play/pause button */
   .video-container a.transcript-button {
     width: 32px;
     height: 32px;
@@ -297,7 +296,6 @@ video {
   }
 }
 
-/* Hide the authored transcript link until it becomes the control button */
 a.video-transcript-source:not(.transcript-button) {
   display: none;
 }

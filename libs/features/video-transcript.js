@@ -13,30 +13,18 @@ let cachedLabel;
 
 async function getTranscriptLabel() {
   if (cachedLabel) return cachedLabel;
-  cachedLabel = 'Transcript';
-  try {
-    const { replaceKey } = await import('./placeholders.js');
-    const label = await replaceKey(TRANSCRIPT_KEY, getFedsPlaceholderConfig());
-    // replaceKey echoes the raw key when no placeholder is configured; only use
-    // a real, localized value.
-    if (label && label.toLowerCase() !== TRANSCRIPT_KEY) cachedLabel = label;
-  } catch (e) {
-    // fall back to the default label
-  }
+  const { replaceKey } = await import('./placeholders.js');
+  const label = await replaceKey(TRANSCRIPT_KEY, getFedsPlaceholderConfig());
+  cachedLabel = (label && label.toLowerCase() !== TRANSCRIPT_KEY) ? label : 'Transcript';
   return cachedLabel;
 }
 
 /**
- * Converts a tagged transcript source link into a control button inside the
- * video's control cluster. The link keeps its modal data attributes, so the
- * existing modal machinery opens the transcript with no extra wiring.
  * @param {HTMLVideoElement} videoEl the decorated video element
  */
 export default async function decorateVideoTranscript(videoEl) {
   const container = videoEl?.closest('.video-container');
   if (!container) return;
-  // The transcript link is authored in the same cell as the video, but may sit
-  // in a sibling wrapper (e.g. its own <p>), so search the nearest cell div.
   const cell = container.parentElement?.closest('div') || container.parentElement;
   const link = cell?.querySelector('a.video-transcript-source');
   if (!link || container.contains(link)) return;
