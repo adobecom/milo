@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { getLingoActive } from '../../../libs/utils/lingo-active.js';
+import caasTags from '../../../libs/blocks/caas-config/caas-tags.js';
 import {
   defaultState,
   getConfig,
@@ -12,6 +13,8 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
   initBulkPublisherLingoMapping,
+  isLingoLangFirstPath,
+  getLanguageFirstCountryAndLang,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -202,6 +205,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -404,6 +408,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -476,6 +481,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -678,6 +684,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -722,6 +729,50 @@ describe('getConfig', () => {
       env: { name: 'prod' },
       stageDomainsMap: { localhost: { 'www.adobe.com': 'stage.adobe.com', 'business.adobe.com': 'origin' } },
     })).to.eql({});
+  });
+
+  describe('localFirstRecencyThreshold', () => {
+    it('is included in sort config when sortDefault is localFirst and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(6);
+    });
+
+    it('is included in sort config when sortLocalFirst popup option is checked and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortEnablePopup: true,
+        sortLocalFirst: true,
+        sortLocalFirstRecencyThreshold: 3,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(3);
+    });
+
+    it('is omitted from sort config when threshold is null', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: null,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
+
+    it('is omitted from sort config when localFirst is not active', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'dateDesc',
+        sortLocalFirst: false,
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
   });
 });
 
@@ -812,8 +863,8 @@ describe('getCountryAndLang', () => {
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
         'site-locales': {
           data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '/be, /ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: '/be, /us' },
           ],
         },
       }),
@@ -908,6 +959,134 @@ describe('getCountryAndLang', () => {
       partialLoadCount: 75,
     });
   });
+
+  it('should include useRoundedCorners in the config when enabled', async () => {
+    const state = { ...defaultState, useRoundedCorners: true };
+    const config = await getConfig(state, strings);
+    expect(config.collection.useRoundedCorners).to.be.true;
+  });
+
+  it('should NOT include useRoundedCorners in the config when disabled', async () => {
+    const state = { ...defaultState, useRoundedCorners: false };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('useRoundedCorners');
+  });
+
+  it('should include editorialOpenVariant when cardStyle is editorial-card and variant is enabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'editorial-card',
+      editorialCardOpenVariant: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.editorialOpenVariant).to.be.true;
+  });
+
+  it('should NOT include editorialOpenVariant when cardStyle is editorial-card but variant is disabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'editorial-card',
+      editorialCardOpenVariant: false,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('editorialOpenVariant');
+  });
+
+  it('should NOT include editorialOpenVariant when cardStyle is not editorial-card', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'half-height',
+      editorialCardOpenVariant: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('editorialOpenVariant');
+  });
+
+  it('should include flexCard.showDateOnFooter in the config when enabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'flex-card',
+      flexCardShowDateOnFooter: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.flexCard).to.deep.equal({
+      imageOption: 'default',
+      textAlign: 'default',
+      textSize: 'default',
+      hideDetails: false,
+      hideTitle: false,
+      hideDescription: false,
+      showDateOnFooter: true,
+    });
+  });
+
+  it('shoold not show date on footer when flexCardShowDateOnFooter is disabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'flex-card',
+      flexCardShowDateOnFooter: false,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.flexCard.showDateOnFooter).to.be.false;
+  });
+
+  it('should populate products from getProducts when detailsTextOption is productName', async () => {
+    const state = { ...defaultState, detailsTextOption: 'productName' };
+    const config = await getConfig(state, strings);
+    expect(config.products).to.deep.equal(caasTags.namespaces.caas.tags.mnemonics.tags);
+    expect(config.products).to.not.be.empty;
+  });
+
+  it('should NOT call getProducts when detailsTextOption is not productName', async () => {
+    const state = { ...defaultState, detailsTextOption: 'default' };
+    const config = await getConfig(state, strings);
+    expect(config.products).to.deep.equal({});
+  });
+
+  it('should include localFirst sort option when sortLocalFirst is enabled', async () => {
+    const state = { ...defaultState, sortLocalFirst: true };
+    const config = await getConfig(state, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localFirst')).to.be.true;
+  });
+
+  it('should include localLast sort option when sortLocalLast is enabled', async () => {
+    const state = { ...defaultState, sortLocalLast: true };
+    const config = await getConfig(state, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localLast')).to.be.true;
+  });
+
+  it('should NOT include localFirst or localLast sort options by default', async () => {
+    const config = await getConfig(defaultState, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localFirst')).to.be.false;
+    expect(sortOptions.some((o) => o.sort === 'localLast')).to.be.false;
+  });
+
+  it('should append current page UUID to excludeIds in the endpoint', async () => {
+    const config = await getConfig(defaultState, strings);
+    const { endpoint } = config.collection;
+    const excludeIds = new URLSearchParams(endpoint.replace(/.*\?/, '?')).get('excludeIds');
+    // The current page UUID must be present in excludeIds
+    expect(excludeIds).to.be.a('string');
+    expect(excludeIds.length).to.be.greaterThan(0);
+  });
+
+  it('should combine existing excludedCards with current page UUID in excludeIds', async () => {
+    const existingId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const state = {
+      ...defaultState,
+      excludedCards: [{ contentId: existingId }],
+    };
+    const config = await getConfig(state, strings);
+    const { endpoint } = config.collection;
+    const excludeIdsEncoded = endpoint.match(/excludeIds=([^&]*)/)?.[1] ?? '';
+    const excludeIds = decodeURIComponent(excludeIdsEncoded);
+    expect(excludeIds).to.include(existingId);
+    // Should also have the page UUID (a second UUID separated by comma)
+    expect(excludeIds.split(',').length).to.be.greaterThan(1);
+  });
 });
 
 describe('getFloodgateCaasConfig', () => {
@@ -951,6 +1130,7 @@ describe('getFloodgateCaasConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -1153,6 +1333,7 @@ describe('getFloodgateCaasConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -1307,6 +1488,136 @@ describe('isLocaleInRegionalSites helper function tests', () => {
       const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
       expect(result).to.be.false;
     });
+  });
+});
+
+describe('isLingoLangFirstPath', () => {
+  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/
+  // /gb/ and /au/ are English regionals
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: '/at' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('returns null when origin is absent from the mapping', async () => {
+    const result = await isLingoLangFirstPath('unknown-origin', '/de/article', 'test');
+    expect(result).to.be.null;
+  });
+
+  it('returns true when locale matches the baseSite of a non-English entry', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns true when locale is a regional site of a non-English baseSite', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/at/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false when locale is an English regional site', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/gb/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('returns true for an unprefixed path (base English page, no locale segment)', async () => {
+    // e.g. business.adobe.com/products/brand-concierge.html: the first path
+    // segment ("products") is real content, not a locale, and must not be
+    // mistaken for one just because it occupies that position in the URL.
+    const result = await isLingoLangFirstPath('bacom', '/products/brand-concierge.html', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false for a real locale code that is simply not onboarded to this site\'s Lingo mapping', async () => {
+    // 'uk' is not in bacom-site's mapping (mock has no /uk anywhere) but IS a
+    // real locale prefix in Milo's classic locale table — it must fall
+    // through to the classic non-LFL lookup, not be swept into the
+    // unprefixed root family the way genuine content segments (e.g.
+    // "products") are.
+    const result = await isLingoLangFirstPath('bacom', '/uk/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('throws when fetch fails so the caller can surface it as an error', async () => {
+    window.fetch = stub().rejects(new Error('network error'));
+    initBulkPublisherLingoMapping();
+    let caught;
+    try {
+      await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).to.be.instanceOf(Error);
+    expect(caught.message).to.equal('network error');
+  });
+});
+
+describe('getLanguageFirstCountryAndLang', () => {
+  // Same shape as bacom's real lingo-site-mapping entry: a root ('/') English
+  // family plus a French family, each with their own regional variants.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/fr', regionalSites: '/be_fr' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('resolves an unprefixed base-English path to en/xx, not the classic en-US fallback', async () => {
+    const result = await getLanguageFirstCountryAndLang('/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'en' });
+  });
+
+  it('resolves a French-prefixed path to fr/xx', async () => {
+    const result = await getLanguageFirstCountryAndLang('/fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'fr' });
+  });
+
+  it('resolves an English-regional path to its country with language en (not blank)', async () => {
+    const result = await getLanguageFirstCountryAndLang('/gb/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
+  });
+
+  it('resolves a French-regional path to its country with language fr', async () => {
+    const result = await getLanguageFirstCountryAndLang('/be_fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'be', lang: 'fr' });
+  });
+
+  it('falls through to the classic locale for a real locale code not onboarded to this site', async () => {
+    // 'uk' isn't in this mock's mapping (no /uk anywhere), but it IS a real
+    // locale in Milo's classic locale table (en-GB) — it must resolve via
+    // that classic lookup, not be misclassified as the unprefixed root
+    // family's en/xx.
+    const result = await getLanguageFirstCountryAndLang('/uk/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
   });
 });
 

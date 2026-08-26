@@ -1,5 +1,5 @@
-import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { norm } from '../../utils/market.js';
+/* eslint-disable no-underscore-dangle */
+import { getFederatedContentRoot, getCountry, setMarket, normCountryCode as norm } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -8,8 +8,26 @@ let createTag;
 let getMetadata;
 let loadBlock;
 let loadStyle;
-let sendAnalyticsFunc;
 let isC2Page;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalytics(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -139,11 +157,13 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
-function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch', countryOverride = null) {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch', countryOverride = null, akamaiCode = null) {
   const modCurrPrefix = localePrefix || 'us';
   const modPrefix = urlPrefix || 'us';
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
-  link.setAttribute('daa-ll', eventName);
+  const locale = config.locale.prefix?.replace('/', '') || 'us';
+  const cookie = getCookie('international') || 'none';
+  link.setAttribute('daa-ll', `${eventName}|locale:${locale}|country:${akamaiCode || 'none'}|intl:${cookie}`);
   link.addEventListener('click', async () => {
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
@@ -153,8 +173,8 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    const akamaiCode = await getCountry();
-    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });
+    const country = await getCountry();
+    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });
     removeOverflow();
   });
 }
@@ -266,7 +286,7 @@ function openPicker(button, locales, country, event, dir, currentPage, akamaiCod
       a.setAttribute('href', a.href);
     }
     const countryOverride = (hasExactNativeLocale && l.geo !== akamaiCode) ? akamaiCode : null;
-    decorateForOnLinkClick(a, l.prefix, currentPage.prefix, 'Switch', countryOverride);
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix, 'Switch', countryOverride, akamaiCode);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -338,11 +358,11 @@ function buildContent(currentPage, locale, geoData, locales, akamaiCode = null, 
     mainAction.addEventListener('click', openPickerHandler);
   } else {
     mainAction.href = locale.url || '/';
-    decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
+    decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix, 'Switch', null, akamaiCode);
   }
 
   const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
-  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay');
+  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay', null, akamaiCode);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   fragment.append(title, text, linkWrapper);
@@ -435,8 +455,7 @@ async function showModal(details) {
     import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[4];
-  sendAnalyticsFunc = sendAnalytics;
+  const { getModal } = result[4];
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
@@ -500,8 +519,8 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         const akamaiCode = await getCountry();
-        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`;
-        sendAnalyticsFunc(new Event(eventString));
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:${storedInter || 'none'}`;
+        sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }
@@ -525,8 +544,8 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`;
-        sendAnalyticsFunc(new Event(eventString));
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:none`;
+        sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }

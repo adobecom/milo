@@ -85,4 +85,40 @@ describe('susi light', () => {
       expect(susiElement.authParams.dctx_id).equals('v:2,test-id');
     });
   });
+  describe('lingo sign-in locale follows the user geo (physical location)', () => {
+    before(async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      config = {
+        ...config,
+        locales: {
+          '': { ietf: 'en-US', prefix: '/' },
+          de: { ietf: 'de-DE' },
+          ch_de: { ietf: 'de-CH', base: 'de' },
+        },
+        pathname: '/de/',
+      };
+      // Physically in CH (geo). Neither the `international` cookie (a divergent
+      // region pick) nor the market `country` cookie (pricing) is consulted here.
+      sessionStorage.setItem('akamai', 'ch');
+      document.cookie = 'international=de; path=/';
+      document.cookie = 'country=fr; path=/';
+      document.body.innerHTML = susiHtml;
+      setConfig(config);
+      await setViewport({ width: 600, height: 800 });
+      await init();
+    });
+    after(() => {
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+    it('uses geo (de-CH), ignoring the international and market cookies', async () => {
+      susiElement = document.querySelector('susi-sentry-light');
+      expect(susiElement.authParams.locale).equals('de-CH');
+    });
+  });
 });

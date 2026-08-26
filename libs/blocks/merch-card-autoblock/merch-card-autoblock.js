@@ -1,12 +1,14 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
-import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
+import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   overrideOptions,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -65,16 +67,23 @@ async function loadInlineDependencies() {
   await loadMasComponent(MAS_FIELD);
 }
 
-export async function checkReady(masElement) {
+export async function checkReady(masElement, fragment) {
+  if (isMasErrorEnv()) {
+    const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
+    if (masElement.hasAttribute('failed')) {
+      createFragmentErrorEl(uuid, 'Card').then((el) => masElement.insertAdjacentElement('beforebegin', el));
+    } else {
+      masElement.addEventListener('aem:error', async (e) => {
+        masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Card', e.detail?.status));
+      }, { once: true });
+    }
+  }
+
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }
@@ -120,13 +129,10 @@ function normalizeBlockFieldWrappers(masField) {
 }
 
 async function createJsonLd(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   const fragmentEl = merchCard.querySelector('aem-fragment');
   const fields = fragmentEl?.data?.fields;
   const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
@@ -141,13 +147,11 @@ async function createJsonLd(el, options) {
 }
 
 export async function createCard(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   // For the "Edit Card" mep preview badge.
   if (getConfig()?.mep?.preview) {
+    const { mepMasStudioUrls } = await import('../merch/mas-mep-utils.js');
     mepMasStudioUrls.set(merchCard, el.href);
     merchCard.dataset.masBlock = 'card';
   }
@@ -157,24 +161,119 @@ export async function createCard(el, options) {
   } else {
     el.replaceWith(merchCard);
   }
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   await postProcessAutoblock(merchCard, true);
+}
+
+function copyMasFieldIdToParent(masField, name) {
+  if (masField.getAttribute(name)) {
+    masField.parentElement.setAttribute(`data-mas-field-${name}`, masField.getAttribute(name));
+  }
+}
+
+function preserveInlineCommerceContext(masField, content) {
+  const promotionCode = masField.getAttribute('data-promotion-code');
+  if (promotionCode) {
+    content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code]), a[is="checkout-link"]:not([data-promotion-code]), button[is="checkout-button"]:not([data-promotion-code])')
+      .forEach((commerceEl) => commerceEl.setAttribute('data-promotion-code', promotionCode));
+  }
+  if (content.querySelector('span[is="inline-price"]')) {
+    loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  }
+}
+
+/**
+ * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
+ * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
+ * sibling isn't matched by 'em a'/'strong a' with the wrong parent (its content span).
+ */
+function decorateInlineCtas(masField, content) {
+  const container = masField.closest('p, div');
+
+  // The block this CTA belongs to (direct child of a section). Bounds the sibling
+  // lookup so a foreign block's button can't dictate this CTA's size.
+  let blockEl = container?.parentElement;
+  while (blockEl?.parentElement && !blockEl.parentElement.classList.contains('section')
+    && blockEl.parentElement !== document.body) {
+    blockEl = blockEl.parentElement;
+  }
+
+  // Only a sized sibling counts: mas-field self-styles CTAs with con-button but no size,
+  // and using an unsized one as reference would drop button-xl on every CTA.
+  const SIZE_CLASS = /^button-(s|m|l|xl)$/;
+  const siblingBtn = [...(blockEl?.querySelectorAll('.con-button') ?? [])]
+    .find((b) => !masField.contains(b) && [...b.classList].some((c) => SIZE_CLASS.test(c)));
+  let size;
+  let utilClasses = [];
+
+  if (siblingBtn) {
+    // Inherit the sibling's exact size and utility classes.
+    size = [...siblingBtn.classList].find((c) => SIZE_CLASS.test(c));
+    utilClasses = [...siblingBtn.classList].filter((c) => c.startsWith('button-') && c !== size);
+  } else {
+    // No decorated sibling yet — derive size from the block, mirroring its decorateButtons call.
+    const btnVariant = [...(blockEl?.classList ?? [])].find((c) => c.endsWith('-button'));
+    if (btnVariant) {
+      size = `button-${btnVariant.split('-')[0]}`;
+    } else if (blockEl?.classList.contains('hero-marquee')) {
+      // Mirror hero-marquee's extendButtonsClass; the util class keeps CTAs full-width on mobile.
+      size = 'button-xl';
+      utilClasses = ['button-justified-mobile'];
+    } else if (blockEl?.classList.contains('accordion') || blockEl?.classList.contains('media')) {
+      size = null;
+    } else {
+      const blockSize = getBlockSize(blockEl ?? container);
+      size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
+    }
+  }
+  copyMasFieldIdToParent(masField, 'fragment-id');
+  copyMasFieldIdToParent(masField, 'variation-id');
+  preserveInlineCommerceContext(masField, content);
+  masField.replaceWith(...content.childNodes);
+
+  const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
+  if (container && !pendingCTAs?.length) {
+    decorateButtons(container, size);
+    if (utilClasses.length) {
+      container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
+    }
+  }
+}
+
+/**
+ * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network),
+ * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
+ */
+let masReadyWatched = false;
+function watchMasFieldCtas() {
+  if (masReadyWatched) return;
+  masReadyWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
+    // Same gate createInline uses: an inline CTA anchor, not block-level content.
+    if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+      // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
+      upgradeCommerceLinks(content);
+      await decorateContentLinks(content);
+      decorateInlineCtas(mf, content);
+    }
+  });
 }
 
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   if (getConfig()?.mep?.preview) {
+    const { mepMasStudioUrls } = await import('../merch/mas-mep-utils.js');
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
   el.replaceWith(masField);
-  await checkReady(masField);
+  await checkReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);
+  await localizePreviewLinks(masField);
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return;
@@ -183,68 +282,16 @@ async function createInline(el, options) {
   // them. Applies to both CTA (<a>) and price (<span>) fields.
   upgradeCommerceLinks(content);
 
-  // For inline link content (CTAs), replace mas-field with the rendered content so the
-  // links sit inside the page's original em/strong wrappers. Then run Milo's decorateButtons
-  // using the size and utility classes already applied to sibling buttons by the block
-  // (e.g. marquee's button-l and button-justified-mobile).
+  await decorateContentLinks(content);
+
+  // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-    const container = masField.closest('p, div');
-
-    // Read size + utility classes from already-decorated sibling .con-button elements
-    // (the block ran decorateButtons on its regular CTAs before our checkReady resolved).
-    let siblingBtn = null;
-    let searchEl = container?.parentElement;
-    while (searchEl && searchEl !== document.body && !siblingBtn) {
-      siblingBtn = [...searchEl.querySelectorAll('.con-button')].find((b) => !masField.contains(b));
-      if (!siblingBtn) searchEl = searchEl.parentElement;
-    }
-    let size;
-    let utilClasses = [];
-
-    if (siblingBtn) {
-      // Sibling authored buttons exist — inherit their exact size and utility classes.
-      // If siblings have no size class (e.g. accordion, media), honour that with null.
-      size = [...siblingBtn.classList].find((c) => /^button-(s|m|l|xl)$/.test(c)) ?? null;
-      utilClasses = [...siblingBtn.classList].filter((c) => c.startsWith('button-') && c !== size);
-    } else {
-      // No sibling reference yet — block ran decorateButtons before our checkReady resolved.
-      // Derive size from the block's own classes, mirroring each block's decorateButtons call.
-      let blockEl = container?.parentElement;
-      while (blockEl?.parentElement && !blockEl.parentElement.classList.contains('section')
-        && blockEl.parentElement !== document.body) {
-        blockEl = blockEl.parentElement;
-      }
-      // Explicit *-button variation class (hero-marquee/notification: 'xl-button' → 'button-xl')
-      const btnVariant = [...(blockEl?.classList ?? [])].find((c) => c.endsWith('-button'));
-      if (btnVariant) {
-        size = `button-${btnVariant.split('-')[0]}`;
-      } else if (blockEl?.classList.contains('hero-marquee')) {
-        size = 'button-xl'; // hero-marquee always defaults to button-xl
-      } else if (blockEl?.classList.contains('accordion') || blockEl?.classList.contains('media')) {
-        size = null; // these blocks call decorateButtons with no size
-      } else {
-        const blockSize = getBlockSize(blockEl ?? container);
-        size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
-      }
-    }
-    masField.replaceWith(...[...content.childNodes]);
-
-    // Defer decorateButtons until the last CTA mas-field in this container has been
-    // replaced. If decorateButtons ran while another mas-field was still in the DOM,
-    // it would find the checkout link inside that pending mas-field via 'strong a'/'em a'
-    // but with the wrong parentElement (the content span, not strong/em), causing the
-    // wrong button type and breaking the pending mas-field's content span.
-    const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
-    if (container && !pendingCTAs?.length) {
-      decorateButtons(container, size);
-      if (utilClasses.length) {
-        container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
-      }
-    }
+    decorateInlineCtas(masField, content);
   }
 }
 
 export default async function init(el) {
+  watchMasFieldCtas();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return;

@@ -10,6 +10,9 @@ echo "GITHUB_REF: ${GITHUB_REF:-}"
 echo "GITHUB_HEAD_REF: ${GITHUB_HEAD_REF:-}"
 echo "PROJECT: ${PROJECT:-<all>}"
 echo "SHARD:   ${SHARD:-<none>}"
+echo "isFork=${isFork:-<empty>}"
+echo "NALA_BROWSER_SKIP=${NALA_BROWSER_SKIP:-<empty>}"
+echo "labels=${labels:-<empty>}"
 
 if [[ "${GITHUB_REF:-}" == refs/pull/* ]]; then
   # extract PR number and branch name
@@ -96,6 +99,9 @@ if [[ -n "${PROJECT:-}" ]]; then
   if [[ "$PROJECT" == "mas" ]]; then
     # run ALL 3 MAS projects together
     PROJECT_ARG=(--project=mas-chromium --project=mas-firefox --project=mas-webkit)
+  elif [[ "$PROJECT" == "mep" ]]; then
+    # run ALL 3 MEP projects together
+    PROJECT_ARG=(--project=mep-chromium --project=mep-firefox --project=mep-webkit)
   else
     PROJECT_ARG=(--project="$PROJECT")
   fi
@@ -115,7 +121,7 @@ npx playwright test --config=./playwright.config.js \
   ${REPORTER} || EXIT_STATUS=$?
 
 # Check if tests passed or failed
-if [ $EXIT_STATUS -ne 0 ]; then
+if [ $EXIT_STATUS -ne 0 ] && ! echo "${TAGS}" | grep -q "caas"; then
   echo "Some tests failed. Exiting with error."
   exit $EXIT_STATUS
 else

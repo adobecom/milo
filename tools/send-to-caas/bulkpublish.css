@@ -247,6 +247,26 @@ div#caas-draft-cb {
   margin-top: 15px;
 }
 
+.button-container {
+  display: flex;
+  align-items: center;
+}
+
+label.dry-run-label,
+label.language-first-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 16px;
+  font-size: 15px;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+label.language-first-label span.help {
+  vertical-align: middle;
+}
+
 /* *** Content panel *** */
 .content-panel {
   padding: 0 50px;
@@ -453,7 +473,7 @@ table.success-table th {
 }
 
 table.error-table td:not(.error),
-table.success-table td:not(.ok) {
+table.success-table td:not(.ok):not(.dry-run) {
   font-size: 15px;
   padding: 6px 0;
   font-weight: 200;
@@ -476,6 +496,7 @@ table.error-table tr th:first-child {
 }
 
 td.ok,
+td.dry-run,
 td.error {
   padding: 0 6px;
   font-weight: bold;
@@ -483,6 +504,10 @@ td.error {
 
 td.ok {
   color: green;
+}
+
+td.dry-run {
+  color: #0070d2;
 }
 
 td.error {
@@ -587,6 +612,10 @@ a.classic {
   color: #99d600;
 }
 
+.bulk-publisher.dark .content-panel table.success-table td.dry-run {
+  color: #4db3ff;
+}
+
 .bulk-publisher.dark .status button.clear-results,
 .bulk-publisher.dark .status button.export-results {
   border-color: #757575;
@@ -603,4 +632,11 @@ a.classic {
 }
 .bulk-publisher.dark td.error {
   color: #d00;
+}
+
+label.language-first-label.lingo-auto::after {
+  content: ' (auto)';
+  font-style: italic;
+  font-size: 0.85em;
+  color: #666;
 }

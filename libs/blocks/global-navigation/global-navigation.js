@@ -6,6 +6,7 @@ import {
   loadIms,
   loadStyle,
   loadLana,
+  loadBlock,
   decorateLinksAsync,
   loadScript,
   getGnavSource,
@@ -68,6 +69,7 @@ const { replaceKey, replaceKeyArray } = placeholders;
 const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
+  clearSignOutCookies,
   closeAllDropdowns,
   createErrorPopup,
   fetchAndProcessPlainHtml,
@@ -110,7 +112,10 @@ const {
   setupKeyboardNav,
   KEYBOARD_DELAY,
   isSmallScreen,
+  updateGnavActiveLink,
 } = utilities;
+
+export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -159,7 +164,9 @@ const getMessageEventListener = () => {
           .catch(() => { setUserProfile({}); });
         break;
       case 'SignOut':
+        clearSignOutCookies();
         executeDefaultAction();
+        window.dispatchEvent(new Event('feds:signOut'));
         break;
       case 'ProfileSwitch':
         Promise.resolve(executeDefaultAction()).then((profile) => {
@@ -187,7 +194,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
-  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -287,6 +294,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -294,6 +302,11 @@ export const CONFIG = {
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
+              },
+              managePeopleConfig: {
+                enableWorkflow: true,
+                params: { enableinlineoverlay: 's2-compat' },
+                ...getConfig().unav?.profile?.managePeopleConfig,
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
@@ -523,6 +536,30 @@ export const closeGnavOptions = () => {
   enableMobileScroll();
   setMenuState();
 };
+
+const getOrgFlags = (organizations) => {
+  const ORG_TYPE_CCT = 'DIRECT';
+  const ORG_TYPE_CCE = 'Enterprise';
+  const ORG_TYPE_CCE_DEPR = 'INDIRECT';
+  const ROLE_ADMIN = 'GRP_ADMIN';
+
+  const orgs = organizations?.organizations || [];
+  const relevantOrgs = orgs.filter(
+    (org) => org.orgType === ORG_TYPE_CCT
+      || org.orgType === ORG_TYPE_CCE
+      || org.orgType === ORG_TYPE_CCE_DEPR,
+  );
+  const showTeam = relevantOrgs.some(
+    (org) => org.orgType === ORG_TYPE_CCT
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  const showEnterprise = relevantOrgs.some(
+    (org) => (org.orgType === ORG_TYPE_CCE || org.orgType === ORG_TYPE_CCE_DEPR)
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  return { hasOrgs: showTeam || showEnterprise };
+};
+
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -576,6 +613,7 @@ class Gnav {
       // We needn't worry about delays now since decorateAside
       // needed to run anyway prior to decorateTopNavWrapper
       this.decorateAside,
+      this.decorateBrandConciergeGlobal,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
@@ -648,6 +686,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -865,6 +904,20 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+      this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+      this.aupsdkInstancePromise.catch((e) => {
+        this.aupsdkInstancePromise = null;
+        lanaLog({
+          message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
+          e,
+          tags: 'universalnav',
+          errorType: 'i',
+          severity: 'info',
+        });
+      });
+    }
+
     const tasks = [
       this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
       this.setUpProductCTA,
@@ -913,10 +966,35 @@ class Gnav {
     // If user is signed in, decorate the profile avatar
     const accessToken = window.adobeIMS.getAccessToken();
     const { env } = getConfig();
-    const headers = new Headers({ Authorization: `Bearer ${accessToken.token}` });
-    const profileData = await fetch(`https://${env.adobeIO}/profile`, { headers });
+    // Get user profile for x-account-id
+    let accountId = '';
+    let hasOrgs = false;
+    try {
+      const [profile, organizations] = await Promise.all([
+        window.adobeIMS.getProfile(),
+        window.adobeIMS.getOrganizations(),
+      ]);
+      accountId = profile?.userId || '';
+      hasOrgs = getOrgFlags(organizations).hasOrgs;
+    } catch (e) {
+      accountId = '';
+      hasOrgs = false;
+      lanaLog({
+        message: 'GNAV: decorateProfile has failed to fetch profile or organizations data',
+        e,
+        tags: 'gnav',
+        errorType: 'i',
+        severity: 'error',
+      });
+    }
+    const headers = new Headers({
+      Authorization: `Bearer ${accessToken.token}`,
+      'x-account-id': accountId,
+      'x-api-key': window.adobeid?.client_id,
+    });
+    const profileData = await fetch(`https://${env.adobeIO}/api/profile`, { headers });
 
-    if (profileData.status !== 200) {
+    if (!profileData.ok) {
       lanaLog({
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
@@ -927,24 +1005,23 @@ class Gnav {
       return;
     }
 
-    const { sections, user: { avatar } } = await profileData.json();
+    const profileJson = await profileData.json();
+    const avatar = profileJson?.images?.['138'] || '';
 
     this.blocks.profile.buttonElem = await decorateProfileTrigger({ avatar });
     decoratedElem.append(this.blocks.profile.buttonElem);
 
     // Decorate the profile dropdown
     // after user interacts with button or after 3s have passed
-    let decorationTimeout;
-
     const decorateDropdown = async (e) => {
       this.blocks.profile.buttonElem.removeEventListener('click', decorateDropdown);
-      clearTimeout(decorationTimeout);
+      clearTimeout(this.blocks.profile.decorationTimeout);
       await this.loadDelayed();
       this.blocks.profile.dropdownInstance = new this.ProfileDropdown({
         rawElem,
         decoratedElem,
         avatar,
-        sections,
+        hasOrgs,
         buttonElem: this.blocks.profile.buttonElem,
         // If the dropdown has been decorated due to a click, open it
         openOnInit: e instanceof Event,
@@ -952,7 +1029,68 @@ class Gnav {
     };
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
-    decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+    this.blocks.profile.decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+  };
+
+  reloadProfile = async () => {
+    clearTimeout(this.blocks.profile.decorationTimeout);
+    this.blocks.profile.decoratedElem.replaceChildren();
+    delete this.blocks.profile.buttonElem;
+    delete this.blocks.profile.dropdownInstance;
+    await this.decorateProfile();
+  };
+
+  static preloadAupSdk = async () => {
+    const config = getConfig();
+    const { imsClientId } = config;
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
+
+    await loadScript(
+      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      null,
+      { mode: 'async' },
+    );
+
+    window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
+      appId: 'adobe_com',
+      apiKey: imsClientId,
+      getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
+      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      environment,
+      cdnEnvironment: environment,
+      locale,
+      appName: 'adobecom',
+      appVersion: '1.0',
+      colorScheme: isDarkMode() ? 'dark' : 'light',
+      showDialog: async (element, _, closeCallback) => {
+        document.getElementById('feds-manage-people-dialog')?.remove();
+        const dialog = document.createElement('dialog');
+        dialog.id = 'feds-manage-people-dialog';
+        dialog.appendChild(element);
+        document.body.appendChild(dialog);
+        dialog.addEventListener('cancel', () => {
+          closeCallback({ type: 'close' });
+          dialog.close();
+          dialog.remove();
+          document.documentElement.classList.remove('disable-scroll');
+        });
+        dialog.addEventListener('click', (e) => {
+          if (e.target === dialog) {
+            closeCallback({ type: 'close' });
+            dialog.close();
+            dialog.remove();
+            document.documentElement.classList.remove('disable-scroll');
+          }
+        });
+        document.documentElement.classList.add('disable-scroll');
+        dialog.showModal();
+      },
+    });
+
+    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    return window.aupsdk;
   };
 
   decorateUniversalNav = async () => {
@@ -963,7 +1101,7 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     const locale = lingoRegion?.ietf
       ? lingoRegion.ietf.replace('-', '_')
       : getUniversalNavLocale(config.locale);
@@ -982,7 +1120,7 @@ class Gnav {
     let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
     // If versions follow a predictable format (digit.digit), validate using a regex
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
+      unavVersion = '1.6';
     }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
@@ -1014,6 +1152,19 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
+    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
+
+    const addFetchAUPSDKInstance = () => {
+      if (!window.adobeIMS?.isSignedInUser()) return {};
+      return {
+        fetchAUPSDKInstance: async () => {
+          if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
+          this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+          return this.aupsdkInstancePromise;
+        },
+      };
+    };
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1034,6 +1185,36 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
+      isArpEnabled,
+      ...(isArpEnabled && {
+        arpConfig: Promise.resolve({
+          sessionId: visitorGuid,
+          tokenCallback: (token) => {
+            window.adobeArp = window.adobeArp || {};
+            window.adobeArp.sessionToken = token;
+            window.dispatchEvent(new CustomEvent('arp:tokenReady', { detail: { token } }));
+            /* eslint-disable no-underscore-dangle */
+            window.alloy_all ??= {};
+            window.alloy_all.data ??= {};
+            window.alloy_all.data._adobe_corpnew ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom.arp_token = token;
+            /* eslint-enable no-underscore-dangle */
+          },
+          successCallback: () => {},
+          errorCallback: (err) => {
+            lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' });
+          },
+          ...getConfig()?.unav?.arpConfig,
+          metadata: {
+            source: 'universal-navigation',
+            version: unavVersion,
+            ...getConfig()?.unav?.arpConfig?.metadata,
+          },
+        }),
+      }),
+      ...addFetchAUPSDKInstance(),
     });
 
     // Exposing UNAV config for consumers
@@ -1059,8 +1240,9 @@ class Gnav {
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+    this.reloadUnav = () => window.UniversalNav?.reload(getConfiguration());
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      this.reloadUnav();
     });
   };
 
@@ -1315,6 +1497,12 @@ class Gnav {
     analyticsValue: 'Logo',
   });
 
+  decorateBrandConciergeGlobal = async () => {
+    const rawBlock = this.content.querySelector('.brand-concierge-global');
+    if (!rawBlock) return;
+    await loadBlock(rawBlock);
+  };
+
   decorateMainNav = async () => {
     performance.mark('Decorate-MainNav-Start');
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
@@ -1329,7 +1517,14 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
+    const mainNavItemsSelector = [
+      'h2',
+      'p:only-child > strong > a',
+      'p:only-child > em > a',
+      'p:only-child > a.merch',
+      'p:only-child > a.con-button',
+    ].join(', ');
+    const items = [...this.content.querySelectorAll(mainNavItemsSelector)]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1359,9 +1554,13 @@ class Gnav {
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
-    const isPrimaryCta = item.closest('strong') instanceof HTMLElement;
+    const isPrimaryCta = item.closest('strong') instanceof HTMLElement
+      || item.matches('a.con-button.blue')
+      || item.querySelector('a.con-button.blue') instanceof HTMLElement;
     if (isPrimaryCta) return 'primaryCta';
-    const isSecondaryCta = item.closest('em') instanceof HTMLElement;
+    const isSecondaryCta = item.closest('em') instanceof HTMLElement
+      || item.matches('a.con-button.outline')
+      || item.querySelector('a.con-button.outline') instanceof HTMLElement;
     if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
@@ -1651,13 +1850,16 @@ class Gnav {
           return addMepHighlightAndTargetId(triggerTemplate, item);
         }
         case 'primaryCta':
-        case 'secondaryCta':
-          // Remove its 'em' or 'strong' wrapper
-          item.parentElement.replaceWith(item);
+        case 'secondaryCta': {
+          const ctaLink = item.matches('a') ? item : item.querySelector('a');
+          if (ctaLink.parentElement.tagName === 'STRONG' || ctaLink.parentElement.tagName === 'EM') {
+            ctaLink.parentElement.replaceWith(ctaLink);
+          }
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: ctaLink.classList.contains('merch') ? await (await import('../merch/merch.js')).default(ctaLink) : ctaLink, type: itemType, index: index + 1 })}
             </div>`, item);
+        }
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
@@ -1675,6 +1877,7 @@ class Gnav {
               const url = new URL(linkElem.href);
               linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
               if (isActiveLink(linkElem)) {
+                linkElem.dataset.activeLinkHref = linkElem.href;
                 linkElem.removeAttribute('href');
               }
               const linkHash = url.hash.slice(2);
@@ -1685,6 +1888,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.activeLinkHref = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');
@@ -1802,6 +2006,12 @@ export default async function init(block) {
   if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
+  window.feds = window.feds || {};
+  if (!gnav.useUniversalNav && gnav.blocks?.profile?.rawElem) {
+    window.feds.nav = { reload: () => gnav.reloadProfile() };
+  } else if (gnav.useUniversalNav) {
+    window.feds.nav = { reloadUnav: gnav.reloadUnav };
+  }
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';

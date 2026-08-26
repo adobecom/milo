@@ -12,7 +12,11 @@ const NOT_FOUND = {
 };
 const DA_DOMAIN = 'da.live';
 const nonEDSContent = 'Non AEM EDS Content';
-const EXCLUDED_PATHS = ['/tools/caas'];
+const EXCLUDED_PATHS = ['/tools/caas', '/libs/'];
+
+const CROSS_REPO_PREFIXES = [
+  { prefix: '/federal/', owner: 'adobecom', repo: 'federal', branch: 'main' },
+];
 
 const content = signal({});
 
@@ -72,9 +76,15 @@ async function getLocalizationResults() {
 }
 
 function getAdminUrl(url, type) {
-  if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
-  const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
-  const [branch, repo, owner] = project.split('--');
+  const crossRepo = CROSS_REPO_PREFIXES.find(({ prefix }) => url.pathname.startsWith(prefix));
+  let owner; let repo; let branch;
+  if (crossRepo) {
+    ({ owner, repo, branch } = crossRepo);
+  } else {
+    if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
+    const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
+    [branch, repo, owner] = project.split('--');
+  }
   const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
