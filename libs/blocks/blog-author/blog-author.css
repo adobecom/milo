@@ -1,0 +1,145 @@
+.blog-author > div:not(.blog-author-content) {
+  display: contents;
+}
+
+.blog-author {
+  display: flex;
+  flex-direction: column;
+  padding: 56px 30px;
+}
+
+.blog-author-image {
+  margin-bottom: 24px;
+}
+
+.blog-author-image img {
+  display: block;
+  width: 100%;
+  max-width: 148px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 50%;
+}
+
+.blog-author-name {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.blog-author-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.blog-author-description {
+  font-size: 20px;
+  margin: 0;
+}
+
+.blog-author-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.blog-author-social a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-gray-700, #2c2c2c);
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.blog-author-social .icon {
+  display: contents;
+}
+
+.blog-author-social .icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-2px);
+}
+
+@media (min-width: 600px) {
+  .blog-author {
+    padding: 56px 32px;
+  }
+
+  .blog-author-image picture {
+    width: 300px;
+  }
+
+  .blog-author-image img {
+    width: 300px;
+    max-width: none;
+    aspect-ratio: auto;
+  }
+
+  .blog-author-social {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .blog-author {
+    padding: 56px 48px;
+  }
+
+  .blog-author-image {
+    margin-bottom: 52px;
+  }
+
+  .blog-author-image picture {
+    width: 328px;
+  }
+
+  .blog-author-image img {
+    width: 328px;
+    max-width: none;
+    aspect-ratio: auto;
+  }
+
+}
+
+@media (min-width: 1200px) {
+  .blog-author {
+    display: grid;
+    grid-template-columns: 328px minmax(0, 600px);
+    column-gap: 32px;
+    align-items: start;
+    justify-content: center;
+  }
+
+  .blog-author-image {
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+
+  .blog-author-image picture {
+    display: contents;
+  }
+
+  .blog-author-image img {
+    width: 328px;
+    max-width: none;
+    height: 328px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .blog-author-content {
+    grid-column: 2;
+  }
+}
