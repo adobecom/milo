@@ -128,22 +128,9 @@
   }
 
   &.featured {
-    .content-aux {
-      display: none;
-    }
-
-    div.card-overlay {
+    .card-overlay {
       display: flex;
       border: none;
-      aspect-ratio: unset;
-      flex-direction: column;
-      align-items: flex-start;
-      background-color: var(--s2a-color-gray-1000);
-    }
-
-    .media {
-      position: unset;
-      margin: 0 auto;
     }
 
     &:has(+ .side-by-side.equal) {
@@ -245,6 +232,7 @@
 
 @media (width >= 1440px) {
   .side-by-side.featured .card-overlay {
+    height: 1200px;
     aspect-ratio: unset;
   }
 }
