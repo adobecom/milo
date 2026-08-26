@@ -1,3 +1,4 @@
+// stream-preflight
 function checkUrlCorrectness(targetUrl) {
   const isSameHost = targetUrl.host === window.location.host;
   const isHttpsProtocol = targetUrl.protocol === 'https:';
