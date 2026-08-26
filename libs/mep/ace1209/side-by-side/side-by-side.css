@@ -76,6 +76,10 @@
     .media {
       position: absolute;
       inset: 0;
+
+      :is(img, video) {
+        object-position: top;
+      }
     }
 
     .media::after {
