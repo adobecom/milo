@@ -2815,6 +2815,26 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
+// PROTOTYPE (LCP): warm the LCP section's block JS/CSS in parallel with MEP init.
+// loadArea awaits checkForPageMods() (the full MEP round-trip) before the section
+// loop even starts, so the LCP block's assets aren't fetched until MEP resolves.
+// But those assets are pure fetches (rel=preload / modulepreload / stylesheet) with
+// no dependency on MEP's outcome, no DOM mutation and no side effects — so we can
+// fire them early and have the module graph warm by the time decoration runs.
+// Preload ONLY here; never loadBlock/decorate (that must wait for a MEP-stable DOM).
+// If a manifest section-swaps or useblockcode-remaps the first section, the wrong
+// assets are warmed (wasted bandwidth, not a correctness issue) and the real ones
+// are preloaded again in processSection — loadLink/loadStyle dedupe by href, so the
+// second pass is a no-op. Scope is deliberately the FIRST section only (where the
+// LCP element lives); we never speculatively warm a deeper section's assets, and
+// detection is lightweight (no decoration).
+const preloadLcpBlocks = (area = document) => {
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  if (blocks.length) preloadBlockResources(blocks);
+};
+
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
   if (!anchors.length) return false;
@@ -2892,6 +2912,9 @@ export async function loadArea(area = document) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
+    // Fire LCP-section block asset preloads in parallel with the MEP round-trip
+    // below, instead of waiting for it. Preload only — decoration stays post-MEP.
+    preloadLcpBlocks(area);
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
