@@ -29,6 +29,11 @@
   margin: 0 0 8px;
 }
 
+.blog-author-name h1 {
+  font: inherit;
+  margin: 0;
+}
+
 .blog-author-title {
   font-size: 20px;
   font-weight: 700;
