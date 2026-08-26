@@ -1,4 +1,3 @@
-// stream-sidekick
 function notifyParent(redirRef, ackCode) {
   if (!redirRef) return;
   if (window.opener) {
