@@ -468,6 +468,11 @@
   color: var(--s2a-color-content-default);
 }
 
+.email-collection-c2.mailing-list .caption {
+  font-weight: var(--s2a-font-weight-body);
+  line-height: var(--s2a-typography-line-height-body-xs);
+}
+
 .email-collection-c2.mailing-list .text > div {
   display: flex;
   flex-flow: row wrap;
