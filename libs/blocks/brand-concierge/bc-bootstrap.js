@@ -210,6 +210,23 @@ export function loadWebclient() {
   loadScript(src);
 }
 
+/**
+ * Record BC click in the current history entry.
+ *
+ * When the user navigates back to this page, we can attribute the original link.
+ */
+function recordBcNavClick(clickType, destinationPage) {
+  window.history.replaceState(
+    {
+      ...window.history.state,
+      bcClickType: clickType,
+      bcSourcePage: window.location.href,
+      bcDestinationPage: destinationPage ?? '',
+    },
+    '',
+  );
+}
+
 export async function bcBootstrap(initialMessage, mountIdentifier) {
   const mountEl = document.querySelector(`#${mountIdentifier}`);
   const { locale } = getConfig();
@@ -281,8 +298,9 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
       selector: `#${mountId}`,
       onBeforeEventSend,
       onEvent: (event) => {
-        if (event.eventType === 'card:clicked') window.history.replaceState({ ...window.history.state, bcClickType: 'card' }, '');
-        else if (event.eventType === 'cta:clicked') window.history.replaceState({ ...window.history.state, bcClickType: 'cta' }, '');
+        if (event.eventType === 'card:clicked') recordBcNavClick('product_card_cta', event.data?.element?.productPageURL);
+        else if (event.eventType === 'cta:clicked') recordBcNavClick('cta', event.data?.element?.productPageURL);
+        else if (event.eventType === 'link:clicked') recordBcNavClick(event.data?.element?.linkType ?? 'inline_hyperlink', event.data?.element?.href);
         bcAnalytics(event);
       },
     });

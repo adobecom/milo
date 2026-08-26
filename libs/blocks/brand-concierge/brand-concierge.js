@@ -13,6 +13,7 @@ import {
   handleConsent,
   setCssGnavHeight,
   hasChatCookie,
+  getChatSessionId,
 } from './bc-utils.js';
 import {
   loadWebclient,
@@ -89,28 +90,35 @@ export default async function init(el) {
 
   setCssGnavHeight();
 
-  // bfcache restore — page is brought back from memory, init does not re-run.
+  const emitAnalyticsIfBackNav = () => {
+    // BC records "click type" when navigating to outgoing links.
+    // This indicates the user is returning via back button, etc.
+    const state = window.history.state ?? {};
+    if (!state.bcClickType) {
+      return;
+    }
+
+    bcAnalytics({
+      eventType: 'navigation:backNavigation',
+      data: {
+        clickType: state.bcClickType,
+        sessionId: getChatSessionId(),
+        sourcePage: state.bcSourcePage ?? window.location.href,
+        destinationPage: state.bcDestinationPage ?? document.referrer ?? '',
+        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
+        navigatedBack: true,
+      },
+    });
+  };
+
+  // bfcache restore: page is brought back from memory, init does not re-run.
   window.addEventListener('pageshow', (e) => {
-    if (!e.persisted) return;
-    const clickType = window.history.state?.bcClickType;
-    if (!clickType) return;
-    bcAnalytics({
-      eventType: 'navigation:historyChange',
-      data: {
-        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
-        precedingClickType: clickType,
-      },
-    });
+    if (e.persisted) emitAnalyticsIfBackNav();
   });
-  // Full-page back/forward load — init re-runs, navigation type is back_forward.
+
+  // Full-page back/forward load: init re-runs, navigation type is back_forward.
   if (window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
-    bcAnalytics({
-      eventType: 'navigation:historyChange',
-      data: {
-        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
-        precedingClickType: window.history.state?.bcClickType ?? 'unknown',
-      },
-    });
+    emitAnalyticsIfBackNav();
   }
 
   const rows = el.querySelectorAll(':scope > div');
