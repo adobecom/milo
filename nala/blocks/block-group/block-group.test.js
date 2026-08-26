@@ -12,7 +12,7 @@ test.describe('Milo Block Group Block test suite', () => {
   });
 
   // Test 0 : Block Group Carousel
-  test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
 
     await test.step('step-1: Go to Block Group carousel test page', async () => {
@@ -31,7 +31,7 @@ test.describe('Milo Block Group Block test suite', () => {
   });
 
   // Test 1 : Block Group Tabs
-  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
 
     await test.step('step-1: Go to Block Group tabs test page', async () => {

@@ -135,8 +135,16 @@
 }
 
 :root:lang(ar) {
-  --body-font-family: adobe-arabic, myriad-arabic, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --body-font-family: adobe-clean-arabic, 'Adobe Clean', adobe-clean, adobe-arabic, myriad-arabic, 'Trebuchet MS', sans-serif;
   --font-size-multiplier: 1.25;
+}
+
+:root:lang(he) {
+  --body-font-family: adobe-clean-hebrew, 'Adobe Clean', adobe-clean, myriad-hebrew, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(hi) {
+  --body-font-family: adobe-clean-devanagari, 'Adobe Clean', adobe-clean, myriad-devanagari, 'Trebuchet MS', sans-serif;
 }
 
 :root:lang(ko-KR),

@@ -1,13 +1,13 @@
-import { stub } from 'sinon';
+import { stub, match } from 'sinon';
 import tagsData from './tagsData.js';
 
-const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
+const CAAS_TAGS_URL_BASE = 'https://www.adobe.com/chimera-api/tags';
 
 const ogFetch = window.fetch;
 
 export const stubFetch = () => {
   window.fetch = stub();
-  window.fetch.withArgs(CAAS_TAG_URL).returns(
+  window.fetch.withArgs(match((url) => url.startsWith(CAAS_TAGS_URL_BASE))).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,

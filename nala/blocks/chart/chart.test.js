@@ -12,7 +12,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 0 : Chart (area, green, border)
-  test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
 
@@ -36,7 +36,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 1 : Chart (bar, border)
-  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
     const { data } = features[1];
 
@@ -64,7 +64,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 2 : Chart (column, border)
-  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
     const { data } = features[2];
 
@@ -101,7 +101,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 3 : Chart (donut, border)
-  test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     const { data } = features[3];
 
@@ -131,7 +131,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 4 : Chart (line, border)
-  test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
     const { data } = features[4];
 
@@ -164,7 +164,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 5 : Chart (oversized-number, border)
-  test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
     const { data } = features[5];
 
@@ -194,7 +194,7 @@ test.describe('Milo Chart feature test suite', () => {
   });
 
   // Test 6 : Chart (pie, border)
-  test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[6].path}${miloLibs}`);
     const { data } = features[6];
 

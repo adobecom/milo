@@ -154,9 +154,12 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-future - Validate active promo scheduled in the future
   test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
-    const testPage = constructTestUrl(baseURL, features[5].path);
+    // Overlay requires auth on .aem.live → run on the same branch's ungated
+    // .aem.page preview tier (see spec host note).
+    const previewBase = baseURL.replace('.aem.live', '.aem.page');
+    const testPage = constructTestUrl(previewBase, features[5].path);
     const { data } = features[5];
-    const previewPage = constructTestUrl(baseURL, features[5].path, `?mep=${data.mepPath}`);
+    const previewPage = constructTestUrl(previewBase, features[5].path, `?mep=${data.mepPath}`);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -261,7 +264,9 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-preview - Validate preview functionality
   test(`${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
-    const testPage = constructTestUrl(baseURL, features[8].path);
+    // Overlay requires auth on .aem.live → run on the same branch's ungated
+    // .aem.page preview tier (see spec host note).
+    const testPage = constructTestUrl(baseURL.replace('.aem.live', '.aem.page'), features[8].path);
     const { data } = features[8];
     let previewPage;
     console.info('[Test Page]: ', testPage);

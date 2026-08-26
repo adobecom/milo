@@ -1,7 +1,17 @@
 import { createTag, decorateAutoBlock, loadBlock, getConfig } from '../../utils/utils.js';
-import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction } from '../merch/merch.js';
+import { MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction, getMasLibsBaseUrl } from '../merch/merch.js';
 
 const DEFAULT_LOCALE = 'en_US';
+const SURFACE = 'acom';
+const MAS_AEM_LIVE = 'https://main--mas--adobecom.aem.live';
+
+// Get the locales from mas so the dropdowns update when mas adds new ones.
+function getSurfaceLocales() {
+  const base = getMasLibsBaseUrl() || MAS_AEM_LIVE;
+  return import(`${base}/io/www/src/fragment/locales.js`)
+    .then((mod) => mod.getSurfaceLocales(SURFACE))
+    .catch(() => []);
+}
 const TAG_MAS_COM_SERVICE = 'mas-commerce-service';
 const FRAGMENT_ID = 'fragment-id';
 const CONTENT_TYPE = 'content-type';
@@ -30,10 +40,31 @@ function createMasCommerceService(selectLocale, selectCountry) {
   registerCheckoutAction();
 }
 
-async function preview(divPreview, selectType, selectLocale, selectCountry, fragmentEl, deeplink) {
+const MODEL_IDS = {
+  L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24: MAS_MERCH_CARD_COLLECTION,
+  L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ: MAS_MERCH_CARD,
+};
+
+async function preview(divPreview, selectType, selectLoc, selectCo, fragmentEl, btn, deeplink) {
   divPreview.innerHTML = '';
 
   registerCheckoutAction();
+
+  fetch(`https://odinpreview.corp.adobe.com/adobe/contentFragments/${fragmentEl.value}`)
+    // eslint-disable-next-line consistent-return
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json();
+      }
+      divPreview.innerText = 'Cannot load fragment';
+      divPreview.classList.remove('hidden');
+    })
+    .then((fragment) => {
+      if (fragment?.model?.id && MODEL_IDS[fragment.model.id] !== selectType.value) {
+        selectType.value = MODEL_IDS[fragment.model.id];
+        btn.click();
+      }
+    });
 
   const href = `https://mas.adobe.com/studio.html#content-type=${selectType.value}&page=content&path=acom&query=${fragmentEl.value}`;
   const autoblock = createTag('a', { href });
@@ -43,6 +74,7 @@ async function preview(divPreview, selectType, selectLocale, selectCountry, frag
   const merchBlock = divPreview.querySelector(selectType.value);
   if (!merchBlock) return;
   await merchBlock.checkReady();
+  divPreview.classList.remove('hidden');
   if ((selectType.value === MAS_MERCH_CARD && !merchBlock.variant)
     || (selectType.value === MAS_MERCH_CARD_COLLECTION && !merchBlock.classList.length)) {
     divPreview.innerText = 'Cannot load fragment';
@@ -50,13 +82,17 @@ async function preview(divPreview, selectType, selectLocale, selectCountry, frag
     const urlDeeplink = new URL(window.location.href.split('#')[0]);
     urlDeeplink.searchParams.set(FRAGMENT_ID, fragmentEl.value);
     urlDeeplink.searchParams.set(CONTENT_TYPE, selectType.value);
-    urlDeeplink.searchParams.set(LOCALE, selectLocale.value);
-    if (selectCountry.value) {
-      urlDeeplink.searchParams.set(COUNTRY, selectCountry.value);
+    urlDeeplink.searchParams.set(LOCALE, selectLoc.value);
+    if (selectCo.value) {
+      urlDeeplink.searchParams.set(COUNTRY, selectCo.value);
     } else {
       urlDeeplink.searchParams.delete(COUNTRY);
     }
     window.history.replaceState(window.history.state, '', urlDeeplink.href);
+  }
+  if (selectType.value === MAS_MERCH_CARD_COLLECTION) {
+    const firstSidenavItem = divPreview.querySelector('sp-sidenav-item');
+    if (firstSidenavItem) firstSidenavItem.click();
   }
 }
 
@@ -72,9 +108,10 @@ export default async function init(el) {
     selectType.value = url.searchParams.get(CONTENT_TYPE);
   }
 
+  const surfaceLocales = await getSurfaceLocales();
+
   const selectCountry = createTag('select');
-  const countries = ['AR', 'BE', 'BR', 'CA', 'CH', 'MX', 'MU', 'DK', 'DE', 'EE', 'EG', 'ES', 'FR', 'GR', 'IE', 'IL', 'IT', 'LV', 'LT', 'LU', 'MY', 'HU', 'NL', 'NO', 'PL', 'PT', 'RO', 'SI', 'SK', 'FI', 'SE', 'TR', 'GB', 'AT', 'CZ', 'BG', 'UA', 'AU', 'IN', 'ID', 'NZ', 'SA', 'SG', 'TW', 'HK', 'JP', 'KR', 'ZA', 'NG', 'US', 'TH', 'CO', 'PE', 'DO', 'CL', 'DZ', 'CR', 'EC', 'GT'];
-  countries.sort();
+  const countries = [...new Set(surfaceLocales.map((locale) => locale.country))].sort();
   countries.unshift('');
   countries.forEach((value) => selectCountry.appendChild(createTag('option', { value }, value)));
   if (url.searchParams.get(COUNTRY)) {
@@ -82,11 +119,7 @@ export default async function init(el) {
   }
 
   const selectLocale = createTag('select');
-  const localeArray = [DEFAULT_LOCALE];
-  for (const [, val] of Object.entries(GeoMap)) {
-    const valArray = val.split('_');
-    localeArray.push(`${valArray[1]}_${valArray[0]}`);
-  }
+  const localeArray = [...new Set([DEFAULT_LOCALE, ...surfaceLocales.map((locale) => `${locale.lang}_${locale.country}`)])];
   localeArray.sort();
   localeArray.forEach((value) => selectLocale.appendChild(createTag('option', { value }, value)));
 
@@ -99,7 +132,8 @@ export default async function init(el) {
   const btnPreview = createTag('button', { type: 'button' }, 'Preview');
   const divPreview = createTag('div', { class: 'fragment-preview hidden' });
   btnPreview.addEventListener('click', () => {
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, true);
+    divPreview.classList.add('hidden');
+    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview, true);
   });
   selectLocale.addEventListener('change', async () => {
     createMasCommerceService(selectLocale, selectCountry);
@@ -120,8 +154,8 @@ export default async function init(el) {
   el.appendChild(divMeta);
   el.appendChild(divPreview);
   if (fragmentIdEl.value) {
-    await preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl);
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl);
+    await preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
+    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
     divPreview.classList.remove('hidden');
   }
 }

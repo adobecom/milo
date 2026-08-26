@@ -4,6 +4,31 @@ import { displayPreflightVisuals } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;
 
+// Resolves after `idleMs` of no resource activity, or `maxMs` total — whichever comes first.
+function waitForNetworkIdle(idleMs = 2000, maxMs = 15000) {
+  return new Promise((resolve) => {
+    let idleTimer;
+    let maxTimer;
+    let observer;
+
+    const finish = () => {
+      clearTimeout(idleTimer);
+      clearTimeout(maxTimer);
+      observer.disconnect();
+      resolve();
+    };
+
+    observer = new PerformanceObserver(() => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(finish, idleMs);
+    });
+
+    observer.observe({ type: 'resource', buffered: true });
+    idleTimer = setTimeout(finish, idleMs);
+    maxTimer = setTimeout(finish, maxMs);
+  });
+}
+
 export function loadImage(asset) {
   if (asset.complete) return Promise.resolve();
   asset.setAttribute('loading', 'eager');
@@ -24,10 +49,15 @@ async function loadVideo(asset) {
   if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
 
   asset.load();
-  await Promise.race(['loadedmetadata', 'error']
-    .map((event) => new Promise((resolve) => {
+
+  if (asset.readyState >= 1) return;
+
+  await Promise.race([
+    ...['loadedmetadata', 'error'].map((event) => new Promise((resolve) => {
       asset.addEventListener(event, resolve, { once: true });
-    })));
+    })),
+    waitForNetworkIdle(),
+  ]);
 }
 
 function loadMpc(asset) {

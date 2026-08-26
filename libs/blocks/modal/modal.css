@@ -365,7 +365,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .dialog-modal.s-size {
     max-width: 650px;
   }
@@ -426,15 +426,13 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 
   .dialog-modal.upgrade-flow-modal {
     height: 820px;
-    max-width: 1100px;
+    max-width: 1280px;
     overflow: hidden;
-    width: 80%;
   }
 
   .dialog-modal.three-in-one {
     height: 820px;
-    width: 80%;
-    max-width: 1100px;
+    max-width: 1280px;
     overflow: hidden;
   }
 

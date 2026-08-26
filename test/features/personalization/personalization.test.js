@@ -2,11 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl,
+  fetchData, DATA_TYPE, categorizeActions,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -656,6 +656,63 @@ describe('MEP Utils', () => {
       );
       expect(manifests.length).to.equal(0);
     });
+    it('blocks manifest URLs that normalize to a cross-origin host', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        [
+          '/\\evil.com/manifest.json--all',
+          '\\/evil.com/manifest.json--all',
+          '/\t/evil.com/manifest.json--all',
+          '/\n/evil.com/manifest.json--all',
+          '/\r/evil.com/manifest.json--all',
+        ].join('---'),
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks untrusted manifest URLs from personalization sources', async () => {
+      const persValue = [
+        '/\\evil.com/manifest.json',
+        '\\/evil.com/manifest.json',
+        'https://attacker.com/manifest.json',
+      ].join(',');
+      const manifests = await combineMepSources(
+        persValue,
+        persValue,
+        undefined,
+        undefined,
+        persValue,
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks malformed scheme prefixes across all personalization sources', async () => {
+      const bypassValue = [
+        'https:/evil.com/manifest.json',
+        'https:\\evil.com/manifest.json',
+        'HTTPS:/evil.com/manifest.json',
+        'http:/evil.com/manifest.json',
+      ].join(',');
+      const manifests = await combineMepSources(
+        bypassValue,
+        bypassValue,
+        undefined,
+        undefined,
+        bypassValue,
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('allows trusted AEM-hosted manifest URLs from personalization sources', async () => {
+      const aemUrl = 'https://main--milo--adobecom.aem.page/path/manifest.json';
+      const manifests = await combineMepSources(aemUrl, undefined, undefined, undefined);
+      expect(manifests.length).to.equal(1);
+      expect(manifests[0].manifestPath).to.equal(aemUrl);
+    });
+    it('allows relative manifest URLs from personalization sources', async () => {
+      const manifests = await combineMepSources('/promos/manifest.json', undefined, undefined, undefined);
+      expect(manifests.length).to.equal(1);
+      expect(manifests[0].manifestPath).to.equal('/promos/manifest.json');
+    });
     it('allows relative path manifest URLs from mep param', async () => {
       const manifests = await combineMepSources(
         undefined,
@@ -710,6 +767,99 @@ describe('MEP Utils', () => {
     });
     it('blocks protocol-relative URLs', () => {
       expect(isTrustedUrl('//evil.com/script.js')).to.be.false;
+    });
+    it('rejects URLs that normalize to a cross-origin host', () => {
+      expect(isTrustedUrl('/\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('\\/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\t/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\n/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\r/evil.com/script.js')).to.be.false;
+    });
+    it('rejects malformed scheme prefixes (CDN slash-collapse bypass)', () => {
+      expect(isTrustedUrl('https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HTTPS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HtTpS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('http:/evil.com/script.js')).to.be.false;
+      // eslint-disable-next-line no-script-url
+      expect(isTrustedUrl('javascript:alert(1)')).to.be.false;
+    });
+    it('rejects additional scheme-prefix edge cases', () => {
+      expect(isTrustedUrl('https:foo')).to.be.false;
+      expect(isTrustedUrl('https:\t/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\n/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('﻿https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl(' https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:///evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:////evil.com/script.js')).to.be.false;
+    });
+    it('safe-by-accident: IDN homograph hostnames blocked because parser punycodes them', () => {
+      expect(isTrustedUrl('https://www.аdobe.com/script.js')).to.be.false;
+    });
+    it('rejects non-string inputs', () => {
+      expect(isTrustedUrl(123)).to.be.false;
+      expect(isTrustedUrl({})).to.be.false;
+      expect(isTrustedUrl([])).to.be.false;
+    });
+  });
+  describe('isSameOriginManifestPath', () => {
+    it('allows same-origin absolute paths', () => {
+      expect(isSameOriginManifestPath('/path/to/data/')).to.be.true;
+      expect(isSameOriginManifestPath('/content/dam/cc/')).to.be.true;
+      expect(isSameOriginManifestPath('/drafts/x/')).to.be.true;
+    });
+    it('rejects absolute URLs, even same-origin or trusted', () => {
+      expect(isSameOriginManifestPath(`${window.location.origin}/x`)).to.be.false;
+      expect(isSameOriginManifestPath('https://www.adobe.com/x')).to.be.false;
+      expect(isSameOriginManifestPath('http://www.adobe.com/x')).to.be.false;
+    });
+    it('rejects protocol-relative paths', () => {
+      expect(isSameOriginManifestPath('//evil.com/')).to.be.false;
+    });
+    it('rejects paths that normalize to a cross-origin host', () => {
+      expect(isSameOriginManifestPath('/\\evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('\\/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\t/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\n/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\r/evil.com/')).to.be.false;
+    });
+    it('rejects non-path schemes', () => {
+      // eslint-disable-next-line no-script-url
+      expect(isSameOriginManifestPath('javascript:alert(1)')).to.be.false;
+      expect(isSameOriginManifestPath('data:text/html,x')).to.be.false;
+    });
+    it('rejects null/empty and non-string inputs', () => {
+      expect(isSameOriginManifestPath(null)).to.be.false;
+      expect(isSameOriginManifestPath(undefined)).to.be.false;
+      expect(isSameOriginManifestPath('')).to.be.false;
+      expect(isSameOriginManifestPath(123)).to.be.false;
+      expect(isSameOriginManifestPath({})).to.be.false;
+      expect(isSameOriginManifestPath([])).to.be.false;
+    });
+  });
+  describe('fetchData', () => {
+    it('forwards redirect option to underlying fetch', async () => {
+      const originalFetch = window.fetch;
+      const fetchStub = stub().returns(getFetchPromise({}));
+      window.fetch = fetchStub;
+      try {
+        await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(fetchStub.firstCall.args[1]?.redirect).to.equal('error');
+      } finally {
+        window.fetch = originalFetch;
+      }
+    });
+    it('returns null when fetch throws (simulating blocked redirect)', async () => {
+      const originalFetch = window.fetch;
+      window.fetch = stub().throws(new TypeError('Failed to fetch'));
+      try {
+        const result = await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(result).to.be.null;
+      } finally {
+        window.fetch = originalFetch;
+      }
     });
   });
   describe('cleanAndSortManifestList', async () => {
@@ -814,5 +964,43 @@ describe('analyticifseen', () => {
     expect(window._satellite.track.calledOnce).to.be.true;
     const [, payload] = window._satellite.track.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+  });
+});
+
+describe('categorizeActions ordering (parallelization-safe)', () => {
+  const mkExp = (name, page, fw) => ({
+    manifestPath: `/m-${name}.json`,
+    selectedVariant: {
+      name,
+      replacepage: page ? [{ val: page }] : undefined,
+      updateframework: fw ? [fw] : undefined,
+    },
+  });
+
+  it('applies the later experiment replacepage/updateframework (last write wins)', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    delete config.mep.updateframework;
+
+    // applyPers runs categorizeActions via Promise.all(experiments.map(...)).
+    // categorizeActions has no internal awaits, so .map invokes each body
+    // synchronously in execution order and the last manifest's writes win —
+    // identical to the old sequential loop. Pin that observable contract.
+    const experiments = [mkExp('a', '/page-a', 'fw-a'), mkExp('b', '/page-b', 'fw-b')];
+    await Promise.all(experiments.map((exp) => categorizeActions(exp, config)));
+
+    expect(config.mep.replacepage).to.deep.equal({ val: '/page-b' });
+    expect(config.mep.updateframework).to.equal('fw-b');
+  });
+
+  it('returns { experiment } for a default variant without touching shared config', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    const experiment = { manifestPath: '/d.json', selectedVariant: 'default' };
+    const result = await categorizeActions(experiment, config);
+    expect(result).to.deep.equal({ experiment });
+    expect(config.mep.replacepage).to.be.undefined;
   });
 });

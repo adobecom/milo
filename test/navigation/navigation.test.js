@@ -3,11 +3,14 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, restore } from 'sinon';
 import loadBlock from '../../libs/navigation/navigation.js';
+import miloLocales from '../../libs/utils/locales.js';
 import { setConfig } from '../../libs/utils/utils.js';
 import { mockRes } from '../blocks/global-navigation/test-utilities.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const miloLibs = 'http://localhost:2000/libs';
+
+const withTestLocales = (config) => ({ ...config, locales: miloLocales });
 
 describe('Navigation component', async () => {
   beforeEach(async () => {
@@ -27,20 +30,20 @@ describe('Navigation component', async () => {
   });
 
   it('Renders the footer block', async () => {
-    await loadBlock({ authoringPath: '/federal/dev', footer: { privacyId: '12343', onReady: 'dede' }, env: 'qa' }, 'http://localhost:2000');
+    await loadBlock(withTestLocales({ authoringPath: '/federal/dev', footer: { privacyId: '12343', onReady: 'dede' }, env: 'qa' }), 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
   });
 
   it('Renders the localnav if isLocalNav key is passed', async () => {
-    await loadBlock({ authoringPath: '/federal/localnav', header: { imsClientId: 'fedsmilo', mobileGnavV2: 'on', isLocalNav: true, jarvis: { id: '1.2' } }, env: 'stage', theme: 'dark' }, 'http://localhost:2000');
+    await loadBlock(withTestLocales({ authoringPath: '/federal/localnav', header: { imsClientId: 'fedsmilo', mobileGnavV2: 'on', isLocalNav: true, jarvis: { id: '1.2' } }, env: 'stage', theme: 'dark' }), 'http://localhost:2000');
     const el = document.querySelector('.feds-localnav');
     expect(el).to.exist;
   });
 
   it('Renders the header block', async () => {
     const onReady = stub();
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, layout: 'fullWidth', noBorder: 'true' }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
+    await loadBlock(withTestLocales({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, layout: 'fullWidth', noBorder: 'true' }, env: 'prod', theme: 'dark' }), 'http://localhost:2000');
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
     expect(onReady.called).to.be.true;
@@ -48,7 +51,7 @@ describe('Navigation component', async () => {
 
   it('Renders the mini GNAV', async () => {
     const onReady = stub();
-    await loadBlock({
+    await loadBlock(withTestLocales({
       authoringPath: '/federal/dev',
       header: {
         imsClientId: 'fedsmilo',
@@ -60,7 +63,7 @@ describe('Navigation component', async () => {
       },
       env: 'prod',
       theme: 'dark',
-    }, 'http://localhost:2000');
+    }), 'http://localhost:2000');
     const isMiniGnav = !!document.querySelector('.mini-gnav');
     console.log(isMiniGnav);
     expect(isMiniGnav).to.be.true;
@@ -69,7 +72,7 @@ describe('Navigation component', async () => {
 
   it('Renders the mini GNAV and desktop apps cta placeholder', async () => {
     const onReady = stub();
-    await loadBlock({
+    await loadBlock(withTestLocales({
       authoringPath: '/federal/dev',
       header: {
         imsClientId: 'fedsmilo',
@@ -80,7 +83,7 @@ describe('Navigation component', async () => {
       },
       env: 'prod',
       theme: 'dark',
-    }, 'http://localhost:2000');
+    }), 'http://localhost:2000');
     const isMiniGnav = document.querySelector('.mini-gnav');
     const isDesktopAppsCta = document.querySelector('.feds-client-desktop-apps');
     expect(isMiniGnav).to.exist;
@@ -90,7 +93,7 @@ describe('Navigation component', async () => {
 
   it('Renders mini GNAV and search placeholder before (.feds-nav-wrapper)', async () => {
     const onReady = stub();
-    await loadBlock({
+    await loadBlock(withTestLocales({
       authoringPath: '/federal/dev',
       header: {
         imsClientId: 'fedsmilo',
@@ -102,7 +105,7 @@ describe('Navigation component', async () => {
       },
       env: 'prod',
       theme: 'dark',
-    }, 'http://localhost:2000');
+    }), 'http://localhost:2000');
     const isMiniGnav = document.querySelector('.mini-gnav');
     const searchPlaceholder = document.querySelector('.feds-client-search');
     expect(isMiniGnav).to.exist;
@@ -113,7 +116,7 @@ describe('Navigation component', async () => {
 
   it('Should not render the footer block when config is not passed', async () => {
     try {
-      await loadBlock({ env: 'qa', authoringPath: '/federal/dev', footer: {} }, 'http://localhost:2000');
+      await loadBlock(withTestLocales({ env: 'qa', authoringPath: '/federal/dev', footer: {} }), 'http://localhost:2000');
       const el = document.getElementsByTagName('footer');
       expect(el).to.not.exist;
     } catch (e) {
@@ -123,7 +126,7 @@ describe('Navigation component', async () => {
 
   it('Should not render the header block when config is not passed', async () => {
     try {
-      await loadBlock({ env: 'qa', footer: { privacyId: '12343' } }, 'http://localhost:2000');
+      await loadBlock(withTestLocales({ env: 'qa', footer: { privacyId: '12343' } }), 'http://localhost:2000');
       const el = document.getElementsByTagName('header');
       expect(el).to.not.exist;
     } catch (e) {
@@ -133,7 +136,7 @@ describe('Navigation component', async () => {
 
   it('Does not render either header or footer if not found in configs', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    await loadBlock({ authoringPath: '/federal/dev', env: 'qa' }, 'http://localhost:2000');
+    await loadBlock(withTestLocales({ authoringPath: '/federal/dev', env: 'qa' }), 'http://localhost:2000');
     const header = document.getElementsByTagName('header');
     const footer = document.getElementsByTagName('footer');
     expect(header).to.be.empty;
@@ -141,7 +144,7 @@ describe('Navigation component', async () => {
   });
 
   it('Renders the footer block with authoringpath passed in footer', async () => {
-    await loadBlock({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }, 'http://localhost:2000');
+    await loadBlock(withTestLocales({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }), 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
   });

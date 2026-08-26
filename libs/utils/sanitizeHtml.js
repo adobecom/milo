@@ -33,10 +33,19 @@ function removeAttributes(elem) {
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export function sanitizeHtml(html) {
+function sanitize(html) {
   const htmlElem = stringToHTML(html);
   removeScripts(htmlElem);
   [htmlElem, ...htmlElem.querySelectorAll('*')].forEach(removeAttributes);
-  return htmlElem.firstChild;
+  return htmlElem;
+}
+
+// Returns firstChild for backwards compatibility with existing consumers.
+export function sanitizeHtml(html) {
+  return sanitize(html).firstChild;
+}
+
+// Returns the full body element — use when the fragment may have multiple root elements.
+export function sanitizeHtmlBody(html) {
+  return sanitize(html);
 }

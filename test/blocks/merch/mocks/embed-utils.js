@@ -48,6 +48,8 @@ export const reloadPage = stub();
 
 export const getCountry = stub().resolves('us');
 
+export const loadIms = stub().resolves();
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -58,3 +60,24 @@ export const shouldAllowKrTrial = stub();
 export const lingoActive = () => false;
 export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
+
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+/** Mirrors getValidatedMasLibsUrl in libs/utils/utils.js (VULN-36379). */
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
