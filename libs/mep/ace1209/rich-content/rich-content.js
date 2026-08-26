@@ -1,5 +1,6 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 
@@ -73,17 +74,22 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
-const SPACING_CLASS_RE = /^spacing-([a-z0-9]+)(-top|-bottom)?$/;
+const SPACING_CLASS_RE = /^spacing-[a-z0-9]+(-static)?(-top|-bottom)?$/;
 
 function applyMediaSpacing(root) {
-  [...root.classList].forEach((cls) => {
-    const match = cls.match(SPACING_CLASS_RE);
-    if (!match) return;
-    const [, size, direction] = match;
-    const value = `var(--s2a-section-spacing-${size})`;
-    if (direction !== '-bottom') root.style.setProperty('--rc-media-spacing-top', value);
-    if (direction !== '-top') root.style.setProperty('--rc-media-spacing-bottom', value);
-  });
+  const spacingClasses = [...root.classList].filter((cls) => SPACING_CLASS_RE.test(cls));
+  if (!spacingClasses.length) return;
+
+  const authorsTop = spacingClasses.some((cls) => !cls.endsWith('-bottom'));
+  const authorsBottom = spacingClasses.some((cls) => !cls.endsWith('-top'));
+
+  const probe = createTag('div', { class: spacingClasses.join(' '), style: 'position:absolute;visibility:hidden' });
+  root.append(probe);
+  const { paddingTop, paddingBottom } = getComputedStyle(probe);
+  probe.remove();
+
+  if (authorsTop) root.style.setProperty('--rc-media-spacing-top', paddingTop);
+  if (authorsBottom) root.style.setProperty('--rc-media-spacing-bottom', paddingBottom);
 }
 
 const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
@@ -174,6 +180,10 @@ function applyHeroOverlay(el) {
 
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
+
+  if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
+    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+  }
 
   if (!el.classList.contains('hero')) return;
 
