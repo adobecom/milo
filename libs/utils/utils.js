@@ -707,14 +707,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain, fetchOptions = {}) {
+function processQueryIndexMap(link, domain) {
   const result = {
     pathsRequest: null,
     requestResolved: false,
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
+  result.pathsRequest = fetch(`${link}?limit=30000`, { priority: 'low' })
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -811,7 +811,7 @@ async function loadQueryIndexes(prefix, links = []) {
         .filter(({ uniqueSiteId: uid }) => localesData
           .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix)));
 
-      const startCrossSiteIndex = (entry, fetchOptions = {}) => {
+      const startCrossSiteIndex = (entry) => {
         const { uniqueSiteId: uid, queryIndexWebPath, stageHost } = entry;
         const prodDomain = getDomainLingo(queryIndexWebPath);
         const { url, host: envHost } = resolveCrossSiteIndex(
@@ -820,7 +820,7 @@ async function loadQueryIndexes(prefix, links = []) {
           suffix,
           window.location.hostname,
         );
-        queryIndexes[uid] = processQueryIndexMap(url, prodDomain, fetchOptions);
+        queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
         if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
       };
 
@@ -835,7 +835,7 @@ async function loadQueryIndexes(prefix, links = []) {
 
       crossSiteEntries
         .filter((d) => d.fetchPriority !== 'yes')
-        .forEach((d) => startCrossSiteIndex(d, { priority: 'low' }));
+        .forEach((d) => startCrossSiteIndex(d));
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
@@ -2790,9 +2790,10 @@ const STATIC_BLOCK_DEPS = {
 
 const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
 
-export function registerBlockDeps(blockName, ...deps) {
-  blockDeps.set(blockName, deps);
-}
+const MODULE_BLOCK_DEPS = {
+  'merch-card-autoblock': ['blocks/merch/merch.js', 'blocks/merch/autoblock.js', 'utils/market.js'],
+  merch: ['utils/market.js'],
+};
 
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
@@ -2806,6 +2807,10 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
     if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
+  (MODULE_BLOCK_DEPS[name] ?? []).forEach((dep) => {
+    const { base } = getConfig();
+    loadLink(`${base}/${dep}`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);

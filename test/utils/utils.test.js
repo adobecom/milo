@@ -2130,11 +2130,10 @@ describe('Utils', () => {
       expect(dcIdx).to.be.greaterThan(-1);
       expect(daBacomIdx).to.be.greaterThan(-1);
       // The flagged (`dc`) index is issued before the barrier resolves — i.e.
-      // before the low-priority remainder (`da-bacom`) is even requested.
+      // before the remainder (`da-bacom`) is even requested. The flag controls
+      // ordering only; every query index is fetched at low priority.
       expect(dcIdx).to.be.lessThan(daBacomIdx);
-      // Flagged entry fetched with no explicit priority hint (default);
-      // the remainder is deferred at low priority.
-      expect(calls[dcIdx].args[1]?.priority).to.be.undefined;
+      expect(calls[dcIdx].args[1]?.priority).to.equal('low');
       expect(calls[daBacomIdx].args[1]?.priority).to.equal('low');
 
       a.remove();
