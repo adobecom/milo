@@ -555,9 +555,12 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   }
 
   > .fragment {
-    max-height: inherit;
     padding-block: var(--s2a-spacing-lg) var(--s2a-spacing-2xl);
     padding-inline: var(--s2a-spacing-lg);
+  }
+
+  .content {
+    padding-bottom: var(--s2a-spacing-64);
   }
 
   .content :is(h1, h2, h3, h4, h5, h6) ~ p {
