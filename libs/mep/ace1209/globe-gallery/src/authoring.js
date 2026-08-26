@@ -414,7 +414,7 @@ const buildMarkup = (gid, labels) => `
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
-    <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
+    <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" role="note"></span>
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>

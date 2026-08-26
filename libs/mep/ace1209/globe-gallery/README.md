@@ -1585,12 +1585,16 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
-- **Modal counter:** the visible `.globe-gallery-modal-counter` ("05 / 47") and the sr-only
-  `.globe-gallery-modal-position` ("5 of 47", from `cardLabel`) are **both `aria-hidden`**. The
-  position is spoken only through the heading's `aria-describedby`, which still resolves it —
-  description computation traverses `aria-hidden` subtrees. Hiding it keeps NVDA's dialog sweep
-  from reading it on top of the heading, and keeps it from being a redundant virtual-cursor stop
-  now that open and nav both announce it.
+- **Modal counter reading order:** the visible `.globe-gallery-modal-counter` ("05 / 47") is
+  `aria-hidden`; the spoken form lives in the sr-only `.globe-gallery-modal-position` ("5 of 47",
+  from `cardLabel`), which is also the heading's `aria-describedby` target. Both sit in the markup
+  **between Prev and Next**, so a virtual cursor reads Prev → position → Next → Close, matching the
+  on-screen row. The whole bottom row is `position: absolute`, so that markup order is free.
+  The span carries **`role="note"`**: NVDA does not descend into a `note` when it sweeps the dialog
+  on open, so the position is spoken once (with the heading) instead of twice, while the span stays
+  a virtual-cursor stop for VoiceOver. `aria-hidden` would also silence the sweep but kills the
+  stop; `group` does not stop the sweep at all; `article`/`region` do, but VoiceOver announces
+  entering/leaving them.
 - **Instructions popup:** on focus the entry widget shows a **visible pill** so sighted keyboard
   users get the affordance (a11y audit). ONE element (`.globe-gallery-a11y-tip`) — hidden by
   default, shown on `:focus-visible`, and simultaneously the button's `aria-labelledby` target, so
@@ -1618,9 +1622,9 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   **native `<dialog>`** makes NVDA read the dialog's prose aloud; the same markup as a
   `div[role="dialog"][aria-modal="true"]` does not, so this is the element's behavior and not the
   role's. NVDA does not descend into a `document` subtree, so the attribute opts the long copy out.
-  Measured, not inferred — see the variant probe results: focusing a control instead of the heading
-  makes no difference, and neither does inserting the copy a frame after the dialog is shown (NVDA
-  re-reads live rather than snapshotting at appear-time). Putting the copy in the dialog's
+  Measured in NVDA, not inferred. Three things that do **not** help: focusing a control instead of
+  the heading, inserting the copy a frame after the dialog is shown (NVDA re-reads live rather than
+  snapshotting at appear-time), and making the copy focusable. Putting it in the dialog's
   `aria-describedby` makes it read **twice**.
 - **Only two announcement primitives are portable**: focus moving into a named dialog, and a live
   region's text changing. Each event uses exactly one of them — open → the focused heading, nav →
@@ -1635,7 +1639,8 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
 - **Prev/Next announcement:** nav keeps focus on the button, so the new card is spoken only through
   `.globe-gallery-modal-announce` — an sr-only `aria-live="polite"` span, last child of the dialog,
   written as `"Name. Role. N of M"` by `populateModal(i, speak)` when `speak` is true (the nav call
-  site only; `open()` passes nothing and so clears it, keeping the open path single-read). It
+  site only; `open()` passes nothing and so clears it, keeping the open path single-read — and it
+  clears **before** `showModal()`, so a stale nav line can never be spoken as the dialog appears). It
   carries the **whole** card, position included, because it is the only thing that speaks on nav —
   focus stays on the button and the dialog's name is static by design.
   The text is **not** cleared on a timer — it holds the current card until the next nav or the next
