@@ -1,0 +1,139 @@
+.quick-actions {
+  position: relative;
+}
+
+.quick-actions-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-lg);
+  padding-block-end: var(--s2a-spacing-xl);
+}
+
+.quick-actions-header :is(h1, h2, h3, h4, h5, h6) {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--s2a-color-content-heading);
+}
+
+.quick-actions-header .con-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.quick-actions-grid {
+  grid-column: 1 / -1;
+  gap: var(--s2a-spacing-xs);
+}
+
+.quick-actions-tile {
+  position: relative;
+  display: grid;
+  overflow: clip;
+  min-width: 0;
+  background: var(--s2a-color-background-subtle);
+  border-radius: var(--s2a-border-radius-md);
+  text-decoration: none;
+  transition: filter 0.3s ease-in-out;
+}
+
+.quick-actions-tile:hover {
+  filter: brightness(0.98);
+}
+
+.quick-actions-tile:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-2);
+}
+
+.quick-actions-media {
+  grid-area: 1 / 1;
+  display: block;
+  inline-size: 100%;
+  min-block-size: 180px;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+}
+
+.quick-actions-tile:hover .quick-actions-media {
+  transform: scale(1.015);
+}
+
+.quick-actions-media img,
+img.quick-actions-media {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.quick-actions-tile-footer {
+  grid-area: 1 / 1;
+  align-self: end;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-xs);
+  padding-block-end: var(--s2a-spacing-lg);
+  padding-inline: var(--s2a-spacing-lg);
+}
+
+.quick-actions-chevron {
+  flex-shrink: 0;
+  block-size: var(--s2a-typography-line-height-heading-6);
+  display: flex;
+  align-items: center;
+  color: var(--s2a-color-content-default);
+  transition: transform 0.5s var(--parallax-easing);
+}
+
+.quick-actions-chevron svg {
+  inline-size: 5px;
+  block-size: 8px;
+  display: block;
+}
+
+.quick-actions-tile:hover .quick-actions-chevron {
+  transform: translate3d(var(--s2a-spacing-4), 0, 0);
+}
+
+.quick-actions-tile-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-inline-size: 0;
+  color: var(--s2a-color-content-default);
+}
+
+[dir="rtl"] .quick-actions-chevron {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .quick-actions-tile:hover .quick-actions-chevron {
+  transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
+}
+
+@media (width < 768px) {
+  .quick-actions-grid[class*="up"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @supports (animation-timeline: view()) {
+    .quick-actions-grid.parallax-stagger-ltr {
+      animation-name: none;
+
+      > :not([class*="section-"]) {
+        animation-name: enable-parallax-stagger;
+      }
+    }
+  }
+}
+
+@media (width >= 2560px) {
+  .quick-actions-tile {
+    border-radius: var(--s2a-border-radius-24);
+  }
+}

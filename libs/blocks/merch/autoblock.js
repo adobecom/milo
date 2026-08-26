@@ -126,11 +126,15 @@ export function enableAnalytics(card) {
   });
 }
 
+export async function decorateContentLinks(el) {
+  await decorateLinksAsync(el);
+  el.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+}
+
 async function postProcessCard(card) {
-  await decorateLinksAsync(card);
+  await decorateContentLinks(card);
   await localizePreviewLinks(card);
   await localizeMerchIcons(card);
-  card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
 }

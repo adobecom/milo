@@ -10,7 +10,7 @@
 }
 
 .milo-tooltip::before {
-  content: attr(data-tooltip);
+  content: attr(data-tooltip) / '';
   position: absolute;
   top: 50%;
   transform: translateY(-50%);

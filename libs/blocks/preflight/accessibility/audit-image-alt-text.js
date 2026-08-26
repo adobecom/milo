@@ -46,7 +46,12 @@ export async function checkAlt() {
   const result = { ...altResult.value };
   if (!images) return;
 
+  const isVisible = (el) => (typeof el.checkVisibility === 'function'
+    ? el.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true })
+    : !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+
   images.forEach((img) => {
+    if (!isVisible(img)) return;
     const alt = img.getAttribute('alt');
     let parent = '';
 

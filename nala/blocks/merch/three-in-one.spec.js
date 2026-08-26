@@ -2,12 +2,14 @@ module.exports = {
   name: 'Merch Three In One',
   features: [
     {
+      tcid: '0',
       name: '@ThreeInOne',
       path: '/drafts/nala/blocks/merch/three-in-one',
       browserParams: '?georouting=off&martech=off',
       tags: '@three-in-one @commerce @smoke @regression @milo',
     },
     {
+      tcid: '1',
       name: '@ThreeInOneFallback',
       path: '/drafts/nala/blocks/merch/three-in-one-fallback',
       browserParams: '?georouting=off&martech=off',
@@ -44,10 +46,10 @@ module.exports = {
           sectionId: 'deeplink-business',
           attributes: {
             'data-modal': 'twp',
-            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=TEAM&pa=phsp_direct_indirect_team',
-            'aria-label': 'Free trial - Photoshop - Business',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=TEAM&pa=apcc_direct_indirect_team',
+            'aria-label': 'Free trial - Acrobat - Business',
           },
-          iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=team',
+          iframeSrc: 'https://www.adobe.com/mini-plans/acrobat-pro.html?mid=ft&web=1&plan=team',
         },
         {
           sectionId: 'deeplink-students-override',
@@ -82,6 +84,7 @@ module.exports = {
       ],
     },
     {
+      tcid: '2',
       name: '@ThreeInOneCatalog',
       path: '/drafts/nala/blocks/merch/3in1-catalog-edu',
       sectionId: 'modal-catalog-edu',
@@ -91,6 +94,7 @@ module.exports = {
       tags: '@three-in-one @commerce @smoke @regression @milo',
     },
     {
+      tcid: '3',
       name: '@ThreeInOneCatalogFallback',
       path: '/drafts/nala/blocks/merch/3in1-fallback-catalog-edu',
       sectionId: 'modal-fallback-catalog-edu',
@@ -100,6 +104,7 @@ module.exports = {
       tags: '@three-in-one @commerce @smoke @regression @milo',
     },
     {
+      tcid: '4',
       name: '@ThreeInOneDCAddon',
       path: '/drafts/nala/blocks/merch/3in1-acrobat-addon',
       iframeSrcNoAddOn: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=apcc_direct_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
@@ -109,6 +114,7 @@ module.exports = {
       tags: '@three-in-one @commerce @smoke @regression @milo',
     },
     {
+      tcid: '5',
       name: '@ThreeInOneFallbackStep',
       path: '/drafts/nala/blocks/merch/three-in-one-fallback',
       sectionId: 'fallback-step',

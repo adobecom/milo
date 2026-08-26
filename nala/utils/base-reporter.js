@@ -13,12 +13,35 @@ const pattern = [
 
 const ansiRegex = new RegExp(pattern, 'g');
 
+// ANSI colors
+const RESET = '\x1b[0m';
+const BOLD = '\x1b[1m';
+
+const RED = '\x1b[31m';
+const YELLOW = '\x1b[33m';
+const BLUE = '\x1b[34m';
+const CYAN = '\x1b[36m';
+
 // limit failed status
 const failedStatus = ['failed', 'timedOut', 'interrupted'];
 
 function stripAnsi(str) {
   if (!str || typeof str !== 'string') return str;
   return str.replace(ansiRegex, '');
+}
+
+function extractTestPage(stdout = []) {
+  const output = stdout
+    .map((entry) => (typeof entry === 'string' ? entry : entry.text || ''))
+    .join('\n');
+
+  const match = output.match(/(https?:\/\/[^\s]+)/i);
+
+  return match?.[1];
+}
+
+function extractTestId(title) {
+  return title.match(/\[Test Id - (.*?)\]/)?.[1];
 }
 
 class BaseReporter {
@@ -38,13 +61,24 @@ class BaseReporter {
 
   async onTestEnd(test, result) {
     const { title, retries, _projectId } = test;
+    const testId = extractTestId(title);
+    const pageUrl = extractTestPage(result.stdout);
+    const testFile = test.location?.file;
+    const testLine = test.location?.line;
     const {
       name, tags, url, browser, env, branch, repo,
-    } = this.parseTestTitle(title, _projectId);
+    } = this.parseTestTitle(
+      title,
+      _projectId,
+    );
     const {
       status,
       duration,
-      error: { message: errorMessage, value: errorValue, stack: errorStack } = {},
+      error: {
+        message: errorMessage,
+        value: errorValue,
+        stack: errorStack,
+      } = {},
       retry,
     } = result;
 
@@ -61,6 +95,10 @@ class BaseReporter {
       browser,
       branch,
       repo,
+      testId,
+      pageUrl,
+      testFile,
+      testLine,
       status: failedStatus.includes(status) ? 'failed' : status,
       errorMessage: stripAnsi(errorMessage),
       errorValue,
@@ -105,7 +143,9 @@ class BaseReporter {
     const passPercentage = ((this.passedTests / totalTests) * 100).toFixed(2);
     const failPercentage = ((this.failedTests / totalTests) * 100).toFixed(2);
     const miloLibs = process.env.MILO_LIBS || '';
-    const prBranchUrl = process.env.PR_BRANCH_LIVE_URL ? (process.env.PR_BRANCH_LIVE_URL + miloLibs) : undefined;
+    const prBranchUrl = process.env.PR_BRANCH_LIVE_URL
+      ? process.env.PR_BRANCH_LIVE_URL + miloLibs
+      : undefined;
     const projectBaseUrl = this.config.projects[0].use.baseURL;
     const envURL = prBranchUrl || projectBaseUrl;
 
@@ -119,7 +159,7 @@ class BaseReporter {
       const runId = process.env.GITHUB_RUN_ID;
       const prNumber = process.env.GITHUB_REF.split('/')[2];
       runUrl = `https://github.com/${repo}/actions/runs/${runId}`;
-      runName = `${process.env.WORKFLOW_NAME ? (process.env.WORKFLOW_NAME || 'Nala Daily Run') : 'Nala PR Run'} (${prNumber})`;
+      runName = `${process.env.WORKFLOW_NAME ? process.env.WORKFLOW_NAME || 'Nala Daily Run' : 'Nala PR Run'} (${prNumber})`;
     } else if (process.env.CIRCLECI) {
       exeEnv = 'CircleCI Environment';
       const workflowId = process.env.CIRCLE_WORKFLOW_ID;
@@ -143,14 +183,20 @@ class BaseReporter {
     console.log(summary);
 
     if (this.failedTests > 0) {
-      console.log('-------- Test Failures --------');
+      console.log('\n-------- Test Failures --------');
       this.results
         .filter((result) => result.status === 'failed')
         .forEach((failedTest) => {
-          console.log(`Test: ${failedTest.title.split('@')[1]}`);
-          console.log(`Error Message: ${failedTest.errorMessage}`);
-          console.log(`Error Stack: ${failedTest.errorStack}`);
-          console.log('-------------------------');
+          console.log(`
+${YELLOW}Test ID${RESET}       : ${failedTest.testId || 'N/A'}
+${YELLOW}Test Name${RESET}     : ${(failedTest.name || 'N/A').replace(/,+$/, '')}
+${YELLOW}Test File${RESET}     : ${CYAN}${failedTest.testFile || 'N/A'}:${failedTest.testLine || ''}${RESET}
+${YELLOW}Test Page URL${RESET} : ${BLUE}${failedTest.pageUrl || 'N/A'}${RESET}
+
+${RED}Error Message${RESET} : ${failedTest.errorMessage}
+${RED}Error Stack${RESET}   : ${failedTest.errorStack}
+${RED}${BOLD}--------------------------------------------------${RESET}
+`);
         });
     }
     return summary;
@@ -172,7 +218,9 @@ class BaseReporter {
     const name = titleParts[1].trim();
     const tags = titleParts.slice(2).map((tag) => tag.trim());
 
-    const projectConfig = this.config.projects.find((project) => project.name === projectId);
+    const projectConfig = this.config.projects.find(
+      (project) => project.name === projectId,
+    );
 
     // Get baseURL from project config
     if (projectConfig?.use?.baseURL) {
@@ -197,7 +245,13 @@ class BaseReporter {
     }
 
     return {
-      name, tags, url, browser, env, branch, repo,
+      name,
+      tags,
+      url,
+      browser,
+      env,
+      branch,
+      repo,
     };
   }
 

@@ -3,6 +3,8 @@ Common styles for the block library
 */
 
 .sk-library {
+  display: flex;
+  flex-direction: column;
   width: 360px;
   height: 360px;
   background: #303030;
@@ -169,7 +171,8 @@ input.sk-library-search-input:focus {
 
 .con-container {
   position: relative;
-  height: calc(100% - 36px);
+  flex: 1;
+  min-height: 0;
 }
 
 .sk-library ul.sk-library-list,
@@ -201,15 +204,6 @@ input.sk-library-search-input:focus {
   border-bottom: 1px solid #676767;
 }
 
-/*
- * Fixes block list getting cut off with search
- * Margin height equal to search bar height
-*/
-.sk-library ul.con-blocks-list.inset,
-.sk-library ul.con-templates-list.inset,
-.sk-library ul.con-icons-list.inset  {
-  margin-bottom: 39px;
-}
 
 .sk-library .block-group::after,
 .sk-library .content-type::after {
