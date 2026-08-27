@@ -1,5 +1,5 @@
 import { getModal, closeModal } from '../../../c2/blocks/modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadScript } from '../../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';
 
@@ -33,6 +33,7 @@ const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
+let lastImsState = null;
 
 function floatingElement(targetEl, el, focusableEl = null) {
   const getTargetHeight = (target) => {
@@ -232,6 +233,11 @@ export function createSusiComponentForModal({
 }
 
 async function openSusiLightModal() {
+  window.history.replaceState(
+    {},
+    document.title,
+    `${window.location.pathname}${window.location.search}`,
+  );
   const config = getConfig();
   const { env, locale, imsClientId } = config || {};
   const isStage = env?.name !== 'prod';
@@ -260,12 +266,10 @@ async function openSusiLightModal() {
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
     window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
-    if (!bcToken) {
-      bcToken = token;
-      const mountEl = document.getElementById(mountId);
-      if (mountEl) {
-        mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
-      }
+    bcToken = token;
+    const mountEl = document.getElementById(mountId);
+    if (mountEl) {
+      mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
     }
   };
 
@@ -397,6 +401,18 @@ async function openChatModal(initialMessage, el) {
       bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
     }
 
+    const isSignedIn = !!window.adobeIMS?.isSignedInUser();
+    const guestToken = getMetadata('ims-guest-token');
+    const imsState = `${isSignedIn}:${!!bcToken}:${!!guestToken}`;
+    if (imsState !== lastImsState) {
+      lastImsState = imsState;
+      const severity = (!bcToken && isSignedIn) || (!bcToken && guestToken) || !guestToken ? 'warn' : 'info';
+      window.lana?.log(
+        `Brand Concierge IMS state — signedIn: ${isSignedIn}, accessToken: ${!!bcToken}, guestToken: ${!!guestToken}`,
+        { tags: 'brand-concierge', severity },
+      );
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
@@ -425,6 +441,7 @@ async function openChatModal(initialMessage, el) {
         _dc: { language },
       },
       homeAddress: { region: locale.region },
+      arpSessionToken: window.adobeArp?.sessionToken,
     };
 
     if (consentConfObject?.length) {
@@ -640,6 +657,11 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('feds:signOut', () => {
+    if (window.adobe?.concierge?.clearHistory) {
+      window.adobe.concierge.clearHistory();
+    }
+  });
   window.addEventListener('signIn:decorateNav', async () => {
     await window.adobeIMS?.refreshToken();
     window.UniversalNav?.reload();
