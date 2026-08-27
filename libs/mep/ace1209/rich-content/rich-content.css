@@ -258,6 +258,7 @@
     grid-template-rows: auto auto;
     box-sizing: border-box;
     height: auto;
+    z-index: 1;
 
     .rich-content.merch-moment {
       grid-row: 1;
@@ -274,6 +275,7 @@
          up into view as it translates, so the bottom stays covered and no hole
          is exposed. */
       --merch-bg-shift: 80px;
+      overflow: unset;
 
       &,
       & > * {
