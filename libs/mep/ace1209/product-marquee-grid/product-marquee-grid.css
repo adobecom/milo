@@ -55,7 +55,7 @@
     .mas-description,
     .mas-price-commitment {
       color: var(--s2a-color-content-default);
-      font-family: var(--s2a-font-family-body);
+      font-family: var(--body-font-family);
       font-size: var(--s2a-typography-font-size-body-sm);
       font-weight: var(--s2a-font-weight-adobe-clean-regular);
       line-height: var(--s2a-typography-line-height-body-sm);
