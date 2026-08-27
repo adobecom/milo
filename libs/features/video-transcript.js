@@ -1,4 +1,4 @@
-import { getFedsPlaceholderConfig } from '../utils/utils.js';
+import { getConfig } from '../utils/utils.js';
 
 const TRANSCRIPT_ICON = `
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -12,7 +12,7 @@ let cachedLabel;
 async function getTranscriptLabel() {
   if (cachedLabel) return cachedLabel;
   const { replaceKey } = await import('./placeholders.js');
-  const label = await replaceKey(TRANSCRIPT_KEY, getFedsPlaceholderConfig());
+  const label = await replaceKey(TRANSCRIPT_KEY, getConfig());
   cachedLabel = (label && label.toLowerCase() !== TRANSCRIPT_KEY) ? label : 'Transcript';
   return cachedLabel;
 }
