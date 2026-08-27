@@ -85,7 +85,7 @@ describe('susi light', () => {
       expect(susiElement.authParams.dctx_id).equals('v:2,test-id');
     });
   });
-  describe('lingo sign-in locale follows the explicit region pick', () => {
+  describe('lingo sign-in locale follows the user geo (physical location)', () => {
     before(async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
@@ -100,9 +100,10 @@ describe('susi light', () => {
         },
         pathname: '/de/',
       };
-      // Explicit CH-German region pick; a divergent FR market cookie must be
-      // ignored on the sign-in path (it drives pricing only).
-      document.cookie = 'international=ch_de; path=/';
+      // Physically in CH (geo). Neither the `international` cookie (a divergent
+      // region pick) nor the market `country` cookie (pricing) is consulted here.
+      sessionStorage.setItem('akamai', 'ch');
+      document.cookie = 'international=de; path=/';
       document.cookie = 'country=fr; path=/';
       document.body.innerHTML = susiHtml;
       setConfig(config);
@@ -111,10 +112,11 @@ describe('susi light', () => {
     });
     after(() => {
       document.querySelector('meta[name="langfirst"]')?.remove();
+      sessionStorage.removeItem('akamai');
       document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
       document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     });
-    it('uses the international pick (de-CH), not the market cookie (fr)', async () => {
+    it('uses geo (de-CH), ignoring the international and market cookies', async () => {
       susiElement = document.querySelector('susi-sentry-light');
       expect(susiElement.authParams.locale).equals('de-CH');
     });

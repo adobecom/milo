@@ -1,9 +1,7 @@
-// Scroll timeline: every phase constant, threshold, and the per-frame clock derivation.
-// Pure — no THREE, no DOM, no closure state. See README (Lifecycle timeline).
+// Every phase constant, threshold, and the per-frame clock derivation.
+// Pure — no THREE, no DOM, no closure state.
 
-import { easeOutCubic, easeOutSine } from './math.js';
-
-// --- Phase constants (progress-space) ---
+import { clamp01, easeOutCubic, lerpN } from './math.js';
 
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
@@ -14,13 +12,12 @@ export const PROGRESS_ZOOM_END = 1.00;
 export const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
 
 export const GRID_PEEL_STAGGER = 0.20;
-export const ARC_PEEL_JITTER = 0.40;
+export const GRID_PEEL_JITTER = 2 * GRID_PEEL_STAGGER;
 export const GRID_PEEL_WINDOW = 1.0 - GRID_PEEL_STAGGER;
 
 export const FOLD_PEEL_OVERLAP = 0.35;
 export const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
 
-// Fold window ends: sphereFormT 0 and 1. cardFoldStartProgress(0) === FOLD_FIRST_PROGRESS.
 export const FOLD_FIRST_PROGRESS = Math.max(
   0,
   (PROGRESS_GRID_ARC_START
@@ -35,54 +32,53 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 ) + PROGRESS_FOLD_DUR;
 export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-// --- Entry (raw-scroll space, before `progress` exists) ---
+// Entry: raw-scroll space, before `progress` exists.
 
-export const ENTRY_LEAD_VH = 0.4;
 export const ENTRY_RAMP_VH = 1.05;
-export const ARC_ENTRY_HOLD_T = 0.05;
 export const ENTRY_ROT_MAX = 0.9;
-export const ENTRY_SLIDE_H_FRAC = 0.30;
-export const SLIDE_IN_PROGRESS = 0.07;
+export const ARC_ENTRY_STAGGER = 0.45;
 
-// --- Gates, each in its own clock's space ---
-
-// sphereFormT. One gate for everything that says or does "the globe is live": hover, click, drag,
-// auto-rotate, desktop cursor, hint-plane entrance. Sits just past the first card landing (0.884).
-export const SPHERE_INTERACTIVE_T = 0.9;
-export const DEPTH_SORT_FORM_T = 0.5;
+// sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
+// auto-rotate, desktop cursor, hint-plane entrance
+export const SPHERE_INTERACTIVE_T = 0.94;
+export const BROWSE_VIEW_T = 0.96;
 export const SPHERE_ORIENT_RESET_T = 0.01;
 export const TEXT_APPEAR_START = 0.10;
 
-// arcCopyEntryT / fold-window fraction
 export const ARC_COPY_IN_ENTRY_T = 0.336;
 export const ARC_COPY_OUT_FORM_START = 0.20;
 export const ARC_COPY_OUT_FORM_END = 0.90;
 
-// zoomT
-export const TEXT_ZOOM_FADE_RATE = 3;
-export const CANVAS_HIDE_ZOOM_T = 0.95;
+export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-export const CURSOR_DRAG_DISMISS_T = 0.12;
-export const CURSOR_DRAG_RETIRE_T = 0.30;
-export const CURSOR_ZOOM_RETIRE_T = 0.35;
+export const HINT_DISMISS_T = 0.12; // hintDismissProgress at which the barrel hint retires
 
-export const SCROLL_VEL_DEADBAND = 7; // px/frame — below this is Lenis settle noise
-
-// --- Frame pacing (frame.dtScale rescales per-60fps-frame rates; clamped) ---
+// frame.dtScale rescales per-60fps-frame rates; clamped.
 
 export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
 export const DT_SCALE_MAX = 3;
 
-// --- Derived ---
-
 export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
+
+export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
+
+// zoomT is a fraction of the ZOOM span; the CSS pin and hold ceiling reason in fractions of the
+// whole tail. Identical only while PROGRESS_ZOOM_END is 1, so convert at the boundary.
+export const ZOOM_TO_TAIL_T = (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS)
+  / (1 - SPHERE_FORMED_PROGRESS);
 
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
-// Inverse of the zoom camera's easeOutCubic ramp (see updateActiveCamera): the zoomT at which the
-// camera reaches world z. Lets a threshold be stated as a place in the scene, not a scroll number.
+// The zoom camera's world z at zoomT, and its inverse. An inverse pair: neither is derivable
+// from the other at runtime, so they must be edited together — hence they live side by side.
+// Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
+// the canvas hide and the pull-quote reveal with it.
+export function camZAtZoomT(t, camZSphere, camZEnd) {
+  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+}
+
 export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
@@ -90,16 +86,11 @@ export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   return 1 - ((1 - eased) ** (1 / 3));
 }
 
-// --- Frame ---
-
-const clamp01 = (v) => (v > 0 ? Math.min(1, v) : 0); // NaN → 0
-
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
 // monomorphic; activeCamera and below are written by tick()'s producer stages.
 export function createFrame() {
   return {
     lenisY: 0,
-    scrollingDown: true,
     scrollVel: 0,
     dtScale: 1,
     progress: 0,
@@ -109,8 +100,6 @@ export function createFrame() {
     gpWin: GRID_PEEL_WINDOW,
     sphereFormT: 0,
     zoomT: 0,
-    entryRot: ENTRY_ROT_MAX,
-    entryYOffset: 0,
     arcScale: 1,
     activeCamera: null,
     sphereRotActive: false,
@@ -131,32 +120,30 @@ export function createFrameInput() {
     formPx: 0,
     viewportH: 0,
     arcScale: 1,
+    entryLeadVh: 0,
   };
 }
 
-// Derive every clock onto `frame`. No allocation; caller carries frame.lenisY back into
-// input.prevLenisY.
+// No allocation; caller carries frame.lenisY back into input.prevLenisY.
 export function deriveFrame(frame, input) {
-  const { reducedMotion, blockDocTop, blockHeight, formPx, viewportH } = input;
+  const {
+    reducedMotion, blockDocTop, blockHeight, formPx, viewportH, entryLeadVh,
+  } = input;
 
-  // Elapsed time as a multiple of a 60fps frame; the caller carries `now` into `prevNow`.
   const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
   frame.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
 
-  // Reduced motion pins scroll input to the formed-sphere position; the pin cancels in `progress`
-  // but canvas visibility still uses real scroll.
+  // RM pins scroll input to the formed-sphere position; the pin cancels in `progress` but
+  // canvas visibility still uses real scroll.
   const lenisY = reducedMotion ? blockDocTop + formPx : input.scrollY;
   frame.lenisY = lenisY;
-  frame.scrollingDown = lenisY >= input.prevLenisY;
-  const rawScrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY);
-  frame.scrollVel = rawScrollVel < SCROLL_VEL_DEADBAND ? 0 : rawScrollVel;
+  frame.scrollVel = reducedMotion ? 0 : Math.abs(lenisY - input.prevLenisY) / frame.dtScale;
 
-  const entryStart = blockDocTop - viewportH * ENTRY_LEAD_VH;
+  const entryStart = blockDocTop - viewportH * entryLeadVh;
   const entryRange = Math.max(1, viewportH * ENTRY_RAMP_VH);
   const arcCopyEntryT = clamp01((lenisY - entryStart) / entryRange);
   frame.arcCopyEntryT = arcCopyEntryT;
 
-  // Piecewise: formation over [0, formPx] (fixed length), zoom-through + quote over the rest.
   const rawScroll = lenisY - blockDocTop;
   const tailPx = Math.max(1, blockHeight - formPx);
   const progress = rawScroll <= formPx
@@ -174,10 +161,6 @@ export function deriveFrame(frame, input) {
     (progress - SPHERE_FORMED_PROGRESS) / (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS),
   );
 
-  const slideT = Math.max(arcCopyEntryT, clamp01(progress / SLIDE_IN_PROGRESS));
-  const arcEntryT = clamp01((arcCopyEntryT - ARC_ENTRY_HOLD_T) / (1 - ARC_ENTRY_HOLD_T));
-  frame.entryRot = (1 - easeOutCubic(arcEntryT)) * ENTRY_ROT_MAX;
-  frame.entryYOffset = (1 - easeOutSine(slideT)) * viewportH * ENTRY_SLIDE_H_FRAC;
   frame.arcScale = input.arcScale;
 
   return frame;

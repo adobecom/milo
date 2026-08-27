@@ -1,7 +1,7 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
-import { easeInOutCubic, easeOutCubic, coverFit } from './math.js';
-import { escapeHtml, renderParagraphs } from './authoring.js';
+import { easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt } from './math.js';
+import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -16,20 +16,19 @@ const MODAL_PHASE = Object.freeze({
   OPEN: 'open',
   CLOSING: 'closing',
 });
-// Camera→card distance the modal card flies to (perspective FOV 60°).
 const MODAL_CAM_DIST = 16.4;
 const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
-const MODAL_ANIM_DURATION = 350; // ms open/close fly time
+const MODAL_ANIM_FALLBACK = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
-// Fisheye warp peaks (sin bell curve) per modal interaction.
+// Fisheye warp peaks (sin bell curve).
 const MODAL_WARP_OPEN = 0.30;
 const MODAL_WARP_CLOSE = 0.30;
 const MODAL_WARP_PULL = 0.40;
 const MODAL_WARP_SWIPE = 0.25;
-// Desktop/tablet modal-nav cross-warp transition.
+const MODAL_WARP_DECAY = 0.85;
 const DN_NAV_DUR = 500; // ms
 const DN_NAV_WARP = 0.40; // peak warp
-// Desktop/tablet image fit — see computeModalTarget. Chrome placement is CSS.
+// Desktop/tablet image fit; chrome placement is CSS.
 const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
 
 export default function createGlobeModal({
@@ -41,7 +40,8 @@ export default function createGlobeModal({
   getCards,
   getCount,
   getCardMetadata,
-  // Lazily load a sharper texture for the opened card. (idx, onReady, onError) → Image|null.
+  authoredNo,
+  stepCard,
   loadModalUpgrade,
   getViewport,
   getBP,
@@ -49,13 +49,11 @@ export default function createGlobeModal({
   cardAspect,
   getAntialias,
   caEnabled,
-  // Localized "{index} of {count}" for the sr-only __position element.
   cardLabel,
   getReducedMotion,
-  // Sphere-rotation bridge (live THREE object shared by reference).
   sphereRotQuat,
   snapToSphereSlot,
-  // Applies the sphere's camera-facing tilt to a quat in place (no-op when CARD_FACE_CAMERA is 0).
+  // Applies the sphere's camera-facing tilt to a quat IN PLACE.
   applySphereFacing,
   requestNavNudge,
   applyMotionCA,
@@ -66,16 +64,17 @@ export default function createGlobeModal({
   let modalScene = null;
   let modalCanvasEl = null;
   let modalEl = null;
+  let chromeEl = null;
 
   let modalIdx = -1; // currently open card index, -1 if closed
   let modalCard = null; // card whose mesh is animating
   let modalPhase = MODAL_PHASE.CLOSED;
-  // Lazy hi-res modal texture: pending Image + owned CanvasTexture (1 resident at a time).
+  // Pending Image + owned CanvasTexture; 1 resident at a time.
   let modalTexImg = null;
   let modalTexOwned = null;
   let modalTexCard = null;
   let modalAnimT0 = 0; // animation start timestamp
-  // World-transform snapshots (THREE) — created in setup().
+  let modalAnimMs = MODAL_ANIM_FALLBACK;
   let modalStartPos = null;
   let modalStartQuat = null;
   let modalStartScale = null;
@@ -86,20 +85,19 @@ export default function createGlobeModal({
   const scratchQuat = new THREE.Quaternion();
   const scratchScale = new THREE.Vector3();
   const coverScratch = {}; // coverFit output (see pushModalCoverUV)
-  let chromeNodes = null; // { chromeEl, els, settled } — see revealModalChrome
+  let chromeNodes = null; // { els, settled } — see revealModalChrome
 
-  // Chrome reveal — elements fade + slide in after card is 90% settled.
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
   let modalChromeFadeT = 0; // 0→1 fade progress for chrome elements
 
-  // close() uses this to suppress the synthetic click after touch pointerup (would self-close).
+  // Suppresses the synthetic click after touch pointerup, which would self-close.
   let modalOpenedAt = 0;
-  // close-finalize timeout id; open() cancels a stale one so it can't yank the new modal's state.
+  // open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
-  // click/touch listeners wired once — DOM persists across re-inits so re-adding would stack.
+  // Wired once — the DOM persists across re-inits, so re-adding would stack them.
   let listenersWired = false;
-  // Held so Escape + the touch gestures can click them rather than call navigate()/close().
-  // See README (Analytics).
+  // Held so Escape + touch gestures can click them rather than call navigate()/close(), which
+  // is what makes those paths report.
   let prevBtn = null;
   let nextBtn = null;
   let closeBtn = null;
@@ -112,20 +110,13 @@ export default function createGlobeModal({
   let dnNavOldCard = null;
   let dnNavNewCard = null;
 
-  // Cards past the barrel get a lazy modal-only carrier that dissolves in/out instead of flying
-  // to a slot. Keyed by gallery index. See README (Card count).
-  const overflowCards = new Map();
-  // Shared 1×1 placeholder for overflow carriers before/after their image texture.
-  let overflowPlaceholderTex = null;
-
-  // Reset the modal to its closed identity (no open card). Shared by close-finalize + destroy().
+  // Shared by close-finalize and destroy().
   function closeModalIdentity() {
     modalPhase = MODAL_PHASE.CLOSED;
     modalCard = null;
     modalIdx = -1;
   }
 
-  // Chrome starts hidden and fades in after the card settles.
   function resetChromeReveal() {
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 0;
@@ -136,7 +127,7 @@ export default function createGlobeModal({
 
   const isRtl = () => document.documentElement.dir === 'rtl';
 
-  // Desktop/tablet plane fit + the uRadius fraction for a constant MODAL_RADIUS_PX. See README.
+  // Plane fit + the uRadius fraction that holds MODAL_RADIUS_PX constant.
   function modalDesktopFit(uAspect) {
     const { W, H } = getViewport();
     const cardHPx = Math.min(
@@ -151,98 +142,17 @@ export default function createGlobeModal({
     return modalDesktopFit(uAspect).radiusFrac;
   }
 
-  // Aspect the modal renders at: the DISPLAYED texture's, else the base texture's. See README.
+  // The DISPLAYED texture's aspect, else the base texture's.
   function modalUAspect(card) {
     return (card && (card.modalAspect || card.srcAspect)) || cardAspect;
   }
 
-  // Barrel = cards with a real sphere slot; indices ≥ this are overflow.
-  function barrelCount() { return getCards().length; }
-  function isOverflowIdx(idx) { return idx >= barrelCount(); }
-  function isOverflowCard(card) { return !!(card && card.isOverflow); }
-
-  function ensureOverflowPlaceholder() {
-    if (overflowPlaceholderTex) return overflowPlaceholderTex;
-    const cv = document.createElement('canvas');
-    cv.width = 1; cv.height = 1;
-    const cx = cv.getContext('2d');
-    cx.fillStyle = '#1a1a1a';
-    cx.fillRect(0, 0, 1, 1);
-    overflowPlaceholderTex = new THREE.CanvasTexture(cv);
-    return overflowPlaceholderTex;
-  }
-
-  // Lazily build + cache a modal-only carrier for an index past the barrel.
-  // Aspect stays at the base card aspect until the image decodes (loadOverflowTexture).
-  function createOverflowCard(idx) {
-    const { w, h } = getCardDims();
-    const mat = createModalMaterial(ensureOverflowPlaceholder(), cardAspect);
-    mat.uniforms.uRadius.value = modalRadiusFrac(cardAspect);
-    const geo = new THREE.PlaneGeometry(w, h, 1, 1);
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.material.depthTest = true;
-    mesh.visible = false;
-    mesh.renderOrder = 0;
-    return {
-      mesh,
-      modalMat: mat,
-      isOverflow: true,
-      idx,
-      // Dummy sphere-phase fields so defensive reads don't hit undefined (never flies to a slot).
-      sphereScaleSX: 1,
-      sphereScaleSY: 1,
-      ownTex: null,
-      pendingImg: null,
-    };
-  }
-
-  // Card object for ANY gallery index: the real barrel card, or a lazy overflow carrier.
-  function getGalleryCard(idx) {
-    if (!isOverflowIdx(idx)) return getCards()[idx];
-    let card = overflowCards.get(idx);
-    if (!card) { card = createOverflowCard(idx); overflowCards.set(idx, card); }
-    return card;
-  }
-
-  // Load an overflow carrier's image at the modal cap, swap in on decode, derive aspect. Owns
-  // its texture per-card (disposed in retireOverflowCard) so a cross-fade keeps the outgoing image.
-  function loadOverflowTexture(card, idx) {
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-    if (!loadModalUpgrade) return;
-    card.pendingImg = loadModalUpgrade(idx, (tex) => {
-      card.pendingImg = null;
-      if (card.ownTex) card.ownTex.dispose();
-      card.ownTex = tex;
-      card.modalMat.uniforms.map.value = tex;
-      if (tex.image && tex.image.width && tex.image.height) {
-        card.modalAspect = tex.image.width / tex.image.height;
-        card.modalMat.uniforms.uAspect.value = card.modalAspect;
-      }
-    }, () => { card.pendingImg = null; });
-  }
-
-  // Retire an overflow carrier on nav-away/close: unparent, hide, drop texture, reset material.
-  function retireOverflowCard(card) {
-    if (!isOverflowCard(card)) return;
-    if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-    if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
-    card.mesh.visible = false;
-    card.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
-    if (card.ownTex) { card.ownTex.dispose(); card.ownTex = null; }
-    card.modalAspect = 0; // aspect belonged to the texture we just dropped
-    // Reset animated uniforms (inlined to avoid a forward ref to resetModalMaterialUniforms).
-    const u = card.modalMat.uniforms;
-    u.uOpacity.value = 1;
-    u.uWarp.value = 0;
-    u.uMotionDir.value.set(0, 0);
-  }
-
-  // True if the card is the active modal card or a swipe-neighbor in modalScene (core loop skips).
+  // Active modal card or a swipe-neighbour in modalScene; the core loop skips these.
   function isCardManaged(card) {
     return card === modalCard || (!!modalScene && card.mesh.parent === modalScene);
   }
 
-  // Cancel a pending hi-res load + dispose the owned modal texture, resetting the card to its base.
+  // Cancel a pending hi-res load + dispose the owned texture, resetting the card to its base.
   function releaseModalTexture() {
     if (modalTexImg) {
       modalTexImg.onload = null;
@@ -252,12 +162,8 @@ export default function createGlobeModal({
     }
     if (modalTexOwned) {
       if (modalTexCard && modalTexCard.modalMat) {
-        if (modalTexCard.isOverflow) {
-          modalTexCard.modalMat.uniforms.map.value = ensureOverflowPlaceholder();
-        } else {
-          const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
-          if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
-        }
+        const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
+        if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
         modalTexCard.modalAspect = 0; // back to the base texture, so back to the barrel's aspect
       }
       modalTexOwned.dispose();
@@ -266,18 +172,11 @@ export default function createGlobeModal({
     modalTexCard = null;
   }
 
-  // Per-card SDF modal material, lazily built + cached; base texture is the placeholder.
   function getModalMaterial(card) {
-    // Overflow carriers ARE the modal material — just refresh the corner radius.
-    if (card.isOverflow) {
-      const u = card.modalMat.uniforms;
-      u.uRadius.value = modalRadiusFrac(u.uAspect.value);
-      return card.modalMat;
-    }
     if (!card.modalMat) {
       card.modalMat = createModalMaterial(card.mesh.material.map, modalUAspect(card));
     } else {
-      // Reset to base in case a prior open left a since-disposed hi-res texture.
+      // In case a prior open left a since-disposed hi-res texture.
       card.modalMat.uniforms.map.value = card.mesh.material.map;
       card.modalMat.uniforms.uAspect.value = modalUAspect(card);
     }
@@ -285,15 +184,13 @@ export default function createGlobeModal({
     return card.modalMat;
   }
 
-  // Request the lazy hi-res texture for the ACTIVE modal card (not swipe-neighbors).
+  // ACTIVE modal card only, not swipe-neighbours.
   function requestModalUpgrade(card, idx) {
-    // Free any resident barrel hi-res first (overflow carriers own their texture per-card).
     releaseModalTexture();
-    if (card.isOverflow) { loadOverflowTexture(card, idx); return; }
     if (!loadModalUpgrade) return;
     modalTexImg = loadModalUpgrade(idx, (tex) => {
       modalTexImg = null;
-      // Bail if the modal closed or navigated away before the decode finished.
+      // The modal may have closed or navigated away before the decode finished.
       if (modalCard !== card || modalPhase === MODAL_PHASE.CLOSED) {
         tex.dispose();
         return;
@@ -307,7 +204,7 @@ export default function createGlobeModal({
     }, () => { modalTexImg = null; });
   }
 
-  // Reset the cached SDF material's animated uniforms so a stale mid-fade value doesn't ghost.
+  // A stale mid-fade value would ghost otherwise.
   function resetModalMaterialUniforms(material, opacity) {
     const u = material && material.uniforms;
     if (!u) return;
@@ -319,8 +216,7 @@ export default function createGlobeModal({
     // uWarpCenter intentionally NOT reset — callers set it right after.
   }
 
-  // Crop the displayed texture to the aspect the plane is drawn at THIS frame (the core's
-  // applyCardFit rule). Call after the frame's scale write. See README (Architecture notes).
+  // Crop to the aspect the plane is drawn at THIS frame. Call after the frame's scale write.
   function pushModalCoverUV(card) {
     const u = card && card.mesh.material && card.mesh.material.uniforms;
     if (!u || !u.uRepeat) return;
@@ -330,16 +226,14 @@ export default function createGlobeModal({
     u.uOffset.value.set(c.ox, c.oy);
   }
 
-  // Map a viewport touch/click position to an approximate asset UV (screen Y inverts).
   function touchToWarpUV(clientX, clientY, out) {
     const { W, H } = getViewport();
     const v = out || new THREE.Vector2();
-    v.x = Math.max(0, Math.min(1, clientX / W));
-    v.y = Math.max(0, Math.min(1, 1 - clientY / H));
+    v.x = clamp01(clientX / W);
+    v.y = clamp01(1 - clientY / H);
     return v;
   }
 
-  // Push the current modalWarp / modalWarpCenter onto the active modal card's uniforms.
   function pushModalWarpUniforms() {
     if (!modalCard) return;
     const u = modalCard.mesh.material && modalCard.mesh.material.uniforms;
@@ -348,10 +242,14 @@ export default function createGlobeModal({
     u.uWarpCenter.value.copy(modalWarpCenter);
   }
 
-  // Target world pos/quat/scale for the modal card: visible photo contain-fit to the viewport
-  // with native aspect kept (via modalUAspect). Recomputed per-frame. See README (Behavior notes).
+  function skewOffsetPx() {
+    const { view } = getCamera();
+    return view && view.enabled === true ? -view.offsetY : 0;
+  }
+
+  // Visible photo contain-fit to the viewport, native aspect kept. Recomputed per-frame.
   function computeModalTarget(outPos, outQuat, outScale, cardOverride) {
-    // cardOverride: compute for this card (swipe-neighbors); defaults to modalCard.
+    // cardOverride targets a swipe-neighbour; defaults to modalCard.
     const card = cardOverride || modalCard;
     const camera = getCamera();
     const { W, H } = getViewport();
@@ -359,10 +257,8 @@ export default function createGlobeModal({
     const camZ = camera.position.z;
     const dist = MODAL_CAM_DIST;
 
-    // CSS pixels per world unit at 'dist' from the perspective camera (FOV 60°).
-    const pxPerWorld = H / (2 * dist * Math.tan(Math.PI / 6));
+    const pxPerWorld = pxPerWorldAt(dist, H);
 
-    // Width is proportional to the image aspect (kept); the branches diverge mobile/desktop.
     const isMobile = (getBP() === 'sm');
     const uAspect = modalUAspect(card);
     const sScaleX = uAspect / cardAspect;
@@ -370,23 +266,21 @@ export default function createGlobeModal({
       scaleX;
 
     if (isMobile) {
-      // Mobile: full-bleed width, top-aligned, square corners; height follows aspect.
+      // Full-bleed width, top-aligned, square corners; height follows aspect.
       const cardHPx = W / uAspect;
       scaleX = W / (CARD_W_SPHERE * pxPerWorld);
       scaleY = scaleX / sScaleX;
-      outPos.set(0, (H / 2 - cardHPx / 2) / pxPerWorld, camZ - dist);
+      outPos.set(0, (H / 2 - cardHPx / 2 + skewOffsetPx()) / pxPerWorld, camZ - dist);
     } else {
-      // Desktop/tablet: visible photo contain-fit to the viewport minus DT_IMG_MARGIN, aspect
-      // kept — see README (Behavior notes).
+      // Contain-fit to the viewport minus DT_IMG_MARGIN, aspect kept.
       const { cardHPx } = modalDesktopFit(uAspect);
       scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
 
-      // Centered at viewport center.
-      outPos.set(0, 0, camZ - dist);
+      outPos.set(0, skewOffsetPx() / pxPerWorld, camZ - dist);
     }
-    // uRadius tracks the fit, so it is re-pushed every frame — see README (Behavior notes).
-    // uAspect rides along: it changes when the hi-res texture decodes mid-flight.
+    // uRadius tracks the fit and uAspect changes when the hi-res texture decodes mid-flight,
+    // so both are re-pushed every frame.
     if (card && card.modalMat) {
       card.modalMat.uniforms.uAspect.value = uAspect;
       card.modalMat.uniforms.uRadius.value = modalRadiusFrac(uAspect);
@@ -395,20 +289,30 @@ export default function createGlobeModal({
     outScale.set(scaleX, scaleY, 1.0);
   }
 
-  // Reveal fade only (opacity + an 8px slide-up), driven by modalChromeFadeT. Placement is pure
-  // CSS — every offset is a per-breakpoint constant. See README (Modal chrome).
+  function photoRectPx() {
+    if (!modalCard || modalPhase !== MODAL_PHASE.OPEN) return null;
+    const { W, H } = getViewport();
+    const { w: cardW, h: cardH } = getCardDims();
+    const pxPerWorld = pxPerWorldAt(MODAL_CAM_DIST, H);
+    const { position, scale } = modalCard.mesh;
+    const halfW = 0.5 * cardW * scale.x * pxPerWorld;
+    const halfH = 0.5 * cardH * scale.y * pxPerWorld;
+    const cx = W / 2 + position.x * pxPerWorld;
+    const cy = H / 2 - position.y * pxPerWorld; // world +Y is screen-up
+    return { left: cx - halfW, right: cx + halfW, top: cy - halfH, bottom: cy + halfH };
+  }
+
+  // Reveal fade only (opacity + an 8px slide-up). Placement is pure CSS.
   function revealModalChrome() {
-    const chromeEl = q('.globe-gallery-modal-chrome');
     if (!chromeEl) return;
-    if (!chromeNodes || chromeNodes.chromeEl !== chromeEl) {
+    if (!chromeNodes) {
       chromeNodes = {
-        chromeEl,
         els: [...chromeEl.querySelectorAll('.globe-gallery-modal-info, .globe-gallery-modal-close,'
           + ' .globe-gallery-modal-nav, .globe-gallery-modal-counter')],
       };
     }
-    // transition:none while animating so CSS hover can't fight the per-frame write; cleared on the
-    // settled frame so :hover animates again, then bail — nothing changes after.
+    // transition:none while animating so CSS hover can't fight the per-frame write; cleared on
+    // the settled frame so :hover animates again.
     const settled = modalChromeFadeT >= 1;
     if (settled && chromeNodes.settled) return;
     chromeNodes.settled = settled;
@@ -416,14 +320,13 @@ export default function createGlobeModal({
     const shift = settled ? '' : ` translateY(${Math.round((1 - cFade) * 8)}px)`;
     chromeNodes.els.forEach((el) => {
       el.style.opacity = String(cFade);
-      // The counter's CSS centring transform must survive the slide (it has no wrapper).
+      // The counter has no wrapper, so its CSS centring transform must survive the slide.
       const base = el.classList.contains('globe-gallery-modal-counter') ? 'translateX(-50%)' : '';
       el.style.transform = settled ? '' : `${base}${shift}`.trim();
       el.style.transition = settled ? '' : 'none';
     });
   }
 
-  // Flag which description edges have more copy; focusable only when it scrolls.
   function updateDescFade(descEl) {
     if (!descEl) return;
     const overflow = descEl.scrollHeight - descEl.clientHeight;
@@ -441,11 +344,16 @@ export default function createGlobeModal({
     if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
   }
 
-  function populateModal(i) {
-    const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
+  function announce(text) {
+    const el = chromeEl && chromeEl.querySelector('.globe-gallery-modal-announce');
+    if (el) el.textContent = text;
+  }
+
+  function populateModal(i, speak) {
+    const targetEl = chromeEl || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
-    // role="img" text alternative for the WebGL photo (no src — the visible photo is the canvas).
+    // Text alternative for the WebGL photo; there is no src, the photo is the canvas.
     const imgEl = targetEl.querySelector('.globe-gallery-modal-image');
     if (imgEl) {
       if (meta.alt) {
@@ -459,58 +367,52 @@ export default function createGlobeModal({
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-    renderParagraphs(targetEl.querySelector('.globe-gallery-modal-description'), meta.description);
+    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+    renderParagraphs(descEl, meta.description);
+    hangParagraphs(descEl);
     const counterEl = targetEl.querySelector('.globe-gallery-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
-      counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
+      counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
-    // SR position — read via the dialog name (aria-labelledby) + heading (aria-describedby).
     const posEl = targetEl.querySelector('.globe-gallery-modal-position');
-    if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
+    const position = cardLabel(authoredNo(i), getCount());
+    if (posEl) posEl.textContent = position;
+    announce(speak ? [meta.name, meta.role, position].filter(Boolean).join('. ') : '');
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
     const config = getConfig();
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
       row.className = 'globe-gallery-modal-badge';
-      // Labelled by product, not by card, and unindexed. See README (Analytics).
+      // Labelled by product, not by card, and unindexed.
       const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
       const nameHtml = b.href
         ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
         : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
-      // The logo is authored per row; rows without one just render the name (no empty chip).
+      // Rows without a logo just render the name — no empty chip.
       row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
       badgesEl.appendChild(row);
     });
-    const descEl = targetEl.querySelector('.globe-gallery-modal-description');
     if (descEl) descEl.scrollTop = 0;
     scheduleDescFade();
   }
 
-  // Finalize the desktop nav transition: detach old card to sphere, reset uniforms on the new.
   function completeDesktopNavTransition() {
     if (!dnNavActive) return;
     const sphereGroup = getSphereGroup();
     if (dnNavOldCard) {
-      if (isOverflowCard(dnNavOldCard)) {
-        // No sphere slot — the cross-fade already faded it out; retire the carrier.
-        retireOverflowCard(dnNavOldCard);
-      } else {
-        // Reset uniforms before swapping back to the basic material (else a mid-fade card ghosts).
-        resetModalMaterialUniforms(dnNavOldCard.modalMat, 1);
-        if (dnNavOldCard.mesh.origMaterial) {
-          dnNavOldCard.mesh.material = dnNavOldCard.mesh.origMaterial;
-          dnNavOldCard.mesh.origMaterial = null;
-        }
-        sphereGroup.attach(dnNavOldCard.mesh);
-        snapToSphereSlot(dnNavOldCard);
-        dnNavOldCard.mesh.material.depthTest = true;
-        dnNavOldCard.mesh.renderOrder = 0;
+      resetModalMaterialUniforms(dnNavOldCard.modalMat, 1);
+      if (dnNavOldCard.mesh.origMaterial) {
+        dnNavOldCard.mesh.material = dnNavOldCard.mesh.origMaterial;
+        dnNavOldCard.mesh.origMaterial = null;
       }
+      sphereGroup.attach(dnNavOldCard.mesh);
+      snapToSphereSlot(dnNavOldCard);
+      dnNavOldCard.mesh.material.depthTest = true;
+      dnNavOldCard.mesh.renderOrder = 0;
     }
     if (dnNavNewCard) {
-      // New card stays active — restore its uniforms to fully-visible, no warp.
       resetModalMaterialUniforms(dnNavNewCard.mesh.material, 1);
       dnNavNewCard.mesh.renderOrder = 0;
     }
@@ -519,23 +421,22 @@ export default function createGlobeModal({
     dnNavActive = false;
   }
 
-  // Begin the desktop modal-nav cross-warp: old card warps + fades out, new warps + fades in at
-  // the same screen position; renderOrder controls draw order during the blend.
+  // Old card warps + fades out, new warps + fades in at the same screen position; renderOrder
+  // controls draw order during the blend.
   function startDesktopNavTransition(newIdx) {
     const oldCard = modalCard;
-    const newCard = getGalleryCard(newIdx);
+    const newCard = getCards()[newIdx];
     if (!oldCard || !newCard || !modalScene) return;
 
-    // Finalize any in-flight transition first so we don't leak the old-old card.
+    // Finalize any in-flight transition first, or the old-old card leaks.
     if (dnNavActive) completeDesktopNavTransition();
 
-    // Attach new card, swap to SDF material (overflow carriers already are it), position at target.
     modalScene.attach(newCard.mesh);
     newCard.mesh.visible = true;
-    if (!newCard.isOverflow) newCard.mesh.origMaterial = newCard.mesh.material;
+    newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
     requestModalUpgrade(newCard, newIdx);
-    // Start invisible; animation fades to 1 over DN_NAV_DUR. Also clears stale warp/motion.
+    // Also clears stale warp/motion.
     resetModalMaterialUniforms(newCard.mesh.material, 0);
     newCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
     newCard.mesh.material.depthTest = true;
@@ -550,20 +451,18 @@ export default function createGlobeModal({
     newCard.mesh.scale.copy(tgtScale);
     pushModalCoverUV(newCard); // at its modal size already → identity
 
-    // Lock old card warp center to (0.5, 0.5) so the bell curve emanates from center.
+    // So the bell curve emanates from centre.
     if (oldCard.mesh.material && oldCard.mesh.material.uniforms
       && oldCard.mesh.material.uniforms.uWarpCenter) {
       oldCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
     }
     oldCard.mesh.renderOrder = 0;
 
-    // Promote new card to active modalCard; the 'open' phase keeps it locked at tgtPos.
     modalIdx = newIdx;
     modalCard = newCard;
     modalPhase = MODAL_PHASE.OPEN;
-    populateModal(newIdx);
-    // Nudge the sphere toward the new slot only when it HAS one (barrel). No-op for overflow.
-    if (!isOverflowIdx(newIdx)) requestNavNudge(newIdx);
+    populateModal(newIdx, true);
+    requestNavNudge(newIdx);
 
     dnNavOldCard = oldCard;
     dnNavNewCard = newCard;
@@ -574,7 +473,7 @@ export default function createGlobeModal({
   function open(i, originX, originY) {
     const cards = getCards();
     if (!modalEl || !cards[i]) return;
-    // Cancel a pending close-finalize timeout so it can't strip our fresh modal's state.
+    // So it can't strip the fresh modal's state.
     if (closeTimeoutId) {
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
@@ -582,7 +481,6 @@ export default function createGlobeModal({
     modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
-    // Pin warp center to click origin (default ~center).
     if (typeof originX === 'number' && typeof originY === 'number') {
       touchToWarpUV(originX, originY, modalWarpCenter);
     } else {
@@ -591,26 +489,25 @@ export default function createGlobeModal({
     modalWarp = 0; // bell curve in updateAnimation ramps it up from 0
     populateModal(i);
 
-    // Snapshot the card's current WORLD transform (driven by sphereGroup rotation right now)
+    // Snapshot the card's current WORLD transform
     modalCard.mesh.updateWorldMatrix(true, false);
     modalCard.mesh.getWorldPosition(modalStartPos);
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
 
-    // Reparent into the modal scene (sharp above the blur); attach() preserves world transform.
+    // attach() preserves the world transform.
     if (modalScene) modalScene.attach(modalCard.mesh);
     else getScene().attach(modalCard.mesh);
 
-    // Swap to SDF shader material for crisp corners at modal scale (alphaMap pixelates).
+    // Crisp corners at modal scale; alphaMap pixelates.
     modalCard.mesh.origMaterial = modalCard.mesh.material;
     modalCard.mesh.material = getModalMaterial(modalCard);
     requestModalUpgrade(modalCard, i);
-    // Reset cached SDF uniforms (stale mid-fade would ghost the image); the crop then comes from
-    // the mesh's live scale — still the shape it had on the globe, mid-fold included.
+    // A stale mid-fade would ghost. The crop then comes from the mesh's live scale — still the
+    // shape it had on the globe, mid-fold included.
     resetModalMaterialUniforms(modalCard.mesh.material, 1);
     pushModalCoverUV(modalCard);
 
-    // Reset depth test/order — modal scene has only this one mesh.
     modalCard.mesh.renderOrder = 0;
     modalCard.mesh.material.depthTest = true;
     if (modalCanvasEl) modalCanvasEl.style.display = 'block';
@@ -618,13 +515,11 @@ export default function createGlobeModal({
     modalPhase = MODAL_PHASE.OPENING;
     modalAnimT0 = perfNow();
 
-    // Reset chrome reveal so elements start hidden and fade in after card settles.
     resetChromeReveal();
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'true');
-    const chromeEl = q('.globe-gallery-modal-chrome');
-    // Enter top layer as native dialog: focus trap, inert background, Escape, focus-restore.
+    // Native dialog: focus trap, inert background, Escape, focus-restore.
     if (chromeEl && !chromeEl.open) {
       try { chromeEl.showModal(); } catch (e) { /* already open / not connected; ignore */ }
     }
@@ -632,9 +527,6 @@ export default function createGlobeModal({
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
-      const nameEl = chromeEl && chromeEl.querySelector('.globe-gallery-modal-name');
-      const focusEl = nameEl || chromeEl;
-      if (focusEl) { try { focusEl.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
     const renderer = getRenderer();
@@ -646,25 +538,23 @@ export default function createGlobeModal({
   }
 
   function close(viaPointer) {
-    // Suppress only the synthetic click after touch pointerup (would immediately close the fresh
-    // modal). Escape / pull-to-close are deliberate and must not be swallowed inside this window.
+    // Only the synthetic click after touch pointerup. Escape / pull-to-close are deliberate and
+    // must not be swallowed inside this window.
     if (viaPointer) {
       const now = perfNow();
       if (now - modalOpenedAt < 200) return;
     }
     if (!modalEl || modalIdx < 0 || !modalCard) return;
-    // Re-entrancy guard: ignore extra close requests while already CLOSING (avoids jitter).
+    // Ignore extra close requests while already CLOSING.
     if (modalPhase === MODAL_PHASE.CLOSING) return;
 
-    // Captured for focus-restore below (modalIdx resets to -1 when the close animation completes).
+    // modalIdx resets to -1 when the close animation completes.
     const restoreIdx = modalIdx;
 
-    // Finalize any in-flight desktop nav first so the old card returns to its slot cleanly.
+    // So the old card returns to its slot cleanly.
     if (dnNavActive) completeDesktopNavTransition();
 
-    const chromeEl = q('.globe-gallery-modal-chrome');
-
-    // Snapshot current world transform (the modal target) as the START for the closing animation.
+    // The START for the closing animation.
     modalCard.mesh.updateWorldMatrix(true, false);
     modalCard.mesh.getWorldPosition(modalCloseStartPos);
     modalCard.mesh.getWorldQuaternion(modalCloseStartQuat);
@@ -673,21 +563,20 @@ export default function createGlobeModal({
     modalPhase = MODAL_PHASE.CLOSING;
     modalAnimT0 = perfNow();
 
-    // Hide chrome immediately — it fades with the container.
     resetChromeReveal();
 
     modalEl.classList.remove('is-open');
     if (chromeEl) chromeEl.classList.remove('is-open');
 
-    // Defer scroll-unlock + aria cleanup until the close animation completes, else scrolling
-    // moves the slot the card is flying back to. open() cancels this timeout if a new modal opens.
+    // Deferred until the close animation completes, else scrolling moves the slot the card is
+    // flying back to. open() cancels this timeout if a new modal opens.
     closeTimeoutId = setTimeout(() => {
       modalEl.classList.remove('is-visible');
       modalEl.setAttribute('aria-hidden', 'true');
       if (chromeEl) {
         chromeEl.classList.remove('is-open');
-        // Leave the top layer; native dialog restores opener focus, then re-point to the
-        // last-viewed card so the globe doesn't spin back (synchronous, no visible frame).
+        // The native dialog restores opener focus; re-point to the last-viewed card so the
+        // globe doesn't spin back. Synchronous, so no visible frame.
         if (chromeEl.open) chromeEl.close();
         if (restoreFocusOnClose) restoreFocusOnClose(restoreIdx);
       }
@@ -695,45 +584,53 @@ export default function createGlobeModal({
       document.body.classList.remove('globe-gallery-modal-open');
       if (window.lenis) window.lenis.start();
       closeTimeoutId = null;
-    }, MODAL_ANIM_DURATION);
+    }, modalAnimMs);
 
     const renderer = getRenderer();
     const canvas = renderer && renderer.domElement;
     if (canvas) canvas.classList.remove('is-modal-active');
   }
 
-  // Close via the button so Escape / pull-to-close report it. See README (Analytics).
+  // Close via the button so Escape / pull-to-close report it.
   function clickClose() {
     if (closeBtn) closeBtn.click(); else close();
   }
 
+  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info';
+  function backdropTap(touch) {
+    const rect = photoRectPx();
+    if (!rect) return;
+    const x = touch.clientX;
+    const y = touch.clientY;
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return;
+    if (touch.target?.closest?.(TAP_KEEP_SEL)) return;
+    clickClose();
+  }
+
   function navigate(direction) {
     if (modalIdx < 0 || !modalCard) return;
-    // Don't navigate while closing, or startDesktopNavTransition would flip CLOSING→OPEN and orphan
-    // the close animation (card left floating in modalScene — the "duplicate globe" bug).
+    // Navigating while closing would flip CLOSING→OPEN and orphan the close animation, leaving
+    // the card floating in modalScene.
     if (modalPhase === MODAL_PHASE.CLOSING) return;
-    const count = getCount();
-    if (count <= 1) return;
-    const next = (modalIdx + direction + count) % count;
-    // Every breakpoint uses the same cross-warp transition (old warps + fades out, new fades in).
+    if (getCount() <= 1) return;
+    const next = stepCard(modalIdx, direction);
     startDesktopNavTransition(next);
   }
 
-  // Modal card animation: from the captured world transform → target near camera (open), or back
-  // to the live sphere slot (close, which tracks the slot as the sphere keeps rotating).
-  function updateAnimation(sphereRotActive) {
+  // Captured world transform → target near camera (open), or back to the live sphere slot
+  // (close), which tracks the slot as the sphere keeps rotating.
+  function updateAnimation(sphereRotActive, dtScale = 1) {
     if (modalCard && modalPhase) {
       const sphereGroup = getSphereGroup();
       const now = perfNow();
-      // Reduced motion: force aT=1 so the fly snaps in one frame and the warp bell curves collapse.
+      // RM: aT=1 snaps the fly in one frame and collapses the warp bell curves.
       const aT = getReducedMotion()
-        ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
+        ? 1 : clamp01((now - modalAnimT0) / modalAnimMs);
       const aE = easeInOutCubic(aT);
       const tgtPos = scratchPos;
       const tgtQuat = scratchQuat;
       const tgtScale = scratchScale;
 
-      // Capture position before this frame's update for the CA delta.
       const prevModalX = modalCard.mesh.position.x;
       const prevModalY = modalCard.mesh.position.y;
 
@@ -749,32 +646,21 @@ export default function createGlobeModal({
           modalCard.mesh.quaternion.copy(modalStartQuat).slerp(tgtQuat, aE);
           modalCard.mesh.scale.lerpVectors(modalStartScale, tgtScale, aE);
         }
-        // Crop tracks that scale; a nav cross-warp owns its own cards' uniforms.
+        // A nav cross-warp owns its own cards' uniforms.
         if (!dnNavActive) pushModalCoverUV(modalCard);
 
-        // Chrome reveal: start fade once card is 90% to target (skip at 1 — navigate snaps).
+        // Start the fade once the card is 90% to target; skip at 1, navigate snaps.
         if (modalChromeFadeT < 1) {
           if (getReducedMotion()) {
             modalChromeFadeT = 1; // chrome appears instantly
           } else {
             if (aT >= 0.90 && modalChromeRevealT0 < 0) modalChromeRevealT0 = now;
             modalChromeFadeT = modalChromeRevealT0 >= 0
-              ? Math.max(0, Math.min(1, (now - modalChromeRevealT0) / CHROME_REVEAL_DUR))
+              ? clamp01((now - modalChromeRevealT0) / CHROME_REVEAL_DUR)
               : 0;
           }
         }
-      } else if (modalPhase === MODAL_PHASE.CLOSING && modalCard.isOverflow) {
-        // Overflow carrier has no slot to fly back to — dissolve opacity to 0, then retire.
-        const u = modalCard.mesh.material.uniforms;
-        if (u && u.uOpacity) u.uOpacity.value = 1 - aE;
-        if (aT >= 1) {
-          retireOverflowCard(modalCard);
-          releaseModalTexture();
-          if (modalCanvasEl) modalCanvasEl.style.display = 'none';
-          closeModalIdentity();
-        }
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
-        // Live target = slot's world transform: (drag rotation × spherePos) + sphereGroup.position.
         // sphereGroup.rotation is identity, so apply the drag rotation manually.
         sphereGroup.updateMatrixWorld(true);
         if (sphereRotActive) {
@@ -785,8 +671,8 @@ export default function createGlobeModal({
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
-        // Match sphere-phase scale (equal-area) + facing tilt exactly, or the card jumps on the
-        // last frame when snapToSphereSlot runs. applySphereFacing is a no-op where facing=0.
+        // Must match sphere-phase scale + facing tilt exactly, or the card jumps on the last
+        // frame when snapToSphereSlot runs.
         tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);
         applySphereFacing(tgtQuat);
 
@@ -796,26 +682,24 @@ export default function createGlobeModal({
         pushModalCoverUV(modalCard); // closes back down to the slot's crop, tracking the scale
 
         if (aT >= 1) {
-          // Reset cached SDF uniforms before restoring the basic material (else it ghosts later).
+          // Before restoring the basic material, else it ghosts later.
           resetModalMaterialUniforms(modalCard.modalMat, 1);
-          // Restore the card's own material before re-parenting to globe.
           if (modalCard.mesh.origMaterial) {
             modalCard.mesh.material = modalCard.mesh.origMaterial;
             modalCard.mesh.origMaterial = null;
           }
-          // Re-parent to sphereGroup and snap (drag rotation baked in, no flash).
+          // Drag rotation baked in, so no flash.
           sphereGroup.attach(modalCard.mesh);
           snapToSphereSlot(modalCard);
           modalCard.mesh.material.depthTest = true;
           modalCard.mesh.renderOrder = 0;
           if (modalCanvasEl) modalCanvasEl.style.display = 'none';
-          // Free the opened card's hi-res texture (only the small base set stays resident).
           releaseModalTexture();
           closeModalIdentity();
         }
       }
 
-      // Modal CA while the card moves; the position delta encodes velocity. Clear to 0 once OPEN.
+      // The position delta encodes velocity. Cleared to 0 once OPEN.
       if (caEnabled && modalCard && modalCard.mesh.material.uniforms
         && modalCard.mesh.material.uniforms.uMotionDir) {
         if (modalPhase === MODAL_PHASE.OPEN) {
@@ -827,32 +711,31 @@ export default function createGlobeModal({
         }
       }
 
-      // Modal warp: sin(aT·π) bell curve on open/close, settles to 0 when OPEN (drag sets it then).
+      // sin(aT·π) bell curve on open/close; drag owns it once OPEN.
       if (modalPhase === MODAL_PHASE.OPENING) {
-        modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_OPEN;
+        modalWarp = Math.sin(clamp01(aT) * Math.PI) * MODAL_WARP_OPEN;
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
-        modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_CLOSE;
+        modalWarp = Math.sin(clamp01(aT) * Math.PI) * MODAL_WARP_CLOSE;
       } else if (modalPhase === MODAL_PHASE.OPEN) {
-        // Decay any leftover warp once settled; touch handlers will set it again on drag.
-        modalWarp *= 0.85;
+        modalWarp *= MODAL_WARP_DECAY ** dtScale;
         if (modalWarp < 0.001) modalWarp = 0;
       }
-      // Skip during desktop nav cross-warp — updateDesktopNav drives both cards' uWarp directly.
+      // updateDesktopNav drives both cards' uWarp directly.
       if (!dnNavActive) pushModalWarpUniforms();
 
-      // Keep chrome locked to the card's projected position each frame (OPENING sets fade target).
+      // Keep chrome locked to the card's projected position each frame.
       if (modalPhase === MODAL_PHASE.OPENING || modalPhase === MODAL_PHASE.OPEN) {
         revealModalChrome();
       }
     }
   }
 
-  // Desktop nav cross-warp: both cards' uWarp on a sin bell curve; opacity cross-fades.
+  // Both cards' uWarp on a sin bell curve; opacity cross-fades.
   function updateDesktopNav() {
     if (dnNavActive) {
       const dnNow = perfNow();
-      // Reduced motion: force completion — the new card just becomes visible.
-      const dnT = getReducedMotion() ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
+      // RM: force completion.
+      const dnT = getReducedMotion() ? 1 : clamp01((dnNow - dnNavT0) / DN_NAV_DUR);
       if (dnT >= 1) {
         completeDesktopNavTransition();
       } else {
@@ -870,14 +753,11 @@ export default function createGlobeModal({
     }
   }
 
-  // Render the flown-out modal card on its own canvas (called after the main scene).
   function render() {
-    if (modalRenderer && modalScene && modalCard) {
-      modalRenderer.render(modalScene, getCamera());
-    }
+    if (!(modalRenderer && modalScene && modalCard)) return;
+    modalRenderer.render(modalScene, getCamera());
   }
 
-  // Re-size the modal renderer to match the viewport (called from core doLayout).
   function resize(w, h) {
     if (!modalRenderer) return;
     const dpr = Math.min(window.devicePixelRatio, 2);
@@ -886,15 +766,14 @@ export default function createGlobeModal({
       modalRenderer.setPixelRatio(dpr);
     }
     modalRenderer.setSize(w, h);
-    // Resize can change whether the description overflows — re-measure the fade cue.
+    // Resize can change whether the description overflows.
     if (modalIdx >= 0) scheduleDescFade();
   }
 
-  // Create the modal renderer/scene + THREE temps and wire DOM interactions. Once per init.
+  // Once per init.
   function setup() {
     const { W, H } = getViewport();
 
-    // Modal renderer/scene: renders only the flown-out card, above the blurred main canvas.
     modalCanvasEl = q('.globe-gallery-modal-canvas');
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
@@ -908,42 +787,44 @@ export default function createGlobeModal({
 
     modalEl = q('.globe-gallery-modal');
     if (!modalEl) return;
+    const declaredMs = parseFloat(
+      getComputedStyle(modalEl).getPropertyValue('--gg-modal-anim-ms'),
+    );
+    modalAnimMs = Number.isFinite(declaredMs) && declaredMs > 0 ? declaredMs : MODAL_ANIM_FALLBACK;
     modalStartPos = new THREE.Vector3();
     modalStartQuat = new THREE.Quaternion();
     modalStartScale = new THREE.Vector3();
     modalCloseStartPos = new THREE.Vector3();
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
-    // Chrome div hosts the interactive elements (close, nav, info) above the WebGL card canvas.
-    const chromeEl = q('.globe-gallery-modal-chrome');
+    chromeEl = q('.globe-gallery-modal-chrome');
+    chromeNodes = null;
     const evtRoot = chromeEl || modalEl;
-    // Wire click + touch listeners once (DOM persists across re-inits — re-adding would stack).
     const alreadyWired = listenersWired;
     listenersWired = true;
     if (!alreadyWired) {
       closeBtn = evtRoot.querySelector('.globe-gallery-modal-close');
-      // isTrusted is exactly viaPointer: the guard exists to swallow the browser's synthetic
-      // click after a touch pointerup (trusted); ours from clickClose() are not.
+      // isTrusted is exactly viaPointer: the guard swallows the browser's synthetic click after
+      // a touch pointerup; ours from clickClose() are not trusted.
       closeBtn.addEventListener('click', (e) => close(e.isTrusted));
       prevBtn = evtRoot.querySelector('.globe-gallery-modal-nav-prev');
       nextBtn = evtRoot.querySelector('.globe-gallery-modal-nav-next');
       prevBtn.addEventListener('click', () => { navigate(-1); });
       nextBtn.addEventListener('click', () => { navigate(1); });
-      // Single-card gallery: nav is a no-op, so hide the arrows entirely (count is fixed).
+      // Single-card gallery: nav is a no-op, so hide the arrows.
       if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
       const descEl = evtRoot.querySelector('.globe-gallery-modal-description');
       if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
-      // Escape → dialog 'cancel'; preventDefault to play the close animation, not instant close.
+      // preventDefault so the close animation plays instead of an instant close.
       if (chromeEl) {
         chromeEl.addEventListener('cancel', (e) => { e.preventDefault(); clickClose(); });
       }
     }
 
-    // Touch gestures wired once too; nothing runs after this, so early-return.
     if (alreadyWired) return;
 
-    // Mobile touch gestures: live 1:1 drag (CSS transform on the canvas) with rubber-band release.
-    // Horizontal = swipe/navigate; vertical pull-down = close. Chrome stays put (iOS Photos UX).
+    // Live 1:1 drag (CSS transform on the canvas) with rubber-band release. Horizontal =
+    // swipe/navigate, vertical pull-down = close. Chrome stays put.
     let swStartX = 0; let
       swStartY = 0;
     let swLastX = 0; let swLastY = 0; let
@@ -960,17 +841,16 @@ export default function createGlobeModal({
     const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
     const PULL_SCALE_MIN = 0.80;
 
-    // Gestures follow POINTER type, not the width band (tablets at md get them too), mirroring
-    // usesCylinderGeometry. matchMedia-less → none.
+    // Follows POINTER type, not the width band, mirroring usesCylinderGeometry.
     const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
 
-    // Attach to the dialog (evtRoot), not modalEl — modalEl goes inert under showModal().
+    // Attach to the dialog, not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {
       if (!isTouchPrimary()) return;
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
-      // Description owns its own touch scroll — don't hijack it for swipe/pull-to-close.
+      // Description owns its own touch scroll.
       if (e.target?.closest?.('.globe-gallery-modal-description')) return;
       swStartX = e.touches[0].clientX; swLastX = swStartX;
       swStartY = e.touches[0].clientY; swLastY = swStartY;
@@ -979,9 +859,7 @@ export default function createGlobeModal({
       swAxis = null;
       swVelX = 0;
       swVelY = 0;
-      // Capture touch position as warp center (finger-anchored fisheye).
       touchToWarpUV(swStartX, swStartY, modalWarpCenter);
-      // Drag follows finger 1:1 — no transition.
       modalCanvasEl.style.transition = 'none';
     }, { passive: true });
 
@@ -992,13 +870,12 @@ export default function createGlobeModal({
       const dx = x - swStartX;
       const dy = y - swStartY;
 
-      // Axis lock — first significant move picks horizontal swipe vs vertical pull (no jitter).
+      // First significant move picks horizontal swipe vs vertical pull.
       if (swAxis === null) {
         if (Math.abs(dx) < AXIS_LOCK_PX && Math.abs(dy) < AXIS_LOCK_PX) return;
         swAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
       }
 
-      // Velocity tracking — used for fling detection on touchend.
       const now = Date.now();
       const dt = now - swLastT;
       if (dt > 0) {
@@ -1009,15 +886,12 @@ export default function createGlobeModal({
 
       const { W: vpW, H: vpH } = getViewport();
       if (swAxis === 'x') {
-        // Warp-only preview (no slide): the fisheye grows with drag, capped at MODAL_WARP_SWIPE.
-        // Release commits the same cross-warp transition as the nav buttons.
+        // Warp-only preview, no slide. Release commits the same cross-warp as the nav buttons.
         modalWarp = Math.min(1, Math.abs(dx) / (vpW * 0.30)) * MODAL_WARP_SWIPE;
       } else {
-        // Pull-down only — upward drag does nothing (clamped to 0).
         const pullY = Math.max(0, dy);
         const scale = Math.max(PULL_SCALE_MIN, 1 - pullY / PULL_SCALE_DAMPING);
         modalCanvasEl.style.transform = `translate3d(0, ${pullY}px, 0) scale(${scale.toFixed(3)})`;
-        // Pull-down warp: scales with pull / 20% viewport height, capped at MODAL_WARP_PULL.
         modalWarp = Math.min(1, pullY / (vpH * 0.20)) * MODAL_WARP_PULL;
       }
       pushModalWarpUniforms();
@@ -1026,7 +900,12 @@ export default function createGlobeModal({
     evtRoot.addEventListener('touchend', (e) => {
       if (!swActive) return;
       swActive = false;
-      if (!modalCanvasEl || swAxis === null) { swAxis = null; return; }
+      if (!modalCanvasEl || swAxis === null) {
+        // No axis lock means the finger never travelled AXIS_LOCK_PX: a tap, not a gesture.
+        if (swAxis === null && e.changedTouches.length === 1) backdropTap(e.changedTouches[0]);
+        swAxis = null;
+        return;
+      }
       if (e.changedTouches.length !== 1) return;
       const dx = e.changedTouches[0].clientX - swStartX;
       const dy = e.changedTouches[0].clientY - swStartY;
@@ -1035,11 +914,9 @@ export default function createGlobeModal({
       if (swAxis === 'x') {
         const commit = Math.abs(dx) > vpW * COMMIT_DIST_X_FRAC
                   || Math.abs(swVelX) > COMMIT_VEL_X;
-        // Commit clicks the matching nav button (same handler, and it reports);
-        // a non-commit release lets the preview warp decay in updateAnimation.
+        // Commit clicks the matching nav button, so that path reports.
         if (commit) {
-          // Clear the preview warp so it doesn't bleed onto the new card once the transition
-          // ends and updateAnimation resumes pushing modalWarp — the cross-warp owns warp now.
+          // Else it bleeds onto the new card once updateAnimation resumes pushing modalWarp.
           modalWarp = 0;
           const dir = (dx < 0 ? 1 : -1) * (isRtl() ? -1 : 1);
           const btn = dir < 0 ? prevBtn : nextBtn;
@@ -1050,10 +927,9 @@ export default function createGlobeModal({
         const pullCommit = dy > vpH * COMMIT_DIST_Y_FRAC
                       || swVelY > COMMIT_VEL_Y;
         if (pullCommit) {
-          // Sync the mesh world pos+scale to the gesture's visible state, reset CSS, then close —
-          // so the fly-back starts from where the user dragged, not center. No snap.
+          // So the fly-back starts from where the user dragged, not centre.
           if (modalCard) {
-            const pxPerWorld = vpH / (2 * MODAL_CAM_DIST * Math.tan(Math.PI / 6));
+            const pxPerWorld = pxPerWorldAt(MODAL_CAM_DIST, vpH);
             const pulledY = Math.max(0, dy);
             const gestureScale = Math.max(PULL_SCALE_MIN, 1 - pulledY / PULL_SCALE_DAMPING);
             modalCard.mesh.position.y -= pulledY / pxPerWorld; // CSS down → world Y negative
@@ -1063,7 +939,6 @@ export default function createGlobeModal({
           modalCanvasEl.style.transform = '';
           clickClose();
         } else {
-          // Rubber-band back.
           modalCanvasEl.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
           modalCanvasEl.style.transform = '';
         }
@@ -1081,17 +956,15 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
-  // Synchronously return the modal DOM + page state to closed, so a breakpoint re-init on the
-  // same DOM can't leave it stuck open. q() because core destroy() nulls the renderer first.
+  // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. q() because
+  // core destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');
       modalEl.setAttribute('aria-hidden', 'true');
     }
-    const chromeEl = q('.globe-gallery-modal-chrome');
     if (chromeEl) {
       chromeEl.classList.remove('is-open');
-      // Leave the top layer if a breakpoint re-init fires with the modal open.
       if (chromeEl.open) chromeEl.close();
     }
     if (modalCanvasEl) {
@@ -1111,16 +984,6 @@ export default function createGlobeModal({
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
     resetModalDom();
     releaseModalTexture();
-    // Dispose lazy overflow carriers — Three frees GPU memory only on explicit dispose.
-    overflowCards.forEach((card) => {
-      if (card.pendingImg) { card.pendingImg.onload = null; card.pendingImg.onerror = null; card.pendingImg.src = ''; card.pendingImg = null; }
-      if (card.mesh.parent) card.mesh.parent.remove(card.mesh);
-      card.mesh.geometry.dispose();
-      card.modalMat.dispose();
-      if (card.ownTex) { card.ownTex.dispose(); card.ownTex = null; }
-    });
-    overflowCards.clear();
-    if (overflowPlaceholderTex) { overflowPlaceholderTex.dispose(); overflowPlaceholderTex = null; }
     if (modalRenderer) {
       modalRenderer.dispose();
       modalRenderer = null;

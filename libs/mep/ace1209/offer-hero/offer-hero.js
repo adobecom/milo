@@ -222,11 +222,9 @@ function initAnimation(block) {
       videoObserver?.disconnect();
       videoObserver = null;
       needsReset = true;
-      cards.forEach((card) => card.classList.remove('is-settled'));
       return;
     }
 
-    cards.forEach((card) => card.classList.add('is-settled'));
     fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
     if (needsReset) {
       needsReset = false;
@@ -277,9 +275,10 @@ function initAnimation(block) {
     const eyebrowH = eyebrow.offsetHeight;
     const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
     layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
-    const threshold = isMobile() ? 0.15 : 0.6;
+    const threshold = isMobile() ? 0.05 : 0.3;
     const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
-    eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
+    const fadeRange = (layout.animEnd - layout.animStart) * 0.25;
+    eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + fadeRange}px`);
   }
 
   function computeLayouts() {

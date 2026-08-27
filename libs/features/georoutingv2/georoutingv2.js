@@ -1,6 +1,5 @@
-import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { sendAnalytics } from '../../martech/helpers.js';
-import { norm } from '../../utils/market.js';
+/* eslint-disable no-underscore-dangle */
+import { getFederatedContentRoot, getCountry, setMarket, normCountryCode as norm } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -10,6 +9,25 @@ let getMetadata;
 let loadBlock;
 let loadStyle;
 let isC2Page;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalytics(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');

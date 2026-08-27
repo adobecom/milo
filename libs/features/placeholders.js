@@ -107,6 +107,19 @@ async function getGeoPlaceholders(config, sheet) {
   });
 }
 
+// Map of `-geo-ip` placeholder overrides for the visitor's geo, or null when
+// inactive/none apply. Exposed for surfaces that do their own token replacement
+// outside milo's decorateArea pipeline (e.g. the C2 federal gnav).
+export async function getGeoIpPlaceholders(config = getConfig(), sheet = 'default') {
+  const geo = await getGeoPlaceholders(config, sheet);
+  if (!geo) return null;
+  const overrides = new Map();
+  Object.entries(geo).forEach(([key, value]) => {
+    if (isGeoIpKey(key) && typeof value === 'string') overrides.set(key, value);
+  });
+  return overrides.size ? overrides : null;
+}
+
 async function getPlaceholder(key, config, sheet) {
   let defaultFetched = false;
   const defaultLocale = 'en-US';
@@ -213,7 +226,7 @@ export async function replaceText(
   return finalText;
 }
 
-const geoIpPattern = /{{(.*?-geo-ip)}}|%7B%7B(.*?-geo-ip)%7D%7D/g;
+const geoIpPattern = /{{([^{}]*?-geo-ip)}}|%7B%7B((?:(?!%7[BD]).)*?-geo-ip)%7D%7D/g;
 const findGeoIpKeys = (t) => (t ? [...t.matchAll(geoIpPattern)].map((m) => m[1] || m[2]) : []);
 
 async function deferGeoIpUpdate(deferredItems, config, sheet) {

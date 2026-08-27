@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { getMetadata as getSectionMetadata } from '../section-metadata/section-metadata.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -542,16 +543,7 @@ function setupCollapsingHeader(el) {
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
-  const getNavHeight = () => {
-    const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-    if (!nav) return 0;
-    const pos = getComputedStyle(nav).position;
-    const bottom = (pos === 'fixed' || pos === 'sticky')
-      ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
-    return bottom + (document.querySelector('.feds-localnav')?.offsetHeight ?? 0);
-  };
-
-  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
+  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
@@ -597,8 +589,8 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-  if (nav) new ResizeObserver(syncTop).observe(nav);
+  const header = document.querySelector('header');
+  if (header) new ResizeObserver(syncTop).observe(header);
 
   new ResizeObserver(() => {
     if (!isExpanding) syncHeaderHeight();

@@ -1,5 +1,6 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 
@@ -73,6 +74,24 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+const SPACING_CLASS_RE = /^spacing-[a-z0-9]+(-static)?(-top|-bottom)?$/;
+
+function applyMediaSpacing(root) {
+  const spacingClasses = [...root.classList].filter((cls) => SPACING_CLASS_RE.test(cls));
+  if (!spacingClasses.length) return;
+
+  const authorsTop = spacingClasses.some((cls) => !cls.endsWith('-bottom'));
+  const authorsBottom = spacingClasses.some((cls) => !cls.endsWith('-top'));
+
+  const probe = createTag('div', { class: spacingClasses.join(' '), style: 'position:absolute;visibility:hidden' });
+  root.append(probe);
+  const { paddingTop, paddingBottom } = getComputedStyle(probe);
+  probe.remove();
+
+  if (authorsTop) root.style.setProperty('--rc-media-spacing-top', paddingTop);
+  if (authorsBottom) root.style.setProperty('--rc-media-spacing-bottom', paddingBottom);
+}
+
 const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
 
 function isMediaCell(cell) {
@@ -120,6 +139,7 @@ function decorateMediaVariant(container) {
 
 function decorate(block, root = block) {
   if (root.classList.contains('media')) {
+    applyMediaSpacing(root);
     decorateMediaVariant(block);
     return;
   }
@@ -177,7 +197,11 @@ function applyHeroOverlay(el) {
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
 
-  if (el.classList.contains('merch-moment')) {
+  if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
+    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+  }
+
+    if (el.classList.contains('merch-moment')) {
     revealMerchMomentText(el);
   }
 

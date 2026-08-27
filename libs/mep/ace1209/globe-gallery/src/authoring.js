@@ -1,12 +1,11 @@
 // eslint-disable-next-line import/no-relative-packages
-import { getFederatedUrl } from '../../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../../utils/utils.js';
 
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
 }
 
-// The authored SVG URL (href, or the visible URL text) if this anchor is a badge logo.
 function badgeSvgUrl(a) {
   const href = a.getAttribute('href') || '';
   if (href.includes('.svg')) return href;
@@ -18,17 +17,14 @@ function isSvgAnchor(a) {
   return !!badgeSvgUrl(a);
 }
 
-// Inline <picture> markup for a badge logo URL, or null. getFederatedUrl (not decorateSVG) and
-// aria-hidden: see README (Card shape).
+// Inline <picture> markup for a badge logo URL, or null.
 function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
   return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
-// See README (Authoring contract) for the authored-row layout.
-
-// English fallback for the a11y instructions; authored inline so it stays localizable.
+// Fallback only; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const DEFAULT_HINT = 'Click & Drag';
@@ -38,7 +34,7 @@ const LABEL_DIVIDER = '||';
 const DEFAULT_LABELS = [
   DEFAULT_GALLERY_INSTRUCTIONS,
   'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
-  'Previous card', '{index} of {count}', 'Next card', 'Close',
+  'Previous card', '{index} of {count}', 'Next card', 'Close', 'Card details',
 ];
 const CARD_TPL_INDEX = 6;
 
@@ -56,13 +52,13 @@ function buildLabels(parts) {
     prevCard: at(5),
     nextCard: at(7),
     closeBtn: at(8),
+    modalTitle: at(9),
     cardLabel: (index, count) => cardTpl
       .replace('{index}', String(index))
       .replace('{count}', String(count)),
   };
 }
 
-// One cell's text: its <p>s joined, or the bare cell text when unwrapped.
 function cellText(cell) {
   if (!cell) return '';
   const paras = [...cell.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
@@ -73,33 +69,100 @@ function cellParas(cell) {
   return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
 }
 
-// Move the authored <p>s into a container. See README (Reusing authored paragraphs).
+// Move the authored <p>s into a container.
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }
 
 const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
 
-function hangOpeningMark(quoteEl) {
-  const text = quoteEl.textContent.trim();
-  const container = quoteEl.closest('.globe-gallery-pullquote');
-  if (!container || !OPENING_MARK.test(text)) return;
-  const cs = getComputedStyle(quoteEl);
+function gutterOf(el) {
+  return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
+}
+
+function hangOpeningMark(el, room) {
+  el.style.textIndent = '';
+  const text = el.textContent.trim();
+  if (!room || !OPENING_MARK.test(text)) return;
+  const cs = getComputedStyle(el);
   const ctx = document.createElement('canvas').getContext('2d');
   ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
   // Canvas ignores letter-spacing, and heading-1 has some.
   const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
-  const room = parseFloat(getComputedStyle(container).paddingInlineStart) || 0;
   // Too wide to hang — a CJK bracket, or just past the padding.
   if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
-  if (advance > 0) quoteEl.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
 }
 
-function applyQuoteHang(quoteEl) {
-  if (!quoteEl) return;
-  const run = () => hangOpeningMark(quoteEl);
-  document.fonts?.ready?.then(run, run);
+export function hangParagraphs(container) {
+  if (!container) return;
+  const room = gutterOf(container);
+  [...container.children].forEach((p) => hangOpeningMark(p, room));
+}
+
+const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
+
+// Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
+function measureLines(quoteEl, words) {
+  const probes = words.map((w) => {
+    const s = document.createElement('span');
+    s.textContent = w;
+    return s;
+  });
+  const nodes = [];
+  probes.forEach((s, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(s);
+  });
+  quoteEl.replaceChildren(...nodes);
+  const lines = [];
+  let top = null;
+  probes.forEach((s, i) => {
+    const y = s.offsetTop;
+    if (top === null || y - top > 1) {
+      lines.push([]);
+      top = y;
+    }
+    lines[lines.length - 1].push(words[i]);
+  });
+  return lines;
+}
+
+// Re-typeset the quote as one masked block per rendered line, and return those lines for the
+// caller to write progress vars to. Idempotent; plain text if there is nothing to split.
+export function layoutQuote(quoteEl) {
+  if (!quoteEl) return [];
+  if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
+  const text = QUOTE_TEXT.get(quoteEl).trim();
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.remove('globe-gallery-pullquote-lines');
+  quoteEl.textContent = text;
+  if (!text) return [];
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-gallery-pullquote')));
+  const indent = quoteEl.style.textIndent;
+  const lines = measureLines(quoteEl, text.split(/\s+/));
+  const lineEls = lines.map((wordsOnLine, i) => {
+    const inner = createTag('span', { class: 'globe-gallery-pullquote-line-inner' });
+    inner.textContent = wordsOnLine.join(' ');
+    // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
+    if (i === 0 && indent) inner.style.marginInlineStart = indent;
+    return createTag('span', { class: 'globe-gallery-pullquote-line', 'aria-hidden': 'true' }, inner);
+  });
+  const srEl = createTag('span', { class: 'sr-only globe-gallery-pullquote-sr' });
+  srEl.textContent = text;
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.add('globe-gallery-pullquote-lines');
+  // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
+  // flex items generates no box, so the layout is untouched.
+  const nodes = [];
+  lineEls.forEach((line, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(line);
+  });
+  nodes.push(srEl);
+  quoteEl.replaceChildren(...nodes);
+  return lineEls;
 }
 
 function parseArcCopy(row) {
@@ -123,7 +186,7 @@ function parsePullQuote(row) {
   };
 }
 
-// The <em>/<strong> text, but only when it IS the whole paragraph. See README (Card shape).
+// The <em>/<strong> text, but only when it IS the whole paragraph.
 function wholeParaChild(p, selector) {
   const child = p.querySelector(selector);
   const text = child?.textContent.trim();
@@ -162,7 +225,7 @@ function parseFragmentCardSegment(nodes) {
       if (!img && bare) img = bare;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
-        // Row (on a clone, so authored DOM is untouched) = product; nested <ul> = its feature.
+        // Cloned, so the authored DOM is untouched.
         const row = li.cloneNode(true);
         const featureLi = row.querySelector(':scope > ul > li');
         row.querySelector(':scope > ul')?.remove();
@@ -212,12 +275,10 @@ function parseFragmentCards(row) {
   const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
 
   if (!hasDirectContent) {
-    // Children are section divs (each fragment section = one card).
     const divs = [...row.querySelectorAll(':scope > div')];
     return divs.flatMap((div) => parseFragmentCards(div));
   }
 
-  // Flat content — split by <hr> for multiple cards in one section.
   const segments = [];
   let current = [];
   [...row.childNodes].forEach((node) => {
@@ -231,14 +292,13 @@ function parseFragmentCards(row) {
   return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
 }
 
-// Fetch the fragment's .plain.html and parse all card sections from it.
 export async function fetchFragmentCards(href) {
   try {
     const resp = await fetch(`${href}.plain.html`);
     if (!resp.ok) return null;
     const html = await resp.text();
-    // DOMParser yields an inert document (no browsing context), so card <img>/<picture>
-    // never fetch here — only the right-sized texture URL (optimizeImgUrl) is downloaded.
+    // DOMParser yields an inert document, so card <img>/<picture> never fetch here — only the
+    // right-sized texture URL is downloaded.
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const cards = [...doc.body.querySelectorAll(':scope > div')]
       .flatMap((section) => parseFragmentCards(section))
@@ -249,8 +309,7 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// Right-size a helix/DA media image to what we rasterize. Cards ask by height, the modal by
-// width; non-media URLs pass through. See README (Texture memory budget).
+// Cards ask by height, the modal by width; non-media URLs pass through.
 export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
   try {
@@ -262,8 +321,8 @@ export function optimizeImgUrl(src, px, axis = 'width') {
   }
 }
 
-// Positional rows (see README, Authoring contract). Fragment links are authored
-// with #_dnb so Milo skips auto-resolution; the hash is stripped before fetching.
+// Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
+// the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
@@ -285,7 +344,7 @@ export function parseAuthoredContent(el) {
 // modal's aria-labelledby/describedby.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
-    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
     <div class="globe-gallery-controls">
       <button class="globe-gallery-control globe-gallery-spin-toggle" type="button" daa-ll="pause_spin--globe_gallery" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="globe-gallery-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
@@ -293,11 +352,11 @@ const buildMarkup = (gid, labels) => `
       </button>
       <div class="globe-gallery-hint">
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="globe-gallery-hint-text"></div>
         <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12h16m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </div>
@@ -306,13 +365,14 @@ const buildMarkup = (gid, labels) => `
   <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
     <defs>
       <filter id="ca-filter-${gid}" color-interpolation-filters="sRGB">
-        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rch"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1" result="rch"/>
         <feOffset in="rch" class="globe-gallery-ca-r-offset" dx="0" dy="0" result="rOff"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gch"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bch"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 0 1" result="gch"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 0 1" result="bch"/>
         <feOffset in="bch" class="globe-gallery-ca-b-offset" dx="0" dy="0" result="bOff"/>
-        <feComposite in="rOff" in2="gch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="rg"/>
-        <feComposite in="rg" in2="bOff" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+        <feBlend in="rOff" in2="gch" mode="screen" result="rg"/>
+        <feBlend in="rg" in2="bOff" mode="screen" result="rgb"/>
+        <feComposite in="rgb" in2="SourceGraphic" operator="in"/>
       </filter>
     </defs>
   </svg>
@@ -324,13 +384,13 @@ const buildMarkup = (gid, labels) => `
 
   <div class="globe-gallery-pullquote-pin">
     <div class="globe-gallery-pullquote-rail">
-      <div class="globe-gallery-pullquote">
+      <figure class="globe-gallery-pullquote">
         <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-        <div class="globe-gallery-pullquote-attribution">
+        <figcaption class="globe-gallery-pullquote-attribution">
           <p class="globe-gallery-pullquote-name body-lg"></p>
           <p class="globe-gallery-pullquote-role body-lg"></p>
-        </div>
-      </div>
+        </figcaption>
+      </figure>
     </div>
   </div>
 
@@ -340,34 +400,33 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
+  <dialog class="globe-gallery-modal-chrome" aria-label="${escapeHtml(labels.modalTitle)}">
     <div class="globe-gallery-modal-info">
+      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
-      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" data-lenis-prevent></div>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
-    <span class="globe-gallery-modal-image globe-gallery-sr-only" role="img"></span>
+    <span class="globe-gallery-modal-image sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
+    <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" role="note"></span>
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
     <button class="globe-gallery-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <span class="globe-gallery-modal-position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
+    <span class="globe-gallery-modal-announce sr-only" aria-live="polite"></span>
   </dialog>
 `;
 
-// Per-page instance counter → unique id suffix per globe.
 let globeInstanceSeq = 0;
 
-// Build the block's DOM; returns the `gid` for this instance's unique ids.
 export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
@@ -382,9 +441,29 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
     quoteEl.textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
     el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
-    applyQuoteHang(quoteEl);
+    layoutQuote(quoteEl);
   } else {
     el.querySelector('.globe-gallery-pullquote-pin').remove();
   }
   return gid;
+}
+
+const SCATTER_KEY = 'One day I will return to your side';
+const SCATTER_MOD = 2147483647;
+
+function seedFrom(key) {
+  let h = 0;
+  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) % SCATTER_MOD;
+  return h || 1;
+}
+
+export function scatterCards(cards) {
+  const out = cards.map((card, i) => ({ ...card, authoredIndex: i }));
+  let rand = seedFrom(SCATTER_KEY);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    rand = (rand * 48271) % SCATTER_MOD;
+    const j = Math.floor((rand / SCATTER_MOD) * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }

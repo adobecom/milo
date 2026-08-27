@@ -46,14 +46,14 @@
 .rounded-corners + .section,
 .rounded-corners-bottom + .section {
   .plans-hero-media {
-    top: calc(-1 * var(--s2a-border-radius-lg));
+    top: calc(-1 * var(--s2a-border-radius-xl));
   }
 }
 
 .section:has(+ .rounded-corners),
 .section:has(+ .rounded-corners-top) {
   .plans-hero-media {
-    bottom: calc(-1 * var(--s2a-border-radius-lg));
+    bottom: calc(-1 * var(--s2a-border-radius-xl));
   }
 }
 
