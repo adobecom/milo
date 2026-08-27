@@ -1,9 +1,8 @@
 .roller-carousel {
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
-  --gnav-offset: 72px;
   --rcc-top-gap: 40px;
-  --rcc-sticky-top: var(--gnav-offset);
+  --rcc-sticky-top: var(--global-height-nav, 64px);
 
   .rcc-scroll-wrapper {
     position: relative;
@@ -153,7 +152,7 @@
     aspect-ratio: 650 / 766;
     height: clamp(265px, 100dvh - 382px, 360px);
     max-width: 70vw;
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
     overflow: hidden;
     background: #000;
   }
@@ -269,11 +268,11 @@
 }
 
 body:has(header.has-breadcrumbs) .roller-carousel {
-  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-height-breadcrumbs, 33px));
+  --rcc-sticky-top: calc(var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 }
 
 body:has(header.local-nav) .roller-carousel {
-  --rcc-sticky-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px));
+  --rcc-sticky-top: calc(var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
 }
 
 @media (width >= 768px) {

@@ -1,7 +1,7 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: calc(494px + var(--global-height-nav, 80px));
+  min-block-size: calc(494px + var(--global-height-nav, 64px));
 
   .pm-content {
     display: flex;
@@ -17,7 +17,7 @@
     justify-content: space-between;
 
     .pm-subtext {
-      max-width: 400px;
+      max-inline-size: 400px;
     }
   }
 
@@ -51,6 +51,25 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
+
+    .mas-description,
+    .mas-price-commitment {
+      color: var(--s2a-color-content-default);
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price-commitment {
+      color: var(--s2a-color-content-subtle);
+    }
+
+    .mas-price {
+      color: var(--s2a-color-content-default);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
   }
 
   .pm-merch-ctas {
@@ -63,15 +82,21 @@
       text-align: center;
     }
   }
+
+  .price.price-strikethrough {
+    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
+  }
 }
 
-/* local-nav adds a breadcrumbs/local-nav bar below the global nav */
+body:has(header.has-breadcrumbs) .product-marquee-grid {
+  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+}
+
 body:has(header.local-nav) .product-marquee-grid {
-  min-block-size: calc(494px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
+  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
 }
 
 @media (width < 768px) {
-  /* justify-between pushes card to bottom; foreground stays at natural height */
   .product-marquee-grid .pm-content {
     justify-content: space-between;
   }
@@ -89,7 +114,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
 @media (width >= 768px) {
   .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 80px));
+    min-block-size: calc(500px + var(--global-height-nav, 64px));
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
@@ -109,7 +134,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
     .pm-foreground {
       .pm-subtext {
-        max-width: min(467px, 80%);
+        max-inline-size: min(467px, 80%);
       }
     }
 
@@ -118,7 +143,7 @@ body:has(header.local-nav) .product-marquee-grid {
       flex-direction: column;
       justify-content: flex-end;
       padding-block-start: var(--s2a-spacing-4xl);
-      width: min(370px, 45%);
+      inline-size: min(370px, 45%);
     }
 
     .pm-merch-card {
@@ -126,9 +151,22 @@ body:has(header.local-nav) .product-marquee-grid {
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
     }
+
+    .pm-merch-content {
+      .mas-description,
+      .mas-price-commitment {
+        font-size: var(--s2a-typography-font-size-body-md);
+        line-height: var(--s2a-typography-line-height-body-md);
+        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+      }
+    }
+  }
+
+  body:has(header.has-breadcrumbs) .product-marquee-grid {
+    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
   }
 
   body:has(header.local-nav) .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 33px));
+    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
   }
 }

@@ -1,20 +1,27 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent, decorateButtons } from '../../../utils/decorate.js';
 
-const findSize = (classes, key) => classes.find((item) => item.startsWith(key))?.slice(key.length);
+const MAS_FIELD_CLASSES = {
+  description: ['mas-description'],
+  prices: ['mas-price', 'heading-5'],
+};
 
-function getSubtextStyle(block) {
-  const classes = [...block.classList];
-  const headingSize = findSize(classes, 'heading-');
-  if (headingSize) return `heading-${headingSize}`;
-  const bodySize = findSize(classes, 'body-');
-  if (bodySize) return `body-${bodySize}`;
-  return 'heading-5';
+function decorateMasField(cardContent) {
+  cardContent.querySelectorAll('mas-field[field]').forEach((masField) => {
+    const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
+    if (classes) masField.classList.add(...classes);
+  });
+  const priceParent = cardContent.querySelector(':has(> .mas-price)');
+  const commitmentEl = priceParent?.nextElementSibling;
+  if (commitmentEl?.matches('p') && commitmentEl.children.length === 0 && commitmentEl.textContent.trim()) {
+    priceParent.append(commitmentEl);
+    commitmentEl.classList.add('mas-price-commitment');
+  }
 }
 
 function parseLeftColumn(col) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
-  if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
+  if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('heading-super');
@@ -38,16 +45,23 @@ function buildChicletRow(iconEl, heading) {
 function buildMerchCard(col) {
   decorateButtons(col);
 
-  const allParas = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  const contentEls = allParas.filter((el) => !el.querySelector('.con-button'));
+  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
+  buttons.forEach((btn) => btn.remove());
+
+  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+    .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  contentEls.forEach((el) => cardContent.append(el));
+  allParas.forEach((el) => cardContent.append(el));
+  decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  [...col.querySelectorAll('.con-button')].forEach((btn) => ctaWrapper.append(btn));
+  buttons.forEach((btn) => ctaWrapper.append(btn));
 
-  return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
+  const merchCard = createTag('div', { class: 'pm-merch-card' });
+  merchCard.append(cardContent);
+  if (ctaWrapper.children.length) merchCard.append(ctaWrapper);
+  return merchCard;
 }
 
 function decorate(block) {
@@ -56,15 +70,14 @@ function decorate(block) {
   if (!col) return;
 
   const { iconEl, heading, bodyEls } = parseLeftColumn(col);
-  const subtextStyle = getSubtextStyle(block);
-  bodyEls.forEach((el) => el.classList.add('pm-subtext', subtextStyle));
+  bodyEls.forEach((el) => el.classList.add('pm-subtext'));
 
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
-  if (col2) promoArea.append(buildMerchCard(col2));
+  if (col2?.children.length) promoArea.append(buildMerchCard(col2));
 
   const content = createTag('div', { class: 'pm-content container' });
   content.append(foreground, promoArea);

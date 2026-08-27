@@ -115,7 +115,7 @@ const onSlideLeave = (event) => {
 
 const removeHovered = (carousel) => {
   const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
-  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
+  [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
 const onCarouselLeave = (event) => {
@@ -150,12 +150,22 @@ const onHover = (event) => {
   if (!container) return;
 
   removeHovered(slideEl.closest('.hub-hero-carousel'));
-  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
-  const maxIndex = slideEl.closest('.hub-hero')?.classList.contains('slides-3') ? 3 : 5;
-  container.classList.toggle('stick-left', rtl ? slideIndex === maxIndex : slideIndex === 1);
-  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === maxIndex);
+  const hubHero = slideEl.closest('.hub-hero');
+  const isThree = hubHero?.classList.contains('slides-3');
+  const styles = getComputedStyle(hubHero);
+  const slideCount = parseInt(styles.getPropertyValue('--slides'), 10) || 0;
+  const maxIndex = isThree ? 3 : slideCount;
+  const slideWidth = parseFloat(styles.getPropertyValue('--slide-width')) || 0;
+  const endGap = parseFloat(styles.getPropertyValue('--end-gap')) || 0;
+  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const unhoveredTotal = slideWidth * slideCount + (endGap * rootFontSize) * (slideCount - 1);
+  const needsStick = unhoveredTotal > window.innerWidth;
+
+  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
+  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
+  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
 
   if (hoverTracked) return;
 
@@ -167,7 +177,7 @@ const onHover = (event) => {
   sendAnalytics(`user-hover|${sectionName}|${blockName}`);
 };
 
-const buildSlide = ({ slide, index, slidesTotal }) => {
+const buildSlide = ({ slide, idx, slidesTotal }) => {
   if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
   const children = [...slide.children];
   const left = children[0];
@@ -178,6 +188,9 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const asset = right.children[0];
   const icon = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
+  // handling of middle "invisible" slide when we animate 4 slides
+  const index = idx >= 2 && slidesTotal === 5 ? idx - 1 : idx;
+  const sldsTotal = slidesTotal === 5 ? 4 : slidesTotal;
 
   if (asset?.dataset.videoSource) {
     asset.setAttribute('preload', 'none');
@@ -207,7 +220,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     </div>
   `;
 
-  let ariaLabel = `${index + 1} of ${slidesTotal}`;
+  let ariaLabel = `${index + 1} of ${sldsTotal}`;
   // assign unique aria-label to the first slide
   if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
 
@@ -249,7 +262,7 @@ const decorateCarousel = (slides) => {
   const carousel = createTag('div', { class: 'hub-hero-carousel' }, slides);
   if (isRtl()) slides.reverse();
   const decoratedSlides = slides.map((slide, index) => buildSlide(
-    { slide, index, slidesTotal: slides.length },
+    { slide, idx: index, slidesTotal: slides.length },
   ));
   const carouselContainer = createTag('div', { class: 'hub-hero-carousel-container' });
   carouselContainer.append(...decoratedSlides);
@@ -276,6 +289,7 @@ const upgradeVideoPreload = (carousel) => {
 };
 
 const handleCarousel = (slds, isThreeSlides) => {
+  // add middle "invisible" slide when carousel has 4 slides
   const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
@@ -369,11 +383,11 @@ const prepareVideo = (video) => {
 const playVideo = (video) => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (video.readyState >= 3) {
-    video.play().catch(() => {});
+    video.play().catch(() => { });
     return;
   }
   prepareVideo(video);
-  video.addEventListener('canplay', () => video.play().catch(() => {}), { once: true });
+  video.addEventListener('canplay', () => video.play().catch(() => { }), { once: true });
 };
 
 const MAX_AUTOPLAY_DURATION = 5.1;

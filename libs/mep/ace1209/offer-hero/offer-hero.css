@@ -1,10 +1,16 @@
+@property --hero-eyebrow-gap {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
   overflow: visible;
 
   > .section-background {
     overflow: clip;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 }
 
@@ -63,11 +69,11 @@
     position: relative;
     padding-block: 0 var(--s2a-spacing-lg);
     z-index: 2;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 
   .hero-eyebrow {
-    --hero-eyebrow-gap: var(--s2a-spacing-lg);
+    --hero-eyebrow-gap: var(--s2a-spacing-2xl);
 
     position: fixed;
     top: 0;
@@ -85,7 +91,7 @@
   .hero-cards {
     max-width: var(--grid-max-width-default);
     margin-inline: auto;
-    padding-inline: var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-xs);
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--grid-gutter);
@@ -335,10 +341,11 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
+      --hero-eyebrow-gap: calc(var(--s2a-spacing-96) + var(--s2a-spacing-xl));
     }
 
     .hero-cards {
+      padding-inline: var(--s2a-spacing-lg);
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -379,12 +386,6 @@
 
 .dark {
   .offer-hero {
-    .hero-card {
-      &.is-settled {
-        border-radius: var(--s2a-border-radius-24);
-      }
-    }
-
     .hero-card-tile {
       background: transparent;
     }

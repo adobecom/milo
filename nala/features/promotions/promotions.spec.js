@@ -52,7 +52,11 @@ module.exports = {
     {
       tcid: '5',
       name: '@Promo-future',
-      path: '/drafts/nala/features/promotions/promo-future',
+      // TEMP: the mep-next overlay (.mep-fab, opened by this test) is gated
+      // behind ?mepnext=on. Remove once mep-next is the default preview and the
+      // gate is dropped. The test runs this on the `.aem.page` preview tier of
+      // the same branch (overlay requires Sidekick auth on the `.aem.live` edge).
+      path: '/drafts/nala/features/promotions/promo-future?mepnext=on',
       data: {
         mepPath: '/drafts/nala/features/promotions/manifests/promo-insert-future.json--all',
         textMarquee: 'Promo test page',
@@ -89,7 +93,11 @@ module.exports = {
     {
       tcid: '8',
       name: '@Promo-preview',
-      path: '/drafts/nala/features/promotions/promo-default',
+      // TEMP: the mep-next overlay (.mep-fab, opened by this test) is gated
+      // behind ?mepnext=on. Remove once mep-next is the default preview and the
+      // gate is dropped. The test runs this on the `.aem.page` preview tier of
+      // the same branch (overlay requires Sidekick auth on the `.aem.live` edge).
+      path: '/drafts/nala/features/promotions/promo-default?mepnext=on',
       data: {
         mepInsertOn: '/drafts/nala/features/promotions/manifests/promo-insert.json--all',
         mepReplaceOn: '/drafts/nala/features/promotions/manifests/promo-replace.json--all',

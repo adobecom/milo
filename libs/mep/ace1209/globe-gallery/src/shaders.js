@@ -6,7 +6,7 @@ const RR_SDF = [
   '}',
 ];
 
-// Hash for the particle dissolves; inputs scaled first to dodge precision loss at large coords.
+// Inputs scaled first to dodge precision loss at large coords.
 const HASH21 = [
   'float hash21(vec2 p) {',
   '  p = fract(p * vec2(0.1031, 0.1030));',
@@ -15,8 +15,8 @@ const HASH21 = [
   '}',
 ];
 
-// Modal SDF shader material — rounded rect computed in the fragment shader (sharp
-// at any zoom). uAspect = card world-space width/height; uRadius = fraction of height.
+// Rounded rect computed in the fragment shader, so it stays sharp at any zoom.
+// uAspect = card world-space width/height; uRadius = fraction of height.
 export const MODAL_VERT = [
   'varying vec2 vUv;',
   'void main() {',
@@ -38,33 +38,30 @@ export const MODAL_FRAG = [
   'varying vec2 vUv;',
   ...RR_SDF,
   'void main() {',
-  // Raw vUv so the card outline doesn't warp; half-extents are the FULL plane (as CARD_FRAG) —
-  // an inset box would clip uRadius of photo off every edge. See README (Image fit).
+  // Raw vUv so the card outline doesn't warp; half-extents are the FULL plane, since an inset
+  // box would clip uRadius of photo off every edge.
   '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
   '  float d = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float alpha = 1.0 - smoothstep(-px, px, d);',
-  // Flip uv.x + warp anchor on back faces so the back reads like the front (matches CARD_FRAG).
+  // Flip uv.x + warp anchor on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
   '  vec2 wc = gl_FrontFacing ? uWarpCenter : vec2(1.0 - uWarpCenter.x, uWarpCenter.y);',
-  // Fisheye/barrel warp anchored at wc.
   '  vec2 d2 = fUv - wc;',
   '  float r2 = dot(d2, d2);',
   '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + wc;',
-  // Cover-crop (identity once the card has settled at its native-aspect modal size).
   '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
-  // Motion-trail CA: R trails behind, B ghosts ahead.
+  // R trails behind, B ghosts ahead.
   '  float r = texture2D(map, baseUv - uMotionDir).r;',
   '  float g = texture2D(map, baseUv).g;',
   '  float b = texture2D(map, baseUv + uMotionDir * 0.5).b;',
-  // Re-encode linear→sRGB.
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, alpha * uOpacity);',
   '}',
 ].join('\n');
 
-// Card ShaderMaterial. uCA splits R/B outward; uRepeat/uOffset apply the cover-crop
-// (ShaderMaterial doesn't auto-apply texture.repeat/offset); rounded corners via rrSDF.
+// uRepeat/uOffset apply the cover-crop by hand — ShaderMaterial does not auto-apply
+// texture.repeat/offset.
 export const CARD_VERT = [
   'varying vec2 vUv;',
   'void main() {',
@@ -73,8 +70,7 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
-// Card dissolve + near-camera dispersion dials. Units and roles: README (Tuning reference);
-// how they interact: README (Near-camera dissolve EXPLODES past the card box).
+// Card dissolve + near-camera dispersion dials.
 const GRAIN_CELLS = 160;
 const DISPERSE_EXPAND = 2.5;
 const DISPERSE_JITTER = 0.2;
@@ -84,7 +80,7 @@ const DISPERSE_EDGE_LEAD = 1.4;
 const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
 const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
-// CARD_VERT plus the dispersion overscan. See README.
+// CARD_VERT plus the dispersion overscan.
 export const CARD_DISPERSE_VERT = [
   'uniform float uDisperse;',
   'uniform float uAspect;',
@@ -120,13 +116,13 @@ export const CARD_FRAG = [
   'void main() {',
   // Flip uv.x on back faces so the back reads like the front.
   '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
-  // Rounded-corner alpha: rrSDF in world-proportional UV; box half-size is the full
-  // plane (uAspect/2, 0.5) so the rect fills edge-to-edge. fwidth gives ~1px AA.
+  // Box half-size is the FULL plane (uAspect/2, 0.5) so the rect fills edge-to-edge.
+  // fwidth gives ~1px AA.
   '  vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
-  // Explosion (uniform-gated, so other phases pay nothing). See README.
+  // Uniform-gated, so other phases pay nothing.
   '  vec2 sUv = fUv;',
   '  float srcSD = dsd;',
   '  float a = shapeA;',
@@ -150,7 +146,7 @@ export const CARD_FRAG = [
   '    srcSD = rrSDF((sUv - 0.5) * vec2(uAspect, 1.0), vec2(uAspect * 0.5, 0.5), uRadius) + erode;',
   '    a = 1.0 - smoothstep(-pxs, pxs, srcSD);',
   '  }',
-  // Particle grain, eaten edge-first. See README.
+  // Particle grain, eaten edge-first.
   '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
   `    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * ${glf(GRAIN_CELLS)});`,
@@ -165,20 +161,19 @@ export const CARD_FRAG = [
   '    dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
   '    a *= (dR + dG + dB) * 0.3333;',
   '  }',
-  // Contour: faint fill + ~1px edge stroke (reuse dsd/px), shown before the photo un-dissolves in.
+  // Faint fill + ~1px edge stroke, shown before the photo un-dissolves in.
   '  float stroke = 1.0 - smoothstep(0.0, px * 1.5, abs(dsd));',
   '  float contourA = (shapeA * 0.06 + stroke * 0.5) * uContourFade;',
-  // Crossfade contour → photo as reveal goes 0→1; the photo alpha `a` is already dispersing when
-  // uDissolve > 0, so the reveal reads as the same edge-first un-dissolve.
+  // The photo alpha is already dispersing when uDissolve > 0, so the reveal reads as the same
+  // edge-first un-dissolve.
   '  float outA = mix(contourA, a * uOpacity, uReveal);',
-  // Bail before the texture fetches — load-bearing for the dispersion's fill cost. See README.
+  // Bail BEFORE the texture fetches — load-bearing for the dispersion's fill cost.
   '  if (outA < 0.002) discard;',
-  // Fisheye magnify anchored at uHoverPos (cursor UV); (0.5,0.5) = centered.
   '  vec2 d  = sUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // Melt (content swells as the card rushes the lens) — net of uDisperse, so the explosion owns
-  // the motion in the sphere phase and this is left to the texture-ready reveal. See README.
+  // Net of uDisperse, so the explosion owns the motion in the sphere phase and this is left to
+  // the texture-ready reveal.
   '  vec2 mdir = sUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
   '  float melt = max(uDissolve - uDisperse, 0.0);',
@@ -186,7 +181,7 @@ export const CARD_FRAG = [
   '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
   '  }',
   '  vec2 baseUv = meltUv * uRepeat + uOffset;',
-  // Radial CA + motion trail: R trails behind, B ghosts ahead; smear scales with dissolve.
+  // R trails behind, B ghosts ahead; smear scales with dissolve.
   '  vec2 meltRad = mdir * uDissolve * 0.22;',
   '  vec2 radial = mdir * uCA + meltRad;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r * dR;',
@@ -198,8 +193,7 @@ export const CARD_FRAG = [
   '}',
 ].join('\n');
 
-// "Click & Drag" hint text — a CARD_FRAG variant over a text canvas (no corner SDF),
-// with warp + particle dissolve. uExitP (0→1) drives the one-way exit on first drag.
+// A CARD_FRAG variant over a text canvas, no corner SDF.
 export const TEXT_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -208,41 +202,33 @@ export const TEXT_FRAG = [
   'uniform float uZoom;',
   'uniform float uUVScale;',
   'uniform float uAspect;',
-  'uniform float uExitP;',
   'uniform vec2  uResolution;',
-  'uniform vec2  uMotionDir;',
   'varying vec2  vUv;',
   ...HASH21,
   'void main() {',
   '  vec2 d = vUv - 0.5;',
-  // Exit: horizontal stretch (mimics drag direction) + radial scatter (letters fly outward)
-  '  d.x *= 1.0 + uExitP * 1.6;',
-  '  d    += d * uExitP * 0.7;',
   '  vec2 dA = vec2(d.x * uAspect, d.y);', // scale x to world-proportional space
   '  float r2 = dot(dA, dA);', // isotropic radius in world space
-  // Exit amplifies the barrel warp on top of the normal warp
-  '  float exitWarp = uWarp + uExitP * 3.0;',
-  '  vec2 warpedVUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
+  '  vec2 warpedVUv = d / (1.0 + uWarp * r2 * 4.0) + 0.5;',
   '  vec2 finalUv = (warpedVUv - 0.5) / uUVScale + 0.5;',
   '  vec2 radial = (vUv - 0.5) * uCA;',
-  '  float r = texture2D(uMap, finalUv + radial - uMotionDir).r;',
+  '  float r = texture2D(uMap, finalUv + radial).r;',
   '  float g = texture2D(uMap, finalUv).g;',
-  '  float b = texture2D(uMap, finalUv - radial + uMotionDir * 0.5).b;',
+  '  float b = texture2D(uMap, finalUv - radial).b;',
   '  float a = texture2D(uMap, finalUv).a;',
-  // Edge-proximity: sample alpha at 4 offsets so dissolve fires at glyph edges first.
+  // Sample alpha at 4 offsets so dissolve fires at glyph edges first.
   '  float _bl  = 0.020;',
   '  float _a4  = texture2D(uMap, finalUv + vec2( _bl, 0.0)).a',
   '              + texture2D(uMap, finalUv + vec2(-_bl, 0.0)).a',
   '              + texture2D(uMap, finalUv + vec2(0.0,  _bl)).a',
   '              + texture2D(uMap, finalUv + vec2(0.0, -_bl)).a;',
   '  float edgeProx = 1.0 - _a4 * 0.25;', // 0=deep interior, 1=at/near edge
-  // Particle dissolve: 2px screen-space grain, per-channel seeds → RGB split
+  // 2px screen-space grain, per-channel seeds → RGB split.
   '  vec2  cell    = floor(gl_FragCoord.xy * 0.5);',
   '  float nR      = hash21(cell + vec2(0.00,  0.00));',
   '  float nG      = hash21(cell + vec2(2.10,  1.30));',
   '  float nB      = hash21(cell + vec2(1.70, -0.50));',
-  // Exit progress drives dissolve toward 0.97 (full scatter) on top of warp/zoom dissolve
-  '  float dissolve  = clamp(uWarp * 0.2 + uZoom * 2.0 + uExitP * 0.97, 0.0, 0.97);',
+  '  float dissolve  = clamp(uWarp * 0.2 + uZoom * 2.0, 0.0, 0.97);',
   '  float localDis  = clamp(dissolve + edgeProx * dissolve * 2.0, 0.0, 0.97);',
   '  float pedge     = 0.06;',
   '  float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
@@ -255,7 +241,6 @@ export const TEXT_FRAG = [
   '  float fz   = max(0.005, uWarp * 0.025);',
   '  float fadeX = smoothstep(0.0, fz,       sc.x) * smoothstep(1.0, 1.0 - fz,       sc.x);',
   '  float fadeY = smoothstep(0.0, fz * 0.5, sc.y) * smoothstep(1.0, 1.0 - fz * 0.5, sc.y);',
-  '  float exitFade = 1.0 - smoothstep(0.0, 0.85, uExitP);',
-  '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY * exitFade);',
+  '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY);',
   '}',
 ].join('\n');

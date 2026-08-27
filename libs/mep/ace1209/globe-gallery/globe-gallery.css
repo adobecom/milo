@@ -1,34 +1,39 @@
 /* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
 
-.globe-gallery,
-.globe-gallery-cursor {
-  --gg-chrome-blur: 12px;
+@property --gg-nav-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 124px;
 }
 
-/* Scroll model (see README). .globe-gallery-reduced and .globe-gallery-empty overrides are at the end of this file. */
 .globe-gallery {
-  /* Full scroll-runway model: README. --gg-pq-appear-t is published by the JS, off the camera. */
-  --gg-runway-height: 460vh;
-  --gg-formation-vh: 304vh;
+  --gg-chrome-blur: 12px;
+  --gg-hang-max: 0.8em;
+  --gg-runway-height: 520vh;
+  --gg-formation-vh: 340vh;
 
-  /* Shared copy edge: the pull-quote's own left text edge, reused by the arc copy. See README. */
+  /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
+
+  /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. */
+  --gg-pq-hold: 40vh;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
-  --gg-controls-nav: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
-  --gg-controls-top: calc(var(--gg-controls-nav) + var(--gg-controls-inset));
+  --gg-modal-anim-ms: 350;
+  --gg-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
+  --gg-band-h: calc(100vh - var(--gg-nav-h));
+  --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
+  --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
 
   height: var(--gg-runway-height);
   position: relative;
   background: var(--s2a-color-gray-900);
   margin-top: 0;
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
-
-  /* kill the mobile tap flash on cards / backdrop */
   -webkit-tap-highlight-color: transparent;
 
   &.globe-gallery-reduced,
@@ -40,6 +45,9 @@
 
 @media (width >= 768px) {
   .globe-gallery {
+    --gg-runway-height: 520vh;
+    --gg-formation-vh: 320vh;
+    --gg-pq-hold: 45vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -56,22 +64,20 @@
   -webkit-touch-callout: none;
 }
 
-/* z-index bands: hero 2–5, modal 13–17. See README. */
-
 .globe-gallery-world {
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: visible;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
 .globe-gallery-controls {
   position: fixed;
   inset: 0;
   pointer-events: none; /* not intercepting canvas drag */
-  z-index: 5;
+  z-index: 1;
   opacity: 0;
   visibility: hidden; /* pulls the buttons out of the tab order while the globe isn't live */
 
@@ -146,9 +152,9 @@
   text-align: center;
   text-wrap: balance;
   user-select: none;
-
   box-sizing: border-box;
   padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
   border-radius: var(--gg-controls-radius);
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
@@ -157,17 +163,27 @@
   & > p { margin: 0; }
 }
 
+.globe-gallery-barrel .globe-gallery-hint-text {
+  transition: opacity 0.5s ease, visibility 0s;
+}
+
+.globe-gallery-barrel .globe-gallery-hint.is-dismissed .globe-gallery-hint-text {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
 .globe-gallery-arc-copy {
   --gg-arc-pad: var(--s2a-spacing-md);
 
   position: fixed;
 
-  /* Full width less a gap each side, capped. See README (CSS) for the literal-vs-token rule. */
+  /* Full width less a gap each side, capped. */
   width: calc(100% - var(--s2a-spacing-xs) * 2);
   max-width: 359px;
   bottom: var(--s2a-spacing-xs);
 
-  /* sm: the pill hugs the edge and its own padding lands the copy on --gg-content-inset. */
+  /* The pill hugs the edge; its own padding lands the copy on --gg-content-inset. */
   inset-inline-start: var(--s2a-spacing-xs);
   box-sizing: border-box;
   padding: var(--gg-arc-pad);
@@ -179,7 +195,6 @@
   opacity: 0;
   will-change: opacity, transform;
   transform-origin: left bottom;
-  z-index: 4;
 }
 
 html[dir="rtl"] .globe-gallery-arc-copy {
@@ -187,7 +202,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 
 .globe-gallery-arc-copy-title {
-  /* 18px custom mini-headline (between Title-4 and body) — no standard type class fits. */
+  /* 18px: between Title-4 and body — no standard type class fits. */
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: var(--s2a-font-size-lg);
@@ -205,94 +220,167 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Ends 50vh past the camera-clear point, so the sticky rail inside lets go on the frame the quote
-   fades in: revealed dead-centre, then free to scroll. Nothing is held. See README. */
+/* Ends one hold past the reveal, so the sticky rail holds the quote centred for that much scroll
+   before letting go. --gg-pq-hold-max defaults to 0, so no JS means no hold. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   top: var(--gg-formation-vh);
   bottom: max(0px, calc(
-    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh)) - 50vh
+    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
+      - var(--gg-optical-center) - min(var(--gg-pq-hold), var(--gg-pq-hold-max, 0vh))
   ));
   left: 0;
   right: 0;
   pointer-events: none;
 }
 
-/* Zero-height rail at the viewport mid-line; the quote hangs centred off it. See README. */
 .globe-gallery-pullquote-rail {
   position: sticky;
-  top: 50vh;
+  top: var(--gg-optical-center);
   height: 0;
 }
 
-/* Starts hidden; JS adds .is-active once the zoom-in threshold passes. */
 .globe-gallery-pullquote {
-  --gg-pq-gap: var(--s2a-layout-xl);
+  --gg-pq-ideal-gap: var(--s2a-layout-lg);
+
+  /* Yields on short viewports so a long quote can't outgrow the band. */
+  --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
+  --gg-pq-copy-rise: 14px;
+  --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
+  --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
+  --gg-pq-rule-color: var(--s2a-color-gray-800);
 
   position: absolute;
   top: 0;
   inset-inline: 0;
   box-sizing: border-box;
   max-width: var(--gg-copy-max);
-  margin-inline: auto;
-  z-index: 5;
+  margin: 0 auto;
   background: transparent;
   display: flex;
   flex-direction: column;
   gap: var(--gg-pq-gap);
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
-  opacity: 0;
   pointer-events: none;
-  transform: translateY(-50%) scale(0.9);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+
+  /* Centred on the optical centre until the box is taller than the band, then top-anchored: a
+     long quote overflows downward only, never under the nav. */
+  transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)));
 }
 
-.globe-gallery-pullquote.is-active {
-  opacity: 1;
-  transform: translateY(-50%) scale(1);
-}
-
+/* Four rules at the same insets, drawn by masking. */
 .globe-gallery-pullquote::before,
 .globe-gallery-pullquote::after {
   content: '';
   position: absolute;
   pointer-events: none;
-  border: 0 solid var(--s2a-color-gray-800);
+
+  /* Longhands, not the `border` shorthand: an unresolvable var() colour inside a shorthand is
+     invalid at computed-value time and resets border-style to none, erasing every rule. */
+  border-style: solid;
+  border-width: 0;
+  border-color: var(--gg-pq-rule-color, currentcolor);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
+/* Each rule is masked to the fraction of itself that is drawn, measured along its OWN clockwise
+   direction — top runs left→right, right top→bottom, bottom right→left, left bottom→top. The
+   gradient's direction encodes that clockwise sense, so a var never needs to know which edge it is
+   on — and since the horizontals always share a fraction, as do the verticals, two vars cover four
+   rules. JS writes them per frame; the 100% fallbacks mean no-JS renders the complete crosshair. */
 .globe-gallery-pullquote::before {
   inset-block: var(--gg-pq-pad-block);
   inset-inline: 0;
   border-block-width: var(--gg-crosshair-width);
+  -webkit-mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
+  mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
+  -webkit-mask-position: left top, left bottom;
+  mask-position: left top, left bottom;
+  -webkit-mask-size: 100% 51%;
+  mask-size: 100% 51%;
 }
 
+/* 51% per half so a subpixel box height can't leave a rule half-masked; the halves overlap across
+   the middle, where there is nothing to draw. */
 .globe-gallery-pullquote::after {
   inset-block: 0;
   inset-inline: var(--gg-copy-pad);
   border-inline-width: var(--gg-crosshair-width);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
+  mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
+  -webkit-mask-position: right top, left top;
+  mask-position: right top, left top;
+  -webkit-mask-size: 51% 100%;
+  mask-size: 51% 100%;
 }
 
-/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See README. */
+/* Each line's arrival is one 0..1 var written per frame, already eased and staggered in JS; the 1
+   fallbacks are the rest state. Opening mark is outdented by authoring.js; `hanging-punctuation`
+   deliberately unused. See README. */
 .globe-gallery-pullquote-quote {
+  opacity: var(--gg-pq-copy-q, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-q, 1))));
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
+/* Written by the split; an unsplit quote keeps the plain flow and the fade/rise below. Flex so the
+   lines' negative bleed margins meet without collapsing. */
+.globe-gallery-pullquote-lines {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: none;
+}
+
+/* One mask per rendered line, so each rolls up into place from under it. JS writes
+   --gg-pq-line-v per line, already eased and staggered; the 1 fallbacks are the rest state. */
+.globe-gallery-pullquote-line {
+  display: block;
+  overflow: hidden;
+
+  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
+  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
+  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
+}
+
+.globe-gallery-pullquote-line-inner {
+  display: inline-block;
+  transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
+}
+
+.globe-gallery-pullquote-sr {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .globe-gallery-pullquote-name {
+  opacity: var(--gg-pq-copy-n, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-n, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
 .globe-gallery-pullquote-role {
+  opacity: var(--gg-pq-copy-r, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-r, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-400);
   margin: 0;
 }
 
-/* Backdrop layer (z:13) — dims/blurs the globe canvas behind the sharp card canvas. */
 .globe-gallery-modal {
   position: fixed;
   inset: 0;
@@ -300,7 +388,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: none;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.35s linear;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) linear;
 }
 .globe-gallery-modal.is-visible { display: block; }
 .globe-gallery-modal.is-open    { opacity: 1; }
@@ -316,7 +404,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   pointer-events: none;
 }
 
-/* Native <dialog> via showModal(); full-viewport top-layer overlay. Gesture surface: siblings go inert. */
+/* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
 .globe-gallery-modal-chrome {
   --gg-modal-edge: var(--s2a-spacing-md);
   --gg-control-size: 48px;
@@ -327,7 +415,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
   position: fixed;
   inset: 0;
-  z-index: 15;
   width: 100%;
   height: 100vh;
   height: 100dvh;
@@ -341,11 +428,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   pointer-events: auto;
   touch-action: none;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) ease;
 }
 .globe-gallery-modal-chrome.is-open { opacity: 1; }
 
-/* Scripted focus target (tabindex=-1), not user-tabbable, so suppress the full-viewport outline. */
 .globe-gallery-modal-chrome:focus,
 .globe-gallery-modal-chrome:focus-visible { outline: none; }
 
@@ -433,8 +519,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   box-sizing: border-box;
 }
 
-.globe-gallery-modal-role-label,
 .globe-gallery-modal-name,
+.globe-gallery-modal-role-label,
 .globe-gallery-modal-badges { flex-shrink: 0; }
 
 .globe-gallery-modal-badges {
@@ -451,22 +537,23 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin-top: auto;
 }
 
-.globe-gallery-modal-role-label {
-  font-family: var(--body-font-family);
-  font-size: 13px;
-  font-weight: var(--s2a-font-weight-body);
-  color: var(--s2a-color-gray-400);
-  margin: 0;
-}
-
 .globe-gallery-modal-name {
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: var(--s2a-font-size-xl);
   line-height: var(--s2a-font-line-height-md);
-  letter-spacing: -0.6px;
+  letter-spacing: var(--s2a-font-letter-spacing-5xl);
   color: var(--s2a-color-gray-25);
-  margin: var(--s2a-spacing-3xs) 0 var(--s2a-spacing-xs);
+  margin: 0 0 var(--s2a-spacing-3xs);
+}
+
+.globe-gallery-modal-role-label {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
+  font-weight: var(--s2a-font-weight-body);
+  color: var(--s2a-color-gray-400);
+  margin: 0 0 var(--s2a-spacing-xs);
 }
 
 .globe-gallery-modal-description {
@@ -474,7 +561,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   font-size: var(--s2a-font-size-sm);
   line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
-  margin: 0 0 var(--s2a-spacing-sm);
+  padding-inline-start: var(--gg-hang-max);
+  margin-block: 0 var(--s2a-spacing-sm);
+  margin-inline-start: calc(var(--gg-hang-max) * -1);
   min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
   overflow-y: auto;
   touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
@@ -592,14 +681,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   user-select: none;
 }
 
-/* Lock both html + body: either may be the scrolling element; body alone leaks wheel events on some browsers. */
+/* Both: either may be the scrolling element, and body alone leaks wheel events on some browsers. */
 html.globe-gallery-modal-open,
 body.globe-gallery-modal-open { overflow: hidden; }
 
-/* pointer-events:none — never intercepts canvas drag; tabbable only while interactive (JS). */
+/* Never intercepts canvas drag; tabbable only while interactive. */
 .globe-gallery-a11y {
   position: fixed;
-  top: 50vh;
+  top: var(--gg-optical-center);
   left: 50%;
   width: min(80%, 80vh);
   aspect-ratio: 1;
@@ -610,11 +699,10 @@ body.globe-gallery-modal-open { overflow: hidden; }
   background: transparent;
   border-radius: 50%;
   pointer-events: none; /* never intercept canvas drag */
-  z-index: 4; /* above the WebGL canvas (z:3); the modal still covers it */
 }
 .globe-gallery-a11y:focus { outline: none; }
 
-/* JS sizes/positions per-frame to each card's projected screen rect. See README (Accessibility). */
+/* JS sizes/positions this per frame to each card's projected screen rect. */
 .globe-gallery-a11y-cards {
   position: fixed;
   top: 0;
@@ -622,7 +710,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   right: 0;
   height: 100vh;
   pointer-events: none;
-  z-index: 4; /* same layer as the entry widget */
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -642,7 +729,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
 }
 .globe-gallery-a11y-card:focus { outline: none; }
 
-/* aria-labelledby target + visible instructions pill on focus. pointer-events:none so it never blocks the canvas. */
+/* aria-labelledby target + visible instructions pill on focus. */
 .globe-gallery-a11y-tip {
   position: absolute;
   top: 50%;
@@ -665,25 +752,12 @@ body.globe-gallery-modal-open { overflow: hidden; }
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 5; /* above the a11y layer (z:4); the modal still covers it */
 }
 
 .globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%) scale(1);
-}
-
-.globe-gallery-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
@@ -696,7 +770,7 @@ body.globe-gallery-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: var(--s2a-spacing-lg);
     --gg-counter-w: 138px;
@@ -731,16 +805,11 @@ body.globe-gallery-modal-open { overflow: hidden; }
     inset-inline-start: calc(50% + var(--gg-counter-w) / 2 + var(--gg-nav-gap));
   }
 
-  .globe-gallery-modal-role-label { margin-top: 0; }
+  .globe-gallery-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
 
-  .globe-gallery-modal-name {
-    font-size: var(--s2a-font-size-2xl);
-    line-height: 28px;
-    letter-spacing: -0.6px;
-    margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-sm);
-  }
+  .globe-gallery-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
 
-  .globe-gallery-modal-description { margin: 0; }
+  .globe-gallery-modal-description { margin-block: 0; }
 
   .globe-gallery-modal-badges { gap: 10px; }
 
@@ -761,131 +830,23 @@ body.globe-gallery-modal-open { overflow: hidden; }
     -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
     backdrop-filter: blur(var(--gg-chrome-blur));
   }
-}
 
-/* Custom cursor (src/cursor.js); @media mirrors the JS gate (hover+fine only). */
-@media (hover: hover) and (pointer: fine) {
-  .globe-gallery-cursor {
-    pointer-events: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    /* body-level; above the modal band (≤15) to top everything the block draws */
-    z-index: 17;
-  }
-
-  /* Direct body child so mix-blend-mode: difference blends against page content (not an isolated GPU layer). */
-  .globe-gallery-cursor-disc {
-    pointer-events: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 16; /* just below the cursor container */
-    width: 48px;
-    height: 48px;
-    margin: -24px; /* center on the pointer hot-point */
-    border-radius: 50%;
-    background: var(--s2a-color-gray-25);
-    mix-blend-mode: difference;
-    transform: scale(0);
-    visibility: hidden; /* snaps instantly — no disc lingering at the click point on modal open */
-    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .globe-gallery-cursor-disc-active {
-    transform: scale(1);
-    visibility: visible;
-  }
-
-  .globe-gallery-cursor-disc-dragging {
-    transform: scale(0.82);
-    transition: transform 0.15s ease;
-  }
-
-  .globe-gallery-cursor-ring-wrap,
-  .globe-gallery-cursor-text-wrap {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .globe-gallery-cursor-text-wrap {
-    display: flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: var(--s2a-border-radius-xs);
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
-    background: var(--s2a-color-transparent-black-64);
-    -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
-    backdrop-filter: blur(var(--gg-chrome-blur));
-    opacity: 0;
-    transition: opacity 0.5s ease 0.15s;
-  }
-
-  /* Chevron SVG — no blend mode; own opacity/scale entrance, separate from the disc. */
-  .globe-gallery-cursor-ring {
-    display: block;
-    position: absolute;
-    top: -24px;
-    left: -24px;
-    width: 48px;
-    height: 48px;
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.5);
-    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .globe-gallery-cursor-active .globe-gallery-cursor-ring {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-  }
-
-  .globe-gallery-cursor-dragging .globe-gallery-cursor-ring {
-    transform: scale(0.82);
-    transition: opacity 0.35s ease, transform 0.15s ease;
-  }
-
-  .globe-gallery-cursor-chevron-l,
-  .globe-gallery-cursor-chevron-r {
-    transition: transform 0.15s ease;
-  }
-
-  .globe-gallery-cursor-dragging .globe-gallery-cursor-chevron-l { transform: translateX(4px); }
-  .globe-gallery-cursor-dragging .globe-gallery-cursor-chevron-r { transform: translateX(-4px); }
-
-  .globe-gallery-cursor-text {
-    display: block;
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-font-size-xs);
-    font-weight: var(--s2a-font-weight-adobe-clean-bold);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    line-height: 1;
-    color: var(--s2a-color-gray-25);
-  }
-
-  .globe-gallery-cursor-active .globe-gallery-cursor-text-wrap { opacity: 0.9; }
-
-  .globe-gallery-cursor-hint-dismissed .globe-gallery-cursor-text-wrap { opacity: 0; }
-
-  .globe-gallery-cursor-retiring .globe-gallery-cursor-ring {
-    opacity: 0;
-    transform: scale(0.6);
-    transition: opacity 0.42s ease, transform 0.42s ease;
-  }
-
-  .globe-gallery-cursor-disc-retiring {
-    transform: scale(0);
-    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  .globe-gallery-pullquote {
+    --gg-pq-ideal-gap: var(--s2a-layout-xl);
   }
 }
 
-/* Reduced-motion overrides — grouped here to avoid no-descending-specificity lint errors. See README (Accessibility). */
+@media (width >= 1280px) {
+  .globe-gallery-pullquote {
+    --gg-pq-ideal-gap: var(--s2a-layout-2xl);
+  }
+}
 
-/* relative: scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
+.globe-gallery-reduced {
+  --gg-nav-h: 0;
+}
+
+/* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
 .globe-gallery-reduced .globe-gallery-world {
   position: relative;
 }
@@ -896,12 +857,11 @@ html .globe-gallery-reduced .globe-gallery-arc-copy {
   display: none;
 }
 
-/* Absolute so it scrolls with the globe; the base 50vh still centres on the sphere. */
+/* Scrolls with the globe; the base 50vh still centres on the sphere. */
 .globe-gallery-reduced .globe-gallery-a11y {
   position: absolute;
 }
 
-/* Focus-ring overlay tracks the scrolled canvas; the base box already matches it. */
 .globe-gallery-reduced .globe-gallery-a11y-cards {
   position: absolute;
 }
@@ -914,7 +874,7 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   display: none;
 }
 
-/* Pull-quote flows normally after the globe: drop the pin/rail/sticky, show statically with a gap above. */
+/* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
 .globe-gallery-reduced .globe-gallery-pullquote-pin,
 .globe-gallery-reduced .globe-gallery-pullquote-rail {
   position: static;
@@ -928,11 +888,28 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   top: auto;
   opacity: 1;
   transform: none;
+}
+
+/* Full reveal. The copy needs no override: updatePullQuote returns early, so its vars stay unset
+   at their 1 fallback. */
+.globe-gallery-reduced .globe-gallery-pullquote::before,
+.globe-gallery-reduced .globe-gallery-pullquote::after {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.globe-gallery-reduced .globe-gallery-pullquote-quote,
+.globe-gallery-reduced .globe-gallery-pullquote-name,
+.globe-gallery-reduced .globe-gallery-pullquote-role {
   transition: none;
 }
 
+/* RM can be toggled after the lines already carry a written progress var. */
+.globe-gallery-reduced .globe-gallery-pullquote-line-inner {
+  transform: none;
+}
 
-/* Drop nav scale hover animation; colour cue stays. */
+
 @media (prefers-reduced-motion: reduce) {
   .globe-gallery-modal-nav:hover,
   .globe-gallery-modal-nav:active,

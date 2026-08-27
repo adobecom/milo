@@ -163,6 +163,80 @@ describe('Fragments', () => {
       expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
     }
   });
+
+  it('blocks a fragment from an untrusted cross-origin URL', async () => {
+    window.lana.log.resetHistory();
+    const fetchSpy = stub(window, 'fetch').callsFake((url) => originalFetch(url));
+    const a = document.createElement('a');
+    a.href = 'https://gist.githubusercontent.com/attacker/evil/raw/xss-fragment';
+    document.body.append(a);
+    await getFragment(a);
+    const fetchedFragment = fetchSpy.getCalls().some((call) => {
+      try {
+        return new URL(String(call.args[0]), window.location.origin).origin
+          === 'https://gist.githubusercontent.com';
+      } catch { return false; }
+    });
+    expect(fetchedFragment).to.be.false;
+    expect(window.lana.log.calledWithMatch('Fragment blocked, untrusted URL')).to.be.true;
+    fetchSpy.restore();
+    a.remove();
+  });
+
+  it('allows a cross-origin fragment from a configured allowedOrigin', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['https://partner.example.com'] });
+    const fetchSpy = stub(window, 'fetch')
+      .callsFake(() => Promise.resolve(new Response('<div></div>', { status: 200 })));
+    const a = document.createElement('a');
+    a.href = 'https://partner.example.com/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const blocked = window.lana.log.getCalls()
+      .some((call) => String(call.args[0]).includes('Fragment blocked'));
+    expect(blocked).to.be.false;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
+
+  it('allows a cross-origin fragment via a bare-domain allowedOrigin (suffix match)', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['.partner.example'] });
+    const fetchSpy = stub(window, 'fetch')
+      .callsFake(() => Promise.resolve(new Response('<div></div>', { status: 200 })));
+    const a = document.createElement('a');
+    a.href = 'https://cdn.partner.example/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const blocked = window.lana.log.getCalls()
+      .some((call) => String(call.args[0]).includes('Fragment blocked'));
+    expect(blocked).to.be.false;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
+
+  it('blocks a cross-origin fragment when the bare-domain allowedOrigin does not suffix-match', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['.partner.example'] });
+    const fetchSpy = stub(window, 'fetch').callsFake((url) => originalFetch(url));
+    const a = document.createElement('a');
+    a.href = 'https://partner.example.evil.com/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const fetchedFragment = fetchSpy.getCalls().some((call) => {
+      try {
+        return new URL(String(call.args[0]), window.location.origin).origin
+          === 'https://partner.example.evil.com';
+      } catch { return false; }
+    });
+    expect(fetchedFragment).to.be.false;
+    expect(window.lana.log.calledWithMatch('Fragment blocked, untrusted URL')).to.be.true;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
 });
 
 describe('MEP Lingo Fragments', () => {

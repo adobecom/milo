@@ -7,8 +7,8 @@ function parseColumn(col, isSoftOffer) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
-  const ctaLinkPara = col.querySelector('p:has(em a), p:has(strong a)');
-  const ctaLink = ctaLinkPara?.querySelector('em a, strong a');
+  const ctaLinkPara = col.querySelector('p:has(em a), p:has(strong a), p:has(a[data-wcs-osi])');
+  const ctaLink = ctaLinkPara?.querySelector('em a, strong a, a[data-wcs-osi]');
   ctaLinkPara?.remove();
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
@@ -53,55 +53,20 @@ function buildPromoButton(ctaLink) {
   ]);
 }
 
-function buildMerchCard(col2) {
-  const ctaParas = [...col2.querySelectorAll('p:has(em a), p:has(strong a)')];
-  const contentParas = [...col2.querySelectorAll('p')].filter(
-    (el) => !ctaParas.includes(el) && el.textContent.trim(),
-  );
-
-  const cardContent = createTag('div', { class: 'pm-merch-content' });
-  contentParas.forEach((para, i) => {
-    if (para.querySelector('a[href*="osi="], [is="inline-price"], [data-wcs-osi]')) {
-      para.classList.add('pm-price');
-      const subPara = contentParas[i + 1];
-      if (subPara) {
-        subPara.classList.add('pm-price-sub');
-        const priceGroup = createTag('div', { class: 'pm-price-group' }, [para, subPara]);
-        cardContent.append(priceGroup);
-      } else {
-        cardContent.append(para);
-      }
-    } else if (!para.classList.contains('pm-price-sub')) {
-      cardContent.append(para);
-    }
-  });
-
-  const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  ctaParas.forEach((p) => ctaWrapper.append(p));
-  decorateButtons(ctaWrapper);
-
-  return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
-}
-
 function decorate(block) {
-  const isMerchOffer = block.classList.contains('merch-offer');
   const isPromoCta = block.classList.contains('featured-offer');
-  const row = block.children[0];
-  const col = row?.children[0];
+  const col = block.children[0]?.children[0];
   if (!col) return;
 
   const {
     iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
-  } = parseColumn(col, !isPromoCta && !isMerchOffer);
+  } = parseColumn(col, !isPromoCta);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
-  if (isMerchOffer) {
-    const col2 = row?.children[1];
-    if (col2) promoArea.append(buildMerchCard(col2));
-  } else if (ctaLink) {
+  if (ctaLink) {
     const promoEl = isPromoCta
       ? buildPromoButton(ctaLink)
       : buildSoftOfferCta(ctaLinkPara, labelEl);

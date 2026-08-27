@@ -2,7 +2,6 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
-// change here
 
 const SCROLL_PER_APP = 200;
 const M_BREAKPOINT = 1024;
@@ -98,11 +97,12 @@ function parseContent(rows) {
     }
     const name = cols[0]?.textContent?.trim() ?? '';
     const pics = [...row.querySelectorAll('picture')];
-    const svgIconImg = [...row.querySelectorAll('img')]
-      .find((img) => !img.closest('picture') && isSvgUrl(img.src));
-    if (svgIconImg) svgIconImg.src = getFederatedUrl(svgIconImg.getAttribute('src'));
-    const icon = svgIconImg || (pics.length > 1 ? pics[0] : null);
-    const picture = svgIconImg ? (pics[0] ?? null) : (pics.length > 1 ? pics[1] : (pics[0] ?? null));
+    const prodIcon = row.querySelector('img');
+    const isSvgIcon = prodIcon && isSvgUrl(prodIcon.src);
+    if (isSvgIcon) prodIcon.src = getFederatedUrl(prodIcon.src);
+    // eslint-disable-next-line no-nested-ternary
+    const icon = isSvgIcon ? prodIcon : (pics.length > 1 ? pics[0] : null);
+    const picture = pics[pics.length - 1] ?? null;
     if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
 

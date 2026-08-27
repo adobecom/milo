@@ -76,6 +76,10 @@
     .media {
       position: absolute;
       inset: 0;
+
+      :is(img, video) {
+        object-position: top;
+      }
     }
 
     .media::after {
@@ -122,7 +126,7 @@
     }
 
     .media {
-      aspect-ratio: 32/39;
+      aspect-ratio: 4/5;
     }
 
   }
