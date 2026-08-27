@@ -202,7 +202,7 @@ export default function init(el) {
   }
 
   if (el.classList.contains('merch-moment')) {
-    // revealMerchMomentText(el);
+    revealMerchMomentText(el);
   }
 
   if (!el.classList.contains('hero')) return;
