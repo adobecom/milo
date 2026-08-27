@@ -1864,11 +1864,13 @@ function decorateInlineCtas(masField, content) {
     }
   }
 
-  [...container?.merchLink?.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
-    container?.querySelectorAll('a').forEach((link) => {
-      link.classList.add(match[1]);
+  if (container?.merchLink) {
+    [...container.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
+      container?.querySelectorAll('a').forEach((link) => {
+        link.classList.add(match[1]);
+      });
     });
-  });
+  }
 
   return hoisted;
 }
