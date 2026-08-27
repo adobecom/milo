@@ -290,8 +290,8 @@ video {
       }
     }
   }
-}
 
-a.video-transcript-source:not(.transcript-button) {
-  display: none;
+  a.video-transcript-source:not(.transcript-button) {
+    display: none;
+  }
 }
