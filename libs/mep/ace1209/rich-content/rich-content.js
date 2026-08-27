@@ -201,8 +201,8 @@ export default function init(el) {
     window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
   }
 
-    if (el.classList.contains('merch-moment')) {
-    revealMerchMomentText(el);
+  if (el.classList.contains('merch-moment')) {
+    // revealMerchMomentText(el);
   }
 
   if (!el.classList.contains('hero')) return;
