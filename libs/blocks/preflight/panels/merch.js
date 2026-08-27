@@ -263,7 +263,15 @@ async function checkWcsElements() {
       if (priceUnavailable) {
         elem.classList.add('preflight-price-unavailable');
         if (textContent) elem.classList.add('preflight-merch-error');
-        if (!elem.nextElementSibling?.classList.contains('preflight-price-unavailable-label')) {
+        const footer = !isPrice && elem.closest('merch-card')?.querySelector('[slot="footer"]');
+        if (footer) {
+          if (!footer.querySelector('.preflight-price-unavailable-label')) {
+            const label = document.createElement('span');
+            label.className = 'preflight-price-unavailable-label';
+            label.textContent = 'Offer unavailable';
+            footer.append(label);
+          }
+        } else if (!elem.nextElementSibling?.classList.contains('preflight-price-unavailable-label')) {
           const label = document.createElement('span');
           label.className = 'preflight-price-unavailable-label';
           label.textContent = 'Offer unavailable';
