@@ -38,6 +38,10 @@ export function normalizeUrl(input) {
 
 const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '#');
 
+const fillSelect = (sel, opts) => {
+  opts.forEach(([value, label]) => sel.append(createTag('option', { value }, label)));
+};
+
 function createStatusCell(when) {
   if (!when) return createTag('td', { class: 'pt-cell pt-empty' }, '—');
   const date = new Date(when).toLocaleDateString();
@@ -131,8 +135,7 @@ function renderResults(mount, rows, since, view = {}) {
   const visible = applyView(rows, view);
   const total = visible.length;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (view.page > pages) view.page = pages;
-  if (view.page < 1) view.page = 1;
+  view.page = Math.min(Math.max(view.page, 1), pages);
   const start = (view.page - 1) * PAGE_SIZE;
   const pageRows = visible.slice(start, start + PAGE_SIZE);
 
@@ -152,7 +155,9 @@ function renderResults(mount, rows, since, view = {}) {
     const tr = createTag('tr');
     const href = safeUrl(r.url);
     const linkCell = createTag('td', { class: 'pt-cell pt-url' });
-    linkCell.append(createTag('a', { class: 'pt-link', href, target: '_blank', rel: 'noopener noreferrer' }, r.url));
+    const link = createTag('a', { class: 'pt-link', href, target: '_blank', rel: 'noopener noreferrer' });
+    link.textContent = r.url;
+    linkCell.append(link);
     tr.append(
       linkCell,
       createBadgeCell(deriveStatus(r)),
@@ -215,11 +220,9 @@ export default async function init(block) {
   const view = { filter: 'all', sort: 'url', search: '', page: 1 };
   const toolbar = createTag('div', { class: 'pt-toolbar' });
   const filterSel = createTag('select', { class: 'pt-filter', 'aria-label': 'Filter by status' });
-  [['all', 'All statuses'], ['Draft', 'Draft'], ['Previewed', 'Previewed'], ['Live', 'Live']]
-    .forEach(([v, l]) => filterSel.append(createTag('option', { value: v }, l)));
+  fillSelect(filterSel, [['all', 'All statuses'], ['Draft', 'Draft'], ['Previewed', 'Previewed'], ['Live', 'Live']]);
   const sortSel = createTag('select', { class: 'pt-sort', 'aria-label': 'Sort by' });
-  [['url', 'Sort: URL'], ['status', 'Sort: Status'], ['lastPublish', 'Sort: Last published'], ['lastPreview', 'Sort: Last previewed']]
-    .forEach(([v, l]) => sortSel.append(createTag('option', { value: v }, l)));
+  fillSelect(sortSel, [['url', 'Sort: URL'], ['status', 'Sort: Status'], ['lastPublish', 'Sort: Last published'], ['lastPreview', 'Sort: Last previewed']]);
   const searchInput = createTag('input', { type: 'search', class: 'pt-search', placeholder: 'Search URL…', 'aria-label': 'Search URL' });
   toolbar.append(filterSel, sortSel, searchInput);
 
@@ -250,6 +253,8 @@ export default async function init(block) {
     if (rows) renderResults(results, rows, since.value, view);
   };
 
+  const updateView = (patch = {}) => { Object.assign(view, patch, { page: 1 }); rerender(); };
+
   const check = async () => {
     const inputs = parseUrls(textarea.value);
     if (inputs.length === 0 || checkBtn.disabled) return;
@@ -269,7 +274,7 @@ export default async function init(block) {
       renderResults(results, rows, since.value, view);
     } catch (e) {
       rows = null;
-      renderError(results, e.status, `Could not reach page-status (${e.message}).`);
+      renderError(results, e.status, `Could not reach project-status (${e.message}).`);
     } finally {
       checkBtn.disabled = false;
       checkBtn.textContent = 'Check status';
@@ -316,8 +321,8 @@ export default async function init(block) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
   });
   checkBtn.addEventListener('click', check);
-  since.addEventListener('change', () => { view.page = 1; rerender(); });
-  filterSel.addEventListener('change', () => { view.filter = filterSel.value; view.page = 1; rerender(); });
-  sortSel.addEventListener('change', () => { view.sort = sortSel.value; view.page = 1; rerender(); });
-  searchInput.addEventListener('input', () => { view.search = searchInput.value; view.page = 1; rerender(); });
+  since.addEventListener('change', () => updateView());
+  filterSel.addEventListener('change', () => updateView({ filter: filterSel.value }));
+  sortSel.addEventListener('change', () => updateView({ sort: sortSel.value }));
+  searchInput.addEventListener('input', () => updateView({ search: searchInput.value }));
 }

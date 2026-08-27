@@ -1,10 +1,20 @@
 .project-tracking {
   --pt-accent: #3b63fb;
+  --pt-accent-soft: #eaeeff;
   --pt-good: #079355;
+  --pt-preflight: #7326d3;
   --pt-ink: #292929;
   --pt-ink-soft: #505050;
   --pt-line: #e1e1e1;
+  --pt-disabled: #b0b0b0;
   --pt-radius: 12px;
+
+  --pt-pass-bg: #e6f4ea;
+  --pt-pass-fg: #1e7e34;
+  --pt-warn-bg: #fff4e5;
+  --pt-warn-fg: #a15c00;
+  --pt-fail-bg: #fde7e9;
+  --pt-fail-fg: #d32011;
 
   padding: 24px;
   font-family: var(--body-font-family, "Adobe Clean", adobe-clean, sans-serif);
@@ -70,7 +80,7 @@
 
   & .pt-textarea:focus {
     border-color: var(--pt-accent);
-    box-shadow: 0 0 0 2px #eaeeff;
+    box-shadow: 0 0 0 2px var(--pt-accent-soft);
     outline: none;
   }
 
@@ -98,7 +108,7 @@
   & .pt-drop:hover,
   & .pt-drop:focus-visible,
   & .pt-drop-over {
-    background: #eaeeff;
+    background: var(--pt-accent-soft);
     border-color: var(--pt-accent);
     color: var(--pt-accent);
     outline: none;
@@ -148,7 +158,7 @@
   }
 
   & .pt-error {
-    color: #d32011;
+    color: var(--pt-fail-fg);
     font-size: 14px;
   }
 
@@ -172,7 +182,7 @@
   }
 
   & .pt-stat-previewed {
-    background: #eaeeff;
+    background: var(--pt-accent-soft);
   }
 
   & .pt-stat-published {
@@ -218,7 +228,7 @@
   }
 
   & .pt-stat-preflight .pt-stat-pct {
-    color: #7326d3;
+    color: var(--pt-preflight);
   }
 
   & .pt-bar {
@@ -244,7 +254,7 @@
   }
 
   & .pt-stat-preflight .pt-bar-fill {
-    background: #7326d3;
+    background: var(--pt-preflight);
   }
 
   & .pt-pf {
@@ -257,19 +267,21 @@
     text-align: center;
   }
 
-  & .pt-pf-pass {
-    background: #e6f4ea;
-    color: #1e7e34;
+  & .pt-pf-pass,
+  & .pt-badge-live {
+    background: var(--pt-pass-bg);
+    color: var(--pt-pass-fg);
   }
 
-  & .pt-pf-warn {
-    background: #fff4e5;
-    color: #a15c00;
+  & .pt-pf-warn,
+  & .pt-badge-previewed {
+    background: var(--pt-warn-bg);
+    color: var(--pt-warn-fg);
   }
 
   & .pt-pf-fail {
-    background: #fde7e9;
-    color: #d32011;
+    background: var(--pt-fail-bg);
+    color: var(--pt-fail-fg);
   }
 
   & .pt-table-wrap {
@@ -327,7 +339,7 @@
   }
 
   & .pt-empty {
-    color: #b0b0b0;
+    color: var(--pt-disabled);
   }
 
   & .pt-toolbar {
@@ -369,16 +381,6 @@
     white-space: nowrap;
   }
 
-  & .pt-badge-live {
-    background: #e6f4ea;
-    color: #1e7e34;
-  }
-
-  & .pt-badge-previewed {
-    background: #fff4e5;
-    color: #a15c00;
-  }
-
   & .pt-badge-draft {
     background: #eee;
     color: #555;
@@ -406,7 +408,7 @@
   }
 
   & .pt-page-btn:disabled {
-    color: #b0b0b0;
+    color: var(--pt-disabled);
     cursor: default;
   }
 
