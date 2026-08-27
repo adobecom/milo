@@ -282,10 +282,17 @@ export const createContent = async (
     return container;
   }
 
+  // fragment is wrapped around a p tag, not div
   const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
   if (el?.parentElement.nodeName !== 'MAIN') return frag;
   return createTag('div', undefined, frag);
+};
+
+const addContainerMap = {
+  section: '<div>',
+  col: '<div></div>',
+  row: '<div><div></div></div>',
 };
 
 export const handleTwpButtons = (el, selector) => {

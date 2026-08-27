@@ -52,15 +52,36 @@ const updateFragMap = async (fragment, a, href) => {
     });
   }
 };
-
+// add row and entire column logic using fragment inserts (all cases)
+// all this does is either entire block or WITHIN the cell
 const insertInlineFrag = async (sections, a, relHref) => {
-  // Inline fragments only support one section, other sections are ignored
+  const parent = a.parentElement;
+  const grandParent = a.parentElement?.parentElement;
   const fragChildren = [...sections[0].children];
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
-    a.parentElement.replaceWith(...fragChildren);
-  } else {
+
+  if (parent.nodeName !== 'DIV') { // buttons, load inside of <em> tags
     a.replaceWith(...fragChildren);
+  } else if (parent.attributes.length && !parent.classList.contains('section')) {
+    // potentially for handling rows
+    // make new var for row children, to see the ENTIRE row, for when replacing for a ROW.
+    // const rows = sections[0].querySelectorAll('div[class] > div');
+    const block = sections[0].querySelector('div[class]');
+    const rows = block?.querySelectorAll(':scope > div');
+    if (!rows.length) return;
+    parent.replaceWith(...rows);
+  } else if (grandParent.attributes.length && !grandParent.classList.contains('section')) {
+    // potentially for handling columns (individual cells)
+    // make new var for row children, to see the ENTIRE row, for when replacing for a ROW.
+    const block = sections[0].querySelector('div[class]');
+    const row = block?.querySelector(':scope > div');
+    const cols = row?.querySelector(':scope > div');
+    if (!cols.length) return;
+    parent.replaceWith(...row);
+  } else {
+    // this is likely for BLOCKS designated as #_inline-fragment in mep ** should already be working
+    parent.replaceWith(...fragChildren);
   }
+
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
