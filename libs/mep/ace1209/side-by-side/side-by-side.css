@@ -82,15 +82,6 @@
       }
     }
 
-    .media::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--card-overlay-gradient);
-      filter: blur(0px);
-      pointer-events: none;
-    }
-
     .foreground {
       --card-overlay-padding: var(--s2a-spacing-lg);
 
@@ -104,6 +95,16 @@
       max-width: 450px;
     }
   }
+
+  &:not(.scrim-off) .card-overlay .media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--card-overlay-gradient);
+    filter: blur(0px);
+    pointer-events: none;
+  }
+
 
   .card-stacked {
     --parallax-stagger-index: 1.5;

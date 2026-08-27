@@ -56,6 +56,11 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
+function applyTheme(block, cardType, media) {
+  if (block.classList.contains('small-dark') && cardType === 'card-stacked') media.classList.add('dark');
+  if (block.classList.contains('big-dark') && cardType === 'card-overlay') media.classList.add('dark');
+}
+
 function decorateCardStackedIcon(mediaContainer) {
   const medias = mediaContainer.querySelectorAll('img, video');
   if (medias.length <= 1) return;
@@ -89,15 +94,12 @@ function decorate(block, el) {
     if (variant === 'card-stacked') decorateCardStackedIcon(media);
     const card = createTag('div', { class: `card ${variant}` });
     if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
+    applyTheme(block, variant, media);
     card.append(media, foreground);
     cards.push(card);
   }
 
   block.replaceChildren(...cards);
-
-  if (!block.classList.contains('dark')) {
-    block.querySelector('.card-overlay')?.classList.add('dark');
-  }
   replaceVideoIntersectionObserver(medias);
 }
 
