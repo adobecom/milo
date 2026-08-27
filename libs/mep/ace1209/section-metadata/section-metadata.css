@@ -170,6 +170,18 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     z-index: 4;
   }
 
+  /* 
+     Deliberately excludes .rounded-corners-top: it only overlaps *upward* */
+  &.rounded-corners:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast),
+  &.rounded-corners-bottom:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+    z-index: 3;
+  }
+
+  &.rounded-corners:has(+ .section[class*='rounded-corners']):has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast),
+  &.rounded-corners-bottom:has(+ .section[class*='rounded-corners']):has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+    z-index: 4;
+  }
+
   &.masonry-layout {
     display: grid;
     gap: var(--grid-gutter);
