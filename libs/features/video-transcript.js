@@ -31,9 +31,18 @@ export default async function decorateVideoTranscript(videoEl) {
 
   link.classList.add('transcript-button');
   link.classList.remove('video-transcript-source', 'con-button', 'button-l', 'button-m', 'button-s', 'blue', 'fill', 'outline');
+  link.setAttribute('role', 'button');
+  link.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      link.click();
+    }
+  });
   const label = await getTranscriptLabel();
   link.setAttribute('aria-label', label);
   link.setAttribute('title', label);
   link.innerHTML = TRANSCRIPT_ICON;
-  container.append(link);
+  const playPause = container.querySelector('.play-pause-button');
+  if (playPause) container.insertBefore(link, playPause);
+  else container.append(link);
 }
