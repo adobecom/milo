@@ -2214,6 +2214,14 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
+  // The personalization path is active, so the section loop below will block on this
+  // round-trip. Warm the first section's block + autoblock assets now (preload only,
+  // no decoration) so the LCP module graph is ready when decoration runs post-MEP.
+  // Runtime-safe forward ref: preloadLcpBlocks is a module-scope const invoked only
+  // when checkForPageMods runs (well after module init from loadArea).
+  // eslint-disable-next-line no-use-before-define
+  preloadLcpBlocks();
+
   const { base } = getConfig();
   loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
@@ -2778,6 +2786,9 @@ function getMasDepUrl(component) {
 
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
+    // commerce.js is awaited FIRST by the autoblock's loadCoreDependencies (initService)
+    // before merch-card.js even loads, so it gates the card/price paint — warm it too.
+    getMasDepUrl('commerce.js'),
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
@@ -2815,24 +2826,92 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-// PROTOTYPE (LCP): warm the LCP section's block JS/CSS in parallel with MEP init.
-// loadArea awaits checkForPageMods() (the full MEP round-trip) before the section
-// loop even starts, so the LCP block's assets aren't fetched until MEP resolves.
-// But those assets are pure fetches (rel=preload / modulepreload / stylesheet) with
-// no dependency on MEP's outcome, no DOM mutation and no side effects — so we can
-// fire them early and have the module graph warm by the time decoration runs.
-// Preload ONLY here; never loadBlock/decorate (that must wait for a MEP-stable DOM).
-// If a manifest section-swaps or useblockcode-remaps the first section, the wrong
+// Resolve the autoblock name a link WOULD become during decoration, without any
+// DOM side effects. Mirrors the trusted-host + pattern match in decorateAutoBlock
+// (isTrustedAutoBlock) but never mutates the anchor — we only need the block name
+// to warm its assets. Returns null for non-autoblock links.
+const getAutoBlockName = (a) => {
+  let url;
+  try { url = new URL(a.href); } catch (e) { return null; }
+  const { autoBlocks = AUTO_BLOCKS } = getConfig();
+  const match = autoBlocks.find((candidate) => {
+    const name = Object.keys(candidate)[0];
+    return isTrustedAutoBlock(candidate[name], url);
+  });
+  return match ? Object.keys(match)[0] : null;
+};
+
+// Warm the LCP section's block JS/CSS in parallel with MEP init. loadArea awaits
+// checkForPageMods() (the full MEP round-trip) before the section loop even starts,
+// so the LCP block's assets aren't fetched until MEP resolves. Those assets are
+// pure fetches (rel=preload / modulepreload / stylesheet) with no dependency on
+// MEP's outcome, no DOM mutation and no side effects — so we fire them early and
+// have the module graph warm by the time decoration runs. This is gated on the
+// personalization path being active (called from checkForPageMods once MEP is
+// confirmed to run); on non-MEP pages the section loop is not blocked, so there is
+// no window to fill and nothing to preload ahead.
+//
+// Two kinds of block live in the first section:
+//  - Authored blocks: `div[class]` in the source HTML.
+//  - Autoblocks: plain links that decorateAutoBlock later turns into blocks (e.g.
+//    the hero's `mas.adobe.com/studio.html` link → merch-card-autoblock, the real
+//    LCP element). These are NOT `div[class]`, so we detect them from the raw links
+//    and synthesize detached name-only elements for preloadBlockResources to
+//    resolve asset paths from. The synthesized elements never touch the DOM.
+//
+// Beyond blocks, processSection also runs decoratePlaceholders on each section,
+// which fetches the locale placeholder sheet whenever the section contains {{token}}
+// text. Traces show that sheet (features/placeholders.js + placeholders.json) does
+// not start until after MEP resolves, yet it gates the LCP paint. Detecting the need
+// is a read-only DOM check ({{ / %7B%7B present) and the sheet path is deterministic
+// (getPlaceholderPaths, from config.locale — known pre-MEP), so we warm both here.
+//
+// Preload ONLY; never loadBlock/decorate (that must wait for a MEP-stable DOM). If
+// a manifest section-swaps or useblockcode-remaps the first section, the wrong
 // assets are warmed (wasted bandwidth, not a correctness issue) and the real ones
 // are preloaded again in processSection — loadLink/loadStyle dedupe by href, so the
 // second pass is a no-op. Scope is deliberately the FIRST section only (where the
-// LCP element lives); we never speculatively warm a deeper section's assets, and
-// detection is lightweight (no decoration).
+// LCP element lives); we never speculatively warm a deeper section's assets.
 const preloadLcpBlocks = (area = document) => {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
-  if (blocks.length) preloadBlockResources(blocks);
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    const name = getAutoBlockName(a);
+    if (name) autoNames.add(name);
+  });
+  // Video autoblocks are synthesized during decoration: decorateImageLinks (called
+  // from setupLinksDecoration → decorateLinksAsync) turns an img whose alt is the
+  // "url|alt|icon" form with an .mp4 source into an <a href="*.mp4"> with the URL as
+  // its text. decorateAutoBlock only promotes that to a `video` block when the text
+  // matches `media_.*.mp4` (its "slack uploaded mp4s" guard, utils.js ~1601) — other
+  // mp4s (e.g. a hero-marquee background video like images-tv.../*.mp4#_autoplay,
+  // consumed via data-video-poster, NOT the video block) are rejected. Match that
+  // guard exactly so we don't warm video.js for a background video that never becomes
+  // a block. (An authored <a href="*.mp4"> is already covered by the a[href] scan.)
+  if ([...firstSection.querySelectorAll('img[alt*=".mp4"]')]
+    .some((img) => /media_.*\.mp4/.test(img.alt))) autoNames.add('video');
+  const autoBlocks = [...autoNames].map((name) => createTag('div', { class: name }));
+  const allBlocks = [...blocks, ...autoBlocks];
+  if (allBlocks.length) preloadBlockResources(allBlocks);
+
+  const config = getConfig();
+  // Placeholders: decoratePlaceholders fetches the locale sheet when the section has
+  // {{token}} text (findReplaceableNodes). The sheet path is deterministic
+  // (getPlaceholderPaths, from config.locale). Guard on contentRoot so a locale-less
+  // config never preloads an "undefined/placeholders.json" 404.
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+    loadLink(`${config.base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
+  }
+  // Icons: decorateIcons (awaited in processSection BEFORE the block loads start) imports
+  // the icons feature and its sprite CSS when the section has span.icon — so on that page
+  // it gates section reveal too. Warm both.
+  if (firstSection.querySelector('span.icon')) {
+    loadLink(`${config.base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    loadLink(`${config.base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
+  }
 };
 
 async function loadFragments(section, selector) {
@@ -2950,9 +3029,9 @@ export async function loadArea(area = document) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
-    // Fire LCP-section block asset preloads in parallel with the MEP round-trip
-    // below, instead of waiting for it. Preload only — decoration stays post-MEP.
-    preloadLcpBlocks(area);
+    // First-section block/autoblock asset preloads are fired from inside
+    // checkForPageMods (only when the personalization path is active, i.e. when the
+    // section loop is actually blocked on the MEP round-trip). See preloadLcpBlocks.
     // PROTOTYPE (?earlylcp=on): run the first section's decoration + block load
     // concurrently with MEP instead of blocking the whole section pipeline on
     // applyPers. checkForPageMods stays in flight; we await both below.
