@@ -1810,7 +1810,7 @@ function preserveInlineCommerceContext(masField, content) {
  * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
  * sibling isn't matched by 'em a'/'strong a' with the wrong parent (its content span).
  */
-function decorateInlineCtas(masField, content, el) {
+function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
@@ -1864,7 +1864,7 @@ function decorateInlineCtas(masField, content, el) {
     }
   }
 
-  [...el.href.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
+  [...container?.merchLink?.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
     container?.querySelectorAll('a').forEach((link) => {
       link.classList.add(match[1]);
     });
@@ -1878,7 +1878,7 @@ function decorateInlineCtas(masField, content, el) {
  * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
  */
 let masReadyWatched = false;
-function watchMasFieldCtas(el) {
+function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
@@ -1889,7 +1889,7 @@ function watchMasFieldCtas(el) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
-      decorateInlineCtas(mf, content, el);
+      decorateInlineCtas(mf, content);
     }
   });
 }
@@ -1903,6 +1903,10 @@ async function createInlineField(el, options) {
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
+
+  const container = el.closest('p, div');
+  if (container) container.merchLink = el.href;
+
   el.replaceWith(masField);
   await checkFieldReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);
@@ -1919,13 +1923,13 @@ async function createInlineField(el, options) {
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-    return decorateInlineCtas(masField, content, el) ?? masField;
+    return decorateInlineCtas(masField, content) ?? masField;
   }
   return masField;
 }
 
 export async function initMasField(el) {
-  watchMasFieldCtas(el);
+  watchMasFieldCtas();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return el;
