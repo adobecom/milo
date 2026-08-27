@@ -1,6 +1,5 @@
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
   createAemFragment,
