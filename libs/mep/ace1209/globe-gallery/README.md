@@ -1,8 +1,6 @@
 # globe — C2 block
 
-A scroll-driven **Three.js WebGL** hero, running in a real Milo page. The core
-arc→grid→sphere→zoom, the detail modal, the a11y gallery, and chromatic aberration (CA) are all
-shipped; remaining items are in Open items / backlog.
+A scroll-driven **Three.js WebGL** block running in Milo C2 page.
 
 **New here, or changing *when* something happens?** Read **Lifecycle timeline** — it maps every
 scroll position to what each subsystem is doing, and names the six separate normalized clocks the
@@ -157,8 +155,7 @@ The block expects up to **five direct child rows** (the pull-quote row is option
 
 Rows are positional. `parseAuthoredContent(el)` returns
 `{ arcCopy, pullQuote, fragmentHref, hintText, touchHint, instructions, labels }` (`labels` =
-`{ rotateLeft, rotateRight, pauseSpin, resumeSpin, prevCard, nextCard, closeBtn, modalTitle,
-cardLabel }`, built
+`{ rotateLeft, rotateRight, pauseSpin, resumeSpin, prevCard, nextCard, closeBtn, cardLabel }`, built
 by `buildLabels` from row 3's parts — which it indexes 1:1, so `DEFAULT_LABELS[0]` is the
 instructions slot even though `buildLabels` itself doesn't expose it); cards are loaded separately
 from the fragment link by `fetchFragmentCards`.
@@ -435,7 +432,7 @@ literals in the code are only fallbacks that never show on a correctly-authored 
 | Row 2, cell 0 | touch instruction | the barrel's visible bottom-row copy, between the rotate arrows (see Globe controls). Real on-screen prose, so it's a sentence, not a label. **The authored `<p>`s are kept as nodes, one per line**, so the author owns the line break; a cell with no `<p>` renders as plain text | `Click and drag to rotate. Tap to dive deep into the artwork.` (`DEFAULT_TOUCH_HINT`) |
 | Row 2, cell 1 | "Click & Drag" | WebGL hint plane copy (decorative, not exposed to AT — the a11y instructions cover the real affordance; `createClickDragTexture` auto-scales the font, so keep it short) | `Click & Drag` (`DEFAULT_HINT`) |
 | Row 3, part 1 | instructions | a11y entry-widget accessible name (see below) | `Press Enter to enter the gallery, then Tab through the images.` (`DEFAULT_GALLERY_INSTRUCTIONS`) |
-| Row 3, parts 2–10 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close \|\| card details` | the nine UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** + the `<dialog>`'s `aria-label` — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
+| Row 3, parts 2–9 | `rotate left \|\| rotate right \|\| pause \|\| resume \|\| prev \|\| {index} of {count} \|\| next \|\| close` | the eight UI labels: the globe controls' four `aria-label`s (the spin toggle names the action it performs, so it needs both states) + modal prev/next/close `aria-label`s + the sr-only card **position** — `\|\|`-separated in on-screen order (`buildLabels`) | each part → English (`DEFAULT_LABELS`) |
 
 The instructions lead row 3 because they are the a11y row's subject: one cell holding every string
 a screen-reader or keyboard user hears, in the order they meet them — the entry announcement first,
@@ -702,73 +699,46 @@ during that morph. It is not scroll-driven and cannot oscillate.
 ### One viewport height
 
 `H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
-`.globe-gallery-world`'s `offsetHeight`: that box is `height: 100vh` and it is the canvas' own parent,
-so `measureViewportH()` is a direct read of 100vh in px, straight from CSS. Scroll clocks and rendering
-both use it, and it is the only viewport height here.
+`.globe-gallery-world`'s `offsetHeight`. That box is `height: 100vh` and is the canvas' own parent, so
+`measureViewportH()` reads 100vh in px straight from CSS. Scroll clocks and rendering both use it, and
+it is the only viewport height here. Nav-centring does not add a second one (see **The nav band**): the
+canvas stays full-bleed `100vh` and the globe is re-centred by skewing the perspective camera's
+projection, not by handing anything a shorter height.
 
-Note that **nav-centring does not add a second one** (see **The nav band**): the canvas stays
-full-bleed `100vh`, and the globe is re-centred by skewing the perspective camera's projection, not
-by handing anything a shorter height. Anything that gives the renderer, either camera, or the scroll
-clock a height other than this `H` will re-fit the composition — that failure is catalogued below.
+**Anything that gives the renderer, either camera, or the scroll clock a height other than this `H`
+will re-fit the composition.** On iOS the URL bar resizes the layout viewport, so `innerHeight` shrinks
+and grows mid-scroll while `vh` resolves against the large viewport and never moves. Reading the window
+therefore rewinds `progress` (the barrel re-plays) and steps the camera distance and drawing-buffer size
+mid-scroll (an "enlarge/shrink" pop). With `H` as the only height, a URL-bar move is a complete no-op:
+`doLayout` re-reads the same `H` and takes its unchanged-`W`/`H` exit.
 
-**Why not the window.** On iOS the URL bar resizes the *layout* viewport: `innerHeight` shrinks and
-grows mid-scroll — every change of scroll direction collapses or restores it — while `vh` resolves
-against the large viewport and never moves (measured on-device: `100vh` and `worldH` held at 1005 while
-`innerHeight` went 1005 → 952). Two separate failures came out of reading the window, and one number
-fixes both:
+**The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing,
+its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area. That
+matches what the block's CSS already does, so the WebGL layer and the DOM chrome agree. The modal's
+chrome stays on `100dvh` (its buttons must stay reachable); only its photo canvas rides `H`, and the
+scroll lock means the bar can't move while it's open.
 
-| what read `innerHeight` | what the bar did to it |
-| --- | --- |
-| `formPx` + the entry ramps (scroll → `progress`) | `blockHeight` is `vh`-based and `formPx` was not, so they disagreed by the bar × 3.04 (~150–250px of scroll). Each collapse *rewound* `progress`: the barrel visibly re-played. Where in the timeline it landed depended on when that browser moves the bar (Safari mid-run, Chrome iOS right at the start — same cause). |
-| `arcCamZ(H)`, the ortho frustum, `computeGridLayout()`, `renderer.setSize` | the composition re-fitted to the new height: a ~10% camera-distance step (measured: 624.9 → 559.5 at `progress` 0.35) plus a drawing-buffer reallocation. Reads as the "enlarge/shrink" pop, and on Safari as a stutter, because iOS delivers it all in one `resize` at settle. |
-
-A URL-bar move is now a **complete no-op**: `doLayout` re-reads the same `H` and takes its
-unchanged-`W`/`H` exit. With `innerHeight` 90px smaller than `100vh` at a fixed `scrollY`, camera z
-is identical in the formation *and* tail phases, `arcOp` is identical, and there are zero writes to
-`canvas.width`/`height`; on-device, the drawing buffer and canvas box are unchanged across the URL
-bar's collapse.
-
-**The trade-off, deliberate:** the canvas is sized to the large viewport, so while the bar is showing
-its bottom ~50–90px sits behind the bar and the globe reads slightly larger than the visible area.
-That matches what the block's own CSS already does (`.globe-gallery-world` is `100vh`), so the WebGL
-layer and the DOM chrome now agree instead of being mis-registered by
-the bar's height whenever it is visible. The alternative is re-fitting on every bar move, which is the
-artifact being removed. The modal's chrome stays on `100dvh` (its buttons must stay reachable); only
-its photo canvas rides `H`, and the scroll lock means the bar can't move while it's open.
+**Do not switch to another viewport unit.** `lvh` is what `vh` already means here, and `svh` is constant
+too, so both are pure documentation. `dvh` would make CSS agree with `innerHeight` by making the box
+grow and shrink mid-scroll — on `.globe-gallery-world` that brings the pop back, on `--gg-runway-height`
+it rescales the runway under the scroll mapping. Either way the artifact returns.
 
 **Consequences worth knowing:**
-- **`1` while the section is hidden.** `display: none` → `offsetHeight` 0, clamped to 1 so nothing
-  divides by zero. Everything sized from `H` is recomputed at the un-hide, and the `IntersectionObserver`
-  keeps the ticker parked until then, so no frame is ever drawn at that size.
-- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand — that un-hide
-  arrives as a body resize with *no window resize behind it*, so it is the only thing that upgrades `H`
-  at that moment. `measureBlock()` + `readCssVars()` sit above the exit so this stays exactly as cheap
-  as the bare measure it replaced. Verified (`HIDDEN=1`): the buffer starts at the clamp and lands on
-  100vh × DPR after the un-hide.
+- **`H` is `1` while the section is hidden.** `display: none` → `offsetHeight` 0, clamped to 1 so
+  nothing divides by zero. Everything sized from `H` is recomputed at the un-hide, and the
+  `IntersectionObserver` parks the ticker until then, so no frame is drawn at that size.
+- **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. The un-hide
+  arrives as a body resize with no window resize behind it, so it is the only thing that upgrades `H` at
+  that moment.
 - **Reduced motion needs no branch.** `.globe-gallery-reduced` leaves `.globe-gallery-world` at
-  `height: 100vh` and only un-sticks it, so `measureViewportH()` is exact in both modes (verified: the
-  RM drawing buffer is the same 100vh × DPR as the non-RM one). Keep it that way — a `vh` override on
-  that element would put an imprecision into the one function every clock depends on.
-- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 3882→2760 and the same
-  *fraction* of the runway holds the same phase (camera z within 0.02).
+  `height: 100vh` and only un-sticks it. Keep it that way — a `vh` override on that element would put an
+  imprecision into the one function every clock depends on.
+- A genuine viewport change still lands: 844→600px tall moves `blockHeight` 3882→2760, and the same
+  *fraction* of the runway holds the same phase.
 
-**Why not a viewport unit instead?** No unit choice removes the problem, because the gap is between a
-CSS length and a JS number — JS still has to learn how many px that unit produced:
-- **`lvh`** is what `vh` already means here (spec: `vh` = large viewport), so `100lvh` would be pure
-  documentation; `svh` is constant too. Neither changes anything.
-- **`dvh`** *would* make CSS agree with `innerHeight` — by making the box grow and shrink mid-scroll.
-  Put it on `.globe-gallery-world` and `H` tracks the bar again, pop included; put it on
-  `--gg-runway-height` and the runway rescales under the scroll mapping instead. Either way the
-  artifact returns by a different route. Don't.
-- **Scroll-driven animations** would hand the whole mapping to CSS, but reading progress back per
-  frame (`getComputedStyle`) is a style recalc, it can't feed `deriveFrame`'s pure clocks, and it
-  wouldn't help the render side at all.
-
-**CSS is the source of truth for the scroll budget**, `--gg-formation-vh` read per layout in
-`readCssVars()`, so retuning is a CSS-only edit:
-
-The CSS is **mobile-first**: the base `.globe-gallery` rule is sm, `@media (width >= 768px)`
-overrides md. All three budget props are authored at both.
+**CSS is the source of truth for the scroll budget**, read per layout in `readCssVars()`, so retuning is
+a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is sm, `@media (width >=
+768px)` overrides md. All three budget props are authored at both.
 
 | prop | effect | ↑ does |
 |---|---|---|
@@ -776,170 +746,115 @@ overrides md. All three budget props are authored at both.
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
 | `--gg-pq-hold` | how much tail the held quote spends | lengthens the pin, so the finished quote sits still for longer. It does **not** change the reveal, which runs on its own clock |
 
-> **The measured vh figures below were taken at a single 540 / 304 budget (tail 236) shared by both
-> breakpoints.** The budget is now split per breakpoint and being tuned, so read them as worked
-> examples of the formulas, not as current values. The formulas hold at any budget; re-measure
-> before quoting a number.
+> The `vh` figures in this section were taken at a 540 / 304 budget (tail 236). The budget is now split
+> per breakpoint, so read them as worked examples of the formulas, not as current values.
 
 A fourth prop, `--gg-pq-appear-t`, is on the same element but is **not authored** — the runtime
-publishes it (see below), and CSS only declares a `var(…, 0.42)` fallback inline on the pin for the
-frames before the script runs. It is the one prop written from JS, and the exception is deliberate.
+publishes it, and CSS only declares a `var(…, 0.42)` fallback inline on the pin for the frames before
+the script runs. It is the one prop written from JS.
 
-**No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale
-literal. That takes some care, because `loadBlock` races a block's stylesheet against its script
-(`libs/utils/utils.js:1370`), so the `readCssVars()` call in `initRuntime` can run before the
-properties exist. Two rules make an unresolved read harmless rather than something needing a
-substitute value:
+**No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
+That takes care, because `loadBlock` races a block's stylesheet against its script, so `readCssVars()`
+in `initRuntime` can run before the properties exist. Two rules make an unresolved read harmless:
 
-- `readCssVars()` **leaves the previous value in place** when a property doesn't resolve, instead of
-  writing a fallback. So `formationVh` keeps its declared initializer
-  (`0`) and can never become `NaN` — which matters because `Math.max(1, NaN)` is `NaN`, so a single
-  unresolved read would otherwise poison `progress` and silently kill the animation. Its `cssNum`
-  helper tests `Number.isFinite` rather than `||` so an authored `0` isn't swallowed.
-- **`0` is a safe value**, unlike `NaN`: every division in `deriveFrame` is guarded (`Math.max(1,
+- `readCssVars()` **leaves the previous value in place** when a property doesn't resolve. So
+  `formationVh` keeps its declared initializer (`0`) and can never become `NaN` — which matters because
+  `Math.max(1, NaN)` is `NaN`, so one unresolved read would poison `progress` and silently kill the
+  animation. Its `cssNum` helper tests `Number.isFinite` rather than `||`, so an authored `0` isn't
+  swallowed.
+- **`0` is a safe value, unlike `NaN`:** every division in `deriveFrame` is guarded (`Math.max(1,
   formPx)`, `Math.max(1, blockHeight - formPx)`) and clamped, so a pre-stylesheet frame renders at
-  `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn
-  this into a crash. `measureViewportH()` clamps to `1` for the same reason: it is a divisor too.
+  `progress` 0 or 1 rather than breaking. Keep it that way — a new unguarded `/ formPx` would turn this
+  into a crash. `measureViewportH()` clamps to `1` for the same reason: it is a divisor too.
 
-`layoutObs` → `doLayout()`, whose first act is `measureBlock()` + `readCssVars()`, is what guarantees
-the real values land. It needs no extra listener and no "already resolved" flag: `processSection` un-hides the
-section (`main .section[data-status='pending'] { display: none }`) only after `Promise.all([styleLoaded,
-scriptLoaded])`, and that un-hide changes the body height, so the `ResizeObserver` is guaranteed to
-fire at least once with the stylesheet applied. Re-reading on every body resize is free next to the
-`getBoundingClientRect()` `measureBlock()` already does there, and `doLayout`'s unchanged-`W`/`H` exit
-means nothing beyond those two reads runs on a fire that changes neither.
+`layoutObs` → `doLayout()`, whose first act is `measureBlock()` + `readCssVars()`, guarantees the real
+values land, with no extra listener and no "already resolved" flag: `processSection` un-hides the
+section only after both the stylesheet and script resolve, and that un-hide changes the body height, so
+the `ResizeObserver` fires at least once with the stylesheet applied. `measureBlock()` sets
+`blockDocTop` + `blockHeight`; `blockHeight` is plain `offsetHeight`, which is `0` (never `NaN`) while
+hidden. `--gg-runway-height` is never read from JS at all. **No JS file holds a copy of these lengths**
+— not even for docs, since Milo ships `timeline.js` unbundled, so a doc-only export rides along in every
+page's payload. The derivation snippet reads them out of `globe-gallery.css` instead (see
+**Re-deriving these numbers**).
 
-`measureBlock()` (`doLayout`, so also `layoutObs`) sets `blockDocTop` + `blockHeight`. `blockHeight`
-is plain `offsetHeight`, itself CSS-driven, and needs no fallback either, since `offsetHeight` is `0`
-(never `NaN`) while the section is hidden. `--gg-runway-height` is never read from JS at all — `H` comes
-off `.globe-gallery-world` instead (see **One viewport height**), so the runway's size lives in exactly
-one place.
-
-So **no JS file anywhere holds a copy of these two lengths** — not even for docs. The event table's
-`vh` column needs the runway lengths, but Milo ships `timeline.js` unbundled and byte-for-byte, so a
-doc-only export would ride along in every page's payload; the derivation snippet reads them out of
-`globe-gallery.css` instead (see **Re-deriving these numbers**). Don't reintroduce one.
-
-**The pull-quote's cue is the camera, not a scroll number.** It is derived, in
-`publishPqAppearZoomT()`, from where the cards are — a threshold about the scene, so it cannot drift
-when a camera or radius constant moves:
+**The pull-quote's cue is the camera, not a scroll number.** It is derived in `publishPqAppearZoomT()`
+from where the cards are, so it cannot drift when a camera or radius constant moves:
 
 ```
 clearZ = −SPHERE_R + NEAR_FADE_END × fadeRefH        // where the LAST CARD VANISHES
 pqAppearZoomT = zoomTAtCamZ(clearZ, CAM_Z_SPHERE, CAM_Z_END)  // timeline.js, inverse of easeOutCubic
 ```
 
-**The cue is where the last card leaves the *screen*, not where the camera passes the shell.** Those
-are not the same frame, and conflating them was a real bug worth not reintroducing.
-`updateCardTransforms` hides a card a whole proximity-fade band *before* the camera reaches it
-(`mesh.visible = proxFade > 0`, at `NEAR_FADE_END` = 1.6 card-heights of depth — see **near-camera
-dissolve**). The original derivation used `−hypot(SPHERE_R, halfExtent)`, the camera's *geometric*
-pass of the deepest card, and so kept waiting for **16.5vh md / 22.0vh sm** after the shell had
-already gone empty — dead air with the globe controls still on screen, since they share this
-threshold.
-
-The deepest card **centre** sits at `−SPHERE_R` under any rotation, and the fade keys off the centre,
-so the last thing on screen goes at `−SPHERE_R + NEAR_FADE_END × fadeRefH`. The card's own extent
-drops out entirely — that is why `halfExtent` is gone, and why there is no longer a sm/md branch.
-Today: **0.2204 sm / 0.3433 md**.
+**The cue is where the last card leaves the *screen*, not where the camera passes the shell** — those
+are different frames. `updateCardTransforms` hides a card a whole proximity-fade band before the camera
+reaches it (`mesh.visible = proxFade > 0`, at `NEAR_FADE_END` = 1.6 card-heights of depth). The deepest
+card *centre* sits at `−SPHERE_R` under any rotation and the fade keys off the centre, so the last thing
+on screen goes at `−SPHERE_R + NEAR_FADE_END × fadeRefH`. The card's own extent drops out, so there is
+no sm/md branch. Today: **0.2204 sm / 0.3433 md**.
 
 Two consequences of depending on `fadeRefH`:
 
-- **It is no longer derivable from constants alone.** `fadeRefH` is the *mean of per-card
-  `sphereWorldH`*, measured after the cards are built and re-measured once textures land (the
-  masonry sizes replace placeholders). So `publishPqAppearZoomT` is called from
-  `recomputeDragFlip` — the one place `fadeRefH` is written — and not only from `initRuntime`.
-  Before cards exist `fadeRefH` is 0, which falls back to `−SPHERE_R`: later than the truth, i.e.
-  the safe direction.
-- **The doc snippet below can only approximate it**, using `CARD_H_SPHERE` in place of the measured
-  mean. That lands within ~1vh of reality (measured 6.29 vs 6.5 on md, 11.64 vs 11.0 on sm). For the
-  real number, log `fadeRefH`.
+- **It is not derivable from constants alone.** `fadeRefH` is the mean of per-card `sphereWorldH`,
+  measured after the cards are built and re-measured once textures land. So `publishPqAppearZoomT` is
+  called from `recomputeDragFlip` — the one place `fadeRefH` is written — and not only from
+  `initRuntime`. Before cards exist `fadeRefH` is 0, which falls back to `−SPHERE_R`: later than the
+  truth, i.e. the safe direction.
+- **The doc snippet can only approximate it**, using `CARD_H_SPHERE` in place of the measured mean,
+  landing within ~1vh. For the real number, log `fadeRefH`.
 
-Verified at both breakpoints: the formula predicts the frame the screen goes empty
-to a fraction of a vh, at two very different geometries (md sphere R 35, sm barrel R 16 — where
-`clearZ` is *positive*, i.e. the last card vanishes before the camera even reaches the barrel
-centre).
-
-**The pin's release edge rides the same number, which is why nothing is stuck.** `publishPqAppearZoomT`
-writes the value to `--gg-pq-appear-t` on the block, and the pin's bottom edge is
-`(1 − appear-t) × tail − 50vh` above the runway end — i.e. the sticky rail hits the pin's bottom
-**exactly as the quote fades in**, plus the hold. So the quote is revealed dead-centre (the sticky
-did the centring while it was invisible) and then *stays* there for `min(--gg-pq-hold,
---gg-pq-hold-max)` of scroll before it is free. This is a reversal: the pin originally ended on the
-reveal frame so nothing was ever held, and the reveal was kept to `0.45s` to suit a quote that never
-stops moving. The crosshair is now *drawn* (see **Crosshair frame → Reveal choreography**), which
-needs a quote that stays put — so the hold came back, and the hold in turn is what the crosshair's
-phase B visualises. The three move together: change the hold and the affordance's pacing changes
+**The pin's release edge rides the same number, which is why nothing is stuck.**
+`publishPqAppearZoomT` writes the value to `--gg-pq-appear-t`, and the pin's bottom edge is
+`(1 − appear-t) × tail − 50vh` above the runway end — so the sticky rail hits the pin's bottom exactly
+as the quote fades in, plus the hold. The quote is revealed dead-centre (the sticky did the centring
+while it was invisible), stays there for `min(--gg-pq-hold, --gg-pq-hold-max)` of scroll, then is
+released. The crosshair draw (see **Crosshair frame → Reveal choreography**) needs a quote that stays
+put, and the hold is what its phase B visualises: change the hold and the affordance's pacing changes
 with it, by construction.
 
 This also bounds the overlap. At the reveal the runway end (= the next section's top) is
-`(1 − appear-t) × tail` down the viewport — **155vh md / 184vh sm** — below the quote's own bottom
-edge (`optical-centre + half the box`: ~78vh md, ~102vh sm for a tall one). **During the hold the
-quote stays put while the section keeps rising, so that gap is spent, not frozen** — which is
-precisely what `--gg-pq-hold-max` is derived from (see above). Only after the release do the two
-travel up together at 1:1 with the remaining gap frozen, so the section can never climb over the
-quote from there. Verified in Chromium at 1440×900 and 390×844 (quote centre pinned at 50vh up to
-the reveal scroll, then `centre = 50vh − (r − r_a)`, section top never above the quote's bottom).
+`(1 − appear-t) × tail` down the viewport — **155vh md / 184vh sm** — below the quote's own bottom edge
+(~78vh md, ~102vh sm for a tall one). During the hold the quote stays put while the section keeps
+rising, so that gap is spent, not frozen. Only after the release do the two travel up together at 1:1
+with the remaining gap frozen, so the section can never climb over the quote.
 
 **What the runway still controls.** Whatever is left is the stretch where the camera has passed the
-shell's centre but not yet its far wall — a few far-pole cards, then nothing. That is `≈0.20` of the
-tail on md by the camera curve, so it shrinks with the tail: **47vh md / 18vh sm** at a 540/304
-budget (it was 31vh / 12vh at 460/304). **This is the block's main open tuning question.** Nothing draws
-over it any more — the crosshair deliberately waits for the far-wall clear, for reasons set out under
-**Crosshair frame → Reveal choreography** — so it is genuinely blank, and it trades directly against
-the hold: shortening the runway shrinks the blank and the hold together. The floor on the runway is
-the other side of the same coin — the tail after the reveal must stay longer than half the quote box,
-or the section arrives on top of it.
+shell's centre but not its far wall — a few far-pole cards, then nothing. That is `≈0.20` of the tail on
+md, so it shrinks with the tail: **47vh md / 18vh sm** at a 540/304 budget. **This is the block's main
+open tuning question.** Nothing draws over it, so it is genuinely blank, and it trades directly against
+the hold. The floor on the runway is the other side of the same coin — the tail after the reveal must
+stay longer than half the quote box, or the section arrives on top of it.
 
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
-- *Whole stretch after the globe too long, or too much blank before the quote:* shorten the tail.
-  The quote's own timing is camera-derived and rides along, so there is nothing to tune on it
-  directly — only the tail it sits in. Three ways, and they are **per breakpoint**: the CSS is
-  mobile-first, so the base rule is sm and `@media (width >= 768px)` overrides md.
+- *Whole stretch after the globe too long, or too much blank before the quote:* shorten the tail. The
+  quote's timing is camera-derived and rides along. Three ways, **per breakpoint**:
   - `--gg-runway-height` down: removes tail outright, the strongest per vh. Compresses everything
-    fraction-based in the tail at once — the zoom, the controls retiring, the hint fade, the reveal
-    point — and the zoom speeds up faster than the gap closes, since the gap is only
-    `(1 − appear-t)` of what is removed.
-  - `--gg-formation-vh` up: moves scroll from tail into formation, leaving the block's total length
-    alone, so nothing after the globe shifts except the gap. Costs formation pacing: arc → grid →
-    fold all play slower.
-  - `--gg-pq-hold` down: spends less tail on the held frame, so it *widens* the gap — the knob for
-    how long the finished quote sits still, not for the reveal, which is timed (`PQ_REVEAL_IN_MS`).
+    fraction-based in the tail at once, and the zoom speeds up faster than the gap closes.
+  - `--gg-formation-vh` up: moves scroll from tail into formation, leaving total length alone, so
+    nothing after the globe shifts except the gap. Costs formation pacing.
+  - `--gg-pq-hold` down: spends less tail on the held frame, so it *widens* the gap.
 
-  Floor on all three: `(1 − appear-t) × tail` must stay above half the quote box *plus the hold*, or
-  the next section lands on the quote. Shrinking the tail also shrinks `--gg-pq-hold-max`, so the
-  hold quietly goes first — log it off the block with the longest authored quote and check it still
-  clears `--gg-pq-hold` before shipping.
-- *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune —
-  it is `zoomTAtCamZ` of the shell's far wall. If it reads early, the card extent is the term to
-  revisit (`publishPqAppearZoomT`), not a scroll number.
-- *Quote should linger instead of scrolling straight off:* that is a held frame — extend the pin's
-  bottom edge past the reveal and lengthen the reveal transition to match, keeping the clearance
-  above.
-- *"Click & Drag" hint text lingers too long/short:* there is no constant — the globe controls
-  retire **on** `pqAppearZoomT` and the hint text's linear fade reaches 0 **at** it, so the whole
-  affordance layer leaves as the quote arrives and the two can't drift apart. To move either, move
-  the cue.
+  Floor on all three: `(1 − appear-t) × tail` must stay above half the quote box *plus the hold*, or the
+  next section lands on the quote. Shrinking the tail also shrinks `--gg-pq-hold-max`, so the hold
+  quietly goes first — log it off the block with the longest authored quote before shipping.
+- *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune — it is
+  `zoomTAtCamZ` of the shell's far wall. If it reads early, revisit the card extent in
+  `publishPqAppearZoomT`, not a scroll number.
+- *"Click & Drag" hint text lingers too long/short:* there is no constant — the globe controls retire
+  **on** `pqAppearZoomT` and the hint text's linear fade reaches 0 **at** it, so the whole affordance
+  layer leaves as the quote arrives. To move either, move the cue.
 - *Barrel hint copy fades too early/late after a spin:* `HINT_DISMISS_T` (0.12) on drag-accrued
-  `hintDismissProgress`. `updateHintExitProgress` adds `HINT_EXIT_HOLD_RATE` per 60fps frame held
-  plus `norm × HINT_EXIT_DIST_RATE` per frame of motion (both `× dtScale`), so ~0.12 is about one
-  flick — 99ms at full drag speed, 909ms for a finger held still. Only the crossing is read
-  (`getHintDismissed` is a boolean), and only the barrel renders the hint at all, so this tunes
-  sm/touch only. A rotate-chevron tap or a card open sets it to 1
-  outright — both are the interaction the copy asks for.
+  `hintDismissProgress`. `updateHintExitProgress` adds `HINT_EXIT_HOLD_RATE` per 60fps frame held plus
+  `norm × HINT_EXIT_DIST_RATE` per frame of motion (both `× dtScale`), so ~0.12 is about one flick —
+  99ms at full drag speed, 909ms for a finger held still. Only the crossing is read, and only the barrel
+  renders the hint, so this tunes sm/touch only. A rotate-chevron tap or a card open sets it to 1.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
-
-The quote is revealed centred — the frame the camera clears the shell — **held there** so the
-crosshair draw gets its moment, then released and scrolled away over what is left.
 
 #### The hold, and why its length is derived
 
-`--gg-pq-hold` is a *preference*, not the hold. The pin subtracts
-`min(--gg-pq-hold, --gg-pq-hold-max)`, and `--gg-pq-hold-max` is published per layout by
-`publishPqMetrics()`. **A fixed hold is not safe here**, because holding spends the one thing the
-runway has already committed: the gap between the quote's bottom edge and the next section's top.
-That gap is *authored* — it shrinks with the quote's own height — so it is not a constant anyone can
-write down:
+`--gg-pq-hold` is a *preference*, not the hold. The pin subtracts `min(--gg-pq-hold,
+--gg-pq-hold-max)`, and `--gg-pq-hold-max` is published per layout by `publishPqMetrics()`. **A fixed
+hold is not safe here**, because holding spends the gap between the quote's bottom edge and the next
+section's top — and that gap is *authored*, shrinking with the quote's own height:
 
 ```
 holdMax = (1 − pqAppearTailT) · tail        // next section's top at the reveal
@@ -947,41 +862,33 @@ holdMax = (1 − pqAppearTailT) · tail        // next section's top at the reve
           − band · PQ_HOLD_CLEARANCE_BAND_FRAC   // so the two never land flush
 ```
 
-The clearance is a **share of the band** (`100vh − --gg-nav-h`), not a fixed vh: it is the same
-space `--gg-optical-center` halves and `--gg-pq-gap` already takes `0.2` of, so it shrinks with the
-band when the chrome grows or the viewport shortens — which is precisely when the gap is tightest.
-At the reference 1080p desktop (nav 124px → band ~88.5vh) it resolves to ~4vh.
+The clearance is a **share of the band** (`100vh − --gg-nav-h`), not a fixed vh: it is the same space
+`--gg-optical-center` halves and `--gg-pq-gap` takes `0.2` of, so it shrinks with the band when the
+chrome grows or the viewport shortens — precisely when the gap is tightest. At a 1080p desktop (nav
+124px → band ~88.5vh) it resolves to ~4vh.
 
-Measured (Chromium, clearance ≈4vh at 1080p, preference 52vh, runway 540):
+md is the tight breakpoint despite having the *later* reveal — `--gg-pq-appear-t` is 0.3433 there
+against sm's 0.2204, which leaves md less tail to spend. Two consequences worth not re-deriving:
 
-With the corrected cue the reveal lands 16–22vh earlier, so the post-reveal runway grows and the
-derived ceilings move well clear of the preference — 71–100vh for a normal quote against a 52vh
-preference. **The hold is the authored 52vh at every tested size and quote length**, and the phases
-are 16.6 / 9.4 / 26.0vh everywhere. The ceiling is now slack rather than binding, which is the first
-time it has been; `--gg-pq-hold` is a real knob again rather than a wish.
-
-md is the tight breakpoint despite having the *later* reveal — the derived `--gg-pq-appear-t` is
-0.3433 there against sm's 0.2204, which leaves md less tail to spend. Three consequences worth not
-re-deriving:
-
-- **The runway is 540vh, not 460vh, because of this.** At 460 the ceiling capped the hold at 8–12vh
-  on desktop — a fraction of a second at normal scroll speed, so the quote was gone before it could be
-  read. The whole crosshair sequence lives inside the hold, so the runway is the single knob for both the hold and the blank stretch before it, in
-  opposite directions. The exchange rate: every 1vh of hold costs ~1.7vh of tail
-  (`Δtail = Δhold / (1 − appear-t)` on md), and ~0.20 of every vh of tail lands in the blank — so
-  **~0.34vh of extra blank buys 1vh of extra hold.** Budget with that before reaching for either.
-- **`--gg-pq-hold-max` defaults to `0vh`.** Before the first `doLayout` publishes it — or if the JS
-  never runs — the pin resolves exactly as it did with no hold at all, which is the safe direction.
-  It is re-derived on every `doLayout` — including the cheap early-return path, since a reflow that
-  leaves the viewport alone still moves `blockHeight` and the quote's bottom edge — and again on
+- **The runway trades the hold against the blank stretch, in opposite directions.** Every 1vh of hold
+  costs ~1.7vh of tail (`Δtail = Δhold / (1 − appear-t)` on md), and ~0.20 of every vh of tail lands in
+  the blank — so **~0.34vh of extra blank buys 1vh of extra hold.** Budget with that before reaching for
+  either. The whole crosshair sequence lives inside the hold.
+- **`--gg-pq-hold-max` defaults to `0vh`.** Before the first `doLayout` publishes it — or if the JS never
+  runs — the pin resolves exactly as it did with no hold at all, which is the safe direction. It is
+  re-derived on every `doLayout`, including the cheap early-return path, since a reflow that leaves the
+  viewport alone still moves `blockHeight` and the quote's bottom edge — and again on
   `document.fonts.ready`, because a late webfont retypesets the quote.
 - **The runway length is what keeps a long quote inside its section.** At 540vh a five-line quote at
-  390×667 clears comfortably; shortening the runway reopens overflow into the next section
-  regardless of the hold. There is still no `overflow` handling for a pathologically long or
-  localized quote — see **Open questions → Pull-quote pacing and overflow**.
+  390×667 clears comfortably; shortening the runway reopens overflow into the next section regardless of
+  the hold. There is still no `overflow` handling for a pathologically long or localized quote — see
+  **Open questions → Pull-quote pacing and overflow**.
+
 
 The 0-tall rail (see **CSS → Pull-quote box**) is what keeps the box's own height out of the sticky
 clamp, so the centring at the reveal holds for any copy length.
+
+### Ticker and render loop
 
 Milo's page-level Lenis keeps `window.scrollY` in sync; the driver is a plain `requestAnimationFrame`
 loop (`startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
@@ -1000,6 +907,15 @@ because reduced motion also keeps the ticker running on an otherwise-static glob
 long off-screen scroll doesn't read a spurious one-frame `scrollVel` spike. The observer is
 created in `initRuntime`, disconnected in `destroy` (mirrors `layoutObs`); it fires once on
 `observe()` to correct the `onScreen` default.
+
+**Pausing must hide the canvas (multi-globe correctness).** The main canvas is `position:fixed` +
+full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the stage that `display:none`s
+it when out of range — runs *inside* `tick()`. So when `syncTicker()` stops the loop it also sets
+`display = 'none'` directly; otherwise a paused globe's fixed canvas keeps intercepting pointer events
+across the whole viewport, which with **multiple globes per page** silently swallows the clicks meant
+for whichever globe is actually on screen. The resumed loop's `updateCanvasVisibility` restores it.
+
+### Progressive texture loading
 
 **Progressive texture loading (contours → un-dissolve).** Card meshes are built before any photo
 loads, so the block paints immediately: `initRuntime` runs `buildCards()`/`buildTextMesh()`/
@@ -1023,6 +939,15 @@ case). `dragFlipZ` is recomputed in `onDone` / when the morph settles. Images de
 thread (`img.decode()`) so many decode concurrently. So `renderReady` means *cards built* (contours
 visible), not *all textures loaded*.
 
+**Right-sized image requests.** `loadCardTextures`' `getSrc` and the modal upgrade both route the
+authored URL through `optimizeImgUrl(src, cap)` (`authoring.js`), which for a helix/DA `media_*` asset
+rewrites it to `?width=<cap>&format=webply`, mirroring `decoratePictures`' convention. Non-`media_`
+URLs pass through. Because we downscale client-side anyway (`fitDims`), this trims bytes on the wire
+(≈10–30× on slow links), not the final texture resolution — and it lets the modal request its own cap
+(`MODAL_TEX_MD`) rather than being limited by the authored `<img>` src width.
+
+### Rotation through the peel, fold and sphere handoff
+
 **Rotation through the peel → fold → sphere handoff.** Three separate traps, all fixed in the
 placement branches:
 
@@ -1042,19 +967,7 @@ forward so the sphere-camera distance lerps `FOLD_SPHERE_DIST → CAM_Z_SPHERE` 
 sphere subtract `sphGroupZ` to stay at world z≈0). Skipping the stage before the fold starts makes
 `sphGroupZ` discontinuous at that boundary — the whole group darts forward on the first fold frame.
 
-**Right-sized image requests.** `loadCardTextures`' `getSrc` and the modal upgrade both route the
-authored URL through `optimizeImgUrl(src, cap)` (`authoring.js`), which for a helix/DA `media_*` asset
-rewrites it to `?width=<cap>&format=webply`, mirroring `decoratePictures`' convention. Non-`media_`
-URLs pass through. Because we downscale client-side anyway (`fitDims`), this trims bytes on the wire
-(≈10–30× on slow links), not the final texture resolution — and it lets the modal request its own cap
-(`MODAL_TEX_MD`) rather than being limited by the authored `<img>` src width.
-
-**Pausing must hide the canvas (multi-globe correctness).** The main canvas is `position:fixed` +
-full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the stage that `display:none`s
-it when out of range — runs *inside* `tick()`. So when `syncTicker()` stops the loop it also sets
-`display = 'none'` directly; otherwise a paused globe's fixed canvas keeps intercepting pointer events
-across the whole viewport, which with **multiple globes per page** silently swallows the clicks meant
-for whichever globe is actually on screen. The resumed loop's `updateCanvasVisibility` restores it.
+### Stacking order
 
 **z-index / stacking order.** The hero claims **nothing at page level** — world, arc copy,
 pull-quote, and the a11y layers are all positioned and already in paint order in the DOM, so tree
@@ -1308,8 +1221,7 @@ The delay must stay **linear** in `fanT`. Adjacent-pair separation is `f'(τ) ×
 sweeps the whole velocity curve during its flight, so with `Δdelay` equal for all pairs every pair
 peaks at the same separation (~520px at the shipped values) whatever the easing is. Bending the delay
 — an exponent on `(1 - fanT)`, say — buys a larger opening gap by starving the rest: at `^0.6` the
-first pair peaks at 926px and the ninth at 522px, a 1.77× taper across exactly the cards most visible
-during the entry.
+taper runs 1.77× across exactly the cards most visible during the entry.
 
 **`ENTRY_ROT_MAX` is the dial for gap size**, and it scales every pair equally (1.01× spread at any
 value): 0.9 → ~520px peak gap, 1.2 → ~580px, 1.6 → ~650px, 2.0 → ~720px, at 1944 / 2592 / 3456 /
@@ -1329,15 +1241,14 @@ uniform ~510px apart mid-entry (mean ≈ max), against a settled fan spacing of 
 
 The rotation eases with `easeInOutQuint`. A card is off-screen for the first third of its own flight
 — it enters frame at `τ` 0.32–0.61 depending on its `fanT`, and stays visible to `τ` 0.65–1.0 — so the
-whole visible stretch sits in the ease's decay phase, and what matters is the velocity profile over
+whole visible stretch sits in the ease's decay phase, so what matters is the velocity profile over
 that stretch rather than the ease's name. Cards launch from **below and right** of the viewport (`y`
 1881–4299 against a 900px viewport) and swing up, so the off-screen stretch is not clearance for the
-section above. A plain ease-out is the weakest option there, not the
-strongest: it spends 83% of its travel off-screen (`easeInOutQuint` 30%) and enters frame already
-slow, so adjacent cards both spread less and converge less. Peak velocity 5× average puts cards into
-frame fast, then decelerates hard, so each card is visibly reeled in by the next: an adjacent pair
-peaks ~620px apart and closes ~240px (38%) while both are on screen, against ~520px / 118px (23%)
-under `easeInOutCubic` and ~435px / 62px (14%) under `easeOutCubic`.
+section above. **Do not swap in a plain ease-out**: it spends 83% of its travel off-screen
+(`easeInOutQuint` 30%) and enters frame already slow, so adjacent cards both spread less and converge
+less. Peak velocity 5× average puts cards into frame fast then decelerates hard, so each card is
+visibly reeled in by the next — an adjacent pair peaks ~620px apart and closes ~240px (38%) while
+both are on screen, roughly double the convergence of `easeInOutCubic`.
 
 The card's entry CA reads its own `entry.rot`, so each card gets its own CA burst as it launches.
 
@@ -1514,7 +1425,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   (sm) → `--s2a-spacing-lg` (md+) in lockstep with the modal's `--gg-modal-edge`, so the two chrome
   layers never disagree about how far off the edge a control sits. The spin toggle's `top` adds that
   same gap to `--gg-nav-h` (124px today, from measured fallbacks — see CSS, Tokens), clearing the sticky gnav +
-  breadcrumbs the fixed layer sits under. It is no longer the only nav-aware rule — see **The nav band**.
+  breadcrumbs the fixed layer sits under. It is not the only nav-aware rule — see **The nav band**.
 - **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
   nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
 - **RTL pins the row's visual order, and does NOT flip the arrow icons.** The modal's prev/next are
@@ -1551,7 +1462,7 @@ clears `inert` before `focus()`, and so does `focusCard` (the modal's close-time
 land before `updateTabStops` has re-run); `trackCardOpen` clears and restores `inert` around its
 synthetic `.click()` rather than relying on inert click semantics.
 
-Focusing the entry button or any browse image runs `snapToFormed` (`window.lenis.scrollTo` to
+Focusing the entry button or any browse image runs `snapToBrowseView` (`window.lenis.scrollTo` to
 `SPHERE_FORMED_PROGRESS`), bringing the block into its interactive state *and* into view before the
 ring shows (the pdf-space focus pattern). It lands at **`BROWSE_VIEW_T`** (`sphereFormT` 0.96,
 328vh), not at `sphereFormT` 1: `BROWSE_VIEW_SCROLL_FRAC` is that formT re-expressed as a fraction
@@ -1586,15 +1497,29 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
   replaced it).
 - **Modal counter reading order:** the visible `.globe-gallery-modal-counter` ("05 / 47") is
-  `aria-hidden`; the spoken form lives in the sr-only `.globe-gallery-modal-position` ("5 of 47",
-  from `cardLabel`), which is also the heading's `aria-describedby` target. Both sit in the markup
-  **between Prev and Next**, so a virtual cursor reads Prev → position → Next → Close, matching the
-  on-screen row. The whole bottom row is `position: absolute`, so that markup order is free.
-  The span carries **`role="note"`**: NVDA does not descend into a `note` when it sweeps the dialog
-  on open, so the position is spoken once (with the heading) instead of twice, while the span stays
-  a virtual-cursor stop for VoiceOver. `aria-hidden` would also silence the sweep but kills the
-  stop; `group` does not stop the sweep at all; `article`/`region` do, but VoiceOver announces
+  `aria-hidden`; the spoken form ("5 of 47", from `cardLabel`) lives in **two** sr-only spans, both
+  classed `.globe-gallery-modal-position` so one `querySelectorAll` write in `populateModal` keeps
+  them in sync. They exist because no single element can do both jobs:
+  - the one in `.globe-gallery-modal-info` is `aria-hidden` and carries the `id` the heading's
+    `aria-describedby` points at. `aria-describedby` resolves into `aria-hidden` subtrees, so the
+    position is announced with the focused heading on open, while staying out of NVDA's sweep of
+    the dialog — which would otherwise speak it a second time.
+  - the one **between Prev and Next** carries `role="note"` and no `id`. It is there to be a
+    VoiceOver virtual-cursor stop, so the cursor reads Prev -> position -> Next -> Close, matching
+    the on-screen row. NVDA does not descend into a `note` when it sweeps, so it costs no
+    duplicate. The whole bottom row is `position: absolute`, so that markup order is free.
+
+  Do not collapse these into one element. **WebKit skips both `note` and `document` when computing
+  a description** (measured), so a single `note` span is silent on open in Safari; a single
+  `aria-hidden` span loses the cursor stop; and a single span with no role at all brings NVDA's
+  duplicate back. `group` does not stop the sweep; `article`/`region` do, but VoiceOver announces
   entering/leaving them.
+- **Safari skips the badge links when tabbing.** The badge names are `<a href>`; Prev/Next/Close
+  are `<button>`. Safari keeps links out of the Tab sequence unless the user enables "Press Tab to
+  highlight each item on a webpage", so Tab there goes description (only while scrollable) ->
+  Prev. Chrome tabs through everything. This is the platform default, not a block bug — the
+  VoiceOver cursor reaches the links either way, and `Option`+Tab does too. Do not force
+  `tabindex="0"` onto them to paper over it.
 - **Instructions popup:** on focus the entry widget shows a **visible pill** so sighted keyboard
   users get the affordance (a11y audit). ONE element (`.globe-gallery-a11y-tip`) — hidden by
   default, shown on `:focus-visible`, and simultaneously the button's `aria-labelledby` target, so
@@ -1607,17 +1532,20 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   first), carrying the card's alt as a real text alternative. The card **position** ("N of M") lives
   in one sr-only element referenced by the heading's `aria-describedby`, so it is read with the
   focused heading on open.
-- **The `<dialog>`'s name is static and is not card text.** `aria-label` is `labels.modalTitle`,
-  row 3 part 10, defaulting to English like every other label. Two rules follow from this, and both
-  were learned the hard way:
+- **The `<dialog>` carries no accessible name**, so VoiceOver falls back to name-from-contents and
+  says the card's name before the focused heading repeats it. Safari's fallback takes the heading
+  alone; Chrome's takes the whole info subtree plus its group counts, which is why Chrome + VO is
+  much the louder of the two. Two rules bound any name added back:
   1. It must not be **card** text (`aria-labelledby` → the heading, role or position). The dialog
      name and the focused heading are two separate announcements on open; if they overlap, the card
-     is read twice. Leaving the dialog unnamed is not an escape — VoiceOver then falls back to
-     reading the contents, which overlaps too. An empty or whitespace `aria-label` is the same as
+     is read twice — the fallback's failure mode as well, so a static non-card `aria-label` is the
+     only version that removes the repeat. An empty or whitespace `aria-label` is the same as
      unnamed: name computation ignores it.
   2. It must not **change** per card. VoiceOver re-announces a dialog whose name changed; NVDA never
      does. A changing name is therefore a channel that double-speaks on one AT and is silent on the
      other — it cannot be the carrier for anything.
+  axe's `aria-dialog-name` does not match a native `<dialog>` (only an explicit `role="dialog"`), so
+  being unnamed passes a full axe run.
 - **`role="document"` on `.globe-gallery-modal-description` is load-bearing for NVDA.** Opening a
   **native `<dialog>`** makes NVDA read the dialog's prose aloud; the same markup as a
   `div[role="dialog"][aria-modal="true"]` does not, so this is the element's behavior and not the
@@ -1626,7 +1554,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   the heading, inserting the copy a frame after the dialog is shown (NVDA re-reads live rather than
   snapshotting at appear-time), and making the copy focusable. Putting it in the dialog's
   `aria-describedby` makes it read **twice**.
-- **Only two announcement primitives are portable**: focus moving into a named dialog, and a live
+- **Only two announcement primitives are portable**: focus moving into the dialog, and a live
   region's text changing. Each event uses exactly one of them — open → the focused heading, nav →
   the live region — and nothing here relies on an AT re-reading a changed name or falling back to
   contents.
@@ -1820,9 +1748,8 @@ value CSS cannot compute — it comes off the WebGL camera curve and the shell r
 other way, and CSS derives the pin's release edge from it rather than restating it. Anything that
 *could* be a CSS number must not follow it out of the stylesheet. **No upstream (`--feds-*`)
 property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
-gnav, so the whole nav band has to be reckoned with — but `var(--feds-height-nav, 63px)` +
-`var(--feds-height-breadcrumbs, 33px)` is the wrong instrument for that, and the earlier version of
-this file used it. Both vars are declared upstream (`libs/styles/styles.css` `:root` and
+gnav, so the whole nav band has to be reckoned with. **Do not reach for `var(--feds-height-nav, 63px)`
++ `var(--feds-height-breadcrumbs, 33px)`** — both vars are declared upstream (`libs/styles/styles.css` `:root` and
 `global-navigation/base.css`), so the px fallbacks never fire and the calc resolves to a fixed 96px
 whatever the live nav paints; `--feds-height-breadcrumbs` isn't even a bar height, it's the
 `line-height` of breadcrumb links. `--gg-nav-h` names the *other* pair
@@ -2000,15 +1927,9 @@ Consequences worth knowing before retuning:
 ### Crosshair frame
 
 `--gg-copy-pad` steps **24px → 48px (≥768) → 64px (≥1440)**, and the pull-quote draws a hairline
-crosshair on it — so the quote's own text edge lands on the vertical line, and the hanging opening
-mark is the one thing outside it. Because that var also feeds `--gg-content-inset`, **the arc copy
-widens with it** — the two share one edge by design, so they still cannot drift.
-
-**Line weight.** The frame is 1px (`--gg-crosshair-width`) in `--gg-pq-rule-color` (gray-800). It
-sits beside the quote and must not out-shout it — gray-400 `#c6c6c6` is close enough to the copy's
-own `#fafafa` to read as a second headline. **Do not use fractional widths:** `border-width` snaps
-to device pixels *per edge*, so 1.5px lands as 1px on some rules and 2px on others at 1dppx and the
-frame goes asymmetric; it is exact only at 2dppx.
+crosshair on it — so the quote's own text edge lands on the vertical line, and the hanging opening mark
+is the one thing outside it. Because that var also feeds `--gg-content-inset`, **the arc copy widens
+with it**: the two share one edge by design and cannot drift.
 
 | Width | `--gg-copy-pad` | Token |
 | --- | --- | --- |
@@ -2016,196 +1937,161 @@ frame goes asymmetric; it is exact only at 2dppx.
 | 768–1439 | 48px | `--s2a-spacing-3xl` |
 | ≥ 1440 | 64px | `--s2a-spacing-4xl` |
 
-Note this uses c2's **grid** breakpoint (768, where `--grid-columns` becomes 12) for the first step
-and its **token tier** `xl` (1440) for the second. c2's responsive token tiers are `sm` = base,
-`md` = 1024, `lg` = 1280, `xl` = 1440 — so lg (1280–1439) holds md's 48px here.
+This uses c2's **grid** breakpoint (768, where `--grid-columns` becomes 12) for the first step and its
+**token tier** `xl` (1440) for the second. c2's tiers are `sm` = base, `md` = 1024, `lg` = 1280, `xl` =
+1440 — so lg (1280–1439) holds md's 48px here.
 
-Drawn as two pseudo-elements on `.globe-gallery-pullquote`, not four: `::before` insets top/bottom
-and borders its block edges, `::after` insets inline and borders its inline edges. Each pair spans
-the full box instead of stopping at the corners, so the runs **cross** and read as a crosshair
-rather than a closed rectangle. They are `position: absolute`, which both keeps them out of the
-flex flow (an abspos child of a flex container is not a flex item) and lets them inherit the
-parent's fade, so the frame animates in with the quote. The frame
-tracks the content-sized box: `::after` spans `inset-block: 0` (the full height) and `::before` sits
-on the padding edges, so both follow a copy or `--gg-pq-gap` change with no second number to update.
+**Line weight.** The frame is 1px (`--gg-crosshair-width`) in `--gg-pq-rule-color` (gray-800). It sits
+beside the quote and must not out-shout it — gray-400 `#c6c6c6` is close enough to the copy's `#fafafa`
+to read as a second headline. **Do not use fractional widths:** `border-width` snaps to device pixels
+*per edge*, so 1.5px lands as 1px on some rules and 2px on others at 1dppx and the frame goes
+asymmetric.
+
+Drawn as two pseudo-elements, not four: `::before` insets top/bottom and borders its block edges,
+`::after` insets inline and borders its inline edges. Each pair spans the full box instead of stopping
+at the corners, so the runs **cross** and read as a crosshair rather than a closed rectangle. They are
+`position: absolute`, which keeps them out of the flex flow and lets them inherit the parent's fade. The
+frame tracks the content-sized box, so both follow a copy or `--gg-pq-gap` change with no second number
+to update.
 
 #### Reveal choreography
 
-The frame is **drawn**, not faded — and each of the four rules is drawn in a different direction,
-chosen so the whole thing runs **clockwise**: top →, right ↓, bottom ←, left ↑. It reads as one
-continuous stroke tracing the frame rather than four unrelated wipes.
+The frame is **drawn**, not faded, and each of the four rules is drawn in a different direction so the
+whole thing runs **clockwise**: top →, right ↓, bottom ←, left ↑. It reads as one continuous stroke.
 
-**One threshold, one window.** `pqAppearZoomT` — the frame the camera geometrically clears the shell
-— is the only thing scroll decides. Crossing it starts the reveal; everything after that is time:
+**One threshold, one window.** `pqAppearZoomT` is the only thing scroll decides. Crossing it starts the
+reveal; everything after is time:
 
 | Phase | Clock | What |
 | --- | --- | --- |
 | reveal | `0 → 1` over `PQ_REVEAL_IN_MS` (700ms) | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
 | held | the rest of the pinned band | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
 
-The **hold** (`min(--gg-pq-hold, --gg-pq-hold-max)`) pins the rail — see **The hold, and why its
-length is derived**. It buys reading time; it does not pace the reveal.
+The **hold** (`min(--gg-pq-hold, --gg-pq-hold-max)`) pins the rail — see **The hold, and why its length
+is derived**. It buys reading time; it does not pace the reveal. The frame and the copy share one window
+*and* the clock that runs it (`advanceReveal`), so "the same length" is structural rather than intended.
 
-**The frame and the copy share one window** rather than queueing, and share the *clock* that runs it
-(`advanceReveal`, below), so "the same length" is structural rather than intended. The lines' stagger
-spans the window (see **The stagger**), so the last one lands as the verticals close.
+**Nothing starts before `pqAppearZoomT`.** There is no second threshold: if the draw needs more room, it
+needs more hold. Two consequences:
 
-**Nothing starts before `pqAppearZoomT`.** There is no second threshold: if the draw needs more
-room, it needs more hold.
+- **The pre-reveal blank is real and unfilled** — up to ~47vh md / ~18vh sm of tail where the shell has
+  emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also shrinks
+  the hold, so the two trade directly. This is the open tuning question, not a crosshair bug.
+- **Nothing moves once the reveal has played.** It finishes 700ms after the cue however the reader got
+  there, so the rest of the pinned band is always still.
 
-Two consequences:
+**The reveal is a tween, not a scrub.** `advanceReveal` is the whole clock: past the cue it steps forward
+by `dtScale · FRAME_MS / PQ_REVEAL_IN_MS`, before it steps back over `PQ_REVEAL_OUT_MS`, clamped to
+`[0, 1]`. Scroll picks the direction and nothing else, so a quote whose viewport leaves no hold at all
+(`--gg-pq-hold-max` 0) plays exactly like any other. On the way out the rules un-draw and the lines drop
+back under their masks together, **bottom line first**.
 
-- **The pre-reveal blank is real and unfilled** — up to ~47vh md / ~18vh sm of tail where the shell
-  has emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also
-  shrinks the hold (see **Scroll model**), so the two trade directly. This is the open tuning
-  question, not a bug to fix in the crosshair.
-- **Nothing moves once the reveal has played.** It finishes 700ms after the cue however the reader
-  got there, so the rest of the pinned band is always still.
-
-**The reveal is a tween, not a scrub.** `advanceReveal` is the whole clock: past the cue it steps
-forward by `dtScale · FRAME_MS / PQ_REVEAL_IN_MS`, before it steps back over `PQ_REVEAL_OUT_MS`,
-clamped to `[0, 1]`. Scroll picks the direction and nothing else, so the reveal takes 700ms from the
-cue however far or fast the reader scrolled, and a quote whose viewport leaves no hold at all
-(`--gg-pq-hold-max` 0) plays exactly like any other. On the way out the rules un-draw and the lines
-drop back under their masks together, **bottom line first**: a larger lag trails the sweep in
-*either* direction.
-
-`updatePullQuoteCopy` is a pure function of the reveal — **the copy must not get a clock of its
-own**, or the two are free to disagree about when they finish.
+`updatePullQuoteCopy` is a pure function of the reveal — **the copy must not get a clock of its own**, or
+the two are free to disagree about when they finish.
 
 **The lines composite.** `translate3d` rather than `translateY`, so each line gets its own layer and
-travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every frame and they shimmer as
-they move.
+travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every frame and they shimmer.
 
 #### The quote rolls in line by line
 
-The quote does not fade in as one block: each **rendered line** sits in its own `overflow: hidden`
-mask and starts one line-height *below* it, so it rolls up into place and the reader never sees a
-line at half opacity — only a line arriving. Name and role keep the plain 14px rise; three rolling
-blocks in a row would be noise, and the attribution is not the line people are reading.
+Each **rendered line** sits in its own `overflow: hidden` mask and starts one line-height *below* it, so
+it rolls up into place and the reader never sees a line at half opacity — only a line arriving. Name and
+role keep the plain 14px rise; three rolling blocks in a row would be noise. `easeOutExpo` puts most of a
+line's travel in the first tenth of *its own share* of the sweep, which is why the shares are staggered
+across the window rather than overlapped — a line snaps, then the next one does, for as long as the rules
+are still drawing.
 
-**Measured off a reference, not guessed.** The pattern is the one on `alexfrisondeisla.com` (its
-"( ABOUT ME )" copy): an `inline-block` inside an `overflow: hidden` block, tweened from
-`translate(0, 115%)` to `0` — **no rotation, no opacity, ~1.2s, ~40ms between lines**. The mask plus
-a straight vertical translate is the whole trick. `easeOutExpo` stands in for that tween's shape: it
-puts most of a line's travel in the first tenth of *its own share* of the sweep, which is why the
-shares are staggered across the window rather than overlapped — a line snaps, then the next one
-does, for as long as the rules are still drawing.
-
-**Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a
-probe span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block
-per line. Break points move with the box width and with whichever font finally resolved, so it is
-always redone from the authored text rather than patched. `relayoutQuote` **gates on the quote box's
-width**, not on the viewport's: a scrollbar arriving changes the box without changing
-`innerWidth` (the body `ResizeObserver` is what catches it), and a viewport change that only alters
-height leaves the split correct. `fonts.ready` forces one regardless. It drops the copy cache and
-rewrites the current frame straight after, because fresh line elements carry no progress var and
-would otherwise render at rest for a frame. Line text is assigned with `textContent`; `createTag`'s
+**Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a probe
+span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block per line.
+Break points move with the box width and with whichever font resolved, so it is always redone from the
+authored text rather than patched. `relayoutQuote` **gates on the quote box's width**, not the
+viewport's: a scrollbar arriving changes the box without changing `innerWidth`, and a viewport change
+that only alters height leaves the split correct. `fonts.ready` forces one regardless. It drops the copy
+cache and rewrites the current frame straight after, because fresh line elements carry no progress var
+and would otherwise render at rest for a frame. Line text is assigned with `textContent`; `createTag`'s
 third argument parses a string as markup.
 
-**The split is presentational, and AT gets the unsplit text.** Each `.globe-gallery-pullquote-line`
-is `aria-hidden`, and `layoutQuote` appends one `.sr-only.globe-gallery-pullquote-sr` span holding
-the whole quote. Block-level line spans otherwise land in the accessibility tree as one static-text
-node **per visual line**, so a screen reader stops mid-phrase at break points that move with the box
-width; the sr-only span restores the single node a plain `<blockquote>` produces. It carries
-`user-select: none` so selecting the quote copies the visible lines only, never both copies.
+**The split is presentational, and AT gets the unsplit text.** Each `.globe-gallery-pullquote-line` is
+`aria-hidden`, and `layoutQuote` appends one `.sr-only.globe-gallery-pullquote-sr` span holding the whole
+quote. Block-level line spans otherwise land in the accessibility tree as one static-text node **per
+visual line**, so a screen reader stops mid-phrase at break points that move with the box width. It
+carries `user-select: none` so selecting the quote copies the visible lines only.
 
 Details that are load-bearing:
 
-- **The split must not change the box.** `publishPqMetrics` measures the quote to derive the hold
-  and the crosshair's edge splits, so any height the split introduced would feed straight back into
-  the choreography. Each line pads itself by `--gg-pq-line-bleed` and takes the same amount back as
-  a negative margin; the quote is a **flex column** so those negative margins meet without
-  collapsing (sibling margins collapse to the single most-negative one, which would leave the quote
-  one bleed taller per line), and the lines are separated by whitespace text nodes, which generate
-  no flex items.
+- **The split must not change the box.** `publishPqMetrics` measures the quote to derive the hold and the
+  crosshair's edge splits, so any height the split introduced would feed back into the choreography. Each
+  line pads itself by `--gg-pq-line-bleed` and takes the same amount back as a negative margin; the quote
+  is a **flex column** so those negative margins meet without collapsing, and the lines are separated by
+  whitespace text nodes, which generate no flex items.
 - **Those separators are also the text.** Without them `textContent` runs the lines together
   (`the differentapps.`) for anything reading the quote as a string.
-- **A script that does not break on spaces is one "word"**, so a CJK or Thai quote measures as a
-  single line and rolls as one block rather than line by line.
-- **The mask bleeds sideways too.** `overflow: hidden` clips both axes, and the hung opening mark
-  sits *outside* the line's content box, so the inline bleed is what keeps the mask from cropping
-  it. That bleed is `--gg-hang-max`, shared with the modal description — see **Hanging the opening
-  mark**. The vertical bleed is the descender headroom, and it is why
-  `--gg-pq-line-start` is 120% rather than 100%: a line waits *below the padded mask*, not just
-  below its own line box, which needs `0.2 × line-height > bleed`.
-- **The outdent becomes a margin, and only on the first line.** `text-indent` is still what
-  `hangOpeningMark` sets while measuring, since the outdent can change where the first line breaks
-  — but it must not survive into the split. It is an **inherited** property, and each line's inner
-  is an `inline-block`, i.e. its own block container: the line indents the inline-block, then the
-  inline-block re-indents its own first line, and the quote hangs the opening mark *and the first
-  letter*. So the first line's inner carries the same distance as `margin-inline-start`, which does
-  not inherit and applies exactly once.
+- **A script that does not break on spaces is one "word"**, so a CJK or Thai quote measures as a single
+  line and rolls as one block.
+- **The mask bleeds sideways too.** `overflow: hidden` clips both axes, and the hung opening mark sits
+  *outside* the line's content box, so the inline bleed is what keeps the mask from cropping it. That
+  bleed is `--gg-hang-max`, shared with the modal description. The vertical bleed is descender headroom,
+  and it is why `--gg-pq-line-start` is 120% rather than 100%: a line waits *below the padded mask*,
+  which needs `0.2 × line-height > bleed`.
+- **The outdent becomes a margin, and only on the first line.** `text-indent` is what `hangOpeningMark`
+  sets while measuring, since the outdent can change where the first line breaks — but it must not
+  survive into the split. It is **inherited**, and each line's inner is an `inline-block`, i.e. its own
+  block container: the line indents the inline-block, then the inline-block re-indents its own first
+  line, hanging the opening mark *and the first letter*. So the first line's inner carries the same
+  distance as `margin-inline-start`, which does not inherit and applies exactly once.
 
-**The stagger** is a share of the sweep, not a per-line delay. Each line owns
-`PQ_COPY_LINE_SPAN` (0.55) of the sweep and the lags divide what is left, so the last line starts
-around where the first one finishes and the set spans the whole reveal — for two lines or for six,
-which is why the name/role lags below them never need re-tuning against the line count. JS writes one
-already-eased `--gg-pq-line-v` per line; the `1` fallbacks are the rest state, which is also the
-no-JS and reduced-motion render.
+**The stagger** is a share of the sweep, not a per-line delay. Each line owns `PQ_COPY_LINE_SPAN` (0.55)
+of the sweep and the lags divide what is left, so the last line starts around where the first finishes
+and the set spans the whole reveal — for two lines or for six, which is why the name/role lags never need
+re-tuning against the line count. JS writes one already-eased `--gg-pq-line-v` per line; the `1`
+fallbacks are the rest state, which is also the no-JS and reduced-motion render.
 
-#### The hold after the reveal
+#### Frame mechanics
 
-Once the reveal has played the hold keeps going, and **nothing on screen changes**: the rail stays
-stuck, the finished quote sits still, and the reader reads. The still stretch itself is
-unchanged from when a progress lap ran over it — a brighter, 2px line retracing the frame clockwise
-and closing as the rail un-sticks. It was built as a progress affordance and removed: it sat right
-beside the copy people were reading, and a stuck page for the length of the hold turned out to need no
-narration. Four treatments were compared in total (fill, the frame depleting instead, a single
-travelling runner, and none); **none** is what ships, and the losing paths are gone rather than left
-behind a flag. If it comes back, it needs its own element over the frame's pseudo selectors and its
-own copy of the four edge vars, plus the perimeter split by real edge length so the clockwise head
-travels at constant speed.
+- **Every rule is masked to the fraction of itself that is drawn, along its own clockwise direction.**
+  The gradient's direction (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense,
+  so a var never needs to know which edge it is on. There are **two** vars, not four — `--gg-pq-h` for
+  both horizontals, `--gg-pq-v` for both verticals — because horizontals lead verticals and that is the
+  only split the draw makes. JS writes them per frame; the CSS fallbacks are `100%`, so a no-JS or
+  pre-first-frame render is the complete crosshair.
+- **A pair is one element, so the two rules are separated by the mask, not the DOM.** `::before` paints
+  *both* horizontals; give each of its two mask layers **half the box height** and pin it to a diagonal
+  corner, and the `left top` layer can only uncover the top border while the `right bottom` layer can
+  only uncover the bottom one. `::after` is the same with the axes swapped: half the *width*, pinned
+  `right top` / `left top`. Four independent directions, no extra elements.
+- **The halves are 51%, not 50%,** so a subpixel box height can't leave a rule half-masked. They overlap
+  across the middle, where there is nothing to draw; mask layers composite with `add`, so the overlap
+  costs nothing.
+- **Border colour comes from `--gg-pq-rule-color` and width from `--gg-crosshair-width`, never from a
+  second `border:` shorthand** — a shorthand silently resets the `border-block-width` /
+  `border-inline-width` the shared rules already set, and the rule renders as nothing. If a rule
+  vanishes, suspect a shorthand before you suspect the mask.
+- **Style writes are memoised** on the joined interval string (the `arcCopy` pattern), so a frame that
+  moves nothing costs no writes.
+- **The container has no opacity or transform of its own.** The frame is masked to zero-length intervals
+  and the copy vars sit at 0, so there is nothing for a container fade to hide, and a growing box would
+  stretch the rules while they draw. Don't add one.
+- **Each line is one 0..1 var** (`--gg-pq-copy-q` / `-n` / `-r`), already eased and staggered in JS. The
+  CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. The `1` fallbacks are the
+  rest state, so no-JS and reduced motion need no override — `updatePullQuote` returns early under
+  reduced motion and the vars stay unset.
 
-Mechanics of the frame itself, and the reasons they are what they are:
+Reduced-motion constraints:
 
-- **Every rule is masked to the fraction of itself that is drawn, along its own clockwise
-  direction.** The gradient's *direction*
-  (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense, which is why a var
-  never needs to know which edge it is on. There are **two** of them, not four — `--gg-pq-h` for
-  both horizontals, `--gg-pq-v` for both verticals — because horizontals lead verticals and that is
-  the only split the draw makes. JS writes them per frame; the CSS fallbacks are `100%`, so a no-JS
-  or pre-first-frame render is the complete crosshair.
-- **A pair is one element, so the two rules are separated by the mask, not the DOM.** This is the
-  trick worth not re-deriving. `::before` paints *both* horizontals; give each of its two mask
-  layers **half the box height** and pin it to a diagonal corner, and the `left top` layer can only
-  ever uncover the top border while the `right bottom` layer can only uncover the bottom one.
-  `::after` is the same with the axes swapped: half the *width*, pinned `right top` / `left top`.
-  Four independent directions, no extra elements.
-- **The halves are 51%, not 50%,** so a subpixel box height can't leave a rule half-masked. They
-  overlap across the middle, where there is nothing to draw; mask layers composite with `add`, so
-  the overlap costs nothing.
-- **Border colour comes from `--gg-pq-rule-color` and width from `--gg-crosshair-width`, never from
-  a second `border:` shorthand.** An
-  overlay once set its colour with `border: 0 solid …`, which silently reset the
-  `border-block-width` / `border-inline-width` the shared rules had already set, and it rendered as
-  nothing at all. If a rule vanishes, suspect a shorthand before you suspect the mask.
-- **Style writes are memoised** on the joined interval string — the `arcCopy` pattern
-  (`globe-gallery.js`), so a frame that moves nothing costs no writes.
-- **The container has no opacity or transform of its own** — the frame is masked to zero-length
-  intervals and the copy vars sit at 0, so there is nothing for a container fade to hide, and a
-  growing box would stretch the rules while they draw. Don't add one back.
-- **`.is-active` is gone.** It existed only to trigger the copy's CSS transition; with the copy
-  driven per frame there is nothing left to gate, and no class to fall out of step with the scroll.
-- **Each line is one 0..1 var** (`--gg-pq-copy-q` / `-n` / `-r`), already eased and staggered in JS.
-  The CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. The `1` fallbacks
-  are the rest state, so no-JS and reduced motion need no override at all — `updatePullQuote` returns
-  early under reduced motion and the vars simply stay unset.
-
-Two constraints worth not re-deriving:
-
-- The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as
-  a containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame
-  over the whole runway.
-- Reduced motion kills the draw with `mask-image: none` (a full reveal) and `transition: none` on
-  the three copy lines. The `transition: none` is not redundant with the var reset: the
+- The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as a
+  containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame over the
+  whole runway.
+- Reduced motion kills the draw with `mask-image: none` (a full reveal) and `transition: none` on the
+  three copy lines. The `transition: none` is not redundant with the var reset: the
   `globe-gallery-reduced` class can land after first paint, and the flip would otherwise play.
-- The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the
-  `::before` `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one
-  property (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding
-  without the lines moving with it.
-- Widening the padding gives the hanging quote more room, which is exactly what makes the
-  measured hang's fit test breakpoint-dependent — see **Localization → Hanging the opening mark**.
+- The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the `::before`
+  `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one property
+  (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding without the
+  lines moving with it.
+- Widening the padding gives the hanging quote more room, which is what makes the measured hang's fit
+  test breakpoint-dependent — see **Localization → Hanging the opening mark**.
+
+
 
 ## Analytics
 
@@ -2301,7 +2187,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   so reporting there too would double-count.
 - **`enter_gallery` is the one engagement signal here** — one label, ~one event per keyboard session,
   answering whether the two-level gallery is ever entered at all. The widget is only *clicked* to
-  enter BROWSE; merely focusing it (which scrolls via `snapToFormed`) is not reported.
+  enter BROWSE; merely focusing it (which scrolls via `snapToBrowseView`) is not reported.
 - **Caveat inherent to `daa-ll` on any button:** a real click reports even when the handler declines
   to act — `enterBrowse()` bails if the sphere isn't formed, `onCardClick` if `isInteractive()` is
   false. Expect a small over-count on both.
@@ -2321,37 +2207,33 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
 ## Behavior notes
 
-- **"Click & Drag" hint text (WebGL).** **Sphere geometry only** — `initRuntime` skips
-  `buildTextMesh()` when `bp.CYLINDER`. The plane sits behind *both* walls, and the masonry barrel is
-  near-solid (`CYL_COL_GAP_RATIO` 0.20, columns wrapping 360°), so it is occluded to nothing there:
-  A/B'd against the drawing buffer with an on/on control for the noise floor, the barrel's whole-frame
-  contribution is a mean **≤0.08/255** per channel with <1% of channels past a just-noticeable Δ8,
-  versus **mean 2.5 across 8.6%** of the frame on the sphere. Invisible, but it still cost a
-  viewport-filling transparent quad every frame plus ~17MB (7.4MB canvas + ~9.9MB texture).
-  The gate is on the **geometry, not the pointer**, so a narrow desktop window skips it too — the
-  barrel's own DOM hint row covers that case. Nothing needs to add it back on a resize: a band crossing rebuilds the whole runtime (`doLayout`), and `doLayout`'s
-  own rebuild branch is already `if (textMesh)`. Verified across sm-touch / md-fine / md-coarse
-  (iPad → barrel → skipped) / narrow-desktop, and across repeated sm↔md resizes.
-  A `PlaneGeometry` in `sphereGroup` behind the sphere's back
-  surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = TEXT_ORDER`), so it rotates with the globe and
-  draws behind the cards. Hidden until `sphereFormT > TEXT_APPEAR_START`, then warps in (barrel
-  warp + particle dissolve via `TEXT_FRAG`), settles to a faint resting opacity (`TEXT_OPACITY_PEAK
-  0.15 → RESTING 0.06`), fades out over the zoom. **The entrance resolves on
-  `SPHERE_INTERACTIVE_T`, not at `sphereFormT` 1**: `sfT` remaps `[TEXT_APPEAR_START,
-  SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes live and the `grab`
-  cursor arrives. Running it to 1 (the original) left the hint still visibly warping in for 18vh *after* the
-  thing it names was already draggable — measured `uWarp` 0.946 of `TEXT_WARP_ENTER_MAX` 4.5 still
-  active at the gate, now 0.002. The plane's *scale* is unaffected and keeps tracking `foldSphDist`
-  to 1.0 at `sphereFormT` 1; that is distance compensation, not entrance, and holds apparent size
-  constant. Sized to fill the frustum at its live camera
-  distance (`textPlaneSize` × a per-frame scale off `frame.foldSphDist`), with warp-proportional
-  overflow so letterforms bleed off-screen. **Nothing about it reacts to input.** Once the entrance
-  resolves it holds still: `uWarp` is `txtWarpEntrance` alone, `uCA` is that same term × `TEXT_CA_WARP_MUL`,
-  and the mesh scale tracks only `foldSphDist`. Every clock it reads is scroll-driven, so the plane
-  is a static backdrop that fades out on the zoom to `pqAppearZoomT` and nothing else.
+- **"Click & Drag" hint text (WebGL).** Sphere geometry only — `initRuntime` skips
+  `buildTextMesh()` when `bp.CYLINDER`, because the masonry barrel would hide the plane while it
+  still cost a full-screen transparent quad every frame and about 17MB. The gate is on the
+  geometry, not the pointer, so a narrow desktop window skips it too; the barrel's own DOM hint row
+  covers that case. A band crossing rebuilds the whole runtime, and `doLayout`'s rebuild branch is
+  already `if (textMesh)`, so nothing needs to add the plane back on a resize.
 
-  Built async in `buildTextMesh` (waits for `document.fonts.ready` → Adobe Clean), rebuilt on resize,
-  static-and-faint under RM. Copy is hardcoded (see Localization).
+  A `PlaneGeometry` in `sphereGroup` behind the sphere's back surface
+  (`z = -(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = TEXT_ORDER`), so it rotates with the globe
+  and draws behind the cards. Hidden until `sphereFormT > TEXT_APPEAR_START`, then warps in (barrel
+  warp plus particle dissolve, via `TEXT_FRAG`), settles to a faint resting opacity
+  (`TEXT_OPACITY_PEAK` 0.15 to `TEXT_OPACITY_RESTING` 0.06), and fades out over the zoom. Sized to
+  fill the frustum at its live camera distance (`textPlaneSize` times a per-frame scale off
+  `frame.foldSphDist`), with warp-proportional overflow so letterforms bleed off-screen.
+
+  **The entrance resolves on `SPHERE_INTERACTIVE_T`, not at `sphereFormT` 1.** `sfT` remaps
+  `[TEXT_APPEAR_START, SPHERE_INTERACTIVE_T]`, so the warp reaches 0 exactly when the globe goes
+  live and the `grab` cursor arrives. The plane's scale is separate: it tracks `foldSphDist` to 1.0
+  at `sphereFormT` 1, which holds apparent size constant as the camera moves.
+
+  **Nothing about it reacts to input.** `uWarp` is `txtWarpEntrance` alone, `uCA` is that same term
+  times `TEXT_CA_WARP_MUL`, and the mesh scale tracks only `foldSphDist`. Every clock it reads is
+  scroll-driven, so the plane is a static backdrop.
+
+  Built in `buildTextMesh`, which waits for the Typekit `adobe-clean-display` face before drawing
+  the texture. Rebuilt on resize, static and faint under reduced motion. Copy is hardcoded (see
+  Localization).
 
 - **Canvas cursor — browser-native (`interaction.js`).** The block draws no cursor of its own. Over
   the interactive sphere with no modal open the canvas gets `grab`, `grabbing` while `drag.isDragging`,
@@ -2491,11 +2373,10 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     which is exactly the "still bounded by a box" read this is meant to avoid.
   - **No thinning term, and nothing keyed to the border.** A fragment at radius `f` only draws if its
     own cell's flight reached that far, so coverage outward is just the odds of a grain being that
-    fast — the falloff is free, and it's continuous through the card's old edge. Two earlier attempts
-    failed here and are worth not repeating: confining the scatter to *outside* the box (via an `ow`
-    gate) puts a hard seam at the border and reads as a box inside a box — a 回; and expanding
-    *every* grain scrambles the still-opaque photo and, with a density-conserving `1/sg²` thinning,
-    dusts the card away long before it reaches the lens.
+    fast — the falloff is free, and it's continuous through the card's old edge. Do not gate the
+    scatter to *outside* the box (an `ow` gate puts a hard seam at the border and reads as a box
+    inside a box — a 回), and do not expand *every* grain (it scrambles the still-opaque photo, and
+    with a density-conserving `1/sg²` thinning it dusts the card away before it reaches the lens).
   - **The melt is netted against `uDisperse`** (`melt = max(uDissolve − uDisperse, 0)`). The melt is
     a *uniform* magnification of the whole card, so running it alongside the explosion reads as the
     image swelling from its centre on one clock while debris leaves on another — two motions, out of
@@ -2504,9 +2385,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **`DISPERSE_EXPAND` is the "how dramatic" dial**, and what it costs is **fill**: the quad grows
     to `1 + DISPERSE_EXPAND` per axis plus `DISPERSE_MARGIN`, and the square of that is the card's
     pixel count at full dispersion (an order of magnitude at the current setting). Three things keep
-    it affordable, all load-bearing — measured on-vs-off, the effect costs ~10% of frame time in the
-    zoom-through, and that held when `DISPERSE_EXPAND` was raised by half again, i.e. the cost tracks
-    the grains actually drawn, not the bounding box:
+    it affordable, all load-bearing. The effect costs ~10% of frame time in the zoom-through, and the
+    cost tracks the grains actually drawn rather than the bounding box:
     - **`placeSphereCard` skips the draw once `proxFade` hits 0** (`mesh.visible`). Those cards are
       fully transparent *and* at maximum overscan, so they were the most expensive thing on screen
       while contributing nothing: culling them cut the worst frame's overscan-weighted card area
@@ -2585,8 +2465,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     primary pointer** — both independently rule out a sphere (a small viewport can't frame one;
     yaw-only drags can't reach its poles). Constants live in the `YAW_ONLY_GEOMETRY` overlay.
   - **Why split** — the shape constants exist only because a yaw-only drag can't change a card's
-    latitude. Keying them to width was wrong: an **iPad Pro is ≥768px (`md`) but drags with
-    touch**, which left 7 of its authored cards permanently >60° oblique. Use `(pointer: coarse)` (the
+    latitude. **Do not key them to width**: an **iPad Pro is ≥768px (`md`) but drags with touch**,
+    which leaves 7 of its authored cards permanently >60° oblique. Use `(pointer: coarse)` (the
     *primary* pointer's precision), not `(hover: none)` or a UA sniff. Precision is read **once at
     init** (`usesCylinderGeometry`), so the geometry that bakes at `buildCards()` matches the device
     the page loaded on; a **mid-session mouse/trackpad swap needs a reload** (out of scope — rare,
@@ -2621,9 +2501,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     cap is a **guard against pathological input**, not a house style — the masonry packs any aspect
     inside it losslessly, so it is sized to clear the authored set (`1.9` vs a widest 1.79 and a
     tallest 1/0.57 = 1.75) and nothing real is cropped in the barrel. Re-run the column solve before
-    lowering it: with this content, dropping to 1.5 cropped 4 images ~15% and changed **nothing**
-    about the layout (same column count, same card width, wall height within 1%, column imbalance
-    marginally worse at 1.084 vs 1.073).
+    lowering it — the cap changes what is cropped without necessarily changing the layout.
     Without that crop a 3:1 image would be **squashed to half its width** in the wall — the barrel
     scales the plane per card, it does not letterbox. **The two gaps are separate dials.**
     `CYL_COL_GAP_RATIO` is the COLUMN gap and also sets card width (= pitch / (1 + ratio)), so lowering
@@ -2671,14 +2549,12 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     from target toward eye) — a plain `lookAt` at the axis would ignore the slope.
   - **Near-camera fade bands off ONE wall-wide height** (`fadeRefH`, the mean `sphereWorldH`,
     recomputed alongside `dragFlipZ`) — **not** each card's own height, and not `bp.CARD_H_SPHERE`
-    (only the `PlaneGeometry` base on this path). Per-card was the original choice, for a constant
-    fill-margin, but it makes the trigger a function of *size* while the metric is *depth*, and on
-    this layout those fight: heights span ~2.4× (measured 6.5–15.9), so a tall card starts dissolving
-    ~2.4× farther out than a short one at the same azimuth. Since `pack` places **tallest-first at
-    `offset = 0`** — the top of each column — the tall cards ARE the top row, so the top row always
-    went first and the physically nearest card often went last (measured at `camZ 39.5`: the closest
-    card, depth 23.6, was 31% dispersed while one 5 units *farther* was 96%). One shared band restores
-    the read the fly-through wants: nearest goes first, and since a barrel column shares one azimuth
+    (only the `PlaneGeometry` base on this path). A per-card height makes the trigger a function of
+    *size* while the metric is *depth*, and on this layout those fight: heights span ~2.4×, so a tall
+    card starts dissolving ~2.4× farther out than a short one at the same azimuth. Since `pack` places
+    **tallest-first at `offset = 0`** — the top of each column — the tall cards ARE the top row, so the
+    top row goes first and the physically nearest card often goes last. One shared band gives the read
+    the fly-through wants: nearest goes first, and since a barrel column shares one azimuth
     (hence one `z`), the whole column — top, middle and bottom — comes apart together. The cost is
     that a tall card is a bigger share of the frame when it finally vanishes; `NEAR_FADE_START`/`_END`
     are the dial if that goes too far. `dragFlipZ` uses `fadeRefH` too, so the flip still lands
@@ -2686,7 +2562,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   - **Drag-flip threshold is DERIVED, not `SPHERE_R`** (`dragFlipZ = maxRadial + NEAR_FADE_END ×
     CARD_H_SPHERE`, in `buildCards`, read by `updateActiveCamera`). Once the camera is inside the
     shell the far wall moves opposite the same rotation, so the drag delta is negated. Firing at the
-    geometric wall (`SPHERE_R`) drifted from the dissolve distance when card heights changed; tying
+    geometric wall (`SPHERE_R`) drifts from the dissolve distance whenever card heights change; tying
     it to the fade keeps the flip aligned. `maxRadial` is radial (rotation-invariant); `sphereGroup.
     scale` (RM shrink) folded in; capped at `CAM_Z_SPHERE × DRAG_FLIP_MAX_CAM_FRAC` so it
     can't fire at zoom start; gated on `zoomT > 0`.
@@ -2715,9 +2591,8 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     symptoms — cards "popping up" as they face the camera, and appearing to spin on their own near the
     limb. Both come from this one dial: the tilt is a full 3D re-aim, so it partly cancels each card's
     *vertical* slope (the one `cylinderMasonryLayout` computes so cards sit flush on the bulge), and
-    it unwinds much faster than it winds up once `|n.z|` enters the edge-on band. Measured on the sm
-    barrel (sm's `SPHERE_R` / `CAM_Z_SPHERE`) — both costs scale linearly with the dial; only the snap responds to
-    the band:
+    it unwinds much faster than it winds up once `|n.z|` enters the edge-on band. On the sm barrel,
+    both costs scale linearly with the dial; only the snap responds to the band:
 
     | `CARD_FACE_CAMERA` / `FACING_EDGE_ON_BAND` | maxSnap °/° | front pitch err | limb width |
     | --- | --- | --- | --- |
@@ -2766,19 +2641,16 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     worth of rotation (`MAX_VEL × dtScale`) passes through **untouched**, so ordinary dragging keeps
     its exact tracking; past that the step is rate-capped and then eased down by `DRAG_CATCHUP` as
     the backlog shrinks, with the rest left in `pendingX` for the following frames. Nothing is
-    discarded, so total travel still matches the pointer. Measured on a 500px single-event jump:
-    biggest frame drops from the whole rotation at once (≈1000°/s) to exactly `MAX_VEL × dtScale`,
-    spread over ~7 frames, same total. The old code got this for free by clamping `velX`; making
-    the held path position-driven is what removed it. On release the backlog is dropped and `velX`
+    discarded, so total travel still matches the pointer: a 500px single-event jump spreads over
+    ~7 frames instead of arriving as one ≈1000°/s rotation. On release the backlog is dropped and `velX`
     — clamped to the same `MAX_VEL` — takes over, so the handoff is continuous.
   - **`velX`/`velY` — an EMA of pointer speed (`VEL_SMOOTH_MS`), in rad per 60fps frame.** This
     is the **release inertia**, and also every drag-driven CA/warp amplitude (normalized by
-    `MAX_VEL`). It's sampled **by elapsed time, not per event** (`flushVel`): the old code assigned
-    `velX` from the *last event's* pixel delta, which made the release velocity a function of the
-    pointer's event rate. Under the old scheme one constant-speed drag released at velocities
-    **proportional to the event interval** — measured 16× apart between a 60Hz and a 1000Hz pointer
-    for the identical hand motion — and Chrome coalescing moves to rAF while Safari doesn't is why
-    the momentum felt inconsistent across browsers. Moves sharing a millisecond bank into
+    `MAX_VEL`). It must be sampled **by elapsed time, not per event** (`flushVel`). Taking `velX`
+    from the last event's pixel delta makes release velocity a function of the pointer's event rate —
+    ~16× apart between a 60Hz and a 1000Hz pointer for the identical hand motion — and since Chrome
+    coalesces moves to rAF while Safari does not, the momentum then differs by browser. Moves sharing
+    a millisecond bank into
     `sampX`/`sampY` rather than dividing by a zero dt.
   - **The idle gap before release is part of the measurement.** `endGesture` flushes the EMA one
     last time with nothing banked, so *slowing to a stop before lifting* decays the inertia toward
@@ -2810,36 +2682,34 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     `getDragSensitivity` and re-read per move). True 1:1 surface tracking is **90° per on-screen
     ball radius** (`SPHERE_R × H / CYL_FRUSTUM_H` px), and `bp.DRAG_GEARING` is a fraction of that:
     geared down on **sm**, where the barrel is only a couple of hundred pixels wide and 1:1 would
-    whip it past half a turn per swipe (that band's value also reproduces the old fixed rad/px
-    almost exactly, so touch feel was preserved through the change). Deriving it keeps the feel
-    constant across window sizes: a bigger ball on screen needs *fewer* rad/px, which one fixed
-    number got wrong in both directions — over-geared on a tall desktop window, under-geared on a
-    phone. Drag by the ball's on-screen radius and it turns `90° × DRAG_GEARING`.
+    whip it past half a turn per swipe. Deriving it keeps the feel constant across window sizes: a
+    bigger ball on screen needs *fewer* rad/px, which one fixed number gets wrong in both directions —
+    over-geared on a tall desktop window, under-geared on a phone. Drag by the ball's on-screen radius
+    and it turns `90° × DRAG_GEARING`.
   - **`SPHERE_INTERACTIVE_T` is 0.94, not 0.8, because 0.8 is ahead of every card.** Cards land
     between `sphereFormT` 0.883 (the first) and exactly 1 (the last — its fold end *is*
-    `SPHERE_FORMED_PROGRESS`), so at 0.8 the drag was spinning a swarm still mid-assembly and a tap
-    was being refused on cards that already read as part of the globe. Both went through the same
-    gate, in opposite kinds of wrong. 0.94 sits just past the first landing: something is on the shell
-    to grab and to click. ONE constant for **everything** that says or does "the globe is live":
+    `SPHERE_FORMED_PROGRESS`). At 0.8 the drag spins a swarm still mid-assembly while a tap is refused
+    on cards that already read as part of the globe — both sides of the same gate, wrong in opposite
+    directions. 0.94 sits just past the first landing: something is on the shell to grab and to click.
+    ONE constant for **everything** that says or does "the globe is live":
     hover, click, drag, auto-rotate, the `grab` cursor, and the GL hint plane's entrance. Do not give
     the cursor its own earlier gate: it puts the affordance 26vh ahead of the input it advertises.
     Raycasting is not the constraint at any value: a tap below the gate still hits, and
     `onPointerUp` discards it.
   - **Hover uniforms are applied in `updateCardTransform`, not `placeSphereCard`** — that gate is
     global, `fdE` is per-card. Between `sphereFormT` 0.9 and 1 the late-staggered cards sit at `fdE`
-    0.999: seated to the eye, but routed to `placeFoldingCard`, which sets `opacity = 1` (so they
-    pick, show `cursor: pointer`, and open on click) and wrote no `uWarp` — they raised `hoverT` and
-    rendered nothing, for ~9% of the formation scroll. The broken set follows `gpDelay` (index
-    cascade + `peelJitter`), not depth, which is what made it read as random. `placeSphereCard` now
-    only adds `sphereDragWarp`; `placeFoldingCard` applies `hs` so nothing pops at `fdE` 1.
+    0.999: seated to the eye, but routed to `placeFoldingCard`, which sets `opacity = 1` so they pick,
+    show `cursor: pointer`, and open on click. If the hover warp is applied in `placeSphereCard` those
+    cards raise `hoverT` and render nothing. `placeSphereCard` only adds `sphereDragWarp`;
+    `placeFoldingCard` applies `hs` so nothing pops at `fdE` 1.
   - **Inertia coasts below `SPHERE_INTERACTIVE_T`; only `SPHERE_ORIENT_RESET_T` zeroes it.**
     Hard-zeroing at the interactive gate stopped a released spin dead whenever the page was still
     settling across it. A drag *started* below the gate stays inert and can't fling on release, and
     `stopTicker` retires inertia outright (it can't coast while the loop is parked).
-  - **Gesture ownership is `activePointerId`, not `hasPointerCapture()`.** The tap test no longer
-    depends on *when* the browser releases capture relative to `pointerup`. `pointercancel` →
-    `cancelDrag` (no inertia, no tap — routed to `onPointerUp` it let a cancelled press pass the tap
-    test and open a card); `lostpointercapture` → `endGesture`, a no-op after a normal release and a
+  - **Gesture ownership is `activePointerId`, not `hasPointerCapture()`**, so the tap test does not
+    depend on *when* the browser releases capture relative to `pointerup`. `pointercancel` →
+    `cancelDrag` (no inertia, no tap — routed to `onPointerUp` a cancelled press passes the tap test
+    and opens a card); `lostpointercapture` → `endGesture`, a no-op after a normal release and a
     clean exit on a genuine loss (rather than leaving `isDragging` latched true forever).
 - **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`). On
   touch a vertical drag *is* the page-scroll gesture, so touch gets **yaw only** (horizontal spins,

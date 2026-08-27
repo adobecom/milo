@@ -203,6 +203,13 @@ const TEXT_MAX_SIDE = 2048;
 // Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
 const HINT_FILL = 0.9;
 
+// for safari
+const HINT_FAMILY = 'adobe-clean-display';
+
+export async function loadHintFont(text) {
+  return document.fonts.load(`900 100px ${HINT_FAMILY}`, text);
+}
+
 // `aspect` is the camera aspect, so texture pixels stay square.
 export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   let canvasW; let canvasH;
@@ -223,7 +230,7 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   ctx.textAlign = 'center';
 
   const setFont = (px) => {
-    ctx.font = `900 ${px}px 'Adobe Clean Display', sans-serif`;
+    ctx.font = `900 ${px}px ${HINT_FAMILY}, 'Arial Bold Adjusted', sans-serif`;
     if (typeof ctx.letterSpacing !== 'undefined') {
       ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
     }
