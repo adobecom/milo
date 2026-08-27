@@ -1777,6 +1777,7 @@ img:hover ~ .asset-meta,
 .preflight-price-unavailable-label {
   color: var(--s2a-color-red-800);
   font-weight: 700;
+  margin-inline-start: 8px;
 }
 
 /* Page-injected: blocks with multiple M@S fragment IDs (preflight warning). */

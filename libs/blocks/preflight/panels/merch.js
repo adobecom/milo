@@ -261,12 +261,13 @@ async function checkWcsElements() {
       };
 
       if (priceUnavailable) {
-        elem.classList.add('preflight-merch-error', 'preflight-price-unavailable');
-        if (!elem.querySelector('.preflight-price-unavailable-label')) {
+        elem.classList.add('preflight-price-unavailable');
+        if (textContent) elem.classList.add('preflight-merch-error');
+        if (!elem.nextElementSibling?.classList.contains('preflight-price-unavailable-label')) {
           const label = document.createElement('span');
           label.className = 'preflight-price-unavailable-label';
-          label.textContent = 'Price unavailable';
-          elem.append(label);
+          label.textContent = 'Offer unavailable';
+          elem.after(label);
         }
       }
 
@@ -383,7 +384,7 @@ function WcsElementItem({ wcsElem }) {
         <p class="preflight-item-description">
           <strong>WCS OSI:</strong> <code class="wcs-osi-code">${wcsElem.wcsOsi}</code>
           ${wcsElem.priceUnavailable && html`
-            <br/><span class="url-error-message">Price unavailable</span>
+            <br/><span class="url-error-message">Offer unavailable</span>
           `}
           ${wcsElem.promoCode && html`
             <br/><br/>
