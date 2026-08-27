@@ -145,9 +145,12 @@
   &.small-left .card-stacked {
     padding-inline: 0 var(--card-stack-padding);;
   }
+
+  .standalone-link {
+    text-decoration: none;
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  }
 }
-
-
 
 @media (width >= 768px) {
   .side-by-side {

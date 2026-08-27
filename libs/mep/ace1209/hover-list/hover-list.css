@@ -8,6 +8,16 @@
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
   color: var(--s2a-color-content-knockout);
   padding-block: var(--s2a-spacing-md);
+
+  .firefly & {
+    text-wrap: balance;
+
+    @media (width >= 1280px) {
+      * {
+        width: 75%;
+      }
+    }
+  }
 }
 
 .hover-list-items {

@@ -1,5 +1,22 @@
 .quick-actions {
   position: relative;
+
+  .firefly & {
+    isolation: isolate;
+    background: transparent;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0; /* Tie this to whether the next section has corner radius */
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
+      backdrop-filter: blur(47px);
+      mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
+    }
+  }
 }
 
 .quick-actions-header {
@@ -71,6 +88,7 @@ img.quick-actions-media {
 
 .quick-actions-tile-footer {
   grid-area: 1 / 1;
+  z-index: 1;
   align-self: end;
   display: flex;
   align-items: flex-end;

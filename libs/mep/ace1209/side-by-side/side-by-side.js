@@ -8,6 +8,7 @@ function isSvgUrl(url) { return /\.svg(\?.*)?$/i.test(url || ''); }
 
 function decorateCardText(foreground) {
   decorateBlockText(foreground, DEFAULT_TEXT_CONFIG);
+  foreground.querySelector(':scope > :last-child a')?.classList.add('standalone-link');
   const headingP = foreground.querySelector('p:has(strong)');
   if (!headingP) return;
   headingP.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, `title-${DEFAULT_TEXT_CONFIG.heading}`);
