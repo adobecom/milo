@@ -66,26 +66,30 @@
       if (e.data?.type === 'collab:apply-edits') {
         const { editRecord } = e.data;
         if (!Array.isArray(editRecord)) return;
-        editRecord.forEach((edit) => {
-          if (!edit || typeof edit.elementPath !== 'string' || !edit.elementPath) return;
-          const el = resolveElement(edit.elementPath);
-          if (!el) return;
-          const to = typeof edit.to === 'string' ? edit.to : '';
-          if (edit.editType === 'text') {
-            el.innerHTML = sanitizeHtml(to);
-          } else if (edit.editType === 'image') {
-            if (!(el instanceof HTMLImageElement)) return;
-            // Allow only http(s) or data:image/ — block javascript: and other schemes
-            if (!/^(https?:\/\/|data:image\/)/.test(to)) return;
-            el.src = to.replace(/[<>"]/g, '');
-            if (el.closest('picture')) {
-              el.closest('picture').querySelectorAll('source').forEach((s) => s.remove());
+        function applyEditRecord(record) {
+          record.forEach((edit) => {
+            if (!edit || typeof edit.elementPath !== 'string' || !edit.elementPath) return;
+            const el = resolveElement(edit.elementPath);
+            if (!el) return;
+            const to = typeof edit.to === 'string' ? edit.to : '';
+            if (edit.editType === 'text') {
+              el.innerHTML = sanitizeHtml(to);
+            } else if (edit.editType === 'image') {
+              if (!(el instanceof HTMLImageElement)) return;
+              if (!/^(https?:\/\/|data:image\/)/.test(to)) return;
+              el.src = to.replace(/[<>"]/g, '');
+              if (el.closest('picture')) {
+                el.closest('picture').querySelectorAll('source').forEach((s) => s.remove());
+              }
+            } else if (edit.editType === 'image-alt') {
+              if (!(el instanceof HTMLImageElement)) return;
+              el.setAttribute('alt', to.replace(/[<>"]/g, ''));
             }
-          } else if (edit.editType === 'image-alt') {
-            if (!(el instanceof HTMLImageElement)) return;
-            el.setAttribute('alt', to.replace(/[<>"]/g, ''));
-          }
-        });
+          });
+        }
+        applyEditRecord(editRecord);
+        // Retry for elements that weren't in the DOM yet (async block rendering)
+        setTimeout(() => applyEditRecord(editRecord), 1500);
         return;
       }
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
@@ -1648,6 +1652,7 @@
     setupScrollSync();
     notifyParent();
     if (window.parent !== window) {
+      window.parent.postMessage({ type: 'collab:ready-for-edits' }, ME.parentOrigin || '*');
       // In iframe mode all API calls are proxied through the parent — no need to
       // wait for user identity before fetching data.
       startPolling();
