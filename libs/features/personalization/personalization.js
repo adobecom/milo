@@ -1233,16 +1233,12 @@ async function getManifestConfig(info, variantOverride) {
     }
   }
 
-  const persData = data.experiences?.data;
-  const infoTab = manifestInfo || data.info?.data;
-  let errorMsg;
-  if (!persData && !infoTab) errorMsg = 'Tabs';
-  else if (!persData) errorMsg = 'Experiences tab';
-  else if (!infoTab) errorMsg = 'Info tab';
-  if (errorMsg) {
-    recordManifestError(name, manifestPath, errorMsg);
+  const persData = data.experiences?.data || data.data || data;
+  if (!persData) {
+    recordManifestError(name, manifestPath, 'Experiences tab');
     return null;
   }
+  const infoTab = manifestInfo || data.info?.data;
 
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
