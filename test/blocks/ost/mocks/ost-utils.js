@@ -141,6 +141,7 @@ const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
 const getGeoIpSheetHoist = () => undefined;
+const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 const normCountryCode = (country) => {
   if (typeof country !== 'string') return undefined;
   const lower = country.toLowerCase();
@@ -191,6 +192,7 @@ export {
   getGeoLocalePrefix,
   getPlaceholderPaths,
   getGeoIpSheetHoist,
+  geoIpSiteKey,
   normCountryCode,
   resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
