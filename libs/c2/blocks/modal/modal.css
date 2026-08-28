@@ -563,6 +563,10 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
 
   p {
     margin-bottom: var(--s2a-spacing-20);
+
+    @media (max-width: 767px) {
+      margin-inline: var(--s2a-spacing-40) !important;
+    }
   }
 
   > .fragment {
