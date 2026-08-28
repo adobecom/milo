@@ -55,8 +55,22 @@ const updateFragMap = async (fragment, a, href) => {
 
 const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
-  const fragChildren = [...sections[0].children];
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+  const rowOrCellInsertContainer = a.closest('[data-mep-replace-type]');
+  const rowOrCellInsertValue = rowOrCellInsertContainer?.getAttribute('data-mep-replace-type');
+  const fragmentBlock = sections[0].querySelector('div[class]:not([class*="section"])');
+  let fragChildren;
+
+  if (rowOrCellInsertValue === 'row') {
+    fragChildren = fragmentBlock?.querySelectorAll(':scope > div') || [];
+  } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
+    fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
+  } else fragChildren = [...sections[0].children];
+  if (!fragChildren.length) return;
+
+  // if (rowOrCellInsertValue === 'cell' && !fragmentBlock) a.replaceWith(...fragChildren);
+  if (rowOrCellInsertContainer && fragmentBlock) {
+    rowOrCellInsertContainer.replaceWith(...fragChildren);
+  } else if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
     a.replaceWith(...fragChildren);

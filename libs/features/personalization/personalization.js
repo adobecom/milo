@@ -218,9 +218,23 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  const noParagraphWrap = !!el?.parentElement?.closest('p')
-    || (el.nodeName === 'P' && action.includes('pend'));
-  const frag = noParagraphWrap ? a : createTag('p', undefined, a);
+  let containerType = 'other';
+  const parent = el.parentElement;
+  const grandParent = el.parentElement?.parentElement;
+  if (parent?.nodeName === 'MAIN') containerType = 'section';
+  else if (parent?.nodeName === 'DIV' && parent?.classList.length && !parent?.classList.contains('section')) containerType = 'row';
+  else if (grandParent?.nodeName === 'DIV' && grandParent?.classList.length && !grandParent?.classList.contains('section')) containerType = 'cell';
+
+  const noParagraphWrap = !!el?.parentElement?.closest('p') // parent el is already inside a paragraph
+    || (el.nodeName === 'P' && action.includes('pend')) // parent el IS a p tag, AND you're prepending/appending
+    || containerType === 'row'
+    || containerType === 'cell';
+  // const frag = noParagraphWrap ? a : createTag('p', undefined, a);
+  let frag = a;
+
+  if (!noParagraphWrap) frag = createTag('p', undefined, frag);
+  if (containerType === 'row' || containerType === 'section') frag = createTag('div', undefined, frag);
+  if (containerType === 'row' || containerType === 'cell') frag = createTag('div', { 'data-mep-replace-type': containerType }, frag);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
@@ -257,8 +271,9 @@ export const createContent = async (
 
   const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
-  if (el?.parentElement.nodeName !== 'MAIN') return frag;
-  return createTag('div', undefined, frag);
+  // if (el?.parentElement.nodeName !== 'MAIN') return frag;
+  // return createTag('div', undefined, frag);
+  return frag;
 };
 
 export const handleTwpButtons = (el, selector) => {
