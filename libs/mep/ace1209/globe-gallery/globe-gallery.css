@@ -187,7 +187,7 @@
   inset-inline-start: var(--s2a-spacing-xs);
   box-sizing: border-box;
   padding: var(--gg-arc-pad);
-  background: var(--s2a-color-transparent-black-32);
+  background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(var(--s2a-blur-lg));
   backdrop-filter: blur(var(--s2a-blur-lg));
   border-radius: var(--s2a-border-radius-md);
@@ -789,7 +789,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
     max-width: none;
     bottom: var(--s2a-spacing-lg);
     inset-inline-start: calc(var(--gg-content-inset) - var(--gg-arc-pad));
-    background: none;
   }
 
   /* Full-height scrim on the viewport's inline-start edge. */
