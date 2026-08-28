@@ -15,6 +15,12 @@
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
+
+    .foreground {
+      [class^='body-'] {
+        color: inherit;
+      }
+    }
   }
 
   > .card:first-child {
@@ -58,6 +64,42 @@
       z-index: 1;
       inset-block-start: var(--s2a-spacing-md);
       inset-inline-start: var(--s2a-spacing-md);
+    }
+  }
+
+  &.body-color-subtle {
+    .card {
+      .foreground [class^='body-'] {
+        color: var(--s2a-color-content-subtle);
+      }
+    }
+
+    &.first-card {
+      .card:first-child {
+        .foreground [class^='body-'] {
+          color: var(--s2a-color-content-subtle);
+        }
+      }
+
+      .card:last-child {
+        .foreground [class^='body-'] {
+          color: inherit;
+        }
+      }
+    }
+
+    &.second-card {
+      .card:last-child {
+        .foreground [class^='body-'] {
+          color: var(--s2a-color-content-subtle);
+        }
+      }
+
+      .card:first-child {
+        .foreground [class^='body-'] {
+          color: inherit;
+        }
+      }
     }
   }
 
@@ -123,10 +165,6 @@
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-
-      [class^='body-'] {
-        color: var(--s2a-color-content-subtle);
-      }
     }
 
     .media {
