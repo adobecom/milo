@@ -2231,8 +2231,17 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   times `TEXT_CA_WARP_MUL`, and the mesh scale tracks only `foldSphDist`. Every clock it reads is
   scroll-driven, so the plane is a static backdrop.
 
-  Built in `buildTextMesh`, which waits for the Typekit `adobe-clean-display` face before drawing
-  the texture. Rebuilt on resize, static and faint under reduced motion. Copy is hardcoded (see
+  Built in `buildTextMesh`. The font comes from `--heading-font-family`, so the hint follows the
+  page's heading font, including the per-locale swaps (CJK and Thai repoint that variable to a Han
+  or Thai family). `loadHintFont` waits for those faces first, because drawing to a canvas does not
+  trigger font loading on its own. The `|| 'adobe-clean-display, sans-serif'` fallback is
+  load-bearing: an empty variable makes the font shorthand invalid, so the assignment is silently
+  dropped and the text bakes at the canvas default of 10px.
+
+  Known and accepted: on a machine with Adobe Clean Display installed locally, Chrome uses that
+  local face while Safari, which hides non-system fonts, uses the webfont, so the baked text
+  differs slightly in size between the two. Anyone without the font installed gets the webfont in
+  both. Rebuilt on resize, static and faint under reduced motion. Copy is authored (see
   Localization).
 
 - **Canvas cursor — browser-native (`interaction.js`).** The block draws no cursor of its own. Over

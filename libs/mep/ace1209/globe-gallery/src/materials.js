@@ -204,10 +204,13 @@ const TEXT_MAX_SIDE = 2048;
 const HINT_FILL = 0.9;
 
 // for safari
-const HINT_FAMILY = 'adobe-clean-display';
+function hintFamilies() {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue('--heading-font-family') || 'adobe-clean-display, sans-serif';
+}
 
 export async function loadHintFont(text) {
-  return document.fonts.load(`900 100px ${HINT_FAMILY}`, text);
+  return document.fonts.load(`900 100px ${hintFamilies()}`, text);
 }
 
 // `aspect` is the camera aspect, so texture pixels stay square.
@@ -230,7 +233,7 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   ctx.textAlign = 'center';
 
   const setFont = (px) => {
-    ctx.font = `900 ${px}px ${HINT_FAMILY}, 'Arial Bold Adjusted', sans-serif`;
+    ctx.font = `900 ${px}px ${hintFamilies()}`;
     if (typeof ctx.letterSpacing !== 'undefined') {
       ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
     }
