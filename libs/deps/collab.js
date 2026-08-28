@@ -972,19 +972,22 @@
       inlineEditWandBar.classList.add('is-generating');
 
       const range = inlineEditSavedRange;
-      let html;
+      let text;
       if (range && !range.collapsed && inlineEditTarget.contains(range.commonAncestorContainer)) {
-        const div = document.createElement('div');
-        div.appendChild(range.cloneContents());
-        html = div.innerHTML;
+        text = range.toString();
       } else {
-        html = inlineEditTarget.innerHTML;
+        text = (inlineEditTarget.textContent || '').trim();
       }
+
+      // Derive block name from the closest milo block ancestor (first class on a direct main > div child)
+      const blockEl = inlineEditTarget.closest('main > div');
+      const block = (blockEl?.className || '').split(/\s+/).filter(Boolean)[0] || 'content';
 
       window.parent.postMessage({
         type: 'collab:ai-generate-request',
-        html,
-        text: inlineEditTarget.textContent || '',
+        text,
+        block,
+        thread_id: '',
         elementPath: buildElementPath(inlineEditTarget),
       }, ME.parentOrigin || '*');
     });
