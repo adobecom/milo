@@ -1202,10 +1202,10 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
-function recordManifestError(name, manifestPath) {
+function recordManifestError(name, manifestPath, error) {
   const config = getConfig();
   config.mep.manifestErrors ??= [];
-  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath });
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1227,15 +1227,25 @@ async function getManifestConfig(info, variantOverride) {
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchedData) data = fetchedData;
+    if (fetchedData) {
+      data = fetchedData;
+    } else {
+      recordManifestError(name, manifestPath, 'Manifest');
+      return null;
+    }
   }
 
-  const persData = data?.experiences?.data || data?.data || data;
-  const infoTab = manifestInfo || data?.info?.data;
-  if (!data || !persData || !infoTab) {
-    recordManifestError(name, manifestPath);
+  const persData = data.experiences?.data;
+  const infoTab = manifestInfo || data.info?.data;
+  let errorMsg;
+  if (!persData && !infoTab) errorMsg = 'Tabs';
+  else if (!persData) errorMsg = 'Experiences tab';
+  else if (!infoTab) errorMsg = 'Info tab';
+  if (!persData || !infoTab) {
+    recordManifestError(name, manifestPath, errorMsg);
     return null;
   }
+
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;

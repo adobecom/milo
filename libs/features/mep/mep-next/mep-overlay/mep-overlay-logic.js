@@ -224,12 +224,13 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
-function buildMalformedManifestEntry({ name, manifestPath }, mIdx) {
+function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx) {
   return {
     index: mIdx + 1,
     editUrl: manifestPath,
     fileName: name,
     malformed: true,
+    error,
   };
 }
 

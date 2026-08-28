@@ -139,7 +139,7 @@ function toggleExpandedCard(cardEl) {
 
 function getManifestStatus(manifest) {
   if (manifest.malformed) {
-    return { level: 'error', label: 'Error', messages: ['Manifest malformed or not found.'] };
+    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
   }
   const statusChecks = [
     {
