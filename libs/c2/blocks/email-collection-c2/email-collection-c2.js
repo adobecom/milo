@@ -540,7 +540,8 @@ function decorateSubscribedMessage(text) {
   text.appendChild(parent);
 }
 
-function decorateText(elChildren) {
+function decorateText(el, elChildren) {
+  const isMailingList = el.classList.contains('mailing-list');
   const foreground = elChildren[0];
   elChildren.forEach((child, childIndex) => {
     const isForeground = child === foreground;
@@ -554,7 +555,7 @@ function decorateText(elChildren) {
       } else if (textEl.childElementCount === 1 && textEl.firstElementChild.tagName === 'PICTURE') {
         textEl.classList.add('icon-area');
       } else if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(textEl.tagName)) {
-        textEl.classList.add('heading-3');
+        textEl.classList.add(isMailingList ? 'heading-4' : 'heading-3');
       } else {
         textEl.classList.add('body-md');
       }
@@ -605,7 +606,7 @@ async function decorate(el, blockChildren) {
   blockChildren[1].classList.add('hidden');
   blockChildren[2].classList.add('hidden');
 
-  decorateText(blockChildren);
+  decorateText(el, blockChildren);
   blockChildren[0].querySelector(':scope > div:not([class])')?.classList.add('image');
 
   const isSubscribed = await checkIsSubscribed();

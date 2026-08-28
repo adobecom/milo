@@ -8,6 +8,7 @@
 }
 
 .email-collection-c2 .heading-3,
+.email-collection-c2 .heading-4,
 .email-collection-c2 .body-md,
 .email-collection-c2 .body-sm,
 .email-collection-c2 .caption {
@@ -112,7 +113,8 @@
   margin-bottom: var(--s2a-spacing-lg);
 }
 
-.email-collection-c2 .heading-3:has(+ form) {
+.email-collection-c2 .heading-3:has(+ form),
+.email-collection-c2 .heading-4:has(+ form) {
   margin-bottom: var(--s2a-spacing-sm);
 }
 
@@ -455,21 +457,7 @@
   padding: 0 var(--s2a-spacing-lg);
 }
 
-.email-collection-c2.mailing-list .heading-3 {
-  font-weight: var(--s2a-font-weight-heading);
-  font-size: var(--s2a-typography-font-size-heading-4);
-  line-height: var(--s2a-typography-line-height-heading-4);
-  letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
-  color: var(--s2a-color-content-default);
-}
-
-.email-collection-c2.mailing-list .body-md {
-  font-weight: var(--s2a-font-weight-body);
-  color: var(--s2a-color-content-default);
-}
-
 .email-collection-c2.mailing-list .caption {
-  font-weight: var(--s2a-font-weight-body);
   line-height: var(--s2a-typography-line-height-body-xs);
 }
 
