@@ -979,9 +979,15 @@
         text = (inlineEditTarget.textContent || '').trim();
       }
 
-      // Derive block name from the closest milo block ancestor (first class on a direct main > div child)
-      const blockEl = inlineEditTarget.closest('main > div');
-      const block = (blockEl?.className || '').split(/\s+/).filter(Boolean)[0] || 'content';
+      // Walk up to the element whose parent has class 'section' — same logic as stream-mapper
+      let blockName = '';
+      let cur = inlineEditTarget;
+      while (cur && cur !== document.body) {
+        const parent = cur.parentElement;
+        if (parent?.classList.contains('section')) { blockName = cur.classList[0] || ''; break; }
+        cur = parent;
+      }
+      const block = blockName || 'content';
 
       window.parent.postMessage({
         type: 'collab:ai-generate-request',
