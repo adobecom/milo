@@ -32,6 +32,7 @@
       }
       if (e.data?.type === 'collab:toggle-panel') togglePanel();
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
+      if (e.data?.type === 'collab:set-annotation-mode') setAnnotationMode(e.data.mode);
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
       if (e.data?.type === 'collab:select-thread') {
         const t = state.threads.find(x => x.id === e.data.threadId);
@@ -231,11 +232,27 @@
   let threadPopupEl;
   let markersVisible = true;
   let pageInfoResolved = false;
+  let annotationModeActive = false;
 
   function toggleMarkersVisibility() {
     markersVisible = !markersVisible;
     document.body.classList.toggle('collab-markers-hidden', !markersVisible);
     notifyParent();
+  }
+
+  function setAnnotationMode(mode) {
+    annotationModeActive = !!mode && mode !== 'comments';
+    // Delegate to annotation panel buttons if stream-mapper annotation is present on the page.
+    const sel = mode === 'edit' ? '.annotation-mode-btn-edit'
+      : mode === 'assets' ? '.annotation-mode-btn-assets'
+      : null;
+    if (sel) {
+      const btn = document.querySelector(sel);
+      if (btn instanceof HTMLButtonElement && btn.getAttribute('aria-pressed') !== 'true') btn.click();
+    } else {
+      const active = document.querySelector('.annotation-mode-btn[aria-pressed="true"]');
+      if (active instanceof HTMLButtonElement) active.click();
+    }
   }
 
   function notifyParent() {
@@ -979,6 +996,8 @@
       if (newCommentPopup.classList.contains('open') && !newCommentPopup.contains(e.target)) {
         closeNewCommentPopup(); return;
       }
+
+      if (annotationModeActive) return;
 
       if (e.target.closest('.collab-thread-marker') ||
           e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
