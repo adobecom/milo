@@ -39,18 +39,8 @@
         if (!inlineEditTarget) return;
         const raw = typeof e.data.html === 'string' ? e.data.html : '';
         const generated = sanitizeHtml(raw);
-        const range = inlineEditSavedRange;
-        if (range && !range.collapsed && inlineEditTarget.contains(range.commonAncestorContainer)) {
-          range.deleteContents();
-          const tmp = document.createElement('div');
-          tmp.innerHTML = generated;
-          const frag = document.createDocumentFragment();
-          while (tmp.firstChild) frag.appendChild(tmp.firstChild);
-          range.insertNode(frag);
-          inlineEditSavedRange = null;
-        } else {
-          inlineEditTarget.innerHTML = generated;
-        }
+        inlineEditTarget.innerHTML = generated;
+        inlineEditSavedRange = null;
         positionWandBar();
       }
       if (e.data?.type === 'collab:image-generated') {
@@ -1050,6 +1040,15 @@
 
   function closeInlineEdit() {
     if (!inlineEditTarget) return;
+    const currentHtml = inlineEditTarget.innerHTML;
+    if (currentHtml !== inlineEditOriginalHtml && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'collab:inline-edit-change',
+        elementPath: buildElementPath(inlineEditTarget),
+        from: inlineEditOriginalHtml,
+        to: currentHtml,
+      }, ME.parentOrigin || '*');
+    }
     inlineEditTarget.removeEventListener('keydown', handleInlineEditKeydown);
     window.removeEventListener('scroll', positionWandBar);
     inlineEditTarget.contentEditable = 'false';
