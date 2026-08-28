@@ -34,7 +34,24 @@
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
       if (e.data?.type === 'collab:set-annotation-mode') setAnnotationMode(e.data.mode);
       if (e.data?.type === 'collab:ai-generated-text') {
-        if (textEditTextarea) textEditTextarea.value = e.data.text || '';
+        inlineEditGenerating = false;
+        if (inlineEditWandBar) inlineEditWandBar.classList.remove('is-generating');
+        if (!inlineEditTarget) return;
+        const raw = typeof e.data.html === 'string' ? e.data.html : '';
+        const generated = sanitizeHtml(raw);
+        const range = inlineEditSavedRange;
+        if (range && !range.collapsed && inlineEditTarget.contains(range.commonAncestorContainer)) {
+          range.deleteContents();
+          const tmp = document.createElement('div');
+          tmp.innerHTML = generated;
+          const frag = document.createDocumentFragment();
+          while (tmp.firstChild) frag.appendChild(tmp.firstChild);
+          range.insertNode(frag);
+          inlineEditSavedRange = null;
+        } else {
+          inlineEditTarget.innerHTML = generated;
+        }
+        positionWandBar();
       }
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
       if (e.data?.type === 'collab:select-thread') {
@@ -208,6 +225,24 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  function sanitizeHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    // Remove executable elements entirely
+    tmp.querySelectorAll('script,style,iframe,object,embed,form,input,button,textarea,select,link,meta,base').forEach(n => n.remove());
+    // Strip event-handler attributes and dangerous href/src values from every element
+    tmp.querySelectorAll('*').forEach(n => {
+      for (const attr of [...n.attributes]) {
+        if (/^on/i.test(attr.name)) { n.removeAttribute(attr.name); continue; }
+        if (['href', 'src', 'action', 'formaction', 'data'].includes(attr.name.toLowerCase())
+            && /^\s*javascript:/i.test(attr.value)) {
+          n.removeAttribute(attr.name);
+        }
+      }
+    });
+    return tmp.innerHTML;
+  }
+
   function el(tag, cls, html) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -233,10 +268,15 @@
   let floatingLayer;
   let newCommentPopup, newCommentTextarea, newCommentGetValue;
   let threadPopupEl;
-  let textEditPopup, textEditTextarea, textEditTarget;
+  let inlineEditTarget = null;
+  let inlineEditOriginalHtml = '';
+  let inlineEditWandBar = null;
+  let inlineEditSavedRange = null;
+  let inlineEditGenerating = false;
   let markersVisible = true;
   let pageInfoResolved = false;
   let annotationModeActive = false;
+  let currentAnnotationMode = null;
 
   function toggleMarkersVisibility() {
     markersVisible = !markersVisible;
@@ -245,7 +285,8 @@
   }
 
   function setAnnotationMode(mode) {
-    annotationModeActive = !!mode && mode !== 'comments';
+    currentAnnotationMode = (mode && mode !== 'comments') ? mode : null;
+    annotationModeActive = !!currentAnnotationMode;
     // Delegate to annotation panel buttons if stream-mapper annotation is present on the page.
     const sel = mode === 'edit' ? '.annotation-mode-btn-edit'
       : mode === 'assets' ? '.annotation-mode-btn-assets'
@@ -910,74 +951,84 @@
     }
   }
 
-  function buildTextEditPopup() {
-    textEditPopup = el('div', '');
-    textEditPopup.id = 'collab-text-edit-popup';
+  function buildInlineEditBar() {
+    inlineEditWandBar = el('div', '');
+    inlineEditWandBar.id = 'collab-inline-edit-bar';
 
-    const header = el('div', 'collab-thread-popup-header');
-    const label = el('span', 'collab-thread-popup-label', 'EDIT TEXT');
-    const closeBtn = el('button', 'collab-popup-close', '×');
-    closeBtn.addEventListener('click', closeTextEditPopup);
-    header.append(label, closeBtn);
+    const wandBtn = el('button', 'collab-wand-btn');
+    wandBtn.title = 'Generate with AI';
+    wandBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg><span class="collab-wand-label">Generate</span>';
 
-    textEditTextarea = el('textarea', 'collab-text-edit-textarea');
-    textEditTextarea.rows = 4;
-    textEditTextarea.placeholder = 'Edit text…';
-    textEditTextarea.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { e.stopPropagation(); closeTextEditPopup(); }
+    // mousedown keeps focus on the contenteditable and snapshots the selection
+    wandBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const sel = window.getSelection();
+      inlineEditSavedRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : null;
     });
 
-    const actions = el('div', 'collab-text-edit-actions');
-
-    const wandBtn = el('button', 'collab-wand-btn', '');
-    wandBtn.title = 'Generate with AI';
-    wandBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg>Generate';
     wandBtn.addEventListener('click', () => {
-      if (!textEditTarget || window.parent === window) return;
+      if (!inlineEditTarget || window.parent === window || inlineEditGenerating) return;
+      inlineEditGenerating = true;
+      inlineEditWandBar.classList.add('is-generating');
+
+      const range = inlineEditSavedRange;
+      let html;
+      if (range && !range.collapsed && inlineEditTarget.contains(range.commonAncestorContainer)) {
+        const div = document.createElement('div');
+        div.appendChild(range.cloneContents());
+        html = div.innerHTML;
+      } else {
+        html = inlineEditTarget.innerHTML;
+      }
+
       window.parent.postMessage({
         type: 'collab:ai-generate-request',
-        text: textEditTextarea.value,
-        elementPath: buildElementPath(textEditTarget),
-      }, '*');
+        html,
+        text: inlineEditTarget.textContent || '',
+        elementPath: buildElementPath(inlineEditTarget),
+      }, ME.parentOrigin || '*');
     });
 
-    const applyBtn = el('button', 'collab-send-btn collab-apply-btn', 'Apply');
-    applyBtn.title = 'Apply changes to page';
-    applyBtn.addEventListener('click', () => {
-      if (!textEditTarget) return;
-      textEditTarget.textContent = textEditTextarea.value;
-      closeTextEditPopup();
-    });
-
-    actions.append(wandBtn, applyBtn);
-    textEditPopup.append(header, textEditTextarea, actions);
-    document.body.appendChild(textEditPopup);
+    inlineEditWandBar.appendChild(wandBtn);
+    document.body.appendChild(inlineEditWandBar);
   }
 
-  function openTextEditPopup(targetEl) {
-    if (textEditPopup.classList.contains('open')) closeTextEditPopup();
-    textEditTarget = targetEl;
-    textEditTextarea.value = (targetEl.textContent || '').trim();
-    textEditPopup.classList.add('open');
-
-    const rect = targetEl.getBoundingClientRect();
-    const pw = textEditPopup.offsetWidth  || 340;
-    const ph = textEditPopup.offsetHeight || 200;
-    let left = rect.right + 12;
-    let top  = rect.top;
-    if (left + pw > window.innerWidth  - 12) left = rect.left - pw - 12;
-    if (left < 12) left = 12;
-    if (top  + ph > window.innerHeight - 12) top  = window.innerHeight - ph - 12;
-    top = Math.max(60, top);
-    textEditPopup.style.left = `${left}px`;
-    textEditPopup.style.top  = `${top}px`;
-    textEditTextarea.focus();
+  function positionWandBar() {
+    if (!inlineEditTarget || !inlineEditWandBar) return;
+    const rect = inlineEditTarget.getBoundingClientRect();
+    inlineEditWandBar.style.top  = `${rect.top + window.scrollY - 2}px`;
+    inlineEditWandBar.style.left = `${rect.right + window.scrollX + 6}px`;
   }
 
-  function closeTextEditPopup() {
-    if (!textEditPopup) return;
-    textEditPopup.classList.remove('open');
-    textEditTarget = null;
+  function openInlineEdit(targetEl) {
+    closeInlineEdit();
+    inlineEditTarget = targetEl;
+    inlineEditOriginalHtml = targetEl.innerHTML;
+    targetEl.contentEditable = 'true';
+    targetEl.classList.add('collab-inline-editing');
+    targetEl.focus();
+    inlineEditWandBar.classList.add('open');
+    positionWandBar();
+
+    targetEl.addEventListener('keydown', handleInlineEditKeydown);
+    window.addEventListener('scroll', positionWandBar, { passive: true });
+  }
+
+  function closeInlineEdit() {
+    if (!inlineEditTarget) return;
+    inlineEditTarget.removeEventListener('keydown', handleInlineEditKeydown);
+    window.removeEventListener('scroll', positionWandBar);
+    inlineEditTarget.contentEditable = 'false';
+    inlineEditTarget.classList.remove('collab-inline-editing');
+    inlineEditTarget = null;
+    inlineEditOriginalHtml = '';
+    inlineEditSavedRange = null;
+    inlineEditGenerating = false;
+    inlineEditWandBar.classList.remove('open', 'is-generating');
+  }
+
+  function handleInlineEditKeydown(e) {
+    if (e.key === 'Escape') { e.stopPropagation(); inlineEditTarget.innerHTML = inlineEditOriginalHtml; closeInlineEdit(); }
   }
 
   async function submitNewComment() {
@@ -1071,26 +1122,31 @@
         closeNewCommentPopup(); return;
       }
 
-      if (textEditPopup?.classList.contains('open') && !textEditPopup.contains(e.target)) {
-        closeTextEditPopup(); return;
+      if (inlineEditTarget && !inlineEditTarget.contains(e.target) && !inlineEditWandBar?.contains(e.target)) {
+        closeInlineEdit();
       }
 
       if (e.target.closest('.collab-thread-marker') ||
           e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
-          e.target.closest('#collab-text-edit-popup') ||
+          e.target.closest('#collab-inline-edit-bar') ||
           e.target.closest('.collab-thread-popup')) return;
 
-      const target = findCommentableElement(e.target);
+      const target = currentAnnotationMode === 'edit'
+        ? findTextElement(e.target)
+        : findCommentableElement(e.target);
       if (target) {
         e.stopPropagation();
         e.stopImmediatePropagation();
         e.preventDefault();
 
-        if (annotationModeActive) {
+        if (currentAnnotationMode === 'edit') {
           closeNewCommentPopup();
-          openTextEditPopup(target);
+          openInlineEdit(target);
           return;
         }
+
+        // assets mode — let stream-mapper handle selection; don't intercept
+        if (currentAnnotationMode === 'assets') return;
 
         const existing = state.threads.find(t => resolveElement(t.elementPath) === target);
         if (existing) {
@@ -1110,6 +1166,20 @@
     const main = document.querySelector('main') || document.body;
     const block = el.closest('main > div > div, main > div, section, article, p, h1, h2, h3, h4, h5, li, figure');
     return block && main.contains(block) ? block : null;
+  }
+
+  const TEXT_SELECTORS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, figcaption';
+  function findTextElement(node) {
+    if (!node || node === document.body) return null;
+    const skip = ['#collab-panel','#collab-new-comment-popup','.collab-thread-popup','.collab-thread-marker','#collab-inline-edit-bar'];
+    if (skip.some(s => node.closest?.(s))) return null;
+    const main = document.querySelector('main') || document.body;
+    const block = node.closest(TEXT_SELECTORS);
+    if (block && main.contains(block)) return block;
+    // fall back to a div that contains text but not images as primary content
+    const div = node.closest('main > div > div, main > div');
+    if (div && main.contains(div) && (div.textContent || '').trim().length > 0 && !div.querySelector('img,video,picture')) return div;
+    return null;
   }
 
   function buildMentionField(placeholder) {
@@ -1431,7 +1501,7 @@
     buildPanel();
     buildFloatingLayer();
     buildNewCommentPopup();
-    buildTextEditPopup();
+    buildInlineEditBar();
     setupElementInteraction();
     setupScrollSync();
     notifyParent();

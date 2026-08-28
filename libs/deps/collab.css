@@ -1,7 +1,7 @@
 #collab-panel,
 #collab-floating-layer,
 #collab-new-comment-popup,
-#collab-text-edit-popup,
+#collab-inline-edit-bar,
 .collab-thread-popup,
 .collab-mention-dropdown {
   font-family: 'Adobe Clean', 'Trebuchet MS', sans-serif;
@@ -703,75 +703,45 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
   font-weight: 600;
 }
 
-#collab-text-edit-popup {
-  position: fixed;
-  width: min(340px, calc(100vw - 24px));
-  background: #fff;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  box-shadow: 0 10px 26px rgba(30, 64, 175, 0.15);
-  z-index: 10051;
-  padding: 12px;
+.collab-inline-editing {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px;
+  border-radius: 3px;
+  caret-color: #1d4ed8;
+  min-height: 1em;
+}
+
+#collab-inline-edit-bar {
+  position: absolute;
+  z-index: 10052;
   display: none;
-  flex-direction: column;
-  gap: 10px;
   pointer-events: auto;
 }
 
-#collab-text-edit-popup.open { display: flex; }
-
-.collab-text-edit-textarea {
-  width: 100%;
-  min-height: 90px;
-  resize: vertical;
-  border: 1.5px solid #93c5fd;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  box-sizing: border-box;
-}
-
-.collab-text-edit-textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.collab-text-edit-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-}
+#collab-inline-edit-bar.open { display: block; }
 
 .collab-wand-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 4px 10px 4px 7px;
   border: 1.5px solid #a78bfa;
   background: #f5f3ff;
   color: #6d28d9;
-  border-radius: 8px;
-  font-size: 12px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(109,40,217,.15);
 }
 
 .collab-wand-btn:hover { background: #ede9fe; }
 
-.collab-apply-btn {
-  padding: 6px 16px;
-  border: 1.5px solid #3b82f6;
-  background: #3b82f6;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
+.collab-wand-label { line-height: 1; }
 
-.collab-apply-btn:hover { background: #2563eb; border-color: #2563eb; }
+#collab-inline-edit-bar.is-generating .collab-wand-btn {
+  opacity: 0.6;
+  cursor: wait;
+}
