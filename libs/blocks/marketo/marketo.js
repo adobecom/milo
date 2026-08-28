@@ -36,6 +36,7 @@ export const LANA_MESSAGE = {
   RENDER_RECOVERED: 'Marketo form rendered after timeout',
   SUBMIT_FAILED: 'Marketo form submit failed',
   MARKETO_FORMS_JS: 'Marketo form failed to load forms2.min.js',
+  HIDDEN_REQUIRED_FIELD: 'Marketo form has a hidden field marked as required',
 };
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
@@ -122,6 +123,9 @@ export const getDataLayer = (key = '') => key
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+  if (formEl.querySelectorAll('.mktoHidden:has(.mktoRequired)').length) {
+    window.lana?.log(LANA_MESSAGE.HIDDEN_REQUIRED_FIELD, { tags: 'marketo', severity: 'w', sampleRate: 100 });
+  }
 };
 
 export const decorateURL = async (destination, baseURL = window.location) => {
@@ -283,13 +287,11 @@ export const logFailure = (el, msg) => {
   decorateOverlay(el, `${msg}: ${tags.join(', ')}`, () => { window.location.reload(); });
 };
 
-export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => {
-  setTimeout(() => {
-    if (condition()) {
-      logFailure(el, message);
-    }
-  }, timeout);
-};
+export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => setTimeout(() => {
+  if (condition()) {
+    logFailure(el, message);
+  }
+}, timeout);
 
 const toggleSuccessSection = (formData) => {
   showSuccessSection(formData);
@@ -300,7 +302,7 @@ export const formSubmit = (formEl) => {
   const el = formEl.closest('.marketo');
   const testRecord = window.mkto_isTestRecord?.();
   if (testRecord && testRecord !== 'not_test') return;
-  formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
+  el.dataset.submitTimeoutId = formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
 };
 
 export const formSuccess = (formEl, formData) => {
@@ -308,6 +310,7 @@ export const formSuccess = (formEl, formData) => {
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
 
+  clearTimeout(el.dataset.submitTimeoutId);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
