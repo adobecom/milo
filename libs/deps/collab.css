@@ -2,6 +2,7 @@
 #collab-floating-layer,
 #collab-new-comment-popup,
 #collab-inline-edit-bar,
+#collab-image-wand,
 .collab-thread-popup,
 .collab-mention-dropdown {
   font-family: 'Adobe Clean', 'Trebuchet MS', sans-serif;
@@ -742,3 +743,20 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
   opacity: 0.6;
   cursor: wait;
 }
+
+/* ── Image hover (assets mode) ── */
+.collab-image-hover {
+  outline: 2px dashed #a78bfa !important;
+  outline-offset: 3px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#collab-image-wand {
+  position: absolute;
+  z-index: 10052;
+  display: none;
+  pointer-events: auto;
+}
+
+#collab-image-wand.open { display: block; }

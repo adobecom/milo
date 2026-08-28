@@ -53,6 +53,26 @@
         }
         positionWandBar();
       }
+      if (e.data?.type === 'collab:image-generated') {
+        const { elementPath, src } = e.data;
+        const imgEl = resolveElement(elementPath);
+        if (imgEl instanceof HTMLImageElement && src) {
+          imgEl.src = sanitizeHtml(src).replace(/[<>"]/g, '');
+          if (imgEl.closest('picture')) {
+            imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
+          }
+        }
+      }
+      if (e.data?.type === 'collab:image-upload') {
+        const { elementPath, src } = e.data;
+        const imgEl = resolveElement(elementPath);
+        if (imgEl instanceof HTMLImageElement && src) {
+          imgEl.src = src;
+          if (imgEl.closest('picture')) {
+            imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
+          }
+        }
+      }
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
       if (e.data?.type === 'collab:select-thread') {
         const t = state.threads.find(x => x.id === e.data.threadId);
@@ -273,6 +293,8 @@
   let inlineEditWandBar = null;
   let inlineEditSavedRange = null;
   let inlineEditGenerating = false;
+  let imageHoverTarget = null;
+  let imageWandEl = null;
   let markersVisible = true;
   let pageInfoResolved = false;
   let annotationModeActive = false;
@@ -285,8 +307,11 @@
   }
 
   function setAnnotationMode(mode) {
+    const prev = currentAnnotationMode;
     currentAnnotationMode = (mode && mode !== 'comments') ? mode : null;
     annotationModeActive = !!currentAnnotationMode;
+    if (prev === 'edit' && currentAnnotationMode !== 'edit') closeInlineEdit();
+    if (prev === 'assets' && currentAnnotationMode !== 'assets') closeImageHover();
     // Delegate to annotation panel buttons if stream-mapper annotation is present on the page.
     const sel = mode === 'edit' ? '.annotation-mode-btn-edit'
       : mode === 'assets' ? '.annotation-mode-btn-assets'
@@ -1040,6 +1065,69 @@
     if (e.key === 'Escape') { e.stopPropagation(); inlineEditTarget.innerHTML = inlineEditOriginalHtml; closeInlineEdit(); }
   }
 
+  // ── Image hover wand (assets mode) ──────────────────────────────────────────
+
+  function buildImageWand() {
+    imageWandEl = el('div', '');
+    imageWandEl.id = 'collab-image-wand';
+    // wand icon (AI generate)
+    const wandBtn = el('button', 'collab-wand-btn collab-image-wand-btn');
+    wandBtn.title = 'Generate image with AI';
+    wandBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg>';
+    wandBtn.addEventListener('mousedown', e => e.preventDefault());
+    wandBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!imageHoverTarget || window.parent === window) return;
+      const imgEl = imageHoverTarget.tagName === 'IMG' ? imageHoverTarget : imageHoverTarget.querySelector('img');
+      if (!imgEl) return;
+      window.parent.postMessage({
+        type: 'collab:ai-image-request',
+        elementPath: buildElementPath(imgEl),
+        currentSrc: imgEl.getAttribute('src') || '',
+      }, ME.parentOrigin || '*');
+    });
+    imageWandEl.appendChild(wandBtn);
+    document.body.appendChild(imageWandEl);
+  }
+
+  function positionImageWand() {
+    if (!imageHoverTarget || !imageWandEl) return;
+    const rect = imageHoverTarget.getBoundingClientRect();
+    imageWandEl.style.top  = `${rect.top + window.scrollY + 6}px`;
+    imageWandEl.style.left = `${rect.right + window.scrollX - 40}px`;
+  }
+
+  function openImageHover(imgContainer) {
+    closeImageHover();
+    imageHoverTarget = imgContainer;
+    imgContainer.classList.add('collab-image-hover');
+    imageWandEl.classList.add('open');
+    positionImageWand();
+    window.addEventListener('scroll', positionImageWand, { passive: true });
+  }
+
+  function closeImageHover() {
+    if (!imageHoverTarget) return;
+    imageHoverTarget.classList.remove('collab-image-hover');
+    imageHoverTarget = null;
+    if (imageWandEl) imageWandEl.classList.remove('open');
+    window.removeEventListener('scroll', positionImageWand);
+  }
+
+  function findImageElement(node) {
+    if (!node || node === document.body) return null;
+    const skip = ['#collab-panel','#collab-new-comment-popup','.collab-thread-popup','.collab-thread-marker','#collab-inline-edit-bar','#collab-image-wand'];
+    if (skip.some(s => node.closest?.(s))) return null;
+    const main = document.querySelector('main') || document.body;
+    // prefer picture/figure wrapper, fall back to img itself
+    const picture = node.closest('picture, figure');
+    if (picture && main.contains(picture)) return picture;
+    if (node.tagName === 'IMG' && main.contains(node)) return node;
+    const img = node.querySelector?.('img');
+    if (img && main.contains(img)) return node;
+    return null;
+  }
+
   async function submitNewComment() {
     const body = newCommentGetValue ? newCommentGetValue().trim() : newCommentTextarea.value.trim();
     if (!body || !clickTarget) return;
@@ -1107,6 +1195,14 @@
 
     document.addEventListener('mousemove', e => {
       if (newCommentPopup.classList.contains('open')) return;
+      if (currentAnnotationMode === 'assets') {
+        const imgTarget = findImageElement(e.target);
+        if (imgTarget !== imageHoverTarget) {
+          closeImageHover();
+          if (imgTarget) { openImageHover(imgTarget); positionImageWand(); }
+        }
+        return;
+      }
       const target = findCommentableElement(e.target);
       if (target === hovered) return;
       if (hovered) hovered.classList.remove('collab-block-hover');
@@ -1137,8 +1233,23 @@
 
       if (e.target.closest('.collab-thread-marker') ||
           e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
-          e.target.closest('#collab-inline-edit-bar') ||
+          e.target.closest('#collab-inline-edit-bar') || e.target.closest('#collab-image-wand') ||
           e.target.closest('.collab-thread-popup')) return;
+
+      if (currentAnnotationMode === 'assets') {
+        const imgTarget = findImageElement(e.target);
+        if (imgTarget) {
+          e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
+          const imgEl = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
+          if (imgEl && window.parent !== window) {
+            window.parent.postMessage({
+              type: 'collab:image-upload-request',
+              elementPath: buildElementPath(imgEl),
+            }, ME.parentOrigin || '*');
+          }
+        }
+        return;
+      }
 
       const target = currentAnnotationMode === 'edit'
         ? findTextElement(e.target)
@@ -1153,9 +1264,6 @@
           openInlineEdit(target);
           return;
         }
-
-        // assets mode — let stream-mapper handle selection; don't intercept
-        if (currentAnnotationMode === 'assets') return;
 
         const existing = state.threads.find(t => resolveElement(t.elementPath) === target);
         if (existing) {
@@ -1511,6 +1619,7 @@
     buildFloatingLayer();
     buildNewCommentPopup();
     buildInlineEditBar();
+    buildImageWand();
     setupElementInteraction();
     setupScrollSync();
     notifyParent();
