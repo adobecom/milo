@@ -2,6 +2,7 @@ import {
   customFetch,
   getConfig,
   getGeoIpSheetHoist,
+  geoIpSiteKey,
   getMetadata,
   lingoActive,
   normCountryCode,
@@ -100,8 +101,7 @@ async function getGeoIpColumnPlaceholders(config, source) {
 
   const basePath = getGeoIpPlaceholderPath(config, source);
   // tab = lingo site key (not ietf, which merges distinct sites): child's `base`, else own prefix
-  const { base, prefix } = config.locale ?? {};
-  const lang = (base ?? (prefix ?? '').replace('/', '')) || 'en';
+  const lang = geoIpSiteKey(config.locale);
   const path = `${basePath}${basePath.includes('?') ? '&' : '?'}sheet=${lang}`;
   const cacheKey = `${path}#${column}`;
 
@@ -131,7 +131,9 @@ async function getGeoPlaceholders(config, source) {
 }
 
 // Map of `-geo-ip` overrides (or null), for surfaces that replace tokens outside milo's
-// decorateArea pipeline — e.g. the C2 federal gnav, which passes its own federal sheet `source`.
+// decorateArea pipeline. `source` is an optional absolute URL to a placeholders-geo-ip.json
+// file (e.g. `${federalDomain}/globalnav/placeholders-geo-ip.json`); when omitted the URL
+// is derived from config.locale.contentRoot. Returns null when lingo is inactive.
 export async function getGeoIpPlaceholders(config = getConfig(), source = undefined) {
   const geo = await getGeoPlaceholders(config, source);
   if (!geo) return null;

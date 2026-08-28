@@ -2886,13 +2886,19 @@ let geoIpSheetHoist;
 // In-flight geo-IP sheet fetch, reused by placeholders.js.
 export const getGeoIpSheetHoist = () => geoIpSheetHoist;
 
+// Shared lingo site-key derivation: used by both the hoist and getGeoIpColumnPlaceholders to build
+// the same ?sheet= value so hoist.url === path holds.
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
 // Fetch the geo-IP sheet at page load (low priority) so decoratePlaceholders reuses it instead of
-// serially blocking the LCP image. URL must match the one getGeoIpColumnPlaceholders builds.
+// serially blocking the LCP image.
 const hoistGeoIpSheet = (config) => {
-  const { contentRoot, base, prefix } = config.locale ?? {};
-  const lang = (base ?? (prefix ?? '').replace('/', '')) || 'en';
+  const { contentRoot } = config.locale ?? {};
+  const lang = geoIpSiteKey(config.locale);
   const url = `${contentRoot}/placeholders-geo-ip.json?sheet=${lang}`;
-  geoIpSheetHoist ??= { url, resp: fetch(url, { priority: 'low' }).catch(() => null) };
+  const params = new URLSearchParams(window.location.search);
+  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  geoIpSheetHoist ??= { url, resp: fetch(url, { priority: 'low', cache }).catch(() => null) };
 };
 
 export async function loadArea(area = document) {

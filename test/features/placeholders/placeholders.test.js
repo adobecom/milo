@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig, customFetch } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig, customFetch, geoIpSiteKey } from '../../../libs/utils/utils.js';
 import {
   replaceText,
   replaceKey,
@@ -205,5 +205,27 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
     cfg.locale.contentRoot = '/nonexistent';
     const overrides = await getGeoIpPlaceholders(cfg, gnavSheet);
     expect(overrides.get('hello-geo-ip')).to.equal('hello US GNAV');
+  });
+});
+
+describe('geoIpSiteKey', () => {
+  it('returns base when set', () => {
+    expect(geoIpSiteKey({ base: 'fr_FR' })).to.equal('fr_FR');
+  });
+
+  it('strips the leading slash from prefix', () => {
+    expect(geoIpSiteKey({ prefix: '/fr' })).to.equal('fr');
+  });
+
+  it('prefers base over prefix', () => {
+    expect(geoIpSiteKey({ base: 'fr_CH', prefix: '/fr' })).to.equal('fr_CH');
+  });
+
+  it('defaults to en when locale is empty', () => {
+    expect(geoIpSiteKey({})).to.equal('en');
+  });
+
+  it('defaults to en when called with no argument', () => {
+    expect(geoIpSiteKey()).to.equal('en');
   });
 });
