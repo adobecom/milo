@@ -557,10 +557,6 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   max-width: calc(100% - 2 * var(--s2a-spacing-lg));
   border-radius: var(--s2a-border-radius-md);
 
-  h1, h2, h3, h4, h5, h6 {
-    margin-inline-start: 0 !important;
-  }
-
   p {
     margin-bottom: var(--s2a-spacing-20);
 
