@@ -33,6 +33,9 @@
       if (e.data?.type === 'collab:toggle-panel') togglePanel();
       if (e.data?.type === 'collab:toggle-visibility') toggleMarkersVisibility();
       if (e.data?.type === 'collab:set-annotation-mode') setAnnotationMode(e.data.mode);
+      if (e.data?.type === 'collab:ai-generated-text') {
+        if (textEditTextarea) textEditTextarea.value = e.data.text || '';
+      }
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
       if (e.data?.type === 'collab:select-thread') {
         const t = state.threads.find(x => x.id === e.data.threadId);
@@ -230,6 +233,7 @@
   let floatingLayer;
   let newCommentPopup, newCommentTextarea, newCommentGetValue;
   let threadPopupEl;
+  let textEditPopup, textEditTextarea, textEditTarget;
   let markersVisible = true;
   let pageInfoResolved = false;
   let annotationModeActive = false;
@@ -906,6 +910,76 @@
     }
   }
 
+  function buildTextEditPopup() {
+    textEditPopup = el('div', '');
+    textEditPopup.id = 'collab-text-edit-popup';
+
+    const header = el('div', 'collab-thread-popup-header');
+    const label = el('span', 'collab-thread-popup-label', 'EDIT TEXT');
+    const closeBtn = el('button', 'collab-popup-close', '×');
+    closeBtn.addEventListener('click', closeTextEditPopup);
+    header.append(label, closeBtn);
+
+    textEditTextarea = el('textarea', 'collab-text-edit-textarea');
+    textEditTextarea.rows = 4;
+    textEditTextarea.placeholder = 'Edit text…';
+    textEditTextarea.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { e.stopPropagation(); closeTextEditPopup(); }
+    });
+
+    const actions = el('div', 'collab-text-edit-actions');
+
+    const wandBtn = el('button', 'collab-wand-btn', '');
+    wandBtn.title = 'Generate with AI';
+    wandBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg>Generate';
+    wandBtn.addEventListener('click', () => {
+      if (!textEditTarget || window.parent === window) return;
+      window.parent.postMessage({
+        type: 'collab:ai-generate-request',
+        text: textEditTextarea.value,
+        elementPath: buildElementPath(textEditTarget),
+      }, '*');
+    });
+
+    const applyBtn = el('button', 'collab-send-btn collab-apply-btn', 'Apply');
+    applyBtn.title = 'Apply changes to page';
+    applyBtn.addEventListener('click', () => {
+      if (!textEditTarget) return;
+      textEditTarget.textContent = textEditTextarea.value;
+      closeTextEditPopup();
+    });
+
+    actions.append(wandBtn, applyBtn);
+    textEditPopup.append(header, textEditTextarea, actions);
+    document.body.appendChild(textEditPopup);
+  }
+
+  function openTextEditPopup(targetEl) {
+    if (textEditPopup.classList.contains('open')) closeTextEditPopup();
+    textEditTarget = targetEl;
+    textEditTextarea.value = (targetEl.textContent || '').trim();
+    textEditPopup.classList.add('open');
+
+    const rect = targetEl.getBoundingClientRect();
+    const pw = textEditPopup.offsetWidth  || 340;
+    const ph = textEditPopup.offsetHeight || 200;
+    let left = rect.right + 12;
+    let top  = rect.top;
+    if (left + pw > window.innerWidth  - 12) left = rect.left - pw - 12;
+    if (left < 12) left = 12;
+    if (top  + ph > window.innerHeight - 12) top  = window.innerHeight - ph - 12;
+    top = Math.max(60, top);
+    textEditPopup.style.left = `${left}px`;
+    textEditPopup.style.top  = `${top}px`;
+    textEditTextarea.focus();
+  }
+
+  function closeTextEditPopup() {
+    if (!textEditPopup) return;
+    textEditPopup.classList.remove('open');
+    textEditTarget = null;
+  }
+
   async function submitNewComment() {
     const body = newCommentGetValue ? newCommentGetValue().trim() : newCommentTextarea.value.trim();
     if (!body || !clickTarget) return;
@@ -997,10 +1071,13 @@
         closeNewCommentPopup(); return;
       }
 
-      if (annotationModeActive) return;
+      if (textEditPopup?.classList.contains('open') && !textEditPopup.contains(e.target)) {
+        closeTextEditPopup(); return;
+      }
 
       if (e.target.closest('.collab-thread-marker') ||
           e.target.closest('#collab-panel') || e.target.closest('#collab-new-comment-popup') ||
+          e.target.closest('#collab-text-edit-popup') ||
           e.target.closest('.collab-thread-popup')) return;
 
       const target = findCommentableElement(e.target);
@@ -1008,6 +1085,12 @@
         e.stopPropagation();
         e.stopImmediatePropagation();
         e.preventDefault();
+
+        if (annotationModeActive) {
+          closeNewCommentPopup();
+          openTextEditPopup(target);
+          return;
+        }
 
         const existing = state.threads.find(t => resolveElement(t.elementPath) === target);
         if (existing) {
@@ -1348,6 +1431,7 @@
     buildPanel();
     buildFloatingLayer();
     buildNewCommentPopup();
+    buildTextEditPopup();
     setupElementInteraction();
     setupScrollSync();
     notifyParent();
