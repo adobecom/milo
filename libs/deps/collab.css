@@ -708,7 +708,7 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
   outline: 2px solid #3b82f6 !important;
   outline-offset: 2px;
   border-radius: 3px;
-  caret-color: #1d4ed8;
+  caret-color: currentColor;
   min-height: 1em;
 }
 

@@ -63,6 +63,31 @@
           }
         }
       }
+      if (e.data?.type === 'collab:apply-edits') {
+        const { editRecord } = e.data;
+        if (!Array.isArray(editRecord)) return;
+        editRecord.forEach((edit) => {
+          if (!edit || typeof edit.elementPath !== 'string' || !edit.elementPath) return;
+          const el = resolveElement(edit.elementPath);
+          if (!el) return;
+          const to = typeof edit.to === 'string' ? edit.to : '';
+          if (edit.editType === 'text') {
+            el.innerHTML = sanitizeHtml(to);
+          } else if (edit.editType === 'image') {
+            if (!(el instanceof HTMLImageElement)) return;
+            // Allow only http(s) or data:image/ — block javascript: and other schemes
+            if (!/^(https?:\/\/|data:image\/)/.test(to)) return;
+            el.src = to.replace(/[<>"]/g, '');
+            if (el.closest('picture')) {
+              el.closest('picture').querySelectorAll('source').forEach((s) => s.remove());
+            }
+          } else if (edit.editType === 'image-alt') {
+            if (!(el instanceof HTMLImageElement)) return;
+            el.setAttribute('alt', to.replace(/[<>"]/g, ''));
+          }
+        });
+        return;
+      }
       if (e.data?.type === 'collab:set-panel-mode') setPanelMode(e.data.mode);
       if (e.data?.type === 'collab:select-thread') {
         const t = state.threads.find(x => x.id === e.data.threadId);
