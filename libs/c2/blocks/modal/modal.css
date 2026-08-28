@@ -125,6 +125,13 @@
   z-index: var(--modal-z-index-curtain);
 }
 
+.modal-curtain.is-open[data-modal-id^="transcript"] {
+  border-radius: var(--s2a-border-radius-none);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  background: var(--s2a-color-transparent-black-88);
+  backdrop-filter: blur(var(--s2a-shadow-level-3-blur));
+}
+
 .dialog-modal button.dialog-close {
   border: 3px solid transparent;
   position: absolute;
@@ -552,6 +559,10 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
 
   h1, h2, h3, h4, h5, h6 {
     margin-inline-start: 0 !important;
+  }
+
+  p {
+    margin-bottom: var(--s2a-spacing-20);
   }
 
   > .fragment {
