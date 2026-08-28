@@ -1226,10 +1226,8 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchedData) {
-      data = fetchedData;
-    } else {
+    data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!data) {
       recordManifestError(name, manifestPath, 'Manifest');
       return null;
     }
@@ -1241,7 +1239,7 @@ async function getManifestConfig(info, variantOverride) {
   if (!persData && !infoTab) errorMsg = 'Tabs';
   else if (!persData) errorMsg = 'Experiences tab';
   else if (!infoTab) errorMsg = 'Info tab';
-  if (!persData || !infoTab) {
+  if (errorMsg) {
     recordManifestError(name, manifestPath, errorMsg);
     return null;
   }
