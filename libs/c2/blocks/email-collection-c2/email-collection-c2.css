@@ -438,7 +438,7 @@
 }
 
 .email-collection-c2.mailing-list .foreground {
-  border-radius: var(--s2a-border-radius-24);
+  border-radius: var(--s2a-border-radius-md);
   min-height: unset;
   padding: var(--s2a-spacing-xs) var(--s2a-spacing-xs) var(--s2a-spacing-lg) var(--s2a-spacing-xs);
   gap: var(--s2a-spacing-lg);
@@ -447,7 +447,7 @@
 .email-collection-c2.mailing-list .image {
   display: block;
   aspect-ratio: 374 / 440;
-  border-radius: var(--s2a-border-radius-16);
+  border-radius: var(--s2a-border-radius-md);
   overflow: hidden;
 }
 
