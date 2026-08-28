@@ -1184,7 +1184,10 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) return false;
+  if (!getGeoRestriction(manifestConfig)) {
+    manifestConfig.geoDisabled = true;
+    return false;
+  }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction?.includes('core services')) return true;
 

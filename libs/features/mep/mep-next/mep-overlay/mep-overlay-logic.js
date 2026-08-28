@@ -82,7 +82,7 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, geoRestriction, geoDisabled, mktgAction,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -98,6 +98,7 @@ function toActivity({
     pathname,
     analyticsTitle,
     geoRestriction,
+    geoDisabled,
     mktgAction,
   };
 }
@@ -136,17 +137,6 @@ function formatDate(dateTime, format = 'local') {
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
-function checkPromoRange({ eventStart, eventEnd, geoRestriction }) {
-  const now = new Date();
-  const withinDateRange = !eventStart || !eventEnd || (now >= eventStart && now <= eventEnd);
-
-  const akamaiCode = getConfig().mep?.akamaiCode;
-  const manifestGeoRestricted = !!geoRestriction
-    && !geoRestriction.split(',').map((code) => code.trim()).includes(akamaiCode);
-
-  return { withinDateRange, manifestGeoRestricted };
-}
-
 function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   const {
     url,
@@ -159,6 +149,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventEnd,
     disabled,
     geoRestriction,
+    geoDisabled,
     mktgAction,
   } = manifest;
 
@@ -195,11 +186,6 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     });
   });
 
-  const {
-    withinDateRange,
-    manifestGeoRestricted,
-  } = checkPromoRange({ eventStart, eventEnd, geoRestriction });
-
   return {
     index: mIdx + 1,
     editUrl: url,
@@ -213,8 +199,8 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
-    withinDateRange,
-    manifestGeoRestricted,
+    withinDateRange: !disabled,
+    manifestGeoRestricted: !!geoDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
