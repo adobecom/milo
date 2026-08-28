@@ -228,11 +228,18 @@
     .content > * {
       animation: none;
       opacity: 0;
-      transition: opacity 1.2s ease-out;
+      translate: 0 16px;
+      transition: opacity 1.2s ease-out, translate 1.2s ease-out;
+      will-change: opacity, translate;
+    }
+
+    .content > :is(.eyebrow, [class*="heading-"]) {
+      translate: 0 40px;
     }
 
     &.is-revealed .content > * {
       opacity: 1;
+      translate: 0 0;
     }
 
     .content > :nth-child(2) { transition-delay: 120ms; }
@@ -245,6 +252,7 @@
     &.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > * {
       transition: none;
       opacity: 1;
+      translate: 0 0;
     }
   }
 
@@ -824,32 +832,6 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content {
-      > .eyebrow, > [class*="heading-"] {
-        animation: rc-merch-parallax-fast linear both;
-        animation-timeline: view();
-        animation-range: cover 0% cover 100%;
-        will-change: translate;
-      }
-
-      > [class*="body-"], > .action-area {
-        animation: rc-merch-parallax-slow linear both;
-        animation-timeline: view();
-        animation-range: cover 0% cover 100%;
-        will-change: translate;
-      }
-    }
-
-    @keyframes rc-merch-parallax-fast {
-      from { translate: 0 20px; }
-      to { translate: 0 -20px; }
-    }
-
-    @keyframes rc-merch-parallax-slow {
-      from { translate: 0 8px; }
-      to { translate: 0 -8px; }
-    }
-
     .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .section-background img {
       margin-block-end: calc(-1 * var(--merch-bg-shift));
       animation: rc-merch-bg-parallax ease-out both;
