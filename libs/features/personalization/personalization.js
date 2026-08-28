@@ -1249,9 +1249,8 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 4 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
-    recordManifestError(name, manifestPath);
+    recordManifestError(name, manifestPath, 'Experience columns');
     return null;
   }
   const infoKeyMap = {

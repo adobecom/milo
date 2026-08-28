@@ -198,7 +198,7 @@ describe('Functional Test', () => {
     const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
     await applyPers({ manifests: badManifest });
 
-    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json' });
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest' });
   });
 
   it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
@@ -217,7 +217,7 @@ describe('Functional Test', () => {
     const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
     await applyPers({ manifests: emptyManifest });
 
-    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json' });
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
   });
 
   it('test or promo manifest', async () => {
