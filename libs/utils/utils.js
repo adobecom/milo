@@ -2881,6 +2881,20 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+let geoIpSheetHoist;
+
+// In-flight geo-IP sheet fetch, reused by placeholders.js.
+export const getGeoIpSheetHoist = () => geoIpSheetHoist;
+
+// Fetch the geo-IP sheet at page load (low priority) so decoratePlaceholders reuses it instead of
+// serially blocking the LCP image. URL must match the one getGeoIpColumnPlaceholders builds.
+const hoistGeoIpSheet = (config) => {
+  const { contentRoot, base, prefix } = config.locale ?? {};
+  const lang = (base ?? (prefix ?? '').replace('/', '')) || 'en';
+  const url = `${contentRoot}/placeholders-geo-ip.json?sheet=${lang}`;
+  geoIpSheetHoist ??= { url, resp: fetch(url, { priority: 'low' }).catch(() => null) };
+};
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2906,6 +2920,8 @@ export async function loadArea(area = document) {
   }
 
   if (isLingoActive) loadLingoIndexes(area);
+
+  if (isDoc && isLingoActive) hoistGeoIpSheet(config);
 
   if (isDoc) {
     await decorateDocumentExtras();

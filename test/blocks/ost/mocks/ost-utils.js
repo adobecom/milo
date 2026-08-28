@@ -140,6 +140,13 @@ const shouldAllowKrTrial = (button, localePrefix) => {
 const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
+const getGeoIpSheetHoist = () => undefined;
+const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -183,5 +190,8 @@ export {
   lingoActive,
   getGeoLocalePrefix,
   getPlaceholderPaths,
+  getGeoIpSheetHoist,
+  normCountryCode,
+  resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
 };
