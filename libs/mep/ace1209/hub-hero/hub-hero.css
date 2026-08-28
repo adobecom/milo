@@ -278,6 +278,7 @@
 
 .hub-hero-carousel-item-media picture {
   height: 100%;
+  width: 100%;
 }
 
 .hub-hero-carousel-item-media img {
@@ -285,6 +286,7 @@
   object-fit: cover;
   display: block;
   height: 100%;
+  width: 100%;
 }
 
 .hub-hero-carousel-item-footer {
@@ -1968,7 +1970,6 @@
     }
 
     .hub-hero-carousel-container {
-      max-width: var(--slide-max-width);
       min-width: var(--hub-hero-carousel-item-min-width);
       display: flex;
       flex-direction: column;
