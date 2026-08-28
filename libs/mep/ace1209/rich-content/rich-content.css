@@ -274,7 +274,7 @@
          its (clipped) box by exactly this much — the spare image below slides
          up into view as it translates, so the bottom stays covered and no hole
          is exposed. */
-      --merch-bg-shift: 80px;
+      --merch-bg-shift: 150px;
       overflow: unset;
 
       &,
@@ -334,10 +334,6 @@
 }
 
 @media (width >= 768px) {
-  .section:has(.rich-content.merch-moment).has-background .section-background {
-    --merch-bg-shift: 340px;
-  }
-
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
@@ -474,6 +470,10 @@
 }
 
 @media (width >= 1280px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-shift: 340px;
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     height: auto;
