@@ -475,10 +475,9 @@ describe('init: buildManifestCard — malformed manifest via mep.manifestErrors'
           selectedVariantName: 'v-a',
           source: 'helix',
           disabled: false,
-          error: 'Manifest',
         },
       ],
-      manifestErrors: [{ name: 'broken-manifest', manifestPath: '/frags/mep/broken.json' }],
+      manifestErrors: [{ name: 'broken-manifest', manifestPath: '/frags/mep/broken.json', error: 'Manifest' }],
     },
   };
 
