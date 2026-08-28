@@ -175,9 +175,6 @@ function revealMerchMomentText(block) {
   if (!foreground || foreground.dataset.revealObserved) return;
   foreground.dataset.revealObserved = '1';
 
-  // Fires as soon as the foreground starts entering the viewport, so the fade
-  // actually plays on screen — independent of the section's own scroll-linked
-  // grow/scale, which is much slower to complete.
   const observer = new IntersectionObserver(([entry]) => {
     if (!entry.isIntersecting) return;
     foreground.classList.add('is-revealed');
