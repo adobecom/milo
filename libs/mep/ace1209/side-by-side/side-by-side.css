@@ -158,7 +158,7 @@
       --card-overlay-gradient: var(--card-overlay-gradient-top);
 
       flex-direction: row;
-      aspect-ratio: 33/37;
+      aspect-ratio: 1 / 1.1;
       align-items: flex-start;
       .foreground {
         --card-overlay-padding-bottom: var(--card-overlay-padding);
@@ -205,7 +205,7 @@
         --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
         align-items: flex-end;
-        aspect-ratio: 3 / 2;
+        aspect-ratio: 16 / 9;
       }
     }
   }
@@ -231,13 +231,6 @@
     &.featured .card-overlay .foreground {
       --card-overlay-padding: var(--s2a-spacing-2xl);
     }
-  }
-}
-
-@media (width >= 1440px) {
-  .side-by-side.featured .card-overlay {
-    height: 1200px;
-    aspect-ratio: unset;
   }
 }
 

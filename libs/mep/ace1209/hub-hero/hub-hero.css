@@ -30,7 +30,6 @@
   --elastic-mobile-first-slide-offset: -290px;
   --start-gap: 6rem;
   --end-gap: .5rem;
-  --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --gap-shrink-timeline: ease;
   --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 90px);
@@ -297,7 +296,8 @@
 }
 
 .hub-hero-carousel-item-footer p {
-  flex: 1;
+  flex: 1;    
+  max-width: 80%;    
 }
 
 .hub-hero-carousel-item-footer span {
@@ -398,7 +398,7 @@
 
 .hub-hero.slides-3 {
   --slides: 3;
-  --elastic-mobile-first-slide-offset: -240px;
+  --elastic-mobile-first-slide-offset: -160px;
   
 
   .hub-hero-carousel-item-media {
@@ -449,15 +449,22 @@
       --stack-contrast: .5;
     }
 
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
-      aspect-ratio: 3 / 4;
+    .hub-hero-carousel-item .hub-hero-carousel-item-media {
+      aspect-ratio: 5 / 4;
       width: 100%;
     }
 
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media picture:nth-child(1) img {
+    .hub-hero-carousel-item .hub-hero-carousel-item-media picture:nth-child(1) img {
       object-fit: cover;
       width: 100%;
       height: 100%;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
+      aspect-ratio: 3 / 4;
+      animation: slideOneMediaAspect ease both;
+      animation-timeline: --hub-hero;
+      animation-range: entry 100% exit 100%;
     }
 
     .hub-hero-carousel-item:nth-child(2) {
@@ -588,7 +595,6 @@
 @media (width < 768px) {
   .hub-hero {
     height: auto;
-    padding-bottom: calc(var(--hub-hero-mobile-bottom-margin) + var(--s2a-spacing-3xl)*2);
     position: relative;
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
@@ -711,6 +717,7 @@
     contain: layout;
     width: 100%;
     margin: 0;
+    padding-bottom: calc(var(--slide-footer-h) / 2);
   }
 
   .hub-hero-carousel-container {
@@ -1428,6 +1435,20 @@
 }
 
 
+
+@keyframes slideOneMediaAspect {
+  0% {
+    aspect-ratio: 3 / 4;
+  }
+
+  20% {
+    aspect-ratio: 5 / 4;
+  }
+
+  100% {
+    aspect-ratio: 5 / 4;
+  }
+}
 
 @keyframes elasticMobileStackSlides {
   0% {
