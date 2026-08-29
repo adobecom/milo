@@ -448,7 +448,6 @@
 
 .email-collection-c2.mailing-list .image {
   display: block;
-  aspect-ratio: 374 / 440;
   border-radius: var(--s2a-border-radius-md);
   overflow: hidden;
 }
