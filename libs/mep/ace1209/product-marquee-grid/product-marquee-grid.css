@@ -98,6 +98,7 @@
     position: relative;
     background-color: var(--s2a-color-transparent-black-72);
     backdrop-filter: blur(125px);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
     
     
     
