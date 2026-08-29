@@ -1,6 +1,6 @@
 # Milo JSON-LD Graph Manager
 
-## Summary 
+## Summary
 
 The Milo JSON-LD Graph Manager (graph manager) aims to improve Adobe.com page ranking performance in search engines and AI assistants by automatically consolidating all the JSON-LD on a page into a single, directed @graph format proven to trigger Google Search Rich Results while still maximizing context for AI assistants. The graph manager system design helps maintain engineering productivity: stakeholders only need to enable the feature via metadata and the manager handles normalizing, relating and deduplicating the JSON-LD data from 33+ integrations across 7+ AEM Site repositories.
 
@@ -109,7 +109,7 @@ Recommended logging behavior:
   {
     "@type": "Article",
     "headline": "Photoshop",
-    "author": { 
+    "author": {
       "@type": "Organization",
       "name": "Adobe"
     }
@@ -252,7 +252,7 @@ Non-managed JSON-LD scripts are candidates for ingestion and removal regardless 
 
 ### 2.4 Normalization And Merge Policy
 
-The canonical `@id` values the manager assigns to each recognized entity type are defined in §3 Requirements (`page-scoped-id-format`, `organization-site-wide-id`). Incoming producer `@id` values are treated as merge hints — for recognized entities, the manager rewrites `@id` to the canonical value. Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated.
+The canonical `@id` values the manager assigns to each recognized entity type are defined in §3 Requirements (`page-scoped-id-format`, `organization-site-wide-id`). Incoming producer `@id` values are treated as merge hints — for recognized entities, the manager rewrites `@id` to the canonical value. Unknown top-level nodes without stable identity remain a v1 limitation: the manager keys them by `@type`, so distinct same-type contributions may be merged. Rollout cohorts must exclude that shape or require producers to supply stable `@id` values until the `all-nodes-have-id` follow-up is implemented.
 
 #### Merge priority
 
@@ -271,7 +271,7 @@ Unless a type-specific rule overrides them, the manager applies the following de
 - relationship arrays are unioned by canonical `@id`
 - repeatable Event, Offer, and VideoObject nodes without producer `@id` values receive stable IDs derived from their identity fields
 - anonymous array members are deduplicated by normalized content hash when no stable `@id` exists
-- unknown anonymous top-level nodes are retained provisionally until they can be normalized or deduplicated
+- unknown anonymous top-level nodes fall back to `@type` identity and may merge with distinct same-type contributions; this documented v1 limitation requires rollout validation or producer-supplied `@id` values
 
 Singleton, supplemental, and repeatable type policies are defined in §3.4 Graph composition (`webpage-canonical-singleton`, `organization-singleton`, `breadcrumblist-singleton`, `required-primary-type`, `supplemental-singletons`, `repeatable-types`). Relationship arrays such as `hasPart` are unioned by canonical `@id`.
 

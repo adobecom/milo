@@ -20,6 +20,10 @@ const RULES = {
     idFragment: '#article',
     linksBack: { isPartOf: 'WebPage', mainEntityOfPage: 'WebPage', publisher: 'Organization' },
   },
+  NewsArticle: {
+    idFragment: '#newsarticle',
+    linksBack: { isPartOf: 'WebPage', mainEntityOfPage: 'WebPage', publisher: 'Organization' },
+  },
   BreadcrumbList: {
     idFragment: '#breadcrumb',
     singleton: true,
@@ -340,7 +344,7 @@ export function injectLinks(nodes) {
 }
 
 function sortNodes(nodes) {
-  const order = ['WebPage', 'Organization', 'Article', 'SoftwareApplication', 'BreadcrumbList'];
+  const order = ['WebPage', 'Organization', 'Article', 'NewsArticle', 'SoftwareApplication', 'BreadcrumbList'];
   return [...nodes].sort((a, b) => {
     const ai = order.indexOf(a['@type'] ?? '');
     const bi = order.indexOf(b['@type'] ?? '');

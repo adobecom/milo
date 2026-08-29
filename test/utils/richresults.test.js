@@ -56,6 +56,32 @@ describe('Rich Results', () => {
     expect(actual).to.deep.equal(expected);
   });
 
+  it('links the real NewsArticle producer shape through graph management', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await loadArea(document);
+    const manager = new JsonLdGraphManager();
+    try {
+      manager.init();
+      const graph = JSON.parse(
+        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+      )['@graph'];
+      const canonicalPageUrl = `${window.location.origin}${window.location.pathname}`;
+      const newsArticleId = `${canonicalPageUrl}#newsarticle`;
+      const webpageId = `${canonicalPageUrl}#webpage`;
+      const newsArticle = graph.find((node) => node['@type'] === 'NewsArticle');
+      const webpage = graph.find((node) => node['@type'] === 'WebPage');
+
+      expect(newsArticle['@id']).to.equal(newsArticleId);
+      expect(newsArticle.isPartOf).to.deep.equal({ '@id': webpageId });
+      expect(newsArticle.mainEntityOfPage).to.deep.equal({ '@id': webpageId });
+      expect(newsArticle.publisher).to.deep.equal({ '@id': 'https://www.adobe.com/#organization' });
+      expect(webpage.mainEntity).to.deep.equal({ '@id': newsArticleId });
+    } finally {
+      manager.destroy();
+    }
+  });
+
   it('disable the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });

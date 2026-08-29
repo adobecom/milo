@@ -427,16 +427,16 @@
   applies_to: [Article, NewsArticle, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
   implements:
     - injectLinks
-    - "RULES.{Article,SoftwareApplication}.linksBack"
-  tested_by: [conformance.test.js]
+    - "RULES.{Article,NewsArticle,SoftwareApplication}.linksBack"
+  tested_by: [conformance.test.js, richresults.test.js]
   interacts_with: [webpage-canonical-singleton, softwareapplication-subtype-allowed]
   notes: >
     RULES.SoftwareApplication.linksBack now includes isPartOf: 'WebPage' and
     mainEntityOfPage: 'WebPage', so injectLinks injects isPartOf for Article,
-    SoftwareApplication, and its subtypes. Covered by the product and
-    merch-card golden cases (graph-golden.test.js).
+    NewsArticle, SoftwareApplication, and its subtypes. Covered by the real
+    richresults producer test and the product and merch-card golden cases.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-08-28"
 
 - name: breadcrumblist-ispartof
   section: Linking
@@ -459,14 +459,14 @@
     The primary page type node SHOULD have a publisher property referencing
     the Organization node by @id.
   applies_to: [Article, NewsArticle]
-  implements: [injectLinks, RULES.Article.linksBack]
-  tested_by: []
+  implements: [injectLinks, "RULES.{Article,NewsArticle}.linksBack"]
+  tested_by: [richresults.test.js]
   interacts_with: [softwareapplication-provider]
   notes: >
     SoftwareApplication uses provider rather than publisher; see
     softwareapplication-provider.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-08-28"
 
 - name: primary-type-mainentityofpage
   section: Linking
@@ -475,15 +475,15 @@
     The primary page type node MAY have a mainEntityOfPage property
     referencing the WebPage node by @id.
   applies_to: [Article, NewsArticle, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [injectLinks, "RULES.{Article,SoftwareApplication}.linksBack"]
-  tested_by: []
+  implements: [injectLinks, "RULES.{Article,NewsArticle,SoftwareApplication}.linksBack"]
+  tested_by: [richresults.test.js]
   interacts_with: [webpage-canonical-singleton]
   notes: >
     RULES.SoftwareApplication.linksBack now includes mainEntityOfPage: 'WebPage'
     alongside Article, so injectLinks injects it for the primary page type.
     Covered by the editorial, product, and merch-card golden cases.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-08-28"
 
 - name: product-to-softwareapplication
   section: Type transforms
