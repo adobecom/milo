@@ -65,7 +65,7 @@ export const API_URLS = {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, countryRestriction, mktgAction,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -80,7 +80,7 @@ function toActivity({
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
+    countryRestriction,
     mktgAction,
   };
 }
@@ -361,7 +361,7 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
-      geoRestriction,
+      countryRestriction,
       mktgAction,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
@@ -415,9 +415,9 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span>${escapeHtml(source)}</span>
                   <span>Mktg action</span>
                   <span>${escapeHtml(mktgAction)}</span>
-                ${geoRestriction ? `
-                  <span>Geo</span>
-                  <span>${escapeHtml(geoRestriction.toUpperCase())}</span>` : ''}
+                ${countryRestriction ? `
+                  <span>Allowed User Countries</span>
+                  <span>${escapeHtml(countryRestriction.toUpperCase())}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
                   <span>${disabled ? 'inactive' : 'active'}</span>` : ''}

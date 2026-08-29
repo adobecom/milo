@@ -82,7 +82,7 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, geoDisabled, mktgAction,
+  disabled, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -97,8 +97,8 @@ function toActivity({
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
-    geoDisabled,
+    countryRestriction,
+    countryDisabled,
     mktgAction,
   };
 }
@@ -148,8 +148,8 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart,
     eventEnd,
     disabled,
-    geoRestriction,
-    geoDisabled,
+    countryRestriction,
+    countryDisabled,
     mktgAction,
   } = manifest;
 
@@ -196,11 +196,11 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
     mktgAction,
-    geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
+    countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
     withinDateRange: !disabled,
-    manifestGeoRestricted: !!geoDisabled,
+    manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
