@@ -151,7 +151,7 @@ function toggleExpandedCard(cardEl) {
   localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
-function buildManifestCard(manifest, { mmm = false } = {}) {
+function buildManifestCard(manifest) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
   const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
@@ -159,13 +159,11 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('span', { class: 'mep-overline' }, mmm ? '7 Day Manifest' : 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
-  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   rows.push(buildRow('Source', manifest.source));
   rows.push(buildRow('Geo Restriction', manifest.geoRestriction || 'none'));
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
@@ -180,6 +178,7 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     rows.push(onRow, buildRow('Off', manifest.eventEnd));
   }
 
+  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
   manifest.options.forEach((option) => {
     const attrs = {
@@ -484,7 +483,7 @@ async function buildAdditionalManifests() {
 
   let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
-    const manifestEl = buildManifestCard(manifest, { mmm: true });
+    const manifestEl = buildManifestCard(manifest);
     manifestEl.classList.add('mmm-manifest-card');
     insertionPoint.after(manifestEl);
     insertionPoint = manifestEl;
