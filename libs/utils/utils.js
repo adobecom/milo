@@ -2035,7 +2035,7 @@ const getMdValue = (key) => {
   return false;
 };
 
-const getPromoMepEnablement = () => {
+export const getPromoMepEnablement = () => {
   const mds = [
     'apac_manifestnames',
     'emea_manifestnames',
