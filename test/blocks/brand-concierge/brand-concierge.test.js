@@ -326,9 +326,9 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       const wrappers = background.querySelectorAll(':scope > div');
       expect(wrappers.length).to.equal(3);
-      expect(wrappers[0].classList.contains('desktop-only')).to.be.true;
+      expect(wrappers[0].classList.contains('mobile-only')).to.be.true;
       expect(wrappers[1].classList.contains('tablet-only')).to.be.true;
-      expect(wrappers[2].classList.contains('mobile-only')).to.be.true;
+      expect(wrappers[2].classList.contains('desktop-only')).to.be.true;
       wrappers.forEach((wrapper) => expect(wrapper.querySelector('picture')).to.exist);
     });
 
