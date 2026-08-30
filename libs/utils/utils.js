@@ -2180,10 +2180,10 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
+  const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
   const { base } = getConfig();
   loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
@@ -2243,7 +2243,7 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
-    mepMarketingDecrease,
+    nonPznOffer,
     akamaiCode,
   });
 }

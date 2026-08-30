@@ -143,7 +143,7 @@ function getManifestStatus(manifest) {
   }
   const statusChecks = [
     {
-      reason: manifest.manifestCountryRestricted,
+      reason: !manifest.countryEnabled,
       msg: 'User country is restricted.',
       level: 'Warning',
       label: 'Ineligible',
@@ -153,6 +153,18 @@ function getManifestStatus(manifest) {
       msg: 'Outside of promo date range.',
       level: 'Warning',
       label: 'Ineligible',
+    },
+    {
+      reason: !manifest.consentEnabled,
+      msg: 'Disabled due to user\'s consent.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.consentNotSpecified,
+      msg: 'Consent req missing.',
+      level: 'Error',
+      label: 'Urgent warning',
     },
   ];
   const severity = { Warning: 0, Error: 1 };
@@ -212,7 +224,7 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
   rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Mktg Action', manifest.mktgAction));
+  rows.push(buildRow('Consent Req', manifest.consentType));
   if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
   if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));

@@ -82,7 +82,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
+  disabled, analyticsTitle, source, countryRestriction, countryEnabled,
+  consentType, consentNotSpecified, consentEnabled,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -98,8 +99,10 @@ function toActivity({
     pathname,
     analyticsTitle,
     countryRestriction,
-    countryDisabled,
-    mktgAction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
   };
 }
 
@@ -149,8 +152,10 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventEnd,
     disabled,
     countryRestriction,
-    countryDisabled,
-    mktgAction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
   } = manifest;
 
   const editPath = normalizePath(url);
@@ -195,12 +200,14 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isDefaultSelected,
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
-    mktgAction,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
+    countryEnabled,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
     withinDateRange: !disabled,
-    manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
@@ -281,7 +288,7 @@ function getPersonalization() {
 
 function getPerformanceConsent() {
   const { consentState } = getConfig().mep;
-  return consentState?.functional ? 'on' : 'off';
+  return consentState?.performance ? 'on' : 'off';
 }
 
 function getAdvertisingConsent() {
