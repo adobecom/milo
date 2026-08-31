@@ -83,7 +83,7 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
   manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
@@ -94,6 +94,7 @@ function toActivity({
     selectedVariantName,
     url: manifest,
     disabled,
+    disabledPromo,
     source,
     eventStart: event?.start,
     eventEnd: event?.end,
@@ -159,6 +160,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart,
     eventEnd,
     disabled,
+    disabledPromo,
     countryRestriction,
     countryDisabled,
     mktgAction,
@@ -217,6 +219,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
     withinDateRange: !disabled,
+    disabledPromo: !!disabledPromo,
     manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
