@@ -56,7 +56,8 @@ export default {
         <script type="importmap">
           {
             "imports": {
-              "https://www.adobe.com/mas/libs/": "/node_modules/@adobecom/mas-platform/web-components/dist/"
+              "https://www.adobe.com/mas/libs/": "/node_modules/@adobecom/mas-platform/web-components/dist/",
+              "https://main--mas--adobecom.aem.live/web-components/dist/": "/node_modules/@adobecom/mas-platform/web-components/dist/"
             }
           }
         </script>

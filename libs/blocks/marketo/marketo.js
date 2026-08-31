@@ -16,6 +16,7 @@
 import {
   parseEncodedConfig,
   loadScript,
+  loadStyle,
   loadLink,
   localizeLinkAsync,
   createTag,
@@ -59,6 +60,40 @@ const FORM_MAP = {
   'cta-override': 'form.cta.override',
 };
 export const FORM_PARAM = 'form';
+export const MARKETO_LIBS_PARAM = 'marketolibs';
+export const MARKETO_LIBS_META = 'marketo-libs';
+export const MARKETO_LIBS_CLASS = 'da-marketo';
+const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
+
+export function getMarketoLibsBase(el, location = window.location, getMeta = getMetadata) {
+  const { hostname, search } = location;
+  const param = new URLSearchParams(search).get(MARKETO_LIBS_PARAM);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (meta) branch = 'main';
+  if (el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  if (param != null) branch = param || 'main';
+  if (!branch) return null;
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) throw new Error(`Invalid ${MARKETO_LIBS_PARAM} branch name: ${branch}`);
+  if (!['.aem.', '.hlx.', '.stage.', 'local', '.da.'].some((i) => hostname.includes(i))) return '/mkto';
+  if (branch === 'local') return 'http://localhost:6586/mkto';
+  return branch.includes('--')
+    ? `https://${branch}.aem.live/mkto`
+    : `https://${branch}--da-marketo--adobecom.aem.live/mkto`;
+}
+
+export async function loadDaMarketoBlock(el, marketoBase) {
+  try {
+    loadStyle(`${marketoBase}/blocks/da-marketo/da-marketo.css`);
+    const { default: daInit } = await import(`${marketoBase}/blocks/da-marketo/da-marketo.js`);
+    await daInit(el);
+    return true;
+  } catch (e) {
+    window.lana?.log(`da-marketo block load failed: ${e.message}`, { tags: 'marketo', severity: 'w' });
+    return false;
+  }
+}
 
 const isVisible = (el) => !!el && (typeof el.checkVisibility === 'function'
   ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
@@ -416,6 +451,9 @@ function decorateForm(el, formData) {
 }
 
 export default async function init(el) {
+  const marketoBase = getMarketoLibsBase(el);
+  if (marketoBase && await loadDaMarketoBlock(el, marketoBase)) return;
+
   setDataLayer(FORM_STATUS, 'init');
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
