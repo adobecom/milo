@@ -6,16 +6,15 @@ import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
 import FormFieldsPanel from './form-fields-panel.js';
+import { STEP_PREF, VISIBILITY_PREFIX, FILTER_PREFIX, META_KEYS } from './field-map.js';
 
 const CONFIG_URL = 'https://milo.adobe.com/tools/marketo';
 const TEMPLATE_RULES_URL = new URL('./template-rules.json', import.meta.url).href;
 
 // Props owned by the combined Form Fields panel; hidden from the JSON-driven panels.
-const MANAGED_PREFIXES = ['field_visibility.', 'field_filters.'];
+const MANAGED_PREFIXES = [VISIBILITY_PREFIX, FILTER_PREFIX];
 const isManagedProp = (prop) => prop === 'form.template'
   || MANAGED_PREFIXES.some((p) => prop?.startsWith(p));
-// Emitted keys not declared in the options sheets that must survive validateState.
-const EMITTED_KEYS = ['form.fldStepPref', 'form.template', 'form.id', 'form.subtype', 'form.success.type'];
 
 async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
@@ -107,7 +106,7 @@ const validateState = (state, panelsData) => {
   Object.values(panelsData).forEach((panelConfig) => {
     panelConfig.forEach((field) => {
       const key = field?.prop;
-      if (key && key !== 'form.fldStepPref' && key in state) {
+      if (key && key !== STEP_PREF && key in state) {
         validatedState[key] = state[key];
       }
     });
@@ -115,15 +114,15 @@ const validateState = (state, panelsData) => {
 
   // Keep the combined-panel output that isn't declared in the options sheets.
   Object.keys(state).forEach((key) => {
-    if (MANAGED_PREFIXES.some((p) => key.startsWith(p)) || EMITTED_KEYS.includes(key)) {
+    if (MANAGED_PREFIXES.some((p) => key.startsWith(p)) || META_KEYS.includes(key)) {
       validatedState[key] = state[key];
     }
   });
 
-  const stepPreferences = state['form.fldStepPref'] || {};
+  const stepPreferences = state[STEP_PREF] || {};
   const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
-  if (count > 1) validatedState['form.fldStepPref'] = stepPreferences;
-  else delete validatedState['form.fldStepPref'];
+  if (count > 1) validatedState[STEP_PREF] = stepPreferences;
+  else delete validatedState[STEP_PREF];
 
   return validatedState;
 };

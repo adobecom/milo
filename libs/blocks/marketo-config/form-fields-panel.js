@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { html, useContext, useState, useEffect } from '../../deps/htm-preact.js';
+import { html, useContext, useState, useEffect, useMemo } from '../../deps/htm-preact.js';
 import { ConfiguratorContext } from './context.js';
 import { Select } from '../../ui/controls/formControls.js';
 import {
-  byId, deriveBuckets, deriveStepCount, isRequired, filterValue,
+  STEP_PREF, byId, deriveBuckets, deriveStepCount, isRequired, filterValue,
   applyTemplate, moveField, toggleRequired, setFilter, setStepCount as redistributeSteps,
 } from './field-map.js';
 
@@ -76,7 +76,7 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
   // Seed buckets from the default template once rules load and nothing is placed yet.
   useEffect(() => {
     const template = state['form.template'];
-    const placed = state['form.fldStepPref'] && Object.keys(state['form.fldStepPref']).length;
+    const placed = state[STEP_PREF] && Object.keys(state[STEP_PREF]).length;
     if (Object.keys(templateRules).length && template && templateRules[template] && !placed) {
       merge(applyTemplate(template, templateRules, 1));
     }
@@ -101,12 +101,12 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
     onSetFilter: (id, value) => merge(setFilter(state, id, value)),
   };
 
-  const onReset = () => merge(applyTemplate(state['form.template'], templateRules, stepCount));
+  const onReset = () => onTemplate(state['form.template']);
 
   const buckets = deriveBuckets(state);
-  const templateOptions = Object.fromEntries(
+  const templateOptions = useMemo(() => Object.fromEntries(
     Object.entries(templateRules).map(([id, r]) => [id, r.label || id]),
-  );
+  ), [templateRules]);
 
   return html`
     <div class="form-fields-panel">

@@ -10,6 +10,10 @@
 
 export const HIDDEN = 'hidden';
 export const STEP_PREF = 'form.fldStepPref';
+export const VISIBILITY_PREFIX = 'field_visibility.';
+export const FILTER_PREFIX = 'field_filters.';
+// Meta keys emitted by applyTemplate that must survive validateState (STEP_PREF handled apart).
+export const META_KEYS = ['form.template', 'form.id', 'form.subtype', 'form.success.type'];
 
 // kind: 'locked' (always in a step) | 'visibility' | 'filter' | 'synced'
 export const FIELDS = [
@@ -106,7 +110,7 @@ export const FIELDS = [
 
 export const byId = Object.fromEntries(FIELDS.map((f) => [f.id, f]));
 
-const propFor = (field) => (field.kind === 'filter' ? `field_filters.${field.id}` : `field_visibility.${field.id}`);
+const propFor = (field) => (field.kind === 'filter' ? `${FILTER_PREFIX}${field.id}` : `${VISIBILITY_PREFIX}${field.id}`);
 
 const defaultFilter = (field) => field.filterOptions?.[0]?.value ?? HIDDEN;
 
@@ -122,12 +126,13 @@ const removeFromSteps = (stepPref, stepName) => {
   [1, 2, 3].forEach((s) => { stepPref[s] = stepPref[s].filter((n) => n !== stepName); });
 };
 
-/* Keep `company_type` glued to `products`: same step, or absent when products is hidden. */
-function syncCompanyType(stepPref) {
-  const ct = byId.company_type;
-  removeFromSteps(stepPref, ct.stepName);
-  const productsStep = [1, 2, 3].find((s) => stepPref[s].includes(byId.products.stepName));
-  if (productsStep) stepPref[productsStep].push(ct.stepName);
+/* Glue each `synced` field to its `syncWith` parent: same step, or absent when the parent is. */
+function syncLinkedFields(stepPref) {
+  FIELDS.filter((f) => f.kind === 'synced').forEach((field) => {
+    removeFromSteps(stepPref, field.stepName);
+    const parentStep = [1, 2, 3].find((s) => stepPref[s].includes(byId[field.syncWith].stepName));
+    if (parentStep) stepPref[parentStep].push(field.stepName);
+  });
 }
 
 const cloneSteps = (state) => {
@@ -142,7 +147,7 @@ const getDefaultDistribution = (state, count) => {
     if (field.kind === 'synced' || !isShown(state, field)) return;
     stepPref[Math.min(field.defaultStep, count)].push(field.stepName);
   });
-  syncCompanyType(stepPref);
+  syncLinkedFields(stepPref);
   return stepPref;
 };
 
@@ -211,7 +216,7 @@ export const moveField = (currentState, id, bucket) => {
     removeFromSteps(stepPref, field.stepName);
     stepPref[s].push(field.stepName);
   }
-  syncCompanyType(stepPref);
+  syncLinkedFields(stepPref);
   patch[STEP_PREF] = stepPref;
   return patch;
 };
