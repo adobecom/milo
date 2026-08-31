@@ -29,7 +29,6 @@
 
   --mep-emphasis: #00ff73;
   --mep-error: #c52424;
-  --mep-warning: rgb(255,160,0);
 
   --caas-block-outline: #007bff;
   --caas-market-outline: #28a745;
@@ -251,7 +250,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-card.manifest-warning {
-  border-color: var(--mep-warning);
+  border-color: var(--mep-white-100);
 }
 
 .mep-drawer .mep-card .mep-manifest-error,
@@ -274,7 +273,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-card .mep-manifest-warning {
-  background: var(--mep-warning);
+  background: var(--mep-white-12);
 }
 
 .mep-drawer .mep-card .mep-manifest-error svg,
@@ -307,7 +306,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-card .mep-manifest-warning-tooltip {
-  border: 1px solid var(--mep-warning);
+  border: 1px solid var(--mep-white-100);
 }
 
 .mep-drawer .mep-card .mep-manifest-error:hover .mep-manifest-error-tooltip,
