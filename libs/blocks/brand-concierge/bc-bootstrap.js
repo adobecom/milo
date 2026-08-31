@@ -1,5 +1,5 @@
 import { getModal, closeModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript, loadStyle } from '../../utils/utils.js';
 import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
@@ -16,6 +16,8 @@ const susiScopes = 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.rol
 
 let bcToken;
 let susiListener;
+let sideModalEl = null;
+let sideCurtainEl = null;
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -332,32 +334,37 @@ export async function openModal(initialMessage, bootstrap) {
   bootstrap(initialMessage, mountId);
 }
 
+async function hideSideModal() {
+  if (!sideModalEl) return;
+  localStorage.setItem('bc-side-overlay', 'closed');
+  document.body.classList.remove('bc-side-open');
+  sideModalEl.classList.add('closing');
+  sideModalEl.classList.remove('expanded');
+  await new Promise((resolve) => { setTimeout(resolve, animationMs); });
+  // Keep 'closing' on the element — its CSS properties (right/-100vw or bottom/-100vh)
+  // hold the panel in the correct off-screen position. 'bc-side-hidden' only suppresses
+  // any animation re-trigger (animation: none !important) and disables pointer-events.
+  sideModalEl.classList.add('bc-side-hidden');
+  sideModalEl.setAttribute('aria-hidden', 'true');
+  if (sideCurtainEl) sideCurtainEl.classList.remove('is-open');
+  if (!document.querySelectorAll('.modal-curtain.is-open').length) {
+    document.body.classList.remove('disable-scroll');
+    window.lenis?.start();
+  }
+  [...document.querySelectorAll('header, main, footer')]
+    .forEach((el) => el.removeAttribute('aria-disabled'));
+  window.dispatchEvent(new Event('milo:modal:closed'));
+}
+
+export async function destroySideModal() {
+  await hideSideModal();
+  sideModalEl?.remove();
+  sideCurtainEl?.remove();
+  sideModalEl = null;
+  sideCurtainEl = null;
+}
+
 export async function openSideModal(initialMessage, bootstrap) {
-  const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, `${chatLabelText}`);
-  const expandButton = createTag('button', { class: 'bc-expand-button', 'aria-label': 'expand-modal' }, expandIcon);
-  const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
-  const mountEl = createTag('div', { id: mountId });
-
-  innerModal.append(header, mountEl);
-  const modal = await getModal(null, {
-    class: 'opening',
-    id: 'brand-concierge-side',
-    content: innerModal,
-    closeCallback: async () => {
-      localStorage.setItem('bc-side-overlay', 'closed');
-      document.body.classList.remove('bc-side-open');
-      modal.classList.add('closing');
-      await new Promise((resolve) => {
-        setTimeout(() => resolve(), animationMs);
-      });
-    },
-  });
-
-  setTimeout(() => {
-    modal.classList.remove('opening');
-  }, animationMs);
-
   if (susiListener !== 'signIn:decorateNav') {
     window.addEventListener('signIn:decorateNav', async () => {
       await window.adobeIMS?.refreshToken();
@@ -366,21 +373,91 @@ export async function openSideModal(initialMessage, bootstrap) {
     susiListener = 'signIn:decorateNav';
   }
 
-  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.body.classList.add('bc-side-open');
   localStorage.setItem('bc-side-overlay', 'open');
 
+  // Guard: if the element was removed from the DOM externally (e.g. by tests or
+  // a hard reset), treat the reference as stale and fall through to a full rebuild.
+  if (sideModalEl && !document.contains(sideModalEl)) {
+    sideModalEl = null;
+    sideCurtainEl = null;
+  }
+
+  // Subsequent opens: reveal existing panel without re-bootstrapping.
+  // Remove both 'bc-side-hidden' and 'closing' (held from the park state), then
+  // add 'opening' so the slide-in animation plays from the off-screen position.
+  if (sideModalEl) {
+    sideModalEl.removeAttribute('aria-hidden');
+    sideModalEl.classList.remove('bc-side-hidden', 'closing');
+    sideModalEl.classList.add('opening');
+    if (sideCurtainEl) sideCurtainEl.classList.add('is-open');
+    document.body.classList.add('disable-scroll');
+    window.lenis?.stop();
+    [...document.querySelectorAll('header, main, footer')]
+      .forEach((el) => el.setAttribute('aria-disabled', 'true'));
+    setTimeout(() => sideModalEl.classList.remove('opening'), animationMs);
+    return;
+  }
+
+  // First open: build modal DOM and bootstrap the web agent.
+  // Await modal.css so position:fixed and --modal-z-index vars are available before
+  // the panel is appended to the DOM — loadStyle is fire-and-forget otherwise.
+  const { miloLibs, codeRoot } = getConfig();
+  await new Promise((resolve) => {
+    loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`, resolve);
+  });
+
+  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
+  const expandButton = createTag('button', { class: 'bc-expand-button', 'aria-label': 'expand-modal' }, expandIcon);
+  const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
+  const mountEl = createTag('div', { id: mountId });
+
+  const closeBtn = createTag('button', {
+    class: 'dialog-close',
+    'aria-label': 'Close',
+    'daa-ll': getAnalyticsLabel('modal-close'),
+  });
+  const modal = createTag('div', {
+    class: 'dialog-modal opening',
+    id: 'brand-concierge-side',
+    role: 'dialog',
+    'aria-modal': 'true',
+  });
+  modal.append(closeBtn, header, mountEl);
+  document.body.append(modal);
+  sideModalEl = modal;
+
+  document.body.classList.add('disable-scroll');
+  window.lenis?.stop();
+  [...document.querySelectorAll('header, main, footer')]
+    .forEach((el) => el.setAttribute('aria-disabled', 'true'));
+
+  const curtain = createTag('div', {
+    class: 'modal-curtain is-open',
+    'daa-ll': getAnalyticsLabel('modal-close'),
+  });
+  curtain.addEventListener('click', (e) => { if (e.target === curtain) hideSideModal(); });
+  modal.insertAdjacentElement('afterend', curtain);
+  sideCurtainEl = curtain;
+
+  closeBtn.addEventListener('click', hideSideModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sideModalEl?.classList.contains('bc-side-hidden')) hideSideModal();
+  });
+
+  setTimeout(() => modal.classList.remove('opening'), animationMs);
+
   expandButton.addEventListener('click', () => {
-    const modalClasses = modal.classList;
-    if (modalClasses.contains('expanded')) {
-      modalClasses.remove('expanded');
+    const { classList } = modal;
+    if (classList.contains('expanded')) {
+      classList.remove('expanded');
       document.body.classList.add('bc-side-open');
     } else {
-      modalClasses.add('expanded');
+      classList.add('expanded');
       document.body.classList.remove('bc-side-open');
     }
   });
 
+  window.dispatchEvent(new Event('milo:modal:loaded'));
   bootstrap(initialMessage, mountId);
 }

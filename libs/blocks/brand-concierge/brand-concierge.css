@@ -1354,6 +1354,18 @@
   }
 }
 
+/* bc-side-hidden: applied alongside 'closing' to park the panel off-screen
+   without destroying the DOM. Suppresses animation re-triggers; the 'closing'
+   class CSS properties (bottom/-100vh or right/-100vw) hold the off-screen position. */
+#brand-concierge-side.bc-side-hidden {
+  animation: none !important;
+  pointer-events: none;
+}
+
+#brand-concierge-side.bc-side-hidden ~ .modal-curtain {
+  display: none;
+}
+
 /* marquee */
 /* stylelint-disable no-descending-specificity */
 .brand-concierge.marquee {
