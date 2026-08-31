@@ -210,8 +210,8 @@ export const applyTemplate = (templateId, templateRules, count = 1) => {
 export const moveField = (currentState, id, bucket) => {
   const field = byId[id];
   if (!field || field.kind === 'synced') return {};
-  // Locked fields (email, country) are pinned to step 1: can't hide or move to another step.
-  if (field.kind === 'locked' && Number(bucket) !== 1) return {};
+  // Locked fields (email, country) are always shown: can't be hidden, but can move between steps.
+  if (field.kind === 'locked' && bucket === 'hidden') return {};
   const patch = {};
   const stepPref = cloneSteps(currentState);
 

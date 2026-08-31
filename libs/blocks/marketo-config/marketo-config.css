@@ -108,6 +108,11 @@
   background: rgb(106 168 79 / 12%);
 }
 
+.form-fields-panel .ff-bucket.is-blocked {
+  border-color: #cc4b37;
+  background: rgb(204 75 55 / 12%);
+}
+
 .form-fields-panel .ff-bucket-header {
   display: flex;
   align-items: center;
@@ -169,10 +174,6 @@
 
 .form-fields-panel .ff-chip:active {
   cursor: grabbing;
-}
-
-.form-fields-panel .ff-chip.is-pinned {
-  cursor: default;
 }
 
 .form-fields-panel .ff-chip-row {

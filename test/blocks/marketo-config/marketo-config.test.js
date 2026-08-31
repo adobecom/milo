@@ -345,12 +345,19 @@ describe('field-map', () => {
     expect(toggleRequired({ 'field_visibility.name': 'required' }, 'name')).to.deep.equal({});
   });
 
-  it('locked fields are pinned to step 1 (cannot be hidden or moved to step 2/3)', () => {
+  it('locked fields cannot be hidden but can move between steps', () => {
     const state = applyTemplate('tmpl1', templateRules, 3);
     expect(moveField(state, 'email', 'hidden')).to.deep.equal({});
-    expect(moveField(state, 'email', 2)).to.deep.equal({});
-    expect(moveField(state, 'country', 3)).to.deep.equal({});
-    // email/country always distribute to step 1
+
+    const movedEmail = moveField(state, 'email', 2);
+    expect(movedEmail[STEP_PREF][2]).to.include('email');
+    expect(movedEmail[STEP_PREF][1]).to.not.include('email');
+
+    const movedCountry = moveField(state, 'country', 3);
+    expect(movedCountry[STEP_PREF][3]).to.include('country');
+    expect(movedCountry[STEP_PREF][1]).to.not.include('country');
+
+    // default distribution still places email/country in step 1
     expect(state[STEP_PREF][1]).to.include('email').and.include('country');
   });
 

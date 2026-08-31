@@ -10,20 +10,21 @@ import {
 const STEP_COUNT_OPTIONS = [1, 2, 3];
 const bucketLabel = (bucket) => (bucket === 'hidden' ? 'Hidden' : `Step ${bucket}`);
 
-const FieldChip = ({ id, bucket, onDragStart, onToggleRequired, onSetFilter }) => {
+const FieldChip = ({
+  id, bucket, onDragStart, onDragEnd, onToggleRequired, onSetFilter,
+}) => {
   const { state } = useContext(ConfiguratorContext);
   const field = byId[id];
   const inStep = bucket !== 'hidden';
-  const locked = field.kind === 'locked';
   const showRequire = inStep && field.kind === 'visibility' && field.canRequire;
   const lockedRequired = inStep && field.alwaysRequired;
   const showFilter = inStep && field.kind === 'filter';
 
   return html`
-    <div class="ff-chip ${locked ? 'is-pinned' : ''}" data-field=${id}
-      draggable=${!locked} onDragStart=${(e) => onDragStart(e, id)}>
+    <div class="ff-chip" data-field=${id}
+      draggable="true" onDragStart=${(e) => onDragStart(e, id)} onDragEnd=${onDragEnd}>
       <div class="ff-chip-row">
-        <span class="ff-chip-handle" aria-hidden="true">${locked ? '🔒' : '⠿'}</span>
+        <span class="ff-chip-handle" aria-hidden="true">⠿</span>
         <span class="ff-chip-label">${field.label}</span>
         ${showRequire && html`
           <label class="ff-chip-required">
@@ -43,20 +44,24 @@ const FieldChip = ({ id, bucket, onDragStart, onToggleRequired, onSetFilter }) =
     </div>`;
 };
 
-const Bucket = ({ bucket, ids, handlers }) => {
+const Bucket = ({ bucket, ids, draggingId, handlers }) => {
   const [isOver, setIsOver] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const blocked = bucket === 'hidden' && draggingId && byId[draggingId]?.kind === 'locked';
   const onDrop = (e) => {
     e.preventDefault();
     setIsOver(false);
+    if (blocked) return;
     const id = e.dataTransfer.getData('text/plain');
     if (id) handlers.onMove(id, bucket);
   };
+  let overClass = '';
+  if (isOver) overClass = blocked ? 'is-blocked' : 'is-over';
   return html`
     <div
-      class="ff-bucket ${isOver ? 'is-over' : ''} ${collapsed ? 'is-collapsed' : ''}"
+      class="ff-bucket ${overClass} ${collapsed ? 'is-collapsed' : ''}"
       data-bucket=${bucket}
-      onDragOver=${(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setIsOver(true); }}
+      onDragOver=${(e) => { e.preventDefault(); e.dataTransfer.dropEffect = blocked ? 'none' : 'move'; setIsOver(true); }}
       onDragLeave=${() => setIsOver(false)}
       onDrop=${onDrop}>
       <div class="ff-bucket-header" onClick=${() => setCollapsed(!collapsed)}>
@@ -74,6 +79,7 @@ const Bucket = ({ bucket, ids, handlers }) => {
 const FormFieldsPanel = ({ templateRules = {} }) => {
   const { state, dispatch } = useContext(ConfiguratorContext);
   const [stepCount, setStepCount] = useState(1);
+  const [draggingId, setDraggingId] = useState(null);
 
   useEffect(() => {
     setStepCount(deriveStepCount(state));
@@ -101,7 +107,9 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
     onDragStart: (e, id) => {
       e.dataTransfer.setData('text/plain', id);
       e.dataTransfer.effectAllowed = 'move';
+      setDraggingId(id);
     },
+    onDragEnd: () => setDraggingId(null),
     onMove: (id, bucket) => merge(moveField(state, id, bucket)),
     onToggleRequired: (id) => merge(toggleRequired(state, id)),
     onSetFilter: (id, value) => merge(setFilter(state, id, value)),
@@ -131,9 +139,9 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
         </div>
       </div>
 
-      <${Bucket} bucket="hidden" ids=${buckets.hidden} handlers=${handlers} />
+      <${Bucket} bucket="hidden" ids=${buckets.hidden} draggingId=${draggingId} handlers=${handlers} />
       ${[...Array(stepCount)].map((_, i) => html`
-        <${Bucket} key=${`step-${i + 1}`} bucket=${i + 1} ids=${buckets[i + 1]} handlers=${handlers} />`)}
+        <${Bucket} key=${`step-${i + 1}`} bucket=${i + 1} ids=${buckets[i + 1]} draggingId=${draggingId} handlers=${handlers} />`)}
 
       <button class="ff-reset" onClick=${onReset}>Reset to Template</button>
     </div>`;
