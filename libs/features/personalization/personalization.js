@@ -5,6 +5,7 @@
 import {
   createTag,
   getConfig,
+  getCountry,
   getMetadata,
   loadLink,
   loadScript,
@@ -1138,11 +1139,15 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getCountryRestriction = (manifestConfig) => {
+export const getCountryRestriction = async (manifestConfig) => {
   const { countryRestriction, manifestPath } = manifestConfig;
   if (!countryRestriction) return true;
   const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = countryArray.includes(getConfig().mep.akamaiCode);
+  const config = getConfig();
+  if (!config.mep.akamaiCode) {
+    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
+  }
+  const isAllowed = countryArray.includes(config.mep.akamaiCode);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1156,8 +1161,8 @@ export function getManifestMarketingAction(mktgAction, source) {
   return 'marketing increase';
 }
 
-export function canServeManifest(manifestConfig) {
-  if (!getCountryRestriction(manifestConfig)) {
+export async function canServeManifest(manifestConfig) {
+  if (!(await getCountryRestriction(manifestConfig))) {
     manifestConfig.countryDisabled = true;
     return false;
   }
@@ -1263,7 +1268,7 @@ async function getManifestConfig(info, variantOverride) {
   let finalDisabled = disabled;
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const isAllowed = canServeManifest(manifestConfig);
+  const isAllowed = await canServeManifest(manifestConfig);
   if (!isAllowed) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
