@@ -2881,24 +2881,15 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
-let geoIpSheetHoist;
-
-// In-flight geo-IP sheet fetch, reused by placeholders.js.
-export const getGeoIpSheetHoist = () => geoIpSheetHoist;
-
-// Shared lingo site-key derivation: used by both the hoist and getGeoIpColumnPlaceholders to build
-// the same ?sheet= value so hoist.url === path holds.
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 
-// Fetch the geo-IP sheet at page load (low priority) so decoratePlaceholders reuses it instead of
-// serially blocking the LCP image.
-const hoistGeoIpSheet = (config) => {
-  const { contentRoot } = config.locale ?? {};
-  const lang = geoIpSiteKey(config.locale);
-  const url = `${contentRoot}/placeholders-geo-ip.json?sheet=${lang}`;
-  const params = new URLSearchParams(window.location.search);
-  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
-  geoIpSheetHoist ??= { url, resp: fetch(url, { priority: 'low', cache }).catch(() => null) };
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config) => {
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
 };
 
 export async function loadArea(area = document) {
@@ -2921,13 +2912,17 @@ export async function loadArea(area = document) {
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
-  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
+  const fragmentLink = area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]');
+  if (fragmentLink) {
     loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   }
 
   if (isLingoActive) loadLingoIndexes(area);
 
-  if (isDoc && isLingoActive) hoistGeoIpSheet(config);
+  if (isDoc && isLingoActive) {
+    const tokenInLcp = htmlSections[0]?.innerHTML.includes('-geo-ip');
+    if (tokenInLcp || getMepEnablement('geo-ip-lcp')) warmGeoIpSheet(config);
+  }
 
   if (isDoc) {
     await decorateDocumentExtras();

@@ -140,7 +140,7 @@ const shouldAllowKrTrial = (button, localePrefix) => {
 const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
-const getGeoIpSheetHoist = () => undefined;
+const getGeoIpWarmSheet = () => undefined;
 const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 const normCountryCode = (country) => {
   if (typeof country !== 'string') return undefined;
@@ -191,7 +191,7 @@ export {
   lingoActive,
   getGeoLocalePrefix,
   getPlaceholderPaths,
-  getGeoIpSheetHoist,
+  getGeoIpWarmSheet,
   geoIpSiteKey,
   normCountryCode,
   resolveDetectedMarketCountry,

@@ -1,10 +1,11 @@
 {
-  "total": 2,
+  "total": 3,
   "offset": 0,
-  "limit": 2,
+  "limit": 3,
   "data": [
     { "key": "hello-geo-ip", "US": "hello US", "AR": "hello AR", "UK": "hello UK" },
-    { "key": "phone-number-geo-ip", "US": "+1 800 111 1111", "AR": "+54 800 222 2222", "UK": "+44 800 333 3333" }
+    { "key": "phone-number-geo-ip", "US": "+1 800 111 1111", "AR": "+54 800 222 2222", "UK": "+44 800 333 3333" },
+    { "key": "cleared-geo-ip", "US": "--none--", "AR": "cleared AR", "UK": "cleared UK" }
   ],
   "columns": ["key", "US", "AR", "UK"],
   ":type": "sheet"

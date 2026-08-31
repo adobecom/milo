@@ -1,8 +1,8 @@
 import {
   customFetch,
   getConfig,
-  getGeoIpSheetHoist,
   geoIpSiteKey,
+  getGeoIpWarmSheet,
   getMetadata,
   lingoActive,
   normCountryCode,
@@ -10,6 +10,7 @@ import {
 } from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
+const fetchedGeoSheets = {};
 window.mph = {};
 
 const getPlaceholdersPath = (config, sheet) => {
@@ -69,52 +70,55 @@ function keyToStr(key) {
 const isGeoIpKey = (key) => key.endsWith('-geo-ip');
 const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
-// Geo-IP column sheet: one row per key, one uppercase-ISO country column per market, one tab per
-// lingo site (`?sheet=<siteKey>`); flattened to `{ key: value }` for the visitor's market country.
-// Authoring contract: home-market column first (it's the fallback default); every `-geo-ip` key
-// also needs a base row in placeholders.json; add a site's tab before enabling langfirst. A missing
-// tab 404s → geo-ip inert, tokens keep their base (intended; an `en` fallback would leak English).
-
-// geo-ip file uses non-ISO `UK`; normCountryCode uses `gb`.
 const COUNTRY_COL_ALIAS = { gb: 'UK' };
 const countryToColumn = (c) => (c ? (COUNTRY_COL_ALIAS[c] ?? c).toUpperCase() : null);
 
-// source: caller-supplied sheet (e.g. C2 gnav's federal one); else the page content root.
 const getGeoIpPlaceholderPath = (config, source) => {
   if (source) return source;
   return `${config.locale?.contentRoot}/placeholders-geo-ip.json`;
 };
 
+const NONE_SENTINEL = '--none--';
+const cellVal = (v) => (typeof v === 'string' ? v.trim() : '');
+
 const parseGeoIpColumnJson = (json, column, out) => {
-  const defaultColumn = json.columns?.find((c) => c !== 'key');
+  const cols = json.columns ?? [];
+  const defaultColumn = cols.find((c) => c.toLowerCase() === 'default')
+    ?? cols.find((c) => c !== 'key');
   json.data?.forEach((row) => {
-    const val = row[column] || row[defaultColumn]; // visitor's market, else the default column
-    if (typeof val === 'string' && val.length) out[row.key] = val;
+    const val = cellVal(row[column]) || cellVal(row[defaultColumn]);
+    if (val === NONE_SENTINEL) { out[row.key] = ''; return; }
+    if (val) out[row.key] = val;
   });
 };
 
+const geoIpSheetPath = (config, source) => {
+  const basePath = getGeoIpPlaceholderPath(config, source);
+  const lang = geoIpSiteKey(config.locale);
+  return `${basePath}${basePath.includes('?') ? '&' : '?'}sheet=${lang}`;
+};
+
+const fetchGeoIpSheet = (path) => {
+  fetchedGeoSheets[path] ||= getGeoIpWarmSheet(path)
+    || customFetch({ resource: path, withCacheRules: true })
+      .then((r) => (r?.ok ? r.json() : null))
+      .catch(() => null);
+  return fetchedGeoSheets[path];
+};
+
 async function getGeoIpColumnPlaceholders(config, source) {
+  const path = geoIpSheetPath(config, source);
+  const jsonPromise = fetchGeoIpSheet(path); // start fetch before awaiting country
   // detected-market country, not pure geo, to match MEP targeting + MAS pricing
   const rawCountry = await resolveDetectedMarketCountry();
   const column = countryToColumn(normCountryCode(rawCountry));
   if (!column) return null;
 
-  const basePath = getGeoIpPlaceholderPath(config, source);
-  // tab = lingo site key (not ietf, which merges distinct sites): child's `base`, else own prefix
-  const lang = geoIpSiteKey(config.locale);
-  const path = `${basePath}${basePath.includes('?') ? '&' : '?'}sheet=${lang}`;
   const cacheKey = `${path}#${column}`;
-
   fetchedPlaceholders[cacheKey] ||= (async () => {
     const out = {};
     try {
-      // reuse the page-load hoist for this sheet if present, else fetch now
-      const hoist = getGeoIpSheetHoist();
-      const req = hoist?.url === path
-        ? hoist.resp
-        : customFetch({ resource: path, withCacheRules: true });
-      const resp = await req.catch(() => null);
-      const json = resp?.ok ? await resp.json() : null;
+      const json = await jsonPromise;
       if (json) parseGeoIpColumnJson(json, column, out);
     } catch (e) {
       window.lana?.log(`Error parsing geo-ip placeholder json: ${e.message}`, { tags: 'placeholders', severity: 'error' });
@@ -130,10 +134,8 @@ async function getGeoPlaceholders(config, source) {
   return getGeoIpColumnPlaceholders(config, source);
 }
 
-// Map of `-geo-ip` overrides (or null), for surfaces that replace tokens outside milo's
-// decorateArea pipeline. `source` is an optional absolute URL to a placeholders-geo-ip.json
-// file (e.g. `${federalDomain}/globalnav/placeholders-geo-ip.json`); when omitted the URL
-// is derived from config.locale.contentRoot. Returns null when lingo is inactive.
+// Map of `-geo-ip` overrides (or null) for surfaces outside milo's decorateArea pipeline (e.g.
+// C2 gnav); `source` is an optional absolute sheet URL, else derived from config.locale.
 export async function getGeoIpPlaceholders(config = getConfig(), source = undefined) {
   const geo = await getGeoPlaceholders(config, source);
   if (!geo) return null;

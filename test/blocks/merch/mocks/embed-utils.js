@@ -60,7 +60,7 @@ export const shouldAllowKrTrial = stub();
 export const lingoActive = () => false;
 export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
-export const getGeoIpSheetHoist = () => undefined;
+export const getGeoIpWarmSheet = () => undefined;
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 export const normCountryCode = (country) => {
   if (typeof country !== 'string') return undefined;

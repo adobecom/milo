@@ -173,6 +173,11 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
     expect(await replaceText('{{unlisted-thing-geo-ip}}', cfg)).to.equal('unlisted thing geo ip');
   });
 
+  it('renders --none-- as empty, not the humanized key', async () => {
+    const cfg = enableGeo('us');
+    expect(await replaceText('{{cleared-geo-ip}}', cfg)).to.equal('');
+  });
+
   it('falls back to the base placeholder when langfirst is off', async () => {
     const cfg = disableGeo();
     expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello geo ip');
@@ -205,6 +210,52 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
     cfg.locale.contentRoot = '/nonexistent';
     const overrides = await getGeoIpPlaceholders(cfg, gnavSheet);
     expect(overrides.get('hello-geo-ip')).to.equal('hello US GNAV');
+  });
+
+  describe('named `default` column and --none-- clearing', () => {
+    const defaultSheet = '/test/features/placeholders/placeholders-geo-ip-default.json';
+
+    it('uses the market column over the default column', async () => {
+      const cfg = enableGeo('us');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('hello US');
+    });
+
+    it('falls back to the named default column when the market has no cell', async () => {
+      // phone-number has no US column → inherits the default column
+      const cfg = enableGeo('us');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('phone-number-geo-ip')).to.equal('+1 000 000 0000');
+    });
+
+    it('uses the default column for a market with no column of its own', async () => {
+      const cfg = enableGeo('jp');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('hello DEFAULT');
+    });
+
+    it('clears a market with --none-- so the token renders empty (not the default)', async () => {
+      // hello-geo-ip AR cell is --none-- → explicit empty, not inherited from the default column
+      const cfg = enableGeo('ar');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('');
+    });
+
+    it('a --none-- default means only explicit market cells resolve; others render empty', async () => {
+      // explicit-only-geo-ip default is --none--: AR gets its cell, other markets clear to empty
+      const cfg = enableGeo('ar');
+      const arOverrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(arOverrides.get('explicit-only-geo-ip')).to.equal('only AR');
+      sessionStorage.setItem('akamai', 'us');
+      const usOverrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(usOverrides.get('explicit-only-geo-ip')).to.equal('');
+    });
+
+    it('omits a key whose default column is empty', async () => {
+      const cfg = enableGeo('jp');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.has('unlisted-thing-geo-ip')).to.be.false;
+    });
   });
 });
 
