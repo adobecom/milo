@@ -29,14 +29,14 @@ describe('getGeoRestriction', () => {
     sessionStorage.setItem('akamai', 'us');
     getConfig().mep = {};
   });
-  it('should return true if the geo restriction is null', () => {
-    expect(getGeoRestriction({ geoRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if the geo restriction is null', async () => {
+    expect(await getGeoRestriction({ geoRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if the geo restriction includes US', () => {
-    expect(getGeoRestriction({ geoRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.false;
+  it('should return true if the geo restriction includes US', async () => {
+    expect(await getGeoRestriction({ geoRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return false and override the variant if the geo restriction does not include US', () => {
-    getGeoRestriction({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' });
+  it('should return false and override the variant if the geo restriction does not include US', async () => {
+    await getGeoRestriction({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' });
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
 });
@@ -62,41 +62,42 @@ describe('getManifestMarketingAction', () => {
 describe('canServeManifest', () => {
   beforeEach(() => {
     sessionStorage.setItem('akamai', 'us');
+    delete getConfig().mep.akamaiCode;
     getConfig().mep.consentState = { performance: true, advertising: true };
     getConfig().mep.variantOverride = {};
   });
   afterEach(() => {
     delete window._satellite;
   });
-  it('should return false if the geo restriction is false', () => {
-    expect(canServeManifest({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
+  it('should return false if the geo restriction is false', async () => {
+    expect(await canServeManifest({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
   });
-  it('should return true if mktgAction is core services/non-marketing', () => {
-    expect(canServeManifest({ mktgAction: 'core services/non-marketing', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if mktgAction is core services/non-marketing', async () => {
+    expect(await canServeManifest({ mktgAction: 'core services/non-marketing', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if mktgAction is core services (legacy name)', () => {
-    expect(canServeManifest({ mktgAction: 'core services', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if mktgAction is core services (legacy name)', async () => {
+    expect(await canServeManifest({ mktgAction: 'core services', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if mktgAction is non-marketing and performance is true', () => {
-    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if mktgAction is non-marketing and performance is true', async () => {
+    expect(await canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if mktgAction is non-marketing and performance is false', () => {
+  it('should return true if mktgAction is non-marketing and performance is false', async () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.false;
+    expect(await canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.false;
   });
-  it('should return true if mktgAction is marketing increase and advertising is true', () => {
-    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if mktgAction is marketing increase and advertising is true', async () => {
+    expect(await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return false if mktgAction is marketing increase and advertising is false', () => {
+  it('should return false if mktgAction is marketing increase and advertising is false', async () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
-    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.false;
+    expect(await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.false;
   });
-  it('should return true if mktgAction is unspecified and performance and advertising are true', () => {
-    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if mktgAction is unspecified and performance and advertising are true', async () => {
+    expect(await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true and override the variant if mktgAction is unspecified and performance is false', () => {
+  it('should return true and override the variant if mktgAction is unspecified and performance is false', async () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] })).to.be.true;
+    expect(await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] })).to.be.true;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
   });
 
@@ -105,61 +106,61 @@ describe('canServeManifest', () => {
   // events when it's off, so the effect is not observable at the network payload level.
   // These tests verify the MEP-side gating so we don't rely on Launch's internal
   // consent logic as the only safeguard.
-  it('should fire analytics for marketing increase when both consent flags are true', () => {
+  it('should fire analytics for marketing increase when both consent flags are true', async () => {
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
+    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
     expect(trackStub.calledOnce).to.be.true;
     const [, payload] = trackStub.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
   });
 
-  it('should fire analytics for marketing decrease when both consent flags are true', () => {
+  it('should fire analytics for marketing decrease when both consent flags are true', async () => {
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
+    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
     expect(trackStub.calledOnce).to.be.true;
     const [, payload] = trackStub.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
   });
 
-  it('should not fire analytics for marketing decrease when advertising consent is false', () => {
+  it('should not fire analytics for marketing decrease when advertising consent is false', async () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
+    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
     expect(trackStub.called).to.be.false;
   });
 
-  it('should not fire analytics for marketing decrease when performance consent is false', () => {
+  it('should not fire analytics for marketing decrease when performance consent is false', async () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
+    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
     expect(trackStub.called).to.be.false;
   });
 
-  it('should not fire analytics for marketing increase when advertising consent is false', () => {
+  it('should not fire analytics for marketing increase when advertising consent is false', async () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
+    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
     expect(trackStub.called).to.be.false;
   });
 
-  it('should not fire analytics for marketing increase when performance consent is false', () => {
+  it('should not fire analytics for marketing increase when performance consent is false', async () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
+    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
     expect(trackStub.called).to.be.false;
   });
 
-  it('should serve marketing decrease manifest with default variant but suppress analytics when consent is missing', () => {
+  it('should serve marketing decrease manifest with default variant but suppress analytics when consent is missing', async () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();
     window._satellite = { track: trackStub };
-    const result = canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['default'] });
+    const result = await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['default'] });
     expect(result).to.be.true;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.equal('default');
     expect(trackStub.called).to.be.false;
