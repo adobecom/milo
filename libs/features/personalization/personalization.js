@@ -1144,7 +1144,9 @@ export const getGeoRestriction = async (manifestConfig) => {
   if (!geoRestriction) return true;
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
   const config = getConfig();
-  if (!config.mep.akamaiCode) config.mep.akamaiCode = await getCountry();
+  if (!config.mep.akamaiCode) {
+    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
+  }
   const isAllowed = geoArray.includes(config.mep.akamaiCode);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
