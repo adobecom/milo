@@ -257,13 +257,10 @@ editor — the skill only reads it on sync.
    mandatory the first time a design is added, so the user gets the whole
    history immediately rather than only change data going forward from
    today) — **for every entry added**, not just one, when step 1 split a
-   URL into multiple viewport variants. Pass a high `--max-versions` (well
-   above the default 60) so a design with a long history doesn't get
-   truncated — if the script's `--since`/`--max-versions` error fires (see
-   that section), that's the signal to raise `--max-versions` further, not
-   to accept partial history. Also run "End-of-day screenshots" for the
-   same reason, unless the user says they don't want screenshots for this
-   one.
+   URL into multiple viewport variants. For a newly-added design **omit
+   `--since` so the full history is pulled** (there's no version cap; it
+   pages everything). Also run "End-of-day screenshots" for the same reason,
+   unless the user says they don't want screenshots for this one.
 
 ## Refresh Figma data (per entry)
 
@@ -496,18 +493,21 @@ directly):
 ```bash
 python3 $SKILL_DIR/scripts/diff_versions.py \
   --file-key <figmaFileKey> --node-id <figmaNodeId> \
-  [--since <YYYY-MM-DD>] [--max-versions N, default 60]
+  [--since <YYYY-MM-DD>]
 ```
 
-**If the script prints an `error` about `--since`/`--max-versions` instead
-of running**: `fetch_all_versions()` stops paging once `--max-versions` is
-hit, *before* the `--since` filter runs. The script fails loudly rather
-than silently returning incomplete history in two cases: (1) `--since` is
-older than every version fetched, or (2) the version cap was hit before
-pagination reached that far back (every fetched version is *already*
-newer than `--since`, which looks like coverage but isn't — there could be
-more, uncounted history in between). Both errors say what happened; the
-fix is the same either way — increase `--max-versions`.
+**Pull ALL history — there is no version cap.** By default the script pages
+the entire available version history (no `--max-versions` limit). Pass
+`--since <date>` to make a repeat sync efficient: **set it to the design's
+last recorded change** (the latest `date` in that entry's existing
+`versionChanges`), and paging stops at the first version older than that, so
+you only pull the delta since last time instead of the whole history every
+run. `merge_entry.py` unions the delta into the existing history. **First
+time a design is added (no prior history), omit `--since` to pull everything.**
+If `--since` is newer than every version (no edits since last sync), the
+script returns an empty result (a clean no-op), not an error. (`--max-versions`
+still exists as an optional hard ceiling but defaults to unlimited — don't set
+it unless you deliberately want to truncate.)
 
 **Method: document-JSON diffing, not pixel diffing.** An earlier version of
 this script rendered each version to a PNG and pixel-diffed them

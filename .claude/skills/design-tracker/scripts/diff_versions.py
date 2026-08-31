@@ -31,7 +31,6 @@ import urllib.request
 
 API = "https://api.figma.com/v1"
 FIGMA_TOKEN = os.environ.get("FIGMA_TOKEN")
-DEFAULT_MAX_VERSIONS = 60
 MAX_CHANGED_ELEMENTS = 500  # safety cap for pathological cases (e.g. library/token syncs)
 MAX_RETRIES = 6
 
@@ -65,10 +64,18 @@ def fatal_api_error(e, context):
     sys.exit(1)
 
 
-def fetch_all_versions(file_key, max_versions):
+def fetch_all_versions(file_key, since=None, max_versions=None):
+    """Fetch the file's version list, newest-first. Pulls the FULL history by
+    default (no cap). If `since` (YYYY-MM-DD) is given, stops paging as soon as
+    it has fetched a version older than that date — the versions API returns
+    newest-first, so once we've paged past `since` the window is fully covered
+    (that one older version stays in the list as the diff baseline). This makes
+    a repeat sync cheap: it only pages back to the design's last recorded
+    change, not through the entire multi-thousand-version history every time.
+    `max_versions` is an optional hard ceiling (None = unlimited)."""
     versions = []
     url = f"{API}/files/{file_key}/versions"
-    while url and len(versions) < max_versions:
+    while url:
         try:
             data = api_get(url)
         except urllib.error.HTTPError as e:
@@ -82,8 +89,15 @@ def fetch_all_versions(file_key, max_versions):
             print(json.dumps({"error": f"failed fetching version list: {e}"}))
             sys.exit(1)
         versions.extend(data.get("versions", []))
+        if max_versions and len(versions) >= max_versions:
+            return versions[:max_versions]
+        # newest-first: once the oldest fetched version predates `since`, we've
+        # covered everything on/after it — stop paging (keep that older one as
+        # the baseline for the first diff).
+        if since and versions and versions[-1]["created_at"][:10] < since:
+            break
         url = (data.get("pagination") or {}).get("next_page")
-    return versions[:max_versions]
+    return versions
 
 
 def node_document(file_key, node_id, version_id):
@@ -349,8 +363,11 @@ def main():
     parser.add_argument("--file-key", required=True)
     parser.add_argument("--node-id", help="omit to track the WHOLE file (every page/canvas) "
                          "instead of one node's subtree — see full_file_document()")
-    parser.add_argument("--since", help="YYYY-MM-DD; omit to pull full available history")
-    parser.add_argument("--max-versions", type=int, default=DEFAULT_MAX_VERSIONS)
+    parser.add_argument("--since", help="YYYY-MM-DD; omit to pull full available history. "
+                        "When set, paging stops at the first version older than this date, so a "
+                        "repeat sync only pulls the delta since the design's last recorded change.")
+    parser.add_argument("--max-versions", type=int, default=None,
+                        help="optional hard ceiling on versions fetched (default: unlimited — pull all)")
     parser.add_argument("--screenshot-dir", help="if set, fetch one end-of-day preview image "
                          "(best-effort, see fetch_screenshot docstring) for each day that had "
                          "a real (magnitude > 0) change, saved into this directory. Ignored in "
@@ -361,21 +378,8 @@ def main():
         print(json.dumps({"error": "FIGMA_TOKEN not set"}))
         sys.exit(1)
 
-    versions = fetch_all_versions(args.file_key, args.max_versions)
+    versions = fetch_all_versions(args.file_key, since=args.since, max_versions=args.max_versions)
     versions.sort(key=lambda v: v["created_at"])
-
-    if args.since and len(versions) == args.max_versions and versions[0]["created_at"][:10] > args.since:
-        # The version cap was hit before pagination reached --since, even though every
-        # fetched version happens to already satisfy ">= since" — that's a coverage gap,
-        # not confirmation the window is fully covered. Observed in practice: a heavily
-        # edited file returned 60/60 versions spanning only the last 2 weeks when a full
-        # month was requested, with no error, silently returning incomplete history.
-        print(json.dumps({
-            "error": f"--max-versions {args.max_versions} was exhausted before reaching --since "
-                     f"{args.since} — all {len(versions)} fetched versions are already newer than "
-                     f"that date (oldest: {versions[0]['created_at'][:10]}). Increase --max-versions.",
-        }))
-        sys.exit(1)
 
     if args.since:
         start_idx = next(
@@ -383,15 +387,14 @@ def main():
             None,
         )
         if start_idx is None:
-            # fetch_all_versions stops at --max-versions before this filter runs, so if
-            # --since is older than every version fetched, silently taking "the last
-            # element" would return just the single oldest version with no warning.
-            oldest = versions[0]["created_at"][:10] if versions else "(no versions fetched)"
-            print(json.dumps({
-                "error": f"--since {args.since} is older than all {len(versions)} versions "
-                         f"fetched (oldest: {oldest}) — increase --max-versions to reach that date",
-            }))
-            sys.exit(1)
+            # Every fetched version is older than --since — i.e. there have been
+            # no new versions since the design's last recorded change. Nothing to
+            # pull; emit an empty (successful) result so merge is a no-op and the
+            # existing history is left intact.
+            print(json.dumps({"results": [], "errors": [], "dayScreenshots": {},
+                              "note": f"no versions on/after {args.since}"}))
+            return
+        # Include one version before --since as the baseline for the first diff.
         start_idx = max(start_idx - 1, 0)
         versions = versions[start_idx:]
 
