@@ -261,14 +261,22 @@ function renderRoadmap(entry, sinceValue) {
 
     bars.append(bar);
 
-    if (index % labelEvery === 0 || index === days.length - 1) {
+    const lastIndex = days.length - 1;
+    const isLast = index === lastIndex;
+    const isRegular = index % labelEvery === 0;
+    // The last day's label (the "today" end of the axis) is always shown;
+    // drop any regular tick that falls within one label interval of it, so
+    // the two don't render on top of each other (this is what made the end
+    // read as a garbled "8/13/14" overlap).
+    const collidesWithLast = isRegular && !isLast && lastIndex - index < labelEvery;
+    if ((isRegular && !collidesWithLast) || isLast) {
       const label = document.createElement('div');
       label.className = 'roadmap-day-label';
       // Centered labels get clipped at the very start/end of the track
       // (half the text would render outside the 0-100% range), so the
       // first and last labels align inward instead of centering.
       if (index === 0) label.classList.add('roadmap-day-label-first');
-      else if (index === days.length - 1) label.classList.add('roadmap-day-label-last');
+      else if (isLast) label.classList.add('roadmap-day-label-last');
       label.style.left = `${left}%`;
       label.textContent = new Date(`${dayBucket.day}T00:00:00Z`).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
       labels.append(label);
@@ -286,12 +294,21 @@ function renderRoadmap(entry, sinceValue) {
   const updateScrollAffordance = () => {
     const moreToScroll = track.scrollWidth - track.scrollLeft - track.clientWidth > 4;
     trackWrap.classList.toggle('roadmap-track-scrollable', moreToScroll);
+    // Older history sits to the left; show a left-edge cue once any is
+    // scrolled off (the track now starts scrolled to the right).
+    trackWrap.classList.toggle('roadmap-track-scrollable-left', track.scrollLeft > 4);
   };
   track.addEventListener('scroll', updateScrollAffordance);
   window.addEventListener('resize', updateScrollAffordance);
   // Layout isn't final until the track is in the document — defer past the
   // current paint so scrollWidth/clientWidth reflect the rendered size.
-  requestAnimationFrame(updateScrollAffordance);
+  requestAnimationFrame(() => {
+    // Start scrolled to the right edge: the timeline reads oldest → newest,
+    // so "today" is the far right. Landing at the left would look like the
+    // history starts now, which is backwards.
+    track.scrollLeft = track.scrollWidth;
+    updateScrollAffordance();
+  });
 
   wrap.append(skipLink, trackWrap, skipTarget);
   wrap.append(summary);
