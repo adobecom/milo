@@ -1,4 +1,4 @@
-import { getConfig, loadStyle } from '../utils/utils.js';
+import { getConfig, loadStyle } from '../../utils/utils.js';
 
 /**
  * @param {HTMLVideoElement} videoEl the decorated video element
@@ -18,7 +18,7 @@ export default async function decorateVideoTranscript(videoEl) {
   if (container.contains(link)) return;
 
   const { codeRoot, miloLibs } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/features/video-transcript.css`);
+  loadStyle(`${miloLibs || codeRoot}/features/video-transcript/video-transcript.css`);
 
   link.className = 'transcript-button label';
   link.setAttribute('role', 'button');

@@ -1595,7 +1595,7 @@ export function decorateAutoBlock(a) {
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
         if (url.hash.startsWith('#transcript')) {
           a.classList.add('video-transcript-source');
-          import('../features/video-transcript.js');
+          import('../features/video-transcript/video-transcript.js');
         }
         return true;
       }
