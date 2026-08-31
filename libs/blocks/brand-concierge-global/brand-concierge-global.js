@@ -14,6 +14,7 @@ import {
   openSideModal,
   setAuthoredContent,
 } from '../brand-concierge/bc-bootstrap.js';
+import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
 
@@ -132,6 +133,8 @@ export default function init(el) {
       window.adobe.concierge.clearHistory();
     }
   });
+
+  initAnalytics();
 
   setCssGnavHeight();
 
