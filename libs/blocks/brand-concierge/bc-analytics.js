@@ -5,13 +5,14 @@ export function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
-const recordNavClick = (clickType, destinationPage) => {
+const recordNavClick = ({ clickType, destinationPage, clickSource } = {}) => {
   window.history.replaceState(
     {
       ...window.history.state,
       bcClickType: clickType,
       bcSourcePage: window.location.href,
       bcDestinationPage: destinationPage ?? '',
+      bcClickSource: clickSource ?? '',
     },
     '',
   );
@@ -20,14 +21,20 @@ const recordNavClick = (clickType, destinationPage) => {
 const handleNav = (event) => {
   switch (event.eventType) {
     case 'card:clicked':
-      recordNavClick('product_card_cta', event.data?.element?.entity_info?.productPageURL);
+      recordNavClick({
+        clickType: 'product_card_cta',
+        destinationPage: event.data?.element?.entity_info?.productPageURL,
+      });
       break;
     case 'cta:clicked':
-      // cta:clicked payload carries no destination URL (only source/actionType/ctaLabel).
-      recordNavClick('cta');
+      // cta:clicked carries no destination URL; `source` (a stable enum) identifies the surface.
+      recordNavClick({ clickType: 'cta', clickSource: event.data?.source });
       break;
     case 'link:clicked':
-      recordNavClick(event.data?.element?.linkType ?? 'inline_hyperlink', event.data?.element?.href);
+      recordNavClick({
+        clickType: event.data?.element?.linkType ?? 'inline_hyperlink',
+        destinationPage: event.data?.element?.href,
+      });
       break;
     default:
       break;
@@ -150,6 +157,7 @@ export const bcAnalytics = (event) => {
           sessionId = '',
           sourcePage = '',
           destinationPage = '',
+          clickSource = '',
           loginStatus = '',
           navigatedBack = true,
         } = event.data ?? {};
@@ -164,10 +172,11 @@ export const bcAnalytics = (event) => {
               clickType,
               sourcePage,
               destinationPage,
+              clickSource,
               navigatedBack,
               loginStatus,
             },
-            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { click: `${eventName}|session:${sessionId}|from:${sourcePage}|to:${destinationPage}|nav:${navigatedBack}|loginStatus:${loginStatus}` } } } } },
+            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { click: `${eventName}|session:${sessionId}|from:${sourcePage}|to:${destinationPage}|source:${clickSource}|nav:${navigatedBack}|loginStatus:${loginStatus}` } } } } },
           },
         });
         break;
@@ -192,6 +201,7 @@ const initBackNavAnalytics = () => {
         sessionId: getChatSessionId(),
         sourcePage: state.bcSourcePage ?? window.location.href,
         destinationPage: state.bcDestinationPage ?? document.referrer ?? '',
+        clickSource: state.bcClickSource ?? '',
         loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
         navigatedBack: true,
       },
