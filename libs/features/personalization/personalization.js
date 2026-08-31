@@ -1101,6 +1101,7 @@ async function getPersonalizationVariant(
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
