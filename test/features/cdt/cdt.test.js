@@ -29,7 +29,11 @@ describe('CDT test error case invalid date', () => {
 
 describe('CDT test success case', () => {
   before(() => {
+    window.history.replaceState({}, '', '?instant=2025-06-01T00:00:00Z');
     document.head.innerHTML = '<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
+  });
+  after(() => {
+    window.history.replaceState({}, '', window.location.pathname);
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
@@ -63,7 +67,11 @@ describe('CDT test start is equal to end date', () => {
 
 describe('CDT test start is equal to end date', () => {
   before(() => {
+    window.history.replaceState({}, '', '?instant=2025-06-01T00:00:00Z');
     document.head.innerHTML = '<meta name="manifestnames" content="black-friday-offer,twp-cct"><meta name="schedule" content=", black-friday-offer | 2024-03-22T05:00:00 | 2038-03-31T05:00:00 | https://main--milo--adobecom.aem.page/drafts/nala/features/promotions/manifests/promo-with-fragments-insert.json |  | 2024-08-26T12:00:00 | 2026-08-30T00:00:00, mwpw-159157-delayed-modal-space-between | 2024-09-26T00:00:00 | 2026-11-30T00:00:00 | https://main--milo--adobecom.aem.live/fragments/mirafedas/promos/2024/global/delayed-modal-promo/delayed-modal-promo.json |  |  |">';
+  });
+  after(() => {
+    window.history.replaceState({}, '', window.location.pathname);
   });
   it('check for countdown-timer meta data by MEP', async () => {
     const container = document.getElementById('cdt-container');
