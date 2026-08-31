@@ -20,10 +20,11 @@ const recordNavClick = (clickType, destinationPage) => {
 const handleNav = (event) => {
   switch (event.eventType) {
     case 'card:clicked':
-      recordNavClick('product_card_cta', event.data?.element?.productPageURL);
+      recordNavClick('product_card_cta', event.data?.element?.entity_info?.productPageURL);
       break;
     case 'cta:clicked':
-      recordNavClick('cta', event.data?.element?.productPageURL);
+      // cta:clicked payload carries no destination URL (only source/actionType/ctaLabel).
+      recordNavClick('cta');
       break;
     case 'link:clicked':
       recordNavClick(event.data?.element?.linkType ?? 'inline_hyperlink', event.data?.element?.href);
