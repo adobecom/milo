@@ -27,7 +27,6 @@ const handleNav = (event) => {
       });
       break;
     case 'cta:clicked':
-      // cta:clicked carries no destination URL; `source` (a stable enum) identifies the surface.
       recordNavClick({ clickType: 'cta', clickSource: event.data?.source });
       break;
     case 'link:clicked':
