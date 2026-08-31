@@ -91,6 +91,20 @@ add/remove (that's done by editing the table + syncing):
 
 ## Sync from an input page
 
+**Run fully autonomously — never ask the invoking user any questions.** When
+this skill is called, carry the sync through to completion without stopping to
+confirm scope, depth, or anything else. Do **not** ask whether to pull
+history/screenshots or how deep to refresh — the answer is always "do the full
+pull." Every design in the sync (added, refreshed, or reactivated) must get
+its **complete version history AND end-of-day screenshots** pulled, so all
+dashboard functionality (change bars, per-day screenshots, highlight overlays)
+is populated. Never skip these as "optional," never substitute a thumbnail-only
+light refresh. (Efficiency detail, not a reason to skip: for an entry that
+already has history, an incremental `--since <latest existing versionChanges
+date>` pull is enough because `merge_entry.py` unions + dedupes it into the
+existing history; an entry with no prior history gets a full pull. Either way
+the end state is complete — that's the requirement.)
+
 Each tracker page carries a hand-editable **"Design Links"** block (a
 two-column table in the DA editor: Figma link, optional Jira link — stored as
 `<div class="design-links">`) right alongside its generated `design-tracker`
@@ -160,10 +174,13 @@ Steps:
      nulls, then the mandatory full-history + screenshots pull), for each
      target.
    - `toRefresh` and `toReactivate`: run "Refresh Figma data" / "Refresh
-     Jira data". For history, an incremental pull is enough — pass
-     `--since <the entry's latest existing versionChanges date>` to
-     `diff_versions.py` rather than re-pulling the whole history (for a
-     reactivated entry this fills only the gap since `disabledDate`).
+     Jira data", **and always pull history + end-of-day screenshots** (this
+     is not optional on a sync — see the autonomous-run note at the top of
+     this section). Pass `--since <the entry's latest existing versionChanges
+     date>` to `diff_versions.py` as an efficiency optimization only — it
+     fills the gap and `merge_entry.py` unions it in; it does not mean
+     "skip history." A reactivated entry likewise fills the gap since
+     `disabledDate`.
    - `toSoftDisable`: nothing to fetch — the script already flagged these.
      Just report them to the user so a surprise removal is visible.
    Merge every pull result into the scratch `entries.json` via
