@@ -77,10 +77,6 @@
   .pm-merch-ctas {
     display: flex;
     gap: var(--s2a-spacing-xs);
-    
-    
-    
-    
 
     .con-button {
       flex: 1;
@@ -93,48 +89,20 @@
     color: var(--s2a-color-button-background-primary-solid-on-light-hover);
   }
 
+  /* Firefly (dark) variant — shared across breakpoints */
   .firefly & {
     --pmg-base-height: 350px;
+
     position: relative;
     background-color: var(--s2a-color-transparent-black-72);
     backdrop-filter: blur(125px);
     border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     .pm-promo-area {
       inline-size: auto;
     }
 
-    .pm-merch-card {
-      flex-direction: row;
-      align-items: center;
-      padding: var(--s2a-spacing-lg) var(--s2a-spacing-xl);
-      border: 2px solid var(--s2a-color-transparent-white-04);
-      border-radius: var(--s2a-border-radius-round);
-      background: var(--s2a-color-transparent-black-32);
-    }
-
     .pm-merch-content {
-      align-self: center;
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
     }
   }
@@ -162,6 +130,19 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid .pm-promo-area {
     margin-block-start: 0;
   }
+
+  /* Firefly (dark) variant — mobile: centered copy, tighter card gap.
+     Column layout + full-width CTA already come from the base rule. */
+  .firefly .product-marquee-grid {
+    .pm-merch-card {
+      gap: var(--s2a-section-spacing-5xs);
+    }
+
+    .pm-merch-content {
+      align-items: center;
+      text-align: center;
+    }
+  }
 }
 
 @media (width >= 768px) {
@@ -170,6 +151,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
+
       flex-direction: row;
       gap: var(--s2a-spacing-xs);
       padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
@@ -214,8 +196,22 @@ body:has(header.local-nav) .product-marquee-grid {
     }
   }
 
-  body:has(header.has-breadcrumbs) .product-marquee-grid {
-    /* min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px)); */
+  /* Firefly (dark) variant — tablet/desktop: horizontal pill card (unchanged) */
+  .firefly .product-marquee-grid {
+    .pm-merch-card {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2a-section-spacing-2xs);
+      padding: var(--s2a-spacing-lg) var(--s2a-spacing-lg) var(--s2a-spacing-lg) var(--s2a-spacing-xl);
+      border: 2px solid var(--s2a-color-transparent-white-04);
+      border-radius: var(--s2a-border-radius-round);
+      background: var(--s2a-color-transparent-black-32);
+    }
+
+    .pm-merch-content {
+      align-self: center;
+    }
   }
 
   body:has(header.local-nav) .product-marquee-grid {
