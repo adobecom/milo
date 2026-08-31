@@ -1,9 +1,6 @@
 :root {
   interpolate-size: allow-keywords;
 
-  --mep-overline-font: normal 500 12px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
-  --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
-
   --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 24px var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-h2-font: normal 500 var(--Static-Title-Medium-Size, 16px) / var(--Static-Title-Medium-Line-Height, 24px) "Adobe Clean";
@@ -185,6 +182,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 .mep-drawer .mep-body {
   flex-grow: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mep-drawer .mep-body::-webkit-scrollbar {
@@ -586,14 +584,6 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-switch input:checked + .mep-switch-track::after {
   transform: translateX(20px);
-}
-
-.mep-drawer .mep-overline {
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--mep-white-60);
-  font: var(--mep-overline-font);
-  letter-spacing: var(--mep-overline-letter-spacing);
 }
 
 .mep-drawer .mep-manifest-link {
