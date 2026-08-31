@@ -20,7 +20,7 @@ export default async function decorateVideoTranscript(videoEl) {
   const { codeRoot, miloLibs } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/video-transcript.css`);
 
-  link.className = 'transcript-button';
+  link.className = 'transcript-button label';
   link.setAttribute('role', 'button');
   link.addEventListener('keydown', (e) => {
     if (e.key === ' ' || e.key === 'Spacebar') {

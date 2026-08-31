@@ -16,10 +16,6 @@
     right: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-32) + var(--s2a-spacing-2));
     bottom: var(--s2a-spacing-lg);
     color: var(--s2a-color-gray-25);
-    font-size: var(--s2a-typography-font-size-label);
-    font-weight: var(--s2a-font-weight-adobe-clean-bold);
-    line-height: var(--s2a-typography-line-height-label);
-    letter-spacing: var(--s2a-typography-letter-spacing-label);
     text-decoration: none;
     white-space: nowrap;
 
