@@ -56,12 +56,24 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
-function applyCustomization(block, cards) {
-  const classes = [...block.classList];
-  const firstCardClasses = classes.filter((c) => c.startsWith('first-')).map((c) => c.replace('first-', ''));
-  const secondCardClasses = classes.filter((c) => c.startsWith('second-')).map((c) => c.replace('second-', ''));
-  cards[0]?.classList.add(...firstCardClasses);
-  cards[1]?.classList.add(...secondCardClasses);
+const THEME_OVERRIDES = ['first-theme-dark', 'first-theme-light', 'second-theme-dark', 'second-theme-light'];
+
+function applyTheme(el, cards, migrateDark) {
+  const classes = [...el.classList];
+
+  // When a block-level `dark` is migrated onto the cards (see init), theme both
+  // so a per-card override below can flip one back. If it isn't being migrated,
+  // the block keeps its own `dark` and we leave the cards alone here.
+  if (migrateDark) cards.forEach((card) => card?.classList.add('dark'));
+
+  // Per-card overrides: `theme-dark` -> dark card, `theme-light` -> light card.
+  const setCardTheme = (card, prefix) => {
+    if (!card) return;
+    if (classes.includes(`${prefix}theme-dark`)) card.classList.add('dark');
+    if (classes.includes(`${prefix}theme-light`)) card.classList.remove('dark');
+  };
+  setCardTheme(cards[0], 'first-');
+  setCardTheme(cards[1], 'second-');
 }
 
 function decorateCardStackedIcon(mediaContainer) {
@@ -76,7 +88,7 @@ function decorateCardStackedIcon(mediaContainer) {
   imgVideoContainer.remove();
 }
 
-function decorate(block, el) {
+function decorate(block, el, blockDark) {
   const [mediaRow, textRow] = block.children;
   if (!mediaRow || !textRow) return;
 
@@ -96,16 +108,28 @@ function decorate(block, el) {
     const variant = cardType[i];
     if (variant === 'card-stacked') decorateCardStackedIcon(media);
     const card = createTag('div', { class: `card ${variant}` });
-    if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
+    if (variant === 'card-overlay') {
+      card.append(createTag('div', { class: 'content-aux' }));
+      // Overlay text sits over the media, so it defaults to the dark theme
+      // (light text) unless the block itself is already dark (which themes it).
+      if (!el.classList.contains('dark')) card.classList.add('dark');
+    }
     card.append(media, foreground);
     cards.push(card);
   }
 
-  applyCustomization(block, cards);
+  applyTheme(el, cards, blockDark);
   block.replaceChildren(...cards);
   replaceVideoIntersectionObserver(medias);
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
+  // Only migrate a block-level `dark` onto the cards when a per-card theme
+  // override is present — the block's tokens would otherwise cascade over the
+  // card and defeat the override. With no override, leave the block untouched
+  // and let its own `.dark` theme both cards (background handled in CSS).
+  const migrateDark = el.classList.contains('dark')
+    && THEME_OVERRIDES.some((c) => el.classList.contains(c));
+  if (migrateDark) el.classList.remove('dark');
+  decorateViewportContent(el, (block, elem) => decorate(block, elem, migrateDark));
 }
