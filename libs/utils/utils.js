@@ -2743,6 +2743,20 @@ export function getValidatedRepoOwnerOrigin(repo, owner) {
   return url.origin;
 }
 
+const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/adobe\\.sharepoint\\.com,${GUID_PATTERN},${GUID_PATTERN}$`);
+
+/**
+ * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
+ * repo/owner validation alone can't guarantee a config isn't attacker-owned (VULN-38270).
+ * @param {string} site raw `sharepoint.site` config value
+ * @returns {string|null} the validated site value, or null if unsafe
+ */
+export function getValidatedSharePointSite(site) {
+  if (typeof site !== 'string') return null;
+  return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 

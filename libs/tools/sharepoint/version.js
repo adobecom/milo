@@ -1,4 +1,5 @@
 import getServiceConfig from '../../utils/service-config.js';
+import { getValidatedSharePointSite } from '../../utils/utils.js';
 import { getReqOptions } from './msal.js';
 import login from './login.js';
 
@@ -22,11 +23,15 @@ async function loginToSharePoint(origin, telemetry) {
 
 async function getSharePointDetails(hlxOrigin) {
   const { sharepoint } = await getServiceConfig(hlxOrigin);
-  const spSiteHostname = sharepoint.site.split(',')[0].split('/').pop();
+  // `sharepoint.site` feeds the Graph fetch and SharePoint REST origin below,
+  // so it must resolve to Adobe's real host (VULN-38270).
+  const site = getValidatedSharePointSite(sharepoint.site);
+  if (!site) throw new Error('Could not verify SharePoint site.');
+  const spSiteHostname = site.split(',')[0].split('/').pop();
   return {
     origin: `https://${spSiteHostname}`,
     siteId: sharepoint.siteId,
-    site: sharepoint.site,
+    site,
     driveId: sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive',
   };
 }
