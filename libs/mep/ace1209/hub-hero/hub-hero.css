@@ -591,6 +591,12 @@
   .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
     display: revert;
   }
+
+  @media (width >= 768px) {
+    .hub-hero {
+      padding-bottom: var(--slide-footer-h);
+    }
+  }
 }
 
 /** mobile only */
