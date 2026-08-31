@@ -172,7 +172,8 @@ function renderRoadmap(entry, sinceValue) {
   const title = document.createElement('div');
   title.className = 'roadmap-title';
   if (sinceTime !== null) {
-    const count = changes.filter((c) => c.magnitude > 0 && new Date(c.date).getTime() >= sinceTime).length;
+    const count = changes.filter((c) => c.magnitude > 0
+      && new Date(c.date).getTime() >= sinceTime).length;
     title.textContent = `Change history — ${count} change${count === 1 ? '' : 's'} since ${new Date(sinceTime).toLocaleDateString()}`;
   } else {
     title.textContent = 'Change history';
@@ -243,6 +244,7 @@ function renderRoadmap(entry, sinceValue) {
         });
         bar.classList.add('roadmap-bar-selected');
         bar.setAttribute('aria-pressed', 'true');
+        // eslint-disable-next-line no-use-before-define
         renderSummary(summary, dayBucket, entry);
         summary.focus();
       });
@@ -336,7 +338,8 @@ function summarizePlainLanguage(elements) {
     if (el.changeType === 'modified') {
       (el.details || []).forEach((d) => {
         const category = DETAIL_CATEGORIES.find((c) => c.match(d));
-        if (category) categoryCounts.set(category.label, (categoryCounts.get(category.label) || 0) + 1);
+        if (!category) return;
+        categoryCounts.set(category.label, (categoryCounts.get(category.label) || 0) + 1);
       });
     }
   });
@@ -390,10 +393,12 @@ function renderVersionSummary(change, entry) {
         // find — an added/removed node past the tree-walk depth or one
         // Figma didn't report a box for wouldn't have one, so skip wiring
         // this one up rather than jumping to nothing.
-        li.dataset.elId = el.id; // looked up in the other direction by jumpToListItem() when a box is clicked
+        // looked up in the other direction by jumpToListItem() when a box is clicked
+        li.dataset.elId = el.id;
         li.classList.add('roadmap-summary-list-item-clickable');
         // Click, not hover — hovering while scanning down the list used to
         // fire this on every row passed over, which felt too twitchy/sudden.
+        // eslint-disable-next-line no-use-before-define
         li.addEventListener('click', () => jumpToHighlight(li, el.id));
       }
 
@@ -522,7 +527,8 @@ function renderHighlights(container, dayBucket, nodeBox, summary) {
       box.style.top = `${pct.top}%`;
       box.style.width = `${pct.width}%`;
       box.style.height = `${pct.height}%`;
-      box.dataset.elId = el.id; // matched against a clicked row in the version-summary list, see jumpToHighlight()
+      // matched against a clicked row in the version-summary list, see jumpToHighlight()
+      box.dataset.elId = el.id;
       // No title tooltip: hover already surfaces this via the version-
       // summary list, so a redundant native tooltip on top of that (and on
       // top of the click behavior below) would just be noise.
@@ -539,6 +545,7 @@ function renderHighlights(container, dayBucket, nodeBox, summary) {
         // element beneath and also triggers ITS click handler (enlarge or
         // zoom-toggle) at the same time as jumping to the list row.
         event.stopPropagation();
+        // eslint-disable-next-line no-use-before-define
         jumpToListItem(el.id, summary);
       });
       container.append(box);
@@ -714,6 +721,11 @@ function renderDayScreenshot(dayBucket, entry, summary) {
       modalInner.setAttribute('role', 'button');
       modalInner.setAttribute('aria-label', 'Zoom in');
       modalInner.title = 'Click to zoom in';
+
+      const modalImg = document.createElement('img');
+      modalImg.src = shot.path;
+      modalImg.alt = altText;
+
       const toggleZoom = () => {
         const zoomingIn = modalInner.classList.contains('image-modal-inner-fit');
         modalInner.classList.toggle('image-modal-inner-fit');
@@ -733,9 +745,6 @@ function renderDayScreenshot(dayBucket, entry, summary) {
         }
       });
 
-      const modalImg = document.createElement('img');
-      modalImg.src = shot.path;
-      modalImg.alt = altText;
       modalInner.append(modalImg);
       renderHighlights(modalInner, dayBucket, shot.nodeBox, summary);
       body.append(renderHighlightLegend(), modalInner);
@@ -918,6 +927,7 @@ function render(container, entries, sinceValue) {
     try {
       container.append(renderGroup(group, sinceValue));
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to render group', group.jiraKey, err);
     }
   });
