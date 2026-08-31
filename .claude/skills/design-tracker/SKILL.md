@@ -5,7 +5,6 @@ description: >
   them, for the dashboard hosted as a DA page (never in this repo). Adds,
   removes, or refreshes Figma+Jira pairs and uploads the result to DA as
   entries.json, which is embedded into the dashboard page at publish time.
-disable-model-invocation: true
 ---
 
 # Design Tracker Skill
