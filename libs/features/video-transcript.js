@@ -1,3 +1,5 @@
+import { loadStyle } from '../utils/utils.js';
+
 /**
  * @param {HTMLVideoElement} videoEl the decorated video element
  */
@@ -7,6 +9,8 @@ export default async function decorateVideoTranscript(videoEl) {
   const cell = container.parentElement?.closest('div') || container.parentElement;
   const link = cell?.querySelector('a.video-transcript-source');
   if (!link || container.contains(link)) return;
+
+  loadStyle(new URL('./video-transcript.css', import.meta.url).href);
 
   link.className = 'transcript-button';
   link.setAttribute('role', 'button');
