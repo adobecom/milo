@@ -70,10 +70,10 @@ export const FIELDS = [
     id: 'company', label: 'Company | Organization', stepName: 'company', kind: 'visibility', canRequire: true, defaultStep: 3,
   },
   {
-    id: 'company_size', label: 'Company Size', stepName: 'mktoDemandbaseEmployeeRange', kind: 'visibility', canRequire: true, defaultStep: 2,
+    id: 'company_size', label: 'Company Size', stepName: 'companysize', kind: 'visibility', canRequire: true, defaultStep: 2,
   },
   {
-    id: 'website', label: 'Website', stepName: 'mktodemandbaseWebsite', kind: 'visibility', canRequire: true, defaultStep: 2,
+    id: 'website', label: 'Website', stepName: 'website', kind: 'visibility', canRequire: true, defaultStep: 2,
   },
   {
     id: 'country', label: 'Country', stepName: 'country', kind: 'locked', alwaysRequired: true, defaultStep: 1,
@@ -102,10 +102,10 @@ export const FIELDS = [
     id: 'company_type', label: 'Company Type', stepName: 'mktoFormsCompanyType', kind: 'synced', syncWith: 'products', defaultStep: 3,
   },
   {
-    id: 'comments', label: 'Comments', stepName: 'mktoFormsComments', kind: 'visibility', canRequire: false, defaultStep: 3,
+    id: 'comments', label: 'Comments', stepName: 'comments', kind: 'visibility', canRequire: false, defaultStep: 3,
   },
   {
-    id: 'demo', label: 'Demo Request', stepName: 'mktoRequestProductDemo', kind: 'visibility', canRequire: false, defaultStep: 3,
+    id: 'demo', label: 'Demo Request', stepName: 'demo', kind: 'visibility', canRequire: false, defaultStep: 3,
   },
 ];
 

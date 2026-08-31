@@ -328,7 +328,7 @@ describe('field-map', () => {
     const state = applyTemplate('tmpl1', templateRules, 2);
     const patch = moveField(state, 'website', 2);
     expect(patch['field_visibility.website']).to.equal('visible');
-    expect(patch[STEP_PREF][2]).to.include('mktodemandbaseWebsite');
+    expect(patch[STEP_PREF][2]).to.include('website');
   });
 
   it('name is always required when shown, never merely visible', () => {
