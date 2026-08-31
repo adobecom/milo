@@ -8,8 +8,7 @@ export default async function decorateVideoTranscript(videoEl) {
   const link = cell?.querySelector('a.video-transcript-source');
   if (!link || container.contains(link)) return;
 
-  link.classList.add('transcript-button');
-  link.classList.remove('video-transcript-source', 'con-button', 'button-l', 'button-m', 'button-s', 'blue', 'fill', 'outline');
+  link.className = 'transcript-button';
   link.setAttribute('role', 'button');
   link.addEventListener('keydown', (e) => {
     if (e.key === ' ' || e.key === 'Spacebar') {
