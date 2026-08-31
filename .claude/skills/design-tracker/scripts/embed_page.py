@@ -39,12 +39,23 @@ changedElements with a `detailUrl` pointer for those specific days; design-
 tracker.js fetches that URL only when a user actually opens that day's
 summary, not upfront.
 
+Each tracker is one self-contained page: a hand-edited "Design Links" input
+table plus the generated design-tracker dashboard block, side by side, with
+its own data stored beside it (page `<path>` → data at `<path>/entries.json`,
+`<path>/thumbnails/`, `<path>/detail/`). So this script REGENERATES the
+dashboard block in place but PRESERVES the existing "Design Links" table it
+finds on the page verbatim — otherwise every publish would wipe the input
+the user just edited. Points people can make a wave1 page, a wave2 page, etc.,
+each independently tracked, and re-sync any of them by sending its link.
+
 Usage:
-  python3 embed_page.py --entries <path to db entries.json> --token <da-auth-helper token> --page-org-repo adobecom/milo --page-branch parallax-garage-door-mask --page-path drafts/dusan/design-tracker --out <output html path>
+  python3 embed_page.py --entries <path to db entries.json> --token <da-auth-helper token> --page-org-repo adobecom/milo --page-branch design-tracker-dashboard --page-path drafts/dusan/wave1 --out <output html path> [--input-block-name "Design Links"]
 """
 import argparse
 import html
 import json
+import re
+import urllib.error
 import urllib.request
 
 # Confirmed via direct testing: Helix's content-bus 409s somewhere between
@@ -190,7 +201,7 @@ def build_gallery(entries):
 PAGE_TEMPLATE = """<body>
   <header></header>
   <main>
-    <div>
+{input_table}    <div>
       <div class="design-tracker">
         <div>
           <div>{data}</div>
@@ -208,6 +219,55 @@ PAGE_TEMPLATE = """<body>
 """
 
 
+def fetch_page_source(org_repo, page_path, token):
+    """Returns the current page's raw DA source HTML, or None if it doesn't
+    exist yet (first-ever publish of a brand-new page). Source is
+    branch-independent, so no branch in this URL."""
+    org, repo = org_repo.split("/")
+    url = f"https://admin.da.live/source/{org}/{repo}/{page_path}.html"
+    try:
+        _, body = da_request("GET", url, token)
+        return body.decode("utf-8")
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        raise
+
+
+_DIV_TAG = re.compile(r"<\s*(/?)\s*div\b[^>]*>", re.IGNORECASE)
+
+
+def extract_input_table(page_html, block_class):
+    """Pulls the hand-edited input block's `<div class="<block_class>">...</div>`
+    substring out of the current page verbatim, so republishing the dashboard
+    beside it never reformats or drops it.
+
+    DA stores authored blocks as nested divs (not <table> — confirmed a raw
+    <table> upload is normalized to div-blocks on preview), so this finds the
+    block's opening div by class, then balances <div>/</div> to its matching
+    close. Returns the raw block HTML (to re-embed untouched) or None if the
+    page has no such block yet (first publish of a new page)."""
+    if not page_html:
+        return None
+    open_re = re.compile(
+        r'<div\b[^>]*\bclass\s*=\s*"[^"]*\b' + re.escape(block_class) + r'\b[^"]*"[^>]*>',
+        re.IGNORECASE,
+    )
+    m = open_re.search(page_html)
+    if not m:
+        return None
+    start = m.start()
+    depth = 0
+    for tag in _DIV_TAG.finditer(page_html, start):
+        if tag.group(1):   # </div>
+            depth -= 1
+            if depth == 0:
+                return page_html[start:tag.end()]
+        else:              # <div ...>
+            depth += 1
+    return None            # unbalanced — treat as no table rather than half a block
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--entries", required=True, help="path to the db entries.json (plain DA URLs)")
@@ -215,18 +275,30 @@ def main():
     parser.add_argument("--token", required=True, help="da-auth-helper token, for uploading offloaded detail docs")
     parser.add_argument("--page-org-repo", required=True, help="e.g. adobecom/milo")
     parser.add_argument("--page-branch", required=True, help="branch the page is being previewed on")
-    parser.add_argument("--page-path", required=True, help="e.g. drafts/dusan/design-tracker")
+    parser.add_argument("--page-path", required=True, help="e.g. drafts/dusan/wave1")
+    parser.add_argument("--input-block-class", default="design-links",
+                        help="CSS class of the hand-edited input block to preserve verbatim")
     args = parser.parse_args()
 
     with open(args.entries) as f:
         entries = json.load(f)
+
+    # Preserve the user's hand-edited input table: read the current page and
+    # carry its "Design Links" table across untouched, so regenerating the
+    # dashboard block beside it never clobbers what they just authored.
+    current_page = fetch_page_source(args.page_org_repo, args.page_path, args.token)
+    input_table = extract_input_table(current_page, args.input_block_class)
+    if input_table:
+        input_block = f"    <div>\n      {input_table}\n    </div>\n"
+    else:
+        input_block = ""
 
     offloaded = offload_oversized_days(entries, args.token, args.page_org_repo, args.page_branch, args.page_path)
 
     gallery, keys = build_gallery(entries)
     json_text = json.dumps(entries)
     escaped = html.escape(json_text, quote=False)
-    page = PAGE_TEMPLATE.format(data=escaped, gallery=gallery)
+    page = PAGE_TEMPLATE.format(data=escaped, gallery=gallery, input_table=input_block)
 
     with open(args.out, "w") as f:
         f.write(page)
@@ -236,6 +308,7 @@ def main():
         "images": len(keys),
         "outputBytes": len(page),
         "daysOffloaded": offloaded,
+        "inputTablePreserved": bool(input_table),
     }))
 
 

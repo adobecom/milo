@@ -989,6 +989,12 @@ export default async function decorate(block) {
     loadError = true;
   }
 
+  // Soft-disabled entries (row removed from the input table, but history
+  // kept — see the design-tracker skill's "Sync from an input page") stay in
+  // entries.json so re-adding the row later resumes tracking without
+  // re-pulling lost history. They're just hidden from the default view here.
+  entries = entries.filter((entry) => !entry.trackingDisabled);
+
   container.className = 'design-tracker-groups';
   if (loadError) {
     container.textContent = '';

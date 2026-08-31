@@ -4,7 +4,7 @@ description: >
   Tracks Figma design changes paired with the Jira tickets that relate to
   them, for the dashboard hosted as a DA page (never in this repo). Adds,
   removes, or refreshes Figma+Jira pairs and uploads the result to DA as
-  entries.json, which the DA-hosted page fetches live at runtime.
+  entries.json, which is embedded into the dashboard page at publish time.
 disable-model-invocation: true
 ---
 
@@ -29,34 +29,34 @@ write to `tools/design-tracker/entries.json` or
 `tools/design-tracker/thumbnails/`, that's a sign it's using the old
 pattern and needs to write to a scratch dir + upload to DA instead.
 
-All entry data, screenshots, and the dashboard page itself instead live in
-a private DA drafts space, read directly via `content.da.live` (never
-through `admin.hlx.page` preview/live — see "Publishing the dashboard
-page" below for why), so viewing any of it requires DA auth:
+All entry data and screenshots live in a private DA drafts space under
+`adobecom/milo`, so viewing any of it requires DA auth.
 
-```
-https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/
-```
-
-This value is duplicated as the default `--da-base` in
-`scripts/merge_entry.py` and in `references/da-page-template.html`'s
-`__ENTRIES_URL__` placeholder — keep them in sync if the location ever
-changes.
+**One page = one self-contained tracker (per-page layout).** Each tracker is
+a single DA page that holds *both* a hand-edited `Design Links` input block
+*and* the generated `design-tracker` dashboard block, with its own data
+stored **beside the page** (page `<page-path>` → data at
+`<page-path>/entries.json`, `<page-path>/thumbnails/`, `<page-path>/detail/`).
+This lets people make a `wave1` page, a `wave2` page, etc., each independently
+tracked, and re-sync any one by sending its link. `<page-path>` below is a
+placeholder for that page's own path (e.g. `drafts/dusan/wave1`) — there is
+no single fixed design-tracker path anymore; everything is relative to the
+page being synced. The running example path in this doc is
+`drafts/dusan/wave1`.
 
 **Auth for the skill's own uploads** (this file, screenshots, the page
 itself): `da-auth-helper token` (run `da-auth-helper login` first if it's
 expired — opens a browser OAuth flow, so this needs to happen in an
 interactive session, not delegated to a background agent).
 
-**Auth for the page's own runtime reads is not our concern.** Confirmed
-`content.da.live` returns `401` with no `Authorization` header and `200`
-with one — but a logged-in employee's browser adds that header
-transparently (via an internal extension), so `design-tracker.js`'s plain
-`fetch()`/`img.src` calls against DA URLs just work with no token
-handling in our code at all. **Do not add a token input, `sessionStorage`
-token, or blob-URL image fetching** — this was tried and is explicitly the
-wrong direction: it bakes a "paste your token" affordance into the page
-for a problem that's already solved at the browser/network layer.
+**The published dashboard does not read `content.da.live` at runtime at all**
+— `embed_page.py` embeds `entries.json`'s contents into the page and Helix
+re-hosts images same-origin at preview time (see "Publishing the dashboard
+page"), so there's no runtime DA fetch to authenticate. (An earlier static-
+page design *did* fetch DA live and this section warned against adding a
+token input for it; that design is obsolete, but the "never add a token
+paste affordance" rule still stands — nothing here should ever fetch
+`content.da.live` from the browser.)
 
 Every instruction below that involves writing a file means: write it to a
 **scratch directory** (e.g. `/tmp/design-tracker/`), then upload via the
@@ -65,7 +65,7 @@ DA admin API — same pattern `build-content-from-figma` uses:
 ```bash
 TOKEN=$(da-auth-helper token)
 curl -s -w "\n%{http_code}" -X POST \
-  "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/<relative-path>" \
+  "https://admin.da.live/source/adobecom/milo/<page-path>/<relative-path>" \
   -H "Authorization: Bearer $TOKEN" \
   -F "data=@<local-scratch-path>;type=<mime-type>"
 ```
@@ -77,9 +77,113 @@ dashboard page").
 ## When invoked
 
 The user will either:
+- **Sync from an input page**: give you a DA page URL whose "Design Links"
+  table lists every Figma+Jira pair to track. This is now the primary way to
+  add/remove designs — the user hand-edits that table in DA (add a row to
+  track, delete a row to un-track) and this skill reconciles `entries.json`
+  to match. See "Sync from an input page" below.
 - **Add** a new pair: give you a Figma URL and a Jira URL to track.
 - **Remove** a pair: give you a `jiraKey` or `figmaFileKey`/`figmaNodeId` to stop tracking.
 - **Refresh**: ask you to pull fresh data for one entry or all entries.
+
+## Sync from an input page
+
+Each tracker page carries a hand-editable **"Design Links"** block (a
+two-column table in the DA editor: Figma link, optional Jira link — stored as
+`<div class="design-links">`) right alongside its generated `design-tracker`
+dashboard block. Routine add/remove needs no skill invocation — the user just
+edits that table in DA (add a row to track, delete a row to un-track). When
+they hand you **that page's URL**, reconcile the page's own
+`<page-path>/entries.json` to whatever the table now lists, then regenerate
+the dashboard block **on the same page** (the input block is preserved
+verbatim — see "Publishing the dashboard page"). The input block and the
+dashboard live on one page; the sync reads and writes the same page.
+
+**Removing a row soft-disables, it does not delete.** A design dropped from
+the table keeps its full tracked history in `entries.json` but gets
+`trackingDisabled: true` (+ `disabledDate`), so `design-tracker.js` hides it
+from the default view. Re-adding the same row later reactivates it
+(`trackingDisabled` cleared) with prior history intact — only the gap since
+`disabledDate` is re-pulled, never the whole history again. This is why the
+sync flow never hard-deletes an entry.
+
+Steps:
+
+1. **Resolve the page location.** From the given URL, work out `org`/`repo`/
+   `<page-path>` (e.g. `adobecom` / `milo` / `drafts/dusan/wave1`). Any URL
+   form the user pastes (`.aem.page` preview, `da.live/edit`,
+   `content.da.live`) maps to that same org/repo/page-path. Everything below
+   is relative to this page: its data is at `<page-path>/entries.json`.
+
+2. **Parse the input block** — don't hand-roll HTML parsing:
+   ```bash
+   TOKEN=$(da-auth-helper token)
+   python3 $SKILL_DIR/scripts/parse_input_block.py \
+     --org adobecom --repo milo --path drafts/dusan/wave1 \
+     --token "$TOKEN"
+   ```
+   It reads the page's **raw DA source** (no preview needed) and prints
+   `{rows: [{figmaUrl, jiraUrl}, ...], warnings}`. It finds the block by CSS
+   class `design-links` (DA stores authored blocks as nested divs, not
+   `<table>`, and a block named "Design Links" gets `class="design-links"`).
+   Surface any `warnings` to the user. A row's `jiraUrl` may be `null` —
+   that's allowed (tracks under "Untracked", same as a Jira-less manual add).
+
+3. **Resolve each row into concrete target entries.** For each `figmaUrl`,
+   apply "Add a new pair" step 1's parsing: derive `figmaFileKey` /
+   `figmaNodeId`, and if a URL has no `node-id`, split it into one target per
+   viewport-variant frame via `get_metadata` (Figma MCP) exactly as that
+   section describes. Derive `jiraKey` from `jiraUrl` (or `null`). Write the
+   resulting flat list to `/tmp/design-tracker/targets.json` as
+   `[{figmaFileKey, figmaNodeId, jiraKey, figmaUrl, jiraUrl}, ...]`.
+
+4. **Download this page's `entries.json`** from `<page-path>/entries.json`
+   (see "Writing back" step 1). On a brand-new page it 404s — start from `[]`.
+
+5. **Reconcile** — this both classifies each design and updates the disabled
+   flags in place, so history is never dropped and stale flags never linger:
+   ```bash
+   python3 $SKILL_DIR/scripts/reconcile_input.py \
+     --entries /tmp/design-tracker/entries.json \
+     --targets /tmp/design-tracker/targets.json
+   ```
+   It prints `{toAdd, toRefresh, toReactivate, toSoftDisable}` and rewrites
+   the local `entries.json` scratch copy with `trackingDisabled`/`disabledDate`
+   set on soft-disabled entries and cleared on reactivated ones. **It does
+   not fetch anything or add new entries** — you run those pulls next.
+
+6. **Run the pulls per bucket:**
+   - `toAdd`: run the full "Add a new pair" flow (append the new entry with
+     nulls, then the mandatory full-history + screenshots pull), for each
+     target.
+   - `toRefresh` and `toReactivate`: run "Refresh Figma data" / "Refresh
+     Jira data". For history, an incremental pull is enough — pass
+     `--since <the entry's latest existing versionChanges date>` to
+     `diff_versions.py` rather than re-pulling the whole history (for a
+     reactivated entry this fills only the gap since `disabledDate`).
+   - `toSoftDisable`: nothing to fetch — the script already flagged these.
+     Just report them to the user so a surprise removal is visible.
+   Merge every pull result into the scratch `entries.json` via
+   `merge_entry.py` as usual.
+
+7. **Upload `entries.json`** back to `<page-path>/entries.json` ("Writing
+   back" step 3), then **regenerate and re-publish the page** ("Publishing
+   the dashboard page") — `embed_page.py` keeps the `design-links` input
+   block verbatim and rewrites the `design-tracker` block beside it, so the
+   sync is immediately visible on the same page.
+
+### Creating a new tracker page
+
+Anyone can make a new tracker (`wave1`, `wave2`, …) themselves in the DA
+editor: create a page, insert a block named **Design Links**, give it two
+columns (Figma link, optional Jira link), add rows, then send you the link
+to sync. If asked to scaffold one, author the page with a
+`<div class="design-links">` block (rows: `<div><div>figma-link</div><div>jira-link</div></div>`;
+an optional first header row `Figma`/`Jira` is skipped by the parser), upload
+to `admin.da.live/source/adobecom/milo/<page-path>.html` (`text/html`) and
+preview it. The first sync then generates the `design-tracker` block on that
+same page. After creation the user maintains the table themselves in DA's
+editor — the skill only reads it on sync.
 
 ## Remove a pair
 
@@ -148,14 +252,14 @@ The user will either:
    it will expire, so never store it directly in `entries.json`. Instead,
    immediately `curl` it down to
    `/tmp/design-tracker/thumbnails/<figmaFileKey>-<figmaNodeId with : replaced by ->.png`,
-   upload that file to DA at
-   `.../design-tracker/thumbnails/<same filename>` (see "Data lives in DA"
-   above), and set `figmaThumbnailUrl` in the entry to the resulting
+   upload that file to DA at this page's own
+   `<page-path>/thumbnails/<same filename>` (see "Data lives in DA" above),
+   and set `figmaThumbnailUrl` in the entry to the resulting
    **`content.da.live` URL** (e.g.
-   `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/thumbnails/q87sUm2fvForRQzxGum5wE-392-16552.png`)
-   — not a Figma URL and not a local/relative path. `design-tracker.js`
-   fetches thumbnails with an auth header, which only resolves against a
-   real DA URL. Use `get_metadata` on the node to get a human-readable name for
+   `https://content.da.live/adobecom/milo/drafts/dusan/wave1/thumbnails/q87sUm2fvForRQzxGum5wE-392-16552.png`)
+   — not a Figma URL and not a local/relative path. At publish time
+   `embed_page.py` re-hosts these same-origin; the DA URL is the build-time
+   source. Use `get_metadata` on the node to get a human-readable name for
    `figmaFileName` if you don't already have one. **This step needs a
    specific node and doesn't apply to whole-file entries** (`figmaNodeId`
    is `null`) — `get_screenshot` requires a `nodeId`, so there's no single
@@ -225,26 +329,27 @@ previously-fetched data.
 
 ## Writing back
 
-1. **Download the current `entries.json` from DA first** — it's the
-   source of truth now, not a file tracked in this repo:
+1. **Download this page's `entries.json` from DA first** — it's the
+   source of truth, not a file tracked in this repo. It lives beside the
+   page being synced, at `<page-path>/entries.json`:
    ```bash
    TOKEN=$(da-auth-helper token)
    mkdir -p /tmp/design-tracker
    curl -s -H "Authorization: Bearer $TOKEN" \
-     "https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/entries.json" \
+     "https://content.da.live/adobecom/milo/drafts/dusan/wave1/entries.json" \
      -o /tmp/design-tracker/entries.json
    ```
-   On the very first run ever, this 404s / comes back empty — start from
+   On a brand-new page this 404s / comes back empty — start from
    `[]` instead of treating that as a failure.
 2. Merge the updated entry (or entries) into that local scratch copy,
    matching on `figmaFileKey` + `figmaNodeId` (not a fixed triple-key —
    `jiraKey` is only used to disambiguate the rare case where the *same*
    node is tracked under more than one ticket, not as a third required
    match field every time), and pretty-print (2-space indent).
-3. **Upload the merged file back to DA**:
+3. **Upload the merged file back to DA** (same `<page-path>/entries.json`):
    ```bash
    curl -s -w "\n%{http_code}" -X POST \
-     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/entries.json" \
+     "https://admin.da.live/source/adobecom/milo/drafts/dusan/wave1/entries.json" \
      -H "Authorization: Bearer $TOKEN" \
      -F "data=@/tmp/design-tracker/entries.json;type=application/json"
    ```
@@ -265,7 +370,7 @@ python3 $SKILL_DIR/scripts/merge_entry.py \
   --file-key <figmaFileKey> --node-id <figmaNodeId> \
   --diff-output <path to diff_versions.py's JSON output> \
   --scratch-dir /tmp/design-tracker \
-  --da-base https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker
+  --da-base https://content.da.live/adobecom/milo/<page-path>
 ```
 It handles matching, deduping `versionChanges` by `versionId` (union, kept
 sorted by date — so a partial `--since` refresh doesn't need to guess
@@ -286,82 +391,76 @@ confuse the two when triaging a failed run.
 
 ## Publishing the dashboard page
 
-The actual dashboard the user opens is a DA page, not anything in this
-repo. It's a thin shell — `references/da-page-template.html` — that loads
-`design-tracker.js`/`.css` and points `window.DESIGN_TRACKER_DATA_URL` at
-DA's `entries.json`. It fetches data live on every page load (no baked-in
-data, no regeneration needed when entries.json changes) — only re-upload
-this shell if the template itself changes.
+**This describes the current block-based pipeline. An earlier version of
+this skill served a static page from `adobecom/da-dc` via `content.da.live`
+whose JS `fetch()`ed `entries.json` live, and warned "never call
+`admin.hlx.page/preview`."** That's obsolete — the dashboard is now a real
+milo block (`libs/blocks/design-tracker/design-tracker.js`/`.css`) whose data
+and images are **embedded** into an authored page by `scripts/embed_page.py`,
+which is then genuinely **previewed** through Helix so the block decorates
+and images re-host same-origin. The old static shell
+(`references/da-page-template.html`) and the `tools/design-tracker/` copy of
+the JS/CSS are leftovers from that superseded design — don't use them.
 
-**View it via `content.da.live` directly — never `admin.hlx.page`
-preview/live.** `adobecom/da-dc` is Adobe's real production Acrobat site
-(canonical URL points at `www.adobe.com`, loads `/acrobat/scripts/scripts.js`,
-full global nav/footer). Confirmed by testing: uploading this page and
-calling `/preview/` or `/live/` routes it through that site's own EDS page
-template, which processes `<main>` through its own block-decoration JS and
-**silently drops every custom `<head>` tag and all of our markup** — the
-rendered result was the full Acrobat site chrome with a completely empty
-`<main>`, nothing of ours anywhere.
+**One page holds both blocks; data sits beside it.** For a tracker page at
+`<page-path>` (e.g. `drafts/dusan/wave1`):
+- **The page** (`<page-path>.html`) holds the hand-edited `design-links` input
+  block **and** the generated `design-tracker` dashboard block. It's served
+  through Helix's preview pipeline (that's how the block decorates). This is
+  what the user opens and edits.
+- **`embed_page.py` regenerates the `design-tracker` block on every publish
+  but preserves the `design-links` block verbatim** (it reads the current
+  page and carries the input block across untouched). That's how the two
+  coexist on one regenerated page without the input being wiped.
+- **Data store** — `<page-path>/entries.json`, `<page-path>/thumbnails/`,
+  `<page-path>/detail/` offloaded docs — read via `content.da.live` as
+  *build-time source* only; the published page embeds their contents, so the
+  browser never fetches `content.da.live` at runtime.
 
-The fix: `content.da.live` is a plain authenticated static-file store —
-confirmed a raw `.html` upload comes back with `content-type: text/html`
-and renders correctly as a normal page when fetched directly (bypassing
-the EDS pipeline entirely, since `admin.hlx.page` is never involved).
-The dashboard's real URL is therefore:
-```
-https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker.html
-```
-**Never call `admin.hlx.page/preview` or `/live` for this page or for
-`design-tracker.js`/`.css`/`entries.json`.** Those endpoints are for
-authoring real site content through da-dc's block pipeline — not relevant
-here, and calling `/live/` in particular would make it genuinely public on
-`aem.live` with no auth wall at all (confirmed this directly — do not
-repeat that mistake).
+The page lives on a **dedicated, long-lived branch: `design-tracker-dashboard`**.
+(It previously rode on `parallax-garage-door-mask`, a branch slated for
+deletion — anything pointing there would break, so it was moved.) Use this
+branch for every upload/preview below and as `embed_page.py`'s `--page-branch`.
 
-**This dashboard must never reference milo's own site as a source for
-`design-tracker.js`/`.css`.** There is no such thing as
-"main--milo--adobecom.aem.live" — milo is a shared library other site
-repos consume, not a standalone deployed site itself (verified: even
-`scripts/scripts.js`, guaranteed to exist, 404s at every branch alias
-tried). The only way to make milo's own files reachable at a URL would be
-pushing this work onto `stage`/`main` and into a real site's deploy —
-**never do that for this dashboard.** Instead, `design-tracker.js`/`.css`
-are uploaded into the *same DA folder* as the page, making the whole thing
-self-contained:
+Steps:
 
-1. Upload the current copies of `tools/design-tracker/design-tracker.js`
-   and `.css` from this repo (read-only source — this repo's copies stay
-   the canonical source of the code, DA just gets a copy to serve):
+1. **Build the page HTML** with `embed_page.py` (embeds `entries.json`'s
+   data + an image gallery, and offloads any oversized day's detail to its
+   own DA doc — see "Version-history change bars"):
    ```bash
    TOKEN=$(da-auth-helper token)
-   curl -s -w "\n%{http_code}" -X POST \
-     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/design-tracker.js" \
-     -H "Authorization: Bearer $TOKEN" \
-     -F "data=@tools/design-tracker/design-tracker.js;type=text/javascript"
-   curl -s -w "\n%{http_code}" -X POST \
-     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker/design-tracker.css" \
-     -H "Authorization: Bearer $TOKEN" \
-     -F "data=@tools/design-tracker/design-tracker.css;type=text/css"
+   python3 $SKILL_DIR/scripts/embed_page.py \
+     --entries /tmp/design-tracker/entries.json \
+     --token "$TOKEN" \
+     --page-org-repo adobecom/milo \
+     --page-branch design-tracker-dashboard \
+     --page-path drafts/dusan/wave1 \
+     --out /tmp/design-tracker/page.html
    ```
-   Re-run this step whenever `tools/design-tracker/design-tracker.js`/`.css`
-   change in this repo — DA's copies don't update on their own.
-2. Fill in the page template's placeholders:
-   - `__ENTRIES_URL__` → `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker/entries.json`
-   - `__DA_BASE__` → `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker`
-   - `__CACHE_BUST__` → today's date (`YYYYMMDD`), same convention as
-     `index.html`'s own `?v=` cache-buster
-3. Upload it as `text/html`:
+   `--page-path` also tells it which page to read the `design-links` input
+   block from (to preserve) — the output reports `inputTablePreserved`.
+2. **Upload the page HTML** to DA source (same `<page-path>.html`):
    ```bash
    curl -s -w "\n%{http_code}" -X POST \
-     "https://admin.da.live/source/adobecom/da-dc/drafts/dusan/design-tracker.html" \
+     "https://admin.da.live/source/adobecom/milo/drafts/dusan/wave1.html" \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: text/html" \
-     --data-binary @<filled-in-template-path>
+     --data-binary @/tmp/design-tracker/page.html
    ```
-4. The dashboard is now live (in the "already updated" sense, not the EDS
-   "published" sense) at
-   `https://content.da.live/adobecom/da-dc/drafts/dusan/design-tracker.html` —
-   open it directly, no preview/publish step needed or wanted.
+3. **Preview it through Helix** so the block decorates and any embedded
+   `<img>` re-hosts same-origin:
+   ```bash
+   curl -s -w "\n%{http_code}" -X POST \
+     "https://admin.hlx.page/preview/adobecom/milo/design-tracker-dashboard/drafts/dusan/wave1" \
+     -H "Authorization: Bearer $TOKEN"
+   ```
+   (`embed_page.py` already previews each *offloaded detail doc* it uploads;
+   this step previews the main page itself.)
+4. The page renders at the branch's `.aem.page` preview alias, path
+   `<page-path>`. Confirm the exact URL from the `preview` response's
+   `preview.url` field rather than hand-assembling it. Do **not** call
+   `/live/` — preview is auth-gated; `/live/` would publish it with no auth
+   wall.
 
 ## Version-history change bars (mandatory when adding a design, optional otherwise)
 
