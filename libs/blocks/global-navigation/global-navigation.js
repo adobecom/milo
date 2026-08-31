@@ -1868,6 +1868,12 @@ class Gnav {
           if (linkElem.classList.contains('merch')) {
             linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
+          if (linkElem.classList.contains('con-button')) {
+            const ctaType = linkElem.classList.contains('outline') ? 'secondaryCta' : 'primaryCta';
+            return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
+                ${decorateCta({ elem: linkElem, type: ctaType, index: index + 1 })}
+              </div>`, item);
+          }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));

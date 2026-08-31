@@ -1,0 +1,462 @@
+import {
+  createTag,
+  getConfig,
+  getFederatedUrl,
+  localizeLinkAsync,
+  loadIms,
+  getLocale,
+} from '../../../utils/utils.js';
+import { closeModal } from '../modal/modal.js';
+
+const API_ENDPOINTS = {
+  local: 'https://www.stage.adobe.com/milo-email-collection-api',
+  stage: 'https://www.stage.adobe.com/milo-email-collection-api',
+  prod: 'https://www.adobe.com/milo-email-collection-api',
+};
+const FORM_METADATA = {
+  'email-collection-test': 'emailCollectionTest',
+  'mps-sname': 'mpsSname',
+  'subscription-name': 'subscriptionName',
+  'sign-in': 'signIn',
+  'runtime-endpoint': 'runtimeEndpoint',
+  'consent-id': 'consentId',
+};
+
+export async function localizeFederatedUrl(url) {
+  const link = await localizeLinkAsync(getFederatedUrl(url), '', true);
+  return link;
+}
+
+const FEDERAL_ROOT = '/federal/email-collection';
+const DEFAULT_CONSENT_ID = 'cs4';
+const PLACEHOLDER_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
+
+export const FORM_FIELDS = {
+  email: {
+    tag: 'input',
+    attributes: {
+      type: 'email',
+      required: true,
+      autocomplete: 'email',
+    },
+  },
+  'first-name': {
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      disabled: '',
+    },
+  },
+  'last-name': {
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      disabled: '',
+    },
+  },
+  country: {
+    tag: 'select',
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
+    attributes: {
+      required: true,
+      disabled: '',
+    },
+  },
+  organization: {
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: 'organization',
+    },
+  },
+  occupation: {
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: 'organization-title',
+    },
+  },
+  state: {
+    tag: 'select',
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
+    attributes: { required: true },
+  },
+  'phone-number': {
+    tag: 'input',
+    attributes: {
+      type: 'tel',
+      required: true,
+      autocomplete: 'tel',
+    },
+  },
+  'phone-country-code': {
+    tag: 'input',
+    attributes: {
+      type: 'tel',
+      disabled: '',
+    },
+  },
+};
+
+function getPhoneIconUrl(name) {
+  const { base } = getConfig();
+  return `${base}/c2/blocks/email-collection-c2/icons/${name}`;
+}
+
+export function getPageLocale() {
+  const { locales } = getConfig() || {};
+  return getLocale(locales)?.region;
+}
+
+const PHONE_FIELD_CONFIG = {
+  br: {
+    code: '+55',
+    validationPattern: /^\s*(?:\+?55[\s-]?)?\(?\d{2}\)?[\s-]?9\d{4}[-\s]?\d{4}\s*$/,
+    icon: getPhoneIconUrl('br-flag.svg'),
+    format: (number) => {
+      const maxDigits = 11;
+      const d = number.replace(/\D/g, '').slice(-maxDigits);
+      return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    },
+  },
+  in: {
+    code: '+91',
+    validationPattern: /^\s*(?:\+?91[\s-]?|0)?[6-9]\d{4}[\s-]?\d{5}\s*$/,
+    icon: getPhoneIconUrl('in-flag.svg'),
+    format: (number) => {
+      const maxDigits = 10;
+      const d = number.replace(/\D/g, '').slice(-maxDigits);
+      return `${d.slice(0, 5)}-${d.slice(5)}`;
+    },
+  },
+};
+
+export function getPhoneFieldConfig() {
+  return PHONE_FIELD_CONFIG[getPageLocale()];
+}
+
+export function normalizePhoneNumber(number) {
+  if (!number) return number;
+  const { format } = getPhoneFieldConfig() ?? {};
+  return (format ? format(number) : number).replace(/\D/g, '');
+}
+
+export function validatePhoneNumber(number) {
+  if (!number) return false;
+  const regex = getPhoneFieldConfig()?.validationPattern ?? null;
+  if (!regex) return false;
+  return regex.test(number);
+}
+
+export async function getIMS() {
+  if (window.adobeIMS) return window.adobeIMS;
+  try {
+    await loadIms();
+  } catch (e) {
+    return null;
+  }
+  return window.adobeIMS;
+}
+
+async function refreshIMSToken(ims) {
+  try {
+    await ims?.refreshToken();
+  } catch (e) {
+    window.lana?.log('Refreshing IMS token failed');
+  }
+}
+
+export async function validateImsToken() {
+  const ims = await getIMS();
+  try {
+    await ims?.validateToken();
+  } catch (e) {
+    await refreshIMSToken(ims);
+  }
+}
+
+export async function getIMSAccessToken() {
+  try {
+    const ims = await getIMS();
+    const { token } = ims?.getAccessToken() ?? {};
+    return token;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function getIMSProfile() {
+  try {
+    const ims = await getIMS();
+    const {
+      email,
+      countryCode: country,
+      first_name: firstName,
+      last_name: lastName,
+      ...profile
+    } = await ims.getProfile();
+
+    return {
+      email,
+      country,
+      'first-name': firstName,
+      'last-name': lastName,
+      ...profile,
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
+export const [createAriaLive, updateAriaLive] = (() => {
+  let ariaLive;
+  return [
+    (el) => {
+      ariaLive = createTag('div', {
+        class: 'email-collection-aria-live',
+        'aria-live': 'polite',
+        role: 'status',
+      });
+      el.nextElementSibling.after(ariaLive);
+    },
+    (content) => {
+      ariaLive.textContent = '';
+      let ariaTextContent = '';
+      if (typeof content === 'string') {
+        ariaLive.textContent = content;
+        return;
+      }
+      content.querySelectorAll('.text:not(.hidden) > *:not(.icon-area, form, .button-container, .hidden)')
+        .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
+      ariaLive.textContent = ariaTextContent;
+    },
+  ];
+})();
+
+function formatMetadataKey(key) {
+  return key?.toLowerCase().trim().replaceAll(/\s+/g, '-');
+}
+
+function formatStateData(data) {
+  const formattedData = {};
+  data.forEach((state) => {
+    const { countryCode, key, value } = state;
+    if (!countryCode) return;
+    formattedData[countryCode] = formattedData[countryCode] ?? [];
+    formattedData[countryCode].push({ key, value });
+  });
+  return formattedData;
+}
+
+function defaultFormatData(data) {
+  return data.reduce((acc, { key, value }) => {
+    acc[key] = value;
+    return acc;
+  }, {});
+}
+
+async function fetchSheet(sheetData) {
+  const formatData = { state: formatStateData };
+  const { id, url: urlOrPromise } = sheetData;
+  try {
+    const resolvedUrl = await urlOrPromise;
+    const sheetReq = await fetch(resolvedUrl);
+    if (!sheetReq.ok) return { [id]: {} };
+    const { data } = await sheetReq.json();
+
+    if (formatData[id]) return { [id]: formatData[id](data) };
+    return { [id]: defaultFormatData(data) };
+  } catch (e) {
+    window.lana?.log(e);
+    return { [id]: {} };
+  }
+}
+
+async function fetchFormConfig(sheets) {
+  const sheetPromises = [{ url: PLACEHOLDER_URL_PROMISE, id: 'placeholders' }, ...sheets]
+    .map((sheet) => fetchSheet(sheet));
+
+  const resolved = await Promise.all(sheetPromises);
+  let config = {};
+  resolved.forEach((result) => { config = { ...config, ...result }; });
+  return config;
+}
+
+export async function fetchConsentString(metadataConsentId) {
+  try {
+    const id = metadataConsentId?.toLowerCase() ?? DEFAULT_CONSENT_ID;
+    const consentUrl = await localizeFederatedUrl(`${FEDERAL_ROOT}/consents/${id}.plain.html`);
+    const stringReq = await fetch(consentUrl);
+    if (!stringReq.ok) return {};
+
+    const string = await stringReq.text();
+    const doc = new DOMParser().parseFromString(string, 'text/html');
+    const [consentDiv, consentId] = doc.querySelectorAll('body > div');
+
+    return {
+      consentDiv,
+      consentId: consentId?.textContent.trim(),
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
+export const [getFormData, setFormData] = (() => {
+  let formData;
+  return [
+    (key) => (formData[key]),
+    (el) => {
+      formData = {
+        fields: {},
+        metadata: {},
+      };
+      const fetchConfigParams = [];
+      const { fields, metadata } = formData;
+      const metadataEl = el.parentElement?.querySelector('.section-metadata');
+      if (!metadataEl) return 'Section metadata is missing';
+
+      [...metadataEl.children].forEach((child) => {
+        const key = formatMetadataKey(child.firstElementChild?.textContent);
+        if (!FORM_FIELDS[key] && !FORM_METADATA[key]) return;
+        const value = child.lastElementChild.textContent;
+        const metadataObject = FORM_METADATA[key] ? metadata : fields;
+        const newKey = FORM_METADATA[key] ?? key;
+        metadataObject[newKey] = value;
+
+        if (FORM_FIELDS[key]?.url) fetchConfigParams.push({ id: key, url: FORM_FIELDS[key].url });
+        if (newKey === 'runtimeEndpoint') child.lastElementChild.remove();
+      });
+
+      if (!fields.email
+        || !metadata.mpsSname
+        || (!metadata.subscriptionName && !metadata.consentId)) return 'Section metadata is missing email/mps-sname/subscription-name/consent-id field';
+
+      if ((fields['phone-number'] && !fields['phone-country-code'])
+      || (!fields['phone-number'] && fields['phone-country-code'])) {
+        return 'Phone number field is missing phone country code field';
+      }
+
+      formData.consent = fetchConsentString(formData.metadata.consentId);
+      formData.config = fetchFormConfig(fetchConfigParams);
+
+      return null;
+    },
+  ];
+})();
+
+export function getApiEndpoint(action = 'submit') {
+  const { env } = getConfig();
+  const { runtimeEndpoint } = getFormData('metadata');
+  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
+  if (env.name !== 'prod' && runtimeEndpoint) endPoint = runtimeEndpoint;
+
+  return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
+}
+
+export function disableForm(form, disable = true) {
+  form.querySelectorAll('input, button').forEach((el) => {
+    el.toggleAttribute('disabled', disable);
+  });
+}
+
+function resolvePendingPromise(promise, resolve) {
+  const promiseTimeout = setTimeout(() => resolve(undefined), 5000);
+  promise.then((result) => {
+    clearTimeout(promiseTimeout);
+    resolve(result);
+  });
+}
+
+function awaitWindowProperty(property, timeout = 5000, interval = 100) {
+  if (window[property] && !window[property].then) return window[property];
+
+  return new Promise((resolve) => {
+    let timeoutRef;
+    const intervalRef = setInterval(() => {
+      if (!window[property]) return;
+      clearTimeout(timeoutRef);
+      clearInterval(intervalRef);
+      if (window[property].then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, interval);
+
+    timeoutRef = setTimeout(() => {
+      clearInterval(intervalRef);
+      if (window[property]?.then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, timeout);
+  });
+}
+
+export async function getAEPData() {
+  try {
+    const [adobePrivacy, alloyIdentity, alloyAll] = await Promise.all([
+      awaitWindowProperty('adobePrivacy'),
+      awaitWindowProperty('alloy_getIdentity'),
+      awaitWindowProperty('alloy_all'),
+    ]);
+
+    const privacyCookieGroups = adobePrivacy?.activeCookieGroups() || [];
+    const hasMarketingConsent = privacyCookieGroups.includes('C0004');
+    const { identity } = alloyIdentity || {};
+
+    // eslint-disable-next-line
+    const { cmp, otherConsents } = alloyAll?.data?._adobe_corpnew || {};
+
+    return {
+      ...(hasMarketingConsent && { ecid: identity?.ECID }),
+      aepCmp: cmp,
+      aepOtherConsents: otherConsents,
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
+function waitForModal() {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(), 3000);
+    window.addEventListener('milo:modal:loaded', () => {
+      clearTimeout(timeout);
+      resolve();
+    }, { once: true });
+  });
+}
+
+export async function redirectToSignIn(dialog) {
+  const ims = await getIMS();
+  if (!document.body.contains(dialog)) await waitForModal();
+  await ims?.signIn();
+  if (dialog) closeModal(dialog);
+}
+
+export async function runtimePost(url, data) {
+  const token = await getIMSAccessToken();
+  try {
+    const req = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    const { ok, status } = req;
+    const res = await req.json();
+    return {
+      status,
+      data: res,
+      ...(!ok && { error: JSON.stringify(res) }),
+    };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+export async function isUserGuest() {
+  const ims = await getIMS();
+  return !ims?.isSignedInUser();
+}
