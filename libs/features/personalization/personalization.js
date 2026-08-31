@@ -11,6 +11,8 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
+  isTrustedUrl,
+  isSameOriginManifestPath,
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
@@ -88,35 +90,6 @@ export const DATA_TYPE = {
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
-
-const TRUSTED_DOMAINS = ['.adobe.com'];
-const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
-
-export function isTrustedUrl(url) {
-  if (typeof url !== 'string' || !url) return false;
-  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
-  let parsed;
-  try {
-    parsed = new URL(url, window.location.origin);
-  } catch {
-    return false;
-  }
-  if (parsed.origin === window.location.origin) return true;
-  if (parsed.protocol !== 'https:') return false;
-  return TRUSTED_DOMAINS.some(
-    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
-  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
-}
-
-function isSameOriginManifestPath(manifestPath) {
-  if (typeof manifestPath !== 'string' || !manifestPath) return false;
-  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
-  try {
-    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
-  } catch {
-    return false;
-  }
-}
 
 export const normalizePath = (p, localize = true) => {
   let path = p;
@@ -1101,9 +1074,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob, event } = config.mep.promises;
+    const { lob } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 

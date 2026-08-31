@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix, isTrustedUrl,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -98,7 +98,7 @@ const preserveAuthored = (a, isBlockSwap, originalBlock, originalSection) => {
 };
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale } = getConfig();
+  const { decorateArea, mep, placeholders, locale, allowedOrigins = [] } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   let url;
   let inline = false;
@@ -117,6 +117,15 @@ export default async function init(a) {
     const path = !a.href.includes('/federal/') ? url.pathname
       : a.href.replace('#_inline', '');
     mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
+
+    // Lingo rewrote the href with a geo prefix; match the authored originalHref path.
+    if (!mepFrag && a.dataset.mepLingo === 'true' && a.dataset.originalHref) {
+      const { origin } = window.location;
+      const origPath = new URL(a.dataset.originalHref, origin).pathname;
+      const key = Object.keys(mep?.fragments || {})
+        .find((k) => new URL(k, origin).pathname === origPath);
+      if (key) mepFrag = mep.fragments[key];
+    }
   } catch (e) {
     // do nothing
   }
@@ -124,6 +133,15 @@ export default async function init(a) {
     const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
     relHref = handleFragmentCommand(mepFrag, a);
     if (!relHref) return;
+    // Replace wins — drop the lingo link's stale state.
+    ['mepLingo', 'originalHref', 'mepLingoInsert', 'mepLingoRemove',
+      'mepLingoSectionSwap', 'mepLingoBlockSwap', 'mepLingoSkippedQI']
+      .forEach((k) => delete a.dataset[k]);
+    // Replacement is itself a lingo link — resolve it regionally (inherits LCP/skip-QI).
+    if (a.href.includes('#_mep-lingo')) {
+      a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+      relHref = a.href;
+    }
   }
 
   if (a.href.includes('#_inline')) {
@@ -144,6 +162,20 @@ export default async function init(a) {
   if (a.href.includes('/federal/')) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
+  }
+
+  let fragOrigin = null;
+  try {
+    fragOrigin = new URL(resourcePath, window.location.origin).origin;
+  } catch { /* unparseable resourcePath is caught by the isTrustedUrl check below */ }
+  const isAllowedOrigin = fragOrigin === window.location.origin
+    || allowedOrigins.some((o) => (o.startsWith('https://') ? fragOrigin === o : fragOrigin?.endsWith(o)));
+  if (!isAllowedOrigin && !isTrustedUrl(resourcePath)) {
+    window.lana?.log(`Fragment blocked, untrusted URL: ${resourcePath}`, {
+      tags: 'fragment',
+      severity: 'error',
+    });
+    return;
   }
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
