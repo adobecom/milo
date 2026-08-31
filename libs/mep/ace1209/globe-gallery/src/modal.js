@@ -375,9 +375,10 @@ export default function createGlobeModal({
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
-    const posEl = targetEl.querySelector('.globe-gallery-modal-position');
     const position = cardLabel(authoredNo(i), getCount());
-    if (posEl) posEl.textContent = position;
+    targetEl.querySelectorAll('.globe-gallery-modal-position').forEach((el) => {
+      el.textContent = position;
+    });
     announce(speak ? [meta.name, meta.role, position].filter(Boolean).join('. ') : '');
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';

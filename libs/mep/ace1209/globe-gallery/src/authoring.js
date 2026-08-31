@@ -34,7 +34,7 @@ const LABEL_DIVIDER = '||';
 const DEFAULT_LABELS = [
   DEFAULT_GALLERY_INSTRUCTIONS,
   'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
-  'Previous card', '{index} of {count}', 'Next card', 'Close', 'Card details',
+  'Previous card', '{index} of {count}', 'Next card', 'Close',
 ];
 const CARD_TPL_INDEX = 6;
 
@@ -52,7 +52,6 @@ function buildLabels(parts) {
     prevCard: at(5),
     nextCard: at(7),
     closeBtn: at(8),
-    modalTitle: at(9),
     cardLabel: (index, count) => cardTpl
       .replace('{index}', String(index))
       .replace('{count}', String(count)),
@@ -400,10 +399,11 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="globe-gallery-modal-chrome" aria-label="${escapeHtml(labels.modalTitle)}">
+  <dialog class="globe-gallery-modal-chrome">
     <div class="globe-gallery-modal-info">
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
+      <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
       <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document" data-lenis-prevent></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
@@ -414,7 +414,7 @@ const buildMarkup = (gid, labels) => `
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
-    <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" role="note"></span>
+    <span class="globe-gallery-modal-position sr-only" role="note"></span>
     <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>

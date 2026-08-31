@@ -6,6 +6,7 @@ import {
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
+  loadHintFont,
 } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
@@ -628,8 +629,7 @@ function createGlobeGalleryRuntime(
 
   // Depth (world units, from the camera) at which a card has faded out completely. placeSphereCard
   // owns the rule; dragFlipZ and the pull-quote cue are both anchored to it. NOTE: those two apply
-  // sphereGroup.scale differently — see the call sites. Only reduced motion on md+ scales the group
-  // at all, and RM pins zoomT to 0, so nothing reads either value there today.
+  // sphereGroup.scale differently — see the call sites.
   const cardVanishDepth = () => bp.NEAR_FADE_END * fadeRefH;
 
   // Camera z below which drag inverts, anchored to where cards VANISH. Sole writer of fadeRefH.
@@ -741,8 +741,7 @@ function createGlobeGalleryRuntime(
     };
     // Two-arg then, NOT .then().catch(): a throw inside create must not re-run create and
     // orphan the mesh it already added.
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(create, create);
-    else create();
+    loadHintFont(hintText).then(create, create);
   }
 
   // Tilts limb cards toward the camera; MUTATES the quat in place. Target is sign(n.z) × view
@@ -1349,10 +1348,7 @@ function createGlobeGalleryRuntime(
     updatePullQuoteCopy(reveal);
   }
 
-  // Re-split from scratch: line breaks move with the box width and the resolved font. The fresh
-  // elements carry no progress var, so the cache is dropped and the current frame rewritten.
-  // Width-gated, since the box can change without the viewport doing so (a scrollbar arriving) and
-  // can equally stay put across a viewport change that only alters height.
+  // Fresh line elements carry no progress var, so the cache is dropped and the frame rewritten.
   function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
     const w = pqEl.clientWidth;
