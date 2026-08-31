@@ -117,6 +117,7 @@ const C2_BLOCKS = [
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
+  'email-collection-c2',
   'explore-card',
   'faq',
   'floating-cta',
@@ -2042,7 +2043,7 @@ const getMdValue = (key) => {
   return false;
 };
 
-const getPromoMepEnablement = () => {
+export const getPromoMepEnablement = () => {
   const mds = [
     'apac_manifestnames',
     'emea_manifestnames',
@@ -2184,7 +2185,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id'];
+  const mepAddons = ['lob'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);

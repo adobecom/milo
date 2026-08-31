@@ -11,16 +11,17 @@ import {
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
-function getFederalDomain(config) {
+export function getFederalDomain(config) {
   const env = getEnv(config);
 
   if (env.name !== 'prod') {
     const queryParams = new URLSearchParams(window.location.search);
-    const federalBranch = queryParams.get('fedsbranch');
-    if (federalBranch?.trim()) {
-      const sanitized = federalBranch.trim().toLowerCase();
-      if (sanitized === 'local') return 'http://localhost:3000/federal';
-      return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+    const federalBranch = queryParams.get('fedsbranch')?.trim().toLowerCase();
+    // Branch names are [a-z0-9-] only; reject other characters so the value
+    // cannot break out of the host position of the import URL built below.
+    if (federalBranch && /^[a-z0-9-]+$/.test(federalBranch)) {
+      if (federalBranch === 'local') return 'http://localhost:3000/federal';
+      return `https://${federalBranch}--federal--adobecom.aem.page/federal`;
     }
   }
 
@@ -77,6 +78,14 @@ export default async function init(el) {
 
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
+  const countryCodePromise = (async () => {
+    const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
+    if (!isMasGeoDetectionEnabled()) return undefined;
+    const base = config.miloLibs || config.codeRoot;
+    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    return (await getValidatedMarket())?.toUpperCase();
+  })().catch(() => undefined);
+
   const gnavPromise = main({
     localizeLink,
     // Lingo link transformation only — skip when lingo is off so federal doesn't
@@ -89,6 +98,7 @@ export default async function init(el) {
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: config,
+    countryCode: countryCodePromise,
     mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {

@@ -1,6 +1,6 @@
-import { createTag, getConfig } from '../../utils/utils.js';
-import { decorateButtons } from '../../utils/decorate.js';
-import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
+import { createTag, getConfig } from '../../../utils/utils.js';
+import { decorateButtons } from '../../../utils/decorate.js';
+import { decorateDefaultLinkAnalytics } from '../../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 import {
   getIMSProfile,
@@ -118,7 +118,7 @@ async function validateForm(form) {
     if (!showInputError(form, input, placeholders)) return;
     isInvalidForm = true;
 
-    /* eslint-disable */ 
+    /* eslint-disable */
     if (!input._hasChangeListener) {
       input.addEventListener('change', () => showInputError(form, input, placeholders));
       input._hasChangeListener = true;
@@ -166,7 +166,7 @@ async function insertProgress(el, size = 'm') {
 
   const { base } = miloConfig;
   await Promise.all([
-    import('../../deps/lit-all.min.js'),
+    import('../../../deps/lit-all.min.js'),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/progress-circle.js`),
   ]);
@@ -211,7 +211,7 @@ function addErrorElement(container, key) {
   const input = container.querySelector('input, select');
   const shouldAdd = input.getAttribute('disabled') === null;
   if (!shouldAdd) return;
-  const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
+  const error = createTag('div', { id: `error-${key}`, class: 'body-sm hidden' });
   container.append(error);
 }
 
@@ -305,7 +305,7 @@ async function decorateInput(key, value) {
 
   const label = createTag(
     'label',
-    { for: key, class: 'body-xs' },
+    { for: key, class: 'body-sm' },
     labelText.trim(),
   );
   const input = await decorateFunction({ key, placeholder, labelText, inputValue });
@@ -417,7 +417,7 @@ function setMaxHeightToForm(formContainer, restore) {
 async function decorateConsentString() {
   const { consentDiv } = await getFormData('consent');
   if (!consentDiv) return null;
-  consentDiv.classList.add('body-xxs', 'consent-string');
+  consentDiv.classList.add('caption', 'consent-string');
 
   const { subscriptionName } = getFormData('metadata');
   const regex = /{{subscription-name}}/g;
@@ -511,7 +511,7 @@ function transformCtaToBtn(el) {
 
 function decorateSubscribedMessage(text) {
   const showForm = text.querySelector('a[href$="#show-form"]');
-  const email = createTag('p', { class: 'subscribed-email hidden body-m' });
+  const email = createTag('p', { class: 'subscribed-email hidden body-md' });
   text.appendChild(email);
 
   if (!showForm) return;
@@ -535,12 +535,13 @@ function decorateSubscribedMessage(text) {
   });
 
   const parent = showForm.parentElement ?? span;
-  parent.classList.replace('body-m', 'body-xs');
+  parent.classList.replace('body-md', 'body-sm');
   showForm.replaceWith(span);
   text.appendChild(parent);
 }
 
-function decorateText(elChildren) {
+function decorateText(el, elChildren) {
+  const isMailingList = el.classList.contains('mailing-list');
   const foreground = elChildren[0];
   elChildren.forEach((child, childIndex) => {
     const isForeground = child === foreground;
@@ -554,9 +555,9 @@ function decorateText(elChildren) {
       } else if (textEl.childElementCount === 1 && textEl.firstElementChild.tagName === 'PICTURE') {
         textEl.classList.add('icon-area');
       } else if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(textEl.tagName)) {
-        textEl.classList.add('heading-l');
+        textEl.classList.add(isMailingList ? 'heading-4' : 'heading-3');
       } else {
-        textEl.classList.add('body-m');
+        textEl.classList.add('body-md');
       }
     });
 
@@ -605,7 +606,7 @@ async function decorate(el, blockChildren) {
   blockChildren[1].classList.add('hidden');
   blockChildren[2].classList.add('hidden');
 
-  decorateText(blockChildren);
+  decorateText(el, blockChildren);
   blockChildren[0].querySelector(':scope > div:not([class])')?.classList.add('image');
 
   const isSubscribed = await checkIsSubscribed();

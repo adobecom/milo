@@ -1,12 +1,10 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata, loadIms,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
-
-loadIms();
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -1863,15 +1861,6 @@ function decorateInlineCtas(masField, content) {
       container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
     }
   }
-
-  if (container?.merchLink) {
-    [...container.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
-      container?.querySelectorAll('a').forEach((link) => {
-        link.classList.add(match[1]);
-      });
-    });
-  }
-
   return hoisted;
 }
 
@@ -1905,10 +1894,6 @@ async function createInlineField(el, options) {
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
-
-  const container = el.closest('p, div');
-  if (container) container.merchLink = el.href;
-
   el.replaceWith(masField);
   await checkFieldReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);

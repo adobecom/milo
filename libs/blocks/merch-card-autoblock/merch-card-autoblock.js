@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadIms } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
@@ -12,8 +12,6 @@ import {
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
 } from '../merch/merch.js';
-
-loadIms();
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 const seenFragments = new Set();
