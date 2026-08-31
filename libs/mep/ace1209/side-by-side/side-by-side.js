@@ -56,9 +56,12 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
-function applyTheme(block, cardType, media) {
-  if (block.classList.contains('small-dark') && cardType === 'card-stacked') media.classList.add('dark');
-  if (block.classList.contains('big-dark') && cardType === 'card-overlay') media.classList.add('dark');
+function applyCustomization(block, cards) {
+  const classes = [...block.classList];
+  const firstCardClasses = classes.filter((c) => c.startsWith('first-')).map((c) => c.replace('first-', ''));
+  const secondCardClasses = classes.filter((c) => c.startsWith('second-')).map((c) => c.replace('second-', ''));
+  cards[0]?.classList.add(...firstCardClasses);
+  cards[1]?.classList.add(...secondCardClasses);
 }
 
 function decorateCardStackedIcon(mediaContainer) {
@@ -94,11 +97,11 @@ function decorate(block, el) {
     if (variant === 'card-stacked') decorateCardStackedIcon(media);
     const card = createTag('div', { class: `card ${variant}` });
     if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
-    applyTheme(block, variant, media);
     card.append(media, foreground);
     cards.push(card);
   }
 
+  applyCustomization(block, cards);
   block.replaceChildren(...cards);
   replaceVideoIntersectionObserver(medias);
 }
