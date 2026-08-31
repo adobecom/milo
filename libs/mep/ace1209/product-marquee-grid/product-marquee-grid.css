@@ -2,8 +2,10 @@
   --pmg-base-height: 500px;
 
   background: var(--s2a-color-background-default);
+  border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   display: flex;
   min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px));
+  position: relative;
 
   .pm-content {
     display: flex;
@@ -92,10 +94,8 @@
   .firefly & {
     --pmg-base-height: 350px;
 
-    position: relative;
     background-color: var(--s2a-color-transparent-black-72);
     backdrop-filter: blur(125px);
-    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 
   &.non-mas {
