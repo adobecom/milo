@@ -559,16 +559,10 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
 
   p {
     margin-bottom: var(--s2a-spacing-20);
-
-    @media (max-width: 1279px) {
-      width: min(330px, calc(100% - 2 * var(--s2a-spacing-40)));
-      margin-inline: auto !important;
-    }
   }
 
   > .fragment {
-    padding-block: var(--s2a-spacing-lg) var(--s2a-spacing-2xl);
-    padding-inline: var(--s2a-spacing-lg);
+    padding: var(--s2a-spacing-lg) var(--s2a-spacing-lg) var(--s2a-spacing-2xl);
   }
 
   .content {
@@ -584,9 +578,17 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
     margin-block-start: var(--s2a-spacing-2xl);
   }
 
+  .content p,
+  .content :is(h1, h2, h3, h4, h5, h6) ~ p {
+    @media (width < 1280px) {
+      width: min(330px, calc(100% - 2 * var(--s2a-spacing-40)));
+      margin-inline: auto;
+    }
+  }
+
   button.dialog-close {
-    width: var(--s2a-spacing-48);
-    height: var(--s2a-spacing-48);
+    width: 48px;
+    height: 48px;
     border-radius: var(--s2a-border-radius-sm);
     background: var(--s2a-color-gray-75);
     inset-block-start: var(--s2a-spacing-md);

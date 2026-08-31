@@ -237,7 +237,7 @@ video {
 
   .video-container a.transcript-button {
     box-sizing: border-box;
-    height: var(--s2a-spacing-32);
+    height: 32px;
     padding-inline: var(--s2a-spacing-md);
     border-radius: var(--s2a-border-radius-xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
@@ -282,7 +282,7 @@ video {
 
   @media (width >= 1440px) {
     .video-container a.transcript-button {
-      height: var(--s2a-spacing-48);
+      height: 48px;
       right: calc(var(--s2a-spacing-xl) + var(--s2a-spacing-48) + var(--s2a-spacing-2));
     }
   }
