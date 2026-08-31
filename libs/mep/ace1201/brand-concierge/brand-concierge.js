@@ -309,7 +309,7 @@ async function openChatModal(initialMessage, el) {
       const severity = (!bcToken && isSignedIn) || (!bcToken && guestToken) || !guestToken ? 'warn' : 'info';
       window.lana?.log(
         `Brand Concierge IMS state — signedIn: ${isSignedIn}, accessToken: ${!!bcToken}, guestToken: ${!!guestToken}`,
-        { tags: 'brand-concierge', severity },
+        { tags: 'brand-concierge', severity, sampleRate: 100 },
       );
     }
 
