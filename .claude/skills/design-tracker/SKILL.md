@@ -76,12 +76,16 @@ dashboard page").
 
 ## When invoked
 
-The user will either:
-- **Sync from an input page**: give you a DA page URL whose "Design Links"
-  table lists every Figma+Jira pair to track. This is now the primary way to
-  add/remove designs — the user hand-edits that table in DA (add a row to
-  track, delete a row to un-track) and this skill reconciles `entries.json`
-  to match. See "Sync from an input page" below.
+**Default: sync from an input page.** If the invocation includes a DA page URL
+(and no other explicit instruction), treat it as "sync this page" — run the
+"Sync from an input page" flow below, no verb like "sync" required. Editing
+the page's "Design Links" table is how the user adds/removes designs; this
+skill just reconciles `entries.json` to whatever the table now lists. This is
+the normal, primary path.
+
+The other modes below are legacy manual operations, kept for the rare case the
+user asks for one directly by name — they are **not** needed for routine
+add/remove (that's done by editing the table + syncing):
 - **Add** a new pair: give you a Figma URL and a Jira URL to track.
 - **Remove** a pair: give you a `jiraKey` or `figmaFileKey`/`figmaNodeId` to stop tracking.
 - **Refresh**: ask you to pull fresh data for one entry or all entries.
