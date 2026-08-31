@@ -28,26 +28,27 @@ describe('setCountryEnabled', () => {
     sessionStorage.setItem('akamai', 'us');
     getConfig().mep = {};
   });
-  it('should set countryEnabled to true if the country restriction is null', () => {
+  it('should set countryEnabled to true if the country restriction is null', async () => {
     const manifestConfig = { countryRestriction: null, manifestPath: '/test/test.json' };
-    setCountryEnabled(manifestConfig);
+    await setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
   });
-  it('should set countryEnabled to false if the akamai code is not in the restriction list', () => {
+  it('should set countryEnabled to true if the akamai code is resolved from session storage and is in the restriction list', async () => {
     const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
-    setCountryEnabled(manifestConfig);
-    expect(manifestConfig.countryEnabled).to.be.false;
+    await setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.true;
   });
-  it('should set countryEnabled to true if the akamai code is in the restriction list', () => {
+  it('should set countryEnabled to true if the akamai code is in the restriction list', async () => {
     getConfig().mep.akamaiCode = 'us';
     const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
-    setCountryEnabled(manifestConfig);
+    await setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
     delete getConfig().mep.akamaiCode;
   });
-  it('should override the variant to Default if the country restriction is not met', () => {
+  it('should override the variant to Default if the country restriction is not met', async () => {
     const manifestConfig = { countryRestriction: 'fr, ca', manifestPath: '/test/test.json' };
-    setCountryEnabled(manifestConfig);
+    await setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.false;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
 });
@@ -101,6 +102,7 @@ describe('normalizeConsentType', () => {
 describe('setConsentEnabled', () => {
   beforeEach(() => {
     sessionStorage.setItem('akamai', 'us');
+    delete getConfig().mep.akamaiCode;
     getConfig().mep.consentState = { performance: true, advertising: true };
     getConfig().mep.variantOverride = {};
     localStorage.removeItem('mep-/test/test.json');

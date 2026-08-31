@@ -5,6 +5,7 @@
 import {
   createTag,
   getConfig,
+  getCountry,
   getMetadata,
   loadLink,
   loadScript,
@@ -1113,6 +1114,7 @@ async function getPersonalizationVariant(
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
@@ -1149,12 +1151,16 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export function setCountryEnabled(manifestConfig) {
+export async function setCountryEnabled(manifestConfig) {
   manifestConfig.countryEnabled = true;
   const { countryRestriction, manifestPath } = manifestConfig;
   if (!countryRestriction) return;
   const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  manifestConfig.countryEnabled = countryArray.includes(getConfig().mep.akamaiCode);
+  const config = getConfig();
+  if (!config.mep.akamaiCode) {
+    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
+  }
+  manifestConfig.countryEnabled = countryArray.includes(config.mep.akamaiCode);
   if (!manifestConfig.countryEnabled) overrideVariant(manifestPath, 'Default');
 }
 
@@ -1295,7 +1301,7 @@ async function getManifestConfig(info, variantOverride) {
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   setConsentEnabled(manifestConfig, source);
-  setCountryEnabled(manifestConfig);
+  await setCountryEnabled(manifestConfig);
   if (manifestConfig.consentType !== PROMO_OR_NO_OFFER_CHANGES
     && manifestConfig.consentEnabled && manifestConfig.countryEnabled) {
     sendAnalytics(`${fileName} was served`);

@@ -163,7 +163,7 @@ function getManifestStatus(manifest) {
       label: 'Ineligible',
     },
     {
-      reason: !manifest.withinDateRange,
+      reason: manifest.disabledPromo === true,
       msg: 'Outside of promo date range.',
       level: 'Warning',
       label: 'Disabled',
