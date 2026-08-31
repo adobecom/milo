@@ -63,6 +63,8 @@ const createReducer = (defaultState) => (state, action) => {
   switch (action.type) {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
+    case 'MERGE':
+      return { ...state, ...action.values };
     case 'RESET_STATE':
       return { ...deepCopy(defaultState), reset: Date.now() };
     /* c8 ignore next 2 */

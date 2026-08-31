@@ -46,6 +46,14 @@
         "label": "Non-required field with no options and no default",
         "required": "no",
         "description": "This is a non-required field with no options or default value"
+      },
+      {
+        "prop": "form.template",
+        "label": "Template",
+        "options": "tmpl1:Template One,tmpl2:Template Two",
+        "default": "tmpl1",
+        "required": "yes",
+        "description": "Managed by the Form Fields panel"
       }
     ]
   },

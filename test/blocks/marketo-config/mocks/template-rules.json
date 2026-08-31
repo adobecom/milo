@@ -1,0 +1,48 @@
+{
+  "tmpl1": {
+    "label": "Template One",
+    "formId": "2277",
+    "purpose": "request_for_information",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "required",
+      "company": "required",
+      "website": "hidden",
+      "state": "required",
+      "postcode": "required",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-DX",
+      "products": "POI-Dxonly",
+      "industry": "hidden",
+      "job_role": "DX"
+    }
+  },
+  "tmpl2": {
+    "label": "Template Two",
+    "formId": "2277",
+    "purpose": "subscribe",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "hidden",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "hidden",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "hidden"
+    }
+  }
+}

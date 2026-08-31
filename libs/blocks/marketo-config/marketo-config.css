@@ -88,6 +88,138 @@
   background: #EFEFEF;
 }
 
+.form-fields-panel .ff-bucket {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  transition: background-color 0.1s, border-color 0.1s;
+}
+
+.form-fields-panel .ff-bucket.is-over {
+  border-color: #6aa84f;
+  background: rgb(106 168 79 / 12%);
+}
+
+.form-fields-panel .ff-bucket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.form-fields-panel .ff-bucket-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.form-fields-panel .ff-bucket-toggle {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+}
+
+.form-fields-panel .ff-bucket-fields {
+  margin-top: 10px;
+}
+
+.form-fields-panel .ff-bucket-empty {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.5;
+}
+
+.form-fields-panel .ff-chip {
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  background: rgb(255 255 255 / 4%);
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.form-fields-panel .ff-chip:last-child {
+  margin-bottom: 0;
+}
+
+.form-fields-panel .ff-chip:active {
+  cursor: grabbing;
+}
+
+.form-fields-panel .ff-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-fields-panel .ff-chip-handle {
+  color: rgb(255 255 255 / 35%);
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.form-fields-panel .ff-chip-label {
+  flex: 1;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.form-fields-panel .ff-chip-required {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.form-fields-panel .ff-chip-required input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2680eb;
+  cursor: pointer;
+}
+
+.form-fields-panel .ff-chip-filter {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 28px 6px 10px;
+  background-color: #4a4a4a;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4.5l4 4 4-4" stroke="%23ccc" stroke-width="1.5" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 4px;
+  font-size: 14px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-fields-panel .ff-reset {
+  margin-top: 16px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
 .tool-content {
   display: grid;
   grid-template-columns: 380px 1fr;

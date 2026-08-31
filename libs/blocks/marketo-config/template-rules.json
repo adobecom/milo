@@ -1,0 +1,209 @@
+{
+  "flex_contact": {
+    "label": "Full (DX) (contact)",
+    "formId": "2277",
+    "purpose": "request_for_information",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "required",
+      "company": "required",
+      "website": "hidden",
+      "state": "required",
+      "postcode": "required",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-DX",
+      "products": "POI-Dxonly",
+      "industry": "hidden",
+      "job_role": "DX"
+    }
+  },
+  "flex_event": {
+    "label": "Expanded (DX) (event)",
+    "formId": "2277",
+    "purpose": "strategy_webinar",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-DX",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "DX"
+    }
+  },
+  "flex_content": {
+    "label": "Essential (DX) (content)",
+    "formId": "2277",
+    "purpose": "whitepaper_form",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "hidden",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "hidden"
+    }
+  },
+  "dme_flex_contact": {
+    "label": "Full (DMe) (contact)",
+    "formId": "2277",
+    "purpose": "request_for_information",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "required",
+      "company": "required",
+      "website": "hidden",
+      "state": "required",
+      "postcode": "required",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-DMe",
+      "products": "POI-DMe",
+      "industry": "hidden",
+      "job_role": "DMe"
+    }
+  },
+  "dme_flex_event": {
+    "label": "Expanded (DMe) (event)",
+    "formId": "2277",
+    "purpose": "strategy_webinar",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-DMe",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "DMe"
+    }
+  },
+  "dme_flex_content": {
+    "label": "Essential (DMe) (content)",
+    "formId": "2277",
+    "purpose": "whitepaper_form",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "hidden",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "hidden"
+    }
+  },
+  "comb_flex_contact": {
+    "label": "Full (Combined) (contact)",
+    "formId": "2277",
+    "purpose": "request_for_information",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "required",
+      "company": "required",
+      "website": "hidden",
+      "state": "required",
+      "postcode": "required",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-Combined",
+      "products": "POI-Combined",
+      "industry": "hidden",
+      "job_role": "Combined"
+    }
+  },
+  "comb_flex_event": {
+    "label": "Expanded (Combined) (event)",
+    "formId": "2277",
+    "purpose": "strategy_webinar",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "Functional Area-Combined",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "Combined"
+    }
+  },
+  "comb_flex_content": {
+    "label": "Essential (Combined) (content)",
+    "formId": "2277",
+    "purpose": "whitepaper_form",
+    "successType": "redirect",
+    "field_visibility": {
+      "name": "required",
+      "phone": "hidden",
+      "company": "required",
+      "website": "hidden",
+      "state": "hidden",
+      "postcode": "hidden",
+      "company_size": "hidden",
+      "comments": "hidden",
+      "demo": "hidden"
+    },
+    "field_filters": {
+      "functional_area": "hidden",
+      "products": "hidden",
+      "industry": "hidden",
+      "job_role": "hidden"
+    }
+  }
+}
