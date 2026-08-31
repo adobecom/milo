@@ -152,7 +152,7 @@ function getManifestStatus(manifest) {
       reason: !manifest.withinDateRange,
       msg: 'Outside of promo date range.',
       level: 'Warning',
-      label: 'Ineligible',
+      label: 'Disabled',
     },
     {
       reason: !manifest.consentEnabled,
