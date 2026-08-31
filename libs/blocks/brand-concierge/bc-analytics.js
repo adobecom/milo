@@ -1,11 +1,42 @@
 import { getConfig } from '../../utils/utils.js';
+import { getChatSessionId } from './bc-utils.js';
 
 export function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
+const recordNavClick = (clickType, destinationPage) => {
+  window.history.replaceState(
+    {
+      ...window.history.state,
+      bcClickType: clickType,
+      bcSourcePage: window.location.href,
+      bcDestinationPage: destinationPage ?? '',
+    },
+    '',
+  );
+};
+
+const handleNav = (event) => {
+  switch (event.eventType) {
+    case 'card:clicked':
+      recordNavClick('product_card_cta', event.data?.element?.productPageURL);
+      break;
+    case 'cta:clicked':
+      recordNavClick('cta', event.data?.element?.productPageURL);
+      break;
+    case 'link:clicked':
+      recordNavClick(event.data?.element?.linkType ?? 'inline_hyperlink', event.data?.element?.href);
+      break;
+    default:
+      break;
+  }
+};
+
 /* eslint-disable no-undef, no-underscore-dangle */
 export const bcAnalytics = (event) => {
+  handleNav(event);
+
   if (window?._satellite?.track) {
     switch (event.eventType) {
       case 'query:submitted':
@@ -144,4 +175,39 @@ export const bcAnalytics = (event) => {
         break;
     }
   }
+};
+
+const initBackNavAnalytics = () => {
+  const emitAnalyticsIfBackNav = () => {
+    const state = window.history.state ?? {};
+    if (!state.bcClickType) {
+      return;
+    }
+
+    bcAnalytics({
+      eventType: 'navigation:backNavigation',
+      data: {
+        clickType: state.bcClickType,
+        sessionId: getChatSessionId(),
+        sourcePage: state.bcSourcePage ?? window.location.href,
+        destinationPage: state.bcDestinationPage ?? document.referrer ?? '',
+        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
+        navigatedBack: true,
+      },
+    });
+  };
+
+  // bfcache restore: page is brought back from memory, init does not re-run.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) emitAnalyticsIfBackNav();
+  });
+
+  // full-page back/forward load: init re-runs, navigation type is back_forward.
+  if (window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+    emitAnalyticsIfBackNav();
+  }
+};
+
+export const initAnalytics = () => {
+  initBackNavAnalytics();
 };

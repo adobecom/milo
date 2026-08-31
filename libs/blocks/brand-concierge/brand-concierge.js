@@ -1,5 +1,5 @@
 import { createTag } from '../../utils/utils.js';
-import { bcAnalytics } from './bc-analytics.js';
+import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -13,7 +13,6 @@ import {
   handleConsent,
   setCssGnavHeight,
   hasChatCookie,
-  getChatSessionId,
 } from './bc-utils.js';
 import {
   loadWebclient,
@@ -88,38 +87,9 @@ export default async function init(el) {
     }
   });
 
+  initAnalytics();
+
   setCssGnavHeight();
-
-  const emitAnalyticsIfBackNav = () => {
-    // BC records "click type" when navigating to outgoing links.
-    // This indicates the user is returning via back button, etc.
-    const state = window.history.state ?? {};
-    if (!state.bcClickType) {
-      return;
-    }
-
-    bcAnalytics({
-      eventType: 'navigation:backNavigation',
-      data: {
-        clickType: state.bcClickType,
-        sessionId: getChatSessionId(),
-        sourcePage: state.bcSourcePage ?? window.location.href,
-        destinationPage: state.bcDestinationPage ?? document.referrer ?? '',
-        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
-        navigatedBack: true,
-      },
-    });
-  };
-
-  // bfcache restore: page is brought back from memory, init does not re-run.
-  window.addEventListener('pageshow', (e) => {
-    if (e.persisted) emitAnalyticsIfBackNav();
-  });
-
-  // Full-page back/forward load: init re-runs, navigation type is back_forward.
-  if (window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
-    emitAnalyticsIfBackNav();
-  }
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
