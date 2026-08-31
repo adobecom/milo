@@ -161,7 +161,6 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     disabled,
     geoRestriction,
     geoDisabled,
-    mktgAction,
     manifestType,
     manifestOverrideName,
     executionOrder,
