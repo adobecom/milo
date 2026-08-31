@@ -6,7 +6,7 @@ import init, { getDefaultStates, cleanPanelData, getConfigOptions } from '../../
 import { sanitizeConfigValue, sanitizeHashConfig } from '../../../libs/blocks/marketo-config/context.js';
 import {
   applyTemplate, deriveBuckets, deriveStepCount, moveField, toggleRequired,
-  setFilter, setStepCount, isRequired, byId, STEP_PREF,
+  setFilter, setStepCount, isRequired, isSeeded, byId, STEP_PREF,
 } from '../../../libs/blocks/marketo-config/field-map.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
@@ -331,16 +331,34 @@ describe('field-map', () => {
     expect(patch[STEP_PREF][2]).to.include('mktodemandbaseWebsite');
   });
 
-  it('locked fields cannot be hidden', () => {
-    const state = applyTemplate('tmpl1', templateRules, 2);
+  it('name is always required when shown, never merely visible', () => {
+    // re-showing name lands on required, not visible
+    const patch = moveField({ 'field_visibility.name': 'hidden' }, 'name', 2);
+    expect(patch['field_visibility.name']).to.equal('required');
+    expect(isRequired({ 'field_visibility.name': 'visible' }, byId.name)).to.equal(true);
+    expect(isRequired({ 'field_visibility.name': 'hidden' }, byId.name)).to.equal(false);
+    // a template that offers name as merely visible is coerced to required
+    expect(applyTemplate('tmpl1', templateRules, 1)['field_visibility.name']).to.equal('required');
+  });
+
+  it('toggleRequired ignores always-required fields (name)', () => {
+    expect(toggleRequired({ 'field_visibility.name': 'required' }, 'name')).to.deep.equal({});
+  });
+
+  it('locked fields are pinned to step 1 (cannot be hidden or moved to step 2/3)', () => {
+    const state = applyTemplate('tmpl1', templateRules, 3);
     expect(moveField(state, 'email', 'hidden')).to.deep.equal({});
+    expect(moveField(state, 'email', 2)).to.deep.equal({});
+    expect(moveField(state, 'country', 3)).to.deep.equal({});
+    // email/country always distribute to step 1
+    expect(state[STEP_PREF][1]).to.include('email').and.include('country');
   });
 
   it('toggleRequired flips visible/required and ignores comments/demo', () => {
-    const state = { 'field_visibility.name': 'visible' };
-    expect(toggleRequired(state, 'name')['field_visibility.name']).to.equal('required');
-    expect(toggleRequired({ 'field_visibility.name': 'required' }, 'name')['field_visibility.name']).to.equal('visible');
-    expect(toggleRequired({ 'field_visibility.name': 'hidden' }, 'name')).to.deep.equal({});
+    const state = { 'field_visibility.phone': 'visible' };
+    expect(toggleRequired(state, 'phone')['field_visibility.phone']).to.equal('required');
+    expect(toggleRequired({ 'field_visibility.phone': 'required' }, 'phone')['field_visibility.phone']).to.equal('visible');
+    expect(toggleRequired({ 'field_visibility.phone': 'hidden' }, 'phone')).to.deep.equal({});
     expect(toggleRequired({ 'field_visibility.comments': 'visible' }, 'comments')).to.deep.equal({});
   });
 
@@ -378,5 +396,12 @@ describe('field-map', () => {
   it('deriveStepCount reads the highest non-empty step', () => {
     expect(deriveStepCount(applyTemplate('tmpl1', templateRules, 1))).to.equal(1);
     expect(deriveStepCount(applyTemplate('tmpl1', templateRules, 3))).to.equal(3);
+  });
+
+  it('isSeeded detects placement even when STEP_PREF is stripped (single-step persistence)', () => {
+    expect(isSeeded({ 'form.template': 'tmpl1' })).to.equal(false);
+    // a single-step form persisted without STEP_PREF still reads as seeded, so it is not re-seeded
+    expect(isSeeded({ 'field_visibility.name': 'required' })).to.equal(true);
+    expect(isSeeded({ 'field_filters.products': 'POI-Dxonly' })).to.equal(true);
   });
 });

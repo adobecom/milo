@@ -3,28 +3,36 @@ import { html, useContext, useState, useEffect, useMemo } from '../../deps/htm-p
 import { ConfiguratorContext } from './context.js';
 import { Select } from '../../ui/controls/formControls.js';
 import {
-  STEP_PREF, byId, deriveBuckets, deriveStepCount, isRequired, filterValue,
+  byId, deriveBuckets, deriveStepCount, isRequired, filterValue, isSeeded,
   applyTemplate, moveField, toggleRequired, setFilter, setStepCount as redistributeSteps,
 } from './field-map.js';
 
-const STEP_COUNT_OPTIONS = { 1: '1', 2: '2', 3: '3' };
+const STEP_COUNT_OPTIONS = [1, 2, 3];
 const bucketLabel = (bucket) => (bucket === 'hidden' ? 'Hidden' : `Step ${bucket}`);
 
 const FieldChip = ({ id, bucket, onDragStart, onToggleRequired, onSetFilter }) => {
   const { state } = useContext(ConfiguratorContext);
   const field = byId[id];
   const inStep = bucket !== 'hidden';
+  const locked = field.kind === 'locked';
   const showRequire = inStep && field.kind === 'visibility' && field.canRequire;
+  const lockedRequired = inStep && field.alwaysRequired;
   const showFilter = inStep && field.kind === 'filter';
 
   return html`
-    <div class="ff-chip" data-field=${id} draggable=${true} onDragStart=${(e) => onDragStart(e, id)}>
+    <div class="ff-chip ${locked ? 'is-pinned' : ''}" data-field=${id}
+      draggable=${!locked} onDragStart=${(e) => onDragStart(e, id)}>
       <div class="ff-chip-row">
-        <span class="ff-chip-handle" aria-hidden="true">⠿</span>
+        <span class="ff-chip-handle" aria-hidden="true">${locked ? '🔒' : '⠿'}</span>
         <span class="ff-chip-label">${field.label}</span>
         ${showRequire && html`
           <label class="ff-chip-required">
             <input type="checkbox" checked=${isRequired(state, field)} onChange=${() => onToggleRequired(id)} />
+            Required
+          </label>`}
+        ${lockedRequired && html`
+          <label class="ff-chip-required is-locked" title="This field is always required">
+            <input type="checkbox" checked disabled />
             Required
           </label>`}
       </div>
@@ -76,10 +84,8 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
   // Seed buckets from the default template once rules load and nothing is placed yet.
   useEffect(() => {
     const template = state['form.template'];
-    const placed = state[STEP_PREF] && Object.keys(state[STEP_PREF]).length;
-    if (Object.keys(templateRules).length && template && templateRules[template] && !placed) {
-      merge(applyTemplate(template, templateRules, 1));
-    }
+    const ready = Object.keys(templateRules).length && template && templateRules[template];
+    if (ready && !isSeeded(state)) merge(applyTemplate(template, templateRules, 1));
   }, [Object.keys(templateRules).length]);
 
   const onTemplate = (templateId) => merge(applyTemplate(templateId, templateRules, stepCount));
@@ -112,8 +118,18 @@ const FormFieldsPanel = ({ templateRules = {} }) => {
     <div class="form-fields-panel">
       <${Select} label="Template" name="form.template" options=${templateOptions}
         value=${state['form.template'] || ''} onChange=${onTemplate} isRequired=${true} />
-      <${Select} label="Number of Steps" name="fldStepCount" options=${STEP_COUNT_OPTIONS}
-        value=${stepCount} onChange=${onStepCount} />
+      <div class="ff-step-count">
+        <span class="ff-step-count-label">Number of Steps</span>
+        <div class="ff-step-count-group" role="group" aria-label="Number of Steps">
+          ${STEP_COUNT_OPTIONS.map((count) => html`
+            <button
+              key=${count}
+              type="button"
+              class="ff-step-count-btn ${stepCount === count ? 'is-active' : ''}"
+              aria-pressed=${stepCount === count}
+              onClick=${() => onStepCount(count)}>${count}</button>`)}
+        </div>
+      </div>
 
       <${Bucket} bucket="hidden" ids=${buckets.hidden} handlers=${handlers} />
       ${[...Array(stepCount)].map((_, i) => html`

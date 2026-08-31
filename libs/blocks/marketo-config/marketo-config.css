@@ -51,6 +51,10 @@
   left: 18px;
 }
 
+.marketo-config .accordion {
+  --field-max-size: 326px;
+}
+
 .marketo-config dt.title {
   cursor: pointer;
 }
@@ -63,6 +67,7 @@
 .marketo-config dd.content .field select, 
 .marketo-config dd.content .field input {
   width: 100%;
+  border-right: 16px solid transparent; 
 }
 
 .marketo-config dd.content .field label {
@@ -94,6 +99,8 @@
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 8px;
   transition: background-color 0.1s, border-color 0.1s;
+  width: var(--field-max-size);
+  box-sizing: border-box;
 }
 
 .form-fields-panel .ff-bucket.is-over {
@@ -122,8 +129,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 20px;
-  height: 20px;
+  width: 36px;
+  height: 24px;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -132,6 +139,7 @@
   font-size: 12px;
   line-height: 1;
   color: inherit;
+  background-color: #4a4a4a;
   cursor: pointer;
 }
 
@@ -163,6 +171,10 @@
   cursor: grabbing;
 }
 
+.form-fields-panel .ff-chip.is-pinned {
+  cursor: default;
+}
+
 .form-fields-panel .ff-chip-row {
   display: flex;
   align-items: center;
@@ -186,8 +198,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
+}
+
+.form-fields-panel .ff-chip-required.is-locked {
+  cursor: default;
+  opacity: 0.7;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -196,6 +213,11 @@
   height: 18px;
   accent-color: #2680eb;
   cursor: pointer;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.form-fields-panel .ff-chip-required.is-locked input {
+  cursor: default;
 }
 
 .form-fields-panel .ff-chip-filter {
@@ -208,10 +230,43 @@
   background-position: right 10px center;
   color: #fff;
   border: 1px solid rgb(255 255 255 / 15%);
-  border-radius: 4px;
   font-size: 14px;
   appearance: none;
   cursor: pointer;
+}
+
+.form-fields-panel .ff-step-count {
+  margin-top: 12px;
+}
+
+.form-fields-panel .ff-step-count-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-fields-panel .ff-step-count-group {
+  display: flex;
+  overflow: hidden;
+  width: var(--field-max-size);
+  justify-content: space-between;
+  gap: 5%;
+}
+
+.form-fields-panel .ff-step-count-btn {
+  flex: 1;
+  appearance: none;
+  min-width: 80px;
+  margin: 0;
+  background: #4a4a4a;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-fields-panel .ff-step-count-btn.is-active {
+  background: #2680eb;
 }
 
 .form-fields-panel .ff-reset {

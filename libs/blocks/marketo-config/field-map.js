@@ -17,37 +17,15 @@ export const META_KEYS = ['form.template', 'form.id', 'form.subtype', 'form.succ
 
 // kind: 'locked' (always in a step) | 'visibility' | 'filter' | 'synced'
 export const FIELDS = [
-  { id: 'email', label: 'Email', stepName: 'email', kind: 'locked', defaultStep: 1 },
-  { id: 'country', label: 'Country', stepName: 'country', kind: 'locked', defaultStep: 1 },
-
   {
-    id: 'name', label: 'First and Last Name', stepName: 'name', kind: 'visibility', canRequire: true, defaultStep: 2,
+    id: 'name', label: 'First and Last Name', stepName: 'name', kind: 'visibility', alwaysRequired: true, defaultStep: 2,
+  },
+  {
+    id: 'email', label: 'Email', stepName: 'email', kind: 'locked', alwaysRequired: true, defaultStep: 1,
   },
   {
     id: 'phone', label: 'Phone', stepName: 'phone', kind: 'visibility', canRequire: true, defaultStep: 2,
   },
-  {
-    id: 'company', label: 'Company', stepName: 'company', kind: 'visibility', canRequire: true, defaultStep: 3,
-  },
-  {
-    id: 'website', label: 'Website', stepName: 'mktodemandbaseWebsite', kind: 'visibility', canRequire: true, defaultStep: 2,
-  },
-  {
-    id: 'state', label: 'State', stepName: 'state', kind: 'visibility', canRequire: true, defaultStep: 3,
-  },
-  {
-    id: 'postcode', label: 'Postal Code', stepName: 'postcode', kind: 'visibility', canRequire: true, defaultStep: 3,
-  },
-  {
-    id: 'company_size', label: 'Company Size', stepName: 'mktoDemandbaseEmployeeRange', kind: 'visibility', canRequire: true, defaultStep: 2,
-  },
-  {
-    id: 'comments', label: 'Comments', stepName: 'mktoFormsComments', kind: 'visibility', canRequire: false, defaultStep: 3,
-  },
-  {
-    id: 'demo', label: 'Demo Request', stepName: 'mktoRequestProductDemo', kind: 'visibility', canRequire: false, defaultStep: 3,
-  },
-
   {
     id: 'job_role',
     label: 'Job Title or Role',
@@ -59,32 +37,6 @@ export const FIELDS = [
       { value: 'DX', label: 'DX Specific Roles' },
       { value: 'DMe', label: 'DMe Specific Roles' },
       { value: 'DALP', label: 'DALP Specific Roles' },
-    ],
-  },
-  {
-    id: 'functional_area',
-    label: 'Functional Area',
-    stepName: 'mktoFormsFunctionalArea',
-    kind: 'filter',
-    defaultStep: 2,
-    filterOptions: [
-      { value: 'Functional Area-Combined', label: 'Combined' },
-      { value: 'Functional Area-DX', label: 'DX' },
-      { value: 'Functional Area-DMe', label: 'DMe' },
-      { value: 'Functional Area-DALP', label: 'DALP' },
-    ],
-  },
-  {
-    id: 'products',
-    label: 'Product / Area of Interest',
-    stepName: 'mktoFormsPrimaryProductInterest',
-    kind: 'filter',
-    defaultStep: 3,
-    filterOptions: [
-      { value: 'POI-Combined', label: 'DMe & DX Combined Products' },
-      { value: 'POI-Dxonly', label: 'DX Products' },
-      { value: 'POI-DMe', label: 'DMe Products' },
-      { value: 'POI-DALP', label: 'DALP Products' },
     ],
   },
   {
@@ -101,10 +53,59 @@ export const FIELDS = [
       { value: 'Industry-Manufacturing', label: 'Manufacturing' },
     ],
   },
-
+  {
+    id: 'functional_area',
+    label: 'Functional Area | Department',
+    stepName: 'mktoFormsFunctionalArea',
+    kind: 'filter',
+    defaultStep: 2,
+    filterOptions: [
+      { value: 'Functional Area-Combined', label: 'Combined' },
+      { value: 'Functional Area-DX', label: 'DX' },
+      { value: 'Functional Area-DMe', label: 'DMe' },
+      { value: 'Functional Area-DALP', label: 'DALP' },
+    ],
+  },
+  {
+    id: 'company', label: 'Company | Organization', stepName: 'company', kind: 'visibility', canRequire: true, defaultStep: 3,
+  },
+  {
+    id: 'company_size', label: 'Company Size', stepName: 'mktoDemandbaseEmployeeRange', kind: 'visibility', canRequire: true, defaultStep: 2,
+  },
+  {
+    id: 'website', label: 'Website', stepName: 'mktodemandbaseWebsite', kind: 'visibility', canRequire: true, defaultStep: 2,
+  },
+  {
+    id: 'country', label: 'Country', stepName: 'country', kind: 'locked', alwaysRequired: true, defaultStep: 1,
+  },
+  {
+    id: 'state', label: 'State', stepName: 'state', kind: 'visibility', canRequire: true, defaultStep: 3,
+  },
+  {
+    id: 'postcode', label: 'Postal Code', stepName: 'postcode', kind: 'visibility', canRequire: true, defaultStep: 3,
+  },
+  {
+    id: 'products',
+    label: 'Product / Area of Interest',
+    stepName: 'mktoFormsPrimaryProductInterest',
+    kind: 'filter',
+    defaultStep: 3,
+    filterOptions: [
+      { value: 'POI-Combined', label: 'DMe & DX Combined Products' },
+      { value: 'POI-Dxonly', label: 'DX Products' },
+      { value: 'POI-DMe', label: 'DMe Products' },
+      { value: 'POI-DALP', label: 'DALP Products' },
+    ],
+  },
   // No Marketo-side visibility key; follows `products` placement + visibility.
   {
     id: 'company_type', label: 'Company Type', stepName: 'mktoFormsCompanyType', kind: 'synced', syncWith: 'products', defaultStep: 3,
+  },
+  {
+    id: 'comments', label: 'Comments', stepName: 'mktoFormsComments', kind: 'visibility', canRequire: false, defaultStep: 3,
+  },
+  {
+    id: 'demo', label: 'Demo Request', stepName: 'mktoRequestProductDemo', kind: 'visibility', canRequire: false, defaultStep: 3,
   },
 ];
 
@@ -113,6 +114,9 @@ export const byId = Object.fromEntries(FIELDS.map((f) => [f.id, f]));
 const propFor = (field) => (field.kind === 'filter' ? `${FILTER_PREFIX}${field.id}` : `${VISIBILITY_PREFIX}${field.id}`);
 
 const defaultFilter = (field) => field.filterOptions?.[0]?.value ?? HIDDEN;
+
+// The "on" value for a shown visibility field: always-required fields (name) can't be optional.
+const shownValue = (field) => (field.alwaysRequired ? 'required' : 'visible');
 
 const isShown = (state, field) => {
   if (field.kind === 'locked') return true;
@@ -169,8 +173,14 @@ export const deriveStepCount = (state) => {
   return [1, 2, 3].reduce((max, s) => (stepPref[s]?.length ? s : max), 1);
 };
 
+/* Has the panel already been seeded (or restored from storage)? Managed keys persist at any
+   step count, unlike STEP_PREF which validateState drops for single-step forms. */
+export const isSeeded = (state) => Object.keys(state).some(
+  (k) => k.startsWith(VISIBILITY_PREFIX) || k.startsWith(FILTER_PREFIX),
+);
+
 export const isRequired = (state, field) => {
-  if (field.kind === 'filter') return isShown(state, field); // shown ⇒ required
+  if (field.kind === 'filter' || field.alwaysRequired) return isShown(state, field); // shown ⇒ required
   return state[propFor(field)] === 'required';
 };
 
@@ -189,7 +199,8 @@ export const applyTemplate = (templateId, templateRules, count = 1) => {
   FIELDS.forEach((field) => {
     if (field.kind === 'locked' || field.kind === 'synced') return;
     const source = field.kind === 'filter' ? rule.field_filters : rule.field_visibility;
-    patch[propFor(field)] = source?.[field.id] ?? HIDDEN;
+    const value = source?.[field.id] ?? HIDDEN;
+    patch[propFor(field)] = field.alwaysRequired && value !== HIDDEN ? 'required' : value;
   });
   patch[STEP_PREF] = getDefaultDistribution(patch, count);
   return patch;
@@ -199,17 +210,18 @@ export const applyTemplate = (templateId, templateRules, count = 1) => {
 export const moveField = (currentState, id, bucket) => {
   const field = byId[id];
   if (!field || field.kind === 'synced') return {};
+  // Locked fields (email, country) are pinned to step 1: can't hide or move to another step.
+  if (field.kind === 'locked' && Number(bucket) !== 1) return {};
   const patch = {};
   const stepPref = cloneSteps(currentState);
 
   if (bucket === 'hidden') {
-    if (field.kind === 'locked') return {}; // locked fields can't be hidden
     patch[propFor(field)] = HIDDEN;
     removeFromSteps(stepPref, field.stepName);
   } else {
     const s = Number(bucket);
     if (field.kind === 'visibility' && (currentState[propFor(field)] ?? HIDDEN) === HIDDEN) {
-      patch[propFor(field)] = 'visible';
+      patch[propFor(field)] = shownValue(field);
     } else if (field.kind === 'filter' && (currentState[propFor(field)] ?? HIDDEN) === HIDDEN) {
       patch[propFor(field)] = defaultFilter(field);
     }
