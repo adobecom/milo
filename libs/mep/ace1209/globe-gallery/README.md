@@ -2859,7 +2859,7 @@ self-evident from the name:
 | `VEL_SMOOTH_MS` (`interaction.js`) | ms | time constant of the release-velocity EMA |
 | `HOVER_RATE` | per 60fps frame | ease toward the hover target, applied as `1 − (1 − RATE) ** dtScale`; reaches 80% in `ln(0.2) / ln(1 − RATE)` frames |
 | `CA_STRENGTH` | UV | radial shift per channel at transition peaks (bell curve) |
-| `CA_MOTION_CAP` | UV | directional (motion-trail) shift max. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself |
+| `CA_MOTION_CAP` (per band) | UV | directional (motion-trail) shift max, resolved into the profile as `bp.CA_MOTION_CAP` from `CA_MOTION_CAP_SM`/`_MD`. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself. The explicit `cap` argument still overrides it, so `modal.js` is unaffected |
 | `SPHERE_DRAG_CA_MUL` | uCA per unit of `sphereDragWarp` | adds to `uCA` while spinning the sphere, on top of the transition bell and hover terms |
 | `SCROLL_VEL_MAX` | px/frame | scroll speed that saturates the motion-trail amplitude. Since the canvas-wide filter was removed this is the **only** thing in the block gated on scroll speed, so an artefact that appears solely on a fast scroll is the motion trail |
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |

@@ -136,7 +136,8 @@ const COLUMN_EPS = 1e-6;
 // Chromatic aberration.
 const CA_ENABLED = true;
 const CA_STRENGTH = 0.01; // radial UV shift per channel
-const CA_MOTION_CAP = 0.03; // directional UV shift max
+const CA_MOTION_CAP_SM = 0.01; // directional UV shift max
+const CA_MOTION_CAP_MD = 0.03;
 const SCROLL_VEL_MAX = 18; // px/frame scroll speed that saturates the motion trail
 const HOVER_CA = 0.0125;
 const SPHERE_DRAG_CA_MUL = 0.2; // uCA per unit of sphereDragWarp
@@ -343,6 +344,7 @@ function createGlobeGalleryRuntime(
       name,
       YAW_ONLY: cylinder, // compared in doLayout to detect a pointer-precision change
       N_TOTAL: nTotal, // every card is on the arc at once — there is no conveyor
+      CA_MOTION_CAP: name === 'sm' ? CA_MOTION_CAP_SM : CA_MOTION_CAP_MD,
       ARC_SPAN: cfg.ARC_SPAN,
       SPHERE_R: cfg.SPHERE_R,
       CARD_H_SPHERE: sphereCardH,
@@ -864,7 +866,7 @@ function createGlobeGalleryRuntime(
   function applyMotionCA(mesh, dx, dy, ampOverride, cap) {
     if (!CA_ENABLED) return;
     const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
-    const s = cap !== undefined ? cap : CA_MOTION_CAP;
+    const s = cap !== undefined ? cap : bp.CA_MOTION_CAP;
     const sX = Math.max(mesh.scale.x, 0.01);
     const sY = Math.max(mesh.scale.y, 0.01);
     const dt = frameState.dtScale;
