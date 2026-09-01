@@ -201,7 +201,7 @@ def build_gallery(entries):
 PAGE_TEMPLATE = """<body>
   <header></header>
   <main>
-{input_table}    <div>
+{title}{input_table}    <div>
       <div class="design-tracker">
         <div>
           <div>{data}</div>
@@ -235,6 +235,18 @@ def fetch_page_source(org_repo, page_path, token):
 
 
 _DIV_TAG = re.compile(r"<\s*(/?)\s*div\b[^>]*>", re.IGNORECASE)
+_H1_RE = re.compile(r"<h1\b[^>]*>.*?</h1>", re.IGNORECASE | re.DOTALL)
+
+
+def extract_title(page_html):
+    """Pulls the page's own <h1>...</h1> (its display title) out of the
+    current source verbatim, same rationale as extract_input_table: this
+    script rebuilds the whole page body each sync, so anything not
+    explicitly carried across is silently dropped."""
+    if not page_html:
+        return None
+    m = _H1_RE.search(page_html)
+    return m.group(0) if m else None
 
 
 def extract_input_table(page_html, block_class):
@@ -278,6 +290,10 @@ def main():
     parser.add_argument("--page-path", required=True, help="e.g. drafts/dusan/wave1")
     parser.add_argument("--input-block-class", default="design-links",
                         help="CSS class of the hand-edited input block to preserve verbatim")
+    parser.add_argument("--title", default=None,
+                        help="page display title (<h1>); sets it on first publish or "
+                             "overrides an existing one. Omit to carry across whatever "
+                             "title (if any) is already on the page.")
     args = parser.parse_args()
 
     with open(args.entries) as f:
@@ -293,12 +309,15 @@ def main():
     else:
         input_block = ""
 
+    title_html = f"<h1>{html.escape(args.title)}</h1>" if args.title else extract_title(current_page)
+    title_block = f"    {title_html}\n" if title_html else ""
+
     offloaded = offload_oversized_days(entries, args.token, args.page_org_repo, args.page_branch, args.page_path)
 
     gallery, keys = build_gallery(entries)
     json_text = json.dumps(entries)
     escaped = html.escape(json_text, quote=False)
-    page = PAGE_TEMPLATE.format(data=escaped, gallery=gallery, input_table=input_block)
+    page = PAGE_TEMPLATE.format(data=escaped, gallery=gallery, input_table=input_block, title=title_block)
 
     with open(args.out, "w") as f:
         f.write(page)
@@ -309,6 +328,7 @@ def main():
         "outputBytes": len(page),
         "daysOffloaded": offloaded,
         "inputTablePreserved": bool(input_table),
+        "title": args.title or (extract_title(current_page) and "preserved") or None,
     }))
 
 
