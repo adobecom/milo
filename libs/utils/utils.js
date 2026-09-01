@@ -1549,6 +1549,8 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
+  if (a.hasAttribute('data-wcs-osi')) return false;
+
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     if (!isTrustedAutoBlock(candidate[key], url)) return false;
