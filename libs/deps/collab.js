@@ -331,6 +331,7 @@
     annotationModeActive = !!currentAnnotationMode;
     if (prev === 'edit' && currentAnnotationMode !== 'edit') closeInlineEdit();
     if (prev === 'assets' && currentAnnotationMode !== 'assets') closeImageHover();
+    if (currentAnnotationMode) { closeThreadPopup(); closeNewCommentPopup(); }
     // Delegate to annotation panel buttons if stream-mapper annotation is present on the page.
     const sel = mode === 'edit' ? '.annotation-mode-btn-edit'
       : mode === 'assets' ? '.annotation-mode-btn-assets'
