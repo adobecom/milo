@@ -103,8 +103,6 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_HOLD_CLEARANCE_BAND_FRAC = 0.045; // of band; quote bottom → next section top
-
 const PQ_REVEAL_IN_MS = 700;
 const PQ_REVEAL_OUT_MS = 225;
 
@@ -974,8 +972,8 @@ function createGlobeGalleryRuntime(
     root.style.setProperty('--gg-pq-appear-t', pqAppearTailT.toFixed(4));
   }
 
-  // The hold spends the gap between the quote's bottom edge and the next section's top, which
-  // depends on the authored quote's height. Publishes 0 when there is no room.
+  // The hold spends the WHOLE gap between the quote's bottom edge and the next section's top, so
+  // the two land flush. Authored quote height moves it. Publishes 0 when there is no room.
   function publishPqMetrics() {
     if (!pqEl || !pqEl.isConnected) return;
     const toVh = (px) => (px / H) * 100;
@@ -985,9 +983,8 @@ function createGlobeGalleryRuntime(
     const opticalCenterPx = navH + (H - navH) / 2;
     const box = pqEl.getBoundingClientRect();
     const quoteBottomVh = toVh(opticalCenterPx + box.height / 2);
-    const clearanceVh = (100 - toVh(navH)) * PQ_HOLD_CLEARANCE_BAND_FRAC;
-    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - clearanceVh);
-    root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
+    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh);
+    root.style.setProperty('--gg-pq-hold', `${freeVh.toFixed(1)}vh`);
   }
 
   // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
