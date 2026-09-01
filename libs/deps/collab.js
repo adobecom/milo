@@ -344,6 +344,12 @@
     }
   }
 
+  function notifyParentThread(threadId) {
+    if (window.parent === window || !ME.parentOrigin) return;
+    const thread = state.threads.find(t => t.id === threadId);
+    if (thread) window.parent.postMessage({ type: 'collab:thread-updated', threadId, thread }, ME.parentOrigin);
+  }
+
   function notifyParent() {
     if (window.parent === window) return;
     const count = state.threads.filter(t => !isResolved(t)).length;
@@ -596,7 +602,7 @@
     statusSel.addEventListener('mousedown', e => e.stopPropagation());
     statusSel.addEventListener('change', async e => {
       e.stopPropagation();
-      try { await api.updateStatus(t.id, statusSel.value); await refresh(); }
+      try { await api.updateStatus(t.id, statusSel.value); await refresh(); notifyParentThread(t.id); }
       catch (err) { console.error('[collab] updateStatus', err); }
     });
 
@@ -933,7 +939,7 @@
       select.appendChild(opt);
     });
     select.addEventListener('change', async () => {
-      try { await api.updateStatus(t.id, select.value); await refresh(); }
+      try { await api.updateStatus(t.id, select.value); await refresh(); notifyParentThread(t.id); }
       catch (e) { console.error('[collab] updateStatus', e); }
     });
     const closeBtn = el('button', 'collab-popup-close', '×');
