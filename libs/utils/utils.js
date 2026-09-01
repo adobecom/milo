@@ -2912,16 +2912,15 @@ export async function loadArea(area = document) {
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
-  const fragmentLink = area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]');
-  if (fragmentLink) {
+  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
     loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   }
 
   if (isLingoActive) loadLingoIndexes(area);
 
-  if (isDoc && isLingoActive) {
-    const tokenInLcp = htmlSections[0]?.innerHTML.includes('-geo-ip');
-    if (tokenInLcp || getMepEnablement('geo-ip-lcp')) warmGeoIpSheet(config);
+  if (isLingoActive) {
+    const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(htmlSections[0]?.innerHTML ?? '');
+    if (tokenInLcp || (isDoc && getMepEnablement('geo-ip-lcp'))) warmGeoIpSheet(config);
   }
 
   if (isDoc) {
