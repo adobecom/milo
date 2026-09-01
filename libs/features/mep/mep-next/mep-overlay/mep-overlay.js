@@ -176,7 +176,7 @@ function getManifestStatus(manifest) {
     },
     {
       reason: manifest.consentNotSpecified,
-      msg: 'Consent req missing.',
+      msg: 'Consent type not specified.',
       level: 'Error',
       label: 'Urgent warning',
     },
