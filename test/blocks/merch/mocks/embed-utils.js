@@ -61,6 +61,15 @@ export const lingoActive = () => false;
 export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
 
+// Unused directly by these tests; needed because merch.js statically imports
+// decorate.js and autoblock.js, which import these from utils.js.
+export const createIntersectionObserver = stub();
+export const getFederatedContentRoot = () => '';
+export const getFedsPlaceholderConfig = () => ({});
+export const shouldBlockFreeTrialLinks = () => false;
+export const decorateLinksAsync = stub().resolves();
+export const loadBlock = stub().resolves();
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
