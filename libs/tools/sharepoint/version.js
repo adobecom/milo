@@ -1,5 +1,5 @@
 import getServiceConfig from '../../utils/service-config.js';
-import { getValidatedSharePointSite } from '../../utils/utils.js';
+import { getValidatedSharePointSite, ADOBE_SHAREPOINT_HOSTNAME } from '../../utils/utils.js';
 import { getReqOptions } from './msal.js';
 import login from './login.js';
 
@@ -27,9 +27,9 @@ async function getSharePointDetails(hlxOrigin) {
   // so it must resolve to Adobe's real host (VULN-38270).
   const site = getValidatedSharePointSite(sharepoint.site);
   if (!site) throw new Error('Could not verify SharePoint site.');
-  const spSiteHostname = site.split(',')[0].split('/').pop();
+  // site is already pinned to ADOBE_SHAREPOINT_HOSTNAME, so no need to parse it back out.
   return {
-    origin: `https://${spSiteHostname}`,
+    origin: `https://${ADOBE_SHAREPOINT_HOSTNAME}`,
     siteId: sharepoint.siteId,
     site,
     driveId: sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive',

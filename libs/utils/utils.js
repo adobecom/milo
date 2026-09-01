@@ -2734,17 +2734,19 @@ export function getValidatedRepoOwnerOrigin(repo, owner) {
   ) return null;
   let url;
   try {
-    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.aem.live`);
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
   } catch {
     // stricter URL parsers (e.g. Node) reject invalid punycode labels
     return null;
   }
-  if (!url.hostname.endsWith('.aem.live')) return null;
+  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
   return url.origin;
 }
 
+export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
 const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/adobe\\.sharepoint\\.com,${GUID_PATTERN},${GUID_PATTERN}$`);
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);
 
 /**
  * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
