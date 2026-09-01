@@ -578,12 +578,12 @@ nav.feds-topnav .feds-bc-wrapper {
 
 /* gnav collapse */
 @media screen and (min-width: 900px) {
-  .bc-gnav-button {
+  .bc-gnav:not(.has-chat-history) .bc-gnav-button {
     display: none;
   }
 
-  .bc-gnav .bc-prompt-cards,
-  .bc-gnav .bc-input-field {
+  .bc-gnav:not(.has-chat-history) .bc-prompt-cards,
+  .bc-gnav:not(.has-chat-history) .bc-input-field {
     display: flex;
   }
 }

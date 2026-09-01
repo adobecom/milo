@@ -16,6 +16,7 @@ import {
 } from '../brand-concierge/bc-bootstrap.js';
 
 let stayActive = false;
+let bcGlobal;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -26,6 +27,14 @@ function gnavDeactivate(gnavInput, gnavCards) {
   if (!stayActive) {
     gnavInput.classList.remove('active');
     gnavCards.classList.remove('active');
+  }
+}
+
+function updateGnavHistoryUi() {
+  if (bcGlobal) {
+    if (!bcGlobal.classList.contains('has-chat-history')) {
+      bcGlobal.classList.add('has-chat-history');
+    }
   }
 }
 
@@ -41,6 +50,7 @@ function handleInput(text, gnavInput) {
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
   openSideModal(text, bcBootstrap);
+  updateGnavHistoryUi();
 }
 
 function handleSuggestedPrompt(text, gnavCards, event) {
@@ -49,6 +59,7 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
   openSideModal(text, bcBootstrap);
+  updateGnavHistoryUi();
 }
 
 function handleGnavButton(event) {
@@ -69,12 +80,13 @@ function promptUp() {
 
 function decorateGnav(cards, input, topNav, el) {
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: 'bc-gnav' });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
-  const gnavButtonSection = createTag('section', { class: `bc-gnav-button ${hasNoMobile ? ' no-gnav-mobile' : ''}` });
+  const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
 
   if (bcWrapper) {
+    if (!bcGlobal) bcGlobal = bcGnav;
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
 
