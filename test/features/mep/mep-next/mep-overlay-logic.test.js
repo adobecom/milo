@@ -818,9 +818,10 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.include('akamaiLocale=de');
+    expect(href).to.include('mboxOverride.browserIp=2.247.255.255');
   });
 
-  it('removes akamaiLocale from href when spoof geo select value is empty', async () => {
+  it('removes akamaiLocale and the browser IP from href when spoof geo select value is empty', async () => {
     const select = document.createElement('select');
     select.className = 'mep-spoof-geo';
     const opt = document.createElement('option');
@@ -831,6 +832,7 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.not.include('akamaiLocale');
+    expect(href).to.not.include('mboxOverride.browserIp');
   });
 
   it('includes mepButton=off when toggle-preview-link checkbox is checked', async () => {
@@ -853,6 +855,28 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.not.include('mepButton');
+  });
+
+  it('excludes the mep param from href when toggle-manifest-parameters is checked', async () => {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-manifest-parameters';
+    cb.checked = true;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.not.include('mep=');
+  });
+
+  it('includes the mep param in href when toggle-manifest-parameters is unchecked', async () => {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-manifest-parameters';
+    cb.checked = false;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.include('mep=');
   });
 
   it('includes mepHighlight param when toggle-mep checkbox is checked', async () => {

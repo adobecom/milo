@@ -1,5 +1,6 @@
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
+import { applyGeoSpoof } from '../spoof-country-ip.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../../utils/market.js';
 import {
   hasMasSurfaces,
@@ -490,13 +491,17 @@ export async function setPreviewButton() {
   ];
 
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
-
   const setOrDelete = (key, value) => (value
     ? simulateHref.searchParams.set(key, value)
     : simulateHref.searchParams.delete(key));
 
-  setOrDelete('akamaiLocale', getSpoofGeoParams(popup));
+  if (getCheckboxParam(popup, 'toggle-manifest-parameters')) {
+    simulateHref.searchParams.delete('mep');
+  } else {
+    simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  }
+
+  applyGeoSpoof(simulateHref.searchParams, getSpoofGeoParams(popup));
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));

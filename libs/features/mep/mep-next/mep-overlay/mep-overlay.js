@@ -42,6 +42,7 @@ const CARD_DATA = {
     ]],
     ['Toggle', [
       ['Preview Link', 'Add mepButton=off'],
+      ['Manifest Parameters', 'Exclude from URL'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
     ['Spoof Geo', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
