@@ -313,7 +313,12 @@ def main():
         input_block = ""
 
     title_html = f"<h1>{html.escape(args.title)}</h1>" if args.title else extract_title(current_page)
-    title_block = f"    {title_html}\n" if title_html else ""
+    # Wrapped in its own section <div> — a bare <h1> as a direct child of
+    # <main> breaks Franklin's per-section block-decoration pass (confirmed
+    # directly: the whole page stayed hidden behind the pre-decoration
+    # `display: none` since decoration never completed). Every top-level
+    # child of <main> must itself be a section div.
+    title_block = f"    <div>{title_html}</div>\n" if title_html else ""
 
     offloaded = offload_oversized_days(entries, args.token, args.page_org_repo, args.page_branch, args.page_path)
 
