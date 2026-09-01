@@ -84,6 +84,16 @@ describe('mepGeolocation', () => {
     expect(document.querySelector('.how-to')).to.be.null;
   });
 
+  it('skips countryIP resolution for bots', async () => {
+    const uaStub = stub(navigator, 'userAgent').value('Googlebot/2.1 (+http://www.google.com/bot.html)');
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    await init({ ...mepSettings, akamaiCode: 'de' });
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    uaStub.restore();
+  });
+
   it('adobe account (ims_country_code) country counts when mas-ims-login is on', async () => {
     await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'us' });
     document.head.insertAdjacentHTML('beforeend', '<meta name="mas-ims-login" content="on">');
