@@ -2258,15 +2258,12 @@ function initModalEventListener() {
   });
 }
 
-// CPU/RAM are coarse proxies (deviceMemory is Chromium-only), so pair them and
-// bias harder on Windows, whose integrated-GPU compositing is the real jank driver.
-// Missing signals compare false (undefined <= 4 === false) and read as capable.
-// Destructured (not navigator.x) so eslint-plugin-compat skips the guarded APIs.
 function shouldSkipLenis() {
   if (navigator.connection?.saveData
     || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-  const { deviceMemory, hardwareConcurrency: cores } = navigator;
-  const isWindows = navigator.userAgent.includes('Windows');
+  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
+  const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
+  const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
   return isWindows
     ? deviceMemory <= 4 || cores <= 4
     : deviceMemory <= 4 && cores <= 4;
@@ -2323,9 +2320,7 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    // Skip Lenis on mobile and on devices that can't carry it smoothly
-    const enableLenis = !window.matchMedia('(width < 768px)').matches && !shouldSkipLenis();
-    if (enableLenis) {
+    if (!shouldSkipLenis()) {
       await Promise.all([
         new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
         loadScript(`${config.base}/deps/lenis.min.js`),
