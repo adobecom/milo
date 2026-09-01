@@ -103,8 +103,6 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_HOLD_CLEARANCE_BAND_FRAC = 0.045; // of band; quote bottom → next section top
-
 const PQ_REVEAL_IN_MS = 700;
 const PQ_REVEAL_OUT_MS = 225;
 
@@ -405,7 +403,6 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
   let pqAppearZoomT = 0.5;
-  let pqAppearTailT = 0.5; // same cue in tail-fraction space, for the CSS pin
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0;
   let H = 0;
@@ -970,24 +967,15 @@ function createGlobeGalleryRuntime(
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
     // CSS pins against the tail, not the zoom span.
-    pqAppearTailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
-    root.style.setProperty('--gg-pq-appear-t', pqAppearTailT.toFixed(4));
+    const tailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
+    root.style.setProperty('--gg-pq-appear-t', tailT.toFixed(4));
   }
 
-  // The hold spends the gap between the quote's bottom edge and the next section's top, which
-  // depends on the authored quote's height. Publishes 0 when there is no room.
+  // Every other term cancels to half the quote box; CSS clamps it to the reveal point. See README.
   function publishPqMetrics() {
     if (!pqEl || !pqEl.isConnected) return;
-    const toVh = (px) => (px / H) * 100;
-    const tailVh = toVh(blockHeight) - formationVh;
-    if (!(tailVh > 0)) return;
-    const nextSectionTopVh = (1 - pqAppearTailT) * tailVh;
-    const opticalCenterPx = navH + (H - navH) / 2;
-    const box = pqEl.getBoundingClientRect();
-    const quoteBottomVh = toVh(opticalCenterPx + box.height / 2);
-    const clearanceVh = (100 - toVh(navH)) * PQ_HOLD_CLEARANCE_BAND_FRAC;
-    const freeVh = Math.max(0, nextSectionTopVh - quoteBottomVh - clearanceVh);
-    root.style.setProperty('--gg-pq-hold-max', `${freeVh.toFixed(1)}vh`);
+    const halfBox = pqEl.getBoundingClientRect().height / 2;
+    root.style.setProperty('--gg-pq-half-box', `${halfBox.toFixed(1)}px`);
   }
 
   // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.

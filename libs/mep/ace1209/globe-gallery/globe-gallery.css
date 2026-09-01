@@ -17,9 +17,6 @@
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
-
-  /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. */
-  --gg-pq-hold: 40vh;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
@@ -47,7 +44,6 @@
   .globe-gallery {
     --gg-runway-height: 520vh;
     --gg-formation-vh: 320vh;
-    --gg-pq-hold: 45vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -220,14 +216,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Ends one hold past the reveal, so the sticky rail holds the quote centred for that much scroll
-   before letting go. --gg-pq-hold-max defaults to 0, so no JS means no hold. */
+/* Ends half a quote box above the runway end, so the rail lets go as the next section's top reaches
+   the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   top: var(--gg-formation-vh);
-  bottom: max(0px, calc(
+  bottom: clamp(0px, var(--gg-pq-half-box, var(--gg-runway-height)), calc(
     (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
-      - var(--gg-optical-center) - min(var(--gg-pq-hold), var(--gg-pq-hold-max, 0vh))
+      - var(--gg-optical-center)
   ));
   left: 0;
   right: 0;
