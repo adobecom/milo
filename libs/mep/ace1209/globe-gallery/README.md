@@ -1293,7 +1293,10 @@ spreads the fade over the whole window and still lands exactly on 0 at `ARC_COPY
 `gpDelay = 0` case. All three live in `timeline.js`, so the global window and the per-card gate
 cannot drift apart.
 
-**Arc-copy placement is all CSS**; `updateArcCopy` owns only the opacity and the 24px entry slide.
+**Arc-copy placement is all CSS**; `updateArcCopy` owns the opacity, the 24px entry slide, and
+`pointer-events` — the pill keeps its `fixed` box at opacity 0, so it is hit-testable (selectable)
+only while that opacity is above 0, which ends at `ARC_COPY_OUT_FORM_END` (0.90), before the globe
+goes live at `SPHERE_INTERACTIVE_T` (0.94).
 CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
 and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
 below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
@@ -1520,8 +1523,10 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   screen reader arrowing through the description text (browse / virtual-cursor mode) is never
   hijacked. **Esc** (the `cancel` event,
   `preventDefault`'d so the close animation plays) / Enter-on-Close exit and the dialog **restores
-  focus to the opening image**. No backdrop-click-to-close; no arrow-key globe rotation (browsing
-  replaced it).
+  focus to the opening image**. **Click/tap outside the photo dismisses** (`backdropTap`, wired to
+  `touchend` for touch and to `click` for mouse) — the photo rect itself, the info scrim, the counter
+  pill, and any `button`/`a` are exempt, and a mouse gesture that moved or changed target is treated as a text
+  selection, not a dismiss. No arrow-key globe rotation (browsing replaced it).
 - **Modal counter reading order:** the visible `.globe-gallery-modal-counter` ("05 / 47") is
   `aria-hidden`; the spoken form ("5 of 47", from `cardLabel`) lives in **two** sr-only spans, both
   classed `.globe-gallery-modal-position` so one `querySelectorAll` write in `populateModal` keeps
@@ -1986,7 +1991,18 @@ The frame is **drawn**, not faded, and each of the four rules is drawn in a diff
 whole thing runs **clockwise**: top →, right ↓, bottom ←, left ↑. It reads as one continuous stroke.
 
 **One threshold, one window.** `pqAppearZoomT` is the only thing scroll decides. Crossing it starts the
-reveal; everything after is time:
+reveal, and `updatePullQuote` flips the figure's `pointer-events` to `auto` on the same cue, so the
+quote becomes selectable exactly as the globe stops taking the pointer (`globeLive()` is
+`zoomT < pqAppearZoomT`). `-pin` stays `none` — it is a tall box over the canvas — as do the two
+crosshair pseudo-elements, which span the whole figure and would otherwise block the selection.
+
+Crossing back the other way calls **`dropQuoteSelection`**, which collapses a selection whose anchor
+is inside the figure (and only then — a selection elsewhere on the page is left alone). It has to:
+`layoutQuote` adds `-lines` to the quote element itself, and that rule beats `-quote` at equal
+specificity, so a split quote is pinned at `opacity: 1` and the roll-up is the *only* thing hiding
+it. The glyphs translate out under each line's `overflow: hidden`, but the highlight painted on the
+line blocks does neither, so a leftover selection rides into the globe phase as full-width strips.
+The inline `pointer-events` value is the transition's only state. Everything after the cue is time:
 
 | Phase | Clock | What |
 | --- | --- | --- |

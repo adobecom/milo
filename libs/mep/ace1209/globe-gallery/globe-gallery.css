@@ -263,7 +263,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   gap: var(--gg-pq-gap);
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
-  pointer-events: none;
 
   /* Centred on the optical centre until the box is taller than the band, then top-anchored: a
      long quote overflows downward only, never under the nav. */
@@ -399,9 +398,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
-
-  /* Decorative dim/blur only; inert once the dialog runs showModal(). */
-  pointer-events: none;
 }
 
 /* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
@@ -425,7 +421,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   border: 0;
   background: transparent;
   color: inherit;
-  pointer-events: auto;
   touch-action: none;
   opacity: 0;
   transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) ease;
@@ -463,7 +458,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  pointer-events: auto;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -492,7 +486,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
   transition: background 0.2s ease;
 }
 .globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
@@ -511,7 +504,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
   backdrop-filter: blur(var(--gg-chrome-blur));
   box-shadow: none;
-  pointer-events: auto;
   display: flex;
   flex-direction: column;
 
@@ -677,7 +669,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   font-size: var(--s2a-font-size-sm);
   font-weight: var(--s2a-font-weight-body);
   letter-spacing: 0.02em;
-  pointer-events: none;
   user-select: none;
 }
 
@@ -709,7 +700,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   left: 0;
   right: 0;
   height: 100vh;
-  pointer-events: none;
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -725,7 +715,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   border: 0;
   background: transparent;
   transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 .globe-gallery-a11y-card:focus { outline: none; }
 
@@ -748,7 +737,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   line-height: 1.35;
   text-align: center;
   white-space: normal;
-  pointer-events: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -878,6 +866,7 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote-rail {
   position: static;
   height: auto;
+  pointer-events: auto;
 }
 
 .globe-gallery-reduced .globe-gallery-pullquote {

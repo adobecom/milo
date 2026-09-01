@@ -1350,9 +1350,17 @@ function createGlobeGalleryRuntime(
     if (!reducedMotion) writePullQuoteFrame(pq.revealT);
   }
 
+  function dropQuoteSelection() {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && pqEl.contains(sel.anchorNode)) sel.removeAllRanges();
+  }
+
   function updatePullQuote(frame) {
     // RM: CSS owns it — no JS driving.
     if (reducedMotion || !pqEl) return;
+    const live = frame.zoomT >= pqAppearZoomT;
+    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
+    pqEl.style.pointerEvents = live ? 'auto' : 'none';
     writePullQuoteFrame(advanceReveal(frame.zoomT));
   }
 
@@ -1401,6 +1409,7 @@ function createGlobeGalleryRuntime(
     const opStr = arcCopyOp.toFixed(3);
     const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
     if (opStr !== arcCopy.opStr) { arcCopy.el.style.opacity = opStr; arcCopy.opStr = opStr; }
+    arcCopy.el.style.pointerEvents = arcCopyOp > 0 ? 'auto' : 'none';
     if (transformStr !== arcCopy.transformStr) {
       arcCopy.el.style.transform = transformStr;
       arcCopy.transformStr = transformStr;
