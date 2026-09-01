@@ -54,7 +54,7 @@ export function computePreflightRollup(rows = []) {
     const score = r.preflight?.score;
     if (score == null) return;
     checked += 1;
-    if (score >= PREFLIGHT_WARN) passing += 1;
+    if (score >= PREFLIGHT_PASS) passing += 1;
   });
   return { checked, passing, passingPct: pct(passing, checked) };
 }

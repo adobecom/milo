@@ -21,6 +21,11 @@ function relayOriginFor(env) {
 }
 
 let relayedToken = null;
+const tokenListeners = new Set();
+export function onToken(fn) {
+  tokenListeners.add(fn);
+  return () => tokenListeners.delete(fn);
+}
 function persist(token) {
   try {
     if (token) sessionStorage.setItem(TOKEN_KEY, token);
@@ -31,6 +36,7 @@ function persist(token) {
 function storeToken(token) {
   relayedToken = token || null;
   persist(token);
+  if (token) tokenListeners.forEach((fn) => fn(token));
 }
 function storedToken() {
   try { return sessionStorage.getItem(TOKEN_KEY); } catch { return null; }

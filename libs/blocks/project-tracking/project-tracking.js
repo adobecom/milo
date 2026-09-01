@@ -1,5 +1,5 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
-import { resolveContext, createClient, signIn } from './api.js';
+import { resolveContext, createClient, signIn, onToken } from './api.js';
 import { computeRollup, deriveStatus, computeStatusCounts, computePreflightRollup, preflightTier } from './rollup.js';
 import applyView from './view.js';
 
@@ -54,7 +54,9 @@ const STATUS_CLASS = { Draft: 'pt-badge-draft', Previewed: 'pt-badge-previewed',
 
 function createBadgeCell(status) {
   const cell = createTag('td', { class: 'pt-cell' });
-  cell.append(createTag('span', { class: `pt-badge ${STATUS_CLASS[status] || ''}` }, status));
+  const badge = createTag('span', { class: `pt-badge ${STATUS_CLASS[status] || ''}` });
+  badge.textContent = status;
+  cell.append(badge);
   return cell;
 }
 
@@ -139,16 +141,18 @@ function renderResults(mount, rows, since, view = {}) {
   const start = (view.page - 1) * PAGE_SIZE;
   const pageRows = visible.slice(start, start + PAGE_SIZE);
 
+  const hasPreflight = preflight.checked > 0;
   const table = createTag('table', { class: 'pt-table' });
   const headRow = createTag('tr');
-  headRow.append(
+  const headCells = [
     createTag('th', { scope: 'col' }, 'Page'),
     createTag('th', { scope: 'col' }, 'Status'),
     createTag('th', { scope: 'col' }, 'Previewed'),
     createTag('th', { scope: 'col' }, 'Published'),
-    createTag('th', { scope: 'col' }, 'Preflight'),
-    createTag('th', { scope: 'col' }, 'Comments'),
-  );
+  ];
+  if (hasPreflight) headCells.push(createTag('th', { scope: 'col' }, 'Preflight'));
+  headCells.push(createTag('th', { scope: 'col' }, 'Comments'));
+  headRow.append(...headCells);
   table.append(createTag('thead', {}, headRow));
   const tbody = createTag('tbody');
   pageRows.forEach((r) => {
@@ -158,14 +162,15 @@ function renderResults(mount, rows, since, view = {}) {
     const link = createTag('a', { class: 'pt-link', href, target: '_blank', rel: 'noopener noreferrer' });
     link.textContent = r.url;
     linkCell.append(link);
-    tr.append(
+    const cells = [
       linkCell,
       createBadgeCell(deriveStatus(r)),
       createStatusCell(r.lastPreview),
       createStatusCell(r.lastPublish),
-      createPreflightCell(r.preflight),
-      createCommentsCell(r.annotations),
-    );
+    ];
+    if (hasPreflight) cells.push(createPreflightCell(r.preflight));
+    cells.push(createCommentsCell(r.annotations));
+    tr.append(...cells);
     tbody.append(tr);
   });
   table.append(tbody);
@@ -258,18 +263,15 @@ export default async function init(block) {
   const check = async () => {
     const inputs = parseUrls(textarea.value);
     if (inputs.length === 0 || checkBtn.disabled) return;
-    const seen = new Set();
-    const pairs = [];
-    inputs.forEach((original) => {
-      const api = normalizeUrl(original);
-      if (!seen.has(api)) { seen.add(api); pairs.push({ original, api }); }
-    });
+    const pairs = inputs.map((original) => ({ original, api: normalizeUrl(original) }));
+    const uniqueApis = [...new Set(pairs.map((p) => p.api))];
     checkBtn.disabled = true;
     checkBtn.textContent = 'Checking…';
     results.replaceChildren(createTag('p', { class: 'pt-muted' }, 'Checking…'));
     try {
-      const data = await client.post('/project-status', { urls: pairs.map((p) => p.api) });
-      rows = data.map((r, i) => ({ ...r, url: pairs[i]?.original ?? r.url }));
+      const data = await client.post('/project-status', { urls: uniqueApis });
+      const byApi = new Map(uniqueApis.map((api, i) => [api, data[i]]));
+      rows = pairs.map(({ original, api }) => ({ ...(byApi.get(api) ?? {}), url: original }));
       view.page = 1;
       renderResults(results, rows, since.value, view);
     } catch (e) {
@@ -321,6 +323,7 @@ export default async function init(block) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
   });
   checkBtn.addEventListener('click', check);
+  onToken(() => check());
   since.addEventListener('change', () => updateView());
   filterSel.addEventListener('change', () => updateView({ filter: filterSel.value }));
   sortSel.addEventListener('change', () => updateView({ sort: sortSel.value }));

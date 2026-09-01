@@ -64,12 +64,12 @@ describe('project-tracking preflight', () => {
     expect(preflightTier(0)).to.equal('fail');
   });
 
-  it('rollup: passing = score >= 70, denominator = pages with a run', () => {
+  it('rollup: passing = score >= 90 (pass tier), denominator = pages with a run', () => {
     const rows = [pfRow(95), pfRow(72), pfRow(40), pfRow(null)];
     const r = computePreflightRollup(rows);
     expect(r.checked).to.equal(3);
-    expect(r.passing).to.equal(2);
-    expect(r.passingPct).to.equal(67);
+    expect(r.passing).to.equal(1);
+    expect(r.passingPct).to.equal(33);
   });
 
   it('rollup: no preflight data → zeroed, no divide-by-zero', () => {

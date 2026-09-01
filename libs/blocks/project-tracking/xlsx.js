@@ -1,3 +1,4 @@
+// No xlsx lib: Milo blocks have no bundler for deps, not worth a parser just to pull URLs.
 const TRACKABLE = /(^|\.)aem\.(page|live)$|^business(\.stage)?\.adobe\.com$/i;
 const URL_RE = /https?:\/\/[^\s"'<>]+/gi;
 
@@ -5,13 +6,9 @@ function isTrackable(u) {
   try { return TRACKABLE.test(new URL(u).hostname); } catch { return false; }
 }
 
+const XML_ENTITIES = { '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&amp;': '&' };
 function unescapeXml(s) {
-  return s
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&');
+  return s.replace(/&(?:lt|gt|quot|#39|amp);/g, (m) => XML_ENTITIES[m]);
 }
 
 export function extractUrlsFromText(text) {
