@@ -263,6 +263,10 @@ export default async function init(block) {
   const check = async () => {
     const inputs = parseUrls(textarea.value);
     if (inputs.length === 0 || checkBtn.disabled) return;
+    if (!ctx.getToken() && signIn()) {
+      results.replaceChildren(createTag('p', { class: 'pt-muted' }, 'Sign in to continue…'));
+      return;
+    }
     const pairs = inputs.map((original) => ({ original, api: normalizeUrl(original) }));
     const uniqueApis = [...new Set(pairs.map((p) => p.api))];
     checkBtn.disabled = true;

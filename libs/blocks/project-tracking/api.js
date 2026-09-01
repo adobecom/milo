@@ -100,7 +100,9 @@ function loadIms(base) {
 }
 
 export function signIn() {
-  window[IMS_INSTANCE]?.signIn?.();
+  if (!window[IMS_INSTANCE]?.signIn) return false;
+  window[IMS_INSTANCE].signIn();
+  return true;
 }
 
 function readConfig(block) {
