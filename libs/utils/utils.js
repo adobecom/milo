@@ -114,6 +114,7 @@ const C2_BLOCKS = [
   'base-card',
   'box',
   'brand-concierge',
+  'card-metadata',
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
@@ -1376,7 +1377,7 @@ function getBlockData(block) {
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
 
-  const PAGE_AGNOSTIC_BLOCKS = ['preflight', 'card-metadata'];
+  const PAGE_AGNOSTIC_BLOCKS = ['preflight'];
   const isPageAgnostic = PAGE_AGNOSTIC_BLOCKS.includes(name);
   if (isC2Page && isC1Block && !isC2Block && !isAutoBlock && !isPageAgnostic) {
     return { name, isInvalid: true };
