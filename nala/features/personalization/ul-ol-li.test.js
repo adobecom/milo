@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './mep-test.js';
 import { features } from './ul-ol-li.spec.js';
 
 const miloLibs = process.env.MILO_LIBS || '';

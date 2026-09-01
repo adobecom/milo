@@ -2,11 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl, fetchData, DATA_TYPE, categorizeActions,
+  fetchData, DATA_TYPE, categorizeActions,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -802,6 +802,41 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
       expect(isTrustedUrl([])).to.be.false;
+    });
+  });
+  describe('isSameOriginManifestPath', () => {
+    it('allows same-origin absolute paths', () => {
+      expect(isSameOriginManifestPath('/path/to/data/')).to.be.true;
+      expect(isSameOriginManifestPath('/content/dam/cc/')).to.be.true;
+      expect(isSameOriginManifestPath('/drafts/x/')).to.be.true;
+    });
+    it('rejects absolute URLs, even same-origin or trusted', () => {
+      expect(isSameOriginManifestPath(`${window.location.origin}/x`)).to.be.false;
+      expect(isSameOriginManifestPath('https://www.adobe.com/x')).to.be.false;
+      expect(isSameOriginManifestPath('http://www.adobe.com/x')).to.be.false;
+    });
+    it('rejects protocol-relative paths', () => {
+      expect(isSameOriginManifestPath('//evil.com/')).to.be.false;
+    });
+    it('rejects paths that normalize to a cross-origin host', () => {
+      expect(isSameOriginManifestPath('/\\evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('\\/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\t/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\n/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\r/evil.com/')).to.be.false;
+    });
+    it('rejects non-path schemes', () => {
+      // eslint-disable-next-line no-script-url
+      expect(isSameOriginManifestPath('javascript:alert(1)')).to.be.false;
+      expect(isSameOriginManifestPath('data:text/html,x')).to.be.false;
+    });
+    it('rejects null/empty and non-string inputs', () => {
+      expect(isSameOriginManifestPath(null)).to.be.false;
+      expect(isSameOriginManifestPath(undefined)).to.be.false;
+      expect(isSameOriginManifestPath('')).to.be.false;
+      expect(isSameOriginManifestPath(123)).to.be.false;
+      expect(isSameOriginManifestPath({})).to.be.false;
+      expect(isSameOriginManifestPath([])).to.be.false;
     });
   });
   describe('fetchData', () => {

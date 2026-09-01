@@ -14,6 +14,8 @@ import init, {
   formTimeout,
   LANA_MESSAGE,
   FORM_PARAM,
+  getMarketoLibsBase,
+  loadDaMarketoBlock,
 } from '../../../libs/blocks/marketo/marketo.js';
 import { waitForElement } from '../../helpers/waitfor.js';
 
@@ -466,5 +468,136 @@ describe('Marketo formSuccess IMS', () => {
       { tags: 'marketo', severity: 'e' },
     )).to.be.true;
     expect(result).to.be.false;
+  });
+});
+
+describe('da-marketo libs', () => {
+  const plainEl = () => document.createElement('div');
+  // default to a dev host so branch resolution falls through to the CDN URLs;
+  // pass a production host explicitly to exercise the /mkto DNS route.
+  const loc = (search, hostname = 'main--milo--adobecom.aem.live') => ({ search, hostname });
+  const noMeta = () => '';
+
+  beforeEach(() => {
+    window.lana = { log: sinon.spy() };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe('getMarketoLibsBase', () => {
+    it('returns null when there is no trigger', () => {
+      expect(getMarketoLibsBase(plainEl(), loc(''), noMeta)).to.be.null;
+    });
+
+    it('resolves ?marketolibs=main to the da-marketo production mkto base', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=main'), noMeta))
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('treats a bare ?marketolibs as main', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs'), noMeta))
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('treats ?marketolibs=true as a literal branch', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=true'), noMeta))
+        .to.equal('https://true--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves a named branch to a da-marketo branch mkto base', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=stage'), noMeta))
+        .to.equal('https://stage--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves any marketo-libs metadata value to main', () => {
+      expect(getMarketoLibsBase(plainEl(), loc(''), () => 'stage'))
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves the da-marketo block class to main', () => {
+      const el = plainEl();
+      el.classList.add('da-marketo');
+      expect(getMarketoLibsBase(el, loc(''), noMeta))
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('gives the query param precedence over metadata and class', () => {
+      const el = plainEl();
+      el.classList.add('da-marketo');
+      expect(getMarketoLibsBase(el, loc('?marketolibs=parambranch'), () => 'metabranch'))
+        .to.equal('https://parambranch--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves metadata to main even when a da-marketo class is present', () => {
+      const el = plainEl();
+      el.classList.add('da-marketo');
+      expect(getMarketoLibsBase(el, loc(''), () => 'metabranch'))
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves a fork branch containing -- to an aem.live mkto base', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=feature--da-marketo--adobecom'), noMeta))
+        .to.equal('https://feature--da-marketo--adobecom.aem.live/mkto');
+    });
+
+    it('resolves local to the da-marketo local mkto base', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=local'), noMeta))
+        .to.equal('http://localhost:6586/mkto');
+    });
+
+    it('throws on an invalid branch name', () => {
+      expect(() => getMarketoLibsBase(plainEl(), loc('?marketolibs=bad!name'), noMeta))
+        .to.throw(/Invalid marketolibs branch name/);
+    });
+
+    it('resolves to /mkto on a production adobe.com host when triggered', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=main', 'business.adobe.com'), noMeta))
+        .to.equal('/mkto');
+    });
+
+    it('returns null on a production host when there is no trigger', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('', 'www.adobe.com'), noMeta)).to.be.null;
+    });
+  });
+
+  describe('loadDaMarketoBlock', () => {
+    const MOCK_BASE = '/test/blocks/marketo/mocks/da-marketo/mkto';
+
+    afterEach(() => {
+      document.head.querySelectorAll(`link[href^="${MOCK_BASE}"]`).forEach((l) => l.remove());
+    });
+
+    it('runs da-marketo\'s da-marketo block, loads its css, and returns true', async () => {
+      const el = plainEl();
+      el.className = 'marketo da-marketo';
+      const result = await loadDaMarketoBlock(el, MOCK_BASE);
+      expect(result).to.be.true;
+      expect(el.dataset.daMarketoRan).to.equal('true');
+      expect(document.head.querySelector(`link[href="${MOCK_BASE}/blocks/da-marketo/da-marketo.css"]`)).to.exist;
+    });
+
+    it('returns false and warns when the da-marketo block cannot load', async () => {
+      const el = plainEl();
+      const result = await loadDaMarketoBlock(el, '/test/blocks/marketo/mocks/does-not-exist/mkto');
+      expect(result).to.be.false;
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.firstCall.args[1]).to.include({ severity: 'w' });
+    });
+  });
+
+  describe('init delegation', () => {
+    beforeEach(() => {
+      setConfig(config);
+      document.body.innerHTML = '';
+    });
+
+    it('does not delegate to da-marketo when there is no trigger', async () => {
+      document.body.innerHTML = blockHTML;
+      const el = document.querySelector('.marketo');
+      await init(el);
+      expect(el.dataset.daMarketoRan).to.be.undefined;
+    });
   });
 });

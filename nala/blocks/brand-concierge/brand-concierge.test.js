@@ -1057,7 +1057,10 @@ test.describe('Milo Brand Concierge Block test suite', () => {
 
         await test.step('step-7: Verify marquee background images render', async () => {
           expect(await bc.marqueeImages.count()).toBeGreaterThanOrEqual(data.minimumImageCount);
-          await expect(bc.marqueeImages.first()).toBeVisible();
+          // Marquee authors per-viewport images (mobile-only/tablet-only/
+          // desktop-only), so the first <picture> may be hidden on this
+          // viewport. Assert at least one picture is actually visible.
+          await expect(bc.block.locator('picture:visible').first()).toBeVisible({ timeout: 12000 });
         });
 
         await test.step('step-8: Run accessibility test on the marquee', async () => {
