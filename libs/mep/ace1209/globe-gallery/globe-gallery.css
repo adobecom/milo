@@ -42,7 +42,6 @@
 
 @media (width >= 768px) {
   .globe-gallery {
-    --gg-runway-height: 520vh;
     --gg-formation-vh: 320vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);

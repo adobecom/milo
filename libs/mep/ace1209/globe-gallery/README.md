@@ -48,9 +48,8 @@ or read upside down, and the globe self-levels); **touch drags spin yaw only** s
 vertical swipes stay page scroll, and **the barrel is yaw-only for mouse too** (pitch
 follows the geometry, not the pointer — a cylinder can't centre vertically). See
 Sphere rotation + Touch gesture arbitration.
-Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
-fixed pull-quote whose crosshair draws itself in near the zoom end, a WebGL **"Click & Drag" hint
-text** behind the sphere (warps in on fold, dissolves away on first drag — see
+Extras: a fixed arc-copy overlay, a fixed pull-quote whose crosshair draws itself
+in near the zoom end, a WebGL **"Click & Drag" hint text** behind the sphere (warps in on fold, dissolves away on first drag — see
 Behavior notes), **globe controls** (an auto-spin play/pause toggle everywhere plus a
 rotate/hint/rotate row on the barrel — see Globe controls), and a **two-level a11y gallery** (see Accessibility below): a single
 focusable entry widget whose Enter opens a keyboard/screen-reader browse mode that tabs
@@ -577,13 +576,11 @@ markup, fills the arc-copy / pull-quote slots, and **returns the `gid`** (the
 per-instance unique-id suffix it mints from a module-level counter in
 `authoring.js`). The runtime finds nodes by **class, queried within
 `el`** (`root.querySelector('.globe-gallery-canvas')`, `.globe-gallery-modal-canvas`,
-`.globe-gallery-pullquote`, `.globe-gallery-modal*`,
-`.globe-gallery-ca-r-offset`/`.globe-gallery-ca-b-offset`, …) →
+`.globe-gallery-pullquote`, `.globe-gallery-modal*`, …) →
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
-document-wide id references): the CA SVG filter (referenced from JS as
-`filter: url(#ca-filter-<gid>)`) and the modal heading/role-label/position (the heading's own id
-plus its `aria-describedby` IDREFs). `el` itself is the scroll runway
+document-wide id references): the modal heading/role-label/position — the heading's own id plus its
+`aria-describedby` IDREFs. `el` itself is the scroll runway
 (height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-gallery-modal-open` scroll lock.
@@ -827,7 +824,7 @@ stay longer than half the quote box, or the section arrives on top of it.
 
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
 - *Whole stretch after the globe too long, or too much blank before the quote:* shorten the tail. The
-  quote's timing is camera-derived and rides along. Three ways, **per breakpoint**:
+  quote's timing is camera-derived and rides along. Two knobs, both **per breakpoint**:
   - `--gg-runway-height` down: removes tail outright, the strongest per vh. Compresses everything
     fraction-based in the tail at once, and the zoom speeds up faster than the gap closes.
   - `--gg-formation-vh` up: moves scroll from tail into formation, leaving total length alone, so
@@ -835,9 +832,10 @@ stay longer than half the quote box, or the section arrives on top of it.
   - The hold is **not** a knob — the pin ends half a quote box above the runway end, which spends
     whatever gap is there.
 
-  Floor on all three: `(1 − appear-t) × tail` must stay above half the quote box *plus the hold*, or the
-  next section lands on the quote. Shrinking the tail spends the hold first — it is the residual —
-  so log it off the block with the longest authored quote before shipping.
+  Floor on both: `(1 − appear-t) × tail` must stay above the quote's bottom edge
+  (`optical-centre + box/2`), or the hold reaches 0 and the next section lands on the quote.
+  Shrinking the tail spends the hold first — it is the residual — so log it off the block with the
+  longest authored quote before shipping.
 - *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune — it is
   `zoomTAtCamZ` of the shell's far wall. If it reads early, revisit the card extent in
   `publishPqAppearZoomT`, not a scroll number.
@@ -2863,8 +2861,7 @@ self-evident from the name:
 | `CA_STRENGTH` | UV | radial shift per channel at transition peaks (bell curve) |
 | `CA_MOTION_CAP` | UV | directional (motion-trail) shift max. Amplitude is `sqrt` of the scroll/drag speed ratio (see `SCROLL_VEL_MAX`), not the ratio itself |
 | `SPHERE_DRAG_CA_MUL` | uCA per unit of `sphereDragWarp` | adds to `uCA` while spinning the sphere, on top of the transition bell and hover terms |
-| `SCROLL_VEL_MAX` | px/frame | scroll speed that saturates the motion-trail amplitude and the global canvas filter (`CA_PX_MAX`) |
-| `CA_PX_MAX` | px | max vertical shift for the global canvas SVG filter. Gated by `GLOBAL_CA_SM`/`_MD` — **sm stays off**: a CSS `filter` over the full canvas forces an offscreen composite every repainted frame, and falls off the GPU-accelerated path on mobile Safari in particular |
+| `SCROLL_VEL_MAX` | px/frame | scroll speed that saturates the motion-trail amplitude. Since the canvas-wide filter was removed this is the **only** thing in the block gated on scroll speed, so an artefact that appears solely on a fast scroll is the motion trail |
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |

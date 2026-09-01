@@ -138,9 +138,6 @@ const CA_ENABLED = true;
 const CA_STRENGTH = 0.01; // radial UV shift per channel
 const CA_MOTION_CAP = 0.03; // directional UV shift max
 const SCROLL_VEL_MAX = 18; // px/frame scroll speed that saturates the motion trail
-const CA_PX_MAX = 1; // max vertical px shift for the canvas SVG filter
-const GLOBAL_CA_SM = false;
-const GLOBAL_CA_MD = true;
 const HOVER_CA = 0.0125;
 const SPHERE_DRAG_CA_MUL = 0.2; // uCA per unit of sphereDragWarp
 const TEXT_CA_WARP_MUL = 0.75;
@@ -345,9 +342,7 @@ function createGlobeGalleryRuntime(
     return Object.freeze({
       name,
       YAW_ONLY: cylinder, // compared in doLayout to detect a pointer-precision change
-      GLOBAL_CA: name === 'sm' ? GLOBAL_CA_SM : GLOBAL_CA_MD,
-      N_TOTAL: nTotal,
-      N_VISIBLE: nTotal, // all cards on arc simultaneously (no conveyor)
+      N_TOTAL: nTotal, // every card is on the arc at once — there is no conveyor
       ARC_SPAN: cfg.ARC_SPAN,
       SPHERE_R: cfg.SPHERE_R,
       CARD_H_SPHERE: sphereCardH,
@@ -420,9 +415,6 @@ function createGlobeGalleryRuntime(
     copyStr: '',
   };
 
-  let caFilterR = null; // SVG feOffset element for red channel
-  let caFilterB = null; // SVG feOffset element for blue channel
-  let globalCaFilterOn = false; // whether canvas.style.filter currently holds the CA url
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
   // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
@@ -1365,25 +1357,6 @@ function createGlobeGalleryRuntime(
     return sphGroupZ;
   }
 
-  function setGlobalCa(on) {
-    if (on === globalCaFilterOn || !renderer) return;
-    renderer.domElement.style.filter = on ? `url(#ca-filter-${gid})` : '';
-    globalCaFilterOn = on;
-  }
-
-  function updateGlobalCA() {
-    if (!bp.GLOBAL_CA) { setGlobalCa(false); return; }
-    if (!CA_ENABLED || !caFilterR) return;
-    const scrollVelNorm = Math.min(1.0, frameState.scrollVel / SCROLL_VEL_MAX);
-    const globalCA = scrollVelNorm * CA_PX_MAX;
-    if (globalCA <= 0.05) { setGlobalCa(false); return; }
-    caFilterR.setAttribute('dx', '0');
-    caFilterR.setAttribute('dy', (-globalCA).toFixed(2));
-    caFilterB.setAttribute('dx', '0');
-    caFilterB.setAttribute('dy', (globalCA * 0.5).toFixed(2));
-    setGlobalCa(true);
-  }
-
   function updateArcCopy(frame) {
     if (!arcCopy.el) return;
     const arcCopyInE = easeOutCubic(Math.min(1, frame.arcCopyEntryT / TL.ARC_COPY_IN_ENTRY_T));
@@ -1514,9 +1487,9 @@ function createGlobeGalleryRuntime(
   // Transform on the arc→grid continuum at peel ease gpE (0 = arc, 1 = grid). Serves the
   // arc/peel render AND the origin of the fold lerp.
   function computeCardEntry(i, frame, out) {
-    const { N_VISIBLE, ARC_DENSE_COUNT } = bp;
-    const rawT = clamp01(i / Math.max(1, N_VISIBLE - 1));
-    const splitR = ARC_DENSE_COUNT / Math.max(1, N_VISIBLE - 1);
+    const { N_TOTAL, ARC_DENSE_COUNT } = bp;
+    const rawT = clamp01(i / Math.max(1, N_TOTAL - 1));
+    const splitR = ARC_DENSE_COUNT / Math.max(1, N_TOTAL - 1);
     out.fanT = rawT < splitR
       ? (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT
       : ARC_DENSE_SPLIT + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
@@ -1758,7 +1731,6 @@ function createGlobeGalleryRuntime(
     renderer.sortObjects = true;
 
     frame.sphGroupZ = updateSphereGroupDepth(frame);
-    updateGlobalCA();
     updateCardTransforms(frame);
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExitProgress(frame); // before controls.update reads it
@@ -2019,8 +1991,6 @@ function createGlobeGalleryRuntime(
 
     canvas.style.display = 'block';
 
-    caFilterR = q('.globe-gallery-ca-r-offset');
-    caFilterB = q('.globe-gallery-ca-b-offset');
     arcCopy.el = q('.globe-gallery-arc-copy');
     arcCopy.opStr = '';
     arcCopy.transformStr = '';
@@ -2092,7 +2062,6 @@ function createGlobeGalleryRuntime(
     interaction.teardown();
     controls.teardown();
     if (renderer) {
-      setGlobalCa(false);
       // Do NOT forceContextLoss() here — the canvas is reused across rebuilds and a force-lost
       // context never restores.
       renderer.dispose();
