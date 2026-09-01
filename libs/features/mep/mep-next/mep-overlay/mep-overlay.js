@@ -535,7 +535,7 @@ function setEventListeners() {
       });
       return;
     }
-    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    const cardEl = event.target.closest('.mep-card h1 svg') && event.target.closest('.mep-card');
     if (cardEl) toggleExpandedCard(cardEl);
   });
 

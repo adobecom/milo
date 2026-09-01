@@ -752,6 +752,14 @@ describe('setEventListeners: toggleExpandedCard', () => {
       expect(stored).to.not.include(key);
     }
   });
+
+  it('clicking a Spoof Geo radio-row SVG does not collapse the card', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Spoof Geo"]');
+    const radioSvg = card.querySelector('.mep-radio-row svg');
+    const was = card.classList.contains('expanded');
+    radioSvg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(card.classList.contains('expanded')).to.equal(was);
+  });
 });
 
 // ============================================================
