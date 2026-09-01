@@ -70,11 +70,9 @@ Generates complete preview indexes for specific regional paths.
 
 | Variable | Description |
 |----------|-------------|
-| `ROLLING_IMPORT_IMS_URL` | Adobe IMS authentication URL |
-| `ROLLING_IMPORT_CLIENT_ID` | IMS OAuth client ID |
-| `ROLLING_IMPORT_CLIENT_SECRET` | IMS OAuth client secret |
-| `ROLLING_IMPORT_CODE` | IMS OAuth authorization code |
-| `ROLLING_IMPORT_GRANT_TYPE` | IMS OAuth grant type |
+| `PREVIEW_INDEXER_IMS_CLIENT_ID` | IMS OAuth client ID (secret) |
+| `PREVIEW_INDEXER_IMS_CLIENT_SECRET` | IMS OAuth client secret (secret) |
+| `PREVIEW_INDEXER_IMS_SCOPE` | IMS OAuth scopes (var, optional — has default) |
 | `GITHUB_TOKEN` | GitHub API token (automatically provided) |
 | `PREVIEW_INDEXER_REPO` | Target DA repository |
 | `PREVIEW_INDEXER_REPOS` | Comma-separated list of repos to process |
@@ -87,7 +85,6 @@ For each site (e.g., `adobecom/da-bacom`), configure:
 
 | Variable Pattern | Description | Example |
 |-----------------|-------------|---------|
-| `AEM_ADMIN_TOKEN_<ORG>_<REPO>` | Helix admin API token | `AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM` |
 | `PREVIEW_INDEX_KEY_<ORG>_<REPO>` | Key for regional paths in lingo config | `PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM` |
 | `EXCLUDE_PREVIEW_PATHS_PATTERN_<ORG>_<REPO>` | Regex pattern — paths matching this pattern are excluded | `EXCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM` |
 | `INCLUDE_PREVIEW_PATHS_PATTERN_<ORG>_<REPO>` | Regex pattern — when set, only paths matching this pattern are included (applied after exclusion) | `INCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM` |
@@ -172,15 +169,12 @@ Create a `.env` file with required environment variables:
 
 ```bash
 # Authentication
-ROLLING_IMPORT_IMS_URL=https://...
-ROLLING_IMPORT_CLIENT_ID=...
-ROLLING_IMPORT_CLIENT_SECRET=...
-ROLLING_IMPORT_CODE=...
-ROLLING_IMPORT_GRANT_TYPE=authorization_code
+PREVIEW_INDEXER_IMS_CLIENT_ID=...
+PREVIEW_INDEXER_IMS_CLIENT_SECRET=...
+PREVIEW_INDEXER_IMS_SCOPE=openid,AdobeID,additional_info.projectedProductContext,aem.frontend.all,read_organizations
 
 # Site Configuration
 PREVIEW_INDEXER_REPOS=da-bacom,da-bacom-lingo
-AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM=bacom
 EXCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM=/target-preview/
 LINGO_CONFIG=https://...
