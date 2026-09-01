@@ -21,6 +21,7 @@ Screenshots/highlight-overlays don't apply in that mode (no single node to
 render), so --screenshot-dir is ignored if --node-id is omitted.
 """
 import argparse
+import concurrent.futures
 import json
 import os
 import sys
@@ -33,6 +34,21 @@ API = "https://api.figma.com/v1"
 FIGMA_TOKEN = os.environ.get("FIGMA_TOKEN")
 MAX_CHANGED_ELEMENTS = 500  # safety cap for pathological cases (e.g. library/token syncs)
 MAX_RETRIES = 6
+# Per-version document fetches are independent (only diffing needs sequential
+# order), so they run concurrently. Kept modest — high enough to hide network
+# latency, low enough not to make Figma's rate limiter (see api_get()) worse
+# than running sequentially would.
+FETCH_POOL_WORKERS = 6
+
+
+# No timeout on urlopen() means a socket read blocks forever if the
+# connection dies without a clean TCP close (laptop sleep/wake, wifi/network
+# switch mid-request) — confirmed directly: a real run left 48 sockets stuck
+# in CLOSE_WAIT after a sleep/wake, each worker thread hung in read() forever,
+# no exception ever raised, no retry ever triggered, the whole run dead with
+# no way to recover short of killing the process. REQUEST_TIMEOUT bounds that
+# so a dead connection surfaces as a retryable error instead of an infinite hang.
+REQUEST_TIMEOUT = 30  # seconds
 
 
 def api_get(url):
@@ -40,9 +56,16 @@ def api_get(url):
     req = urllib.request.Request(safe_url, headers={"X-Figma-Token": FIGMA_TOKEN})
     for attempt in range(MAX_RETRIES):
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as e:
+            # HTTPError wraps a still-open connection (it's itself a
+            # file-like response object) — confirmed directly: under 6-way
+            # concurrent fetching against a rate limiter, retrying without
+            # closing it here left 100+ sockets stuck in CLOSE_WAIT within
+            # minutes (one leaked per 429), on track to exhaust the process's
+            # file descriptors. Close it on every path, retried or not.
+            e.close()
             if e.code == 429 and attempt < MAX_RETRIES - 1:
                 retry_after = e.headers.get("Retry-After", "")
                 try:
@@ -53,6 +76,14 @@ def api_get(url):
                 time.sleep(wait)
                 continue
             raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            # A dead/stalled connection (timeout, reset, DNS blip from a
+            # network switch) — same backoff as a 429, distinct message so
+            # it's not confused with a rate-limit response when triaging.
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+                continue
+            raise TimeoutError(f"network error after {MAX_RETRIES} attempts: {e}") from e
 
 
 def fatal_api_error(e, context):
@@ -132,7 +163,7 @@ def fetch_document(file_key, node_id, version_id):
 
 def download(url, path):
     req = urllib.request.Request(url)
-    with urllib.request.urlopen(req) as resp, open(path, "wb") as f:
+    with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp, open(path, "wb") as f:
         f.write(resp.read())
 
 
@@ -403,11 +434,40 @@ def main():
     day_last_version = {}   # day -> versionId of the last version seen that day
     day_root_box = {}       # day -> tracked node's own absoluteBoundingBox at that version
     day_has_change = set()  # days with at least one magnitude > 0 transition
+
+    # fetch_document() per version is the dominant cost of a full-history pull
+    # (one API call per version — confirmed directly: a run against a large,
+    # heavily-shared file spent 2+ hours almost entirely blocked in a socket
+    # read, ~16s of actual CPU time, one request at a time). Figma's versions
+    # API is file-wide, not node-scoped, so a file with a long shared edit
+    # history pays that cost regardless of how small the tracked node is.
+    # Each fetch is independent (only the diff step needs sequential order),
+    # so overlapping them in a thread pool turns N sequential network waits
+    # into N/POOL_WORKERS — api_get()'s existing per-call retry/backoff still
+    # applies per thread, so this doesn't bypass rate-limit handling, it just
+    # stops paying for it one request at a time.
+    docs_by_version = {}
+    fetch_errors = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=FETCH_POOL_WORKERS) as pool:
+        future_to_version = {
+            pool.submit(fetch_document, args.file_key, args.node_id, v["id"]): v
+            for v in versions
+        }
+        for future in concurrent.futures.as_completed(future_to_version):
+            v = future_to_version[future]
+            try:
+                docs_by_version[v["id"]] = future.result()
+            except Exception as e:
+                fetch_errors[v["id"]] = str(e)
+
     prev_doc = None
     for v in versions:
-        try:
-            doc = fetch_document(args.file_key, args.node_id, v["id"])
+        if v["id"] in fetch_errors:
+            errors.append({"versionId": v["id"], "date": v["created_at"], "reason": fetch_errors[v["id"]]})
+            continue
+        doc = docs_by_version[v["id"]]
 
+        try:
             magnitude = None
             changes, changed_count = [], 0
             if prev_doc is not None:

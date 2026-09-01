@@ -109,7 +109,10 @@ def da_source_get(org, repo, path, token):
             "User-Agent": "Mozilla/5.0 (compatible; design-tracker-skill/1.0)",
         },
     )
-    with urllib.request.urlopen(req) as resp:
+    # Bounded timeout: an unbounded urlopen() blocks forever on a dead
+    # connection (laptop sleep/wake, network switch) instead of raising —
+    # confirmed directly causing an unrecoverable hang in diff_versions.py.
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8")
 
 

@@ -87,7 +87,10 @@ def da_request(method, url, token, data=None, content_type=None):
     if content_type:
         headers["Content-Type"] = content_type
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req) as resp:
+    # Bounded timeout: an unbounded urlopen() blocks forever on a dead
+    # connection (laptop sleep/wake, network switch) instead of raising —
+    # confirmed directly causing an unrecoverable hang in diff_versions.py.
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.status, resp.read()
 
 
