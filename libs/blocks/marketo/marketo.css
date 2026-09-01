@@ -294,7 +294,7 @@
   padding: 0;
   position: relative;
   top: 2px;
-  margin-right: 10px;
+  margin-inline-end: 10px;
 }
 
 .marketo .mktoForm .mktoCheckboxList label + input,
