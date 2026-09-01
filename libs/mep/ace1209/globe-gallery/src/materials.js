@@ -203,17 +203,26 @@ const TEXT_MAX_SIDE = 2048;
 // Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
 const HINT_FILL = 0.9;
 
-// for safari
+const HINT_FALLBACK = 'adobe-clean-display, sans-serif';
 function hintFamilies() {
   return getComputedStyle(document.documentElement)
-    .getPropertyValue('--heading-font-family') || 'adobe-clean-display, sans-serif';
+    .getPropertyValue('--heading-font-family') || HINT_FALLBACK;
 }
 
 export async function loadHintFont(text) {
   return document.fonts.load(`900 100px ${hintFamilies()}`, text);
 }
 
-// `aspect` is the camera aspect, so texture pixels stay square.
+// canvas silently keeps its 10px default when the shorthand does not parse.
+function usableFamilies(ctx) {
+  const authored = hintFamilies();
+  ctx.font = `900 100px ${authored}`;
+  if (ctx.font.includes('100px')) return authored;
+  ctx.font = `900 100px ${HINT_FALLBACK}`;
+  return ctx.font.includes('100px') ? HINT_FALLBACK : null;
+}
+
+// `aspect` is the camera aspect, so texture pixels stay square. Null when no font parses.
 export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   let canvasW; let canvasH;
   if (aspect >= 1) {
@@ -232,8 +241,11 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
 
+  const families = usableFamilies(ctx);
+  if (!families) return null;
+
   const setFont = (px) => {
-    ctx.font = `900 ${px}px ${hintFamilies()}`;
+    ctx.font = `900 ${px}px ${families}`;
     if (typeof ctx.letterSpacing !== 'undefined') {
       ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
     }
@@ -242,7 +254,8 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   // Measure at a reference size, scale to HINT_FILL of the width, cap to a height budget.
   const refSize = Math.round((canvasW * 250) / 1440); // Figma: 250px @ 1440 viewport
   setFont(refSize);
-  const measured = Math.max(1, ctx.measureText(hintText).width);
+  const rawWidth = ctx.measureText(hintText).width;
+  const measured = rawWidth > 0 ? rawWidth : 1;
   const maxSize = Math.round(canvasH * 0.55); // keeps glyphs within the ~75% height budget
   const fitSize = Math.round(refSize * ((canvasW * HINT_FILL) / measured));
   const fontSize = Math.min(maxSize, fitSize);

@@ -441,7 +441,6 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
     quoteEl.textContent = pullQuote.quote;
     el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
     el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
-    layoutQuote(quoteEl);
   } else {
     el.querySelector('.globe-gallery-pullquote-pin').remove();
   }

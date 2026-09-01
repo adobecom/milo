@@ -725,8 +725,7 @@ it rescales the runway under the scroll mapping. Either way the artifact returns
 
 **Consequences worth knowing:**
 - **`H` is `1` while the section is hidden.** `display: none` → `offsetHeight` 0, clamped to 1 so
-  nothing divides by zero. Everything sized from `H` is recomputed at the un-hide, and the
-  `IntersectionObserver` parks the ticker until then, so no frame is drawn at that size.
+  nothing divides by zero. Everything sized from `H` is recomputed at the un-hide.
 - **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. The un-hide
   arrives as a body resize with no window resize behind it, so it is the only thing that upgrades `H` at
   that moment.
@@ -754,8 +753,9 @@ publishes it, and CSS only declares a `var(…, 0.42)` fallback inline on the pi
 the script runs. It is the one prop written from JS.
 
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
-That takes care, because `loadBlock` races a block's stylesheet against its script, so `readCssVars()`
-in `initRuntime` can run before the properties exist. Two rules make an unresolved read harmless:
+The zero-box gate means `readCssVars()` always finds the block's properties, so the two rules below
+are not load-bearing for first paint. They still cover an authored `0`, and a read that degrades
+rather than poisons is worth keeping whatever gates it:
 
 - `readCssVars()` **leaves the previous value in place** when a property doesn't resolve. So
   `formationVh` keeps its declared initializer (`0`) and can never become `NaN` — which matters because
@@ -887,6 +887,32 @@ against sm's 0.2204, which leaves md less tail to spend. Two consequences worth 
 
 The 0-tall rail (see **CSS → Pull-quote box**) is what keeps the box's own height out of the sticky
 clamp, so the centring at the reveal holds for any copy length.
+
+### Zero-box gate
+
+`initRuntime` returns without measuring or building anything while `root.offsetHeight <= 0`. It parks
+a one-shot `ResizeObserver` on `root` and re-enters when the block has a box. `destroy` disconnects it
+with the others, so a pending init is cancelled.
+
+Milo keeps the section `display: none` until `processSection` reaches
+`delete section.el.dataset.status`, which is **after** `await Promise.all(loadBlocks)` — and
+`loadBlock` awaits `styleLoaded`. Two consequences follow:
+
+- **The gate is what keeps a zero-box measurement off the screen, not the `IntersectionObserver`.**
+  `onScreen` starts `true` and `initRuntime` ends with `renderReady = true; syncTicker()`, which
+  starts the rAF loop *synchronously*; the observer's first callback is a frame away. On a zero-box
+  block the numbers are wrong rather than absent: `getBoundingClientRect().top` is 0, so
+  `blockDocTop` collapses onto the current scroll position and `arcCopyEntryT` reads `1` without
+  anyone having scrolled — and `.globe-gallery-arc-copy` is `position: fixed`, so it would paint
+  over a page nowhere near the block. `H` 1 shrinks the entry ramp to a single pixel and takes
+  `camera.aspect` to `W`; `blockHeight` 0 saturates `progress`; `readCssVars` resolves nothing.
+- **A box implies the block's stylesheet is applied.** `readCssVars()`, the quote split and every px
+  measured in `initRuntime` read final values on the first pass. This covers the **block's**
+  stylesheet only — page-level custom properties (`--heading-font-family`) and webfonts load on
+  their own schedule, which is why `buildTextMesh` waits on `fonts.ready`.
+
+`init()` does not await the deferred runtime, so `loadBlock` still resolves and the un-hide — the
+thing that opens the gate — still happens.
 
 ### Ticker and render loop
 
@@ -2003,6 +2029,9 @@ are still drawing.
 
 **Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a probe
 span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block per line.
+It is called **only from the runtime** (`relayoutQuote`), never from `buildGlobeDom` — that runs from
+`init()` before the zero-box gate opens, where every probe measures 0. An unsplit quote is a supported
+state, so the paths that never reach a runtime (`globe-gallery-empty`) render it as plain flow.
 Break points move with the box width and with whichever font resolved, so it is always redone from the
 authored text rather than patched. `relayoutQuote` **gates on the quote box's width**, not the
 viewport's: a scrollbar arriving changes the box without changing `innerWidth`, and a viewport change
@@ -2234,9 +2263,35 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   Built in `buildTextMesh`. The font comes from `--heading-font-family`, so the hint follows the
   page's heading font, including the per-locale swaps (CJK and Thai repoint that variable to a Han
   or Thai family). `loadHintFont` waits for those faces first, because drawing to a canvas does not
-  trigger font loading on its own. The `|| 'adobe-clean-display, sans-serif'` fallback is
-  load-bearing: an empty variable makes the font shorthand invalid, so the assignment is silently
-  dropped and the text bakes at the canvas default of 10px.
+  trigger font loading on its own.
+
+  **The build waits on `fonts.ready` AND `loadHintFont`, and both are load-bearing.**
+  `loadHintFont` names the family explicitly so Safari actually fetches the face, but
+  `document.fonts.load` resolves in a microtask when no matching `@font-face` is registered yet —
+  on a cold cache, every first paint — so alone it is no barrier and the hint bakes in whatever
+  fallback the canvas had. `fonts.ready` is the wait that survives a cold load. The zero-box gate
+  does not replace it: that gate guarantees the *block's* stylesheet, while the webfont arrives via
+  a *page* stylesheet it says nothing about.
+
+  **Nothing about the hint degrades to a half-built plane.** A rejected font promise takes the
+  `then`'s no-op arm; a `null` from `createClickDragTexture` drops the build; and a **first** build
+  (`!replacing`) that resolves once `sphereFormT` is past `TEXT_APPEAR_START` sits out, so the hint
+  never pops in over a globe already turning. A **rebuild** lands whatever the scroll is doing — it
+  is swapping a plane already on screen. `doLayout` rebuilds only when a `textMesh` exists, so a
+  first build that sat out stays out for the session.
+
+  **That skip is off under reduced motion**, which has no entrance to interrupt. RM pins `lenisY` to
+  `blockDocTop + formPx`, so `sphereFormT` is `1` on every tick from the first one regardless of
+  scroll — without the `!reducedMotion` term the first build would always sit out and RM would never
+  get its static plane at all.
+
+  `usableFamilies` probes the shorthand once against the serialised size, falls back to
+  `HINT_FALLBACK`, and returns `null` if even that will not parse — an unparseable `ctx.font` is
+  **ignored** by canvas, leaving the previous font (10px sans-serif) while `letterSpacing` still
+  applies, which stacks every glyph into one column. `measured` guards the same class of thing:
+  `Math.max(1, NaN)` is `NaN`, and a `NaN` font size is one more silently ignored assignment.
+
+  At most one build is ever in flight, which is why `create` needs no generation check.
 
   Known and accepted: on a machine with Adobe Clean Display installed locally, Chrome uses that
   local face while Safari, which hides non-system fonts, uses the webfont, so the baked text

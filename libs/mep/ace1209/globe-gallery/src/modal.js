@@ -1,6 +1,8 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
-import { easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt } from './math.js';
+import {
+  easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
+} from './math.js';
 import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
@@ -761,7 +763,7 @@ export default function createGlobeModal({
 
   function resize(w, h) {
     if (!modalRenderer) return;
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const dpr = capDpr();
     if (dpr !== appliedModalDpr) {
       appliedModalDpr = dpr;
       modalRenderer.setPixelRatio(dpr);
@@ -779,7 +781,7 @@ export default function createGlobeModal({
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
-      appliedModalDpr = Math.min(window.devicePixelRatio, 2);
+      appliedModalDpr = capDpr();
       modalRenderer.setPixelRatio(appliedModalDpr);
       modalRenderer.setSize(W, H);
       modalRenderer.setClearColor(0x000000, 0);
