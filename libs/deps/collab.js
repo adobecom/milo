@@ -722,6 +722,15 @@
       try {
         await api.updateComment(message.id, body);
         await refresh();
+        if (window.parent !== window && ME.parentOrigin) {
+          const updatedThread = state.threads.find(t => t.id === thread.id);
+          if (updatedThread) {
+            window.parent.postMessage(
+              { type: 'collab:comment-updated', threadId: thread.id, thread: updatedThread },
+              ME.parentOrigin,
+            );
+          }
+        }
       } catch (e) { console.error('[collab] updateComment', e); }
     });
     actions.append(saveBtn, discardBtn);
