@@ -40,9 +40,12 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake(fetchFn);
 
 const {
   CARD_STORAGE_KEY,
+  EXCLUDE_MANIFEST_PARAMS_KEY,
   TOP_MARKETS,
   API_URLS,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   toSlug,
   hasMasChanges,
   getTopMarketsAvailability,
@@ -74,6 +77,26 @@ describe('CARD_STORAGE_KEY', () => {
 
   it('equals "mep-expanded-cards"', () => {
     expect(CARD_STORAGE_KEY).to.equal('mep-expanded-cards');
+  });
+});
+
+describe('exclude manifest params persistence', () => {
+  afterEach(() => sessionStorage.removeItem(EXCLUDE_MANIFEST_PARAMS_KEY));
+
+  it('defaults to false when nothing is stored', () => {
+    expect(getExcludeManifestParams()).to.be.false;
+  });
+
+  it('round-trips true through sessionStorage', () => {
+    setExcludeManifestParams(true);
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('true');
+    expect(getExcludeManifestParams()).to.be.true;
+  });
+
+  it('round-trips false through sessionStorage', () => {
+    setExcludeManifestParams(true);
+    setExcludeManifestParams(false);
+    expect(getExcludeManifestParams()).to.be.false;
   });
 });
 

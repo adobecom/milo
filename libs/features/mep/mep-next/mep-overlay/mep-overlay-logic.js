@@ -44,6 +44,22 @@ export function getExpandedCards() {
   } catch { return new Set(); }
 }
 
+// Session-scoped so the choice survives a preview reload but doesn't linger into
+// a later QA session (a sticky "don't apply manifests" would be a footgun).
+export const EXCLUDE_MANIFEST_PARAMS_KEY = 'mep-exclude-manifest-params';
+
+export function getExcludeManifestParams() {
+  try {
+    return sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY) === 'true';
+  } catch { return false; }
+}
+
+export function setExcludeManifestParams(on) {
+  try {
+    sessionStorage.setItem(EXCLUDE_MANIFEST_PARAMS_KEY, on ? 'true' : 'false');
+  } catch { /* storage unavailable (private mode) — non-fatal */ }
+}
+
 export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
 
 const STAGE_ALLOWED_HOSTS = [

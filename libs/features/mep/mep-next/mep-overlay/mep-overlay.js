@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   toSlug,
   getPageId,
   getManifestList,
@@ -403,6 +405,9 @@ async function setDefaultValues() {
     toggleHighlight({ target: checkbox });
   });
 
+  const excludeManifestsEl = document.querySelector('#toggle-manifest-parameters');
+  if (excludeManifestsEl) excludeManifestsEl.checked = getExcludeManifestParams();
+
   const selectEl = document.querySelector('select.mep-spoof-geo');
   if (!selectEl) return;
 
@@ -541,6 +546,7 @@ function setEventListeners() {
 
   drawerEl.addEventListener('change', (event) => {
     if (event.target.type === 'checkbox') event.target.toggleAttribute('checked', event.target.checked);
+    if (event.target.id === 'toggle-manifest-parameters') setExcludeManifestParams(event.target.checked);
     setPreviewButton(event);
   });
 
