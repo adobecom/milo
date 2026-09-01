@@ -181,8 +181,7 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
 }
 
 async function getRedirects(siteOrg, siteRepo) {
-  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = process.env.AEM_ORG_AUTH_TOKEN;
   const url = `https://main--${siteRepo}--${siteOrg}.aem.page/redirects.json?limit=${MAX_REDIRECT_ENTRIES}`;
   try {
     const response = await axiosWithRetryError({
