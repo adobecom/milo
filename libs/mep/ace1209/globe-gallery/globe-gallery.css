@@ -9,8 +9,8 @@
 .globe-gallery {
   --gg-chrome-blur: 12px;
   --gg-hang-max: 0.8em;
-  --gg-runway-height: 520vh;
-  --gg-formation-vh: 340vh;
+  --gg-runway-height: 550vh;
+  --gg-formation-vh: 380vh;
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
@@ -42,7 +42,7 @@
 
 @media (width >= 768px) {
   .globe-gallery {
-    --gg-formation-vh: 320vh;
+    --gg-formation-vh: 360vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }

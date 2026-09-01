@@ -43,7 +43,7 @@ const BREAKPOINTS = {
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    ARC_DENSE_FRACTION: 0.55,
+    ARC_DENSE_FRACTION: 0.5,
     CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
     ENTRY_LEAD_VH: 0.55,
