@@ -1,144 +1,71 @@
-import { getConfig } from '../../utils/utils.js';
-
 /*
- * Detects AEM Sidekick login from the page world. <aem-sidekick> is defined in the
- * extension's isolated world, so page JS sees no config/status and its status event
- * fires before we attach. The page-world signal: login-button#user in
- * plugin-action-bar's shadow is always present and carries `not-authorized` while
- * signed out. Auth is orthogonal to the adobe.com session (logged-out pages preview).
+ * DEMO for Raphael (@rofe) — repro for the aem-sidekick thread.
+ *
+ * To reproduce the 401 I hit: override this file (DevTools > Sources > Overrides)
+ * for libs/features/mep/sidekick-auth.js on https://milo.adobe.com/ while signed in
+ * to Sidekick, then reload. No plugin click needed — the profile request fires
+ * automatically on page load. Watch the console for the "[sidekick-auth demo]" lines.
+ *
+ * It sends a page-context GET to admin.hlx.page/profile (HEAD is rejected 405):
+ *   200 = logged in, 401 = logged out, 403 = logged in without the project role.
+ * milo.adobe.com and main--milo--adobecom.aem.page are already in trustedHosts, yet
+ * the GET returns 401 (X-Error: [admin] not authenticated) with no auth cookie/header
+ * on the request — which is the behavior I'm asking about. This build always probes
+ * (bypasses the ungated-host shortcut) so the call is visible on every host.
  */
 
+const PROFILE_URL = 'https://admin.hlx.page/profile';
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';
-const USER_BUTTON_SELECTOR = 'login-button#user';
-const NOT_AUTHED_CLASS = 'not-authorized';
-// Catch class flips (not-authorized) and node re-renders in the shadow.
-const AUTH_MO = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
-// Stop waiting for the sidekick to mount after this long; never tears down the live
-// auth watcher (it runs for the page's life so logout is always caught).
-const WATCH_TIMEOUT_MS = 5 * 60 * 1000;
-// Head start for the shadow/status to resolve before defaulting to unauthed, so a
-// signed-in author doesn't see a sign-in flash.
-const RESOLVE_DELAY_MS = 1200;
 
-function getSidekick() {
-  return document.querySelector(SIDEKICK_SELECTOR);
-}
+// eslint-disable-next-line no-console
+console.log('[sidekick-auth demo] override active on', window.location.hostname, '— profile GET fires automatically on load');
 
-function getPluginActionBarShadow() {
-  return getSidekick()?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot;
-}
-
-// Authed iff the always-present user button lacks the not-authorized marker.
-function isAuthedIn(pluginBarShadow) {
-  const user = pluginBarShadow?.querySelector(USER_BUTTON_SELECTOR);
-  return !!user && !user.classList.contains(NOT_AUTHED_CLASS);
-}
-
-export function isSidekickAuthed() {
-  return isAuthedIn(getPluginActionBarShadow());
-}
-
-// Ungated (no auth) = preview/dev/stage/internal hosts only; prod, prodDomains, the
-// public *.aem.live edge, and unknown hosts stay GATED. graybox's [.-] covers both
-// graybox.adobe.com and the hyphenated business-graybox.adobe.com. Keyed on hostname,
-// not config.env.name (spoofable via ?env=stage on any host).
 const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$|(^|\.)(stage|corp)\.adobe\.com$|(^|[.-])graybox\.adobe\.com$/;
 export function isUngatedHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
 }
 
-function shouldGate() {
-  const { prodDomains, env } = getConfig();
-  const { hostname } = window.location;
-  if (prodDomains?.includes(hostname)) return true;
-  if (env?.name === 'prod') return true;
-  return !isUngatedHost(hostname);
+// GET /profile status: 200 authed, 401 logged out, 403 no role, 0 network error.
+export async function fetchProfileStatus() {
+  try {
+    // eslint-disable-next-line no-console
+    console.log('[sidekick-auth demo] GET ->', PROFILE_URL, '(credentials: include)');
+    const res = await fetch(PROFILE_URL, { method: 'GET', credentials: 'include' });
+    // eslint-disable-next-line no-console
+    console.log('[sidekick-auth demo] response status', res.status, 'ok', res.ok, 'type', res.type);
+    return res.status;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log('[sidekick-auth demo] fetch threw', e?.name, e?.message);
+    return 0;
+  }
 }
 
-/*
- * Ungated hosts fire true immediately. Gated hosts fire the initial verdict, then
- * again whenever auth flips (author signs in/out mid-session).
- */
+export async function isSidekickAuthed() {
+  return (await fetchProfileStatus()) === 200;
+}
+
+function labelForStatus(status) {
+  if (status === 200) return 'authed';
+  if (status === 401) return 'logged out';
+  if (status === 403) return 'logged in, no role for this project';
+  if (status === 0) return 'network error / blocked';
+  return `unexpected (${status})`;
+}
+
+// Fires the initial verdict, then re-probes on the sidekick's auth events. 403
+// (logged in without the project role) is treated as not-authed for the gate but
+// logged distinctly so the demo shows it apart from a plain logged-out 401.
 export function onSidekickAuth(callback) {
-  if (!shouldGate()) {
-    callback(true);
-    return;
-  }
-
-  let authed;
-  let mountTimer;
-  // Transient search observers; the steady-state auth watcher is NOT tracked here.
-  const observers = [];
-  const track = (observer) => { observers.push(observer); };
-  const stop = (observer) => {
-    observer.disconnect();
-    const i = observers.indexOf(observer);
-    if (i !== -1) observers.splice(i, 1);
+  const resolve = async () => {
+    const status = await fetchProfileStatus();
+    // eslint-disable-next-line no-console
+    console.log('[sidekick-auth demo] GET', PROFILE_URL, '->', status, `(${labelForStatus(status)})`);
+    callback(status === 200);
   };
-
-  const set = (value) => {
-    if (value === authed) return;
-    authed = value;
-    callback(value);
-  };
-
-  // Resolve true eagerly; defer the negative verdict to the bounded default so a
-  // late render doesn't flash a prompt. Observer re-resolves on class toggle / re-render.
-  const watchAuthState = (pluginBarShadow) => {
-    if (isAuthedIn(pluginBarShadow)) set(true);
-    const observer = new MutationObserver(() => {
-      if (isAuthedIn(pluginBarShadow)) set(true);
-      else if (authed === true) set(false);
-    });
-    observer.observe(pluginBarShadow, AUTH_MO);
-    // Steady state: left running for the page's life (never torn down) so logout is
-    // always caught. Transient observers have self-disconnected — stop the mount timer.
-    clearTimeout(mountTimer);
-  };
-
-  // plugin-action-bar's shadowRoot renders async — wait for it.
-  const watchPluginActionBar = (sidekickShadow) => {
-    const bar = sidekickShadow.querySelector('plugin-action-bar');
-    if (bar?.shadowRoot) { watchAuthState(bar.shadowRoot); return; }
-    const observer = new MutationObserver(() => {
-      const nextBar = sidekickShadow.querySelector('plugin-action-bar');
-      if (!nextBar?.shadowRoot) return;
-      stop(observer);
-      watchAuthState(nextBar.shadowRoot);
-    });
-    observer.observe(sidekickShadow, { childList: true, subtree: true });
-    track(observer);
-  };
-
-  // Live backup to the DOM signal for mid-session changes; status-fetched has the profile.
-  const attachAuthEvents = (sk) => {
-    sk.addEventListener('status-fetched', (e) => { if (e?.detail?.profile) set(true); });
-    sk.addEventListener('logged-in', () => set(true));
-    sk.addEventListener('logged-out', () => set(false));
-  };
-
-  // The sidekick element may mount after we run — wait for it.
-  const sk = getSidekick();
-  if (sk?.shadowRoot) {
-    attachAuthEvents(sk);
-    watchPluginActionBar(sk.shadowRoot);
-    // Sidekick present: brief head start before defaulting to unauthed, so a late
-    // status resolution doesn't flash a sign-in prompt.
-    setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
-  } else {
-    // No sidekick → unauthed now (delay 0): no flash to avoid, and nothing lingering
-    // to fire after a consumer tears down. Still watch for a late mount.
-    setTimeout(() => { if (authed === undefined) set(false); }, 0);
-    const observer = new MutationObserver(() => {
-      const el = getSidekick();
-      if (!el?.shadowRoot) return;
-      stop(observer);
-      attachAuthEvents(el);
-      watchPluginActionBar(el.shadowRoot);
-    });
-    observer.observe(document.body, { childList: true });
-    track(observer);
-  }
-  // Tear down only the transient search observers, and only if none resolved.
-  mountTimer = setTimeout(() => { observers.slice().forEach(stop); }, WATCH_TIMEOUT_MS);
+  resolve();
+  const sk = document.querySelector(SIDEKICK_SELECTOR);
+  // eslint-disable-next-line no-console
+  console.log('[sidekick-auth demo] sidekick element', sk ? sk.tagName.toLowerCase() : 'NOT FOUND', '- rebinding on auth events:', !!sk);
+  if (sk) ['logged-in', 'logged-out', 'status-fetched'].forEach((evt) => sk.addEventListener(evt, resolve));
 }
