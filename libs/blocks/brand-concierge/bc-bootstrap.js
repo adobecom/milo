@@ -359,6 +359,7 @@ export async function openSideModal(initialMessage, bootstrap) {
     id: 'brand-concierge-side',
     content: innerModal,
     closeCallback: async () => {
+      window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
       localStorage.setItem('bc-side-overlay', 'closed');
       document.body.classList.remove('bc-side-open');
       modal.classList.add('closing');

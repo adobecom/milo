@@ -86,9 +86,18 @@ function decorateGnav(cards, input, topNav, el) {
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
 
   if (bcWrapper) {
-    if (!bcGlobal) bcGlobal = bcGnav;
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
+
+    if (!bcGlobal) bcGlobal = bcGnav;
+    // remove the has-chat-history class if the overlay is closed before chat history is written
+    window.addEventListener('bc:side-modal-close', () => {
+      if (bcGlobal) {
+        if (!hasChatCookie()) {
+          bcGlobal.classList.remove('has-chat-history');
+        }
+      }
+    });
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
