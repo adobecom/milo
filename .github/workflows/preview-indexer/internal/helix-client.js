@@ -17,7 +17,7 @@ const axiosWithRetryError = async (request) => {
   }
 };
 
-const { LOCAL_RUN = '' } = process.env;
+const { AEM_ORG_AUTH_TOKEN: aemOrgToken } = process.env;
 const JOB_STATUS_POLL_INTERVAL = Number(process.env.JOB_STATUS_POLL_INTERVAL || '15');
 const JOB_STATUS_TIMEOUT = Number(process.env.JOB_STATUS_TIMEOUT || '2700');
 const LOG_FETCH_MAX_REQUESTS = Number(process.env.LOG_FETCH_MAX_REQUESTS || '10');
@@ -181,13 +181,12 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
 }
 
 async function getRedirects(siteOrg, siteRepo) {
-  const adminToken = process.env.AEM_ORG_AUTH_TOKEN;
   const url = `https://main--${siteRepo}--${siteOrg}.aem.page/redirects.json?limit=${MAX_REDIRECT_ENTRIES}`;
   try {
     const response = await axiosWithRetryError({
       method: 'GET',
       url,
-      headers: { Authorization: `token ${adminToken}` }
+      headers: { Authorization: `token ${aemOrgToken}` }
     });
     return response.data?.data?.map(item => item.Source) || [];
   } catch (error) {
