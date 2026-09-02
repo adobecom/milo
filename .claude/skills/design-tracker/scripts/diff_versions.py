@@ -49,14 +49,21 @@ FETCH_POOL_WORKERS = 6
 # no way to recover short of killing the process. REQUEST_TIMEOUT bounds that
 # so a dead connection surfaces as a retryable error instead of an infinite hang.
 REQUEST_TIMEOUT = 30  # seconds
+# Figma's /v1/images render endpoint renders a historical version's PNG
+# server-side on demand — confirmed directly much slower than a plain
+# document-JSON fetch for a large/complex frame (19,350px-tall node: 15 of
+# 17 screenshot attempts hit REQUEST_TIMEOUT and silently dropped that
+# day's screenshot, even though the day genuinely had a real change). Image
+# rendering gets its own, longer budget instead of sharing the JSON-fetch one.
+SCREENSHOT_REQUEST_TIMEOUT = 120  # seconds
 
 
-def api_get(url):
+def api_get(url, timeout=REQUEST_TIMEOUT):
     safe_url = urllib.parse.quote(url, safe=":/?&=")
     req = urllib.request.Request(safe_url, headers={"X-Figma-Token": FIGMA_TOKEN})
     for attempt in range(MAX_RETRIES):
         try:
-            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as e:
             # HTTPError wraps a still-open connection (it's itself a
@@ -161,9 +168,9 @@ def fetch_document(file_key, node_id, version_id):
     return node_document(file_key, node_id, version_id) if node_id else full_file_document(file_key, version_id)
 
 
-def download(url, path):
+def download(url, path, timeout=REQUEST_TIMEOUT):
     req = urllib.request.Request(url)
-    with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp, open(path, "wb") as f:
+    with urllib.request.urlopen(req, timeout=timeout) as resp, open(path, "wb") as f:
         f.write(resp.read())
 
 
@@ -187,12 +194,13 @@ def fetch_screenshot(file_key, node_id, version_id, out_path, scale=0.3):
     highlight boxes drawn over it come from the (reliable) JSON diff, not
     from comparing this image to another one."""
     data = api_get(
-        f"{API}/images/{file_key}?ids={node_id}&version={version_id}&format=png&scale={scale}"
+        f"{API}/images/{file_key}?ids={node_id}&version={version_id}&format=png&scale={scale}",
+        timeout=SCREENSHOT_REQUEST_TIMEOUT,
     )
     url = (data.get("images") or {}).get(node_id)
     if not url:
         return False
-    download(url, out_path)
+    download(url, out_path, timeout=SCREENSHOT_REQUEST_TIMEOUT)
     return True
 
 
