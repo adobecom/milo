@@ -174,7 +174,13 @@ def download(url, path, timeout=REQUEST_TIMEOUT):
         f.write(resp.read())
 
 
-TARGET_MAX_DIMENSION = 700  # px, longer edge — keeps preview files small regardless of node size
+# px, longer edge. Was 700 — confirmed too small for very tall/narrow
+# tracked frames (e.g. a 1440x19350 frame scaled to ~52px wide), stretched
+# blurry in the UI at any real display width. Raised to keep enough real
+# pixel data at the frame's actual proportions; still far below "render at
+# 1:1", which produced an 81MB single image on a 36k x 50k px node before
+# this cap existed at all.
+TARGET_MAX_DIMENSION = 2000
 
 
 def scale_for_box(box, target=TARGET_MAX_DIMENSION):
