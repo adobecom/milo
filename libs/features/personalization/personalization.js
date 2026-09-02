@@ -1410,7 +1410,7 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
-  if (config.mep && !config.mep.countryIP && !isBot()) {
+  if (!config.mep.countryIP && !isBot()) {
     config.mep.countryIP = computeDetectedMarketCountry(
       window.location.search,
       getCookie('country'),
