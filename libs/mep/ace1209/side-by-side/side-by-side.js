@@ -6,11 +6,25 @@ let videoObserver = null;
 
 function isSvgUrl(url) { return /\.svg(\?.*)?$/i.test(url || ''); }
 
+function decorateStandaloneLink(foreground) {
+  foreground.querySelectorAll('a').forEach((a) => {
+    const parent = a.parentElement;
+    if (!parent) return;
+    const isStandalone = parent.textContent?.trim() === a.textContent?.trim();
+    if (!isStandalone) return;
+    parent.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, 'label');
+    parent.classList.add('link-container');
+    a.classList.add('standalone-link');
+  });
+}
+
 function decorateCardText(foreground) {
   decorateBlockText(foreground, DEFAULT_TEXT_CONFIG);
   const headingP = foreground.querySelector('p:has(strong)');
-  if (!headingP) return;
-  headingP.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, `title-${DEFAULT_TEXT_CONFIG.heading}`);
+  if (headingP) {
+    headingP.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, `title-${DEFAULT_TEXT_CONFIG.heading}`);
+  }
+  decorateStandaloneLink(foreground);
 }
 
 function replaceVideoIntersectionObserver(medias) {
