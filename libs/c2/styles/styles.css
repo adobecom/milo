@@ -372,6 +372,7 @@
   --s2a-color-content-utility-error: var(--s2a-color-red-900);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
   --s2a-color-focus-ring-knockout: var(--s2a-color-gray-25);
+  --s2a-color-promo-cta-button-background-neutral-on-image-on-dark-active: var(--s2a-color-background-default);
 
   /* tokens.responsive.sm */
   --s2a-section-spacing-none: var(--s2a-spacing-none);
@@ -431,6 +432,12 @@
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-label: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
+  --s2a-hover-list-number-container-width: 24px;
+  --s2a-hover-list-padding-vertical: var(--s2a-spacing-xl);
+  --s2a-side-by-side-max-width-overlay: 320px;
+  --s2a-side-by-side-padding-overlay: var(--s2a-spacing-lg);
+  --s2a-side-by-side-padding-underlay: var(--s2a-spacing-sm);
+  --s2a-tab-side-padding: 20px;
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
@@ -520,6 +527,7 @@
   --s2a-color-content-subtle: var(--s2a-color-transparent-white-64);
   --s2a-color-content-heading: var(--s2a-color-content-knockout);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
+  --s2a-color-promo-cta-button-background-neutral-on-image-on-dark-active: var(--s2a-color-background-inverse);
 
   /* Milo-specific declarations */
 }
@@ -1578,6 +1586,11 @@ span.hang-opening-quote {
     --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-md);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
+    --s2a-hover-list-number-container-width: 32px;
+    --s2a-hover-list-padding-vertical: var(--s2a-spacing-lg);
+    --s2a-side-by-side-max-width-overlay: 250px;
+    --s2a-side-by-side-padding-underlay: var(--s2a-spacing-md);
+    --s2a-tab-side-padding: var(--s2a-spacing-lg);
   }
 }
 
@@ -1612,6 +1625,10 @@ span.hang-opening-quote {
     --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-2xl);
     --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-heading-5: var(--s2a-font-line-height-md);
+    --s2a-hover-list-number-container-width: 64px;
+    --s2a-side-by-side-max-width-overlay: 400px;
+    --s2a-side-by-side-padding-overlay: var(--s2a-spacing-xl);
+    --s2a-side-by-side-padding-underlay: var(--s2a-spacing-lg);
   }
 }
 
@@ -1619,6 +1636,8 @@ span.hang-opening-quote {
   :root {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
+    --s2a-side-by-side-padding-overlay: var(--s2a-spacing-2xl);
+    --s2a-side-by-side-padding-underlay: var(--s2a-spacing-2xl);
   }
 
   .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
