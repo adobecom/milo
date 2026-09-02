@@ -471,6 +471,16 @@
   align-items: flex-end;
 }
 
+/* Bottom-align CTAs across pods when a promo makes one price taller. */
+.table.has-addon:has(mas-field) .row-heading .col.col-heading:not(.col-1) .heading-button {
+  display: flex;
+  flex-direction: column;
+}
+
+.table.has-addon:has(mas-field) .row-heading .col.col-heading:not(.col-1) .heading-button .buttons-wrapper {
+  margin-top: auto;
+}
+
 .table.has-addon p.body {
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
