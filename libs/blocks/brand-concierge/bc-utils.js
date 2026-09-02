@@ -43,7 +43,7 @@ export function setCssGnavHeight() {
   const gnav = document.querySelector('header.global-navigation');
   const localGnav = document.querySelector('div.feds-localnav');
   const localNavStyle = localGnav ? getComputedStyle(localGnav) : null;
-  const localNavOn = localGnav && localNavStyle ? localNavStyle.display === 'block' : false;
+  const localNavOn = localGnav && localNavStyle ? localNavStyle.display !== 'none' : false;
 
   if (!gnav) return;
   const rootStyles = getComputedStyle(document.documentElement);
