@@ -893,6 +893,22 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 }
 
 
+@media (height <= 360px) {
+  .globe-gallery-modal-chrome {
+    --gg-modal-edge: 8px;
+    --gg-control-size: 44px;
+  }
+
+  .globe-gallery-modal-info {
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+
+  .globe-gallery-modal-description {
+    flex-shrink: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .globe-gallery-modal-nav:hover,
   .globe-gallery-modal-nav:active,

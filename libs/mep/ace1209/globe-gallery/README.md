@@ -2386,6 +2386,11 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     where the pill's own `width` reads it) and `--gg-scrim-w` (md+ only). `--gg-modal-edge` is
     also the sm scrim's `padding-bottom` reserve (`edge + control + edge`, so the arrows clear the
     badges); at md+ the arrows sit under the image, so the override drops it to a flat `edge`.
+    At `height ≤ 360px` (e.g. 200 % browser zoom on a small window) `--gg-modal-edge` and
+    `--gg-control-size` compress to their WCAG minima; `.globe-gallery-modal-info` switches to
+    `display: block` + `overflow-y: auto` so the full panel scrolls as one container. The
+    `data-lenis-prevent` on `.globe-gallery-modal-info` is required for this: Lenis intercepts
+    wheel events on any child that isn't covered by the attribute (checked via `closest`).
   - **Image fit + corner radius.** The **visible image** is contain-fit to the viewport minus a
     symmetric margin (desktop `DT_IMG_MARGIN`; mobile full-bleed, square corners `uRadius=0`),
     native aspect kept. `MODAL_FRAG`'s rounded-rect is measured against the **full plane**

@@ -384,11 +384,11 @@ const buildMarkup = (gid, labels) => `
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome">
-    <div class="globe-gallery-modal-info">
+    <div class="globe-gallery-modal-info" data-lenis-prevent>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
-      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document" data-lenis-prevent></div>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document"></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
