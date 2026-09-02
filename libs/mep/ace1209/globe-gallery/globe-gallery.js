@@ -1083,7 +1083,8 @@ function createGlobeGalleryRuntime(
   const LENIS_TRUST_PX = 2;
   function readScrollY() {
     const domY = window.scrollY;
-    const lenisY = window.lenis?.animatedScroll;
+    if (!window.lenis?.isSmooth) return domY;
+    const lenisY = window.lenis.animatedScroll;
     if (!Number.isFinite(lenisY) || Math.abs(lenisY - domY) > LENIS_TRUST_PX) return domY;
     return lenisY;
   }
