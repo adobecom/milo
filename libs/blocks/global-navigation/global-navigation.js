@@ -922,7 +922,9 @@ class Gnav {
         [el.style.width, el.style.flexShrink] = savedFlex[i];
       });
       const EXPAND_BUFFER = 40;
-      const threshold = wasCompact ? available - EXPAND_BUFFER : available;
+     const navMaxWidth = parseFloat(getComputedStyle(topnav).maxWidth) || Infinity;
+      const hasRoomToGrow = available < navMaxWidth - 1;
+      const threshold = wasCompact && hasRoomToGrow ? available - EXPAND_BUFFER : available;
       const shouldCompact = contentWidth > threshold;
       header.classList.toggle('is-compact', shouldCompact);
       if (this.newMobileNav) header.classList.toggle('new-nav', shouldCompact);
