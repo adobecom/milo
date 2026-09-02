@@ -16,7 +16,6 @@ import {
 } from '../brand-concierge/bc-bootstrap.js';
 
 let stayActive = false;
-let bcGlobal;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
