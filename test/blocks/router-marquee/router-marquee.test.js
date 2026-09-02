@@ -121,6 +121,28 @@ describe('Router Marquee', () => {
     expect(cards[1].getAttribute('daa-ll')).to.equal('rm-nav-2--Slide two title');
   });
 
+  it('builds a nav card icon from a plain svg link when it was not converted to an img', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/link-icon.html' });
+    const block = document.querySelector('.router-marquee');
+    init(block);
+
+    const cards = mobileVp(block).querySelectorAll('.rm-card');
+    expect(cards.length).to.equal(2);
+    expect(cards[0].querySelector('.rm-card-icon').getAttribute('src')).to.equal('https://main--federal--adobecom.aem.page/federal/icons/card-one.svg');
+    expect(cards[0].querySelector('.rm-card-label').textContent.trim()).to.equal('Slide one');
+  });
+
+  it('does not throw when a card icon link is merged into the cta paragraph', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/link-icon.html' });
+    const block = document.querySelector('.router-marquee');
+    expect(() => init(block)).to.not.throw();
+
+    // decorateCtas strips the icon link that shares its paragraph with the cta,
+    // so the second card renders without an icon instead of crashing card building
+    const cards = mobileVp(block).querySelectorAll('.rm-card');
+    expect(cards[1].querySelector('.rm-card-icon').getAttribute('src')).to.equal('');
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');

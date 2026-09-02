@@ -237,15 +237,18 @@ const decorateSlide = (slide) => {
 
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
-    .find((p) => p.querySelector('img[src*=".svg"]'));
-  const label = icon.nextElementSibling;
-  const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
+    .find((p) => p.querySelector('img[src*=".svg"], a[href*=".svg"]'));
+  const label = icon?.nextElementSibling;
+  const iconEl = icon?.querySelector('img[src*=".svg"], a[href*=".svg"]');
+  const iconSrc = getFederatedUrl(
+    iconEl && (iconEl.tagName === 'IMG' ? iconEl.getAttribute('src') : iconEl.getAttribute('href')),
+  );
   const labelText = label?.textContent.trim();
   const href = label?.querySelector('a')?.getAttribute('href') || '';
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
   const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
 
-  icon.remove();
+  icon?.remove();
   label?.remove();
 
   const card = createTag('a', {
