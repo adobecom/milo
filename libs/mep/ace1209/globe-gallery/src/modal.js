@@ -703,7 +703,7 @@ export default function createGlobeModal({
       }
 
       // The position delta encodes velocity. Cleared to 0 once OPEN.
-      if (caEnabled && modalCard && modalCard.mesh.material.uniforms
+      if (caEnabled() && modalCard && modalCard.mesh.material.uniforms
         && modalCard.mesh.material.uniforms.uMotionDir) {
         if (modalPhase === MODAL_PHASE.OPEN) {
           modalCard.mesh.material.uniforms.uMotionDir.value.set(0, 0);

@@ -6,8 +6,9 @@ import {
 // GPU-asset factories: the ShaderMaterials + the texture loaders.
 
 // Property proxies let the tick loop drive this via MeshBasicMaterial's opacity/map API.
-export function createCardMaterial({ texture, aspect }) {
+export function createCardMaterial({ texture, aspect, ca = true }) {
   const mat = new THREE.ShaderMaterial({
+    defines: ca ? {} : { NO_CA: '' },
     uniforms: {
       uMap: { value: texture },
       uOpacity: { value: 0 },

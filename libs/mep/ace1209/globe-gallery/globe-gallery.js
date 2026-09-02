@@ -135,6 +135,7 @@ const COLUMN_EPS = 1e-6;
 
 // Chromatic aberration.
 const CA_ENABLED = true;
+const CA_SM = false;
 const CA_STRENGTH = 0.01; // radial UV shift per channel
 const CA_MOTION_CAP_SM = 0.01; // directional UV shift max
 const CA_MOTION_CAP_MD = 0.03;
@@ -533,6 +534,8 @@ function createGlobeGalleryRuntime(
     return cardAspects[i] || CARD_ASPECT;
   }
 
+  function caOn() { return CA_ENABLED && (bp.name !== 'sm' || CA_SM); }
+
   function buildCards() {
     const {
       N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
@@ -571,6 +574,7 @@ function createGlobeGalleryRuntime(
       const mat = createCardMaterial({
         texture: textures[i] || placeholderTex,
         aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
+        ca: caOn(),
       });
       const mesh = new THREE.Mesh(geo, mat);
       sphereGroup.add(mesh);
@@ -865,7 +869,7 @@ function createGlobeGalleryRuntime(
 
   // dx/dy: world-space delta this frame. ampOverride defaults to sqrt(scroll/drag speed ratio).
   function applyMotionCA(mesh, dx, dy, ampOverride, cap) {
-    if (!CA_ENABLED) return;
+    if (!caOn()) return;
     const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
     const s = cap !== undefined ? cap : bp.CA_MOTION_CAP;
     const sX = Math.max(mesh.scale.x, 0.01);
@@ -922,7 +926,7 @@ function createGlobeGalleryRuntime(
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
     getAntialias: () => (bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD),
-    caEnabled: CA_ENABLED,
+    caEnabled: caOn,
     cardLabel: labels.cardLabel,
     getReducedMotion: () => reducedMotion,
     sphereRotQuat,
@@ -1421,7 +1425,7 @@ function createGlobeGalleryRuntime(
     mesh.material.uniforms.uDisperse.value = proxDis ** NEAR_FADE_DISPERSE_RAMP;
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = proxFade;
-    if (CA_ENABLED) {
+    if (caOn()) {
       mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
     }
     // World delta approximated as depth × angular velocity.
@@ -1600,7 +1604,7 @@ function createGlobeGalleryRuntime(
     const entry = computeCardEntry(i, frame, entryScratch);
 
     let cardCA = 0;
-    if (CA_ENABLED) {
+    if (caOn()) {
       cardCA = Math.max(
         entry.rot / TL.ENTRY_ROT_MAX,
         gpE * (1 - gpE) * 4,
@@ -1616,7 +1620,7 @@ function createGlobeGalleryRuntime(
 
     // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
     // card still folding at fdE 0.999 would raise hoverT and render nothing.
-    if (CA_ENABLED) {
+    if (caOn()) {
       mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA
         + sphereDragWarp * SPHERE_DRAG_CA_MUL;
       mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP;
@@ -1718,7 +1722,7 @@ function createGlobeGalleryRuntime(
     uniforms.uZoom.value = zoomT;
     uniforms.uWarp.value = txtWarpEntrance;
 
-    if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
+    if (caOn()) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
   }
 
   // Stage order is FIXED and load-bearing.
