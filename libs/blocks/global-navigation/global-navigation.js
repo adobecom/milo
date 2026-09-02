@@ -904,9 +904,25 @@ class Gnav {
       if (this.newMobileNav) header.classList.remove('new-nav');
       const wasOverflowing = topnav.classList.contains(overflowingClass);
       topnav.classList.remove(overflowingClass);
+      // topnav is clamped by its max-width, so compare against its own width.
+      const available = topnav.clientWidth;
+      // Reserve the brand-concierge / search widget at its full authored width for
+      // so the nav collapses before the box is squeezed
+      const flexible = [...topnav.querySelectorAll('.feds-bc-wrapper, .feds-client-search')];
+      const savedFlex = flexible.map((el) => [el.style.width, el.style.flexShrink]);
+      flexible.forEach((el) => { el.style.width = ''; el.style.flexShrink = '0'; });
+      const prevWidth = topnav.style.width;
+      const prevMaxWidth = topnav.style.maxWidth;
+      topnav.style.width = 'max-content';
+      topnav.style.maxWidth = 'none';
       const contentWidth = topnav.scrollWidth;
+      topnav.style.width = prevWidth;
+      topnav.style.maxWidth = prevMaxWidth;
+      flexible.forEach((el, i) => {
+        [el.style.width, el.style.flexShrink] = savedFlex[i];
+      });
       const EXPAND_BUFFER = 40;
-      const threshold = wasCompact ? header.clientWidth - EXPAND_BUFFER : header.clientWidth;
+      const threshold = wasCompact ? available - EXPAND_BUFFER : available;
       const shouldCompact = contentWidth > threshold;
       header.classList.toggle('is-compact', shouldCompact);
       if (this.newMobileNav) header.classList.toggle('new-nav', shouldCompact);
