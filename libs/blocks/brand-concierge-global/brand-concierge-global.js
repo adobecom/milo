@@ -30,14 +30,6 @@ function gnavDeactivate(gnavInput, gnavCards) {
   }
 }
 
-function updateGnavHistoryUi() {
-  if (bcGlobal) {
-    if (!bcGlobal.classList.contains('has-chat-history')) {
-      bcGlobal.classList.add('has-chat-history');
-    }
-  }
-}
-
 function handleInput(text, gnavInput) {
   const textWrapper = gnavInput.querySelector('.bc-textarea-grow-wrap');
   const textArea = gnavInput.querySelector('textarea');
@@ -50,7 +42,6 @@ function handleInput(text, gnavInput) {
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
   openSideModal(text, bcBootstrap);
-  updateGnavHistoryUi();
 }
 
 function handleSuggestedPrompt(text, gnavCards, event) {
@@ -59,7 +50,6 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
   openSideModal(text, bcBootstrap);
-  updateGnavHistoryUi();
 }
 
 function handleGnavButton(event) {
@@ -89,13 +79,15 @@ function decorateGnav(cards, input, topNav, el) {
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
 
-    if (!bcGlobal) bcGlobal = bcGnav;
+    window.addEventListener('bc:side-modal-open', () => {
+      if (!bcGnav.classList.contains('has-chat-history')) {
+        bcGnav.classList.add('has-chat-history');
+      }
+    });
     // remove the has-chat-history class if the overlay is closed before chat history is written
     window.addEventListener('bc:side-modal-close', () => {
-      if (bcGlobal) {
-        if (!hasChatCookie()) {
-          bcGlobal.classList.remove('has-chat-history');
-        }
+      if (!hasChatCookie()) {
+        bcGnav.classList.remove('has-chat-history');
       }
     });
 

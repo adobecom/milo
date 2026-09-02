@@ -368,6 +368,7 @@ export async function openSideModal(initialMessage, bootstrap) {
       });
     },
   });
+  window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
 
   setTimeout(() => {
     modal.classList.remove('opening');
