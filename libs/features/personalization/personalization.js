@@ -16,7 +16,6 @@ import {
   isBot,
   computeDetectedMarketCountry,
   getCookie,
-  getCountry,
   isMasImsLoginEnabled,
   normCountryCode,
 } from '../../utils/utils.js';
@@ -1418,10 +1417,6 @@ export async function applyPers({ manifests }) {
       getCookie('ims_country_code'),
       isMasImsLoginEnabled(),
     );
-    // Off-Akamai origins lack the edge geo header; resolve via network once.
-    if (!config.mep.countryIP) {
-      config.mep.countryIP = normCountryCode(await getCountry());
-    }
   }
 
   experiments = await Promise.all(

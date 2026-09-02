@@ -94,25 +94,6 @@ describe('mepGeolocation', () => {
     uaStub.restore();
   });
 
-  it('cold load resolves countryIP via geo2 fallback when akamaiCode is unresolved', async () => {
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryIP.json' }));
-    window.fetch = stub().callsFake((url) => {
-      let hostname = '';
-      try {
-        hostname = new URL(typeof url === 'string' ? url : url?.url ?? '').hostname;
-      } catch {
-        hostname = '';
-      }
-      if (hostname === 'geo2.adobe.com') {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve({ country: 'DE' }) });
-      }
-      return Promise.resolve({ ok: true, json: () => manifestJson });
-    });
-    expect(document.querySelector('.how-to')).to.not.be.null;
-    await init({ ...mepSettings });
-    expect(document.querySelector('.how-to')).to.be.null;
-  });
-
   it('adobe account (ims_country_code) country counts when mas-ims-login is on', async () => {
     await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'us' });
     document.head.insertAdjacentHTML('beforeend', '<meta name="mas-ims-login" content="on">');
