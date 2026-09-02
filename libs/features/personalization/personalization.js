@@ -1241,7 +1241,7 @@ async function getManifestConfig(info, variantOverride) {
     }
   }
 
-  const persData = data.experiences?.data || data.data || data;
+  const persData = data.experiences?.data || data.data;
   if (!persData) {
     recordManifestError(name, manifestPath, 'Experiences tab');
     return null;
