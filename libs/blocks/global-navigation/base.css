@@ -236,8 +236,8 @@ header.global-navigation.ready {
     padding: 0;
   }
 
-  .feds-navLink--hoverCaret:hover,
-  .feds-navLink--hoverCaret:focus {
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret:hover,
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret:focus {
     background-color: var(--feds-background-popup);
   }
 
