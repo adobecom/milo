@@ -12,6 +12,7 @@ import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
+import createCursor from './src/cursor.js';
 import {
   easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
@@ -179,9 +180,7 @@ const TEXT_WARP_ENTER_MAX = 4.50;
 const TEXT_OPACITY_PEAK = 0.15;
 const TEXT_OPACITY_RESTING = 0.06;
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
-// hintDismissProgress accrual per 60fps frame of drag.
-const HINT_EXIT_DIST_RATE = 0.018;
-const HINT_EXIT_HOLD_RATE = 0.0022; // ~0.13/s at 60fps
+const HINT_EXIT_RATE = 0.007;
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
@@ -431,7 +430,8 @@ function createGlobeGalleryRuntime(
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   let textMesh = null;
-  let hintDismissProgress = 0; // 0→1 over drag activity; retires the barrel's DOM hint
+  let hintRetired = false;
+  let hintExitT = 0;
 
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
@@ -494,6 +494,7 @@ function createGlobeGalleryRuntime(
   let a11y = null;
   let interaction = null;
   let controls = null;
+  let cursor = null;
 
   let suppressFocusSnap = false;
   let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
@@ -1011,7 +1012,7 @@ function createGlobeGalleryRuntime(
   };
 
   const openModalAndDismissHint = (idx, x, y) => {
-    hintDismissProgress = 1;
+    hintRetired = true;
     modal.open(idx, x, y);
   };
 
@@ -1054,12 +1055,19 @@ function createGlobeGalleryRuntime(
     q,
     labels,
     getVisible: globeLive,
-    getHintDismissed: () => hintDismissProgress > TL.HINT_DISMISS_T,
+    getHintDismissed: () => hintRetired,
     rotate: (dir) => {
-      hintDismissProgress = 1;
+      hintRetired = true;
 
       rotateStep(dir);
     },
+  });
+
+  cursor = createCursor({
+    getGlobeLive: globeLive,
+    getCursorRetired: () => hintRetired || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
+    labelText: hintText,
+    drag,
   });
 
   const dragSensitivity = () => {
@@ -1078,6 +1086,8 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
+    isCursorActive: () => cursor.isActive(),
+    onDrag: () => { hintRetired = true; },
   });
 
   const LENIS_TRUST_PX = 2;
@@ -1675,20 +1685,9 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // Sole writer of hintDismissProgress.
-  function updateHintExitProgress(frame) {
-    const { sphereFormT, dtScale } = frame;
-    if (hintDismissProgress >= 1 || reducedMotion || !drag.isDragging) return;
-    // Pointer capture outlives the gate, so a held drag can scroll out of the live range.
-    if (sphereFormT < TL.SPHERE_INTERACTIVE_T) return;
-    // A vertical touch drag is page scroll, not a globe drag.
-    if (interaction.isPageScrollGesture()) return;
-    const spd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-    const norm = spd / MAX_VEL; // 0–1
-    hintDismissProgress = Math.min(
-      1,
-      hintDismissProgress + dtScale * (norm * HINT_EXIT_DIST_RATE + HINT_EXIT_HOLD_RATE),
-    );
+  function updateHintExit(frame) {
+    if (!hintRetired || hintExitT >= 1) return;
+    hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
   }
 
   // Reads frame.foldSphDist, so it runs after the fold.
@@ -1704,6 +1703,7 @@ function createGlobeGalleryRuntime(
       uniforms.uWarp.value = 0;
       uniforms.uZoom.value = 0;
       uniforms.uCA.value = 0;
+      uniforms.uExitP.value = 0;
       return;
     }
     if (sphereFormT <= TL.TEXT_APPEAR_START) {
@@ -1726,10 +1726,11 @@ function createGlobeGalleryRuntime(
     const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
       * (1 - clamp01(zoomT / pqAppearZoomT));
 
-    textMesh.visible = txtOp > 0.001;
+    textMesh.visible = txtOp > 0.001 && hintExitT < 1;
     uniforms.uOpacity.value = txtOp;
     uniforms.uZoom.value = zoomT;
     uniforms.uWarp.value = txtWarpEntrance;
+    uniforms.uExitP.value = hintExitT;
 
     if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
   }
@@ -1754,9 +1755,10 @@ function createGlobeGalleryRuntime(
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateCardTransforms(frame);
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
-    updateHintExitProgress(frame); // before controls.update reads it
+    updateHintExit(frame);
 
     updateClickDragText(frame);
+    cursor.update();
     interaction.applyCursor();
     controls.update();
     updateArcCopy(frame);
@@ -2004,6 +2006,7 @@ function createGlobeGalleryRuntime(
     }
 
     interaction.setup(canvas);
+    if (!bp.CYLINDER && !reducedMotion) cursor.setup(canvas);
     root.classList.toggle('globe-gallery-barrel', bp.CYLINDER);
 
     window.addEventListener('blur', armFocusGuard);
@@ -2083,6 +2086,7 @@ function createGlobeGalleryRuntime(
     window.removeEventListener('focus', disarmFocusGuard);
     document.removeEventListener('visibilitychange', onVisibilityChange);
     interaction.teardown();
+    cursor.teardown();
     controls.teardown();
     if (renderer) {
       // Do NOT forceContextLoss() here — the canvas is reused across rebuilds and a force-lost
@@ -2113,7 +2117,8 @@ function createGlobeGalleryRuntime(
     textures = [];
     cardAspects = [];
     disposeTextMesh();
-    hintDismissProgress = 0;
+    hintRetired = false;
+    hintExitT = 0;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; cameraOrtho = null; sphereGroup = null;
     modal.destroy();
