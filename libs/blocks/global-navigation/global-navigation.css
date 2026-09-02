@@ -584,6 +584,17 @@ header.global-navigation.is-compact .feds-logo {
   display: flex;
 }
 
+header.global-navigation.is-compact + .feds-localnav {
+  display: block;
+}
+
+header.global-navigation.has-breadcrumbs.is-compact {
+  padding-bottom: 0;
+}
+
+header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .feds-navLink::before {
+  display: none;
+}
 
 @media (max-width: 320px) {
   .feds-promo-aside-wrapper[aria-hidden="true"] {
@@ -848,7 +859,8 @@ header.global-navigation.is-compact .feds-logo {
   :where(header.global-navigation:not(.is-compact)) .feds-brand-image + .feds-brand-label {
     display: none;
   }
-  :where(header.global-navigation:not(.is-compact)) .feds-localnav {
+
+  .feds-localnav {
     display: none;
   }
 }
@@ -868,7 +880,7 @@ header.global-navigation.is-compact .feds-logo {
     margin: 0 auto;
   }
 
-  :where(header.global-navigation:not(.is-compact)) .feds-localnav {
+  .feds-localnav {
     display: none;
   }
 }
