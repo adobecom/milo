@@ -1081,11 +1081,24 @@ function createGlobeGalleryRuntime(
   });
 
   const LENIS_TRUST_PX = 2;
+  const SCROLL_LAG_PX = 8;
+  const SCROLL_JUMP_PX = 100;
+  let smoothY = window.scrollY;
+
+  function deQuantize(y) {
+    const err = y - smoothY;
+    const mag = Math.abs(err);
+    smoothY = mag > SCROLL_JUMP_PX ? y : smoothY + err * (mag / (mag + SCROLL_LAG_PX));
+    return smoothY;
+  }
+
   function readScrollY() {
     const domY = window.scrollY;
-    if (!window.lenis?.isSmooth) return domY;
+    if (!window.lenis?.isSmooth) return deQuantize(domY);
     const lenisY = window.lenis.animatedScroll;
-    if (!Number.isFinite(lenisY) || Math.abs(lenisY - domY) > LENIS_TRUST_PX) return domY;
+    const trusted = Number.isFinite(lenisY) && Math.abs(lenisY - domY) <= LENIS_TRUST_PX;
+    if (!trusted) return deQuantize(domY);
+    smoothY = lenisY;
     return lenisY;
   }
 
@@ -2008,6 +2021,7 @@ function createGlobeGalleryRuntime(
     buildCards();
 
     if (!bp.CYLINDER) buildTextMesh();
+    renderer.compile(scene, camera);
     a11y.setup();
     controls.setup();
 
@@ -2022,6 +2036,7 @@ function createGlobeGalleryRuntime(
       const card = cards[i];
       if (!card) return;
       card.mesh.material.map = tex; // property proxy writes uMap
+      renderer.initTexture(tex);
       card.srcAspect = srcAspect; // every phase's fit derives from it; the modal falls back to it
       // md sizes per-card in place; sm re-solves its packing in onDone.
       if (!bp.CYLINDER) updateCardSphereSizing(card, srcAspect);

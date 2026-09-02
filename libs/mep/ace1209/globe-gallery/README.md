@@ -1050,6 +1050,35 @@ Nothing here is a source of truth — every number below is derived from `timeli
 retune a constant, re-run the snippet at the end of this section and update the tables from its
 output rather than hand-editing them.
 
+### Scroll input
+
+Every clock below derives from `readScrollY()`, which feeds `deriveFrame` as `input.scrollY`.
+
+Lenis is consulted only while it is actually driving the scroll (`lenis.isSmooth` — smooth wheel on
+desktop); its `animatedScroll` is fractional there and is used as-is, with `LENIS_TRUST_PX` guarding
+a desync. Every other path — all touch scrolling, since milo constructs Lenis without `syncTouch` —
+reads `window.scrollY` through `deQuantize`.
+
+`deQuantize` exists because iOS reports whole-CSS-pixel scroll positions while it composites the
+page at sub-pixel precision. During the last ~30 frames of momentum the per-frame delta falls under
+1px, so the reported position steps `1 0 1 0` while the page itself glides — a ±0.5px ripple the
+timeline turns into visible shake at the arc's ~1.4 card-px per scroll-px. The filter blends by
+`mag / (mag + SCROLL_LAG_PX)`, keyed on the error's own magnitude, which holds lag constant in
+**pixels** rather than frames:
+
+| per-frame scroll | lag | ripple |
+| --- | --- | --- |
+| 0.1–0.5 px (settle) | 1.5–1.9 px | ±0.10–0.16 px (from ±0.5) |
+| 1 px | 2.4 px | 0 |
+| 8 px | 4.9 px | 0 |
+| 20 px | 6.1 px | 0 |
+
+Above 1px/frame there is no ripple left to remove, and beyond `SCROLL_JUMP_PX` the filter passes
+straight through, so programmatic jumps and the a11y focus snap land in one frame. Movement between
+8px and 100px in a single frame is the one case that eases rather than cuts — about 5 frames.
+Nothing in this block produces that except a sub-100px `snapToBrowseView`; an external anchor scroll
+landing in the window would ease in.
+
 ### The six clocks
 
 Most confusion in this block comes from code that mixes normalized timers. There are six, and they
