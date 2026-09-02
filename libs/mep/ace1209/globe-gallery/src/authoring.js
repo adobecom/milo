@@ -339,8 +339,7 @@ export function parseAuthoredContent(el) {
   };
 }
 
-// `gid` makes the two document-wide id refs unique per instance: the CA SVG filter and the
-// modal's aria-labelledby/describedby.
+// `gid` makes the modal's document-wide aria-labelledby/describedby id refs unique per instance.
 const buildMarkup = (gid, labels) => `
   <div class="globe-gallery-world">
     <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
@@ -360,21 +359,6 @@ const buildMarkup = (gid, labels) => `
       </div>
     </div>
   </div>
-
-  <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
-    <defs>
-      <filter id="ca-filter-${gid}" color-interpolation-filters="sRGB">
-        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1" result="rch"/>
-        <feOffset in="rch" class="globe-gallery-ca-r-offset" dx="0" dy="0" result="rOff"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 0 1" result="gch"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 0 1" result="bch"/>
-        <feOffset in="bch" class="globe-gallery-ca-b-offset" dx="0" dy="0" result="bOff"/>
-        <feBlend in="rOff" in2="gch" mode="screen" result="rg"/>
-        <feBlend in="rg" in2="bOff" mode="screen" result="rgb"/>
-        <feComposite in="rgb" in2="SourceGraphic" operator="in"/>
-      </filter>
-    </defs>
-  </svg>
 
   <div class="globe-gallery-arc-copy">
     <h2 class="globe-gallery-arc-copy-title"></h2>
@@ -400,11 +384,11 @@ const buildMarkup = (gid, labels) => `
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome">
-    <div class="globe-gallery-modal-info">
+    <div class="globe-gallery-modal-info" data-lenis-prevent>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
       <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
-      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document" data-lenis-prevent></div>
+      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document"></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->

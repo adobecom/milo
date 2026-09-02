@@ -599,7 +599,7 @@ export default function createGlobeModal({
     if (closeBtn) closeBtn.click(); else close();
   }
 
-  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info';
+  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info, .globe-gallery-modal-counter';
   function backdropTap(touch) {
     const rect = photoRectPx();
     if (!rect) return;
@@ -846,6 +846,24 @@ export default function createGlobeModal({
 
     // Follows POINTER type, not the width band, mirroring usesCylinderGeometry.
     const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
+
+    let clickStartX = 0;
+    let clickStartY = 0;
+    let clickStartTarget = null;
+    evtRoot.addEventListener('pointerdown', (e) => {
+      clickStartX = e.clientX;
+      clickStartY = e.clientY;
+      clickStartTarget = e.target;
+    });
+
+    evtRoot.addEventListener('click', (e) => {
+      if (isTouchPrimary()) return;
+      if (modalIdx < 0) return;
+      if (e.target !== clickStartTarget) return;
+      if (Math.abs(e.clientX - clickStartX) > AXIS_LOCK_PX
+        || Math.abs(e.clientY - clickStartY) > AXIS_LOCK_PX) return;
+      backdropTap(e);
+    });
 
     // Attach to the dialog, not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {
