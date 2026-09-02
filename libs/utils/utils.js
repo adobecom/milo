@@ -2893,6 +2893,17 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config) => {
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2918,6 +2929,11 @@ export async function loadArea(area = document) {
   }
 
   if (isLingoActive) loadLingoIndexes(area);
+
+  if (isLingoActive) {
+    const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(htmlSections[0]?.innerHTML ?? '');
+    if (tokenInLcp || (isDoc && getMepEnablement('geo-ip-lcp'))) warmGeoIpSheet(config);
+  }
 
   if (isDoc) {
     await decorateDocumentExtras();

@@ -26,17 +26,17 @@
     import { calls } from './mocks/federal-main.js';
     import init from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 
-    const geoFixturePath = '/test/features/placeholders/lu_fr';
+    const gnavSheet = '/test/features/placeholders/placeholders-geo-ip-gnav.json';
     let langfirstMeta;
 
-    // Mirrors enableLingo() in placeholders.test.js — drives the real lingo +
-    // geo-IP code against local fixtures, no network.
+    // Activates lingo/geo-IP against local fixtures. The wrapper's geo-IP source is the remote
+    // federal domain, so the fetch stub below redirects it to the local gnav sheet.
     function enableLingo() {
       langfirstMeta = document.createElement('meta');
       langfirstMeta.name = 'langfirst';
       langfirstMeta.content = 'on';
       document.head.appendChild(langfirstMeta);
-      sessionStorage.setItem('akamai', 'lu');
+      sessionStorage.setItem('akamai', 'us');
       setConfig({
         locales: {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -48,7 +48,6 @@
       const cfg = getConfig();
       cfg.locale.prefix = '/fr';
       cfg.locale.contentRoot = '/test/features/placeholders';
-      cfg.locale.regions = { lu_fr: { prefix: geoFixturePath } };
       return cfg;
     }
 
@@ -68,15 +67,24 @@
     runTests(() => {
       describe('C2 global-navigation wrapper wiring', () => {
         let paramsGetStub;
+        let fetchStub;
 
         before(() => {
           // keep the runner URL's query out of getFederalDomain/getEnv/lingoActive
           paramsGetStub = sinon.stub(URLSearchParams.prototype, 'get');
           paramsGetStub.withArgs('cache').returns('off');
+          // Redirect the remote federal geo-IP sheet to the local fixture; pass everything else through.
+          const realFetch = window.fetch.bind(window);
+          fetchStub = sinon.stub(window, 'fetch').callsFake((resource, opts) => {
+            const url = typeof resource === 'string' ? resource : resource?.url;
+            if (url?.includes('placeholders-geo-ip.json')) return realFetch(gnavSheet);
+            return realFetch(resource, opts);
+          });
         });
 
         after(() => {
           paramsGetStub.restore();
+          fetchStub.restore();
         });
 
         afterEach(() => {
@@ -114,7 +122,7 @@
           enableLingo();
           const args = await runInit();
           const map = await args.placeholders;
-          expect(map.get('phone-number-geo-ip')).to.equal('+352 800 99999');
+          expect(map.get('hello-geo-ip')).to.equal('hello US GNAV');
         });
 
         it('leaves the base value when lingo is inactive (no geo-IP merge)', async () => {
