@@ -165,6 +165,7 @@ const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not 
 const CARD_ORDER_STEPS = 1000;
 const CARD_ORDER_HANDOVER_T = 0.5;
 const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
+const HOVER_ORDER_STEPS = 7;
 const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
 
 const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
@@ -1554,7 +1555,11 @@ function createGlobeGalleryRuntime(
       z = tmpVec3.z;
     }
     const n = Math.max(-1, Math.min(1, z / bp.SPHERE_R));
-    mesh.renderOrder = CARD_ORDER_BASE + Math.round(n * CARD_ORDER_STEPS);
+    let order = CARD_ORDER_BASE + Math.round(n * CARD_ORDER_STEPS);
+    if (n >= 0 && card.hoverT > 0.01) {
+      order = CARD_ORDER_BASE + CARD_ORDER_STEPS + 1 + Math.round(card.hoverT * HOVER_ORDER_STEPS);
+    }
+    mesh.renderOrder = order;
   }
 
   function updateCardTransform(i, frame) {

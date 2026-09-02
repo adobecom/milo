@@ -678,10 +678,18 @@ handing them out, so a card's index is its depth rank and both keys produce the 
 from its own card's aspect, so slot and card are a matched pair — permuting them re-crops the
 photos. The barrel keeps the packer's pairing and pays one reorder at the handover instead.
 
+**Hover overrides the depth key.** Past the handover, a card on the near half (`n >= 0`) with
+`hoverT > 0.01` is lifted out of the depth band into the `HOVER_ORDER_STEPS` slots above it
+(`-7 … -1`), so the enlarged card paints over every neighbour. The slot is `hoverT`-scaled, so
+during a sweep between two cards the one easing in outranks the one easing out. `hoverT` decays over
+~30 frames, so a card scrolled out of `globeLive()` while hovered holds its promoted order until the
+scale has come back down with it.
+
 Two things the numbers rely on:
 
-- **`|spherePos.z| ≤ SPHERE_R`**, which keeps `renderOrder` inside `[CARD_ORDER_BASE ±
-  CARD_ORDER_STEPS]` — below `modal.js`'s 0/1 and above `TEXT_ORDER`. It holds because the sphere's
+- **`|spherePos.z| ≤ SPHERE_R`**, which keeps the depth key inside `[CARD_ORDER_BASE ±
+  CARD_ORDER_STEPS]`, and the hover band inside the +8 slack above it — both below `modal.js`'s 0/1
+  and above `TEXT_ORDER`. It holds because the sphere's
   slots are all at radius `R`, and the barrel is yaw-only (`interaction.js` zeroes `dy`), so its
   rotation cannot lift a slot's `z` past its ring radius. A barrel slot's distance from centre is
   `hypot(ringR, y)`, up to ~2.3 R on sm, so enabling pitch there would need the clamp widened and
