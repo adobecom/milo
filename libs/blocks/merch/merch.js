@@ -1850,6 +1850,15 @@ function decorateInlineCtas(masField, content) {
   copyMasFieldIdToParent(masField, 'fragment-id');
   copyMasFieldIdToParent(masField, 'variation-id');
   preserveInlineCommerceContext(masField, content);
+
+  if (masField.merchLink) {
+    [...masField.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
+      content.querySelectorAll('a').forEach((link) => {
+        link.classList.add(match[1]);
+      });
+    });
+  }
+
   // masField is removed from the DOM here; hand callers the hoisted anchor instead.
   const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
   masField.replaceWith(...content.childNodes);
@@ -1894,6 +1903,8 @@ async function createInlineField(el, options) {
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
+  masField.merchLink = el.href;
+
   el.replaceWith(masField);
   await checkFieldReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);

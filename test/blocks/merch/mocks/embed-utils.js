@@ -60,6 +60,14 @@ export const shouldAllowKrTrial = stub();
 export const lingoActive = () => false;
 export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
+export const getGeoIpWarmSheet = () => undefined;
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+export const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+export const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 // Unused directly by these tests; needed because merch.js statically imports
 // decorate.js and autoblock.js, which import these from utils.js.
