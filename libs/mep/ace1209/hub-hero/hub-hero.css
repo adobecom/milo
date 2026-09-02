@@ -423,7 +423,7 @@
     .hub-hero-image-grid-container-col div {
       position: relative;
 
-      img {
+      img, video {
         border-radius: var(--s2a-border-radius-xs);
       }
     }
@@ -978,14 +978,18 @@
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), min-width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
-  .hub-hero-carousel-item.hovered,
-  .hub-hero-carousel-item.focused,
-  .hub-hero-carousel-item:focus-visible {
-    --hover-w: min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5));
-    --slide-min-w: var(--hover-w);
-    width: var(--hover-w);
-    min-width: var(--hover-w);
-    background-color: var(--s2a-color-gray-1000);
+  /* the hover-preview grow effect only makes sense where hover actually exists — on touch,
+     a tap fires a "focus" event too, which would otherwise trigger this unintentionally */
+  @media (hover: hover) {
+    .hub-hero-carousel-item.hovered,
+    .hub-hero-carousel-item.focused,
+    .hub-hero-carousel-item:focus-visible {
+      --hover-w: min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5));
+      --slide-min-w: var(--hover-w);
+      width: var(--hover-w);
+      min-width: var(--hover-w);
+      background-color: var(--s2a-color-gray-1000);
+    }
   }
 
   .hub-hero-carousel-item-media {
@@ -995,33 +999,35 @@
     z-index: 10;
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
-  .hub-hero-carousel-item.focused .hub-hero-carousel-item-media img,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-media img {
-    transform: scale(1.2);
-  }
+  @media (hover: hover) {
+    .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-media img,
+    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-media img {
+      transform: scale(1.2);
+    }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header *,
-  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *,
-  .hub-hero-carousel-item.focused .hub-hero-carousel-item-header *,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header * {
-    color: var(--s2a-color-gray-25);
-  }
+    .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
+    .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header *,
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *,
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-header *,
+    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *,
+    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header * {
+      color: var(--s2a-color-gray-25);
+    }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
-  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg),
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
-    max-width: 80%;
-  }
+    .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg),
+    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
+      max-width: 80%;
+    }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span,
-  .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer span {
-    transition: all 0s .2s;
-    opacity: 1;
-    max-width: 20%;
-    padding-inline: var(--s2a-spacing-md);
+    .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span,
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer span {
+      transition: all 0s .2s;
+      opacity: 1;
+      max-width: 20%;
+      padding-inline: var(--s2a-spacing-md);
+    }
   }
 
   .hub-hero-carousel-item:nth-child(1) {
@@ -1103,13 +1109,14 @@
   }
 }
 
-/** custom media rule 1 */
+/** custom media rule 4 slides (default) */
 @media (768px <=width <=1200px) {
   .hub-hero-carousel-container {
     transition: all .3s var(--paralax-easing);
     gap: var(--end-gap);
   }
 }
+/** custom media rule 3 slides */
 @media (768px <=width <=890px) {
   .hub-hero.slides-3 {
     --hub-hero-carousel-item-min-width: var(--slide-width);
@@ -1121,6 +1128,96 @@
   .hub-hero:not(.slides-3) {
     --hub-hero-carousel-item-min-width: var(--slide-width);
     --hub-hero-carousel-container-width: calc(((var(--slides) - 1) * var(--slide-width)) + var(--hub-hero-carousel-container-height)*.8 + ((var(--end-gap) * (var(--slides) - 1))));
+  }
+}
+
+/**
+ * touch devices can't hover, so give them native horizontal scroll instead of the hover-expanded
+ * -slot width budget above, and permanently freeze the scroll-driven assembly animation once it
+ * finishes (see initTouchCarouselLock in hub-hero.js) — reversing it while scrolling back up
+ * looks broken on touch (grid images flying back apart), so it only ever plays once, going down.
+ */
+@media (768px <=width <=890px) {
+  .hub-hero.touch-scroll.slides-3 {
+    --hub-hero-carousel-item-min-width: var(--slide-width);
+    --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-width)) + (var(--end-gap) * (var(--slides) - 1)));
+  }
+}
+
+@media (768px <=width <=1230px) {
+  .hub-hero.touch-scroll:not(.slides-3) {
+    --hub-hero-carousel-item-min-width: var(--slide-width);
+    --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-width)) + (var(--end-gap) * (var(--slides) - 1)));
+  }
+}
+
+@media (768px <=width <=1230px) {
+  /*
+   * .hub-hero-carousel-container also gets `transition: all .3s` from the width-scoped rule
+   * above (meant to smooth the desktop hover-triggered stick-left/stick-right shift) — touch
+   * has no such interaction, so that transition just fights our scroll-driven/JS-driven
+   * position changes (most visibly right at lock time, when left/transform switch instantly).
+   */
+  .hub-hero.touch-scroll .hub-hero-carousel-container {
+    transition: none;
+  }
+
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-item,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-item-media,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-header,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-header > div,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-header > div > * {
+    animation-play-state: paused;
+  }
+
+  /*
+   * .hub-hero-carousel can't own the scroll itself: overflow-x:clip on it is paired with an
+   * implicitly-visible overflow-y so .hub-hero-carousel-header (a sibling) can translate above
+   * its box. Any non-"clip" overflow-x would force overflow-y to "auto" too and clip the header.
+   * .hub-hero-carousel-container can't own it either since its width is set to exactly fit its
+   * content (no self-overflow) — so scrolling lives on a wrapper around just the container.
+   */
+  .hub-hero.touch-scroll .hub-hero-carousel-scroll {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hub-hero.touch-scroll .hub-hero-carousel-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+   * Only once locked do we switch the container from its native centered positioning to a
+   * flush-left, scrollable one — JS sets scrollLeft so it *looks* just as centered, but
+   * reachable in both directions by touch. Before that it must stay on native centering
+   * (left:50%/translateX(-50%)), or the still-playing entry animation renders lopsided.
+   */
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-scroll {
+    overflow-x: auto;
+  }
+
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-image-grid-container {
+    padding-bottom: 300px;
+  }
+
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container {
+    left: 0;
+    transform: none;
+  }
+
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container.stick-left,
+  .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container.stick-right {
+    transform: none;
+  }
+
+  [dir="rtl"] .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container {
+    left: auto;
+    right: 0;
+    transform: none;
   }
 }
 

@@ -102,6 +102,49 @@ const scrollHubHeroTo = (el, progress) => {
   });
 };
 
+// touch devices can't hover, so the assembled row scrolls natively instead of the hover-
+// triggered stick-left/stick-right shift. Reversing the scroll-driven assembly animation looks
+// broken on touch, so it's frozen permanently once done — it only ever plays once, going down.
+const CAROUSEL_TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
+
+const getHubHeroProgress = (hubHero) => {
+  const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+  if (totalScrollRange <= 0) return 1;
+  const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
+  return Math.min(Math.max((window.scrollY - hubHeroAbsTop) / totalScrollRange, 0), 1);
+};
+
+const initTouchCarouselLock = (hubHero, carousel, signal) => {
+  if (!hubHero.classList.contains('touch-scroll')) return;
+  const scrollEl = carousel.querySelector('.hub-hero-carousel-scroll');
+  if (!scrollEl) return;
+
+  // scrolling only needs watching until the carousel locks — once it does, we're done for good
+  const lockController = new AbortController();
+  signal.addEventListener('abort', () => lockController.abort(), { once: true });
+
+  const checkLock = () => {
+    // settle point of the slowest assembly animation: gap-shrink finishes at 45%/50% progress,
+    // but the default layout's pointer-events/padding reveal runs to ~56% — 0.6 covers it
+    const lockProgress = hubHero.classList.contains('slides-3') ? 0.46 : 0.6;
+    if (getHubHeroProgress(hubHero) < lockProgress) return;
+    hubHero.classList.add('carousel-locked');
+    // resting position matches the non-touch view: centered, equal overflow both sides.
+    // modern browsers report RTL scrollLeft as 0 (start) to -(max) (end), per spec
+    const offset = Math.max((scrollEl.scrollWidth - scrollEl.clientWidth) / 2, 0);
+    scrollEl.scrollLeft = isRtl() ? -offset : offset;
+    lockController.abort();
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { checkLock(); ticking = false; });
+  }, { signal: lockController.signal, passive: true });
+  requestAnimationFrame(checkLock);
+};
+
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -266,8 +309,9 @@ const decorateCarousel = (slides) => {
   ));
   const carouselContainer = createTag('div', { class: 'hub-hero-carousel-container' });
   carouselContainer.append(...decoratedSlides);
+  const carouselScroll = createTag('div', { class: 'hub-hero-carousel-scroll' }, carouselContainer);
   carousel.replaceChildren();
-  carousel.append(carouselContainer);
+  carousel.append(carouselScroll);
   carousel.dataset.role = 'group';
   carousel.dataset.ariaRoledescription = 'carousel';
   carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
@@ -288,7 +332,7 @@ const upgradeVideoPreload = (carousel) => {
   });
 };
 
-const handleCarousel = (slds, isThreeSlides) => {
+const handleCarousel = (hubHero, slds, isThreeSlides) => {
   // add middle "invisible" slide when carousel has 4 slides
   const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
@@ -297,6 +341,7 @@ const handleCarousel = (slds, isThreeSlides) => {
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
   window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
+  initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
@@ -431,6 +476,10 @@ const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
 
 export default async function init(el) {
+  // touch devices can't hover, so they get different carousel behavior (see hub-hero.css) —
+  // detected once up front rather than re-checked on every scroll tick
+  el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
+
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
   const isThreeSlides = classes.includes('slides-3');
@@ -449,7 +498,7 @@ export default async function init(el) {
   const carouselImages = [...el.querySelectorAll(`.hub-hero > div:nth-last-of-type(-n+${isThreeSlides ? 3 : 4})`)];
 
   const grid = handleGridImages(gridImages, carouselImages, isThreeSlides);
-  const elasticCarousel = handleCarousel(carouselImages, isThreeSlides);
+  const elasticCarousel = handleCarousel(el, carouselImages, isThreeSlides);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
