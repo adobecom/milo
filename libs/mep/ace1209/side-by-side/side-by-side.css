@@ -12,6 +12,10 @@
     background-color: unset;
   }
 
+  .foreground {
+    max-width: 450px;
+  }
+
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
@@ -29,10 +33,6 @@
 
   > .card:last-child {
     --parallax-stagger-index: 1.5;
-  }
-
-  .foreground {
-    max-width: 450px;
   }
 
   .media {
@@ -73,34 +73,14 @@
         color: var(--s2a-color-content-subtle);
       }
     }
+  }
 
-    &.first-card {
-      .card:first-child {
-        .foreground [class^='body-'] {
-          color: var(--s2a-color-content-subtle);
-        }
-      }
+  .card.body-subtle .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
+  }
 
-      .card:last-child {
-        .foreground [class^='body-'] {
-          color: inherit;
-        }
-      }
-    }
-
-    &.second-card {
-      .card:last-child {
-        .foreground [class^='body-'] {
-          color: var(--s2a-color-content-subtle);
-        }
-      }
-
-      .card:first-child {
-        .foreground [class^='body-'] {
-          color: inherit;
-        }
-      }
-    }
+  .card.body-solid .foreground [class^='body-'] {
+    color: inherit;
   }
 
   .card-overlay {
