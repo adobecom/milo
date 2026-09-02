@@ -3,13 +3,21 @@ import {
   getConfig,
   getMetadata,
   localizeLink,
-  decorateLinksAsync,
+  localizeLinkAsync,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
 } from '../../../utils/utils.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
+
+// Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
+// federal's authored .svg icon anchors into <picture> (MWPW-198294).
+async function localizeGnavLinks(body) {
+  await Promise.all([...body.querySelectorAll('a')].map(async (a) => {
+    a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+  }));
+}
 
 export function getFederalDomain(config) {
   const env = getEnv(config);
@@ -89,9 +97,8 @@ export default async function init(el) {
 
   const gnavPromise = main({
     localizeLink,
-    // Lingo link transformation only — skip when lingo is off so federal doesn't
-    // re-run milo link decoration over links federal has already localized.
-    ...(isLingo && { decorateBody: decorateLinksAsync }),
+    // Lingo href transformation only; skip when lingo is off.
+    ...(isLingo && { decorateBody: localizeGnavLinks }),
     gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
