@@ -317,6 +317,37 @@
   }
 }
 
+.dialog-modal.close-button-circle {
+  --dialog-modal-close-size: 40px;
+  --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 0.375);
+
+  button.dialog-close {
+    background: var(--s2a-color-gray-200);
+    border-radius: 50%;
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .dialog-close:focus-visible {
+    outline-color: var(--s2a-color-blue-1000);
+  }
+}
+
+@media (max-width: 1279px) {
+  .dialog-modal.close-button-circle-mobile {
+    --dialog-modal-close-size: 40px;
+    --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 0.375);
+
+    button.dialog-close {
+      background: var(--s2a-color-gray-200);
+      border-radius: 50%;
+    }
+
+    .dialog-close:focus-visible {
+      outline-color: var(--s2a-color-blue-1000);
+    }
+  }
+}
+
 [dir="rtl"] {
   .dialog-modal {
     button.dialog-close {
@@ -491,6 +522,20 @@
     button.dialog-close {
       right: calc(2 * var(--s2a-spacing-lg));
       top: calc(2 * var(--s2a-spacing-lg));
+    }
+  }
+
+  .dialog-modal.close-button-circle-desktop {
+    --dialog-modal-close-size: 40px;
+    --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 0.375);
+
+    button.dialog-close {
+      background: var(--s2a-color-gray-200);
+      border-radius: 50%;
+    }
+
+    .dialog-close:focus-visible {
+      outline-color: var(--s2a-color-blue-1000);
     }
   }
 
