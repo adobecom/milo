@@ -1,0 +1,107 @@
+:root {
+  --chat-panel-width: 400px;
+  --chat-panel-z: 20;
+  --chat-panel-transition: 0.3s ease;
+  --chat-panel-bg: #fff;
+  --chat-panel-border: 1px solid #e0e0e0;
+  --chat-panel-header-height: 52px;
+}
+
+/* Shift the entire page left by giving <body> right padding when the panel is
+   open. All in-flow content (sticky nav included) reflows into the narrower
+   remaining width; the fixed-position panel occupies the reserved space. */
+body {
+  transition: padding-right var(--chat-panel-transition);
+  overflow-x: hidden;
+}
+
+body.chat-panel-open {
+  padding-right: var(--chat-panel-width);
+}
+
+#chat-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--chat-panel-width);
+  height: 100vh;
+  background: var(--chat-panel-bg);
+  border-left: var(--chat-panel-border);
+  box-shadow: -4px 0 16px rgba(0 0 0 / 10%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: var(--chat-panel-z);
+  transform: translateX(100%);
+  transition: transform var(--chat-panel-transition);
+}
+
+body.chat-panel-open #chat-panel {
+  transform: translateX(0);
+}
+
+.chat-panel-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: var(--chat-panel-header-height);
+  border-bottom: var(--chat-panel-border);
+  flex-shrink: 0;
+}
+
+.chat-panel-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chat-panel-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 8px;
+  color: #4b4b4b;
+  border-radius: 4px;
+}
+
+.chat-panel-close:hover {
+  background: #f0f0f0;
+  color: #000;
+}
+
+#brand-concierge-mount {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#chat-panel-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1473e6;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: calc(var(--chat-panel-z) + 1);
+  box-shadow: 0 4px 12px rgba(0 0 0 / 20%);
+  transition: opacity var(--chat-panel-transition);
+}
+
+#chat-panel-toggle:hover { background: #0d66d0; }
+
+body.chat-panel-open #chat-panel-toggle {
+  opacity: 0;
+  pointer-events: none;
+}

@@ -1,7 +1,9 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
 
+let initialized = false;
 let bootstrapped = false;
+let toggleEl = null;
 
 function buildPanel() {
   const panel = createTag('aside', { id: 'chat-panel', 'aria-label': 'Chat' });
@@ -26,7 +28,34 @@ function buildToggle() {
   }, 'Chat');
 }
 
+export function isChatPanelOpen() {
+  return document.body.classList.contains('chat-panel-open');
+}
+
+export function closeChatPanel() {
+  if (!initialized) return;
+  document.body.classList.remove('chat-panel-open');
+  toggleEl?.setAttribute('aria-expanded', 'false');
+}
+
+export function openChatPanel(initialMessage) {
+  if (!initialized) return;
+  document.body.classList.add('chat-panel-open');
+  toggleEl?.setAttribute('aria-expanded', 'true');
+  if (!bootstrapped) {
+    bootstrapped = true;
+    bcBootstrap(initialMessage || null, mountId);
+  }
+}
+
+/**
+ * Build the panel DOM + wire up close/toggle/Escape. Idempotent — calling
+ * again is a no-op. Does NOT open the panel; callers must call openChatPanel().
+ */
 export default async function init() {
+  if (initialized) return;
+  initialized = true;
+
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot || '/libs';
   await new Promise((resolve) => {
@@ -35,29 +64,12 @@ export default async function init() {
 
   const { panel, closeBtn } = buildPanel();
   const toggle = buildToggle();
+  toggleEl = toggle;
   document.body.append(panel, toggle);
 
-  const open = () => {
-    document.body.classList.add('chat-panel-open');
-    toggle.setAttribute('aria-expanded', 'true');
-    if (!bootstrapped) {
-      bootstrapped = true;
-      bcBootstrap(null, mountId);
-    }
-  };
-
-  const close = () => {
-    document.body.classList.remove('chat-panel-open');
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.focus();
-  };
-
-  toggle.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
-
+  toggle.addEventListener('click', () => openChatPanel());
+  closeBtn.addEventListener('click', closeChatPanel);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.body.classList.contains('chat-panel-open')) close();
+    if (e.key === 'Escape' && isChatPanelOpen()) closeChatPanel();
   });
-
-  open();
 }

@@ -10,10 +10,13 @@ import {
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
-  bcBootstrap,
-  openSideModal,
   setAuthoredContent,
 } from '../brand-concierge/bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../features/chat-panel/chat-panel.js';
 
 let stayActive = false;
 
@@ -40,7 +43,7 @@ function handleInput(text, gnavInput) {
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
-  openSideModal(text, bcBootstrap);
+  openChatPanel(text);
 }
 
 function handleSuggestedPrompt(text, gnavCards, event) {
@@ -48,14 +51,12 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
   setCssGnavHeight();
-  openSideModal(text, bcBootstrap);
+  openChatPanel(text);
 }
 
 function handleGnavButton(event) {
-  const isOpen = document.body.classList.contains('bc-side-open');
-  const close = document.querySelector('#brand-concierge-side button.dialog-close');
-  if (!isOpen) openSideModal(null, bcBootstrap);
-  else close.click();
+  if (isChatPanelOpen()) closeChatPanel();
+  else openChatPanel();
   event.target.blur();
 }
 
@@ -95,16 +96,13 @@ function decorateGnav(cards, input, topNav, el) {
     });
 
     gnavButton.addEventListener('click', (event) => {
-      // debounce the click to prevent double opening of the modal
+      // debounce the click to prevent double toggling
       gnavButton.classList.add('active');
       const cleanup = setTimeout(() => {
         gnavButton.classList.remove('active');
         clearTimeout(cleanup);
       }, 500);
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
-      } else handleGnavButton(event);
+      handleGnavButton(event);
     });
     if (window?.milo) {
       window.milo.brandConcierge = brandConcierge;
@@ -125,10 +123,7 @@ export default function init(el) {
       loadWebclient();
     }
     if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
-      }
+      if (isChatPanelOpen()) closeChatPanel();
       window.adobe.concierge.clearHistory();
     }
   });
@@ -150,8 +145,12 @@ export default function init(el) {
     el.removeChild(row);
   });
 
+  // Build the chat-panel DOM once. Opening is driven by gnav button / input /
+  // suggested-prompt click handlers above.
+  initChatPanel();
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
-    openSideModal(null, bcBootstrap);
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+    openChatPanel();
   }
 }
