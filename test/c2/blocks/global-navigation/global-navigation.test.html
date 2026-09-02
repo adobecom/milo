@@ -118,6 +118,29 @@
           expect(args.decorateBody).to.equal(undefined);
         });
 
+        it('decorateBody localizes hrefs without converting authored .svg icon anchors to <picture>', async () => {
+          enableLingo();
+          const args = await runInit();
+          const body = document.createElement('div');
+          // Icon anchor authored as text = .svg URL — the form decorateSVG
+          // would convert to <picture>. Regression guard: MWPW-198294.
+          const iconUrl = 'https://main--federal--adobecom.aem.page/assets/icon.svg';
+          body.innerHTML = `
+            <a class="icon" href="${iconUrl}">${iconUrl}</a>
+            <a class="lingo" href="https://main--federal--adobecom.aem.page/fr/plans.html#_mep-lingo">Plans</a>`;
+          await args.decorateBody(body);
+
+          expect(body.querySelector('picture')).to.equal(null);
+          const svgAnchor = body.querySelector('a.icon');
+          expect(svgAnchor).to.exist;
+          expect(svgAnchor.href).to.include('.svg');
+
+          // Proves href localization still ran (mep-lingo marker consumed).
+          const lingoAnchor = body.querySelector('a.lingo');
+          expect(lingoAnchor.dataset.mepLingo).to.equal('true');
+          expect(lingoAnchor.href).to.not.include('#_mep-lingo');
+        });
+
         it('merges geo-IP overrides into the placeholder map when lingo is active', async () => {
           enableLingo();
           const args = await runInit();
