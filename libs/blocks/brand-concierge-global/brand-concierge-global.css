@@ -541,7 +541,7 @@
 }
 
 /* functional controls */
-.bc-side-open .bc-gnav-button {
+.bc-side-open .bc-gnav-button:not(.no-gnav-mobile) {
   display: flex;
 }
 
