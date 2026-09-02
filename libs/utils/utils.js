@@ -113,7 +113,6 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'base-card',
-  'box',
   'brand-concierge',
   'carousel-c2',
   'comparison-table-c2',
@@ -137,6 +136,7 @@ const C2_BLOCKS = [
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
+  'quote',
   'region-nav',
   'rich-content',
   'router-marquee',
@@ -177,6 +177,7 @@ const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
+  'hub-hero',
 ];
 
 const ENVS = {
