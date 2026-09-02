@@ -7,7 +7,8 @@
   grid-template-columns: 1fr;
   gap: var(--card-gap);
 
-  &.dark {
+  &.dark,
+  .card.dark {
     background-color: unset;
   }
 
@@ -69,10 +70,6 @@
       height: auto;
     }
 
-    &.dark {
-      background-color: unset;
-    }
-
     .media {
       position: absolute;
       inset: 0;
@@ -103,6 +100,11 @@
       gap: var(--s2a-spacing-2xs);
       max-width: 450px;
     }
+  }
+
+  &.scrim-off .card-overlay,
+  .card-overlay:not(.dark) {
+    --card-overlay-gradient: transparent;
   }
 
   .card-stacked {
