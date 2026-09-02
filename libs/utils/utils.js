@@ -2752,6 +2752,55 @@ export function partition(arr, fn) {
   );
 }
 
+const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
+
+/**
+ * Validates a repo/owner pair intended for use in an *.aem.live host and
+ * returns the resulting origin, or null if either value is missing or does
+ * not look like a safe AEM repo/owner segment. Guards against arbitrary host
+ * injection via the `repo`/`owner` query params (VULN-38270).
+ * @param {string} repo raw repo query parameter value
+ * @param {string} owner raw owner query parameter value
+ * @returns {string|null} origin, or null if repo/owner are missing or invalid
+ */
+export function getValidatedRepoOwnerOrigin(repo, owner) {
+  if (!repo || !owner) return null;
+  const cleanRepo = repo.trim().toLowerCase();
+  const cleanOwner = owner.trim().toLowerCase();
+  if (
+    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
+  ) return null;
+  let url;
+  try {
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
+  return url.origin;
+}
+
+export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
+const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);
+
+/**
+ * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
+ * repo/owner validation alone can't guarantee a config isn't attacker-owned (VULN-38270).
+ * @param {string} site raw `sharepoint.site` config value
+ * @returns {string|null} the validated site value, or null if unsafe
+ */
+export function getValidatedSharePointSite(site) {
+  if (typeof site !== 'string') return null;
+  return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
