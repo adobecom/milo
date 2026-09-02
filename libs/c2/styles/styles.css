@@ -1439,7 +1439,7 @@ span.hang-opening-quote {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
-    --parallax-move-up-to: calc(-35vh - var(--feds-promo-bar-height, 0px));
+    --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 35vh);
 
     will-change: transform;
     position: sticky;
@@ -1452,7 +1452,7 @@ span.hang-opening-quote {
 
     /* Shorter viewports in the common laptop width band need more travel */
     @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
-      --parallax-move-up-to: calc(-50vh - var(--feds-promo-bar-height, 0px));
+      --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
     }
 
     /* Once the promo bar has scrolled out (feds-header-scrolled), it no longer
