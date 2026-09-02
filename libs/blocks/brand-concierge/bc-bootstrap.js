@@ -1,5 +1,5 @@
 import { getModal, closeModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
 import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
@@ -18,6 +18,7 @@ let bcToken;
 let susiListener;
 let sideModalEl = null;
 let sideCurtainEl = null;
+let lastImsState = null;
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -241,6 +242,18 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
       bcToken = window.adobeIMS?.getAccessToken()?.token;
     }
 
+    const isSignedIn = !!window.adobeIMS?.isSignedInUser();
+    const guestToken = getMetadata('ims-guest-token');
+    const imsState = `${isSignedIn}:${!!bcToken}:${!!guestToken}`;
+    if (imsState !== lastImsState) {
+      lastImsState = imsState;
+      const severity = (!bcToken && isSignedIn) || (!bcToken && guestToken) || !guestToken ? 'warn' : 'info';
+      window.lana?.log(
+        `Brand Concierge IMS state — signedIn: ${isSignedIn}, accessToken: ${!!bcToken}, guestToken: ${!!guestToken}`,
+        { tags: 'brand-concierge', severity, sampleRate: 50 },
+      );
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
@@ -269,6 +282,7 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
         _dc: { language },
       },
       homeAddress: { region: locale.region },
+      arpSessionToken: window.adobeArp?.sessionToken,
     };
 
     if (consentConfObject?.length) {

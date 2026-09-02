@@ -47,6 +47,10 @@ export function openChatPanel(initialMessage) {
   if (!bootstrapped) {
     bootstrapped = true;
     bcBootstrap(initialMessage || null, mountId);
+  } else if (initialMessage) {
+    // Same pattern as the legacy routeInput's `if (isOpen) bcBootstrap(text)`:
+    // set dataset.initialMessage and re-invoke bootstrap so BC picks it up.
+    bcBootstrap(initialMessage, mountId);
   }
 }
 
