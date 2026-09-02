@@ -392,6 +392,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   if (variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
+  let pillVisibilityRaf;
   function updatePillVisibility(target) {
     const prompts = target.querySelector('.bc-prompt-cards');
     if (!prompts) return;
@@ -399,7 +400,9 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
     const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
     buttons.forEach((btn) => { btn.style.display = ''; });
 
-    requestAnimationFrame(() => {
+    if (pillVisibilityRaf) cancelAnimationFrame(pillVisibilityRaf);
+    pillVisibilityRaf = requestAnimationFrame(() => {
+      pillVisibilityRaf = null;
       const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
 
       buttons.forEach((btn) => {
@@ -417,12 +420,10 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
-  const updateLayout = () => {
-    updatePillVisibility(floatingInput);
-  };
+  const updateLayout = () => updatePillVisibility(floatingInput);
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;
