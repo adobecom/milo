@@ -244,6 +244,23 @@ describe('preflight diff-onpage', () => {
       expect(overlay.classList.contains('is-modified')).to.equal(true);
     });
 
+    it('resolves a change against change.scope instead of the page root when set', () => {
+      const fragment = document.createElement('div');
+      fragment.className = 'fragment';
+      fragment.innerHTML = '<div><p>Fragment text</p></div>';
+      root.append(fragment);
+      const diff = {
+        added: [{ type: 'added', tag: 'P', path: '/div[1]/p[1]', scope: fragment }],
+        modified: [],
+        removed: [],
+      };
+
+      highlightOnPage(diff, root);
+
+      expect(fragment.querySelector('p > .preflight-diff-overlay')).to.exist;
+      expect(root.children[0].querySelector('.preflight-diff-overlay')).to.not.exist;
+    });
+
     it('gives an added overlay host a visually-hidden accessible label, since the overlay itself is aria-hidden', () => {
       const diff = { added: [{ type: 'added', tag: 'H2', path: '/div[1]/h2[1]' }], modified: [], removed: [] };
 

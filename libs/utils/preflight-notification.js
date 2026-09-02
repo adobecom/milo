@@ -3,16 +3,32 @@ import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
 import loadC2Tokens from '../blocks/preflight/c2-tokens.js';
 import { loadStyle, getConfig } from './utils.js';
 
+const PENDING_FRAGMENT_WAIT_MS = 2000;
+
 export async function autoHighlightUnpublished() {
   const root = document.querySelector('main');
   if (!root) return;
   try {
-    const [{ default: fetchVersions }, { default: computeDiff }] = await Promise.all([
+    const url = new URL(window.location.href);
+    const [
+      { default: fetchVersions },
+      { default: computeDiff },
+      { default: collectFragmentChanges, hasPendingFragments },
+    ] = await Promise.all([
       import('../blocks/preflight/checks/diff/fetchVersions.js'),
       import('../blocks/preflight/checks/diff/computeDiff.js'),
+      import('../blocks/preflight/checks/diff/fragments.js'),
     ]);
-    const { content } = computeDiff(await fetchVersions(new URL(window.location.href)));
-    if (!content) return;
+    const page = computeDiff(await fetchVersions(url)).content;
+    if (hasPendingFragments(root)) {
+      await new Promise((res) => { setTimeout(res, PENDING_FRAGMENT_WAIT_MS); });
+    }
+    const fragments = await collectFragmentChanges(root, url);
+    const content = {
+      added: [...(page?.added || []), ...fragments.added],
+      modified: [...(page?.modified || []), ...fragments.modified],
+    };
+    if (!content.added.length && !content.modified.length) return;
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
     await Promise.all([

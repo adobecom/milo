@@ -155,7 +155,7 @@ export function highlightOnPage(diff, root) {
     const apply = (change, modifierClass) => {
       let el = null;
       try {
-        el = resolveOnPage(change.path, root, change.kind, change.previewText || change.liveText || '');
+        el = resolveOnPage(change.path, change.scope || root, change.kind, change.previewText || change.liveText || '');
       } catch {
         el = null;
       }

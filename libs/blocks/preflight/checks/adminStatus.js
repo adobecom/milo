@@ -2,6 +2,10 @@ const CROSS_REPO_PREFIXES = [
   { prefix: '/federal/', owner: 'adobecom', repo: 'federal', branch: 'main' },
 ];
 
+export function isCrossRepo(pathname) {
+  return CROSS_REPO_PREFIXES.some(({ prefix }) => pathname.startsWith(prefix));
+}
+
 export function getAdminUrl(url, type) {
   const crossRepo = CROSS_REPO_PREFIXES.find(({ prefix }) => url.pathname.startsWith(prefix));
   let owner; let repo; let branch;
