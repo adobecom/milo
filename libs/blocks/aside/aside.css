@@ -1,3 +1,10 @@
+.aside.promobar:not(.promobar-ready){
+  visibility: hidden;
+  width: 0px;
+  height: 0px;
+  min-height: 0px;
+}
+
 .aside {
   --min-height: 160px;
 

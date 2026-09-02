@@ -291,12 +291,18 @@ function decorateLayout(el) {
 
 export default function init(el) {
   el.classList.add('con-block');
-  const blockData = getBlockData(el);
-  const blockText = decorateLayout(el);
-  decorateBlockText(blockText, blockData);
-  decorateStaticLinks(el);
-  formatPromoButton(el);
-  decorateTextOverrides(el);
-  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
-  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
+  const isPromoBar = el.classList.contains('promobar');
+  try{
+    const blockData = getBlockData(el);
+    const blockText = decorateLayout(el);
+    decorateBlockText(blockText, blockData);
+    decorateStaticLinks(el);
+    formatPromoButton(el);
+    decorateTextOverrides(el);
+    // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+    if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
+  }catch (error){
+    throw error;
+  }
+  if(isPromoBar) el.classList.add('promobar-ready');
 }
