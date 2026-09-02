@@ -580,6 +580,10 @@
 
 /* gnav collapse */
 @media screen and (min-width: 900px) {
+  .bc-gnav.has-chat-history .bc-gnav-button.no-gnav-mobile {
+    display: flex;
+  }
+
   .bc-gnav:not(.has-chat-history) .bc-gnav-button {
     display: none;
   }
