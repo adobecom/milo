@@ -209,6 +209,11 @@
         align-items: flex-end;
         aspect-ratio: 16 / 9;
       }
+
+      &.scrim-off .card-overlay,
+      .card-overlay:not(.dark) {
+        --card-overlay-gradient: transparent;
+      }
     }
   }
 }
