@@ -2822,6 +2822,70 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
+// Resolve the autoblock name a link WOULD become during decoration, without any DOM
+// side effects — mirrors the trusted-host match in decorateAutoBlock so we can warm the
+// block's assets. Deliberately approximate (skips the pdf/fragment/video sub-rules); a
+// wrong guess only over/under-warms a preload, it never changes decoration. Returns null
+// for non-autoblock links.
+const getAutoBlockName = (a) => {
+  let url;
+  try { url = new URL(a.href); } catch (e) { return null; }
+  const { autoBlocks = AUTO_BLOCKS } = getConfig();
+  const match = autoBlocks.find((candidate) => {
+    const key = Object.keys(candidate)[0];
+    return isTrustedAutoBlock(candidate[key], url);
+  });
+  return match ? Object.keys(match)[0] : null;
+};
+
+// Warm the first (LCP) section's block assets (authored blocks + link autoblocks) BEFORE
+// MEP's awaits in loadArea hold up section processing. Runs on the raw authored DOM
+// (pre-decoration), mirroring the blocks decorateSection/processSection will later load,
+// so their fetches are already in flight by the time processing resumes.
+const preloadLcpBlocks = (area = document) => {
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    const name = getAutoBlockName(a);
+    if (name) autoNames.add(name);
+  });
+  // A `video` autoblock is only synthesized for "slack uploaded" mp4s (a media_<...>.mp4
+  // marker in the link text / img alt); other mp4s (e.g. a hero-marquee background video)
+  // never become a video block. Match that guard so we don't warm video.js needlessly.
+  if ([...firstSection.querySelectorAll('img[alt*=".mp4"]')].some((img) => /media_.*\.mp4/.test(img.alt))) {
+    autoNames.add('video');
+  }
+  const autoBlocks = [...autoNames].map((name) => createTag('div', { class: name }));
+  const allBlocks = [...blocks, ...autoBlocks];
+  if (allBlocks.length) preloadBlockResources(allBlocks);
+
+  const config = getConfig();
+  const { base, iconsExcludeBlocks } = config;
+
+  // Placeholders: decoratePlaceholders fetches the locale sheet when the section has
+  // {{token}} text. That fetch is same-origin via customFetch (plain fetch, NO CORS), so
+  // the sheet preload must omit crossorigin or it won't be reused. Guard on contentRoot so
+  // a locale-less config never preloads an "undefined/placeholders.json" 404.
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
+  }
+
+  // Icons: decorateIcons (awaited in processSection before block loads) imports the icons
+  // module + sprite CSS when the section has a span.icon that ISN'T inside an
+  // iconsExcludeBlocks block. Mirror that exclusion so we only warm icons.js when
+  // decorateIcons actually will. Only the module is warmed (not icons.css) — the sheet is
+  // small and preloading it would shadow the rel=stylesheet link decorateIcons appends.
+  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const willDecorateIcons = icons.length && (!iconsExcludeBlocks
+    || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
+  if (willDecorateIcons) {
+    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  }
+};
+
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
   if (!anchors.length) return false;
@@ -2899,6 +2963,7 @@ export async function loadArea(area = document) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
+    preloadLcpBlocks(area);
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
