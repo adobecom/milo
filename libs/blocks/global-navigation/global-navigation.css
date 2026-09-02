@@ -580,6 +580,10 @@ header.global-navigation.is-compact .feds-client-plans-cta {
   margin-left: 0;
 }
 
+header.global-navigation.is-compact .feds-logo {
+  display: flex;
+}
+
 
 @media (max-width: 320px) {
   .feds-promo-aside-wrapper[aria-hidden="true"] {
