@@ -41,6 +41,10 @@
   grid-template-areas: var(--grid-default);
  }
 
+ .section[class*='grid-width-'] .how-to .foreground {
+  max-width: unset;
+ }
+
  .how-to ol {
   list-style-type: none;
   padding: 0;
@@ -212,6 +216,15 @@
 
   .how-to.large-media .how-to-media.large {
     max-width: 500px;
+  }
+
+  .section[class*='grid-width-'] .how-to.large-image .foreground,
+  .section[class*='grid-width-'] .how-to.large-media .foreground {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .section[class*='grid-width-'] .how-to ol {
+    min-width: 0;
   }
  }
 
