@@ -252,7 +252,7 @@ const Configurator = ({ title, panelsData, lsKey }) => {
     const validatedState = validateState(state, panelsData);
     const windowUrl = new URL(window.location.href);
     const iframeUrl = new URL(windowUrl.origin + windowUrl.pathname);
-    const allowedParams = ['preview', 'milolibs', 'lang'];
+    const allowedParams = ['preview', 'milolibs', 'lang', 'marketoform'];
     const { searchParams } = windowUrl;
     allowedParams.forEach((param) => {
       if (searchParams.has(param)) {
