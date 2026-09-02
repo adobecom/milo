@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
+import { getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
 
 let initialized = false;
 let bootstrapped = false;
@@ -8,10 +9,11 @@ let toggleEl = null;
 function buildPanel() {
   const panel = createTag('aside', { id: 'chat-panel', 'aria-label': 'Chat' });
 
-  const header = createTag('div', { class: 'chat-panel-header' });
-  const title = createTag('span', { class: 'chat-panel-title' }, 'Ask Adobe');
+  // Match the "Ask BETA" styling from the legacy #brand-concierge-side header:
+  // an `h1.bc-modal-title` next to `getBetaLabel()` (the pill from bc-utils).
+  const title = createTag('h1', { class: 'bc-modal-title' }, 'Ask');
   const closeBtn = createTag('button', { class: 'chat-panel-close', 'aria-label': 'Close chat' }, '✕');
-  header.append(title, closeBtn);
+  const header = createTag('div', { class: 'chat-panel-header bc-modal-header' }, [title, getBetaLabel(), closeBtn]);
 
   const mountEl = createTag('div', { id: mountId });
   panel.append(header, mountEl);

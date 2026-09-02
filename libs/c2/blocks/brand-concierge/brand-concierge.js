@@ -14,11 +14,15 @@ import {
 import {
   loadWebclient,
   bcBootstrap,
-  openSideModal,
   openModal,
   setAuthoredContent,
   mountId,
 } from './bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../../features/chat-panel/chat-panel.js';
 
 const variants = {};
 
@@ -32,9 +36,8 @@ function checkGlobal() {
 
 function routeInput(text) {
   if (checkGlobal()) {
-    const isOpen = document.body.classList.contains('bc-side-open');
-    if (isOpen) bcBootstrap(text, mountId);
-    else openSideModal(text, bcBootstrap);
+    if (isChatPanelOpen()) bcBootstrap(text, mountId);
+    else openChatPanel(text);
   } else {
     openModal(text, bcBootstrap);
   }
@@ -73,13 +76,14 @@ export default async function init(el) {
       loadWebclient();
     }
     if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
-      }
+      if (isChatPanelOpen()) closeChatPanel();
       window.adobe.concierge.clearHistory();
     }
   });
+
+  // Build the chat-panel DOM once so gnav / floating-button / input triggers
+  // can open it. Idempotent — safe to call from multiple BC block instances.
+  initChatPanel();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;

@@ -17,10 +17,14 @@ import {
   loadWebclient,
   bcBootstrap,
   openModal,
-  openSideModal,
   setAuthoredContent,
   mountId,
 } from './bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../features/chat-panel/chat-panel.js';
 
 const variants = {};
 
@@ -34,11 +38,10 @@ function checkGlobal() {
 
 function routeInput(text) {
   if (checkGlobal()) {
-    const isOpen = document.body.classList.contains('bc-side-open');
-    if (isOpen) bcBootstrap(text, mountId);
+    if (isChatPanelOpen()) bcBootstrap(text, mountId);
     else {
       setCssGnavHeight();
-      openSideModal(text, bcBootstrap);
+      openChatPanel(text);
     }
   } else {
     openModal(text, bcBootstrap);
@@ -78,10 +81,7 @@ export default async function init(el) {
       loadWebclient();
     }
     if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
-      }
+      if (isChatPanelOpen()) closeChatPanel();
       window.adobe.concierge.clearHistory();
     }
   });
@@ -190,8 +190,12 @@ export default async function init(el) {
     el.removeChild(row);
   });
 
+  // Build the chat-panel DOM once so gnav / floating-button / input triggers
+  // can open it. Idempotent — safe to call from multiple BC block instances.
+  initChatPanel();
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
-    openSideModal(null, bcBootstrap);
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+    openChatPanel();
   }
 }
