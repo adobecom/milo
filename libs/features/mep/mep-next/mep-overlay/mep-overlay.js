@@ -1,5 +1,6 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import { onSidekickAuth } from '../../sidekick-auth.js';
+import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -169,7 +170,13 @@ function getManifestStatus(manifest) {
       label: 'Disabled',
     },
     {
-      reason: !manifest.consentEnabled,
+      reason: !manifest.consentEnabled && manifest.consentType === NON_PERSONALIZED_OFFER_TEST,
+      msg: 'Target off due to user\'s consent.',
+      level: 'Warning',
+      label: 'MEP used instead of Target',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === PERSONALIZED_OFFER,
       msg: 'Disabled due to user\'s consent.',
       level: 'Warning',
       label: 'Ineligible',

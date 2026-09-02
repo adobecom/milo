@@ -70,9 +70,9 @@ const SELECTOR_TYPES = {
   other: 'other',
 };
 
-const PROMO_OR_NO_OFFER_CHANGES = 'promo or no offer changes';
-const NON_PERSONALIZED_OFFER_TEST = 'non-personalized offer test';
-const PERSONALIZED_OFFER = 'personalized offer';
+export const PROMO_OR_NO_OFFER_CHANGES = 'promo or no offer changes';
+export const NON_PERSONALIZED_OFFER_TEST = 'non-personalized offer test';
+export const PERSONALIZED_OFFER = 'personalized offer';
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
