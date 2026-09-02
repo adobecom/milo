@@ -28,26 +28,21 @@ describe('setCountryEnabled', () => {
     sessionStorage.setItem('akamai', 'us');
     getConfig().mep = {};
   });
-  it('should set countryEnabled to true if the country restriction is null', async () => {
+  it('should set countryEnabled to true if the country restriction is null', () => {
     const manifestConfig = { countryRestriction: null, manifestPath: '/test/test.json' };
-    await setCountryEnabled(manifestConfig);
+    setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
   });
-  it('should set countryEnabled to true if the akamai code is resolved from session storage and is in the restriction list', async () => {
-    const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
-    await setCountryEnabled(manifestConfig);
-    expect(manifestConfig.countryEnabled).to.be.true;
-  });
-  it('should set countryEnabled to true if the akamai code is in the restriction list', async () => {
+  it('should set countryEnabled to true if the akamai code is in the restriction list', () => {
     getConfig().mep.akamaiCode = 'us';
     const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
-    await setCountryEnabled(manifestConfig);
+    setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
     delete getConfig().mep.akamaiCode;
   });
-  it('should override the variant to Default if the country restriction is not met', async () => {
+  it('should override the variant to Default if the country restriction is not met', () => {
     const manifestConfig = { countryRestriction: 'fr, ca', manifestPath: '/test/test.json' };
-    await setCountryEnabled(manifestConfig);
+    setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.false;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });

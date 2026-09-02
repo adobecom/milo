@@ -5,7 +5,6 @@
 import {
   createTag,
   getConfig,
-  getCountry,
   getMetadata,
   loadLink,
   loadScript,
@@ -1151,15 +1150,12 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export async function setCountryEnabled(manifestConfig) {
+export function setCountryEnabled(manifestConfig) {
   manifestConfig.countryEnabled = true;
   const { countryRestriction, manifestPath } = manifestConfig;
   if (!countryRestriction) return;
   const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
   const config = getConfig();
-  if (!config.mep.akamaiCode) {
-    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
-  }
   manifestConfig.countryEnabled = countryArray.includes(config.mep.akamaiCode);
   if (!manifestConfig.countryEnabled) overrideVariant(manifestPath, 'Default');
 }
@@ -1301,7 +1297,7 @@ async function getManifestConfig(info, variantOverride) {
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   setConsentEnabled(manifestConfig, source);
-  await setCountryEnabled(manifestConfig);
+  setCountryEnabled(manifestConfig);
   if (manifestConfig.consentType !== PROMO_OR_NO_OFFER_CHANGES
     && manifestConfig.consentEnabled && manifestConfig.countryEnabled) {
     sendAnalytics(`${fileName} was served`);
