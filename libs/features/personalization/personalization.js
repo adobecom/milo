@@ -1418,10 +1418,7 @@ export async function applyPers({ manifests }) {
       getCookie('ims_country_code'),
       isMasImsLoginEnabled(),
     );
-    // Cold-load fallback: URL/cookie/IMS and the non-network akamaiCode were all
-    // unresolved (no edge geo server-timing header — e.g. aem.page, martech=off).
-    // Resolve via the geo2 network fetch once so countryIP(...) placeholders and
-    // manifest-geo-restriction match on first load instead of only on reload.
+    // Off-Akamai origins lack the edge geo header; resolve via network once.
     if (!config.mep.countryIP) {
       config.mep.countryIP = normCountryCode(await getCountry());
     }
