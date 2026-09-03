@@ -23,7 +23,7 @@ const handleNav = (event) => {
     case 'card:clicked':
       recordNavClick({
         clickType: 'product_card_cta',
-        destinationPage: event.data?.element?.entity_info?.productPageURL,
+        destinationPage: event.data?.destinationUrl,
       });
       break;
     case 'cta:clicked':
@@ -199,7 +199,7 @@ const initBackNavAnalytics = () => {
         clickType: state.bcClickType,
         sessionId: getChatSessionId(),
         sourcePage: state.bcSourcePage ?? window.location.href,
-        destinationPage: state.bcDestinationPage ?? document.referrer ?? '',
+        destinationPage: state.bcDestinationPage ?? '',
         clickSource: state.bcClickSource ?? '',
         loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
         navigatedBack: true,
