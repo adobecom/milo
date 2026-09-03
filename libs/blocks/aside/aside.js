@@ -42,7 +42,11 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
                       <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"></line>
                     </g>
                   </svg>`;
+const ASIDE_CSS_LINK_REGEXP = /\/aside\/aside\.css(?:[?#]|$)/;
 
+function checkPromoBarCssLoaded(){
+  return getComputedStyle(document.documentElement).getPropertyValue('--promobar-css-loaded').trim() === '1';
+}
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
   const size = sizes.find((sizeClass) => el.classList.contains(sizeClass));
@@ -291,12 +295,30 @@ function decorateLayout(el) {
 
 export default function init(el) {
   el.classList.add('con-block');
-  const blockData = getBlockData(el);
-  const blockText = decorateLayout(el);
-  decorateBlockText(blockText, blockData);
-  decorateStaticLinks(el);
-  formatPromoButton(el);
-  decorateTextOverrides(el);
-  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
-  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
+  const isPromoBar = el.classList.contains('promobar');
+  try{
+    const blockData = getBlockData(el);
+    const blockText = decorateLayout(el);
+    decorateBlockText(blockText, blockData);
+    decorateStaticLinks(el);
+    formatPromoButton(el);
+    decorateTextOverrides(el);
+    // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+    if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
+  }catch (error){
+    throw error;
+  }
+  if(!isPromoBar) return;
+  if(checkPromoBarCssLoaded()){
+    el.classList.add('promobar-ready')
+  }
+  const link = [...document.querySelectorAll('link[rel="stylesheet"]')].find(lnk => ASIDE_CSS_LINK_REGEXP.test(lnk.href));
+  if(!link) return;
+  const recheck = () =>{
+    if(checkPromoBarCssLoaded()){
+      el.classList.add('promobar-ready')
+    }
+  }
+  link.addEventListener('load', recheck, {once: true})
+  link.addEventListener('error', recheck, {once: true})
 }
