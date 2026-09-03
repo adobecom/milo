@@ -1,11 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
 import {
   overrideVariant,
-  getCountryRestriction,
-  getManifestMarketingAction,
-  canServeManifest,
+  setCountryEnabled,
+  normalizeConsentType,
+  setConsentEnabled,
 } from '../../../libs/features/personalization/personalization.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
@@ -24,145 +23,148 @@ describe('overrideVariant', () => {
   });
 });
 
-describe('getCountryRestriction', () => {
+describe('setCountryEnabled', () => {
   before(() => {
     sessionStorage.setItem('akamai', 'us');
     getConfig().mep = {};
   });
-  it('should return true if the country restriction is null', async () => {
-    expect(await getCountryRestriction({ countryRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
+  it('should set countryEnabled to true if the country restriction is null', () => {
+    const manifestConfig = { countryRestriction: null, manifestPath: '/test/test.json' };
+    setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.true;
   });
-  it('should return true if the country restriction includes US', async () => {
-    expect(await getCountryRestriction({ countryRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
+  it('should set countryEnabled to true if the akamai code is in the restriction list', () => {
+    getConfig().mep.akamaiCode = 'us';
+    const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
+    setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.true;
+    delete getConfig().mep.akamaiCode;
   });
-  it('should return false and override the variant if the country restriction does not include US', async () => {
-    await getCountryRestriction({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' });
+  it('should override the variant to Default if the country restriction is not met', () => {
+    const manifestConfig = { countryRestriction: 'fr, ca', manifestPath: '/test/test.json' };
+    setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.false;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
 });
 
-describe('getManifestMarketingAction', () => {
-  it('should return the same action if it is in the allowed list', () => {
-    expect(getManifestMarketingAction('marketing increase', 'promo')).to.be.equal('marketing increase');
+describe('normalizeConsentType', () => {
+  it('should return the same value if it is already the new promo value', () => {
+    expect(normalizeConsentType('promo or no offer changes', {}, 'promo')).to.be.equal('promo or no offer changes');
   });
-  it('should normalize core services to core services/non-marketing', () => {
-    expect(getManifestMarketingAction('core services', 'pzn')).to.be.equal('core services/non-marketing');
+  it('should return the same value if it is already the new non-personalized offer test value', () => {
+    expect(normalizeConsentType('non-personalized offer test', {}, 'pzn')).to.be.equal('non-personalized offer test');
   });
-  it('should return core services/non-marketing if the action is promo and the action is undefined', () => {
-    expect(getManifestMarketingAction(undefined, 'promo')).to.be.equal('core services/non-marketing');
+  it('should map legacy core services to promo or no offer changes', () => {
+    expect(normalizeConsentType('core services', {}, 'pzn')).to.be.equal('promo or no offer changes');
   });
-  it('should return marketing increase if the action is not in the allowed list and the source is not promo', () => {
-    expect(getManifestMarketingAction('marketing', 'pzn')).to.be.equal('marketing increase');
+  it('should map legacy core services/non-marketing to promo or no offer changes', () => {
+    expect(normalizeConsentType('core services/non-marketing', {}, 'pzn')).to.be.equal('promo or no offer changes');
   });
-  it('should return marketing increase if the action is undefined and the source is not promo', () => {
-    expect(getManifestMarketingAction(undefined, 'pzn')).to.be.equal('marketing increase');
+  it('should map legacy non-marketing to promo or no offer changes', () => {
+    expect(normalizeConsentType('non-marketing', {}, 'pzn')).to.be.equal('promo or no offer changes');
+  });
+  it('should map legacy marketing increase to non-personalized offer test', () => {
+    expect(normalizeConsentType('marketing increase', {}, 'pzn')).to.be.equal('non-personalized offer test');
+  });
+  it('should map legacy marketing decrease to non-personalized offer test', () => {
+    expect(normalizeConsentType('marketing decrease', {}, 'pzn')).to.be.equal('non-personalized offer test');
+  });
+  it('should return promo or no offer changes if the value is unrecognized and the source is promo', () => {
+    expect(normalizeConsentType(undefined, {}, 'promo')).to.be.equal('promo or no offer changes');
+  });
+  it('should return personalized offer if the value is unrecognized and the source is not promo', () => {
+    expect(normalizeConsentType('marketing', {}, 'pzn')).to.be.equal('personalized offer');
+  });
+  it('should return personalized offer if the value is undefined and the source is not promo', () => {
+    expect(normalizeConsentType(undefined, {}, 'pzn')).to.be.equal('personalized offer');
+  });
+  it('should return the same value if it is already personalized offer', () => {
+    expect(normalizeConsentType('personalized offer', {}, 'pzn')).to.be.equal('personalized offer');
+  });
+  it('should set consentNotSpecified to true on the manifestConfig when no value is provided', () => {
+    const manifestConfig = {};
+    normalizeConsentType(undefined, manifestConfig, 'pzn');
+    expect(manifestConfig.consentNotSpecified).to.be.true;
+  });
+  it('should not set consentNotSpecified when a value is provided', () => {
+    const manifestConfig = {};
+    normalizeConsentType('personalized offer', manifestConfig, 'pzn');
+    expect(manifestConfig.consentNotSpecified).to.be.undefined;
   });
 });
 
-describe('canServeManifest', () => {
+describe('setConsentEnabled', () => {
   beforeEach(() => {
     sessionStorage.setItem('akamai', 'us');
     delete getConfig().mep.akamaiCode;
     getConfig().mep.consentState = { performance: true, advertising: true };
     getConfig().mep.variantOverride = {};
+    localStorage.removeItem('mep-/test/test.json');
   });
   afterEach(() => {
-    delete window._satellite;
+    localStorage.removeItem('mep-/test/test.json');
   });
-  it('should return false if the country restriction is false', async () => {
-    expect(await canServeManifest({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
+
+  it('should set consentEnabled true and not override the variant for promo or no offer changes', () => {
+    const manifestConfig = { consentType: 'promo or no offer changes', manifestPath: '/test/test.json' };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.true;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.undefined;
   });
-  it('should return true if mktgAction is core services/non-marketing', async () => {
-    expect(await canServeManifest({ mktgAction: 'core services/non-marketing', manifestPath: '/test/test.json' })).to.be.true;
+
+  it('should set consentEnabled true for promo or no offer changes even when consent is missing', () => {
+    getConfig().mep.consentState = { performance: false, advertising: false };
+    const manifestConfig = { consentType: 'promo or no offer changes', manifestPath: '/test/test.json' };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.true;
   });
-  it('should return true if mktgAction is core services (legacy name)', async () => {
-    expect(await canServeManifest({ mktgAction: 'core services', manifestPath: '/test/test.json' })).to.be.true;
+
+  it('should keep consentEnabled true for non-personalized offer test when performance is true', () => {
+    const manifestConfig = { consentType: 'non-personalized offer test', manifestPath: '/test/test.json' };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.true;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.undefined;
   });
-  it('should return true if mktgAction is non-marketing and performance is true', async () => {
-    expect(await canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.true;
-  });
-  it('should return true if mktgAction is non-marketing and performance is false', async () => {
+
+  it('should set consentEnabled false and use the variant saved in local storage when performance is false', () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(await canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.false;
+    localStorage.setItem('mep-/test/test.json', 'sticky');
+    const manifestConfig = { consentType: 'non-personalized offer test', manifestPath: '/test/test.json', variantNames: ['test'] };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.false;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('sticky');
   });
-  it('should return true if mktgAction is marketing increase and advertising is true', async () => {
-    expect(await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.true;
+
+  it('should randomly choose and persist a variant when performance is false and nothing is saved', () => {
+    getConfig().mep.consentState = { performance: false, advertising: true };
+    const manifestConfig = { consentType: 'non-personalized offer test', manifestPath: '/test/test.json', variantNames: ['test'] };
+    setConsentEnabled(manifestConfig);
+    const chosen = getConfig().mep.variantOverride['/test/test.json'];
+    expect(['test', 'Default']).to.include(chosen);
+    expect(localStorage.getItem('mep-/test/test.json')).to.equal(chosen);
   });
-  it('should return false if mktgAction is marketing increase and advertising is false', async () => {
+
+  it('should set consentEnabled true for personalized offer when performance and advertising are true', () => {
+    const manifestConfig = { consentType: 'personalized offer', manifestPath: '/test/test.json', variantNames: ['test'] };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.true;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.undefined;
+  });
+
+  it('should set consentEnabled false and override to Default for personalized offer when performance is false', () => {
+    getConfig().mep.consentState = { performance: false, advertising: true };
+    const manifestConfig = { consentType: 'personalized offer', manifestPath: '/test/test.json', variantNames: ['test'] };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.false;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
+  });
+
+  it('should set consentEnabled false and override to Default for personalized offer when advertising is false', () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
-    expect(await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.false;
-  });
-  it('should return true if mktgAction is unspecified and performance and advertising are true', async () => {
-    expect(await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json' })).to.be.true;
-  });
-  it('should return true and override the variant if mktgAction is unspecified and performance is false', async () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] })).to.be.true;
-    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
-  });
-
-  // "was served" analytics: MEP gates _satellite.track on both performance (C0002)
-  // and advertising (C0004) consent. Launch independently checks C0002 and suppresses
-  // events when it's off, so the effect is not observable at the network payload level.
-  // These tests verify the MEP-side gating so we don't rely on Launch's internal
-  // consent logic as the only safeguard.
-  it('should fire analytics for marketing increase when both consent flags are true', async () => {
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
-    expect(trackStub.calledOnce).to.be.true;
-    const [, payload] = trackStub.firstCall.args;
-    expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
-  });
-
-  it('should fire analytics for marketing decrease when both consent flags are true', async () => {
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
-    expect(trackStub.calledOnce).to.be.true;
-    const [, payload] = trackStub.firstCall.args;
-    expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
-  });
-
-  it('should not fire analytics for marketing decrease when advertising consent is false', async () => {
-    getConfig().mep.consentState = { performance: true, advertising: false };
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
-    expect(trackStub.called).to.be.false;
-  });
-
-  it('should not fire analytics for marketing decrease when performance consent is false', async () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
-    expect(trackStub.called).to.be.false;
-  });
-
-  it('should not fire analytics for marketing increase when advertising consent is false', async () => {
-    getConfig().mep.consentState = { performance: true, advertising: false };
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
-    expect(trackStub.called).to.be.false;
-  });
-
-  it('should not fire analytics for marketing increase when performance consent is false', async () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    await canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
-    expect(trackStub.called).to.be.false;
-  });
-
-  it('should serve marketing decrease manifest with default variant but suppress analytics when consent is missing', async () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    const trackStub = stub();
-    window._satellite = { track: trackStub };
-    const result = await canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['default'] });
-    expect(result).to.be.true;
-    expect(getConfig().mep.variantOverride['/test/test.json']).to.equal('default');
-    expect(trackStub.called).to.be.false;
+    const manifestConfig = { consentType: 'personalized offer', manifestPath: '/test/test.json', variantNames: ['test'] };
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.consentEnabled).to.be.false;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
 });

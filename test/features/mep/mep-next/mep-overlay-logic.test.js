@@ -17,7 +17,7 @@ const config = {
     experiments: [],
     prefix: '',
     highlight: true,
-    consentState: { functional: true, advertising: true },
+    consentState: { performance: true, advertising: true },
     targetEnabled: true,
   },
   env: { name: 'stage' },
@@ -278,7 +278,7 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: false,
           analyticsTitle: 'Test',
         }],
@@ -300,7 +300,7 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: false,
         }],
       },
@@ -565,20 +565,20 @@ describe('getConsentSummary', () => {
     expect(pairs).to.be.an('array').with.lengthOf(2);
   });
 
-  it('returns "on" for performance (functional) when consentState.functional is true', async () => {
+  it('returns "on" for performance when consentState.performance is true', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: true, advertising: false } },
+      mep: { ...config.mep, consentState: { performance: true, advertising: false } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 2 | Performance');
     expect(val).to.equal('on');
   });
 
-  it('returns "off" for performance when consentState.functional is false', async () => {
+  it('returns "off" for performance when consentState.performance is false', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: false, advertising: true } },
+      mep: { ...config.mep, consentState: { performance: false, advertising: true } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 2 | Performance');
@@ -588,7 +588,7 @@ describe('getConsentSummary', () => {
   it('returns "on" for advertising when consentState.advertising is true', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: false, advertising: true } },
+      mep: { ...config.mep, consentState: { performance: false, advertising: true } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 4 | Advertising');
@@ -598,7 +598,7 @@ describe('getConsentSummary', () => {
   it('returns "off" for advertising when consentState.advertising is false', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: true, advertising: false } },
+      mep: { ...config.mep, consentState: { performance: true, advertising: false } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 4 | Advertising');
