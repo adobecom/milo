@@ -44,10 +44,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  left: 0;
+  right: 0;
   padding: 8px 12px;
   border: none;
-  border-radius: 0 100% 100% 0;
+  border-radius: 100% 0 0 100%;
   color: var(--mep-white-100);
   background: var(--mep-primary-100);
   box-shadow: var(--mep-elevation-4);
@@ -68,12 +68,22 @@
 
 body:has(#mep-drawer:popover-open) .mep-fab {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   pointer-events: none;
 }
 
 .mep-fab.disabled {
   background: var(--mep-dark-44);
+}
+
+body.mep-align-left .mep-fab {
+  right: auto;
+  left: 0;
+  border-radius: 0 100% 100% 0;
+}
+
+body.mep-align-left:has(#mep-drawer:popover-open) .mep-fab {
+  transform: translateX(-100%);
 }
 
 .mep-drawer {
@@ -83,7 +93,8 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   overflow: hidden;
   font-size: 16px;
   width: 280px;
-  left: 0;
+  left: auto;
+  right: 0;
   margin: 0;
   border: none;
   padding: 0;
@@ -101,14 +112,29 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 @starting-style {
   .mep-drawer:popover-open {
     opacity: 0;
-    transform: translate3d(-100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
   }
 }
 
 .mep-drawer:not(:popover-open) {
   opacity: 0;
-  transform: translate3d(-100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+}
+
+body.mep-align-left .mep-drawer {
+  right: auto;
+  left: 0;
+}
+
+@starting-style {
+  body.mep-align-left .mep-drawer:popover-open {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+body.mep-align-left .mep-drawer:not(:popover-open) {
+  transform: translate3d(-100%, 0, 0);
 }
 
 .mep-drawer a {
@@ -140,7 +166,14 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   align-items: center;
 }
 
-.mep-drawer .mep-header .mep-navigation .icon-close {
+.mep-drawer .mep-header .mep-navigation .mep-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mep-drawer .mep-header .mep-navigation .icon-close,
+.mep-drawer .mep-header .mep-navigation .mep-align-toggle {
   background: none;
   border: none;
   padding: 0;
