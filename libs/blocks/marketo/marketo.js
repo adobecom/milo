@@ -27,6 +27,9 @@ import {
   MILO_EVENTS,
 } from '../../utils/utils.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+
+const sanitizeFormHtml = (value) => (typeof value === 'string' ? sanitizeHtmlBody(value).innerHTML : value);
 
 const ROOT_MARGIN = 50;
 const FAILURE_TIMEOUT = 10000;
@@ -422,12 +425,12 @@ function decorateForm(el, formData) {
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
   if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    const title = createTag('h3', { class: 'marketo-title' }, sanitizeFormHtml(formData.title));
     formWrapper.append(title);
   }
 
   if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    const description = createTag('p', { class: 'marketo-description' }, sanitizeFormHtml(formData.description));
     formWrapper.append(description);
   }
 
