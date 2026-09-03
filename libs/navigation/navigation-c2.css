@@ -1,3 +1,4 @@
+@import './common.css';
 @import '../c2/blocks/global-navigation/global-navigation.css';
 body:has(.global-navigation.c2-gnav-c1-host) {
   -webkit-font-smoothing: antialiased;
