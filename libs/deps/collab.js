@@ -46,8 +46,8 @@
       if (e.data?.type === 'collab:image-generated') {
         const { elementPath, src } = e.data;
         const imgEl = resolveElement(elementPath);
-        if (imgEl instanceof HTMLImageElement && src) {
-          imgEl.src = sanitizeHtml(src).replace(/[<>"]/g, '');
+        if (imgEl instanceof HTMLImageElement && src && /^https?:\/\//.test(src)) {
+          imgEl.src = src;
           if (imgEl.closest('picture')) {
             imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
           }
@@ -1137,8 +1137,8 @@
   function positionImageWand() {
     if (!imageHoverTarget || !imageWandEl) return;
     const rect = imageHoverTarget.getBoundingClientRect();
-    imageWandEl.style.top  = `${rect.top + 8}px`;
-    imageWandEl.style.left = `${rect.right - 36}px`;
+    imageWandEl.style.top  = `${rect.top + window.scrollY + 8}px`;
+    imageWandEl.style.left = `${rect.right + window.scrollX - 36}px`;
   }
 
   function openImageHover(imgContainer) {

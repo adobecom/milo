@@ -728,13 +728,13 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1.5px solid #a78bfa;
-  background: #f5f3ff;
-  color: #6d28d9;
+  border: 2px solid #7c3aed;
+  background: #ede9fe;
+  color: #5b21b6;
   border-radius: 50%;
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
-  box-shadow: 0 2px 8px rgba(109,40,217,.15);
+  box-shadow: 0 2px 8px rgba(109,40,217,.3);
 }
 
 .collab-wand-btn:hover { background: #ede9fe; }
@@ -753,7 +753,7 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
 }
 
 #collab-image-wand {
-  position: fixed;
+  position: absolute;
   z-index: 10052;
   display: none;
   pointer-events: auto;
