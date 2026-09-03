@@ -432,6 +432,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-top: 1px solid var(--mep-white-12);
 }
 
+.mep-drawer .mep-footer.hidden {
+  display: none;
+}
+
 .mep-drawer .mep-footer .con-button {
   cursor: pointer;
   flex: 1;

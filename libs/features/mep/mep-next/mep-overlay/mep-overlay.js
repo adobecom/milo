@@ -441,7 +441,10 @@ function checkAuthAndBuild(pageId) {
 
     const cards = buildActionsContent(pageId);
     contentEl.replaceChildren(...cards);
-    drawerEl.appendChild(buildFooter());
+    const footerEl = buildFooter();
+    const activeTab = drawerEl.querySelector('.mep-tab.active');
+    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+    drawerEl.appendChild(footerEl);
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
@@ -532,6 +535,7 @@ function setEventListeners() {
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
       });
+      drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
     const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
