@@ -41,9 +41,9 @@
   grid-template-areas: var(--grid-default);
  }
 
- .section[class*='grid-width-'] .how-to .foreground {
+.section[class*='grid-width-'] .how-to .foreground {
   max-width: unset;
- }
+}
 
  .how-to ol {
   list-style-type: none;
@@ -226,7 +226,7 @@
   .section[class*='grid-width-'] .how-to ol {
     min-width: 0;
   }
- }
+}
 
  .dark .how-to,
  .how-to.dark {
