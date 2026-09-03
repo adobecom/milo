@@ -51,6 +51,7 @@
           if (imgEl.closest('picture')) {
             imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
           }
+          imgEl.addEventListener('load', positionImageWand, { once: true });
         }
       }
       if (e.data?.type === 'collab:apply-edits') {
