@@ -85,14 +85,8 @@ export default async function init(el) {
 
   // Mirrors fragment.js's mep.fragments lookup + handleFragmentCommand: swaps
   // a nested `#_inline` product-card (or other) fragment href for whatever
-  // MEP's page-wide fragment-replace manifest points it at. `#_inline` is
-  // stripped before matching federal hrefs against the map, since that's how
-  // the map's keys were normalized too.
+  // MEP's page-wide fragment-replace manifest points it at.
   const resolveFragmentHref = async (href) => {
-    // The fetched fragment's authored href still points at federal's own
-    // authoring domain (e.g. main--federal--adobecom.aem.page) — federate it
-    // first so the lookup key matches config.mep.fragments, whose keys went
-    // through the same getFederatedUrl call inside normalizePath.
     const isFederalHref = href.includes('/federal/');
     const path = isFederalHref
       ? getFederatedUrl(href).replace('#_inline', '')
