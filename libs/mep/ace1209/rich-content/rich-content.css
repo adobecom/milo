@@ -268,7 +268,8 @@
     }
 
     &.has-background .section-background {
-      --merch-bg-shift: 150px;
+      --merch-bg-img-h: calc(100vw * 434 / 375);
+      --merch-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
       overflow: unset;
 
       &,
@@ -328,6 +329,10 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-img-h: calc(min(100vw, 1612px) * 1361 / 1612);
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
@@ -464,10 +469,6 @@
 }
 
 @media (width >= 1280px) {
-  .section:has(.rich-content.merch-moment).has-background .section-background {
-    --merch-bg-shift: 340px;
-  }
-
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     height: auto;
@@ -830,9 +831,9 @@
   @media (prefers-reduced-motion: no-preference) {
     .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .section-background img {
       margin-block-end: calc(-1 * var(--merch-bg-shift));
-      animation: rc-merch-bg-parallax ease-out both;
+      animation: rc-merch-bg-parallax linear both;
       animation-timeline: view();
-      animation-range: cover 0% cover 60%;
+      animation-range: cover 0% cover 50%;
     }
 
     @keyframes rc-merch-bg-parallax {

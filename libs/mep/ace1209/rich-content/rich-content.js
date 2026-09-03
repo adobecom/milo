@@ -179,7 +179,7 @@ function revealMerchMomentText(block) {
     if (!entry.isIntersecting) return;
     foreground.classList.add('is-revealed');
     observer.disconnect();
-  }, { threshold: 0 });
+  }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
   observer.observe(foreground);
 }
 
