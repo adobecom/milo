@@ -1,8 +1,9 @@
-.aside.promobar:not(.promobar-ready){
-  visibility: hidden;
-  width: 0px;
-  height: 0px;
-  min-height: 0px;
+.aside.promobar{
+  --promobar-css-loaded: 1;
+}
+.aside.promobar.promobar-ready{
+  visibility: visible;
+  height: auto;
 }
 
 .aside {
