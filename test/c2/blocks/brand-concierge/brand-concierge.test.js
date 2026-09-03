@@ -70,5 +70,30 @@ describe('Brand Concierge back-navigation analytics', () => {
       })).to.not.throw();
     });
   });
+
+  describe('card:clicked navigation recording', () => {
+    it('records the resolved destinationUrl from the event payload', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: { destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card' },
+      });
+
+      expect(replaceState.calledOnce).to.be.true;
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcClickType).to.equal('product_card_cta');
+      expect(state.bcDestinationPage).to.equal('https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+    });
+
+    it('stores an empty destination without falling back to the referrer', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({ eventType: 'card:clicked', data: {} });
+
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcDestinationPage).to.equal('');
+    });
+  });
 });
 /* eslint-enable no-underscore-dangle */
