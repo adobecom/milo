@@ -2213,6 +2213,8 @@ async function checkForPageMods() {
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
+  // eslint-disable-next-line no-use-before-define
+  preloadLcpCodeFiles();
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
@@ -2805,24 +2807,24 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
-const preloadBlockResources = (blocks = [], { fetchpriority } = {}) => blocks.map((block) => {
+const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous', fetchpriority });
-    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style', fetchpriority });
-    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style', fetchpriority });
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous', fetchpriority });
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous', fetchpriority });
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-const preloadLcpCodeFiles = (area = document) => {
+function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
@@ -2845,20 +2847,20 @@ const preloadLcpCodeFiles = (area = document) => {
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
   const autoBlockEls = [...autoNames].filter((name) => !/merch|^mas-/.test(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
-  if (allBlocks.length) preloadBlockResources(allBlocks, { fetchpriority: 'high' });
+  if (allBlocks.length) preloadBlockResources(allBlocks);
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
-    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous', fetchpriority: 'high' });
-    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', fetchpriority: 'high' }));
+    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
   }
 
   const icons = [...firstSection.querySelectorAll('span.icon')];
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
-    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous', fetchpriority: 'high' });
+    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   }
-};
+}
 
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
@@ -2937,7 +2939,6 @@ export async function loadArea(area = document) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
-    preloadLcpCodeFiles(area);
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
