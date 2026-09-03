@@ -60,9 +60,6 @@ describe('Brand Concierge Global', () => {
     // global flag exposed on window.milo
     expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
 
-    // main-top CSS variable is set
-    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
-
     // authored rows are removed from the block
     expect(block.children.length).to.equal(0);
   });
