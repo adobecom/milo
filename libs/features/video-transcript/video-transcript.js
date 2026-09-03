@@ -1,8 +1,5 @@
 import { getConfig, loadStyle } from '../../utils/utils.js';
 
-/**
- * @param {HTMLVideoElement} videoEl the decorated video element
- */
 export default async function decorateVideoTranscript(videoEl) {
   const container = videoEl?.closest('.video-container');
   if (!container) {
