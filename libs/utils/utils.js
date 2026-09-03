@@ -285,6 +285,9 @@ function hydrateLocale(locales, key) {
       }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
+    // Only a Lingo base locale gets `regions`. Omitting the key when there are no regional
+    // children keeps legacy locale-based sites out of the Lingo link path entirely.
+    if (!Object.keys(hydratedChildren).length) return hydratedBase;
     return { ...hydratedBase, regions: hydratedChildren };
   }
 
@@ -296,6 +299,13 @@ function hydrateLocale(locales, key) {
   }
 
   return { ...locale };
+}
+
+// A Lingo base locale has at least one regional child. Count the entries rather than
+// testing `locale.regions` for truthiness: an empty object is truthy, which would make
+// every legacy locale-based site look like a Lingo base page.
+function hasLingoRegions(locale) {
+  return !!Object.keys(locale?.regions ?? {}).length;
 }
 
 export function getLocale(locales, pathname = window.location.pathname) {
@@ -943,7 +953,7 @@ function localizeLinkCore(
       return relative ? urlPath : `${url.origin}${urlPath}`;
     };
 
-    const isLingoPage = locale.base !== undefined || !!locale.regions;
+    const isLingoPage = locale.base !== undefined || hasLingoRegions(locale);
     const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
     const siteId = uniqueSiteId ?? '';
     const qiResolved = queryIndexes[siteId]?.requestResolved;
@@ -951,7 +961,7 @@ function localizeLinkCore(
         && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
     const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
       && lingoActive() && isLingoPage
-      && (!isFragment || (isMepLingoFragment && !!locale.regions));
+      && (!isFragment || (isMepLingoFragment && hasLingoRegions(locale)));
 
     if (enterAsync) {
       return (async () => {
@@ -976,7 +986,7 @@ function localizeLinkCore(
 
         const domainInSiteMap = !lingoSiteMappingLoaded
           || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
-        const isBasePage = !!locale.regions;
+        const isBasePage = hasLingoRegions(locale);
 
         let resolvedPrefix = basePrefix;
         if (lingoModule) {
@@ -1086,7 +1096,7 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   const { locale } = config || {};
   const { regions } = locale || {};
 
-  if (!regions || !Object.keys(regions).length) return null;
+  if (!hasLingoRegions(locale)) return null;
 
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
@@ -1180,7 +1190,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoBlockSwap;
 
   const { locale } = getConfig() || {};
-  const isBasePage = !!locale?.regions;
+  const isBasePage = hasLingoRegions(locale);
   const needsOverride = lingoActive()
     && (isMepLingoLink || isBasePage || locale?.base !== undefined);
 
