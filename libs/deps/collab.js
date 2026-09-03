@@ -43,17 +43,6 @@
         inlineEditSavedRange = null;
         positionWandBar();
       }
-      if (e.data?.type === 'collab:image-generated') {
-        const { elementPath, src } = e.data;
-        alert(`[collab] image-generated received\nsrc: ${src}\nelementPath: ${elementPath}`);
-        const imgEl = resolveElement(elementPath);
-        if (imgEl instanceof HTMLImageElement && src && /^https?:\/\//.test(src)) {
-          imgEl.src = src;
-          if (imgEl.closest('picture')) {
-            imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
-          }
-        }
-      }
       if (e.data?.type === 'collab:image-upload') {
         const { elementPath, src } = e.data;
         const imgEl = resolveElement(elementPath);
