@@ -271,6 +271,7 @@
       --merch-bg-img-h: calc(100vw * 434 / 375);
       --merch-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
       overflow: unset;
+      clip-path: inset(-100% 0 0);
 
       &,
       & > * {
@@ -336,7 +337,7 @@
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
-    aspect-ratio: unset;
+    aspect-ratio: 1612 / 1361;
     display: block;
   }
 
