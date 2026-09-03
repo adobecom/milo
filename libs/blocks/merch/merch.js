@@ -466,7 +466,7 @@ export async function loadMasComponent(componentName) {
   }
 
   // Component already loaded, return immediately
-  if (customElements.get(componentName)) {
+  if (customElements.get(componentName === 'commerce' ? 'aem-fragment' : componentName)) {
     return Promise.resolve();
   }
 

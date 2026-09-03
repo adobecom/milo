@@ -594,7 +594,7 @@ export async function resolveMerchCardFields(content, loader = loadBlock) {
   const fields = content.querySelectorAll(
     'a.merch-card-autoblock.link-block[href*="field="]',
   );
-  await Promise.all([...fields].map((field) => loader(field)));
+  await Promise.allSettled([...fields].map((field) => loader(field)));
 }
 
 export async function fetchAndProcessPlainHtml({

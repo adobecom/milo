@@ -1399,7 +1399,7 @@ export async function loadBlock(block) {
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`${blockPath}.js`);
+        const { default: init } = await import(/* webpackIgnore: true */ /* @vite-ignore */ `${blockPath}.js`);
         await init(block);
         block.dataset.blockStatus = 'loaded';
       } catch (err) {
