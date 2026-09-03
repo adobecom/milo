@@ -91,9 +91,8 @@
   .globe-gallery-cursor-text-wrap {
     display: flex;
     align-items: center;
-    padding: 4px 10px;
+    padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs);
     border-radius: var(--s2a-border-radius-xs);
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
     -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
     backdrop-filter: blur(var(--gg-chrome-blur));
