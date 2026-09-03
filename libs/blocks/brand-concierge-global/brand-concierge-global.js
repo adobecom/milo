@@ -115,7 +115,12 @@ function decorateGnav(cards, input, topNav, el) {
       }, 500);
       if (document.body.classList.contains('bc-side-open')) {
         const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          document.body.classList.remove('bc-side-open');
+          handleGnavButton(event);
+        }
       } else handleGnavButton(event);
     });
     if (window?.milo) {
