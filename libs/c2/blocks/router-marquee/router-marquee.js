@@ -1,6 +1,7 @@
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 let USER_ACTION = false;
@@ -440,6 +441,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
+  let userPaused = false; // paused via explicit user action - survives breakpoint/scroll resume
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
 
@@ -569,7 +571,8 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     preloadNextVideo();
   };
 
-  const pause = () => {
+  const pause = (manual = false) => {
+    if (manual) userPaused = true;
     if (paused) return;
     clearTimeout(timer);
     finishSlideTransition();
@@ -579,19 +582,27 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     slides[active]?.querySelector('video')?.pause();
   };
 
-  const resume = () => {
-    if (!paused || prefersReducedMotion()) return;
+  // manual=true is the explicit Play-button click: it always takes effect (clearing a
+  // sticky user-pause) and still updates playback/UI under reduced motion, just without
+  // scheduling auto-advance. manual=false is a system resume (breakpoint switch, scroll
+  // back into view) and defers to a standing user pause or a reduced-motion preference.
+  const resume = (manual = false) => {
+    if (!paused) return;
+    if (!manual && (userPaused || prefersReducedMotion())) return;
+    if (manual) userPaused = false;
     paused = false;
     setPlayingState(true);
+    slides[active]?.querySelector('video')?.play().catch(() => {});
+    if (prefersReducedMotion()) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
     if (target && !target.closest('.rm-pause-play')) {
-      if (!paused) pause();
+      if (!paused) pause(true);
     }
   };
 
@@ -600,10 +611,11 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      if (i === active) { pause(); return; }
+      if (i === active) { pause(true); return; }
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
       USER_ACTION = true;
@@ -616,6 +628,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     clearTimeout(timer);
     clearFill(active);
     paused = true;
+    userPaused = true;
     activate(0, -1);
   });
 
@@ -639,6 +652,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       setPlayingState(false);
       activate(next, 1);
     });
@@ -648,15 +662,15 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', (e) => {
-    if (!e.target.closest('.rm-pause-play') && !paused) pause();
+    if (!e.target.closest('.rm-pause-play') && !paused) pause(true);
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     if (paused) {
-      resume();
+      resume(true);
     } else {
-      pause();
+      pause(true);
     }
   });
 
@@ -680,6 +694,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
     paused = true;
+    userPaused = true;
     USER_ACTION = true;
     setPlayingState(false);
   }, { passive: true });
@@ -691,6 +706,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       return;
     }
     if (paused) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
@@ -722,10 +738,12 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   const getActive = () => active;
   // Jump straight to a slide with no transition, so a hidden viewport can be lined up
   // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
+  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one.
   const syncTo = (index) => {
-    if (index === active) return;
+    const target = Math.min(index, slides.length - 1);
+    if (target === active) return;
     clearFill(active);
-    activate(index, 1, { instant: true });
+    activate(target, 1, { instant: true });
   };
 
   return { pause, resume, getActive, syncTo };
@@ -811,15 +829,14 @@ export default function init(el) {
   loadViewportVideos(el);
   syncViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
-  let resizeRaf;
+  // syncViewportAutoplay/loadViewportVideos stay un-debounced: getActiveViewport() is a
+  // cheap matchMedia check, and delaying the outgoing viewport's pause until resize settles
+  // would let its hidden video/timer keep running for the whole drag - the leak this fixes.
   window.addEventListener('resize', () => {
-    cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => {
-      dynamicLayoutUpdates(el);
-      loadViewportVideos(el);
-      syncViewportAutoplay();
-    });
+    loadViewportVideos(el);
+    syncViewportAutoplay();
   });
+  window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {
