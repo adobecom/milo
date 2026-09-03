@@ -7,6 +7,7 @@ import {
   convertStageLinks,
   lingoActive,
   getLingoRegion,
+  getFederatedUrl,
 } from '../../../utils/utils.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
@@ -82,6 +83,30 @@ export default async function init(el) {
     return handleCommands(cs, root, true, true);
   };
 
+  // Mirrors fragment.js's mep.fragments lookup + handleFragmentCommand: swaps
+  // a nested `#_inline` product-card (or other) fragment href for whatever
+  // MEP's page-wide fragment-replace manifest points it at. `#_inline` is
+  // stripped before matching federal hrefs against the map, since that's how
+  // the map's keys were normalized too.
+  const resolveFragmentHref = async (href) => {
+    // The fetched fragment's authored href still points at federal's own
+    // authoring domain (e.g. main--federal--adobecom.aem.page) — federate it
+    // first so the lookup key matches config.mep.fragments, whose keys went
+    // through the same getFederatedUrl call inside normalizePath.
+    const isFederalHref = href.includes('/federal/');
+    const path = isFederalHref
+      ? getFederatedUrl(href).replace('#_inline', '')
+      : new URL(href).pathname;
+    const mepFrag = config.mep?.fragments?.[path]
+      ?? config.mep?.fragments?.[path.replace(config.locale?.prefix ?? '', '')];
+    if (!mepFrag) return href;
+    const { handleFragmentCommand } = await import('../../../features/personalization/personalization.js');
+    const tempAnchor = document.createElement('a');
+    tempAnchor.href = href;
+    const resolved = handleFragmentCommand(mepFrag, tempAnchor);
+    return resolved ? tempAnchor.href : href;
+  };
+
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
@@ -112,6 +137,7 @@ export default async function init(el) {
     personalization: {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
+      resolveFragmentHref,
     },
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
