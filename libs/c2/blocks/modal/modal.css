@@ -332,8 +332,24 @@
   }
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 599px) {
   .dialog-modal.close-button-circle-mobile {
+    --dialog-modal-close-size: 40px;
+    --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 0.375);
+
+    button.dialog-close {
+      background: var(--s2a-color-gray-200);
+      border-radius: 50%;
+    }
+
+    .dialog-close:focus-visible {
+      outline-color: var(--s2a-color-blue-1000);
+    }
+  }
+}
+
+@media (min-width: 600px) and (max-width: 1279px) {
+  .dialog-modal.close-button-circle-tablet {
     --dialog-modal-close-size: 40px;
     --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 0.375);
 
