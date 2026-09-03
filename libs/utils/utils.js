@@ -2824,7 +2824,7 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-function preloadLcpCodeFiles(area = document) {
+export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;

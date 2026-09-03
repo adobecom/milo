@@ -100,6 +100,78 @@ describe('Utils', () => {
     });
   });
 
+  describe('preloadLcpCodeFiles', () => {
+    const preloadSel = 'link[rel="preload"], link[rel="modulepreload"]';
+
+    beforeEach(() => {
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      utils.setConfig(config);
+    });
+
+    it('does nothing when the disable-mep-perf-optimization kill switch is on', () => {
+      document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('preloads authored first-section blocks', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+    });
+
+    it('preloads non-commerce autoblocks but excludes merch/mas', () => {
+      document.body.innerHTML = `<main><div>
+        <a href="https://www.youtube.com/watch?v=abc">watch</a>
+        <a href="https://www.adobe.com/tools/ost?ci=1">buy</a>
+        <a href="https://mas.adobe.com/studio.html#content-type=mas-compare-chart">chart</a>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      // the whole point of the change: a normal autoblock still warms...
+      expect(document.head.querySelector('link[href*="/libs/blocks/youtube/youtube.js"]')).to.exist;
+      // ...but the heavy commerce dependency chains never do
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('only warms the video autoblock for media_*.mp4 anchors', () => {
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.not.exist;
+
+      document.head.innerHTML = '';
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/media_9.mp4">media_9.mp4</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('warms the video autoblock from a media_*.mp4 image alt', () => {
+      document.body.innerHTML = '<main><div><img alt="media_9.mp4"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('preloads placeholders.js when the first section uses {{ }} tokens', () => {
+      document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
+    });
+
+    it('warms icons.js when the first section contains icons', () => {
+      document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+    });
+
+    it('does nothing when there is no first section', () => {
+      document.body.innerHTML = '<header></header>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+  });
+
   it('renders global navigation when header tag is present', async () => {
     const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
     document.head.innerHTML = head;
