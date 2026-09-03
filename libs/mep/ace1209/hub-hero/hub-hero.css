@@ -463,7 +463,11 @@
     }
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
-      aspect-ratio: 3 / 4;
+      /* intentionally a hair flatter than true 3/4 (0.75) — the uploaded image isn't actually
+         3:4, so this "fakes" the look of it; nudging short instead of tall means any point
+         where the scroll-driven transition hasn't reached exactly 5/4 yet errs toward being
+         shorter than other slides (unnoticeable) rather than taller (pokes out behind them) */
+      aspect-ratio: 0.78;
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
       animation-range: entry 100% exit 100%;
@@ -1582,11 +1586,11 @@
 
 @keyframes slideOneMediaAspect {
   0% {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 0.78;
   }
 
   20% {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 0.78;
   }
 
   100% {
