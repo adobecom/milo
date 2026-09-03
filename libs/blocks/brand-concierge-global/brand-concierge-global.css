@@ -1,5 +1,6 @@
-nav.feds-topnav .feds-bc-wrapper {
+.global-navigation .feds-bc-wrapper {
   width: 340px;
+  margin-left: auto;
   padding: 0 8px;
 }
 
@@ -114,6 +115,7 @@ nav.feds-topnav .feds-bc-wrapper {
   background: #fff;
   border: none;
   border-radius: 20px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -539,7 +541,7 @@ nav.feds-topnav .feds-bc-wrapper {
 }
 
 /* functional controls */
-.bc-side-open .bc-gnav-button {
+.bc-side-open .bc-gnav-button:not(.no-gnav-mobile) {
   display: flex;
 }
 
@@ -578,12 +580,16 @@ nav.feds-topnav .feds-bc-wrapper {
 
 /* gnav collapse */
 @media screen and (min-width: 900px) {
-  .bc-gnav-button {
+  .bc-gnav.has-chat-history .bc-gnav-button.no-gnav-mobile {
+    display: flex;
+  }
+
+  .bc-gnav:not(.has-chat-history) .bc-gnav-button {
     display: none;
   }
 
-  .bc-gnav .bc-prompt-cards,
-  .bc-gnav .bc-input-field {
+  .bc-gnav:not(.has-chat-history) .bc-prompt-cards,
+  .bc-gnav:not(.has-chat-history) .bc-input-field {
     display: flex;
   }
 }

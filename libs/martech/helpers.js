@@ -920,7 +920,6 @@ function fireAnalyticsEvent(val) {
 
 export async function sendAnalytics(val) {
   /* eslint-disable no-underscore-dangle */
-  if (!getMepConsentConfig()?.performance) return;
   if (window._satellite?.track) {
     fireAnalyticsEvent(val);
   } else {

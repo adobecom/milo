@@ -13,6 +13,7 @@ import {
   getCookie,
   getGeoLocalePrefix,
   resolveDetectedMarketCountry,
+  getPromoMepEnablement,
 } from '../../../../utils/utils.js';
 import {
   US_GEO,
@@ -36,9 +37,25 @@ export const API_URLS = {
 
 export const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
+export function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable; setting just won't persist
+  }
+}
+
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
+    return new Set(JSON.parse(safeGetItem(CARD_STORAGE_KEY)) || []);
   } catch { return new Set(); }
 }
 
@@ -82,7 +99,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, geoRestriction,
+  manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -98,7 +116,9 @@ function toActivity({
     pathname,
     analyticsTitle,
     geoRestriction,
-    mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   };
 }
 
@@ -135,6 +155,12 @@ function formatDate(dateTime, format = 'local') {
 }
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
+const EXECUTION_ORDER_LABELS = ['First', 'Normal', 'Last'];
+
+function getExecutionOrderLabel(executionOrder) {
+  const [orderIndex] = (executionOrder ?? '').split('-');
+  return EXECUTION_ORDER_LABELS[orderIndex] ?? null;
+}
 
 function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   const {
@@ -148,7 +174,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventEnd,
     disabled,
     geoRestriction,
-    mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   } = manifest;
 
   const editPath = normalizePath(url);
@@ -193,7 +221,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isDefaultSelected,
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
-    mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder: getExecutionOrderLabel(executionOrder),
     geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
@@ -239,11 +269,29 @@ function getTheme() {
   return (getMetadata('theme') || 'None');
 }
 
-function getTargetIntegration() {
+function isTargetOn() {
   const { page } = parseMepConfig();
   const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
-  if (mepTarget === undefined) return page.target;
-  return { postlcp: 'on post LCP' }[mepTarget] ?? mepTarget;
+  const targetValue = mepTarget === undefined ? page.target : mepTarget;
+  return !!targetValue && targetValue !== 'off';
+}
+
+function getTargetIntegration() {
+  return isTargetOn() ? 'on' : 'off';
+}
+
+function getLoadTargetFaster() {
+  if (!isTargetOn()) return 'n/a';
+  return getMetadata('personalization-v2') ? 'on' : 'off';
+}
+
+function getPromoMetadata() {
+  return getPromoMepEnablement() ? 'on' : 'off';
+}
+
+function getMepParam() {
+  const { manifests } = getManifestList();
+  return manifests.some((manifest) => manifest.source?.includes('mep param')) ? 'on' : 'off';
 }
 
 export function getLocale() {
@@ -256,7 +304,7 @@ export function getLastSeen() {
   return formatDate(new Date(page.lastSeen));
 }
 
-function getPersonalization() {
+function getPersonalizationMetadata() {
   const { page } = parseMepConfig();
   return page.personalization;
 }
@@ -314,8 +362,13 @@ export function getPageSummary() {
     ['Manifests Found', getManifestsFound()],
     ['Foundation', getFoundation()],
     ['Theme', getTheme()],
-    ['Target Integration', getTargetIntegration()],
-    ['Personalization', getPersonalization()],
+    ['Load Target Faster (v2)', getLoadTargetFaster()],
+    ['Manifest Sources', resolvePairs([
+      ['Target Integration', getTargetIntegration()],
+      ['Personalization Metadata', getPersonalizationMetadata()],
+      ['Promo Metadata', getPromoMetadata()],
+      ['MEP Param', getMepParam()],
+    ])],
   ]);
 }
 
