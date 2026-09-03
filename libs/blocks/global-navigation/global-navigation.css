@@ -90,7 +90,7 @@ header.global-navigation {
   z-index: 1;
 }
 
-.aside.promobar:not(.promobar-ready){
+.aside.promobar:not(.promobar-ready) {
   display: none;
 }
 

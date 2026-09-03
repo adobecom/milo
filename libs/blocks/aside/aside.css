@@ -1,8 +1,8 @@
-:root{
+:root {
   --promobar-css-loaded: 1;
 }
 
-.aside.promobar.promobar-ready{
+.aside.promobar.promobar-ready {
   visibility: visible;
   height: auto;
 }
