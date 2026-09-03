@@ -2,11 +2,6 @@ import { createContext, html, useReducer } from '../../deps/htm-preact.js';
 import { parseEncodedConfig } from '../../utils/utils.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
 
-// Allowlist-sanitize a single config value: strip <script>, on* handlers and
-// unsafe URL schemes, then serialize back to a string. Serializing re-encodes
-// HTML entities, which neutralizes entity-encoded payloads (the VULN-36919
-// bypass) instead of decoding them the way the previous .textContent fix did,
-// while still preserving legitimate inline markup.
 export const sanitizeConfigValue = (value) => {
   if (typeof value !== 'string') return value;
   return sanitizeHtmlBody(value).innerHTML;
@@ -27,8 +22,6 @@ export const loadStateFromLocalStorage = (lsKey) => {
   const lsState = localStorage.getItem(lsKey);
   if (lsState) {
     try {
-      // Sanitize on load too: the stored config feeds the marketo preview sink,
-      // so a poisoned store (any origin) must not resurrect an XSS payload.
       return sanitizeHashConfig(JSON.parse(lsState));
       /* c8 ignore next 2 */
       // eslint-disable-next-line no-empty
