@@ -288,7 +288,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a', 'v-b'],
           selectedVariantName: 'v-a',
           source: 'adobe-target',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           mktgAction: 'buy now',
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
@@ -299,7 +299,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a'],
           selectedVariantName: 'not-in-list',
           source: 'helix',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: true,
         },
@@ -328,7 +328,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('My Campaign');
   });
 
-  it('geoRestriction is uppercased in manifest card (EMEA)', () => {
+  it('countryRestriction is uppercased in manifest card (EMEA)', () => {
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
   });
 
@@ -416,7 +416,7 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           variantNames: [XSS], // → <option> label
           selectedVariantName: XSS, // → Experience row (buildRow)
           source: XSS, // → Source row (buildRow)
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         },

@@ -277,7 +277,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a', 'variant-b'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
           analyticsTitle: 'Test',
@@ -299,7 +299,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         }],
@@ -380,24 +380,24 @@ describe('getManifestList', () => {
     expect(va.selected).to.be.false;
   });
 
-  it('uppercases geoRestriction when present', () => {
+  it('uppercases countryRestriction when present', () => {
     setConfig({
       ...config,
       mep: {
         ...config.mep,
         experiments: [{
-          name: 'Geo Test',
-          manifest: '/homepage/fragments/mep/geo.json',
+          name: 'Country Test',
+          manifest: '/homepage/fragments/mep/country.json',
           variantNames: ['v-a'],
           selectedVariantName: 'v-a',
           source: 'helix',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           disabled: false,
         }],
       },
     });
     const { manifests } = getManifestList();
-    expect(manifests[0].geoRestriction).to.equal('EMEA');
+    expect(manifests[0].countryRestriction).to.equal('EMEA');
   });
 
   it('sets showActive and isActive correctly when experiment is disabled', () => {

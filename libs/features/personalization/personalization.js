@@ -1139,15 +1139,15 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getGeoRestriction = async (manifestConfig) => {
-  const { geoRestriction, manifestPath } = manifestConfig;
-  if (!geoRestriction) return true;
-  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
+export const getCountryRestriction = async (manifestConfig) => {
+  const { countryRestriction, manifestPath } = manifestConfig;
+  if (!countryRestriction) return true;
+  const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
   const config = getConfig();
   if (!config.mep.akamaiCode) {
     config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
   }
-  const isAllowed = geoArray.includes(config.mep.akamaiCode);
+  const isAllowed = countryArray.includes(config.mep.akamaiCode);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1162,8 +1162,8 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export async function canServeManifest(manifestConfig) {
-  if (!(await getGeoRestriction(manifestConfig))) {
-    manifestConfig.geoDisabled = true;
+  if (!(await getCountryRestriction(manifestConfig))) {
+    manifestConfig.countryDisabled = true;
     return false;
   }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
@@ -1257,7 +1257,8 @@ async function getManifestConfig(info, variantOverride) {
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
     manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
-    manifestConfig.geoRestriction = infoObj['manifest-geo-restriction']?.toLowerCase();
+    manifestConfig.countryRestriction = infoObj['manifest-country-restriction']?.toLowerCase()
+      || infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];

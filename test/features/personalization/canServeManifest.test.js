@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import {
   overrideVariant,
-  getGeoRestriction,
+  getCountryRestriction,
   getManifestMarketingAction,
   canServeManifest,
 } from '../../../libs/features/personalization/personalization.js';
@@ -24,19 +24,19 @@ describe('overrideVariant', () => {
   });
 });
 
-describe('getGeoRestriction', () => {
+describe('getCountryRestriction', () => {
   before(() => {
     sessionStorage.setItem('akamai', 'us');
     getConfig().mep = {};
   });
-  it('should return true if the geo restriction is null', async () => {
-    expect(await getGeoRestriction({ geoRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if the country restriction is null', async () => {
+    expect(await getCountryRestriction({ countryRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if the geo restriction includes US', async () => {
-    expect(await getGeoRestriction({ geoRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
+  it('should return true if the country restriction includes US', async () => {
+    expect(await getCountryRestriction({ countryRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return false and override the variant if the geo restriction does not include US', async () => {
-    await getGeoRestriction({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' });
+  it('should return false and override the variant if the country restriction does not include US', async () => {
+    await getCountryRestriction({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' });
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
 });
@@ -69,8 +69,8 @@ describe('canServeManifest', () => {
   afterEach(() => {
     delete window._satellite;
   });
-  it('should return false if the geo restriction is false', async () => {
-    expect(await canServeManifest({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
+  it('should return false if the country restriction is false', async () => {
+    expect(await canServeManifest({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
   });
   it('should return true if mktgAction is core services/non-marketing', async () => {
     expect(await canServeManifest({ mktgAction: 'core services/non-marketing', manifestPath: '/test/test.json' })).to.be.true;
