@@ -131,6 +131,14 @@
 
   }
 
+  .foreground .link-container {
+    margin-block-start: var(--s2a-spacing-2xs);
+
+    .standalone-link {
+      text-decoration: none;
+    }
+  }
+
   &.featured {
     .card-overlay {
       display: flex;
