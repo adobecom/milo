@@ -1127,8 +1127,8 @@
   function positionImageWand() {
     if (!imageHoverTarget || !imageWandEl) return;
     const rect = imageHoverTarget.getBoundingClientRect();
-    imageWandEl.style.top  = `${rect.top + 8}px`;
-    imageWandEl.style.left = `${rect.right - 36}px`;
+    imageWandEl.style.top  = `${rect.top + rect.height / 2 - 14}px`;
+    imageWandEl.style.left = `${rect.left + rect.width / 2 - 14}px`;
   }
 
   function openImageHover(imgContainer) {
