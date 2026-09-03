@@ -607,10 +607,15 @@
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
     --end-gap: 12rem;
-    --grid-gap-animation-range: 15% 100%;
+    /* fully faded by ~44% (local 30% of this range), so the grid clears out before card 1's
+       header/footer poke (50-55%) and the carousel header fade-in (also ~50-55%) — otherwise
+       the header text lands on top of still-fully-opaque, cluttered grid images */
+    --grid-gap-animation-range: 20% 100%;
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
-    --hub-hero-grip-col-float-mobile: 250%;
+    /* rises upward off screen (~48x slower than the original 250%), mirroring desktop's
+       grid-converges-into-carousel motion, instead of dropping away below */
+    --hub-hero-grip-col-float-mobile: -5%;
   }
 
   .hub-hero-carousel-header {
@@ -619,10 +624,19 @@
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
+    /* the base hubHeroCarouselHeaderFade (unconditional, fades this wrapper in by ~45% via
+       --header-animation-range) was making the header visible before the inner div's own
+       fade-in even started (its range only begins at 50%) — opacity compounds, so the parent
+       finishing at 1 made the child's later opacity:0 start moot. The inner div's
+       hubHeroCarouselHeaderMobileLeave now fully owns visibility on mobile, so disable this. */
+    animation: none;
   }
 
   .hub-hero-carousel-header>div {
-    animation: hubHeroCarouselHeaderMobileLeave ease forwards;
+    /* "both" (not just "forwards") so the 0% keyframe (opacity:0) fills backwards before the
+       range starts — otherwise the animation has no effect pre-range and the element falls
+       back to its unanimated default opacity:1, visible immediately on load */
+    animation: hubHeroCarouselHeaderMobileLeave ease both;
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 102%;
     position: relative;
@@ -711,12 +725,33 @@
     animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
   }
 
+  /* within-column image gap grows the same way desktop shrinks it (hubHeroGridGapDesktopY):
+     translate the second stacked image instead of animating the gap property directly */
+  .hub-hero-image-grid-container-col div:nth-child(2) {
+    will-change: translate;
+    animation: hubHeroGridGapMobileY ease both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range);
+  }
+
+  /* columns 2 and 4 get a 3rd cloned preview image (see handleGridImages in hub-hero.js) — it
+     needs to move away from the (already-translated) 2nd image by the same amount again, i.e.
+     double the single-gap offset, or it stays put while the 2nd image drifts away from it */
+  .hub-hero-image-grid-container-col div:nth-child(3) {
+    will-change: translate;
+    animation: hubHeroGridGapMobileY3rd ease both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range);
+  }
+
   .hub-hero-carousel {
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
     --carousel-items-top: 38%;
-    --slide-one-header-footer-reveal: 36% 40%;
+    /* delayed so header/footer only poke out after the slide has fully expanded, not while
+       it's still settling into place */
+    --slide-one-header-footer-reveal: 50% 55%;
 
     position: relative;
     top: unset;
@@ -790,7 +825,7 @@
     z-index: 2;
     --stack-contrast: .25;
     --stack-scale-x: 0.91;
-    margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 500px);
+    margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 900px);
   }
 
   .hub-hero-carousel-item:nth-child(4) {
@@ -1527,6 +1562,10 @@
     border-radius: var(--s2a-border-radius-md);
   }
 
+  50% {
+    filter: contrast(1);
+  }
+
   75% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: 1;
@@ -1547,7 +1586,7 @@
   }
 
   20% {
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 3 / 4;
   }
 
   100% {
@@ -1672,9 +1711,20 @@
   }
 }
 
+/*
+ * this animation's range (contain 50% contain 102%, set on .hub-hero-carousel-header>div)
+ * conveniently starts at the same 50% as --slide-one-header-footer-reveal, so the fade-in
+ * added here (local 0-10% = actual ~50-55%) lands right as the header/footer finish poking
+ * out, instead of the carousel header being visible from the very start of the scroll.
+ */
 @keyframes hubHeroCarouselHeaderMobileLeave {
   0% {
     transform: translate(0, 0%);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
   }
 
   94% {
@@ -1809,13 +1859,24 @@
 }
 
 
+/*
+ * horizontal spread (gap between columns) reaches a moderate value at 60% (calmer/gradual pace,
+ * paired with the much slower vertical float), then accelerates (ease-in, set on the 60%
+ * keyframe so it applies to the 60%->100% segment) further past the viewport edge — instead of
+ * holding flat and awkwardly poking in from the side for the rest of the animation.
+ */
 @keyframes hubHeroGridCol1Mobile {
   0% {
     transform: translate(0, var(--grid-col-one-offset));
   }
 
+  60% {
+    animation-timing-function: ease-in;
+    transform: translate(calc(-2 * (var(--end-gap) - var(--start-gap))), calc(var(--hub-hero-grip-col-float-mobile) * 0.6));
+  }
+
   100% {
-    transform: translate(calc(-2 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile));
+    transform: translate(calc(-2 * (var(--end-gap) - var(--start-gap)) - 70vw), var(--hub-hero-grip-col-float-mobile));
   }
 }
 
@@ -1824,8 +1885,13 @@
     transform: translate(0, var(--grid-col-two-offset));
   }
 
+  60% {
+    animation-timing-function: ease-in;
+    transform: translate(calc(-1 * (var(--end-gap) - var(--start-gap))), calc(var(--hub-hero-grip-col-float-mobile) * 0.6));
+  }
+
   100% {
-    transform: translate(calc(-1 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile));
+    transform: translate(calc(-1 * (var(--end-gap) - var(--start-gap)) - 70vw), var(--hub-hero-grip-col-float-mobile));
   }
 }
 
@@ -1844,8 +1910,13 @@
     transform: translate(0, var(--grid-col-four-offset));
   }
 
+  60% {
+    animation-timing-function: ease-in;
+    transform: translate(calc(1 * (var(--end-gap) - var(--start-gap))), calc(var(--hub-hero-grip-col-float-mobile) * 0.6));
+  }
+
   100% {
-    transform: translate(calc(1 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile));
+    transform: translate(calc(1 * (var(--end-gap) - var(--start-gap)) + 70vw), var(--hub-hero-grip-col-float-mobile));
   }
 }
 
@@ -1854,8 +1925,47 @@
     transform: translate(0, var(--grid-col-five-offset));
   }
 
+  60% {
+    animation-timing-function: ease-in;
+    transform: translate(calc(2 * (var(--end-gap) - var(--start-gap))), calc(var(--hub-hero-grip-col-float-mobile) * 0.6));
+  }
+
   100% {
-    transform: translate(calc(2 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile));
+    transform: translate(calc(2 * (var(--end-gap) - var(--start-gap)) + 70vw), var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+/* mirrors hubHeroGridGapDesktopY's trick: translate the second stacked image instead of
+   animating the gap property directly. Desktop shrinks the gap (translates toward the first
+   image); mobile grows it (translates away), reaching the end value at 60% (calmer/more
+   gradual pace), then holding. */
+@keyframes hubHeroGridGapMobileY {
+  0% {
+    translate: 0 0;
+  }
+
+  60% {
+    translate: 0 calc(var(--end-gap) - var(--start-gap));
+  }
+
+  100% {
+    translate: 0 calc(var(--end-gap) - var(--start-gap));
+  }
+}
+
+/* double the single-gap offset for the 3rd stacked image (columns 2 and 4 only) — it needs to
+   move away from the already-translated 2nd image by that same amount again */
+@keyframes hubHeroGridGapMobileY3rd {
+  0% {
+    translate: 0 0;
+  }
+
+  60% {
+    translate: 0 calc(2 * (var(--end-gap) - var(--start-gap)));
+  }
+
+  100% {
+    translate: 0 calc(2 * (var(--end-gap) - var(--start-gap)));
   }
 }
 
