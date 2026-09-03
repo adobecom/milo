@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 const { setConfig, updateConfig, getConfig } = await import('../../../../libs/utils/utils.js');
-const { CARD_STORAGE_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
+const { CARD_STORAGE_KEY, EXCLUDE_MANIFEST_PARAMS_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
 
 // icon-mep has onclick/onload attributes to exercise svgIcon() sanitization branch
 const SVG_DATA = {
@@ -213,6 +213,18 @@ describe('init: DOM structure — stage env first call', () => {
 
   it('Preview Link toggle exists (string description in buildToggleRow)', () => {
     expect(mainEl.querySelector('#toggle-preview-link')).to.exist;
+  });
+
+  it('persists the Manifest Parameters toggle to sessionStorage on change', () => {
+    const cb = mainEl.querySelector('#toggle-manifest-parameters');
+    expect(cb).to.exist;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('true');
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('false');
+    sessionStorage.removeItem(EXCLUDE_MANIFEST_PARAMS_KEY);
   });
 
   it('MEP highlight toggle has function-computed description (0 Page Updates)', () => {
@@ -751,6 +763,14 @@ describe('setEventListeners: toggleExpandedCard', () => {
     } else {
       expect(stored).to.not.include(key);
     }
+  });
+
+  it('clicking a Spoof Geo radio-row SVG does not collapse the card', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Spoof Geo"]');
+    const radioSvg = card.querySelector('.mep-radio-row svg');
+    const was = card.classList.contains('expanded');
+    radioSvg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(card.classList.contains('expanded')).to.equal(was);
   });
 });
 

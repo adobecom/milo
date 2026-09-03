@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   toSlug,
   getPageId,
   getManifestList,
@@ -42,6 +44,7 @@ const CARD_DATA = {
     ]],
     ['Toggle', [
       ['Preview Link', 'Add mepButton=off'],
+      ['Manifest Parameters', 'Exclude from URL'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
     ['Spoof Geo', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
@@ -402,6 +405,9 @@ async function setDefaultValues() {
     toggleHighlight({ target: checkbox });
   });
 
+  const excludeManifestsEl = document.querySelector('#toggle-manifest-parameters');
+  if (excludeManifestsEl) excludeManifestsEl.checked = getExcludeManifestParams();
+
   const selectEl = document.querySelector('select.mep-spoof-geo');
   if (!selectEl) return;
 
@@ -534,12 +540,13 @@ function setEventListeners() {
       });
       return;
     }
-    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    const cardEl = event.target.closest('.mep-card h1 svg') && event.target.closest('.mep-card');
     if (cardEl) toggleExpandedCard(cardEl);
   });
 
   drawerEl.addEventListener('change', (event) => {
     if (event.target.type === 'checkbox') event.target.toggleAttribute('checked', event.target.checked);
+    if (event.target.id === 'toggle-manifest-parameters') setExcludeManifestParams(event.target.checked);
     setPreviewButton(event);
   });
 
