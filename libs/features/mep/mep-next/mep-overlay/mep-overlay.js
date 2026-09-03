@@ -151,6 +151,56 @@ function toggleExpandedCard(cardEl) {
   localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
+function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
+  }
+  const statusChecks = [
+    {
+      reason: manifest.manifestGeoRestricted,
+      msg: 'User country is geo restricted.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.disabledPromo === true,
+      msg: 'Outside of promo date range.',
+      level: 'Warning',
+      label: 'Disabled',
+    },
+  ];
+  const severity = { Warning: 0, Error: 1 };
+  const messages = [];
+  let finalLabel = null;
+  let finalLevel = null;
+
+  statusChecks.forEach(({ reason, msg, level, label }) => {
+    if (!reason) return;
+    messages.push(msg);
+    if (!finalLevel || severity[level] > severity[finalLevel]) {
+      finalLevel = level;
+      finalLabel = label || level;
+    }
+  });
+
+  if (!finalLabel) return null;
+  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
+}
+
+function applyManifestStatus(card, manifest) {
+  const status = getManifestStatus(manifest);
+  if (!status) return;
+
+  const { level, label, messages } = status;
+  const list = createTag(
+    'ul',
+    { class: `mep-manifest-${level}-tooltip` },
+    messages.map((message) => createTag('li', {}, message)),
+  );
+  card.classList.add(`manifest-${level}`);
+  card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
+}
+
 function buildManifestCard(manifest) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
@@ -161,6 +211,15 @@ function buildManifestCard(manifest) {
   const header = createTag('div', { class: 'mep-manifest-header' }, [
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
+
+  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
+  markExpanded(card, manifest.editUrl);
+
+  if (manifest.malformed) {
+    card.append(header);
+    applyManifestStatus(card, manifest);
+    return card;
+  }
 
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
@@ -194,9 +253,10 @@ function buildManifestCard(manifest) {
     select.append(optEl);
   });
 
-  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
-  markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
+
+  applyManifestStatus(card, manifest);
+
   return card;
 }
 

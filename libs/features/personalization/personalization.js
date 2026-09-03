@@ -5,6 +5,7 @@
 import {
   createTag,
   getConfig,
+  getCountry,
   getMetadata,
   loadLink,
   loadScript,
@@ -1101,6 +1102,7 @@ async function getPersonalizationVariant(
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
@@ -1137,11 +1139,15 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getGeoRestriction = (manifestConfig) => {
+export const getGeoRestriction = async (manifestConfig) => {
   const { geoRestriction, manifestPath } = manifestConfig;
   if (!geoRestriction) return true;
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+  const config = getConfig();
+  if (!config.mep.akamaiCode) {
+    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
+  }
+  const isAllowed = geoArray.includes(config.mep.akamaiCode);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1155,8 +1161,11 @@ export function getManifestMarketingAction(mktgAction, source) {
   return 'marketing increase';
 }
 
-export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) return false;
+export async function canServeManifest(manifestConfig) {
+  if (!(await getGeoRestriction(manifestConfig))) {
+    manifestConfig.geoDisabled = true;
+    return false;
+  }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction?.includes('core services')) return true;
 
@@ -1172,6 +1181,12 @@ export function canServeManifest(manifestConfig) {
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
+}
+
+function recordManifestError(name, manifestPath, error) {
+  const config = getConfig();
+  config.mep.manifestErrors ??= [];
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1192,13 +1207,20 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchData) data = fetchedData;
+    data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!data) {
+      recordManifestError(name, manifestPath, 'Manifest');
+      return null;
+    }
   }
 
-  const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
-  const infoTab = manifestInfo || data?.info?.data;
+  const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
+  if (!persData) {
+    recordManifestError(name, manifestPath, 'Experiences tab');
+    return null;
+  }
+  const infoTab = manifestInfo || data.info?.data;
+
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;
@@ -1208,8 +1230,8 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 3 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
+    recordManifestError(name, manifestPath, 'Experience columns');
     return null;
   }
   const infoKeyMap = {
@@ -1245,7 +1267,7 @@ async function getManifestConfig(info, variantOverride) {
   let finalDisabled = disabled;
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const isAllowed = canServeManifest(manifestConfig);
+  const isAllowed = await canServeManifest(manifestConfig);
   if (!isAllowed) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;

@@ -28,6 +28,7 @@
   --mep-elevation-drawer: 0 6px 10px 0 rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 
   --mep-emphasis: #00ff73;
+  --mep-error: #c52424;
 
   --caas-block-outline: #007bff;
   --caas-market-outline: #28a745;
@@ -242,6 +243,75 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-card[hidden] {
   display: none;
+}
+
+.mep-drawer .mep-card.manifest-error {
+  border-color: var(--mep-error);
+}
+
+.mep-drawer .mep-card.manifest-warning {
+  border-color: var(--mep-white-100);
+}
+
+.mep-drawer .mep-card .mep-manifest-error,
+.mep-drawer .mep-card .mep-manifest-warning {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 8px;
+  padding: 4px 16px;
+  border-radius: 8px 8px 0 0;
+  color: var(--mep-white-100);
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+  cursor: default;
+}
+
+.mep-drawer .mep-card .mep-manifest-error {
+  background: var(--mep-error);
+}
+
+.mep-drawer .mep-card .mep-manifest-warning {
+  background: var(--mep-white-12);
+}
+
+.mep-drawer .mep-card .mep-manifest-error svg,
+.mep-drawer .mep-card .mep-manifest-warning svg {
+  flex-shrink: 0;
+  fill: var(--mep-white-100);
+}
+
+.mep-drawer .mep-card .mep-manifest-error-tooltip,
+.mep-drawer .mep-card .mep-manifest-warning-tooltip {
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 16px;
+  display: none;
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  list-style: none;
+  border-radius: 4px;
+  background: var(--mep-dark-22, #222);
+  box-shadow: var(--mep-elevation-4);
+  color: var(--mep-white-100);
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+  white-space: nowrap;
+}
+
+.mep-drawer .mep-card .mep-manifest-error-tooltip {
+  border: 1px solid var(--mep-error);
+}
+
+.mep-drawer .mep-card .mep-manifest-warning-tooltip {
+  border: 1px solid var(--mep-white-100);
+}
+
+.mep-drawer .mep-card .mep-manifest-error:hover .mep-manifest-error-tooltip,
+.mep-drawer .mep-card .mep-manifest-warning:hover .mep-manifest-warning-tooltip {
+  display: block;
 }
 
 .mep-drawer .mep-card.center {
