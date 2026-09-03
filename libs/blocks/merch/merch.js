@@ -482,6 +482,9 @@ export async function loadMasComponent(componentName) {
     try {
       return await import(/* webpackIgnore: true */ /* @vite-ignore */ targetUrl);
     } catch (error) {
+      if (error?.message?.includes('already been used with this registry')) {
+        return;
+      }
       failedExternalLoads.add(targetUrl);
       throw error;
     }
