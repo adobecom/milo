@@ -584,7 +584,7 @@ header.global-navigation.is-compact .feds-logo {
   display: flex;
 }
 
-header.global-navigation.is-compact.local-nav .feds-nav-wrapper--expanded ~ .feds-bc-wrapper {
+header.global-navigation.is-compact .feds-nav-wrapper--expanded ~ .feds-bc-wrapper {
   display: none;
 }
 
