@@ -2823,6 +2823,7 @@ const preloadBlockResources = (blocks = [], { fetchpriority } = {}) => blocks.ma
 }).filter(Boolean);
 
 const preloadLcpCodeFiles = (area = document) => {
+  if (getMetadata('disable-mep-perf-optimization') === 'on') return;
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
