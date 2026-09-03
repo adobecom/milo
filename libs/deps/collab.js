@@ -45,6 +45,7 @@
       }
       if (e.data?.type === 'collab:image-generated') {
         const { elementPath, src } = e.data;
+        alert(`[collab] image-generated received\nsrc: ${src}\nelementPath: ${elementPath}`);
         const imgEl = resolveElement(elementPath);
         if (imgEl instanceof HTMLImageElement && src && /^https?:\/\//.test(src)) {
           imgEl.src = src;
