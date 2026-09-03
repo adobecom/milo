@@ -64,7 +64,9 @@ const insertInlineFrag = async (sections, a, relHref) => {
     fragChildren = fragmentBlock?.querySelectorAll(':scope > div') || [];
   } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
     fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
-  } else fragChildren = [...sections[0].children];
+  } else {
+    fragChildren = [...sections[0].children];
+  }
   if (!fragChildren.length) return;
 
   // if (rowOrCellInsertValue === 'cell' && !fragmentBlock) a.replaceWith(...fragChildren);
@@ -78,8 +80,16 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
-    if (a.dataset.skipLoadArea !== 'true' && child.querySelector('a[href*="/fragments/"]')) {
+    const nestedFragments = child.querySelectorAll('a[href*="/fragments/"]');
+    if (a.dataset.skipLoadArea === 'true' || !nestedFragments.length) {
+      return;
+    }
+    if (rowOrCellInsertValue === 'row' || rowOrCellInsertValue === 'cell') {
+      nestedFragments.forEach((nestedFragment) => {
+        // eslint-disable-next-line no-use-before-define
+        promises.push(init(nestedFragment));
+      });
+    } else {
       promises.push(loadArea(child));
     }
   });
