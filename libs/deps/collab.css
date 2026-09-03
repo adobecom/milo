@@ -753,7 +753,7 @@ body.collab-markers-hidden .collab-has-comments { box-shadow: none; }
 }
 
 #collab-image-wand {
-  position: absolute;
+  position: fixed;
   z-index: 10052;
   display: none;
   pointer-events: auto;
