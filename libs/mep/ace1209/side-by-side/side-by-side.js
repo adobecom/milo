@@ -11,7 +11,7 @@ function decorateStandaloneLink(foreground) {
     const parent = a.parentElement;
     if (!parent) return;
     const isStandalone = parent.textContent?.trim() === a.textContent?.trim();
-    if (!isStandalone) return;
+    if (!isStandalone || a.classList.contains('con-button')) return;
     parent.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, 'label');
     parent.classList.add('link-container');
     a.classList.add('standalone-link');
