@@ -1925,13 +1925,84 @@ export async function initMasField(el) {
   return createInlineField(el, options);
 }
 
+/** An <a>, or a <strong>/<em> uniquely wrapping one <a> - the two shapes a split field-link
+ *  segment can take (see resolveSplitFieldLink). Returns the segment's own anchor. */
+function fieldLinkAnchor(node) {
+  if (!node || node.nodeType !== Node.ELEMENT_NODE) return null;
+  if (node.tagName === 'A') return node;
+  if (['STRONG', 'EM'].includes(node.tagName)
+    && node.childElementCount === 1
+    && node.firstElementChild.tagName === 'A') {
+    return node.firstElementChild;
+  }
+  return null;
+}
+
+/** The segment carrying `anchor` - `anchor` itself, or its unique strong/em wrapper. */
+function fieldLinkSegment(anchor) {
+  const { parentElement } = anchor;
+  return fieldLinkAnchor(parentElement) === anchor ? parentElement : anchor;
+}
+
+/**
+ * Doc-authored content can't nest a partially bold/italic run inside a single <a>, so an
+ * inline mas-field link whose label has a bolded/italicized substring (e.g. "ctas[**Buy
+ * now**]") round-trips as sibling anchors that all share the same href - a plain <a> and a
+ * <strong>/<em> wrapping another <a>. Each would otherwise reach initMasField independently
+ * and duplicate the CTA. Collapse the group to a single canonical segment - the strong/em
+ * one, so the CTA still resolves to the button style that wrapper implies, or the first in
+ * document order if none is wrapped - discarding the rest (their label text is decorative;
+ * mas-field replaces it once the field resolves anyway).
+ *
+ * Returns true if `el` is the canonical anchor (safe to pass to initMasField), false if
+ * `el`'s own segment was just discarded in favor of a sibling.
+ */
+function resolveSplitFieldLink(el) {
+  const segment = fieldLinkSegment(el);
+  const { href } = el;
+  const group = [segment];
+  let sibling = segment.previousSibling;
+  while (sibling) {
+    if (sibling.nodeType === Node.TEXT_NODE && !sibling.textContent.trim()) {
+      sibling = sibling.previousSibling;
+    } else {
+      const anchor = fieldLinkAnchor(sibling);
+      if (!anchor || anchor.href !== href) break;
+      group.unshift(sibling);
+      sibling = sibling.previousSibling;
+    }
+  }
+  sibling = segment.nextSibling;
+  while (sibling) {
+    if (sibling.nodeType === Node.TEXT_NODE && !sibling.textContent.trim()) {
+      sibling = sibling.nextSibling;
+    } else {
+      const anchor = fieldLinkAnchor(sibling);
+      if (!anchor || anchor.href !== href) break;
+      group.push(sibling);
+      sibling = sibling.nextSibling;
+    }
+  }
+  if (group.length === 1) return true;
+  const canonical = group.find((seg) => seg.tagName === 'STRONG')
+    ?? group.find((seg) => seg.tagName === 'EM')
+    ?? group[0];
+  if (canonical !== segment) {
+    segment.remove();
+    return false;
+  }
+  group.forEach((seg) => { if (seg !== segment) seg.remove(); });
+  return true;
+}
+
 export default async function init(el) {
-  if (!el?.classList?.contains('merch')) return undefined;
+  if (!el?.classList?.contains('merch') || !el.isConnected) return undefined;
   const url = new URL(el.href);
   // Inline fragment field links (mas.adobe.com/studio.html#...&field=...) are routed here
   // instead of merch-card-autoblock (see decorateAutoBlock in utils.js) so a field render
   // never pulls in merch-card.
   if (url.hash.includes('field=')) {
+    if (!resolveSplitFieldLink(el)) return undefined;
     return initMasField(el);
   }
   const { searchParams } = url;
