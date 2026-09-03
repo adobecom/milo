@@ -15,6 +15,7 @@ const C1_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'blog-author',
   'brand-concierge',
   'brand-concierge-global',
   'brick',
@@ -112,11 +113,11 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'base-card',
-  'box',
   'brand-concierge',
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
+  'email-collection-c2',
   'explore-card',
   'faq',
   'floating-cta',
@@ -135,6 +136,7 @@ const C2_BLOCKS = [
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
+  'quote',
   'region-nav',
   'rich-content',
   'router-marquee',
@@ -175,6 +177,7 @@ const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
+  'hub-hero',
 ];
 
 const ENVS = {
@@ -1548,6 +1551,8 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
+  if (a.hasAttribute('data-wcs-osi')) return false;
+
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     if (!isTrustedAutoBlock(candidate[key], url)) return false;
@@ -1604,6 +1609,14 @@ export function decorateAutoBlock(a) {
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
       return false;
+    }
+
+    // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
+    // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
+    // dependencies out of the critical path when only a field is authored (e.g. in marquee).
+    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+      a.className = 'merch link-block';
+      return true;
     }
 
     a.className = `${key} link-block`;
@@ -2038,7 +2051,7 @@ const getMdValue = (key) => {
   return false;
 };
 
-const getPromoMepEnablement = () => {
+export const getPromoMepEnablement = () => {
   const mds = [
     'apac_manifestnames',
     'emea_manifestnames',
@@ -2180,7 +2193,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id'];
+  const mepAddons = ['lob'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -2743,6 +2756,55 @@ export function partition(arr, fn) {
   );
 }
 
+const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
+
+/**
+ * Validates a repo/owner pair intended for use in an *.aem.live host and
+ * returns the resulting origin, or null if either value is missing or does
+ * not look like a safe AEM repo/owner segment. Guards against arbitrary host
+ * injection via the `repo`/`owner` query params (VULN-38270).
+ * @param {string} repo raw repo query parameter value
+ * @param {string} owner raw owner query parameter value
+ * @returns {string|null} origin, or null if repo/owner are missing or invalid
+ */
+export function getValidatedRepoOwnerOrigin(repo, owner) {
+  if (!repo || !owner) return null;
+  const cleanRepo = repo.trim().toLowerCase();
+  const cleanOwner = owner.trim().toLowerCase();
+  if (
+    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
+  ) return null;
+  let url;
+  try {
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
+  return url.origin;
+}
+
+export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
+const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);
+
+/**
+ * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
+ * repo/owner validation alone can't guarantee a config isn't attacker-owned (VULN-38270).
+ * @param {string} site raw `sharepoint.site` config value
+ * @returns {string|null} the validated site value, or null if unsafe
+ */
+export function getValidatedSharePointSite(site) {
+  if (typeof site !== 'string') return null;
+  return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
@@ -2785,10 +2847,10 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
-    getMasDepUrl('mas-field.js'),
   ],
   merch: [
     getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
   ],
 };
 
@@ -2809,7 +2871,8 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
-    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
@@ -2885,6 +2948,17 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config) => {
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2910,6 +2984,11 @@ export async function loadArea(area = document) {
   }
 
   if (isLingoActive) loadLingoIndexes(area);
+
+  if (isLingoActive) {
+    const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(htmlSections[0]?.innerHTML ?? '');
+    if (tokenInLcp || (isDoc && getMepEnablement('geo-ip-lcp'))) warmGeoIpSheet(config);
+  }
 
   if (isDoc) {
     await decorateDocumentExtras();

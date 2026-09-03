@@ -13,8 +13,8 @@
     justify-content: center;
     position: absolute;
     z-index: 1;
-    right: calc(var(--s2a-spacing-lg) + var(--play-pause-button-size) + var(--s2a-spacing-2));
-    bottom: var(--s2a-spacing-lg);
+    inset-inline-end: calc(var(--s2a-spacing-md) + var(--play-pause-button-size) + var(--s2a-spacing-2));
+    inset-block-end: var(--s2a-spacing-md);
     color: var(--s2a-color-gray-25);
     text-decoration: none;
     white-space: nowrap;
@@ -33,17 +33,23 @@
     }
   }
 
+  @media (width >= 768px) {
+    .video-container a.transcript-button {
+      inset-inline-end: calc(var(--s2a-spacing-lg) + var(--play-pause-button-size) + var(--s2a-spacing-2));
+      inset-block-end: var(--s2a-spacing-lg);
+    }
+  }
+
   @media (width >= 1280px) {
     .video-container a.transcript-button {
-      right: calc(var(--s2a-spacing-xl) + var(--play-pause-button-size) + var(--s2a-spacing-2));
-      bottom: var(--s2a-spacing-xl);
+      inset-inline-end: calc(var(--s2a-spacing-xl) + var(--play-pause-button-size) + var(--s2a-spacing-2));
+      inset-block-end: var(--s2a-spacing-xl);
     }
   }
 
   @media (width >= 1440px) {
     .video-container a.transcript-button {
       height: 48px;
-      right: calc(var(--s2a-spacing-xl) + var(--play-pause-button-size) + var(--s2a-spacing-2));
     }
   }
 

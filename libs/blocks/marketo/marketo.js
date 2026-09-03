@@ -59,7 +59,9 @@ const FORM_MAP = {
   'hardcoded-poi': 'program.poi',
   'cta-override': 'form.cta.override',
 };
-export const FORM_PARAM = 'form';
+export const UNGATED_PARAM = 'form';
+export const FORM_ID_PARAM = 'marketoform';
+export const NAMED_FORM_IDS = { stage: '1723', prod: '2277' };
 export const MARKETO_LIBS_PARAM = 'marketolibs';
 export const MARKETO_LIBS_META = 'marketo-libs';
 export const MARKETO_LIBS_CLASS = 'da-marketo';
@@ -478,6 +480,17 @@ export default async function init(el) {
     }
   });
 
+  const isProd = getConfig().env?.name === 'prod';
+  const searchParams = new URLSearchParams(window.location.search);
+  const formIdParam = searchParams.get(FORM_ID_PARAM);
+  const setFormId = formIdParam in NAMED_FORM_IDS ? NAMED_FORM_IDS[formIdParam] : formIdParam;
+
+  if (/^\d{4}$/.test(setFormId)) {
+    if (!isProd || Object.values(NAMED_FORM_IDS).includes(setFormId)) {
+      formData[FORM_ID] = setFormId;
+    }
+  }
+
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
@@ -488,8 +501,7 @@ export default async function init(el) {
     return;
   }
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const ungated = searchParams.get(FORM_PARAM) === 'off';
+  const ungated = searchParams.get(UNGATED_PARAM) === 'off';
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');

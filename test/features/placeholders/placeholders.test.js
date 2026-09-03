@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig, customFetch } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig, customFetch, geoIpSiteKey } from '../../../libs/utils/utils.js';
 import {
   replaceText,
   replaceKey,
@@ -100,10 +100,11 @@ describe('Placeholders', () => {
   });
 });
 
-describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
+describe('Geo-IP Placeholders (column-per-market sheet)', () => {
   let paramsGetStub;
   let langfirstMeta;
-  const geoFixturePath = '/test/features/placeholders/lu_fr';
+  const contentRoot = '/test/features/placeholders';
+  const gnavSheet = '/test/features/placeholders/placeholders-geo-ip-gnav.json';
 
   before(() => {
     paramsGetStub = stub(URLSearchParams.prototype, 'get');
@@ -114,153 +115,168 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     paramsGetStub.restore();
   });
 
-  function enableLingo() {
+  // Geo-IP is gated on lingoActive() (langfirst meta); the country comes from sessionStorage
+  // 'akamai'. UK is the non-ISO alias for gb; the test server ignores the ?sheet= query.
+  function enableGeo(country) {
     langfirstMeta = document.createElement('meta');
     langfirstMeta.name = 'langfirst';
     langfirstMeta.content = 'on';
     document.head.appendChild(langfirstMeta);
-    sessionStorage.setItem('akamai', 'lu');
-    const geoLocales = {
-      '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-      '/fr': { ietf: 'fr-FR', tk: 'hah7vzn.css' },
-    };
-    const regions = { lu_fr: { prefix: geoFixturePath } };
-    setConfig({ locales: geoLocales, locale: { region: 'fr' }, contentRoot: '' });
+    if (country) sessionStorage.setItem('akamai', country);
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
     const cfg = getConfig();
-    cfg.locale.prefix = '/fr';
-    cfg.locale.regions = regions;
+    cfg.locale.contentRoot = contentRoot;
     return cfg;
   }
 
-  function disableLingo() {
-    if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
-    sessionStorage.removeItem('akamai');
+  function disableGeo() {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+    const cfg = getConfig();
+    cfg.locale.contentRoot = contentRoot;
+    return cfg;
   }
 
   afterEach(() => {
-    disableLingo();
+    if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
+    langfirstMeta = undefined;
+    sessionStorage.removeItem('akamai');
   });
 
-  it('replaceText resolves geo value for -geo-ip keys (default, non-deferred)', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const text = await replaceText('tel:{{phone-number-geo-ip}}', cfg);
-    expect(text).to.equal('tel:+352 800 99999');
+  it('resolves the visitor country column for a -geo-ip key', async () => {
+    const cfg = enableGeo('us');
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello US');
   });
 
-  it('replaceText resolves geo value for non-phone -geo-ip key', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
-    expect(text).to.equal('Acheter maintenant');
+  it('resolves a different country column', async () => {
+    const cfg = enableGeo('ar');
+    expect(await replaceText('tel:{{phone-number-geo-ip}}', cfg)).to.equal('tel:+54 800 222 2222');
   });
 
-  it('falls back to base placeholder when langfirst is off', async () => {
-    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
-    const cfg = getConfig();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
-    expect(text).to.equal('Buy now');
+  it('maps a gb visitor to the non-ISO UK column', async () => {
+    const cfg = enableGeo('gb');
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello UK');
   });
 
-  it('getGeoIpPlaceholders returns a Map of -geo-ip overrides (for the C2 gnav map merge)', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
+  it('maps a uk visitor (normalised to gb) to the UK column', async () => {
+    const cfg = enableGeo('uk');
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello UK');
+  });
+
+  it('falls back to the first value column when the visitor country has no column', async () => {
+    // Positional default: an unlisted market resolves to the first value column (US), not the base.
+    const cfg = enableGeo('jp');
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello US');
+  });
+
+  it('keeps the authored base value for a -geo-ip key absent from the sheet', async () => {
+    const cfg = enableGeo('us');
+    expect(await replaceText('{{unlisted-thing-geo-ip}}', cfg)).to.equal('unlisted thing geo ip');
+  });
+
+  it('renders --none-- as empty, not the humanized key', async () => {
+    const cfg = enableGeo('us');
+    expect(await replaceText('{{cleared-geo-ip}}', cfg)).to.equal('');
+  });
+
+  it('falls back to the base placeholder when langfirst is off', async () => {
+    const cfg = disableGeo();
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello geo ip');
+  });
+
+  it('lets a MEP placeholder override the geo-ip value', async () => {
+    const cfg = enableGeo('us');
+    cfg.placeholders = { 'hello-geo-ip': 'MEP override value' };
+    expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('MEP override value');
+    delete cfg.placeholders;
+  });
+
+  it('getGeoIpPlaceholders returns a Map of -geo-ip overrides (for the C2 gnav merge)', async () => {
+    const cfg = enableGeo('us');
     const overrides = await getGeoIpPlaceholders(cfg);
     expect(overrides).to.be.instanceOf(Map);
-    expect(overrides.get('phone-number-geo-ip')).to.equal('+352 800 99999');
-    expect(overrides.get('buy-now-geo-ip')).to.equal('Acheter maintenant');
+    expect(overrides.get('hello-geo-ip')).to.equal('hello US');
+    expect(overrides.get('phone-number-geo-ip')).to.equal('+1 800 111 1111');
     // only -geo-ip keys are included — base keys must not leak into the merge
     [...overrides.keys()].forEach((key) => expect(key.endsWith('-geo-ip')).to.be.true);
   });
 
   it('getGeoIpPlaceholders returns null when langfirst is off', async () => {
-    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
-    const cfg = getConfig();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const overrides = await getGeoIpPlaceholders(cfg);
-    expect(overrides).to.equal(null);
+    const cfg = disableGeo();
+    expect(await getGeoIpPlaceholders(cfg)).to.equal(null);
   });
 
-  it('deferred update swaps base to geo value in href, preserves custom text', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const link = document.createElement('a');
-    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
-    link.textContent = 'Call Adobe Support';
-
-    await decoratePlaceholderArea({ nodes: [link] });
-    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
-    expect(link.textContent).to.equal('Call Adobe Support');
-
-    await decoratePlaceholderArea.deferredGeo;
-    expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
-    expect(link.textContent).to.equal('Call Adobe Support');
+  it('resolves from an explicit source sheet, ignoring contentRoot (C2 gnav federal path)', async () => {
+    const cfg = enableGeo('us');
+    cfg.locale.contentRoot = '/nonexistent';
+    const overrides = await getGeoIpPlaceholders(cfg, gnavSheet);
+    expect(overrides.get('hello-geo-ip')).to.equal('hello US GNAV');
   });
 
-  it('deferred update swaps both href and text node to geo values', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const link = document.createElement('a');
-    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
-    const textNode = document.createTextNode('{{phone-number-geo-ip}}');
-    link.appendChild(textNode);
+  describe('named `default` column and --none-- clearing', () => {
+    const defaultSheet = '/test/features/placeholders/placeholders-geo-ip-default.json';
 
-    await decoratePlaceholderArea({ nodes: [link, textNode] });
-    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
-    expect(textNode.nodeValue).to.equal('800 555 1234');
+    it('uses the market column over the default column', async () => {
+      const cfg = enableGeo('us');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('hello US');
+    });
 
-    await decoratePlaceholderArea.deferredGeo;
-    expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
-    expect(textNode.nodeValue).to.equal('+352 800 99999');
+    it('falls back to the named default column when the market has no cell', async () => {
+      // phone-number has no US column → inherits the default column
+      const cfg = enableGeo('us');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('phone-number-geo-ip')).to.equal('+1 000 000 0000');
+    });
+
+    it('uses the default column for a market with no column of its own', async () => {
+      const cfg = enableGeo('jp');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('hello DEFAULT');
+    });
+
+    it('clears a market with --none-- so the token renders empty (not the default)', async () => {
+      // hello-geo-ip AR cell is --none-- → explicit empty, not inherited from the default column
+      const cfg = enableGeo('ar');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.get('hello-geo-ip')).to.equal('');
+    });
+
+    it('a --none-- default means only explicit market cells resolve; others render empty', async () => {
+      // explicit-only-geo-ip default is --none--: AR gets its cell, other markets clear to empty
+      const cfg = enableGeo('ar');
+      const arOverrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(arOverrides.get('explicit-only-geo-ip')).to.equal('only AR');
+      sessionStorage.setItem('akamai', 'us');
+      const usOverrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(usOverrides.get('explicit-only-geo-ip')).to.equal('');
+    });
+
+    it('omits a key whose default column is empty', async () => {
+      const cfg = enableGeo('jp');
+      const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
+      expect(overrides.has('unlisted-thing-geo-ip')).to.be.false;
+    });
+  });
+});
+
+describe('geoIpSiteKey', () => {
+  it('returns base when set', () => {
+    expect(geoIpSiteKey({ base: 'fr_FR' })).to.equal('fr_FR');
   });
 
-  it('deferred update swaps geo-ip value when preceded by another placeholder in the same text node', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const textNode = document.createTextNode('{{add-to-cart}} and {{buy-now-geo-ip}}');
-
-    await decoratePlaceholderArea({ nodes: [textNode] });
-    expect(textNode.nodeValue).to.equal('Add to cart and Buy now');
-
-    await decoratePlaceholderArea.deferredGeo;
-    expect(textNode.nodeValue).to.equal('Add to cart and Acheter maintenant');
+  it('strips the leading slash from prefix', () => {
+    expect(geoIpSiteKey({ prefix: '/fr' })).to.equal('fr');
   });
 
-  it('MEP placeholder overrides geo-ip value', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
-    const text = await replaceText('{{phone-number-geo-ip}}', cfg);
-    expect(text).to.equal('MEP override value');
-    delete cfg.placeholders;
+  it('prefers base over prefix', () => {
+    expect(geoIpSiteKey({ base: 'fr_CH', prefix: '/fr' })).to.equal('fr_CH');
   });
 
-  it('resolves geo value for federated content root (GNAV path)', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const federatedConfig = {
-      locale: {
-        ...cfg.locale,
-        contentRoot: `${window.location.origin}/fr/federal/globalnav`,
-      },
-    };
-    const text = await replaceText('{{phone-number-geo-ip}}', federatedConfig);
-    expect(text).to.equal('+352 GNAV 99999');
+  it('defaults to en when locale is empty', () => {
+    expect(geoIpSiteKey({})).to.equal('en');
   });
 
-  it('deferred update skips keys overridden by MEP', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
-    const link = document.createElement('a');
-    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
-    link.textContent = 'Call us';
-
-    await decoratePlaceholderArea({ nodes: [link] });
-    await decoratePlaceholderArea.deferredGeo;
-    expect(link.getAttribute('href')).to.equal('tel:MEP override value');
-    expect(link.textContent).to.equal('Call us');
-    delete cfg.placeholders;
+  it('defaults to en when called with no argument', () => {
+    expect(geoIpSiteKey()).to.equal('en');
   });
 });
