@@ -1038,6 +1038,12 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   .globe-gallery-control:active {
     transform: none;
   }
+
+  /* Hint retires instantly, no 0.5s fade (drag, rotate and modal-open all reach is-dismissed). */
+  .globe-gallery-barrel .globe-gallery-hint-text,
+  .globe-gallery-barrel .globe-gallery-hint.is-dismissed .globe-gallery-hint-text {
+    transition: none;
+  }
 }
 
 html[dir="rtl"] .globe-gallery-modal-nav svg {
