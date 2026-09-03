@@ -1125,9 +1125,12 @@
   }
 
   function positionImageWand() {
-    if (!imageHoverTarget || !imageWandEl) return;
-    const rect = imageHoverTarget.getBoundingClientRect();
-    imageWandEl.style.top  = `${rect.top - 36}px`;
+    if (!imageWandEl) return;
+    const target = document.querySelector('.collab-image-hover') || imageHoverTarget;
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const top = Math.max(8, rect.top) - 14;
+    imageWandEl.style.top  = `${top}px`;
     imageWandEl.style.left = `${rect.left + rect.width / 2 - 14}px`;
   }
 
