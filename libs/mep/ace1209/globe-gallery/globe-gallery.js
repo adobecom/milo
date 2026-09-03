@@ -27,7 +27,8 @@ function sphereCardScale(srcAspect) {
   return { sX: stretch, sY: 1 / stretch };
 }
 
-const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  || !!window.matchMedia?.('(height <= 460px) and (resolution >= 1.5dppx)').matches;
 
 const BREAKPOINTS = {
   sm: {
@@ -1352,9 +1353,25 @@ function createGlobeGalleryRuntime(
     const w = pqEl.clientWidth;
     if (!force && w === pq.splitW) return;
     pq.splitW = w;
+    pq.quoteEl.style.removeProperty('font-size');
+    pq.quoteEl.style.removeProperty('letter-spacing');
     pq.lineEls = layoutQuote(pq.quoteEl);
     pq.copyStr = '';
-    if (!reducedMotion) writePullQuoteFrame(pq.revealT);
+    if (!reducedMotion) {
+      const bandH = H - navH;
+      if (bandH > 0 && pqEl.scrollHeight > bandH) {
+        const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+        pq.quoteEl.style.letterSpacing = 'normal';
+        for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
+          const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+          const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
+          if (Math.abs(next - fs) < 0.5) break;
+          pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
+          pq.lineEls = layoutQuote(pq.quoteEl);
+        }
+      }
+      writePullQuoteFrame(pq.revealT);
+    }
   }
 
   function dropQuoteSelection() {
@@ -1363,7 +1380,6 @@ function createGlobeGalleryRuntime(
   }
 
   function updatePullQuote(frame) {
-    // RM: CSS owns it — no JS driving.
     if (reducedMotion || !pqEl) return;
     const live = frame.zoomT >= pqAppearZoomT;
     if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();

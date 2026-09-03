@@ -1016,8 +1016,7 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   transform: none;
 }
 
-
-@media (height <= 360px) {
+@media (height <= 460px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: 8px;
     --gg-control-size: 44px;
