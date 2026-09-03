@@ -69,14 +69,26 @@ function promptUp() {
 
 function decorateGnav(cards, input, topNav, el) {
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: 'bc-gnav' });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
-  const gnavButtonSection = createTag('section', { class: `bc-gnav-button ${hasNoMobile ? ' no-gnav-mobile' : ''}` });
+  const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
 
   if (bcWrapper) {
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
+
+    window.addEventListener('bc:side-modal-open', () => {
+      if (!bcGnav.classList.contains('has-chat-history')) {
+        bcGnav.classList.add('has-chat-history');
+      }
+    });
+    // remove the has-chat-history class if the overlay is closed before chat history is written
+    window.addEventListener('bc:side-modal-close', () => {
+      if (!hasChatCookie()) {
+        bcGnav.classList.remove('has-chat-history');
+      }
+    });
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
