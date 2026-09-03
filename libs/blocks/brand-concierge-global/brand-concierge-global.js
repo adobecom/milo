@@ -145,8 +145,6 @@ export default function init(el) {
     }
   });
 
-  setCssGnavHeight();
-
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
@@ -164,6 +162,7 @@ export default function init(el) {
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+    setCssGnavHeight();
     openSideModal(null, bcBootstrap);
   }
 }

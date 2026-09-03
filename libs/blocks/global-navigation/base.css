@@ -179,9 +179,9 @@ header.global-navigation.ready {
 
 /* Desktop styles */
 @media (min-width: 900px) {
-  .feds-navLink,
-  .feds-navLink--hoverCaret,
-  [dir = "rtl"] .feds-navLink--hoverCaret {
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink,
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret,
+  [dir = "rtl"] :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret {
     padding: 0 12px;
   }
 
@@ -236,12 +236,12 @@ header.global-navigation.ready {
     padding: 0;
   }
 
-  .feds-navLink--hoverCaret:hover,
-  .feds-navLink--hoverCaret:focus {
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret:hover,
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret:focus {
     background-color: var(--feds-background-popup);
   }
 
-  .feds-navLink--hoverCaret:after {
+  :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret:after {
     position: static;
     margin-top: 0;
     margin-left: 5px;
