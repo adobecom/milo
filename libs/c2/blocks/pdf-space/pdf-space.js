@@ -1518,7 +1518,7 @@ export default function init(el) {
   };
 
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const shortViewportQuery = window.matchMedia('(max-height: 500px) and (min-resolution: 1.5dppx)');
+  const shortViewportQuery = window.matchMedia('(max-height: 300px) and (min-resolution: 1.5dppx)');
   const prefersReducedMotion = () => reducedMotionQuery.matches || shortViewportQuery.matches;
 
   let teardownMotion = null;
