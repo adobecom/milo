@@ -2258,7 +2258,7 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
-const preloadBlockResources = (blocks = []) => blocks.map((block) => {
+const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
@@ -2272,7 +2272,11 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
     if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
-  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+  if (!hasStyles) return null;
+  // Warm (don't apply) styles when running before MEP: applying the default block's
+  // stylesheet would override the styles of a block MEP redirects via useBlockCode.
+  if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
+  return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
@@ -2314,7 +2318,7 @@ export function preloadLcpCodeFiles(area = document) {
     .filter((el) => !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
-  if (allBlocks.length) preloadBlockResources(allBlocks);
+  if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });

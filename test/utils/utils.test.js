@@ -116,10 +116,14 @@ describe('Utils', () => {
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
     });
 
-    it('preloads authored first-section blocks', () => {
+    it('preloads authored first-section blocks (js + warmed css, not applied)', () => {
       document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      // css is warmed as a preload, never applied as a stylesheet -- applying the
+      // default block css pre-MEP would override a useBlockCode-redirected block
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
+      expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
     });
 
     it('preloads non-commerce autoblocks but excludes merch/mas', () => {
