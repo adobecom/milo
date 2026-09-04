@@ -8,6 +8,9 @@ import {
   lingoActive,
   getLingoRegion,
 } from '../../../utils/utils.js';
+import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -45,11 +48,44 @@ export function getFederalDomain(config) {
   return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
+async function decorateAppPrompt(el) {
+  const state = getMetadata('app-prompt')?.toLowerCase();
+  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+  const hasMobileUA = MOBILE_UA_REGEX.test(navigator.userAgent);
+
+  if (state === 'off'
+    || !window.adobeIMS?.isSignedInUser()
+    || !isDesktop.matches
+    || hasMobileUA
+    || !entName?.length
+    || !promptPath?.length) return;
+
+  const parent = el.querySelector('.feds-utilities');
+  if (!parent) return;
+
+  const { base } = getConfig();
+  const [webappPrompt] = await Promise.all([
+    import('../../../features/webapp-prompt/webapp-prompt.js'),
+    loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
+  ]);
+
+  await webappPrompt.default({
+    promptPath,
+    entName,
+    parent,
+    getAnchorState: () => window.UniversalNav?.getComponent?.('app-switcher'),
+  });
+}
+
 export default async function init(el) {
   const config = getConfig();
   const isLingo = lingoActive();
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
+
+  const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+  if (isGnavOverrideOnC1) el.classList.add('c2-gnav-c1-host');
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
@@ -87,6 +123,9 @@ export default async function init(el) {
 
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
+  const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
+  const unavEnabled = universalNavMeta === 'on'
+    || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
@@ -103,7 +142,7 @@ export default async function init(el) {
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
-    unavEnabled: getMetadata('unav') === 'on',
+    unavEnabled,
     placeholders: placeholdersPromise,
     miloConfig: config,
     countryCode: countryCodePromise,
@@ -124,6 +163,9 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => requestAnimationFrame(() => window.lenis?.resize()));
+  gnavPromise.then(() => {
+    requestAnimationFrame(() => window.lenis?.resize());
+    decorateAppPrompt(el);
+  });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
