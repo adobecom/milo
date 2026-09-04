@@ -1,6 +1,7 @@
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 let USER_ACTION = false;
@@ -431,7 +432,7 @@ const dynamicLayoutUpdates = (el) => {
   updateContentSpacing(el);
 };
 
-const startAutoplay = (slides, cards, container, block) => {
+const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true) => {
   const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
@@ -440,6 +441,7 @@ const startAutoplay = (slides, cards, container, block) => {
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
+  let userPaused = false; // paused via explicit user action - survives breakpoint/scroll resume
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
 
@@ -496,14 +498,16 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
-  const activate = (index, direction = 1, { skipTrack = false } = {}) => {
+  const activate = (index, direction = 1, { skipTrack = false, instant = false } = {}) => {
     finishSlideTransition();
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
     const vid = newSlide.querySelector('video');
     loadSlideMedia(newSlide);
-    const reducedMotion = prefersReducedMotion();
+    // instant skips the slide-transition animation - used when a hidden viewport is
+    // synced to another viewport's slide, so it's already correct once revealed.
+    const reducedMotion = prefersReducedMotion() || instant;
 
     oldSlide.classList.remove('is-active');
     newSlide.classList.add('is-active');
@@ -567,7 +571,8 @@ const startAutoplay = (slides, cards, container, block) => {
     preloadNextVideo();
   };
 
-  const pause = () => {
+  const pause = (manual = false) => {
+    if (manual) userPaused = true;
     if (paused) return;
     clearTimeout(timer);
     finishSlideTransition();
@@ -577,19 +582,27 @@ const startAutoplay = (slides, cards, container, block) => {
     slides[active]?.querySelector('video')?.pause();
   };
 
-  const resume = () => {
+  // manual=true is the explicit Play-button click: it always takes effect (clearing a
+  // sticky user-pause) and still updates playback/UI under reduced motion, just without
+  // scheduling auto-advance. manual=false is a system resume (breakpoint switch, scroll
+  // back into view) and defers to a standing user pause or a reduced-motion preference.
+  const resume = (manual = false) => {
     if (!paused) return;
+    if (!manual && (userPaused || prefersReducedMotion())) return;
+    if (manual) userPaused = false;
     paused = false;
     setPlayingState(true);
+    slides[active]?.querySelector('video')?.play().catch(() => {});
+    if (prefersReducedMotion()) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
     if (target && !target.closest('.rm-pause-play')) {
-      if (!paused) pause();
+      if (!paused) pause(true);
     }
   };
 
@@ -598,10 +611,11 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      if (i === active) { pause(); return; }
+      if (i === active) { pause(true); return; }
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
       USER_ACTION = true;
@@ -614,6 +628,7 @@ const startAutoplay = (slides, cards, container, block) => {
     clearTimeout(timer);
     clearFill(active);
     paused = true;
+    userPaused = true;
     activate(0, -1);
   });
 
@@ -637,6 +652,7 @@ const startAutoplay = (slides, cards, container, block) => {
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       setPlayingState(false);
       activate(next, 1);
     });
@@ -646,15 +662,15 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', (e) => {
-    if (!e.target.closest('.rm-pause-play') && !paused) pause();
+    if (!e.target.closest('.rm-pause-play') && !paused) pause(true);
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     if (paused) {
-      resume();
+      resume(true);
     } else {
-      pause();
+      pause(true);
     }
   });
 
@@ -678,6 +694,7 @@ const startAutoplay = (slides, cards, container, block) => {
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
     paused = true;
+    userPaused = true;
     USER_ACTION = true;
     setPlayingState(false);
   }, { passive: true });
@@ -689,6 +706,7 @@ const startAutoplay = (slides, cards, container, block) => {
       return;
     }
     if (paused) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
@@ -699,7 +717,7 @@ const startAutoplay = (slides, cards, container, block) => {
   // on the heading instead of being dragged to the late video paint. It also keeps
   // the progress bar honest: it begins when the video is actually playing.
   const heroVideo = slides[active]?.querySelector('video');
-  if (heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
+  if (gateOnFirstFrame && heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
     let started = false;
     let fallbackTimer = null;
     const kick = () => {
@@ -717,7 +735,18 @@ const startAutoplay = (slides, cards, container, block) => {
     requestAnimationFrame(beginAutoplay);
   }
 
-  return { pause, resume };
+  const getActive = () => active;
+  // Jump straight to a slide with no transition, so a hidden viewport can be lined up
+  // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
+  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one.
+  const syncTo = (index) => {
+    const target = Math.min(index, slides.length - 1);
+    if (target === active) return;
+    clearFill(active);
+    activate(target, 1, { instant: true });
+  };
+
+  return { pause, resume, getActive, syncTo };
 };
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
@@ -765,40 +794,56 @@ export default function init(el) {
   const containers = Object.entries(viewports)
     .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
   el.replaceChildren(...containers);
-  const initializedVps = new Set();
-  const autoplayControllers = [];
-  const initViewportAutoplay = () => {
+  const controllersByVp = new Map();
+  let activeVpName = null;
+  // Only the currently visible viewport's controller should ever run. Switching breakpoints
+  // (mobile/tablet/desktop) pauses the outgoing viewport - so its autoplay timer and hero
+  // video don't keep running inside a display:none container - and resumes (or lazily creates)
+  // the incoming one, carrying the outgoing viewport's active slide across so the breakpoints
+  // stay in sync instead of each tracking its own index.
+  const syncViewportAutoplay = () => {
     const activeVp = getActiveViewport();
-    if (initializedVps.has(activeVp)) return;
-    initializedVps.add(activeVp);
-    const container = containers.find((c) => c.dataset.viewport === activeVp);
-    if (!container) return;
-    const slides = container.querySelectorAll('.rm-slide');
-    const cards = container.querySelector('.rm-cards');
-    setSlideObserver(slides);
-    setAnalytics(slides, cards, container, el);
-    autoplayControllers.push(startAutoplay(slides, cards, container, el));
+    if (activeVp === activeVpName) return;
+    const outgoing = activeVpName ? controllersByVp.get(activeVpName) : null;
+    const carryIndex = outgoing?.getActive();
+    outgoing?.pause();
+    activeVpName = activeVp;
+
+    let controller = controllersByVp.get(activeVp);
+    if (!controller) {
+      const container = containers.find((c) => c.dataset.viewport === activeVp);
+      if (!container) return;
+      const slides = container.querySelectorAll('.rm-slide');
+      const cards = container.querySelector('.rm-cards');
+      setSlideObserver(slides);
+      setAnalytics(slides, cards, container, el);
+      // Gate autoplay on the hero's first frame only for the initial viewport (LCP);
+      // viewports created later on resize don't affect LCP, so start them right away.
+      controller = startAutoplay(slides, cards, container, el, controllersByVp.size === 0);
+      controllersByVp.set(activeVp, controller);
+    }
+    if (carryIndex != null) controller.syncTo(carryIndex);
+    controller.resume();
   };
 
   loadViewportVideos(el);
-  initViewportAutoplay();
+  syncViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
-  let resizeRaf;
+  // syncViewportAutoplay/loadViewportVideos stay un-debounced: getActiveViewport() is a
+  // cheap matchMedia check, and delaying the outgoing viewport's pause until resize settles
+  // would let its hidden video/timer keep running for the whole drag - the leak this fixes.
   window.addEventListener('resize', () => {
-    cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => {
-      dynamicLayoutUpdates(el);
-      loadViewportVideos(el);
-      initViewportAutoplay();
-    });
+    loadViewportVideos(el);
+    syncViewportAutoplay();
   });
+  window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {
     new IntersectionObserver(([entry]) => {
       const action = entry.isIntersecting ? 'pause' : 'resume';
       if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
-        autoplayControllers.forEach((ctrl) => ctrl[action]());
+        controllersByVp.get(activeVpName)?.[action]();
       }
     }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
   }
