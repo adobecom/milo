@@ -11,8 +11,9 @@
     "nala": "node nala/utils/nala.run.js",
     "a11y": "node nala/utils/nala.cli.js a11y",
     "libs": "aem up --port=6456",
-    "lint": "npm run lint:js && npm run lint:css",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:types",
     "lint:js": "eslint .",
+    "lint:types": "tsc -p tsconfig.types.json",
     "lint:js:nibble": "eslint-nibble .",
     "lint:css": "stylelint 'libs/blocks/**/*.css' 'libs/styles/*.css'",
     "build:htm-preact": "microbundle ./build/htm-preact.js -o ./libs/deps/htm-preact.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact.modern.mjs ./libs/deps/htm-preact.js",
@@ -67,6 +68,7 @@
     "eslint-plugin-ecmalist": "^1.0.8",
     "eslint-plugin-import": "2.25.4",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "js-yaml": "^4.1.1",
     "microbundle": "0.15.1",
     "playwright": "^1.44.1",
     "postcss": "^8.5.6",
@@ -75,6 +77,7 @@
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "25.0.0",
-    "tar": "^7.5.13"
+    "tar": "^7.5.13",
+    "typescript": "5.7"
   }
 }
