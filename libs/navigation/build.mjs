@@ -67,6 +67,23 @@ const LitResolver = {
   },
 };
 
+// mep-overlay modules are authoring/preview tools not needed in the standalone-feds bundle.
+// Stubbing them out prevents the raw relative import paths from appearing in the dist output,
+// which would cause bundlers (webpack, etc.) in consumer projects to fail resolution.
+const MepOverlayStub = {
+  name: 'mep-overlay-stub',
+  setup({ onResolve, onLoad }) {
+    onResolve({ filter: /mep-overlay/ }, (args) => ({
+      path: args.path,
+      namespace: 'mep-overlay-stub',
+    }));
+    onLoad({ filter: /.*/, namespace: 'mep-overlay-stub' }, () => ({
+      contents: 'export default function() {}',
+      loader: 'js',
+    }));
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -74,5 +91,5 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [LitResolver, StyleLoader],
+  plugins: [LitResolver, MepOverlayStub, StyleLoader],
 });
