@@ -2273,8 +2273,6 @@ const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => bloc
     if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   });
   if (!hasStyles) return null;
-  // Warm (don't apply) styles when running before MEP: applying the default block's
-  // stylesheet would override the styles of a block MEP redirects via useBlockCode.
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
   return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);

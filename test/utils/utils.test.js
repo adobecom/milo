@@ -120,8 +120,6 @@ describe('Utils', () => {
       document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
-      // css is warmed as a preload, never applied as a stylesheet -- applying the
-      // default block css pre-MEP would override a useBlockCode-redirected block
       expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
     });
@@ -133,9 +131,7 @@ describe('Utils', () => {
         <a href="https://mas.adobe.com/studio.html#content-type=mas-compare-chart">chart</a>
       </div></main>`;
       utils.preloadLcpCodeFiles();
-      // the whole point of the change: a normal autoblock still warms...
       expect(document.head.querySelector('link[href*="/libs/blocks/youtube/youtube.js"]')).to.exist;
-      // ...but the heavy commerce dependency chains never do
       expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
@@ -147,9 +143,7 @@ describe('Utils', () => {
         <div class="mas-compare-chart-autoblock"></div>
       </div></main>`;
       utils.preloadLcpCodeFiles();
-      // a normal authored block still warms...
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
-      // ...but authored commerce blocks are excluded like the autoblock ones
       expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
