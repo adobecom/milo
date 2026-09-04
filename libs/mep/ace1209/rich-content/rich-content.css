@@ -495,10 +495,13 @@
   gap: var(--s2a-spacing-lg);
   padding-block: calc(var(--rc-media-spacing-top, var(--s2a-spacing-4xl)) + var(--rc-pull-offset)) var(--rc-media-spacing-bottom, var(--s2a-spacing-4xl));
   overflow: clip;
-  --grid-margin-width: 0px; /* Keep unit for calc */
 
-  @media (width >= 768px) {
-    --grid-margin-width: var(--grid-margin-width-base);
+  &.full-width {
+    --grid-margin-width: 0px; /* Keep unit for calc */
+
+    @media (width >= 768px) {
+      --grid-margin-width: var(--grid-margin-width-base);
+    }
   }
 
   .action-area {
