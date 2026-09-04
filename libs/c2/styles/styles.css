@@ -1494,6 +1494,16 @@ span.hang-opening-quote {
       --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
     }
 
+    /* Once the promo bar has scrolled out (feds-header-scrolled), it no longer
+       offsets this section, so drop the var and move by the flat vh amount. */
+    body:has(header.feds-header-scrolled) & {
+      --parallax-move-up-to: -35vh;
+
+      @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+        --parallax-move-up-to: -50vh;
+      }
+    }
+
     &::after {
       content: '';
       position: absolute;

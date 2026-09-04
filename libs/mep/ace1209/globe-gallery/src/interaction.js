@@ -17,7 +17,7 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 export default function createInteraction({
   getRenderer, getCamera, getCards, openModal,
   getDragSensitivity, isGlobeLive, maxVel, drag,
-  getYawOnly,
+  getYawOnly, isCursorActive, onDrag,
 }) {
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
@@ -36,6 +36,7 @@ export default function createInteraction({
   // Per-gesture, so the axis lock still applies correctly on hybrids.
   let isTouchDrag = false;
   let axisLock = AXIS_UNDECIDED;
+  let dragMoved = false;
   let hoveringCard = false;
   let appliedCursor = null; // last value written to canvas.style.cursor
 
@@ -43,9 +44,10 @@ export default function createInteraction({
   function applyCursor() {
     if (!canvasEl) return;
     let want = '';
+    if (isCursorActive()) want = 'none';
     // A gesture already in flight keeps 'grabbing' until release: pointer capture outlives the
     // live gate, and the rotation it is still driving is real.
-    if (drag.isDragging) want = 'grabbing';
+    else if (drag.isDragging) want = 'grabbing';
     else if (isGlobeLive()) want = hoveringCard ? 'pointer' : 'grab';
     if (want === appliedCursor) return;
     appliedCursor = want;
@@ -139,6 +141,7 @@ export default function createInteraction({
     lastMoveT = pointerDownT;
     isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
     axisLock = AXIS_UNDECIDED;
+    dragMoved = false;
     applyCursor();
   }
 
@@ -148,6 +151,12 @@ export default function createInteraction({
     // Inert until the axis latches horizontal. lastMX/MY/lastMoveT are NOT advanced here, so
     // neither the travel nor the elapsed time is lost.
     if (isTouchDrag && axisLock !== AXIS_HORIZONTAL) return;
+    if (!dragMoved
+      && (Math.abs(e.clientX - pointerDownX) >= CLICK_MAX_MOVE
+        || Math.abs(e.clientY - pointerDownY) >= CLICK_MAX_MOVE)) {
+      dragMoved = true;
+      onDrag();
+    }
     const t = now();
     const sens = getDragSensitivity(); // rad/px, live off the viewport + band
     const dx = (e.clientX - lastMX) * sens;
@@ -245,11 +254,5 @@ export default function createInteraction({
     resetDrag();
   }
 
-  // True while an in-flight touch gesture is page scroll or undecided. Gated on isDragging —
-  // isTouchDrag persists after pointerup.
-  const isPageScrollGesture = () => drag.isDragging
-    && isTouchDrag
-    && axisLock !== AXIS_HORIZONTAL;
-
-  return { setup, teardown, isPageScrollGesture, applyCursor };
+  return { setup, teardown, applyCursor };
 }
