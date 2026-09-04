@@ -1786,17 +1786,16 @@ function normalizeBlockFieldWrappers(masField) {
   }
 }
 
-// Unwrapped inline prices still need merch.css, which the card would have loaded.
-// (Promo/id context rides on the elements themselves — mas-field stamps it.)
+// Inline prices need merch.css, which the card would otherwise have loaded.
 function ensureInlinePriceStyle(content) {
   if (content.querySelector('span[is="inline-price"]')) {
     loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
   }
 }
 
-// The unwrapped CTA is static markup and paints before the card's still-wrapped
-// price resolves, briefly sitting above it. Hold the action area until the
-// nearest ancestor's price mas-field is ready (reveal anyway after a timeout).
+// A CTA field and its card's price field resolve independently. Hold the CTA's
+// container until the price mas-field is ready so the CTA can't paint above an
+// unresolved price (reveal anyway after FIELD_TIMEOUT).
 export function holdCtaUntilPrice(container) {
   if (!container?.style) return;
   let scope = container.parentElement;
