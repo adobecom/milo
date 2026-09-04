@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
+  shouldAllowKrTrial, isKrFreeTrialMarket, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
@@ -1095,11 +1095,29 @@ export function setPreview(attributes) {
   }
 }
 
-function isAnnualPriceEnabled(params) {
-  const annualEnabled = getMetadata('mas-ff-annual-price');
-  if (annualEnabled === 'true' || annualEnabled === 'on') {
-    return params?.get('annual') !== 'false';
+/**
+ * Decides whether a price should render its annualized suffix.
+ *
+ * Annualized ABM pricing is a legal requirement for AU, so it must be automatic for AU-resolved
+ * visitors — not dependent on an authored flag. When `mas-geo-detection` is on (the global EN
+ * site serving all markets by geo-IP), the annualized display is driven purely by the visitor's
+ * validated market: on for AU, off for everyone else — so it can never leak to other markets
+ * (e.g. a US visitor seeing "US$69.99/mo (US$839.88/yr)"). `getValidatedMarket()` already
+ * applies supported-markets validation, so an AU-geo visitor on a page where AU isn't supported
+ * (e.g. /fr) resolves to a non-AU market and correctly gets no annualized suffix. When geo
+ * detection is off, behavior is unchanged: the page-wide `mas-ff-annual-price` flag (today's
+ * dedicated /au site).
+ * @see https://jira.corp.adobe.com/browse/MWPW-206524
+ */
+async function isAnnualPriceEnabled(params) {
+  if (params?.get('annual') === 'false') return false;
+  if (isMasGeoDetectionEnabled()) {
+    const { getValidatedMarket } = await import('../../utils/market.js');
+    const market = await getValidatedMarket();
+    return market?.toLowerCase() === 'au';
   }
+  const annualEnabled = getMetadata('mas-ff-annual-price');
+  if (annualEnabled === 'true' || annualEnabled === 'on') return true;
   return undefined;
 }
 
@@ -1209,7 +1227,7 @@ export async function initService(force = false, attributes = {}) {
         }
         if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
-      if (isAnnualPriceEnabled()) {
+      if (await isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
       return service;
@@ -1386,7 +1404,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = isAnnualPriceEnabled(params);
+  const displayAnnual = await isAnnualPriceEnabled(params);
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   const quantity = params.get('quantity');
@@ -1540,7 +1558,7 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
   const localePrefix = getConfig()?.locale?.prefix;
-  if (localePrefix === '/kr') {
+  if (isKrFreeTrialMarket(localePrefix)) {
     const hasAllowKrTrial = shouldAllowKrTrial(el, localePrefix);
     const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
     const elAlreadyHasAllow = el.getAttribute('data-allow-kr-free-trial') === 'true';

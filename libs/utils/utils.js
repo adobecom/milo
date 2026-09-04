@@ -590,6 +590,23 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+export function isMasGeoDetectionEnabled() {
+  const val = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
+  return ['on', 'true'].includes(val?.toLowerCase());
+}
+
+/**
+ * True when KR free-trial suppression should apply: the dedicated /kr site (path-based, as
+ * today), or a geo-resolved KR visitor on a geo-detection page (the global EN site serving KR
+ * via geo-IP). Reads the validated market cached by resolveGeoMarket(); when that hasn't
+ * resolved it falls back to path-only, so there is no regression on non-geo pages.
+ * @see https://jira.corp.adobe.com/browse/MWPW-206525
+ */
+export function isKrFreeTrialMarket(localePrefix = getConfig()?.locale?.prefix) {
+  if (localePrefix === '/kr') return true;
+  return isMasGeoDetectionEnabled() && getConfig()?.geoMarket === 'kr';
+}
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -604,7 +621,7 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
   }
-  return localePrefix === '/kr' && hasAllowKrTrial;
+  return isKrFreeTrialMarket(localePrefix) && hasAllowKrTrial;
 };
 
 /**
@@ -619,7 +636,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
   if (hasAllowKrTrialMeta
     || hasAllowAttribute
     || shouldAllowKrTrial(link, localePrefix)
-    || localePrefix !== '/kr'
+    || !isKrFreeTrialMarket(localePrefix)
     || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
@@ -2682,13 +2699,28 @@ export async function decorateLanguageBanner() {
   }
 }
 
+/**
+ * Resolves the visitor's geo-validated market once per page and caches it on config, so the
+ * synchronous KR free-trial helpers (and merch commerce suppression) can read it without each
+ * becoming async or re-resolving. No-op — leaves config.geoMarket undefined — when geo
+ * detection is off, so path-based behavior on dedicated market sites (e.g. /kr) is unchanged.
+ * @see https://jira.corp.adobe.com/browse/MWPW-206525
+ */
+export async function resolveGeoMarket() {
+  const config = getConfig();
+  if (config.geoMarket !== undefined) return config.geoMarket;
+  if (!isMasGeoDetectionEnabled()) return undefined;
+  const { getValidatedMarket } = await import('./market.js');
+  const market = await getValidatedMarket();
+  config.geoMarket = market ? market.toLowerCase() : null;
+  return config.geoMarket;
+}
+
 export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
-  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
-  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled()) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
@@ -2980,6 +3012,9 @@ export async function loadArea(area = document) {
   }
 
   if (isDoc) {
+    // Resolve the geo-validated market before gnav/footer/sections decorate so the KR
+    // free-trial suppression (MWPW-206525) can read it synchronously. No-op when geo off.
+    await resolveGeoMarket();
     await decorateDocumentExtras();
     initModalEventListener();
   }
