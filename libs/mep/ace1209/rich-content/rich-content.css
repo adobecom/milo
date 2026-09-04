@@ -220,6 +220,10 @@
   &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
     .foreground {
       animation-range: cover -10% cover 90%;
+
+      p.body-lg a {
+        scroll-margin-bottom: calc(100vh - 200px);
+      }
     }
   }
 
