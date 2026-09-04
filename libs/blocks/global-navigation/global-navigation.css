@@ -600,6 +600,11 @@ header.global-navigation.is-compact .feds-navItem--active > .feds-navLink {
   font-weight: 400;
 }
 
+header.global-navigation.is-compact .feds-navItem--section:only-of-type {
+  border-left: none;
+  border-right: none;
+}
+
 header.global-navigation.is-compact .feds-navItem--active > .feds-navLink::before {
   display: none;
 }
