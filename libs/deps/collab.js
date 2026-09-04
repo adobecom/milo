@@ -1129,9 +1129,9 @@
     if (!imageWandEl || !imageHoverTarget) return;
     const block = findCommentableElement(imageHoverTarget) || imageHoverTarget;
     const rect = block.getBoundingClientRect();
-    const top = Math.max(8, rect.top) - 14;
+    const top = Math.max(8, rect.top) + 8;
     imageWandEl.style.top  = `${top}px`;
-    imageWandEl.style.left = `${rect.left + rect.width / 2 - 14}px`;
+    imageWandEl.style.left = `${rect.right - 44}px`;
   }
 
   function openImageHover(imgContainer) {
