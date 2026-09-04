@@ -1868,9 +1868,23 @@ function decorateInlineCtas(masField, content) {
     });
   }
 
-  // masField is removed from the DOM here; hand callers the hoisted anchor instead.
+  // Keep mas-field in the DOM as the CTA's ancestor instead of unwrapping it, so its
+  // promo/id context survives by structure (mas-field is display:contents, so it adds no
+  // box). Re-nest it to wrap the authored em/strong (mas-field > em > a) so decorateButtons
+  // still matches 'em a'/'strong a' with the em/strong as the anchor's direct parent.
   const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
-  masField.replaceWith(...content.childNodes);
+  let outer = masField;
+  while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
+    && hasOnlyTargetContent(outer.parentElement, outer)) {
+    outer = outer.parentElement;
+  }
+  if (outer === masField) {
+    masField.replaceChildren(...content.childNodes);
+  } else {
+    masField.replaceWith(...content.childNodes);
+    outer.replaceWith(masField);
+    masField.append(outer);
+  }
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
   if (container && !pendingCTAs?.length) {

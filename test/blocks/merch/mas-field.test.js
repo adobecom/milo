@@ -287,8 +287,9 @@ describe('mas-field', () => {
 
       await init(a);
 
-      expect(document.querySelector('mas-field')).to.not.exist;
-      const link = p.querySelector('a.con-button');
+      const masField = p.querySelector('mas-field');
+      expect(masField).to.exist;
+      const link = masField.querySelector('a.con-button');
       expect(link).to.exist;
       expect(link.classList.contains('blue')).to.be.true;
       expect(link.classList.contains('button-l')).to.be.true;
@@ -311,8 +312,9 @@ describe('mas-field', () => {
 
       await init(a);
 
-      expect(document.querySelector('mas-field')).to.not.exist;
-      const price = p.querySelector('span[is="inline-price"]');
+      const masField = p.querySelector('mas-field');
+      expect(masField).to.exist;
+      const price = masField.querySelector('span[is="inline-price"]');
       expect(price).to.exist;
       expect(price.getAttribute('data-promotion-code')).to.equal('PROMO26');
     });
@@ -329,8 +331,9 @@ describe('mas-field', () => {
 
       await init(a);
 
-      expect(document.querySelector('mas-field')).to.not.exist;
-      const cta = section.querySelector('a[is="checkout-link"]');
+      const masField = section.querySelector('mas-field');
+      expect(masField).to.exist;
+      const cta = masField.querySelector('a[is="checkout-link"]');
       expect(cta).to.exist;
       expect(cta.getAttribute('data-promotion-code')).to.equal('PROMO26');
     });
@@ -398,8 +401,9 @@ describe('mas-field', () => {
 
       await init(a);
 
-      expect(document.querySelector('mas-field')).to.not.exist;
-      const link = p.querySelector('a.con-button.blue.button-xl');
+      const masField = p.querySelector('mas-field');
+      expect(masField).to.exist;
+      const link = masField.querySelector('a.con-button.blue.button-xl');
       expect(link).to.exist;
     });
 
@@ -424,8 +428,9 @@ describe('mas-field', () => {
 
       await init(a);
 
-      expect(document.querySelector('mas-field')).to.not.exist;
-      const link = p.querySelector('a.con-button');
+      const masField = p.querySelector('mas-field');
+      expect(masField).to.exist;
+      const link = masField.querySelector('a.con-button');
       expect(link).to.exist;
       expect(link.classList.contains('button-xl')).to.be.true;
       expect(link.classList.contains('button-justified-mobile')).to.be.true;
@@ -455,8 +460,8 @@ describe('mas-field', () => {
       });
       await new Promise((resolve) => { setTimeout(resolve, 0); });
 
-      expect(p.querySelectorAll('mas-field').length).to.equal(0);
-      const links = [...p.querySelectorAll('a.con-button')];
+      expect(p.querySelectorAll('mas-field').length).to.equal(2);
+      const links = [...p.querySelectorAll('mas-field a.con-button')];
       expect(links.length).to.equal(2);
       links.forEach((link) => expect(link.classList.contains('button-xl')).to.be.true);
     });
@@ -484,8 +489,8 @@ describe('mas-field', () => {
       );
       await new Promise((resolve) => { setTimeout(resolve, 0); });
 
-      expect(p.querySelectorAll('mas-field').length).to.equal(0);
-      const link = p.querySelector('a[data-wcs-osi]');
+      expect(p.querySelectorAll('mas-field').length).to.equal(1);
+      const link = p.querySelector('mas-field a[data-wcs-osi]');
       expect(link, 'CTA anchor should be hoisted').to.exist;
       expect(link.outerHTML).to.include('is="checkout-link"');
       expect(link.classList.contains('con-button')).to.be.true;
@@ -519,10 +524,10 @@ describe('mas-field', () => {
 
       await Promise.all([init(a1), init(a2)]);
 
-      expect(document.querySelectorAll('mas-field').length).to.equal(0);
+      expect(document.querySelectorAll('mas-field').length).to.equal(2);
       // Both CTAs should be decorated — outline for em, blue for strong
-      const outline = p.querySelector('a.con-button.outline');
-      const blue = p.querySelector('a.con-button.blue');
+      const outline = p.querySelector('mas-field a.con-button.outline');
+      const blue = p.querySelector('mas-field a.con-button.blue');
       expect(outline).to.exist;
       expect(blue).to.exist;
       expect(outline.classList.contains('button-l')).to.be.true;
