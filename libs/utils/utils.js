@@ -2275,6 +2275,17 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config) => {
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
   const [firstSection] = area.querySelectorAll('body > main > div');
@@ -2303,6 +2314,11 @@ export function preloadLcpCodeFiles(area = document) {
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
+  }
+
+  if (lingoActive()) {
+    const geoIpInLcp = /-geo-ip(}}|%7D%7D)/.test(firstSection.innerHTML);
+    if (geoIpInLcp || getMepEnablement('geo-ip-lcp')) warmGeoIpSheet(config);
   }
 
   const icons = [...firstSection.querySelectorAll('span.icon')];
@@ -2975,17 +2991,6 @@ function loadLingoIndexes(area = document) {
     }
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
-
-export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
-
-const geoIpWarm = {};
-export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
-const warmGeoIpSheet = (config) => {
-  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
-  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
-    .then((r) => (r?.ok ? r.json() : null))
-    .catch(() => null);
-};
 
 export async function loadArea(area = document) {
   const isDoc = area === document;

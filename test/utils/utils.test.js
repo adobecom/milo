@@ -165,6 +165,26 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
     });
 
+    const geoIpUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    it('warms the geo-ip sheet when lingo is active and the LCP has a -geo-ip token', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-pos' });
+      document.head.innerHTML = '<meta name="langfirst" content="on">';
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'geo-ip sheet warmed').to.exist;
+    });
+
+    it('does not warm the geo-ip sheet when lingo is inactive', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-neg' });
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no geo-ip warm without lingo').to.be.undefined;
+    });
+
     it('does nothing when there is no first section', () => {
       document.body.innerHTML = '<header></header>';
       utils.preloadLcpCodeFiles();
