@@ -1809,8 +1809,7 @@ export function holdCtaUntilPrice(container) {
   if (!price?.checkReady) return;
   container.style.visibility = 'hidden';
   const reveal = () => { container.style.visibility = ''; };
-  const timer = setTimeout(reveal, 3000);
-  price.checkReady().catch(() => {}).then(() => { clearTimeout(timer); reveal(); });
+  withTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
 /**
