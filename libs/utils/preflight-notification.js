@@ -1,6 +1,47 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
+import loadC2Tokens from '../blocks/preflight/c2-tokens.js';
 import { loadStyle, getConfig } from './utils.js';
+
+const PENDING_FRAGMENT_WAIT_MS = 2000;
+
+export async function autoHighlightUnpublished() {
+  const root = document.querySelector('main');
+  if (!root) return;
+  try {
+    const url = new URL(window.location.href);
+    const [
+      { default: fetchVersions },
+      { default: computeDiff },
+      { default: collectFragmentChanges, hasPendingFragments },
+    ] = await Promise.all([
+      import('../blocks/preflight/checks/diff/fetchVersions.js'),
+      import('../blocks/preflight/checks/diff/computeDiff.js'),
+      import('../blocks/preflight/checks/diff/fragments.js'),
+    ]);
+    const page = computeDiff(await fetchVersions(url)).content;
+    if (hasPendingFragments(root)) {
+      await new Promise((res) => { setTimeout(res, PENDING_FRAGMENT_WAIT_MS); });
+    }
+    const fragments = await collectFragmentChanges(root, url);
+    const content = {
+      added: [...(page?.added || []), ...fragments.added],
+      modified: [...(page?.modified || []), ...fragments.modified],
+    };
+    if (!content.added.length && !content.modified.length) return;
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    await Promise.all([
+      new Promise((res) => { loadStyle(`${base}/blocks/preflight/panels/diff-onpage.css`, res); }),
+      loadC2Tokens(base),
+    ]);
+    const { autoHighlightOnPage } = await import('../blocks/preflight/panels/diff-onpage.js');
+    const cleanup = autoHighlightOnPage(content, root);
+    if (cleanup) window.addEventListener('popstate', cleanup, { once: true });
+  } catch (e) {
+    window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
+  }
+}
 
 let wasDismissed = false;
 let sidekickObserver;

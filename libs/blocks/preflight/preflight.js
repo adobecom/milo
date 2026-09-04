@@ -1,5 +1,5 @@
 import { html, render, signal } from '../../deps/htm-preact.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { getPreflightResults } from './checks/preflightApi.js';
 import { runChecks as runLocalizationChecks } from './checks/localization.js';
 import { SEVERITY } from './checks/constants.js';
@@ -10,13 +10,11 @@ import Martech from './panels/martech.js';
 import Merch from './panels/merch.js';
 import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
+import loadC2Tokens from './c2-tokens.js';
 
 const HEADING = 'Milo Preflight';
 const SUBHEADING = 'Pre-publish quality checks for this page';
 const IMG_PATH = '/blocks/preflight/img';
-// c2 (--s2a-*) design tokens are only defined on c2 pages; preflight runs on every Milo
-// page, so load them at :root so both the modal and the page-injected overlays resolve.
-const C2_TOKENS = ['tokens.primitives.css', 'tokens.primitives.light.css', 'tokens.semantic.light.css'];
 
 const svg = (paths) => html`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
@@ -214,7 +212,7 @@ export function Preflight() {
 function loadAssets() {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-  C2_TOKENS.forEach((file) => loadStyle(`${base}/c2/styles/deps/${file}`));
+  loadC2Tokens(base);
   // Preload the icons used as CSS masks across the panels.
   const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
   const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
