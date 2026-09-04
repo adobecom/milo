@@ -2203,6 +2203,137 @@ export function loadMepAddons() {
   return promises;
 }
 
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+/**
+ * Validates the maslibs URL parameter and returns the MAS base URL.
+ * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
+ * the resulting host always stays under aem.live (VULN-36379).
+ * @param {string} masLibs raw maslibs parameter value
+ * @returns {string|null} base URL, or null if the value is missing or invalid
+ */
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
+  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
+  return `${baseUrl}/web-components/dist/${component}`;
+}
+
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+  ],
+  merch: [
+    getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
+const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
+  if (block.classList.contains('hide-block')) return null;
+  const { blockPath, hasStyles, name } = getBlockData(block);
+  if (['marquee', 'hero-marquee'].includes(name)) {
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
+  if (!hasStyles) return null;
+  if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
+  return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+}).filter(Boolean);
+
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config, section, isDoc = true) => {
+  if (!lingoActive()) return;
+  const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
+  if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
+export function preloadLcpCodeFiles(area = document) {
+  if (getMetadata('disable-mep-perf-optimization') === 'on') return;
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
+  const config = getConfig();
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    let url;
+    try { url = new URL(a.href); } catch (e) { return; }
+    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+    if (!match) return;
+    const name = Object.keys(match)[0];
+    if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    autoNames.add(name);
+  });
+  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+    autoNames.add('video');
+  }
+  const isCommerceBlock = (name) => /merch|^mas-/.test(name);
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+    .filter((el) => !isCommerceBlock(el.classList[0]));
+  const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
+  const allBlocks = [...blocks, ...autoBlockEls];
+  if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
+
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
+  }
+
+  warmGeoIpSheet(config, firstSection);
+
+  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const willDecorateIcons = icons.length && (!iconsExcludeBlocks
+    || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
+  if (willDecorateIcons) {
+    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    loadLink(`${base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
+  }
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -2214,6 +2345,7 @@ async function checkForPageMods() {
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
+  preloadLcpCodeFiles();
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
@@ -2794,78 +2926,6 @@ export function getValidatedSharePointSite(site) {
   return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
 }
 
-const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
-const MASLIBS_MAX_LENGTH = 100;
-
-/**
- * Validates the maslibs URL parameter and returns the MAS base URL.
- * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
- * the resulting host always stays under aem.live (VULN-36379).
- * @param {string} masLibs raw maslibs parameter value
- * @returns {string|null} base URL, or null if the value is missing or invalid
- */
-export function getValidatedMasLibsUrl(masLibs) {
-  if (!masLibs || masLibs.trim() === '') return null;
-  const value = masLibs.trim().toLowerCase();
-  if (value === 'local') return 'http://localhost:3000';
-  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
-  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
-  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
-  let url;
-  try {
-    url = new URL(`https://${branch}.aem.live`);
-  } catch {
-    // stricter URL parsers (e.g. Node) reject invalid punycode labels
-    return null;
-  }
-  if (!url.hostname.endsWith('.aem.live')) return null;
-  return url.origin;
-}
-
-function getMasDepUrl(component) {
-  const { hostname } = window.location;
-  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
-
-  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
-  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
-  return `${baseUrl}/web-components/dist/${component}`;
-}
-
-const STATIC_BLOCK_DEPS = {
-  'merch-card-autoblock': [
-    getMasDepUrl('lit-all.min.js'),
-    getMasDepUrl('merch-card.js'),
-    getMasDepUrl('merch-quantity-select.js'),
-  ],
-  merch: [
-    getMasDepUrl('commerce.js'),
-    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
-  ],
-};
-
-const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
-
-export function registerBlockDeps(blockName, ...deps) {
-  blockDeps.set(blockName, deps);
-}
-
-const preloadBlockResources = (blocks = []) => blocks.map((block) => {
-  if (block.classList.contains('hide-block')) return null;
-  const { blockPath, hasStyles, name } = getBlockData(block);
-  if (['marquee', 'hero-marquee'].includes(name)) {
-    const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
-    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
-  }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  (blockDeps.get(name) ?? []).forEach((dep) => {
-    const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  });
-  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
-}).filter(Boolean);
-
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
   if (!anchors.length) return false;
@@ -2937,17 +2997,6 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
-export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
-
-const geoIpWarm = {};
-export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
-const warmGeoIpSheet = (config) => {
-  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
-  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
-    .then((r) => (r?.ok ? r.json() : null))
-    .catch(() => null);
-};
-
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2974,10 +3023,7 @@ export async function loadArea(area = document) {
 
   if (isLingoActive) loadLingoIndexes(area);
 
-  if (isLingoActive) {
-    const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(htmlSections[0]?.innerHTML ?? '');
-    if (tokenInLcp || (isDoc && getMepEnablement('geo-ip-lcp'))) warmGeoIpSheet(config);
-  }
+  warmGeoIpSheet(config, htmlSections[0], isDoc);
 
   if (isDoc) {
     await decorateDocumentExtras();
