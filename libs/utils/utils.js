@@ -2326,6 +2326,7 @@ export function preloadLcpCodeFiles(area = document) {
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
     loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    loadLink(`${base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
   }
 }
 

@@ -159,10 +159,11 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
     });
 
-    it('warms icons.js when the first section contains icons', () => {
+    it('warms icons.js and icons.css when the first section contains icons', () => {
       document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/features/icons/icons.css"]')).to.exist;
     });
 
     const geoIpUrl = () => {
@@ -1602,7 +1603,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when some icons are not excluded
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -1628,7 +1629,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when no exclusion config
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
