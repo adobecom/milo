@@ -2279,7 +2279,10 @@ export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').r
 
 const geoIpWarm = {};
 export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
-const warmGeoIpSheet = (config) => {
+const warmGeoIpSheet = (config, section, isDoc = true) => {
+  if (!lingoActive()) return;
+  const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
+  if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
   const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
   geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
     .then((r) => (r?.ok ? r.json() : null))
@@ -2316,10 +2319,7 @@ export function preloadLcpCodeFiles(area = document) {
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
   }
 
-  if (lingoActive()) {
-    const geoIpInLcp = /-geo-ip(}}|%7D%7D)/.test(firstSection.innerHTML);
-    if (geoIpInLcp || getMepEnablement('geo-ip-lcp')) warmGeoIpSheet(config);
-  }
+  warmGeoIpSheet(config, firstSection);
 
   const icons = [...firstSection.querySelectorAll('span.icon')];
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
@@ -3018,10 +3018,7 @@ export async function loadArea(area = document) {
 
   if (isLingoActive) loadLingoIndexes(area);
 
-  if (isLingoActive) {
-    const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(htmlSections[0]?.innerHTML ?? '');
-    if (tokenInLcp || (isDoc && getMepEnablement('geo-ip-lcp'))) warmGeoIpSheet(config);
-  }
+  warmGeoIpSheet(config, htmlSections[0], isDoc);
 
   if (isDoc) {
     await decorateDocumentExtras();
