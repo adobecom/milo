@@ -683,7 +683,7 @@ class Footer {
       </div>
     </div>`;
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Footer logo" />
+        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Adobe" />
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
