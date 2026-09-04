@@ -123,16 +123,47 @@ function goToActive(carouselEls) {
   wrapper._timeout = null;
 }
 
+function createSlideClone(slide) {
+  const clone = slide.cloneNode(true);
+  clone.setAttribute('data-cloned', 'true');
+  clone.removeAttribute('data-index');
+  clone.classList.remove('active');
+  clone.style.removeProperty('--slide-spread-sign');
+  return clone;
+}
+
+function expectsBackground(source) {
+  return [...source.querySelectorAll(':scope > .section-metadata > div > div:first-child')]
+    .some((key) => key.textContent.trim().toLowerCase() === 'background');
+}
+
+function syncHintClone(source, clone) {
+  if (source.querySelector('.section-background') || !expectsBackground(source)) return;
+  const observer = new MutationObserver(() => {
+    if (!source.querySelector('.section-background')) return;
+    observer.disconnect();
+    if (!clone.parentNode) return;
+    const fresh = createSlideClone(source);
+    fresh.style.setProperty('--slide-spread-sign', clone.style.getPropertyValue('--slide-spread-sign'));
+    clone.replaceWith(fresh);
+  });
+  observer.observe(source, { childList: true });
+}
+
+function fillHintSlides(wrapper, slides) {
+  while (slides.length && wrapper.children.length < 3) {
+    const source = slides[wrapper.children.length % slides.length];
+    const clone = createSlideClone(source);
+    clone.querySelectorAll('img').forEach((img) => img.setAttribute('loading', 'eager'));
+    wrapper.append(clone);
+    syncHintClone(source, clone);
+  }
+}
+
 function cloneSlides(carouselEls) {
   const { wrapper, slides, activeSlide } = carouselEls;
-  const cloneBack = slides.slice(0, 3).map((slide) => slide.cloneNode(true));
-  const cloneFront = slides.slice(-3).map((slide) => slide.cloneNode(true));
-  [...cloneFront, ...cloneBack].forEach((slide) => {
-    slide.setAttribute('data-cloned', 'true');
-    slide.removeAttribute('data-index');
-    slide.style.removeProperty('--slide-spread-sign');
-    slide.classList.remove('active');
-  });
+  const cloneBack = slides.slice(0, 3).map(createSlideClone);
+  const cloneFront = slides.slice(-3).map(createSlideClone);
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
   allSlides.forEach((slide) => {
     slide.querySelectorAll('img').forEach((img) => {
@@ -354,12 +385,13 @@ export default function init(el) {
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
-  setSlideSpreadSign(slides[1], slides);
   indicatorsContainer.children[0]?.classList.add('active');
   indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
 
   el.textContent = '';
   wrapper.append(...slides);
+  fillHintSlides(wrapper, slides);
+  setSlideSpreadSign(slides[1], [...wrapper.children]);
   const [prevBtn, nextBtn] = decorateNavigation();
   el.append(ariaLive, prevBtn, wrapper, nextBtn, indicatorsContainer);
 
@@ -376,6 +408,6 @@ export default function init(el) {
     activeSlide: slides[1],
   };
 
-  setAriaHiddenAndTabIndex(slides, slides[1]);
+  setAriaHiddenAndTabIndex([...wrapper.children], slides[1]);
   attachListeners(carouselEls);
 }
