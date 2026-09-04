@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  safeGetItem,
+  safeSetItem,
   toSlug,
   getPageId,
   getManifestList,
@@ -31,6 +33,20 @@ import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
 const domParser = new DOMParser();
+
+const ALIGN_STORAGE_KEY = 'mep-align-left';
+
+function getStoredAlignLeft() {
+  return safeGetItem(ALIGN_STORAGE_KEY) === 'true';
+}
+
+function setStoredAlignLeft(alignLeft) {
+  safeSetItem(ALIGN_STORAGE_KEY, String(alignLeft));
+}
+
+function applyStoredAlignment() {
+  document.body.classList.toggle(ALIGN_STORAGE_KEY, getStoredAlignLeft());
+}
 
 const CARD_DATA = {
   actions: [
@@ -148,7 +164,7 @@ function toggleExpandedCard(cardEl) {
   const isExpanded = cardEl.classList.toggle('expanded');
   const expanded = getExpandedCards();
   expanded[isExpanded ? 'add' : 'delete'](key);
-  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+  safeSetItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
 function buildManifestCard(manifest) {
@@ -441,21 +457,33 @@ function checkAuthAndBuild(pageId) {
 
     const cards = buildActionsContent(pageId);
     contentEl.replaceChildren(...cards);
-    drawerEl.appendChild(buildFooter());
+    const footerEl = buildFooter();
+    const activeTab = drawerEl.querySelector('.mep-tab.active');
+    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+    drawerEl.appendChild(footerEl);
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
   });
 }
 
+function buildAlignToggle() {
+  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', title: 'Move to other side', 'aria-label': 'Move to other side' });
+  btn.appendChild(svgIcon('icon-swap-horiz'));
+  return btn;
+}
+
 function buildDrawer(gnavOffset, pageId) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
+  const alignToggleBtn = buildAlignToggle();
+
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [alignToggleBtn, closeBtn]);
+  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, actionsEl]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
   const children = [headerEl, bodyEl];
@@ -526,12 +554,18 @@ function setEventListeners() {
   const drawerEl = document.querySelector('#mep-drawer');
 
   drawerEl.addEventListener('click', (event) => {
+    if (event.target.closest('.mep-align-toggle')) {
+      const alignLeft = document.body.classList.toggle(ALIGN_STORAGE_KEY);
+      setStoredAlignLeft(alignLeft);
+      return;
+    }
     const tab = event.target.closest('.mep-tab');
     if (tab) {
       const tabIndex = tab.getAttribute('data-tab');
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
       });
+      drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
     const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
@@ -625,6 +659,7 @@ async function buildOverlay() {
 }
 
 export default async function init() {
+  applyStoredAlignment();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();

@@ -34,7 +34,7 @@
     left: 0;
     z-index: 20;
     width: var(--text-block-width-mobile);
-    text-align: left;
+    text-align: start;
     will-change: transform, opacity;
 
     .heading {
@@ -146,6 +146,9 @@
     position: absolute;
     inset: 10px;
     display: none;
+
+    /* Product mockup UI has no separate layout for RTL */
+    direction: ltr;
     flex-direction: row-reverse;
     align-items: flex-end;
     overflow: hidden;
@@ -458,7 +461,7 @@
       }
 
       .text-block {
-        margin-left: auto;
+        margin-inline-start: auto;
       }
     }
   }

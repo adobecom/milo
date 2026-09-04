@@ -1,0 +1,2200 @@
+import * as THREE from './three.module.min.js';
+import {
+  parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
+  optimizeImgUrl, layoutQuote, scatterCards,
+} from './src/authoring.js';
+import {
+  createCardMaterial, createTextMaterial, createPlaceholderTexture,
+  loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
+  loadHintFont,
+} from './src/materials.js';
+import createGalleryA11y from './src/a11y.js';
+import createGlobeModal from './src/modal.js';
+import createInteraction from './src/interaction.js';
+import createGlobeControls from './src/controls.js';
+import createCursor from './src/cursor.js';
+import {
+  easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, clamp01, coverFit,
+  buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
+} from './src/math.js';
+import * as TL from './src/timeline.js';
+
+const CARD_ASPECT = 456 / 631;
+
+function sphereCardScale(srcAspect) {
+  const a = Number.isFinite(srcAspect) && srcAspect > 0 ? srcAspect : CARD_ASPECT;
+  const stretch = Math.sqrt(a / CARD_ASPECT);
+  return { sX: stretch, sY: 1 / stretch };
+}
+
+const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  || !!window.matchMedia?.('(height <= 460px) and (resolution >= 1.5dppx)').matches;
+
+const BREAKPOINTS = {
+  sm: {
+    minWidth: 0,
+    ARC_SPAN: 3.6,
+    SPHERE_R: 18,
+    CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
+    CARD_W_ARC: 220,
+    CAM_Z_SPHERE: 70,
+    CAM_Z_END: -60,
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.5,
+    GRID_WINDOW_COLS: 3,
+    GRID_ROWS: 8,
+    CARD_FACE_CAMERA: 0,
+    CARD_ROLL_JITTER: 0.18,
+    ARC_DENSE_FRACTION: 0.5,
+    CYL_COLS_FIT: 0.65,
+    DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.55,
+    ARC_RAMP_T: 0.20,
+  },
+  md: {
+    minWidth: 768,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 10.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 57,
+    CAM_Z_END: -60,
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.6,
+    GRID_WINDOW_COLS: 9,
+    GRID_ROWS: 5,
+    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
+    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
+    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
+    ENTRY_LEAD_VH: 0.5,
+    ARC_RAMP_T: 0.1,
+  },
+};
+
+function resolveBP(w) {
+  if (w >= BREAKPOINTS.md.minWidth) return { name: 'md', cfg: BREAKPOINTS.md };
+  return { name: 'sm', cfg: BREAKPOINTS.sm };
+}
+
+// Card caps are on texture HEIGHT; modal caps are on the longest side.
+const CARD_TEX_SM = 256;
+const CARD_TEX_MD = 768;
+const MODAL_TEX_SM = 768;
+const MODAL_TEX_MD = 2048;
+const ANTIALIAS_SM = false;
+const ANTIALIAS_MD = true;
+
+// Yaw-only drags (touch / narrow): a cylindrical masonry wall replaces the Fibonacci sphere.
+const YAW_ONLY_GEOMETRY = {
+  CYLINDER: true,
+  CYL_COLS_FIT: 0.80, // wall-height dial: fewest columns whose tallest fits this × frustum
+  CYL_COL_GAP_RATIO: 0.20, // column gap as a fraction of card width; also sets cardW
+  CYL_ROW_GAP_RATIO: 0.10, // row gap as a fraction of card width
+  CYL_ASPECT_CAP: 1.9, // on the LAID-OUT aspect; past it the fit crops
+  CYL_BULGE: 0.18, // r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
+  CARD_FACE_CAMERA: 0.1, // >0 costs barrel smoothness
+};
+
+function usesCylinderGeometry(bandName) {
+  if (bandName === 'sm') return true;
+  return !!window.matchMedia?.('(pointer: coarse)').matches;
+}
+
+const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
+
+const TEXT_REBUILD_DEBOUNCE_MS = 150;
+
+const PQ_REVEAL_IN_MS = 700;
+const PQ_REVEAL_OUT_MS = 225;
+
+// Shares of the reveal window; horizontals lead verticals.
+const PQ_DRAW_H_SPAN = 0.82;
+const PQ_DRAW_V_START = 0.26;
+const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
+const PQ_COPY_KEYS = ['q', 'n', 'r'];
+const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
+
+const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
+const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
+
+// Every *_RATE / FRICTION / SPEED below is authored per 60fps frame and rescaled at its use site
+// by frame.dtScale: linear ones by multiply, exponential eases by ** dtScale. MAX_VEL is shared
+// with interaction.js (it clamps, core normalizes).
+const DRAG_FRICTION = 0.94;
+const MAX_VEL = 0.08; // rad per 60fps frame; ceiling on a flick AND a held step
+const DRAG_CATCHUP = 0.5; // share of an over-max backlog worked off per 60fps frame
+const AUTO_ROT_SPEED = 0.0005; // ambient yaw RATE per 60fps frame (NOT an increment into velX)
+// Browse-only pitch cap; excess eases back to the resting cap at PITCH_RELAX.
+const KEY_PITCH_CAP = (85 * Math.PI) / 180;
+const PITCH_RELAX = 0.85;
+// Sphere-centring tween lengths, in 60fps frames (navNudge.frame advances by dtScale).
+const KEY_BROWSE_FRAMES = 90;
+const KEY_MODAL_FRAMES = 20;
+const ROTATE_STEP_FRAMES = 34;
+const ROTATE_DEADZONE = 0.15;
+const COLUMN_EPS = 1e-6;
+
+// Chromatic aberration.
+const CA_ENABLED = true;
+const CA_STRENGTH = 0.01; // radial UV shift per channel
+const CA_MOTION_CAP_SM = 0.01; // directional UV shift max
+const CA_MOTION_CAP_MD = 0.03;
+const SCROLL_VEL_MAX = 18; // px/frame scroll speed that saturates the motion trail
+const HOVER_CA = 0.0125;
+const SPHERE_DRAG_CA_MUL = 0.2; // uCA per unit of sphereDragWarp
+const TEXT_CA_WARP_MUL = 0.75;
+
+// Hover (sphere phase only).
+const HOVER_WARP = 0.4;
+const HOVER_SCALE = 0.25; // added, not replacing: 1.0 → 1.25
+const HOVER_RATE = 0.15; // per-frame lerp toward target
+
+// Per-card un-dissolve once its photo lands.
+const REVEAL_RATE = 0.06; // per-frame
+// One-time sm-barrel reflow after all textures load.
+const MASONRY_MORPH_RATE = 0.05; // per-frame
+
+// Near-camera proximity fade, in card-heights of depth.
+const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-out band
+const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
+// Near-camera fade. The BAND is per breakpoint (bp.NEAR_FADE_START/END, in mean card-heights of
+// camera depth) — sm cards are far larger against the viewport, so the two can want a different
+// feel. The RAMP SHAPE below is shared: it is how the band is spent, not how wide it is.
+const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
+const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
+
+const CARD_ORDER_STEPS = 1000;
+const CARD_ORDER_HANDOVER_T = 0.5;
+const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
+const HOVER_ORDER_STEPS = 7;
+const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
+
+const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
+const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed
+const SPHERE_DRAG_WARP_MAX = 0.25; // cap on the combined value
+const SPHERE_DRAG_WARP_EASE = 0.20; // per-frame ease toward the target
+
+// "Click & Drag" hint text: a WebGL plane behind the sphere.
+const TEXT_BEHIND_GAP = 15; // world units behind the sphere back surface
+const TEXT_WARP_ENTER_MAX = 4.50;
+const TEXT_OPACITY_PEAK = 0.15;
+const TEXT_OPACITY_RESTING = 0.06;
+const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
+const HINT_EXIT_RATE = 0.007;
+
+const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const BALANCE_PASSES = 20;
+
+function balanceColumns(heights, gap, cols) {
+  const n = heights.length;
+  const load = new Array(cols).fill(0);
+  const col = new Array(n);
+  const tallestFirst = Array.from({ length: n }, (unused, i) => i)
+    .sort((a, b) => heights[b] - heights[a] || a - b);
+  for (let k = 0; k < n; k += 1) {
+    const i = tallestFirst[k];
+    let best = 0;
+    for (let c = 1; c < cols; c += 1) if (load[c] < load[best]) best = c;
+    col[i] = best;
+    load[best] += heights[i] + gap;
+  }
+  for (let pass = 0; pass < BALANCE_PASSES; pass += 1) {
+    let swapped = false;
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        const [a, b, d] = [col[i], col[j], heights[i] - heights[j]];
+        if (a !== b && d * (load[b] - load[a] + d) < 0) {
+          load[a] -= d;
+          load[b] += d;
+          col[i] = b;
+          col[j] = a;
+          swapped = true;
+        }
+      }
+    }
+    if (!swapped) break;
+  }
+  return col;
+}
+
+// Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
+// See README (yaw-only geometry) for the packing + column-count rules.
+function cylinderMasonryLayout({
+  aspects, radius, frustumH, colsFit, colGapRatio, rowGapRatio = colGapRatio, aspectCap, bulge = 0,
+}) {
+  const n = aspects.length;
+  // Clamp extremes so one panorama can't dominate a column (cover-crop handles the rest).
+  const clamped = aspects.map((ar) => {
+    const a = Number.isFinite(ar) && ar > 0 ? ar : 1;
+    return Math.max(1 / aspectCap, Math.min(aspectCap, a));
+  });
+
+  const pack = (cols) => {
+    const pitch = (2 * Math.PI * radius) / cols;
+    const cardW = pitch / (1 + colGapRatio);
+    const rowGap = cardW * rowGapRatio;
+    const hs = clamped.map((a) => cardW / a);
+    const col = balanceColumns(hs, rowGap, cols);
+    const colH = new Array(cols).fill(0);
+    const placed = new Array(n);
+    for (let c = 0; c < cols; c += 1) {
+      for (let i = 0; i < n; i += 1) {
+        if (col[i] !== c) continue; // eslint-disable-line no-continue
+        placed[i] = { col: c, offset: colH[c], w: cardW, h: hs[i] };
+        colH[c] += hs[i] + rowGap;
+      }
+    }
+    const totals = colH.map((h) => Math.max(0, h - rowGap));
+    return { placed, totals, wallH: Math.max(...totals) };
+  };
+
+  // Fewest columns that fit.
+  let packed = null;
+  for (let cols = Math.min(4, n); cols <= Math.max(4, n); cols += 1) {
+    packed = pack(cols);
+    if (packed.wallH <= frustumH * colsFit) break;
+  }
+
+  const cols = packed.totals.length;
+  // Barrel bulge: r(t) = radius·(1 − bulge·t²), t = 2y/wallH ∈ [−1,1]. Azimuth is untouched.
+  const wallH = packed.wallH || 1;
+  return packed.placed.map((p, i) => {
+    const colTotal = packed.totals[p.col];
+    const y = colTotal / 2 - p.offset - p.h / 2;
+    const azimuth = (2 * Math.PI * p.col) / cols;
+    const t = Math.max(-1, Math.min(1, (2 * y) / wallH));
+    const r = radius * (1 - bulge * t * t);
+    // Outward normal of the surface of revolution r(y): (1, −dr/dy) normalized, at this azimuth.
+    const dRdy = bulge === 0 ? 0 : radius * -2 * bulge * t * (2 / wallH);
+    const nScale = 1 / Math.hypot(1, dRdy);
+    return {
+      pos: new THREE.Vector3(
+        r * Math.cos(azimuth),
+        y,
+        r * Math.sin(azimuth),
+      ),
+      normal: new THREE.Vector3(
+        nScale * Math.cos(azimuth),
+        -dRdy * nScale,
+        nScale * Math.sin(azimuth),
+      ),
+      w: p.w,
+      h: p.h,
+      index: i,
+    };
+  });
+}
+
+function fibSpherePos(i, total, radius) {
+  const y = 1 - (2 * i + 1) / total;
+  const polarAngle = Math.acos(Math.max(-1, Math.min(1, y)));
+  const azimuth = GOLDEN_ANGLE * i;
+  return new THREE.Vector3(
+    radius * Math.sin(polarAngle) * Math.cos(azimuth),
+    radius * Math.cos(polarAngle),
+    radius * Math.sin(polarAngle) * Math.sin(azimuth),
+  );
+}
+
+// DOM lookups are scoped to `root` so >1 globe can coexist; `gid` is this instance's unique-id
+// suffix (CA filter url(#…) ref).
+function createGlobeGalleryRuntime(
+  authoredCards,
+  hintText,
+  instructions,
+  root,
+  gid,
+  labels,
+) {
+  const q = (sel) => root.querySelector(sel); // root-scoped query (multi-instance safe)
+
+  const CARD_CONTENT = authoredCards || [];
+
+  function authoredIdx(i) {
+    return CARD_CONTENT[i]?.authoredIndex ?? i;
+  }
+
+  const AUTHORED_ORDER = [];
+  CARD_CONTENT.forEach((_, i) => { AUTHORED_ORDER[authoredIdx(i)] = i; });
+
+  function getCardMetadata(i) {
+    return CARD_CONTENT[i];
+  }
+
+  function authoredNo(i) {
+    return authoredIdx(i) + 1;
+  }
+
+  function stepCard(i, dir) {
+    const n = AUTHORED_ORDER.length;
+    return AUTHORED_ORDER[(authoredIdx(i) + dir + n) % n];
+  }
+
+  let reducedMotion = false;
+
+  // Frozen within a band; rebuilt on a crossing. null until initRuntime runs.
+  let bp = null;
+
+  function resolveBpProfile(name, cfg, cylinder) {
+    const nTotal = CARD_CONTENT.length;
+    const shape = cylinder ? YAW_ONLY_GEOMETRY : cfg;
+    const sphereCardH = cfg.CARD_H_SPHERE;
+    return Object.freeze({
+      name,
+      YAW_ONLY: cylinder, // compared in doLayout to detect a pointer-precision change
+      N_TOTAL: nTotal, // every card is on the arc at once — there is no conveyor
+      CA_MOTION_CAP: name === 'sm' ? CA_MOTION_CAP_SM : CA_MOTION_CAP_MD,
+      ARC_SPAN: cfg.ARC_SPAN,
+      SPHERE_R: cfg.SPHERE_R,
+      CARD_H_SPHERE: sphereCardH,
+      CARD_W_SPHERE: sphereCardH * CARD_ASPECT,
+      CARD_W_ARC: cfg.CARD_W_ARC,
+      CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
+      CAM_Z_END: cfg.CAM_Z_END,
+      // Near-camera fade band, in mean card-heights of camera depth. START is purely visual; END
+      // also anchors dragFlipZ and the pull-quote cue — see cardVanishDepth.
+      NEAR_FADE_START: cfg.NEAR_FADE_START,
+      NEAR_FADE_END: cfg.NEAR_FADE_END,
+      // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
+      FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * TAN_HALF_FOV)),
+      GRID_WINDOW_COLS: cfg.GRID_WINDOW_COLS,
+      GRID_ROWS: cfg.GRID_ROWS,
+      // Listed explicitly, not spread, so the overlay's layout keys can't leak on.
+      CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
+      CYLINDER: !!shape.CYLINDER,
+      CYL_COLS_FIT: cfg.CYL_COLS_FIT ?? shape.CYL_COLS_FIT,
+      CYL_COL_GAP_RATIO: shape.CYL_COL_GAP_RATIO,
+      CYL_ROW_GAP_RATIO: shape.CYL_ROW_GAP_RATIO,
+      CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
+      CYL_BULGE: shape.CYL_BULGE,
+      // Frustum height at the cylinder's centre plane — the column solve's vertical budget.
+      CYL_FRUSTUM_H: 2 * TAN_HALF_FOV * cfg.CAM_Z_SPHERE,
+      CARD_ROLL_JITTER: cfg.CARD_ROLL_JITTER,
+      DRAG_GEARING: cfg.DRAG_GEARING,
+      ENTRY_LEAD_VH: cfg.ENTRY_LEAD_VH,
+      ARC_RAMP_T: cfg.ARC_RAMP_T,
+      // Clamped so the spread keeps ≥1 card.
+      ARC_DENSE_COUNT: Math.min(
+        Math.round(cfg.ARC_DENSE_FRACTION * nTotal),
+        Math.max(0, nTotal - 1),
+      ),
+    });
+  }
+
+  let renderer; let scene; let camera; let cameraOrtho; let
+    sphereGroup;
+  let cards = [];
+  let textures = [];
+  let cardAspects = []; // per-card native image aspect (index-aligned with CARD_CONTENT)
+  let placeholderTex = null; // shared transparent texture for not-yet-loaded cards
+  const masonryMorph = { active: false, t: 0 };
+  let gridCardW = 0; let
+    gridTilts = [];
+
+  // The single source for the clocks — never cache them.
+  const frameState = TL.createFrame();
+  const frameInput = TL.createFrameInput();
+
+  let blockDocTop = 0; // block's top in document space (the scroll runway)
+  let blockHeight = 0; // its full scroll length
+  // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
+  let pqAppearZoomT = 0.5;
+  let formationVh = 0; // from --gg-formation-vh (see readCssVars)
+  let W = 0;
+  let H = 0;
+  let navH = 0; // --gg-nav-h; see README (The nav band)
+
+  const worldEl = q('.globe-gallery-world');
+  const pqEl = q('.globe-gallery-pullquote');
+  // The cached strings elide unchanged style writes.
+  const pq = {
+    quoteEl: q('.globe-gallery-pullquote-quote'),
+    lineEls: [], // one per rendered line
+    splitW: 0, // box width they were split at
+    revealT: 0,
+    frameStr: '',
+    copyStr: '',
+  };
+
+  const arcCopy = { el: null, opStr: '', transformStr: '' };
+
+  // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
+  // velX/Y: smoothed velocity per 60fps frame.
+  const drag = { isDragging: false, velX: 0, velY: 0, pendingX: 0, pendingY: 0 };
+  let renderReady = false;
+  let onScreen = true; // assume visible until the observer's first callback corrects it
+  let canvasHidden = false; // set by updateCanvasVisibility; also skips the scene draw
+  let sphereDragWarp = 0;
+  let cameraInsideSphere = false;
+  let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
+  let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
+  let textMesh = null;
+  let hintRetired = false;
+  let hintExitT = 0;
+
+  // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
+  // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
+  // Euler order 'XYZ' is load-bearing.
+  const sphereOrient = { x: 0, y: 0, z: 0 };
+  // Glides ±85°→±60° when leaving browse.
+  let pitchReleaseCap = Math.PI / 3;
+  const sphereRotEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+  const sphereRotQuat = new THREE.Quaternion();
+  const screenRollQuat = new THREE.Quaternion();
+  const Z_UNIT = new THREE.Vector3(0, 0, 1);
+  const refreshSphereRotQuat = () => {
+    sphereRotEuler.set(sphereOrient.x, sphereOrient.y, 0);
+    sphereRotQuat.setFromEuler(sphereRotEuler);
+    if (sphereOrient.z !== 0) {
+      screenRollQuat.setFromAxisAngle(Z_UNIT, sphereOrient.z);
+      sphereRotQuat.premultiply(screenRollQuat); // world-Z roll applied last (screen space)
+    }
+  };
+  const foldRotQuat = new THREE.Quaternion();
+  const stageQuat = new THREE.Quaternion();
+  const stageEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+  const tmpVec3 = new THREE.Vector3();
+  const fanScratch = {};
+  const wpScratch = {};
+  const stageScratch = {};
+  const entryScratch = {};
+
+  const navNudge = {
+    active: false,
+    kind: '', // 'browse' | 'modal' | 'rotate' — who armed it; see the browse-exit edge + rotateStep
+    targetX: 0,
+    targetY: 0,
+    targetZ: 0,
+    startX: 0,
+    startY: 0,
+    startZ: 0,
+    frame: 0,
+    frames: 0,
+  };
+  const kbTargetQuat = new THREE.Quaternion(); // scratch: keyboard-centring target orientation
+  const kbTargetEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+  const kbUp = new THREE.Vector3(); // scratch: focused card's world up (for the upright roll)
+  let wasBrowsing = false; // tracks the keyboard-gallery browse edge
+  // Does NOT touch drag velocity or sphereDragWarp.
+  function resetSphereOrientation() {
+    sphereOrient.x = 0;
+    sphereOrient.y = 0;
+    sphereOrient.z = 0;
+    pitchReleaseCap = Math.PI / 3;
+    navNudge.active = false;
+  }
+  const cardNormal = new THREE.Vector3();
+  const facingTarget = new THREE.Vector3();
+  const facingAlign = new THREE.Quaternion();
+  const facingPartial = new THREE.Quaternion();
+  const IDENTITY_QUAT = new THREE.Quaternion();
+
+  let modal = null;
+  let a11y = null;
+  let interaction = null;
+  let controls = null;
+  let cursor = null;
+
+  let suppressFocusSnap = false;
+  let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
+
+  let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
+
+  function computeGridLayout() {
+    if (cards.length === 0) return;
+    const { GRID_WINDOW_COLS, GRID_ROWS, CARD_W_SPHERE } = bp;
+    gridCardW = (bp.name === 'sm')
+      ? W / (GRID_WINDOW_COLS + (GRID_WINDOW_COLS - 1) * GRID_GAP_RATIO)
+      : W / GRID_WINDOW_COLS;
+    const gridGap = gridCardW * GRID_GAP_RATIO;
+    const gridCardH = gridCardW / CARD_ASPECT;
+    const gridCols = Math.max(GRID_WINDOW_COLS, Math.ceil(cards.length / GRID_ROWS));
+    const colShift = Math.round((gridCols - GRID_WINDOW_COLS) / 2);
+    const totalW = GRID_WINDOW_COLS * gridCardW + (GRID_WINDOW_COLS - 1) * gridGap;
+    const totalH = GRID_ROWS * gridCardH + (GRID_ROWS - 1) * gridGap;
+    const tiltEuler = new THREE.Euler(0, 0, 0);
+    // Column-major: i=0 → lower-right, sweeping bottom-to-top then right-to-left.
+    for (let i = 0; i < cards.length; i += 1) {
+      const card = cards[i];
+      const col = GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS) + colShift;
+      const row = GRID_ROWS - 1 - (i % GRID_ROWS);
+      const gx = -totalW / 2 + col * (gridCardW + gridGap) + gridCardW / 2;
+      const gy = totalH / 2 - row * (gridCardH + gridGap) - gridCardH / 2;
+      const tilt = gridTilts[i] || 0;
+      // Written through, not replaced — this reruns on every resize.
+      card.gridPos.set(gx, gy, 0);
+      card.gridScale = gridCardW / CARD_W_SPHERE;
+      card.gridTilt = tilt;
+      card.gridQuat.setFromEuler(tiltEuler.set(0, 0, tilt));
+    }
+  }
+
+  function cardAspect(i) {
+    return cardAspects[i] || CARD_ASPECT;
+  }
+
+  function buildCards() {
+    const {
+      N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, CARD_ROLL_JITTER, CYLINDER,
+    } = bp;
+    if (!placeholderTex) placeholderTex = createPlaceholderTexture();
+    sphereGroup = new THREE.Group();
+    scene.add(sphereGroup);
+    if (reducedMotion && bp.name !== 'sm') sphereGroup.scale.setScalar(RM_GLOBE_SCALE_MD);
+    cards = [];
+
+    // Whole-set solve, run ONCE before the per-card loop. Null on the sphere path.
+    const masonry = CYLINDER
+      ? cylinderMasonryLayout({
+        aspects: Array.from({ length: N_TOTAL }, (unused, i) => cardAspect(i)),
+        radius: SPHERE_R,
+        frustumH: bp.CYL_FRUSTUM_H,
+        colsFit: bp.CYL_COLS_FIT,
+        colGapRatio: bp.CYL_COL_GAP_RATIO,
+        rowGapRatio: bp.CYL_ROW_GAP_RATIO,
+        aspectCap: bp.CYL_ASPECT_CAP,
+        bulge: bp.CYL_BULGE,
+      })
+      : null;
+
+    const fibSlots = masonry ? null : Array.from(
+      { length: N_TOTAL },
+      (unused, k) => fibSpherePos(k, N_TOTAL, SPHERE_R),
+    ).sort((a, b) => a.z - b.z);
+
+    for (let i = 0; i < N_TOTAL; i += 1) {
+      const srcAspect = cardAspect(i);
+      const mas = masonry ? masonry[i] : null;
+      const sphereScale = sphereCardScale(srcAspect);
+
+      const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
+      const mat = createCardMaterial({
+        texture: textures[i] || placeholderTex,
+        aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      sphereGroup.add(mesh);
+
+      const sp = mas ? mas.pos.clone() : fibSlots[i].clone();
+
+      // lookAt target is INSIDE the surface so local +Z points out.
+      const faceTarget = mas
+        ? sp.clone().sub(mas.normal)
+        : new THREE.Vector3(0, 0, 0);
+      const m = new THREE.Matrix4()
+        .lookAt(sp, faceTarget, WORLD_UP);
+      const sq = new THREE.Quaternion().setFromRotationMatrix(m);
+      const rz = CYLINDER ? 0 : (Math.random() - 0.5) * CARD_ROLL_JITTER;
+      sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
+
+      cards.push({
+        mesh,
+        spherePos: sp,
+        sphereQuat: sq,
+        gridPos: new THREE.Vector3(),
+        gridScale: 1,
+        gridTilt: 0,
+        gridQuat: new THREE.Quaternion(),
+        peelJitter: Math.random(),
+        srcAspect,
+        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : sphereScale.sX,
+        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : sphereScale.sY,
+        sphereWorldH: mas ? mas.h : CARD_H_SPHERE * sphereScale.sY,
+        hoverT: 0, // eased 0→1 hover progress (sphere phase only)
+        hoverTarget: 0, // instant 0|1 set by onHover() raycast
+        hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
+        hasTexture: !!textures[i], // false until this card's photo loads (onEach flips it)
+        revealT: textures[i] ? 1 : 0, // eased 0→1 texture-ready un-dissolve
+        peelStartRot: null, // set on the first peel frame, cleared back at gpE 0
+        morph: null, // the sm masonry re-solve's from/to pair, while one is running
+      });
+    }
+    // eslint-disable-next-line no-use-before-define -- hoisted helper defined just below
+    recomputeDragFlip();
+
+    gridTilts = [];
+    for (let ti = 0; ti < N_TOTAL; ti += 1) {
+      gridTilts.push((Math.random() - 0.5) * 0.175); // ±5° in radians
+    }
+    computeGridLayout();
+  }
+
+  // Depth (world units, from the camera) at which a card has faded out completely. placeSphereCard
+  // owns the rule; dragFlipZ and the pull-quote cue are both anchored to it. NOTE: those two apply
+  // sphereGroup.scale differently — see the call sites.
+  const cardVanishDepth = () => bp.NEAR_FADE_END * fadeRefH;
+
+  // Camera z below which drag inverts, anchored to where cards VANISH. Sole writer of fadeRefH.
+  // Rerun once textures land (sphereWorldH starts as a placeholder).
+  function recomputeDragFlip() {
+    if (!sphereGroup || cards.length === 0) return;
+    const groupScale = sphereGroup.scale.x || 1;
+    const maxRadial = cards.reduce(
+      (m, c) => Math.max(m, Math.hypot(c.spherePos.x, c.spherePos.z)),
+      0,
+    ) * groupScale;
+    fadeRefH = cards.reduce((s, c) => s + c.sphereWorldH, 0) / cards.length;
+    dragFlipZ = Math.min(
+      maxRadial + cardVanishDepth() * groupScale,
+      bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
+    );
+    // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
+    publishPqAppearZoomT();
+    // eslint-disable-next-line no-use-before-define -- same
+    publishPqMetrics();
+  }
+
+  // Read live each frame, so writing these morphs the card into its native shape.
+  function updateCardSphereSizing(card, srcAspect) {
+    const { sX, sY } = sphereCardScale(srcAspect);
+    card.srcAspect = srcAspect;
+    card.sphereScaleSX = sX;
+    card.sphereScaleSY = sY;
+    card.sphereWorldH = bp.CARD_H_SPHERE * sY;
+  }
+
+  // sm barrel: re-solve the packing once every aspect is known; each card morphs to its slot.
+  function resolveMasonryLayout() {
+    const { N_TOTAL, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE } = bp;
+    const masonry = cylinderMasonryLayout({
+      aspects: Array.from({ length: N_TOTAL }, (unused, i) => cardAspect(i)),
+      radius: SPHERE_R,
+      frustumH: bp.CYL_FRUSTUM_H,
+      colsFit: bp.CYL_COLS_FIT,
+      colGapRatio: bp.CYL_COL_GAP_RATIO,
+      rowGapRatio: bp.CYL_ROW_GAP_RATIO,
+      aspectCap: bp.CYL_ASPECT_CAP,
+      bulge: bp.CYL_BULGE,
+    });
+    const up = new THREE.Vector3(0, 1, 0);
+    for (let i = 0; i < N_TOTAL; i += 1) {
+      const card = cards[i];
+      if (!card) continue; // eslint-disable-line no-continue
+      const mas = masonry[i];
+      const sp = mas.pos.clone();
+      const faceTarget = sp.clone().sub(mas.normal);
+      const m = new THREE.Matrix4().lookAt(sp, faceTarget, up);
+      const sq = new THREE.Quaternion().setFromRotationMatrix(m); // no roll on the masonry path
+      card.morph = {
+        posFrom: card.spherePos.clone(),
+        posTo: sp,
+        quatFrom: card.sphereQuat.clone(),
+        quatTo: sq,
+        ssxFrom: card.sphereScaleSX,
+        ssxTo: mas.w / CARD_W_SPHERE,
+        ssyFrom: card.sphereScaleSY,
+        ssyTo: mas.h / CARD_H_SPHERE,
+        swhFrom: card.sphereWorldH,
+        swhTo: mas.h,
+      };
+    }
+    masonryMorph.active = true;
+    masonryMorph.t = 0;
+  }
+
+  function textPlaneSize() {
+    const { SPHERE_R, CAM_Z_SPHERE } = bp;
+    const dist = CAM_Z_SPHERE - (-(SPHERE_R + TEXT_BEHIND_GAP));
+    const visH = 2 * TAN_HALF_FOV * dist;
+    const visW = visH * (camera ? camera.aspect : W / H);
+    return { w: visW, h: visH };
+  }
+
+  function disposeTextMesh() {
+    if (!textMesh) return;
+    if (textMesh.parent) textMesh.parent.remove(textMesh);
+    textMesh.geometry.dispose();
+    if (textMesh.material.uniforms.uMap.value) textMesh.material.uniforms.uMap.value.dispose();
+    textMesh.material.dispose();
+    textMesh = null;
+  }
+
+  // See README ("Click & Drag" hint text).
+  function buildTextMesh() {
+    const replacing = !!textMesh;
+    disposeTextMesh();
+    const targetGroup = sphereGroup;
+    const create = () => {
+      if (sphereGroup !== targetGroup || !sphereGroup) return;
+      if (!replacing && !reducedMotion && frameState.sphereFormT > TL.TEXT_APPEAR_START) return;
+      const { SPHERE_R } = bp;
+      const aspect = camera ? camera.aspect : W / H;
+      const texture = createClickDragTexture(aspect, hintText);
+      if (!texture) return;
+      const dpr = capDpr();
+      const sz = textPlaneSize();
+      const mat = createTextMaterial({
+        texture,
+        aspect,
+        resolution: { x: W * dpr, y: H * dpr },
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(sz.w, sz.h), mat);
+      mesh.position.set(0, 0, -(SPHERE_R + TEXT_BEHIND_GAP));
+      mesh.renderOrder = TEXT_ORDER;
+      mesh.visible = false; // the tick stage reveals it once the fold is underway
+      textMesh = mesh;
+      sphereGroup.add(mesh);
+    };
+    // Two-arg then, NOT .then().catch(): a throw inside create must not re-run create and
+    // orphan the mesh it already added.
+    const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+    Promise.all([fontsReady, loadHintFont(hintText)]).then(create, () => {});
+  }
+
+  // Tilts limb cards toward the camera; MUTATES the quat in place. Target is sign(n.z) × view
+  // dir so back cards keep facing away.
+  function applySphereFacing(quat, amount = 1) {
+    let k = bp.CARD_FACE_CAMERA * amount;
+    if (!k) return;
+    cardNormal.set(0, 0, 1).applyQuaternion(quat); // current outward normal (local +Z)
+    // Fade out around edge-on, else the target's sign flip teleports the card.
+    const edgeOnT = Math.min(1, Math.abs(cardNormal.z) / FACING_EDGE_ON_BAND);
+    k *= edgeOnT * edgeOnT * (3 - 2 * edgeOnT); // smoothstep — C1, so no velocity kink
+    if (k < 1e-6) return;
+    facingTarget.set(0, 0, cardNormal.z < 0 ? -1 : 1);
+    facingAlign.setFromUnitVectors(cardNormal, facingTarget);
+    facingPartial.copy(IDENTITY_QUAT).slerp(facingAlign, k);
+    quat.premultiply(facingPartial);
+  }
+
+  const applyCardFacing = (mesh, amount = 1) => applySphereFacing(mesh.quaternion, amount);
+
+  // Sphere slot with the live drag rotation baked in, so a reparent can't flash it unrotated.
+  function snapCardToSphereSlot(card) {
+    if (!card || !card.mesh) return;
+    const hasRot = (sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0);
+    if (hasRot) {
+      refreshSphereRotQuat();
+      card.mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
+      card.mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
+    } else {
+      card.mesh.position.copy(card.spherePos);
+      card.mesh.quaternion.copy(card.sphereQuat);
+    }
+    applyCardFacing(card.mesh); // match placeSphereCard's tilt (else a one-frame flash)
+    card.mesh.scale.set(card.sphereScaleSX, card.sphereScaleSY, 1);
+    card.hoverTarget = 0;
+    card.hoverT = 0;
+  }
+
+  // Shortest signed yaw bringing a slot front-centre. Scale-invariant, so on the barrel it
+  // depends only on the column — rotateStep relies on that.
+  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y, inside = cameraInsideSphere) {
+    const cy = Math.cos(fromYaw);
+    const sy = Math.sin(fromYaw);
+    const px = spherePos.x * cy + spherePos.z * sy;
+    const pz = -spherePos.x * sy + spherePos.z * cy;
+    let deltaY = -Math.atan2(px, pz); // → +Z (near wall, camera outside)
+    if (inside) deltaY += Math.PI; // → −Z (far wall, camera inside)
+    return Math.atan2(Math.sin(deltaY), Math.cos(deltaY));
+  }
+
+  function cardCenterYawPitch(idx, pitchCap, yawOnly, inside = cameraInsideSphere) {
+    const { spherePos } = cards[idx];
+    const targetYaw = sphereOrient.y + yawDeltaToCenter(spherePos, sphereOrient.y, inside);
+    if (yawOnly) return { targetYaw, targetPitch: sphereOrient.x };
+    const h = Math.hypot(spherePos.x, spherePos.z);
+    const pitchMag = Math.atan2(spherePos.y, h); // drives the card's height → centre
+    const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, inside ? -pitchMag : pitchMag));
+    return { targetYaw, targetPitch };
+  }
+
+  function armNavNudge(kind, frames, targetX, targetY, targetZ) {
+    navNudge.targetX = targetX;
+    navNudge.targetY = targetY;
+    navNudge.targetZ = targetZ;
+    navNudge.startX = sphereOrient.x;
+    navNudge.startY = sphereOrient.y;
+    navNudge.startZ = sphereOrient.z;
+    navNudge.frames = frames;
+    navNudge.frame = reducedMotion ? frames : 0;
+    navNudge.kind = kind;
+    navNudge.active = true;
+  }
+
+  function centerModalCard(idx) {
+    if (!cards[idx]) return;
+    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, Math.PI / 3, bp.YAW_ONLY);
+    armNavNudge('modal', KEY_MODAL_FRAMES, targetPitch, targetYaw, sphereOrient.z);
+  }
+
+  // Ease to the next column BOUNDARY (never `y += pitch`); dir −1 = surface travels screen-left.
+  function rotateStep(dir) {
+    // Measure from where the last press is HEADED, so taps queue instead of re-targeting.
+    const from = navNudge.active && navNudge.kind === 'rotate' ? navNudge.targetY : sphereOrient.y;
+    const deltas = [];
+    cards.forEach((card) => {
+      // Mid-morph spherePos has no column structure yet — read the target.
+      const slot = masonryMorph.active && card.morph ? card.morph.posTo : card.spherePos;
+      const d = yawDeltaToCenter(slot, from);
+      if (!deltas.some((seen) => Math.abs(seen - d) < COLUMN_EPS)) deltas.push(d);
+    });
+    if (!deltas.length) return;
+    const deadzone = ((2 * Math.PI) / deltas.length) * ROTATE_DEADZONE;
+    const ahead = deltas.filter((d) => d * (cameraInsideSphere ? -dir : dir) > deadzone);
+    if (!ahead.length) return; // one column: nothing to step to
+    const delta = ahead.reduce((a, b) => (Math.abs(a) < Math.abs(b) ? a : b));
+    armNavNudge('rotate', ROTATE_STEP_FRAMES, sphereOrient.x, from + delta, sphereOrient.z);
+    drag.velX = 0;
+    drag.velY = 0;
+  }
+
+  // a11y.js's centerCard: the shared yaw/pitch solve plus the screen-Z roll that cancels the
+  // card's residual tilt. snapPending = focus is about to scroll us back to the formed position,
+  // where the camera sits OUTSIDE the sphere: solve for THERE, not for wherever the user scrolled
+  // to. Trusting the live flag from inside the zoom aims at the far wall (yaw + π, pitch negated)
+  // and the card lands out of view.
+  function centerCardOnScreen(idx, snapPending = false) {
+    if (!cards[idx]) return;
+    const { sphereQuat } = cards[idx];
+    const inside = snapPending ? false : cameraInsideSphere;
+    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, KEY_PITCH_CAP, bp.YAW_ONLY, inside);
+    // The card's world up at that (pitch, yaw), pre screen-roll.
+    kbTargetEuler.set(targetPitch, targetYaw, 0);
+    kbTargetQuat.setFromEuler(kbTargetEuler).multiply(sphereQuat);
+    kbUp.set(0, 1, 0).applyQuaternion(kbTargetQuat);
+    const rollTarget = Math.atan2(kbUp.x, kbUp.y); // screen-Z roll that returns up → +Y
+    const dRoll = Math.atan2(
+      Math.sin(rollTarget - sphereOrient.z),
+      Math.cos(rollTarget - sphereOrient.z),
+    );
+    armNavNudge('browse', KEY_BROWSE_FRAMES, targetPitch, targetYaw, sphereOrient.z + dRoll);
+    drag.velX = 0;
+    drag.velY = 0;
+  }
+
+  // dx/dy: world-space delta this frame. ampOverride defaults to sqrt(scroll/drag speed ratio).
+  function applyMotionCA(mesh, dx, dy, ampOverride, cap) {
+    if (!CA_ENABLED) return;
+    const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
+    const s = cap !== undefined ? cap : bp.CA_MOTION_CAP;
+    const sX = Math.max(mesh.scale.x, 0.01);
+    const sY = Math.max(mesh.scale.y, 0.01);
+    const dt = frameState.dtScale;
+    const uvDX = dx / (CARD_W_SPHERE * sX * dt);
+    const uvDY = dy / (CARD_H_SPHERE * sY * dt);
+    const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
+    const ampRaw = Math.min(
+      1.0,
+      Math.max(frameState.scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL),
+    );
+    const amp = ampOverride !== undefined ? ampOverride : Math.sqrt(ampRaw);
+    const rep = mesh.material.uniforms.uRepeat.value;
+    const mx = Math.max(-s, Math.min(s, uvDX * amp)) * rep.x;
+    const my = Math.max(-s, Math.min(s, uvDY * amp)) * rep.y;
+    mesh.material.uniforms.uMotionDir.value.set(mx, my);
+  }
+
+  // Cover-crop + corner aspect for THIS frame's shape.
+  const uvScratch = {};
+  function applyCardFit(mesh, card, planeAspect) {
+    const aspect = planeAspect !== undefined
+      ? planeAspect
+      : CARD_ASPECT * (mesh.scale.x / (mesh.scale.y || 1));
+    const uv = coverFit(card.srcAspect, aspect, uvScratch);
+    const u = mesh.material.uniforms;
+    u.uRepeat.value.set(uv.rx, uv.ry);
+    u.uOffset.value.set(uv.ox, uv.oy);
+    u.uAspect.value = aspect;
+  }
+
+  modal = createGlobeModal({
+    q,
+    getScene: () => scene,
+    getCamera: () => camera,
+    getSphereGroup: () => sphereGroup,
+    getRenderer: () => renderer,
+    getCards: () => cards,
+    getCount: () => CARD_CONTENT.length,
+    getCardMetadata,
+    authoredNo,
+    stepCard,
+    // Returns the pending Image (cancellable), or null when the base cap already meets it.
+    loadModalUpgrade: (idx, onReady, onError) => {
+      const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
+      const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
+      if (modalCap <= base) return null;
+      const src = optimizeImgUrl(getCardMetadata(idx).img, modalCap);
+      return loadModalTextureRaw(src, modalCap, onReady, onError);
+    },
+    getViewport: () => ({ W, H }),
+    getBP: () => bp.name,
+    getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
+    cardAspect: CARD_ASPECT,
+    getAntialias: () => (bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD),
+    caEnabled: CA_ENABLED,
+    cardLabel: labels.cardLabel,
+    getReducedMotion: () => reducedMotion,
+    sphereRotQuat,
+    snapToSphereSlot: snapCardToSphereSlot,
+    applySphereFacing,
+    requestNavNudge: (idx) => {
+      if (a11y && a11y.isBrowsing()) centerCardOnScreen(idx);
+      else centerModalCard(idx);
+    },
+    applyMotionCA,
+    restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
+  });
+
+  function measureBlock() {
+    blockDocTop = root.getBoundingClientRect().top + window.scrollY;
+    blockHeight = root.offsetHeight;
+  }
+
+  function readCssVars() {
+    const rootStyle = getComputedStyle(root);
+    const cssNum = (prop) => {
+      const n = parseFloat(rootStyle.getPropertyValue(prop));
+      return Number.isFinite(n) ? n : null;
+    };
+    const vh = cssNum('--gg-formation-vh');
+    if (vh !== null) formationVh = vh;
+    const nav = cssNum('--gg-nav-h');
+    if (nav !== null) navH = nav;
+  }
+
+  const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
+
+  // The cue is where the last card leaves the SCREEN, not where the camera clears the shell:
+  // placeSphereCard hides a card bp.NEAR_FADE_END card-heights out, and the deepest card centre
+  // sits at -SPHERE_R under any rotation. fadeRefH 0 falls back to -SPHERE_R, which errs late.
+  function publishPqAppearZoomT() {
+    const clearZ = -bp.SPHERE_R + cardVanishDepth();
+    pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
+    // CSS pins against the tail, not the zoom span.
+    const tailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
+    root.style.setProperty('--gg-pq-appear-t', tailT.toFixed(4));
+  }
+
+  // Every other term cancels to half the quote box; CSS clamps it to the reveal point. See README.
+  function publishPqMetrics() {
+    if (!pqEl || !pqEl.isConnected) return;
+    const halfBox = pqEl.getBoundingClientRect().height / 2;
+    root.style.setProperty('--gg-pq-half-box', `${halfBox.toFixed(1)}px`);
+  }
+
+  // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
+  function writeFrameVars(h, v) {
+    const str = `${h.toFixed(4)};${v.toFixed(4)}`;
+    if (str === pq.frameStr) return;
+    pq.frameStr = str;
+    pqEl.style.setProperty('--gg-pq-h', `${(h * 100).toFixed(2)}%`);
+    pqEl.style.setProperty('--gg-pq-v', `${(v * 100).toFixed(2)}%`);
+  }
+
+  function formedScrollPx() {
+    return Math.min((formationVh / 100) * H, blockHeight);
+  }
+
+  function snapToBrowseView() {
+    if (suppressFocusSnap) return;
+    const top = reducedMotion
+      ? blockDocTop
+      : blockDocTop + formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC;
+    // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
+    // before the callback below lands. Above the block that tick would reset the orientation and
+    // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
+    focusSnapPending = true;
+    requestAnimationFrame(() => {
+      if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
+      else window.scrollTo(0, top);
+      focusSnapPending = false;
+    });
+  }
+
+  // Armed on blur/hidden, disarmed a frame after focus, so a tab-return can't re-snap.
+  const armFocusGuard = () => { suppressFocusSnap = true; };
+  const disarmFocusGuard = () => { requestAnimationFrame(() => { suppressFocusSnap = false; }); };
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') armFocusGuard();
+    else disarmFocusGuard();
+  };
+
+  const openModalAndDismissHint = (idx, x, y) => {
+    hintRetired = true;
+    modal.open(idx, x, y);
+  };
+
+  // Canvas taps only — the keyboard path reports itself.
+  const openModalFromCanvas = (idx, x, y) => {
+    openModalAndDismissHint(idx, x, y);
+    if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
+  };
+
+  // The globe is on screen and nothing is covering it. The keyboard path stays on THIS even past
+  // the pull-quote cue: focusing a card runs snapToBrowseView, which scrolls back into range, so
+  // retiring the tab stops early would remove the entry point before the snap could use it.
+  const globeFormed = () => frameState.sphereFormT >= TL.SPHERE_INTERACTIVE_T
+    && modal.getModalIdx() < 0;
+
+  a11y = createGalleryA11y({
+    q,
+    getCount: () => CARD_CONTENT.length,
+    cardOrder: AUTHORED_ORDER,
+    getModalIdx: () => modal.getModalIdx(),
+    isGlobeFormed: globeFormed,
+    getCardLabel: (i) => {
+      const m = getCardMetadata(i);
+      return (m && m.alt) || `Image ${authoredNo(i)}`;
+    },
+    // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
+    centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
+    openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
+    onFocus: snapToBrowseView,
+    galleryInstructions: instructions,
+    gid,
+  });
+
+  // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
+  // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
+  // actually ends the pointer-interactive stretch.
+  const globeLive = () => globeFormed() && frameState.zoomT < pqAppearZoomT;
+
+  controls = createGlobeControls({
+    q,
+    labels,
+    getVisible: globeLive,
+    getHintDismissed: () => hintRetired,
+    rotate: (dir) => {
+      hintRetired = true;
+
+      rotateStep(dir);
+    },
+  });
+
+  cursor = createCursor({
+    getGlobeLive: globeLive,
+    getCursorRetired: () => hintRetired || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
+    labelText: hintText,
+    drag,
+  });
+
+  const dragSensitivity = () => {
+    const radiusPx = (bp.SPHERE_R * H) / bp.CYL_FRUSTUM_H;
+    return ((Math.PI / 2) * bp.DRAG_GEARING) / Math.max(1, radiusPx);
+  };
+
+  interaction = createInteraction({
+    getRenderer: () => renderer,
+    getCamera: () => camera,
+    getCards: () => cards,
+    openModal: (idx, x, y) => openModalFromCanvas(idx, x, y),
+    getDragSensitivity: dragSensitivity,
+    isGlobeLive: globeLive,
+    maxVel: MAX_VEL,
+    drag,
+    // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
+    getYawOnly: () => bp.YAW_ONLY,
+    isCursorActive: () => cursor.isActive(),
+    onDrag: () => { hintRetired = true; },
+  });
+
+  const LENIS_TRUST_PX = 2;
+  const SCROLL_LAG_PX = 8;
+  const SCROLL_JUMP_PX = 100;
+  let smoothY = window.scrollY;
+
+  function deQuantize(y) {
+    const err = y - smoothY;
+    const mag = Math.abs(err);
+    smoothY = mag > SCROLL_JUMP_PX ? y : smoothY + err * (mag / (mag + SCROLL_LAG_PX));
+    return smoothY;
+  }
+
+  function readScrollY() {
+    const domY = window.scrollY;
+    if (!window.lenis?.isSmooth) return deQuantize(domY);
+    const lenisY = window.lenis.animatedScroll;
+    const trusted = Number.isFinite(lenisY) && Math.abs(lenisY - domY) <= LENIS_TRUST_PX;
+    if (!trusted) return deQuantize(domY);
+    smoothY = lenisY;
+    return lenisY;
+  }
+
+  function computeFrame(now) {
+    frameInput.scrollY = readScrollY();
+    frameInput.reducedMotion = reducedMotion;
+    frameInput.blockDocTop = blockDocTop;
+    frameInput.blockHeight = blockHeight;
+    frameInput.formPx = formedScrollPx();
+    frameInput.viewportH = H;
+    frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
+    frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
+    frameInput.now = now || performance.now();
+    TL.deriveFrame(frameState, frameInput);
+    frameInput.prevLenisY = frameState.lenisY;
+    frameInput.prevNow = frameInput.now;
+    return frameState;
+  }
+
+  let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
+  function applyCentringOffset(sphereFormT) {
+    const offY = (navH / 2) * sphereFormT;
+    if (offY === appliedViewOffsetY) return;
+    appliedViewOffsetY = offY;
+    if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
+    else camera.clearViewOffset();
+  }
+
+  // Ortho on the arc, perspective from the fold on.
+  function updateActiveCamera(frame) {
+    const { sphereFormT, zoomT } = frame;
+    const { CAM_Z_SPHERE, CAM_Z_END } = bp;
+    let activeCamera;
+    const camZArc = arcCamZ(H);
+    if (sphereFormT === 0) {
+      activeCamera = cameraOrtho;
+      camera.position.z = camZArc;
+    } else {
+      activeCamera = camera;
+      // easeInCubic matches the zoom's easeOutCubic; apparent size is held by sphereGroup.z.
+      const camZ = zoomT === 0
+        ? lerpN(camZArc, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT)
+        : TL.camZAtZoomT(zoomT, CAM_Z_SPHERE, CAM_Z_END);
+      camera.position.z = camZ;
+    }
+    applyCentringOffset(sphereFormT);
+    // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
+    cameraInsideSphere = zoomT > 0 && Math.abs(camera.position.z) < dragFlipZ;
+    return activeCamera;
+  }
+
+  // Refreshes sphereRotQuat; the rotation itself is applied per-card in updateCardTransform.
+  function updateSphereRotation(frame) {
+    const { sphereFormT, dtScale } = frame;
+
+    // Cancel browse's own tween so it stops fighting resumed auto-spin. A rotate press collapses
+    // browse (focusout) in the same turn it arms its nudge — don't eat that.
+    const browsing = a11y && a11y.isBrowsing();
+    if (wasBrowsing && !browsing && navNudge.kind === 'browse') {
+      navNudge.active = false;
+    }
+    wasBrowsing = browsing;
+
+    if (navNudge.active) {
+      navNudge.frame += dtScale;
+      const e = easeInOutCubic(Math.min(1, navNudge.frame / navNudge.frames));
+      sphereOrient.y = navNudge.startY + (navNudge.targetY - navNudge.startY) * e;
+      sphereOrient.x = navNudge.startX + (navNudge.targetX - navNudge.startX) * e;
+      sphereOrient.z = navNudge.startZ + (navNudge.targetZ - navNudge.startZ) * e;
+      if (e >= 1) navNudge.active = false;
+    }
+    // frozen (modal open): holds its rotation. !interactive (still folding): no new drag and no
+    // auto-spin, but inertia keeps coasting.
+    const frozen = modal.getModalIdx() >= 0;
+    const interactive = sphereFormT >= TL.SPHERE_INTERACTIVE_T;
+    // Consume the banked travel; anything but held-and-live drops it (no pooling on resume).
+    const holding = drag.isDragging && !frozen && interactive;
+    let stepX = 0;
+    let stepY = 0;
+    if (holding) {
+      // Jerk limiter: under one frame's rotation passes through exactly; past it the step is
+      // capped then eased and the rest stays banked.
+      const maxStep = MAX_VEL * dtScale;
+      const catchup = 1 - (1 - DRAG_CATCHUP) ** dtScale;
+      const limit = (v) => (Math.abs(v) <= maxStep
+        ? v
+        : Math.max(-maxStep, Math.min(maxStep, v * catchup)));
+      stepX = limit(drag.pendingX);
+      stepY = limit(drag.pendingY);
+      drag.pendingX -= stepX;
+      drag.pendingY -= stepY;
+    } else {
+      drag.pendingX = 0;
+      drag.pendingY = 0;
+    }
+    if (!frozen) {
+      // Inside the globe the far wall moves opposite, so negate to track the visible surface.
+      const dragDir = cameraInsideSphere ? -1 : 1;
+      if (drag.isDragging) {
+        // Held: position-driven off the (rate-limited) travel — no smoothing lag on normal frames.
+        sphereOrient.y += stepX * dragDir;
+        sphereOrient.x += stepY * dragDir;
+        if (!interactive) { drag.velX = 0; drag.velY = 0; } // inert mid-fold: must not fling
+      } else {
+        // Released: velocity-driven coast.
+        const friction = DRAG_FRICTION ** dtScale;
+        drag.velX *= friction;
+        drag.velY *= friction;
+        // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
+        const spin = interactive && !reducedMotion && !browsing && !controls.isSpinPaused()
+          ? AUTO_ROT_SPEED : 0;
+        sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
+        sphereOrient.x += drag.velY * dtScale * dragDir;
+      }
+      const RESTING_PITCH = Math.PI / 3;
+      if (browsing) {
+        sphereOrient.x = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, sphereOrient.x));
+        pitchReleaseCap = Math.max(RESTING_PITCH, Math.abs(sphereOrient.x)); // prime the glide
+      } else {
+        sphereOrient.x = Math.max(-pitchReleaseCap, Math.min(pitchReleaseCap, sphereOrient.x));
+        const relax = PITCH_RELAX ** dtScale;
+        if (pitchReleaseCap > RESTING_PITCH) {
+          pitchReleaseCap = RESTING_PITCH + (pitchReleaseCap - RESTING_PITCH) * relax;
+          if (pitchReleaseCap - RESTING_PITCH < 0.001) pitchReleaseCap = RESTING_PITCH;
+        }
+        // Upright roll relaxes to 0 over the same glide (so pitch + roll settle together).
+        if (sphereOrient.z !== 0) {
+          sphereOrient.z *= relax;
+          if (Math.abs(sphereOrient.z) < 0.001) sphereOrient.z = 0;
+        }
+      }
+    }
+
+    let warpTarget = 0;
+    if (!frozen && interactive) {
+      const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
+      const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
+      warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + dragSpeed * SPHERE_DRAG_WARP_VEL);
+    }
+    sphereDragWarp += (warpTarget - sphereDragWarp) * (1 - (1 - SPHERE_DRAG_WARP_EASE) ** dtScale);
+    if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
+
+    // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
+    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T && !focusSnapPending) {
+      resetSphereOrientation();
+      drag.velX = 0;
+      drag.velY = 0;
+    }
+
+    // Fast-path flag so the rotation math can be skipped when upright.
+    const sphereRotActive = (sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0);
+    refreshSphereRotQuat();
+    return sphereRotActive;
+  }
+
+  const ringWorld = new THREE.Vector3();
+  const ringEdge = new THREE.Vector3();
+  function updateA11yFocusRing() {
+    const idx = a11y.getFocusedIdx();
+    if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
+    const { mesh } = cards[idx];
+    mesh.getWorldPosition(ringWorld);
+    if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
+    const groupScale = sphereGroup.scale.x;
+    ringEdge.set(
+      ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
+      ringWorld.y + 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale,
+      ringWorld.z,
+    );
+    camera.updateMatrixWorld();
+    ringWorld.project(camera);
+    ringEdge.project(camera);
+    const cx = (ringWorld.x * 0.5 + 0.5) * W;
+    const cy = (-ringWorld.y * 0.5 + 0.5) * H;
+    const wPx = Math.abs(ringEdge.x - ringWorld.x) * W;
+    const hPx = Math.abs(ringEdge.y - ringWorld.y) * H;
+    a11y.setFocusRect(cx, cy, wPx, hPx);
+  }
+
+  function updateCanvasVisibility(frame) {
+    const { lenisY, zoomT } = frame;
+    const canvas = renderer.domElement;
+    // RM: canvas is in normal flow (scrolls away, clips naturally) — just reveal once.
+    if (reducedMotion) {
+      canvasHidden = false;
+      canvas.style.display = 'block';
+      return;
+    }
+    const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
+    // Past the reveal every card is prox-faded out and the hint text has finished; the scene
+    // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
+    // blurs this canvas, so hiding it would leave the blur with nothing to sample.
+    canvasHidden = modal.getModalIdx() < 0
+      && (lenisY < showTrigger
+        || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
+    canvas.style.display = canvasHidden ? 'none' : 'block';
+  }
+
+  function updatePullQuoteCopy(reveal) {
+    const p = reveal;
+    const arrive = (lag) => easeOutCubic(clamp01((p - lag) / (1 - lag)));
+    const lines = pq.lineEls;
+    const last = lines.length - 1;
+    let str = '';
+    const vals = [];
+    for (let i = 0; i < 3; i += 1) {
+      vals.push(arrive(PQ_COPY_LAG[i]));
+      str += `${vals[i].toFixed(3)};`;
+    }
+    // Each line snaps inside its own share; the shares stagger across the sweep.
+    const lineVals = lines.map((_, i) => {
+      const lag = last > 0 ? ((1 - PQ_COPY_LINE_SPAN) * i) / last : 0;
+      return easeOutExpo(clamp01((p - lag) / PQ_COPY_LINE_SPAN));
+    });
+    lineVals.forEach((v) => { str += `${v.toFixed(3)};`; });
+    if (str === pq.copyStr) return;
+    pq.copyStr = str;
+    for (let i = 0; i < 3; i += 1) {
+      pqEl.style.setProperty(`--gg-pq-copy-${PQ_COPY_KEYS[i]}`, vals[i].toFixed(3));
+    }
+    lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
+  }
+
+  function advanceReveal(zoomT) {
+    const fwd = zoomT >= pqAppearZoomT;
+    const step = (frameState.dtScale * TL.FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
+    pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
+    return pq.revealT;
+  }
+
+  function writePullQuoteFrame(reveal) {
+    const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
+    const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
+    writeFrameVars(hDrawn, vDrawn);
+    updatePullQuoteCopy(reveal);
+  }
+
+  // Fresh line elements carry no progress var, so the cache is dropped and the frame rewritten.
+  function relayoutQuote(force) {
+    if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
+    const w = pqEl.clientWidth;
+    if (!force && w === pq.splitW) return;
+    pq.splitW = w;
+    pq.quoteEl.style.removeProperty('font-size');
+    pq.quoteEl.style.removeProperty('letter-spacing');
+    pq.lineEls = layoutQuote(pq.quoteEl);
+    pq.copyStr = '';
+    if (!reducedMotion) {
+      const bandH = H - navH;
+      if (bandH > 0 && pqEl.scrollHeight > bandH) {
+        const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+        pq.quoteEl.style.letterSpacing = 'normal';
+        for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
+          const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+          const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
+          if (Math.abs(next - fs) < 0.5) break;
+          pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
+          pq.lineEls = layoutQuote(pq.quoteEl);
+        }
+      }
+      writePullQuoteFrame(pq.revealT);
+    }
+  }
+
+  function dropQuoteSelection() {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && pqEl.contains(sel.anchorNode)) sel.removeAllRanges();
+  }
+
+  function updatePullQuote(frame) {
+    if (reducedMotion || !pqEl) return;
+    const live = frame.zoomT >= pqAppearZoomT;
+    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
+    pqEl.style.pointerEvents = live ? 'auto' : 'none';
+    writePullQuoteFrame(advanceReveal(frame.zoomT));
+  }
+
+  // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
+  function updateSphereGroupDepth(frame) {
+    const { sphereFormT, zoomT } = frame;
+    const { FOLD_SPHERE_DIST, CAM_Z_SPHERE } = bp;
+    const sphereFormT3 = sphereFormT * sphereFormT * sphereFormT;
+    const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT3);
+    // For the hint-text stage: its plane scale tracks the live camera↔sphere distance.
+    frame.foldSphDist = foldSphDist;
+    const sphGroupZ = zoomT === 0 ? (camera.position.z - foldSphDist) : 0;
+    sphereGroup.position.z = sphGroupZ;
+    return sphGroupZ;
+  }
+
+  function updateArcCopy(frame) {
+    if (!arcCopy.el) return;
+    const arcCopyInE = easeOutCubic(Math.min(1, frame.arcCopyEntryT / TL.ARC_COPY_IN_ENTRY_T));
+    const arcCopyOutT = Math.max(0, Math.min(
+      1,
+      (frame.progress - TL.ARC_COPY_OUT_START) / (TL.ARC_COPY_OUT_END - TL.ARC_COPY_OUT_START),
+    ));
+    const arcCopyOutE = easeInOutCubic(arcCopyOutT);
+    const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
+    const arcCopySlide = 24 * (1 - arcCopyInE);
+    const opStr = arcCopyOp.toFixed(3);
+    const transformStr = `translateY(${arcCopySlide.toFixed(1)}px)`;
+    if (opStr !== arcCopy.opStr) { arcCopy.el.style.opacity = opStr; arcCopy.opStr = opStr; }
+    arcCopy.el.style.pointerEvents = arcCopyOp > 0 ? 'auto' : 'none';
+    if (transformStr !== arcCopy.transformStr) {
+      arcCopy.el.style.transform = transformStr;
+      arcCopy.transformStr = transformStr;
+    }
+  }
+
+  function renderScene(activeCamera) {
+    if (!canvasHidden) renderer.render(scene, activeCamera);
+    modal.render();
+  }
+
+  function placeSphereCard(card, mesh, frame) {
+    const { sphereRotActive, sphGroupZ } = frame;
+    mesh.visible = true;
+    const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
+    if (sphereRotActive) {
+      mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
+    } else {
+      mesh.position.copy(card.spherePos);
+    }
+    // Return early ONLY at depth ≤ 0 — a return leaves the transform stale, which scroll jitter
+    // shows as a flash.
+    const depth = camera.position.z - (sphGroupZ + mesh.position.z);
+    if (depth <= 0) { mesh.visible = false; return; }
+    // One band for the whole wall, so the order is purely by depth.
+    const fadeEnd = cardVanishDepth();
+    const fadeStart = bp.NEAR_FADE_START * fadeRefH;
+    const proxFade = clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
+    // Skip the DRAW, not the state updates, once fully faded.
+    mesh.visible = proxFade > 0;
+    mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
+    applyCardFit(mesh, card);
+    if (sphereRotActive) {
+      mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
+    } else {
+      mesh.quaternion.copy(card.sphereQuat);
+    }
+    applyCardFacing(mesh);
+    // Max dissolve, min opacity, so neither un-hides what the other hides.
+    const proxDis = 1 - proxFade;
+    const revealDis = 1 - card.revealT;
+    mesh.material.opacity = Math.min(proxFade ** NEAR_FADE_OPACITY_BIAS, card.revealT);
+    mesh.material.uniforms.uDissolve.value = Math.max(proxDis, revealDis);
+    mesh.material.uniforms.uDisperse.value = proxDis ** NEAR_FADE_DISPERSE_RAMP;
+    mesh.material.uniforms.uReveal.value = card.revealT;
+    mesh.material.uniforms.uContourFade.value = proxFade;
+    if (CA_ENABLED) {
+      mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
+    }
+    // World delta approximated as depth × angular velocity.
+    const dragDt = frameState.dtScale;
+    applyMotionCA(
+      mesh,
+      card.spherePos.z * drag.velX * dragDt,
+      -card.spherePos.z * drag.velY * dragDt,
+    );
+  }
+
+  function placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame) {
+    const { sphereRotActive } = frame;
+    mesh.visible = true;
+    // Sphere endpoint is fully rotated; the lerp itself unwinds it.
+    let sX; let sY; let sZ;
+    if (sphereRotActive) {
+      tmpVec3.copy(card.spherePos).applyQuaternion(sphereRotQuat);
+      sX = tmpVec3.x; sY = tmpVec3.y; sZ = tmpVec3.z;
+    } else {
+      sX = card.spherePos.x; sY = card.spherePos.y; sZ = card.spherePos.z;
+    }
+    mesh.position.set(
+      lerpN(stage.x, sX, fdE),
+      lerpN(stage.y, sY, fdE),
+      lerpN(stage.z, sZ, fdE),
+    );
+    // Hover lands before the fold ends, so scale for it here too or the card pops at fdE 1.
+    // Both axes, so applyCardFit's aspect is unchanged.
+    const hs = 1 + card.hoverT * HOVER_SCALE;
+    mesh.scale.set(
+      lerpN(stage.scale, card.sphereScaleSX, fdE) * hs,
+      lerpN(stage.scale, card.sphereScaleSY, fdE) * hs,
+      1,
+    );
+    applyCardFit(mesh, card); // reads the scale set just above, so the fold framing stays exact
+    // Slerp to the UPRIGHT grid quat, not the live peel spin, then reapply the residual peel
+    // spin about local Z. Both are load-bearing.
+    if (sphereRotActive) {
+      foldRotQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
+      mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
+    } else {
+      mesh.quaternion.slerpQuaternions(card.gridQuat, card.sphereQuat, fdE);
+    }
+    const residualZ = stage.rotZ - card.gridTilt;
+    if (residualZ !== 0) {
+      stageQuat.setFromEuler(stageEuler.set(0, 0, residualZ));
+      mesh.quaternion.multiply(stageQuat); // local-Z (in-plane) spin, post-multiply
+    }
+    // Blend by fdE so it lands continuous with placeSphereCard.
+    applyCardFacing(mesh, fdE);
+    mesh.material.opacity = 1;
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+  }
+
+  function placeGridCard(card, mesh, prevMeshX, prevMeshY, frame) {
+    const { sphGroupZ } = frame;
+    mesh.visible = true;
+    mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
+    mesh.scale.setScalar(card.gridScale);
+    applyCardFit(mesh, card, CARD_ASPECT);
+    mesh.quaternion.copy(card.gridQuat);
+    mesh.material.opacity = 1;
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+  }
+
+  // Transform on the arc→grid continuum at peel ease gpE (0 = arc, 1 = grid). Serves the
+  // arc/peel render AND the origin of the fold lerp.
+  function computeCardEntry(i, frame, out) {
+    const { N_TOTAL, ARC_DENSE_COUNT } = bp;
+    const rawT = clamp01(i / Math.max(1, N_TOTAL - 1));
+    const splitR = ARC_DENSE_COUNT / Math.max(1, N_TOTAL - 1);
+    out.fanT = rawT < splitR
+      ? (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT
+      : ARC_DENSE_SPLIT + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
+    const delay = TL.ARC_ENTRY_STAGGER
+      * Math.min(1, (1 - out.fanT) / (1 - ARC_DENSE_SPLIT));
+    const span = Math.max(0.01, 1 - TL.ARC_ENTRY_STAGGER);
+    const rotT = clamp01((frame.arcCopyEntryT - delay) / span);
+    out.rot = (1 - easeInOutQuint(rotT)) * TL.ENTRY_ROT_MAX;
+    return out;
+  }
+
+  function computeCardStage(card, i, gpE, frame, entry) {
+    const { arcScale, sphGroupZ } = frame;
+    const { fanT, rot: entryRot } = entry;
+    const fan = getFanData(fanT, arcCtx, fanScratch);
+    const wp = entryRot > 0.001
+      ? rotateArcPoint(fan.px, fan.py, entryRot, arcCtx, W, H, wpScratch)
+      : cssToWorld(fan.px, fan.py, W, H, wpScratch);
+    const webglRot = -fan.cssRot - entryRot;
+
+    // First peel frame's rotation, normalized within ±π of gridTilt. Direct z-angle lerp,
+    // NOT slerp.
+    if (gpE <= 0) {
+      card.peelStartRot = null;
+    } else if (card.peelStartRot == null) {
+      let startRot = webglRot;
+      while (startRot - card.gridTilt > Math.PI) startRot -= 2 * Math.PI;
+      while (startRot - card.gridTilt < -Math.PI) startRot += 2 * Math.PI;
+      card.peelStartRot = startRot;
+    }
+
+    stageScratch.x = lerpN(wp.x, card.gridPos.x, gpE);
+    stageScratch.y = lerpN(wp.y, card.gridPos.y, gpE);
+    stageScratch.z = lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE);
+    stageScratch.scale = lerpN(arcScale, card.gridScale, gpE);
+    stageScratch.rotZ = card.peelStartRot == null
+      ? webglRot
+      : card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE;
+    return stageScratch;
+  }
+
+  function placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY) {
+    mesh.visible = true;
+    applyCardFit(mesh, card, CARD_ASPECT); // first phase a card renders in — must fit here too
+    mesh.position.set(stage.x, stage.y, stage.z);
+    mesh.scale.setScalar(stage.scale);
+    mesh.rotation.set(0, 0, stage.rotZ);
+    mesh.material.opacity = 1;
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+  }
+
+  function applyCardOrder(card, mesh, i, frame) {
+    if (frame.sphereFormT <= CARD_ORDER_HANDOVER_T) {
+      mesh.renderOrder = CARD_ORDER_BASE + i;
+      return;
+    }
+    let { z } = card.spherePos;
+    if (frame.sphereRotActive) {
+      tmpVec3.copy(card.spherePos).applyQuaternion(sphereRotQuat);
+      z = tmpVec3.z;
+    }
+    const n = Math.max(-1, Math.min(1, z / bp.SPHERE_R));
+    let order = CARD_ORDER_BASE + Math.round(n * CARD_ORDER_STEPS);
+    if (n >= 0 && card.hoverT > 0.01) {
+      order = CARD_ORDER_BASE + CARD_ORDER_STEPS + 1 + Math.round(card.hoverT * HOVER_ORDER_STEPS);
+    }
+    mesh.renderOrder = order;
+  }
+
+  function updateCardTransform(i, frame) {
+    const { progress, gridFormT, gpWin, dtScale } = frame;
+    const { N_TOTAL } = bp;
+    const card = cards[i];
+    const { mesh } = card;
+
+    // modal.js drives the cards it manages (active + swipe-neighbours).
+    if (modal.isCardManaged(card)) return;
+
+    // Both BEFORE the branch reads them.
+    if (card.hasTexture && card.revealT < 1) {
+      card.revealT = Math.min(1, card.revealT + REVEAL_RATE * dtScale);
+    }
+    if (masonryMorph.active && card.morph) {
+      const e = easeInOutCubic(masonryMorph.t);
+      const mo = card.morph;
+      card.spherePos.lerpVectors(mo.posFrom, mo.posTo, e);
+      card.sphereQuat.slerpQuaternions(mo.quatFrom, mo.quatTo, e);
+      card.sphereScaleSX = lerpN(mo.ssxFrom, mo.ssxTo, e);
+      card.sphereScaleSY = lerpN(mo.ssyFrom, mo.ssyTo, e);
+      card.sphereWorldH = lerpN(mo.swhFrom, mo.swhTo, e);
+    }
+
+    const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * TL.GRID_PEEL_STAGGER;
+    const jitter = (card.peelJitter - 0.5) * TL.GRID_PEEL_JITTER;
+    const gpDelay = Math.max(0, Math.min(TL.GRID_PEEL_STAGGER, baseDelay + jitter));
+    const gpLocalT = clamp01((gridFormT - gpDelay) / Math.max(0.01, gpWin));
+    const gpE = easeOutCubic(gpLocalT);
+
+    // Gated on the RAW peel localT, not the eased gpE.
+    const foldStartProg = TL.cardFoldStartProgress(gpDelay);
+    const fdLocalT = clamp01((progress - foldStartProg) / TL.PROGRESS_FOLD_DUR);
+    const fdE = gpLocalT >= TL.FOLD_START_LOCAL_T ? easeInOutCubic(fdLocalT) : 0;
+
+    const entry = computeCardEntry(i, frame, entryScratch);
+
+    let cardCA = 0;
+    if (CA_ENABLED) {
+      cardCA = Math.max(
+        entry.rot / TL.ENTRY_ROT_MAX,
+        gpE * (1 - gpE) * 4,
+        fdE * (1 - fdE) * 4,
+      ) * CA_STRENGTH; // written to uCA with the hover term below
+    }
+
+    // Gates on the GLOBAL live predicate, not per-card fdE. Must match interaction.js: hoverTarget
+    // is only rewritten on pointermove, so a pointer parked over a card while the page scrolls past
+    // the cue would otherwise hold its hover.
+    if (!globeLive() || reducedMotion) card.hoverTarget = 0;
+    card.hoverT += (card.hoverTarget - card.hoverT) * (1 - (1 - HOVER_RATE) ** dtScale);
+
+    // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
+    // card still folding at fdE 0.999 would raise hoverT and render nothing.
+    if (CA_ENABLED) {
+      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA
+        + sphereDragWarp * SPHERE_DRAG_CA_MUL;
+      mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP;
+      if (card.hoverT > 0.01) {
+        mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
+      } else {
+        mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
+      }
+    }
+
+    // uDissolve is shared with the sphere phase's near-camera dissolve, so it must be reset
+    // every frame.
+    mesh.material.uniforms.uReveal.value = card.revealT;
+    mesh.material.uniforms.uContourFade.value = 1;
+    mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
+    mesh.material.uniforms.uDisperse.value = 0;
+
+    const prevMeshX = mesh.position.x;
+    const prevMeshY = mesh.position.y;
+
+    // Latest phase first. Sphere + settled-grid skip the stage compute.
+    if (fdE >= 1) {
+      placeSphereCard(card, mesh, frame);
+    } else if (gpE >= 1 && fdE === 0) {
+      placeGridCard(card, mesh, prevMeshX, prevMeshY, frame);
+    } else {
+      const stage = computeCardStage(card, i, gpE, frame, entry);
+      if (fdE > 0) placeFoldingCard(card, mesh, fdE, stage, prevMeshX, prevMeshY, frame);
+      else placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY);
+    }
+    applyCardOrder(card, mesh, i, frame);
+  }
+
+  function updateCardTransforms(frame) {
+    if (masonryMorph.active) {
+      masonryMorph.t = Math.min(1, masonryMorph.t + MASONRY_MORPH_RATE * frame.dtScale);
+    }
+    for (let i = 0; i < bp.N_TOTAL; i += 1) updateCardTransform(i, frame);
+    if (masonryMorph.active && masonryMorph.t >= 1) {
+      masonryMorph.active = false;
+      for (let i = 0; i < cards.length; i += 1) { if (cards[i]) cards[i].morph = null; }
+      recomputeDragFlip(); // now that spherePos/sphereWorldH hold the final masonry values
+    }
+  }
+
+  function updateHintExit(frame) {
+    if (!hintRetired || hintExitT >= 1) return;
+    hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
+  }
+
+  // Reads frame.foldSphDist, so it runs after the fold.
+  function updateClickDragText(frame) {
+    if (!textMesh) return;
+    const { sphereFormT, zoomT, foldSphDist } = frame;
+    const { uniforms } = textMesh.material;
+
+    if (reducedMotion) {
+      textMesh.visible = true;
+      textMesh.scale.setScalar(1);
+      uniforms.uOpacity.value = TEXT_OPACITY_RESTING;
+      uniforms.uWarp.value = 0;
+      uniforms.uZoom.value = 0;
+      uniforms.uCA.value = 0;
+      uniforms.uExitP.value = 0;
+      return;
+    }
+    if (sphereFormT <= TL.TEXT_APPEAR_START) {
+      textMesh.visible = false;
+      textMesh.scale.setScalar(1); // plane is viewport-sized; the warp does the entrance
+      return;
+    }
+
+    const { CAM_Z_SPHERE, SPHERE_R } = bp;
+    // Entrance resolves ON the interactive gate, not at sphereFormT 1.
+    const sfRaw = (sphereFormT - TL.TEXT_APPEAR_START)
+      / (TL.SPHERE_INTERACTIVE_T - TL.TEXT_APPEAR_START);
+    const sfT = clamp01(sfRaw);
+    const txtT = easeOutCubic(sfT);
+    const txtWarpEntrance = lerpN(TEXT_WARP_ENTER_MAX, 0, sfT * sfT);
+    // Fill the viewport at the current camera distance + warp-proportional overflow.
+    const restDist = CAM_Z_SPHERE + SPHERE_R + TEXT_BEHIND_GAP;
+    const currDist = foldSphDist + SPHERE_R + TEXT_BEHIND_GAP;
+    textMesh.scale.setScalar(currDist / restDist + txtWarpEntrance * TEXT_WARP_OVERFLOW);
+    const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
+      * (1 - clamp01(zoomT / pqAppearZoomT));
+
+    textMesh.visible = txtOp > 0.001 && hintExitT < 1;
+    uniforms.uOpacity.value = txtOp;
+    uniforms.uZoom.value = zoomT;
+    uniforms.uWarp.value = txtWarpEntrance;
+    uniforms.uExitP.value = hintExitT;
+
+    if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
+  }
+
+  // Stage order is FIXED and load-bearing.
+  function tick(now) {
+    if (!renderer || !scene || !camera || !sphereGroup) return;
+
+    const frame = computeFrame(now);
+    arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN, bp.ARC_RAMP_T);
+
+    a11y.updateTabStops();
+    frame.activeCamera = updateActiveCamera(frame);
+    frame.sphereRotActive = updateSphereRotation(frame);
+    modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
+    modal.updateDesktopNav();
+    updateCanvasVisibility(frame);
+    updatePullQuote(frame);
+
+    renderer.sortObjects = true;
+
+    frame.sphGroupZ = updateSphereGroupDepth(frame);
+    updateCardTransforms(frame);
+    updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
+    updateHintExit(frame);
+
+    updateClickDragText(frame);
+    cursor.update();
+    interaction.applyCursor();
+    controls.update();
+    updateArcCopy(frame);
+    renderScene(frame.activeCamera);
+  }
+
+  let rafId = 0;
+  function rafLoop(now) { tick(now); rafId = requestAnimationFrame(rafLoop); }
+  function startTicker() {
+    if (rafId) return;
+    // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
+    frameInput.prevLenisY = readScrollY();
+    frameInput.prevNow = 0;
+    rafId = requestAnimationFrame(rafLoop);
+  }
+  function stopTicker() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    // Inertia can't coast while the loop is parked — retire it.
+    drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
+  }
+  function syncTicker() {
+    if (renderReady && onScreen) {
+      startTicker();
+    } else {
+      stopTicker();
+      if (renderer) renderer.domElement.style.display = 'none';
+    }
+  }
+
+  const MAX_CONTEXT_REBUILDS = 4;
+  const CONTEXT_STABLE_MS = 10000;
+  const ctxLoss = { rebuilds: 0, stableTimer: 0, recovering: false, recoverTimer: 0 };
+  function onContextLost(e) {
+    e.preventDefault();
+    if (ctxLoss.stableTimer) { clearTimeout(ctxLoss.stableTimer); ctxLoss.stableTimer = 0; }
+    stopTicker();
+    renderReady = false;
+    window.lana?.log?.('globe-gallery: WebGL context lost', { tags: 'globe-gallery', severity: 'warn' });
+  }
+  function recoverFromContextLoss() {
+    ctxLoss.recoverTimer = 0;
+    ctxLoss.recovering = false;
+    ctxLoss.rebuilds += 1;
+    const collapsed = ctxLoss.rebuilds > MAX_CONTEXT_REBUILDS;
+    window.lana?.log?.(
+      collapsed
+        ? 'globe-gallery: WebGL context keeps failing — collapsing'
+        : 'globe-gallery: WebGL context restored — rebuilding',
+      { tags: 'globe-gallery', severity: collapsed ? 'error' : 'info' },
+    );
+    // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
+    destroy();
+    // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
+    if (collapsed || initRuntime() === false) {
+      root.classList.add('globe-gallery-empty');
+      return;
+    }
+    ctxLoss.stableTimer = window.setTimeout(() => {
+      ctxLoss.rebuilds = 0; ctxLoss.stableTimer = 0;
+    }, CONTEXT_STABLE_MS);
+  }
+  function onContextRestored() {
+    if (ctxLoss.recovering) return; // coalesce the main + modal canvases' restore events (README)
+    ctxLoss.recovering = true;
+    ctxLoss.recoverTimer = window.setTimeout(recoverFromContextLoss, 0);
+  }
+  function bindContextListeners(add) {
+    const fn = add ? 'addEventListener' : 'removeEventListener';
+    [q('.globe-gallery-canvas'), q('.globe-gallery-modal-canvas')].forEach((c) => {
+      if (!c) return;
+      c[fn]('webglcontextlost', onContextLost, false);
+      c[fn]('webglcontextrestored', onContextRestored, false);
+    });
+  }
+
+  let resizeHandler = null;
+  let textRebuildTimer = 0;
+  let reducedMotionMQ = null;
+  let reducedMotionHandler = null;
+  function detachReducedMotion() {
+    if (reducedMotionMQ && reducedMotionHandler) {
+      reducedMotionMQ.removeEventListener('change', reducedMotionHandler);
+    }
+    reducedMotionMQ = null;
+    reducedMotionHandler = null;
+  }
+  let appliedDpr = 0;
+  let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
+  let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility
+  let layoutWaitObs = null;
+  function disconnectObservers() {
+    [layoutObs, intersectionObs, layoutWaitObs].forEach((o) => o && o.disconnect());
+    layoutObs = null;
+    intersectionObs = null;
+    layoutWaitObs = null;
+  }
+  let textureLoadGeneration = 0;
+
+  function initRuntime() {
+    const canvas = q('.globe-gallery-canvas');
+    if (!canvas) return false;
+
+    // See README (Zero-box gate).
+    if (root.offsetHeight <= 0) {
+      if (!layoutWaitObs) {
+        layoutWaitObs = new ResizeObserver(() => {
+          if (root.offsetHeight <= 0) return;
+          layoutWaitObs.disconnect();
+          layoutWaitObs = null;
+          if (initRuntime() === false) root.classList.add('globe-gallery-empty');
+        });
+        layoutWaitObs.observe(root);
+      }
+      return undefined;
+    }
+
+    reducedMotion = prefersReducedMotion();
+    root.classList.toggle('globe-gallery-reduced', reducedMotion);
+
+    // RM: canvas into normal flow so the globe scrolls away. Non-RM must restate `fixed` — the
+    // only other place it is set is the inline style this would otherwise clear.
+    canvas.style.position = reducedMotion ? 'absolute' : 'fixed';
+
+    W = window.innerWidth;
+    H = measureViewportH();
+
+    const band = resolveBP(W);
+    bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
+    publishPqAppearZoomT();
+
+    try {
+      const aa = bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD;
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: aa, alpha: true });
+    } catch (e) {
+      renderer = null;
+      return false;
+    }
+    appliedDpr = capDpr();
+    renderer.setPixelRatio(appliedDpr);
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x000000, 0);
+    renderer.sortObjects = false; // we manage order via mesh.renderOrder
+
+    bindContextListeners(true);
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(CAM_FOV, W / H, 0.1, 5000);
+    camera.position.set(0, 0, arcCamZ(H));
+    camera.lookAt(0, 0, 0);
+    appliedViewOffsetY = null;
+
+    // Arc phase: flat 2D, 1 world unit = 1 CSS pixel.
+    cameraOrtho = new THREE.OrthographicCamera(-W / 2, W / 2, H / 2, -H / 2, 1, 5000);
+    cameraOrtho.position.set(0, 0, 100);
+    cameraOrtho.lookAt(0, 0, 0);
+
+    function doLayout({ fromResize = false } = {}) {
+      measureBlock();
+      readCssVars();
+      const nextW = window.innerWidth;
+      const nextH = measureViewportH();
+      if (fromResize && nextW === W && nextH === H) {
+        relayoutQuote(); // the quote box can change width without the viewport doing so
+        publishPqMetrics();
+        return;
+      }
+      W = nextW;
+      H = nextH;
+      appliedViewOffsetY = null;
+
+      // A band crossing or RM toggle rebuilds (geometry is baked at build time); resizing
+      // within a band takes the cheap path.
+      const nextBand = resolveBP(W);
+      const nextReducedMotion = prefersReducedMotion();
+      if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
+        // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
+        destroy();
+        if (initRuntime() === false) root.classList.add('globe-gallery-empty');
+        return;
+      }
+      const dpr = capDpr();
+      if (dpr !== appliedDpr) {
+        appliedDpr = dpr;
+        renderer.setPixelRatio(dpr);
+      }
+      renderer.setSize(W, H);
+      modal.resize(W, H);
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      cameraOrtho.left = -W / 2;
+      cameraOrtho.right = W / 2;
+      cameraOrtho.top = H / 2;
+      cameraOrtho.bottom = -H / 2;
+      cameraOrtho.updateProjectionMatrix();
+      computeGridLayout();
+      // Deferred only while off-screen.
+      if (textMesh) {
+        clearTimeout(textRebuildTimer);
+        textRebuildTimer = 0;
+        if (textMesh.visible) {
+          buildTextMesh();
+        } else {
+          textRebuildTimer = setTimeout(() => {
+            textRebuildTimer = 0;
+            if (textMesh) buildTextMesh();
+          }, TEXT_REBUILD_DEBOUNCE_MS);
+        }
+      }
+      relayoutQuote(); // before the metrics: the split settles the box they measure
+      publishPqMetrics();
+    }
+    doLayout();
+    // A webfont landing after first layout retypesets the quote.
+    if (document.fonts && document.fonts.ready) {
+      const afterFonts = () => { relayoutQuote(true); publishPqMetrics(); };
+      document.fonts.ready.then(afterFonts, afterFonts);
+    }
+    if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+    resizeHandler = () => doLayout({ fromResize: true });
+    window.addEventListener('resize', resizeHandler, { passive: true });
+
+    // RM can toggle mid-session without a resize.
+    detachReducedMotion();
+    reducedMotionMQ = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? null;
+    if (reducedMotionMQ) {
+      reducedMotionHandler = () => doLayout();
+      reducedMotionMQ.addEventListener('change', reducedMotionHandler);
+    }
+
+    disconnectObservers();
+
+    // Page height changes shift offsetTop with no window resize behind them.
+    layoutObs = new ResizeObserver(() => doLayout({ fromResize: true }));
+    layoutObs.observe(document.body);
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      intersectionObs = new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+        syncTicker();
+      }, { rootMargin: '100% 0px 100% 0px' });
+      intersectionObs.observe(root);
+    }
+
+    interaction.setup(canvas);
+    if (!bp.CYLINDER && !reducedMotion) cursor.setup(canvas);
+    root.classList.toggle('globe-gallery-barrel', bp.CYLINDER);
+
+    window.addEventListener('blur', armFocusGuard);
+    window.addEventListener('focus', disarmFocusGuard);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    canvas.style.display = 'block';
+
+    arcCopy.el = q('.globe-gallery-arc-copy');
+    arcCopy.opStr = '';
+    arcCopy.transformStr = '';
+
+    modal.setup();
+
+    buildCards();
+
+    if (!bp.CYLINDER) buildTextMesh();
+    renderer.compile(scene, camera);
+    a11y.setup();
+    controls.setup();
+
+    renderReady = true;
+    syncTicker();
+
+    const loadGeneration = textureLoadGeneration;
+    const onEachTexture = (i, tex, srcAspect) => {
+      if (loadGeneration !== textureLoadGeneration) { tex.dispose(); return; }
+      textures[i] = tex;
+      cardAspects[i] = srcAspect;
+      const card = cards[i];
+      if (!card) return;
+      card.mesh.material.map = tex; // property proxy writes uMap
+      renderer.initTexture(tex);
+      card.srcAspect = srcAspect; // every phase's fit derives from it; the modal falls back to it
+      // md sizes per-card in place; sm re-solves its packing in onDone.
+      if (!bp.CYLINDER) updateCardSphereSizing(card, srcAspect);
+      card.hasTexture = true; // revealT eases up in updateCardTransform
+    };
+    const onDoneTextures = (loadedTextures, loadedAspects) => {
+      if (loadGeneration !== textureLoadGeneration) {
+        loadedTextures.forEach((t) => t && t.dispose());
+        return;
+      }
+      textures = loadedTextures;
+      cardAspects = loadedAspects;
+      if (bp.CYLINDER) resolveMasonryLayout(); // recomputeDragFlip runs when the morph settles
+      else recomputeDragFlip();
+    };
+    const cardMaxTexH = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
+    loadCardTextures({
+      count: bp.N_TOTAL,
+      // Ask at the cap, by HEIGHT, matching fitCardDims.
+      getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTexH, 'height'),
+      maxTexH: cardMaxTexH,
+    }, onEachTexture, onDoneTextures);
+    return true;
+  }
+
+  function destroy() {
+    stopTicker();
+    renderReady = false;
+    textureLoadGeneration += 1; // invalidate any loadCardTextures callback still in flight
+
+    onScreen = true; // reset the visibility default; the next init's observer re-corrects it
+    bindContextListeners(false);
+    if (ctxLoss.stableTimer) { clearTimeout(ctxLoss.stableTimer); ctxLoss.stableTimer = 0; }
+    if (ctxLoss.recoverTimer) { clearTimeout(ctxLoss.recoverTimer); ctxLoss.recoverTimer = 0; }
+    ctxLoss.recovering = false;
+    disconnectObservers();
+    if (resizeHandler) {
+      window.removeEventListener('resize', resizeHandler);
+      resizeHandler = null;
+    }
+    if (textRebuildTimer) { clearTimeout(textRebuildTimer); textRebuildTimer = 0; }
+    detachReducedMotion();
+    window.removeEventListener('blur', armFocusGuard);
+    window.removeEventListener('focus', disarmFocusGuard);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    interaction.teardown();
+    cursor.teardown();
+    controls.teardown();
+    if (renderer) {
+      // Do NOT forceContextLoss() here — the canvas is reused across rebuilds and a force-lost
+      // context never restores.
+      renderer.dispose();
+      renderer.domElement.style.display = 'none';
+    }
+    for (let i = 0; i < cards.length; i += 1) {
+      const card = cards[i];
+      const { mesh } = card;
+      if (mesh) {
+        const mm = card.modalMat;
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) mesh.material.dispose();
+        if (mesh.origMaterial && mesh.origMaterial !== mesh.material) mesh.origMaterial.dispose();
+        if (mm && mm !== mesh.material && mm !== mesh.origMaterial) mm.dispose();
+      }
+    }
+    for (let i = 0; i < textures.length; i += 1) {
+      if (textures[i]) textures[i].dispose();
+    }
+    if (placeholderTex) { placeholderTex.dispose(); placeholderTex = null; }
+    masonryMorph.active = false; masonryMorph.t = 0;
+    // Otherwise a band crossing pairs the old band's card height with the new band's SPHERE_R
+    // in publishPqAppearZoomT, which runs before any card exists.
+    fadeRefH = 0;
+    cards = [];
+    textures = [];
+    cardAspects = [];
+    disposeTextMesh();
+    hintRetired = false;
+    hintExitT = 0;
+    if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
+    renderer = null; scene = null; camera = null; cameraOrtho = null; sphereGroup = null;
+    modal.destroy();
+    a11y.teardown();
+    if (arcCopy.el) arcCopy.el.style.cssText = '';
+    if (pqEl) {
+      pqEl.style.cssText = '';
+      pq.frameStr = '';
+      pq.copyStr = '';
+      pq.revealT = 0;
+    }
+    frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
+    canvasHidden = false;
+    // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
+    resetSphereOrientation();
+    sphereDragWarp = 0;
+    drag.isDragging = false;
+    drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
+    wasBrowsing = false;
+    // NOTE: `bp` intentionally NOT cleared — doLayout compares it, initRuntime overwrites it.
+  }
+
+  return { init: initRuntime, destroy };
+}
+
+export default async function init(el) {
+  if (prefersReducedMotion()) {
+    el.classList.add('globe-gallery-reduced');
+  }
+
+  // Before buildGlobeDom() wipes the children.
+  const {
+    arcCopy, pullQuote, hintText, touchHint, instructions, labels, fragmentHref,
+  } = parseAuthoredContent(el);
+
+  const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint });
+
+  const authored = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  if (!authored || authored.length === 0) {
+    el.classList.add('globe-gallery-empty');
+    return el;
+  }
+  const runtime = createGlobeGalleryRuntime(
+    scatterCards(authored),
+    hintText,
+    instructions,
+    el,
+    gid,
+    labels,
+  );
+  if (!runtime) { el.classList.add('globe-gallery-empty'); return el; }
+  if (runtime.init() === false) { el.classList.add('globe-gallery-empty'); return el; }
+  el.globeRuntime = runtime;
+
+  const removalObserver = new MutationObserver(() => {
+    if (document.contains(el)) return;
+    runtime.destroy();
+    removalObserver.disconnect();
+  });
+  removalObserver.observe(document.body, { childList: true, subtree: true });
+
+  return el;
+}

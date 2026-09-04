@@ -3441,4 +3441,75 @@ describe('Utils', () => {
       expect(result).to.equal('be');
     });
   });
+
+  describe('geo-ip sheet prewarm', () => {
+    let warmCount = 0;
+    let savedFetch;
+
+    const geoUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    // Unique contentRoot per test → unique sheet URL → sidesteps the module-level
+    // warm dedupe cache, so getGeoIpWarmSheet reflects only this test's warm.
+    const setup = ({ lingo = true, geoLcp = false } = {}) => {
+      warmCount += 1;
+      utils.setConfig({ ...config, contentRoot: `/geo-warm-${warmCount}` });
+      document.head.innerHTML = head;
+      if (lingo) document.head.appendChild(createTag('meta', { name: 'langfirst', content: 'on' }));
+      if (geoLcp) document.head.appendChild(createTag('meta', { name: 'geo-ip-lcp', content: 'on' }));
+    };
+
+    const fragmentArea = (html) => {
+      const area = createTag('div');
+      area.innerHTML = html;
+      return area;
+    };
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      window.fetch = mockFetch({ payload: { data: [] } });
+    });
+
+    afterEach(() => {
+      window.fetch = savedFetch;
+    });
+
+    it('warms when a -geo-ip token is in the first section', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('warms on the geo-ip-lcp opt-in even with no token in the section', async () => {
+      setup({ geoLcp: true });
+      const url = geoUrl();
+      document.body.innerHTML = '<main><div>no token here</div></main>';
+      await utils.loadArea();
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('does not warm when there is no token and no opt-in', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>plain copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm when lingo is inactive even if a token is present', async () => {
+      setup({ lingo: false });
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm on a bare -geo-ip substring with no token closer', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+  });
 });
