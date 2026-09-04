@@ -136,6 +136,20 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
 
+    it('excludes authored merch/mas blocks, not just link-derived autoblocks', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="merch"></div>
+        <div class="mas-compare-chart-autoblock"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      // a normal authored block still warms...
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      // ...but authored commerce blocks are excluded like the autoblock ones
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
     it('only warms the video autoblock for media_*.mp4 anchors', () => {
       document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
       utils.preloadLcpCodeFiles();

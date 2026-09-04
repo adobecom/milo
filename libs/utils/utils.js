@@ -2309,8 +2309,10 @@ export function preloadLcpCodeFiles(area = document) {
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
   }
-  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
-  const autoBlockEls = [...autoNames].filter((name) => !/merch|^mas-/.test(name)).map((name) => createTag('div', { class: name }));
+  const isCommerceBlock = (name) => /merch|^mas-/.test(name);
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+    .filter((el) => !isCommerceBlock(el.classList[0]));
+  const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks);
 
