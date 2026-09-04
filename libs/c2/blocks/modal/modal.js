@@ -268,6 +268,7 @@ export async function getModal(details, custom) {
     window.lenis?.stop();
     const curtain = createTag('div', {
       class: 'modal-curtain is-open',
+      'data-modal-id': id,
       'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
     });
     curtain.addEventListener('click', (e) => {
