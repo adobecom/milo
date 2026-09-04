@@ -252,6 +252,24 @@ const loadSlideMedia = (slide) => {
   loadVideo(slide?.querySelector('video'));
 };
 
+const promotePoster = (video) => {
+  if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
+    video.setAttribute('poster', video.dataset.rmPoster);
+  }
+};
+
+const preloadRemainingSlides = (slides) => {
+  const warm = () => {
+    slides.forEach((slide) => {
+      if (slide.classList.contains('is-active')) return;
+      loadSlideImage(slide);
+      promotePoster(slide.querySelector('video'));
+    });
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 5000 });
+  else setTimeout(warm, 2000);
+};
+
 const playActiveVideo = (video) => {
   loadVideo(video);
   if (!prefersReducedMotion()) video.play().catch(() => {});
@@ -778,6 +796,7 @@ export default function init(el) {
     setSlideObserver(slides);
     setAnalytics(slides, cards, container, el);
     autoplayControllers.push(startAutoplay(slides, cards, container, el));
+    preloadRemainingSlides([...slides]);
   };
 
   loadViewportVideos(el);
