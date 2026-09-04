@@ -596,6 +596,14 @@ header.global-navigation.has-breadcrumbs.is-compact {
   padding-bottom: 0;
 }
 
+header.global-navigation.is-compact .feds-navItem--active > .feds-navLink {
+  font-weight: 400;
+}
+
+header.global-navigation.is-compact .feds-navItem--active > .feds-navLink::before {
+  display: none;
+}
+
 header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .feds-navLink::before {
   display: none;
 }
