@@ -852,7 +852,6 @@ class Gnav {
         }
 
         // On mobile (or forced-compact), breadcrumbs are before the search and nav,
-        // i.e. inside the drawer (hidden until the hamburger is opened).
         if (this.elements.navWrapper instanceof HTMLElement
           && this.elements.breadcrumbsWrapper instanceof HTMLElement) {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
@@ -860,8 +859,6 @@ class Gnav {
       }
     };
     isDesktop.addEventListener('change', syncElementOrder);
-    // Forced-compact at desktop width is effectively mobile; keep DOM order in sync
-    // when the compact state toggles so the breadcrumb moves into/out of the drawer.
     if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', syncElementOrder);
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
