@@ -41,9 +41,16 @@ export function hasChatCookie() {
 
 export function setCssGnavHeight() {
   const gnav = document.querySelector('header.global-navigation');
+  const localGnav = document.querySelector('div.feds-localnav');
+  const localNavStyle = localGnav ? getComputedStyle(localGnav) : null;
+  const localNavOn = localGnav && localNavStyle ? localNavStyle.display !== 'none' : false;
+
   if (!gnav) return;
-  const gnavHeight = gnav.getBoundingClientRect().height;
-  document.documentElement.style.setProperty('--bc-gnav-height', `${gnavHeight}px`);
+  const rootStyles = getComputedStyle(document.documentElement);
+  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
+  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
+  const newHeight = gnavHeight + (localGnav && localNavOn ? localNavHeight : 0);
+  document.documentElement.style.setProperty('--bc-gnav-height', `${newHeight}px`);
 }
 
 export function handleConsent(el) {
@@ -392,6 +399,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   if (variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
+  let pillVisibilityRaf;
   function updatePillVisibility(target) {
     const prompts = target.querySelector('.bc-prompt-cards');
     if (!prompts) return;
@@ -399,7 +407,9 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
     const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
     buttons.forEach((btn) => { btn.style.display = ''; });
 
-    requestAnimationFrame(() => {
+    if (pillVisibilityRaf) cancelAnimationFrame(pillVisibilityRaf);
+    pillVisibilityRaf = requestAnimationFrame(() => {
+      pillVisibilityRaf = null;
       const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
 
       buttons.forEach((btn) => {
@@ -417,12 +427,10 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
-  const updateLayout = () => {
-    updatePillVisibility(floatingInput);
-  };
+  const updateLayout = () => updatePillVisibility(floatingInput);
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;
