@@ -2836,6 +2836,78 @@ describe('Utils', () => {
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
+
+    it('prefers akamaiLocale over IMS country when no country cookie and mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca', true)).to.equal('fr');
+    });
+
+    it('prefers country cookie over IMS country even when mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', 'be', null, 'ca', true)).to.equal('be');
+    });
+
+    it('falls through to akamaiLocale when cookie and IMS country are absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, null)).to.equal('fr');
+    });
+
+    it('uses IMS country as last resort when mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', true)).to.equal('ca');
+    });
+
+    it('ignores IMS country and falls back to geo hint when mas-ims-login is not enabled', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca', false)).to.equal('ng');
+    });
+
+    it('ignores IMS country when imsLoginEnabled is omitted', () => {
+      expect(utils.computeDetectedMarketCountry('', null, 'ng', 'ca')).to.equal('ng');
+    });
+  });
+
+  describe('isMasImsLoginEnabled', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      document.querySelector('meta[name="mas-ims-login"]')?.remove();
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns false when the mas-ims-login metadata is absent', () => {
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('returns false when the mas-ims-login metadata is not "on"', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'off');
+      document.head.append(meta);
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('returns true when the mas-ims-login metadata is "on"', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      expect(utils.isMasImsLoginEnabled()).to.be.true;
+    });
+
+    it('returns true when the mas-ims-login query param is "on"', () => {
+      window.history.pushState({}, '', '/?mas-ims-login=on');
+      expect(utils.isMasImsLoginEnabled()).to.be.true;
+    });
+
+    it('returns false when the mas-ims-login query param is not "on"', () => {
+      window.history.pushState({}, '', '/?mas-ims-login=off');
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
+
+    it('prefers the mas-ims-login query param over the metadata value', () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      window.history.pushState({}, '', '/?mas-ims-login=off');
+      expect(utils.isMasImsLoginEnabled()).to.be.false;
+    });
   });
 
   describe('getCountry query params', () => {
@@ -3260,6 +3332,112 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'ch');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.be.null;
+    });
+  });
+
+  describe('resolveDetectedMarketCountry with ims_country_code cookie', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'ims_country_code=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.querySelector('meta[name="mas-ims-login"]')?.remove();
+    });
+
+    it('uses ims_country_code cookie when no country cookie and mas-ims-login is enabled', async () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ims-login');
+      meta.setAttribute('content', 'on');
+      document.head.append(meta);
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('ca');
+    });
+
+    it('ignores ims_country_code cookie when mas-ims-login is not enabled', async () => {
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('fr');
+    });
+
+    it('prefers country cookie over ims_country_code cookie', async () => {
+      document.cookie = 'country=be; path=/';
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('be');
+    });
+  });
+
+  describe('geo-ip sheet prewarm', () => {
+    let warmCount = 0;
+    let savedFetch;
+
+    const geoUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    // Unique contentRoot per test → unique sheet URL → sidesteps the module-level
+    // warm dedupe cache, so getGeoIpWarmSheet reflects only this test's warm.
+    const setup = ({ lingo = true, geoLcp = false } = {}) => {
+      warmCount += 1;
+      utils.setConfig({ ...config, contentRoot: `/geo-warm-${warmCount}` });
+      document.head.innerHTML = head;
+      if (lingo) document.head.appendChild(createTag('meta', { name: 'langfirst', content: 'on' }));
+      if (geoLcp) document.head.appendChild(createTag('meta', { name: 'geo-ip-lcp', content: 'on' }));
+    };
+
+    const fragmentArea = (html) => {
+      const area = createTag('div');
+      area.innerHTML = html;
+      return area;
+    };
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      window.fetch = mockFetch({ payload: { data: [] } });
+    });
+
+    afterEach(() => {
+      window.fetch = savedFetch;
+    });
+
+    it('warms when a -geo-ip token is in the first section', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('warms on the geo-ip-lcp opt-in even with no token in the section', async () => {
+      setup({ geoLcp: true });
+      const url = geoUrl();
+      document.body.innerHTML = '<main><div>no token here</div></main>';
+      await utils.loadArea();
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('does not warm when there is no token and no opt-in', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>plain copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm when lingo is inactive even if a token is present', async () => {
+      setup({ lingo: false });
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm on a bare -geo-ip substring with no token closer', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
     });
   });
 });

@@ -16,6 +16,7 @@
 import {
   parseEncodedConfig,
   loadScript,
+  loadStyle,
   loadLink,
   localizeLinkAsync,
   createTag,
@@ -58,7 +59,43 @@ const FORM_MAP = {
   'hardcoded-poi': 'program.poi',
   'cta-override': 'form.cta.override',
 };
-export const FORM_PARAM = 'form';
+export const UNGATED_PARAM = 'form';
+export const FORM_ID_PARAM = 'marketoform';
+export const NAMED_FORM_IDS = { stage: '1723', prod: '2277' };
+export const MARKETO_LIBS_PARAM = 'marketolibs';
+export const MARKETO_LIBS_META = 'marketo-libs';
+export const MARKETO_LIBS_CLASS = 'da-marketo';
+const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
+
+export function getMarketoLibsBase(el, location = window.location, getMeta = getMetadata) {
+  const { hostname, search } = location;
+  const param = new URLSearchParams(search).get(MARKETO_LIBS_PARAM);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (meta) branch = 'main';
+  if (el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  if (param != null) branch = param || 'main';
+  if (!branch) return null;
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) throw new Error(`Invalid ${MARKETO_LIBS_PARAM} branch name: ${branch}`);
+  if (!['.aem.', '.hlx.', '.stage.', 'local', '.da.'].some((i) => hostname.includes(i))) return '/mkto';
+  if (branch === 'local') return 'http://localhost:6586/mkto';
+  return branch.includes('--')
+    ? `https://${branch}.aem.live/mkto`
+    : `https://${branch}--da-marketo--adobecom.aem.live/mkto`;
+}
+
+export async function loadDaMarketoBlock(el, marketoBase) {
+  try {
+    loadStyle(`${marketoBase}/blocks/da-marketo/da-marketo.css`);
+    const { default: daInit } = await import(`${marketoBase}/blocks/da-marketo/da-marketo.js`);
+    await daInit(el);
+    return true;
+  } catch (e) {
+    window.lana?.log(`da-marketo block load failed: ${e.message}`, { tags: 'marketo', severity: 'w' });
+    return false;
+  }
+}
 
 const isVisible = (el) => !!el && (typeof el.checkVisibility === 'function'
   ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
@@ -416,6 +453,9 @@ function decorateForm(el, formData) {
 }
 
 export default async function init(el) {
+  const marketoBase = getMarketoLibsBase(el);
+  if (marketoBase && await loadDaMarketoBlock(el, marketoBase)) return;
+
   setDataLayer(FORM_STATUS, 'init');
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
@@ -440,6 +480,17 @@ export default async function init(el) {
     }
   });
 
+  const isProd = getConfig().env?.name === 'prod';
+  const searchParams = new URLSearchParams(window.location.search);
+  const formIdParam = searchParams.get(FORM_ID_PARAM);
+  const setFormId = formIdParam in NAMED_FORM_IDS ? NAMED_FORM_IDS[formIdParam] : formIdParam;
+
+  if (/^\d{4}$/.test(setFormId)) {
+    if (!isProd || Object.values(NAMED_FORM_IDS).includes(setFormId)) {
+      formData[FORM_ID] = setFormId;
+    }
+  }
+
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
@@ -450,8 +501,7 @@ export default async function init(el) {
     return;
   }
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const ungated = searchParams.get(FORM_PARAM) === 'off';
+  const ungated = searchParams.get(UNGATED_PARAM) === 'off';
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');

@@ -1,9 +1,6 @@
 :root {
   interpolate-size: allow-keywords;
 
-  --mep-overline-font: normal 500 12px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
-  --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
-
   --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 24px var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-h2-font: normal 500 var(--Static-Title-Medium-Size, 16px) / var(--Static-Title-Medium-Line-Height, 24px) "Adobe Clean";
@@ -47,10 +44,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  left: 0;
+  right: 0;
   padding: 8px 12px;
   border: none;
-  border-radius: 0 100% 100% 0;
+  border-radius: 100% 0 0 100%;
   color: var(--mep-white-100);
   background: var(--mep-primary-100);
   box-shadow: var(--mep-elevation-4);
@@ -71,12 +68,22 @@
 
 body:has(#mep-drawer:popover-open) .mep-fab {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   pointer-events: none;
 }
 
 .mep-fab.disabled {
   background: var(--mep-dark-44);
+}
+
+body.mep-align-left .mep-fab {
+  right: auto;
+  left: 0;
+  border-radius: 0 100% 100% 0;
+}
+
+body.mep-align-left:has(#mep-drawer:popover-open) .mep-fab {
+  transform: translateX(-100%);
 }
 
 .mep-drawer {
@@ -86,7 +93,8 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   overflow: hidden;
   font-size: 16px;
   width: 280px;
-  left: 0;
+  left: auto;
+  right: 0;
   margin: 0;
   border: none;
   padding: 0;
@@ -97,21 +105,36 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer:popover-open {
   opacity: 1;
-  transform: translateX(0%);
+  transform: translate3d(0, 0, 0);
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
 @starting-style {
   .mep-drawer:popover-open {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translate3d(100%, 0, 0);
   }
 }
 
 .mep-drawer:not(:popover-open) {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translate3d(100%, 0, 0);
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+}
+
+body.mep-align-left .mep-drawer {
+  right: auto;
+  left: 0;
+}
+
+@starting-style {
+  body.mep-align-left .mep-drawer:popover-open {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+body.mep-align-left .mep-drawer:not(:popover-open) {
+  transform: translate3d(-100%, 0, 0);
 }
 
 .mep-drawer a {
@@ -143,7 +166,14 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   align-items: center;
 }
 
-.mep-drawer .mep-header .mep-navigation .icon-close {
+.mep-drawer .mep-header .mep-navigation .mep-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mep-drawer .mep-header .mep-navigation .icon-close,
+.mep-drawer .mep-header .mep-navigation .mep-align-toggle {
   background: none;
   border: none;
   padding: 0;
@@ -183,6 +213,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 .mep-drawer .mep-body {
   flex-grow: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mep-drawer .mep-body::-webkit-scrollbar {
@@ -240,6 +271,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-radius: 8px;
   background: var(--mep-dark-44);
   border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-card[hidden] {
+  display: none;
 }
 
 .mep-drawer .mep-card.center {
@@ -430,6 +465,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-top: 1px solid var(--mep-white-12);
 }
 
+.mep-drawer .mep-footer.hidden {
+  display: none;
+}
+
 .mep-drawer .mep-footer .con-button {
   cursor: pointer;
   flex: 1;
@@ -511,14 +550,6 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-switch input:checked + .mep-switch-track::after {
   transform: translateX(20px);
-}
-
-.mep-drawer .mep-overline {
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--mep-white-60);
-  font: var(--mep-overline-font);
-  letter-spacing: var(--mep-overline-letter-spacing);
 }
 
 .mep-drawer .mep-manifest-link {

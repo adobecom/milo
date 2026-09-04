@@ -6,9 +6,23 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge', () => {
+  afterEach(() => {
+    // The side overlay is a singleton with persistent state (localStorage +
+    // body class + a single #brand-concierge-modal element). Without cleanup
+    // it leaks across tests, so a second modal-open test collides with the
+    // overlay left open by the first. Reset it between tests.
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+    document.body.classList.remove('bc-side-open');
+    localStorage.removeItem('bc-side-overlay');
+    sinon.restore();
+  });
+
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
@@ -312,9 +326,9 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       const wrappers = background.querySelectorAll(':scope > div');
       expect(wrappers.length).to.equal(3);
-      expect(wrappers[0].classList.contains('desktop-only')).to.be.true;
+      expect(wrappers[0].classList.contains('mobile-only')).to.be.true;
       expect(wrappers[1].classList.contains('tablet-only')).to.be.true;
-      expect(wrappers[2].classList.contains('mobile-only')).to.be.true;
+      expect(wrappers[2].classList.contains('desktop-only')).to.be.true;
       wrappers.forEach((wrapper) => expect(wrapper.querySelector('picture')).to.exist);
     });
 
@@ -343,6 +357,22 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       expect(background.querySelectorAll('picture').length).to.equal(1);
       expect(background.querySelector('.desktop-only, .tablet-only, .mobile-only')).to.be.null;
+    });
+
+    it('renders the title (not an eyebrow) when only a single heading is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-no-eyebrow.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const header = block.querySelector('.bc-header');
+      expect(header).to.exist;
+      expect(header.querySelector('.bc-header-eyebrow')).to.be.null;
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      const kids = [...header.children];
+      expect(kids[0].classList.contains('bc-header-title')).to.be.true;
+      expect(kids[1].classList.contains('bc-header-subtitle')).to.be.true;
     });
   });
 

@@ -42,13 +42,18 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   });
 
   describe('isUngatedHost (gate defaults to on for anything not a preview/dev host)', () => {
-    it('ungates genuine preview/dev surfaces', () => {
+    it('ungates genuine preview/dev/stage/internal surfaces', () => {
       [
         'main--milo--adobecom.aem.page',
         'mep-next-v1--milo--adobecom.hlx.page',
         'branch--repo--owner.aem.reviews',
         'localhost',
         '127.0.0.1',
+        'www.stage.adobe.com',
+        'business.stage.adobe.com',
+        'www.corp.adobe.com',
+        'graybox.adobe.com',
+        'business-graybox.adobe.com', // hyphenated graybox host
       ].forEach((host) => expect(isUngatedHost(host), host).to.be.true);
     });
 
@@ -59,6 +64,10 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
         'www.adobe.com',
         'business.adobe.com',
         'evil-aem.page.attacker.com', // not a real *.aem.page host
+        'evilstage.adobe.com', // no boundary before "stage"
+        'stage.adobe.com.attacker.com', // suffix trick
+        'notgraybox.adobe.com', // no boundary before "graybox"
+        'graybox.adobe.com.attacker.com', // suffix trick
         'example.com',
       ].forEach((host) => expect(isUngatedHost(host), host).to.be.false);
     });
