@@ -83,7 +83,6 @@
 
     .parallax-featured-card-media {
       animation-name: grow-featured-card-radius;
-      will-change: clip-path;
     }
   }
 }

@@ -221,7 +221,6 @@
   & + .modal-curtain.is-open {
     background: var(--s2a-color-transparent-black-64);
     backdrop-filter: blur(var(--s2a-blur-32));
-    will-change: backdrop-filter;
   }
 }
 
