@@ -259,6 +259,7 @@ describe('init: DOM structure — stage env first call', () => {
     const mmCb = document.createElement('input');
     mmCb.type = 'checkbox';
     mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = true;
     drawer.append(mmCb);
     mmCb.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(200);
@@ -534,6 +535,7 @@ describe('buildAdditionalManifests: with activities returned', () => {
     const mmCb = document.createElement('input');
     mmCb.type = 'checkbox';
     mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = true;
     drawer.append(mmCb);
     mmCb.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(200);
@@ -559,22 +561,40 @@ describe('buildAdditionalManifests: with activities returned', () => {
     expect(mmmCard?.textContent).to.include('Last Seen');
   });
 
-  it('second call skipped when last manifest card is already mmm (early return branch)', async () => {
+  it('unchecking hides mmm-manifest-card instead of removing/refetching it', async () => {
     const drawer = mainEl.querySelector('#mep-drawer');
     const before = drawer.querySelectorAll('.mmm-manifest-card').length;
 
-    // getAdditionalManifests is now cached; calling buildAdditionalManifests again
-    // will find lastManifestEl is the mmm card → returns early
     const mmCb = document.createElement('input');
     mmCb.type = 'checkbox';
     mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = false;
     drawer.append(mmCb);
     mmCb.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(200);
     mmCb.remove();
 
-    const after = drawer.querySelectorAll('.mmm-manifest-card').length;
-    expect(after).to.equal(before);
+    const mmmCards = [...drawer.querySelectorAll('.mmm-manifest-card')];
+    expect(mmmCards.length).to.equal(before);
+    expect(mmmCards.every((card) => card.hidden)).to.be.true;
+  });
+
+  it('rechecking shows the existing mmm-manifest-card again without duplicating it', async () => {
+    const drawer = mainEl.querySelector('#mep-drawer');
+    const before = drawer.querySelectorAll('.mmm-manifest-card').length;
+
+    const mmCb = document.createElement('input');
+    mmCb.type = 'checkbox';
+    mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = true;
+    drawer.append(mmCb);
+    mmCb.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait(200);
+    mmCb.remove();
+
+    const mmmCards = [...drawer.querySelectorAll('.mmm-manifest-card')];
+    expect(mmmCards.length).to.equal(before);
+    expect(mmmCards.every((card) => !card.hidden)).to.be.true;
   });
 });
 
@@ -599,6 +619,7 @@ describe('buildAdditionalManifests: no base manifest cards → early return', ()
     const mmCb = document.createElement('input');
     mmCb.type = 'checkbox';
     mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = true;
     drawer.append(mmCb);
     mmCb.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(200);
@@ -802,6 +823,7 @@ describe('setEventListeners: input handler', () => {
     const mmCb = document.createElement('input');
     mmCb.type = 'checkbox';
     mmCb.id = 'toggle-manifest-manager';
+    mmCb.checked = true;
     drawer.append(mmCb);
     expect(() => mmCb.dispatchEvent(new Event('input', { bubbles: true }))).to.not.throw();
     await wait(100);

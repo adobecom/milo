@@ -318,9 +318,10 @@ export async function createCollection(el, options) {
   let attributes;
   if (Object.keys(mepFragments).length > 0) {
     const overrides = Object.entries(mepFragments)
-      .map(([fragment, data]) => `${fragment}:${data.content}`)
+      .filter(([, data]) => data['']?.content)
+      .map(([fragment, data]) => `${fragment}:${data[''].content}`)
       .join(',');
-    attributes = { overrides };
+    if (overrides) attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);

@@ -134,6 +134,18 @@ export const logErrorFor = async (fn, message, tags, errorType, severity = 'erro
   }
 };
 
+export const clearSignOutCookies = () => {
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const labels = host.split('.');
+  ['ims_country_code', 'acomsis', 'acomsis_stage'].forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
+};
+
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
   const manifestIdEl = source?.closest('[data-manifest-id]');

@@ -1,5 +1,5 @@
 import { processTrackingLabels } from '../../../../martech/attributes.js';
-import { getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
+import { createTag, getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
 import { debounce } from '../../../../utils/action.js';
 import {
   fetchAndProcessPlainHtml,
@@ -26,6 +26,21 @@ try {
   merch = await import('../../../merch/merch.js');
 } catch (e) {
   merch = { default: async (elem) => elem };
+}
+
+// A cloned link has no parent, so merch.default()'s internal `el.replaceWith(...)` no-ops and
+// the built element never connects/fetches; stage it here first so it can.
+let merchStagingContainer;
+function getMerchStagingContainer() {
+  merchStagingContainer ??= createTag('div', { style: 'display: none' }, null, { parent: document.body });
+  return merchStagingContainer;
+}
+
+async function resolveMerch(clonedElement) {
+  getMerchStagingContainer().append(clonedElement);
+  const result = await merch.default(clonedElement);
+  if (!result) clonedElement.remove();
+  return result;
 }
 
 function getAnalyticsValue(str, index) {
@@ -193,49 +208,56 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
     if (shouldBlockFreeTrialLinks(link)) return null;
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
+    // Capture now: links decorate concurrently, so this may move on before an `await` resolves
+    const index = itemIndex.position;
 
     // Decorate link group
     if (link.matches('.link-group')) {
       const merchAnchor = link.querySelector('a.merch');
       if (merchAnchor) {
         const clonedElement = merchAnchor.cloneNode(true);
-        const merchElement = await merch.default(clonedElement);
+        const merchElement = await resolveMerch(clonedElement);
         const primaryAnchor = link.querySelector('a:not(.merch)');
         if (merchElement && primaryAnchor && merchAnchor !== primaryAnchor) {
-          return decorateLinkGroupWithEmbeddedMerch(link, itemIndex.position, merchElement);
+          return decorateLinkGroupWithEmbeddedMerch(link, index, merchElement);
         }
         if (merchElement) {
-          const decoratedElement = decorateLinkGroup(link, itemIndex.position);
+          const decoratedElement = decorateLinkGroup(link, index);
           merchElement.classList.value = decoratedElement.classList.value;
           merchElement.innerHTML = decoratedElement.innerHTML;
           merchElement.setAttribute('daa-ll', decoratedElement.getAttribute('daa-ll'));
           return merchElement;
         }
       }
-      return decorateLinkGroup(link, itemIndex.position);
+      return decorateLinkGroup(link, index);
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
-      const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
-      // Remove its 'em' or 'strong' wrapper
-      link.parentElement.replaceWith(link);
+    const isPrimaryCta = link.parentElement.tagName === 'STRONG' || link.matches('a.con-button.blue');
+    const isSecondaryCta = !isPrimaryCta
+      && (link.parentElement.tagName === 'EM' || link.matches('a.con-button.outline'));
+    if (isPrimaryCta || isSecondaryCta) {
+      const type = isSecondaryCta ? 'secondaryCta' : 'primaryCta';
+      // Remove its 'em' or 'strong' wrapper, if still present
+      if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
+        link.parentElement.replaceWith(link);
+      }
       const clonedLink = link.cloneNode(true);
-      const processedLink = link.classList.contains('merch') ? await merch.default(clonedLink) : link;
-      const decoratedLink = decorateCta({ elem: processedLink, type, index: itemIndex.position });
+      const processedLink = link.classList.contains('merch') ? await resolveMerch(clonedLink) : link;
+      const decoratedLink = decorateCta({ elem: processedLink, type, index });
       return decoratedLink;
     }
 
     // Simple links get analytics attributes and appropriate class name
     if (link.classList.contains('merch')) {
       const clonedLink = link.cloneNode(true);
-      const merchLink = await merch.default(clonedLink);
-      merchLink.setAttribute('daa-ll', getAnalyticsValue(link.textContent, itemIndex.position));
+      const merchLink = await resolveMerch(clonedLink);
+      merchLink.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index));
       merchLink.classList.value = className;
       return merchLink;
     }
 
-    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, itemIndex.position));
+    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index));
     link.classList.add(className);
 
     return link;
@@ -248,11 +270,13 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
     return toFragment`<li>${await decorateLink(elem)}</li>`;
   }
 
-  // Otherwise, this might be a collection of elements;
-  // decorate all links in the collection and return it
-  for (const link of elem.querySelectorAll(linkSelector)) {
-    link.replaceWith(await decorateLink(link));
-  }
+  // Otherwise, this might be a collection of elements; decorate all links in the collection
+  // concurrently, replacing each as soon as its own decoration resolves
+  const links = [...elem.querySelectorAll(linkSelector)];
+  await Promise.all(links.map(async (link) => {
+    const decorated = await decorateLink(link);
+    link.replaceWith(decorated);
+  }));
 
   return elem;
 };
@@ -282,10 +306,20 @@ const decoratePromo = async (elem, index) => {
   }
 
   if (promoHeader?.textContent.trim()) {
-    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">
-        ${promoHeader.textContent.trim()}
-      </div>`;
-    promoHeader.parentElement.replaceWith(headingElem);
+    const headingParagraph = promoHeader.parentElement;
+    const headingMerchLinks = [...headingParagraph.querySelectorAll('a.merch')];
+    await Promise.all(headingMerchLinks.map(async (link) => {
+      const priceEl = await resolveMerch(link.cloneNode(true));
+      if (priceEl instanceof HTMLElement) link.replaceWith(priceEl);
+    }));
+    headingParagraph.querySelectorAll('strong').forEach((strong) => {
+      strong.replaceWith(...strong.childNodes);
+    });
+    // Wrap heading in one inline <span> so the text and inline prices flow together on same line
+    const headingContent = document.createElement('span');
+    headingContent.append(...headingParagraph.childNodes);
+    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">${headingContent}</div>`;
+    headingParagraph.replaceWith(headingElem);
   }
 
   await decorateElements({ elem, className: 'feds-promo-link', index });
@@ -467,9 +501,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const initialHeadingElem = itemTopParent.querySelector('h2');
     itemTopParent.removeChild(initialHeadingElem);
 
-    const merchLinks = itemTopParent.querySelectorAll('.merch');
+    const merchLinks = [...itemTopParent.querySelectorAll('.merch')];
     if (merchLinks.length) {
-      for (const link of merchLinks) {
+      await Promise.all(merchLinks.map(async (link) => {
         const linkContent = link.innerHTML;
         const merchBlock = await merch.default(link);
         if (merchBlock) {
@@ -477,7 +511,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           merchBlock.innerHTML = linkContent;
           link.replaceWith(merchBlock);
         }
-      }
+      }));
     }
 
     menuTemplate = toFragment`<div class="feds-popup">
@@ -503,7 +537,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
       </div>`;
     addMepHighlightAndTargetId(menuTemplate, content);
 
+    // decorateCrossCloudMenu resolves merch via its own staging container, so it doesn't
+    // need menuTemplate connected - run it first, while the tree is still cheap to mutate.
     await decorateCrossCloudMenu(menuTemplate);
+
+    // Connect now (hidden) so mas-field/aem-fragment elements below can start fetching
+    // immediately instead of hitting FIELD_TIMEOUT; `display: none`, not `visibility`,
+    // so decorateColumns' many mutations don't force real layout work.
+    menuTemplate.style.setProperty('display', 'none');
+    config.template?.append(menuTemplate);
 
     await decorateColumns({ content: menuContent });
 
@@ -546,8 +588,10 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
   // Remove the loading state created in delayDropdownDecoration
   config.template?.querySelector('.feds-popup.loading')?.remove();
+  // Already attached for asyncDropdownTrigger; append here is a no-op for it in that case.
   config.template?.append(menuTemplate);
   if (config.type === 'asyncDropdownTrigger') {
+    menuTemplate.style.removeProperty('display');
     setAriaAtributes(menuTemplate.previousElementSibling);
     performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);
   }

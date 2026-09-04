@@ -1,9 +1,10 @@
 {
-  "total": 2,
+  "total": 3,
   "offset": 0,
-  "limit": 2,
+  "limit": 3,
   "data": [
     { "key": "choose-table-column", "value": "Choose table column" },
-    { "key": "empty-table-cell", "value": "Not included" }
+    { "key": "not-a-feature", "value": "not a feature" },
+    { "key": "primary-feature", "value": "primary feature" }
   ]
 }

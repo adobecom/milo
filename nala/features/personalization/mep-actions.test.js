@@ -1,7 +1,7 @@
 // to run tests:
 // npm run nala stage tag=mepact1 mode=headed
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from './mep-test.js';
 import { features } from './mep-actions.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';
@@ -85,6 +85,8 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   });
   await test.step('step-2: Verify useBlockCode', async () => {
     console.info(`[Test Page]: ${pznURL}`);
+    // domcontentloaded: waiting for 'load' stalls past the 30s budget because the
+    // mep-test.js pacer throttles subresources. waitForURL below syncs the redirect.
     await page.goto(pznURL, { waitUntil: 'domcontentloaded' });
     await page.waitForURL(/use-block-code/);
 

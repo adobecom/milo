@@ -11,7 +11,13 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
-  resolveDetectedMarketCountry,
+  isTrustedUrl,
+  isSameOriginManifestPath,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -88,35 +94,6 @@ export const DATA_TYPE = {
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
-
-const TRUSTED_DOMAINS = ['.adobe.com'];
-const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
-
-export function isTrustedUrl(url) {
-  if (typeof url !== 'string' || !url) return false;
-  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
-  let parsed;
-  try {
-    parsed = new URL(url, window.location.origin);
-  } catch {
-    return false;
-  }
-  if (parsed.origin === window.location.origin) return true;
-  if (parsed.protocol !== 'https:') return false;
-  return TRUSTED_DOMAINS.some(
-    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
-  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
-}
-
-function isSameOriginManifestPath(manifestPath) {
-  if (typeof manifestPath !== 'string' || !manifestPath) return false;
-  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
-  try {
-    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
-  } catch {
-    return false;
-  }
-}
 
 export const normalizePath = (p, localize = true) => {
   let path = p;
@@ -516,18 +493,23 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (blockSelector.startsWith('https://mas.adobe.com/')) {
-      const getFragmentId = (masUrl) => {
+      const getFragmentParams = (masUrl) => {
         const { hash } = new URL(masUrl);
         const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
         const searchParams = new URLSearchParams(hashValue);
-        return searchParams.get('fragment') || searchParams.get('query');
+        return {
+          fragment: searchParams.get('fragment') || searchParams.get('query'),
+          field: searchParams.get('field') || '',
+        };
       };
-      blockSelector = getFragmentId(blockSelector);
+      const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
+      blockSelector = sourceFragment;
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentId(command.content);
-        fragments[blockSelector] = command;
+        command.content = getFragmentParams(command.content).fragment;
+        fragments[blockSelector] ??= {};
+        fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
         if (!overridesParent) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
@@ -1057,14 +1039,6 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -1096,9 +1070,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob, event } = config.mep.promises;
+    const { lob } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1113,10 +1086,6 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
-
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1163,8 +1132,8 @@ export const overrideVariant = (manifestPath, variantName) => {
 export const getGeoRestriction = (manifestConfig) => {
   const { geoRestriction, manifestPath } = manifestConfig;
   if (!geoRestriction) return true;
-  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+  const geoArray = geoRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  const isAllowed = geoArray.includes(getConfig().mep.countryIP);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1440,6 +1409,16 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
+
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
@@ -1677,7 +1656,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1697,8 +1676,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),

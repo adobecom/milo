@@ -3,6 +3,7 @@ import {
   getConfig,
   getMetadata,
   localizeLink,
+  localizeLinkAsync,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
@@ -10,13 +11,26 @@ import {
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
-function getFederalDomain(config) {
-  const queryParams = new URLSearchParams(window.location.search);
-  const federalBranch = queryParams.get('fedsbranch');
-  if (federalBranch?.trim()) {
-    const sanitized = federalBranch.trim().toLowerCase();
-    if (sanitized === 'local') return 'http://localhost:3000/federal';
-    return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+// Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
+// federal's authored .svg icon anchors into <picture> (MWPW-198294).
+async function localizeGnavLinks(body) {
+  await Promise.all([...body.querySelectorAll('a')].map(async (a) => {
+    a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+  }));
+}
+
+export function getFederalDomain(config) {
+  const env = getEnv(config);
+
+  if (env.name !== 'prod') {
+    const queryParams = new URLSearchParams(window.location.search);
+    const federalBranch = queryParams.get('fedsbranch')?.trim().toLowerCase();
+    // Branch names are [a-z0-9-] only; reject other characters so the value
+    // cannot break out of the host position of the import URL built below.
+    if (federalBranch && /^[a-z0-9-]+$/.test(federalBranch)) {
+      if (federalBranch === 'local') return 'http://localhost:3000/federal';
+      return `https://${federalBranch}--federal--adobecom.aem.page/federal`;
+    }
   }
 
   const { hostname } = window.location;
@@ -26,7 +40,6 @@ function getFederalDomain(config) {
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
 
-  const env = getEnv(config);
   if (env.name === 'stage') return 'https://www.stage.adobe.com/federal';
   if (env.name === 'prod') return 'https://www.adobe.com/federal';
   return `${DEFAULT_FEDERAL_URL}/federal`;
@@ -34,13 +47,26 @@ function getFederalDomain(config) {
 
 export default async function init(el) {
   const config = getConfig();
+  const isLingo = lingoActive();
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
   const placeholdersPromise = (async () => {
-    const { fetchPlaceholders } = await import('../../../features/placeholders.js');
-    const placeholders = await fetchPlaceholders({ config });
-    return new Map(Object.entries(placeholders));
+    const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
+    // Federal does a flat token swap with no geo decoration, so merge geo-IP overrides
+    // here or {{…-geo-ip}} tokens resolve to the base value. The sheet is federal-owned
+    // (parallel to federal's placeholders.json), authored once for every site.
+    const geoIpSource = `${federalDomain}/globalnav/placeholders-geo-ip.json`;
+    const [placeholders, geoIp] = await Promise.all([
+      fetchPlaceholders({ config }),
+      isLingo ? getGeoIpPlaceholders(config, geoIpSource) : null,
+    ]);
+    const map = new Map(Object.entries(placeholders));
+    geoIp?.forEach((value, key) => map.set(key, value));
+    // MEP manifest "placeholders" sheet overrides win last, matching getPlaceholder
+    // precedence (config.placeholders beats geo-IP in placeholders.js).
+    Object.entries(config.placeholders ?? {}).forEach(([key, value]) => map.set(key, value));
+    return map;
   })();
   // for now we only support inBlock commands.
   // Since MEP on gnav is relatively rare we'll
@@ -59,10 +85,20 @@ export default async function init(el) {
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
+  const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
+
+  const countryCodePromise = (async () => {
+    const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
+    if (!isMasGeoDetectionEnabled()) return undefined;
+    const base = config.miloLibs || config.codeRoot;
+    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    return (await getValidatedMarket())?.toUpperCase();
+  })().catch(() => undefined);
 
   const gnavPromise = main({
     localizeLink,
+    // Lingo href transformation only; skip when lingo is off.
+    ...(isLingo && { decorateBody: localizeGnavLinks }),
     gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
@@ -70,6 +106,8 @@ export default async function init(el) {
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: config,
+    countryCode: countryCodePromise,
+    mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {
       commands: [...commands, ...gnavMepCommands],
