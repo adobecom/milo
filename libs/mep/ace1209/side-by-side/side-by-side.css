@@ -12,9 +12,19 @@
     background-color: unset;
   }
 
+  .foreground {
+    max-width: 450px;
+  }
+
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
+
+    .foreground {
+      [class^='body-'] {
+        color: inherit;
+      }
+    }
   }
 
   > .card:first-child {
@@ -23,10 +33,6 @@
 
   > .card:last-child {
     --parallax-stagger-index: 1.5;
-  }
-
-  .foreground {
-    max-width: 450px;
   }
 
   .media {
@@ -59,6 +65,22 @@
       inset-block-start: var(--s2a-spacing-md);
       inset-inline-start: var(--s2a-spacing-md);
     }
+  }
+
+  &.body-color-subtle {
+    .card {
+      .foreground [class^='body-'] {
+        color: var(--s2a-color-content-subtle);
+      }
+    }
+  }
+
+  .card.body-subtle .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
+  }
+
+  .card.body-solid .foreground [class^='body-'] {
+    color: inherit;
   }
 
   .card-overlay {
@@ -123,10 +145,6 @@
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-
-      [class^='body-'] {
-        color: var(--s2a-color-content-subtle);
-      }
     }
 
     .media {
