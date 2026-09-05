@@ -37,6 +37,21 @@ function getAnalyticsValue(str, index) {
   return analyticsValue;
 }
 
+// mas-field CTAs resolve after decoratePromo runs; move feds-cta onto the real anchor when ready.
+let promoCtasWatched = false;
+function watchPromoCtas() {
+  if (promoCtasWatched) return;
+  promoCtasWatched = true;
+  document.addEventListener('mas:ready', ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD' || !mf.classList.contains('feds-cta')) return;
+    const link = mf.querySelector('a');
+    if (!link) return;
+    link.className = mf.className;
+    if (mf.hasAttribute('daa-ll')) link.setAttribute('daa-ll', mf.getAttribute('daa-ll'));
+    mf.replaceWith(link);
+  });
+}
+
 function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
@@ -277,7 +292,9 @@ const decorateGnavImage = (elem) => {
 const decoratePromo = async (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
-  const promoHeader = elem.querySelector('p > strong');
+  watchPromoCtas();
+  // Skip a <strong> wrapping a CTA link — a mas-field CTA's own <strong> isn't in the DOM yet.
+  const promoHeader = [...elem.querySelectorAll('p > strong')].find((strong) => !strong.querySelector('a'));
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
