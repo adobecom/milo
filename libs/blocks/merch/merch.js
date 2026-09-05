@@ -1880,6 +1880,8 @@ function decorateInlineCtas(masField, content) {
     masField.replaceWith(...content.childNodes);
     outer.replaceWith(masField);
     masField.append(outer);
+    // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
+    content.remove();
   }
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
