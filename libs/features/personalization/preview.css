@@ -833,10 +833,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
   position: relative;
   overflow: visible;
 
-  /* Override M@S's `mas-field { display: inline }`: an inline host that
-     wraps block children (e.g., a body field with multiple <p>s) splits
-     into degenerate inline boxes and the outline disappears. inline-block
-     gives a single coherent box; scoped to highlight mode only. */
+  /* Override M@S's `mas-field { display: contents }`: with no box of its own the
+     highlight outline has nothing to attach to. inline-block gives a single
+     coherent box; scoped to highlight mode only. */
   display: inline-block;
 }
 
