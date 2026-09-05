@@ -383,6 +383,53 @@ describe('mas-field', () => {
       expect(actionArea.style.visibility).to.equal('');
     });
 
+    it('reveals the CTA after the field timeout when the price never resolves', async () => {
+      const clock = sinon.useFakeTimers();
+      try {
+        const card = document.createElement('div');
+        const pricing = document.createElement('p');
+        const price = document.createElement('mas-field');
+        price.setAttribute('field', 'prices');
+        price.checkReady = () => new Promise(() => {}); // never resolves
+        pricing.append(price);
+        const actionArea = document.createElement('p');
+        actionArea.append(document.createElement('a'));
+        card.append(pricing, actionArea);
+
+        holdCtaUntilPrice(actionArea);
+        expect(actionArea.style.visibility).to.equal('hidden');
+
+        await clock.tickAsync(5000); // mirrors FIELD_TIMEOUT in merch.js
+        expect(actionArea.style.visibility).to.equal('');
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('does not hold the CTA when the only price is outside the block (walk stops at .section)', () => {
+      const section = document.createElement('div');
+      section.classList.add('section');
+      // Price sits directly under the section, not inside the CTA's block subtree.
+      const otherPricing = document.createElement('p');
+      const price = document.createElement('mas-field');
+      price.setAttribute('field', 'prices');
+      price.checkReady = () => new Promise(() => {});
+      otherPricing.append(price);
+
+      const block = document.createElement('div');
+      const actionArea = document.createElement('p');
+      actionArea.append(document.createElement('a'));
+      block.append(actionArea);
+
+      section.append(otherPricing, block);
+      document.body.append(section);
+
+      holdCtaUntilPrice(actionArea);
+      expect(actionArea.style.visibility).to.equal('');
+
+      section.remove();
+    });
+
     it('upgrades plain commerce links and decorates using block context', async () => {
       const section = document.createElement('div');
       const siblingBtn = document.createElement('a');
