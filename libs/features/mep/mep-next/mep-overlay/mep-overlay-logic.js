@@ -37,9 +37,25 @@ export const API_URLS = {
 
 export const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
+export function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable; setting just won't persist
+  }
+}
+
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
+    return new Set(JSON.parse(safeGetItem(CARD_STORAGE_KEY)) || []);
   } catch { return new Set(); }
 }
 
