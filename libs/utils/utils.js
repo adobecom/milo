@@ -2206,13 +2206,6 @@ export function loadMepAddons() {
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
-/**
- * Validates the maslibs URL parameter and returns the MAS base URL.
- * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
- * the resulting host always stays under aem.live (VULN-36379).
- * @param {string} masLibs raw maslibs parameter value
- * @returns {string|null} base URL, or null if the value is missing or invalid
- */
 export function getValidatedMasLibsUrl(masLibs) {
   if (!masLibs || masLibs.trim() === '') return null;
   const value = masLibs.trim().toLowerCase();
