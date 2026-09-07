@@ -236,7 +236,7 @@ export function loadWebclient() {
 
 export async function bcBootstrap(initialMessage, mountIdentifier) {
   const mountEl = document.querySelector(`#${mountIdentifier}`);
-  const { locale } = getConfig();
+  const { locale, env } = getConfig();
 
   loadWebclient();
 
@@ -316,6 +316,7 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
       instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
+      env: env?.name,
       onBeforeEventSend,
       onEvent: (event) => {
         bcAnalytics(event);
