@@ -2299,8 +2299,6 @@ export function preloadLcpCodeFiles(area = document) {
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
-  // Approximate match against decorateAutoBlock's own detector: good enough for a speculative
-  // preload (worst case is one wasted request), not meant to be kept byte-for-byte in sync with it.
   firstSection.querySelectorAll('a[href]').forEach((a) => {
     let url;
     try { url = new URL(a.href); } catch { return; }
@@ -2346,10 +2344,8 @@ async function checkForPageMods() {
   let targetInteractionPromise = null;
   let calculatedTimeout = null;
 
-  // Not MEP-specific (ordinary block/icon/placeholder resources), so it must run even when
-  // ?mep=off disables personalization/Target below - only its own kill switch should skip it.
-  preloadLcpCodeFiles();
   if (mepParam === 'off') return;
+  preloadLcpCodeFiles();
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
