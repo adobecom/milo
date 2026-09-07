@@ -2301,7 +2301,7 @@ export function preloadLcpCodeFiles(area = document) {
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
     let url;
-    try { url = new URL(a.href); } catch (e) { return; }
+    try { url = new URL(a.href); } catch { return; }
     const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
     if (!match) return;
     const name = Object.keys(match)[0];
@@ -2311,7 +2311,7 @@ export function preloadLcpCodeFiles(area = document) {
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
   }
-  const isCommerceBlock = (name) => /merch|^mas-/.test(name);
+  const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
     .filter((el) => !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
@@ -2320,7 +2320,7 @@ export function preloadLcpCodeFiles(area = document) {
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch' }));
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
   warmGeoIpSheet(config, firstSection);

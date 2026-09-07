@@ -169,6 +169,17 @@ describe('Utils', () => {
       document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
+      // as=fetch preloads only get reused by the later customFetch() call if crossorigin is
+      // set - otherwise the browser treats them as a mismatched resource and double-fetches.
+      const placeholderPreload = document.head.querySelector('link[rel="preload"][as="fetch"][href*="/placeholders.json"]');
+      expect(placeholderPreload).to.exist;
+      expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
+    });
+
+    it('does not treat a block whose name merely contains "merch" as commerce', () => {
+      document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.exist;
     });
 
     it('warms icons.js and icons.css when the first section contains icons', () => {
