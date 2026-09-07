@@ -1,6 +1,6 @@
 .global-navigation .feds-bc-wrapper {
   width: 340px;
-  margin-left: auto;
+  margin-inline-start: auto;
   padding: 0 8px;
 }
 
