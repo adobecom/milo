@@ -28,6 +28,11 @@
       max-width: 680px;
     }
 
+    [class*="body-"]:not(.action-area),
+    [class*="heading-"] {
+      text-wrap-style: balance;
+    }
+
     .eyebrow:has(picture) {
       color: var(--s2a-color-content-knockout);
       display: flex;
