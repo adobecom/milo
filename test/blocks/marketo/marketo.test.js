@@ -9,6 +9,7 @@ import init, {
   decorateURL,
   formSuccess,
   formSubmit,
+  formValidate,
   loadMarketo,
   logFailure,
   formTimeout,
@@ -400,6 +401,43 @@ describe('Marketo failure logging', () => {
       el.classList.add('success');
       formSubmit(el.querySelector('form'));
       await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.called).to.be.false;
+    });
+
+    it('cancels the pending submit-failure timeout once formSuccess runs', async () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+      formSubmit(formEl);
+      formSuccess(formEl, {});
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledWith(LANA_MESSAGE.SUBMIT_FAILED)).to.be.false;
+    });
+  });
+
+  describe('formValidate', () => {
+    it('logs a warning when a hidden field is marked required', () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+      const hiddenField = document.createElement('div');
+      hiddenField.className = 'mktoHidden';
+      hiddenField.innerHTML = '<input class="mktoRequired">';
+      formEl.appendChild(hiddenField);
+
+      formValidate(formEl);
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.HIDDEN_REQUIRED_FIELD,
+        sinon.match({ severity: 'w', sampleRate: 100 }),
+      )).to.be.true;
+    });
+
+    it('does not log when no hidden fields are marked required', () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+
+      formValidate(formEl);
 
       expect(window.lana.log.called).to.be.false;
     });
