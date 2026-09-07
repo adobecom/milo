@@ -829,9 +829,10 @@ class Gnav {
   };
 
   addChangeEventListeners = () => {
-    // Ensure correct DOM order for elements between mobile and desktop
-    isDesktop.addEventListener('change', () => {
-      if (isDesktop.matches) {
+    // Ensure correct DOM order for elements between desktop and effectively-mobile
+    // (real mobile, or forced-compact at desktop width via dynamic reflow).
+    const syncElementOrder = () => {
+      if (!this.isEffectivelyMobile()) {
         // On desktop, search is after nav
         if (this.elements.mainNav instanceof HTMLElement
           && this.elements.search instanceof HTMLElement) {
@@ -844,19 +845,21 @@ class Gnav {
           this.elements.topnav.after(this.elements.breadcrumbsWrapper);
         }
       } else {
-        // On mobile, nav is after search
+        // On mobile (or forced-compact), nav is after search
         if (this.elements.mainNav instanceof HTMLElement
           && this.elements.search instanceof HTMLElement) {
           this.elements.mainNav.before(this.elements.search);
         }
 
-        // On mobile, breadcrumbs are before the search and nav
+        // On mobile (or forced-compact), breadcrumbs are before the search and nav,
         if (this.elements.navWrapper instanceof HTMLElement
           && this.elements.breadcrumbsWrapper instanceof HTMLElement) {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
-    });
+    };
+    isDesktop.addEventListener('change', syncElementOrder);
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', syncElementOrder);
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
     const toggleContraction = () => {

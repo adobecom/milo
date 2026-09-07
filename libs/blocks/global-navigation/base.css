@@ -212,7 +212,7 @@ header.global-navigation.ready {
     margin: 0 12px;
   }
 
-  .feds-navItem--activeDeferred > .feds-navLink {
+  :where(header.global-navigation:not(.is-compact)) .feds-navItem--activeDeferred > .feds-navLink {
     padding: 0;
     width: 100%;
     justify-content: center;
