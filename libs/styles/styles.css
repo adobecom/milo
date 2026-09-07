@@ -776,7 +776,7 @@ header.global-navigation a {
   text-decoration: unset;
 }
 
-header.global-navigation + .feds-localnav {
+header.global-navigation:not(.c2-gnav-c1-host) + .feds-localnav {
   display: block;
   height: var(--feds-localnav-height);
 }
