@@ -1944,6 +1944,13 @@ function fieldLinkSegment(anchor) {
   return fieldLinkAnchor(parentElement) === anchor ? parentElement : anchor;
 }
 
+// Anchors discarded by resolveSplitFieldLink below. Tracked explicitly rather than inferred
+// from DOM attachment (isConnected/parentNode): a discarded anchor keeps getting reused as a
+// clone's source (global-navigation's menu.js clones a live `.merch` anchor and only attaches
+// the clone, if at all, after it resolves), so an unparented element is routine input here, not
+// a signal that it was discarded.
+const discardedFieldLinks = new WeakSet();
+
 /**
  * Doc-authored content can't nest a partially bold/italic run inside a single <a>, so an
  * inline mas-field link whose label has a bolded/italicized substring (e.g. "ctas[**Buy
@@ -1955,9 +1962,10 @@ function fieldLinkSegment(anchor) {
  * mas-field replaces it once the field resolves anyway).
  *
  * Returns true if `el` is the canonical anchor (safe to pass to initMasField), false if
- * `el`'s own segment was just discarded in favor of a sibling.
+ * `el`'s own segment was just discarded in favor of a sibling, or previously was.
  */
 function resolveSplitFieldLink(el) {
+  if (discardedFieldLinks.has(el)) return false;
   const segment = fieldLinkSegment(el);
   const { href } = el;
   const group = [segment];
@@ -1984,14 +1992,18 @@ function resolveSplitFieldLink(el) {
     }
   }
   if (group.length === 1) return true;
+  const discard = (seg) => {
+    discardedFieldLinks.add(fieldLinkAnchor(seg) ?? seg);
+    seg.remove();
+  };
   const canonical = group.find((seg) => seg.tagName === 'STRONG')
     ?? group.find((seg) => seg.tagName === 'EM')
     ?? group[0];
   if (canonical !== segment) {
-    segment.remove();
+    discard(segment);
     return false;
   }
-  group.forEach((seg) => { if (seg !== segment) seg.remove(); });
+  group.forEach((seg) => { if (seg !== segment) discard(seg); });
   return true;
 }
 
@@ -2002,11 +2014,7 @@ export default async function init(el) {
   // instead of merch-card-autoblock (see decorateAutoBlock in utils.js) so a field render
   // never pulls in merch-card.
   if (url.hash.includes('field=')) {
-    // resolveSplitFieldLink mutates sibling nodes, so it needs the element connected;
-    // scoped here rather than at the top of init() so it doesn't also block price/CTA
-    // links (buildPrice/buildCta below) that can be decorated while still disconnected,
-    // e.g. dialog-modal fragment content built off-DOM before the dialog opens.
-    if (!el.isConnected || !resolveSplitFieldLink(el)) return undefined;
+    if (!resolveSplitFieldLink(el)) return undefined;
     return initMasField(el);
   }
   const { searchParams } = url;
