@@ -327,7 +327,6 @@ describe('mas-field', () => {
       expect(cta.classList.contains('con-button')).to.be.false;
       expect([...cta.classList].some((c) => c.startsWith('button-'))).to.be.false;
     });
-
     it('preserves the stamped promo code on inline prices through unwrapping', async () => {
       const section = document.createElement('div');
       const p = document.createElement('p');

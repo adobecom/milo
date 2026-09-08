@@ -26,18 +26,21 @@ describe('overrideVariant', () => {
 
 describe('getGeoRestriction', () => {
   before(() => {
-    sessionStorage.setItem('akamai', 'us');
-    getConfig().mep = {};
+    getConfig().mep = { countryIP: 'us' };
   });
   it('should return true if the geo restriction is null', () => {
     expect(getGeoRestriction({ geoRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return true if the geo restriction includes US', () => {
-    expect(getGeoRestriction({ geoRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.false;
+  it('should return true if the geo restriction includes the resolved country', () => {
+    expect(getGeoRestriction({ geoRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
   });
-  it('should return false and override the variant if the geo restriction does not include US', () => {
-    getGeoRestriction({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' });
+  it('should return false and override the variant if the geo restriction does not include the resolved country', () => {
+    expect(getGeoRestriction({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
+  });
+  it('should normalize authored uk to gb when matching the resolved country', () => {
+    getConfig().mep = { countryIP: 'gb' };
+    expect(getGeoRestriction({ geoRestriction: 'fr, uk', manifestPath: '/test/uk.json' })).to.be.true;
   });
 });
 
