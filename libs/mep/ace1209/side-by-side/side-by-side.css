@@ -67,12 +67,8 @@
     }
   }
 
-  &.body-color-subtle {
-    .card {
-      .foreground [class^='body-'] {
-        color: var(--s2a-color-content-subtle);
-      }
-    }
+  &.body-color-subtle .card .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
   }
 
   .card.body-subtle .foreground [class^='body-'] {
