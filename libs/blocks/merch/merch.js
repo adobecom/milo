@@ -1786,21 +1786,29 @@ function normalizeBlockFieldWrappers(masField) {
   }
 }
 
-function copyMasFieldIdToParent(masField, name) {
-  if (masField.getAttribute(name)) {
-    masField.parentElement.setAttribute(`data-mas-field-${name}`, masField.getAttribute(name));
-  }
-}
-
-function preserveInlineCommerceContext(masField, content) {
-  const promotionCode = masField.getAttribute('data-promotion-code');
-  if (promotionCode) {
-    content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code]), a[is="checkout-link"]:not([data-promotion-code]), button[is="checkout-button"]:not([data-promotion-code])')
-      .forEach((commerceEl) => commerceEl.setAttribute('data-promotion-code', promotionCode));
-  }
+// Inline prices need merch.css, which the card would otherwise have loaded.
+function ensureInlinePriceStyle(content) {
   if (content.querySelector('span[is="inline-price"]')) {
     loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
   }
+}
+
+// A CTA field and its card's price field resolve independently. Hold the CTA's
+// container until the price mas-field is ready so the CTA can't paint above an
+// unresolved price (reveal anyway after FIELD_TIMEOUT).
+export function holdCtaUntilPrice(container) {
+  if (!container?.style) return;
+  let scope = container.parentElement;
+  let price = null;
+  while (scope && !scope.classList?.contains('section')) {
+    price = scope.querySelector('mas-field[field="prices"]');
+    if (price) break;
+    scope = scope.parentElement;
+  }
+  if (!price?.checkReady) return;
+  container.style.visibility = 'hidden';
+  const reveal = () => { container.style.visibility = ''; };
+  withTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
 /**
@@ -1810,6 +1818,7 @@ function preserveInlineCommerceContext(masField, content) {
  */
 function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
+  holdCtaUntilPrice(container);
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
   // lookup so a foreign block's button can't dictate this CTA's size.
@@ -1847,9 +1856,7 @@ function decorateInlineCtas(masField, content) {
       size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
     }
   }
-  copyMasFieldIdToParent(masField, 'fragment-id');
-  copyMasFieldIdToParent(masField, 'variation-id');
-  preserveInlineCommerceContext(masField, content);
+  ensureInlinePriceStyle(content);
 
   if (masField.merchLink) {
     [...masField.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
@@ -1859,9 +1866,23 @@ function decorateInlineCtas(masField, content) {
     });
   }
 
-  // masField is removed from the DOM here; hand callers the hoisted anchor instead.
+  // Keep mas-field as the CTA's ancestor (not unwrap) so its promo/id context survives by
+  // structure. Re-nest to wrap the em/strong so decorateButtons' 'em a'/'strong a' still match.
   const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
-  masField.replaceWith(...content.childNodes);
+  let outer = masField;
+  while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
+    && hasOnlyTargetContent(outer.parentElement, outer)) {
+    outer = outer.parentElement;
+  }
+  if (outer === masField) {
+    masField.replaceChildren(...content.childNodes);
+  } else {
+    masField.replaceWith(...content.childNodes);
+    outer.replaceWith(masField);
+    masField.append(outer);
+    // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
+    content.remove();
+  }
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
   if (container && !pendingCTAs?.length) {
