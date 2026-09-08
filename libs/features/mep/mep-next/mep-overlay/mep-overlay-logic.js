@@ -39,8 +39,9 @@ export const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
-  } catch { return new Set(); }
+    const parsed = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY));
+    return (parsed && !Array.isArray(parsed)) ? parsed : {};
+  } catch { return {}; }
 }
 
 export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');

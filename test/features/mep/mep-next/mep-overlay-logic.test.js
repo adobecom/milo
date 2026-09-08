@@ -107,32 +107,39 @@ describe('API_URLS', () => {
 describe('getExpandedCards', () => {
   afterEach(() => localStorage.removeItem(CARD_STORAGE_KEY));
 
-  it('returns an empty Set when localStorage has no entry', () => {
+  it('returns an empty object when localStorage has no entry', () => {
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns a Set populated from a valid JSON array in localStorage', () => {
+  it('returns an object populated from valid JSON in localStorage', () => {
+    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify({ 'card-a': true, 'card-b': false }));
+    const result = getExpandedCards();
+    expect(result['card-a']).to.be.true;
+    expect(result['card-b']).to.be.false;
+    expect(Object.keys(result)).to.have.length(2);
+  });
+
+  it('returns an empty object when localStorage contains a legacy array', () => {
     localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(['card-a', 'card-b']));
     const result = getExpandedCards();
-    expect(result.has('card-a')).to.be.true;
-    expect(result.has('card-b')).to.be.true;
-    expect(result.size).to.equal(2);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when localStorage contains invalid JSON', () => {
+  it('returns an empty object when localStorage contains invalid JSON', () => {
     localStorage.setItem(CARD_STORAGE_KEY, '{not-valid-json');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when stored value is null (JSON.parse null edge case)', () => {
+  it('returns an empty object when stored value is null (JSON.parse null edge case)', () => {
     localStorage.setItem(CARD_STORAGE_KEY, 'null');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 });
 

@@ -138,17 +138,19 @@ function buildNestedSection(label, subPairs) {
   return createTag('div', { class: 'mep-row-section' }, children);
 }
 
-function markExpanded(el, key) {
+function markExpanded(el, key, defaultExpanded) {
   el.dataset.cardKey = key;
-  if (getExpandedCards().has(key)) el.classList.add('expanded');
+  const stored = getExpandedCards()[key];
+  const isExpanded = stored === undefined ? defaultExpanded : stored;
+  el.classList.toggle('expanded', isExpanded);
 }
 
 function toggleExpandedCard(cardEl) {
   const key = cardEl.dataset.cardKey;
   const isExpanded = cardEl.classList.toggle('expanded');
   const expanded = getExpandedCards();
-  expanded[isExpanded ? 'add' : 'delete'](key);
-  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+  expanded[key] = isExpanded;
+  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(expanded));
 }
 
 function buildManifestCard(manifest) {
@@ -195,7 +197,7 @@ function buildManifestCard(manifest) {
   });
 
   const card = createTag('div', { class: 'mep-card mep-manifest-card' });
-  markExpanded(card, manifest.editUrl);
+  markExpanded(card, manifest.editUrl, false);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
   return card;
 }
@@ -322,7 +324,7 @@ function buildCard(card, pageId) {
   cardEl.ready = Promise.resolve(buildCardContent(card, pageId))
     .then((nodes) => bodyEl.append(...[nodes].flat()));
 
-  markExpanded(cardEl, card.header);
+  markExpanded(cardEl, card.header, true);
   cardEl.append(headerEl, bodyEl);
   return cardEl;
 }
