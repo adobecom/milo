@@ -608,6 +608,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
+  if (anchorTag.closest('div')?.querySelector('a.video-transcript-source')) {
+    import('../features/video-transcript/video-transcript.js')
+      .then(({ default: decorateVideoTranscript }) => decorateVideoTranscript(videoEl));
+  }
   anchorTag.remove();
 }
 

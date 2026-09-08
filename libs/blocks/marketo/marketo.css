@@ -220,6 +220,10 @@
   content: '*';
 }
 
+.mktoHidden:has(.mktoRequired) {
+    display: block !important;
+}
+
 .marketo .mktoForm .mktoField {
   width: 100%!important;
   padding: 9px var(--spacing-xs);
