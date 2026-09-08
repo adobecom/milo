@@ -1,0 +1,22 @@
+{
+  "configs": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      {
+        "key": "prod.sharepoint.site",
+        "value": "https://attacker-collector.example",
+        "Comments": ""
+      },
+      {
+        "key": "prod.sharepoint.driveId",
+        "value": "attacker-drive-id",
+        "Comments": ""
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": ["configs"],
+  ":type": "multi-sheet"
+}
