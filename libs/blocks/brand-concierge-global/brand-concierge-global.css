@@ -24,7 +24,7 @@
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
-  --bc-gnav-height: 64px;
+  --bc-side-overlay-top: 64px;
 
   align-items: center;
   box-sizing: content-box;
@@ -618,10 +618,11 @@
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: calc(100vh - 48px - var(--bc-gnav-height));
-    margin: 24px 24px 24px auto;
-    bottom: 0;
-    right: 0;
+    height: auto;
+    top: calc(24px + var(--bc-side-overlay-top));
+    margin: 0 0 0 auto;
+    bottom: 24px;
+    right: 24px;
     width: 448px;
     z-index: 5;
   }
