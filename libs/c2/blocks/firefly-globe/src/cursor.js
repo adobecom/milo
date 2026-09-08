@@ -29,6 +29,7 @@ export default function createCursor(deps) {
   let canvasEl = null;
   let els = null;
   let state = initialState();
+  let textWidth = 0;
   const isRtl = () => document.dir === 'rtl';
 
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -64,6 +65,7 @@ export default function createCursor(deps) {
       ring: container.querySelector('.firefly-globe-cursor-ring-wrap'),
       text: container.querySelector('.firefly-globe-cursor-text-wrap'),
     };
+    textWidth = els.text.offsetWidth;
 
     canvasEl = canvas;
     canvas.addEventListener('mouseenter', onEnter);
@@ -107,7 +109,7 @@ export default function createCursor(deps) {
     els.disc.style.left = `${state.mx}px`;
     els.disc.style.top = `${state.my}px`;
     els.ring.style.transform = `translate(${state.mx}px, ${state.my}px)`;
-    const textX = isRtl() ? state.mx - els.text.offsetWidth - 32 : state.mx + 32;
+    const textX = isRtl() ? state.mx - textWidth - 32 : state.mx + 32;
     els.text.style.transform = `translate(${textX}px, ${state.my - 11}px)`;
   }
 

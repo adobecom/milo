@@ -14,6 +14,7 @@ export {
   Scene,
   ShaderMaterial,
   SRGBColorSpace,
+  Texture,
   Vector2,
   Vector3,
   WebGLRenderer,

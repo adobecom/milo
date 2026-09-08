@@ -255,7 +255,7 @@ export default function createGlobeModal({
     const card = cardOverride || modalCard;
     const camera = getCamera();
     const { W, H } = getViewport();
-    const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
+    const { h: CARD_H_SPHERE } = getCardDims();
     const camZ = camera.position.z;
     const dist = MODAL_CAM_DIST;
 
@@ -268,10 +268,10 @@ export default function createGlobeModal({
       scaleX;
 
     if (isMobile) {
-      // Full-bleed width, top-aligned, square corners; height follows aspect.
-      const cardHPx = W / uAspect;
-      scaleX = W / (CARD_W_SPHERE * pxPerWorld);
-      scaleY = scaleX / sScaleX;
+      // Width-first fit, capped by height so tall portraits never overflow the viewport.
+      const cardHPx = Math.min(W / uAspect, H);
+      scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
+      scaleX = scaleY * sScaleX;
       outPos.set(0, (H / 2 - cardHPx / 2 + skewOffsetPx()) / pxPerWorld, camZ - dist);
     } else {
       // Contain-fit to the viewport minus DT_IMG_MARGIN, aspect kept.
