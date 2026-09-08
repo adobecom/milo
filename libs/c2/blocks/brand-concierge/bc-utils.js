@@ -27,6 +27,17 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
+/** Get session ID used to correlate analytics events */
+export function getChatSessionId() {
+  const match = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(`${BC_SESSION_COOKIE}=`));
+  return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
+}
+
 export function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();
