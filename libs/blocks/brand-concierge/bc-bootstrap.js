@@ -470,7 +470,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   // limit window scroll listener, so only one can be active.
   if (sideScrollListener !== 'scroll') {
     window.addEventListener('scroll', () => {
-      if (gnav ? gnav.classList.contains('is-compact') : false) {
+      if (gnav) {
         if (currentSidetop !== document.body.style.getPropertyValue('--bc-side-overlay-top')
         || window.scrollY < gnav.getBoundingClientRect().height) {
           window.requestAnimationFrame(() => {
