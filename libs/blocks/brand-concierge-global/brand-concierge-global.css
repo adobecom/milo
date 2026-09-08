@@ -619,10 +619,10 @@
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
     height: auto;
-    top: calc(24px + var(--bc-side-overlay-top));
+    top: calc(20px + var(--bc-side-overlay-top));
     margin: 0 0 0 auto;
-    bottom: 24px;
-    right: 24px;
+    bottom: 20px;
+    right: 20px;
     width: 448px;
     z-index: 5;
   }
