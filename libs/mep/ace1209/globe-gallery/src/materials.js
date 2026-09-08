@@ -111,19 +111,26 @@ function makeCanvas(w, h, color) {
   return cv;
 }
 
-// Loaded via plain Image (no crossOrigin) so file:// works; a tainted canvas falls back solid.
-function imageToCanvas(img, cap, fit = fitDims) {
+function makeSolidTexture(w, h, color) {
+  const tex = new THREE.CanvasTexture(makeCanvas(w, h, color));
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+async function imageToTexture(img, cap, fit = fitDims) {
   const { w, h } = fit(img.naturalWidth || 512, img.naturalHeight || 512, cap);
-  const cv = makeCanvas(w, h, '#555');
-  const ctx = cv.getContext('2d');
   try {
-    ctx.drawImage(img, 0, 0, w, h);
-    ctx.getImageData(0, 0, 1, 1); // throws (SecurityError) if the canvas is cross-origin tainted
+    const opts = { resizeWidth: w, resizeHeight: h, resizeQuality: 'high', imageOrientation: 'flipY' };
+    const bitmap = await createImageBitmap(img, opts);
+    const tex = new THREE.Texture(bitmap);
+    tex.flipY = false;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return tex;
   } catch (e) {
     window.lana?.log?.(`globe-gallery: card image could not be rasterized, rendering fallback: ${img.src} — ${e?.message || e}`, { tags: 'globe-gallery', severity: 'warn' });
-    return makeCanvas(w, h, '#444');
+    return makeSolidTexture(w, h, '#444');
   }
-  return cv;
 }
 
 function releaseCanvasAfterUpload(tex, cv) {
@@ -146,15 +153,12 @@ function texAspect(tex) {
   return imgW / imgH;
 }
 
-// onEach fires per settled image, onDone once all `count` settle. These deliberately do NOT
-// releaseCanvasAfterUpload — two renderers upload them.
 export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
   const aspects = new Array(count);
 
   function done(i, tex) {
-    tex.colorSpace = THREE.SRGBColorSpace;
     const aspect = texAspect(tex);
     textures[i] = tex;
     aspects[i] = aspect;
@@ -166,16 +170,11 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
   function tryLoad(i) {
     const img = new Image();
     img.onload = () => {
-      const rasterize = () => done(
-        i,
-        new THREE.CanvasTexture(imageToCanvas(img, maxTexH, fitCardDims)),
-      );
-      if (img.decode) img.decode().then(rasterize, rasterize);
-      else rasterize();
+      imageToTexture(img, maxTexH, fitCardDims).then((tex) => done(i, tex));
     };
     img.onerror = () => {
       window.lana?.log?.(`globe-gallery: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: 'globe-gallery', severity: 'warn' });
-      done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));
+      done(i, makeSolidTexture(4, 6, '#555'));
     };
     img.src = getSrc(i); // no crossOrigin — needed so img.onload fires for file://
   }
@@ -187,9 +186,7 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
 export function loadModalTexture(src, maxTex, onReady, onError) {
   const img = new Image();
   img.onload = () => {
-    const tex = new THREE.CanvasTexture(imageToCanvas(img, maxTex));
-    tex.colorSpace = THREE.SRGBColorSpace;
-    onReady(tex);
+    imageToTexture(img, maxTex).then(onReady);
   };
   img.onerror = () => {
     window.lana?.log?.(`globe-gallery: modal texture upgrade failed: ${src}`, { tags: 'globe-gallery', severity: 'warn' });
