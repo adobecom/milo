@@ -1884,8 +1884,11 @@ function decorateInlineCtas(masField, content) {
     content.remove();
   }
 
+  // router-marquee styles its own CTAs after resolution (primary = em>strong).
+  // decorateButtons would strip the <strong> and misclassify them as outline.
+  const selfDecoratesCtas = container?.closest('.router-marquee');
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
-  if (container && !pendingCTAs?.length) {
+  if (container && !pendingCTAs?.length && !selfDecoratesCtas) {
     decorateButtons(container, size);
     if (utilClasses.length) {
       container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
