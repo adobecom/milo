@@ -1,0 +1,779 @@
+/* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
+
+@property --gg-nav-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 124px;
+}
+
+.firefly-globe,
+.firefly-globe-cursor {
+  --gg-chrome-blur: 12px;
+}
+
+.firefly-globe {
+  --gg-runway-height: 100vh;
+  --gg-hang-max: 0.8em;
+
+  --gg-crosshair-width: 1px;
+  --gg-controls-size: 48px;
+  --gg-controls-radius: 6px;
+  --gg-controls-inset: var(--s2a-spacing-md);
+  --gg-modal-anim-ms: 350;
+  --gg-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
+  --gg-band-h: calc(100vh - var(--gg-nav-h));
+  --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
+  --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
+
+  height: var(--gg-runway-height);
+  position: relative;
+  background: var(--s2a-color-gray-900);
+  margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
+  -webkit-tap-highlight-color: transparent;
+
+  &.firefly-globe-reduced,
+  &.firefly-globe-empty {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* Custom cursor (src/cursor.js). */
+@media (hover: hover) and (pointer: fine) {
+  .firefly-globe-cursor {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 17;
+  }
+
+  .firefly-globe-cursor-disc {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 16;
+    width: 48px;
+    height: 48px;
+    margin: -24px;
+    border-radius: 50%;
+    background: var(--s2a-color-gray-25);
+    mix-blend-mode: difference;
+    transform: scale(0);
+    visibility: hidden;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .firefly-globe-cursor-disc-active {
+    transform: scale(1);
+    visibility: visible;
+  }
+
+  .firefly-globe-cursor-disc-dragging {
+    transform: scale(0.82);
+    transition: transform 0.15s ease;
+  }
+
+  .firefly-globe-cursor-ring-wrap,
+  .firefly-globe-cursor-text-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .firefly-globe-cursor-text-wrap {
+    display: flex;
+    align-items: center;
+    padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs);
+    border-radius: var(--s2a-border-radius-xs);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+    backdrop-filter: blur(var(--gg-chrome-blur));
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.42s ease;
+  }
+
+  .firefly-globe-cursor-ring {
+    display: block;
+    position: absolute;
+    top: -24px;
+    left: -24px;
+    width: 48px;
+    height: 48px;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5);
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .firefly-globe-cursor-active .firefly-globe-cursor-ring {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .firefly-globe-cursor-dragging .firefly-globe-cursor-ring {
+    transform: scale(0.82);
+    transition: opacity 0.35s ease, transform 0.15s ease;
+  }
+
+  .firefly-globe-cursor-chevron-l,
+  .firefly-globe-cursor-chevron-r {
+    transition: transform 0.15s ease;
+  }
+
+  .firefly-globe-cursor-dragging .firefly-globe-cursor-chevron-l { transform: translateX(4px); }
+  .firefly-globe-cursor-dragging .firefly-globe-cursor-chevron-r { transform: translateX(-4px); }
+
+  .firefly-globe-cursor-text {
+    display: block;
+    font-family: var(--heading-font-family);
+    font-size: var(--s2a-font-size-xs);
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    line-height: 1;
+    color: var(--s2a-color-gray-25);
+  }
+
+  .firefly-globe-cursor-active .firefly-globe-cursor-text-wrap {
+    opacity: 0.9;
+    visibility: visible;
+    transition-delay: 0.15s;
+  }
+
+  .firefly-globe-cursor-retiring .firefly-globe-cursor-text-wrap,
+  .firefly-globe-cursor-retiring .firefly-globe-cursor-ring,
+  .firefly-globe-cursor-disc-retiring {
+    opacity: 0;
+    transition: opacity 0.42s ease, transform 0.42s ease;
+  }
+
+  .firefly-globe-cursor-retiring .firefly-globe-cursor-ring,
+  .firefly-globe-cursor-disc-retiring {
+    transform: scale(0.6);
+  }
+}
+
+@media (width >= 768px) {
+  .firefly-globe {
+    --gg-controls-inset: var(--s2a-spacing-lg);
+  }
+}
+
+.firefly-globe-canvas,
+.firefly-globe-modal-canvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.firefly-globe-world {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.firefly-globe-controls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* not intercepting canvas drag */
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden; /* pulls the buttons out of the tab order while the globe isn't live */
+
+  /* visibility flips AFTER the fade, never during: an interpolated `visible` would leave the
+     buttons tappable and tabbable at opacity 0 for the whole 0.35s. */
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.firefly-globe-controls.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0s;
+}
+
+.firefly-globe-control {
+  width: var(--gg-controls-size);
+  height: var(--gg-controls-size);
+  flex: none;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: var(--gg-controls-radius);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.firefly-globe-control:hover {
+  background: var(--s2a-color-transparent-black-80);
+  transform: scale(1.05);
+}
+
+.firefly-globe-control:active { transform: scale(0.98); }
+
+.firefly-globe-spin-toggle {
+  position: absolute;
+  top: var(--gg-controls-top);
+  inset-inline-end: var(--gg-controls-inset);
+}
+
+.firefly-globe-spin-toggle .firefly-globe-icon-play { display: none; }
+.firefly-globe-spin-toggle.is-paused .firefly-globe-icon-pause { display: none; }
+.firefly-globe-spin-toggle.is-paused .firefly-globe-icon-play { display: block; }
+
+.firefly-globe-hint { display: none; } /* barrel only */
+
+.firefly-globe-barrel .firefly-globe-hint {
+  position: absolute;
+  inset-inline: var(--gg-controls-inset);
+  bottom: var(--gg-controls-inset);
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-md);
+}
+
+.firefly-globe-hint-text {
+  flex: 1;
+  margin: 0;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-body);
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  user-select: none;
+  box-sizing: border-box;
+  padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--gg-controls-radius);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+
+  & > p { margin: 0; }
+}
+
+.firefly-globe-barrel .firefly-globe-hint-text {
+  transition: opacity 0.5s ease, visibility 0s;
+}
+
+.firefly-globe-barrel .firefly-globe-hint.is-dismissed .firefly-globe-hint-text {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.firefly-globe-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) linear;
+}
+.firefly-globe-modal.is-visible { display: block; }
+.firefly-globe-modal.is-open    { opacity: 1; }
+
+.firefly-globe-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+/* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
+.firefly-globe-modal-chrome {
+  --gg-modal-edge: var(--s2a-spacing-md);
+  --gg-control-size: 48px;
+  --gg-control-radius: 6px;
+  --gg-counter-w: auto; /* md+ pill is a fixed width; the md offsets below need the number */
+  --gg-nav-gap: 12px; /* counter pill edge → each arrow */
+  --gg-scrim-w: 316px; /* md+ info scrim (sm is full-width) */
+
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) ease;
+}
+.firefly-globe-modal-chrome.is-open { opacity: 1; }
+
+.firefly-globe-modal-chrome:focus,
+.firefly-globe-modal-chrome:focus-visible { outline: none; }
+
+/* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
+.firefly-globe-modal-chrome::backdrop { background: transparent; }
+
+/* Bottom row (arrows + counter): sm spreads it into the corners, md+ centres it as one group under
+   the image. All static — JS only fades the chrome in. See README (Modal chrome). */
+.firefly-globe-modal-nav,
+.firefly-globe-modal-counter {
+  position: absolute;
+  bottom: var(--gg-modal-edge);
+}
+
+.firefly-globe-modal-nav-prev { inset-inline-start: var(--gg-modal-edge); }
+.firefly-globe-modal-nav-next { inset-inline-end: var(--gg-modal-edge); }
+
+.firefly-globe-modal-nav {
+  width: var(--gg-control-size);
+  height: var(--gg-control-size);
+  border-radius: var(--gg-control-radius);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.firefly-globe-modal-nav:hover {
+  background: var(--s2a-color-transparent-black-80);
+  transform: scale(1.05);
+}
+
+.firefly-globe-modal-nav:active { transform: scale(0.98); }
+
+/* Close button — top inline-end corner of the viewport at every breakpoint; same frosted
+   treatment as the nav arrows. */
+.firefly-globe-modal-close {
+  position: absolute;
+  top: var(--gg-modal-edge);
+  inset-inline-end: var(--gg-modal-edge);
+  width: var(--gg-control-size);
+  height: var(--gg-control-size);
+  border-radius: var(--gg-control-radius);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+.firefly-globe-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
+
+/* sm = full-width chunk on the viewport's bottom edge, content-sized. Badges margin-top:auto pins
+   them to bottom; padding-bottom reserves the sm nav row (edge + control + edge). */
+.firefly-globe-modal-info {
+  position: absolute;
+  inset: auto 0 0;
+  max-height: 45dvh;
+  margin: 0;
+  padding: var(--gg-modal-edge) var(--gg-modal-edge) calc(var(--gg-modal-edge) * 2 + var(--gg-control-size));
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--s2a-border-radius-md);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+
+  /* padding must count toward width — no global border-box reset in Milo */
+  box-sizing: border-box;
+}
+
+.firefly-globe-modal-name,
+.firefly-globe-modal-role-label,
+.firefly-globe-modal-badges { flex-shrink: 0; }
+
+.firefly-globe-modal-badges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
+.firefly-globe-modal-info > .firefly-globe-modal-badges {
+  margin-top: auto;
+}
+
+.firefly-globe-modal-name {
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
+  font-size: var(--s2a-font-size-xl);
+  line-height: var(--s2a-font-line-height-md);
+  letter-spacing: var(--s2a-font-letter-spacing-5xl);
+  color: var(--s2a-color-gray-25);
+  margin: 0 0 var(--s2a-spacing-3xs);
+}
+
+.firefly-globe-modal-role-label {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
+  font-weight: var(--s2a-font-weight-body);
+  color: var(--s2a-color-gray-400);
+  margin: 0 0 var(--s2a-spacing-xs);
+}
+
+.firefly-globe-modal-description {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
+  color: var(--s2a-color-gray-400);
+  padding-inline-start: var(--gg-hang-max);
+  margin-block: 0 var(--s2a-spacing-sm);
+  margin-inline-start: calc(var(--gg-hang-max) * -1);
+  min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
+  overflow-y: auto;
+  touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
+  scrollbar-width: thin;
+  scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
+
+  /* Scroll-shadow fade cue; JS (updateDescFade) toggles .is-faded-top/-bottom. */
+  --gg-desc-fade-len: 20px;
+  --gg-desc-fade-top: 0;
+  --gg-desc-fade-bottom: 0;
+
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--gg-desc-fade-top), #000 calc(100% - var(--gg-desc-fade-bottom)), transparent 100%);
+
+  &.is-faded-top { --gg-desc-fade-top: var(--gg-desc-fade-len); }
+  &.is-faded-bottom { --gg-desc-fade-bottom: var(--gg-desc-fade-len); }
+}
+
+.firefly-globe-modal-description p {
+  margin: 0;
+}
+
+.firefly-globe-modal-description p + p {
+  margin-top: var(--s2a-spacing-xs);
+}
+
+.firefly-globe-modal-description a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.firefly-globe-modal-description a:hover {
+  color: var(--s2a-color-gray-25);
+}
+
+.firefly-globe-modal-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-sm);
+}
+
+.firefly-globe-modal-badge-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.firefly-globe-modal-badge-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.firefly-globe-modal-badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.firefly-globe-modal-badge-app {
+  font-family: var(--body-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: 13px;
+  color: var(--s2a-color-gray-25);
+}
+
+.firefly-globe-modal-badge-app-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-3xs);
+}
+
+.firefly-globe-modal-badge-app-link::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-right: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
+  border-top: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
+  transform: rotate(45deg) translateY(-1px);
+  flex-shrink: 0;
+}
+
+.firefly-globe-modal-badge-app-link:hover {
+  text-decoration: underline;
+}
+
+.firefly-globe-modal-badge-role {
+  font-family: var(--body-font-family);
+  font-size: 13px;
+  color: var(--s2a-color-gray-400);
+}
+
+/* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
+   `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
+.firefly-globe-modal-counter {
+  left: 50%;
+  transform: translateX(-50%);
+  height: var(--gg-control-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-body);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+/* Both: either may be the scrolling element, and body alone leaks wheel events on some browsers. */
+html.firefly-globe-modal-open,
+body.firefly-globe-modal-open { overflow: hidden; }
+
+/* Never intercepts canvas drag; tabbable only while interactive. */
+.firefly-globe-a11y {
+  position: fixed;
+  top: var(--gg-optical-center);
+  left: 50%;
+  width: min(80%, 80vh);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none; /* never intercept canvas drag */
+}
+.firefly-globe-a11y:focus { outline: none; }
+
+/* JS sizes/positions this per frame to each card's projected screen rect. */
+.firefly-globe-a11y-cards {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+}
+
+/* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
+   image, not the top-left. JS overwrites left/top/width/height each frame while focused. */
+.firefly-globe-a11y-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+.firefly-globe-a11y-card:focus { outline: none; }
+
+/* aria-labelledby target + visible instructions pill on focus. */
+.firefly-globe-a11y-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  max-width: min(78%, 320px);
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-20);
+  border-radius: var(--s2a-border-radius-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+  backdrop-filter: blur(var(--gg-chrome-blur));
+  color: var(--s2a-color-gray-25);
+  font-size: var(--s2a-font-size-md);
+  font-weight: var(--s2a-font-weight-adobe-clean-medium);
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.firefly-globe-a11y:focus-visible .firefly-globe-a11y-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
+.firefly-globe-a11y:focus-visible,
+.firefly-globe-a11y-card:focus-visible,
+.firefly-globe-control:focus-visible,
+.firefly-globe-modal-close:focus-visible,
+.firefly-globe-modal-nav:focus-visible {
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
+}
+
+@media (width >= 768px) {
+  .firefly-globe-modal-chrome {
+    --gg-modal-edge: var(--s2a-spacing-lg);
+    --gg-counter-w: 138px;
+  }
+
+  /* Full-height scrim on the viewport's inline-start edge. */
+  .firefly-globe-modal-info {
+    inset: 0 auto 0;
+    inset-inline-start: 0;
+    width: var(--gg-scrim-w);
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    padding: var(--gg-modal-edge);
+  }
+
+  /* One centred row: counter pill in the middle, an arrow --gg-nav-gap out on each side. */
+  .firefly-globe-modal-nav-prev {
+    inset-inline-start: calc(50% - var(--gg-counter-w) / 2 - var(--gg-nav-gap) - var(--gg-control-size));
+  }
+
+  .firefly-globe-modal-nav-next {
+    inset-inline-start: calc(50% + var(--gg-counter-w) / 2 + var(--gg-nav-gap));
+  }
+
+  .firefly-globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
+
+  .firefly-globe-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
+
+  .firefly-globe-modal-description { margin-block: 0; }
+
+  .firefly-globe-modal-badges { gap: 10px; }
+
+  .firefly-globe-modal-badge-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .firefly-globe-modal-badge-app { font-size: var(--s2a-font-size-sm); }
+  .firefly-globe-modal-badge-role { font-size: var(--s2a-font-size-sm); }
+
+  .firefly-globe-modal-counter {
+    width: var(--gg-counter-w);
+    box-sizing: border-box;
+    border-radius: var(--gg-control-radius);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
+    backdrop-filter: blur(var(--gg-chrome-blur));
+  }
+}
+
+.firefly-globe-reduced {
+  --gg-nav-h: 0;
+}
+
+/* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
+.firefly-globe-reduced .firefly-globe-world {
+  position: relative;
+}
+
+/* Scrolls with the globe; the base 50vh still centres on the sphere. */
+.firefly-globe-reduced .firefly-globe-a11y {
+  position: absolute;
+}
+
+.firefly-globe-reduced .firefly-globe-a11y-cards {
+  position: absolute;
+}
+
+.firefly-globe-reduced .firefly-globe-controls {
+  position: absolute;
+}
+
+html .firefly-globe-reduced .firefly-globe-spin-toggle {
+  display: none;
+}
+
+@media (height <= 460px) {
+  .firefly-globe-modal-chrome {
+    --gg-modal-edge: 8px;
+    --gg-control-size: 44px;
+  }
+
+  .firefly-globe-modal-info {
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+
+  .firefly-globe-modal-description {
+    flex-shrink: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .firefly-globe-modal-nav:hover,
+  .firefly-globe-modal-nav:active,
+  .firefly-globe-control:hover,
+  .firefly-globe-control:active {
+    transform: none;
+  }
+
+  /* Hint retires instantly, no 0.5s fade (drag, rotate and modal-open all reach is-dismissed). */
+  .firefly-globe-barrel .firefly-globe-hint-text,
+  .firefly-globe-barrel .firefly-globe-hint.is-dismissed .firefly-globe-hint-text {
+    transition: none;
+  }
+}
+
+html[dir="rtl"] .firefly-globe-modal-nav svg {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] .firefly-globe-hint {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .firefly-globe-modal-badge-app-link::after {
+  transform: scaleX(-1) rotate(45deg) translateY(-1px);
+}

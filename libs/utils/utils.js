@@ -120,6 +120,7 @@ const C2_BLOCKS = [
   'email-collection-c2',
   'explore-card',
   'faq',
+  'firefly-globe',
   'floating-cta',
   'global-footer',
   'global-navigation',

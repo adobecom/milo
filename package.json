@@ -19,7 +19,8 @@
     "build:preact-debug": "microbundle ./build/htm-preact-debug.js -o ./libs/deps/htm-preact-debug.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact-debug.modern.mjs ./libs/deps/htm-preact-debug.js",
     "build:gnav-profile": "microbundle ./libs/blocks/global-navigation/blocks/profile/profile-wrapper.js -o ./build/profile-wrapper-build.js -f umd --external none --no-sourcemap --target web; mv ./build/profile-wrapper-build.umd.js ./build/profile.js",
     "build:echarts": "cp node_modules/echarts/dist/echarts.common.min.js libs/deps/echarts.common.min.js",
-    "build:s2a": "node .github/workflows/update-s2a-styles.js"
+    "build:s2a": "node .github/workflows/update-s2a-styles.js",
+    "build:three": "microbundle ./build/three.js -o ./libs/deps/three.js -f modern --no-sourcemap --target web; mv ./libs/deps/three.modern.mjs ./libs/deps/three.js"
   },
   "repository": {
     "type": "git",
@@ -75,6 +76,7 @@
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "25.0.0",
-    "tar": "^7.5.13"
+    "tar": "^7.5.13",
+    "three": "0.160.1"
   }
 }
