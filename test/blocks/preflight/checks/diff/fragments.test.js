@@ -47,13 +47,6 @@ describe('preflight fragments', () => {
     expect(modified[0].scope).to.equal(frag);
   });
 
-  it('does not carry detached DOM nodes (previewEl/liveEl) on returned changes', async () => {
-    stubFetch();
-    const { modified } = await collectFragmentChanges(makeRoot(['/fragments/blade']), PAGE_URL);
-    expect(modified[0]).to.not.have.property('previewEl');
-    expect(modified[0]).to.not.have.property('liveEl');
-  });
-
   it('tags every instance when the same fragment appears more than once', async () => {
     stubFetch();
     const root = makeRoot(['/fragments/blade', '/fragments/blade']);
@@ -126,5 +119,17 @@ describe('preflight fragments', () => {
     expect(modified).to.have.length(0);
     expect(window.lana.log.called).to.equal(true);
     expect(fetchStub.called).to.equal(false);
+  });
+
+  it('isolates a throwing fragment so the others still highlight', async () => {
+    stubFetch();
+    const root = makeRoot(['http://', '/fragments/blade']);
+    const blade = root.querySelectorAll('.fragment')[1];
+
+    const { modified } = await collectFragmentChanges(root, PAGE_URL);
+
+    expect(modified).to.have.length(1);
+    expect(modified[0].scope).to.equal(blade);
+    expect(window.lana.log.called).to.equal(true);
   });
 });

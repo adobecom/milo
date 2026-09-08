@@ -53,19 +53,25 @@ describe('preflight diff-onpage', () => {
       expect(el.getAttribute('src')).to.equal('/a.png');
     });
 
-    it('climbs to the containing block for a block-kind change, even resolved deep inside its rebuilt DOM', () => {
+    it('resolves a block by name and text, ignoring position (robust to layout/masonry moves)', () => {
       const root = document.createElement('main');
       root.innerHTML = `
-        <div class="section">
-          <div class="columns block">
-            <div><div><p>Block text</p></div></div>
-          </div>
-        </div>`;
+        <div class="brick"><h2>Generative AI tools</h2></div>
+        <div class="brick"><h2>Fonts and stock images</h2></div>
+        <div class="brick"><h2>Creative community</h2></div>`;
 
-      const el = resolveOnPage('/div[1]/div[1]/div[1]/div[1]/p[1]', root, 'block');
-      const block = root.querySelector('.columns.block');
+      const el = resolveOnPage('/div[99]/div[1]', root, 'block', 'Fonts and stock images', 'brick');
 
-      expect(el).to.equal(block);
+      expect(el).to.equal(root.querySelectorAll('.brick')[1]);
+    });
+
+    it('returns null when no block of the given name matches the change text', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div class="brick"><h2>Completely unrelated content</h2></div>';
+
+      const el = resolveOnPage('/div[1]/div[1]', root, 'block', 'Fonts and stock images', 'brick');
+
+      expect(el).to.equal(null);
     });
 
     it('does not climb for a leaf-kind change, even when it sits inside a decorated block', () => {
@@ -216,7 +222,13 @@ describe('preflight diff-onpage', () => {
     it('marks a block-kind change overlay with is-block so it gets the inset-frame treatment', () => {
       root.innerHTML = '<div class="section"><div class="marquee"><p>Block text</p></div></div>';
       const diff = {
-        added: [{ type: 'added', kind: 'block', tag: 'DIV', path: '/div[1]/div[1]', blockName: 'marquee' }],
+        added: [{
+          type: 'added',
+          kind: 'block',
+          path: '/div[1]/div[1]',
+          blockName: 'marquee',
+          previewText: 'Block text',
+        }],
         modified: [],
         removed: [],
       };

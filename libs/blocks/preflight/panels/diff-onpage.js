@@ -43,14 +43,20 @@ function descendantMatch(context, seg) {
   return found[seg.index - 1] || null;
 }
 
-function toBlockAltitude(el, root) {
-  const block = el.closest('.section > div[class]');
-  if (block && block !== root && root.contains(block)) return block;
-  return el;
+function resolveBlock(root, blockName, expectedText) {
+  if (!blockName || !expectedText) return null;
+  let best = null;
+  let bestScore = 0.3;
+  root.querySelectorAll(`.${CSS.escape(blockName)}`).forEach((block) => {
+    const score = textSimilarity(normalizeText(block.textContent), expectedText);
+    if (score > bestScore) { best = block; bestScore = score; }
+  });
+  return best;
 }
 
-export function resolveOnPage(path, root, kind, expectedText) {
+export function resolveOnPage(path, root, kind, expectedText, blockName) {
   if (!root) return null;
+  if (kind === 'block') return resolveBlock(root, blockName, expectedText);
   const segments = parsePath(path);
   if (!segments.length) return null;
 
@@ -73,8 +79,7 @@ export function resolveOnPage(path, root, kind, expectedText) {
   if (usedFallback && expectedText && normalizeText(context.textContent)) {
     if (textSimilarity(normalizeText(context.textContent), expectedText) < 0.3) return null;
   }
-
-  return kind === 'block' ? toBlockAltitude(context, root) : context;
+  return context;
 }
 
 function logUnmapped(change) {
@@ -155,7 +160,13 @@ export function highlightOnPage(diff, root) {
     const apply = (change, modifierClass) => {
       let el = null;
       try {
-        el = resolveOnPage(change.path, change.scope || root, change.kind, change.previewText || change.liveText || '');
+        el = resolveOnPage(
+          change.path,
+          change.scope || root,
+          change.kind,
+          change.previewText || change.liveText || '',
+          change.blockName,
+        );
       } catch {
         el = null;
       }
