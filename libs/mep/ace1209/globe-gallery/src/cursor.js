@@ -1,4 +1,7 @@
 // See README (Behavior notes).
+// eslint-disable-next-line import/no-relative-packages
+import { createTag } from '../../../../utils/utils.js';
+
 const RING_SVG = [
   '<svg class="globe-gallery-cursor-ring" width="48" height="48" viewBox="-24 -24 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">',
   '<g class="globe-gallery-cursor-chevron-l"><polyline points="-8,-5 -13,0 -8,5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>',
@@ -26,6 +29,7 @@ export default function createCursor(deps) {
   let canvasEl = null;
   let els = null;
   let state = initialState();
+  let isRtl = false;
 
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -44,17 +48,15 @@ export default function createCursor(deps) {
     if (!window.matchMedia) return;
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    const disc = document.createElement('div');
-    disc.className = 'globe-gallery-cursor-disc';
+    isRtl = getComputedStyle(document.documentElement).direction === 'rtl';
+    const disc = createTag('div', { class: 'globe-gallery-cursor-disc' });
     document.body.appendChild(disc);
 
-    const container = document.createElement('div');
-    container.className = 'globe-gallery-cursor';
-    container.setAttribute('aria-hidden', 'true');
-    container.innerHTML = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
+    const cursorInner = `<div class="globe-gallery-cursor-ring-wrap">${RING_SVG}</div>`
       + '<div class="globe-gallery-cursor-text-wrap">'
       + '<span class="globe-gallery-cursor-text"></span>'
       + '</div>';
+    const container = createTag('div', { class: 'globe-gallery-cursor', 'aria-hidden': 'true' }, cursorInner);
     document.body.appendChild(container);
     container.querySelector('.globe-gallery-cursor-text').textContent = labelText || 'Click & Drag';
     els = {
@@ -106,7 +108,8 @@ export default function createCursor(deps) {
     els.disc.style.left = `${state.mx}px`;
     els.disc.style.top = `${state.my}px`;
     els.ring.style.transform = `translate(${state.mx}px, ${state.my}px)`;
-    els.text.style.transform = `translate(${state.mx + 32}px, ${state.my - 11}px)`;
+    const textX = isRtl ? state.mx - els.text.offsetWidth - 32 : state.mx + 32;
+    els.text.style.transform = `translate(${textX}px, ${state.my - 11}px)`;
   }
 
   function isActive() { return state.active; }
