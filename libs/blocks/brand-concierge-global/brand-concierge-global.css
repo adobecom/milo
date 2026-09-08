@@ -1,3 +1,11 @@
+:root {
+  --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
+}
+
+
 .global-navigation .feds-bc-wrapper {
   width: 340px;
   margin-inline-start: auto;
@@ -327,13 +335,13 @@
   }
 
   to {
-    right: 0;
+    right: 24px;
   }
 }
 
 @keyframes slide-out {
   from {
-    right: 0;
+    right: 24px;
   }
 
   to {
