@@ -300,6 +300,34 @@ describe('mas-field', () => {
       expect(linkNotDecorated.className).to.equal('some-class merch link-block');
     });
 
+    it('skips decorateButtons in a router-marquee so it keeps em > strong (self-decorated CTA)', async () => {
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('router-marquee');
+      const p = document.createElement('p');
+      const em = document.createElement('em');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=rm-cta-1&field=ctas-checkout';
+      a.textContent = '[[cta-test:ctas]]';
+      strong.append(a);
+      em.append(strong);
+      p.append(em);
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      await init(a);
+
+      // <strong> survives, so router-marquee can still detect the primary via em > strong.
+      const cta = p.querySelector('em > strong a[is="checkout-link"]');
+      expect(cta, 'strong wrapper preserved').to.exist;
+      // decorateButtons did not run: no con-button/size class added by merch.
+      expect(cta.classList.contains('con-button')).to.be.false;
+      expect([...cta.classList].some((c) => c.startsWith('button-'))).to.be.false;
+    });
+
     it('preserves the stamped promo code on inline prices through unwrapping', async () => {
       const section = document.createElement('div');
       const p = document.createElement('p');
