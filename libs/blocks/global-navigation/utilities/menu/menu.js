@@ -293,8 +293,12 @@ const decoratePromo = async (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
   watchPromoCtas();
-  // Skip a <strong> wrapping a CTA link — a mas-field CTA's own <strong> isn't in the DOM yet.
-  const promoHeader = [...elem.querySelectorAll('p > strong')].find((strong) => !strong.querySelector('a'));
+  // Header is a <strong> that isn't just a CTA wrapper; a CTA's <strong> holds only its
+  // anchor (or an unresolved <mas-field>), so skip those to find the real heading.
+  const wrapsOnlyCta = (s) => s.children.length === 1
+    && ['A', 'MAS-FIELD'].includes(s.children[0].tagName)
+    && s.textContent.trim() === s.children[0].textContent.trim();
+  const promoHeader = [...elem.querySelectorAll('p > strong')].find((s) => !wrapsOnlyCta(s));
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
@@ -585,5 +589,5 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
-export { decorateLinkGroupWithEmbeddedMerch };
+export { decorateLinkGroupWithEmbeddedMerch, decoratePromo };
 export default { decorateMenu, decorateLinkGroup, decorateHeadline };
