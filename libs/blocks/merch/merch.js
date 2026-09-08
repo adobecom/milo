@@ -1996,13 +1996,17 @@ function resolveSplitFieldLink(el) {
 }
 
 export default async function init(el) {
-  if (!el?.classList?.contains('merch') || !el.isConnected) return undefined;
+  if (!el?.classList?.contains('merch')) return undefined;
   const url = new URL(el.href);
   // Inline fragment field links (mas.adobe.com/studio.html#...&field=...) are routed here
   // instead of merch-card-autoblock (see decorateAutoBlock in utils.js) so a field render
   // never pulls in merch-card.
   if (url.hash.includes('field=')) {
-    if (!resolveSplitFieldLink(el)) return undefined;
+    // resolveSplitFieldLink mutates sibling nodes, so it needs the element connected;
+    // scoped here rather than at the top of init() so it doesn't also block price/CTA
+    // links (buildPrice/buildCta below) that can be decorated while still disconnected,
+    // e.g. dialog-modal fragment content built off-DOM before the dialog opens.
+    if (!el.isConnected || !resolveSplitFieldLink(el)) return undefined;
     return initMasField(el);
   }
   const { searchParams } = url;
