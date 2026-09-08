@@ -67,15 +67,18 @@
     }
   }
 
-  &.body-color-subtle .card .foreground [class^='body-'] {
+  /* Not named body-* — that prefix is reserved by decorateTextOverrides()
+     (libs/utils/decorate.js) for block-level text-size overrides and gets
+     stripped/corrupted if used here. */
+  &.content-subtle .card .foreground [class^='body-'] {
     color: var(--s2a-color-content-subtle);
   }
 
-  .card.body-subtle .foreground [class^='body-'] {
+  .card.content-subtle .foreground [class^='body-'] {
     color: var(--s2a-color-content-subtle);
   }
 
-  .card.body-solid .foreground [class^='body-'] {
+  .card.content-solid .foreground [class^='body-'] {
     color: inherit;
   }
 
