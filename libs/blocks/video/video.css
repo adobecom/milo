@@ -171,9 +171,13 @@ video {
   }
 }
 :root:has(meta[name="foundation"][content="c2"]) {
+  .video-container {
+    --play-pause-button-size: 32px;
+  }
+
   button.play-pause-button {
-    width: 32px;
-    height: 32px;
+    width: var(--play-pause-button-size);
+    height: var(--play-pause-button-size);
     border-radius: var(--s2a-border-radius-2xs);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
@@ -237,9 +241,8 @@ video {
   }
 
   @media (width >= 1440px) {
-    button.play-pause-button {
-      width: 48px;
-      height: 48px;
+    .video-container {
+      --play-pause-button-size: 48px;
     }
   }
 }
