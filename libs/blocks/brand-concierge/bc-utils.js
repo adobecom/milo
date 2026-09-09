@@ -40,6 +40,29 @@ export function hasChatCookie() {
   return false;
 }
 
+/** Get session ID used to correlate analytics events */
+export function getChatSessionId() {
+  const match = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(`${BC_SESSION_COOKIE}=`));
+  return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
+}
+
+export function setCssGnavHeight() {
+  const gnav = document.querySelector('header.global-navigation');
+  const localGnav = document.querySelector('div.feds-localnav');
+  const localNavStyle = localGnav ? getComputedStyle(localGnav) : null;
+  const localNavOn = localGnav && localNavStyle ? localNavStyle.display !== 'none' : false;
+
+  if (!gnav) return;
+  const rootStyles = getComputedStyle(document.documentElement);
+  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
+  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
+  const newHeight = gnavHeight + (localGnav && localNavOn ? localNavHeight : 0);
+  document.documentElement.style.setProperty('--bc-gnav-height', `${newHeight}px`);
+}
+
 export function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();
