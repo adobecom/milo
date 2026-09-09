@@ -13,7 +13,11 @@ import {
   isSignedOut,
   isTrustedUrl,
   isSameOriginManifestPath,
-  resolveDetectedMarketCountry,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -1039,14 +1043,6 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -1096,10 +1092,6 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
-
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   const { consentType } = manifestConfig;
@@ -1154,9 +1146,8 @@ export function setCountryEnabled(manifestConfig) {
   manifestConfig.countryEnabled = true;
   const { countryRestriction, manifestPath } = manifestConfig;
   if (!countryRestriction) return;
-  const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const config = getConfig();
-  manifestConfig.countryEnabled = countryArray.includes(config.mep.akamaiCode);
+  const countryArray = countryRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  manifestConfig.countryEnabled = countryArray.includes(getConfig().mep.countryIP);
   if (!manifestConfig.countryEnabled) overrideVariant(manifestPath, 'Default');
 }
 
@@ -1470,6 +1461,16 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
+
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
@@ -1707,7 +1708,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, nonPznOffer, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1727,8 +1728,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),

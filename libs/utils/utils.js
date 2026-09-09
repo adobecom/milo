@@ -114,6 +114,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'base-card',
   'brand-concierge',
+  'card-metadata',
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
@@ -1598,6 +1599,10 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        if (url.hash.startsWith('#transcript')) {
+          a.classList.add('video-transcript-source');
+          import('../features/video-transcript/video-transcript.js');
+        }
         return true;
       }
     }
@@ -2211,7 +2216,6 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  let countryIPPromise = null;
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
@@ -2221,8 +2225,12 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+<<<<<<< HEAD
   const mepgeolocation = getMepEnablement('mepgeolocation');
   const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
+=======
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
+>>>>>>> stage
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
@@ -2235,9 +2243,6 @@ async function checkForPageMods() {
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
-  if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountry();
-  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -2279,8 +2284,6 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    countryIPPromise,
-    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
@@ -2550,6 +2553,15 @@ function getMarketsByRegionPriority(markets, geoIp) {
   return marketsWithPriority.map(({ market }) => market);
 }
 
+function pickPreferredMarket(markets, prefLang, geoIp) {
+  const candidates = markets.filter((m) => m.lang === prefLang);
+  if (!candidates.length) return null;
+  // regionPriorities -> site whose market matches the user's geo -> first-by-order
+  return getMarketsByRegionPriority(candidates, geoIp)?.[0]
+    ?? candidates.find((m) => (m.defaultMarket || '').toLowerCase() === geoIp)
+    ?? candidates[0];
+}
+
 function reserveBannerSpace() {
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
@@ -2610,10 +2622,8 @@ export async function decorateLanguageBanner() {
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
-      market.lang === prefLang
-      && market.supportedRegions.includes(geoIp)
-    ));
+    const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
+    const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
     if (prefMarket) addAndShow(prefMarket);
     else return;
   } else {
@@ -2622,14 +2632,16 @@ export async function decorateLanguageBanner() {
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
     if (useBannerFlow) {
+      // Exclude en-US unless it explicitly lists the geo
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        prefMarketForGeo = pickPreferredMarket(marketsForGeoFiltered, prefLang, geoIp);
         if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
       if (!prefMarketForGeo) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeoFiltered[0]]));
       }
     } else {
       // ACOM flow: US exclusion + regionPriorities filter, multi-option modal

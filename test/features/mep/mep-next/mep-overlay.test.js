@@ -289,7 +289,11 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           selectedVariantName: 'v-a',
           source: 'adobe-target',
           countryRestriction: 'emea',
+<<<<<<< HEAD
           consentType: 'buy now',
+=======
+          mktgAction: 'buy now',
+>>>>>>> stage
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
         },
@@ -300,7 +304,11 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           selectedVariantName: 'not-in-list',
           source: 'helix',
           countryRestriction: null,
+<<<<<<< HEAD
           consentType: null,
+=======
+          mktgAction: null,
+>>>>>>> stage
           disabled: true,
         },
       ],
@@ -417,7 +425,11 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           selectedVariantName: XSS, // → Experience row (buildRow)
           source: XSS, // → Source row (buildRow)
           countryRestriction: null,
+<<<<<<< HEAD
           consentType: null,
+=======
+          mktgAction: null,
+>>>>>>> stage
           disabled: false,
         },
       ],

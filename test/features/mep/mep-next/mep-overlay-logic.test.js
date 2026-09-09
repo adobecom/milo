@@ -278,7 +278,11 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
+<<<<<<< HEAD
           consentType: null,
+=======
+          mktgAction: null,
+>>>>>>> stage
           disabled: false,
           analyticsTitle: 'Test',
         }],
@@ -300,7 +304,11 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
+<<<<<<< HEAD
           consentType: null,
+=======
+          mktgAction: null,
+>>>>>>> stage
           disabled: false,
         }],
       },

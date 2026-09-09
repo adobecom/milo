@@ -1108,7 +1108,11 @@ describe('saveToMmm', () => {
     analyticsTitle: 'Test Activity',
     source: ['mep param', 'target'],
     countryRestriction: 'us',
+<<<<<<< HEAD
     consentType: 'test-action',
+=======
+    mktgAction: 'test-action',
+>>>>>>> stage
   };
 
   beforeEach(() => {
@@ -1314,12 +1318,20 @@ describe('getMepPopup', () => {
     expect(popup.querySelector('.mep-edit-manifest').getAttribute('href')).to.equal('');
   });
 
+<<<<<<< HEAD
   it('escapes malicious source, consentType, countryRestriction and targetActivityName', async () => {
+=======
+  it('escapes malicious source, mktgAction, countryRestriction and targetActivityName', async () => {
+>>>>>>> stage
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     const popup = await renderPopup({
       page: { ...basePage },
+<<<<<<< HEAD
       activities: [buildActivity({ source: '<b>x</b>', consentType: '<b>x</b>', countryRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
+=======
+      activities: [buildActivity({ source: '<b>x</b>', mktgAction: '<b>x</b>', countryRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
+>>>>>>> stage
     });
     expect(popup.querySelector('.mep-section-data b'), 'section data values not parsed as markup').to.be.null;
     expect(popup.querySelector('.target-activity-name b'), 'target activity name not parsed as markup').to.be.null;
