@@ -93,22 +93,24 @@
   animation-range: contain 0% contain 100%;
 }
 
-.hub-hero-header.pinned {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-}
+@media (width >= 768px) {
+  .hub-hero-header.pinned {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
 
-.hub-hero-header.pinned~.hub-hero-image-grid-container {
-  /*
-   * padding, not margin — a margin here collapsed through .hub-hero-header (zero-height once
-   * pinned/fixed and out of flow) and .hub-hero itself (no border/padding-top of its own to
-   * block collapsing), shifting .hub-hero's own rendered position on the page by this amount
-   * every time .pinned toggled — which fed back into initHeaderPin's own pin/unpin scroll
-   * check, causing it to flap on/off rapidly during scroll instead of switching once cleanly.
-   */
-  padding-top: var(--hub-hero-header-height, 0px);
+  .hub-hero-header.pinned~.hub-hero-image-grid-container {
+    /*
+     * padding, not margin — a margin here collapsed through .hub-hero-header (zero-height once
+     * pinned/fixed and out of flow) and .hub-hero itself (no border/padding-top of its own to
+     * block collapsing), shifting .hub-hero's own rendered position on the page by this amount
+     * every time .pinned toggled — which fed back into initHeaderPin's own pin/unpin scroll
+     * check, causing it to flap on/off rapidly during scroll instead of switching once cleanly.
+     */
+    padding-top: var(--hub-hero-header-height, 0px);
+  }
 }
 
 .hub-hero-header .icon-button {
@@ -1353,6 +1355,14 @@
     --hub-hero-height: auto;
   }
 
+  .hub-hero-header.pinned {
+    position: relative;
+  }
+
+  .hub-hero-image-grid-container {
+    padding-top: 0;
+  }
+
   .hub-hero.hub-hero.slides-3 {
     --carousel-items-top: 0;
   }
@@ -1415,6 +1425,7 @@
   .hub-hero-carousel-item.focused,
   .hub-hero-carousel-item:focus-visible {
     width: var(--grid-img-width);
+    min-width: var(--grid-img-width-min);
   }
 
 }
@@ -2210,6 +2221,14 @@
     transition: none;
     position: relative;
     --hub-hero-height: auto;
+  }
+
+  .hub-hero-header.pinned {
+    position: relative;
+  }
+
+  .hub-hero-image-grid-container {
+    padding-top: 0;
   }
 
   /*
