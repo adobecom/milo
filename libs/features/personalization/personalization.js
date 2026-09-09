@@ -1093,6 +1093,7 @@ async function getPersonalizationVariant(
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
@@ -1148,7 +1149,10 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) return false;
+  if (!getGeoRestriction(manifestConfig)) {
+    manifestConfig.geoDisabled = true;
+    return false;
+  }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction?.includes('core services')) return true;
 
@@ -1164,6 +1168,12 @@ export function canServeManifest(manifestConfig) {
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
+}
+
+function recordManifestError(name, manifestPath, error) {
+  const config = getConfig();
+  config.mep.manifestErrors ??= [];
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1184,13 +1194,20 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchData) data = fetchedData;
+    data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!data) {
+      recordManifestError(name, manifestPath, 'Manifest');
+      return null;
+    }
   }
 
-  const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
-  const infoTab = manifestInfo || data?.info?.data;
+  const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
+  if (!persData) {
+    recordManifestError(name, manifestPath, 'Experiences tab');
+    return null;
+  }
+  const infoTab = manifestInfo || data.info?.data;
+
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;
@@ -1200,8 +1217,8 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 3 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
+    recordManifestError(name, manifestPath, 'Experience columns');
     return null;
   }
   const infoKeyMap = {

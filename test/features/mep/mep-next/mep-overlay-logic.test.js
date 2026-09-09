@@ -439,6 +439,43 @@ describe('getManifestList', () => {
     expect(manifests[0].index).to.equal(1);
     expect(manifests[1].index).to.equal(2);
   });
+
+  it('appends a malformed entry for each mep.manifestErrors record', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [{
+          name: 'Valid', manifest: '/valid.json', variantNames: ['v'], selectedVariantName: 'v', source: 'helix', disabled: false,
+        }],
+        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(2);
+    const [valid, malformed] = manifests;
+    expect(valid.malformed).to.be.undefined;
+    expect(malformed).to.include({
+      index: 2,
+      editUrl: '/broken.json',
+      fileName: 'Broken Manifest',
+      malformed: true,
+    });
+  });
+
+  it('returns only malformed entries when mep has manifestErrors but no experiments', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [],
+        manifestErrors: [{ name: 'Broken', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(1);
+    expect(manifests[0]).to.include({ index: 1, malformed: true });
+  });
 });
 
 describe('getPageSummary', () => {
