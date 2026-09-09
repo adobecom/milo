@@ -72,32 +72,33 @@ test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, 
 });
 
 // Test 4: verify useBlockCode
-test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-  // This is the only mep-actions test that does two full page.goto navigations, so it
-  // pays the mep-test.js pacer's per-worker throttle twice over. That regularly pushes
-  // it past the global 30s budget on webkit, the slowest of the three mep-* workers
-  // (observed: PR #6679, mep-webkit, "Test timeout of 30000ms exceeded" at the goto
-  // in step-2). Give it the same room nala/libs/commerce.js gives its own slow setup.
-  test.setTimeout(45000);
-  const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
+//
+// Split into two independent tests (was one test with two test.step() navigations sharing a
+// single 30s budget). Every mep-test.js pacer's per-worker EDS throttle applies per page.goto,
+// so a test doing two full navigations pays it twice over — that's what pushed this past the
+// 30s timeout on webkit (observed: PR #6679, mep-webkit, "Test timeout of 30000ms exceeded" at
+// the goto for step-2, after step-1 had already spent part of the shared clock). The two
+// navigations don't depend on each other's state — each gets its own page/context fixture
+// already — so giving each its own test() call, and therefore its own full budget, removes the
+// contention instead of just widening it.
+test(`[Test Id - ${features[4].tcid}] ${features[4].name} (default state),${features[4].tags}`, async ({ page, baseURL }) => {
   const defaultURL = `${baseURL}${features[4].data.defaultURL}${miloLibs}`;
   const marquee = new MarqueeBlock(page);
+  console.info(`[Test Page]: ${defaultURL}`);
+  await page.goto(defaultURL);
+  await expect(marquee.marquee).toBeVisible();
+  await expect(page.getByText('Marquee code was replaced MEP and the content was overwritten.')).toHaveCount(0);
+});
 
-  await test.step('step-1: verify the default', async () => {
-    console.info(`[Test Page]: ${defaultURL}`);
-    await page.goto(defaultURL);
-    await expect(marquee.marquee).toBeVisible();
-    await expect(page.getByText('Marquee code was replaced MEP and the content was overwritten.')).toHaveCount(0);
-  });
-  await test.step('step-2: Verify useBlockCode', async () => {
-    console.info(`[Test Page]: ${pznURL}`);
-    // domcontentloaded: waiting for 'load' stalls past the 30s budget because the
-    // mep-test.js pacer throttles subresources. waitForURL below syncs the redirect.
-    await page.goto(pznURL, { waitUntil: 'domcontentloaded' });
-    await page.waitForURL(/use-block-code/);
+test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+  const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
+  console.info(`[Test Page]: ${pznURL}`);
+  // domcontentloaded: waiting for 'load' stalls past the budget because the mep-test.js
+  // pacer throttles subresources. waitForURL below syncs the redirect.
+  await page.goto(pznURL, { waitUntil: 'domcontentloaded' });
+  await page.waitForURL(/use-block-code/);
 
-    const marqueeText = page.getByText('Marquee code was replaced MEP and the content was overwritten.');
-    await expect(marqueeText).toHaveCount(1);
-    await expect(marqueeText).toHaveCSS('color', 'rgb(128, 0, 128)'); // purple
-  });
+  const marqueeText = page.getByText('Marquee code was replaced MEP and the content was overwritten.');
+  await expect(marqueeText).toHaveCount(1);
+  await expect(marqueeText).toHaveCSS('color', 'rgb(128, 0, 128)'); // purple
 });
