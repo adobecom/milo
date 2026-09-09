@@ -710,7 +710,9 @@ body.firefly-globe-modal-open { overflow: hidden; }
   @media (prefers-reduced-motion: no-preference) {
     .firefly-globe:not(.firefly-globe-reduced):not(.firefly-globe-empty) {
       animation: firefly-globe-entry linear;
+      /* stylelint-disable-next-line property-no-unknown */
       animation-timeline: view();
+      /* stylelint-disable-next-line property-no-unknown */
       animation-range: entry 0% entry 70%;
       animation-fill-mode: both;
     }
@@ -720,6 +722,7 @@ body.firefly-globe-modal-open { overflow: hidden; }
         transform: scale(0.6);
         opacity: 0.1;
       }
+
       to {
         transform: scale(1);
         opacity: 1;
