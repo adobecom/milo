@@ -150,7 +150,7 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-const getMessageEventListener = () => {
+export const getMessageEventListener = () => {
   const configListener = getConfig().unav?.profile?.messageEventListener;
   if (configListener) return configListener;
 
