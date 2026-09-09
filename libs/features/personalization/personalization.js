@@ -1153,6 +1153,7 @@ export function setCountryEnabled(manifestConfig) {
 
 export function normalizeConsentType(consentType, manifestConfig, source) {
   if (!consentType) manifestConfig.consentNotSpecified = true;
+  const normalized = consentType?.toLowerCase();
   const promoAliases = [
     PROMO_OR_NO_OFFER_CHANGES,
     'core services',
@@ -1160,9 +1161,9 @@ export function normalizeConsentType(consentType, manifestConfig, source) {
     'non-marketing',
   ];
   const nonPznAliases = [NON_PERSONALIZED_OFFER_TEST, 'marketing decrease', 'marketing increase'];
-  if (promoAliases.includes(consentType)) return PROMO_OR_NO_OFFER_CHANGES;
-  if (nonPznAliases.includes(consentType)) return NON_PERSONALIZED_OFFER_TEST;
-  if (consentType === PERSONALIZED_OFFER) return PERSONALIZED_OFFER;
+  if (promoAliases.includes(normalized)) return PROMO_OR_NO_OFFER_CHANGES;
+  if (nonPznAliases.includes(normalized)) return NON_PERSONALIZED_OFFER_TEST;
+  if (normalized === PERSONALIZED_OFFER) return PERSONALIZED_OFFER;
   if (source?.includes('promo')) return PROMO_OR_NO_OFFER_CHANGES;
   return PERSONALIZED_OFFER;
 }
@@ -1274,8 +1275,8 @@ async function getManifestConfig(info, variantOverride) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-    manifestConfig.consentType = normalizeConsentType(infoObj['manifest-consent-type']?.toLowerCase()
-      || infoObj['manifest-marketing-action']?.toLowerCase(), manifestConfig, source);
+    manifestConfig.consentType = normalizeConsentType(infoObj['manifest-consent-type']
+      || infoObj['manifest-marketing-action'], manifestConfig, source);
     manifestConfig.countryRestriction = infoObj['manifest-country-restriction']?.toLowerCase()
       || infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {

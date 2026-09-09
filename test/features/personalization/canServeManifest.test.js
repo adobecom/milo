@@ -73,6 +73,10 @@ describe('normalizeConsentType', () => {
   it('should map legacy marketing decrease to non-personalized offer test', () => {
     expect(normalizeConsentType('marketing decrease', {}, 'pzn')).to.be.equal('non-personalized offer test');
   });
+  it('should match aliases case-insensitively', () => {
+    expect(normalizeConsentType('Marketing Increase', {}, 'pzn')).to.be.equal('non-personalized offer test');
+    expect(normalizeConsentType('CORE SERVICES', {}, 'pzn')).to.be.equal('promo or no offer changes');
+  });
   it('should return promo or no offer changes if the value is unrecognized and the source is promo', () => {
     expect(normalizeConsentType(undefined, {}, 'promo')).to.be.equal('promo or no offer changes');
   });
