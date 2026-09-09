@@ -74,6 +74,7 @@ export function createTextMaterial({ texture, aspect, resolution }) {
       uZoom: { value: 0 },
       uUVScale: { value: 1.0 },
       uAspect: { value: aspect },
+      uExitP: { value: 0 },
       uResolution: { value: new THREE.Vector2(resolution.x, resolution.y) },
     },
     vertexShader: CARD_VERT,

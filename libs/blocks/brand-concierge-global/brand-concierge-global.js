@@ -115,7 +115,12 @@ function decorateGnav(cards, input, topNav, el) {
       }, 500);
       if (document.body.classList.contains('bc-side-open')) {
         const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          document.body.classList.remove('bc-side-open');
+          handleGnavButton(event);
+        }
       } else handleGnavButton(event);
     });
     if (window?.milo) {
@@ -145,8 +150,6 @@ export default function init(el) {
     }
   });
 
-  setCssGnavHeight();
-
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
@@ -164,6 +167,7 @@ export default function init(el) {
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+    setCssGnavHeight();
     openSideModal(null, bcBootstrap);
   }
 }

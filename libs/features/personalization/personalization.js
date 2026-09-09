@@ -5,7 +5,6 @@
 import {
   createTag,
   getConfig,
-  getCountry,
   getMetadata,
   loadLink,
   loadScript,
@@ -14,7 +13,11 @@ import {
   isSignedOut,
   isTrustedUrl,
   isSameOriginManifestPath,
-  resolveDetectedMarketCountry,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -1036,14 +1039,6 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -1092,10 +1087,6 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
-
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
 }
@@ -1139,15 +1130,11 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getCountryRestriction = async (manifestConfig) => {
+export const getCountryRestriction = (manifestConfig) => {
   const { countryRestriction, manifestPath } = manifestConfig;
   if (!countryRestriction) return true;
-  const countryArray = countryRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const config = getConfig();
-  if (!config.mep.akamaiCode) {
-    config.mep.akamaiCode = await (config.mep.countryIPPromise || getCountry());
-  }
-  const isAllowed = countryArray.includes(config.mep.akamaiCode);
+  const countryArray = countryRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  const isAllowed = countryArray.includes(getConfig().mep.countryIP);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1161,8 +1148,8 @@ export function getManifestMarketingAction(mktgAction, source) {
   return 'marketing increase';
 }
 
-export async function canServeManifest(manifestConfig) {
-  if (!(await getCountryRestriction(manifestConfig))) {
+export function canServeManifest(manifestConfig) {
+  if (!getCountryRestriction(manifestConfig)) {
     manifestConfig.countryDisabled = true;
     return false;
   }
@@ -1268,7 +1255,7 @@ async function getManifestConfig(info, variantOverride) {
   let finalDisabled = disabled;
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const isAllowed = await canServeManifest(manifestConfig);
+  const isAllowed = canServeManifest(manifestConfig);
   if (!isAllowed) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
@@ -1439,6 +1426,16 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
 
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
@@ -1677,7 +1674,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1697,8 +1694,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),

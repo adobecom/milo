@@ -1,6 +1,6 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, getMetadata, loadScript } from '../../utils/utils.js';
-import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
+import { getBetaLabel, waitForCondition, expandIcon, setCssGnavHeight } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -17,6 +17,29 @@ const susiScopes = 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.rol
 let bcToken;
 let susiListener;
 let lastImsState = null;
+
+function handleLocalNav() {
+  const localGnav = document.querySelector('div.feds-localnav');
+  let lastDisplay = localGnav ? window.getComputedStyle(localGnav).display : null;
+  if (localGnav) {
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes') {
+          const currentDisplay = window.getComputedStyle(localGnav).display;
+
+          if (currentDisplay !== lastDisplay) {
+            lastDisplay = currentDisplay;
+            setCssGnavHeight();
+          }
+        }
+      }
+    });
+    observer.observe(localGnav, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+    });
+  }
+}
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -381,6 +404,8 @@ export async function openSideModal(initialMessage, bootstrap) {
     });
     susiListener = 'signIn:decorateNav';
   }
+
+  handleLocalNav();
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
