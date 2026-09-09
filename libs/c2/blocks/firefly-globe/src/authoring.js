@@ -206,6 +206,81 @@ function parseFragmentCards(row) {
   return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
 }
 
+const FF_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
+const FF_API_KEY = 'milo-ff-gallery-unity';
+
+function buildRenditionUrl(href, size) {
+  return href
+    .replace(/{format}/g, 'jpg')
+    .replace(/{dimension}/g, 'width')
+    .replace(/{size}/g, size);
+}
+
+function getLocalizedPrompt(prompts, locale) {
+  if (!prompts) return '';
+  return prompts[locale]
+    || prompts[locale.split('-')[0]]
+    || prompts['en-US']
+    || Object.values(prompts)[0]
+    || '';
+}
+
+function apiAssetToCard(asset, locale) {
+  // eslint-disable-next-line no-underscore-dangle
+  const rendition = asset?._links?.rendition;
+  if (!rendition?.href) return null;
+  const width = Math.min(rendition.max_width || 1024, 1024);
+  const img = buildRenditionUrl(rendition.href, width);
+  // eslint-disable-next-line no-underscore-dangle
+  const owner = asset._embedded?.owner;
+  const name = owner?.display_name
+    || `${owner?.first_name || ''} ${owner?.last_name || ''}`.trim()
+    || owner?.user_name
+    || '';
+
+  // eslint-disable-next-line no-underscore-dangle
+  const images = owner?._links?.images;
+  let avatarUrl = '';
+  if (images?.length) {
+    const sorted = [...images].sort((a, b) => Math.abs(a.width - 50) - Math.abs(b.width - 50));
+    avatarUrl = sorted[0].href;
+  }
+
+  const prompts = asset.custom?.input?.['firefly#prompts'];
+  const role = getLocalizedPrompt(prompts, locale);
+  const fireflyUrl = asset.urn
+    ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
+    : null;
+  return {
+    img,
+    alt: '',
+    name,
+    avatarUrl,
+    role,
+    description: [],
+    badges: [],
+    fireflyUrl,
+    crossOrigin: 'anonymous', // cdn.cp.adobe.io is cross-origin; required for WebGL texSubImage2D
+  };
+}
+
+export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
+  try {
+    const resp = await fetch(
+      `${FF_API_URL}?size=50&sort=updated_desc&include_pending_assets=false&cursor=&category_id=${categoryId}`,
+      { headers: { 'x-api-key': FF_API_KEY } },
+    );
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    // eslint-disable-next-line no-underscore-dangle
+    const assets = (data._embedded?.assets || []);
+    const cards = assets.map((a) => apiAssetToCard(a, locale)).filter(Boolean);
+    return cards.length ? cards : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function fetchFragmentCards(href) {
   try {
     const resp = await fetch(`${href}.plain.html`);
@@ -257,6 +332,13 @@ export function parseAuthoredContent(el) {
 const buildMarkup = (gid, labels) => `
   <div class="firefly-globe-world">
     <canvas class="firefly-globe-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <div class="firefly-globe-hover-card" aria-hidden="true">
+      <div class="firefly-globe-hover-user">
+        <img class="firefly-globe-hover-avatar" alt="" loading="lazy">
+        <span class="firefly-globe-hover-name"></span>
+      </div>
+      <p class="firefly-globe-hover-prompt"></p>
+    </div>
     <div class="firefly-globe-controls">
       <button class="firefly-globe-control firefly-globe-spin-toggle" type="button" daa-ll="pause_spin--firefly_globe" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="firefly-globe-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>

@@ -155,7 +155,7 @@ function texAspect(tex) {
 
 // onEach fires per settled image, onDone once all `count` settle. These deliberately do NOT
 // releaseCanvasAfterUpload — two renderers upload them.
-export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
+export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
   const aspects = new Array(count);
@@ -171,6 +171,9 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
 
   function tryLoad(i) {
     const img = new Image();
+    const co = getCrossOrigin ? getCrossOrigin(i) : null;
+    // crossOrigin required for cross-origin WebGL texSubImage2D (e.g. community CDN)
+    if (co) img.crossOrigin = co;
     img.onload = () => {
       imageToTexture(img, maxTexH, fitCardDims).then((tex) => done(i, tex));
     };
@@ -178,15 +181,16 @@ export function loadCardTextures({ count, getSrc, maxTexH }, onEach, onDone) {
       window.lana?.log?.(`firefly-globe: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: 'firefly-globe', severity: 'warn' });
       done(i, makeSolidTexture(4, 6, '#555'));
     };
-    img.src = getSrc(i); // no crossOrigin — needed so img.onload fires for file://
+    img.src = getSrc(i);
   }
 
   for (let i = 0; i < count; i += 1) tryLoad(i);
 }
 
 // Returns the Image so a pending load can be cancelled; caller owns disposal.
-export function loadModalTexture(src, maxTex, onReady, onError) {
+export function loadModalTexture(src, maxTex, onReady, onError, crossOrigin) {
   const img = new Image();
+  if (crossOrigin) img.crossOrigin = crossOrigin;
   img.onload = () => {
     imageToTexture(img, maxTex).then(onReady);
   };
@@ -194,7 +198,7 @@ export function loadModalTexture(src, maxTex, onReady, onError) {
     window.lana?.log?.(`firefly-globe: modal texture upgrade failed: ${src}`, { tags: 'firefly-globe', severity: 'warn' });
     if (onError) onError();
   };
-  img.src = src; // no crossOrigin — needed so onload fires for file://
+  img.src = src;
   return img;
 }
 

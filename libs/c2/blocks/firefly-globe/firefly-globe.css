@@ -179,6 +179,58 @@
   z-index: 0;
 }
 
+/* Hover tooltip — prompt + creator, shown on mouse hover of a globe card (md, non-barrel only) */
+.firefly-globe-hover-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220px;
+  background: rgb(0 0 0 / 65%);
+  border-radius: 8px;
+  padding: 10px 12px;
+  pointer-events: none;
+  opacity: 0;
+  color: white;
+  font-size: 13px;
+  line-height: 1.4;
+  will-change: transform, opacity;
+  z-index: 2;
+}
+
+.firefly-globe-hover-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-end: 4px;
+}
+
+.firefly-globe-hover-avatar {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgb(255 255 255 / 50%);
+  flex-shrink: 0;
+}
+
+.firefly-globe-hover-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.firefly-globe-hover-prompt {
+  margin: 0;
+  overflow: hidden;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: rgb(255 255 255 / 85%);
+}
+
 .firefly-globe-controls {
   position: absolute;
   inset: 0;

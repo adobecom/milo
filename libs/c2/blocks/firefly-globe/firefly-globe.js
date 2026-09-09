@@ -1,6 +1,6 @@
 import * as THREE from '../../../deps/three.js';
 import {
-  parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
+  parseAuthoredContent, fetchFragmentCards, fetchFireflyAssets, buildGlobeDom,
   optimizeImgUrl, scatterCards,
 } from './src/authoring.js';
 import {
@@ -359,6 +359,8 @@ function createGlobeGalleryRuntime(
   let textMesh = null;
   let hintRetired = false;
   let hintExitT = 0;
+  let lastHoverTipIdx = -1;
+  const hoverTipPos = new THREE.Vector3();
 
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
@@ -767,8 +769,9 @@ function createGlobeGalleryRuntime(
       const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
       const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
       if (modalCap <= base) return null;
-      const src = optimizeImgUrl(getCardMetadata(idx).img, modalCap);
-      return loadModalTextureRaw(src, modalCap, onReady, onError);
+      const meta = getCardMetadata(idx);
+      const src = optimizeImgUrl(meta.img, modalCap);
+      return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin);
     },
     getViewport: () => ({ W, H }),
     getBP: () => bp.name,
@@ -1155,6 +1158,49 @@ function createGlobeGalleryRuntime(
     hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
   }
 
+  function updateHoverTooltip() {
+    const tipEl = q('.firefly-globe-hover-card');
+    if (!tipEl || !camera) {
+      if (tipEl) tipEl.style.opacity = '0';
+      return;
+    }
+
+    let hovIdx = -1;
+    let maxT = 0.01;
+    for (let i = 0; i < cards.length; i += 1) {
+      if (cards[i].hoverT > maxT) { maxT = cards[i].hoverT; hovIdx = i; }
+    }
+
+    if (hovIdx < 0 || modal.getModalIdx() >= 0) {
+      tipEl.style.opacity = '0';
+      lastHoverTipIdx = -1;
+      return;
+    }
+
+    if (hovIdx !== lastHoverTipIdx) {
+      lastHoverTipIdx = hovIdx;
+      const meta = getCardMetadata(hovIdx);
+      const avatarEl = tipEl.querySelector('.firefly-globe-hover-avatar');
+      const nameEl = tipEl.querySelector('.firefly-globe-hover-name');
+      const promptEl = tipEl.querySelector('.firefly-globe-hover-prompt');
+      if (avatarEl) {
+        avatarEl.src = meta.avatarUrl || '';
+        avatarEl.style.display = meta.avatarUrl ? '' : 'none';
+      }
+      if (nameEl) nameEl.textContent = meta.name || '';
+      if (promptEl) promptEl.textContent = meta.role || '';
+    }
+
+    const card = cards[hovIdx];
+    card.mesh.getWorldPosition(hoverTipPos);
+    camera.updateMatrixWorld();
+    hoverTipPos.project(camera);
+    const sx = (hoverTipPos.x * 0.5 + 0.5) * W;
+    const sy = (-hoverTipPos.y * 0.5 + 0.5) * H;
+    tipEl.style.opacity = String(Math.min(1, maxT * 2));
+    tipEl.style.transform = `translate(calc(${sx}px - 50%), calc(${sy}px - 100% - 12px))`;
+  }
+
   function updateClickDragText() {
     if (!textMesh) return;
     const { uniforms } = textMesh.material;
@@ -1184,6 +1230,7 @@ function createGlobeGalleryRuntime(
     frame.sphGroupZ = 0;
     updateCardTransforms(frame);
     updateA11yFocusRing();
+    updateHoverTooltip();
     updateHintExit(frame);
 
     updateClickDragText();
@@ -1396,7 +1443,7 @@ function createGlobeGalleryRuntime(
     }
 
     interaction.setup(canvas);
-    if (!bp.CYLINDER && !reducedMotion) cursor.setup(canvas);
+    if (!reducedMotion) cursor.setup(canvas); // cursor.setup self-guards on (pointer: fine)
     root.classList.toggle('firefly-globe-barrel', bp.CYLINDER);
 
     window.addEventListener('blur', armFocusGuard);
@@ -1447,6 +1494,7 @@ function createGlobeGalleryRuntime(
       // Ask at the cap, by HEIGHT, matching fitCardDims.
       getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTexH, 'height'),
       maxTexH: cardMaxTexH,
+      getCrossOrigin: (i) => getCardMetadata(i).crossOrigin || null,
     }, onEachTexture, onDoneTextures);
     return true;
   }
@@ -1503,6 +1551,7 @@ function createGlobeGalleryRuntime(
     disposeTextMesh();
     hintRetired = false;
     hintExitT = 0;
+    lastHoverTipIdx = -1;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy();
@@ -1530,7 +1579,10 @@ export default async function init(el) {
 
   const gid = buildGlobeDom(el, labels, { touchHint });
 
-  const authored = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  // TODO: replace hardcoded category with authored value once authoring is updated
+  const FF_CATEGORY = 'text2Image';
+  const authored = await fetchFireflyAssets(FF_CATEGORY)
+    || (fragmentHref ? await fetchFragmentCards(fragmentHref) : null);
   if (!authored || authored.length === 0) {
     el.classList.add('firefly-globe-empty');
     return el;
