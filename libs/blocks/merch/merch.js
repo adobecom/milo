@@ -157,6 +157,7 @@ export const GeoMap = {
   id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
+  ara: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
   cn: 'CN_zh',
