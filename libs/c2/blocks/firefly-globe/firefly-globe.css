@@ -14,13 +14,12 @@
 .firefly-globe {
   --gg-runway-height: 70vh;
   --gg-hang-max: 0.8em;
-
   --gg-crosshair-width: 1px;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
   --gg-modal-anim-ms: 350;
-  --gg-nav-h: 0px; /* static block: no camera offset; controls use --gg-controls-top instead */
+  --gg-nav-h: 0; /* static block: no camera offset; controls use --gg-controls-top instead */
   --gg-band-h: calc(100vh - var(--gg-nav-h));
   --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
   --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
@@ -708,7 +707,7 @@ body.firefly-globe-modal-open { overflow: hidden; }
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .firefly-globe:not(.firefly-globe-reduced):not(.firefly-globe-empty) {
+    .firefly-globe:not(.firefly-globe-reduced):not(.firefly-globe-empty) > .firefly-globe-world {
       animation: firefly-globe-entry linear;
       /* stylelint-disable-next-line property-no-unknown */
       animation-timeline: view();
@@ -719,13 +718,13 @@ body.firefly-globe-modal-open { overflow: hidden; }
 
     @keyframes firefly-globe-entry {
       from {
-        transform: scale(0.6);
         opacity: 0.1;
+        scale: 0.6;
       }
 
       to {
-        transform: scale(1);
         opacity: 1;
+        scale: 1;
       }
     }
   }
