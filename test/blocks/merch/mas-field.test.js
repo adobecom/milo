@@ -646,6 +646,105 @@ describe('mas-field', () => {
       expect(heading1).to.exist;
       expect(heading1.classList.contains('heading-xxxl')).to.be.true;
     });
+
+    describe('promo-placeholder reveal', () => {
+      // watchPromoPlaceholders is registered on first initMasField call (module-level);
+      // prior tests did that. It reveals a .promo-placeholder when a mas-field inside it
+      // resolves to a promotion variation (data-promotion-project), else stays hidden.
+      const buildField = (field, { onField, contentHTML } = {}) => {
+        const mf = document.createElement('mas-field');
+        mf.setAttribute('field', field);
+        if (onField) mf.setAttribute('data-promotion-project', onField);
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = contentHTML ?? '';
+        mf.append(content);
+        return mf;
+      };
+
+      const dispatchReady = async (mf) => {
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+      };
+
+      it('reveals when a field resolves a promotion variation (marker on the mas-field)', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('description', { onField: 'someproject', contentHTML: 'Promo copy' });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.true;
+      });
+
+      it('reveals when the promotion marker is on a resolved child, not the mas-field', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('ctas', {
+          contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>',
+        });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.true;
+      });
+
+      it('stays hidden when the field has no promotion variation', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('description', { contentHTML: ' ' });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.false;
+      });
+
+      it('reveals once any field resolves a promotion, ignoring earlier non-promo fields', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const empty = buildField('description', { contentHTML: ' ' });
+        const promo = buildField('ctas', {
+          onField: 'proj',
+          contentHTML: '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>',
+        });
+        container.append(empty, promo);
+        document.body.append(container);
+
+        await dispatchReady(empty);
+        expect(container.classList.contains('promo-resolved'), 'not revealed by non-promo field').to.be.false;
+
+        await dispatchReady(promo);
+        expect(container.classList.contains('promo-resolved'), 'revealed once promo field resolves').to.be.true;
+      });
+
+      it('does nothing when the mas-field is not inside a .promo-placeholder', async () => {
+        const mf = buildField('description', { onField: 'proj', contentHTML: 'Promo copy' });
+        document.body.append(mf);
+
+        await dispatchReady(mf);
+
+        expect(document.querySelector('.promo-resolved')).to.not.exist;
+      });
+
+      it('is a no-op (non-mas-field target) for foreign mas:ready events', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const other = document.createElement('div');
+        container.append(other);
+        document.body.append(container);
+
+        other.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect(container.classList.contains('promo-resolved')).to.be.false;
+      });
+    });
   });
 
   describe('MEP Highlight M@S Content markers', () => {

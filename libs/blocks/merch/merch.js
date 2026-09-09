@@ -1918,6 +1918,25 @@ function watchMasFieldCtas() {
   });
 }
 
+/**
+ * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
+ * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
+ * `data-promotion-project`), the container is revealed; otherwise it stays hidden.
+ */
+let promoPlaceholdersWatched = false;
+function watchPromoPlaceholders() {
+  if (promoPlaceholdersWatched) return;
+  promoPlaceholdersWatched = true;
+  document.addEventListener('mas:ready', ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const container = mf.closest('.promo-placeholder');
+    if (!container || container.classList.contains('promo-resolved')) return;
+    if (mf.matches('[data-promotion-project]') || mf.querySelector('[data-promotion-project]')) {
+      container.classList.add('promo-resolved');
+    }
+  });
+}
+
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInlineField(el, options) {
   const aemFragment = createAemFragment(options, seenFragments);
@@ -1952,6 +1971,7 @@ async function createInlineField(el, options) {
 
 export async function initMasField(el) {
   watchMasFieldCtas();
+  watchPromoPlaceholders();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return el;
