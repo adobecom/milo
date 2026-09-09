@@ -1,5 +1,3 @@
-import { getConfig } from '../../utils/utils.js';
-
 /*
  * Detects AEM Sidekick login from the page world. <aem-sidekick> is defined in the
  * extension's isolated world, so page JS sees no config/status and its status event
@@ -38,21 +36,33 @@ export function isSidekickAuthed() {
   return isAuthedIn(getPluginActionBarShadow());
 }
 
-// Ungated (no auth) = preview/dev/stage/internal hosts only; prod, prodDomains, the
-// public *.aem.live edge, and unknown hosts stay GATED. graybox's [.-] covers both
-// graybox.adobe.com and the hyphenated business-graybox.adobe.com. Keyed on hostname,
-// not config.env.name (spoofable via ?env=stage on any host).
-const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$|(^|\.)(stage|corp)\.adobe\.com$|(^|[.-])graybox\.adobe\.com$/;
-export function isUngatedHost(hostname) {
-  return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
-}
+// Host-based gating below is disabled for this PR — auth logic is being reworked
+// and will be re-enabled (in updated form) at a later time. Left commented out,
+// not deleted, so the prior implementation is easy to restore/reference. Restoring
+// it also requires re-adding: import { getConfig } from '../../utils/utils.js';
+//
+// // Ungated (no auth) = preview/dev/stage/internal hosts only; prod, prodDomains, the
+// // public *.aem.live edge, and unknown hosts stay GATED. graybox's [.-] covers both
+// // graybox.adobe.com and the hyphenated business-graybox.adobe.com. Keyed on hostname,
+// // not config.env.name (spoofable via ?env=stage on any host).
+// const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$|(^|\.)(stage|corp)\.adobe\.com$
+//   |(^|[.-])graybox\.adobe\.com$/;
+// export function isUngatedHost(hostname) {
+//   return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
+// }
+//
+// function shouldGate() {
+//   const { prodDomains, env } = getConfig();
+//   const { hostname } = window.location;
+//   if (prodDomains?.includes(hostname)) return true;
+//   if (env?.name === 'prod') return true;
+//   return !isUngatedHost(hostname);
+// }
 
+// Gate only when explicitly requested via ?shouldgatemep=on, until the reworked
+// host-based rules above are restored.
 function shouldGate() {
-  const { prodDomains, env } = getConfig();
-  const { hostname } = window.location;
-  if (prodDomains?.includes(hostname)) return true;
-  if (env?.name === 'prod') return true;
-  return !isUngatedHost(hostname);
+  return new URLSearchParams(window.location.search.toLowerCase()).get('shouldgatemep') === 'on';
 }
 
 /*
