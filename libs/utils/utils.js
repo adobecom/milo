@@ -2225,12 +2225,7 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-<<<<<<< HEAD
-  const mepgeolocation = getMepEnablement('mepgeolocation');
   const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
-=======
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
->>>>>>> stage
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;

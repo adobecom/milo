@@ -220,7 +220,6 @@ describe('Functional Test', () => {
     expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
   });
 
-<<<<<<< HEAD
   it('fires "was served" analytics when the consent requirement is met', async () => {
     const config = getConfig();
     config.mep = {
@@ -283,8 +282,6 @@ describe('Functional Test', () => {
     delete window._satellite;
   });
 
-=======
->>>>>>> stage
   it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};

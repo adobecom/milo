@@ -2,15 +2,9 @@
 import { expect } from '@esm-bundle/chai';
 import {
   overrideVariant,
-<<<<<<< HEAD
   setCountryEnabled,
   normalizeConsentType,
   setConsentEnabled,
-=======
-  getCountryRestriction,
-  getManifestMarketingAction,
-  canServeManifest,
->>>>>>> stage
 } from '../../../libs/features/personalization/personalization.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
@@ -29,46 +23,31 @@ describe('overrideVariant', () => {
   });
 });
 
-<<<<<<< HEAD
 describe('setCountryEnabled', () => {
-=======
-describe('getCountryRestriction', () => {
->>>>>>> stage
   before(() => {
     getConfig().mep = { countryIP: 'us' };
   });
-<<<<<<< HEAD
   it('should set countryEnabled to true if the country restriction is null', () => {
     const manifestConfig = { countryRestriction: null, manifestPath: '/test/test.json' };
     setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
   });
-  it('should set countryEnabled to true if the akamai code is in the restriction list', () => {
-    getConfig().mep.akamaiCode = 'us';
+  it('should set countryEnabled to true if the country restriction includes the resolved country', () => {
     const manifestConfig = { countryRestriction: 'fr, us', manifestPath: '/test/test.json' };
     setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.true;
-    delete getConfig().mep.akamaiCode;
   });
   it('should override the variant to Default if the country restriction is not met', () => {
     const manifestConfig = { countryRestriction: 'fr, ca', manifestPath: '/test/test.json' };
     setCountryEnabled(manifestConfig);
     expect(manifestConfig.countryEnabled).to.be.false;
-=======
-  it('should return true if the country restriction is null', () => {
-    expect(getCountryRestriction({ countryRestriction: null, manifestPath: '/test/test.json' })).to.be.true;
-  });
-  it('should return true if the country restriction includes the resolved country', () => {
-    expect(getCountryRestriction({ countryRestriction: 'fr, us', manifestPath: '/test/test.json' })).to.be.true;
-  });
-  it('should return false and override the variant if the country restriction does not include the resolved country', () => {
-    expect(getCountryRestriction({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
->>>>>>> stage
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
   it('should normalize authored uk to gb when matching the resolved country', () => {
     getConfig().mep = { countryIP: 'gb' };
-    expect(getCountryRestriction({ countryRestriction: 'fr, uk', manifestPath: '/test/uk.json' })).to.be.true;
+    const manifestConfig = { countryRestriction: 'fr, uk', manifestPath: '/test/uk.json' };
+    setCountryEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.true;
   });
 });
 
@@ -129,17 +108,12 @@ describe('setConsentEnabled', () => {
   afterEach(() => {
     localStorage.removeItem('mep-/test/test.json');
   });
-<<<<<<< HEAD
 
   it('should set consentEnabled true and not override the variant for promo or no offer changes', () => {
     const manifestConfig = { consentType: 'promo or no offer changes', manifestPath: '/test/test.json' };
     setConsentEnabled(manifestConfig);
     expect(manifestConfig.consentEnabled).to.be.true;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.undefined;
-=======
-  it('should return false if the country restriction is false', () => {
-    expect(canServeManifest({ countryRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
->>>>>>> stage
   });
 
   it('should set consentEnabled true for promo or no offer changes even when consent is missing', () => {
