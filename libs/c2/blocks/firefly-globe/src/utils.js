@@ -27,10 +27,6 @@ export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 
 export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
-// sphereFormT thresholds.
-export const SPHERE_INTERACTIVE_T = 0.94;
-export const CURSOR_ZOOM_RETIRE_T = 0.35;
-
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
@@ -40,8 +36,6 @@ export const DT_SCALE_MAX = 3;
 export function createFrame() {
   return {
     dtScale: 1,
-    sphereFormT: 1,
-    zoomT: 0,
     activeCamera: null,
     sphereRotActive: false,
     sphGroupZ: 0,

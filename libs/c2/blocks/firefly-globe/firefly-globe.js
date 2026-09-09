@@ -16,7 +16,7 @@ import createCursor from './src/cursor.js';
 import {
   easeInOutCubic, lerpN, clamp01, coverFit,
   capDpr, CAM_FOV, TAN_HALF_FOV,
-  CURSOR_ZOOM_RETIRE_T, FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX, createFrame,
+  FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX, createFrame,
 } from './src/utils.js';
 
 const CARD_ASPECT = 456 / 631;
@@ -865,7 +865,7 @@ function createGlobeGalleryRuntime(
 
   cursor = createCursor({
     getGlobeLive: globeLive,
-    getCursorRetired: () => hintRetired || frameState.zoomT > CURSOR_ZOOM_RETIRE_T,
+    getCursorRetired: () => hintRetired,
     labelText: hintText,
     drag,
   });
@@ -895,14 +895,12 @@ function createGlobeGalleryRuntime(
     const dtMs = frameInput.prevNow ? nowMs - frameInput.prevNow : FRAME_MS;
     frameInput.prevNow = nowMs;
     frameState.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
-    frameState.sphereFormT = 1;
-    frameState.zoomT = 0;
     return frameState;
   }
 
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
-  function applyCentringOffset(sphereFormT) {
-    const offY = (navH / 2) * sphereFormT;
+  function applyCentringOffset() {
+    const offY = navH / 2;
     if (offY === appliedViewOffsetY) return;
     appliedViewOffsetY = offY;
     if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
@@ -911,7 +909,7 @@ function createGlobeGalleryRuntime(
 
   function updateActiveCamera() {
     camera.position.z = bp.CAM_Z_SPHERE;
-    applyCentringOffset(1);
+    applyCentringOffset();
     return camera;
   }
 
@@ -1575,14 +1573,16 @@ export default async function init(el) {
   }
 
   // Before buildGlobeDom() wipes the children.
-  const { hintText, touchHint, instructions, labels, fragmentHref } = parseAuthoredContent(el);
+  const {
+    hintText, touchHint, instructions, labels,
+    categoryId, cgenId, ctaLabel, fragmentHref,
+  } = parseAuthoredContent(el);
 
-  const gid = buildGlobeDom(el, labels, { touchHint });
+  const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel });
 
-  // TODO: replace hardcoded category with authored value once authoring is updated
-  const FF_CATEGORY = 'text2Image';
-  const authored = await fetchFireflyAssets(FF_CATEGORY)
-    || (fragmentHref ? await fetchFragmentCards(fragmentHref) : null);
+  let authored = null;
+  if (categoryId) authored = await fetchFireflyAssets(categoryId, 'en-US', cgenId);
+  else if (fragmentHref) authored = await fetchFragmentCards(fragmentHref);
   if (!authored || authored.length === 0) {
     el.classList.add('firefly-globe-empty');
     return el;

@@ -1,27 +1,6 @@
-// eslint-disable-next-line import/no-relative-packages
-import { getFederatedUrl } from '../../../../utils/utils.js';
-
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
-}
-
-function badgeSvgUrl(a) {
-  const href = a.getAttribute('href') || '';
-  if (href.includes('.svg')) return href;
-  const text = a.textContent.trim();
-  return text.includes('.svg') ? text : '';
-}
-
-function isSvgAnchor(a) {
-  return !!badgeSvgUrl(a);
-}
-
-// Inline <picture> markup for a badge logo URL, or null.
-function badgeIconHtml(url) {
-  if (!url) return null;
-  const src = getFederatedUrl(url);
-  return `<picture class="firefly-globe-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
 // Fallback only; authored inline so it stays localizable.
@@ -73,33 +52,6 @@ export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }
 
-const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
-
-function gutterOf(el) {
-  return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
-}
-
-function hangOpeningMark(el, room) {
-  el.style.textIndent = '';
-  const text = el.textContent.trim();
-  if (!room || !OPENING_MARK.test(text)) return;
-  const cs = getComputedStyle(el);
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
-  // Canvas ignores letter-spacing, and heading-1 has some.
-  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
-  // Too wide to hang — a CJK bracket, or just past the padding.
-  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
-  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
-}
-
-export function hangParagraphs(container) {
-  if (!container) return;
-  const room = gutterOf(container);
-  [...container.children].forEach((p) => hangOpeningMark(p, room));
-}
-
 // The <em>/<strong> text, but only when it IS the whole paragraph.
 function wholeParaChild(p, selector) {
   const child = p.querySelector(selector);
@@ -109,9 +61,7 @@ function wholeParaChild(p, selector) {
 
 function parseFragmentCardSegment(nodes) {
   let img = null;
-  let role = ''; let name = '';
-  const description = [];
-  const badges = [];
+  let prompt = ''; let name = '';
 
   nodes.forEach((node) => {
     const tag = node.nodeName && node.nodeName.toUpperCase();
@@ -125,43 +75,17 @@ function parseFragmentCardSegment(nodes) {
         if (!img) img = inlineImg;
         return;
       }
-      if (!role) {
+      if (!prompt) {
         const em = wholeParaChild(node, 'em');
-        if (em) { role = em; return; }
+        if (em) { prompt = em; return; }
       }
       if (!name) {
         const strong = wholeParaChild(node, 'strong');
-        if (strong) { name = strong; return; }
+        if (strong) { name = strong; }
       }
-      if (node.textContent.trim()) description.push(node); // everything else is description
     } else if (tag === 'PICTURE' || tag === 'IMG') {
       const bare = tag === 'IMG' ? node : node.querySelector('img');
       if (!img && bare) img = bare;
-    } else if (tag === 'UL') {
-      node.querySelectorAll(':scope > li').forEach((li) => {
-        // Cloned, so the authored DOM is untouched.
-        const row = li.cloneNode(true);
-        const featureLi = row.querySelector(':scope > ul > li');
-        row.querySelector(':scope > ul')?.remove();
-
-        const anchors = [...row.querySelectorAll('a')];
-        const svgAnchor = anchors.find(isSvgAnchor) || null;
-        const linkAnchor = anchors.find((a) => a !== svgAnchor) || null;
-        const icon = badgeIconHtml(
-          svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src'),
-        );
-        svgAnchor?.remove(); // its URL text is markup, never part of the name
-
-        const badgeName = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
-        if (badgeName) {
-          badges.push({
-            name: badgeName,
-            role: featureLi?.textContent.trim() || '',
-            href: linkAnchor?.getAttribute('href') || null,
-            icon,
-          });
-        }
-      });
     }
   });
 
@@ -177,13 +101,11 @@ function parseFragmentCardSegment(nodes) {
     img: img.currentSrc || img.getAttribute('src') || img.src,
     alt: (img.getAttribute('alt') || '').trim(),
     name,
-    role,
-    description,
-    badges,
+    prompt,
   };
 }
 
-const CARD_CONTENT_TAGS = /^(P|UL|PICTURE|IMG|H[1-6])$/;
+const CARD_CONTENT_TAGS = /^(P|PICTURE|IMG|H[1-6])$/;
 
 function parseFragmentCards(row) {
   const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
@@ -225,7 +147,7 @@ function getLocalizedPrompt(prompts, locale) {
     || '';
 }
 
-function apiAssetToCard(asset, locale) {
+function apiAssetToCard(asset, locale, cgenId) {
   // eslint-disable-next-line no-underscore-dangle
   const rendition = asset?._links?.rendition;
   if (!rendition?.href) return null;
@@ -248,9 +170,11 @@ function apiAssetToCard(asset, locale) {
 
   const prompts = asset.custom?.input?.['firefly#prompts'];
   const role = getLocalizedPrompt(prompts, locale);
-  const fireflyUrl = asset.urn
-    ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
-    : null;
+  let fireflyUrl = null;
+  if (asset.urn) {
+    fireflyUrl = `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`;
+    if (cgenId) fireflyUrl += `&promoid=${cgenId}&mv=other`;
+  }
   return {
     img,
     alt: '',
@@ -262,7 +186,7 @@ function apiAssetToCard(asset, locale) {
   };
 }
 
-export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
+export async function fetchFireflyAssets(categoryId, locale = 'en-US', cgenId = '') {
   try {
     const resp = await fetch(
       `${FF_API_URL}?size=50&sort=updated_desc&include_pending_assets=false&cursor=&category_id=${categoryId}`,
@@ -272,7 +196,7 @@ export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
     const data = await resp.json();
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
-    const cards = assets.map((a) => apiAssetToCard(a, locale)).filter(Boolean);
+    const cards = assets.map((a) => apiAssetToCard(a, locale, cgenId)).filter(Boolean);
     return cards.length ? cards : null;
   } catch (e) {
     return null;
@@ -310,14 +234,22 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 
 // Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
 // the hash is stripped before fetching.
-// Authoring: [cardsRow, hintTextRow, a11yRow] — no arc-copy or pull-quote rows.
+// Authoring: [cardsRow, hintTextRow, a11yRow]
+// cardsRow first cell: "categoryId || cgenId || ctaLabel" (API) or a fragment link (legacy).
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow] = [...el.children];
+  const firstCell = cardsRow?.querySelector(':scope > div');
+  const [categoryId = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
+    .split(LABEL_DIVIDER)
+    .map((s) => s.trim());
   const fragmentLink = cardsRow?.querySelector('a[href]');
   // hintTextRow is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
+    categoryId: categoryId || null,
+    cgenId,
+    ctaLabel,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
     hintText: cellText(cells[1]) || DEFAULT_HINT,
@@ -327,7 +259,7 @@ export function parseAuthoredContent(el) {
 }
 
 // `gid` makes the modal's document-wide aria-labelledby/describedby id refs unique per instance.
-const buildMarkup = (gid, labels) => `
+const buildMarkup = (gid, labels, ctaLabel) => `
   <div class="firefly-globe-world">
     <canvas class="firefly-globe-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
     <div class="firefly-globe-hover-card" aria-hidden="true">
@@ -365,7 +297,7 @@ const buildMarkup = (gid, labels) => `
       <p class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-prompt-${gid} firefly-globe-modal-position-${gid}"></p>
       <span class="firefly-globe-modal-position sr-only" id="firefly-globe-modal-position-${gid}" aria-hidden="true"></span>
       <div class="firefly-globe-modal-prompt" id="firefly-globe-modal-prompt-${gid}" role="document"></div>
-      <a class="firefly-globe-modal-cta" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>Open in Firefly</a>
+      <a class="firefly-globe-modal-cta" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="firefly-globe-modal-image sr-only" role="img"></span>
@@ -387,10 +319,10 @@ const buildMarkup = (gid, labels) => `
 
 let globeInstanceSeq = 0;
 
-export function buildGlobeDom(el, labels, { touchHint }) {
+export function buildGlobeDom(el, labels, { touchHint, ctaLabel = '' }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
-  el.innerHTML = buildMarkup(gid, labels);
+  el.innerHTML = buildMarkup(gid, labels, ctaLabel);
   const hintEl = el.querySelector('.firefly-globe-hint-text');
   if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
   else hintEl.textContent = touchHint.text;
