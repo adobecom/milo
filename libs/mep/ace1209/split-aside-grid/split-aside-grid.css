@@ -20,6 +20,10 @@
 }
 
 .split-aside-grid-stack {
+  /* One side of the glass frame that sits outside the video: 8px padding (--s2a-spacing-xs)
+     + 1px border (--s2a-border-width-1) = 9px. Per axis the border-box is 2 * this larger. */
+  --split-aside-grid-glass: calc(var(--s2a-spacing-xs) + var(--s2a-border-width-1)); /* 9px */
+
   position: relative;
   z-index: 1;
   width: 100%;
@@ -29,10 +33,6 @@
   user-select: none;
   display: flex;
   justify-content: center;
-
-  /* One side of the glass frame that sits outside the video: 8px padding (--s2a-spacing-xs)
-     + 1px border (--s2a-border-width-1) = 9px. Per axis the border-box is 2 * this larger. */
-  --split-aside-grid-glass: calc(var(--s2a-spacing-xs) + var(--s2a-border-width-1)); /* 9px */
 
   .media {
     --split-aside-grid-stack-step: var(--split-aside-grid-stack-index, 0);
