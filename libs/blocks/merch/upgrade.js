@@ -69,7 +69,7 @@ export const handleIFrameEvents = ({ data: msgData, origin }) => {
   const { app, subType, data } = parsedMsg || {};
 
   if (app !== 'ManagePlan') return;
-  const sanitizedExternalUrl = sanitizeUrl(data.externalUrl);
+  const sanitizedExternalUrl = sanitizeUrl(data?.externalUrl);
   const sanitizedReturnUrl = sanitizeUrl(data.returnUrl);
   const sanitizedTarget = sanitizeTarget(data.target);
   switch (subType) {
