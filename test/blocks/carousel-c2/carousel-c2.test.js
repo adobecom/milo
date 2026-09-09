@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
+import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import init from '../../../libs/c2/blocks/carousel-c2/carousel-c2.js';
 
 describe('Carousel C2', () => {
@@ -188,15 +189,8 @@ describe('Carousel C2', () => {
       expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 2');
     });
 
-    it('rebuilds the padded clone once the source slide gains a section-background', async () => {
+    it('rebuilds the padded hint clone once the source slide gains a section-background', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
-      // the authored slides declare a background, so their own section-metadata
-      // block adds `.section-background` asynchronously, after this init runs
-      document.querySelectorAll('.section-metadata').forEach((sm) => {
-        const row = document.createElement('div');
-        row.innerHTML = '<div>background</div><div>#000000</div>';
-        sm.appendChild(row);
-      });
       const block = document.querySelector('.carousel-c2');
       init(block);
 
@@ -206,19 +200,59 @@ describe('Carousel C2', () => {
       expect(staleClone.querySelector('.section-background')).to.be.null;
       const spreadSign = staleClone.style.getPropertyValue('--slide-spread-sign');
 
-      // simulate section-metadata decorating the source's background later
+      // a slide's section-metadata block appends .section-background asynchronously,
+      // after init has already snapshotted the hint clone
       const bg = document.createElement('div');
       bg.className = 'section-background';
       bg.innerHTML = '<img src="https://example.com/bg.png">';
       source.insertAdjacentElement('afterbegin', bg);
-      await new Promise((resolve) => { setTimeout(resolve, 0); }); // flush the observer
+      // MILO_EVENTS.DEFERRED fires once every section's background has processed
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
       const clone = wrapper.querySelector('.carousel-slide[data-cloned]');
-      expect(clone.querySelector('.section-background')).to.not.be.null;
+      expect(clone.querySelector(':scope > .section-background')).to.not.be.null;
       expect(clone.getAttribute('aria-hidden')).to.equal('true');
       expect(clone.hasAttribute('data-index')).to.be.false;
       expect(clone.style.getPropertyValue('--slide-spread-sign')).to.equal(spreadSign);
       expect(clone.querySelector('a').getAttribute('tabindex')).to.equal('-1');
+    });
+
+    it('rebuilds the loop-ring clones when a background arrives after interaction', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      // interact first so the permanent loop ring is built from the still-blank slides
+      block.querySelector('button.next').click();
+      const wrapper = block.querySelector('.carousel-wrapper');
+      expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+      const ringClone = wrapper.querySelector('.carousel-slide[data-cloned]');
+      expect(ringClone.querySelector(':scope > .section-background')).to.be.null;
+
+      // the source slide gains its background afterwards, then DEFERRED fires
+      wrapper.querySelectorAll('.carousel-slide:not([data-cloned])').forEach((slide) => {
+        const bg = document.createElement('div');
+        bg.className = 'section-background';
+        bg.innerHTML = '<img src="https://example.com/bg.png">';
+        slide.insertAdjacentElement('afterbegin', bg);
+      });
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+
+      wrapper.querySelectorAll('.carousel-slide[data-cloned]').forEach((clone) => {
+        expect(clone.querySelector(':scope > .section-background')).to.not.be.null;
+      });
+    });
+
+    it('clears the block for a single-slide carousel instead of throwing', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/one-slide.html' });
+      const block = document.querySelector('.carousel-c2');
+      expect(() => init(block)).to.not.throw();
+      // no carousel is built and the raw config rows are removed
+      expect(block.querySelector('.carousel-wrapper')).to.be.null;
+      expect(block.textContent.trim()).to.equal('');
+      // the lone section is not left half-decorated
+      expect(document.querySelector('.section .carousel-slide')).to.be.null;
+      expect(document.querySelector('[data-index]')).to.be.null;
     });
   });
 });
