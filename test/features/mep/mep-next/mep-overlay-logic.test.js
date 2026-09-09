@@ -277,7 +277,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a', 'variant-b'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
           analyticsTitle: 'Test',
@@ -299,7 +299,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         }],
@@ -380,24 +380,24 @@ describe('getManifestList', () => {
     expect(va.selected).to.be.false;
   });
 
-  it('uppercases geoRestriction when present', () => {
+  it('uppercases countryRestriction when present', () => {
     setConfig({
       ...config,
       mep: {
         ...config.mep,
         experiments: [{
-          name: 'Geo Test',
-          manifest: '/homepage/fragments/mep/geo.json',
+          name: 'Country Test',
+          manifest: '/homepage/fragments/mep/country.json',
           variantNames: ['v-a'],
           selectedVariantName: 'v-a',
           source: 'helix',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           disabled: false,
         }],
       },
     });
     const { manifests } = getManifestList();
-    expect(manifests[0].geoRestriction).to.equal('EMEA');
+    expect(manifests[0].countryRestriction).to.equal('EMEA');
   });
 
   it('sets showActive and isActive correctly when experiment is disabled', () => {
@@ -439,6 +439,43 @@ describe('getManifestList', () => {
     expect(manifests[0].index).to.equal(1);
     expect(manifests[1].index).to.equal(2);
   });
+
+  it('appends a malformed entry for each mep.manifestErrors record', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [{
+          name: 'Valid', manifest: '/valid.json', variantNames: ['v'], selectedVariantName: 'v', source: 'helix', disabled: false,
+        }],
+        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(2);
+    const [valid, malformed] = manifests;
+    expect(valid.malformed).to.be.undefined;
+    expect(malformed).to.include({
+      index: 2,
+      editUrl: '/broken.json',
+      fileName: 'Broken Manifest',
+      malformed: true,
+    });
+  });
+
+  it('returns only malformed entries when mep has manifestErrors but no experiments', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [],
+        manifestErrors: [{ name: 'Broken', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(1);
+    expect(manifests[0]).to.include({ index: 1, malformed: true });
+  });
 });
 
 describe('getPageSummary', () => {
@@ -453,14 +490,44 @@ describe('getPageSummary', () => {
     });
   });
 
-  it('includes Manifests Found, Foundation, Theme, Target Integration, Personalization', async () => {
+  it('includes Manifests Found, Foundation, Theme, Load Target Faster (v2), Manifest Sources', async () => {
     const pairs = await getPageSummary();
     const labels = pairs.map(([l]) => l);
     expect(labels).to.include('Manifests Found');
     expect(labels).to.include('Foundation');
     expect(labels).to.include('Theme');
-    expect(labels).to.include('Target Integration');
-    expect(labels).to.include('Personalization');
+    expect(labels).to.include('Load Target Faster (v2)');
+    expect(labels).to.include('Manifest Sources');
+  });
+
+  it('Manifest Sources nests Target Integration, Personalization Metadata, Promo Metadata, MEP Param', async () => {
+    const pairs = await getPageSummary();
+    const [, manifestSources] = pairs.find(([l]) => l === 'Manifest Sources');
+    const subLabels = manifestSources.map(([l]) => l);
+    expect(subLabels).to.deep.equal(['Target Integration', 'Personalization Metadata', 'Promo Metadata', 'MEP Param']);
+    const [, targetIntegration] = manifestSources.find(([l]) => l === 'Target Integration');
+    expect(targetIntegration).to.equal('on');
+    manifestSources
+      .filter(([l]) => l !== 'Target Integration')
+      .forEach(([, value]) => expect(value).to.equal('off'));
+  });
+
+  it('Load Target Faster (v2) is n/a when Target is off', async () => {
+    setConfig({ ...config, mep: { ...config.mep, targetEnabled: false } });
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('n/a');
+  });
+
+  it('Load Target Faster (v2) reflects personalization-v2 metadata when Target is on', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'personalization-v2';
+    meta.content = 'on';
+    document.head.append(meta);
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('on');
+    meta.remove();
   });
 
   it('reports 0 manifests found when experiments array is empty', async () => {

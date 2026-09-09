@@ -182,6 +182,44 @@ describe('Functional Test', () => {
     expect(fragment).to.be.null;
   });
 
+  it('records a manifestErrors entry when the manifest fails to fetch (bad location)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    window.fetch = stub().returns(Promise.resolve({ ok: false, status: 404, json: () => ({}), text: () => '' }));
+    const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
+    await applyPers({ manifests: badManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest' });
+  });
+
+  it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({ data: [] });
+    const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
+    await applyPers({ manifests: emptyManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
+  });
+
   it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};

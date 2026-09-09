@@ -13,7 +13,11 @@ import {
   isSignedOut,
   isTrustedUrl,
   isSameOriginManifestPath,
-  resolveDetectedMarketCountry,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -1035,14 +1039,6 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -1074,9 +1070,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob, event } = config.mep.promises;
+    const { lob } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1092,16 +1087,13 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
-
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
 }
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
@@ -1138,11 +1130,11 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getGeoRestriction = (manifestConfig) => {
-  const { geoRestriction, manifestPath } = manifestConfig;
-  if (!geoRestriction) return true;
-  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+export const getCountryRestriction = (manifestConfig) => {
+  const { countryRestriction, manifestPath } = manifestConfig;
+  if (!countryRestriction) return true;
+  const countryArray = countryRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  const isAllowed = countryArray.includes(getConfig().mep.countryIP);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1157,7 +1149,10 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) return false;
+  if (!getCountryRestriction(manifestConfig)) {
+    manifestConfig.countryDisabled = true;
+    return false;
+  }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction?.includes('core services')) return true;
 
@@ -1173,6 +1168,12 @@ export function canServeManifest(manifestConfig) {
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
+}
+
+function recordManifestError(name, manifestPath, error) {
+  const config = getConfig();
+  config.mep.manifestErrors ??= [];
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1193,13 +1194,20 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchData) data = fetchedData;
+    data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!data) {
+      recordManifestError(name, manifestPath, 'Manifest');
+      return null;
+    }
   }
 
-  const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
-  const infoTab = manifestInfo || data?.info?.data;
+  const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
+  if (!persData) {
+    recordManifestError(name, manifestPath, 'Experiences tab');
+    return null;
+  }
+  const infoTab = manifestInfo || data.info?.data;
+
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;
@@ -1209,8 +1217,8 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 3 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
+    recordManifestError(name, manifestPath, 'Experience columns');
     return null;
   }
   const infoKeyMap = {
@@ -1236,7 +1244,8 @@ async function getManifestConfig(info, variantOverride) {
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
     manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
-    manifestConfig.geoRestriction = infoObj['manifest-geo-restriction']?.toLowerCase();
+    manifestConfig.countryRestriction = infoObj['manifest-country-restriction']?.toLowerCase()
+      || infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
@@ -1417,6 +1426,16 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
 
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
@@ -1655,7 +1674,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1675,8 +1694,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),
