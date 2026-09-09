@@ -11,7 +11,6 @@ import {
   decorateFloatingInput,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
 } from './bc-utils.js';
 import {
@@ -19,6 +18,7 @@ import {
   bcBootstrap,
   openModal,
   openSideModal,
+  sideOverlayTop,
   setAuthoredContent,
   mountId,
 } from './bc-bootstrap.js';
@@ -38,7 +38,7 @@ function routeInput(text) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
     else {
-      setCssGnavHeight();
+      sideOverlayTop();
       openSideModal(text, bcBootstrap);
     }
   } else {
@@ -87,9 +87,8 @@ export default async function init(el) {
     }
   });
 
+  sideOverlayTop();
   initAnalytics();
-
-  setCssGnavHeight();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
