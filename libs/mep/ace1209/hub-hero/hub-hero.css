@@ -1448,6 +1448,7 @@
 
   .hub-hero-image-grid-container {
     animation: none;
+    margin-top: 0;
   }
 
   .hub-hero-carousel-item:nth-child(1),
@@ -1671,8 +1672,6 @@
     filter: contrast(var(--stack-contrast, 1));
   }
 }
-
-
 
 @keyframes slideOneMediaAspect {
   0% {
@@ -2184,8 +2183,16 @@
   }
 }
 
-/** Firefox / no scroll-driven animation support fallback */
-@supports not (animation-timeline: view()) {
+/*
+ * Firefox / no scroll-driven animation support fallback — same compound condition as the
+ * earlier @supports block in this file: Firefox now natively supports animation-timeline:
+ * view(), so "not (animation-timeline: view())" alone no longer matches it, even though the
+ * intent is for Firefox to always get this static/stacked treatment regardless of its actual
+ * scroll-driven-animation support level (mobile's .hub-hero-carousel-item rule below, which
+ * covers every slide including the first, was silently never reaching real Firefox because of
+ * this same gap).
+ */
+@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
 
   .hub-hero {
     --carousel-items-top: 15%;
@@ -2205,6 +2212,19 @@
     --hub-hero-height: auto;
   }
 
+  /*
+   * this one wasn't in the list above — its mobile animation (hubHeroCarouselHeaderMobileLeave)
+   * uses fill-mode:both specifically so it reads as opacity:0/translated *before* its range
+   * starts (see that rule's own comment). With scroll-driven animation unsupported, the
+   * animation's timeline never activates, so it's permanently stuck showing that "before" state
+   * — the carousel header text ("All you need for all you make.") was invisible the entire
+   * time as a result. Disabling the animation here removes that stuck 0% fill entirely; there's
+   * no other opacity/transform set on this element, so it falls back to fully visible/untransformed.
+   */
+  .hub-hero-carousel-header>div {
+    animation: none !important;
+  }
+
   .hub-hero-header div[class^="body"] {
     top: 0;
   }
@@ -2214,8 +2234,16 @@
     transform: none;
   }
 
+  /*
+   * z-index:2 — slide 1 (.hub-hero-carousel-item:nth-child(1)) has its own z-index:1 and, with
+   * its reveal/fade animation disabled by this same fallback, is permanently fully opaque
+   * instead of fading in/out as it scrolls — without this, it paints over this sticky header
+   * (DOM order alone would otherwise put slide 1's subtree on top) and blocks the header text
+   * whenever they visually overlap during scroll.
+   */
   .hub-hero-carousel .hub-hero-carousel-header {
     height: auto;
+    z-index: 2;
     margin-bottom: var(--s2a-spacing-lg);
   }
 
@@ -2224,12 +2252,76 @@
   }
 
   @media (width < 768px) {
+    /*
+     * --start-gap is meant to be a brief, quickly-scrolled-past starting point that the grid-col
+     * animations pull tighter within the first few % of scroll — real users barely see it. With
+     * animation disabled here it's the permanent, only state instead, so the normal 4rem starting
+     * value reads as an oddly wide, loose gap rather than the tight grid it's supposed to settle
+     * into; using --end-gap's own smaller value ties this to the design system's own "tight" gap
+     * rather than inventing a new magic number.
+     */
     .hub-hero {
+      --start-gap: var(--s2a-spacing-md);
+
       height: auto;
     }
 
+    /*
+     * hubHeroGridGapMobileY/-3rd grow the *within-column* gap by translating the 2nd/3rd
+     * stacked images away from the 1st, completely separately from --start-gap above (which
+     * only affects the declared flex gap, i.e. the gap *between* columns) — see that keyframe's
+     * own comment. Same stuck-animation problem as the carousel header fix above: not being in
+     * the animation:none list meant these were left running, and the same "gap should be small"
+     * intent applies here too — 0% (translate:0 0) is what actually matches --start-gap's own
+     * spacing, so this needs to freeze there, not just stop wherever it happened to be.
+     */
+    .hub-hero-image-grid-container-col div:nth-child(2),
+    .hub-hero-image-grid-container-col div:nth-child(3) {
+      animation: none !important;
+      translate: 0 0;
+    }
+
+    /*
+     * margin-top:0 on both — the base rule's -160px (--elastic-mobile-first-slide-offset) on
+     * the container exists to match slide 1's own animated -160px starting translateY (see
+     * elasticMobileFirstSlide) so they move together at the start of the animation; with that
+     * animation disabled (slide 1 no longer translates), nothing cancels this margin out
+     * anymore, so it just pulls the whole carousel container up and overlaps it with the grid/
+     * header above. Slide 3's own +160px (slide-footer-h + slide-header-h) exists purely to
+     * reserve extra scroll room for its own stack-settle animation — also meaningless with
+     * animation disabled, and it doesn't cancel against the container's offset (different
+     * elements), so it was just adding unwanted extra vertical space before slide 3.
+     */
+    .hub-hero-carousel-container {
+      margin-top: 0;
+    }
+
+    .hub-hero-carousel-item:nth-child(3) {
+      /* !important — .hub-hero.slides-3's own nth-child(3) rule is more specific than this
+         plain selector and would otherwise win regardless of source order */
+      margin-top: 0 !important;
+    }
+
+    /* not sticky here either — it should read as a normal, one-time in-flow heading for the
+       carousel section, not something that stays pinned in place while scrolling past it */
+    .hub-hero-carousel-header {
+      position: relative;
+      top: unset;
+    }
+
+    /*
+     * position:relative (not the base rule's sticky), not just animation:none — every slide
+     * shares the same sticky top offset, so even with animation disabled, position:sticky alone
+     * still makes each card visually cover/stack over the previous one as it scrolls up to that
+     * shared offset. Disabling that too gives a plain, non-overlapping sequential list, which is
+     * the actual "stacked as if reduced motion" look — confirmed the animation-only fix wasn't
+     * enough live in Firefox (getAnimations() was correctly empty, but cards still visually
+     * overlapped from position:sticky alone).
+     */
     .hub-hero-carousel-item {
       animation: none !important;
+      position: relative;
+      top: unset;
     }
 
     .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
@@ -2250,10 +2342,17 @@
       z-index: 1;
     }
 
+    /*
+     * opacity:1 — the base mobile rule for these gives them a static opacity:0 alongside their
+     * reveal animation (relying on the animation's own keyframes to fade them in), so disabling
+     * just the animation above left them permanently invisible here; nothing else in this
+     * fallback path re-reveals them, so it has to be set explicitly.
+     */
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
       top: unset;
       bottom: unset;
+      opacity: 1;
       animation: none;
     }
 

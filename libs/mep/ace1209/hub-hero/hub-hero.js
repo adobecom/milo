@@ -155,6 +155,20 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
  * header's flow space once it's fixed and out of flow.
  */
 const initHeaderPin = (hubHero, header) => {
+  /*
+   * Firefox (and any browser without animation-timeline:view() support) and prefers-reduced-
+   * motion both get a plain, fully static header via CSS (position:relative, animation:none —
+   * see the "Firefox / no scroll-driven animation support fallback" @supports block and the
+   * prefers-reduced-motion block in hub-hero.css) specifically so Firefox behaves like reduced
+   * motion is on there. .pinned's position:fixed has higher specificity than that fallback's
+   * position:relative, so pinning unconditionally would silently override it and re-introduce
+   * the animated pin/release behavior those paths are meant to opt out of — bail out entirely
+   * instead, matching the exact same condition the CSS fallback uses.
+   */
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
+  if (reducedMotion) return;
+
   // ResizeObserver (not a one-off measurement) because getBoundingClientRect() right after
   // append() can read 0 before the browser's first real layout pass, and this also naturally
   // keeps --hub-hero-header-height correct through later reflows (e.g. web fonts loading)
