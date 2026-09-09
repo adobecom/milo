@@ -368,6 +368,7 @@ export const osMap = {
 };
 
 export const LANGMAP = {
+  ar: ['ara'],
   cs: ['cz'],
   da: ['dk'],
   de: ['at'],
