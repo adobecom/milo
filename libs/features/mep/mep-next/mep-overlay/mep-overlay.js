@@ -173,8 +173,8 @@ function getManifestStatus(manifest) {
   }
   const statusChecks = [
     {
-      reason: manifest.manifestGeoRestricted,
-      msg: 'User country is geo restricted.',
+      reason: manifest.manifestCountryRestricted,
+      msg: 'User country is restricted.',
       level: 'Warning',
       label: 'Ineligible',
     },
@@ -240,7 +240,8 @@ function buildManifestCard(manifest) {
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
   rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Geo Restriction', manifest.geoRestriction || 'none'));
+  rows.push(buildRow('Mktg Action', manifest.mktgAction));
+  if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
   rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
   rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));

@@ -1130,11 +1130,11 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getGeoRestriction = (manifestConfig) => {
-  const { geoRestriction, manifestPath } = manifestConfig;
-  if (!geoRestriction) return true;
-  const geoArray = geoRestriction.split(',').map((item) => normCountryCode(item.trim()));
-  const isAllowed = geoArray.includes(getConfig().mep.countryIP);
+export const getCountryRestriction = (manifestConfig) => {
+  const { countryRestriction, manifestPath } = manifestConfig;
+  if (!countryRestriction) return true;
+  const countryArray = countryRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  const isAllowed = countryArray.includes(getConfig().mep.countryIP);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1149,8 +1149,8 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) {
-    manifestConfig.geoDisabled = true;
+  if (!getCountryRestriction(manifestConfig)) {
+    manifestConfig.countryDisabled = true;
     return false;
   }
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
@@ -1244,7 +1244,8 @@ async function getManifestConfig(info, variantOverride) {
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
     manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
-    manifestConfig.geoRestriction = infoObj['manifest-geo-restriction']?.toLowerCase();
+    manifestConfig.countryRestriction = infoObj['manifest-country-restriction']?.toLowerCase()
+      || infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
