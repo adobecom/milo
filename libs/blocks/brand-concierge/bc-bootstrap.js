@@ -34,12 +34,13 @@ export function sideOverlayTop() {
   const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
   const breadcrumbHeight = Number(rootStyles.getPropertyValue('--global-height-breadcrumbs').trim().slice(0, -2));
 
-  const newTop = ((
-    window.scrollY > gnavHeight
-    && isCompact && hasLocalNav)
-    ? 0 : gnavTop + gnavHeight)
-  + (hasLocalNav && isCompact ? localNavHeight : 0)
-  + (hasBreadcrumbs && !isCompact ? breadcrumbHeight : 0);
+  const gnavMeasure = ((
+    window.scrollY > gnavHeight && isCompact && hasLocalNav) ? 0 : gnavTop + gnavHeight
+  );
+  const localNavMeasure = hasLocalNav && isCompact ? localNavHeight : 0;
+  const breadcrumbMeasure = hasBreadcrumbs && !isCompact ? breadcrumbHeight : 0;
+
+  const newTop = gnavMeasure + localNavMeasure + breadcrumbMeasure;
   if (newTop !== lastSideTop) {
     document.body.style.setProperty('--bc-side-overlay-top', `${newTop}px`);
     lastSideTop = newTop;
