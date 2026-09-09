@@ -56,7 +56,7 @@ export function safeSetItem(key, value) {
 export function getExpandedCards() {
   try {
     const parsed = JSON.parse(safeGetItem(CARD_STORAGE_KEY));
-    return (parsed && !Array.isArray(parsed)) ? parsed : {};
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
   } catch { return {}; }
 }
 

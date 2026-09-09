@@ -612,12 +612,17 @@ function scheduleGnavOffsetUpdate() {
 
 const SUMMARY_TAB_INDEX = '1';
 const lastSummaryKeys = new Map();
+const summaryCallIds = new Map();
 
 async function refreshSummaryCard(header, getData) {
   const bodyEl = document.querySelector(`[data-card-key="${header}"] .mep-card-body`);
   if (!bodyEl) return;
 
+  const callId = (summaryCallIds.get(header) ?? 0) + 1;
+  summaryCallIds.set(header, callId);
+
   const data = await getData?.();
+  if (summaryCallIds.get(header) !== callId) return;
   if (!data) return;
   const dataKey = JSON.stringify(data);
   if (dataKey === lastSummaryKeys.get(header)) return;
