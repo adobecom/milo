@@ -46,8 +46,8 @@ const BREAKPOINTS = {
   md: {
     minWidth: 768,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 10.5,
-    CAM_Z_SPHERE: 57,
+    CARD_H_SPHERE: 12,
+    CAM_Z_SPHERE: 80,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.6,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)

@@ -12,7 +12,7 @@
 }
 
 .firefly-globe {
-  --gg-runway-height: 100vh;
+  --gg-runway-height: 70vh;
   --gg-hang-max: 0.8em;
 
   --gg-crosshair-width: 1px;
@@ -20,7 +20,7 @@
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
   --gg-modal-anim-ms: 350;
-  --gg-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
+  --gg-nav-h: 0px; /* static block: no camera offset; controls use --gg-controls-top instead */
   --gg-band-h: calc(100vh - var(--gg-nav-h));
   --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
   --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
@@ -161,6 +161,7 @@
 @media (width >= 768px) {
   .firefly-globe {
     --gg-controls-inset: var(--s2a-spacing-lg);
+    --gg-runway-height: 100vh;
   }
 }
 
@@ -172,16 +173,15 @@
 }
 
 .firefly-globe-world {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: relative;
+  height: 100%;
   overflow: visible;
   pointer-events: none;
   z-index: 0;
 }
 
 .firefly-globe-controls {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none; /* not intercepting canvas drag */
   z-index: 1;
@@ -576,7 +576,7 @@ body.firefly-globe-modal-open { overflow: hidden; }
 
 /* Never intercepts canvas drag; tabbable only while interactive. */
 .firefly-globe-a11y {
-  position: fixed;
+  position: absolute;
   top: var(--gg-optical-center);
   left: 50%;
   width: min(80%, 80vh);
@@ -593,11 +593,8 @@ body.firefly-globe-modal-open { overflow: hidden; }
 
 /* JS sizes/positions this per frame to each card's projected screen rect. */
 .firefly-globe-a11y-cards {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100vh;
+  position: absolute;
+  inset: 0;
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -709,26 +706,30 @@ body.firefly-globe-modal-open { overflow: hidden; }
   }
 }
 
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .firefly-globe:not(.firefly-globe-reduced):not(.firefly-globe-empty) {
+      animation: firefly-globe-entry linear;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+      animation-fill-mode: both;
+    }
+
+    @keyframes firefly-globe-entry {
+      from {
+        transform: scale(0.6);
+        opacity: 0.1;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  }
+}
+
 .firefly-globe-reduced {
   --gg-nav-h: 0;
-}
-
-/* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
-.firefly-globe-reduced .firefly-globe-world {
-  position: relative;
-}
-
-/* Scrolls with the globe; the base 50vh still centres on the sphere. */
-.firefly-globe-reduced .firefly-globe-a11y {
-  position: absolute;
-}
-
-.firefly-globe-reduced .firefly-globe-a11y-cards {
-  position: absolute;
-}
-
-.firefly-globe-reduced .firefly-globe-controls {
-  position: absolute;
 }
 
 html .firefly-globe-reduced .firefly-globe-spin-toggle {
