@@ -73,6 +73,12 @@ test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, 
 
 // Test 4: verify useBlockCode
 test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+  // This is the only mep-actions test that does two full page.goto navigations, so it
+  // pays the mep-test.js pacer's per-worker throttle twice over. That regularly pushes
+  // it past the global 30s budget on webkit, the slowest of the three mep-* workers
+  // (observed: PR #6679, mep-webkit, "Test timeout of 30000ms exceeded" at the goto
+  // in step-2). Give it the same room nala/libs/commerce.js gives its own slow setup.
+  test.setTimeout(45000);
   const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
   const defaultURL = `${baseURL}${features[4].data.defaultURL}${miloLibs}`;
   const marquee = new MarqueeBlock(page);
