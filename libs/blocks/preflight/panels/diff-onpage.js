@@ -122,14 +122,23 @@ function ensureOverlayHost(el) {
   return el;
 }
 
-let highlightsDismissed = false;
+const DISMISS_KEY = 'preflight-diff-hidden';
+const readDismissed = () => { try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; } };
+
+let highlightsDismissed = readDismissed();
 export const areHighlightsDismissed = () => highlightsDismissed;
-export const setHighlightsDismissed = (value) => { highlightsDismissed = value; };
+export const setHighlightsDismissed = (value) => {
+  highlightsDismissed = value;
+  try { localStorage.setItem(DISMISS_KEY, value ? '1' : '0'); } catch { /* storage may be blocked */ }
+};
 
 function showHighlightControl(root, applyOverlays) {
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
-  const label = createTag('span', { class: 'preflight-diff-control-label', 'aria-live': 'polite' }, CONTROL_LABEL_ON);
-  const toggle = createTag('button', { class: 'preflight-diff-control-hide' }, 'Hide');
+  const dismissed = areHighlightsDismissed();
+  const labelText = dismissed ? CONTROL_LABEL_OFF : CONTROL_LABEL_ON;
+  const toggleText = dismissed ? 'Show' : 'Hide';
+  const label = createTag('span', { class: 'preflight-diff-control-label', 'aria-live': 'polite' }, labelText);
+  const toggle = createTag('button', { class: 'preflight-diff-control-hide' }, toggleText);
   const control = createTag(
     'div',
     { class: CONTROL_CLASS, role: 'region', 'aria-label': 'Unpublished content highlights' },
@@ -186,7 +195,11 @@ export function highlightOnPage(diff, root) {
     return applied;
   };
 
-  if (applyOverlays() > 0) showHighlightControl(root, applyOverlays);
+  const hasChanges = ((diff?.added?.length || 0) + (diff?.modified?.length || 0)) > 0;
+  if (hasChanges) {
+    if (!areHighlightsDismissed()) applyOverlays();
+    showHighlightControl(root, applyOverlays);
+  }
 
   return function cleanup() {
     clearHighlights(root);
@@ -194,6 +207,6 @@ export function highlightOnPage(diff, root) {
 }
 
 export function autoHighlightOnPage(diff, root) {
-  if (highlightsDismissed || !root) return undefined;
+  if (!root) return undefined;
   return highlightOnPage(diff, root);
 }

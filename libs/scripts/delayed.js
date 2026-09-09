@@ -114,9 +114,12 @@ export const loadPreflightResults = async () => {
   if (!isLocal && !hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
 
   const run = async () => {
-    const { default: showPreflightNotification, autoHighlightUnpublished } = await import('../utils/preflight-notification.js');
-    if (isLocal || hostname.endsWith('.aem.page')) autoHighlightUnpublished();
+    if (isLocal || hostname.endsWith('.aem.page')) {
+      const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
+      autoHighlightUnpublished();
+    }
     if (isLocal) return;
+    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
     await showPreflightNotification();
   };
 

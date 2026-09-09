@@ -455,6 +455,20 @@ describe('preflight diff-onpage', () => {
       expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
     });
 
+    it('treats a removed-only diff as nothing to highlight (removed content is not framed on-page)', () => {
+      highlightOnPage({ added: [], modified: [], removed: [{ type: 'removed', tag: 'P', path: '/div[1]/p[1]' }] }, root);
+      expect(document.querySelector('.preflight-diff-highlight-control')).to.not.exist;
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+    });
+
+    it('degrades gracefully when storage is unavailable (private mode / sandboxed iframe)', () => {
+      sinon.stub(Storage.prototype, 'setItem').throws(new Error('blocked'));
+      expect(() => highlightOnPage(diff, root)).to.not.throw();
+      expect(root.querySelector('.preflight-diff-overlay')).to.exist;
+      expect(() => document.querySelector('.preflight-diff-control-hide').click()).to.not.throw();
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+    });
+
     it('clicking Hide clears overlays, keeps the control as a Show toggle, and flips the session flag', () => {
       highlightOnPage(diff, root);
       document.querySelector('.preflight-diff-control-hide').click();
@@ -464,6 +478,14 @@ describe('preflight diff-onpage', () => {
       expect(toggle).to.exist;
       expect(toggle.textContent).to.equal('Show');
       expect(areHighlightsDismissed()).to.equal(true);
+    });
+
+    it('persists the Hide state to localStorage (carries across pages/tabs until Show)', () => {
+      highlightOnPage(diff, root);
+      document.querySelector('.preflight-diff-control-hide').click();
+      expect(localStorage.getItem('preflight-diff-hidden')).to.equal('1');
+      document.querySelector('.preflight-diff-control-hide').click();
+      expect(localStorage.getItem('preflight-diff-hidden')).to.equal('0');
     });
 
     it('clicking Show re-applies overlays, relabels back to Hide, and clears the session flag', () => {
@@ -518,11 +540,13 @@ describe('preflight diff-onpage', () => {
       expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
     });
 
-    it('is a no-op once highlights have been dismissed for the session', () => {
+    it('draws no overlays when dismissed, but still shows the control so it can be re-enabled', () => {
       setHighlightsDismissed(true);
-      const cleanup = autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
-      expect(cleanup).to.equal(undefined);
+      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
       expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+      const toggle = document.querySelector('.preflight-diff-control-hide');
+      expect(toggle).to.exist;
+      expect(toggle.textContent).to.equal('Show');
     });
 
     it('dismissing via the on-page control flips the shared session flag', () => {
