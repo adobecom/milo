@@ -26,9 +26,12 @@ import {
 const variants = {};
 
 function checkGlobal() {
+  const params = new URLSearchParams(window.location.search);
   let global = false;
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
     global = window.milo.brandConcierge.brandConciergeGlobal;
+  } else if (params.get('side-overlay') === 'true') {
+    global = true;
   }
   return global;
 }
