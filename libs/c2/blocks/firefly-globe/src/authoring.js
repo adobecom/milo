@@ -256,9 +256,7 @@ function apiAssetToCard(asset, locale) {
     alt: '',
     name,
     avatarUrl,
-    role,
-    description: [],
-    badges: [],
+    prompt: role,
     fireflyUrl,
     crossOrigin: 'anonymous', // cdn.cp.adobe.io is cross-origin; required for WebGL texSubImage2D
   };
@@ -364,11 +362,10 @@ const buildMarkup = (gid, labels) => `
 
   <dialog class="firefly-globe-modal-chrome">
     <div class="firefly-globe-modal-info" data-lenis-prevent>
-      <h2 class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-role-${gid} firefly-globe-modal-position-${gid}"></h2>
-      <p class="firefly-globe-modal-role-label" id="firefly-globe-modal-role-${gid}"></p>
+      <p class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-prompt-${gid} firefly-globe-modal-position-${gid}"></p>
       <span class="firefly-globe-modal-position sr-only" id="firefly-globe-modal-position-${gid}" aria-hidden="true"></span>
-      <div class="firefly-globe-modal-description" id="firefly-globe-modal-description-${gid}" role="document"></div>
-      <ul class="firefly-globe-modal-badges"></ul>
+      <div class="firefly-globe-modal-prompt" id="firefly-globe-modal-prompt-${gid}" role="document"></div>
+      <a class="firefly-globe-modal-cta" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>Open in Firefly</a>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="firefly-globe-modal-image sr-only" role="img"></span>

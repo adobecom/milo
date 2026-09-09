@@ -3,11 +3,6 @@ import { createModalMaterial } from './materials.js';
 import {
   easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
 } from './utils.js';
-import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
-/* eslint-disable import/no-relative-packages */
-import { processTrackingLabels } from '../../../../martech/attributes.js';
-import { getConfig } from '../../../../utils/utils.js';
-/* eslint-enable import/no-relative-packages */
 
 const perfNow = () => performance?.now() ?? Date.now();
 
@@ -342,8 +337,8 @@ export default function createGlobeModal({
   }
 
   function scheduleDescFade() {
-    const descEl = q('.firefly-globe-modal-description');
-    if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
+    const promptEl = q('.firefly-globe-modal-prompt');
+    if (promptEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(promptEl); });
   }
 
   function announce(text) {
@@ -366,12 +361,9 @@ export default function createGlobeModal({
         imgEl.setAttribute('aria-hidden', 'true');
       }
     }
-    const roleLabelEl = targetEl.querySelector('.firefly-globe-modal-role-label');
-    if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.firefly-globe-modal-name').textContent = meta.name;
-    const descEl = targetEl.querySelector('.firefly-globe-modal-description');
-    renderParagraphs(descEl, meta.description);
-    hangParagraphs(descEl);
+    const descEl = targetEl.querySelector('.firefly-globe-modal-prompt');
+    if (descEl) descEl.textContent = meta.prompt || '';
     const counterEl = targetEl.querySelector('.firefly-globe-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
@@ -381,22 +373,17 @@ export default function createGlobeModal({
     targetEl.querySelectorAll('.firefly-globe-modal-position').forEach((el) => {
       el.textContent = position;
     });
-    announce(speak ? [meta.name, meta.role, position].filter(Boolean).join('. ') : '');
-    const badgesEl = targetEl.querySelector('.firefly-globe-modal-badges');
-    badgesEl.innerHTML = '';
-    const config = getConfig();
-    meta.badges.forEach((b) => {
-      const row = document.createElement('li');
-      row.className = 'firefly-globe-modal-badge';
-      // Labelled by product, not by card, and unindexed.
-      const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
-      const nameHtml = b.href
-        ? `<a class="firefly-globe-modal-badge-app firefly-globe-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
-        : `<span class="firefly-globe-modal-badge-app">${escapeHtml(b.name)}</span>`;
-      // Rows without a logo just render the name — no empty chip.
-      row.innerHTML = `<div class="firefly-globe-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="firefly-globe-modal-badge-role">${escapeHtml(b.role)}</span>`;
-      badgesEl.appendChild(row);
-    });
+    announce(speak ? [meta.name, meta.prompt, position].filter(Boolean).join('. ') : '');
+    const ctaEl = targetEl.querySelector('.firefly-globe-modal-cta');
+    if (ctaEl) {
+      if (meta.fireflyUrl) {
+        ctaEl.href = meta.fireflyUrl;
+        ctaEl.removeAttribute('hidden');
+      } else {
+        ctaEl.removeAttribute('href');
+        ctaEl.setAttribute('hidden', '');
+      }
+    }
     if (descEl) descEl.scrollTop = 0;
     scheduleDescFade();
   }
@@ -816,7 +803,7 @@ export default function createGlobeModal({
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows.
       if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
-      const descEl = evtRoot.querySelector('.firefly-globe-modal-description');
+      const descEl = evtRoot.querySelector('.firefly-globe-modal-prompt');
       if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // preventDefault so the close animation plays instead of an instant close.
       if (chromeEl) {
@@ -872,7 +859,7 @@ export default function createGlobeModal({
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
       // Description owns its own touch scroll.
-      if (e.target?.closest?.('.firefly-globe-modal-description')) return;
+      if (e.target?.closest?.('.firefly-globe-modal-prompt')) return;
       swStartX = e.touches[0].clientX; swLastX = swStartX;
       swStartY = e.touches[0].clientY; swLastY = swStartY;
       swLastT = Date.now();

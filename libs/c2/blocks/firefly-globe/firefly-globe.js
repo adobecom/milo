@@ -1188,7 +1188,7 @@ function createGlobeGalleryRuntime(
         avatarEl.style.display = meta.avatarUrl ? '' : 'none';
       }
       if (nameEl) nameEl.textContent = meta.name || '';
-      if (promptEl) promptEl.textContent = meta.role || '';
+      if (promptEl) promptEl.textContent = meta.prompt || '';
     }
 
     const card = cards[hovIdx];

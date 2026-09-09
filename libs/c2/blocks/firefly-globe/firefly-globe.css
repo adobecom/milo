@@ -224,9 +224,9 @@
 .firefly-globe-hover-prompt {
   margin: 0;
   overflow: hidden;
-  /* stylelint-disable-next-line value-no-vendor-prefix */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   color: rgb(255 255 255 / 85%);
 }
@@ -462,51 +462,44 @@
   box-sizing: border-box;
 }
 
-.firefly-globe-modal-name,
-.firefly-globe-modal-role-label,
-.firefly-globe-modal-badges { flex-shrink: 0; }
-
-.firefly-globe-modal-badges {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-xs);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
-.firefly-globe-modal-info > .firefly-globe-modal-badges {
+/* CTA pushes itself to the bottom of the info scrim. */
+.firefly-globe-modal-cta {
+  display: block;
+  flex-shrink: 0;
   margin-top: auto;
+  padding: var(--s2a-spacing-md) var(--s2a-spacing-lg);
+  border-radius: 20px;
+  background: var(--s2a-color-blue-900);
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-typography-font-size-label);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: var(--s2a-typography-line-height-label);
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s ease;
+
+  &:hover { background: var(--s2a-color-blue-1000); }
+  &:active { background: var(--s2a-color-blue-1100); }
 }
 
 .firefly-globe-modal-name {
-  font-family: var(--heading-font-family);
-  font-weight: var(--s2a-font-weight-adobe-clean-black);
-  font-size: var(--s2a-font-size-xl);
-  line-height: var(--s2a-font-line-height-md);
-  letter-spacing: var(--s2a-font-letter-spacing-5xl);
-  color: var(--s2a-color-gray-25);
-  margin: 0 0 var(--s2a-spacing-3xs);
-}
-
-.firefly-globe-modal-role-label {
+  flex-shrink: 0;
   font-family: var(--body-font-family);
   font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-font-line-height-sm);
-  font-weight: var(--s2a-font-weight-body);
   color: var(--s2a-color-gray-400);
   margin: 0 0 var(--s2a-spacing-xs);
 }
 
-.firefly-globe-modal-description {
+.firefly-globe-modal-prompt {
   font-family: var(--body-font-family);
   font-size: var(--s2a-font-size-sm);
   line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
-  padding-inline-start: var(--gg-hang-max);
   margin-block: 0 var(--s2a-spacing-sm);
-  margin-inline-start: calc(var(--gg-hang-max) * -1);
   min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
   overflow-y: auto;
   touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
@@ -525,84 +518,6 @@
   &.is-faded-bottom { --gg-desc-fade-bottom: var(--gg-desc-fade-len); }
 }
 
-.firefly-globe-modal-description p {
-  margin: 0;
-}
-
-.firefly-globe-modal-description p + p {
-  margin-top: var(--s2a-spacing-xs);
-}
-
-.firefly-globe-modal-description a {
-  color: inherit;
-  text-decoration: underline;
-}
-
-.firefly-globe-modal-description a:hover {
-  color: var(--s2a-color-gray-25);
-}
-
-.firefly-globe-modal-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s2a-spacing-sm);
-}
-
-.firefly-globe-modal-badge-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.firefly-globe-modal-badge-icon {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  display: block;
-}
-
-.firefly-globe-modal-badge-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.firefly-globe-modal-badge-app {
-  font-family: var(--body-font-family);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  font-size: 13px;
-  color: var(--s2a-color-gray-25);
-}
-
-.firefly-globe-modal-badge-app-link {
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2a-spacing-3xs);
-}
-
-.firefly-globe-modal-badge-app-link::after {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-right: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
-  border-top: var(--s2a-border-width-md) solid var(--s2a-color-gray-25);
-  transform: rotate(45deg) translateY(-1px);
-  flex-shrink: 0;
-}
-
-.firefly-globe-modal-badge-app-link:hover {
-  text-decoration: underline;
-}
-
-.firefly-globe-modal-badge-role {
-  font-family: var(--body-font-family);
-  font-size: 13px;
-  color: var(--s2a-color-gray-400);
-}
 
 /* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
    `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
@@ -732,19 +647,7 @@ body.firefly-globe-modal-open { overflow: hidden; }
 
   .firefly-globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
 
-  .firefly-globe-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
-
-  .firefly-globe-modal-description { margin-block: 0; }
-
-  .firefly-globe-modal-badges { gap: 10px; }
-
-  .firefly-globe-modal-badge-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .firefly-globe-modal-badge-app { font-size: var(--s2a-font-size-sm); }
-  .firefly-globe-modal-badge-role { font-size: var(--s2a-font-size-sm); }
+  .firefly-globe-modal-prompt { margin-block: 0; }
 
   .firefly-globe-modal-counter {
     width: var(--gg-counter-w);
@@ -801,7 +704,7 @@ html .firefly-globe-reduced .firefly-globe-spin-toggle {
     overflow-y: auto;
   }
 
-  .firefly-globe-modal-description {
+  .firefly-globe-modal-prompt {
     flex-shrink: 0;
   }
 }
@@ -827,8 +730,4 @@ html[dir="rtl"] .firefly-globe-modal-nav svg {
 
 html[dir="rtl"] .firefly-globe-hint {
   flex-direction: row-reverse;
-}
-
-html[dir="rtl"] .firefly-globe-modal-badge-app-link::after {
-  transform: scaleX(-1) rotate(45deg) translateY(-1px);
 }
