@@ -70,8 +70,8 @@ export const handleIFrameEvents = ({ data: msgData, origin }) => {
 
   if (app !== 'ManagePlan') return;
   const sanitizedExternalUrl = sanitizeUrl(data?.externalUrl);
-  const sanitizedReturnUrl = sanitizeUrl(data.returnUrl);
-  const sanitizedTarget = sanitizeTarget(data.target);
+  const sanitizedReturnUrl = sanitizeUrl(data?.returnUrl);
+  const sanitizedTarget = sanitizeTarget(data?.target);
   switch (subType) {
     case MANAGE_PLAN_MSG_SUBTYPE.AppLoaded:
       document.querySelector('.upgrade-flow-content iframe')?.classList?.remove('loading');
