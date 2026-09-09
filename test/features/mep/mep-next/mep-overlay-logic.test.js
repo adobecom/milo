@@ -44,7 +44,7 @@ const {
   API_URLS,
   getExpandedCards,
   toSlug,
-  hasMasChanges,
+  hasRelevantContentChanges,
   getTopMarketsAvailability,
   getCaasSummary,
   getPageId,
@@ -175,51 +175,75 @@ describe('toSlug', () => {
   });
 });
 
-describe('hasMasChanges', () => {
+describe('hasRelevantContentChanges', () => {
   function makeMutations(nodes) {
     return [{ addedNodes: nodes }];
   }
 
   it('returns true when a merch-card element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
   });
 
   it('returns true when an element with data-mas-block is added', () => {
     const el = document.createElement('div');
     el.dataset.masBlock = 'collection';
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when an element with data-wcs-osi is added', () => {
     const el = document.createElement('span');
     el.setAttribute('data-wcs-osi', 'osi-1');
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when a mas-field element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
   });
 
   it('returns true when an added node contains a MAS descendant', () => {
     const parent = document.createElement('div');
     parent.append(document.createElement('merch-card'));
-    expect(hasMasChanges(makeMutations([parent]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([parent]))).to.be.true;
   });
 
-  it('returns false for a plain div with no MAS attributes', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('div')]))).to.be.false;
+  it('returns true when an element with data-caas-block is added', () => {
+    const el = document.createElement('div');
+    el.dataset.caasBlock = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-manifest-id is added', () => {
+    const el = document.createElement('div');
+    el.dataset.manifestId = 'manifest-1';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-mep-lingo-roc is added', () => {
+    const el = document.createElement('div');
+    el.dataset.mepLingoRoc = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-path is added', () => {
+    const el = document.createElement('div');
+    el.dataset.path = '/fragments/foo';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns false for a plain div with no relevant attributes', () => {
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('div')]))).to.be.false;
   });
 
   it('returns false for a text node', () => {
-    expect(hasMasChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
   });
 
   it('returns false for an empty mutations array', () => {
-    expect(hasMasChanges([])).to.be.false;
+    expect(hasRelevantContentChanges([])).to.be.false;
   });
 
   it('returns false when mutation has no added nodes', () => {
-    expect(hasMasChanges(makeMutations([]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([]))).to.be.false;
   });
 });
 

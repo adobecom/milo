@@ -194,9 +194,9 @@ describe('init: DOM structure — stage env first call', () => {
     expect(content.querySelector('[data-card-key="Toggle"]')).to.exist;
   });
 
-  it('Spoof Geo card is present with select.mep-spoof-geo', () => {
+  it('Spoof Country card is present with select.mep-spoof-geo', () => {
     const content = mainEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.querySelector('[data-card-key="Spoof Geo"]')).to.exist;
+    expect(content.querySelector('[data-card-key="Spoof Country"]')).to.exist;
     expect(content.querySelector('select.mep-spoof-geo')).to.exist;
   });
 
@@ -1017,7 +1017,7 @@ describe('getGnavOffset: MutationObserver resolves when header gains height', ()
 });
 
 // ============================================================
-// GROUP 13: Spoof Geo radio change and select change handlers
+// GROUP 13: Spoof Country radio change and select change handlers
 // auth state: true → true
 // ============================================================
 describe('buildSpoofGeo: radio change and select change handlers', () => {

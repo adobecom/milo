@@ -18,7 +18,7 @@ import {
   setPreviewButton,
   getMasRegions,
   findGeoGroupForLocale,
-  hasMasChanges,
+  hasRelevantContentChanges,
 } from './mep-overlay-logic.js';
 import {
   TOGGLE_KEYS,
@@ -44,7 +44,7 @@ const CARD_DATA = {
       ['Preview Link', 'Add mepButton=off'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
-    ['Spoof Geo', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
+    ['Spoof Country', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
     ['Load Manifest', 'Enter manifest path'],
   ],
   summary: [
@@ -307,7 +307,7 @@ async function buildSummaryData(card) {
 
 function buildCardContent(card, pageId) {
   if (card.getData) return buildSummaryData(card);
-  if (card.header === 'Spoof Geo') return buildSpoofGeo(card, pageId);
+  if (card.header === 'Spoof Country') return buildSpoofGeo(card, pageId);
   if (card.header === 'Load Manifest') return buildLoadManifest(card, pageId);
   if (card.header === 'Toggle' || card.header === 'Highlight') return buildToggle(card, pageId);
   return createTag('div', {}, 'No content available');
@@ -521,6 +521,35 @@ function scheduleGnavOffsetUpdate() {
   });
 }
 
+const SUMMARY_TAB_INDEX = '1';
+const lastSummaryKeys = new Map();
+
+async function refreshSummaryCard(header, getData) {
+  const bodyEl = document.querySelector(`[data-card-key="${header}"] .mep-card-body`);
+  if (!bodyEl) return;
+
+  const data = await getData?.();
+  if (!data) return;
+  const dataKey = JSON.stringify(data);
+  if (dataKey === lastSummaryKeys.get(header)) return;
+  lastSummaryKeys.set(header, dataKey);
+
+  const rows = data.flatMap(([label, value]) => (
+    Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
+  ));
+  bodyEl.replaceChildren(...rows);
+}
+
+function refreshSummaryCards() {
+  return Promise.all(
+    CARD_DATA.summary.map(([header, getData]) => refreshSummaryCard(header, getData)),
+  );
+}
+
+function isSummaryTabActive() {
+  return !!document.querySelector(`.mep-tab-content[data-tab="${SUMMARY_TAB_INDEX}"].active`);
+}
+
 function setEventListeners() {
   window.addEventListener('scroll', scheduleGnavOffsetUpdate, { passive: true });
   window.addEventListener('resize', scheduleGnavOffsetUpdate, { passive: true });
@@ -534,6 +563,7 @@ function setEventListeners() {
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
       });
+      if (tabIndex === SUMMARY_TAB_INDEX) refreshSummaryCards();
       return;
     }
     const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
@@ -552,23 +582,7 @@ function setEventListeners() {
   });
 }
 
-function setMasObserver() {
-  let lastMasSummaryKey;
-  const refreshMasSummary = () => {
-    const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
-    if (!bodyEl) return;
-
-    const summary = getMasSummary();
-    const summaryKey = JSON.stringify(summary);
-    if (summaryKey === lastMasSummaryKey) return;
-    lastMasSummaryKey = summaryKey;
-
-    const rows = summary.flatMap(([label, value]) => (
-      Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
-    ));
-    bodyEl.replaceChildren(...rows);
-  };
-
+function setSummaryObserver() {
   const refreshSpoofGeoMas = async () => {
     const input = document.querySelector('#spoof-geo-lingo-mas');
     if (!input?.disabled) return;
@@ -592,13 +606,13 @@ function setMasObserver() {
 
   const runRefreshes = () => {
     refreshPageUpdateCounts();
-    refreshMasSummary();
+    if (isSummaryTabActive()) refreshSummaryCards();
     refreshSpoofGeoMas();
   };
 
   let debounceTimer;
-  const masObserver = new MutationObserver((mutations) => {
-    if (!hasMasChanges(mutations)) return;
+  const summaryMutationObserver = new MutationObserver((mutations) => {
+    if (!hasRelevantContentChanges(mutations)) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(runRefreshes, 200);
   });
@@ -607,9 +621,9 @@ function setMasObserver() {
   drawerEl?.addEventListener('toggle', (event) => {
     if (event.newState === 'open') {
       runRefreshes();
-      masObserver.observe(document.body, { childList: true, subtree: true });
+      summaryMutationObserver.observe(document.body, { childList: true, subtree: true });
     } else {
-      masObserver.disconnect();
+      summaryMutationObserver.disconnect();
     }
   });
 }
@@ -631,7 +645,7 @@ export default async function init() {
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
   setEventListeners();
-  setMasObserver();
+  setSummaryObserver();
 }
 
 export { buildCardContent as __buildCardContent };
