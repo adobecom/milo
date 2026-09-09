@@ -390,7 +390,7 @@ function buildCardContent(card, pageId) {
   return createTag('div', {}, 'No content available');
 }
 
-function buildCard(card, pageId) {
+function buildCard(card, pageId, defaultExpanded = false) {
   const cardEl = createTag('div', { class: 'mep-card' });
   if (!card?.header) return cardEl;
 
@@ -401,7 +401,7 @@ function buildCard(card, pageId) {
   cardEl.ready = Promise.resolve(buildCardContent(card, pageId))
     .then((nodes) => bodyEl.append(...[nodes].flat()));
 
-  markExpanded(cardEl, card.header, true);
+  markExpanded(cardEl, card.header, defaultExpanded);
   cardEl.append(headerEl, bodyEl);
   return cardEl;
 }
@@ -442,7 +442,7 @@ function buildActionsContent(pageId) {
 function buildTabsAndBody(pageId) {
   const tabDefs = [
     ['Actions', buildActionsContent(pageId)],
-    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId))],
+    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId, true))],
   ];
 
   const tabsEl = createTag('div', { class: 'mep-tabs' });
