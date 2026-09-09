@@ -1,4 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
+import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -80,6 +81,8 @@ export default async function init(el) {
       window.adobe.concierge.clearHistory();
     }
   });
+
+  initAnalytics();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;

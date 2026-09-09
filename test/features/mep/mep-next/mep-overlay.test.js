@@ -288,7 +288,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a', 'v-b'],
           selectedVariantName: 'v-a',
           source: 'adobe-target',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           mktgAction: 'buy now',
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
@@ -299,7 +299,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a'],
           selectedVariantName: 'not-in-list',
           source: 'helix',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: true,
         },
@@ -328,7 +328,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('My Campaign');
   });
 
-  it('geoRestriction is uppercased in manifest card (EMEA)', () => {
+  it('countryRestriction is uppercased in manifest card (EMEA)', () => {
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
   });
 
@@ -416,7 +416,7 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           variantNames: [XSS], // → <option> label
           selectedVariantName: XSS, // → Experience row (buildRow)
           source: XSS, // → Source row (buildRow)
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         },
@@ -451,6 +451,79 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
     expect(card.textContent).to.include(XSS);
     const option = [...card.querySelectorAll('option')].find((o) => o.textContent === XSS);
     expect(option, 'variant option label rendered as text').to.exist;
+  });
+});
+
+// ============================================================
+// Malformed manifests (mep.manifestErrors): a manifest that failed to load
+// or parse never becomes a full experiment, so it's rendered as a lean card
+// via the same error tooltip used by buildManifestCard's getManifestStatus.
+// ============================================================
+describe('init: buildManifestCard — malformed manifest via mep.manifestErrors', () => {
+  let mainEl;
+  let headerEl;
+
+  const malformedConfig = {
+    ...BASE_CONFIG,
+    mep: {
+      ...BASE_CONFIG.mep,
+      experiments: [
+        {
+          name: 'Valid Campaign',
+          manifest: '/frags/mep/valid.json',
+          variantNames: ['v-a'],
+          selectedVariantName: 'v-a',
+          source: 'helix',
+          disabled: false,
+        },
+      ],
+      manifestErrors: [{ name: 'broken-manifest', manifestPath: '/frags/mep/broken.json', error: 'Manifest' }],
+    },
+  };
+
+  before(async () => {
+    setConfig(malformedConfig);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+  });
+
+  it('renders one card per valid experiment plus one per malformed manifest', () => {
+    expect(mainEl.querySelectorAll('.mep-manifest-card').length).to.equal(2);
+  });
+
+  it('renders the malformed manifest name and marks the card as an error', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard, 'malformed manifest card rendered').to.exist;
+    expect(malformedCard.classList.contains('manifest-error')).to.be.true;
+  });
+
+  it('lists the malformed reason in the error tooltip', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    const tooltip = malformedCard.querySelector('.mep-manifest-error-tooltip');
+    expect(tooltip.textContent).to.include('Manifest not found.');
+  });
+
+  it('does not render a variant select or body rows for the malformed card', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard.querySelector('select.mep-manifest-variants')).to.be.null;
+    expect(malformedCard.querySelector('.mep-card-body')).to.be.null;
+  });
+
+  it('still renders the valid manifest card without an error class', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const validCard = cards.find((c) => c.textContent.includes('Valid Campaign'));
+    expect(validCard, 'valid manifest card rendered').to.exist;
+    expect(validCard.classList.contains('manifest-error')).to.be.false;
   });
 });
 

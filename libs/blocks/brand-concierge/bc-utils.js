@@ -27,12 +27,13 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
 export function hasChatCookie() {
   const cookies = document.cookie.split(';');
-  const cookieName = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
   for (let i = 0; i < cookies.length; i += 1) {
     const cookie = cookies[i].trim();
-    if (cookie.includes(cookieName)) {
+    if (cookie.includes(BC_SESSION_COOKIE)) {
       return true;
     }
   }

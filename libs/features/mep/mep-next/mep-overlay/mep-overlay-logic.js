@@ -99,7 +99,7 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
   manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
@@ -110,12 +110,15 @@ function toActivity({
     selectedVariantName,
     url: manifest,
     disabled,
+    disabledPromo,
     source,
     eventStart: event?.start,
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
+    countryRestriction,
+    countryDisabled,
+    mktgAction,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -173,7 +176,10 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart,
     eventEnd,
     disabled,
-    geoRestriction,
+    disabledPromo,
+    countryRestriction,
+    countryDisabled,
+    mktgAction,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -221,12 +227,16 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isDefaultSelected,
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
+    mktgAction,
+    countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
     manifestType,
     manifestOverrideName,
     executionOrder: getExecutionOrderLabel(executionOrder),
-    geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
+    withinDateRange: !disabled,
+    disabledPromo: !!disabledPromo,
+    manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
@@ -236,18 +246,32 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
+function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx) {
+  return {
+    index: mIdx + 1,
+    editUrl: manifestPath,
+    fileName: name,
+    malformed: true,
+    error,
+  };
+}
+
 export function getManifestList() {
   const mepConfig = parseMepConfig();
-  if (!mepConfig) return { manifests: [], manifestParameter: [] };
-  const { activities, page } = mepConfig;
-  const { pageId = 0 } = page;
+  const manifestErrors = getConfig().mep?.manifestErrors ?? [];
+  const { activities, page } = mepConfig ?? {};
+  const { pageId = 0 } = page ?? {};
   const manifestParameter = [];
 
-  const manifests = activities.map(
+  const manifests = activities?.map(
     (manifest, mIdx) => buildManifestEntry(manifest, mIdx, pageId, manifestParameter),
+  ) ?? [];
+
+  const malformedManifests = manifestErrors.map(
+    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx),
   );
 
-  return { manifests, manifestParameter };
+  return { manifests: [...manifests, ...malformedManifests], manifestParameter };
 }
 
 function getManifestsFound() {
