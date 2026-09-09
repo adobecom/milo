@@ -682,8 +682,7 @@ describe('mas-field', () => {
       it('reveals when the promotion marker is on a resolved child, not the mas-field', async () => {
         const container = document.createElement('div');
         container.classList.add('promo-placeholder');
-        const mf = buildField('ctas', { contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>',
-        });
+        const mf = buildField('ctas', { contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>',});
         container.append(mf);
         document.body.append(container);
 
