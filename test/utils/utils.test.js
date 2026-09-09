@@ -100,6 +100,122 @@ describe('Utils', () => {
     });
   });
 
+  describe('preloadLcpCodeFiles', () => {
+    const preloadSel = 'link[rel="preload"], link[rel="modulepreload"]';
+
+    beforeEach(() => {
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      utils.setConfig(config);
+    });
+
+    it('does nothing when the disable-mep-perf-optimization kill switch is on', () => {
+      document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('preloads authored first-section blocks (js + warmed css, not applied)', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
+      expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    it('preloads non-commerce autoblocks but excludes merch/mas', () => {
+      document.body.innerHTML = `<main><div>
+        <a href="https://www.youtube.com/watch?v=abc">watch</a>
+        <a href="https://www.adobe.com/tools/ost?ci=1">buy</a>
+        <a href="https://mas.adobe.com/studio.html#content-type=mas-compare-chart">chart</a>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/youtube/youtube.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('excludes authored merch/mas blocks, not just link-derived autoblocks', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="merch"></div>
+        <div class="mas-compare-chart-autoblock"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('only warms the video autoblock for media_*.mp4 anchors', () => {
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.not.exist;
+
+      document.head.innerHTML = '';
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/media_9.mp4">media_9.mp4</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('warms the video autoblock from a media_*.mp4 image alt', () => {
+      document.body.innerHTML = '<main><div><img alt="media_9.mp4"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('preloads placeholders.js when the first section uses {{ }} tokens', () => {
+      document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
+      // as=fetch preloads only get reused by the later customFetch() call if crossorigin is
+      // set - otherwise the browser treats them as a mismatched resource and double-fetches.
+      const placeholderPreload = document.head.querySelector('link[rel="preload"][as="fetch"][href*="/placeholders.json"]');
+      expect(placeholderPreload).to.exist;
+      expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
+    });
+
+    it('does not treat a block whose name merely contains "merch" as commerce', () => {
+      document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.exist;
+    });
+
+    it('warms icons.js and icons.css when the first section contains icons', () => {
+      document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/features/icons/icons.css"]')).to.exist;
+    });
+
+    const geoIpUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    it('warms the geo-ip sheet when lingo is active and the LCP has a -geo-ip token', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-pos' });
+      document.head.innerHTML = '<meta name="langfirst" content="on">';
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'geo-ip sheet warmed').to.exist;
+    });
+
+    it('does not warm the geo-ip sheet when lingo is inactive', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-neg' });
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no geo-ip warm without lingo').to.be.undefined;
+    });
+
+    it('does nothing when there is no first section', () => {
+      document.body.innerHTML = '<header></header>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+  });
+
   it('renders global navigation when header tag is present', async () => {
     const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
     document.head.innerHTML = head;
@@ -1510,7 +1626,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when some icons are not excluded
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -1536,7 +1652,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when no exclusion config
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -3367,6 +3483,77 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'fr');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('be');
+    });
+  });
+
+  describe('geo-ip sheet prewarm', () => {
+    let warmCount = 0;
+    let savedFetch;
+
+    const geoUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    // Unique contentRoot per test → unique sheet URL → sidesteps the module-level
+    // warm dedupe cache, so getGeoIpWarmSheet reflects only this test's warm.
+    const setup = ({ lingo = true, geoLcp = false } = {}) => {
+      warmCount += 1;
+      utils.setConfig({ ...config, contentRoot: `/geo-warm-${warmCount}` });
+      document.head.innerHTML = head;
+      if (lingo) document.head.appendChild(createTag('meta', { name: 'langfirst', content: 'on' }));
+      if (geoLcp) document.head.appendChild(createTag('meta', { name: 'geo-ip-lcp', content: 'on' }));
+    };
+
+    const fragmentArea = (html) => {
+      const area = createTag('div');
+      area.innerHTML = html;
+      return area;
+    };
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      window.fetch = mockFetch({ payload: { data: [] } });
+    });
+
+    afterEach(() => {
+      window.fetch = savedFetch;
+    });
+
+    it('warms when a -geo-ip token is in the first section', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('warms on the geo-ip-lcp opt-in even with no token in the section', async () => {
+      setup({ geoLcp: true });
+      const url = geoUrl();
+      document.body.innerHTML = '<main><div>no token here</div></main>';
+      await utils.loadArea();
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('does not warm when there is no token and no opt-in', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>plain copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm when lingo is inactive even if a token is present', async () => {
+      setup({ lingo: false });
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm on a bare -geo-ip substring with no token closer', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
     });
   });
 });

@@ -1440,7 +1440,7 @@
 }
 
 .brand-concierge.marquee .bc-header {
-  gap: 8px;
+  gap: 0;
   margin-bottom: 8px;
   padding: 0;
 }
@@ -1462,7 +1462,7 @@
 }
 
 .brand-concierge.marquee .bc-header-subtitle {
-  margin: 0;
+  margin: 8px 0 0;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.5;
@@ -1483,7 +1483,7 @@
 
 .brand-concierge.marquee .bc-prompt-cards {
   flex-flow: column nowrap;
-  gap: 12px;
+  gap: 8px;
   padding: 8px 0 64px;
 }
 
@@ -1599,12 +1599,11 @@
   }
 
   .brand-concierge.marquee .bc-header-subtitle {
-    margin-top: 4px;
     font-size: 20px;
   }
 
   .brand-concierge.marquee .bc-prompt-cards {
-    margin: 8px 0 56px;
+    margin: 0 0 56px;
   }
 
   .brand-concierge.marquee.dark .background::after {
