@@ -40,9 +40,9 @@
     }
   }
 
-  .pm-promo-area {
+  /* .pm-promo-area {
     margin-block-start: var(--s2a-spacing-lg);
-  }
+  } */
 
   .pm-merch-card {
     display: flex;
@@ -262,7 +262,6 @@ body:has(header.local-nav) .product-marquee-grid {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding-block-start: var(--s2a-spacing-4xl);
       inline-size: min(370px, 45%);
     }
   }
