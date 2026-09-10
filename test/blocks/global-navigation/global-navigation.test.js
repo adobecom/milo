@@ -431,6 +431,113 @@ describe('global navigation', () => {
     });
   });
 
+  describe('AUP SDK preload', () => {
+    let gnav;
+    let preload;
+    let meta;
+    let originalUrl;
+
+    beforeEach(async () => {
+      originalUrl = window.location.href;
+      gnav = await createFullGlobalNavigation({ signedIn: false });
+      window.adobeIMS = { isSignedInUser: sinon.stub().returns(false) };
+      preload = sinon.stub(gnav.constructor, 'preloadAupSdk').resolves({});
+      sinon.stub(gnav, 'decorateUniversalNav').resolves();
+      sinon.stub(gnav, 'decorateProfile').resolves();
+      sinon.stub(gnav, 'setUpProductCTA').resolves();
+    });
+
+    afterEach(() => {
+      window.history.replaceState(null, '', originalUrl);
+      meta?.remove();
+      meta = null;
+      window.adobeIMS = undefined;
+      sinon.restore();
+    });
+
+    it('only requests an IMS profile while signed in', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.aupsdk = undefined;
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      try {
+        window.adobeIMS.getProfile = sinon.stub().throws(new Error('please login before getting the profile'));
+        await gnav.constructor.preloadAupSdk();
+        const { getProfile } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        expect(await getProfile()).to.be.undefined;
+        expect(window.adobeIMS.getProfile.called).to.be.false;
+
+        const profile = { userId: 'test-user' };
+        window.adobeIMS.isSignedInUser.returns(true);
+        window.adobeIMS.getProfile.resetBehavior();
+        window.adobeIMS.getProfile.resolves(profile);
+        expect(await getProfile()).to.equal(profile);
+        expect(window.adobeIMS.getProfile.calledOnce).to.be.true;
+
+        window.adobeIMS.isSignedInUser.returns(false);
+        expect(await getProfile()).to.be.undefined;
+        expect(window.adobeIMS.getProfile.calledOnce).to.be.true;
+        window.adobeIMS = undefined;
+        expect(await getProfile()).to.be.undefined;
+      } finally {
+        script.remove();
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('keeps preloading for signed-in Universal Nav users without metadata', async () => {
+      gnav.useUniversalNav = true;
+      window.adobeIMS.isSignedInUser.returns(true);
+      await gnav.imsReady();
+      expect(preload.calledOnce).to.be.true;
+    });
+
+    [false, true].forEach((useUniversalNav) => {
+      it(`does not preload for signed-out users without metadata (Universal Nav: ${useUniversalNav})`, async () => {
+        gnav.useUniversalNav = useUniversalNav;
+        await gnav.imsReady();
+        expect(preload.called).to.be.false;
+      });
+
+      ['on', 'off', ''].forEach((query) => {
+        it(`uses query "${query}" over metadata for signed-out users (Universal Nav: ${useUniversalNav})`, async () => {
+          gnav.useUniversalNav = useUniversalNav;
+          meta = document.createElement('meta');
+          meta.name = 'aup-select';
+          meta.content = query === 'on' ? 'off' : 'on';
+          document.head.append(meta);
+          const url = new URL(originalUrl);
+          url.searchParams.set('aup-select', query);
+          window.history.replaceState(null, '', url);
+          await gnav.imsReady();
+          await gnav.aupsdkInstancePromise;
+          expect(preload.calledOnce).to.equal(query === 'on');
+        });
+      });
+
+      ['on', 'off', ''].forEach((content) => {
+        it(`checks AUP for signed-out users with aup-select="${content}" (Universal Nav: ${useUniversalNav})`, async () => {
+          gnav.useUniversalNav = useUniversalNav;
+          meta = document.createElement('meta');
+          meta.name = 'aup-select';
+          meta.content = content;
+          document.head.append(meta);
+          await gnav.imsReady();
+          await gnav.aupsdkInstancePromise;
+          expect(preload.calledOnce).to.equal(content === 'on');
+        });
+      });
+    });
+  });
+
   describe('Universal navigation', () => {
     const orgAlloy = window.alloy;
     let clock;

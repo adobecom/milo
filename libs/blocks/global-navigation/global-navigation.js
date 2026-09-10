@@ -3,6 +3,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupEnabled,
   loadIms,
   loadStyle,
   loadLana,
@@ -986,7 +987,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+    if (isAupEnabled(this.useUniversalNav)) {
       this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
@@ -1139,7 +1140,9 @@ class Gnav {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      getProfile: () => Promise.resolve(
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined,
+      ),
       environment,
       cdnEnvironment: environment,
       locale,

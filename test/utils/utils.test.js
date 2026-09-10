@@ -74,6 +74,62 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('isAupEnabled', () => {
+    let originalUrl;
+    let meta;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.delete('aup-select');
+      window.history.replaceState(null, '', url);
+      meta = document.createElement('meta');
+      meta.name = 'aup-select';
+    });
+
+    afterEach(() => {
+      meta.remove();
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('defaults to disabled and reads metadata insertion, replacement, and removal', () => {
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      document.head.append(meta);
+      expect(utils.isAupEnabled()).to.be.true;
+      const replacement = meta.cloneNode();
+      replacement.content = 'off';
+      meta.replaceWith(replacement);
+      meta = replacement;
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      expect(utils.isAupEnabled()).to.be.true;
+      meta.remove();
+      expect(utils.isAupEnabled()).to.be.false;
+    });
+
+    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
+      it(`requires exact on for metadata "${value}"`, () => {
+        meta.content = value;
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+      });
+
+      it(`reads query "${value}" with and without metadata`, () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('aup-select', value);
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        meta.content = value === 'on' ? 'off' : 'on';
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        url.searchParams.delete('aup-select');
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+      });
+    });
+  });
+
   describe('prerendered support', () => {
     it('loads milo minimally when document is prerendered', async () => {
       document.head.innerHTML = head;
