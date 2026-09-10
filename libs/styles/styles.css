@@ -825,7 +825,7 @@ body.mweb-enabled {
     padding-bottom: var(--global-height-breadcrumbs);
   }
 
-  header.global-navigation + .feds-localnav {
+  header.global-navigation:not(.c2-gnav-c1-host) + .feds-localnav {
     display: none;
   }
 }

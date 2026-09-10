@@ -19,7 +19,7 @@ header.global-navigation, header.global-navigation.feds--dark {
   visibility: hidden;
 }
 
-header.global-navigation + .feds-localnav {
+header.global-navigation:not(.c2-gnav-c1-host) + .feds-localnav {
   display: block;
   height: var(--feds-localnav-height);
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
