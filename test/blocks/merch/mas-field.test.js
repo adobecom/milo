@@ -572,6 +572,39 @@ describe('mas-field', () => {
       expect(link.classList.contains('con-button')).to.be.true;
     });
 
+    it('hoists a late block-level CTA (no em/strong ancestor) on mas:ready, no stray duplicate', async () => {
+      // Regression: a CTA authored directly in a block-level cell (not wrapped in em/strong --
+      // e.g. rich-content's cta-area, or an offer-hero action-area once decorateButtons has
+      // already stripped the strong) that resolves late must still be cleaned up. Without this,
+      // the raw fallback link is stranded next to the separately self-styled button.
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('rich-content', 'media');
+      const ctaArea = document.createElement('div');
+      ctaArea.classList.add('cta-area');
+      // MAS self-styles the anchor with con-button before hoisting.
+      ctaArea.innerHTML = '<mas-field field="ctas[0]"><span data-role="mas-field-content">'
+        + '<a class="con-button fill" data-wcs-osi="abc" data-checkout-workflow="UCv3">Free trial</a>'
+        + '</span></mas-field>';
+      block.append(ctaArea);
+      section.append(block);
+      document.body.append(section);
+
+      // Late resolution: the component fires mas:ready after the block already decorated.
+      ctaArea.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      expect(ctaArea.querySelectorAll('[data-role="mas-field-content"]').length).to.equal(0);
+      const links = ctaArea.querySelectorAll('mas-field a[data-wcs-osi]');
+      expect(links.length, 'exactly one hoisted CTA, no stray duplicate').to.equal(1);
+      expect(links[0].outerHTML).to.include('is="checkout-link"');
+      expect(links[0].classList.contains('con-button')).to.be.true;
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');

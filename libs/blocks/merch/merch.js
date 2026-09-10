@@ -1898,17 +1898,22 @@ function decorateInlineCtas(masField, content) {
 }
 
 /**
- * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network),
- * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
+ * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network,
+ * or a cached fragment resolving before the component's own render finishes), too late for
+ * decorateButtons. One document listener hoists + decorates it, no per-block wiring. Not
+ * limited to em/strong CTAs — a block-level CTA (e.g. a rich-content cta-area link, or an
+ * offer-hero action-area CTA once decorateButtons has already stripped its em/strong) can
+ * race the same way, and leaving it unhoisted strands the raw fallback link next to the
+ * resolved button.
  */
 let masReadyWatched = false;
 function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
-    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
-    // Same gate createInline uses: an inline CTA anchor, not block-level content.
+    // Same gate createInline uses: a single CTA anchor, not block-level content.
     if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
