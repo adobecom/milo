@@ -123,26 +123,41 @@ body:has(header.local-nav) .product-marquee-grid {
   min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
 }
 
-/* Stacked layout shared by mobile and tablet (< 900px): foreground grouped at
-   the top, promo card pinned to the bottom. Desktop (>= 900px) is side-by-side. */
+/* MAS variant: stacked on mobile and tablet (< 900px) — foreground grouped at
+   the top, promo card pinned to the bottom. Desktop (>= 900px) is side-by-side.
+   The non-mas variant keeps its original 768px breakpoint (handled below). */
 @media (width < 900px) {
-  .product-marquee-grid .pm-content {
+  .product-marquee-grid:not(.non-mas) .pm-content {
     justify-content: space-between;
   }
 
-  .product-marquee-grid .pm-foreground {
+  .product-marquee-grid:not(.non-mas) .pm-foreground {
     flex: none;
     gap: var(--s2a-spacing-lg);
     justify-content: flex-start;
   }
 
-  .product-marquee-grid .pm-promo-area {
+  .product-marquee-grid:not(.non-mas) .pm-promo-area {
     margin-block-start: 0;
   }
 }
 
 @media (width < 768px) {
   .product-marquee-grid.non-mas {
+    .pm-content {
+      justify-content: space-between;
+    }
+
+    .pm-foreground {
+      flex: none;
+      gap: var(--s2a-spacing-lg);
+      justify-content: flex-start;
+    }
+
+    .pm-promo-area {
+      margin-block-start: 0;
+    }
+
     .pm-merch-card {
       gap: var(--s2a-section-spacing-5xs);
     }
@@ -195,8 +210,21 @@ body:has(header.local-nav) .product-marquee-grid {
     }
   }
 
-  /* Non-MAS variant — tablet/desktop: horizontal pill card */
+  /* Non-MAS variant — side-by-side from 768px (its original breakpoint),
+     unaffected by the MAS 768/900 stacked restructure. */
   .product-marquee-grid.non-mas {
+    .pm-content {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+    }
+
+    .pm-promo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block-start: var(--s2a-spacing-4xl);
+    }
+
     .pm-merch-card {
       flex-direction: row;
       align-items: center;
@@ -219,10 +247,11 @@ body:has(header.local-nav) .product-marquee-grid {
   }
 }
 
-/* Desktop: side-by-side row. Below 900px the tablet keeps the stacked,
-   full-width grey promo card (grey background retained from >= 768px). */
+/* MAS variant desktop: side-by-side row. Below 900px the tablet keeps the
+   stacked, full-width grey promo card (grey background retained from >= 768px).
+   non-mas is excluded — it goes side-by-side from 768px (see above). */
 @media (width >= 900px) {
-  .product-marquee-grid {
+  .product-marquee-grid:not(.non-mas) {
     .pm-content {
       flex-direction: row;
       gap: var(--s2a-spacing-xs);
