@@ -8,6 +8,7 @@ import {
   lingoActive,
   getLingoRegion,
   getFederatedUrl,
+  loadIms,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -87,6 +88,13 @@ export default async function init(el) {
 
   const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
   if (isGnavOverrideOnC1) el.classList.add('c2-gnav-c1-host');
+
+  // Unlike the c1 gnav block, nothing else on a standalone c2 page bootstraps
+  // IMS. Without this, window.adobeIMS never initializes and UNAV's internal
+  // isSignedInUser() check times out (uncaught) after 5s, leaving the unav
+  // slot empty. Skip if adobeIMS is already initialized (e.g. a host that
+  // bootstraps IMS itself outside of milo's loadIms) to avoid clobbering it.
+  if (!window.adobeIMS?.initialized) loadIms().catch(() => {});
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
