@@ -27,16 +27,26 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
 export function hasChatCookie() {
   const cookies = document.cookie.split(';');
-  const cookieName = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
   for (let i = 0; i < cookies.length; i += 1) {
     const cookie = cookies[i].trim();
-    if (cookie.includes(cookieName)) {
+    if (cookie.includes(BC_SESSION_COOKIE)) {
       return true;
     }
   }
   return false;
+}
+
+/** Get session ID used to correlate analytics events */
+export function getChatSessionId() {
+  const match = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(`${BC_SESSION_COOKIE}=`));
+  return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
 }
 
 export function setCssGnavHeight() {

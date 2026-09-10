@@ -277,7 +277,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a', 'variant-b'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
           analyticsTitle: 'Test',
@@ -299,7 +299,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         }],
@@ -380,24 +380,24 @@ describe('getManifestList', () => {
     expect(va.selected).to.be.false;
   });
 
-  it('uppercases geoRestriction when present', () => {
+  it('uppercases countryRestriction when present', () => {
     setConfig({
       ...config,
       mep: {
         ...config.mep,
         experiments: [{
-          name: 'Geo Test',
-          manifest: '/homepage/fragments/mep/geo.json',
+          name: 'Country Test',
+          manifest: '/homepage/fragments/mep/country.json',
           variantNames: ['v-a'],
           selectedVariantName: 'v-a',
           source: 'helix',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           disabled: false,
         }],
       },
     });
     const { manifests } = getManifestList();
-    expect(manifests[0].geoRestriction).to.equal('EMEA');
+    expect(manifests[0].countryRestriction).to.equal('EMEA');
   });
 
   it('sets showActive and isActive correctly when experiment is disabled', () => {
@@ -438,6 +438,43 @@ describe('getManifestList', () => {
     const { manifests } = getManifestList();
     expect(manifests[0].index).to.equal(1);
     expect(manifests[1].index).to.equal(2);
+  });
+
+  it('appends a malformed entry for each mep.manifestErrors record', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [{
+          name: 'Valid', manifest: '/valid.json', variantNames: ['v'], selectedVariantName: 'v', source: 'helix', disabled: false,
+        }],
+        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(2);
+    const [valid, malformed] = manifests;
+    expect(valid.malformed).to.be.undefined;
+    expect(malformed).to.include({
+      index: 2,
+      editUrl: '/broken.json',
+      fileName: 'Broken Manifest',
+      malformed: true,
+    });
+  });
+
+  it('returns only malformed entries when mep has manifestErrors but no experiments', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [],
+        manifestErrors: [{ name: 'Broken', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(1);
+    expect(manifests[0]).to.include({ index: 1, malformed: true });
   });
 });
 
