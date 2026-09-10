@@ -414,10 +414,19 @@ function buildFAB(gnavOffset) {
   return fab;
 }
 
-function buildLoginCard() {
+function buildLoginCard(pageId) {
+  const recheckLink = createTag('a', { href: '#' }, 'Check again');
+  recheckLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    // eslint-disable-next-line no-use-before-define
+    checkAuthAndBuild(pageId);
+  });
   return createTag('div', { class: 'mep-card expanded center' }, [
     createTag('h1', {}, 'Content Unavailable'),
-    createTag('p', { class: 'mep-card-body' }, 'Sign into AEM Sidekick for options.'),
+    createTag('p', { class: 'mep-card-body' }, [
+      'Sign into AEM Sidekick or be inside the Adobe firewall for options. ',
+      recheckLink,
+    ]),
   ]);
 }
 
@@ -428,7 +437,7 @@ function buildFooter() {
 }
 
 function buildActionsContent(pageId) {
-  if (!authenticated) return [buildLoginCard()];
+  if (!authenticated) return [buildLoginCard(pageId)];
   return [
     ...buildManifestList(),
     ...CARD_DATA.actions.map(([header, data]) => (
@@ -511,7 +520,7 @@ function checkAuthAndBuild(pageId) {
     if (!contentEl) return;
 
     if (!authenticated) {
-      contentEl.replaceChildren(buildLoginCard());
+      contentEl.replaceChildren(buildLoginCard(pageId));
       drawerEl.querySelector('.mep-footer')?.remove();
       return;
     }
