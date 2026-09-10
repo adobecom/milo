@@ -114,7 +114,7 @@
 body:has(header.has-breadcrumbs) .product-marquee-grid {
   /* main only slides up by the nav height, so the breadcrumb overlaps the block
      top. Pad the content by the breadcrumb height so it sits flush below it. */
-  --pmg-content-block-start: var(--feds-height-breadcrumbs, 33px);
+  --pmg-content-block-start: var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px);
 
   min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 }
@@ -213,7 +213,7 @@ body:has(header.local-nav) .product-marquee-grid {
     }
   }
 
-
+  
   body:has(header.local-nav) .product-marquee-grid {
     min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
   }
