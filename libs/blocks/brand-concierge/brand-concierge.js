@@ -29,7 +29,7 @@ function checkGlobal() {
   const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
     return window.milo.brandConcierge.brandConciergeGlobal;
-  } 
+  }
   if (params.get('side-overlay') === 'true') {
     return true;
   }
