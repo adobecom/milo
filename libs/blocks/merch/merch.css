@@ -2,6 +2,13 @@ mas-field {
   display: contents;
 }
 
+/* Hide inline-CTA content while it's still inside mas-field (the async
+   decorateContentLinks window). */
+em > mas-field > [data-role="mas-field-content"],
+strong > mas-field > [data-role="mas-field-content"] {
+  display: none;
+}
+
 span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 
