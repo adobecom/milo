@@ -44,6 +44,11 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake((url) => {
   if (href.includes('supported-markets')) {
     return Promise.resolve({ ok: true, json: async () => ({ languages: { data: [] } }) });
   }
+  // isWithinFirewall()'s corp-only reachability check: reject by default so tests
+  // exercise the intended Sidekick-auth path instead of always bypassing via firewall.
+  if (href.includes('awesome-sites.corp.adobe.com')) {
+    return Promise.reject(new Error('offline'));
+  }
   // Lambda/API calls return 404 by default so getAdditionalManifests returns undefined
   return Promise.resolve({ ok: false, status: 404, json: async () => ({}), text: async () => '' });
 });
