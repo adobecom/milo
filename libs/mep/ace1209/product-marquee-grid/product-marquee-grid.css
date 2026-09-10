@@ -129,6 +129,7 @@ body:has(header.local-nav) .product-marquee-grid {
 @media (width < 900px) {
   .product-marquee-grid:not(.non-mas) .pm-content {
     justify-content: space-between;
+    gap: var(--s2a-spacing-xl);
   }
 
   .product-marquee-grid:not(.non-mas) .pm-foreground {
