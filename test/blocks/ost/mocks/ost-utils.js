@@ -140,6 +140,23 @@ const shouldAllowKrTrial = (button, localePrefix) => {
 const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
+const getGeoIpWarmSheet = () => undefined;
+const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
+
+// Unused by ost.js itself; only needed because merch.js statically imports
+// decorate.js and autoblock.js, which import these from utils.js.
+const createIntersectionObserver = () => {};
+const getFederatedContentRoot = () => '';
+const getFedsPlaceholderConfig = () => ({});
+const shouldBlockFreeTrialLinks = () => false;
+const decorateLinksAsync = () => Promise.resolve();
+const loadBlock = () => Promise.resolve();
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -183,5 +200,15 @@ export {
   lingoActive,
   getGeoLocalePrefix,
   getPlaceholderPaths,
+  getGeoIpWarmSheet,
+  geoIpSiteKey,
+  normCountryCode,
+  resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
+  decorateLinksAsync,
+  loadBlock,
 };

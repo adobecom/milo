@@ -78,6 +78,9 @@ export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
   return cssToWorld(rpx, rpy, W, H, out);
 }
 
+const MAX_DPR = 2;
+export function capDpr() { return Math.min(window.devicePixelRatio, MAX_DPR); }
+
 export const CAM_FOV = 60;
 export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 

@@ -6,11 +6,25 @@ let videoObserver = null;
 
 function isSvgUrl(url) { return /\.svg(\?.*)?$/i.test(url || ''); }
 
+function decorateStandaloneLink(foreground) {
+  foreground.querySelectorAll('a').forEach((a) => {
+    const parent = a.parentElement;
+    if (!parent) return;
+    const isStandalone = parent.textContent?.trim() === a.textContent?.trim();
+    if (!isStandalone || a.classList.contains('con-button')) return;
+    parent.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, 'label');
+    parent.classList.add('link-container');
+    a.classList.add('standalone-link');
+  });
+}
+
 function decorateCardText(foreground) {
   decorateBlockText(foreground, DEFAULT_TEXT_CONFIG);
   const headingP = foreground.querySelector('p:has(strong)');
-  if (!headingP) return;
-  headingP.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, `title-${DEFAULT_TEXT_CONFIG.heading}`);
+  if (headingP) {
+    headingP.classList.replace(`body-${DEFAULT_TEXT_CONFIG.body}`, `title-${DEFAULT_TEXT_CONFIG.heading}`);
+  }
+  decorateStandaloneLink(foreground);
 }
 
 function replaceVideoIntersectionObserver(medias) {
@@ -101,6 +115,58 @@ function decorate(block, el) {
   replaceVideoIntersectionObserver(medias);
 }
 
+const CARD_INDEX = { first: 0, second: 1 };
+const CARD_CUSTOMIZATION_REGEX = /^(first|second)-card-(.+)$/;
+
+function applyCardCustomization(container, classes) {
+  classes.forEach((cls) => {
+    const [, position, token] = cls.match(CARD_CUSTOMIZATION_REGEX) || [];
+    const card = container.children[CARD_INDEX[position]];
+    if (!token || !card) return;
+    card.classList.add(token);
+  });
+}
+
+function applyThemeCustomization({ container, customization, variants, blockDark }) {
+  const hasThemeCustomization = customization.includes('dark') || customization.includes('light');
+  if (!hasThemeCustomization) return;
+
+  const isBlockDark = blockDark || variants?.includes('dark');
+  container.classList.remove('dark');
+  if (variants?.includes('dark')) variants?.splice(variants.indexOf('dark'), 1);
+  [...container.children].forEach((card) => {
+    if (isBlockDark) card.classList.add('dark');
+    if (card.classList.contains('light')) card.classList.remove('dark');
+    card.classList.remove('light');
+  });
+}
+
+function decorateCardCustomization(el, viewports) {
+  const allVariants = viewports?.allVariants || [];
+  const blockClasses = [...el.classList].filter((cls) => !allVariants.includes(cls));
+  const customization = [...blockClasses, ...allVariants]
+    .map((cls) => (cls.match(CARD_CUSTOMIZATION_REGEX)?.[2] || null))
+    .filter(Boolean);
+
+  if (!customization.length) return;
+
+  const blockDark = blockClasses.includes('dark');
+  if (!viewports?.hasViewportVariations) {
+    applyCardCustomization(el, blockClasses);
+    applyThemeCustomization({ container: el, customization, blockDark });
+    return;
+  }
+
+  Object.values(viewports.content).forEach(({ container, variants }) => {
+    const containerEl = container.children.length
+      ? container
+      : el;
+    applyCardCustomization(containerEl, [...blockClasses, ...variants]);
+    applyThemeCustomization({ container: containerEl, customization, variants, blockDark });
+  });
+}
+
 export default function init(el) {
-  decorateViewportContent(el, decorate);
+  const viewports = decorateViewportContent(el, decorate);
+  decorateCardCustomization(el, viewports);
 }

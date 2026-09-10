@@ -12,11 +12,7 @@ const MIN_ROLLER_ROOM = 120;
 function prepPic(picture) {
   if (!picture) return null;
   const clone = picture.cloneNode(true);
-  if (clone.tagName === 'IMG') {
-    clone.removeAttribute('loading');
-  } else {
-    clone.querySelectorAll('img').forEach((img) => img.removeAttribute('loading'));
-  }
+  clone.querySelectorAll('img').forEach((img) => img.removeAttribute('loading'));
   return clone;
 }
 
@@ -300,7 +296,7 @@ function createReflow({
 
 function initScroll(block, refs, apps) {
   const {
-    bg, scrollWrapper, content, left, header, carousel, sticky, categoryWrapper,
+    bg, scrollWrapper, content, left, header, carousel,
     categoryLabel, divider, listWrapper, list, media,
   } = refs;
 

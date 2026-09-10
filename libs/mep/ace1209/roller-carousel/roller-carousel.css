@@ -4,15 +4,6 @@
   --rcc-top-gap: 40px;
   --rcc-sticky-top: var(--global-height-nav, 64px);
 
-  /* Full-bleed block: align side gutters to the section grid the same way
-     carousel-c2 does — via the root-level --grid-margin-width token, capped
-     at the default grid width. (--grid-padding is .container-only, so it
-     can't be used here.) */
-  --rcc-inline-padding: max(
-    var(--grid-margin-width),
-    calc((100% - var(--grid-max-width-default)) / 2)
-  );
-
   .rcc-scroll-wrapper {
     position: relative;
     z-index: 1;
@@ -71,7 +62,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--rcc-top-gap) var(--rcc-inline-padding) 0;
+    padding: var(--rcc-top-gap) var(--s2a-spacing-lg) 0;
     box-sizing: border-box;
   }
 
@@ -211,7 +202,7 @@
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-xs);
-      padding: var(--s2a-layout-sm) var(--rcc-inline-padding) var(--s2a-spacing-3xl);
+      padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
     }
 
     .rcc-content {
@@ -241,7 +232,6 @@
       flex-direction: column;
       gap: var(--s2a-spacing-3xl);
       max-width: 759px;
-      margin-inline-start: var(--rcc-inline-padding);
       padding: var(--s2a-layout-sm) var(--s2a-spacing-lg);
       box-sizing: border-box;
     }
@@ -319,7 +309,8 @@ body:has(header.local-nav) .roller-carousel {
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
-      padding: var(--s2a-layout-xl) var(--rcc-inline-padding) 0;
+      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
+      padding-inline-start: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
       gap: 0;
     }
 
@@ -366,6 +357,15 @@ body:has(header.local-nav) .roller-carousel {
 }
 
 @media (width >= 1440px) {
+  .roller-carousel {
+    .rcc-content {
+      max-width: 1920px;
+      margin-inline: auto;
+    }
+  }
+}
+
+@media (width >= 1600px) {
   .roller-carousel {
     .rcc-item {
       font-size: var(--s2a-typography-font-size-super);

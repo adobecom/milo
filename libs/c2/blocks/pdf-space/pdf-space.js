@@ -107,6 +107,7 @@ const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM_CONFIG.columnCompressionTarget - 0.15
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
 const MOBILE_OUTER_MARGIN = 24;
+const MOBILE_COLUMN_COUNT = 2;
 
 // FAN_INDEX_BY_GRID_POSITION maps grid [row][col] → arc position.
 // Arc reads column-by-column L→R; fanIdx=0 is lower-right (peels first).
@@ -161,6 +162,12 @@ function getAcrobatDesktopMockupWidth(viewportWidth, isTablet) {
 function getDeskCardCenterX(viewportWidth, colIdx, columnSpread) {
   return viewportWidth * (0.5 + CARD_COLUMN_OFFSETS_RATIO[colIdx] * columnSpread);
 }
+
+// ── RTL ──
+const isRtl = () => document.dir === 'rtl';
+const mirrorCol = (idx, count) => (isRtl() ? count - 1 - idx : idx);
+const mirrorX = (x, width) => (isRtl() ? width - x : x);
+const mirrorSign = (value) => (isRtl() ? -value : value);
 
 function clamp01(x) {
   if (x < 0) return 0;
@@ -359,8 +366,8 @@ function parseAuthoredContent(el) {
       cards.push({
         colIdx,
         rowIdx,
-        mobileColIdx: colIdx % 2,
-        mobileRowIdx: Math.floor(colIdx / 2),
+        mobileColIdx: colIdx % MOBILE_COLUMN_COUNT,
+        mobileRowIdx: Math.floor(colIdx / MOBILE_COLUMN_COUNT),
         mobileHidden: rowIdx !== 0,
         cardHeight,
         label,
@@ -496,7 +503,9 @@ function buildStage(el) {
 // clones scale with the responsive mockup without per-frame JS.
 function getNoMotionDesktopSlotPct(def) {
   const slotHDesign = ACROBAT_DESKTOP_SLOT_WIDTH * (def.cardHeight / CARD_WIDTH);
-  const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[def.colIdx];
+  const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[
+    mirrorCol(def.colIdx, ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length)
+  ];
   const cy = ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[def.rowIdx];
   return {
     left: ((cx - ACROBAT_DESKTOP_SLOT_WIDTH / 2) / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH) * 100,
@@ -526,7 +535,8 @@ function getNoMotionMobileSlotPct(def) {
     + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2 + 30;
   const height = Math.round(def.cardHeight * cardSlotScale);
   const centerY = firstRowCenterY + def.mobileRowIdx * rowPitch;
-  const x = slotGridLeft + def.mobileColIdx * (slotWidth + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
+  const slotColIdx = mirrorCol(def.mobileColIdx, MOBILE_COLUMN_COUNT);
+  const x = slotGridLeft + slotColIdx * (slotWidth + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
   return {
     left: (x / ACROBAT_MOBILE_MOCKUP_WIDTH) * 100,
     top: ((centerY - height / 2) / ACROBAT_MOBILE_MOCKUP_HEIGHT) * 100,
@@ -660,17 +670,19 @@ function getMobileMockupCardSlot(card, mockupFrame) {
   const width = mockupFrame.slotWidth;
   const height = Math.round(card.baseHeight * mockupFrame.cardSlotScale);
   const centerY = mockupFrame.firstRowCenterY + card.mobileRowIdx * mockupFrame.rowPitch;
+  const slotColIdx = mirrorCol(card.mobileColIdx, MOBILE_COLUMN_COUNT);
   const x = mockupFrame.slotGridLeft
-    + card.mobileColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
+    + slotColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
   return { x, y: centerY - height / 2, width, height };
 }
 
 function getDesktopMockupCardSlot(card, mockupFrame) {
   const width = mockupFrame.slotWidth;
   const height = card.height * (width / CARD_WIDTH);
+  const slotColIdx = mirrorCol(card.colIdx, ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length);
   return {
     x: mockupFrame.mockupLeft
-      + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[card.colIdx] * mockupFrame.scale
+      + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[slotColIdx] * mockupFrame.scale
       - width / 2,
     y: mockupFrame.mockupTop
       + ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[card.rowIdx] * mockupFrame.scale
@@ -831,7 +843,13 @@ function mountMotion(el) {
       y += (lineY - y) * flattenProgress;
       rot = arcRotation * (1 - flattenProgress);
     }
-    return { x, y, rot, rx: arcCosine, ry: arcSine };
+    return {
+      x: mirrorX(x, viewportWidth),
+      y,
+      rot: mirrorSign(rot),
+      rx: mirrorSign(arcCosine),
+      ry: arcSine,
+    };
   }
 
   // ──────────────────── Layout helpers ────────────────────
@@ -920,9 +938,9 @@ function mountMotion(el) {
           card.baseY = OFFSCREEN_SENTINEL;
           return;
         }
-        const centerX = gridLeft
+        const centerX = mirrorX(gridLeft
             + card.mobileColIdx * (mobileLayout.cardW + MOBILE_COL_GAP)
-            + mobileLayout.cardW / 2;
+            + mobileLayout.cardW / 2, viewportWidth);
         const centerY = firstRowCenterY + card.mobileRowIdx * mobileLayout.rowPitch;
         card.baseX = centerX - card.width / 2;
         card.baseY = centerY - card.height / 2;
@@ -931,11 +949,11 @@ function mountMotion(el) {
     }
     const rowAnchor = -0.2 + 0.7 * ANIM_STATE.phase.arcToGrid;
     sceneCards.forEach((card) => {
-      const centerX = getDeskCardCenterX(
+      const centerX = mirrorX(getDeskCardCenterX(
         viewportWidth,
         card.colIdx,
         ANIM_STATE.cardGridLayout.columnSpread,
-      );
+      ), viewportWidth);
       const centerY = viewportHeight
         * (0.5 + (card.rowIdx - rowAnchor) * ANIM_STATE.cardGridLayout.rowGap);
       card.baseX = centerX - card.width / 2;
@@ -1105,7 +1123,7 @@ function mountMotion(el) {
       scale: scale * slideScaleMul,
       rotation,
       tiltX: cardXTilt,
-      tiltY: cardYTilt,
+      tiltY: mirrorSign(cardYTilt),
     });
     card.el.style.opacity = Math.min(1, cardSlideT / ANIM_CONFIG.slideOpacityRampTo).toFixed(3);
     const shadowAlpha = ANIM_CONFIG.arcShadowAlpha * (1 - cardPeelProgress);
@@ -1356,6 +1374,7 @@ function mountMotion(el) {
         + viewportHeight * 0.036
         - ANIM_STATE.verticalPan.arcGridY;
     }
+    if (isRtl()) textLeft = viewportWidth - textLeft - LAYOUT_CACHE.textBlockWidth;
     const arcReveal = ANIM_STATE.frame.isMobile
       ? clamp01((ANIM_STATE.phase.arcToGrid - 0.1) / 0.3)
       : clamp01(arcTextPanProgressCached * 2);

@@ -621,7 +621,7 @@
     animation-timeline: --hub-hero;
     animation-range: contain 45% contain 55%;
 
-    margin-bottom: 124px;
+    margin-bottom: var(--s2a-spacing-128);
   }
 
   .hub-hero-carousel-header>div>* {
@@ -1502,7 +1502,7 @@
     position: relative;
     --hub-hero-height: auto;
   }
- 
+
   .hub-hero-image-grid-container-col:nth-child(1),
   .hub-hero-image-grid-container-col:nth-child(2),
   .hub-hero-image-grid-container-col:nth-child(3),
@@ -1533,7 +1533,7 @@
   .hub-hero-carousel {
     margin-top: calc(var(--grid-col-three-offset) + var(--s2a-spacing-4xl));
   }
-  
+
   @media (width < 768px) {
     .hub-hero {
       height: auto;
@@ -1557,7 +1557,7 @@
     }
 
     .hub-hero-carousel-item:nth-child(3) {
-      display: none; 
+      display: none;
     }
 
     .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {

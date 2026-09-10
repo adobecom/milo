@@ -586,7 +586,7 @@
     background: var(--glass-fill);
     background-clip: padding-box;
     box-shadow: inset 0 0 0 var(--glass-stroke) var(--glass-fill);
-    border-radius: var(--s2a-border-radius-16);
+    border-radius: var(--s2a-border-radius-8);
     backdrop-filter: blur(var(--s2a-blur-md));
     overflow: hidden;
 
@@ -594,6 +594,10 @@
       --glass-frame-width: 6.5px;
       --glass-stroke: 1px;
       box-sizing: unset;
+    }
+
+    @media (width >= 1024px) {
+      border-radius: var(--s2a-border-radius-16);
     }
 
     @media (width >= 1280px) {
@@ -608,7 +612,11 @@
 
     :is(img, video) {
       max-width: 100%;
-      border-radius: var(--s2a-border-radius-8);
+      border-radius: var(--s2a-border-radius-4);
+
+      @media (width >= 1024px) {
+        border-radius: var(--s2a-border-radius-8);
+      }
     }
   }
 }

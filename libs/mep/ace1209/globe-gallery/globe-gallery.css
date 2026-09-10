@@ -9,17 +9,14 @@
 .globe-gallery {
   --gg-chrome-blur: 12px;
   --gg-hang-max: 0.8em;
-  --gg-runway-height: 520vh;
-  --gg-formation-vh: 340vh;
+  --gg-runway-height: 550vh;
+  --gg-formation-vh: 380vh;
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
   --gg-copy-pad: var(--s2a-spacing-lg);
   --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
-
-  /* Preference; the pin takes min() of this and the derived --gg-pq-hold-max. */
-  --gg-pq-hold: 40vh;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
   --gg-controls-inset: var(--s2a-spacing-md);
@@ -45,9 +42,7 @@
 
 @media (width >= 768px) {
   .globe-gallery {
-    --gg-runway-height: 520vh;
-    --gg-formation-vh: 320vh;
-    --gg-pq-hold: 45vh;
+    --gg-formation-vh: 360vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -187,7 +182,7 @@
   inset-inline-start: var(--s2a-spacing-xs);
   box-sizing: border-box;
   padding: var(--gg-arc-pad);
-  background: var(--s2a-color-transparent-black-32);
+  background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(var(--s2a-blur-lg));
   backdrop-filter: blur(var(--s2a-blur-lg));
   border-radius: var(--s2a-border-radius-md);
@@ -220,14 +215,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Ends one hold past the reveal, so the sticky rail holds the quote centred for that much scroll
-   before letting go. --gg-pq-hold-max defaults to 0, so no JS means no hold. */
+/* Ends half a quote box above the runway end, so the rail lets go as the next section's top reaches
+   the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   top: var(--gg-formation-vh);
-  bottom: max(0px, calc(
+  bottom: clamp(0px, var(--gg-pq-half-box, var(--gg-runway-height)), calc(
     (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
-      - var(--gg-optical-center) - min(var(--gg-pq-hold), var(--gg-pq-hold-max, 0vh))
+      - var(--gg-optical-center)
   ));
   left: 0;
   right: 0;
@@ -263,7 +258,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   gap: var(--gg-pq-gap);
   padding-block: var(--gg-pq-pad-block);
   padding-inline: var(--gg-copy-pad);
-  pointer-events: none;
 
   /* Centred on the optical centre until the box is taller than the band, then top-anchored: a
      long quote overflows downward only, never under the nav. */
@@ -399,9 +393,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   background: var(--s2a-color-transparent-black-64);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
-
-  /* Decorative dim/blur only; inert once the dialog runs showModal(). */
-  pointer-events: none;
 }
 
 /* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
@@ -425,7 +416,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   border: 0;
   background: transparent;
   color: inherit;
-  pointer-events: auto;
   touch-action: none;
   opacity: 0;
   transition: opacity calc(var(--gg-modal-anim-ms) * 1ms) ease;
@@ -463,7 +453,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  pointer-events: auto;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -492,7 +481,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
   transition: background 0.2s ease;
 }
 .globe-gallery-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
@@ -511,7 +499,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   -webkit-backdrop-filter: blur(var(--gg-chrome-blur));
   backdrop-filter: blur(var(--gg-chrome-blur));
   box-shadow: none;
-  pointer-events: auto;
   display: flex;
   flex-direction: column;
 
@@ -677,7 +664,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   font-size: var(--s2a-font-size-sm);
   font-weight: var(--s2a-font-weight-body);
   letter-spacing: 0.02em;
-  pointer-events: none;
   user-select: none;
 }
 
@@ -709,7 +695,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   left: 0;
   right: 0;
   height: 100vh;
-  pointer-events: none;
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -725,7 +710,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   border: 0;
   background: transparent;
   transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 .globe-gallery-a11y-card:focus { outline: none; }
 
@@ -748,7 +732,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
   line-height: 1.35;
   text-align: center;
   white-space: normal;
-  pointer-events: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -782,7 +765,6 @@ body.globe-gallery-modal-open { overflow: hidden; }
     max-width: none;
     bottom: var(--s2a-spacing-lg);
     inset-inline-start: calc(var(--gg-content-inset) - var(--gg-arc-pad));
-    background: none;
   }
 
   /* Full-height scrim on the viewport's inline-start edge. */
@@ -879,6 +861,7 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote-rail {
   position: static;
   height: auto;
+  pointer-events: auto;
 }
 
 .globe-gallery-reduced .globe-gallery-pullquote {
@@ -909,6 +892,22 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   transform: none;
 }
 
+
+@media (height <= 360px) {
+  .globe-gallery-modal-chrome {
+    --gg-modal-edge: 8px;
+    --gg-control-size: 44px;
+  }
+
+  .globe-gallery-modal-info {
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+
+  .globe-gallery-modal-description {
+    flex-shrink: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .globe-gallery-modal-nav:hover,
