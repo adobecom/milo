@@ -75,6 +75,7 @@ export default async function init(el) {
   Object.keys(variants).forEach((key) => delete variants[key]);
 
   handleConsent(el);
+  window.addEventListener('adobePrivacy:PrivacyAccept', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   window.addEventListener('feds:signOut', () => {
@@ -194,6 +195,8 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
