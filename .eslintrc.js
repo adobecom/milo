@@ -63,6 +63,8 @@ module.exports = {
     '/tools/send-to-caas/caas-payload-builder.js',
     '/libs/features/spectrum-web-components/*',
     '/libs/navigation/dist/*',
+    '/libs/mep/ace1209/globe-gallery/three.module.min.js',
+    '/libs/mep/ace1209/globe-gallery/src/three-src.js',
   ],
   plugins: [
     'chai-friendly',

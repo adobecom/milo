@@ -13,6 +13,7 @@ import {
   getCookie,
   getGeoLocalePrefix,
   resolveDetectedMarketCountry,
+  getPromoMepEnablement,
 } from '../../../../utils/utils.js';
 import {
   US_GEO,
@@ -36,9 +37,25 @@ export const API_URLS = {
 
 export const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
+export function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable; setting just won't persist
+  }
+}
+
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
+    return new Set(JSON.parse(safeGetItem(CARD_STORAGE_KEY)) || []);
   } catch { return new Set(); }
 }
 
@@ -82,7 +99,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
+  manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -92,13 +110,18 @@ function toActivity({
     selectedVariantName,
     url: manifest,
     disabled,
+    disabledPromo,
     source,
     eventStart: event?.start,
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
+    countryRestriction,
+    countryDisabled,
     mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   };
 }
 
@@ -135,6 +158,12 @@ function formatDate(dateTime, format = 'local') {
 }
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
+const EXECUTION_ORDER_LABELS = ['First', 'Normal', 'Last'];
+
+function getExecutionOrderLabel(executionOrder) {
+  const [orderIndex] = (executionOrder ?? '').split('-');
+  return EXECUTION_ORDER_LABELS[orderIndex] ?? null;
+}
 
 function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   const {
@@ -147,8 +176,13 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart,
     eventEnd,
     disabled,
-    geoRestriction,
+    disabledPromo,
+    countryRestriction,
+    countryDisabled,
     mktgAction,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   } = manifest;
 
   const editPath = normalizePath(url);
@@ -194,9 +228,15 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
     mktgAction,
-    geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
+    countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
+    manifestType,
+    manifestOverrideName,
+    executionOrder: getExecutionOrderLabel(executionOrder),
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
+    withinDateRange: !disabled,
+    disabledPromo: !!disabledPromo,
+    manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
@@ -206,18 +246,32 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
+function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx) {
+  return {
+    index: mIdx + 1,
+    editUrl: manifestPath,
+    fileName: name,
+    malformed: true,
+    error,
+  };
+}
+
 export function getManifestList() {
   const mepConfig = parseMepConfig();
-  if (!mepConfig) return { manifests: [], manifestParameter: [] };
-  const { activities, page } = mepConfig;
-  const { pageId = 0 } = page;
+  const manifestErrors = getConfig().mep?.manifestErrors ?? [];
+  const { activities, page } = mepConfig ?? {};
+  const { pageId = 0 } = page ?? {};
   const manifestParameter = [];
 
-  const manifests = activities.map(
+  const manifests = activities?.map(
     (manifest, mIdx) => buildManifestEntry(manifest, mIdx, pageId, manifestParameter),
+  ) ?? [];
+
+  const malformedManifests = manifestErrors.map(
+    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx),
   );
 
-  return { manifests, manifestParameter };
+  return { manifests: [...manifests, ...malformedManifests], manifestParameter };
 }
 
 function getManifestsFound() {
@@ -239,11 +293,29 @@ function getTheme() {
   return (getMetadata('theme') || 'None');
 }
 
-function getTargetIntegration() {
+function isTargetOn() {
   const { page } = parseMepConfig();
   const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
-  if (mepTarget === undefined) return page.target;
-  return { postlcp: 'on post LCP' }[mepTarget] ?? mepTarget;
+  const targetValue = mepTarget === undefined ? page.target : mepTarget;
+  return !!targetValue && targetValue !== 'off';
+}
+
+function getTargetIntegration() {
+  return isTargetOn() ? 'on' : 'off';
+}
+
+function getLoadTargetFaster() {
+  if (!isTargetOn()) return 'n/a';
+  return getMetadata('personalization-v2') ? 'on' : 'off';
+}
+
+function getPromoMetadata() {
+  return getPromoMepEnablement() ? 'on' : 'off';
+}
+
+function getMepParam() {
+  const { manifests } = getManifestList();
+  return manifests.some((manifest) => manifest.source?.includes('mep param')) ? 'on' : 'off';
 }
 
 export function getLocale() {
@@ -256,7 +328,7 @@ export function getLastSeen() {
   return formatDate(new Date(page.lastSeen));
 }
 
-function getPersonalization() {
+function getPersonalizationMetadata() {
   const { page } = parseMepConfig();
   return page.personalization;
 }
@@ -314,8 +386,13 @@ export function getPageSummary() {
     ['Manifests Found', getManifestsFound()],
     ['Foundation', getFoundation()],
     ['Theme', getTheme()],
-    ['Target Integration', getTargetIntegration()],
-    ['Personalization', getPersonalization()],
+    ['Load Target Faster (v2)', getLoadTargetFaster()],
+    ['Manifest Sources', resolvePairs([
+      ['Target Integration', getTargetIntegration()],
+      ['Personalization Metadata', getPersonalizationMetadata()],
+      ['Promo Metadata', getPromoMetadata()],
+      ['MEP Param', getMepParam()],
+    ])],
   ]);
 }
 

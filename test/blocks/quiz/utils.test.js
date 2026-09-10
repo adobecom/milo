@@ -341,3 +341,46 @@ describe('Quiz', () => {
     });
   });
 });
+
+describe('quiz-data param validation', () => {
+  let quizEl;
+  const originalSearch = window.location.search;
+
+  before(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/index.html' });
+    quizEl = document.querySelector('.quiz');
+    window.lana = { log: sinon.stub() };
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, '', `${window.location.pathname}${originalSearch}`);
+    window.lana.log.resetHistory();
+  });
+
+  after(() => {
+    sinon.restore();
+  });
+
+  it('ignores an untrusted cross-origin quiz-data path and logs', () => {
+    window.history.replaceState({}, '', '?quiz-data=https://gist.githubusercontent.com/attacker/raw/');
+    const { configPath } = initConfigPathGlob(quizEl);
+    const resolved = configPath('questions.json');
+    expect(resolved).to.not.include('gist.githubusercontent.com');
+    expect(resolved).to.include('mockdata');
+    expect(window.lana.log.calledWithMatch('Quiz ignoring untrusted quiz-data path')).to.be.true;
+  });
+
+  it('honors a same-origin absolute quiz-data path', () => {
+    window.history.replaceState({}, '', '?quiz-data=/drafts/quiz-test/');
+    const { configPath } = initConfigPathGlob(quizEl);
+    expect(configPath('questions.json')).to.equal('/drafts/quiz-test/questions.json');
+    expect(window.lana.log.called).to.be.false;
+  });
+
+  it('rejects a protocol-relative quiz-data path', () => {
+    window.history.replaceState({}, '', '?quiz-data=//evil.com/');
+    const { configPath } = initConfigPathGlob(quizEl);
+    expect(configPath('questions.json')).to.not.include('evil.com');
+    expect(configPath('questions.json')).to.include('mockdata');
+  });
+});

@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  safeGetItem,
+  safeSetItem,
   toSlug,
   getPageId,
   getManifestList,
@@ -31,6 +33,20 @@ import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
 const domParser = new DOMParser();
+
+const ALIGN_STORAGE_KEY = 'mep-align-left';
+
+function getStoredAlignLeft() {
+  return safeGetItem(ALIGN_STORAGE_KEY) === 'true';
+}
+
+function setStoredAlignLeft(alignLeft) {
+  safeSetItem(ALIGN_STORAGE_KEY, String(alignLeft));
+}
+
+function applyStoredAlignment() {
+  document.body.classList.toggle(ALIGN_STORAGE_KEY, getStoredAlignLeft());
+}
 
 const CARD_DATA = {
   actions: [
@@ -124,6 +140,20 @@ function buildRow(label, value) {
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
+function buildNestedSection(label, subPairs) {
+  const rows = subPairs.map(([subLabel, subValue]) => {
+    const isOnOff = subValue === 'on' || subValue === 'off';
+    const valEl = createTag('div', isOnOff ? { class: subValue === 'on' ? 'mep-row-value emphasis' : 'mep-row-value' } : {});
+    valEl.textContent = subValue == null ? '' : String(subValue);
+    return createTag('div', { class: 'mep-surfaces-row' }, [
+      createTag('div', { class: 'mep-row-value' }, subLabel),
+      valEl,
+    ]);
+  });
+  const children = label ? [createTag('h2', {}, label), ...rows] : rows;
+  return createTag('div', { class: 'mep-row-section' }, children);
+}
+
 function markExpanded(el, key) {
   el.dataset.cardKey = key;
   if (getExpandedCards().has(key)) el.classList.add('expanded');
@@ -134,10 +164,60 @@ function toggleExpandedCard(cardEl) {
   const isExpanded = cardEl.classList.toggle('expanded');
   const expanded = getExpandedCards();
   expanded[isExpanded ? 'add' : 'delete'](key);
-  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+  safeSetItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
-function buildManifestCard(manifest, { mmm = false } = {}) {
+function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
+  }
+  const statusChecks = [
+    {
+      reason: manifest.manifestCountryRestricted,
+      msg: 'User country is restricted.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.disabledPromo === true,
+      msg: 'Outside of promo date range.',
+      level: 'Warning',
+      label: 'Disabled',
+    },
+  ];
+  const severity = { Warning: 0, Error: 1 };
+  const messages = [];
+  let finalLabel = null;
+  let finalLevel = null;
+
+  statusChecks.forEach(({ reason, msg, level, label }) => {
+    if (!reason) return;
+    messages.push(msg);
+    if (!finalLevel || severity[level] > severity[finalLevel]) {
+      finalLevel = level;
+      finalLabel = label || level;
+    }
+  });
+
+  if (!finalLabel) return null;
+  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
+}
+
+function applyManifestStatus(card, manifest) {
+  const status = getManifestStatus(manifest);
+  if (!status) return;
+
+  const { level, label, messages } = status;
+  const list = createTag(
+    'ul',
+    { class: `mep-manifest-${level}-tooltip` },
+    messages.map((message) => createTag('li', {}, message)),
+  );
+  card.classList.add(`manifest-${level}`);
+  card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
+}
+
+function buildManifestCard(manifest) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
   const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
@@ -145,16 +225,26 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('span', { class: 'mep-overline' }, mmm ? '7 Day Manifest' : 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
+  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
+  markExpanded(card, manifest.editUrl);
+
+  if (manifest.malformed) {
+    card.append(header);
+    applyManifestStatus(card, manifest);
+    return card;
+  }
+
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
-  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   rows.push(buildRow('Source', manifest.source));
   rows.push(buildRow('Mktg Action', manifest.mktgAction));
-  if (manifest.geoRestriction) rows.push(buildRow('Geo', manifest.geoRestriction));
+  if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
+  rows.push(buildRow('Type', manifest.manifestType || 'none'));
+  rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
+  rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
   if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
@@ -164,6 +254,7 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     rows.push(onRow, buildRow('Off', manifest.eventEnd));
   }
 
+  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
   manifest.options.forEach((option) => {
     const attrs = {
@@ -179,9 +270,10 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
     select.append(optEl);
   });
 
-  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
-  markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
+
+  applyManifestStatus(card, manifest);
+
   return card;
 }
 
@@ -278,18 +370,6 @@ async function buildSpoofGeo(card, pageId) {
   });
 
   return [...rows, selectEl];
-}
-
-function buildNestedSection(label, subPairs) {
-  const rows = subPairs.map(([subLabel, subValue]) => {
-    const valEl = createTag('div', {});
-    valEl.textContent = subValue == null ? '' : String(subValue);
-    return createTag('div', { class: 'mep-surfaces-row' }, [
-      createTag('div', { class: 'mep-row-value' }, subLabel),
-      valEl,
-    ]);
-  });
-  return createTag('div', { class: 'mep-row-section' }, [createTag('h2', {}, label), ...rows]);
 }
 
 async function buildSummaryData(card) {
@@ -438,21 +518,33 @@ function checkAuthAndBuild(pageId) {
 
     const cards = buildActionsContent(pageId);
     contentEl.replaceChildren(...cards);
-    drawerEl.appendChild(buildFooter());
+    const footerEl = buildFooter();
+    const activeTab = drawerEl.querySelector('.mep-tab.active');
+    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+    drawerEl.appendChild(footerEl);
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
   });
 }
 
+function buildAlignToggle() {
+  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', title: 'Move to other side', 'aria-label': 'Move to other side' });
+  btn.appendChild(svgIcon('icon-swap-horiz'));
+  return btn;
+}
+
 function buildDrawer(gnavOffset, pageId) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
+  const alignToggleBtn = buildAlignToggle();
+
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [alignToggleBtn, closeBtn]);
+  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, actionsEl]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
   const children = [headerEl, bodyEl];
@@ -480,7 +572,7 @@ async function buildAdditionalManifests() {
 
   let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
-    const manifestEl = buildManifestCard(manifest, { mmm: true });
+    const manifestEl = buildManifestCard(manifest);
     manifestEl.classList.add('mmm-manifest-card');
     insertionPoint.after(manifestEl);
     insertionPoint = manifestEl;
@@ -523,12 +615,18 @@ function setEventListeners() {
   const drawerEl = document.querySelector('#mep-drawer');
 
   drawerEl.addEventListener('click', (event) => {
+    if (event.target.closest('.mep-align-toggle')) {
+      const alignLeft = document.body.classList.toggle(ALIGN_STORAGE_KEY);
+      setStoredAlignLeft(alignLeft);
+      return;
+    }
     const tab = event.target.closest('.mep-tab');
     if (tab) {
       const tabIndex = tab.getAttribute('data-tab');
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
       });
+      drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
     const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
@@ -622,6 +720,7 @@ async function buildOverlay() {
 }
 
 export default async function init() {
+  applyStoredAlignment();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();

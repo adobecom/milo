@@ -57,7 +57,7 @@
 .hover-list-media {
   align-self: flex-start;
   block-size: 81px;
-  border-radius: var(--s2a-border-radius-sm);
+  border-radius: var(--s2a-border-radius-xs);
   flex-shrink: 0;
   inline-size: 80px;
   overflow: hidden;
@@ -176,7 +176,7 @@
 
   .hover-list-media picture {
     block-size: 320px;
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
     inline-size: 280px;
     inset: auto;
     left: 0;

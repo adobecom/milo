@@ -147,9 +147,11 @@
   --s2a-border-radius-0: 0;
   --s2a-border-radius-2: 2px;
   --s2a-border-radius-4: 4px;
+  --s2a-border-radius-6: 6px;
   --s2a-border-radius-8: 8px;
   --s2a-border-radius-12: 12px;
   --s2a-border-radius-16: 16px;
+  --s2a-border-radius-22: 22px;
   --s2a-border-radius-24: 24px;
   --s2a-border-radius-32: 32px;
   --s2a-border-radius-999: 999px;
@@ -207,7 +209,8 @@
   --s2a-spacing-64: 64px;
   --s2a-spacing-80: 80px;
   --s2a-spacing-96: 96px;
-  --s2a-spacing-124: 124px;
+  --s2a-spacing-124: 124px; /** DEPRECATED — use spacing/128 instead. Retained temporarily because Milo still references 124px; do not use in new work. Remove once Milo migrates off it. (MWPW-202891) */
+  --s2a-spacing-128: 128px;
   --s2a-spacing-160: 160px;
   --s2a-spacing-240: 240px;
 

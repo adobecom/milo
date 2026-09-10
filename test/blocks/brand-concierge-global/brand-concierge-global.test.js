@@ -7,6 +7,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge-global/brand-concierge-global.js');
+const { setCssGnavHeight } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
 
 describe('Brand Concierge Global', () => {
   let block;
@@ -60,11 +61,14 @@ describe('Brand Concierge Global', () => {
     // global flag exposed on window.milo
     expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
 
-    // main-top CSS variable is set
-    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
-
     // authored rows are removed from the block
     expect(block.children.length).to.equal(0);
+  });
+
+  it('sets the --bc-gnav-height CSS variable when the gnav is present', () => {
+    document.documentElement.style.removeProperty('--bc-gnav-height');
+    setCssGnavHeight();
+    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
   });
 
   it('adds the no-gnav-mobile modifier to the button section', async () => {

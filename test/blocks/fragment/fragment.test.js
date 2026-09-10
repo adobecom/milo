@@ -163,6 +163,80 @@ describe('Fragments', () => {
       expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
     }
   });
+
+  it('blocks a fragment from an untrusted cross-origin URL', async () => {
+    window.lana.log.resetHistory();
+    const fetchSpy = stub(window, 'fetch').callsFake((url) => originalFetch(url));
+    const a = document.createElement('a');
+    a.href = 'https://gist.githubusercontent.com/attacker/evil/raw/xss-fragment';
+    document.body.append(a);
+    await getFragment(a);
+    const fetchedFragment = fetchSpy.getCalls().some((call) => {
+      try {
+        return new URL(String(call.args[0]), window.location.origin).origin
+          === 'https://gist.githubusercontent.com';
+      } catch { return false; }
+    });
+    expect(fetchedFragment).to.be.false;
+    expect(window.lana.log.calledWithMatch('Fragment blocked, untrusted URL')).to.be.true;
+    fetchSpy.restore();
+    a.remove();
+  });
+
+  it('allows a cross-origin fragment from a configured allowedOrigin', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['https://partner.example.com'] });
+    const fetchSpy = stub(window, 'fetch')
+      .callsFake(() => Promise.resolve(new Response('<div></div>', { status: 200 })));
+    const a = document.createElement('a');
+    a.href = 'https://partner.example.com/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const blocked = window.lana.log.getCalls()
+      .some((call) => String(call.args[0]).includes('Fragment blocked'));
+    expect(blocked).to.be.false;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
+
+  it('allows a cross-origin fragment via a bare-domain allowedOrigin (suffix match)', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['.partner.example'] });
+    const fetchSpy = stub(window, 'fetch')
+      .callsFake(() => Promise.resolve(new Response('<div></div>', { status: 200 })));
+    const a = document.createElement('a');
+    a.href = 'https://cdn.partner.example/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const blocked = window.lana.log.getCalls()
+      .some((call) => String(call.args[0]).includes('Fragment blocked'));
+    expect(blocked).to.be.false;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
+
+  it('blocks a cross-origin fragment when the bare-domain allowedOrigin does not suffix-match', async () => {
+    window.lana.log.resetHistory();
+    updateConfig({ ...getConfig(), allowedOrigins: ['.partner.example'] });
+    const fetchSpy = stub(window, 'fetch').callsFake((url) => originalFetch(url));
+    const a = document.createElement('a');
+    a.href = 'https://partner.example.evil.com/fragments/promo';
+    document.body.append(a);
+    await getFragment(a);
+    const fetchedFragment = fetchSpy.getCalls().some((call) => {
+      try {
+        return new URL(String(call.args[0]), window.location.origin).origin
+          === 'https://partner.example.evil.com';
+      } catch { return false; }
+    });
+    expect(fetchedFragment).to.be.false;
+    expect(window.lana.log.calledWithMatch('Fragment blocked, untrusted URL')).to.be.true;
+    fetchSpy.restore();
+    updateConfig({ ...getConfig(), allowedOrigins: [] });
+    a.remove();
+  });
 });
 
 describe('MEP Lingo Fragments', () => {
@@ -226,6 +300,8 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.clear();
     document.head.querySelector('meta[name="langfirst"]')?.remove();
     if (fetchStub) fetchStub.restore();
+    const c = getConfig();
+    if (c.mep) delete c.mep.fragments;
   });
 
   it('loads ROC fragment and sets data-mep-lingo-roc', async () => {
@@ -242,6 +318,127 @@ describe('MEP Lingo Fragments', () => {
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
     expect(frag.dataset.mepLingoRoc).to.exist;
+  });
+
+  it('applies a MEP replace to a mep-lingo link and clears stale lingo state', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    const a = document.querySelector('a[href="/fragments/mep-lingo-test#_mep-lingo"]');
+    const section = a.closest('.section');
+    await simulateDecorateLinks(a);
+    // decorate localized the href with a region prefix and captured the authored href
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.originalHref).to.exist;
+
+    // Key the fragment map by the authored (non-region) path on a different origin,
+    // exactly the mismatch the exact-key lookups can't resolve.
+    const origPath = new URL(a.dataset.originalHref).pathname;
+    const fragKey = `https://main--federal--adobecom.aem.page${origPath}`;
+    const replacement = '/test/blocks/fragment/mocks/fragments/frag-b';
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [fragKey]: {
+            action: 'replace',
+            fragment: replacement,
+            selector: fragKey,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // Replace won: the replacement rendered and the stale lingo state was cleared,
+    // so the replacement was not reprocessed through the lingo fetch/fallback path.
+    expect(a.dataset.mepLingo).to.be.undefined;
+    expect(a.dataset.originalHref).to.be.undefined;
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoRoc).to.be.undefined;
+    expect(frag.dataset.mepLingoFallback).to.be.undefined;
+  });
+
+  it('applies a MEP remove to a mep-lingo link keyed off originalHref', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    const a = document.querySelector('a[href="/fragments/mep-lingo-test#_mep-lingo"]');
+    const parent = a.parentElement;
+    const section = a.closest('.section');
+    await simulateDecorateLinks(a);
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.originalHref).to.exist;
+
+    // Key by the authored path on a different origin — only originalHref match resolves this.
+    const origPath = new URL(a.dataset.originalHref).pathname;
+    const fragKey = `https://main--federal--adobecom.aem.page${origPath}`;
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [fragKey]: {
+            action: 'remove',
+            fragment: fragKey,
+            selector: fragKey,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // Remove won: parent gone, no lingo fragment rendered.
+    expect(parent.isConnected).to.be.false;
+    expect(section.querySelector('a')).to.be.null;
+    expect(section.querySelector('.fragment')).to.be.null;
+  });
+
+  it('re-resolves a mep-lingo replacement regionally instead of clearing it', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    // A plain (non-lingo) fragment link, in a non-LCP section, targeted by a MEP replace
+    // whose TARGET is itself a mep-lingo link.
+    const section = document.createElement('div');
+    section.className = 'plain-replace-section section';
+    section.dataset.idx = '1';
+    section.innerHTML = '<div><div><a class="plain-frag" href="/test/blocks/fragment/mocks/fragments/frag-b">Plain</a></div></div>';
+    document.body.appendChild(section);
+    const a = section.querySelector('a.plain-frag');
+    const path = new URL(a.href).pathname;
+    updateConfig({
+      ...currentConfig,
+      locale: mepLingoLocale,
+      mep: {
+        ...currentConfig.mep,
+        fragments: {
+          [path]: {
+            action: 'replace',
+            fragment: '/fragments/mep-lingo-test#_mep-lingo',
+            selector: path,
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+
+    await getFragment(a);
+
+    // The replacement's OWN href drove a regional (ROC) resolution — not a plain,
+    // non-regional fetch — proving it was re-resolved rather than cleared.
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoRoc).to.exist;
+    section.remove();
   });
 
   it('loads ROC inline fragment', async () => {
