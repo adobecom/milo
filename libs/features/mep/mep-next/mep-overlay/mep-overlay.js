@@ -72,6 +72,10 @@ const CARD_DATA = {
   ],
 };
 
+const TAB_NAMES = ['Actions', 'Summary'];
+const ACTIONS_TAB_INDEX = String(TAB_NAMES.indexOf('Actions'));
+const SUMMARY_TAB_INDEX = String(TAB_NAMES.indexOf('Summary'));
+
 function svgIcon(key) {
   const el = domParser.parseFromString(svgs[key], 'image/svg+xml').documentElement;
   [el, ...el.querySelectorAll('*')].forEach((node) => {
@@ -390,7 +394,7 @@ function buildCardContent(card, pageId) {
   return createTag('div', {}, 'No content available');
 }
 
-function buildCard(card, pageId, defaultExpanded = false) {
+function buildCard(card, pageId, defaultExpanded = true) {
   const cardEl = createTag('div', { class: 'mep-card' });
   if (!card?.header) return cardEl;
 
@@ -440,16 +444,19 @@ function buildActionsContent(pageId) {
 }
 
 function buildTabsAndBody(pageId) {
-  const tabDefs = [
-    ['Actions', buildActionsContent(pageId)],
-    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId, true))],
-  ];
+  const tabContent = {
+    Actions: buildActionsContent(pageId),
+    Summary: CARD_DATA.summary.map(
+      ([header, data]) => buildCard({ header, getData: data }, pageId),
+    ),
+  };
+  const tabDefs = TAB_NAMES.map((name) => [name, tabContent[name]]);
 
   const tabsEl = createTag('div', { class: 'mep-tabs' });
   const bodyEl = createTag('div', { class: 'mep-body' });
 
   tabDefs.forEach(([name, content], index) => {
-    const isActive = index === 0;
+    const isActive = name === 'Actions';
     const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
     const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
     content.forEach((el) => contentEl.appendChild(el));
@@ -509,7 +516,7 @@ function checkAuthAndBuild(pageId) {
     authenticated = isAuthed;
 
     const drawerEl = document.querySelector('#mep-drawer');
-    const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+    const contentEl = drawerEl?.querySelector(`.mep-tab-content[data-tab="${ACTIONS_TAB_INDEX}"]`);
     if (!contentEl) return;
 
     if (!authenticated) {
@@ -610,7 +617,6 @@ function scheduleGnavOffsetUpdate() {
   });
 }
 
-const SUMMARY_TAB_INDEX = '1';
 const lastSummaryKeys = new Map();
 const summaryCallIds = new Map();
 

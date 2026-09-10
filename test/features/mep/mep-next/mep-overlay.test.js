@@ -751,9 +751,9 @@ describe('markExpanded: defaults with no localStorage entry', () => {
     expect(card.classList.contains('expanded')).to.be.false;
   });
 
-  it('action cards (e.g. Highlight) start collapsed by default', () => {
+  it('action cards (e.g. Highlight) start expanded by default', () => {
     const card = mainEl.querySelector('#mep-drawer [data-card-key="Highlight"]');
-    expect(card.classList.contains('expanded')).to.be.false;
+    expect(card.classList.contains('expanded')).to.be.true;
   });
 
   it('summary cards (e.g. Page) start expanded by default', () => {
