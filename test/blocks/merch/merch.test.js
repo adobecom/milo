@@ -1263,6 +1263,90 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
     });
 
+    [
+      { content: 'on', aup: true },
+      { content: 'off', query: 'on', aup: true },
+      { content: 'on', query: 'off', legacy: true },
+      { content: 'off', legacy: true },
+      { content: 'off', commercePreload: 'off' },
+      { content: 'on', commercePreload: 'off' },
+      { content: 'off', lateContent: 'on', aup: true },
+      { content: 'on', lateContent: 'off', legacy: true },
+      { content: 'on', missingSdk: true },
+      { content: 'on', failure: 'getOrchestratorContext', aup: true },
+      { content: 'on', failure: 'loadUIComponent', aup: true },
+      { content: 'on', modal: false },
+    ].forEach(({
+      content, query, commercePreload, lateContent, missingSdk, failure,
+      modal = true, aup = false, legacy = false,
+    }) => {
+      it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
+        content, query, commercePreload, lateContent, missingSdk, failure, modal,
+      })}`, async () => {
+        const previousUrl = window.location.href;
+        const previousDeferred = window.milo.deferredPromise;
+        const previousSdk = window.aupsdk;
+        const sdk = {
+          getOrchestratorContext: sinon.stub().resolves(),
+          loadUIComponent: sinon.stub().resolves(),
+        };
+        if (failure) sdk[failure].rejects(new Error('Preload failed'));
+        window.aupsdk = missingSdk ? undefined : sdk;
+        let resolveDeferred;
+        window.milo.deferredPromise = new Promise((resolve) => { resolveDeferred = resolve; });
+        const meta = createTag('meta', { name: 'aup-select', content });
+        document.head.append(meta);
+        const url = new URL(previousUrl);
+        if (query) url.searchParams.set('aup-select', query);
+        if (commercePreload) url.searchParams.set('commerce.preload', commercePreload);
+        window.history.replaceState(null, '', url);
+        const scripts = [];
+        const { append } = document.head;
+        const appendStub = sinon.stub(document.head, 'append').callsFake((node) => {
+          if (node.id === 'ucv3-preload-script') {
+            scripts.push(node);
+            node.dataset.loaded = 'true';
+          } else {
+            append.call(document.head, node);
+          }
+        });
+        let clock;
+        try {
+          const el = document.createElement('a');
+          el.isOpen3in1Modal = modal;
+          const action = await getModalAction(
+            [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }],
+            { modal: true },
+            el,
+          );
+          expect(action.handler).to.be.a('function');
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          resolveDeferred();
+          await Promise.resolve();
+          if (lateContent) meta.content = lateContent;
+          await clock.tickAsync(999);
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          await clock.tickAsync(1);
+          expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
+          expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
+          expect(scripts.length).to.equal(legacy ? 1 : 0);
+          if (legacy) expect(scripts[0].src).to.include('/store/iframe/preload.js?cli=creative');
+        } finally {
+          clock?.restore();
+          appendStub.restore();
+          meta.remove();
+          window.history.replaceState(null, '', previousUrl);
+          window.milo.deferredPromise = previousDeferred;
+          window.aupsdk = previousSdk;
+        }
+      });
+    });
+
     it('getModalAction: returns undefined if modal path is cancelled', async () => {
       setConfig({
         ...config,

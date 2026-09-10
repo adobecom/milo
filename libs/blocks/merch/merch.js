@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
@@ -494,6 +494,19 @@ export async function loadMasComponent(componentName) {
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
   return loadPromise;
+}
+
+async function preloadAupSelect() {
+  const sdk = window.aupsdk;
+  if (!sdk) return;
+  try {
+    await Promise.all([
+      sdk.getOrchestratorContext(),
+      sdk.loadUIComponent('commerce-select'),
+    ]);
+  } catch (error) {
+    log?.warn('AUP Select preload failed', error);
+  }
 }
 
 function getCommercePreloadUrl() {
@@ -1011,12 +1024,16 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
-    const baseUrl = getCommercePreloadUrl();
-    // The script can preload more, based on clientId, but for the ones in use
-    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
-    const client = 'creative';
     window.milo.deferredPromise.then(() => {
       setTimeout(() => {
+        if (isAupEnabled()) {
+          preloadAupSelect();
+          return;
+        }
+        const baseUrl = getCommercePreloadUrl();
+        // The script can preload more, based on clientId, but for the ones in use
+        // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+        const client = 'creative';
         loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
       }, 1000);
     });
