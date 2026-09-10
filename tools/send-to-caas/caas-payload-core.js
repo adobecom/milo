@@ -640,6 +640,7 @@ const checkUrl = (url, errorMsg) => {
 
 // Case-insensitive search through tag name, path, id and title for the searchStr
 const findTag = (tags, searchStr, ignore = []) => {
+  if (!tags) return undefined;
   const childTags = [];
   let matchingTag = Object.values(tags).find((tag) => {
     if (
@@ -677,11 +678,13 @@ const findTag = (tags, searchStr, ignore = []) => {
   return matchingTag;
 };
 
+// Memoized like fetchLingoSiteMapping above; keeps last-good tags on a failed re-fetch.
 const [getCaasTags, loadCaasTags] = (() => {
   let tags;
   return [
     () => tags,
     async () => {
+      if (tags) return;
       try {
         const resp = await fetch(CAAS_TAG_URL);
         if (resp.ok) {
@@ -711,7 +714,7 @@ const getTag = (tagName, errors) => {
   // inside the Events subtree only if no non-Events match is found, preserving the
   // historical "prefer non-Events" resolution.
   const tag = findTag(caasTags, tagName, ['caas:events'])
-    || findTag(caasTags.events.tags, tagName, []);
+    || findTag(caasTags?.events?.tags, tagName, []);
 
   if (!tag) {
     errors.push(tagName);
