@@ -97,7 +97,7 @@
     --pmg-base-height: 350px;
 
     background-color: var(--s2a-color-transparent-black-72);
-    backdrop-filter: blur(125px);
+    backdrop-filter: blur(250px);
   }
 
   &.non-mas {
