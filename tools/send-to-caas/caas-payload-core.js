@@ -392,9 +392,15 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
 // so pre-warming/resetting THAT module's promise has no effect on the leaf's copy —
 // this is the version the bulk publisher must call to actually affect
 // isLingoLangFirstPath/getBulkPublishLangAttr, which both run through the leaf.
+//
+// Fetches from milo.adobe.com (not www.adobe.com) to bypass CDN caching on reset.
 const initBulkPublisherLingoMapping = () => {
-  lingoSiteMappingPromise = undefined;
-  fetchLingoSiteMapping('bulkpublisher');
+  lingoSiteMappingPromise = fetch(
+    'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
+  ).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  });
 };
 
 // Copied verbatim from libs/blocks/caas/utils.js (isLingoLangFirstPath).
