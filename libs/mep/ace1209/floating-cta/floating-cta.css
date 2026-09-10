@@ -2,7 +2,7 @@
   &:has(.floating-cta .promo-cta) {
     bottom: 0;
     position: sticky;
-    z-index: 4;
+    z-index: 9 !important;
   }
 
   &.rounded-corners-bottom,
