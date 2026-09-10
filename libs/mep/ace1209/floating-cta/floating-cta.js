@@ -250,7 +250,7 @@ function createFloatingCtaAnimation(pill) {
   return { animateIn, animateOut };
 }
 
-function decorateAnimatedCta(cta, img, text, arrow) {
+function decorateAnimatedCta(cta, img, text, trailing) {
   const intro = createTag('span', { class: 'floating-cta__intro', 'aria-hidden': 'true' });
   const background = createTag('span', {
     class: 'floating-cta__background',
@@ -258,8 +258,8 @@ function decorateAnimatedCta(cta, img, text, arrow) {
   });
   const label = createTag('span', { class: 'floating-cta__label' });
   label.textContent = text;
-  const lockup = createTag('span', { class: 'floating-cta__lockup' }, [img, label]);
-  const actions = createTag('span', { class: 'floating-cta__actions' }, arrow);
+  const lockup = createTag('span', { class: 'floating-cta__lockup' }, [...(img ? [img] : []), label]);
+  const actions = createTag('span', { class: 'floating-cta__actions' }, trailing);
   const content = createTag('span', { class: 'floating-cta__content' }, [lockup, actions]);
   cta.replaceChildren(intro, background, content);
   return createFloatingCtaAnimation(cta);
@@ -409,31 +409,58 @@ export default async function init(el) {
   const contentDiv = el.querySelector('div > div');
   if (!contentDiv) return;
 
-  const [imgPara, linkPara] = contentDiv.querySelectorAll('p');
-  if (!imgPara || !linkPara) return;
+  const img = contentDiv.querySelector('img, svg');
+  const links = [...contentDiv.querySelectorAll('a')];
+  
+  const isButtonLink = (a) => a.classList.contains('con-button') || a.parentElement?.classList.contains('con-button');
+  const actionLink = !img ? (links.find(isButtonLink) ??  null ) : null;
+  const linkEl = links.find((a) => a !== actionLink) ?? null;
+  
+  const actionEl = actionLink ? (actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement) : null;
+  let labelText;
+  if(actionEl){
+    const labelSource = contentDiv.cloneNode(true);
+    labelSource.querySelectorAll('a').forEach((a) => a.remove());
+    labelText = labelSource.textContent.trim();
+  }else{
+    labelText = (linkEl ?? contentDiv).textContent.trim();
+  }
+  
+  if(!labelText && !actionLink) return;
+  if(img?.tagName === 'IMG'){
+    const relativeSrc = img.getAttribute('src');
+    if (relativeSrc?.startsWith('/')) {
+      img.src = getFederatedUrl(relativeSrc);
+    }
+  }
+  
 
-  const img = imgPara.querySelector('img');
-  if (!img) return;
-
-  const relativeSrc = img.getAttribute('src');
-  if (relativeSrc?.startsWith('/')) {
-    img.src = getFederatedUrl(relativeSrc);
+  if (actionLink?.isCheckoutLink || actionLink?.classList.contains('merch')) {
+    try{
+      await actionLink.onceSettled();
+    }catch (e) {
+      window.lana?.log?.(
+        `floating-cta: checkout button failed to settle: ${e?.message || e}`,
+        { tags: 'floating-cta', severity: 'error' },
+      );
+    }
   }
 
-  const linkEl = linkPara.querySelector('a');
-  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
-  const isMerchLink = linkEl?.classList.contains('merch') || linkEl?.isCheckoutLink;
+  const trailing = actionEl ?? createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
+  const isMerchLink = !actionEl && (linkEl?.classList.contains('merch') || linkEl?.isCheckoutLink);
   if (isMerchLink) {
     try {
+      const linkPara = linkEl.closest('p') ?? contentDiv;
       const checkoutLink = await waitForCheckoutLink(linkPara);
       await checkoutLink.onceSettled();
+      // checkoutLink.replaceChildren(...(img ? [img] : []), checkoutLink.textContent.trim(), trailing);
       const checkoutText = checkoutLink.textContent.trim();
       checkoutLink.classList.add('promo-cta');
       checkoutLink.classList.remove('con-button');
       checkoutLink.setAttribute('tabindex', '-1');
       checkoutLink.setAttribute('aria-hidden', 'true');
       el.replaceChildren(checkoutLink);
-      const animation = decorateAnimatedCta(checkoutLink, img, checkoutText, arrow);
+      const animation = decorateAnimatedCta(checkoutLink, img, checkoutText, trailing);
       applyCustomHide(el, checkoutLink, animation);
     } catch (e) {
       window.lana?.log?.(
@@ -444,12 +471,12 @@ export default async function init(el) {
     }
     return;
   }
-  const sourceText = (linkEl ? linkEl.textContent : linkPara.textContent).trim();
-  const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
+
+  const [ctaText, ariaLabel = ctaText] = labelText.split('|').map((s) => s.trim());
   const ctaHref = linkEl?.getAttribute('href') || '#';
 
-  const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel, tabindex: '-1' }, [img, ctaText, arrow]);
+  const cta = actionLink ? createTag('span', { class: 'promo-cta' }) : createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel, tabindex: '-1' });
   el.replaceChildren(cta);
-  const animation = decorateAnimatedCta(cta, img, ctaText, arrow);
+  const animation = decorateAnimatedCta(cta, img, ctaText, trailing);
   applyCustomHide(el, cta, animation);
 }
