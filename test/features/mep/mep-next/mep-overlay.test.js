@@ -46,7 +46,7 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake((url) => {
   }
   // isWithinFirewall()'s corp-only reachability check: reject by default so tests
   // exercise the intended Sidekick-auth path instead of always bypassing via firewall.
-  if (href.includes('awesome-sites.corp.adobe.com')) {
+  if ((url instanceof URL ? url.hostname : new URL(href).hostname) === 'mep-auth-check.awesome-sites.corp.adobe.com') {
     return Promise.reject(new Error('offline'));
   }
   // Lambda/API calls return 404 by default so getAdditionalManifests returns undefined
