@@ -37,7 +37,9 @@ const domParser = new DOMParser();
 const ALIGN_STORAGE_KEY = 'mep-align-left';
 
 function getStoredAlignLeft() {
-  return safeGetItem(ALIGN_STORAGE_KEY) === 'true';
+  const stored = safeGetItem(ALIGN_STORAGE_KEY);
+  // Left dock is the default; only an explicit 'false' opts back into the right dock.
+  return stored === null ? true : stored === 'true';
 }
 
 function setStoredAlignLeft(alignLeft) {
