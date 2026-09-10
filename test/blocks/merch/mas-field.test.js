@@ -575,8 +575,7 @@ describe('mas-field', () => {
     it('hoists a late block-level CTA (no em/strong ancestor) on mas:ready, no stray duplicate', async () => {
       // Regression: a CTA authored directly in a block-level cell (not wrapped in em/strong --
       // e.g. rich-content's cta-area, or an offer-hero action-area once decorateButtons has
-      // already stripped the strong) that resolves late must still be cleaned up. Without this,
-      // the raw fallback link is stranded next to the separately self-styled button.
+      // already stripped the strong) that resolves late must still be hoisted and styled.
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
       section.classList.add('section');
@@ -603,6 +602,40 @@ describe('mas-field', () => {
       expect(links.length, 'exactly one hoisted CTA, no stray duplicate').to.equal(1);
       expect(links[0].outerHTML).to.include('is="checkout-link"');
       expect(links[0].classList.contains('con-button')).to.be.true;
+    });
+
+    it('drops a stale fallback span on mas:ready when mas-field already rendered its own resolved CTA', async () => {
+      // Regression: mas-field can render its OWN resolved, styled CTA as a direct sibling
+      // of the stale fallback content it never cleaned up (a cached fragment racing the
+      // field's own render). The late listener must drop the stale span, not hoist it --
+      // hoisting the stale (unstyled) content would discard the working button and leave
+      // plain unstyled text in its place.
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('rich-content', 'media');
+      const ctaArea = document.createElement('div');
+      ctaArea.classList.add('cta-area');
+      ctaArea.innerHTML = '<mas-field field="ctas[0]">'
+        + '<aem-fragment fragment="frag-1" hidden></aem-fragment>'
+        + '<a is="checkout-link" data-wcs-osi="abc" class="con-button fill placeholder-resolved">Free trial</a>'
+        + '<span data-role="mas-field-content"><a data-wcs-osi="abc" data-checkout-workflow="UCv3">Free trial</a></span>'
+        + '</mas-field>';
+      block.append(ctaArea);
+      section.append(block);
+      document.body.append(section);
+
+      ctaArea.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      expect(ctaArea.querySelectorAll('[data-role="mas-field-content"]').length).to.equal(0);
+      const links = ctaArea.querySelectorAll('a[data-wcs-osi]');
+      expect(links.length, 'the already-resolved button survives, no duplicate').to.equal(1);
+      expect(links[0].classList.contains('con-button')).to.be.true;
+      expect(links[0].getAttribute('is')).to.equal('checkout-link');
     });
 
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {

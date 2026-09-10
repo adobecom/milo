@@ -1898,6 +1898,21 @@ function decorateInlineCtas(masField, content) {
 }
 
 /**
+ * mas-field can render its own resolved CTA as a direct sibling of the stale fallback
+ * content it didn't clean up (seen when a cached fragment resolves fast enough to race
+ * the field's own render). Hoisting the stale content in that case would throw away the
+ * working, already-styled button and leave the raw fallback link in its place. Drop the
+ * stale content instead; the real button already works.
+ */
+function dropStaleContentIfAlreadyResolved(masField, content) {
+  const resolvedSibling = [...masField.children]
+    .find((child) => child !== content && child.matches('a, button'));
+  if (!resolvedSibling) return false;
+  content.remove();
+  return true;
+}
+
+/**
  * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network,
  * or a cached fragment resolving before the component's own render finishes), too late for
  * decorateButtons. One document listener hoists + decorates it, no per-block wiring. Not
@@ -1913,8 +1928,9 @@ function watchMasFieldCtas() {
   document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
+    if (!content || dropStaleContentIfAlreadyResolved(mf, content)) return;
     // Same gate createInline uses: a single CTA anchor, not block-level content.
-    if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+    if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
@@ -1941,6 +1957,7 @@ async function createInlineField(el, options) {
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return masField;
+  if (dropStaleContentIfAlreadyResolved(masField, content)) return masField;
 
   // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
   // them. Applies to both CTA (<a>) and price (<span>) fields.
