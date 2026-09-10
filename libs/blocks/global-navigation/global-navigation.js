@@ -1155,19 +1155,24 @@ class Gnav {
         dialog.id = 'feds-manage-people-dialog';
         dialog.appendChild(element);
         document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
+        element.addEventListener('close', () => {
           closeCallback({ type: 'close' });
           dialog.close();
           dialog.remove();
           document.documentElement.classList.remove('disable-scroll');
+        }, { once: true });
+        const cancel = () => {
+          // The orchestrator settles on cancel; close releases its event listeners.
+          element.dispatchEvent(new Event('cancel'));
+          element.dispatchEvent(new Event('close'));
+        };
+        dialog.addEventListener('cancel', (e) => {
+          if (e.target !== dialog) return;
+          e.preventDefault();
+          cancel();
         });
         dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
-            closeCallback({ type: 'close' });
-            dialog.close();
-            dialog.remove();
-            document.documentElement.classList.remove('disable-scroll');
-          }
+          if (e.target === dialog) cancel();
         });
         document.documentElement.classList.add('disable-scroll');
         dialog.showModal();

@@ -493,6 +493,62 @@ describe('global navigation', () => {
       }
     });
 
+    it('settles and cleans up repeated workflows for every dialog close path', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        for (const method of ['escape', 'backdrop', 'workflow-cancel', 'workflow-success']) {
+          const element = document.createElement('div');
+          const callback = sinon.spy();
+          await showDialog(element, {}, callback);
+          const dialog = document.getElementById('feds-manage-people-dialog');
+          const cancel = sinon.spy();
+          const close = sinon.spy();
+          element.addEventListener('cancel', cancel);
+          element.addEventListener('close', close);
+          const outcome = new Promise((resolve) => {
+            element.addEventListener('cancel', () => resolve('cancel'), { once: true });
+            element.addEventListener('success', () => resolve('success'), { once: true });
+          });
+          expect(dialog.open).to.be.true;
+          expect(document.documentElement.classList.contains('disable-scroll')).to.be.true;
+          if (method === 'escape') {
+            dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+          } else if (method === 'backdrop') {
+            dialog.click();
+          } else {
+            element.dispatchEvent(new CustomEvent(method.replace('workflow-', ''), { bubbles: true }));
+            element.dispatchEvent(new CustomEvent('close', { bubbles: true }));
+          }
+          expect(await outcome).to.equal(method === 'workflow-success' ? 'success' : 'cancel');
+          expect(cancel.callCount).to.equal(method === 'workflow-success' ? 0 : 1);
+          expect(close.calledOnce).to.be.true;
+          expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+          expect(document.getElementById('feds-manage-people-dialog')).to.be.null;
+          expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
+          element.dispatchEvent(new Event('close'));
+          expect(callback.calledOnce).to.be.true;
+        }
+      } finally {
+        script.remove();
+        document.getElementById('feds-manage-people-dialog')?.remove();
+        document.documentElement.classList.remove('disable-scroll');
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
     it('keeps preloading for signed-in Universal Nav users without metadata', async () => {
       gnav.useUniversalNav = true;
       window.adobeIMS.isSignedInUser.returns(true);
