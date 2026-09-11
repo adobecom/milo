@@ -143,6 +143,10 @@
 }
 
 @media (pointer: coarse) {
+  .dialog-modal:has(.tour) > .fragment {
+    pointer-events: auto;
+  }
+
   .tour-grab-handle {
     display: block;
     position: absolute;
