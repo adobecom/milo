@@ -179,9 +179,11 @@ describe('preflight checks seo', () => {
       const hrefs = links.map((l) => l.href);
       expect(hrefs).to.include('https://example.com/ok');
       expect(hrefs.some((h) => h.startsWith('tel:'))).to.be.false;
-      expect(hrefs.some((h) => h.includes('mailto:'))).to.be.false;
-      expect(hrefs.some((h) => h.includes('news.adobe.com'))).to.be.false;
-      const hlx = links.find((l) => l.href.includes('hlx.page'));
+      expect(hrefs.some((h) => h.startsWith('mailto:'))).to.be.false;
+      // Compare the parsed hostname, not a URL substring (CodeQL: incomplete URL
+      // substring sanitization — a substring can match arbitrary hosts).
+      expect(links.some((l) => l.hostname === 'news.adobe.com')).to.be.false;
+      const hlx = links.find((l) => l.hostname.endsWith('hlx.page'));
       expect(hlx.liveHref).to.contain('hlx.live');
     });
 
