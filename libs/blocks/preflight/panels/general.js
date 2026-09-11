@@ -89,7 +89,7 @@ function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-async function getStatus(url) {
+export async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   if (!adminUrl) {
     return {
