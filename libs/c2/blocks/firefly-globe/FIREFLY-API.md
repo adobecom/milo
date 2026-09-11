@@ -53,11 +53,17 @@ Fetch it as-is (it is already a full URL) to get the next batch.
   "id":      "3048085a-e8a9-4946-9652-868a941e8f7a",   // UUID, used for video URL
   "urn":     "urn:aaid:sc:US:3048085a-...",             // used in firefly.adobe.com deep-link
   "alias":   "wehiE",
+  "aliases": [],                                         // additional aliases (usually empty)
+  "title":   "A lone runner's silhouette …",            // original prompt or editorial title
+  "type":    "application/vnd.adobe.firefly-generation-image+dcx",
+  "size":    1167303,                                    // bytes
+  "version": 0,
 
   // Timestamps
-  "created":   "2026-08-12T20:50:09.962Z",
-  "updated":   "2026-08-12T20:50:12.452Z",
-  "published": "2026-08-13T17:35:39.847Z",
+  "created":          "2026-08-12T20:50:09.962Z",
+  "updated":          "2026-08-12T20:50:12.452Z",
+  "published":        "2026-08-13T17:35:39.847Z",
+  "metadata_updated": "2026-08-12T20:50:12.897Z",
 
   // Image dimensions / rendition
   "_links": {
@@ -72,12 +78,17 @@ Fetch it as-is (it is already a full URL) to get the next batch.
   // Creator info
   "_embedded": {
     "owner": {
-      "id":           "nikolapanovic",
-      "display_name": "Crni Zec Studio",   // preferred; fall back through first+last, user_name
-      "first_name":   "Crni Zec",
-      "last_name":    "Studio",
-      "user_name":    "nikolapanovic",
-      "city": "Pozega", "country": "Serbia",
+      "id":               "nikolapanovic",
+      "display_name":     "Crni Zec Studio",   // preferred; fall back through first+last, user_name
+      "first_name":       "Crni Zec",
+      "last_name":        "Studio",
+      "user_name":        "nikolapanovic",
+      "city":             "Pozega",
+      "state":            "",
+      "country":          "Serbia",
+      "location":         "Pozega, Serbia",    // pre-formatted city+country string
+      "is_valid_profile": true,
+      "has_default_image": false,
       "_links": {
         // Multiple avatar sizes (50, 100, 115, 138, 230, 276 px square)
         "images": [
@@ -91,38 +102,116 @@ Fetch it as-is (it is already a full URL) to get the next batch.
 
   // Category
   "category": { "id": "text2Image", "name": "text2Image" },
+  "tags": [],  // editorial tags (usually empty)
 
-  // ML tags
-  "machine_tags": [ "modelVersionName:Gemini 3 (Nano Banana Pro)", "translated", "..." ],
+  // Model identification — four tags always present:
+  //   "modelId:<provider>"                    → "google" | "openai" | (others TBD)
+  //   "modelVersionName:<Human name>"         → e.g. "Gemini 3 (Nano Banana Pro)", "GPT Image 2"
+  //   "docVersion_<provider>:firefly:colligo:<codename>"  → internal version string
+  //   "translated"                            → prompts were machine-translated
+  //
+  // Confirmed providers as of 2026-09:
+  //   modelId:google   → modelVersionName:"Gemini 3 (Nano Banana Pro)"
+  //   modelId:openai   → modelVersionName:"GPT Image 2"
+  "machine_tags": [
+    "modelId:google",
+    "modelVersionName:Gemini 3 (Nano Banana Pro)",
+    "docVersion_google:firefly:colligo:nano-banana-pro",
+    "translated"
+  ],
 
-  // Firefly generation metadata
+  // Generation metadata
   "custom": {
-    "firefly#model": "{\"docVersion\":\"...\",\"module\":\"text2Image\"}",
+    // JSON string — docVersion mirrors the machine_tag; module is always "text2Image" here
+    "firefly#model": "{\"docVersion\":\"google:firefly:colligo:nano-banana-pro\",\"module\":\"text2Image\"}",
     "input": {
       // Aspect ratio used at generation time (string float)
       "firefly#inputModel": "{\"aspectRatio\":\"0.7466666666666667\"}",
 
       // Localized prompts — key is IETF locale (en-US, ja-JP, zh-Hans-CN, …)
+      // ~30 locales present
       "firefly#prompts": {
         "en-US": "A lone runner's silhouette …",
         "ja-JP": "…",
         "de-DE": "…"
-        // ~30 locales present
       },
 
       // Original un-translated prompt
       "firefly#originalPrompt": "A lone runner's silhouette …",
       "firefly#locale": "en-US"
+    },
+    "output": {
+      "firefly#outputModel": {}   // present but always empty in observed responses
     }
   },
 
   // Engagement stats
   "stats": {
-    "detail_count": 2212,
-    "custom_counts": { "like": 2, "toggle_like": 1 }
-  }
+    "detail_count":          2417,    // total views / engagements
+    "anonymous_like_count":  0,
+    "purchase_count":        0,
+    "original_count":        0,
+    "copy_count":            0,
+    "add_to_library_count":  0,
+    "website_count":         0,
+    "video_info_count":      0,       // non-zero for video assets
+    "video_stream_count":    0,
+    "video_embed_count":     0,
+    "comment_count":         0,
+    // custom_counts keys vary per asset; only keys with at least one event appear
+    "custom_counts": {
+      "like": 2, "toggle_like": 1,
+      "unliked": 1, "delete_like": 1, "dislike": 1, "unlike": 3,
+      "unheart": 1, "favorite": 1, "heart": 1, "liked": 1,
+      "remove_like": 1, "unfavorite": 1
+    }
+  },
+
+  // Viewer-relative state (always false for unauthenticated requests)
+  "purchased": false,
+  "liked":     false,
+  "is_owner":  false,
+  "activities": []
 }
 ```
+
+---
+
+## All fields — quick reference
+
+| Field | Notes |
+|---|---|
+| `id` | UUID — used to build video stream URL |
+| `urn` | Used for the `firefly.adobe.com/open?id=` deep-link |
+| `alias` / `aliases` | Short alphanumeric IDs |
+| `title` | Original prompt or editorial title |
+| `type` | MIME type string (always `application/vnd.adobe.firefly-generation-image+dcx` for images) |
+| `size` | File size in bytes |
+| `version` | Version number (0) |
+| `created` / `updated` / `published` / `metadata_updated` | ISO timestamps |
+| `machine_tags` | Array of strings — see "Model identification" below |
+| `custom.firefly#model` | JSON string — `docVersion` and `module` |
+| `custom.input.firefly#prompts` | Map of ~30 IETF locales → prompt string |
+| `custom.input.firefly#originalPrompt` | Original un-translated prompt |
+| `custom.input.firefly#inputModel` | JSON string — `aspectRatio` (string float) |
+| `custom.input.firefly#locale` | Locale the asset was generated in |
+| `custom.output.firefly#outputModel` | Present but always `{}` in observed responses |
+| `_links.rendition.href` | Templated image URL (`{format}`, `{dimension}`, `{size}`) |
+| `_links.rendition.max_width` / `max_height` | Native pixel dimensions → aspect ratio |
+| `_embedded.owner.display_name` / `first_name` / `last_name` / `user_name` | Creator name fields |
+| `_embedded.owner.city` / `state` / `country` / `location` | Creator location; `location` is pre-formatted |
+| `_embedded.owner.is_valid_profile` / `has_default_image` | Profile flags |
+| `_embedded.owner._links.images` | Avatar URLs at multiple sizes (50–276 px square) |
+| `category.id` | e.g. `text2Image`, `VideoGeneration` |
+| `tags` | Editorial tags array (usually empty) |
+| `stats.detail_count` | Total views / engagements |
+| `stats.anonymous_like_count` | Anonymous likes |
+| `stats.purchase_count` / `copy_count` / `add_to_library_count` | Other engagement counters |
+| `stats.video_*_count` | Non-zero for video category assets |
+| `stats.comment_count` | Comment count |
+| `stats.custom_counts` | Map of interaction event names → count; keys vary per asset |
+| `purchased` / `liked` / `is_owner` | Viewer-relative booleans (always `false` for unauthenticated requests) |
+| `activities` | Array (always empty in observed responses) |
 
 ---
 
@@ -183,6 +272,29 @@ const avatar = owner._links.images
 // videos
 `https://firefly.adobe.com/open?assetOrigin=community&assetType=VideoGeneration&id=${asset.urn}`
 ```
+
+### Model provider + display name
+
+The community gallery serves images from multiple AI providers. Parse from `machine_tags`:
+
+```js
+function parseModel(asset) {
+  const tags = asset.machine_tags || [];
+  const modelIdTag = tags.find((t) => t.startsWith('modelId:'));
+  const modelNameTag = tags.find((t) => t.startsWith('modelVersionName:'));
+  return {
+    provider: modelIdTag?.slice('modelId:'.length) || '',          // "google" | "openai" | …
+    name: modelNameTag?.slice('modelVersionName:'.length) || '',   // "Gemini 3 (Nano Banana Pro)"
+  };
+}
+```
+
+Confirmed providers as of 2026-09 — no icon URLs are in the API; map them yourself:
+
+| `modelId` | `modelVersionName` | Icon |
+|---|---|---|
+| `google` | Gemini 3 (Nano Banana Pro) | Google logo |
+| `openai` | GPT Image 2 | OpenAI logo |
 
 ### Video stream URL (for video assets)
 
