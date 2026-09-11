@@ -281,7 +281,7 @@ function initButton($block, $sections, index, opts) {
         await Promise.all([...$sections].map(async ($section) => {
           if (matchingSections.includes($section)) {
             await revealSection($section);
-            $section.style.display = 'block';
+            $section.style.removeProperty('display');
           } else {
             $section.style.display = 'none';
           }
