@@ -17,6 +17,9 @@ if (!customElements.get('mas-field')) {
         const field = this.getAttribute('field');
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a><a href="https://main--milo--adobecom.aem.live/test/fragments/modal#cardmodal">Open modal</a>';
+        } else if (field === 'description-inline') {
+          // Copy with an inline link and no block wrapper — must stay a description (MWPW-207084).
+          content.innerHTML = 'Save 40% off your first year. <a href="https://www.adobe.com/terms">Terms apply</a>';
         } else if (field === 'ctas') {
           content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong><em><a href="https://main--milo--adobecom.aem.page/some/test/page">Go</a></em>';
         } else if (field === 'ctas-checkout') {
@@ -38,7 +41,9 @@ if (!customElements.get('mas-field')) {
   });
 }
 
-const { initMasField: init, holdCtaUntilPrice } = await import('../../../libs/blocks/merch/merch.js');
+const merchModule = await import('../../../libs/blocks/merch/merch.js');
+const { initMasField: init, holdCtaUntilPrice } = merchModule;
+const merch = merchModule.default;
 
 const originalFetch = window.fetch;
 const { adobeIMS } = window;
@@ -159,6 +164,22 @@ describe('mas-field', () => {
       const modalLink = document.querySelector('mas-field a[href="#cardmodal"]');
       expect(modalLink.classList.contains('modal')).to.be.true;
       expect(modalLink.getAttribute('data-modal-path')).to.equal('/test/fragments/modal');
+    });
+
+    it('keeps description copy and its discount percentage when a link is authored inline (MWPW-207084)', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=inline-link-1&field=description-inline';
+      a.textContent = '[[inline-link-test:description]]';
+      document.body.append(a);
+      await init(a);
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      const content = masField.querySelector('[data-role="mas-field-content"]');
+      expect(content).to.exist;
+      // The copy (carrying the discount percentage) survives instead of collapsing to the link.
+      expect(content.textContent).to.contain('Save 40% off your first year.');
+      expect(content.querySelector('a[href="https://www.adobe.com/terms"]')).to.exist;
+      expect(masField.querySelector('.con-button')).to.not.exist;
     });
 
     it('returns early for inline fragment when fragment is missing', async () => {
@@ -606,6 +627,46 @@ describe('mas-field', () => {
       expect(blue).to.exist;
       expect(outline.classList.contains('button-l')).to.be.true;
       expect(blue.classList.contains('button-l')).to.be.true;
+    });
+
+    it('collapses a field link split across sibling anchors (doc-authored bold label) to the canonical, strong-wrapped anchor', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const p = document.createElement('p');
+      const href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=split-anchor-1&field=ctas[key1]';
+
+      // Doc-authored content can't nest a bolded run inside a single <a>, so a link whose
+      // label has "Buy now" bolded round-trips as 3 sibling anchors sharing the same href.
+      const before = document.createElement('a');
+      before.className = 'merch link-block';
+      before.href = href;
+      before.textContent = 'ctas[';
+
+      const strong = document.createElement('strong');
+      const bold = document.createElement('a');
+      bold.className = 'merch link-block';
+      bold.href = href;
+      bold.textContent = 'Buy now';
+      strong.append(bold);
+
+      const after = document.createElement('a');
+      after.className = 'merch link-block';
+      after.href = href;
+      after.textContent = ']';
+
+      p.append(before, strong, after);
+      document.body.append(p);
+
+      // decorateAutoBlock tagged all three independently; each would otherwise reach
+      // initMasField on its own and duplicate the CTA.
+      await merch(before);
+      await merch(bold);
+      await merch(after);
+
+      expect(document.querySelectorAll('mas-field').length).to.equal(1);
+      expect(before.isConnected).to.be.false;
+      expect(after.isConnected).to.be.false;
+      // The strong wrapper - and the button style it implies - survives on the CTA that's kept.
+      expect(document.querySelector('mas-field').closest('strong')).to.equal(strong);
     });
 
     it('passes mask and pzn to aem-fragment in createInline', async () => {

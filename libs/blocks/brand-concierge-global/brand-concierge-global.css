@@ -625,11 +625,10 @@
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: auto;
-    top: calc(20px + var(--bc-side-overlay-top));
-    margin: 0 0 0 auto;
-    bottom: 20px;
-    right: 20px;
+    height: calc(100vh - 40px - var(--bc-side-overlay-top));
+    margin: 20px 20px 20px auto;
+    bottom: 0;
+    right: 0;
     width: 448px;
     z-index: 5;
   }
