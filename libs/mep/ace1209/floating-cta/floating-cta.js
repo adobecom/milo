@@ -323,7 +323,7 @@ function applyCustomHide(el, ctaEl, animation) {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
     const precedingCandidates = allCandidates.filter((candidate) =>
-      // eslint-disable-next-line no-bitwise 
+      // eslint-disable-next-line no-bitwise
       candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING);
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
