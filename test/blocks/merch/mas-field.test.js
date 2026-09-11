@@ -63,6 +63,9 @@ describe('mas-field', () => {
     before(async () => {
       await mockIms();
       sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('.plain.html')) {
+          return new Response('<div>Modal content</div>', { status: 200 });
+        }
         let fileName = '';
         if (url.includes('/mas/io/fragment')) {
           fileName = 'fragment.json';
@@ -724,7 +727,7 @@ describe('mas-field', () => {
       it('reveals when the promotion marker is on a resolved child, not the mas-field', async () => {
         const container = document.createElement('div');
         container.classList.add('promo-placeholder');
-        const mf = buildField('ctas', { contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>', });
+        const mf = buildField('ctas', { contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>' });
         container.append(mf);
         document.body.append(container);
 
@@ -783,6 +786,99 @@ describe('mas-field', () => {
         await new Promise((resolve) => { setTimeout(resolve, 0); });
 
         expect(container.classList.contains('promo-resolved')).to.be.false;
+      });
+    });
+
+    describe('promo modal', () => {
+      // watchPromoModals is registered on first initMasField call (module-level; prior tests
+      // did that). When a promo mas-field resolves to a sentinel link labelled "modal", it
+      // consumes the link and opens its href as a modal.
+      before(() => setConfig({ codeRoot: '/libs' }));
+
+      afterEach(() => {
+        document.querySelectorAll('.dialog-modal, .modal-curtain').forEach((el) => el.remove());
+        document.body.classList.remove('disable-scroll');
+      });
+
+      const buildModalField = (href, { promo = 'proj', text = 'modal' } = {}) => {
+        const mf = document.createElement('mas-field');
+        mf.setAttribute('field', 'shortDescription');
+        if (promo) mf.setAttribute('data-promotion-project', promo);
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = text;
+        mf.append(a);
+        document.body.append(mf);
+        return { mf, a };
+      };
+
+      const dispatchReady = (mf) => mf.dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+
+      const waitFor = async (fn, ms = 2000) => {
+        const start = Date.now();
+        let value = fn();
+        while (!value && Date.now() - start < ms) {
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => { setTimeout(resolve, 10); });
+          value = fn();
+        }
+        return value;
+      };
+
+      it('opens the modal and consumes the link when the fragment resolves with content', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal');
+        dispatchReady(mf);
+
+        const opened = await waitFor(() => document.querySelector('.dialog-modal[id="promo-modal"]'));
+        expect(opened, 'modal dialog opened').to.exist;
+        expect(a.isConnected, 'sentinel link removed').to.be.false;
+      });
+
+      it('processes the modal: id from the path, fragment content, close button and curtain', async () => {
+        const { mf } = buildModalField('/drafts/promo/offer-modal');
+        dispatchReady(mf);
+
+        const dialog = await waitFor(() => document.querySelector('.dialog-modal[id="offer-modal"]'));
+        expect(dialog, 'dialog created with id from last path segment').to.exist;
+        expect(dialog.getAttribute('role')).to.equal('dialog');
+        expect(dialog.getAttribute('aria-modal')).to.equal('true');
+        // getPathModal fetched /drafts/promo/offer-modal.plain.html and inlined its content.
+        expect(dialog.querySelector('.fragment'), 'fragment content inlined').to.exist;
+        expect(dialog.textContent).to.include('Modal content');
+        expect(dialog.querySelector('button.dialog-close'), 'close button rendered').to.exist;
+        expect(document.querySelector('.modal-curtain'), 'curtain shown').to.exist;
+        expect(document.body.classList.contains('disable-scroll')).to.be.true;
+      });
+
+      it('opens a modal only once when mas:ready fires repeatedly for the same field', async () => {
+        const { mf } = buildModalField('/drafts/promo/dupe-modal');
+        dispatchReady(mf);
+        await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
+        // A second resolution (e.g. mas re-render) must not stack a second dialog.
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(document.querySelectorAll('.dialog-modal[id="dupe-modal"]').length).to.equal(1);
+      });
+
+      it('ignores a non-promo mas-field (link stays, no modal)', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal', { promo: null });
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(a.isConnected, 'link untouched').to.be.true;
+        expect(document.querySelector('.dialog-modal')).to.not.exist;
+      });
+
+      it('ignores a promo link that is not labelled "modal"', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal', { text: 'Learn more' });
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(a.isConnected, 'link untouched').to.be.true;
+        expect(document.querySelector('.dialog-modal')).to.not.exist;
       });
     });
   });
