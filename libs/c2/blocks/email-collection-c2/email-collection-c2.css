@@ -285,7 +285,7 @@
   }
 }
 
-@media (width >= 700px) {
+@media (width >= 768px) {
   .email-collection-c2 .foreground {
     padding: var(--form-padding);
     padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
@@ -479,7 +479,7 @@
   margin: 0;
 }
 
-@media (width >= 700px) {
+@media (width >= 768px) {
   .email-collection-c2.mailing-list .foreground {
     padding: var(--s2a-spacing-xs) var(--s2a-spacing-2xl) var(--s2a-spacing-xs) var(--s2a-spacing-xs);
     gap: var(--s2a-spacing-2xl);
