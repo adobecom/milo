@@ -9,8 +9,11 @@ const easeInOutCubic = (value) => (
   value < 0.5 ? 4 * value * value * value : 1 - ((-2 * value + 2) ** 3) / 2
 );
 
-const spring = (value, stiffness = 100, damping = 20) => ({ 
-  value, target: value, velocity: 0, stiffness, damping });
+const spring = (value, stiffness = 100, damping = 20) => (
+  {value,
+  target: value,
+  velocity: 0,
+  stiffness, damping });
 
 function setSpring(item, value) {
   item.value = value;
