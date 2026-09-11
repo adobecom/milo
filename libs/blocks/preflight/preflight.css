@@ -4,6 +4,7 @@
  * page-injected overlays (which live outside #preflight) resolve them.
  */
 
+
 #preflight .fragment,
 #preflight .section,
 .preflight {
@@ -33,6 +34,7 @@
   --preflight-warning: var(--s2a-color-orange-700);
   --preflight-error: var(--s2a-color-red-900);
   --preflight-focus: var(--s2a-color-focus-ring-default);
+
   /* Avoid coupling to C1 --body-font-family; use C2 primitive directly. */
   --preflight-font: var(--s2a-font-family-adobe-clean, adobe-clean, "Trebuchet MS", sans-serif);
 
@@ -257,7 +259,7 @@ p.preflight-content-heading-edit {
 
 .preflight-group-expand {
   height: 18px;
-  -webkit-mask: url('./img/expand.svg') no-repeat 50% / 24px;
+  mask: url('./img/expand.svg') no-repeat 50% / 24px;
   mask: url('./img/expand.svg') no-repeat 50% / 24px;
   background-color: var(--preflight-fg-subtle);
   transition: transform .2s ease-in-out;
@@ -303,7 +305,7 @@ p.preflight-content-heading-edit {
 
 .preflight-group-row.preflight-group-detail::before {
   content: '';
-  -webkit-mask: url('./img/empty.svg') no-repeat 50% / 32px;
+  mask: url('./img/empty.svg') no-repeat 50% / 32px;
   mask: url('./img/empty.svg') no-repeat 50% / 32px;
   background-color: var(--s2a-color-gray-300);
   position: absolute;
@@ -315,13 +317,13 @@ p.preflight-content-heading-edit {
 
 .preflight-group-row.preflight-group-detail.is-checked::before,
 .preflight-group-row.preflight-group-detail.is-checked.not-found::before {
-  -webkit-mask-image: url('./img/check.svg');
+  mask-image: url('./img/check.svg');
   mask-image: url('./img/check.svg');
   background-color: var(--preflight-success);
 }
 
 .preflight-group-row.preflight-group-detail.is-fetching::before {
-  -webkit-mask: none;
+  mask: none;
   mask: none;
   background: none;
   border: 3px solid var(--s2a-color-blue-200);
@@ -355,7 +357,7 @@ a.preflight-edit.da-icon {
 }
 
 .preflight-group-row.preflight-group-detail.not-found::before {
-  -webkit-mask-image: url('./img/red-error.svg');
+  mask-image: url('./img/red-error.svg');
   mask-image: url('./img/red-error.svg');
   background-color: var(--preflight-error);
 }
@@ -578,7 +580,7 @@ span.preflight-time {
 
 @keyframes spin {
   100% {
-    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
     transform: rotate(360deg);
   }
 }
@@ -1414,7 +1416,7 @@ img:hover ~ .asset-meta,
 /* Toggle Arrow */
 .violation-expand {
   height: 18px;
-  -webkit-mask: url('./img/expand.svg') no-repeat 50% / 24px;
+  mask: url('./img/expand.svg') no-repeat 50% / 24px;
   mask: url('./img/expand.svg') no-repeat 50% / 24px;
   background-color: var(--preflight-fg-subtle);
   transition: transform 0.2s ease-in-out;
@@ -1818,6 +1820,7 @@ img:hover ~ .asset-meta,
   pointer-events: none;
   line-height: 2.5;
 }
+
 
 .dialog-modal#preflight button.dialog-close svg {
   display: block;
