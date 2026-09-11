@@ -441,8 +441,8 @@ export default async function init(el) {
   const isButtonLink = (a) => a.classList.contains('con-button') || a.parentElement?.classList.contains('con-button');
   const actionLink = !img ? (links.find(isButtonLink) ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
-
-  const actionEl = actionLink ? (actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement) : null;
+  const actionConBtn = actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement;
+  const actionEl = actionLink ? actionConBtn : null;
   let labelText;
   if (actionEl) {
     const labelSource = contentDiv.cloneNode(true);
