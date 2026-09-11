@@ -531,3 +531,8 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* Rejoin parser-split nested paragraphs into one line. */
+.router-marquee mas-field > [data-role="mas-field-content"] p {
+  display: inline;
+}
