@@ -20,11 +20,14 @@ export const retriesPending = (queue) => queue.some(
 // succeeded via a 503 retry (tracked separately in the queue) would still
 // show its original 503 and be skipped by collectSuccessfulPaths unless its
 // status is folded back in here first.
-export const mergeRetriedResources = (resources, queue) => resources.map((resource) => {
-  const resourceKey = resource.webPath || resource.path;
-  const retried = queue.find((item) => (item.webPath || item.path) === resourceKey);
-  return retried ? { ...resource, status: retried.status } : resource;
-});
+export const mergeRetriedResources = (resources, queue) => {
+  if (!Array.isArray(resources)) return [];
+  return resources.map((resource) => {
+    const resourceKey = resource.webPath || resource.path;
+    const retried = queue.find((item) => (item.webPath || item.path) === resourceKey);
+    return retried ? { ...resource, status: retried.status } : resource;
+  });
+};
 
 class JobProcess extends LitElement {
   static get properties() {

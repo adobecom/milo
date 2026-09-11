@@ -57,4 +57,9 @@ describe('job-process: mergeRetriedResources', () => {
       { path: '/b', status: 503 },
     ]);
   });
+
+  it('returns an empty array instead of throwing when jobStatus.data.resources is not an array', () => {
+    expect(mergeRetriedResources(undefined, [])).to.deep.equal([]);
+    expect(mergeRetriedResources(null, [])).to.deep.equal([]);
+  });
 });

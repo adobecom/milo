@@ -51,9 +51,11 @@ const DEFAULT_TARGETS = {
   ],
 };
 
-// URL-pattern matching mirrors libs/tools/utils/publish.js: pattern '/foo/**'
-// matches any path under /foo/, including /foo itself; otherwise an exact
-// match is required.
+// Pattern '/foo/**' matches '/foo' itself and any path under '/foo/'; otherwise
+// an exact match is required. Deliberately stricter than libs/tools/utils/publish.js's
+// '**' matcher, which does an unanchored substring check (`webPath.includes(...)`)
+// and would also match e.g. '/other/foo-launch' against '/foo/**' — too loose for
+// auto-publish routing rules, so this does not mirror that matcher.
 export const matchesUrl = (pattern, path) => {
   if (typeof pattern !== 'string' || typeof path !== 'string') return false;
   if (pattern.endsWith('**')) {
