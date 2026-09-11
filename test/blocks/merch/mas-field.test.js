@@ -17,6 +17,9 @@ if (!customElements.get('mas-field')) {
         const field = this.getAttribute('field');
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a><a href="https://main--milo--adobecom.aem.live/test/fragments/modal#cardmodal">Open modal</a>';
+        } else if (field === 'description-inline') {
+          // Copy with an inline link and no block wrapper — must stay a description (MWPW-207084).
+          content.innerHTML = 'Save 40% off your first year. <a href="https://www.adobe.com/terms">Terms apply</a>';
         } else if (field === 'ctas') {
           content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong><em><a href="https://main--milo--adobecom.aem.page/some/test/page">Go</a></em>';
         } else if (field === 'ctas-checkout') {
@@ -161,6 +164,22 @@ describe('mas-field', () => {
       const modalLink = document.querySelector('mas-field a[href="#cardmodal"]');
       expect(modalLink.classList.contains('modal')).to.be.true;
       expect(modalLink.getAttribute('data-modal-path')).to.equal('/test/fragments/modal');
+    });
+
+    it('keeps description copy and its discount percentage when a link is authored inline (MWPW-207084)', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=inline-link-1&field=description-inline';
+      a.textContent = '[[inline-link-test:description]]';
+      document.body.append(a);
+      await init(a);
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      const content = masField.querySelector('[data-role="mas-field-content"]');
+      expect(content).to.exist;
+      // The copy (carrying the discount percentage) survives instead of collapsing to the link.
+      expect(content.textContent).to.contain('Save 40% off your first year.');
+      expect(content.querySelector('a[href="https://www.adobe.com/terms"]')).to.exist;
+      expect(masField.querySelector('.con-button')).to.not.exist;
     });
 
     it('returns early for inline fragment when fragment is missing', async () => {
