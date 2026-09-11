@@ -23,7 +23,12 @@ function syncTrackMetrics(track) {
   const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
   const setWidth = firstSet.offsetWidth;
   const containerWidth = track.parentElement?.clientWidth || 0;
-  track.classList.toggle('is-static', setWidth + 2 * gap <= containerWidth);
+  const isStatic = setWidth + 2 * gap <= containerWidth;
+  track.classList.toggle('is-static', isStatic);
+  if (!isStatic) {
+    const drift = Math.max(setWidth - containerWidth, 240);
+    track.style.setProperty('--logo-ticker-drift-distance', `${drift}px`);
+  }
 }
 
 export default function init(el) {
