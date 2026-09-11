@@ -5,7 +5,7 @@ const SET_COUNT = 2;
 function getNavHeight() {
   const style = getComputedStyle(document.documentElement);
   const nav = parseFloat(style.getPropertyValue('--gnav-height-nav')) || 72;
-  const crumbs = parseFloat(style.getPropertyValue('--feds-breadcrumbs-height')) || 0;
+  const crumbs = parseFloat(style.getPropertyValue('--feds-breadcrumbs-height')) || 52;
   return nav + crumbs;
 }
 
