@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../../libs/deps/htm-preact.js';
-import General, { runGeneralChecks } from '../../../../libs/blocks/preflight/panels/general.js';
+import General, { runGeneralChecks, getStatus } from '../../../../libs/blocks/preflight/panels/general.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 
 const waitFor = async (fn, tries = 80) => {
@@ -81,6 +81,91 @@ describe('preflight panels general', () => {
       expect(headings).to.include('Content');
       const itemTitles = [...container.querySelectorAll('.preflight-item-title')].map((p) => p.textContent);
       expect(itemTitles).to.include('Navigation');
+    });
+
+    it('selects all items and exposes the Preview action', async () => {
+      render(html`<${General} />`, container);
+      await waitFor(() => container.querySelector('#select-action button'));
+      container.querySelector('#select-action button').click();
+      await waitFor(() => container.querySelector('#preview-action'));
+      container.querySelector('#preview-action button').click();
+      // handleAction fires a POST for the checked page item.
+      await waitFor(() => window.fetch.getCalls().some((c) => c.args[1]?.method === 'POST'));
+      expect(window.fetch.getCalls().some((c) => c.args[1]?.method === 'POST')).to.be.true;
+    });
+
+    it('collapses a content group when its heading is clicked', async () => {
+      render(html`<${General} />`, container);
+      await waitFor(() => container.querySelector('.preflight-group-heading'));
+      const heading = container.querySelector('.preflight-group-heading');
+      const group = heading.closest('.preflight-content-group');
+      const wasClosed = group.classList.contains('is-closed');
+      heading.click();
+      await waitFor(() => group.classList.contains('is-closed') !== wasClosed);
+      expect(group.classList.contains('is-closed')).to.equal(!wasClosed);
+    });
+  });
+
+  describe('getStatus', () => {
+    afterEach(() => sinon.restore());
+
+    const stubAdmin = (statusJson, ok = true) => {
+      sinon.stub(window, 'fetch').callsFake((url) => {
+        if (String(url).includes('publish-permissions-config')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+        }
+        return Promise.resolve({ ok, json: () => Promise.resolve(statusJson) });
+      });
+    };
+
+    it('returns Non AEM EDS Content for non-edge-delivery hosts', async () => {
+      const res = await getStatus(new URL('https://example.com/some/page'));
+      expect(res.preview).to.equal('Non AEM EDS Content');
+      expect(res.live).to.equal('Non AEM EDS Content');
+      expect(res.edit).to.be.null;
+    });
+
+    it('maps preview/live/edit from the admin status response', async () => {
+      stubAdmin({
+        preview: { lastModified: '2024-01-01' },
+        live: { lastModified: '2024-02-01' },
+        edit: { url: 'https://sharepoint/edit' },
+      });
+      const res = await getStatus(new URL('https://main--milo--adobecom.aem.page/foo'));
+      expect(res.preview).to.equal('2024-01-01');
+      expect(res.live).to.equal('2024-02-01');
+      expect(res.edit).to.equal('https://sharepoint/edit');
+      expect(res.publish).to.have.property('canPublish');
+    });
+
+    it('derives a da.live edit link from the source location', async () => {
+      stubAdmin({
+        preview: { lastModified: '2024-01-01', sourceLocation: 'markup:https://content.da.live/org/repo/foo' },
+        live: {},
+      });
+      const res = await getStatus(new URL('https://main--milo--adobecom.aem.page/foo'));
+      expect(res.edit).to.equal('https://da.live/edit#/org/repo/foo');
+      expect(res.live).to.equal('Never');
+    });
+
+    it('returns an empty object when the admin call is not ok', async () => {
+      stubAdmin({}, false);
+      const res = await getStatus(new URL('https://main--milo--adobecom.aem.page/foo'));
+      expect(res).to.deep.equal({});
+    });
+
+    it('resolves cross-repo /federal/ paths against the federal repo', async () => {
+      const captured = [];
+      sinon.stub(window, 'fetch').callsFake((url) => {
+        captured.push(String(url));
+        if (String(url).includes('publish-permissions-config')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+        }
+        const body = { preview: {}, live: {} };
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
+      });
+      await getStatus(new URL('https://main--milo--adobecom.aem.page/federal/x'));
+      expect(captured.some((u) => u.includes('/adobecom/federal/main/federal/x'))).to.be.true;
     });
   });
 });
