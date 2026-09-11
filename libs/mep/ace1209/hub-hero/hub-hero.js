@@ -102,9 +102,8 @@ const scrollHubHeroTo = (el, progress) => {
   });
 };
 
-// touch devices can't hover, so the assembled row scrolls natively instead of the hover-
-// triggered stick-left/stick-right shift. Reversing the scroll-driven assembly animation looks
-// broken on touch, so it's frozen permanently once done — it only ever plays once, going down.
+// touch devices can't hover, so the row scrolls natively instead of stick-left/stick-right;
+// the assembly animation freezes permanently once done since reversing it looks broken on touch.
 const CAROUSEL_TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
 
 const getHubHeroProgress = (hubHero) => {
@@ -145,35 +144,17 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
-/*
- * position:sticky on .hub-hero-header visibly jitters up/down in Safari, likely from its own
- * scroll-driven fade animation (hubHeroHeaderFade) and the sticky offset fighting each other
- * frame-to-frame — see the .hub-hero-header comment in hub-hero.css. This replicates the same
- * "stick to the viewport top, then release once .hub-hero scrolls past" behavior via
- * position:fixed toggled from here instead, sidestepping position:sticky entirely.
- * --hub-hero-header-height is read by hub-hero.css to stop the grid jumping up into the
- * header's flow space once it's fixed and out of flow.
- */
+// Replicates position:sticky via position:fixed toggling (sticky jitters in Safari here).
+// Skipped for Firefox/reduced-motion, which get a static header via CSS instead.
 const initHeaderPin = (hubHero, header) => {
-  /*
-   * Firefox (and any browser without animation-timeline:view() support) and prefers-reduced-
-   * motion both get a plain, fully static header via CSS (position:relative, animation:none —
-   * see the "Firefox / no scroll-driven animation support fallback" @supports block and the
-   * prefers-reduced-motion block in hub-hero.css) specifically so Firefox behaves like reduced
-   * motion is on there. .pinned's position:fixed has higher specificity than that fallback's
-   * position:relative, so pinning unconditionally would silently override it and re-introduce
-   * the animated pin/release behavior those paths are meant to opt out of — bail out entirely
-   * instead, matching the exact same condition the CSS fallback uses.
-   */
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
   if (reducedMotion) return;
 
   const pinController = new AbortController();
 
-  // ResizeObserver (not a one-off measurement) because getBoundingClientRect() right after
-  // append() can read 0 before the browser's first real layout pass, and this also naturally
-  // keeps --hub-hero-header-height correct through later reflows (e.g. web fonts loading)
+  // ResizeObserver, not a one-off measurement — getBoundingClientRect() right after append()
+  // can read 0 before the first real layout pass.
   const headerResizeObserver = new ResizeObserver(() => {
     hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
   });
@@ -304,10 +285,8 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
 
   decorateBlockText(left);
 
-  // this behaves like an interactive card, not an actual carousel widget, so the accessible
-  // name/role must never call it out as one (no "carousel"/"slide" role or label) — labelled by
-  // its own visible eyebrow/heading text instead, same on every viewport (it never becomes a
-  // real carousel on mobile either)
+  // this is a card, not a carousel widget — no carousel/slide role or label, just its own
+  // visible eyebrow/heading text, same on every viewport.
   const titleId = `hub-hero-slide-${index + 1}-title`;
   const descId = `hub-hero-slide-${index + 1}-desc`;
   if (eyebrow) eyebrow.id = titleId;
