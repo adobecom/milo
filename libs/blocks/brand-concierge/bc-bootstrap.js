@@ -1,6 +1,6 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, getMetadata, loadScript } from '../../utils/utils.js';
-import { getBetaLabel, waitForCondition, expandIcon, setCssGnavHeight } from './bc-utils.js';
+import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -17,6 +17,34 @@ const susiScopes = 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.rol
 let bcToken;
 let susiListener;
 let lastImsState = null;
+let lastSideTop = 0;
+
+export function sideOverlayTop() {
+  const gnav = document.querySelector('header.global-navigation');
+
+  if (!gnav) return;
+  const gnavTop = gnav.getBoundingClientRect().top;
+  const hasLocalNav = gnav.classList.contains('local-nav');
+  const hasBreadcrumbs = gnav.classList.contains('has-breadcrumbs');
+  const isCompact = gnav.classList.contains('is-compact');
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
+  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
+  const breadcrumbHeight = Number(rootStyles.getPropertyValue('--global-height-breadcrumbs').trim().slice(0, -2));
+
+  const gnavMeasure = ((
+    window.scrollY > gnavHeight && isCompact && hasLocalNav) ? 0 : gnavTop + gnavHeight
+  );
+  const localNavMeasure = hasLocalNav && isCompact ? localNavHeight : 0;
+  const breadcrumbMeasure = hasBreadcrumbs && !isCompact ? breadcrumbHeight : 0;
+
+  const newTop = gnavMeasure + localNavMeasure + breadcrumbMeasure;
+  if (newTop !== lastSideTop) {
+    document.body.style.setProperty('--bc-side-overlay-top', `${newTop}px`);
+    lastSideTop = newTop;
+  }
+}
 
 function handleLocalNav() {
   const localGnav = document.querySelector('div.feds-localnav');
@@ -29,7 +57,7 @@ function handleLocalNav() {
 
           if (currentDisplay !== lastDisplay) {
             lastDisplay = currentDisplay;
-            setCssGnavHeight();
+            sideOverlayTop();
           }
         }
       }
@@ -376,6 +404,38 @@ export async function openSideModal(initialMessage, bootstrap) {
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
   const mountEl = createTag('div', { id: mountId });
 
+  // Call setSideOverlayTop when the gnav top changes on resize for any reason (promo reflow)
+  const gnav = document.querySelector('header.global-navigation');
+  let lastGnavTop = gnav ? gnav.getBoundingClientRect().top : 0;
+  let currentWidth = document.body.getBoundingClientRect().width;
+
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.target === document.body && entry.contentRect.width !== currentWidth) {
+        if (lastGnavTop !== gnav.getBoundingClientRect().top) {
+          lastGnavTop = gnav.getBoundingClientRect().top;
+          sideOverlayTop();
+        }
+        currentWidth = entry.contentRect.width;
+      }
+    }
+  });
+  resizeObserver.observe(document.body);
+
+  let currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
+  const scrollListener = () => {
+    if (gnav) {
+      if (currentSidetop !== document.body.style.getPropertyValue('--bc-side-overlay-top')
+      || window.scrollY < gnav.getBoundingClientRect().height) {
+        window.requestAnimationFrame(() => {
+          currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
+          sideOverlayTop();
+        });
+      }
+    }
+  };
+  window.addEventListener('scroll', scrollListener, { passive: true });
+
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     class: 'opening',
@@ -385,6 +445,8 @@ export async function openSideModal(initialMessage, bootstrap) {
       window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
       localStorage.setItem('bc-side-overlay', 'closed');
       document.body.classList.remove('bc-side-open');
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', scrollListener);
       modal.classList.add('closing');
       await new Promise((resolve) => {
         setTimeout(() => resolve(), animationMs);
