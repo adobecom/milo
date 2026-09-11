@@ -133,6 +133,7 @@ const C2_BLOCKS = [
   'news',
   'offer-hero',
   'pdf-space',
+  'pill-group',
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
