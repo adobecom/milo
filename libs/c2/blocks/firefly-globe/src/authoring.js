@@ -147,7 +147,7 @@ function getLocalizedPrompt(prompts, locale) {
     || '';
 }
 
-function apiAssetToCard(asset, locale, cgenId) {
+function apiAssetToCard(asset, locale) {
   // eslint-disable-next-line no-underscore-dangle
   const rendition = asset?._links?.rendition;
   if (!rendition?.href) return null;
@@ -170,11 +170,9 @@ function apiAssetToCard(asset, locale, cgenId) {
 
   const prompts = asset.custom?.input?.['firefly#prompts'];
   const role = getLocalizedPrompt(prompts, locale);
-  let fireflyUrl = null;
-  if (asset.urn) {
-    fireflyUrl = `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`;
-    if (cgenId) fireflyUrl += `&promoid=${cgenId}&mv=other`;
-  }
+  const fireflyUrl = asset.urn
+    ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
+    : null;
   return {
     img,
     alt: '',
@@ -186,7 +184,7 @@ function apiAssetToCard(asset, locale, cgenId) {
   };
 }
 
-export async function fetchFireflyAssets(categoryId, locale = 'en-US', cgenId = '') {
+export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
   try {
     const resp = await fetch(
       `${FF_API_URL}?size=50&sort=updated_desc&include_pending_assets=false&cursor=&category_id=${categoryId}`,
@@ -196,7 +194,7 @@ export async function fetchFireflyAssets(categoryId, locale = 'en-US', cgenId = 
     const data = await resp.json();
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
-    const cards = assets.map((a) => apiAssetToCard(a, locale, cgenId)).filter(Boolean);
+    const cards = assets.map((a) => apiAssetToCard(a, locale)).filter(Boolean);
     return cards.length ? cards : null;
   } catch (e) {
     return null;

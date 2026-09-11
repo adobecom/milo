@@ -1581,8 +1581,13 @@ export default async function init(el) {
   const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel });
 
   let authored = null;
-  if (categoryId) authored = await fetchFireflyAssets(categoryId, 'en-US', cgenId);
+  if (categoryId) authored = await fetchFireflyAssets(categoryId, 'en-US');
   else if (fragmentHref) authored = await fetchFragmentCards(fragmentHref);
+  if (cgenId && authored) {
+    authored.forEach((card) => {
+      if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;
+    });
+  }
   if (!authored || authored.length === 0) {
     el.classList.add('firefly-globe-empty');
     return el;
