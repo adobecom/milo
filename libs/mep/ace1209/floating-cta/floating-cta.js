@@ -8,9 +8,7 @@ const lerp = (from, to, progress) => from + (to - from) * progress;
 const easeInOutCubic = (value) => (
   value < 0.5 ? 4 * value * value * value : 1 - ((-2 * value + 2) ** 3) / 2
 );
-const spring = (value, stiffness = 100, damping = 20) => ({
-  value, target: value, velocity: 0, stiffness, damping,
-});
+const spring = (value, stiffness = 100, damping = 20) => ({ value, target: value, velocity: 0, stiffness, damping, });
 
 function setSpring(item, value) {
   item.value = value;
@@ -318,10 +316,7 @@ function applyCustomHide(el, ctaEl, animation) {
   function getMarqueeBoundary() {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
-    const precedingCandidates = allCandidates.filter((candidate) => {
-      // eslint-disable-next-line no-bitwise
-      return candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING;
-    });
+    const precedingCandidates = allCandidates.filter((candidate) => candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING);
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
     let sibling = ctaBoundary?.previousElementSibling;
@@ -411,34 +406,32 @@ export default async function init(el) {
 
   const img = contentDiv.querySelector('img, svg');
   const links = [...contentDiv.querySelectorAll('a')];
-  
   const isButtonLink = (a) => a.classList.contains('con-button') || a.parentElement?.classList.contains('con-button');
-  const actionLink = !img ? (links.find(isButtonLink) ??  null ) : null;
+  const actionLink = !img ? (links.find(isButtonLink) ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
-  
+
   const actionEl = actionLink ? (actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement) : null;
   let labelText;
-  if(actionEl){
+  if (actionEl) {
     const labelSource = contentDiv.cloneNode(true);
     labelSource.querySelectorAll('a').forEach((a) => a.remove());
     labelText = labelSource.textContent.trim();
-  }else{
+  } else {
     labelText = (linkEl ?? contentDiv).textContent.trim();
   }
   
-  if(!labelText && !actionLink) return;
-  if(img?.tagName === 'IMG'){
+  if (!labelText && !actionLink) return;
+  if (img?.tagName === 'IMG') {
     const relativeSrc = img.getAttribute('src');
     if (relativeSrc?.startsWith('/')) {
       img.src = getFederatedUrl(relativeSrc);
     }
   }
-  
 
   if (actionLink?.isCheckoutLink || actionLink?.classList.contains('merch')) {
-    try{
+    try {
       await actionLink.onceSettled();
-    }catch (e) {
+    } catch (e) {
       window.lana?.log?.(
         `floating-cta: checkout button failed to settle: ${e?.message || e}`,
         { tags: 'floating-cta', severity: 'error' },
