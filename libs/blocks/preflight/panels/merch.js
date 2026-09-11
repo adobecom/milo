@@ -10,7 +10,7 @@ const MAS_UNPUBLISHED_HIGHLIGHT = 'preflight-mas-unpublished';
 
 const ALLOWED_MAS_HOSTS = ['mas.adobe.com'];
 
-function isMasUrl(href) {
+export function isMasUrl(href) {
   if (!href) return false;
   try {
     const url = new URL(href);
@@ -20,7 +20,7 @@ function isMasUrl(href) {
   }
 }
 
-function getFragmentIdFromMasElement(el) {
+export function getFragmentIdFromMasElement(el) {
   if (el.tagName === 'MAS-FIELD') {
     const aem = el.querySelector('aem-fragment');
     return aem?.getAttribute('fragment') || null;
@@ -56,7 +56,7 @@ function getBlockLocation(element) {
   return Math.round(rect.top + scrollTop);
 }
 
-function checkMasFieldsMultipleFragments() {
+export function checkMasFieldsMultipleFragments() {
   const main = document.querySelector('main');
   main?.querySelectorAll(`.${MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT}`).forEach((el) => el.classList.remove(MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT));
   const sections = main?.querySelectorAll(':scope > div.section') || [];
@@ -119,7 +119,7 @@ function getService() {
   return document.getElementsByTagName('mas-commerce-service')?.[0];
 }
 
-function formatDate(dateString) {
+export function formatDate(dateString) {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -132,7 +132,7 @@ function formatDate(dateString) {
   });
 }
 
-function selectOffers(offers, { country }) {
+export function selectOffers(offers, { country }) {
   let selected;
   if (offers.length < 2) {
     selected = offers;
@@ -153,7 +153,7 @@ function selectOffers(offers, { country }) {
   return selected;
 }
 
-function isPromotionActive(promotion, instant, quantity = 1) {
+export function isPromotionActive(promotion, instant, quantity = 1) {
   if (!promotion) return false;
   const {
     start,
@@ -182,7 +182,7 @@ function isPromotionActive(promotion, instant, quantity = 1) {
   return now >= startDate && now <= endDate;
 }
 
-async function checkUrl(url) {
+export async function checkUrl(url) {
   try {
     const response = await fetch(url, {
       method: 'HEAD',
