@@ -226,7 +226,7 @@ export async function checkUrl(url) {
   }
 }
 
-async function checkWcsElements() {
+export async function checkWcsElements() {
   const elements = [];
 
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');

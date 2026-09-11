@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import {
+import { html, render } from '../../../../libs/deps/htm-preact.js';
+import Merch, {
   isMasUrl,
   getFragmentIdFromMasElement,
   formatDate,
@@ -8,7 +9,24 @@ import {
   isPromotionActive,
   checkUrl,
   checkMasFieldsMultipleFragments,
+  checkWcsElements,
 } from '../../../../libs/blocks/preflight/panels/merch.js';
+
+const waitFor = async (fn, tries = 80) => {
+  for (let i = 0; i < tries; i += 1) {
+    if (fn()) return;
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => { setTimeout(r, 15); });
+  }
+  throw new Error('waitFor timed out');
+};
+
+const activePromo = () => ({
+  start: '2020-01-01',
+  end: '2999-12-31',
+  displaySummary: { amount: 10, duration: 12, outcomeType: 'PERCENT_OFF', minProductQuantity: 1 },
+});
+const expiredPromo = () => ({ ...activePromo(), end: '2020-12-31' });
 
 describe('preflight panels merch', () => {
   describe('isMasUrl', () => {
@@ -162,6 +180,114 @@ describe('preflight panels merch', () => {
       document.body.append(main);
       checkMasFieldsMultipleFragments();
       expect(main.querySelector('.preflight-mas-multiple-fragments')).to.be.null;
+    });
+  });
+
+  describe('checkWcsElements', () => {
+    const created = [];
+    const add = (html2) => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html2.trim();
+      const el = wrap.firstElementChild;
+      document.body.append(el);
+      created.push(el);
+      return el;
+    };
+
+    afterEach(() => {
+      while (created.length) created.pop().remove();
+      document.querySelectorAll('mas-commerce-service').forEach((s) => s.remove());
+      sinon.restore();
+    });
+
+    it('marks an element whose checkout URL redirects to an error', async () => {
+      sinon.stub(window, 'fetch').resolves({ url: 'https://commerce.adobe.com/error' });
+      const el = add('<a data-wcs-osi="osi-err" href="https://commerce.adobe.com/checkout">Buy</a>');
+      await checkWcsElements();
+      await waitFor(() => el.classList.contains('preflight-merch-error'));
+      expect(el.classList.contains('preflight-merch-error')).to.be.true;
+    });
+
+    it('leaves a clean checkout URL unmarked', async () => {
+      const okUrl = 'https://commerce.adobe.com/checkout?items[0][id]=A';
+      sinon.stub(window, 'fetch').resolves({ url: okUrl });
+      const el = add(`<a data-wcs-osi="osi-ok" href="${okUrl}">Buy</a>`);
+      await checkWcsElements();
+      await new Promise((r) => { setTimeout(r, 60); });
+      expect(el.classList.contains('preflight-merch-error')).to.be.false;
+    });
+
+    it('labels a price element whose offer is unavailable', async () => {
+      const el = add('<span data-wcs-osi="osi-pu" class="placeholder-failed">$9.99</span>');
+      await checkWcsElements();
+      expect(el.classList.contains('preflight-price-unavailable')).to.be.true;
+      expect(el.nextElementSibling?.classList.contains('preflight-price-unavailable-label')).to.be.true;
+    });
+
+    it('skips a disabled element with no text', async () => {
+      const el = add('<div data-wcs-osi="osi-dis"><button disabled></button></div>');
+      await checkWcsElements();
+      await new Promise((r) => { setTimeout(r, 40); });
+      expect(el.classList.contains('preflight-merch-error')).to.be.false;
+      expect(el.classList.contains('preflight-price-unavailable')).to.be.false;
+    });
+
+    it('flags an expired promotion code as an error', async () => {
+      add('<mas-commerce-service></mas-commerce-service>');
+      const service = document.querySelector('mas-commerce-service');
+      service.settings = { country: 'US', language: 'MULT' };
+      service.resolveOfferSelectors = () => [Promise.resolve([{ promotion: expiredPromo() }])];
+      const el = add('<span data-wcs-osi="osi-promo" data-promotion-code="OLD" data-quantity="1">$9.99</span>');
+      await checkWcsElements();
+      await waitFor(() => el.classList.contains('preflight-merch-error'));
+      expect(el.classList.contains('preflight-merch-error')).to.be.true;
+    });
+
+    it('flags a promotion code with no matching offer as not-found', async () => {
+      add('<mas-commerce-service></mas-commerce-service>');
+      const service = document.querySelector('mas-commerce-service');
+      service.settings = { country: 'US', language: 'MULT' };
+      service.resolveOfferSelectors = () => [Promise.resolve([{ }])];
+      const el = add('<span data-wcs-osi="osi-nf" data-promotion-code="NONE">$9.99</span>');
+      await checkWcsElements();
+      await waitFor(() => el.classList.contains('preflight-merch-error'));
+      expect(el.classList.contains('preflight-merch-error')).to.be.true;
+    });
+  });
+
+  describe('Merch component', () => {
+    let container;
+    let wrap;
+
+    beforeEach(async () => {
+      sinon.stub(window, 'fetch').resolves({ url: 'https://commerce.adobe.com/checkout?items[0][id]=A' });
+      // Populate the module signals directly so the component renders its full tree.
+      wrap = document.createElement('div');
+      wrap.innerHTML = '<a data-wcs-osi="osi-render" href="https://commerce.adobe.com/checkout?items[0][id]=A">Buy now</a>';
+      document.body.append(wrap);
+      await checkWcsElements();
+      await new Promise((r) => { setTimeout(r, 60); });
+      container = document.createElement('div');
+      document.body.append(container);
+    });
+
+    afterEach(() => {
+      render(null, container);
+      container.remove();
+      wrap.remove();
+      sinon.restore();
+    });
+
+    it('renders the summary and a WCS element item', async () => {
+      render(html`<${Merch} />`, container);
+      await waitFor(() => container.querySelector('.merch-summary'));
+      expect(container.querySelector('.merch-stat-number')).to.exist;
+      expect(container.textContent).to.contain('Buy now');
+      expect(container.querySelector('.merch-wcs-item')).to.exist;
+      // scroll button is wired
+      const scrollBtn = container.querySelector('.merch-scroll-btn');
+      expect(scrollBtn).to.exist;
+      scrollBtn.click();
     });
   });
 });
