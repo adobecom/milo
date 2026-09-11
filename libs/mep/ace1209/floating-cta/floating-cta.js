@@ -8,7 +8,8 @@ const lerp = (from, to, progress) => from + (to - from) * progress;
 const easeInOutCubic = (value) => (
   value < 0.5 ? 4 * value * value * value : 1 - ((-2 * value + 2) ** 3) / 2
 );
-const spring = (value, stiffness = 100, damping = 20) => ({ value, target: value, velocity: 0, stiffness, damping, });
+const spring = (value, stiffness = 100, damping = 20) => ({ 
+  value, target: value, velocity: 0, stiffness, damping });
 
 function setSpring(item, value) {
   item.value = value;
@@ -316,7 +317,10 @@ function applyCustomHide(el, ctaEl, animation) {
   function getMarqueeBoundary() {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
-    const precedingCandidates = allCandidates.filter((candidate) => candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const precedingCandidates = allCandidates.filter((candidate) => {
+      // eslint-disable-next-line no-bitwise
+      return candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING;
+    });
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
     let sibling = ctaBoundary?.previousElementSibling;
@@ -419,7 +423,7 @@ export default async function init(el) {
   } else {
     labelText = (linkEl ?? contentDiv).textContent.trim();
   }
-  
+
   if (!labelText && !actionLink) return;
   if (img?.tagName === 'IMG') {
     const relativeSrc = img.getAttribute('src');
@@ -446,7 +450,6 @@ export default async function init(el) {
       const linkPara = linkEl.closest('p') ?? contentDiv;
       const checkoutLink = await waitForCheckoutLink(linkPara);
       await checkoutLink.onceSettled();
-      // checkoutLink.replaceChildren(...(img ? [img] : []), checkoutLink.textContent.trim(), trailing);
       const checkoutText = checkoutLink.textContent.trim();
       checkoutLink.classList.add('promo-cta');
       checkoutLink.classList.remove('con-button');
