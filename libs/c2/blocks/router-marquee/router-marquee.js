@@ -147,7 +147,7 @@ const decorateText = (textCol) => {
   const eyebrow = textCol.querySelector('.rm-eyebrow');
   const icon = textCol.querySelector('p a[href*=".svg"]');
   const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
-  const cta = textCol.querySelector('p:has(em)');
+  const cta = textCol.querySelector(':scope > p:has(> em)');
   // Direct children only: skip <p>s a mas-field renders inside itself.
   const body = [...textCol.querySelectorAll(':scope > p')]
     .filter((p) => [eyebrow, icon?.closest('p'), label, cta].every((x) => x !== p));
