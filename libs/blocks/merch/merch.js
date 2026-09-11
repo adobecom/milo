@@ -1691,6 +1691,15 @@ const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
 const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
 const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
 
+// A description with a link (e.g. "save 40%. Terms apply") isn't a button (MWPW-207084).
+function isCtaFieldContent(content) {
+  if (!content || content.querySelector(BLOCK_CONTENT_SELECTOR)) return false;
+  const anchors = [...content.querySelectorAll('a')];
+  if (!anchors.length) return false;
+  const strip = (text) => text.replace(/\s+/g, '');
+  return strip(content.textContent) === strip(anchors.map((a) => a.textContent).join(''));
+}
+
 /**
  * Upgrades plain commerce elements (missing `is` attribute) to their proper
  * customized built-in equivalents so the commerce service resolves them.
@@ -1908,8 +1917,7 @@ function watchMasFieldCtas() {
   document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
-    // Same gate createInline uses: an inline CTA anchor, not block-level content.
-    if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+    if (isCtaFieldContent(content)) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
@@ -1944,7 +1952,7 @@ async function createInlineField(el, options) {
   await decorateContentLinks(content);
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
-  if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+  if (isCtaFieldContent(content)) {
     return decorateInlineCtas(masField, content) ?? masField;
   }
   return masField;
