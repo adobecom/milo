@@ -44,7 +44,7 @@ const {
   API_URLS,
   getExpandedCards,
   toSlug,
-  hasMasChanges,
+  hasRelevantContentChanges,
   getTopMarketsAvailability,
   getCaasSummary,
   getPageId,
@@ -107,32 +107,39 @@ describe('API_URLS', () => {
 describe('getExpandedCards', () => {
   afterEach(() => localStorage.removeItem(CARD_STORAGE_KEY));
 
-  it('returns an empty Set when localStorage has no entry', () => {
+  it('returns an empty object when localStorage has no entry', () => {
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns a Set populated from a valid JSON array in localStorage', () => {
+  it('returns an object populated from valid JSON in localStorage', () => {
+    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify({ 'card-a': true, 'card-b': false }));
+    const result = getExpandedCards();
+    expect(result['card-a']).to.be.true;
+    expect(result['card-b']).to.be.false;
+    expect(Object.keys(result)).to.have.length(2);
+  });
+
+  it('returns an empty object when localStorage contains a legacy array', () => {
     localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(['card-a', 'card-b']));
     const result = getExpandedCards();
-    expect(result.has('card-a')).to.be.true;
-    expect(result.has('card-b')).to.be.true;
-    expect(result.size).to.equal(2);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when localStorage contains invalid JSON', () => {
+  it('returns an empty object when localStorage contains invalid JSON', () => {
     localStorage.setItem(CARD_STORAGE_KEY, '{not-valid-json');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when stored value is null (JSON.parse null edge case)', () => {
+  it('returns an empty object when stored value is null (JSON.parse null edge case)', () => {
     localStorage.setItem(CARD_STORAGE_KEY, 'null');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 });
 
@@ -168,51 +175,75 @@ describe('toSlug', () => {
   });
 });
 
-describe('hasMasChanges', () => {
+describe('hasRelevantContentChanges', () => {
   function makeMutations(nodes) {
     return [{ addedNodes: nodes }];
   }
 
   it('returns true when a merch-card element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
   });
 
   it('returns true when an element with data-mas-block is added', () => {
     const el = document.createElement('div');
     el.dataset.masBlock = 'collection';
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when an element with data-wcs-osi is added', () => {
     const el = document.createElement('span');
     el.setAttribute('data-wcs-osi', 'osi-1');
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when a mas-field element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
   });
 
   it('returns true when an added node contains a MAS descendant', () => {
     const parent = document.createElement('div');
     parent.append(document.createElement('merch-card'));
-    expect(hasMasChanges(makeMutations([parent]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([parent]))).to.be.true;
   });
 
-  it('returns false for a plain div with no MAS attributes', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('div')]))).to.be.false;
+  it('returns true when an element with data-caas-block is added', () => {
+    const el = document.createElement('div');
+    el.dataset.caasBlock = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-manifest-id is added', () => {
+    const el = document.createElement('div');
+    el.dataset.manifestId = 'manifest-1';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-mep-lingo-roc is added', () => {
+    const el = document.createElement('div');
+    el.dataset.mepLingoRoc = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-path is added', () => {
+    const el = document.createElement('div');
+    el.dataset.path = '/fragments/foo';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns false for a plain div with no relevant attributes', () => {
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('div')]))).to.be.false;
   });
 
   it('returns false for a text node', () => {
-    expect(hasMasChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
   });
 
   it('returns false for an empty mutations array', () => {
-    expect(hasMasChanges([])).to.be.false;
+    expect(hasRelevantContentChanges([])).to.be.false;
   });
 
   it('returns false when mutation has no added nodes', () => {
-    expect(hasMasChanges(makeMutations([]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([]))).to.be.false;
   });
 });
 
