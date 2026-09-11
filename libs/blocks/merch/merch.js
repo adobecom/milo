@@ -1762,7 +1762,6 @@ function unwrapInlineWrappers(masField) {
     parent = masField.parentElement;
   }
 }
-
 function normalizeBlockFieldWrappers(masField) {
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content?.querySelector(BLOCK_CONTENT_SELECTOR)) return;
@@ -1793,9 +1792,8 @@ function ensureInlinePriceStyle(content) {
   }
 }
 
-// A CTA field and its card's price field resolve independently. Hold the CTA's
-// container until the price mas-field is ready so the CTA can't paint above an
-// unresolved price (reveal anyway after FIELD_TIMEOUT).
+// Hold the CTA's container hidden until its card's price mas-field is ready, so the CTA
+// can't paint above an unresolved price (reveals anyway after FIELD_TIMEOUT).
 export function holdCtaUntilPrice(container) {
   if (!container?.style) return;
   let scope = container.parentElement;
@@ -1819,6 +1817,11 @@ export function holdCtaUntilPrice(container) {
 function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
   holdCtaUntilPrice(container);
+  // router-marquee styles CTAs itself via plain em/strong/a selectors and doesn't need
+  // mas-field to stay attached, so fully unwrap it there instead of keeping it in the DOM --
+  // otherwise a later, independent re-render from the external mas-field component injects a
+  // stray duplicate content span onto it.
+  const selfDecoratesCtas = !!container?.closest('.router-marquee');
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
   // lookup so a foreign block's button can't dictate this CTA's size.
@@ -1856,8 +1859,6 @@ function decorateInlineCtas(masField, content) {
       size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
     }
   }
-  ensureInlinePriceStyle(content);
-
   if (masField.merchLink) {
     [...masField.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
       content.querySelectorAll('a').forEach((link) => {
@@ -1866,27 +1867,38 @@ function decorateInlineCtas(masField, content) {
     });
   }
 
-  // Keep mas-field as the CTA's ancestor (not unwrap) so its promo/id context survives by
-  // structure. Re-nest to wrap the em/strong so decorateButtons' 'em a'/'strong a' still match.
-  const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
-  let outer = masField;
-  while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
-    && hasOnlyTargetContent(outer.parentElement, outer)) {
-    outer = outer.parentElement;
-  }
-  if (outer === masField) {
-    masField.replaceChildren(...content.childNodes);
-  } else {
+  let hoisted;
+  if (selfDecoratesCtas) {
+    upgradeCommerceLinks(content);
+    ensureInlinePriceStyle(content);
+    hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
     masField.replaceWith(...content.childNodes);
-    outer.replaceWith(masField);
-    masField.append(outer);
-    // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
-    content.remove();
+  } else {
+    // Keep mas-field as the CTA's ancestor so decorateButtons' 'em a'/'strong a' still match
+    // once re-nested, and its promo/id context survives by structure. Move content while it's
+    // still a plain <a>; upgrading to is="checkout-link" is deferred until it settles into its
+    // final position so the custom element only connects once.
+    const innerWrapper = masField.parentElement;
+    let outer = masField;
+    while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
+      && hasOnlyTargetContent(outer.parentElement, outer)) {
+      outer = outer.parentElement;
+    }
+    if (outer === masField) {
+      masField.replaceChildren(...content.childNodes);
+    } else {
+      outer.replaceWith(masField);
+      innerWrapper.append(...content.childNodes);
+      masField.append(outer);
+      // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
+      content.remove();
+    }
+    upgradeCommerceLinks(masField);
+    ensureInlinePriceStyle(masField);
+    hoisted = masField.querySelector('a, button');
   }
 
-  // router-marquee styles its own CTAs after resolution (primary = em>strong).
-  // decorateButtons would strip the <strong> and misclassify them as outline.
-  const selfDecoratesCtas = container?.closest('.router-marquee');
+  // decorateButtons would strip the <strong> and misclassify router-marquee's CTAs as outline.
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
   if (container && !pendingCTAs?.length && !selfDecoratesCtas) {
     decorateButtons(container, size);
@@ -1910,8 +1922,6 @@ function watchMasFieldCtas() {
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     // Same gate createInline uses: an inline CTA anchor, not block-level content.
     if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-      // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
-      upgradeCommerceLinks(content);
       await decorateContentLinks(content);
       decorateInlineCtas(mf, content);
     }
@@ -1937,16 +1947,15 @@ async function createInlineField(el, options) {
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return masField;
 
-  // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
-  // them. Applies to both CTA (<a>) and price (<span>) fields.
-  upgradeCommerceLinks(content);
-
   await decorateContentLinks(content);
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
     return decorateInlineCtas(masField, content) ?? masField;
   }
+
+  // Non-CTA (block) fields never move after this point, so upgrading now is safe.
+  upgradeCommerceLinks(content);
   return masField;
 }
 
