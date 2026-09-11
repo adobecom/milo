@@ -468,6 +468,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   }
 
   handleLocalNav();
+  sideOverlayTop();
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));

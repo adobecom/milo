@@ -40,7 +40,6 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  sideOverlayTop();
   openSideModal(text, bcBootstrap);
 }
 
@@ -48,7 +47,6 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  sideOverlayTop();
   openSideModal(text, bcBootstrap);
 }
 
