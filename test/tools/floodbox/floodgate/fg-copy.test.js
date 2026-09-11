@@ -63,6 +63,21 @@ describe('FloodgateCopy', () => {
     expect(RequestHandler.prototype.uploadContent.firstCall.args[1]).to.include('--test-repo-fg-pink--test-org.');
   });
 
+  it('adds the floodgate color suffix to da.live/app authoring links', async () => {
+    requestHandlerStub.resolves({
+      ok: true,
+      text: async () => '<a href="https://da.live/app/test-org/test-repo/tools/da-apps/schedule-maker?schedule=x">Edit</a>',
+    });
+    RequestHandler.prototype.uploadContent.resolves({ statusCode: 200 });
+
+    await copyFiles({
+      accessToken, org, repo, paths: ['/test-org/test-repo/path1'], callback: callbackStub, fgColor,
+    });
+
+    const uploaded = RequestHandler.prototype.uploadContent.firstCall.args[1];
+    expect(uploaded).to.include('https://da.live/app/test-org/test-repo-fg-pink/tools/da-apps/schedule-maker?schedule=x');
+  });
+
   it('processes non-editable files correctly', async () => {
     requestHandlerStub.resolves({
       ok: true,

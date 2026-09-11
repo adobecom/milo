@@ -38,6 +38,8 @@ class Promote {
             repo: this.repo,
             expName: this.expName,
             color: this.color,
+            // Promote moves content from the floodgate repo to the source repo.
+            direction: 'toSource',
           });
         }
         let destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
