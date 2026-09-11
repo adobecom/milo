@@ -145,11 +145,11 @@ const decorateText = (textCol) => {
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
   const eyebrow = textCol.querySelector('.rm-eyebrow');
-  const icon = textCol.querySelector('p a[href*=".svg"]');
-  const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
-  const cta = textCol.querySelector('p:has(em)');
-  const body = [...textCol.querySelectorAll('p')]
-    .filter((p) => [eyebrow, icon?.closest('p'), label, cta].every((x) => x !== p));
+  const icon = textCol.querySelector(':scope > p:has(img[src*=".svg"])');
+  const label = textCol.querySelector(':scope > p:has(img[src*=".svg"]) + p');
+  const cta = textCol.querySelector(':scope > p:has(> em)');
+  const body = [...textCol.querySelectorAll(':scope > p')]
+    .filter((p) => [eyebrow, icon, label, cta].every((x) => x !== p));
 
   if (!body.length) return;
   const bodyEl = createTag('div', { class: 'rm-body' });
@@ -158,7 +158,7 @@ const decorateText = (textCol) => {
 };
 
 const decorateCtas = (textCol) => {
-  const cta = textCol.querySelector('p:has(em)');
+  const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
   cta.classList.add('rm-ctas', 'dark', 'action-area');
   const primary = cta.querySelector('em > strong a');
@@ -238,14 +238,14 @@ const decorateSlide = (slide) => {
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
     .find((p) => p.querySelector('img[src*=".svg"]'));
-  const label = icon.nextElementSibling;
-  const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
-  const labelText = label?.textContent.trim();
+  const label = icon?.nextElementSibling;
+  const iconSrc = icon && getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
+  const labelText = (label?.textContent ?? slide.querySelector('.rm-title')?.textContent ?? '').trim();
   const href = label?.querySelector('a')?.getAttribute('href') || '';
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
-  const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
+  const ariaLabel = [eyebrowText, labelText].filter(Boolean).join(', ');
 
-  icon.remove();
+  icon?.remove();
   label?.remove();
 
   const card = createTag('a', {
@@ -256,7 +256,7 @@ const buildCard = (slide) => {
     'aria-selected': 'false',
   });
   card.replaceChildren(
-    createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
+    ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' })] : []),
     createTag('div', { class: 'rm-card-content' }, [
       createTag('span', { class: 'rm-card-label' }, labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),

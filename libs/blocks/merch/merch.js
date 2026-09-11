@@ -1763,6 +1763,16 @@ function unwrapInlineWrappers(masField) {
   }
 }
 
+function unwrapSoleAnchorParagraph(content) {
+  const isWhitespace = (node) => node.nodeType === Node.TEXT_NODE && !node.textContent.trim();
+  const [wrapper, ...rest] = [...content.childNodes].filter((node) => !isWhitespace(node));
+  if (rest.length || wrapper?.tagName !== 'P') return;
+  const inner = [...wrapper.childNodes].filter((node) => !isWhitespace(node));
+  if (inner.length === 1 && inner[0].nodeName === 'A') {
+    wrapper.replaceWith(...wrapper.childNodes);
+  }
+}
+
 function normalizeBlockFieldWrappers(masField) {
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content?.querySelector(BLOCK_CONTENT_SELECTOR)) return;
@@ -1931,6 +1941,10 @@ async function createInlineField(el, options) {
 
   el.replaceWith(masField);
   await checkFieldReady(masField, options.fragment);
+  if (options.field?.startsWith('ctas')) {
+    const preContent = masField.querySelector(':scope > [data-role="mas-field-content"]');
+    if (preContent) unwrapSoleAnchorParagraph(preContent);
+  }
   normalizeBlockFieldWrappers(masField);
   await localizePreviewLinks(masField);
 
