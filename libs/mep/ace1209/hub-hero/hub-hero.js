@@ -169,12 +169,15 @@ const initHeaderPin = (hubHero, header) => {
     || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
   if (reducedMotion) return;
 
+  const pinController = new AbortController();
+
   // ResizeObserver (not a one-off measurement) because getBoundingClientRect() right after
   // append() can read 0 before the browser's first real layout pass, and this also naturally
   // keeps --hub-hero-header-height correct through later reflows (e.g. web fonts loading)
-  new ResizeObserver(() => {
+  const headerResizeObserver = new ResizeObserver(() => {
     hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
-  }).observe(header);
+  });
+  headerResizeObserver.observe(header);
 
   let ticking = false;
   const checkPin = () => {
@@ -186,8 +189,17 @@ const initHeaderPin = (hubHero, header) => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(checkPin);
-  }, { passive: true });
+  }, { signal: pinController.signal, passive: true });
   requestAnimationFrame(checkPin);
+
+  // same teardown pattern as initTouchCarouselLock: stop watching once the hero leaves the DOM
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      pinController.abort();
+      headerResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 };
 
 const onSlideLeave = (event) => {

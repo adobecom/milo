@@ -143,6 +143,13 @@
 }
 
 @media (pointer: coarse) {
+  /* pointer-events: none on .fragment (restored above) blocked native touch scrolling of the
+     modal content on real phones — re-enable it for touch devices specifically, since the
+     drag-to-dismiss gesture here is scoped to .tour-grab-handle, not .fragment. */
+  .dialog-modal:has(.tour) > .fragment {
+    pointer-events: auto;
+  }
+
   .tour-grab-handle {
     display: block;
     position: absolute;
@@ -191,6 +198,7 @@
 
   & > .fragment {
     max-height: 100%;
+    pointer-events: none;
   }
 
   &.is-dragging {

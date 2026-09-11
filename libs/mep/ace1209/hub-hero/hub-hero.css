@@ -1284,18 +1284,12 @@
   }
 
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container {
-    left: 0;
+    inset-inline-start: 0;
     transform: none;
   }
 
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container.stick-left,
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container.stick-right {
-    transform: none;
-  }
-
-  [dir="rtl"] .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container {
-    left: auto;
-    right: 0;
     transform: none;
   }
 }
