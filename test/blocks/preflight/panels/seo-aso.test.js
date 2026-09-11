@@ -10,6 +10,7 @@ import { setConfig } from '../../../../libs/utils/utils.js';
 describe('preflight panels seo - ASO suite', () => {
   let container;
   let clock;
+  let loginStub;
 
   const resetAso = () => Object.assign(asoCache, {
     identify: null,
@@ -25,6 +26,7 @@ describe('preflight panels seo - ASO suite', () => {
     clock = sinon.useFakeTimers({ shouldAdvanceTime: false });
     resetAso();
     setConfig({ imsClientId: 'aso-client' });
+    loginStub = sinon.stub();
     sinon.stub(window, 'fetch').callsFake((url) => {
       const u = String(url);
       if (u.includes('preflight-exclusions')) {
@@ -32,6 +34,10 @@ describe('preflight panels seo - ASO suite', () => {
       }
       if (u.includes('preflight-config.json')) {
         return Promise.resolve({ json: () => Promise.resolve({ data: [{ value: 'aso-client' }] }) });
+      }
+      if (u.includes('/auth/login')) {
+        loginStub();
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ sessionToken: 'sess' }) });
       }
       return Promise.reject(new Error(`unexpected fetch ${u}`));
     });
@@ -77,6 +83,12 @@ describe('preflight panels seo - ASO suite', () => {
       signInBtn.click();
       await clock.tickAsync(50);
       expect(window.asoIMS.signIn.calledOnce).to.be.true;
+
+      // After sign-in the token becomes available; the poll interval then exchanges
+      // it for a session token and bumps the re-run trigger.
+      window.asoIMS.getAccessToken = () => ({ token: 'ims-tok' });
+      await clock.tickAsync(2100);
+      expect(loginStub.called, 'session token exchanged after sign-in').to.be.true;
     } finally {
       delete window.asoIMS;
     }

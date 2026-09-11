@@ -290,4 +290,67 @@ describe('preflight panels merch', () => {
       scrollBtn.click();
     });
   });
+
+  describe('Merch component - varied element states', () => {
+    let container;
+    let wrap;
+
+    beforeEach(async () => {
+      sinon.stub(window, 'fetch').callsFake((url) => {
+        const u = String(url);
+        if (u.includes('items[0][id]=AAA')) {
+          return Promise.resolve({ url: 'https://commerce.adobe.com/co?items[0][id]=BBB' });
+        }
+        if (u.includes('/undet')) return Promise.reject(new Error('weird'));
+        return Promise.resolve({ url: u });
+      });
+
+      wrap = document.createElement('div');
+      wrap.innerHTML = `
+        <a data-wcs-osi="m1" href="https://commerce.adobe.com/co?items[0][id]=AAA">Mismatch</a>
+        <a data-wcs-osi="m2" href="https://commerce.adobe.com/undet">Undetermined</a>
+        <span data-wcs-osi="m3" data-promotion-code="GOOD" data-quantity="1">$1</span>
+        <span data-wcs-osi="m4" class="placeholder-failed">$2</span>
+        <mas-commerce-service></mas-commerce-service>
+        <main>
+          <div class="section"><div class="con-block">
+            <mas-field><aem-fragment fragment="f1"></aem-fragment></mas-field>
+            <mas-field><aem-fragment fragment="f2"></aem-fragment></mas-field>
+          </div></div>
+        </main>`;
+      document.body.append(wrap);
+      const service = wrap.querySelector('mas-commerce-service');
+      service.settings = { country: 'US', language: 'MULT' };
+      service.resolveOfferSelectors = () => [Promise.resolve([{ promotion: activePromo() }])];
+
+      await checkWcsElements();
+      await new Promise((r) => { setTimeout(r, 120); });
+      checkMasFieldsMultipleFragments();
+      container = document.createElement('div');
+      document.body.append(container);
+    });
+
+    afterEach(() => {
+      render(null, container);
+      container.remove();
+      wrap.remove();
+      sinon.restore();
+    });
+
+    it('renders id-mismatch, undetermined, active-promo, price-unavailable and mas-field warnings', async () => {
+      render(html`<${Merch} />`, container);
+      await waitFor(() => container.querySelector('.merch-wcs-item'));
+      const text = container.textContent;
+      expect(container.querySelector('.id-comparison'), 'id mismatch block').to.exist;
+      expect(text).to.contain('status is undetermined');
+      expect(text).to.contain('Promotion is active');
+      expect(text).to.contain('Offer unavailable');
+      // summary stats reflect failures/undetermined
+      expect(container.querySelector('.merch-summary-stat.has-errors')).to.exist;
+      expect(container.querySelector('.merch-summary-stat.has-warnings')).to.exist;
+      // mas-fields multiple-fragment section rendered
+      expect(container.querySelector('.mas-fields-warning-item')).to.exist;
+      expect(text).to.contain('multiple M@S fragment IDs');
+    });
+  });
 });
