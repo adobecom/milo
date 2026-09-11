@@ -13,7 +13,8 @@ const spring = (value, stiffness = 100, damping = 20) => ({
   value,
   target: value,
   velocity: 0,
-  stiffness, damping
+  stiffness,
+  damping,
 });
 
 function setSpring(item, value) {
