@@ -359,9 +359,6 @@ function createGlobeGalleryRuntime(
   let textMesh = null;
   let hintRetired = false;
   let hintExitT = 0;
-  let lastHoverTipIdx = -1;
-  const hoverTipPos = new THREE.Vector3();
-
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
   // Euler order 'XYZ' is load-bearing.
@@ -867,7 +864,6 @@ function createGlobeGalleryRuntime(
     getGlobeLive: globeLive,
     getCursorRetired: () => hintRetired,
     labelText: hintText,
-    drag,
   });
 
   const dragSensitivity = () => {
@@ -886,7 +882,6 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
-    isCursorActive: () => cursor.isActive(),
     onDrag: () => { hintRetired = true; },
   });
 
@@ -1156,49 +1151,6 @@ function createGlobeGalleryRuntime(
     hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
   }
 
-  function updateHoverTooltip() {
-    const tipEl = q('.firefly-globe-hover-card');
-    if (!tipEl || !camera) {
-      if (tipEl) tipEl.style.opacity = '0';
-      return;
-    }
-
-    let hovIdx = -1;
-    let maxT = 0.01;
-    for (let i = 0; i < cards.length; i += 1) {
-      if (cards[i].hoverT > maxT) { maxT = cards[i].hoverT; hovIdx = i; }
-    }
-
-    if (hovIdx < 0 || modal.getModalIdx() >= 0) {
-      tipEl.style.opacity = '0';
-      lastHoverTipIdx = -1;
-      return;
-    }
-
-    if (hovIdx !== lastHoverTipIdx) {
-      lastHoverTipIdx = hovIdx;
-      const meta = getCardMetadata(hovIdx);
-      const avatarEl = tipEl.querySelector('.firefly-globe-hover-avatar');
-      const nameEl = tipEl.querySelector('.firefly-globe-hover-name');
-      const promptEl = tipEl.querySelector('.firefly-globe-hover-prompt');
-      if (avatarEl) {
-        avatarEl.src = meta.avatarUrl || '';
-        avatarEl.style.display = meta.avatarUrl ? '' : 'none';
-      }
-      if (nameEl) nameEl.textContent = meta.name || '';
-      if (promptEl) promptEl.textContent = meta.prompt || '';
-    }
-
-    const card = cards[hovIdx];
-    card.mesh.getWorldPosition(hoverTipPos);
-    camera.updateMatrixWorld();
-    hoverTipPos.project(camera);
-    const sx = (hoverTipPos.x * 0.5 + 0.5) * W;
-    const sy = (-hoverTipPos.y * 0.5 + 0.5) * H;
-    tipEl.style.opacity = String(Math.min(1, maxT * 2));
-    tipEl.style.transform = `translate(calc(${sx}px - 50%), calc(${sy}px - 100% - 12px))`;
-  }
-
   function updateClickDragText() {
     if (!textMesh) return;
     const { uniforms } = textMesh.material;
@@ -1228,7 +1180,6 @@ function createGlobeGalleryRuntime(
     frame.sphGroupZ = 0;
     updateCardTransforms(frame);
     updateA11yFocusRing();
-    updateHoverTooltip();
     updateHintExit(frame);
 
     updateClickDragText();
@@ -1549,7 +1500,6 @@ function createGlobeGalleryRuntime(
     disposeTextMesh();
     hintRetired = false;
     hintExitT = 0;
-    lastHoverTipIdx = -1;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy();
