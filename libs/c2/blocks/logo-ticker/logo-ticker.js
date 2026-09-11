@@ -2,6 +2,13 @@ import { createTag } from '../../../utils/utils.js';
 
 const SET_COUNT = 2;
 
+function getNavHeight() {
+  const style = getComputedStyle(document.documentElement);
+  const nav = parseFloat(style.getPropertyValue('--gnav-height-nav')) || 72;
+  const crumbs = parseFloat(style.getPropertyValue('--feds-breadcrumbs-height')) || 0;
+  return nav + crumbs;
+}
+
 function buildTrack(el, logos) {
   const logoSets = Array.from({ length: SET_COUNT }, (_, i) => {
     const logoSet = createTag('div', { class: 'logo-ticker-set' });
@@ -26,7 +33,16 @@ function syncTrackMetrics(track) {
   const isStatic = setWidth + 2 * gap <= containerWidth;
   track.classList.toggle('is-static', isStatic);
   if (!isStatic) {
-    const drift = Math.max(setWidth - containerWidth, 240);
+    // cover range = vh - blockH scroll px; block exits visibility below the nav
+    // at progress t_max = (vh - navH) / (vh - blockH). Need the magnitude of
+    // translate at t_max to reach (setWidth - containerWidth).
+    const navH = getNavHeight();
+    const blockH = track.parentElement?.offsetHeight || 0;
+    const vh = window.innerHeight;
+    const coverRange = Math.max(vh + blockH, 1);
+    const tMax = Math.min((vh - navH) / coverRange, 1);
+    const effectiveFraction = Math.max(2 * tMax - 1, 0.1);
+    const drift = Math.max(Math.ceil((setWidth - containerWidth) / effectiveFraction), 240);
     track.style.setProperty('--logo-ticker-drift-distance', `${drift}px`);
   }
 }
