@@ -8,8 +8,11 @@ const lerp = (from, to, progress) => from + (to - from) * progress;
 const easeInOutCubic = (value) => (
   value < 0.5 ? 4 * value * value * value : 1 - ((-2 * value + 2) ** 3) / 2
 );
-const spring = (value, stiffness = 100, damping = 20) => ({ 
-  value, target: value, velocity: 0, stiffness, damping });
+const spring = (value, stiffness = 100, damping = 20) => (
+  {value,
+  target: value,
+  velocity: 0,
+  stiffness, damping });
 
 function setSpring(item, value) {
   item.value = value;
@@ -317,10 +320,10 @@ function applyCustomHide(el, ctaEl, animation) {
   function getMarqueeBoundary() {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
-    const precedingCandidates = allCandidates.filter((candidate) => {
+    const precedingCandidates = allCandidates.filter((candidate) => 
       // eslint-disable-next-line no-bitwise
-      return candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING;
-    });
+      candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING
+    );
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
     let sibling = ctaBoundary?.previousElementSibling;
