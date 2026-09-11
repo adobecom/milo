@@ -375,6 +375,12 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export function isAupEnabled(useUniversalNav = false) {
+  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
+    || (new URLSearchParams(window.location.search).get('aup-select')
+      ?? getMetadata('aup-select')) === 'on';
+}
+
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {

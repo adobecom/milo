@@ -3,6 +3,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupEnabled,
   loadIms,
   loadStyle,
   loadLana,
@@ -986,7 +987,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+    if (isAupEnabled(this.useUniversalNav)) {
       this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
@@ -1139,7 +1140,9 @@ class Gnav {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      getProfile: () => Promise.resolve(
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined,
+      ),
       environment,
       cdnEnvironment: environment,
       locale,
@@ -1152,19 +1155,24 @@ class Gnav {
         dialog.id = 'feds-manage-people-dialog';
         dialog.appendChild(element);
         document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
+        element.addEventListener('close', () => {
           closeCallback({ type: 'close' });
           dialog.close();
           dialog.remove();
           document.documentElement.classList.remove('disable-scroll');
+        }, { once: true });
+        const cancel = () => {
+          // The orchestrator settles on cancel; close releases its event listeners.
+          element.dispatchEvent(new Event('cancel'));
+          element.dispatchEvent(new Event('close'));
+        };
+        dialog.addEventListener('cancel', (e) => {
+          if (e.target !== dialog) return;
+          e.preventDefault();
+          cancel();
         });
         dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
-            closeCallback({ type: 'close' });
-            dialog.close();
-            dialog.remove();
-            document.documentElement.classList.remove('disable-scroll');
-          }
+          if (e.target === dialog) cancel();
         });
         document.documentElement.classList.add('disable-scroll');
         dialog.showModal();
