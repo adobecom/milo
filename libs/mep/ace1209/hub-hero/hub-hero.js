@@ -102,8 +102,6 @@ const scrollHubHeroTo = (el, progress) => {
   });
 };
 
-// touch devices can't hover, so the row scrolls natively instead of stick-left/stick-right;
-// the assembly animation freezes permanently once done since reversing it looks broken on touch.
 const CAROUSEL_TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
 
 const getHubHeroProgress = (hubHero) => {
@@ -118,18 +116,13 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   const scrollEl = carousel.querySelector('.hub-hero-carousel-scroll');
   if (!scrollEl) return;
 
-  // scrolling only needs watching until the carousel locks — once it does, we're done for good
   const lockController = new AbortController();
   signal.addEventListener('abort', () => lockController.abort(), { once: true });
 
   const checkLock = () => {
-    // settle point of the slowest assembly animation: gap-shrink finishes at 45%/50% progress,
-    // but the default layout's pointer-events/padding reveal runs to ~56% — 0.6 covers it
     const lockProgress = hubHero.classList.contains('slides-3') ? 0.46 : 0.6;
     if (getHubHeroProgress(hubHero) < lockProgress) return;
     hubHero.classList.add('carousel-locked');
-    // resting position matches the non-touch view: centered, equal overflow both sides.
-    // modern browsers report RTL scrollLeft as 0 (start) to -(max) (end), per spec
     const offset = Math.max((scrollEl.scrollWidth - scrollEl.clientWidth) / 2, 0);
     scrollEl.scrollLeft = isRtl() ? -offset : offset;
     lockController.abort();
@@ -144,8 +137,6 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
-// Replicates position:sticky via position:fixed toggling (sticky jitters in Safari here).
-// Skipped for Firefox/reduced-motion, which get a static header via CSS instead.
 const initHeaderPin = (hubHero, header) => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
@@ -153,8 +144,6 @@ const initHeaderPin = (hubHero, header) => {
 
   const pinController = new AbortController();
 
-  // ResizeObserver, not a one-off measurement — getBoundingClientRect() right after append()
-  // can read 0 before the first real layout pass.
   const headerResizeObserver = new ResizeObserver(() => {
     hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
   });
@@ -173,7 +162,6 @@ const initHeaderPin = (hubHero, header) => {
   }, { signal: pinController.signal, passive: true });
   requestAnimationFrame(checkPin);
 
-  // same teardown pattern as initTouchCarouselLock: stop watching once the hero leaves the DOM
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
       pinController.abort();
@@ -285,8 +273,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
 
   decorateBlockText(left);
 
-  // this is a card, not a carousel widget — no carousel/slide role or label, just its own
-  // visible eyebrow/heading text, same on every viewport.
   const titleId = `hub-hero-slide-${index + 1}-title`;
   const descId = `hub-hero-slide-${index + 1}-desc`;
   if (eyebrow) eyebrow.id = titleId;
@@ -315,7 +301,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     tabindex: 0,
     href: link?.href,
     'data-index': index + 1,
-    // a modal opens in place (an action, like a button); a real href navigates away (a link)
     role: isModal ? 'button' : 'link',
     'aria-labelledby': [eyebrow && titleId, heading && descId].filter(Boolean).join(' '),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
@@ -516,8 +501,6 @@ const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
 
 export default async function init(el) {
-  // touch devices can't hover, so they get different carousel behavior (see hub-hero.css) —
-  // detected once up front rather than re-checked on every scroll tick
   el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
 
   const heroHeader = el.querySelector('div:first-child');

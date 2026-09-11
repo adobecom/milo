@@ -39,8 +39,6 @@
   --carousel-header-top: max(calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
       calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px) + var(--s2a-spacing-md)));
 
-  /* --invisible-slide-width is 0px here unless overridden (see the .hub-hero:not(.slides-3)
-     animation near hubHeroDesktopShrink, and the invisibleSlideWidthTransition keyframe) */
   --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-max-width)) + ((var(--end-gap) * (var(--slides) - 1))) + var(--invisible-slide-width));
 
   --grid-col-one-offset: 0px;
@@ -64,9 +62,6 @@
 }
 
 /** header */
-
-/* position:sticky jittered up/down in Safari here — see initHeaderPin in hub-hero.js, which
-   replicates it via position:fixed toggling instead. */
 .hub-hero-header {
   padding-inline: var(--s2a-spacing-lg);
   padding-top: var(--hub-hero-top-spacing);
@@ -94,8 +89,6 @@
   }
 
   .hub-hero-header.pinned~.hub-hero-image-grid-container {
-    /* padding, not margin — margin collapsed through the now-zero-height header and shifted
-       .hub-hero itself, flapping .pinned on/off during scroll. */
     padding-top: var(--hub-hero-header-height, 0px);
   }
 }
@@ -629,14 +622,9 @@
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
     --end-gap: 12rem;
-    /* fully faded by ~44% (local 30% of this range), so the grid clears out before card 1's
-       header/footer poke (50-55%) and the carousel header fade-in (also ~50-55%) — otherwise
-       the header text lands on top of still-fully-opaque, cluttered grid images */
     --grid-gap-animation-range: 20% 100%;
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
-    /* rises upward off screen (~48x slower than the original 250%), mirroring desktop's
-       grid-converges-into-carousel motion, instead of dropping away below */
     --hub-hero-grip-col-float-mobile: -5%;
   }
 
@@ -646,14 +634,10 @@
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
-    /* disabled — the inner div's hubHeroCarouselHeaderMobileLeave fully owns visibility on
-       mobile; this one was making the header visible too early via compounding opacity. */
     animation: none;
   }
 
   .hub-hero-carousel-header>div {
-    /* "both" so the 0% keyframe (opacity:0) fills backwards before the range starts, otherwise
-       it's visible immediately on load. */
     animation: hubHeroCarouselHeaderMobileLeave ease both;
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 107%;
@@ -743,8 +727,6 @@
     animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
   }
 
-  /* within-column image gap grows the same way desktop shrinks it (hubHeroGridGapDesktopY):
-     translate the second stacked image instead of animating the gap property directly */
   .hub-hero-image-grid-container-col div:nth-child(2) {
     will-change: translate;
     animation: hubHeroGridGapMobileY ease both;
@@ -752,9 +734,6 @@
     animation-range: var(--grid-col-rise-animation-range);
   }
 
-  /* columns 2 and 4 get a 3rd cloned preview image (see handleGridImages in hub-hero.js) — it
-     needs to move away from the (already-translated) 2nd image by the same amount again, i.e.
-     double the single-gap offset, or it stays put while the 2nd image drifts away from it */
   .hub-hero-image-grid-container-col div:nth-child(3) {
     will-change: translate;
     animation: hubHeroGridGapMobileY3rd ease both;
@@ -767,8 +746,6 @@
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
     --carousel-items-top: 38%;
-    /* delayed so header/footer only poke out after the slide has fully expanded, not while
-       it's still settling into place */
     --slide-one-header-footer-reveal: 45% 50%;
 
     position: relative;
@@ -949,7 +926,6 @@
     animation-range: contain 50% contain 100%;
   }
 
-  /* see the --invisible-slide-width comment near invisibleSlideWidthTransition's keyframe */
   .hub-hero:not(.slides-3) {
     animation: hubHeroDesktopShrink ease both, invisibleSlideWidthTransition ease both;
     animation-timeline: --hub-hero, --hub-hero;
@@ -1040,8 +1016,6 @@
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), min-width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
-  /* the hover-preview grow effect only makes sense where hover actually exists — on touch,
-     a tap fires a "focus" event too, which would otherwise trigger this unintentionally */
   @media (hover: hover) {
     .hub-hero-carousel-item.hovered,
     .hub-hero-carousel-item.focused,
@@ -1193,8 +1167,6 @@
   }
 }
 
-/* touch devices get native horizontal scroll instead of the hover-expanded width budget above,
-   and the assembly animation freezes permanently once done (see initTouchCarouselLock). */
 @media (768px <=width <=890px) {
   .hub-hero.touch-scroll.slides-3 {
     --hub-hero-carousel-item-min-width: var(--slide-width);
@@ -1210,8 +1182,6 @@
 }
 
 @media (768px <=width <=1230px) {
-  /* the width-scoped rule above adds `transition: all .3s` for desktop's hover shift — touch
-     has no such interaction, so it just fights our scroll/JS-driven position changes instead. */
   .hub-hero.touch-scroll .hub-hero-carousel-container {
     transition: none;
   }
@@ -1225,8 +1195,6 @@
     animation-play-state: paused;
   }
 
-  /* scrolling lives on this wrapper, not .hub-hero-carousel (overflow-x:clip there is load-
-     bearing for the header) or .hub-hero-carousel-container (sized to fit its content). */
   .hub-hero.touch-scroll .hub-hero-carousel-scroll {
     position: relative;
     width: 100%;
@@ -1239,8 +1207,6 @@
     display: none;
   }
 
-  /* only once locked do we switch to flush-left scrollable positioning — JS sets scrollLeft so
-     it still looks centered but is reachable both directions by touch. */
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-scroll {
     overflow-x: auto;
   }
@@ -1513,9 +1479,6 @@
   }
 }
 
-/* tracks the invisible slide's real effective width (see carouselSlide3Transition) so
-   --hub-hero-carousel-container-width can include it; slides-3 has no invisible slide and
-   never animates this, so it stays at 0px there. */
 @property --invisible-slide-width {
   syntax: '<length>';
   inherits: true;
@@ -1559,8 +1522,6 @@
 }
 
 
-/* opacity held at 0 through local 80% (not just the z-index:-1 hidden trick) so this can't be
-   visible before it's mid-reveal — iOS rubber-band overscroll was stretching it into view. */
 @keyframes slideOneHeaderReveal {
   0% {
     transform: translateY(0);
@@ -1753,8 +1714,6 @@
   }
 }
 
-/* fade-in (local 0-10%) lands right as slide 1's header/footer finish poking out, since this
-   range starts at the same 50% as --slide-one-header-footer-reveal. */
 @keyframes hubHeroCarouselHeaderMobileLeave {
   0% {
     transform: translate(0, 0%);
@@ -1899,8 +1858,6 @@
 }
 
 
-/* horizontal spread eases in gradually to 60%, then accelerates off past the viewport edge
-   instead of holding flat and poking in from the side. */
 @keyframes hubHeroGridCol1Mobile {
   0% {
     transform: translate(0, var(--grid-col-one-offset));
@@ -1971,8 +1928,6 @@
   }
 }
 
-/* mirrors hubHeroGridGapDesktopY: translates the 2nd image instead of animating gap directly,
-   but grows the gap (mobile) instead of shrinking it (desktop). */
 @keyframes hubHeroGridGapMobileY {
   0% {
     translate: 0 0;
@@ -1987,8 +1942,6 @@
   }
 }
 
-/* double the single-gap offset for the 3rd stacked image (columns 2 and 4 only) — it needs to
-   move away from the already-translated 2nd image by that same amount again */
 @keyframes hubHeroGridGapMobileY3rd {
   0% {
     translate: 0 0;
@@ -2122,8 +2075,6 @@
   }
 }
 
-/* Firefox / no scroll-driven animation support fallback — the -moz-appearance check is needed
-   because Firefox now natively supports animation-timeline:view(), so "not (...)" alone misses it. */
 @supports (not (animation-timeline: view())) or (-moz-appearance: none) {
 
   .hub-hero {
@@ -2152,8 +2103,6 @@
     padding-top: 0;
   }
 
-  /* not in the list above — its fill-mode:both animation gets stuck showing its 0% (invisible)
-     state when the timeline never activates, hiding the carousel header text entirely. */
   .hub-hero-carousel-header>div {
     animation: none !important;
   }
@@ -2167,8 +2116,6 @@
     transform: none;
   }
 
-  /* z-index:2 — slide 1 is now permanently opaque (its fade animation is disabled below) and
-     would otherwise paint over this header by DOM order. */
   .hub-hero-carousel .hub-hero-carousel-header {
     height: auto;
     z-index: 2;
@@ -2180,43 +2127,31 @@
   }
 
   @media (width < 768px) {
-    /* --start-gap is normally a brief starting point animation quickly pulls tighter; frozen
-       here, its 4rem default reads as an oddly wide gap instead. */
     .hub-hero {
       --start-gap: var(--s2a-spacing-md);
 
       height: auto;
     }
 
-    /* hubHeroGridGapMobileY/-3rd grow the within-column gap separately from --start-gap above
-       (via translate, not the gap property) — same stuck-animation problem as the header fix. */
     .hub-hero-image-grid-container-col div:nth-child(2),
     .hub-hero-image-grid-container-col div:nth-child(3) {
       animation: none !important;
       translate: 0 0;
     }
 
-    /* the container's -160px normally cancels against slide 1's own animated offset; with that
-       animation disabled, nothing cancels it and it pulls the carousel up into the grid. */
     .hub-hero-carousel-container {
       margin-top: 0;
     }
 
     .hub-hero-carousel-item:nth-child(3) {
-      /* !important — .hub-hero.slides-3's own nth-child(3) rule is more specific than this
-         plain selector and would otherwise win regardless of source order */
       margin-top: 0 !important;
     }
 
-    /* not sticky here either — it should read as a normal, one-time in-flow heading for the
-       carousel section, not something that stays pinned in place while scrolling past it */
     .hub-hero-carousel-header {
       position: relative;
       top: unset;
     }
 
-    /* position:relative, not just animation:none — every slide shares the same sticky top
-       offset, so sticky alone still stacks/covers cards even with animation disabled. */
     .hub-hero-carousel-item {
       animation: none !important;
       position: relative;
@@ -2241,8 +2176,6 @@
       z-index: 1;
     }
 
-    /* opacity:1 — the base rule sets a static opacity:0 alongside the reveal animation;
-       disabling just the animation left these permanently invisible. */
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
       top: unset;
