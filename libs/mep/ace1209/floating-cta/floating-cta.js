@@ -224,7 +224,6 @@ export default async function init(el) {
   } else {
     labelText = (linkEl ?? contentDiv).textContent.trim();
   }
-
   if (!labelText && !actionLink) return;
   if (img?.tagName === 'IMG') {
     const relativeSrc = img.getAttribute('src');
