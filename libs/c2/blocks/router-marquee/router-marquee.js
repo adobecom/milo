@@ -145,11 +145,12 @@ const decorateText = (textCol) => {
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
   const eyebrow = textCol.querySelector('.rm-eyebrow');
-  const icon = textCol.querySelector(':scope > p:has(img[src*=".svg"])');
-  const label = textCol.querySelector(':scope > p:has(img[src*=".svg"]) + p');
-  const cta = textCol.querySelector(':scope > p:has(> em)');
+  const icon = textCol.querySelector('p a[href*=".svg"]');
+  const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
+  const cta = textCol.querySelector('p:has(em)');
+  // Direct children only: skip <p>s a mas-field renders inside itself.
   const body = [...textCol.querySelectorAll(':scope > p')]
-    .filter((p) => [eyebrow, icon, label, cta].every((x) => x !== p));
+    .filter((p) => [eyebrow, icon?.closest('p'), label, cta].every((x) => x !== p));
 
   if (!body.length) return;
   const bodyEl = createTag('div', { class: 'rm-body' });
