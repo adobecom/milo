@@ -55,12 +55,30 @@ function shouldGate() {
   return !isUngatedHost(hostname);
 }
 
+// Corp-only hostname: resolvable only on the internal network/VPN, so the fetch
+// itself (not its response, which is opaque under no-cors) is the signal — it
+// rejects on DNS/connection failure off-network and resolves on-network.
+const FIREWALL_CHECK_URL = 'https://mep-auth-check.awesome-sites.corp.adobe.com';
+export async function isWithinFirewall() {
+  try {
+    await fetch(FIREWALL_CHECK_URL, { mode: 'no-cors' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /*
  * Ungated hosts fire true immediately. Gated hosts fire the initial verdict, then
  * again whenever auth flips (author signs in/out mid-session).
  */
-export function onSidekickAuth(callback) {
+export async function onSidekickAuth(callback) {
   if (!shouldGate()) {
+    callback(true);
+    return;
+  }
+
+  if (await isWithinFirewall()) {
     callback(true);
     return;
   }
