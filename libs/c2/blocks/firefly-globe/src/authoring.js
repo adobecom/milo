@@ -147,29 +147,32 @@ function getLocalizedPrompt(prompts, locale) {
     || '';
 }
 
+function parseModelTags(machineTags) {
+  const tags = machineTags || [];
+  const modelId = (tags.find((t) => t.startsWith('modelId:')) || '').slice('modelId:'.length);
+  const modelVersionName = (tags.find((t) => t.startsWith('modelVersionName:')) || '').slice('modelVersionName:'.length);
+  return { modelId, modelVersionName };
+}
+
 function apiAssetToCard(asset, locale) {
   // eslint-disable-next-line no-underscore-dangle
   const rendition = asset?._links?.rendition;
   if (!rendition?.href) return null;
   const width = Math.min(rendition.max_width || 1024, 1024);
   const img = buildRenditionUrl(rendition.href, width);
-  // eslint-disable-next-line no-underscore-dangle
-  const owner = asset._embedded?.owner;
-  const name = owner?.display_name
-    || `${owner?.first_name || ''} ${owner?.last_name || ''}`.trim()
-    || owner?.user_name
-    || '';
 
   const prompts = asset.custom?.input?.['firefly#prompts'];
-  const role = getLocalizedPrompt(prompts, locale);
+  const prompt = getLocalizedPrompt(prompts, locale);
   const fireflyUrl = asset.urn
     ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
     : null;
+  const { modelId, modelVersionName } = parseModelTags(asset.machine_tags);
   return {
     img,
     alt: '',
-    name,
-    prompt: role,
+    modelId,
+    modelVersionName,
+    prompt,
     fireflyUrl,
     crossOrigin: 'anonymous', // cdn.cp.adobe.io is cross-origin; required for WebGL texSubImage2D
   };
@@ -276,7 +279,10 @@ const buildMarkup = (gid, labels, ctaLabel) => `
 
   <dialog class="firefly-globe-modal-chrome">
     <div class="firefly-globe-modal-info" data-lenis-prevent>
-      <p class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-prompt-${gid} firefly-globe-modal-position-${gid}"></p>
+      <p class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-prompt-${gid} firefly-globe-modal-position-${gid}">
+        <img class="firefly-globe-modal-model-icon" alt="" aria-hidden="true">
+        <span class="firefly-globe-modal-model-label"></span>
+      </p>
       <span class="firefly-globe-modal-position sr-only" id="firefly-globe-modal-position-${gid}" aria-hidden="true"></span>
       <div class="firefly-globe-modal-prompt" id="firefly-globe-modal-prompt-${gid}" role="document"></div>
       <a class="firefly-globe-modal-cta" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>

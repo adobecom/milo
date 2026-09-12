@@ -55,7 +55,25 @@ export default function createGlobeModal({
   requestNavNudge,
   applyMotionCA,
   restoreFocusOnClose,
+  iconBaseUrl,
 }) {
+  const MODEL_ICON = {
+    google: 'google-icon.svg',
+    openai: 'gpt-icon.svg',
+    flux: 'flux-icon.svg',
+    ideogram: 'ideogram-icon.svg',
+    kling: 'kling-icon.svg',
+    luma: 'luma-icon.svg',
+    pika: 'pika-icon.svg',
+    runway: 'runway-icon.svg',
+    seedance: 'seedance-icon.svg',
+    topaz: 'topaz-icon.svg',
+    firefly: 'firefly-icon.svg',
+  };
+  const modelIconUrl = (modelId) => {
+    const file = MODEL_ICON[modelId?.toLowerCase()];
+    return (file && iconBaseUrl) ? `${iconBaseUrl}${file}` : '';
+  };
   let modalRenderer = null;
   let appliedModalDpr = 0;
   let modalScene = null;
@@ -361,7 +379,16 @@ export default function createGlobeModal({
         imgEl.setAttribute('aria-hidden', 'true');
       }
     }
-    targetEl.querySelector('.firefly-globe-modal-name').textContent = meta.name;
+    const nameEl = targetEl.querySelector('.firefly-globe-modal-name');
+    if (nameEl) {
+      const iconEl = nameEl.querySelector('.firefly-globe-modal-model-icon');
+      const labelEl = nameEl.querySelector('.firefly-globe-modal-model-label');
+      const url = modelIconUrl(meta.modelId);
+      if (iconEl) {
+        if (url) { iconEl.src = url; iconEl.removeAttribute('hidden'); } else iconEl.setAttribute('hidden', '');
+      }
+      if (labelEl) labelEl.textContent = meta.modelVersionName || meta.modelId || '';
+    }
     const descEl = targetEl.querySelector('.firefly-globe-modal-prompt');
     if (descEl) descEl.textContent = meta.prompt || '';
     const counterEl = targetEl.querySelector('.firefly-globe-modal-counter');
@@ -373,7 +400,8 @@ export default function createGlobeModal({
     targetEl.querySelectorAll('.firefly-globe-modal-position').forEach((el) => {
       el.textContent = position;
     });
-    announce(speak ? [meta.name, meta.prompt, position].filter(Boolean).join('. ') : '');
+    const modelLabel = meta.modelVersionName || meta.modelId || '';
+    announce(speak ? [modelLabel, meta.prompt, position].filter(Boolean).join('. ') : '');
     const ctaEl = targetEl.querySelector('.firefly-globe-modal-cta');
     if (ctaEl) {
       if (meta.fireflyUrl) {

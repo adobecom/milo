@@ -787,6 +787,7 @@ function createGlobeGalleryRuntime(
     },
     applyMotionCA,
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
+    iconBaseUrl: new URL('./icons/', import.meta.url).href,
   });
 
   function readCssVars() {

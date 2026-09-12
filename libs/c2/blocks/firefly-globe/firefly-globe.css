@@ -364,12 +364,25 @@
 
 .firefly-globe-modal-name {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-2xs);
+  margin: 0 0 var(--s2a-spacing-xs);
+}
+
+.firefly-globe-modal-model-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.firefly-globe-modal-model-label {
   font-family: var(--body-font-family);
   font-size: var(--s2a-font-size-sm);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-font-line-height-sm);
   color: var(--s2a-color-gray-400);
-  margin: 0 0 var(--s2a-spacing-xs);
 }
 
 .firefly-globe-modal-prompt {
