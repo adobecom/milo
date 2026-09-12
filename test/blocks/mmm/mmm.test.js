@@ -110,7 +110,7 @@ describe('MMM', () => {
     expect(infoColumnOne.querySelector('span:nth-child(2)').textContent).to.include('default (control)');
     expect(infoColumnOne.querySelector('span:nth-child(3)').textContent).to.include('Source');
     expect(infoColumnOne.querySelector('span:nth-child(4)').textContent).to.include('target');
-    expect(infoColumnOne.querySelector('span:nth-child(5)').textContent).to.include('Mktg action');
+    expect(infoColumnOne.querySelector('span:nth-child(5)').textContent).to.include('Consent req');
     expect(infoColumnOne.querySelector('span:nth-child(6)').textContent).to.include('undefined');
     const mepPopupBody = mmmPopup.querySelector('.mep-popup-body');
     expect(mepPopupBody).to.exist;
