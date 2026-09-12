@@ -1,0 +1,12 @@
+header.global-navigation.c2-gnav-c1-host {
+  position: sticky;
+  top: 0;
+  background-color: var(--feds-background-nav, #fff);
+}
+
+@media (min-width: 900px) {
+  .appPrompt {
+    z-index: 10;
+    top: 94%;
+  }
+}
