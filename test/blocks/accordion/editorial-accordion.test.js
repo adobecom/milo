@@ -115,7 +115,7 @@ describe('Accordion', () => {
       const btn = el.querySelector('.expand-btn');
       btn.click();
       const details = [...el.querySelectorAll('.descr-details')];
-      expect(details.every((detail) => detail.getAttribute('hidden') === null)).to.be.true;
+      expect(details.every((detail) => !detail.classList.contains('is-collapsed'))).to.be.true;
       const images = el.querySelectorAll('.descr-details img');
       expect(images.length).to.be.equal(3);
     });
