@@ -553,6 +553,19 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   border: 2px solid var(--mep-primary-60);
 }
 
+.mep-drawer .mep-card.center .con-button {
+  cursor: pointer;
+  text-align: center;
+  color: var(--mep-white-100);
+  background: var(--mep-primary-100);
+  border-color: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-card.center .con-button:hover {
+  background: var(--mep-primary-60);
+  border: 2px solid var(--mep-primary-60);
+}
+
 .mep-drawer .mep-spoof-geo-option label {
   cursor: pointer;
   font: var(--mep-body-font);
