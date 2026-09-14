@@ -250,15 +250,8 @@ body:has(header.local-nav) .product-marquee-grid {
      hero — re-declare light-mode tokens so the background, text, and outlined
      button flip together (the Firefly section renders in .dark). Matches Figma. */
   .firefly .product-marquee-grid:not(.non-mas) .pm-merch-card {
-    /* --s2a-color-background-default: var(--s2a-color-gray-25);
-    --s2a-color-background-subtle: var(--s2a-color-gray-50);
-    --s2a-color-border-knockout: var(--s2a-color-gray-1000);
     --s2a-color-content-default: var(--s2a-color-gray-1000);
-    --s2a-color-content-eyebrow: var(--s2a-color-transparent-black-64);
-    --s2a-color-content-subtle: var(--s2a-color-transparent-black-64); */
-
     background: var(--s2a-color-gray-25);
-    color: var(--s2a-color-transparent-black-64);
   }
 }
 
