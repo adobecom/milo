@@ -1264,7 +1264,7 @@ describe('Merch Block', () => {
     });
 
     [
-      { content: 'on', aup: true },
+      { content: 'on', calls: 2, aup: true },
       { content: 'off', query: 'on', aup: true },
       { content: 'on', query: 'off', legacy: true },
       { content: 'off', legacy: true },
@@ -1277,11 +1277,11 @@ describe('Merch Block', () => {
       { content: 'on', failure: 'loadUIComponent', aup: true, legacy: true },
       { content: 'on', modal: false },
     ].forEach(({
-      content, query, commercePreload, lateContent, missingSdk, failure,
+      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
       modal = true, aup = false, legacy = false,
     }) => {
       it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
-        content, query, commercePreload, lateContent, missingSdk, failure, modal,
+        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
       })}`, async () => {
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
@@ -1314,12 +1314,12 @@ describe('Merch Block', () => {
         try {
           const el = document.createElement('a');
           el.isOpen3in1Modal = modal;
-          const action = await getModalAction(
+          const actions = await Promise.all(Array.from({ length: calls }, () => getModalAction(
             [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }],
             { modal: true },
             el,
-          );
-          expect(action.handler).to.be.a('function');
+          )));
+          actions.forEach((action) => expect(action.handler).to.be.a('function'));
           expect(sdk.getOrchestratorContext.called).to.be.false;
           expect(sdk.loadUIComponent.called).to.be.false;
           expect(scripts).to.be.empty;

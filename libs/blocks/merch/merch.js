@@ -496,9 +496,9 @@ export async function loadMasComponent(componentName) {
   return loadPromise;
 }
 
-async function preloadAupSelect() {
-  const sdk = window.aupsdk;
-  if (!sdk) return false;
+const aupSelectPreloads = new WeakMap();
+
+async function preloadAupSelect(sdk) {
   try {
     await Promise.all([
       sdk.getOrchestratorContext(),
@@ -510,6 +510,17 @@ async function preloadAupSelect() {
     log?.warn('AUP Select preload failed', error);
     return false;
   }
+}
+
+function getAupSelectPreload() {
+  const sdk = window.aupsdk;
+  if (!sdk) return undefined;
+  let preload = aupSelectPreloads.get(sdk);
+  if (!preload) {
+    preload = preloadAupSelect(sdk);
+    aupSelectPreloads.set(sdk, preload);
+  }
+  return preload;
 }
 
 function getCommercePreloadUrl() {
@@ -1029,7 +1040,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
       setTimeout(async () => {
-        if (isAupEnabled() && await preloadAupSelect()) return;
+        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
+        if (aupSelectPreload && await aupSelectPreload) return;
         const baseUrl = getCommercePreloadUrl();
         // The script can preload more, based on clientId, but for the ones in use
         // ('mini-plans', 'creative') there is no difference, so we can just use either one.
