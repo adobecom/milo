@@ -1150,9 +1150,9 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
-        document.getElementById('feds-manage-people-dialog')?.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
         const dialog = document.createElement('dialog');
-        dialog.id = 'feds-manage-people-dialog';
+        dialog.id = 'aup-workflow-dialog';
         dialog.appendChild(element);
         document.body.appendChild(dialog);
         element.addEventListener('close', () => {
@@ -1179,7 +1179,9 @@ class Gnav {
       },
     });
 
-    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    const features = ['useToasts'];
+    if (isAupEnabled()) features.push('aup-select');
+    await window.aupsdk.updateConfig({ miniAppContext: { features } });
     return window.aupsdk;
   };
 

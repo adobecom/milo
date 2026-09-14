@@ -470,6 +470,9 @@ describe('global navigation', () => {
       try {
         window.adobeIMS.getProfile = sinon.stub().throws(new Error('please login before getting the profile'));
         await gnav.constructor.preloadAupSdk();
+        expect(instance.updateConfig.calledOnceWithExactly(
+          { miniAppContext: { features: ['useToasts'] } },
+        )).to.be.true;
         const { getProfile } = window.AUPSDK.preloadSDK.firstCall.args[1];
         expect(await getProfile()).to.be.undefined;
         expect(window.adobeIMS.getProfile.called).to.be.false;
@@ -486,6 +489,34 @@ describe('global navigation', () => {
         expect(window.adobeIMS.getProfile.calledOnce).to.be.true;
         window.adobeIMS = undefined;
         expect(await getProfile()).to.be.undefined;
+      } finally {
+        script.remove();
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('enables AUP Select in the mini app context when configured', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      meta = document.createElement('meta');
+      meta.name = 'aup-select';
+      meta.content = 'on';
+      document.head.append(meta);
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.aupsdk = undefined;
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      try {
+        await gnav.constructor.preloadAupSdk();
+        expect(instance.updateConfig.calledOnceWithExactly(
+          { miniAppContext: { features: ['useToasts', 'aup-select'] } },
+        )).to.be.true;
       } finally {
         script.remove();
         window.aupsdk = previousSdk;
@@ -512,7 +543,7 @@ describe('global navigation', () => {
           const element = document.createElement('div');
           const callback = sinon.spy();
           await showDialog(element, {}, callback);
-          const dialog = document.getElementById('feds-manage-people-dialog');
+          const dialog = document.getElementById('aup-workflow-dialog');
           const cancel = sinon.spy();
           const close = sinon.spy();
           element.addEventListener('cancel', cancel);
@@ -535,14 +566,14 @@ describe('global navigation', () => {
           expect(cancel.callCount).to.equal(method === 'workflow-success' ? 0 : 1);
           expect(close.calledOnce).to.be.true;
           expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
-          expect(document.getElementById('feds-manage-people-dialog')).to.be.null;
+          expect(document.getElementById('aup-workflow-dialog')).to.be.null;
           expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
           element.dispatchEvent(new Event('close'));
           expect(callback.calledOnce).to.be.true;
         }
       } finally {
         script.remove();
-        document.getElementById('feds-manage-people-dialog')?.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
         document.documentElement.classList.remove('disable-scroll');
         window.aupsdk = previousSdk;
         window.AUPSDK = previousSdkFactory;
