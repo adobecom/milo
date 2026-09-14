@@ -1902,9 +1902,6 @@ function decorateInlineCtas(masField, content) {
       // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
       content.remove();
     }
-    // The field's data is fully consumed now. Remove its aem-fragment so a later aem:load --
-    // whether re-dispatched by the reconnect above or a genuine MEP refresh -- can't resurrect
-    // a stray duplicate content span onto the already-hoisted CTA (MWPW-207442).
     masField.querySelector('aem-fragment')?.remove();
     upgradeCommerceLinks(masField);
     ensureInlinePriceStyle(masField);
