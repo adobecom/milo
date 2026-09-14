@@ -18,6 +18,7 @@ import merch, {
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
+  getUpgradeAction,
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getOptions,
@@ -1035,6 +1036,25 @@ describe('Merch Block', () => {
   describe('Upgrade Flow', () => {
     beforeEach(() => {
       updateSearch({});
+    });
+
+    it('getUpgradeAction: returns undefined when no upgrade offer is on the page', async () => {
+      mockIms('US');
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+      try {
+        const action = await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          null,
+        );
+        expect(action).to.be.undefined;
+      } finally {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+      }
     });
 
     it('updates CTA text to Upgrade Now', async () => {
