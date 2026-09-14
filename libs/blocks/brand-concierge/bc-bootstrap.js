@@ -18,7 +18,6 @@ let bcToken;
 let susiListener;
 let lastImsState = null;
 let lastSideTop = 0;
-let sideScrollListener;
 
 export function sideOverlayTop() {
   const gnav = document.querySelector('header.global-navigation');
@@ -405,6 +404,38 @@ export async function openSideModal(initialMessage, bootstrap) {
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
   const mountEl = createTag('div', { id: mountId });
 
+  // Call setSideOverlayTop when the gnav top changes on resize for any reason (promo reflow)
+  const gnav = document.querySelector('header.global-navigation');
+  let lastGnavTop = gnav ? gnav.getBoundingClientRect().top : 0;
+  let currentWidth = document.body.getBoundingClientRect().width;
+
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.target === document.body && entry.contentRect.width !== currentWidth) {
+        if (lastGnavTop !== gnav.getBoundingClientRect().top) {
+          lastGnavTop = gnav.getBoundingClientRect().top;
+          sideOverlayTop();
+        }
+        currentWidth = entry.contentRect.width;
+      }
+    }
+  });
+  resizeObserver.observe(document.body);
+
+  let currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
+  const scrollListener = () => {
+    if (gnav) {
+      if (currentSidetop !== document.body.style.getPropertyValue('--bc-side-overlay-top')
+      || window.scrollY < gnav.getBoundingClientRect().height) {
+        window.requestAnimationFrame(() => {
+          currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
+          sideOverlayTop();
+        });
+      }
+    }
+  };
+  window.addEventListener('scroll', scrollListener, { passive: true });
+
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     class: 'opening',
@@ -414,6 +445,8 @@ export async function openSideModal(initialMessage, bootstrap) {
       window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
       localStorage.setItem('bc-side-overlay', 'closed');
       document.body.classList.remove('bc-side-open');
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', scrollListener);
       modal.classList.add('closing');
       await new Promise((resolve) => {
         setTimeout(() => resolve(), animationMs);
@@ -451,41 +484,6 @@ export async function openSideModal(initialMessage, bootstrap) {
       document.body.classList.remove('bc-side-open');
     }
   });
-
-  // Call setSideOverlayTop when the gnav top changes on resize for any reason (promo reflow)
-  const gnav = document.querySelector('header.global-navigation');
-  let lastGnavTop = gnav ? gnav.getBoundingClientRect().top : 0;
-  let currentWidth = document.body.getBoundingClientRect().width;
-
-  const resizeObserver = new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.target === document.body && entry.contentRect.width !== currentWidth) {
-        if (lastGnavTop !== gnav.getBoundingClientRect().top) {
-          lastGnavTop = gnav.getBoundingClientRect().top;
-          sideOverlayTop();
-        }
-        currentWidth = entry.contentRect.width;
-      }
-    }
-  });
-  resizeObserver.observe(document.body);
-
-  let currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
-  // limit window scroll listener, so only one can be active.
-  if (sideScrollListener !== 'scroll') {
-    window.addEventListener('scroll', () => {
-      if (gnav) {
-        if (currentSidetop !== document.body.style.getPropertyValue('--bc-side-overlay-top')
-        || window.scrollY < gnav.getBoundingClientRect().height) {
-          window.requestAnimationFrame(() => {
-            currentSidetop = document.body.style.getPropertyValue('--bc-side-overlay-top');
-            sideOverlayTop();
-          });
-        }
-      }
-    });
-    sideScrollListener = 'scroll';
-  }
 
   bootstrap(initialMessage, mountId);
 }

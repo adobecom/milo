@@ -215,8 +215,7 @@
   }
  }
 
- .dark .how-to,
- .how-to.dark {
-  background: #1E1E1E;
+.dark .how-to,
+.how-to.dark {
   color: var(--color-white);
- }
+}
