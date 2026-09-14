@@ -1180,7 +1180,7 @@ class Gnav {
     });
 
     const features = ['useToasts'];
-    if (isAupEnabled()) features.push('aup-select');
+    if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
     return window.aupsdk;
   };
