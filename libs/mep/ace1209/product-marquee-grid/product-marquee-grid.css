@@ -218,6 +218,7 @@ body:has(header.local-nav) .product-marquee-grid {
          non-mas overrides this later with its own pill background. */
       .firefly & {
         background: var(--s2a-color-gray-25);
+        color: var(--s2a-color-gray-1000);
       }
     }
 
