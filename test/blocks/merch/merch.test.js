@@ -1273,8 +1273,8 @@ describe('Merch Block', () => {
       { content: 'off', lateContent: 'on', aup: true },
       { content: 'on', lateContent: 'off', legacy: true },
       { content: 'on', missingSdk: true, legacy: true },
-      { content: 'on', failure: 'getOrchestratorContext', aup: true, legacy: true },
-      { content: 'on', failure: 'loadUIComponent', aup: true, legacy: true },
+      { content: 'on', failure: 'getOrchestratorContext', aup: true },
+      { content: 'on', failure: 'loadUIComponent', aup: true },
       { content: 'on', modal: false },
     ].forEach(({
       content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
