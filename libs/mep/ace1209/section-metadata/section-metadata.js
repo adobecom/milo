@@ -72,9 +72,9 @@ function handleBackgroundControls(section) {
       }
       control.setAttribute('aria-controls', video.id);
     }
-    // Carry the container's viewport class onto the control so CSS can gate it.
-    const vpClass = VIEWPORT_CLASSES.find((vp) => container?.classList.contains(vp));
-    if (vpClass) control.classList.add(vpClass);
+    // Carry the container's viewport classes onto the control so CSS can gate it.
+    VIEWPORT_CLASSES.filter((vp) => container?.classList.contains(vp))
+      .forEach((vp) => control.classList.add(vp));
     host.append(control);
   });
 }
