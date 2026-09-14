@@ -903,6 +903,17 @@ describe('setPreviewButton', () => {
     expect(href).to.include('mepHighlight=true');
   });
 
+  it('includes mepLingoHighlight param when toggle-lingo checkbox is checked', async () => {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-lingo';
+    cb.checked = true;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.include('mepLingoHighlight=true');
+  });
+
   it('includes manifest path in mep param when a manifest text input has a value', async () => {
     const input = document.createElement('input');
     input.type = 'text';

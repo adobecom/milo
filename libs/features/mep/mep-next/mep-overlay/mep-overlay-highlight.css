@@ -5,26 +5,27 @@
   */
 
   /* MEP Toggle*/
-  --mep-accent: #e0f7fa; /* Cyan 50 */
   --mep-primary: #0097a7; /* Cyan 700 */
+  --mep-secondary: #e0f7fa; /* Cyan 50 */
 
-  --mep-lingo-accent: rgb(232,245,233); /* Green 50 */
-  --mep-lingo-primary: rgb(56,142,60); /* Green 700 */
-
-  --mep-removed-accent: rgb(255,235,238); /* Red 50 */
   --mep-removed-primary: rgb(211,47,47); /* Red 700 */
+  --mep-removed-secondary: rgb(255,235,238); /* Red 50 */
+
+  /* Lingo Toggle*/
+  --lingo-primary: rgb(56,142,60); /* Green 700 */
+  --lingo-secondary: rgb(232,245,233); /* Green 50 */
 
   /* Other Toggle*/
-  --other-fragment-accent: #eceff1; /* Blue-Grey 50 */
-  --other-fragment-primary: #455a64; /* Blue-Grey 700 */
+  --other-primary: #455a64; /* Blue-Grey 700 */
+  --other-secondary: #eceff1; /* Blue-Grey 50 */
 
   /* Caas Toggle*/
-  --caas-secondary: rgba(243,229,245); /* Indigo 50 */
   --caas-primary: rgb(48,63,159); /* Indigo 700 */
+  --caas-secondary: rgba(243,229,245); /* Indigo 50 */
 
   /* M@S Toggle */
-  --mas-secondary: rgb(232,234,246); /* Indigo 50 */
   --mas-primary: rgb(245,124,0); /* Indigo 700 */
+  --mas-secondary: rgb(232,234,246); /* Indigo 50 */
 
   /* Misc */
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
@@ -41,8 +42,8 @@ body a.mep-mas-sub-collection-badge,
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before,
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before,
 body[data-other-highlight='true'] [data-fragment-default]::before,
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]::before,
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before,
@@ -101,8 +102,8 @@ a.mep-mas-sub-collection-badge,
 body a.mep-mas-sub-collection-badge,
 body[data-mep-highlight='true'] [data-manifest-id][data-path]::before,
 body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before,
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before,
 body[data-other-highlight='true'] [data-fragment-default]::before,
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]::before,
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before,
@@ -141,7 +142,7 @@ body[data-mep-highlight='true'] [data-manifest-id]::before {
   content: attr(data-manifest-display);
   border: 2px solid var(--mep-primary);
   color: var(--mep-primary);
-  background-color: var(--mep-accent);
+  background-color: var(--mep-secondary);
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {
@@ -153,31 +154,31 @@ body[data-mep-highlight='true'] [data-code-manifest-id]::before {
   content: 'MEP Code:  ' attr(data-code-manifest-id);
   border: 2px solid var(--mep-primary);
   color: var(--mep-primary);
-  background-color: var(--mep-accent);
+  background-color: var(--mep-secondary);
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-roc] {
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc] {
   position: relative !important;
-  outline: 2px dashed var(--mep-lingo-primary) !important;
+  outline: 2px dashed var(--lingo-primary) !important;
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before {
   content: 'MEP Lingo:  ' attr(data-mep-lingo-roc);
-  border: 2px solid var(--mep-lingo-primary);
-  color: var(--mep-lingo-primary);
-  background-color: var(--mep-lingo-accent);
+  border: 2px solid var(--lingo-primary);
+  color: var(--lingo-primary);
+  background-color: var(--lingo-secondary);
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback] {
   position: relative !important;
   outline: 2px dashed var(--caas-primary) !important;
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
+body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before {
   content: 'MEP Lingo Fallback:  ' attr(data-mep-lingo-fallback);
-  border: 2px solid var(--mep-lingo-primary);
-  color: var(--mep-lingo-primary);
-  background-color: var(--mep-lingo-accent);
+  border: 2px solid var(--lingo-primary);
+  color: var(--lingo-primary);
+  background-color: var(--lingo-secondary);
 }
 
 body[data-mep-highlight='true'] [data-removed-manifest-id] {
@@ -189,7 +190,7 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: 'MEP Removed: ' attr(data-removed-manifest-id);
   border: 2px solid var(--mep-removed-primary);
   color: var(--mep-removed-primary);
-  background-color: var(--mep-removed-accent) !important;
+  background-color: var(--mep-removed-secondary) !important;
 }
 
 body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
@@ -199,14 +200,14 @@ body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
 /* OTHER */
 body[data-other-highlight='true'] [data-fragment-default] {
   position: relative !important;
-  outline: 2px dashed var(--other-fragment-primary) !important;
+  outline: 2px dashed var(--other-primary) !important;
 }
 
 body[data-other-highlight='true'] [data-fragment-default]::before {
   content: 'Other Fragment:  ' attr(data-fragment-display);
-  border: 2px solid var(--other-fragment-primary);
-  color: var(--other-fragment-primary);
-  background-color: var(--other-fragment-accent) !important;
+  border: 2px solid var(--other-primary);
+  color: var(--other-primary);
+  background-color: var(--other-secondary) !important;
 }
 
 

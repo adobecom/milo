@@ -539,6 +539,7 @@ export async function setPreviewButton() {
   setOrDelete('akamaiLocale', getSpoofGeoParams(popup));
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
+  setOrDelete(HIGHLIGHT_KEYS.lingo, getCheckboxParam(popup, 'toggle-lingo'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));

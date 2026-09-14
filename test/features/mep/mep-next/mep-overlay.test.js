@@ -1269,7 +1269,7 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   let headerEl;
 
   before(async () => {
-    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
+    window.history.replaceState({}, '', '/?mepHighlight=true&mepLingoHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
     setConfig(BASE_CONFIG);
     mainEl = makeMain();
     headerEl = makeHeader();
@@ -1281,6 +1281,7 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
     window.history.replaceState({}, '', window.location.pathname);
     cleanup(mainEl, headerEl);
     delete document.body.dataset.mepHighlight;
+    delete document.body.dataset.mepLingoHighlight;
     delete document.body.dataset.mepCaasHighlight;
     delete document.body.dataset.mepMasHighlight;
     delete document.body.dataset.otherHighlight;
@@ -1295,8 +1296,17 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
     expect(document.body.dataset.mepCaasHighlight).to.equal('true');
   });
 
+  it('mepLingoHighlight param sets body.dataset.mepLingoHighlight to "true"', () => {
+    expect(document.body.dataset.mepLingoHighlight).to.equal('true');
+  });
+
   it('#toggle-mep checkbox gets "checked" attribute set', () => {
     const cb = mainEl.querySelector('#toggle-mep');
+    expect(cb?.hasAttribute('checked')).to.be.true;
+  });
+
+  it('#toggle-lingo checkbox gets "checked" attribute set', () => {
+    const cb = mainEl.querySelector('#toggle-lingo');
     expect(cb?.hasAttribute('checked')).to.be.true;
   });
 });

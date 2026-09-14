@@ -52,6 +52,7 @@ const CARD_DATA = {
   actions: [
     ['Highlight', [
       ['MEP', getPageUpdates],
+      ['Lingo', getPageUpdates],
       ['Caas', getPageUpdates],
       ['M@S', getPageUpdates],
       ['Other Fragments', getPageUpdates],
@@ -460,6 +461,7 @@ function buildTabsAndBody(pageId) {
 
 async function setDefaultValues() {
   const {
+    mepLingoHighlight,
     mepCaasHighlight,
     mepMasHighlight,
     mepOtherHighlight,
@@ -468,6 +470,7 @@ async function setDefaultValues() {
   } = getParameters();
   [
     [`#${TOGGLE_KEYS.mep}`, mepHighlight],
+    [`#${TOGGLE_KEYS.lingo}`, mepLingoHighlight],
     [`#${TOGGLE_KEYS.caas}`, mepCaasHighlight],
     [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
     [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
