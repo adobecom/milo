@@ -1918,6 +1918,11 @@ function watchMasFieldCtas() {
   });
 }
 
+/** True when a mas-field (or one of its descendants) resolved to a promotion variation. */
+function isPromoVariation(mf) {
+  return mf.matches('[data-promotion-project]') || mf.querySelector('[data-promotion-project]');
+}
+
 /**
  * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
  * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
@@ -1931,7 +1936,7 @@ function watchPromoPlaceholders() {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const container = mf.closest('.promo-placeholder');
     if (!container || container.classList.contains('promo-resolved')) return;
-    if (mf.matches('[data-promotion-project]') || mf.querySelector('[data-promotion-project]')) {
+    if (isPromoVariation(mf)) {
       container.classList.add('promo-resolved');
     }
   });
@@ -1949,7 +1954,7 @@ function watchPromoModals() {
   promoModalsWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD') return;
-    if (!mf.matches('[data-promotion-project]') && !mf.querySelector('[data-promotion-project]')) return;
+    if (!isPromoVariation(mf)) return;
     const anchor = mf.querySelector('a[href]');
     if (!anchor || anchor.textContent.trim().toLowerCase() !== 'modal') return;
     let path;
@@ -1962,10 +1967,14 @@ function watchPromoModals() {
     if (!id) return;
     anchor.remove(); // consume: the link only carried the modal path, never render it
     if (document.querySelector(`.dialog-modal[id="${id}"]`)) return;
-    const { miloLibs, codeRoot } = getConfig();
-    const { getModal } = await import('../modal/modal.js');
-    loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
-    getModal({ id, path });
+    try {
+      const { miloLibs, codeRoot } = getConfig();
+      const { getModal } = await import('../modal/modal.js');
+      loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
+      getModal({ id, path });
+    } catch (e) {
+      log?.error('Failed to open promo modal', e);
+    }
   });
 }
 
