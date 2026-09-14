@@ -11,51 +11,22 @@
   --mep-lingo-accent: rgb(232,245,233); /* Green 50 */
   --mep-lingo-primary: rgb(56,142,60); /* Green 700 */
 
-  --mep-code-accent: rgb(243,229,245); /* Purple 50*/
-  --mep-code-primary: rgb(123,31,162); /* Purple 700*/
-
   --mep-removed-accent: rgb(255,235,238); /* Red 50 */
   --mep-removed-primary: rgb(211,47,47); /* Red 700 */
-
-  --mep-inline-primary: rgb(194,24,91); /* Pink 700 */
-  --mep-edit-primary: rgb(245,124,0); /* Orange 700 */
 
   /* Other Toggle*/
   --other-fragment-accent: #eceff1; /* Blue-Grey 50 */
   --other-fragment-primary: #455a64; /* Blue-Grey 700 */
 
   /* Caas Toggle*/
-  --caas-secondary: rgb(241,248,233); /* Light Green 50 */
-  --caas-primary: rgb(104,159,56); /* Light Green 700 */
-
-  --caas-lang-first-accent: #fff8e1; /* Amber 50 */
-  --caas-lang-first-primary: #ffa000; /* Amber 700 */
-
-  --caas-edit-block-accent: #e8eaf6; /* Indigo 50 */
-  --caas-edit-block-primary: #303f9f; /* Indigo 700 */
+  --caas-secondary: rgba(243,229,245); /* Indigo 50 */
+  --caas-primary: rgb(48,63,159); /* Indigo 700 */
 
   /* M@S Toggle */
-  --mas-edit-accent: rgb(255,243,224); /* Orange 50 */
-  --mas-edit-primary: rgb(245,124,0); /* Orange 700 */
+  --mas-secondary: rgb(232,234,246); /* Indigo 50 */
+  --mas-primary: rgb(245,124,0); /* Indigo 700 */
 
-  --mas-copy-accent: rgb(250,250,250); /* Grey 50 */
-  --mas-copy-primary: rgb(97,97,97); /* Grey 700 */
-
-  --mas-copy-success-accent: rgb(232,245,233); /* Green 50 */
-  --mas-copy-success-primary: rgb(56,142,60); /* Green 700 */
-
-  --mas-collection-accent: rgb(243,229,245); /* Purple 50 */
-  --mas-collection-primary: rgb(123,31,162); /* Purple 700 */
-
-  --mas-ost-accent: rgb(227,242,253); /* Blue 50 */
-  --mas-ost-primary: rgb(25,118,210); /* Blue 700 */
-
-  --mas-sub-collection-accent: rgb(237,231,246); /* Deep Purple 50 */
-  --mas-sub-collection-primary: rgb(81,45,168); /* Deep Purple 700 */
-
-  --mas-inline-accent: rgb(252,228,236); /* Pink 50 */
-  --mas-inline-primary: rgb(194,24,91); /* Pink 700 */
-
+  /* Misc */
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-link-svg: url("data:image/svg+xml,<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11ZM17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11Z' fill='black'/></svg>");
 }
@@ -175,14 +146,14 @@ body[data-mep-highlight='true'] [data-manifest-id]::before {
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {
   position: relative !important;
-  outline: 2px dashed var(--mep-code-primary) !important;
+  outline: 2px dashed var(--mep-primary) !important;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id]::before {
   content: 'MEP Code:  ' attr(data-code-manifest-id);
-  border: 2px solid var(--mep-code-primary);
-  color: var(--mep-code-primary);
-  background-color: var(--mep-code-accent);
+  border: 2px solid var(--mep-primary);
+  color: var(--mep-primary);
+  background-color: var(--mep-accent);
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-roc] {
@@ -199,7 +170,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
   position: relative !important;
-  outline: 2px dashed var(--caas-lang-first-primary) !important;
+  outline: 2px dashed var(--caas-primary) !important;
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
@@ -265,14 +236,14 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'],
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
   position: relative !important;
-  outline: 2px dashed var(--caas-lang-first-primary);
+  outline: 2px dashed var(--caas-primary);
 }
 
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
   content: 'caas-lang: ' attr(data-card-path);
-  border: 2px solid var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary) !important;
-  background-color: var(--caas-lang-first-accent) !important;
+  border: 2px solid var(--caas-primary);
+  color: var(--caas-primary) !important;
+  background-color: var(--caas-secondary) !important;
 }
 
 /* Not sure if this is necessary */
@@ -286,7 +257,7 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
 }
 
 body[data-mep-caas-highlight='true'] [data-caas-block] {
-  outline: 2px dashed var(--caas-edit-block-primary);
+  outline: 2px dashed var(--caas-primary);
 }
 
 *:has(> a.mep-caas-edit-badge) {
@@ -298,34 +269,34 @@ body a.mep-caas-edit-badge {
   top: 0;
   transform: translateY(-100%);
   display: inline-block;
-  border: 2px solid var(--caas-edit-block-primary);
+  border: 2px solid var(--caas-primary);
   text-decoration: none;
-  color: var(--caas-edit-block-primary);
-  background-color: var(--caas-edit-block-accent);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 /* M@S */
 body[data-mep-mas-highlight='true'] [data-mas-block='collection'] {
-  outline: 2px dashed var(--mas-collection-primary);
+  outline: 2px dashed var(--mas-primary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
   position: relative;
   overflow: visible;
-  outline: 2px dashed var(--mas-edit-primary);
+  outline: 2px dashed var(--mas-primary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
   display: inline-block;
   position: relative;
   overflow: visible;
-  outline: 2px dashed var(--mas-inline-primary);
+  outline: 2px dashed var(--mas-primary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
   position: relative;
   overflow: visible;
-  outline: 2px dashed var(--mas-ost-primary);
+  outline: 2px dashed var(--mas-primary);
 }
 
 a.mep-mas-edit-badge,
@@ -336,18 +307,18 @@ body a.mep-mas-edit-badge {
 }
 
 a.mep-mas-edit-badge-collection {
-  border: 2px solid var(--mas-collection-primary);
-  color: var(--mas-collection-primary);
-  background-color: var(--mas-collection-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 a.mep-mas-sub-collection-badge,
 body a.mep-mas-sub-collection-badge {
   display: inline-block;
   text-decoration: none;
-  border: 2px solid var(--mas-sub-collection-primary);
-  color: var(--mas-sub-collection-primary);
-  background-color: var(--mas-sub-collection-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 a.mep-mas-sub-collection-badge::before {
@@ -355,54 +326,54 @@ a.mep-mas-sub-collection-badge::before {
 }
 
 a.mep-mas-edit-badge-card {
-  border: 2px solid var(--mas-edit-primary);
-  color: var(--mas-edit-primary);
-  background-color: var(--mas-edit-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit {
-  border: 2px solid var(--mas-edit-primary);
-  color: var(--mas-edit-primary);
-  background-color: var(--mas-edit-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost {
-  border: 2px solid var(--mas-ost-primary);
-  color: var(--mas-ost-primary);
-  background-color: var(--mas-ost-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
-  border: 2px solid var(--mas-copy-primary);
+  border: 2px solid var(--mas-primary);
   font-family: inherit;
-  color: var(--mas-copy-primary);
-  background-color: var(--mas-copy-accent);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy-copied {
-  border-color: var(--mas-copy-success-primary);
-  color: var(--mas-copy-success-primary);
+  border-color: var(--mas-primary);
+  color: var(--mas-primary);
   background-color: var(--caas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit.mep-mas-card-actions-mismatch,
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-actions-mismatch {
-  border-color: var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary);
-  background-color: var(--caas-lang-first-accent);
+  border-color: var(--caas-primary);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
   position: relative;
   overflow: visible;
-  outline: 2px dashed var(--mas-ost-primary);
+  outline: 2px dashed var(--mas-primary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   content: 'View in OST';
-  border: 2px solid var(--mas-ost-primary);
-  color: var(--mas-ost-primary);
-  background-color: var(--mas-ost-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::before {
@@ -410,9 +381,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::b
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market-mismatch='true']::before {
-  border-color: var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary);
-  background-color: var(--caas-lang-first-accent);
+  border-color: var(--caas-primary);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 /* Collection cards use the consolidated action stack, so suppress the per-offer
@@ -423,9 +394,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-bloc
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
   content: 'Edit Inline Field';
-  border: 2px solid var(--mas-inline-primary);
-  color: var(--mas-inline-primary);
-  background-color: var(--mas-inline-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::before {
@@ -433,16 +404,16 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mismatch='true']::before {
-  border-color: var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary);
-  background-color: var(--caas-lang-first-accent);
+  border-color: var(--caas-primary);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
   content: 'View in OST';
-  border: 2px solid var(--mas-ost-primary);
-  color: var(--mas-ost-primary);
-  background-color: var(--mas-ost-accent);
+  border: 2px solid var(--mas-primary);
+  color: var(--mas-primary);
+  background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::before {
@@ -450,9 +421,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::bef
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-mismatch='true']::before {
-  border-color: var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary);
-  background-color: var(--caas-lang-first-accent);
+  border-color: var(--caas-primary);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 .mep-mas-edit-badge-market {
@@ -465,9 +436,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-misma
 
 .mep-mas-edit-badge-market-mismatch {
   padding: 1px 6px;
-  border: 2px solid var(--caas-lang-first-primary);
-  color: var(--caas-lang-first-primary);
-  background-color: var(--caas-lang-first-accent);
+  border: 2px solid var(--caas-primary);
+  color: var(--caas-primary);
+  background-color: var(--caas-secondary);
 }
 
 .mep-mas-no-content {
