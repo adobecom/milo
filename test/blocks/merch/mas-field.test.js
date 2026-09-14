@@ -505,7 +505,7 @@ describe('mas-field', () => {
       expect(link).to.exist;
     });
 
-    it('removes aem-fragment after hoisting an inline CTA so a later aem:load cannot duplicate it (MWPW-207442)', async () => {
+    it('removes aem-fragment after hoisting an inline CTA so a later aem:load cannot duplicate it', async () => {
       const section = document.createElement('div');
       const p = document.createElement('p');
       const strong = document.createElement('strong');
