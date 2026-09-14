@@ -354,24 +354,11 @@
 
 /* CTA pushes itself to the bottom of the info scrim. */
 .firefly-globe-modal-cta {
-  display: block;
-  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
   margin-top: auto;
-  padding: var(--s2a-spacing-md) var(--s2a-spacing-lg);
-  border-radius: 20px;
-  background: var(--s2a-color-blue-900);
-  color: var(--s2a-color-gray-25);
+  padding-block: 14px;
   font-family: var(--body-font-family);
-  font-size: var(--s2a-typography-font-size-label);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  line-height: var(--s2a-typography-line-height-label);
-  letter-spacing: var(--s2a-typography-letter-spacing-label);
-  text-align: center;
-  text-decoration: none;
-  transition: background 0.2s ease;
-
-  &:hover { background: var(--s2a-color-blue-1000); }
-  &:active { background: var(--s2a-color-blue-1100); }
 }
 
 .firefly-globe-modal-name {

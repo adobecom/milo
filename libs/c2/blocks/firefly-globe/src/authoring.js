@@ -285,7 +285,7 @@ const buildMarkup = (gid, labels, ctaLabel) => `
       </p>
       <span class="firefly-globe-modal-position sr-only" id="firefly-globe-modal-position-${gid}" aria-hidden="true"></span>
       <div class="firefly-globe-modal-prompt" id="firefly-globe-modal-prompt-${gid}" role="document"></div>
-      <a class="firefly-globe-modal-cta" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>
+      <a class="firefly-globe-modal-cta con-button blue" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>
     </div>
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
     <span class="firefly-globe-modal-image sr-only" role="img"></span>
