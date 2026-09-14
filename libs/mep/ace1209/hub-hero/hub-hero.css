@@ -309,8 +309,8 @@
 }
 
 .hub-hero-carousel-item-footer p {
-  flex: 1;    
-  max-width: 80%;    
+  flex: 1;
+  max-width: 80%;
 }
 
 .hub-hero-carousel-item-footer span {
@@ -412,7 +412,7 @@
 .hub-hero.slides-3 {
   --slides: 3;
   --elastic-mobile-first-slide-offset: -160px;
-  
+
 
   .hub-hero-carousel-item-media {
     position: relative;
@@ -474,10 +474,6 @@
     }
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
-      /* intentionally a hair flatter than true 3/4 (0.75) — the uploaded image isn't actually
-         3:4, so this "fakes" the look of it; nudging short instead of tall means any point
-         where the scroll-driven transition hasn't reached exactly 5/4 yet errs toward being
-         shorter than other slides (unnoticeable) rather than taller (pokes out behind them) */
       aspect-ratio: 0.78;
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
@@ -878,7 +874,7 @@
     padding: var(--s2a-spacing-lg);
     text-align: start;
   }
-  
+
   .hub-hero-carousel-item-media {
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
@@ -1543,7 +1539,7 @@
     transform: translateY(0);
     opacity: 0;
   }
-  
+
   10% {
     opacity: 1;
   }
@@ -1591,7 +1587,7 @@
   20% {
     aspect-ratio: 5 / 4;
   }
-  
+
   100% {
     aspect-ratio: 5 / 4;
   }

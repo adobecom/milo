@@ -86,16 +86,18 @@ const handleMobileAutoplay = (carousel) => {
   return observers;
 };
 
+const getHubHeroScrollRange = (hubHero) => ({
+  totalScrollRange: hubHero.offsetHeight - window.innerHeight,
+  hubHeroAbsTop: window.scrollY + hubHero.getBoundingClientRect().top,
+});
+
 const scrollHubHeroTo = (el, progress) => {
-  // double-rAF: runs after VoiceOver's async focus-scroll settles,
-  // preventing it from cancelling our scroll on backward keyboard nav
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const hubHero = el.closest('.hub-hero');
       if (!hubHero) return;
-      const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+      const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
       if (totalScrollRange <= 0) return;
-      const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
       const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
       window.scrollTo({ top: targetScrollY, behavior: 'instant' });
     });
@@ -105,9 +107,8 @@ const scrollHubHeroTo = (el, progress) => {
 const CAROUSEL_TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
 
 const getHubHeroProgress = (hubHero) => {
-  const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+  const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
   if (totalScrollRange <= 0) return 1;
-  const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
   return Math.min(Math.max((window.scrollY - hubHeroAbsTop) / totalScrollRange, 0), 1);
 };
 
@@ -140,7 +141,7 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
 const initHeaderPin = (hubHero, header) => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
-  if (reducedMotion) return;
+  if (reducedMotion || !isMobile()) return;
 
   const pinController = new AbortController();
 
@@ -295,6 +296,7 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   `;
 
   const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
+  const labelledBy = [eyebrow && titleId, heading && descId].filter(Boolean).join(' ');
 
   const slideEl = createTag('a', {
     class: 'hub-hero-carousel-item',
@@ -302,7 +304,7 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
-    'aria-labelledby': [eyebrow && titleId, heading && descId].filter(Boolean).join(' '),
+    ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
@@ -311,9 +313,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
 
   slideEl.addEventListener('click', (e) => {
     if (!slideEl.href) return;
-    // Prevent browser from scrolling to the hash anchor.
-    // Manually push the hash and dispatch hashchange so Milo's modal system
-    // still picks it up without moving the scroll position.
     e.preventDefault();
     const oldURL = window.location.href;
     window.history.pushState(null, '', new URL(slideEl.href).hash);
