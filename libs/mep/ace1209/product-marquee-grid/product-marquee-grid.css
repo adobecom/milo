@@ -257,8 +257,8 @@ body:has(header.local-nav) .product-marquee-grid {
     --s2a-color-content-eyebrow: var(--s2a-color-transparent-black-64);
     --s2a-color-content-subtle: var(--s2a-color-transparent-black-64); */
 
-    background: var(--s2a-color-background-default);
-    color: var(--s2a-color-content-default);
+    background: var(--s2a-color-gray-25);
+    color: var(--s2a-color-transparent-black-64);
   }
 }
 
