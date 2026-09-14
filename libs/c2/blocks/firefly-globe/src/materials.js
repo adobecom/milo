@@ -1,7 +1,5 @@
 import * as THREE from '../../../../deps/three.js';
-import {
-  CARD_VERT, CARD_DISPERSE_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG,
-} from './shaders.js';
+import { CARD_DISPERSE_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG } from './shaders.js';
 
 // GPU-asset factories: the ShaderMaterials + the texture loaders.
 
@@ -63,28 +61,6 @@ export function createModalMaterial(texture, aspect) {
   });
 }
 
-// `aspect` is the camera aspect (x-axis warp); `resolution` is the device-pixel canvas size.
-export function createTextMaterial({ texture, aspect, resolution }) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uMap: { value: texture },
-      uOpacity: { value: 0 },
-      uCA: { value: 0 },
-      uWarp: { value: 0 },
-      uZoom: { value: 0 },
-      uUVScale: { value: 1.0 },
-      uAspect: { value: aspect },
-      uExitP: { value: 0 },
-      uResolution: { value: new THREE.Vector2(resolution.x, resolution.y) },
-    },
-    vertexShader: CARD_VERT,
-    fragmentShader: TEXT_FRAG,
-    transparent: true,
-    depthTest: true,
-    depthWrite: false,
-  });
-}
-
 // Clamp the longest side to `maxTex` px, preserving aspect.
 function fitDims(w, h, maxTex) {
   const longest = Math.max(w, h);
@@ -133,10 +109,6 @@ async function imageToTexture(img, cap, fit = fitDims) {
   }
 }
 
-function releaseCanvasAfterUpload(tex, cv) {
-  tex.onUpdate = () => { cv.width = 0; cv.height = 0; };
-}
-
 // Lets a card mesh be built before its photo loads. Its pixels are never shown — the contour
 // hides them until uReveal > 0.
 export function createPlaceholderTexture() {
@@ -153,8 +125,7 @@ function texAspect(tex) {
   return imgW / imgH;
 }
 
-// onEach fires per settled image, onDone once all `count` settle. These deliberately do NOT
-// releaseCanvasAfterUpload — two renderers upload them.
+// onEach fires per settled image, onDone once all `count` settle.
 export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
@@ -200,75 +171,4 @@ export function loadModalTexture(src, maxTex, onReady, onError, crossOrigin) {
   };
   img.src = src;
   return img;
-}
-
-const TEXT_MAX_SIDE = 2048;
-
-// Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
-const HINT_FILL = 0.9;
-
-const HINT_FALLBACK = 'adobe-clean-display, sans-serif';
-function hintFamilies() {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue('--heading-font-family') || HINT_FALLBACK;
-}
-
-export async function loadHintFont(text) {
-  return document.fonts.load(`900 100px ${hintFamilies()}`, text);
-}
-
-// canvas silently keeps its 10px default when the shorthand does not parse.
-function usableFamilies(ctx) {
-  const authored = hintFamilies();
-  ctx.font = `900 100px ${authored}`;
-  if (ctx.font.includes('100px')) return authored;
-  ctx.font = `900 100px ${HINT_FALLBACK}`;
-  return ctx.font.includes('100px') ? HINT_FALLBACK : null;
-}
-
-// `aspect` is the camera aspect, so texture pixels stay square. Null when no font parses.
-export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
-  let canvasW; let canvasH;
-  if (aspect >= 1) {
-    canvasW = TEXT_MAX_SIDE;
-    canvasH = Math.max(1, Math.round(TEXT_MAX_SIDE / aspect));
-  } else {
-    canvasH = TEXT_MAX_SIDE;
-    canvasW = Math.max(1, Math.round(TEXT_MAX_SIDE * aspect));
-  }
-  const canvas = document.createElement('canvas');
-  canvas.width = canvasW;
-  canvas.height = canvasH;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvasW, canvasH);
-  ctx.fillStyle = 'white';
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'center';
-
-  const families = usableFamilies(ctx);
-  if (!families) return null;
-
-  const setFont = (px) => {
-    ctx.font = `900 ${px}px ${families}`;
-    if (typeof ctx.letterSpacing !== 'undefined') {
-      ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
-    }
-  };
-
-  // Measure at a reference size, scale to HINT_FILL of the width, cap to a height budget.
-  const refSize = Math.round((canvasW * 250) / 1440); // Figma: 250px @ 1440 viewport
-  setFont(refSize);
-  const rawWidth = ctx.measureText(hintText).width;
-  const measured = rawWidth > 0 ? rawWidth : 1;
-  const maxSize = Math.round(canvasH * 0.55); // keeps glyphs within the ~75% height budget
-  const fitSize = Math.round(refSize * ((canvasW * HINT_FILL) / measured));
-  const fontSize = Math.min(maxSize, fitSize);
-  setFont(fontSize);
-
-  ctx.fillText(hintText, canvasW / 2, canvasH * 0.5);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  releaseCanvasAfterUpload(tex, canvas); // sphere-only, single renderer — see README
-  return tex;
 }
