@@ -100,6 +100,12 @@
   -webkit-touch-callout: none;
 }
 
+.firefly-globe-modal-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .firefly-globe-world {
   position: sticky;
   top: 0;

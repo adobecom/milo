@@ -56,19 +56,21 @@ export default function createGlobeModal({
   applyMotionCA,
   restoreFocusOnClose,
   iconBaseUrl,
+  onModalOpen,
+  onModalClose,
 }) {
   const MODEL_ICON = {
-    google: 'google-icon.svg',
-    openai: 'gpt-icon.svg',
-    flux: 'flux-icon.svg',
-    ideogram: 'ideogram-icon.svg',
-    kling: 'kling-icon.svg',
-    luma: 'luma-icon.svg',
-    pika: 'pika-icon.svg',
-    runway: 'runway-icon.svg',
-    seedance: 'seedance-icon.svg',
-    topaz: 'topaz-icon.svg',
-    firefly: 'firefly-icon.svg',
+    google: 'google.svg',
+    openai: 'gpt.svg',
+    flux: 'flux.svg',
+    ideogram: 'ideogram.svg',
+    kling: 'kling.svg',
+    luma: 'luma.svg',
+    pika: 'pika.svg',
+    runway: 'runway.svg',
+    seedance: 'seedance.svg',
+    topaz: 'topaz.svg',
+    firefly: 'firefly.svg',
   };
   const modelIconUrl = (modelId) => {
     const file = MODEL_ICON[modelId?.toLowerCase()];
@@ -107,6 +109,8 @@ export default function createGlobeModal({
 
   // Suppresses the synthetic click after touch pointerup, which would self-close.
   let modalOpenedAt = 0;
+  let preLockScrollY = 0;
+  let modalCanvasTopPx = 0;
   // open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
   // Wired once — the DOM persists across re-inits, so re-adding would stack them.
@@ -130,6 +134,7 @@ export default function createGlobeModal({
     modalPhase = MODAL_PHASE.CLOSED;
     modalCard = null;
     modalIdx = -1;
+    modalCanvasTopPx = 0;
   }
 
   function resetChromeReveal() {
@@ -247,6 +252,12 @@ export default function createGlobeModal({
     v.x = clamp01(clientX / W);
     v.y = clamp01(1 - clientY / H);
     return v;
+  }
+
+  function shiftForCanvasOffset(pos) {
+    if (!modalCanvasTopPx) return;
+    const depth = getCamera().position.z - pos.z;
+    if (depth > 0.01) pos.y -= modalCanvasTopPx / pxPerWorldAt(depth, getViewport().H);
   }
 
   function pushModalWarpUniforms() {
@@ -496,6 +507,8 @@ export default function createGlobeModal({
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
     }
+    modalCanvasTopPx = onModalOpen ? onModalOpen() : 0;
+    preLockScrollY = window.scrollY;
     modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
@@ -512,6 +525,8 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldPosition(modalStartPos);
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
+
+    shiftForCanvasOffset(modalStartPos);
 
     // attach() preserves the world transform.
     if (modalScene) modalScene.attach(modalCard.mesh);
@@ -537,6 +552,7 @@ export default function createGlobeModal({
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'true');
+
     // Native dialog: focus trap, inert background, Escape, focus-restore.
     if (chromeEl && !chromeEl.open) {
       try { chromeEl.showModal(); } catch (e) { /* already open / not connected; ignore */ }
@@ -553,6 +569,8 @@ export default function createGlobeModal({
     document.documentElement.classList.add('firefly-globe-modal-open');
     document.body.classList.add('firefly-globe-modal-open');
     if (window.lenis) window.lenis.stop();
+
+    if (window.scrollY !== preLockScrollY) window.scrollTo(0, preLockScrollY);
   }
 
   function close(viaPointer) {
@@ -601,6 +619,8 @@ export default function createGlobeModal({
       document.documentElement.classList.remove('firefly-globe-modal-open');
       document.body.classList.remove('firefly-globe-modal-open');
       if (window.lenis) window.lenis.start();
+      if (window.scrollY !== preLockScrollY) window.scrollTo(0, preLockScrollY);
+      if (onModalClose) onModalClose();
       closeTimeoutId = null;
     }, modalAnimMs);
 
@@ -689,6 +709,7 @@ export default function createGlobeModal({
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
+        shiftForCanvasOffset(tgtPos);
         // Must match sphere-phase scale + facing tilt exactly, or the card jumps on the last
         // frame when snapToSphereSlot runs.
         tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);

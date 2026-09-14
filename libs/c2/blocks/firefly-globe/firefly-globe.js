@@ -33,19 +33,19 @@ const BREAKPOINTS = {
   sm: {
     minWidth: 0,
     SPHERE_R: 18,
-    CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
+    CARD_H_SPHERE: 11, // PlaneGeometry base only; masonry sets the visible size
     CAM_Z_SPHERE: 70,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.5,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    CYL_COLS_FIT: 0.65,
+    CYL_COLS_FIT: 0.55,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
   },
   md: {
     minWidth: 768,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 12,
+    CARD_H_SPHERE: 10.5,
     CAM_Z_SPHERE: 80,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.6,
@@ -127,6 +127,8 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 // feel. The RAMP SHAPE below is shared: it is how the band is spent, not how wide it is.
 const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
 const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
+
+const CAM_ENTRY_LEAD_RADII = 0.8;
 
 const CARD_ORDER_STEPS = 1000;
 const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
@@ -348,6 +350,7 @@ function createGlobeGalleryRuntime(
   let sphereDragWarp = 0;
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   let cameraInsideSphere = false; // true while sphere passes through camera during scroll
+  let frozenCameraZ = null;
   let hintRetired = false;
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
@@ -731,6 +734,22 @@ function createGlobeGalleryRuntime(
     applyMotionCA,
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
     iconBaseUrl: new URL('./icons/', import.meta.url).href,
+    onModalOpen: () => {
+      frozenCameraZ = camera ? camera.position.z : null;
+      const top = Math.round(worldEl.getBoundingClientRect().top);
+      worldEl.style.position = 'fixed';
+      worldEl.style.top = `${top}px`;
+      worldEl.style.left = '0';
+      worldEl.style.right = '0';
+      return top;
+    },
+    onModalClose: () => {
+      worldEl.style.position = '';
+      worldEl.style.top = '';
+      worldEl.style.left = '';
+      worldEl.style.right = '';
+      frozenCameraZ = null;
+    },
   });
 
   function readCssVars() {
@@ -850,13 +869,15 @@ function createGlobeGalleryRuntime(
   }
 
   function updateActiveCamera() {
-    if (!reducedMotion) {
-      const runwayH = root.offsetHeight - H;
-      const rawT = runwayH > 0 ? (window.scrollY - blockDocTop) / runwayH : 0;
+    if (frozenCameraZ !== null) {
+      camera.position.z = frozenCameraZ;
+    } else if (!reducedMotion) {
+      const blockH = root.offsetHeight;
+      const rawT = blockH > H ? (window.scrollY - (blockDocTop - H)) / blockH : 0;
       const t = Math.max(0, Math.min(1, rawT));
-      // Start just outside the sphere back surface (back cards immediately visible).
       // No lookAt update — orientation stays fixed at init so there is no flip at z=0.
-      const camZStart = bp.NEAR_FADE_START * bp.CARD_H_SPHERE - bp.SPHERE_R;
+      const camZStart = bp.NEAR_FADE_START * bp.CARD_H_SPHERE
+        - bp.SPHERE_R * (1 + CAM_ENTRY_LEAD_RADII);
       camera.position.z = lerpN(camZStart, bp.CAM_Z_SPHERE, t);
     } else {
       camera.position.z = bp.CAM_Z_SPHERE;
@@ -1435,6 +1456,11 @@ function createGlobeGalleryRuntime(
     drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
     wasBrowsing = false;
     cameraInsideSphere = false;
+    frozenCameraZ = null;
+    worldEl.style.position = '';
+    worldEl.style.top = '';
+    worldEl.style.left = '';
+    worldEl.style.right = '';
     // NOTE: `bp` intentionally NOT cleared — doLayout compares it, initRuntime overwrites it.
   }
 
