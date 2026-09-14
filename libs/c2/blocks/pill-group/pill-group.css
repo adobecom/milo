@@ -33,17 +33,3 @@
     color: var(--s2a-color-gray-1000);
   }
 }
-
-@media (width >= 768px) {
-  .pill-group.grid-width-6 {
-    --grid-content-width: var(--grid-width-6);
-  }
-
-  .pill-group.grid-width-8 {
-    --grid-content-width: var(--grid-width-8);
-  }
-
-  .pill-group.grid-width-10 {
-    --grid-content-width: var(--grid-width-10);
-  }
-}
