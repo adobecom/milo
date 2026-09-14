@@ -2208,6 +2208,17 @@ export function loadMepAddons() {
   return promises;
 }
 
+// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+function isMepNextOverlay() {
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
+}
+
+function initMepOverlay() {
+  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+    .then(({ default: init }) => init());
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
@@ -2596,11 +2607,8 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
-    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+    if (isMepNextOverlay()) {
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
         .then(({ default: init }) => init());
     } else {
       import('../features/personalization/preview.js')
@@ -3025,6 +3033,7 @@ export async function loadArea(area = document) {
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
     const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
