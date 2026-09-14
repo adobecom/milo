@@ -19,6 +19,10 @@ let susiListener;
 let lastImsState = null;
 let lastSideTop = 0;
 
+export function isSideOverlayMobile() {
+  return window.matchMedia('(max-width: 1199px)').matches;
+}
+
 export function sideOverlayTop() {
   const gnav = document.querySelector('header.global-navigation');
 

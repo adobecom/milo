@@ -13,6 +13,7 @@ import {
   openSideModal,
   setAuthoredContent,
   sideOverlayTop,
+  isSideOverlayMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
@@ -167,7 +168,7 @@ export default function init(el) {
   });
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isSideOverlayMobile()) {
     sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
