@@ -59,12 +59,17 @@ function shouldGate() {
 // itself (not its response, which is opaque under no-cors) is the signal — it
 // rejects on DNS/connection failure off-network and resolves on-network.
 const FIREWALL_CHECK_URL = 'https://mep-auth-check.awesome-sites.corp.adobe.com';
+const FIREWALL_CHECK_TIMEOUT_MS = 1500;
 export async function isWithinFirewall() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FIREWALL_CHECK_TIMEOUT_MS);
   try {
-    await fetch(FIREWALL_CHECK_URL, { mode: 'no-cors' });
+    await fetch(FIREWALL_CHECK_URL, { mode: 'no-cors', signal: controller.signal });
     return true;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -78,13 +83,12 @@ export async function onSidekickAuth(callback) {
     return;
   }
 
-  if (await isWithinFirewall()) {
-    callback(true);
-    return;
-  }
-
   let authed;
   let mountTimer;
+  let firewallAuthorized = false;
+  let authObserver;
+  let authEventTarget;
+  let authEventHandlers;
   // Transient search observers; the steady-state auth watcher is NOT tracked here.
   const observers = [];
   const track = (observer) => { observers.push(observer); };
@@ -95,20 +99,41 @@ export async function onSidekickAuth(callback) {
   };
 
   const set = (value) => {
-    if (value === authed) return;
-    authed = value;
-    callback(value);
+    const access = firewallAuthorized || value;
+    if (access === authed) return;
+    authed = access;
+    callback(access);
   };
+
+  const stopAuthChecks = () => {
+    clearTimeout(mountTimer);
+    observers.slice().forEach(stop);
+    authObserver?.disconnect();
+    if (authEventTarget && authEventHandlers) {
+      Object.entries(authEventHandlers).forEach(([event, handler]) => {
+        authEventTarget.removeEventListener(event, handler);
+      });
+    }
+  };
+
+  // Do not delay Sidekick listeners on a network reachability probe. Firewall
+  // access is an affirmative override if it resolves while auth is initializing.
+  isWithinFirewall().then((withinFirewall) => {
+    if (!withinFirewall) return;
+    firewallAuthorized = true;
+    stopAuthChecks();
+    set(true);
+  });
 
   // Resolve true eagerly; defer the negative verdict to the bounded default so a
   // late render doesn't flash a prompt. Observer re-resolves on class toggle / re-render.
   const watchAuthState = (pluginBarShadow) => {
     if (isAuthedIn(pluginBarShadow)) set(true);
-    const observer = new MutationObserver(() => {
+    authObserver = new MutationObserver(() => {
       if (isAuthedIn(pluginBarShadow)) set(true);
       else if (authed === true) set(false);
     });
-    observer.observe(pluginBarShadow, AUTH_MO);
+    authObserver.observe(pluginBarShadow, AUTH_MO);
     // Steady state: left running for the page's life (never torn down) so logout is
     // always caught. Transient observers have self-disconnected — stop the mount timer.
     clearTimeout(mountTimer);
@@ -130,9 +155,15 @@ export async function onSidekickAuth(callback) {
 
   // Live backup to the DOM signal for mid-session changes; status-fetched has the profile.
   const attachAuthEvents = (sk) => {
-    sk.addEventListener('status-fetched', (e) => { if (e?.detail?.profile) set(true); });
-    sk.addEventListener('logged-in', () => set(true));
-    sk.addEventListener('logged-out', () => set(false));
+    authEventTarget = sk;
+    authEventHandlers = {
+      'status-fetched': (e) => { if (e?.detail?.profile) set(true); },
+      'logged-in': () => set(true),
+      'logged-out': () => set(false),
+    };
+    Object.entries(authEventHandlers).forEach(([event, handler]) => {
+      sk.addEventListener(event, handler);
+    });
   };
 
   // The sidekick element may mount after we run — wait for it.

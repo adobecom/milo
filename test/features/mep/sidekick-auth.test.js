@@ -208,9 +208,8 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       setConfig({ env: { name: 'prod' } });
       const { sk } = mountSidekick({ authed: false });
       const cb = sinon.spy();
-      // onSidekickAuth awaits isWithinFirewall() before attaching event listeners;
-      // await the call so the listener is in place before we dispatch.
-      await onSidekickAuth(cb);
+      onSidekickAuth(cb);
+      await wait(0);
       sk.dispatchEvent(new CustomEvent('logged-in'));
       await wait(50);
       expect(cb.calledWith(true)).to.be.true;
@@ -220,7 +219,8 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       setConfig({ env: { name: 'prod' } });
       const { sk } = mountSidekick({ authed: false });
       const cb = sinon.spy();
-      await onSidekickAuth(cb);
+      onSidekickAuth(cb);
+      await wait(0);
       sk.dispatchEvent(new CustomEvent('status-fetched', { detail: { profile: { email: 'a@adobe.com' } } }));
       await wait(50);
       expect(cb.calledWith(true)).to.be.true;
@@ -240,6 +240,19 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   });
 
   describe('onSidekickAuth — firewall bypass', () => {
+    it('keeps access granted after a successful firewall check even if the sidekick logs out', async () => {
+      setConfig({ env: { name: 'prod' } });
+      window.fetch.resolves({});
+      const { sk } = mountSidekick({ authed: false });
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await wait(50);
+      expect(cb.calledWith(true)).to.be.true;
+      sk.dispatchEvent(new CustomEvent('logged-out'));
+      await wait(50);
+      expect(cb.calledWith(false)).to.be.false;
+    });
+
     it('isWithinFirewall resolves false when the reachability fetch fails', async () => {
       expect(await isWithinFirewall()).to.equal(false);
     });
