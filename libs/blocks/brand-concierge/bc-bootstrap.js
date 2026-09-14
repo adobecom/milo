@@ -19,7 +19,7 @@ let susiListener;
 let lastImsState = null;
 let lastSideTop = 0;
 
-export function isSideOverlayMobile() {
+export function isMobile() {
   return window.matchMedia('(max-width: 1199px)').matches;
 }
 

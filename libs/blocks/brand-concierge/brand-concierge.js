@@ -21,7 +21,7 @@ import {
   sideOverlayTop,
   setAuthoredContent,
   mountId,
-  isSideOverlayMobile,
+  isMobile,
 } from './bc-bootstrap.js';
 
 const variants = {};
@@ -197,7 +197,7 @@ export default async function init(el) {
   });
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isSideOverlayMobile()) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
     sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
