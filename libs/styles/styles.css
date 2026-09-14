@@ -1131,3 +1131,9 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
+
+/* Placeholder for a promotion: hidden until its mas-fields resolve with content
+   (see watchPromoPlaceholders in blocks/merch/merch.js). */
+.promo-placeholder:not(.promo-resolved) {
+  display: none;
+}
