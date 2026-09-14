@@ -76,6 +76,20 @@
       color: var(--s2a-color-content-default);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
     }
+
+    /* Firefly: the card is a light surface (white background set on
+       .pm-merch-card), so force dark text with fixed palette values that
+       .dark's semantic-token remap cannot override. */
+    .firefly & {
+      .mas-description,
+      .mas-price {
+        color: var(--s2a-color-gray-1000);
+      }
+
+      .mas-price-commitment {
+        color: var(--s2a-color-transparent-black-64);
+      }
+    }
   }
 
   .pm-merch-ctas {
@@ -199,6 +213,12 @@ body:has(header.local-nav) .product-marquee-grid {
       background: var(--s2a-color-background-subtle);
       border-radius: var(--s2a-border-radius-12);
       padding: var(--s2a-spacing-lg);
+
+      /* Firefly: white light-surface card on the dark hero (matches Figma).
+         non-mas overrides this later with its own pill background. */
+      .firefly & {
+        background: var(--s2a-color-gray-25);
+      }
     }
 
     .pm-merch-content {
@@ -244,14 +264,6 @@ body:has(header.local-nav) .product-marquee-grid {
 
   body:has(header.local-nav) .product-marquee-grid {
     min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
-  }
-
-  /* Firefly (default variant): the promo card is a light surface on the dark
-     hero — re-declare light-mode tokens so the background, text, and outlined
-     button flip together (the Firefly section renders in .dark). Matches Figma. */
-  .firefly .product-marquee-grid:not(.non-mas) .pm-merch-card {
-    --s2a-color-content-default: var(--s2a-color-gray-1000);
-    background: var(--s2a-color-gray-25);
   }
 }
 
