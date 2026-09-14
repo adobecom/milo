@@ -108,6 +108,17 @@ describe('Utils', () => {
       expect(utils.isAupEnabled()).to.be.false;
     });
 
+    it('enables AUP for signed-in Universal Nav users', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled()).to.be.false;
+        expect(utils.isAupEnabled(true)).to.be.true;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
+    });
+
     ['on', 'off', '', 'ON', 'true'].forEach((value) => {
       it(`requires exact on for metadata "${value}"`, () => {
         meta.content = value;

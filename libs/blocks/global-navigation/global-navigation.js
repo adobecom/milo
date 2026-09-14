@@ -1140,8 +1140,8 @@ class Gnav {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(
-        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined,
+      getProfile: async () => (
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
       ),
       environment,
       cdnEnvironment: environment,

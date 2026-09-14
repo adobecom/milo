@@ -498,14 +498,17 @@ export async function loadMasComponent(componentName) {
 
 async function preloadAupSelect() {
   const sdk = window.aupsdk;
-  if (!sdk) return;
+  if (!sdk) return false;
   try {
     await Promise.all([
       sdk.getOrchestratorContext(),
+      // The orchestrator mounts this registered component when Select launches.
       sdk.loadUIComponent('commerce-select'),
     ]);
+    return true;
   } catch (error) {
     log?.warn('AUP Select preload failed', error);
+    return false;
   }
 }
 
@@ -1025,11 +1028,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
-      setTimeout(() => {
-        if (isAupEnabled()) {
-          preloadAupSelect();
-          return;
-        }
+      setTimeout(async () => {
+        if (isAupEnabled() && await preloadAupSelect()) return;
         const baseUrl = getCommercePreloadUrl();
         // The script can preload more, based on clientId, but for the ones in use
         // ('mini-plans', 'creative') there is no difference, so we can just use either one.

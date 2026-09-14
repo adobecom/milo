@@ -487,6 +487,14 @@ describe('global navigation', () => {
         window.adobeIMS.isSignedInUser.returns(false);
         expect(await getProfile()).to.be.undefined;
         expect(window.adobeIMS.getProfile.calledOnce).to.be.true;
+
+        const profileError = new Error('IMS profile failed');
+        window.adobeIMS.isSignedInUser.returns(true);
+        window.adobeIMS.getProfile.throws(profileError);
+        const profilePromise = getProfile();
+        expect(profilePromise).to.be.instanceOf(Promise);
+        expect(await profilePromise.catch((error) => error)).to.equal(profileError);
+
         window.adobeIMS = undefined;
         expect(await getProfile()).to.be.undefined;
       } finally {
