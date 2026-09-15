@@ -863,7 +863,7 @@
 
     @keyframes rc-merch-text-item-2 {
       0% { translate: 0 var(--rc-text-y, 0); }
-      33% { opacity: 0; }
+      24% { opacity: 0; }
 
       100% {
         opacity: 1;
@@ -873,7 +873,7 @@
 
     @keyframes rc-merch-text-item-3 {
       0% { translate: 0 var(--rc-text-y, 0); }
-      50% { opacity: 0; }
+      33% { opacity: 0; }
 
       100% {
         opacity: 1;
@@ -883,7 +883,7 @@
 
     @keyframes rc-merch-text-item-4 {
       0% { translate: 0 var(--rc-text-y, 0); }
-      69% { opacity: 0; }
+      42% { opacity: 0; }
 
       100% {
         opacity: 1;
@@ -893,7 +893,7 @@
 
     @keyframes rc-merch-text-item-5 {
       0% { translate: 0 var(--rc-text-y, 0); }
-      86% { opacity: 0; }
+      51% { opacity: 0; }
 
       100% {
         opacity: 1;
