@@ -88,13 +88,13 @@ function addScrollBoost(track, el, getIsPlaying) {
   }, { passive: true });
 }
 
-function syncTrackMetrics(track) {
+function syncTrackMetrics(track, el) {
   const firstSet = track.firstElementChild;
   if (!firstSet) return;
   const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
   const setWidth = firstSet.offsetWidth;
-  const containerWidth = track.parentElement?.clientWidth || 0;
-  track.classList.toggle('is-static', setWidth + 2 * gap <= containerWidth);
+  const isStatic = setWidth + 2 * gap <= el.clientWidth;
+  track.classList.toggle('is-static', isStatic);
   track.style.setProperty('--logo-ticker-set-width', `${setWidth + gap}px`);
 }
 
@@ -103,11 +103,13 @@ export default function init(el) {
   if (!logos.length) return;
 
   const track = buildTrack(logos, trackLabel);
+  const wrap = createTag('div', { class: 'logo-ticker-wrap' });
+  wrap.append(track);
   const button = buildPlayPauseButton(pauseLabel);
-  el.replaceChildren(track, button);
+  el.replaceChildren(wrap, button);
 
-  syncTrackMetrics(track);
-  const ro = new ResizeObserver(() => syncTrackMetrics(track));
+  syncTrackMetrics(track, el);
+  const ro = new ResizeObserver(() => syncTrackMetrics(track, el));
   ro.observe(track.firstElementChild);
   ro.observe(el);
 

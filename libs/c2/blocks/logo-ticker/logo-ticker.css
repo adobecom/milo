@@ -3,12 +3,28 @@
   --logo-ticker-logo-height: 36px;
   --logo-ticker-dir: 1;
   --logo-ticker-duration: 30s;
+  --logo-ticker-inset: var(--s2a-spacing-24);
+  --logo-ticker-btn-size: 2rem;
+  --logo-ticker-mask-width: calc(var(--logo-ticker-inset) * 2 + var(--logo-ticker-btn-size));
 
   position: relative;
   width: 100%;
-  overflow: hidden;
   contain: layout paint;
-  padding-block: var(--s2a-spacing-24);
+  padding-block: var(--logo-ticker-inset);
+
+  .logo-ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .logo-ticker-wrap:not(:has(.is-static)) {
+    mask-image: linear-gradient(
+      to right,
+      black 0,
+      black calc(100% - var(--logo-ticker-mask-width) - var(--logo-ticker-inset)),
+      transparent calc(100% - var(--logo-ticker-mask-width))
+    );
+  }
 
   .logo-ticker-track {
     display: flex;
@@ -54,9 +70,9 @@
     position: absolute;
     top: 50%;
     translate: 0 -50%;
-    inset-inline-end: var(--s2a-spacing-24);
-    width: 2rem;
-    height: 2rem;
+    inset-inline-end: var(--logo-ticker-inset);
+    width: var(--logo-ticker-btn-size);
+    height: var(--logo-ticker-btn-size);
     border-radius: 50%;
     border: 1px solid currentcolor;
     cursor: pointer;
@@ -82,13 +98,22 @@
     }
   }
 
-  .logo-ticker-track.is-static ~ .logo-ticker-play-pause {
+  .logo-ticker-wrap:has(.is-static) ~ .logo-ticker-play-pause {
     display: none;
   }
 }
 
 :dir(rtl) .logo-ticker {
   --logo-ticker-dir: -1;
+
+  .logo-ticker-wrap:not(:has(.is-static)) {
+    mask-image: linear-gradient(
+      to left,
+      black 0,
+      black calc(100% - var(--logo-ticker-mask-width) - var(--logo-ticker-inset)),
+      transparent calc(100% - var(--logo-ticker-mask-width))
+    );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -99,7 +124,7 @@
 
 @keyframes logo-ticker-scroll {
   from {
-    translate: calc((var(--logo-ticker-scroll-offset, 0px)) * -1 * var(--logo-ticker-dir));
+    translate: calc(var(--logo-ticker-scroll-offset, 0px) * -1 * var(--logo-ticker-dir));
   }
 
   to {
