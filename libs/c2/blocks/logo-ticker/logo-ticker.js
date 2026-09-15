@@ -67,7 +67,7 @@ function addScrollBoost(track, el, getIsPlaying) {
 
     if (getIsPlaying() && !track.classList.contains('is-static') && delta !== 0) {
       const setWidth = parseFloat(track.style.getPropertyValue('--logo-ticker-set-width')) || Infinity;
-      targetOffset = Math.min(targetOffset + delta * 0.6, setWidth);
+      targetOffset = Math.max(-setWidth, Math.min(targetOffset + delta * 0.6, setWidth));
     }
 
     currentOffset += (targetOffset - currentOffset) * 0.08;
