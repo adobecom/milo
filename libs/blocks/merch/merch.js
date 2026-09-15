@@ -747,6 +747,7 @@ export async function getUpgradeAction(
     );
   }
 
+  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
