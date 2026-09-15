@@ -1413,8 +1413,18 @@ span.hang-opening-quote {
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
+    --gd-bg-shift: calc((100vh + 100vh) * 0.06);
+
     .section-background {
       overflow: hidden;
+
+      img {
+        height: calc(100% + var(--gd-bg-shift));
+        margin-block-end: calc(-1 * var(--gd-bg-shift));
+        animation: garage-door-bg-parallax linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 50%;
+      }
     }
 
     .foreground {
@@ -1472,10 +1482,6 @@ span.hang-opening-quote {
         width: 100%;
         height: auto;
         object-fit: cover;
-        margin-block-end: calc(-1 * var(--gd-bg-shift, 0px));
-        animation: garage-door-bg-parallax linear both;
-        animation-timeline: view();
-        animation-range: cover 0% cover 50%;
       }
     }
   }

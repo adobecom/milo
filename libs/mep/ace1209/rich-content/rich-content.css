@@ -218,8 +218,6 @@
   }
 
   &:has(.rich-content.merch-moment) {
-    padding-top: 128px;
-
     p:has(span[is="inline-price"]) {
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
     }
