@@ -1725,3 +1725,15 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
 #aup-workflow-dialog::backdrop {
   background: rgb(50 50 50 / 0.8);
 }
+
+#aup-workflow-dialog.loading > iframe {
+  visibility: hidden;
+}
+
+#aup-workflow-dialog > .aup-loading-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

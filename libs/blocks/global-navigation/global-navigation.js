@@ -1150,12 +1150,35 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
+        const isIframe = element.tagName === 'IFRAME';
+        if (isIframe) {
+          await Promise.all([
+            import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+            import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+          ]);
+        }
         document.getElementById('aup-workflow-dialog')?.remove();
         const dialog = document.createElement('dialog');
         dialog.id = 'aup-workflow-dialog';
+        let finishLoading;
+        if (isIframe) {
+          const spinner = toFragment`
+            <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+              <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+            </sp-theme>`;
+          dialog.classList.add('loading');
+          dialog.appendChild(spinner);
+          finishLoading = () => {
+            element.removeEventListener('load', finishLoading);
+            dialog.classList.remove('loading');
+            spinner.remove();
+          };
+          element.addEventListener('load', finishLoading, { once: true });
+        }
         dialog.appendChild(element);
         document.body.appendChild(dialog);
         element.addEventListener('close', () => {
+          finishLoading?.();
           closeCallback({ type: 'close' });
           dialog.close();
           dialog.remove();
