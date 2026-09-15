@@ -30,6 +30,7 @@
   /* Misc */
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-link-svg: url("data:image/svg+xml,<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11ZM17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11Z' fill='black'/></svg>");
+  --mep-link-svg-light: url("data:image/svg+xml,<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11ZM17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11Z' fill='white'/></svg>");
 }
 
 /* Badges */
@@ -116,10 +117,12 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
   padding-left: 32px;
   line-height: initial;
   border-radius: 4px;
-  background-image: var(--mep-link-svg);
-  background-repeat: no-repeat;
-  background-size: 24px 24px;
-  background-position: 4px center;
+  background-image:
+    var(--mep-link-svg-light),
+    linear-gradient(var(--mep-link-icon-background, transparent), var(--mep-link-icon-background, transparent));
+  background-repeat: no-repeat, no-repeat;
+  background-size: 24px 24px, 28px 100%;
+  background-position: 2px center, left top;
 }
 
 /* Not sure what these are, page replacement and ? */
@@ -140,6 +143,7 @@ body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not
 
 body[data-mep-highlight='true'] [data-manifest-id]::before {
   content: attr(data-manifest-display);
+  --mep-link-icon-background: var(--mep-primary);
   border: 2px solid var(--mep-primary);
   color: var(--mep-primary);
   background-color: var(--mep-secondary);
@@ -164,6 +168,7 @@ body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc] {
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before {
   content: 'MEP Lingo:  ' attr(data-mep-lingo-roc);
+  --mep-link-icon-background: var(--lingo-primary);
   border: 2px solid var(--lingo-primary);
   color: var(--lingo-primary);
   background-color: var(--lingo-secondary);
@@ -176,6 +181,7 @@ body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback] {
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before {
   content: 'MEP Lingo Fallback:  ' attr(data-mep-lingo-fallback);
+  --mep-link-icon-background: var(--lingo-primary);
   border: 2px solid var(--lingo-primary);
   color: var(--lingo-primary);
   background-color: var(--lingo-secondary);
@@ -205,6 +211,7 @@ body[data-other-highlight='true'] [data-fragment-default] {
 
 body[data-other-highlight='true'] [data-fragment-default]::before {
   content: 'Other Fragment:  ' attr(data-fragment-display);
+  --mep-link-icon-background: var(--other-primary);
   border: 2px solid var(--other-primary);
   color: var(--other-primary);
   background-color: var(--other-secondary) !important;
@@ -228,6 +235,7 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
 
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
   content: 'caas-market: ' attr(data-card-path);
+  --mep-link-icon-background: var(--caas-primary);
   border: 2px solid var(--caas-primary);
   color: var(--caas-primary) !important;
   background-color: var(--caas-secondary) !important;
@@ -242,6 +250,7 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
 
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
   content: 'caas-lang: ' attr(data-card-path);
+  --mep-link-icon-background: var(--caas-primary);
   border: 2px solid var(--caas-primary);
   color: var(--caas-primary) !important;
   background-color: var(--caas-secondary) !important;
@@ -270,6 +279,7 @@ body a.mep-caas-edit-badge {
   top: 0;
   transform: translateY(-100%);
   display: inline-block;
+  --mep-link-icon-background: var(--caas-primary);
   border: 2px solid var(--caas-primary);
   text-decoration: none;
   color: var(--caas-primary);
@@ -308,6 +318,7 @@ body a.mep-mas-edit-badge {
 }
 
 a.mep-mas-edit-badge-collection {
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
@@ -317,6 +328,7 @@ a.mep-mas-sub-collection-badge,
 body a.mep-mas-sub-collection-badge {
   display: inline-block;
   text-decoration: none;
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
@@ -327,24 +339,28 @@ a.mep-mas-sub-collection-badge::before {
 }
 
 a.mep-mas-edit-badge-card {
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit {
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost {
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
 }
 
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   font-family: inherit;
   color: var(--mas-primary);
@@ -372,6 +388,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   content: 'View in OST';
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
@@ -395,6 +412,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-bloc
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
   content: 'Edit Inline Field';
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
@@ -412,6 +430,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mi
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
   content: 'View in OST';
+  --mep-link-icon-background: var(--mas-primary);
   border: 2px solid var(--mas-primary);
   color: var(--mas-primary);
   background-color: var(--mas-secondary);
