@@ -1413,66 +1413,47 @@ span.hang-opening-quote {
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
-    --gd-grow-from: -50vh;
-    --gd-reveal-from: 20vh;
-
-    transform-origin: top center;
-    animation: garage-door-grow ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 36%;
-
-    @media (width >= 1280px) {
-      --gd-grow-from: -90vh;
-      --gd-reveal-from: 30vh;
-      animation-range: entry 0% cover 48%;
-    }
-
-    @media (width >= 1920px) {
-      --gd-grow-from: -70vh;
-      animation-range: entry 0% cover 36%;
-    }
-
     .section-background {
       overflow: hidden;
-
-      img {
-        animation: garage-door-bg-scale ease-out both;
-        animation-timeline: view();
-        animation-range: entry 0% cover 70%;
-      }
     }
 
     .foreground {
       z-index: 1;
       position: relative;
-      animation: garage-door-reveal ease-out both;
+      view-timeline-name: --gd-text-vt;
+      view-timeline-axis: block;
+      animation: garage-door-text-parallax linear both;
       animation-timeline: view();
-      animation-range: cover -10% cover 70%;
+      animation-range: cover 0% cover 95%;
 
-      * {
-        animation: garage-door-line-height ease-out both;
-        animation-timeline: view();
-        animation-range: entry 30% cover 60%;
+      .content > *,
+      & > :not(.content) {
+        --gd-item-order: calc(sibling-index() - 1);
+
+        opacity: 0;
+        will-change: opacity, translate;
+        animation: garage-door-text-reveal linear both;
+        animation-timeline: --gd-text-vt;
+        animation-range: cover calc(7.35% + (var(--gd-item-order, 0) * 4.41%)) cover 49%;
       }
     }
   }
 
-  @keyframes garage-door-grow {
-    from { transform: translateY(var(--gd-grow-from)); }
-    to { transform: translateY(0); }
+  @keyframes garage-door-text-parallax {
+    from { transform: translateY(-7.5vh); }
+    to { transform: translateY(7.5vh); }
   }
 
-  @keyframes garage-door-reveal {
-    from { transform: translateY(var(--gd-reveal-from)); }
-  }
+  @keyframes garage-door-text-reveal {
+    from {
+      opacity: 0;
+      translate: 0 calc(var(--gd-item-order, 0) * 20px);
+    }
 
-  @keyframes garage-door-bg-scale {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
-  }
-
-  @keyframes garage-door-line-height {
-    from { line-height: 60%; }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
   }
 
   /* Section 1 to section 2 parallax declarations */
