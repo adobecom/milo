@@ -73,16 +73,26 @@
     inset-inline-end: var(--logo-ticker-inset);
     width: var(--logo-ticker-btn-size);
     height: var(--logo-ticker-btn-size);
-    border-radius: 50%;
-    border: 1px solid currentcolor;
+    border-radius: var(--s2a-border-radius-xs);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    color: var(--s2a-color-gray-25);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.8;
     padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
 
-    svg {
+    &:hover {
+      background: var(--s2a-color-transparent-black-80);
+      transform: scale(1.05);
+    }
+
+    &:active { transform: scale(0.98); }
+
+    .logo-ticker-play-icon,
+    .logo-ticker-pause-icon {
       display: block;
       width: 1.125rem;
       height: 1.125rem;
