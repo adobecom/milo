@@ -22,6 +22,7 @@ const MAS_PSEUDO_BADGE_SELECTOR = "[data-mas-block='offer'], [data-mas-block='in
 
 export const HIGHLIGHT_KEYS = {
   mep: 'mepHighlight',
+  lingo: 'mepLingoHighlight',
   caas: 'mepCaasHighlight',
   mas: 'mepMasHighlight',
   other: 'otherHighlight',
@@ -29,6 +30,7 @@ export const HIGHLIGHT_KEYS = {
 
 export const TOGGLE_KEYS = {
   mep: 'toggle-mep',
+  lingo: 'toggle-lingo',
   caas: 'toggle-caas',
   mas: 'toggle-mas',
   other: 'toggle-other-fragments',
@@ -37,6 +39,11 @@ export const TOGGLE_KEYS = {
 const HIGHLIGHT_HANDLERS = {
   [TOGGLE_KEYS.mep]: {
     dataKey: HIGHLIGHT_KEYS.mep,
+    on: [],
+    off: [],
+  },
+  [TOGGLE_KEYS.lingo]: {
+    dataKey: HIGHLIGHT_KEYS.lingo,
     on: [],
     off: [],
   },
@@ -62,6 +69,7 @@ export function getParameters() {
   return {
     mepAkamaiLocale: urlParams.get('akamaiLocale'),
     mepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
+    mepLingoHighlight: urlParams.get(HIGHLIGHT_KEYS.lingo),
     mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
     mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
     mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other),
@@ -169,9 +177,11 @@ const PAGE_UPDATE_SELECTORS = {
   MEP: `
     [data-code-manifest-id],
     [data-manifest-id],
-    [data-mep-lingo-fallback],
-    [data-mep-lingo-roc],
     [data-removed-manifest-id]
+  `,
+  Lingo: `
+    [data-mep-lingo-fallback],
+    [data-mep-lingo-roc]
   `,
   Caas: `
     [data-caas-block],

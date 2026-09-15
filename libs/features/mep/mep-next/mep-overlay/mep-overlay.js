@@ -54,6 +54,7 @@ const CARD_DATA = {
   actions: [
     ['Highlight', [
       ['MEP', getPageUpdates],
+      ['Lingo', getPageUpdates],
       ['Caas', getPageUpdates],
       ['M@S', getPageUpdates],
       ['Other Fragments', getPageUpdates],
@@ -299,7 +300,15 @@ function buildLoadManifest(card, pageId) {
   });
 }
 
-function buildToggleRow([title, description], pageId) {
+const HIGHLIGHT_DOT_CLASSES = {
+  MEP: 'mep',
+  Lingo: 'lingo',
+  Caas: 'caas',
+  'M@S': 'mas',
+  'Other Fragments': 'other',
+};
+
+function buildToggleRow([title, description], pageId, showColorKey = false) {
   const id = `toggle-${toSlug(title)}${pageId}`;
   const input = createTag('input', { type: 'checkbox', id });
   const switchEl = createTag('label', { class: 'mep-switch' }, [
@@ -307,8 +316,16 @@ function buildToggleRow([title, description], pageId) {
     createTag('span', { class: 'mep-switch-track' }),
   ]);
   const desc = typeof description === 'function' ? description(title) : description;
+  const headingChildren = [];
+  if (showColorKey && HIGHLIGHT_DOT_CLASSES[title]) {
+    headingChildren.push(createTag('span', {
+      class: `mep-toggle-key mep-toggle-key-${HIGHLIGHT_DOT_CLASSES[title]}`,
+      'aria-hidden': 'true',
+    }));
+  }
+  headingChildren.push(createTag('h2', {}, title));
   const textEl = createTag('div', { class: 'mep-toggle-text' }, [
-    createTag('h2', {}, title),
+    createTag('div', { class: 'mep-toggle-heading' }, headingChildren),
     createTag('p', { class: 'mep-row-value' }, desc),
   ]);
   return createTag('div', { class: 'mep-toggle-row' }, [textEl, switchEl]);
@@ -318,7 +335,7 @@ function buildToggle(card, pageId) {
   const isProd = getConfig().env?.name === 'prod';
   return card.label
     .filter(([title]) => title !== 'Manifest Manager' || isProd)
-    .map((item) => buildToggleRow(item, pageId));
+    .map((item) => buildToggleRow(item, pageId, card.header === 'Highlight'));
 }
 
 async function populateGeoSelect(selectEl, id) {
@@ -471,6 +488,7 @@ function buildTabsAndBody(pageId) {
 
 async function setDefaultValues() {
   const {
+    mepLingoHighlight,
     mepCaasHighlight,
     mepMasHighlight,
     mepOtherHighlight,
@@ -479,6 +497,7 @@ async function setDefaultValues() {
   } = getParameters();
   [
     [`#${TOGGLE_KEYS.mep}`, mepHighlight],
+    [`#${TOGGLE_KEYS.lingo}`, mepLingoHighlight],
     [`#${TOGGLE_KEYS.caas}`, mepCaasHighlight],
     [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
     [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
