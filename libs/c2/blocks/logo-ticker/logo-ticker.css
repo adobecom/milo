@@ -83,6 +83,7 @@
     padding: 0;
 
     svg {
+      display: block;
       width: 1.125rem;
       height: 1.125rem;
     }
