@@ -255,6 +255,12 @@ export function isMasGeoDetectionEnabled() {
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
 }
 
+export function getMerchCardHeadingLevel() {
+  const raw = getMetadata('mas-heading-level');
+  const match = raw && String(raw).trim().match(/^h?([1-6])$/i);
+  return match ? Number(match[1]) : null;
+}
+
 /**
  * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
  * user's real IMS profile country when it's a supported market, otherwise Milo's own
