@@ -2208,9 +2208,9 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
 function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
 }
 
 function initMepOverlay() {
