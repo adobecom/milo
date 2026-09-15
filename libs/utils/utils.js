@@ -2457,7 +2457,9 @@ function initModalEventListener() {
 
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
-  fontsPromise ??= import('./fonts.js').then(({ default: loadFonts }) => loadFonts(locale));
+  fontsPromise ??= import('./fonts.js')
+    .then(({ default: loadFonts }) => loadFonts(locale))
+    .catch((e) => window.lana?.log(`Failed to load fonts: ${e}`, { tags: 'fonts', severity: 'error' }));
   return fontsPromise;
 }
 

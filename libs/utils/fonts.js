@@ -10,21 +10,17 @@ function dynamicTypekit(kitId, d = document) {
 }
 
 /**
- * Set the fonts of the page.
- *
- * Determines if the font should be a classic CSS integration
- * or if it should be a JS integration (dynamic subsetting) for CJK.
- *
- * @param {Object} locale the locale details
+ * Set the fonts of the page and
+ * determines whether the font should be a classic CSS integration or
+ * if it should be a JS integration (dynamic subsetting) for CJK.
  */
 export default function loadFonts(locale) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
     return new Promise((resolve) => {
-      // const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-      // const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
-      // const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
-      const kitId = 'uwk3rbm.css';
+      const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+      const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
+      const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
       loadStyle(`https://use.typekit.net/${kitId}`, resolve);
     });
   }
