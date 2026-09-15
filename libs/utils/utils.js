@@ -2214,6 +2214,17 @@ export function loadMepAddons() {
   return promises;
 }
 
+// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+function isMepNextOverlay() {
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
+}
+
+function initMepOverlay() {
+  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+    .then(({ default: init }) => init());
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
@@ -2602,11 +2613,8 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
-    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+    if (isMepNextOverlay()) {
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
         .then(({ default: init }) => init());
     } else {
       import('../features/personalization/preview.js')
@@ -3012,13 +3020,35 @@ function loadLingoIndexes(area = document) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let jsonLdOptions;
+  let jsonLdInitScheduled = false;
+  const scheduleJsonLdInit = () => {
+    if (!jsonLdOptions || jsonLdInitScheduled) return;
+    jsonLdInitScheduled = true;
+    window.setTimeout(() => {
+      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+        .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
+        .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
+          tags: 'jsonld-graph-manager',
+          severity: 'error',
+        }));
+    }, 0);
+  };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
+    const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+    if (jsonLdFlag === 'true') {
+      jsonLdOptions = {
+        bootScripts: [...document.querySelectorAll('script[type="application/ld+json"]')]
+          .map((scriptEl) => ({ scriptEl, textContent: scriptEl.textContent })),
+      };
+    }
   }
   const config = getConfig();
   const isLingoActive = lingoActive();
@@ -3054,12 +3084,14 @@ export async function loadArea(area = document) {
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
+    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
+  if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);

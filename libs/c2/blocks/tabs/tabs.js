@@ -10,7 +10,7 @@ const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
 
 const getScrollContainer = (tab) => {
-  const tabList = tab.closest('[role="tablist"]');
+  const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
   return tabList.scrollWidth > tabList.clientWidth ? tabList : tabList.parentElement;
 };
 
@@ -53,14 +53,12 @@ const generateStorageName = (tabId) => {
 
 const loadActiveTab = (config) => {
   if (config.remember !== 'on') return 0;
-
   const tabId = config['tab-id'];
   return sessionStorage.getItem(generateStorageName(tabId));
 };
 
 const saveActiveTabInStorage = (targetId, config) => {
   if (config.remember !== 'on') return;
-
   const delimiterIndex = targetId.lastIndexOf('-');
   const activeTabIndex = targetId.substring(delimiterIndex + 1);
   const storageName = generateStorageName(config['tab-id']);
@@ -94,7 +92,8 @@ function moveIndicator(indicator, target, container) {
 
 function changeTabs(e, config) {
   const { target } = e;
-  if (target.getAttribute('aria-selected') === 'true') return;
+  const isRadio = target.matches('input[type="radio"]');
+  if (!isRadio && target.getAttribute('aria-selected') === 'true') return;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
@@ -107,36 +106,36 @@ function changeTabs(e, config) {
   const content = tabsBlock.lastElementChild;
   const blockId = tabsBlock.id;
 
-  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
+  const targetContent = isRadio
+    ? content.querySelector(`#${target.getAttribute('data-control-id')}`)
+    : content.querySelector(`#${target.getAttribute('aria-controls')}`);
 
-  parent
-    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
-    .forEach((t) => {
+  if (isRadio) {
+    if (Object.keys(tabColor).length) {
+      parent.querySelectorAll('input[type="radio"]').forEach((t) => {
+        if (t !== target) t.style.backgroundColor = '';
+      });
+    }
+  } else {
+    parent.querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`).forEach((t) => {
       t.setAttribute('aria-selected', 'false');
       t.setAttribute('tabindex', '-1');
-      if (Object.keys(tabColor).length) {
-        t.style.backgroundColor = '';
-      }
+      if (Object.keys(tabColor).length) t.style.backgroundColor = '';
     });
-  target.setAttribute('aria-selected', 'true');
-  target.setAttribute('tabindex', '0');
+    target.setAttribute('aria-selected', 'true');
+    target.setAttribute('tabindex', '0');
+  }
+  if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
 
   const indicator = parent.querySelector('.tab-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
-  if (tabColor[targetId]) {
-    target.style.backgroundColor = tabColor[targetId];
-  }
   scrollTabIntoView(target);
-  content
-    .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
-    .forEach((p) => {
-      p.setAttribute('hidden', true);
-      p.classList.remove('tab-entering');
-    });
+  content.querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`).forEach((p) => {
+    p.setAttribute('hidden', true);
+    p.classList.remove('tab-entering');
+  });
   targetContent?.removeAttribute('hidden');
-  if (tabsBlock.classList.contains('staggered-intro-merch-cards') && targetContent) {
-    triggerTabEnterAnimation(targetContent);
-  }
+  if (tabsBlock.classList.contains('staggered-intro-merch-cards') && targetContent) triggerTabEnterAnimation(targetContent);
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
 }
@@ -191,13 +190,26 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"]');
+  const tabs = [...elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper input[type="radio"]')];
+  const tabLists = elm.querySelectorAll(':scope > .tabs-wrapper [role="tablist"], :scope > .tabs-wrapper [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
+    const isRadioGroup = tabList.getAttribute('role') === 'radiogroup';
     tabList.addEventListener('keydown', (e) => {
+      // Left/Right are native (Chrome/Firefox flip for RTL) - only Up/Down need manual handling.
+      if (isRadioGroup) {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        const forward = e.key === 'ArrowDown';
+        const currentFocus = tabs.indexOf(e.target);
+        const nextFocus = (currentFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[nextFocus].focus();
+        tabs[nextFocus].click();
+        return;
+      }
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const forward = e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      const isRtl = document.dir === 'rtl';
+      const forward = e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight');
       tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
       tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
       tabs[tabFocus].setAttribute('tabindex', '0');
@@ -205,7 +217,8 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', (e) => changeTabs(e, config));
+    const isRadio = tab.matches('input[type="radio"]');
+    tab.addEventListener(isRadio ? 'change' : 'click', (e) => changeTabs(e, config));
     tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
   configTabs(config, rootElem);
@@ -263,6 +276,10 @@ const init = async (block) => {
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
+  const isRadio = block.classList.contains('radio');
+  const isQuiet = block.classList.contains('quiet');
+  block.classList.toggle('pill', !isRadio && !isQuiet);
+
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
@@ -271,39 +288,62 @@ const init = async (block) => {
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tab-list');
-  tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
-  const tabListLabel = config.pretext;
-  if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
 
+  const tabListLabelEl = tabListContainer.querySelector(':scope > p');
+  if (tabListLabelEl && isRadio) {
+    tabListLabelEl.classList.add('tab-list-label', 'label');
+    tabListLabelEl.id = `tab-list-label-${tabId}`;
+    tabList.setAttribute('aria-labelledby', tabListLabelEl.id);
+  } else {
+    tabListLabelEl?.remove();
+    const tabListLabel = config.pretext;
+    if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
+  }
+
+  const radioGroupName = `tabs-radio-${tabId}`;
   const tabListItems = rows[0].querySelectorAll(':scope li');
-
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
-      const tabBtnAttributes = {
-        role: 'tab',
-        class: 'tab-button label',
-        id: `tab-${tabId}-${tabName}`,
-        tabindex: (i === 0) ? '0' : '-1',
-        'aria-selected': (i === 0) ? 'true' : 'false',
-        'data-block-id': `tabs-${tabId}`,
-        'daa-state': 'true',
-        'daa-ll': `tab-${tabId}-${tabName}`,
-        'aria-controls': controlId,
-      };
-      const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
+      const btnId = `tab-${tabId}-${tabName}`;
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
-      btnWrapper.append(tabBtn);
+
+      const sharedAttrs = { id: btnId, 'data-block-id': `tabs-${tabId}`, 'daa-state': 'true', 'daa-ll': btnId };
+      if (isRadio) {
+        const radioAttributes = {
+          ...sharedAttrs,
+          type: 'radio',
+          class: 'tab-button',
+          name: radioGroupName,
+          'data-control-id': controlId,
+          ...(i === 0 ? { checked: '' } : {}),
+        };
+        const radioInput = createTag('input', radioAttributes);
+        const radioLabel = createTag('label', { for: btnId, class: 'tab-button-label label' }, item.textContent);
+        btnWrapper.append(radioInput, radioLabel);
+      } else {
+        const tabBtnAttributes = {
+          ...sharedAttrs,
+          role: 'tab',
+          class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
+          tabindex: (i === 0) ? '0' : '-1',
+          'aria-selected': (i === 0) ? 'true' : 'false',
+          'aria-controls': controlId,
+        };
+        const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
+        btnWrapper.append(tabBtn);
+      }
       tabListContainer.append(btnWrapper);
 
       const tabContentAttributes = {
-        id: `tab-panel-${tabId}-${tabName}`,
-        role: 'tabpanel',
+        id: controlId,
+        ...(isRadio ? {} : { role: 'tabpanel' }),
         class: 'tabpanel',
-        'aria-labelledby': `tab-${tabId}-${tabName}`,
+        'aria-labelledby': btnId,
         'data-block-id': `tabs-${tabId}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
@@ -317,9 +357,11 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
-  // Tab indicator
-  const indicator = createTag('div', { class: 'tab-indicator' });
-  tabListContainer.prepend(indicator);
+  let indicator;
+  if (!isRadio && !isQuiet) {
+    indicator = createTag('div', { class: 'tab-indicator' });
+    tabListContainer.prepend(indicator);
+  }
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
@@ -343,19 +385,13 @@ const init = async (block) => {
       val = getStringKeyName(String(values[1]));
     }
     const associatedTabButton = rootElem.querySelector(`#tab-${id}-${val}`);
-    if (associatedTabButton && metaSettings.deeplink) {
-      associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
-    }
+    if (associatedTabButton && metaSettings.deeplink) associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
     const assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (assocTabItem) {
-      if (metaSettings['tab-background']) {
-        tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
-      }
+      if (metaSettings['tab-background']) tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
       await assignLinkedTabs(linkedTabs, metaSettings, id, val);
       const tabLabel = tabListItems[val - 1]?.innerText;
-      if (tabLabel) {
-        assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
-      }
+      if (tabLabel) assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
       const section = sectionMetadata.closest('.section');
       assocTabItem.append(section);
     }
@@ -364,15 +400,17 @@ const init = async (block) => {
   initTabs(block, config, rootElem);
 
   requestAnimationFrame(() => {
-    const activeTab = tabListContainer.querySelector('[aria-selected="true"]');
+    const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
     if (activeTab) {
-      indicator.style.transition = 'none';
-      moveIndicator(indicator, activeTab, tabListContainer);
+      if (indicator) {
+        indicator.style.transition = 'none';
+        moveIndicator(indicator, activeTab, tabListContainer);
+        requestAnimationFrame(() => { indicator.style.transition = ''; });
+      }
       scrollTabIntoView(activeTab);
-      requestAnimationFrame(() => { indicator.style.transition = ''; });
     }
     if (block.classList.contains('staggered-intro-merch-cards')) {
-      const activePanel = tabContentContainer.querySelector('[role="tabpanel"]:not([hidden])');
+      const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
       if (activePanel) triggerTabEnterAnimation(activePanel);
     }
   });

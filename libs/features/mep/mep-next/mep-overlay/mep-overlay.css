@@ -226,13 +226,13 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
 }
 
 .mep-drawer .mep-body::-webkit-scrollbar-thumb {
-  background: var(--mep-dark-44);
+  background: var(--mep-white-38);
   border-radius: 12px;
   border: 1px solid var(--mep-white-12);
 }
 
 .mep-drawer .mep-body::-webkit-scrollbar-thumb:hover {
-  background: var(--mep-white-12);
+  background: var(--mep-white-60);
 }
 
 .mep-drawer select::-webkit-scrollbar {
@@ -275,6 +275,10 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
 }
 
 .mep-drawer .mep-card[hidden] {
+  display: none;
+}
+
+.mep-drawer .mep-card[data-card-key="CaaS"] {
   display: none;
 }
 
