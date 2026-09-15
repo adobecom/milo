@@ -170,19 +170,6 @@ function decorate(block, root = block) {
   decorateJumpLinks(content, foreground);
 }
 
-function revealMerchMomentText(block) {
-  const foreground = block.querySelector('.foreground');
-  if (!foreground || foreground.dataset.revealObserved) return;
-  foreground.dataset.revealObserved = '1';
-
-  const observer = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting) return;
-    foreground.classList.add('is-revealed');
-    observer.disconnect();
-  }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
-  observer.observe(foreground);
-}
-
 function applyHeroOverlay(el) {
   const section = el.closest('.section');
   if (!section) return;
@@ -196,10 +183,6 @@ export default function init(el) {
 
   if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
     window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
-  }
-
-  if (el.classList.contains('merch-moment')) {
-    revealMerchMomentText(el);
   }
 
   if (!el.classList.contains('hero')) return;
