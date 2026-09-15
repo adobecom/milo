@@ -220,6 +220,20 @@ describe('init: DOM structure — stage env first call', () => {
     expect(label?.textContent).to.include('Page Updates');
   });
 
+  it('Highlight toggles render outlined circle keys for each highlight type', () => {
+    const card = mainEl.querySelector('[data-card-key="Highlight"]');
+    expect(card.querySelector('.mep-toggle-key-mep')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-lingo')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-caas')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-mas')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-other')).to.exist;
+  });
+
+  it('non-Highlight toggles do not render outlined circle keys', () => {
+    const card = mainEl.querySelector('[data-card-key="Toggle"]');
+    expect(card.querySelector('.mep-toggle-key')).to.not.exist;
+  });
+
   it('spoof-geo-top-markets radio is checked by default', () => {
     const radio = mainEl.querySelector('#spoof-geo-top-markets');
     expect(radio).to.exist;

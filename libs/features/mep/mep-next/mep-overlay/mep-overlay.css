@@ -565,6 +565,48 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   gap: 16px;
 }
 
+.mep-drawer .mep-toggle-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.mep-drawer .mep-toggle-key {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 2px solid var(--mep-toggle-key-secondary);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: var(--mep-toggle-key-primary);
+}
+
+.mep-drawer .mep-toggle-key-mep {
+  --mep-toggle-key-primary: var(--mep-primary);
+  --mep-toggle-key-secondary: var(--mep-secondary);
+}
+
+.mep-drawer .mep-toggle-key-lingo {
+  --mep-toggle-key-primary: var(--lingo-primary);
+  --mep-toggle-key-secondary: var(--lingo-secondary);
+}
+
+.mep-drawer .mep-toggle-key-caas {
+  --mep-toggle-key-primary: var(--caas-primary);
+  --mep-toggle-key-secondary: var(--caas-secondary);
+}
+
+.mep-drawer .mep-toggle-key-mas {
+  --mep-toggle-key-primary: var(--mas-primary);
+  --mep-toggle-key-secondary: var(--mas-secondary);
+}
+
+.mep-drawer .mep-toggle-key-other {
+  --mep-toggle-key-primary: var(--other-primary);
+  --mep-toggle-key-secondary: var(--other-secondary);
+}
+
 .mep-drawer h2 {
   margin: 0;
   font: var(--mep-h2-font);
