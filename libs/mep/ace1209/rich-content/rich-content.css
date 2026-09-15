@@ -225,11 +225,16 @@
   &.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground {
     animation: none;
 
-    .content > :nth-child(1) { --rc-text-y: 0px; }
-    .content > :nth-child(2) { --rc-text-y: 20px; }
-    .content > :nth-child(3) { --rc-text-y: 40px; }
-    .content > :nth-child(4) { --rc-text-y: 60px; }
-    .content > :nth-child(5) { --rc-text-y: 80px; }
+    .content > :nth-child(1) { --rc-item-order: 0; }
+    .content > :nth-child(2) { --rc-item-order: 1; }
+    .content > :nth-child(3) { --rc-item-order: 2; }
+    .content > :nth-child(4) { --rc-item-order: 3; }
+    .content > :nth-child(5) { --rc-item-order: 4; }
+    .content > :nth-child(6) { --rc-item-order: 5; }
+    .content > :nth-child(7) { --rc-item-order: 6; }
+    .content > :nth-child(8) { --rc-item-order: 7; }
+    .content > :nth-child(9) { --rc-item-order: 8; }
+    .content > :nth-child(10) { --rc-item-order: 9; }
   }
 
   &:has(.rich-content.merch-moment) {
@@ -839,63 +844,18 @@
     .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > * {
       opacity: 0;
       will-change: opacity, translate;
+      animation: rc-merch-text-item linear both;
       animation-timeline: --rc-merch-text-vt;
-      animation-range: cover 0% cover 49%;
-      animation-fill-mode: both;
-      animation-timing-function: linear;
+      animation-range: cover calc(7.35% + (var(--rc-item-order, 0) * 4.41%)) cover 49%;
     }
 
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > :nth-child(1) { animation-name: rc-merch-text-item-1; }
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > :nth-child(2) { animation-name: rc-merch-text-item-2; }
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > :nth-child(3) { animation-name: rc-merch-text-item-3; }
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > :nth-child(4) { animation-name: rc-merch-text-item-4; }
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > :nth-child(5) { animation-name: rc-merch-text-item-5; }
-
-    @keyframes rc-merch-text-item-1 {
-      0% { translate: 0 var(--rc-text-y, 0); }
-      15% { opacity: 0; }
-
-      100% {
-        opacity: 1;
-        translate: 0 0;
+    @keyframes rc-merch-text-item {
+      from {
+        opacity: 0;
+        translate: 0 calc(var(--rc-item-order, 0) * 20px);
       }
-    }
 
-    @keyframes rc-merch-text-item-2 {
-      0% { translate: 0 var(--rc-text-y, 0); }
-      24% { opacity: 0; }
-
-      100% {
-        opacity: 1;
-        translate: 0 0;
-      }
-    }
-
-    @keyframes rc-merch-text-item-3 {
-      0% { translate: 0 var(--rc-text-y, 0); }
-      33% { opacity: 0; }
-
-      100% {
-        opacity: 1;
-        translate: 0 0;
-      }
-    }
-
-    @keyframes rc-merch-text-item-4 {
-      0% { translate: 0 var(--rc-text-y, 0); }
-      42% { opacity: 0; }
-
-      100% {
-        opacity: 1;
-        translate: 0 0;
-      }
-    }
-
-    @keyframes rc-merch-text-item-5 {
-      0% { translate: 0 var(--rc-text-y, 0); }
-      51% { opacity: 0; }
-
-      100% {
+      to {
         opacity: 1;
         translate: 0 0;
       }
