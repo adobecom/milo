@@ -24,19 +24,21 @@ describe('Logo Ticker', () => {
     expect(track.getAttribute('role')).to.equal('img');
   });
 
-  it('duplicates logos into two sets, hiding set 2 from assistive tech', async () => {
+  it('duplicates logos into three sets, hiding sets 2 and 3 from assistive tech', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.logo-ticker');
     init(block);
 
     const sets = block.querySelectorAll('.logo-ticker-set');
-    expect(sets.length).to.equal(2);
+    expect(sets.length).to.equal(3);
     expect(sets[0].hasAttribute('aria-hidden')).to.be.false;
     expect(sets[1].getAttribute('aria-hidden')).to.equal('true');
+    expect(sets[2].getAttribute('aria-hidden')).to.equal('true');
 
     expect(sets[0].querySelectorAll('span.icon').length).to.equal(3);
     expect(sets[1].querySelectorAll('span.icon').length).to.equal(3);
-    expect(block.querySelectorAll('span.icon').length).to.equal(6);
+    expect(sets[2].querySelectorAll('span.icon').length).to.equal(3);
+    expect(block.querySelectorAll('span.icon').length).to.equal(9);
   });
 
   it('labels the track from the first segment of the second row', async () => {
@@ -95,7 +97,7 @@ describe('Logo Ticker', () => {
     const track = block.querySelector('.logo-ticker-track');
     expect(track).to.exist;
     expect(track.hasAttribute('aria-label')).to.be.false;
-    expect(block.querySelectorAll('.logo-ticker-set span.icon').length).to.equal(4);
+    expect(block.querySelectorAll('.logo-ticker-set span.icon').length).to.equal(6);
   });
 
   it('does nothing when there are no logos', async () => {
