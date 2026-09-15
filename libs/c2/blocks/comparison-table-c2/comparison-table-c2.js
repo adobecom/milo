@@ -400,6 +400,7 @@ function processCellContent(child) {
 }
 
 function isEmptyCellContent(cellDiv) {
+  if (cellDiv.querySelector('.icon-checkmark, .icon-close')) return false;
   const content = cellDiv.textContent.trim();
   return !content || /^-+$/.test(content);
 }
@@ -519,14 +520,25 @@ function setupResponsiveHiding(el) {
 
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
-    replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
-      [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
+    replaceKeyArray(['choose-table-column', 'not-a-feature', 'primary-feature'], getConfig())
+      .then(([ariaLabel, notAFeatureText, primaryFeatureText]) => {
+        [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
-      el.querySelectorAll('.table-cell > .cell-content.empty-cell').forEach((cellDiv) => {
-        if (cellDiv.querySelector('.sr-only')) return;
-        cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
+        el.querySelectorAll('.table-cell > .cell-content').forEach((cellDiv) => {
+          const closeIcon = cellDiv.querySelector('.icon-close');
+          const checkmarkIcon = cellDiv.querySelector('.icon-checkmark');
+          const icon = closeIcon || checkmarkIcon;
+
+          if (icon) {
+            icon.querySelector('title')?.remove();
+            icon.setAttribute('aria-hidden', 'true');
+          } else if (!cellDiv.classList.contains('empty-cell') || cellDiv.querySelector('.sr-only')) {
+            return;
+          }
+
+          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, checkmarkIcon ? primaryFeatureText : notAFeatureText));
+        });
       });
-    });
   });
 }
 
