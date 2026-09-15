@@ -1,11 +1,14 @@
 import { getConfig } from '../../utils/utils.js';
 
 /*
- * Detects AEM Sidekick login from the page world. <aem-sidekick> is defined in the
- * extension's isolated world, so page JS sees no config/status and its status event
- * fires before we attach. The page-world signal: login-button#user in
- * plugin-action-bar's shadow is always present and carries `not-authorized` while
- * signed out. Auth is orthogonal to the adobe.com session (logged-out pages preview).
+ * Detects likely page-view authorization from AEM Sidekick and the Adobe firewall.
+ * <aem-sidekick> is defined in the extension's isolated world, so page JS sees no
+ * config/status and its status event fires before we attach. The page-world signal:
+ * login-button#user in plugin-action-bar's shadow is always present and carries
+ * `not-authorized` while signed out. The firewall signal is a reachability check
+ * against a corporate host. These functions do not confirm a user's specific page
+ * permissions; they only indicate that the user is likely authorized to view pages.
+ * Auth is orthogonal to the adobe.com session (logged-out pages preview).
  */
 
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';

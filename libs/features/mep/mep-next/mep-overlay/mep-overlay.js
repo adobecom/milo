@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { onSidekickAuth } from '../../sidekick-auth.js';
+import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -32,6 +32,7 @@ import {
 import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
+let authStateRendered = false;
 const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
@@ -414,22 +415,6 @@ function buildFAB(gnavOffset) {
   return fab;
 }
 
-function buildLoginCard(pageId) {
-  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
-  refreshButton.addEventListener('click', (event) => {
-    event.preventDefault();
-    // eslint-disable-next-line no-use-before-define
-    checkAuthAndBuild(pageId);
-  });
-  return createTag('div', { class: 'mep-card expanded center' }, [
-    createTag('h1', {}, 'Content Unavailable'),
-    createTag('div', { class: 'mep-card-body' }, [
-      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
-      refreshButton,
-    ]),
-  ]);
-}
-
 function buildFooter() {
   return createTag('div', { class: 'mep-footer' }, [
     createTag('a', { class: 'con-button button-l fill', title: 'Preview' }, 'Preview'),
@@ -437,34 +422,13 @@ function buildFooter() {
 }
 
 function buildActionsContent(pageId) {
-  if (!authenticated) return [buildLoginCard(pageId)];
+  if (!authenticated) return [];
   return [
     ...buildManifestList(),
     ...CARD_DATA.actions.map(([header, data]) => (
       buildCard({ header, label: data }, pageId)
     )),
   ];
-}
-
-function buildTabsAndBody(pageId) {
-  const tabDefs = [
-    ['Actions', buildActionsContent(pageId)],
-    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId))],
-  ];
-
-  const tabsEl = createTag('div', { class: 'mep-tabs' });
-  const bodyEl = createTag('div', { class: 'mep-body' });
-
-  tabDefs.forEach(([name, content], index) => {
-    const isActive = index === 0;
-    const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
-    const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
-    content.forEach((el) => contentEl.appendChild(el));
-    tabsEl.appendChild(tabEl);
-    bodyEl.appendChild(contentEl);
-  });
-
-  return { tabsEl, bodyEl };
 }
 
 async function setDefaultValues() {
@@ -510,30 +474,74 @@ async function setDefaultValues() {
   selectEl.value = mepAkamaiLocale;
 }
 
+async function refreshFirewallAuth(refreshAuth) {
+  if (await isWithinFirewall()) await refreshAuth();
+}
+
+function buildLoginCard(onRefresh) {
+  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
+  refreshButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+    await refreshFirewallAuth(onRefresh);
+  });
+  return createTag('div', { class: 'mep-card expanded center' }, [
+    createTag('h1', {}, 'Content Unavailable'),
+    createTag('div', { class: 'mep-card-body' }, [
+      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
+      refreshButton,
+    ]),
+  ]);
+}
+
+async function renderAuthState(pageId, isAuthed) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+  if (!contentEl) return;
+  if (isAuthed === authenticated && authStateRendered) return;
+  authenticated = isAuthed;
+  authStateRendered = true;
+
+  if (!authenticated) {
+    contentEl.replaceChildren(buildLoginCard(() => renderAuthState(pageId, true)));
+    drawerEl.querySelector('.mep-footer')?.remove();
+    return;
+  }
+
+  const cards = buildActionsContent(pageId);
+  contentEl.replaceChildren(...cards);
+  const footerEl = buildFooter();
+  const activeTab = drawerEl.querySelector('.mep-tab.active');
+  footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+  drawerEl.appendChild(footerEl);
+  await Promise.all(cards.map((c) => c.ready).filter(Boolean));
+  setDefaultValues();
+  setPreviewButton();
+}
+
+function buildTabsAndBody(pageId) {
+  const tabDefs = [
+    ['Actions', buildActionsContent(pageId)],
+    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId))],
+  ];
+
+  const tabsEl = createTag('div', { class: 'mep-tabs' });
+  const bodyEl = createTag('div', { class: 'mep-body' });
+
+  tabDefs.forEach(([name, content], index) => {
+    const isActive = index === 0;
+    const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
+    const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
+    content.forEach((el) => contentEl.appendChild(el));
+    tabsEl.appendChild(tabEl);
+    bodyEl.appendChild(contentEl);
+  });
+
+  return { tabsEl, bodyEl };
+}
+
 function checkAuthAndBuild(pageId) {
   onSidekickAuth(async (isAuthed) => {
-    if (isAuthed === authenticated) return;
-    authenticated = isAuthed;
-
-    const drawerEl = document.querySelector('#mep-drawer');
-    const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
-    if (!contentEl) return;
-
-    if (!authenticated) {
-      contentEl.replaceChildren(buildLoginCard(pageId));
-      drawerEl.querySelector('.mep-footer')?.remove();
-      return;
-    }
-
-    const cards = buildActionsContent(pageId);
-    contentEl.replaceChildren(...cards);
-    const footerEl = buildFooter();
-    const activeTab = drawerEl.querySelector('.mep-tab.active');
-    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
-    drawerEl.appendChild(footerEl);
-    await Promise.all(cards.map((c) => c.ready).filter(Boolean));
-    setDefaultValues();
-    setPreviewButton();
+    await renderAuthState(pageId, isAuthed);
   });
 }
 
