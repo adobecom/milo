@@ -1933,6 +1933,7 @@ function decorateInlineCtas(masField, content) {
       // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
       content.remove();
     }
+    masField.querySelector('aem-fragment')?.remove();
     upgradeCommerceLinks(masField);
     ensureInlinePriceStyle(masField);
     hoisted = masField.querySelector('a, button');
