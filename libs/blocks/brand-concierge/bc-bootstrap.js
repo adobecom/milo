@@ -19,6 +19,10 @@ let susiListener;
 let lastImsState = null;
 let lastSideTop = 0;
 
+export function isMobile() {
+  return window.matchMedia('(max-width: 1199px)').matches;
+}
+
 export function sideOverlayTop() {
   const gnav = document.querySelector('header.global-navigation');
 
@@ -468,6 +472,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   }
 
   handleLocalNav();
+  sideOverlayTop();
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
