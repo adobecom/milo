@@ -174,4 +174,25 @@ describe('setConsentEnabled', () => {
     expect(manifestConfig.consentEnabled).to.be.false;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
   });
+
+  it('should not allocate a real variant or persist to local storage for a geo-ineligible non-personalized offer test when performance is off', () => {
+    getConfig().mep = {
+      countryIP: 'us',
+      consentState: { performance: false, advertising: true },
+      variantOverride: {},
+    };
+    const manifestConfig = {
+      consentType: 'non-personalized offer test',
+      manifestPath: '/test/test.json',
+      variantNames: ['test'],
+      countryRestriction: 'fr, ca',
+    };
+    // fixed execution order: country eligibility must be resolved before consent substitution
+    setCountryEnabled(manifestConfig);
+    setConsentEnabled(manifestConfig);
+    expect(manifestConfig.countryEnabled).to.be.false;
+    expect(manifestConfig.consentEnabled).to.be.false;
+    expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('Default');
+    expect(localStorage.getItem('mep-/test/test.json')).to.be.null;
+  });
 });

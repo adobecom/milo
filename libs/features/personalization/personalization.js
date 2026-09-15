@@ -1193,6 +1193,8 @@ export function setConsentEnabled(manifestConfig) {
   if (consentType === NON_PERSONALIZED_OFFER_TEST) {
     if (performance) return;
     manifestConfig.consentEnabled = false;
+    // geo-ineligible users are already restricted to 'Default'; never allocate a real variant
+    if (manifestConfig.countryEnabled === false) return;
     overrideVariant(manifestPath, pickNonPznVariant(manifestPath, variantNames));
     return;
   }
@@ -1288,8 +1290,8 @@ async function getManifestConfig(info, variantOverride) {
   }
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  setConsentEnabled(manifestConfig, source);
   setCountryEnabled(manifestConfig);
+  setConsentEnabled(manifestConfig, source);
   if (manifestConfig.consentType !== PROMO_OR_NO_OFFER_CHANGES
     && manifestConfig.consentEnabled && manifestConfig.countryEnabled) {
     sendAnalytics(`${fileName} was served`);
