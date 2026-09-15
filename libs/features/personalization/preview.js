@@ -916,7 +916,7 @@ function parseMepConfig() {
   const activities = experiments.map((experiment) => {
     const {
       name, event, manifest, variantNames, selectedVariantName,
-      disabled, analyticsTitle, source, countryRestriction, mktgAction,
+      disabled, analyticsTitle, source, countryRestriction, consentType,
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -932,7 +932,7 @@ function parseMepConfig() {
       pathname,
       analyticsTitle,
       countryRestriction,
-      mktgAction,
+      consentType,
     };
   });
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
@@ -982,7 +982,7 @@ function getManifestListDomAndParameter(mepConfig) {
       eventEnd,
       disabled,
       countryRestriction,
-      mktgAction,
+      consentType,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -1033,8 +1033,8 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
                   <span>${escapeHtml(source)}</span>
-                  <span>Mktg action</span>
-                  <span>${escapeHtml(mktgAction)}</span>
+                  <span>Consent req</span>
+                  <span>${escapeHtml(consentType)}</span>
                 ${countryRestriction ? `
                   <span>Allowed User Countries</span>
                   <span>${countryRestriction ? `${escapeHtml(countryRestriction?.toUpperCase())}` : ''}</span>` : ''}
