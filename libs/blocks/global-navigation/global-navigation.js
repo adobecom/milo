@@ -3,6 +3,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupEnabled,
   loadIms,
   loadStyle,
   loadLana,
@@ -368,6 +369,7 @@ export const osMap = {
 };
 
 export const LANGMAP = {
+  ar: ['ara'],
   cs: ['cz'],
   da: ['dk'],
   de: ['at'],
@@ -986,7 +988,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+    if (isAupEnabled(this.useUniversalNav)) {
       this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
@@ -1139,7 +1141,9 @@ class Gnav {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      getProfile: async () => (
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
+      ),
       environment,
       cdnEnvironment: environment,
       locale,
@@ -1147,31 +1151,61 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
-        document.getElementById('feds-manage-people-dialog')?.remove();
+        const isIframe = element.tagName === 'IFRAME';
+        if (isIframe) {
+          await Promise.all([
+            import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+            import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+          ]);
+        }
+        document.getElementById('aup-workflow-dialog')?.remove();
         const dialog = document.createElement('dialog');
-        dialog.id = 'feds-manage-people-dialog';
+        dialog.id = 'aup-workflow-dialog';
+        let finishLoading;
+        if (isIframe) {
+          const spinner = toFragment`
+            <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+              <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+            </sp-theme>`;
+          dialog.classList.add('loading');
+          dialog.appendChild(spinner);
+          finishLoading = () => {
+            element.removeEventListener('load', finishLoading);
+            dialog.classList.remove('loading');
+            spinner.remove();
+          };
+          element.addEventListener('load', finishLoading, { once: true });
+        }
         dialog.appendChild(element);
         document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
+        element.addEventListener('close', () => {
+          finishLoading?.();
           closeCallback({ type: 'close' });
           dialog.close();
           dialog.remove();
           document.documentElement.classList.remove('disable-scroll');
+        }, { once: true });
+        const cancel = () => {
+          // The orchestrator settles on cancel; close releases its event listeners.
+          element.dispatchEvent(new Event('cancel'));
+          element.dispatchEvent(new Event('close'));
+        };
+        dialog.addEventListener('cancel', (e) => {
+          if (e.target !== dialog) return;
+          e.preventDefault();
+          cancel();
         });
         dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
-            closeCallback({ type: 'close' });
-            dialog.close();
-            dialog.remove();
-            document.documentElement.classList.remove('disable-scroll');
-          }
+          if (e.target === dialog) cancel();
         });
         document.documentElement.classList.add('disable-scroll');
         dialog.showModal();
       },
     });
 
-    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    const features = ['useToasts'];
+    if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
+    await window.aupsdk.updateConfig({ miniAppContext: { features } });
     return window.aupsdk;
   };
 

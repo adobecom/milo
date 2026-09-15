@@ -505,6 +505,26 @@ describe('mas-field', () => {
       expect(link).to.exist;
     });
 
+    it('removes aem-fragment after hoisting an inline CTA so a later aem:load cannot duplicate it', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=dup-cta-1&field=ctas-checkout';
+      a.textContent = '[[dup-test:ctas-checkout]]';
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      const masField = p.querySelector('mas-field');
+      expect(masField).to.exist;
+      expect(masField.querySelector('aem-fragment')).to.be.null;
+      expect(masField.querySelectorAll('a').length).to.equal(1);
+    });
+
     it('adds button-justified-mobile to a hero-marquee CTA with no decorated sibling', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
