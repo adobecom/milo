@@ -2,9 +2,11 @@
  * whats-new — feature/release announcement section.
  * Heading (eyebrow + title) followed by an N-up card grid.
  *
- * Geometry below is taken from the declared Figma frame (9848:41113), not
- * eyeballed. Only the desktop 1440 frame was supplied, so horizontal space is
- * handled with intrinsic fluidity rather than fabricated breakpoints.
+ * Geometry is taken from declared Figma frames, not eyeballed. Two frames are
+ * supplied: the narrow 375 frame (7849:6299, the 320-767 band) is the base, and
+ * the desktop 1440 frame (9848:41113) layers on at >=768px (mobile-first). The
+ * 768-1279 band is unframed for this section, so it inherits the desktop rules
+ * via intrinsic fluidity rather than a fabricated breakpoint.
  *
  * Font families use Milo's locale-aware tokens, never literal "Adobe Clean
  * Display", so CJK/Arabic locales substitute correctly.
@@ -54,7 +56,8 @@
 .whats-new .heading-content h2 {
   max-width: 664px;
   font-family: var(--heading-font-family);
-  font-size: clamp(32px, 3.9vw, 56px);
+  /* narrow frame 7849:6299 holds the title at 56px; desktop matches at >=768px */
+  font-size: 56px;
   font-weight: 900;
   line-height: 1;
   color: #000;
@@ -72,9 +75,24 @@
 
 .whats-new .whats-new-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-  gap: var(--s2a-spacing-8, 8px);
+
+  /* narrow frame 7849:6299 stacks 1-up with a 40px gap through 767px */
+  grid-template-columns: 1fr;
+  gap: var(--s2a-spacing-40, 40px);
   align-items: start;
+}
+
+/* ---------- desktop (>=768px): layers the 1440 frame on top ---------- */
+
+@media (width >= 768px) {
+  .whats-new .heading-content h2 {
+    font-size: clamp(32px, 3.9vw, 56px);
+  }
+
+  .whats-new .whats-new-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: var(--s2a-spacing-8, 8px);
+  }
 }
 
 .whats-new .whats-new-card {
