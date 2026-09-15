@@ -176,7 +176,7 @@ body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before {
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback] {
   position: relative !important;
-  outline: 2px dashed var(--caas-primary) !important;
+  outline: 2px dashed var(--lingo-primary) !important;
 }
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before {
