@@ -212,6 +212,23 @@ describe('Blog Author', () => {
     expect(el.textContent).to.not.include('#f0e6d3');
   });
 
+  it('strips whitespace/newlines surrounding authored text nodes', async () => {
+    document.body.innerHTML = `
+      <div class="blog-author">
+        <div><div>
+              Adobe for Business Team
+            </div></div>
+        <div><div>
+              Senior Director, Marketing
+            </div></div>
+      </div>`;
+    await init(document.querySelector('.blog-author'));
+    expect(document.querySelector('.blog-author-name').textContent).to.equal('Adobe for Business Team');
+    expect(document.querySelector('.blog-author-title').textContent).to.equal('Senior Director, Marketing');
+    const schema = getPersonSchema();
+    expect(schema.name).to.equal('Adobe for Business Team');
+  });
+
   it('does not treat non-hex text as a background color', async () => {
     await init(document.querySelector('.blog-author'));
     const el = document.querySelector('.blog-author');
