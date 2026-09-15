@@ -194,9 +194,9 @@ describe('init: DOM structure — stage env first call', () => {
     expect(content.querySelector('[data-card-key="Toggle"]')).to.exist;
   });
 
-  it('Spoof Geo card is present with select.mep-spoof-geo', () => {
+  it('Spoof Country card is present with select.mep-spoof-geo', () => {
     const content = mainEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.querySelector('[data-card-key="Spoof Geo"]')).to.exist;
+    expect(content.querySelector('[data-card-key="Spoof Country"]')).to.exist;
     expect(content.querySelector('select.mep-spoof-geo')).to.exist;
   });
 
@@ -710,20 +710,35 @@ describe('buildAdditionalManifests: no base manifest cards → early return', ()
 });
 
 // ============================================================
-// GROUP 5: markExpanded — pre-expanded from localStorage
+// GROUP 5: markExpanded — per-type defaults and localStorage overrides
 // auth state: true → true
 // ============================================================
-describe('markExpanded: pre-expands card when key is in localStorage', () => {
+const CONFIG_WITH_DEFAULT_EXP = {
+  ...BASE_CONFIG,
+  mep: {
+    ...BASE_CONFIG.mep,
+    experiments: [{
+      name: 'Default Card',
+      manifest: '/frags/mep/default-exp.json',
+      variantNames: [],
+      selectedVariantName: 'default',
+      source: 'adobe-target',
+    }],
+  },
+};
+
+describe('markExpanded: defaults with no localStorage entry', () => {
   let mainEl;
   let headerEl;
 
   before(async () => {
-    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(['Highlight']));
-    setConfig(BASE_CONFIG);
+    localStorage.removeItem(CARD_STORAGE_KEY);
+    setConfig(CONFIG_WITH_DEFAULT_EXP);
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
-    await wait(100);
+    await wait(150);
+    setConfig(BASE_CONFIG);
   });
 
   after(() => {
@@ -731,9 +746,52 @@ describe('markExpanded: pre-expands card when key is in localStorage', () => {
     setConfig(BASE_CONFIG);
   });
 
-  it('Highlight card starts expanded when its key is in localStorage', () => {
+  it('manifest cards start collapsed by default', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card.classList.contains('expanded')).to.be.false;
+  });
+
+  it('action cards (e.g. Highlight) start expanded by default', () => {
     const card = mainEl.querySelector('#mep-drawer [data-card-key="Highlight"]');
     expect(card.classList.contains('expanded')).to.be.true;
+  });
+
+  it('summary cards (e.g. Page) start expanded by default', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Page"]');
+    expect(card.classList.contains('expanded')).to.be.true;
+  });
+});
+
+describe('markExpanded: localStorage overrides the per-type default', () => {
+  let mainEl;
+  let headerEl;
+
+  before(async () => {
+    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify({
+      '/frags/mep/default-exp.json': true,
+      Highlight: false,
+    }));
+    setConfig(CONFIG_WITH_DEFAULT_EXP);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+    setConfig(BASE_CONFIG);
+  });
+
+  it('manifest card starts expanded when localStorage explicitly sets it true', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card.classList.contains('expanded')).to.be.true;
+  });
+
+  it('Highlight card starts collapsed when localStorage explicitly sets it false', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Highlight"]');
+    expect(card.classList.contains('expanded')).to.be.false;
   });
 });
 
@@ -817,13 +875,9 @@ describe('setEventListeners: toggleExpandedCard', () => {
     const svg = card.querySelector('svg');
     const key = card.dataset.cardKey;
     svg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    const stored = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY) || '[]');
-    expect(stored).to.be.an('array');
-    if (card.classList.contains('expanded')) {
-      expect(stored).to.include(key);
-    } else {
-      expect(stored).to.not.include(key);
-    }
+    const stored = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY) || '{}');
+    expect(stored).to.be.an('object');
+    expect(stored[key]).to.equal(card.classList.contains('expanded'));
   });
 });
 
@@ -1041,7 +1095,7 @@ describe('getGnavOffset: MutationObserver resolves when header gains height', ()
 });
 
 // ============================================================
-// GROUP 13: Spoof Geo radio change and select change handlers
+// GROUP 13: Spoof Country radio change and select change handlers
 // auth state: true → true
 // ============================================================
 describe('buildSpoofGeo: radio change and select change handlers', () => {

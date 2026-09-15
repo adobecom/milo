@@ -17,6 +17,9 @@ if (!customElements.get('mas-field')) {
         const field = this.getAttribute('field');
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a><a href="https://main--milo--adobecom.aem.live/test/fragments/modal#cardmodal">Open modal</a>';
+        } else if (field === 'description-inline') {
+          // Copy with an inline link and no block wrapper — must stay a description (MWPW-207084).
+          content.innerHTML = 'Save 40% off your first year. <a href="https://www.adobe.com/terms">Terms apply</a>';
         } else if (field === 'ctas') {
           content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong><em><a href="https://main--milo--adobecom.aem.page/some/test/page">Go</a></em>';
         } else if (field === 'ctas-checkout') {
@@ -38,7 +41,9 @@ if (!customElements.get('mas-field')) {
   });
 }
 
-const { initMasField: init, holdCtaUntilPrice } = await import('../../../libs/blocks/merch/merch.js');
+const merchModule = await import('../../../libs/blocks/merch/merch.js');
+const { initMasField: init, holdCtaUntilPrice } = merchModule;
+const merch = merchModule.default;
 
 const originalFetch = window.fetch;
 const { adobeIMS } = window;
@@ -61,6 +66,9 @@ describe('mas-field', () => {
     before(async () => {
       await mockIms();
       sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('.plain.html')) {
+          return new Response('<div>Modal content</div>', { status: 200 });
+        }
         let fileName = '';
         if (url.includes('/mas/io/fragment')) {
           fileName = 'fragment.json';
@@ -159,6 +167,22 @@ describe('mas-field', () => {
       const modalLink = document.querySelector('mas-field a[href="#cardmodal"]');
       expect(modalLink.classList.contains('modal')).to.be.true;
       expect(modalLink.getAttribute('data-modal-path')).to.equal('/test/fragments/modal');
+    });
+
+    it('keeps description copy and its discount percentage when a link is authored inline (MWPW-207084)', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=inline-link-1&field=description-inline';
+      a.textContent = '[[inline-link-test:description]]';
+      document.body.append(a);
+      await init(a);
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      const content = masField.querySelector('[data-role="mas-field-content"]');
+      expect(content).to.exist;
+      // The copy (carrying the discount percentage) survives instead of collapsing to the link.
+      expect(content.textContent).to.contain('Save 40% off your first year.');
+      expect(content.querySelector('a[href="https://www.adobe.com/terms"]')).to.exist;
+      expect(masField.querySelector('.con-button')).to.not.exist;
     });
 
     it('returns early for inline fragment when fragment is missing', async () => {
@@ -608,6 +632,46 @@ describe('mas-field', () => {
       expect(blue.classList.contains('button-l')).to.be.true;
     });
 
+    it('collapses a field link split across sibling anchors (doc-authored bold label) to the canonical, strong-wrapped anchor', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const p = document.createElement('p');
+      const href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=split-anchor-1&field=ctas[key1]';
+
+      // Doc-authored content can't nest a bolded run inside a single <a>, so a link whose
+      // label has "Buy now" bolded round-trips as 3 sibling anchors sharing the same href.
+      const before = document.createElement('a');
+      before.className = 'merch link-block';
+      before.href = href;
+      before.textContent = 'ctas[';
+
+      const strong = document.createElement('strong');
+      const bold = document.createElement('a');
+      bold.className = 'merch link-block';
+      bold.href = href;
+      bold.textContent = 'Buy now';
+      strong.append(bold);
+
+      const after = document.createElement('a');
+      after.className = 'merch link-block';
+      after.href = href;
+      after.textContent = ']';
+
+      p.append(before, strong, after);
+      document.body.append(p);
+
+      // decorateAutoBlock tagged all three independently; each would otherwise reach
+      // initMasField on its own and duplicate the CTA.
+      await merch(before);
+      await merch(bold);
+      await merch(after);
+
+      expect(document.querySelectorAll('mas-field').length).to.equal(1);
+      expect(before.isConnected).to.be.false;
+      expect(after.isConnected).to.be.false;
+      // The strong wrapper - and the button style it implies - survives on the CTA that's kept.
+      expect(document.querySelector('mas-field').closest('strong')).to.equal(strong);
+    });
+
     it('passes mask and pzn to aem-fragment in createInline', async () => {
       setConfig({ codeRoot: '/libs' });
       const a = document.createElement('a');
@@ -645,6 +709,196 @@ describe('mas-field', () => {
       const heading1 = document.querySelector('#heading-milo-class-test');
       expect(heading1).to.exist;
       expect(heading1.classList.contains('heading-xxxl')).to.be.true;
+    });
+
+    describe('promo-placeholder reveal', () => {
+      // watchPromoPlaceholders is registered on first initMasField call (module-level);
+      // prior tests did that. It reveals a .promo-placeholder when a mas-field inside it
+      // resolves to a promotion variation (data-promotion-project), else stays hidden.
+      const buildField = (field, { onField, contentHTML } = {}) => {
+        const mf = document.createElement('mas-field');
+        mf.setAttribute('field', field);
+        if (onField) mf.setAttribute('data-promotion-project', onField);
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = contentHTML ?? '';
+        mf.append(content);
+        return mf;
+      };
+
+      const dispatchReady = async (mf) => {
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+      };
+
+      it('reveals when a field resolves a promotion variation (marker on the mas-field)', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('description', { onField: 'someproject', contentHTML: 'Promo copy' });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.true;
+      });
+
+      it('reveals when the promotion marker is on a resolved child, not the mas-field', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('ctas', { contentHTML: '<a is="checkout-link" data-promotion-project="proj" href="https://commerce.adobe.com/">Buy now</a>' });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.true;
+      });
+
+      it('stays hidden when the field has no promotion variation', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const mf = buildField('description', { contentHTML: ' ' });
+        container.append(mf);
+        document.body.append(container);
+
+        await dispatchReady(mf);
+
+        expect(container.classList.contains('promo-resolved')).to.be.false;
+      });
+
+      it('reveals once any field resolves a promotion, ignoring earlier non-promo fields', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const empty = buildField('description', { contentHTML: ' ' });
+        const promo = buildField('ctas', {
+          onField: 'proj',
+          contentHTML: '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>',
+        });
+        container.append(empty, promo);
+        document.body.append(container);
+
+        await dispatchReady(empty);
+        expect(container.classList.contains('promo-resolved'), 'not revealed by non-promo field').to.be.false;
+
+        await dispatchReady(promo);
+        expect(container.classList.contains('promo-resolved'), 'revealed once promo field resolves').to.be.true;
+      });
+
+      it('does nothing when the mas-field is not inside a .promo-placeholder', async () => {
+        const mf = buildField('description', { onField: 'proj', contentHTML: 'Promo copy' });
+        document.body.append(mf);
+
+        await dispatchReady(mf);
+
+        expect(document.querySelector('.promo-resolved')).to.not.exist;
+      });
+
+      it('is a no-op (non-mas-field target) for foreign mas:ready events', async () => {
+        const container = document.createElement('div');
+        container.classList.add('promo-placeholder');
+        const other = document.createElement('div');
+        container.append(other);
+        document.body.append(container);
+
+        other.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect(container.classList.contains('promo-resolved')).to.be.false;
+      });
+    });
+
+    describe('promo modal', () => {
+      // watchPromoModals is registered on first initMasField call (module-level; prior tests
+      // did that). When a promo mas-field resolves to a sentinel link labelled "modal", it
+      // consumes the link and opens its href as a modal.
+      before(() => setConfig({ codeRoot: '/libs' }));
+
+      afterEach(() => {
+        document.querySelectorAll('.dialog-modal, .modal-curtain').forEach((el) => el.remove());
+        document.body.classList.remove('disable-scroll');
+      });
+
+      const buildModalField = (href, { promo = 'proj', text = 'modal' } = {}) => {
+        const mf = document.createElement('mas-field');
+        mf.setAttribute('field', 'shortDescription');
+        if (promo) mf.setAttribute('data-promotion-project', promo);
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = text;
+        mf.append(a);
+        document.body.append(mf);
+        return { mf, a };
+      };
+
+      const dispatchReady = (mf) => mf.dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+
+      const waitFor = async (fn, ms = 2000) => {
+        const start = Date.now();
+        let value = fn();
+        while (!value && Date.now() - start < ms) {
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => { setTimeout(resolve, 10); });
+          value = fn();
+        }
+        return value;
+      };
+
+      it('opens the modal and consumes the link when the fragment resolves with content', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal');
+        dispatchReady(mf);
+
+        const opened = await waitFor(() => document.querySelector('.dialog-modal[id="promo-modal"]'));
+        expect(opened, 'modal dialog opened').to.exist;
+        expect(a.isConnected, 'sentinel link removed').to.be.false;
+      });
+
+      it('processes the modal: id from the path, fragment content, close button and curtain', async () => {
+        const { mf } = buildModalField('/drafts/promo/offer-modal');
+        dispatchReady(mf);
+
+        const dialog = await waitFor(() => document.querySelector('.dialog-modal[id="offer-modal"]'));
+        expect(dialog, 'dialog created with id from last path segment').to.exist;
+        expect(dialog.getAttribute('role')).to.equal('dialog');
+        expect(dialog.getAttribute('aria-modal')).to.equal('true');
+        // getPathModal fetched /drafts/promo/offer-modal.plain.html and inlined its content.
+        expect(dialog.querySelector('.fragment'), 'fragment content inlined').to.exist;
+        expect(dialog.textContent).to.include('Modal content');
+        expect(dialog.querySelector('button.dialog-close'), 'close button rendered').to.exist;
+        expect(document.querySelector('.modal-curtain'), 'curtain shown').to.exist;
+        expect(document.body.classList.contains('disable-scroll')).to.be.true;
+      });
+
+      it('opens a modal only once when mas:ready fires repeatedly for the same field', async () => {
+        const { mf } = buildModalField('/drafts/promo/dupe-modal');
+        dispatchReady(mf);
+        await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
+        // A second resolution (e.g. mas re-render) must not stack a second dialog.
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(document.querySelectorAll('.dialog-modal[id="dupe-modal"]').length).to.equal(1);
+      });
+
+      it('ignores a non-promo mas-field (link stays, no modal)', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal', { promo: null });
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(a.isConnected, 'link untouched').to.be.true;
+        expect(document.querySelector('.dialog-modal')).to.not.exist;
+      });
+
+      it('ignores a promo link that is not labelled "modal"', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/promo-modal', { text: 'Learn more' });
+        dispatchReady(mf);
+        await new Promise((resolve) => { setTimeout(resolve, 200); });
+
+        expect(a.isConnected, 'link untouched').to.be.true;
+        expect(document.querySelector('.dialog-modal')).to.not.exist;
+      });
     });
   });
 

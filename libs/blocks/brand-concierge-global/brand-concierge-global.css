@@ -1,3 +1,10 @@
+:root {
+  --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
+}
+
 .global-navigation .feds-bc-wrapper {
   width: 340px;
   margin-inline-start: auto;
@@ -24,7 +31,7 @@
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
-  --bc-gnav-height: 64px;
+  --bc-side-overlay-top: 64px;
 
   align-items: center;
   box-sizing: content-box;
@@ -327,13 +334,13 @@
   }
 
   to {
-    right: 0;
+    right: 24px;
   }
 }
 
 @keyframes slide-out {
   from {
-    right: 0;
+    right: 24px;
   }
 
   to {
@@ -618,8 +625,8 @@
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: calc(100vh - 48px - var(--bc-gnav-height));
-    margin: 24px 24px 24px auto;
+    height: calc(100vh - 40px - var(--bc-side-overlay-top));
+    margin: 20px 20px 20px auto;
     bottom: 0;
     right: 0;
     width: 448px;

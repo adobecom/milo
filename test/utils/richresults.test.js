@@ -1,7 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { waitFor } from '../helpers/waitfor.js';
 import { loadArea, setConfig } from '../../libs/utils/utils.js';
+import { JsonLdGraphManager } from '../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js';
 
 describe('Rich Results', () => {
   beforeEach(() => {
@@ -54,6 +56,32 @@ describe('Rich Results', () => {
     expect(actual).to.deep.equal(expected);
   });
 
+  it('links the real NewsArticle producer shape through graph management', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await loadArea(document);
+    const manager = new JsonLdGraphManager();
+    try {
+      manager.init();
+      const graph = JSON.parse(
+        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+      )['@graph'];
+      const canonicalPageUrl = `${window.location.origin}${window.location.pathname}`;
+      const newsArticleId = `${canonicalPageUrl}#newsarticle`;
+      const webpageId = `${canonicalPageUrl}#webpage`;
+      const newsArticle = graph.find((node) => node['@type'] === 'NewsArticle');
+      const webpage = graph.find((node) => node['@type'] === 'WebPage');
+
+      expect(newsArticle['@id']).to.equal(newsArticleId);
+      expect(newsArticle.isPartOf).to.deep.equal({ '@id': webpageId });
+      expect(newsArticle.mainEntityOfPage).to.deep.equal({ '@id': webpageId });
+      expect(newsArticle.publisher).to.deep.equal({ '@id': 'https://www.adobe.com/#organization' });
+      expect(webpage.mainEntity).to.deep.equal({ '@id': newsArticleId });
+    } finally {
+      manager.destroy();
+    }
+  });
+
   it('disable the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -77,6 +105,48 @@ describe('Rich Results', () => {
       logo: 'https://www.adobe.com/favicon.ico',
     };
     expect(actual).to.deep.equal(expected);
+  });
+
+  it('preserves authored Organization URL and logo through graph management', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await loadArea(document);
+    const manager = new JsonLdGraphManager();
+    try {
+      manager.init();
+      const graph = JSON.parse(
+        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+      )['@graph'];
+      const org = graph.find((node) => node['@type'] === 'Organization');
+      expect(org.url).to.equal('https://www.adobe.com');
+      expect(org.logo).to.equal('https://www.adobe.com/favicon.ico');
+    } finally {
+      manager.destroy();
+    }
+  });
+
+  it('keeps page loading and authored JSON-LD intact when manager initialization fails', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
+    document.head.insertAdjacentHTML('beforeend', `
+      <meta name="jsonld-graph-manager" content="true">
+      <script id="authored-jsonld" type="application/ld+json">{"@type":"Article","headline":"Authored"}</script>
+    `);
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    if (window.miloJsonLd) window.miloJsonLd.manager = null;
+    const append = document.head.appendChild.bind(document.head);
+    const appendStub = sinon.stub(document.head, 'appendChild').callsFake((node) => {
+      if (node.matches?.('script[data-milo-jsonld="graph"]')) throw new Error('managed write failed');
+      return append(node);
+    });
+    try {
+      await loadArea(document);
+      await waitFor(() => appendStub.called, 2000);
+      expect(document.getElementById('page-load-ok-milo')).to.exist;
+      expect(document.getElementById('authored-jsonld')).to.exist;
+      expect(window.miloJsonLd.manager).to.not.exist;
+    } finally {
+      appendStub.restore();
+    }
   });
 
   it('unsupported rich results type', async () => {
