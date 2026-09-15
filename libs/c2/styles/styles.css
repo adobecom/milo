@@ -1434,7 +1434,7 @@ span.hang-opening-quote {
       view-timeline-axis: block;
       animation: garage-door-text-parallax linear both;
       animation-timeline: view();
-      animation-range: cover 0% cover 95%;
+      animation-range: cover 0% cover 76%;
 
       .content > *,
       & > :not(.content) {
