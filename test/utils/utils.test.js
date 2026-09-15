@@ -148,6 +148,16 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
 
+    it('does not preload breadcrumbs, which is relocated into the header (not a blocks/ block)', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="breadcrumbs"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/breadcrumbs/"]')).to.not.exist;
+    });
+
     it('only warms the video autoblock for media_*.mp4 anchors', () => {
       document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
       utils.preloadLcpCodeFiles();

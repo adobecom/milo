@@ -2321,8 +2321,11 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  // `breadcrumbs` is authored in the first section but relocated into the header by
+  // decorateHeader(); it never loads from blocks/breadcrumbs/, so preloading that path 404s.
+  const isHeaderRelocatedBlock = (name) => name === 'breadcrumbs';
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+    .filter((el) => !isCommerceBlock(el.classList[0]) && !isHeaderRelocatedBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
