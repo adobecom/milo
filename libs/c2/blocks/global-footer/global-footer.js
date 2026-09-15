@@ -121,6 +121,14 @@ export async function loadDecorateMenu() {
   resolve(menu.default);
   return cachedDecorateMenu;
 }
+
+const [setThinVersion, getThinVersion] = (() => {
+  let thinVersion = false;
+  return [
+    (url) => { thinVersion = url.includes('#thin'); },
+    () => thinVersion,
+  ];
+})();
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -322,6 +330,8 @@ class Footer {
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
     const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+    setThinVersion(url);
+    this.block.classList.toggle('thin', getThinVersion());
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
@@ -337,17 +347,21 @@ class Footer {
       onFooterError?.(error);
       return;
     }
-
-    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
-    const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
-    // We remove and add again the region and social elements from the body to make sure
+    const [region, social, brand, mailingList, contactSupport] = ['.region-selector', '.social', '.brand', '.mailing-list', '.contact-support'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent] = [
+      region?.parentElement, social?.parentElement, brand?.parentElement, mailingList?.parentElement, contactSupport?.parentElement
+    ];
+    // We remove and add again the region, social and brand elements from the body to make sure
     // they don't get decorated twice
-    [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
+    [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent].forEach((parent) => parent?.replaceChildren());
 
     await decorateLinksAsync(this.body);
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+    brandParent?.appendChild(brand);
+    mailingListParent?.appendChild(mailingList);
+    contactSupportParent?.appendChild(contactSupport);
 
     // Support auto populated modal
     await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
@@ -366,6 +380,8 @@ class Footer {
       this.decorateProducts,
       this.loadIcons,
       this.decorateRegionPicker,
+      this.decorateMailingList,
+      this.decorateContactSupport,
       this.decorateSocial,
       this.decoratePrivacy,
       this.decorateFooter,
@@ -669,21 +685,137 @@ class Footer {
       </span>`;
   };
 
+  decorateModalLink = async (link) => {
+    if(!link) return;
+
+    let url;
+
+    try{
+      url = new URL(link.href);
+    } catch (e) {
+      lanaLog({ message : `Could not create URL for Footer modal link; href : ${link.href}`, tags: 'global-footer', errorType: 'e' });
+      return;
+    }
+    if(!url.hash || url.hash.includes('#_inline')) return;
+
+    link.dataset.modalPath = url.pathname;
+    link.dataset.modalHash = url.hash;
+    link.href = url.hash;
+    decorateAutoBlock(link);
+
+    const { default: initModal } = await import('../modal/modal.js');
+    await initModal(link);
+  };
+
+  decorateMailingList = async () => {
+    this.elements.mailingList = '';
+    const mailingListBlock = this.body.querySelector('.mailing-list');
+    if(!mailingListBlock) return this.elements.mailingList;
+    const mailingListElem = toFragment`<dib class="feds-footer-mailingList" daa-lh="MailingList"></div>`;
+    const text = mailingListBlock.textContent.replace(/\s+/g,' ').trim();
+    const link = mailingListBlock.querySelector('a');
+    if(link) {
+      const linkText = link.textContent.trim();
+      const description = text.replace(linkText, '').trim();
+      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text">${description}</p>`);
+      link.classList.add('feds-footer-mailingList-cta');
+      link.setAttribute('daa-ll', getAnalyticsValue(linkText, 1));
+      const linkWrapper = link.closest('em, strong') || link;
+      linkWrapper.replaceWith(link);
+      mailingListElem.append(link);
+
+      await this.decorateModalLink(link);
+    } else {
+      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text">${text}</p>`);
+    }
+
+    this.elements.mailingList = mailingListElem;
+
+    return this.elements.mailingList;
+  };
+
+  decorateContactSupport = () => {
+    this.elements.contactSupport = '';
+    const contactSupportBlock = this.body.querySelector('.contact-support');
+    if(!contactSupportBlock) return this.elements.contactSupport;
+
+    const contactSupportElem = toFragment`<div class="feds-footer-contactSupport" daa-lh="ContactSupport"></div>`;
+
+    contactSupportBlock.querySelectorAll('a').forEach((link, index) => {
+      link.classList.add('feds-footer-contactSupport-link');
+      link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+    });
+
+    contactSupportElem.append(...contactSupportBlock.children);
+
+    this.elements.contactSupport = contactSupportElem.childElementCount !== 0 ? contactSupportElem : '';
+    return this.elements.contactSupport;
+  };
+
+  decorateAuthoredLogo = () => {
+    const brandBlock = this.body.querySelector('.brand');
+    if (!brandBlock) return null;
+
+    const link = brandBlock.querySelector('a');
+    if (!link) return null;
+
+    const [srcText, alt = ''] = link.textContent.split('|').map((s) => s.trim());
+    const src = srcText?.endsWith('.svg') ? srcText : null;
+    if (!src) return null;
+
+    return { src, alt };
+  };
+
+  decorateAuthoredBackground = () => {
+    if (!getThinVersion()) return null;
+    const bgImageExtensions = /\.(svg|jpeg|png)(\?|$)/i;
+    const brandBlock = this.body.querySelector('.brand');
+    if (!brandBlock) return null;
+
+    const backgroundRow = brandBlock.querySelectorAll(':scope > div')[1];
+    if(!backgroundRow) return null;
+
+    const sources = [...backgroundRow.querySelectorAll(':scope > div')]
+    .map((cell) => (cell).querySelector('a')?.textContent.split('|')[0].trim())
+    .filter((src) => bgImageExtensions.test(src))
+    .map((src) => getFederatedUrl(src));
+
+    if (!sources.length) return null;
+
+    const [mobile, tablet=mobile, desktop=tablet] = sources;
+    return { mobile, tablet, desktop };
+  }
+
   decorateFooter = () => {
+    const isThinVersion = getThinVersion();
     this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
+      ${isThinVersion ? this.elements.mailingList : ''}
       ${this.elements.regionPicker}
+      ${isThinVersion ? this.elements.social : ''}
+      ${isThinVersion ? this.elements.contactSupport : ''}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
         ${this.decorateLogo()}
       </div>
-      ${this.elements.social}
+      ${!isThinVersion ? this.elements.social : ''}
       </div>
     </div>`;
+    const authoredBackround = this.decorateAuthoredBackground();
+    if (authoredBackround) {
+      const { mobile, tablet, desktop } = authoredBackround;
+      this.elements.footer.style.setProperty('--footer-background-mobile', `url("${mobile}")`);
+      this.elements.footer.style.setProperty('--footer-background-tablet', `url("${tablet}")`);
+      this.elements.footer.style.setProperty('--footer-background-desktop', `url("${desktop}")`);
+      this.elements.footer.classList.add('has-authored-background');
+    }
+    const authoredLogo = this.decorateAuthoredLogo();
+    const logoSrc = authoredLogo?.src || FOOTER_LOGO_FULL_SRC;
+    const logoAlt = authoredLogo?.alt || 'Footer logo';
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Adobe" />
+        <img src="${logoSrc}" alt="${logoAlt}" />
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
@@ -695,6 +827,11 @@ class Footer {
   syncFooterOptionsOrder = () => {
     const options = this.elements.footer?.querySelector('.feds-footer-options');
     if (!options) return;
+    
+    if(getThinVersion()){
+      this.syncFooterMenuLayout();
+      return;
+    }
 
     const region = options.querySelector('.feds-regionPicker-wrapper');
     const legal = options.querySelector('.feds-footer-miscLinks-legal');
