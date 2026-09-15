@@ -166,7 +166,14 @@ const loadMartechFiles = async (config) => {
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
-    let launchUrl = config.env.consumer?.marTechUrl || (
+    let launchUrlOverride = null;
+    try {
+      launchUrlOverride = new URL(getMetadata('launch-url').trim()).href;
+    } catch (e) {
+      launchUrlOverride = null;
+    }
+
+    const launchUrl = launchUrlOverride || config.env.consumer?.marTechUrl || (
       isProxied()
         ? '/marketingtech'
         : 'https://assets.adobedtm.com'
@@ -175,11 +182,6 @@ const loadMartechFiles = async (config) => {
         ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
         : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
     );
-
-    const launchUrlOverride = getMetadata('launch-url').trim();
-    if (launchUrlOverride) {
-      launchUrl = launchUrlOverride;
-    }
 
     loadLink(launchUrl, { as: 'script', rel: 'preload' });
 
