@@ -148,6 +148,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'whats-new',
 ];
 
 const AUTO_BLOCKS = [
