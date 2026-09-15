@@ -2608,9 +2608,8 @@ export async function loadDeferred(area, blocks, config) {
   }
   if (config.mep?.preview) {
     if (isMepNextOverlay()) {
+      // The overlay itself is initialized once via initMepOverlay() in loadArea.
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
         .then(({ default: init }) => init());
     } else {
       import('../features/personalization/preview.js')
