@@ -523,7 +523,7 @@ describe('global navigation', () => {
       try {
         await gnav.constructor.preloadAupSdk();
         expect(instance.updateConfig.calledOnceWithExactly(
-          { miniAppContext: { features: ['useToasts', 'aup-select'] } },
+          { miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } },
         )).to.be.true;
       } finally {
         script.remove();
