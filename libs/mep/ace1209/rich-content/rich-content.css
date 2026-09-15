@@ -217,37 +217,8 @@
     }
   }
 
-  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    animation: none;
-    transform: none;
-  }
-
-  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground {
-    animation: none;
-
-    .content > :nth-child(1) { --rc-item-order: 0; }
-    .content > :nth-child(2) { --rc-item-order: 1; }
-    .content > :nth-child(3) { --rc-item-order: 2; }
-    .content > :nth-child(4) { --rc-item-order: 3; }
-    .content > :nth-child(5) { --rc-item-order: 4; }
-    .content > :nth-child(6) { --rc-item-order: 5; }
-    .content > :nth-child(7) { --rc-item-order: 6; }
-    .content > :nth-child(8) { --rc-item-order: 7; }
-    .content > :nth-child(9) { --rc-item-order: 8; }
-    .content > :nth-child(10) { --rc-item-order: 9; }
-  }
-
   &:has(.rich-content.merch-moment) {
-    display: grid;
-    grid-template-rows: auto auto;
-    box-sizing: border-box;
-    height: auto;
-    z-index: 1;
     padding-top: 128px;
-
-    .rich-content.merch-moment {
-      grid-row: 1;
-    }
 
     p:has(span[is="inline-price"]) {
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
@@ -255,23 +226,11 @@
 
     &.has-background .section-background {
       --merch-bg-img-h: calc(100vw * 434 / 375);
-      --merch-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
-      overflow: unset;
-      clip-path: inset(-100% 0 0);
-
-      &,
-      & > * {
-        position: relative;
-        inset: unset;
-      }
+      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
 
       img {
-        width: 100%;
-        height: auto;
         aspect-ratio: 375 / 434;
-        object-fit: cover;
         object-position: center top;
-        animation: unset;
       }
     }
   }
@@ -816,51 +775,6 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .section-background img {
-      margin-block-end: calc(-1 * var(--merch-bg-shift));
-      animation: rc-merch-bg-parallax linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 50%;
-    }
-
-    @keyframes rc-merch-bg-parallax {
-      from { transform: translateY(0); }
-      to { transform: translateY(calc(-1 * var(--merch-bg-shift))); }
-    }
-
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content {
-      view-timeline-name: --rc-merch-text-vt;
-      view-timeline-axis: block;
-      animation: rc-merch-text-parallax linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 95%;
-    }
-
-    @keyframes rc-merch-text-parallax {
-      from { transform: translateY(-7.5vh); }
-      to { transform: translateY(7.5vh); }
-    }
-
-    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) .foreground .content > * {
-      opacity: 0;
-      will-change: opacity, translate;
-      animation: rc-merch-text-item linear both;
-      animation-timeline: --rc-merch-text-vt;
-      animation-range: cover calc(7.35% + (var(--rc-item-order, 0) * 4.41%)) cover 49%;
-    }
-
-    @keyframes rc-merch-text-item {
-      from {
-        opacity: 0;
-        translate: 0 calc(var(--rc-item-order, 0) * 20px);
-      }
-
-      to {
-        opacity: 1;
-        translate: 0 0;
-      }
-    }
-
     @keyframes rc-video-top-door {
       from { transform: translateY(-20vh); }
       to { transform: translateY(0); }

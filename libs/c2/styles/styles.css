@@ -1439,6 +1439,47 @@ span.hang-opening-quote {
     }
   }
 
+  /* Stacked layout variant (content above background instead of overlaid
+     on top of it) used by the CPRO merch-moment hero. */
+  .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    display: grid;
+    grid-template-rows: auto auto;
+
+    &.has-background {
+      height: auto;
+    }
+
+    & > :not(.section-background):not(.section-metadata) {
+      grid-row: 1;
+      height: auto;
+    }
+
+    &.has-background .section-background {
+      overflow-x: clip;
+      overflow-y: unset;
+      z-index: auto;
+      width: 100%;
+      clip-path: inset(-100% 0 0);
+
+      &,
+      & > * {
+        position: relative;
+        inset: unset;
+        width: 100%;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        margin-block-end: calc(-1 * var(--gd-bg-shift, 0px));
+        animation: garage-door-bg-parallax linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 50%;
+      }
+    }
+  }
+
   @keyframes garage-door-text-parallax {
     from { transform: translateY(-7.5vh); }
     to { transform: translateY(7.5vh); }
@@ -1454,6 +1495,11 @@ span.hang-opening-quote {
       opacity: 1;
       translate: 0 0;
     }
+  }
+
+  @keyframes garage-door-bg-parallax {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-1 * var(--gd-bg-shift, 0px))); }
   }
 
   /* Section 1 to section 2 parallax declarations */
