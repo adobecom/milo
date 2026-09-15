@@ -135,8 +135,7 @@ body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-m
 }
 
 /* MEP */
-body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *:not(.feds-popup),
-body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *) {
+body[data-mep-highlight='true'] [data-manifest-id] {
   position: relative !important;
   outline: 2px dashed var(--mep-primary) !important;
 }
