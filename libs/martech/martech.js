@@ -182,7 +182,6 @@ const loadMartechFiles = async (config) => {
         ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
         : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
     );
-
     loadLink(launchUrl, { as: 'script', rel: 'preload' });
 
     window.marketingtech = {
