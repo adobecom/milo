@@ -1,6 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 
-const SET_COUNT = 3;
+const SET_COUNT = 2;
 
 const PLAY_SVG = '<svg class="logo-ticker-play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>';
 const PAUSE_SVG = '<svg class="logo-ticker-pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>';
@@ -66,7 +66,8 @@ function addScrollBoost(track, el, getIsPlaying) {
     lastScrollY = y;
 
     if (getIsPlaying() && !track.classList.contains('is-static') && delta !== 0) {
-      targetOffset += delta * 0.6;
+      const setWidth = parseFloat(track.style.getPropertyValue('--logo-ticker-set-width')) || Infinity;
+      targetOffset = Math.min(targetOffset + delta * 0.6, setWidth);
     }
 
     currentOffset += (targetOffset - currentOffset) * 0.08;
