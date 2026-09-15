@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { onSidekickAuth } from '../../sidekick-auth.js';
+import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -32,6 +32,7 @@ import {
 import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
+let authStateRendered = false;
 const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
@@ -75,7 +76,6 @@ const CARD_DATA = {
 };
 
 const TAB_NAMES = ['Actions', 'Summary'];
-const ACTIONS_TAB_INDEX = String(TAB_NAMES.indexOf('Actions'));
 const SUMMARY_TAB_INDEX = String(TAB_NAMES.indexOf('Summary'));
 
 function svgIcon(key) {
@@ -422,13 +422,6 @@ function buildFAB(gnavOffset) {
   return fab;
 }
 
-function buildLoginCard() {
-  return createTag('div', { class: 'mep-card expanded center' }, [
-    createTag('h1', {}, 'Content Unavailable'),
-    createTag('p', { class: 'mep-card-body' }, 'Sign into AEM Sidekick for options.'),
-  ]);
-}
-
 function buildFooter() {
   return createTag('div', { class: 'mep-footer' }, [
     createTag('a', { class: 'con-button button-l fill', title: 'Preview' }, 'Preview'),
@@ -436,7 +429,7 @@ function buildFooter() {
 }
 
 function buildActionsContent(pageId) {
-  if (!authenticated) return [buildLoginCard()];
+  if (!authenticated) return [];
   return [
     ...buildManifestList(),
     ...CARD_DATA.actions.map(([header, data]) => (
@@ -468,7 +461,6 @@ function buildTabsAndBody(pageId) {
 
   return { tabsEl, bodyEl };
 }
-
 async function setDefaultValues() {
   const {
     mepCaasHighlight,
@@ -512,30 +504,53 @@ async function setDefaultValues() {
   selectEl.value = mepAkamaiLocale;
 }
 
+async function refreshFirewallAuth(refreshAuth) {
+  if (await isWithinFirewall()) await refreshAuth();
+}
+
+function buildLoginCard(onRefresh) {
+  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
+  refreshButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+    await refreshFirewallAuth(onRefresh);
+  });
+  return createTag('div', { class: 'mep-card expanded center' }, [
+    createTag('h1', {}, 'Content Unavailable'),
+    createTag('div', { class: 'mep-card-body' }, [
+      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
+      refreshButton,
+    ]),
+  ]);
+}
+
+async function renderAuthState(pageId, isAuthed) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+  if (!contentEl) return;
+  if (isAuthed === authenticated && authStateRendered) return;
+  authenticated = isAuthed;
+  authStateRendered = true;
+
+  if (!authenticated) {
+    contentEl.replaceChildren(buildLoginCard(() => renderAuthState(pageId, true)));
+    drawerEl.querySelector('.mep-footer')?.remove();
+    return;
+  }
+
+  const cards = buildActionsContent(pageId);
+  contentEl.replaceChildren(...cards);
+  const footerEl = buildFooter();
+  const activeTab = drawerEl.querySelector('.mep-tab.active');
+  footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+  drawerEl.appendChild(footerEl);
+  await Promise.all(cards.map((c) => c.ready).filter(Boolean));
+  setDefaultValues();
+  setPreviewButton();
+}
+
 function checkAuthAndBuild(pageId) {
   onSidekickAuth(async (isAuthed) => {
-    if (isAuthed === authenticated) return;
-    authenticated = isAuthed;
-
-    const drawerEl = document.querySelector('#mep-drawer');
-    const contentEl = drawerEl?.querySelector(`.mep-tab-content[data-tab="${ACTIONS_TAB_INDEX}"]`);
-    if (!contentEl) return;
-
-    if (!authenticated) {
-      contentEl.replaceChildren(buildLoginCard());
-      drawerEl.querySelector('.mep-footer')?.remove();
-      return;
-    }
-
-    const cards = buildActionsContent(pageId);
-    contentEl.replaceChildren(...cards);
-    const footerEl = buildFooter();
-    const activeTab = drawerEl.querySelector('.mep-tab.active');
-    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
-    drawerEl.appendChild(footerEl);
-    await Promise.all(cards.map((c) => c.ready).filter(Boolean));
-    setDefaultValues();
-    setPreviewButton();
+    await renderAuthState(pageId, isAuthed);
   });
 }
 
