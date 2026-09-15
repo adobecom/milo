@@ -21,6 +21,16 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
+export const COMMERCE_ORIGINS = ['https://commerce.adobe.com', 'https://commerce-stg.adobe.com'];
+
+export const isCommerceUrl = (url) => {
+  try {
+    return COMMERCE_ORIGINS.includes(new URL(url, window.location.href).origin);
+  } catch {
+    return false;
+  }
+};
+
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
   msgWrapper.remove();
@@ -63,7 +73,7 @@ export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleT
 };
 
 export const handle3in1IFrameEvents = ({ data: msgData, origin }) => {
-  if (!['https://commerce.adobe.com', 'https://commerce-stg.adobe.com'].includes(origin)) return;
+  if (!COMMERCE_ORIGINS.includes(origin)) return;
   let parsedMsg = null;
   try {
     parsedMsg = JSON.parse(msgData);
@@ -161,6 +171,13 @@ export default async function openThreeInOneModal(el) {
   const modalType = el?.getAttribute('data-modal');
   const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;
+  // An unresolved checkout-link href stays '#', which resolves to the current
+  // page; opening the modal then loads the page inside its own iframe. Only
+  // open when the iframe points at a commerce checkout URL.
+  if (!isCommerceUrl(iframeUrl)) {
+    window.lana?.log(`three-in-one: skipped modal for non-commerce url ${iframeUrl}`, LANA_OPTIONS);
+    return undefined;
+  }
   const { getModal } = await import('../modal/modal.js');
   const content = createContent(iframeUrl);
   const timeoutId = setTimeout(handleTimeoutError, 15000);

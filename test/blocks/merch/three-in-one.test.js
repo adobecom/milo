@@ -330,6 +330,14 @@ describe('Three-in-One Modal', () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
     });
+
+    it('should not open a modal when the href is not a commerce url', async () => {
+      const link = createTag('a', { href: '#', 'data-modal': 'crm', 'data-modal-id': 'no-url' });
+      const before = document.querySelectorAll('.three-in-one').length;
+      const result = await openThreeInOneModal(link);
+      expect(result).to.be.undefined;
+      expect(document.querySelectorAll('.three-in-one').length).to.equal(before);
+    });
   });
 
   describe('handle3in1Params', () => {
