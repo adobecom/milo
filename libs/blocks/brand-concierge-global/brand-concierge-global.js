@@ -5,7 +5,6 @@ import {
   decorateCards,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
 } from '../brand-concierge/bc-utils.js';
 import {
@@ -13,6 +12,8 @@ import {
   bcBootstrap,
   openSideModal,
   setAuthoredContent,
+  sideOverlayTop,
+  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
@@ -40,7 +41,6 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -48,7 +48,6 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -169,8 +168,8 @@ export default function init(el) {
   });
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
-    setCssGnavHeight();
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

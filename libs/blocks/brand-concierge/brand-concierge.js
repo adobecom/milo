@@ -11,7 +11,6 @@ import {
   decorateFloatingInput,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
 } from './bc-utils.js';
 import {
@@ -19,18 +18,23 @@ import {
   bcBootstrap,
   openModal,
   openSideModal,
+  sideOverlayTop,
   setAuthoredContent,
   mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 
 const variants = {};
 
 function checkGlobal() {
-  let global = false;
+  const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    global = window.milo.brandConcierge.brandConciergeGlobal;
+    return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  return global;
+  if (params.get('side-overlay') === 'true') {
+    return true;
+  }
+  return false;
 }
 
 function routeInput(text) {
@@ -38,7 +42,7 @@ function routeInput(text) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
     else {
-      setCssGnavHeight();
+      sideOverlayTop();
       openSideModal(text, bcBootstrap);
     }
   } else {
@@ -87,9 +91,8 @@ export default async function init(el) {
     }
   });
 
+  sideOverlayTop();
   initAnalytics();
-
-  setCssGnavHeight();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
@@ -194,7 +197,8 @@ export default async function init(el) {
   });
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

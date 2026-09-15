@@ -32,7 +32,13 @@ jobs:
         key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install dependencies
-      run: npm ci --no-fund --prefer-offline
+      # Retries transient install failures. Observed on PR #6682: npm ci preparing the
+      # git dependency @adobecom/mas-platform (github:adobecom/mas) hit
+      # "spawnSync .../web-components/node_modules/esbuild/bin/esbuild ETXTBSY" —
+      # npm executing esbuild's postinstall binary while it's still being written to
+      # disk. That's a known npm/git-dependency install race, unrelated to package
+      # content, and a bare rerun of the same job passed clean.
+      run: npm ci --no-fund --prefer-offline || npm ci --no-fund --prefer-offline || npm ci --no-fund --prefer-offline
 
     - name: Run the tests
       run: npm test
