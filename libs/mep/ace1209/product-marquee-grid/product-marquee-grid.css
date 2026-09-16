@@ -1,0 +1,172 @@
+.product-marquee-grid {
+  background: var(--s2a-color-background-default);
+  display: flex;
+  min-block-size: calc(494px + var(--global-height-nav, 64px));
+
+  .pm-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-lg);
+  }
+
+  .pm-foreground {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .pm-subtext {
+      max-inline-size: 400px;
+    }
+  }
+
+  .pm-chiclet-row {
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-md);
+
+    img.icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+      object-fit: contain;
+    }
+  }
+
+  .pm-promo-area {
+    margin-block-start: var(--s2a-spacing-lg);
+  }
+
+  .pm-merch-card {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .pm-merch-content {
+    align-items: flex-start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+
+    .mas-description,
+    .mas-price-commitment {
+      color: var(--s2a-color-content-default);
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price-commitment {
+      color: var(--s2a-color-content-subtle);
+    }
+
+    .mas-price {
+      color: var(--s2a-color-content-default);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+  }
+
+  .pm-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+    .con-button {
+      flex: 1;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  .price.price-strikethrough {
+    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
+  }
+}
+
+body:has(header.has-breadcrumbs) .product-marquee-grid {
+  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+}
+
+body:has(header.local-nav) .product-marquee-grid {
+  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
+}
+
+@media (width < 768px) {
+  .product-marquee-grid .pm-content {
+    justify-content: space-between;
+  }
+
+  .product-marquee-grid .pm-foreground {
+    flex: none;
+    gap: var(--s2a-spacing-lg);
+    justify-content: flex-start;
+  }
+
+  .product-marquee-grid .pm-promo-area {
+    margin-block-start: 0;
+  }
+}
+
+@media (width >= 768px) {
+  .product-marquee-grid {
+    min-block-size: calc(500px + var(--global-height-nav, 64px));
+
+    .pm-content {
+      --grid-margin-width: var(--s2a-spacing-3xl);
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+    }
+
+    .pm-chiclet-row {
+      gap: var(--s2a-spacing-lg);
+
+      img.icon {
+        block-size: 80px;
+        inline-size: 80px;
+      }
+    }
+
+    .pm-foreground {
+      .pm-subtext {
+        max-inline-size: min(467px, 80%);
+      }
+    }
+
+    .pm-promo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block-start: var(--s2a-spacing-4xl);
+      inline-size: min(370px, 45%);
+    }
+
+    .pm-merch-card {
+      background: var(--s2a-color-background-subtle);
+      border-radius: var(--s2a-border-radius-12);
+      padding: var(--s2a-spacing-lg);
+    }
+
+    .pm-merch-content {
+      .mas-description,
+      .mas-price-commitment {
+        font-size: var(--s2a-typography-font-size-body-md);
+        line-height: var(--s2a-typography-line-height-body-md);
+        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+      }
+    }
+  }
+
+  body:has(header.has-breadcrumbs) .product-marquee-grid {
+    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+  }
+
+  body:has(header.local-nav) .product-marquee-grid {
+    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
+  }
+}

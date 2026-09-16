@@ -27,6 +27,17 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
+/** Get session ID used to correlate analytics events */
+export function getChatSessionId() {
+  const match = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(`${BC_SESSION_COOKIE}=`));
+  return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
+}
+
 export function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();
@@ -377,6 +388,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   if (variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
+  let pillVisibilityRaf;
   function updatePillVisibility(target) {
     const prompts = target.querySelector('.bc-prompt-cards');
     if (!prompts) return;
@@ -384,7 +396,9 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
     const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
     buttons.forEach((btn) => { btn.style.display = ''; });
 
-    requestAnimationFrame(() => {
+    if (pillVisibilityRaf) cancelAnimationFrame(pillVisibilityRaf);
+    pillVisibilityRaf = requestAnimationFrame(() => {
+      pillVisibilityRaf = null;
       const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
 
       buttons.forEach((btn) => {
@@ -402,12 +416,10 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
-  const updateLayout = () => {
-    updatePillVisibility(floatingInput);
-  };
+  const updateLayout = () => updatePillVisibility(floatingInput);
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;

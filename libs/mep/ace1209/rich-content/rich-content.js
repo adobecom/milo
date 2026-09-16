@@ -1,0 +1,195 @@
+import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
+
+const HERO_OVERLAY_PROP = '--rc-hero-overlay';
+
+function hangOpeningQuote(header) {
+  if (!header) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = header.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  header.textContent = header.textContent.slice(1);
+  const span = createTag('span', { class: 'opening-quote' }, quote);
+  header.prepend(span);
+}
+
+function decorateText(el) {
+  decorateBlockText(el);
+  const firstText = el?.querySelector('h1, h2, h3, h4, h5, h6, p');
+  hangOpeningQuote(firstText);
+}
+
+function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) {
+  if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
+  const ps = [...content.querySelectorAll('p')];
+  const target = skipFirst ? ps[1] : ps[0];
+  if (!target) return;
+  const bodyClass = [...target.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) target.classList.replace(bodyClass, `heading-${headingSize}`);
+}
+
+function isJumpLinkRow(el) {
+  return [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'));
+}
+
+function getSectionHash(anchor) {
+  const id = anchor.hash?.split('#')[1];
+  return id ? `#${id}` : '';
+}
+
+function decorateJumpLinks(content, foreground) {
+  const jumpRow = [...content?.querySelectorAll(':is(p, div):has(a)') ?? []].find(isJumpLinkRow);
+  if (!jumpRow) return;
+
+  const anchors = [...jumpRow.querySelectorAll('a')];
+  const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
+  const list = createTag('ul');
+
+  anchors.forEach((anchor) => {
+    const badge = createTag('span', { class: 'jump-link-badge' });
+    const label = createTag('span', { class: 'jump-link-label heading-5' }, anchor.textContent.trim());
+    anchor.textContent = '';
+    anchor.classList.add('jump-link-anchor');
+    anchor.append(badge, label);
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      const hash = getSectionHash(anchor);
+      if (window.lenis?.scrollTo) {
+        const target = document.querySelector(`#${hash.slice(1)}:not(.dialog-modal)`);
+        if (!target) return;
+        const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
+        window.lenis.scrollTo(target, { offset, force: true });
+        return;
+      }
+      scrollToHashedElement(hash);
+    });
+    list.append(createTag('li', {}, anchor));
+  });
+
+  nav.append(list);
+
+  jumpRow.remove();
+  foreground.append(nav);
+}
+
+const SPACING_CLASS_RE = /^spacing-[a-z0-9]+(-static)?(-top|-bottom)?$/;
+
+function applyMediaSpacing(root) {
+  const spacingClasses = [...root.classList].filter((cls) => SPACING_CLASS_RE.test(cls));
+  if (!spacingClasses.length) return;
+
+  const authorsTop = spacingClasses.some((cls) => !cls.endsWith('-bottom'));
+  const authorsBottom = spacingClasses.some((cls) => !cls.endsWith('-top'));
+
+  const probe = createTag('div', { class: spacingClasses.join(' '), style: 'position:absolute;visibility:hidden' });
+  root.append(probe);
+  const { paddingTop, paddingBottom } = getComputedStyle(probe);
+  probe.remove();
+
+  if (authorsTop) root.style.setProperty('--rc-media-spacing-top', paddingTop);
+  if (authorsBottom) root.style.setProperty('--rc-media-spacing-bottom', paddingBottom);
+}
+
+const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
+
+function isMediaCell(cell) {
+  if (!cell) return false;
+  if (cell.querySelector(MEDIA_SELECTOR)) return true;
+  return !!cell.querySelector('img')
+    && !cell.querySelector('.action-area, a.con-button, .con-button');
+}
+
+function hasCellContent(cell) {
+  return !!(cell?.textContent?.trim() || cell?.children.length);
+}
+
+function decorateMediaVariant(container) {
+  const rows = [...container.children];
+  if (!rows.length) return;
+
+  const cells = rows.flatMap((row) => [...row.children]);
+  let mediaCell = cells.find(isMediaCell);
+  let ctaCell = cells.find((cell) => cell !== mediaCell && hasCellContent(cell)) || null;
+
+  if (!mediaCell) {
+    const [firstCell, secondCell] = [...(rows[0]?.children ?? [])];
+    ctaCell = firstCell ?? null;
+    mediaCell = secondCell ?? null;
+  }
+
+  if (hasCellContent(mediaCell)) {
+    mediaCell.classList.add('media-cell');
+    container.append(mediaCell);
+  } else {
+    mediaCell?.remove();
+  }
+
+  if (ctaCell && ctaCell !== mediaCell && hasCellContent(ctaCell)) {
+    decorateBlockText(ctaCell);
+    ctaCell.classList.add('cta-area');
+    container.append(ctaCell);
+  }
+
+  rows.forEach((row) => row.remove());
+  container.querySelector('.action-area')?.classList.add('dark');
+  container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
+}
+
+function decorate(block, root = block) {
+  if (root.classList.contains('media')) {
+    applyMediaSpacing(root);
+    decorateMediaVariant(block);
+    return;
+  }
+
+  const foreground = block.children[0];
+  const content = foreground?.children[0];
+  content?.classList.add('content');
+  foreground?.classList.add('foreground');
+  decorateText(content);
+
+  if (root.classList.contains('hero')) {
+    const bgCell = foreground?.children[1];
+    if (bgCell && !bgCell.querySelector('picture, img') && bgCell.textContent.trim()) {
+      bgCell.classList.add('hero-overlay-source');
+    }
+  }
+
+  const isJumpLink = root.classList.contains('jump-link');
+  promoteParagraphHeading(content, '2', isJumpLink);
+  const firstP = content?.querySelector('p:has(picture, img)');
+  const iconImg = firstP?.querySelector('img[src]');
+
+  if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
+
+  const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  if (!isJumpLink) return;
+  decorateJumpLinks(content, foreground);
+}
+
+function applyHeroOverlay(el) {
+  const section = el.closest('.section');
+  if (!section) return;
+  const source = el.querySelector('.hero-overlay-source');
+  if (source) section.style.setProperty(HERO_OVERLAY_PROP, source.textContent.trim());
+  else section.style.removeProperty(HERO_OVERLAY_PROP);
+}
+
+export default function init(el) {
+  const viewports = decorateViewportContent(el, decorate);
+
+  if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
+    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+  }
+
+  if (!el.classList.contains('hero')) return;
+
+  applyHeroOverlay(el);
+  if (viewports.hasViewportVariations) {
+    const observer = new MutationObserver(() => applyHeroOverlay(el));
+    observer.observe(el, { childList: true });
+  }
+}

@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
+import { JsonLdGraphManager } from '../../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js';
 
 window.lana = { log: stub() };
 
@@ -152,5 +153,36 @@ describe('SEO Event', () => {
     expect(window.lana.log.args[1][0]).to.equal('Event property startDate is not defined');
     expect(window.lana.log.args[2][0]).to.equal('Event property endDate is not defined');
     expect(window.lana.log.args[3][0]).to.equal('Event property previousStartDate is not defined');
+  });
+
+  it('preserves two producer Events as distinct graph nodes', async () => {
+    document.head.innerHTML = '';
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const first = document.querySelector('.event-rich-results');
+    const second = first.cloneNode(true);
+    const setField = (block, field, value) => {
+      const row = [...block.children]
+        .find((candidate) => candidate.children[0]?.textContent.trim() === field);
+      row.children[1].textContent = value;
+    };
+    setField(second, 'Name', 'A Second Event');
+    setField(second, 'Start-Date', '2017-03-06');
+    setField(second, 'Offers-Url', 'https://www.example.com/event_offer/second');
+    document.body.appendChild(second);
+    init(first);
+    init(second);
+
+    const manager = new JsonLdGraphManager();
+    try {
+      manager.init();
+      const graph = JSON.parse(
+        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+      )['@graph'];
+      const events = graph.filter((node) => node['@type'] === 'Event');
+      expect(events).to.have.length(2);
+      expect(new Set(events.map((node) => node['@id'])).size).to.equal(2);
+    } finally {
+      manager.destroy();
+    }
   });
 });
