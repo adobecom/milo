@@ -17,7 +17,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Camera | Zoom tail eased by `camZAtZoomT` | Linear from the pin: `camera.z = lerp(CAM_Z_SPHERE, CAM_Z_END, travelT)` |
 | Scroll clock | Six derived clocks (`deriveFrame`) | `scrollT = (scrollY − (blockDocTop − H)) / blockHeight` over the whole block; `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `travelT` spans pin → end. |
 | Arc copy pill | Authoring row 1 | None |
-| "Click & Drag" text plane behind the sphere | WebGL plane (`TEXT_FRAG`) | None. `hintText` (hint row, cell 2) only labels the cursor pill. |
+| "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `travelT` (see below). |
 | Custom cursor | Disc + chevron ring + label; native cursor hidden | Label pill only, beside the native cursor (`grab`/`grabbing`/`pointer`). |
 | Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.firefly-globe-world`. |
 | Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`), or a fragment link. Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
@@ -72,9 +72,22 @@ the cursor pill fades `CURSOR_RETIRE_LEAD_T` earlier), the pull-quote reveal sta
 hides `CANVAS_HIDE_MARGIN_T` later. The keyboard path (`globeFormed`: pinned and modal closed) is
 not gated on it.
 
+`pqAppearTravelT` is the same point on the travel span.
+
 `--fg-pq-appear-t` is published by JS (`publishPqAppearT`, gg's `publishPqAppearZoomT`); the CSS
 fallback covers only the frames before the script runs. The pin's `top: 100vh` is gg's
 `--gg-formation-vh`: the rail starts at the point where the world sticks.
+
+## "Click & Drag" hint text
+
+globe-gallery's WebGL plane (`buildTextMesh`, `TEXT_FRAG`), sphere geometry only: hidden until
+`entryT > TEXT_APPEAR_START`, then warps in over `[TEXT_APPEAR_START, 1]` of `entryT`, so the warp
+reaches 0 as the world pins and the globe goes live. Scale tracks `camera.position.z` against
+`CAM_Z_SPHERE`, holding apparent size through the entry and the travel. Opacity rests at
+`TEXT_OPACITY_RESTING` times `1 − travelT / pqAppearTravelT`; `uZoom` is `travelT`. The first drag or
+tap-to-open flips `hintRetired`, and `hintExitT` runs itself 0→1 at `HINT_EXIT_RATE` regardless of the
+gesture. `buildTextMesh` does not create the plane when `entryT` is already past
+`TEXT_APPEAR_START` by the time the font loads, so it never pops in mid-entry.
 
 ## Modal and the sticky canvas
 

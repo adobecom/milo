@@ -5,8 +5,9 @@ import {
   optimizeImgUrl, scatterCards, layoutQuote,
 } from './src/authoring.js';
 import {
-  createCardMaterial, createPlaceholderTexture,
-  loadCardTextures, loadModalTexture as loadModalTextureRaw,
+  createCardMaterial, createTextMaterial, createPlaceholderTexture,
+  loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
+  loadHintFont,
 } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
@@ -114,6 +115,7 @@ const CA_MOTION_CAP_SM = 0.01; // directional UV shift max
 const CA_MOTION_CAP_MD = 0.03;
 const HOVER_CA = 0.0125;
 const SPHERE_DRAG_CA_MUL = 0.2; // uCA per unit of sphereDragWarp
+const TEXT_CA_WARP_MUL = 0.75;
 
 // Hover (sphere phase only).
 const HOVER_WARP = 0.4;
@@ -133,6 +135,8 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
 const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
 
+const TEXT_REBUILD_DEBOUNCE_MS = 150;
+
 const PQ_REVEAL_IN_MS = 700;
 const PQ_REVEAL_OUT_MS = 225;
 
@@ -144,6 +148,7 @@ const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
 const SPHERE_ORIENT_RESET_T = 0.02;
+const TEXT_APPEAR_START = 0.10;
 const CURSOR_RETIRE_LEAD_T = 0.02;
 const CANVAS_HIDE_MARGIN_T = 0.05;
 
@@ -153,10 +158,20 @@ const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CA
 const CARD_ORDER_STEPS = 1000;
 const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
 const HOVER_ORDER_STEPS = 7;
+const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
+
 const SPHERE_DRAG_WARP_BASELINE = 0.05; // while isDragging
 const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed
 const SPHERE_DRAG_WARP_MAX = 0.25; // cap on the combined value
 const SPHERE_DRAG_WARP_EASE = 0.20; // per-frame ease toward the target
+
+// "Click & Drag" hint text: a WebGL plane behind the sphere.
+const TEXT_BEHIND_GAP = 15; // world units behind the sphere back surface
+const TEXT_WARP_ENTER_MAX = 4.50;
+const TEXT_OPACITY_PEAK = 0.15;
+const TEXT_OPACITY_RESTING = 0.06;
+const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
+const HINT_EXIT_RATE = 0.007;
 
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
@@ -374,8 +389,11 @@ function createGlobeGalleryRuntime(
     copyStr: '',
   };
   let scrollT = 0;
+  let entryT = 0;
+  let travelT = 0;
   let sphereFormed = false;
   let pqAppearT = 1; // scrollT the last card leaves the screen at; see publishPqAppearT
+  let pqAppearTravelT = 1;
   let canvasHidden = false;
 
   // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
@@ -389,7 +407,9 @@ function createGlobeGalleryRuntime(
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
   let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
   let scrollVel = 0;
+  let textMesh = null;
   let hintRetired = false;
+  let hintExitT = 0;
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
   // Euler order 'XYZ' is load-bearing.
@@ -540,10 +560,59 @@ function createGlobeGalleryRuntime(
     if (!pqEl) return;
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     const range = bp.CAM_Z_SPHERE - bp.CAM_Z_END;
-    const travelT = range > 0 ? Math.min(1, Math.max(0, (bp.CAM_Z_SPHERE - clearZ) / range)) : 1;
+    pqAppearTravelT = range > 0 ? Math.min(1, Math.max(0, (bp.CAM_Z_SPHERE - clearZ) / range)) : 1;
     const pinT = Math.min(1, H / Math.max(1, root.offsetHeight));
-    pqAppearT = pinT + (1 - pinT) * travelT;
+    pqAppearT = pinT + (1 - pinT) * pqAppearTravelT;
     root.style.setProperty('--fg-pq-appear-t', pqAppearT.toFixed(4));
+  }
+
+  function textPlaneSize() {
+    const { SPHERE_R, CAM_Z_SPHERE } = bp;
+    const dist = CAM_Z_SPHERE - (-(SPHERE_R + TEXT_BEHIND_GAP));
+    const visH = 2 * TAN_HALF_FOV * dist;
+    const visW = visH * (camera ? camera.aspect : W / H);
+    return { w: visW, h: visH };
+  }
+
+  function disposeTextMesh() {
+    if (!textMesh) return;
+    if (textMesh.parent) textMesh.parent.remove(textMesh);
+    textMesh.geometry.dispose();
+    if (textMesh.material.uniforms.uMap.value) textMesh.material.uniforms.uMap.value.dispose();
+    textMesh.material.dispose();
+    textMesh = null;
+  }
+
+  // See README ("Click & Drag" hint text).
+  function buildTextMesh() {
+    const replacing = !!textMesh;
+    disposeTextMesh();
+    const targetGroup = sphereGroup;
+    const create = () => {
+      if (sphereGroup !== targetGroup || !sphereGroup) return;
+      if (!replacing && !reducedMotion && entryT > TEXT_APPEAR_START) return;
+      const { SPHERE_R } = bp;
+      const aspect = camera ? camera.aspect : W / H;
+      const texture = createClickDragTexture(aspect, hintText);
+      if (!texture) return;
+      const dpr = capDpr();
+      const sz = textPlaneSize();
+      const mat = createTextMaterial({
+        texture,
+        aspect,
+        resolution: { x: W * dpr, y: H * dpr },
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(sz.w, sz.h), mat);
+      mesh.position.set(0, 0, -(SPHERE_R + TEXT_BEHIND_GAP));
+      mesh.renderOrder = TEXT_ORDER;
+      mesh.visible = false; // the tick stage reveals it once the entry is underway
+      textMesh = mesh;
+      sphereGroup.add(mesh);
+    };
+    // Two-arg then, NOT .then().catch(): a throw inside create must not re-run create and
+    // orphan the mesh it already added.
+    const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+    Promise.all([fontsReady, loadHintFont(hintText)]).then(create, () => {});
   }
 
   function recomputeDragFlip() {
@@ -955,18 +1024,21 @@ function createGlobeGalleryRuntime(
       const y = readScrollY();
       scrollT = clamp01((y - (blockDocTop - H)) / blockH);
       scrollVel = Math.abs(y - prevSmooth) / frameState.dtScale;
-      const entryT = clamp01(1 + (y - blockDocTop) / H);
+      entryT = clamp01(1 + (y - blockDocTop) / H);
       sphereFormed = entryT >= 1;
       if (sphereFormed) {
         const pinT = H / blockH;
-        const travelT = clamp01((scrollT - pinT) / Math.max(0.001, 1 - pinT));
+        travelT = clamp01((scrollT - pinT) / Math.max(0.001, 1 - pinT));
         camera.position.z = lerpN(bp.CAM_Z_SPHERE, bp.CAM_Z_END, travelT);
       } else {
+        travelT = 0;
         camera.position.z = lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, easeOutCubic(entryT));
       }
     } else {
       scrollT = 0;
       scrollVel = 0;
+      entryT = 1;
+      travelT = 0;
       sphereFormed = true;
       camera.position.z = bp.CAM_Z_SPHERE;
     }
@@ -1326,6 +1398,51 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  function updateHintExit(frame) {
+    if (!hintRetired || hintExitT >= 1) return;
+    hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
+  }
+
+  function updateClickDragText() {
+    if (!textMesh) return;
+    const { uniforms } = textMesh.material;
+
+    if (reducedMotion) {
+      textMesh.visible = true;
+      textMesh.scale.setScalar(1);
+      uniforms.uOpacity.value = TEXT_OPACITY_RESTING;
+      uniforms.uWarp.value = 0;
+      uniforms.uZoom.value = 0;
+      uniforms.uCA.value = 0;
+      uniforms.uExitP.value = 0;
+      return;
+    }
+    if (entryT <= TEXT_APPEAR_START) {
+      textMesh.visible = false;
+      textMesh.scale.setScalar(1); // plane is viewport-sized; the warp does the entrance
+      return;
+    }
+
+    const { CAM_Z_SPHERE, SPHERE_R } = bp;
+    const sfT = clamp01((entryT - TEXT_APPEAR_START) / (1 - TEXT_APPEAR_START));
+    const txtT = easeOutCubic(sfT);
+    const txtWarpEntrance = lerpN(TEXT_WARP_ENTER_MAX, 0, sfT * sfT);
+    // Fill the viewport at the current camera distance + warp-proportional overflow.
+    const restDist = CAM_Z_SPHERE + SPHERE_R + TEXT_BEHIND_GAP;
+    const currDist = camera.position.z + SPHERE_R + TEXT_BEHIND_GAP;
+    textMesh.scale.setScalar(currDist / restDist + txtWarpEntrance * TEXT_WARP_OVERFLOW);
+    const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
+      * (1 - clamp01(travelT / pqAppearTravelT));
+
+    textMesh.visible = txtOp > 0.001 && hintExitT < 1;
+    uniforms.uOpacity.value = txtOp;
+    uniforms.uZoom.value = travelT;
+    uniforms.uWarp.value = txtWarpEntrance;
+    uniforms.uExitP.value = hintExitT;
+
+    if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
+  }
+
   function tick(now) {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
@@ -1344,6 +1461,8 @@ function createGlobeGalleryRuntime(
     cameraInsideSphere = Math.abs(camera.position.z) < dragFlipZ;
     updateCardTransforms(frame);
     updateA11yFocusRing();
+    updateHintExit(frame);
+    updateClickDragText();
     updatePullQuote();
     updateCanvasVisibility();
     cursor.update();
@@ -1424,6 +1543,7 @@ function createGlobeGalleryRuntime(
   }
 
   let resizeHandler = null;
+  let textRebuildTimer = 0;
   let reducedMotionMQ = null;
   let reducedMotionHandler = null;
   function detachReducedMotion() {
@@ -1530,6 +1650,19 @@ function createGlobeGalleryRuntime(
       modal.resize(W, H);
       camera.aspect = W / H;
       camera.updateProjectionMatrix();
+      // Deferred only while off-screen.
+      if (textMesh) {
+        clearTimeout(textRebuildTimer);
+        textRebuildTimer = 0;
+        if (textMesh.visible) {
+          buildTextMesh();
+        } else {
+          textRebuildTimer = setTimeout(() => {
+            textRebuildTimer = 0;
+            if (textMesh) buildTextMesh();
+          }, TEXT_REBUILD_DEBOUNCE_MS);
+        }
+      }
       publishPqAppearT();
       relayoutQuote();
       publishPqMetrics();
@@ -1575,6 +1708,7 @@ function createGlobeGalleryRuntime(
 
     buildCards();
 
+    if (!bp.CYLINDER) buildTextMesh();
     renderer.compile(scene, camera);
     a11y.setup();
     controls.setup();
@@ -1640,6 +1774,7 @@ function createGlobeGalleryRuntime(
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
     }
+    if (textRebuildTimer) { clearTimeout(textRebuildTimer); textRebuildTimer = 0; }
     detachReducedMotion();
     window.removeEventListener('blur', armFocusGuard);
     window.removeEventListener('focus', disarmFocusGuard);
@@ -1673,7 +1808,9 @@ function createGlobeGalleryRuntime(
     cards = [];
     textures = [];
     cardAspects = [];
+    disposeTextMesh();
     hintRetired = false;
+    hintExitT = 0;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy();
