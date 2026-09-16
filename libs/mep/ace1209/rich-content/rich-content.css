@@ -613,7 +613,6 @@
     }
 
     :is(img, video) {
-      max-width: 100%;
       border-radius: var(--s2a-border-radius-4);
 
       @media (width >= 1024px) {
