@@ -16,8 +16,8 @@ import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
 import {
   easeInOutCubic, easeOutCubic, easeOutExpo, lerpN, clamp01, coverFit,
-  capDpr, CAM_FOV, TAN_HALF_FOV, camZAtTravelT, travelTAtCamZ,
-  FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX, createFrame,
+  capDpr, CAM_FOV, TAN_HALF_FOV, pxPerWorldAt, camZAtTravelT, travelTAtCamZ,
+  createFrame, createFrameInput, deriveFrame, FRAME_MS,
 } from './src/utils.js';
 
 const CARD_ASPECT = 456 / 631;
@@ -34,16 +34,16 @@ const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motio
 const BREAKPOINTS = {
   sm: {
     minWidth: 0,
-    SPHERE_R: 18,
+    SPHERE_R: 16,
     CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
-    CAM_Z_ENTRY: 140,
+    CAM_Z_ENTRY: 100,
     CAM_Z_SPHERE: 70,
-    CAM_Z_END: -40,
+    CAM_Z_END: -18,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.5,
     CARD_FACE_CAMERA: 0,
     CARD_ROLL_JITTER: 0.18,
-    CYL_COLS_FIT: 0.55,
+    CYL_COLS_FIT: 0.65,
     DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
   },
   md: {
@@ -52,7 +52,7 @@ const BREAKPOINTS = {
     CARD_H_SPHERE: 10.5,
     CAM_Z_ENTRY: 160,
     CAM_Z_SPHERE: 80,
-    CAM_Z_END: -60,
+    CAM_Z_END: -30,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.6,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
@@ -371,11 +371,12 @@ function createGlobeGalleryRuntime(
 
   // The single source for the clocks — never cache them.
   const frameState = createFrame();
-  const frameInput = { prevNow: 0 };
+  const frameInput = createFrameInput();
   let W = 0;
   let H = 0;
   let navH = 0; // --fg-nav-h; see README (The nav band)
   let blockDocTop = 0; // block's top in document space (the scroll runway)
+  let blockHeight = 0; // its full scroll length
 
   const worldEl = q('.firefly-globe-world');
   const pqEl = q('.firefly-globe-pullquote');
@@ -388,12 +389,7 @@ function createGlobeGalleryRuntime(
     frameStr: '',
     copyStr: '',
   };
-  let scrollT = 0;
-  let entryT = 0;
-  let travelT = 0;
-  let sphereFormed = false;
   let pqAppearT = 1; // scrollT the last card leaves the screen at; see publishPqAppearT
-  let pqAppearTravelT = 1;
   let canvasHidden = false;
 
   // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
@@ -403,10 +399,10 @@ function createGlobeGalleryRuntime(
   let onScreen = true; // assume visible until the observer's first callback corrects it
   let sphereDragWarp = 0;
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
+  let wallTopY = 0;
   let cameraInsideSphere = false;
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
   let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
-  let scrollVel = 0;
   let textMesh = null;
   let hintRetired = false;
   let hintExitT = 0;
@@ -559,9 +555,7 @@ function createGlobeGalleryRuntime(
   function publishPqAppearT() {
     if (!pqEl) return;
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
-    pqAppearTravelT = travelTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
-    const pinT = Math.min(1, H / Math.max(1, root.offsetHeight));
-    pqAppearT = pinT + (1 - pinT) * pqAppearTravelT;
+    pqAppearT = travelTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
     root.style.setProperty('--fg-pq-appear-t', pqAppearT.toFixed(4));
   }
 
@@ -589,7 +583,7 @@ function createGlobeGalleryRuntime(
     const targetGroup = sphereGroup;
     const create = () => {
       if (sphereGroup !== targetGroup || !sphereGroup) return;
-      if (!replacing && !reducedMotion && entryT > TEXT_APPEAR_START) return;
+      if (!replacing && !reducedMotion && frameState.entryT > TEXT_APPEAR_START) return;
       const { SPHERE_R } = bp;
       const aspect = camera ? camera.aspect : W / H;
       const texture = createClickDragTexture(aspect, hintText);
@@ -622,6 +616,7 @@ function createGlobeGalleryRuntime(
       0,
     ) * groupScale;
     fadeRefH = cards.reduce((s, c) => s + c.sphereWorldH, 0) / cards.length;
+    wallTopY = cards.reduce((m, c) => Math.max(m, c.spherePos.y + c.sphereWorldH / 2), 0);
     dragFlipZ = Math.min(
       maxRadial + cardVanishDepth() * groupScale,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
@@ -810,7 +805,10 @@ function createGlobeGalleryRuntime(
     const uvDX = dx / (CARD_W_SPHERE * sX * dt);
     const uvDY = dy / (CARD_H_SPHERE * sY * dt);
     const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-    const ampRaw = Math.min(1.0, Math.max(scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL));
+    const ampRaw = Math.min(
+      1.0,
+      Math.max(frameState.scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL),
+    );
     const amp = ampOverride !== undefined ? ampOverride : Math.sqrt(ampRaw);
     const rep = mesh.material.uniforms.uRepeat.value;
     const mx = Math.max(-s, Math.min(s, uvDX * amp)) * rep.x;
@@ -882,9 +880,10 @@ function createGlobeGalleryRuntime(
   }
 
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
-  const measureBlockDocTop = () => {
+  function measureBlock() {
     blockDocTop = root.getBoundingClientRect().top + window.scrollY;
-  };
+    blockHeight = root.offsetHeight;
+  }
 
   const LENIS_TRUST_PX = 2;
   const SCROLL_LAG_PX = 8;
@@ -941,8 +940,8 @@ function createGlobeGalleryRuntime(
     if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
   };
 
-  const globeFormed = () => sphereFormed && modal.getModalIdx() < 0;
-  const globeLive = () => globeFormed() && scrollT < pqAppearT;
+  const globeFormed = () => frameState.sphereFormed && modal.getModalIdx() < 0;
+  const globeLive = () => globeFormed() && frameState.scrollT < pqAppearT;
 
   a11y = createGalleryA11y({
     q,
@@ -976,7 +975,7 @@ function createGlobeGalleryRuntime(
 
   cursor = createCursor({
     getGlobeLive: globeLive,
-    getCursorRetired: () => hintRetired || scrollT >= pqAppearT - CURSOR_RETIRE_LEAD_T,
+    getCursorRetired: () => hintRetired || frameState.scrollT >= pqAppearT - CURSOR_RETIRE_LEAD_T,
     labelText: hintText,
   });
 
@@ -1000,48 +999,42 @@ function createGlobeGalleryRuntime(
   });
 
   function computeFrame(now) {
-    const nowMs = now || performance.now();
-    const dtMs = frameInput.prevNow ? nowMs - frameInput.prevNow : FRAME_MS;
-    frameInput.prevNow = nowMs;
-    frameState.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
+    frameInput.scrollY = readScrollY();
+    frameInput.reducedMotion = reducedMotion;
+    frameInput.blockDocTop = blockDocTop;
+    frameInput.blockHeight = blockHeight;
+    frameInput.viewportH = H;
+    frameInput.now = now || performance.now();
+    deriveFrame(frameState, frameInput);
+    frameInput.prevScrollY = frameState.scrollY;
+    frameInput.prevNow = frameInput.now;
     return frameState;
   }
 
+  function entryLiftPx(frame) {
+    if (!bp.CYLINDER || frame.sphereFormed) return 0;
+    const groupScale = sphereGroup.scale.x || 1;
+    const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - bp.SPHERE_R, H);
+    return Math.max(0, H / 2 + navH / 2 - topPx) * (1 - frame.entryT ** 3);
+  }
+
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
-  function applyCentringOffset() {
-    const offY = navH / 2;
+  function applyCentringOffset(frame) {
+    const offY = navH / 2 - entryLiftPx(frame);
     if (offY === appliedViewOffsetY) return;
     appliedViewOffsetY = offY;
     if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
     else camera.clearViewOffset();
   }
 
-  function updateActiveCamera() {
-    if (!reducedMotion) {
-      const blockH = Math.max(H + 1, root.offsetHeight);
-      const prevSmooth = smoothY;
-      const y = readScrollY();
-      scrollT = clamp01((y - (blockDocTop - H)) / blockH);
-      scrollVel = Math.abs(y - prevSmooth) / frameState.dtScale;
-      entryT = clamp01(1 + (y - blockDocTop) / H);
-      sphereFormed = entryT >= 1;
-      if (sphereFormed) {
-        const pinT = H / blockH;
-        travelT = clamp01((scrollT - pinT) / Math.max(0.001, 1 - pinT));
-        camera.position.z = camZAtTravelT(travelT, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
-      } else {
-        travelT = 0;
-        camera.position.z = lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, easeOutCubic(entryT));
-      }
-    } else {
-      scrollT = 0;
-      scrollVel = 0;
-      entryT = 1;
-      travelT = 0;
-      sphereFormed = true;
-      camera.position.z = bp.CAM_Z_SPHERE;
-    }
-    applyCentringOffset();
+  function updateActiveCamera(frame) {
+    const { entryT, scrollT, sphereFormed } = frame;
+    camera.position.z = sphereFormed
+      ? camZAtTravelT(scrollT, bp.CAM_Z_SPHERE, bp.CAM_Z_END)
+      : lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
+    applyCentringOffset(frame);
+    // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
+    cameraInsideSphere = sphereFormed && Math.abs(camera.position.z) < dragFlipZ;
     return camera;
   }
 
@@ -1068,7 +1061,7 @@ function createGlobeGalleryRuntime(
     // frozen (modal open): holds its rotation. !interactive (still folding): no new drag and no
     // auto-spin, but inertia keeps coasting.
     const frozen = modal.getModalIdx() >= 0;
-    const interactive = sphereFormed;
+    const interactive = frame.sphereFormed;
     // Consume the banked travel; anything but held-and-live drops it (no pooling on resume).
     const holding = drag.isDragging && !frozen && interactive;
     let stepX = 0;
@@ -1139,7 +1132,7 @@ function createGlobeGalleryRuntime(
     // Fast-path flag so the rotation math can be skipped when upright.
     const sphereRotActive = (sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0);
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
-    if (scrollT < SPHERE_ORIENT_RESET_T && !focusSnapPending) {
+    if (frame.entryT < SPHERE_ORIENT_RESET_T && !focusSnapPending) {
       resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;
@@ -1250,18 +1243,22 @@ function createGlobeGalleryRuntime(
     if (sel && !sel.isCollapsed && inPq) sel.removeAllRanges();
   }
 
-  function updatePullQuote() {
-    if (!pqEl || reducedMotion) return;
-    const live = scrollT >= pqAppearT;
-    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
-    pqEl.style.pointerEvents = live ? 'auto' : 'none';
-    const fwd = live;
+  function advanceReveal(scrollT) {
+    const fwd = scrollT >= pqAppearT;
     const step = (frameState.dtScale * FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
     pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
-    writePullQuoteFrame(pq.revealT);
+    return pq.revealT;
   }
 
-  function updateCanvasVisibility() {
+  function updatePullQuote(frame) {
+    if (reducedMotion || !pqEl) return;
+    const live = frame.scrollT >= pqAppearT;
+    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
+    pqEl.style.pointerEvents = live ? 'auto' : 'none';
+    writePullQuoteFrame(advanceReveal(frame.scrollT));
+  }
+
+  function updateCanvasVisibility(frame) {
     const canvas = renderer?.domElement;
     if (!canvas) return;
     if (reducedMotion) {
@@ -1272,7 +1269,7 @@ function createGlobeGalleryRuntime(
     // Past the reveal every card is prox-faded out; the scene holds nothing else, so the draw is
     // skipped too. The modal is the exception: its backdrop blurs this canvas, so hiding it would
     // leave the blur with nothing to sample.
-    canvasHidden = modal.getModalIdx() < 0 && scrollT >= pqAppearT + CANVAS_HIDE_MARGIN_T;
+    canvasHidden = modal.getModalIdx() < 0 && frame.scrollT >= pqAppearT + CANVAS_HIDE_MARGIN_T;
     canvas.style.display = canvasHidden ? 'none' : 'block';
   }
 
@@ -1402,8 +1399,9 @@ function createGlobeGalleryRuntime(
     hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
   }
 
-  function updateClickDragText() {
+  function updateClickDragText(frame) {
     if (!textMesh) return;
+    const { entryT, scrollT } = frame;
     const { uniforms } = textMesh.material;
 
     if (reducedMotion) {
@@ -1431,11 +1429,11 @@ function createGlobeGalleryRuntime(
     const currDist = Math.max(camera.position.z, CAM_Z_SPHERE) + SPHERE_R + TEXT_BEHIND_GAP;
     textMesh.scale.setScalar(currDist / restDist + txtWarpEntrance * TEXT_WARP_OVERFLOW);
     const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
-      * (1 - clamp01(travelT / pqAppearTravelT));
+      * (1 - clamp01(scrollT / pqAppearT));
 
     textMesh.visible = txtOp > 0.001 && hintExitT < 1;
     uniforms.uOpacity.value = txtOp;
-    uniforms.uZoom.value = travelT;
+    uniforms.uZoom.value = scrollT;
     uniforms.uWarp.value = txtWarpEntrance;
     uniforms.uExitP.value = hintExitT;
 
@@ -1448,22 +1446,20 @@ function createGlobeGalleryRuntime(
     const frame = computeFrame(now);
 
     a11y.updateTabStops();
-    frame.activeCamera = updateActiveCamera();
+    frame.activeCamera = updateActiveCamera(frame);
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
+    updateCanvasVisibility(frame);
+    updatePullQuote(frame);
 
     renderer.sortObjects = true;
 
-    sphereGroup.position.z = 0;
-    frame.sphGroupZ = 0;
-    cameraInsideSphere = Math.abs(camera.position.z) < dragFlipZ;
     updateCardTransforms(frame);
-    updateA11yFocusRing();
+    updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExit(frame);
-    updateClickDragText();
-    updatePullQuote();
-    updateCanvasVisibility();
+
+    updateClickDragText(frame);
     cursor.update();
     interaction.applyCursor();
     controls.update();
@@ -1475,8 +1471,8 @@ function createGlobeGalleryRuntime(
   function startTicker() {
     if (rafId) return;
     // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
+    frameInput.prevScrollY = readScrollY();
     frameInput.prevNow = 0;
-    smoothY = window.scrollY;
     rafId = requestAnimationFrame(rafLoop);
   }
   function stopTicker() {
@@ -1567,7 +1563,6 @@ function createGlobeGalleryRuntime(
   function initRuntime() {
     const canvas = q('.firefly-globe-canvas');
     if (!canvas) return false;
-    smoothY = window.scrollY;
 
     // See README (Zero-box gate).
     if (root.offsetHeight <= 0) {
@@ -1593,6 +1588,7 @@ function createGlobeGalleryRuntime(
 
     const band = resolveBP(W);
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
+    publishPqAppearT();
 
     try {
       const aa = bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD;
@@ -1618,7 +1614,7 @@ function createGlobeGalleryRuntime(
 
     function doLayout({ fromResize = false } = {}) {
       readCssVars();
-      measureBlockDocTop();
+      measureBlock();
       const nextW = window.innerWidth;
       const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) {
@@ -1662,7 +1658,6 @@ function createGlobeGalleryRuntime(
           }, TEXT_REBUILD_DEBOUNCE_MS);
         }
       }
-      publishPqAppearT();
       relayoutQuote();
       publishPqMetrics();
     }
@@ -1814,19 +1809,16 @@ function createGlobeGalleryRuntime(
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy();
     a11y.teardown();
-    frameInput.prevNow = 0;
+    frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
+    frameState.entryT = 0; frameState.scrollT = 0; frameState.sphereFormed = false;
     if (pqEl) pqEl.style.cssText = '';
     pq.revealT = 0;
     pq.frameStr = '';
     pq.copyStr = '';
     pq.lineEls = [];
     pq.splitW = 0;
-    scrollT = 0;
-    scrollVel = 0;
     pqAppearT = 1;
-    sphereFormed = false;
     canvasHidden = false;
-    smoothY = window.scrollY;
     focusSnapPending = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();

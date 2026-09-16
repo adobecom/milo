@@ -386,8 +386,70 @@ describe('firefly-globe: fetchFireflyAssets', () => {
 describe('firefly-globe: frame state', () => {
   it('createFrame initialises dtScale=1 with a monomorphic shape', () => {
     const frame = TL.createFrame();
-    const expected = { dtScale: 1, activeCamera: null, sphereRotActive: false, sphGroupZ: 0 };
+    const expected = {
+      scrollY: 0,
+      scrollVel: 0,
+      dtScale: 1,
+      entryT: 0,
+      scrollT: 0,
+      sphereFormed: false,
+      activeCamera: null,
+      sphereRotActive: false,
+      sphGroupZ: 0,
+    };
     expect(frame).to.deep.equal(expected);
+  });
+
+  const derive = (scrollY, extra = {}) => TL.deriveFrame(TL.createFrame(), {
+    ...TL.createFrameInput(),
+    scrollY,
+    blockDocTop: 1000,
+    blockHeight: 2000,
+    viewportH: 800,
+    ...extra,
+  });
+
+  it('entryT runs over the viewport before the block top and reaches 1 at the pin', () => {
+    expect(derive(200).entryT).to.equal(0);
+    expect(derive(600).entryT).to.be.closeTo(0.5, 1e-9);
+    expect(derive(1000).entryT).to.equal(1);
+    expect(derive(999).sphereFormed).to.equal(false);
+    expect(derive(1000).sphereFormed).to.equal(true);
+  });
+
+  it('scrollT is 0 at the pin and 1 when the block bottom passes the viewport top', () => {
+    expect(derive(600).scrollT).to.equal(0);
+    expect(derive(1000).scrollT).to.equal(0);
+    expect(derive(2000).scrollT).to.be.closeTo(0.5, 1e-9);
+    expect(derive(3000).scrollT).to.equal(1);
+    expect(derive(4000).scrollT).to.equal(1);
+  });
+
+  it('scrollVel is the per-frame delta scaled by dtScale', () => {
+    const f = derive(1300, { prevScrollY: 1240, now: 33.333, prevNow: 0 });
+    expect(f.dtScale).to.equal(1);
+    expect(f.scrollVel).to.equal(60);
+    const g = derive(1300, { prevScrollY: 1240, now: 33.333, prevNow: 0.0001 });
+    expect(g.dtScale).to.be.closeTo(2, 1e-3);
+    expect(g.scrollVel).to.be.closeTo(30, 1e-1);
+  });
+
+  it('reduced motion pins the input to the formed position', () => {
+    const f = derive(200, { reducedMotion: true, prevScrollY: 5000 });
+    expect(f.scrollY).to.equal(1000);
+    expect(f.entryT).to.equal(1);
+    expect(f.scrollT).to.equal(0);
+    expect(f.sphereFormed).to.equal(true);
+    expect(f.scrollVel).to.equal(0);
+  });
+
+  it('camZAtTravelT / travelTAtCamZ are inverses', () => {
+    for (const t of [0, 0.1, 0.35, 0.5, 0.9, 1]) {
+      const z = TL.camZAtTravelT(t, 70, -14);
+      expect(TL.travelTAtCamZ(z, 70, -14)).to.be.closeTo(t, 1e-9);
+    }
+    expect(TL.travelTAtCamZ(200, 70, -14)).to.equal(0);
+    expect(TL.travelTAtCamZ(-50, 70, -14)).to.equal(1);
   });
 
   it('dtScale clamps are sane', () => {

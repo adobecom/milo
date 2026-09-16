@@ -24,7 +24,7 @@
   --fg-band-h: calc(100vh - var(--fg-nav-h));
   --fg-optical-center: calc(var(--fg-nav-h) + var(--fg-band-h) / 2);
   --fg-controls-top: calc(var(--fg-nav-h) + var(--fg-controls-inset));
-  --fg-runway-height: 350vh;
+  --fg-runway-height: 240vh;
 
   height: var(--fg-runway-height);
   position: relative;
@@ -91,6 +91,7 @@
 
 @media (width >= 768px) {
   .firefly-globe {
+    --fg-runway-height: 333vh;
     --fg-copy-pad: var(--s2a-spacing-3xl);
     --fg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -229,7 +230,7 @@
    the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
 .firefly-globe-pullquote-pin {
   position: absolute;
-  top: 100vh;
+  top: 0;
   bottom: clamp(0px, var(--fg-pq-half-box, var(--fg-runway-height)), calc(
     (1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center)
   ));
