@@ -13,6 +13,9 @@
 
 .firefly-globe {
   --gg-hang-max: 0.8em;
+  --gg-copy-max: 1920px;
+  --gg-copy-pad: var(--s2a-spacing-lg);
+  --gg-content-inset: calc(max(0px, 100% - var(--gg-copy-max)) / 2 + var(--gg-copy-pad));
   --gg-crosshair-width: 1px;
   --gg-controls-size: 48px;
   --gg-controls-radius: 6px;
@@ -22,7 +25,7 @@
   --gg-band-h: calc(100vh - var(--gg-nav-h));
   --gg-optical-center: calc(var(--gg-nav-h) + var(--gg-band-h) / 2);
   --gg-controls-top: calc(var(--gg-nav-h) + var(--gg-controls-inset));
-  --gg-runway-height: 200vh;
+  --gg-runway-height: 350vh;
 
   height: var(--gg-runway-height);
   position: relative;
@@ -89,8 +92,13 @@
 
 @media (width >= 768px) {
   .firefly-globe {
+    --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);
   }
+}
+
+@media (width >= 1440px) {
+  .firefly-globe { --gg-copy-pad: var(--s2a-spacing-4xl); }
 }
 
 .firefly-globe-canvas,
@@ -220,6 +228,177 @@
   visibility: hidden;
   transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 }
+
+/* Ends half a quote box above the runway end so the rail lets go as the next section approaches. */
+.firefly-globe-pullquote-pin {
+  position: absolute;
+  top: var(--gg-pq-pin-top, 60vh); /* written by JS after pqAppearT is resolved */
+  bottom: clamp(0px, var(--gg-pq-half-box, var(--gg-runway-height)), calc(
+    (1 - var(--gg-pq-appear-t, 0.7)) * var(--gg-runway-height) - var(--gg-optical-center)
+  ));
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.firefly-globe-pullquote-rail {
+  position: sticky;
+  top: var(--gg-optical-center);
+  height: 0;
+}
+
+.firefly-globe-pullquote {
+  --gg-pq-ideal-gap: var(--s2a-layout-lg);
+  --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
+  --gg-pq-pad-block: var(--gg-copy-pad);
+  --gg-pq-copy-rise: 14px;
+  --gg-pq-line-start: 120%;
+  --gg-pq-line-bleed: 0.14em;
+  --gg-pq-rule-color: var(--s2a-color-gray-800);
+
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  box-sizing: border-box;
+  max-width: var(--gg-copy-max);
+  margin: 0 auto;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gg-pq-gap);
+  padding-block: var(--gg-pq-pad-block);
+  padding-inline: var(--gg-copy-pad);
+
+  /* Centred on the optical centre until the box is taller than the band, then top-anchored. */
+  transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)));
+  pointer-events: none;
+}
+
+/* Four crosshair rules drawn by masking — JS writes --gg-pq-h and --gg-pq-v per frame. */
+.firefly-globe-pullquote::before,
+.firefly-globe-pullquote::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-style: solid;
+  border-width: 0;
+  border-color: var(--gg-pq-rule-color, currentcolor);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.firefly-globe-pullquote::before {
+  inset-block: var(--gg-pq-pad-block);
+  inset-inline: 0;
+  border-block-width: var(--gg-crosshair-width);
+  -webkit-mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
+  mask-image:
+    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
+    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
+  -webkit-mask-position: left top, left bottom;
+  mask-position: left top, left bottom;
+  -webkit-mask-size: 100% 51%;
+  mask-size: 100% 51%;
+}
+
+.firefly-globe-pullquote::after {
+  inset-block: 0;
+  inset-inline: var(--gg-copy-pad);
+  border-inline-width: var(--gg-crosshair-width);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
+  mask-image:
+    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
+    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
+  -webkit-mask-position: right top, left top;
+  mask-position: right top, left top;
+  -webkit-mask-size: 51% 100%;
+  mask-size: 51% 100%;
+}
+
+.firefly-globe-pullquote-quote {
+  opacity: var(--gg-pq-copy-q, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-q, 1))));
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+.firefly-globe-pullquote-lines {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: none;
+}
+
+.firefly-globe-pullquote-line {
+  display: block;
+  overflow: hidden;
+  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
+  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
+}
+
+.firefly-globe-pullquote-line-inner {
+  display: inline-block;
+  transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
+}
+
+.firefly-globe-pullquote-sr {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.firefly-globe-pullquote-name {
+  opacity: var(--gg-pq-copy-n, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-n, 1))));
+  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-25);
+  margin: 0;
+}
+
+.firefly-globe-pullquote-role {
+  opacity: var(--gg-pq-copy-r, 1);
+  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-r, 1))));
+  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-400);
+  margin: 0;
+}
+
+@media (width >= 768px) {
+  .firefly-globe-pullquote { --gg-pq-ideal-gap: var(--s2a-layout-xl); }
+}
+
+@media (width >= 1280px) {
+  .firefly-globe-pullquote { --gg-pq-ideal-gap: var(--s2a-layout-2xl); }
+}
+
+/* Flows normally after the globe under reduced motion: no pin/rail/sticky, static block. */
+.firefly-globe-reduced .firefly-globe-pullquote-pin,
+.firefly-globe-reduced .firefly-globe-pullquote-rail {
+  position: static;
+  height: auto;
+  pointer-events: auto;
+}
+
+.firefly-globe-reduced .firefly-globe-pullquote {
+  --gg-pq-pad-block: 10vh 8vh;
+
+  position: relative;
+  top: auto;
+  transform: none;
+  pointer-events: auto;
+}
+
+.firefly-globe-reduced .firefly-globe-pullquote::before,
+.firefly-globe-reduced .firefly-globe-pullquote::after {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* RM can be toggled mid-session after lines already carry a written progress var. */
+.firefly-globe-reduced .firefly-globe-pullquote-line-inner { transform: none; }
 
 .firefly-globe-modal {
   position: fixed;

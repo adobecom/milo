@@ -47,9 +47,103 @@ function cellParas(cell) {
   return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
 }
 
+function parsePullQuote(row) {
+  const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
+  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  return {
+    quote: quoteEl ? quoteEl.textContent.trim() : paras.shift() || '',
+    name: paras[0] || '',
+    role: paras[1] || '',
+  };
+}
+
 // Move the authored <p>s into a container.
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
+}
+
+function createTag(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  children.forEach((c) => el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+  return el;
+}
+
+const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
+
+function gutterOf(el) {
+  return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
+}
+
+function hangOpeningMark(el, room) {
+  el.style.textIndent = '';
+  const text = el.textContent.trim();
+  if (!room || !OPENING_MARK.test(text)) return;
+  const cs = getComputedStyle(el);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  if (!ctx.font.includes(cs.fontSize)) return;
+  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
+  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
+  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+}
+
+const QUOTE_TEXT = new WeakMap();
+
+function measureLines(quoteEl, words) {
+  const probes = words.map((w) => {
+    const s = document.createElement('span');
+    s.textContent = w;
+    return s;
+  });
+  const nodes = [];
+  probes.forEach((s, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(s);
+  });
+  quoteEl.replaceChildren(...nodes);
+  const lines = [];
+  let top = null;
+  probes.forEach((s) => {
+    const y = s.offsetTop;
+    if (top === null || y - top > 1) {
+      lines.push([]);
+      top = y;
+    }
+    lines[lines.length - 1].push(s.textContent);
+  });
+  return lines;
+}
+
+export function layoutQuote(quoteEl) {
+  if (!quoteEl) return [];
+  if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
+  const text = QUOTE_TEXT.get(quoteEl).trim();
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.remove('firefly-globe-pullquote-lines');
+  quoteEl.textContent = text;
+  if (!text) return [];
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.firefly-globe-pullquote')));
+  const indent = quoteEl.style.textIndent;
+  const lines = measureLines(quoteEl, text.split(/\s+/));
+  const lineEls = lines.map((wordsOnLine, i) => {
+    const inner = createTag('span', { class: 'firefly-globe-pullquote-line-inner' });
+    inner.textContent = wordsOnLine.join(' ');
+    if (i === 0 && indent) inner.style.marginInlineStart = indent;
+    return createTag('span', { class: 'firefly-globe-pullquote-line', 'aria-hidden': 'true' }, inner);
+  });
+  const srEl = createTag('span', { class: 'sr-only firefly-globe-pullquote-sr' });
+  srEl.textContent = text;
+  quoteEl.style.textIndent = '';
+  quoteEl.classList.add('firefly-globe-pullquote-lines');
+  const nodes = [];
+  lineEls.forEach((line, i) => {
+    if (i) nodes.push(document.createTextNode(' '));
+    nodes.push(line);
+  });
+  nodes.push(srEl);
+  quoteEl.replaceChildren(...nodes);
+  return lineEls;
 }
 
 // The <em>/<strong> text, but only when it IS the whole paragraph.
@@ -226,10 +320,10 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 
 // Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
 // the hash is stripped before fetching.
-// Authoring: [cardsRow, hintTextRow, a11yRow]
+// Authoring: [cardsRow, hintTextRow, a11yRow, pullQuoteRow]
 // cardsRow first cell: "categoryId || cgenId || ctaLabel" (API) or a fragment link (legacy).
 export function parseAuthoredContent(el) {
-  const [cardsRow, hintTextRow, a11yRow] = [...el.children];
+  const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
   const [categoryId = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
@@ -247,6 +341,7 @@ export function parseAuthoredContent(el) {
     hintText: cellText(cells[1]) || DEFAULT_HINT,
     instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,
     labels: buildLabels(parts),
+    pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
   };
 }
 
@@ -254,7 +349,7 @@ export function parseAuthoredContent(el) {
 const buildMarkup = (gid, labels, ctaLabel) => `
   <div class="firefly-globe-world">
     <canvas class="firefly-globe-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
-<div class="firefly-globe-controls">
+    <div class="firefly-globe-controls">
       <button class="firefly-globe-control firefly-globe-spin-toggle" type="button" daa-ll="pause_spin--firefly_globe" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="firefly-globe-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
         <svg class="firefly-globe-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
@@ -268,6 +363,18 @@ const buildMarkup = (gid, labels, ctaLabel) => `
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
+    </div>
+  </div>
+
+  <div class="firefly-globe-pullquote-pin">
+    <div class="firefly-globe-pullquote-rail">
+      <figure class="firefly-globe-pullquote">
+        <blockquote class="firefly-globe-pullquote-quote heading-1"></blockquote>
+        <figcaption class="firefly-globe-pullquote-attribution">
+          <p class="firefly-globe-pullquote-name body-lg"></p>
+          <p class="firefly-globe-pullquote-role body-lg"></p>
+        </figcaption>
+      </figure>
     </div>
   </div>
 
@@ -307,13 +414,20 @@ const buildMarkup = (gid, labels, ctaLabel) => `
 
 let globeInstanceSeq = 0;
 
-export function buildGlobeDom(el, labels, { touchHint, ctaLabel = '' }) {
+export function buildGlobeDom(el, labels, { touchHint, ctaLabel = '', pullQuote = null }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels, ctaLabel);
   const hintEl = el.querySelector('.firefly-globe-hint-text');
   if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
   else hintEl.textContent = touchHint.text;
+  if (pullQuote) {
+    el.querySelector('.firefly-globe-pullquote-quote').textContent = pullQuote.quote;
+    el.querySelector('.firefly-globe-pullquote-name').textContent = pullQuote.name;
+    el.querySelector('.firefly-globe-pullquote-role').textContent = pullQuote.role;
+  } else {
+    el.querySelector('.firefly-globe-pullquote-pin')?.remove();
+  }
   return gid;
 }
 

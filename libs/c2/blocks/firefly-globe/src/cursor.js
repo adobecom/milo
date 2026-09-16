@@ -104,5 +104,7 @@ export default function createCursor(deps) {
     state = initialState();
   }
 
-  return { setup, update, teardown };
+  function isActive() { return state.active; }
+
+  return { setup, update, teardown, isActive };
 }
