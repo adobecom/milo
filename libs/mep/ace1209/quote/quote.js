@@ -9,6 +9,7 @@ function decorateQuote(block) {
   if (!quote) return;
 
   hangOpeningQuote(quote);
+  quote.setAttribute('role', 'paragraph');
   const figure = createTag('figure', { class: 'foreground' }, createTag('blockquote', { class: 'quote-copy' }, quote));
 
   if (name) {
