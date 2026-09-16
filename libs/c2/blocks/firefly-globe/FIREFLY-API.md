@@ -306,15 +306,9 @@ Confirmed providers as of 2026-09 — no icon URLs are in the API; map them your
 
 ## Applying to firefly-globe
 
-The globe currently renders a fixed set of textures. To swap them for live API
-images, author a `categoryId` into the block (same pattern as firefly-gallery),
-fetch on `init`, then:
-
-1. Map each asset to a globe point (lat/lon) — either from `asset.stats.detail_count`
-   (engagement-weighted placement) or random spread.
-2. Use the rendition URL at a small fixed size (e.g. 256 px) as the point
-   texture / thumbnail.
-3. On hover/click show an overlay with prompt text, creator name + avatar, and
-   a CTA link to `firefly.adobe.com/open?…`.
-4. Attach `data-prompt`, `data-creator`, `data-avatar-url`, `data-firefly-url`
-   to each DOM point so the overlay logic stays decoupled from the fetch.
+Implemented in `src/authoring.js` (`fetchFireflyAssets` → `apiAssetToCard`): the rendition URL is
+requested at `min(max_width, 1024)` and `optimizeImgUrl` passes it through; `machine_tags` supply
+`modelId` / `modelVersionName`; the prompt is picked by page locale; `urn` builds the Firefly deep link
+the modal CTA opens. Images are loaded with `crossOrigin: 'anonymous'` because the CDN is cross-origin
+and the card textures go through WebGL. See `README.md` for the authoring row that carries the
+`categoryId`.

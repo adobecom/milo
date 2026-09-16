@@ -1,4 +1,5 @@
 import * as THREE from '../../../deps/three.js';
+import { getConfig } from '../../../utils/utils.js';
 import {
   parseAuthoredContent, fetchFragmentCards, fetchFireflyAssets, buildGlobeDom,
   optimizeImgUrl, scatterCards, layoutQuote,
@@ -633,7 +634,7 @@ function createGlobeGalleryRuntime(
 
   // Shortest signed yaw bringing a slot front-centre. Scale-invariant, so on the barrel it
   // depends only on the column — rotateStep relies on that.
-  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y, inside = false) {
+  function yawDeltaToCenter(spherePos, fromYaw = sphereOrient.y, inside = cameraInsideSphere) {
     const cy = Math.cos(fromYaw);
     const sy = Math.sin(fromYaw);
     const px = spherePos.x * cy + spherePos.z * sy;
@@ -643,7 +644,7 @@ function createGlobeGalleryRuntime(
     return Math.atan2(Math.sin(deltaY), Math.cos(deltaY));
   }
 
-  function cardCenterYawPitch(idx, pitchCap, yawOnly, inside = false) {
+  function cardCenterYawPitch(idx, pitchCap, yawOnly, inside = cameraInsideSphere) {
     const { spherePos } = cards[idx];
     const targetYaw = sphereOrient.y + yawDeltaToCenter(spherePos, sphereOrient.y, inside);
     if (yawOnly) return { targetYaw, targetPitch: sphereOrient.x };
@@ -874,21 +875,25 @@ function createGlobeGalleryRuntime(
     if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
   };
 
-  // Live to the pointer when globe is formed and pull-quote not yet showing.
-  const globeLive = () => modal.getModalIdx() < 0 && scrollT < pqAppearT;
+  // The keyboard path stays on THIS past the pull-quote cue: focusing a card runs
+  // snapToBrowseView, which scrolls back into range, so the entry point must outlive the cue.
+  const globeFormed = () => modal.getModalIdx() < 0;
+  // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
+  // together at the pull-quote cue.
+  const globeLive = () => globeFormed() && scrollT < pqAppearT;
 
   a11y = createGalleryA11y({
     q,
     getCount: () => CARD_CONTENT.length,
     cardOrder: AUTHORED_ORDER,
     getModalIdx: () => modal.getModalIdx(),
-    isGlobeFormed: globeLive,
+    isGlobeFormed: globeFormed,
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
       return (m && m.alt) || `Image ${authoredNo(i)}`;
     },
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
-    centerCard: (i) => centerCardOnScreen(i, focusSnapPending),
+    centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
     onFocus: snapToBrowseView,
     galleryInstructions: instructions,
@@ -929,7 +934,6 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
-    isCursorActive: () => cursor.isActive(),
     onDrag: () => { hintRetired = true; },
   });
 
@@ -1505,7 +1509,11 @@ function createGlobeGalleryRuntime(
       measureBlockDocTop();
       const nextW = window.innerWidth;
       const nextH = measureViewportH();
-      if (fromResize && nextW === W && nextH === H) return;
+      if (fromResize && nextW === W && nextH === H) {
+        relayoutQuote(); // the quote box can change width without the viewport doing so
+        publishPqMetrics();
+        return;
+      }
       W = nextW;
       H = nextH;
       appliedViewOffsetY = null;
@@ -1725,7 +1733,7 @@ export default async function init(el) {
   const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel, pullQuote });
 
   let authored = null;
-  if (categoryId) authored = await fetchFireflyAssets(categoryId, 'en-US');
+  if (categoryId) authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf);
   else if (fragmentHref) authored = await fetchFragmentCards(fragmentHref);
   if (cgenId && authored) {
     authored.forEach((card) => {

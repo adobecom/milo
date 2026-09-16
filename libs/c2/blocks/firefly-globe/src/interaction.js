@@ -17,7 +17,7 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 export default function createInteraction({
   getRenderer, getCamera, getCards, openModal,
   getDragSensitivity, isGlobeLive, maxVel, drag,
-  getYawOnly, isCursorActive, onDrag,
+  getYawOnly, onDrag,
 }) {
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
@@ -48,7 +48,6 @@ export default function createInteraction({
     // live gate, and the rotation it is still driving is real.
     if (drag.isDragging) want = 'grabbing';
     else if (isGlobeLive()) want = hoveringCard ? 'pointer' : 'grab';
-    if (isCursorActive && isCursorActive()) want = 'none';
     if (want === appliedCursor) return;
     appliedCursor = want;
     canvasEl.style.cursor = want;

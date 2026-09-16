@@ -82,14 +82,17 @@ function hangOpeningMark(el, room) {
   const cs = getComputedStyle(el);
   const ctx = document.createElement('canvas').getContext('2d');
   ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  if (!ctx.font.includes(cs.fontSize)) return;
+  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
+  // Canvas ignores letter-spacing, and heading-1 has some.
   const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
+  // Too wide to hang — a CJK bracket, or just past the padding.
   if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
   if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
 }
 
-const QUOTE_TEXT = new WeakMap();
+const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
 
+// Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
 function measureLines(quoteEl, words) {
   const probes = words.map((w) => {
     const s = document.createElement('span');
@@ -115,6 +118,8 @@ function measureLines(quoteEl, words) {
   return lines;
 }
 
+// Re-typeset the quote as one masked block per rendered line, and return those lines for the
+// caller to write progress vars to. Idempotent; plain text if there is nothing to split.
 export function layoutQuote(quoteEl) {
   if (!quoteEl) return [];
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
@@ -129,6 +134,7 @@ export function layoutQuote(quoteEl) {
   const lineEls = lines.map((wordsOnLine, i) => {
     const inner = createTag('span', { class: 'firefly-globe-pullquote-line-inner' });
     inner.textContent = wordsOnLine.join(' ');
+    // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
     if (i === 0 && indent) inner.style.marginInlineStart = indent;
     return createTag('span', { class: 'firefly-globe-pullquote-line', 'aria-hidden': 'true' }, inner);
   });
@@ -136,6 +142,8 @@ export function layoutQuote(quoteEl) {
   srEl.textContent = text;
   quoteEl.style.textIndent = '';
   quoteEl.classList.add('firefly-globe-pullquote-lines');
+  // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
+  // flex items generates no box, so the layout is untouched.
   const nodes = [];
   lineEls.forEach((line, i) => {
     if (i) nodes.push(document.createTextNode(' '));
@@ -222,6 +230,7 @@ function parseFragmentCards(row) {
   return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
 }
 
+const ALT_MAX_CHARS = 120;
 const FF_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const FF_API_KEY = 'milo-ff-gallery-unity';
 
@@ -236,6 +245,7 @@ function getLocalizedPrompt(prompts, locale) {
   if (!prompts) return '';
   return prompts[locale]
     || prompts[locale.split('-')[0]]
+    || prompts[Object.keys(prompts).find((k) => k.split('-')[0] === locale.split('-')[0])]
     || prompts['en-US']
     || Object.values(prompts)[0]
     || '';
@@ -263,7 +273,8 @@ function apiAssetToCard(asset, locale) {
   const { modelId, modelVersionName } = parseModelTags(asset.machine_tags);
   return {
     img,
-    alt: '',
+    // The API carries no alt; the prompt is the closest description for the a11y card label.
+    alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
     modelId,
     modelVersionName,
     prompt,
@@ -272,7 +283,8 @@ function apiAssetToCard(asset, locale) {
   };
 }
 
-export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
+export async function fetchFireflyAssets(categoryId, locale) {
+  const loc = locale || 'en-US';
   try {
     const resp = await fetch(
       `${FF_API_URL}?size=50&sort=updated_desc&include_pending_assets=false&cursor=&category_id=${categoryId}`,
@@ -282,7 +294,7 @@ export async function fetchFireflyAssets(categoryId, locale = 'en-US') {
     const data = await resp.json();
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
-    const cards = assets.map((a) => apiAssetToCard(a, locale)).filter(Boolean);
+    const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
     return cards.length ? cards : null;
   } catch (e) {
     return null;

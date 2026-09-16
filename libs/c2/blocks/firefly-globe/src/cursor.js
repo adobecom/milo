@@ -1,4 +1,4 @@
-// See README (Behavior notes).
+// Floats the hint label beside the native cursor; the native cursor itself stays visible.
 // eslint-disable-next-line import/no-relative-packages
 import { createTag } from '../../../../utils/utils.js';
 
@@ -104,7 +104,5 @@ export default function createCursor(deps) {
     state = initialState();
   }
 
-  function isActive() { return state.active; }
-
-  return { setup, update, teardown, isActive };
+  return { setup, update, teardown };
 }

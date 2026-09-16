@@ -8,6 +8,7 @@ import {
   parseAuthoredContent,
   buildGlobeDom,
   fetchFragmentCards,
+  fetchFireflyAssets,
 } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
 
 // Helpers
@@ -97,8 +98,8 @@ describe('firefly-globe: scatterCards', () => {
 });
 
 // ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: parseAuthoredContent — 3-row structure', () => {
-  // Row layout: [cardsRow, hintTextRow, a11yRow]
+describe('firefly-globe: parseAuthoredContent — positional rows', () => {
+  // Row layout: [cardsRow, hintTextRow, a11yRow, pullQuoteRow]
   function makeBlock({ fragmentUrl = 'https://example.com/cards', hintCell1 = '', hintCell2 = 'Drag', a11y = '' } = {}) {
     return makeEl(`
       ${makeRow(`<a href="${fragmentUrl}#_dnb">Cards</a>`)}
@@ -137,6 +138,39 @@ describe('firefly-globe: parseAuthoredContent — 3-row structure', () => {
     const { instructions, labels } = parseAuthoredContent(el);
     expect(instructions).to.equal('Enter gallery');
     expect(labels.rotateLeft).to.equal('Rotate left');
+  });
+
+  it('parses "categoryId || cgenId || ctaLabel" from the cards cell', () => {
+    const el = makeEl(`
+      ${makeRow('<div><p>cat-123 || promo-9 || Open in Firefly</p></div>')}
+      ${makeRow('<div></div><div><p>Drag</p></div>')}
+      ${makeRow('')}
+    `);
+    const { categoryId, cgenId, ctaLabel, fragmentHref } = parseAuthoredContent(el);
+    expect(categoryId).to.equal('cat-123');
+    expect(cgenId).to.equal('promo-9');
+    expect(ctaLabel).to.equal('Open in Firefly');
+    expect(fragmentHref).to.be.null;
+  });
+
+  it('categoryId is null for a fragment-link cards row', () => {
+    const { categoryId } = parseAuthoredContent(makeBlock());
+    expect(categoryId).to.be.null;
+  });
+
+  it('parses the optional pull-quote row', () => {
+    const el = makeEl(`
+      ${makeRow('<a href="https://x.com/c#_dnb">Cards</a>')}
+      ${makeRow('<div></div><div><p>Drag</p></div>')}
+      ${makeRow('')}
+      ${makeRow('<blockquote>A quote</blockquote><p>Name</p><p>Role</p>')}
+    `);
+    const { pullQuote } = parseAuthoredContent(el);
+    expect(pullQuote).to.deep.equal({ quote: 'A quote', name: 'Name', role: 'Role' });
+  });
+
+  it('pullQuote is null without a fourth row', () => {
+    expect(parseAuthoredContent(makeBlock()).pullQuote).to.be.null;
   });
 
   it('does not crash on a 5-row DOM (old authoring format)', () => {
@@ -198,8 +232,27 @@ describe('firefly-globe: buildGlobeDom', () => {
     expect(el.querySelector('.firefly-globe-arc-copy')).to.be.null;
   });
 
-  it('does NOT create pullquote-pin element', () => {
+  it('drops the pullquote-pin when no pull quote is authored', () => {
     expect(el.querySelector('.firefly-globe-pullquote-pin')).to.be.null;
+  });
+
+  it('renders the pull quote when authored', () => {
+    const other = document.createElement('div');
+    buildGlobeDom(other, LABELS, {
+      touchHint: TOUCH_HINT,
+      pullQuote: { quote: 'Q', name: 'N', role: 'R' },
+    });
+    expect(other.querySelector('.firefly-globe-pullquote-quote').textContent).to.equal('Q');
+    expect(other.querySelector('.firefly-globe-pullquote-name').textContent).to.equal('N');
+    expect(other.querySelector('.firefly-globe-pullquote-role').textContent).to.equal('R');
+  });
+
+  it('renders the CTA label into the modal CTA', () => {
+    const other = document.createElement('div');
+    buildGlobeDom(other, LABELS, { touchHint: TOUCH_HINT, ctaLabel: 'Open <it>' });
+    const cta = other.querySelector('.firefly-globe-modal-cta');
+    expect(cta.textContent).to.equal('Open <it>');
+    expect(cta.hidden).to.be.true;
   });
 
   it('sets hint text content', () => {
@@ -253,8 +306,8 @@ describe('firefly-globe: fetchFragmentCards', () => {
         <div>
           <div>
             <p><img src="https://example.aem.live/media_card1.jpg" alt="Artist 1"></p>
-            <h2>Artist One</h2>
-            <p><em>Illustrator</em></p>
+            <p><em>A prompt</em></p>
+            <p><strong>Artist One</strong></p>
           </div>
         </div>
       </body></html>
@@ -263,27 +316,83 @@ describe('firefly-globe: fetchFragmentCards', () => {
     const cards = await fetchFragmentCards('https://example.com/cards');
     expect(cards).to.be.an('array').with.length(1);
     expect(cards[0].name).to.equal('Artist One');
-    expect(cards[0].role).to.equal('Illustrator');
+    expect(cards[0].prompt).to.equal('A prompt');
+    expect(cards[0].alt).to.equal('Artist 1');
     expect(cards[0].img).to.include('media_card1.jpg');
   });
 });
 
 // ──────────────────────────────────────────────────────────────────
+describe('firefly-globe: fetchFireflyAssets', () => {
+  let fetchStub;
+
+  afterEach(() => {
+    fetchStub?.restore();
+  });
+
+  const asset = (over = {}) => ({
+    urn: 'urn:aaid:sc:1',
+    _links: { rendition: { href: 'https://cdn.cp.adobe.io/x/{format}/{dimension}/{size}', max_width: 2048 } },
+    custom: { input: { 'firefly#prompts': { 'en-US': 'English', 'fr-FR': 'Français', 'de-DE': 'Deutsch' } } },
+    machine_tags: ['modelId:firefly', 'modelVersionName:Firefly Image 4'],
+    ...over,
+  });
+
+  function stubAssets(assets) {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      json: async () => ({ _embedded: { assets } }),
+    });
+  }
+
+  it('returns null when the request fails', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false });
+    expect(await fetchFireflyAssets('cat')).to.be.null;
+  });
+
+  it('maps an asset to a card with a capped rendition URL and model tags', async () => {
+    stubAssets([asset()]);
+    const [card] = await fetchFireflyAssets('cat', 'en-US');
+    expect(card.img).to.equal('https://cdn.cp.adobe.io/x/jpg/width/1024');
+    expect(card.modelId).to.equal('firefly');
+    expect(card.modelVersionName).to.equal('Firefly Image 4');
+    expect(card.fireflyUrl).to.include('id=urn:aaid:sc:1');
+    expect(card.crossOrigin).to.equal('anonymous');
+  });
+
+  it('localizes the prompt: exact, language-only, then en-US', async () => {
+    stubAssets([asset()]);
+    expect((await fetchFireflyAssets('cat', 'fr-FR'))[0].prompt).to.equal('Français');
+    fetchStub.restore(); stubAssets([asset()]);
+    expect((await fetchFireflyAssets('cat', 'de-AT'))[0].prompt).to.equal('Deutsch');
+    fetchStub.restore(); stubAssets([asset()]);
+    expect((await fetchFireflyAssets('cat', 'ja-JP'))[0].prompt).to.equal('English');
+    fetchStub.restore(); stubAssets([asset()]);
+    expect((await fetchFireflyAssets('cat'))[0].prompt).to.equal('English');
+  });
+
+  it('uses the prompt as the alt fallback', async () => {
+    stubAssets([asset()]);
+    expect((await fetchFireflyAssets('cat', 'en-US'))[0].alt).to.equal('English');
+  });
+
+  it('skips assets without a rendition', async () => {
+    stubAssets([asset({ _links: {} }), asset()]);
+    expect(await fetchFireflyAssets('cat')).to.have.length(1);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────
 describe('firefly-globe: frame state', () => {
-  it('createFrame initialises sphereFormT=1 and zoomT=0', () => {
+  it('createFrame initialises dtScale=1 with a monomorphic shape', () => {
     const frame = TL.createFrame();
-    expect(frame.sphereFormT).to.equal(1);
-    expect(frame.zoomT).to.equal(0);
+    const expected = { dtScale: 1, activeCamera: null, sphereRotActive: false, sphGroupZ: 0 };
+    expect(frame).to.deep.equal(expected);
   });
 
-  it('createFrame initialises dtScale=1', () => {
-    const frame = TL.createFrame();
-    expect(frame.dtScale).to.equal(1);
-  });
-
-  it('globe is always considered formed (sphereFormT >= SPHERE_INTERACTIVE_T)', () => {
-    const frame = TL.createFrame();
-    expect(frame.sphereFormT).to.be.at.least(TL.SPHERE_INTERACTIVE_T);
+  it('dtScale clamps are sane', () => {
+    expect(TL.DT_SCALE_MIN).to.be.below(1);
+    expect(TL.DT_SCALE_MAX).to.be.above(1);
   });
 
   it('FRAME_MS is ~16.67ms (60fps target)', () => {
