@@ -56,8 +56,7 @@ export default function createGlobeModal({
   applyMotionCA,
   restoreFocusOnClose,
   iconBaseUrl,
-  onModalOpen,
-  onModalClose,
+  getCanvasTop,
 }) {
   const MODEL_ICON = {
     google: 'google.svg',
@@ -109,8 +108,6 @@ export default function createGlobeModal({
 
   // Suppresses the synthetic click after touch pointerup, which would self-close.
   let modalOpenedAt = 0;
-  let preLockScrollY = 0;
-  let modalCanvasTopPx = 0;
   // open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
   // Wired once — the DOM persists across re-inits, so re-adding would stack them.
@@ -134,7 +131,6 @@ export default function createGlobeModal({
     modalPhase = MODAL_PHASE.CLOSED;
     modalCard = null;
     modalIdx = -1;
-    modalCanvasTopPx = 0;
   }
 
   function resetChromeReveal() {
@@ -254,10 +250,12 @@ export default function createGlobeModal({
     return v;
   }
 
+  // The modal canvas is viewport-fixed; the main canvas sits at getCanvasTop() below it.
   function shiftForCanvasOffset(pos) {
-    if (!modalCanvasTopPx) return;
+    const topPx = getCanvasTop ? getCanvasTop() : 0;
+    if (!topPx) return;
     const depth = getCamera().position.z - pos.z;
-    if (depth > 0.01) pos.y -= modalCanvasTopPx / pxPerWorldAt(depth, getViewport().H);
+    if (depth > 0.01) pos.y -= topPx / pxPerWorldAt(depth, getViewport().H);
   }
 
   function pushModalWarpUniforms() {
@@ -507,8 +505,6 @@ export default function createGlobeModal({
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
     }
-    modalCanvasTopPx = onModalOpen ? onModalOpen() : 0;
-    preLockScrollY = window.scrollY;
     modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
@@ -552,7 +548,6 @@ export default function createGlobeModal({
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'true');
-
     // Native dialog: focus trap, inert background, Escape, focus-restore.
     if (chromeEl && !chromeEl.open) {
       try { chromeEl.showModal(); } catch (e) { /* already open / not connected; ignore */ }
@@ -567,10 +562,7 @@ export default function createGlobeModal({
     const canvas = renderer && renderer.domElement;
     if (canvas) canvas.classList.add('is-modal-active');
     document.documentElement.classList.add('firefly-globe-modal-open');
-    document.body.classList.add('firefly-globe-modal-open');
     if (window.lenis) window.lenis.stop();
-
-    if (window.scrollY !== preLockScrollY) window.scrollTo(0, preLockScrollY);
   }
 
   function close(viaPointer) {
@@ -617,10 +609,7 @@ export default function createGlobeModal({
         if (restoreFocusOnClose) restoreFocusOnClose(restoreIdx);
       }
       document.documentElement.classList.remove('firefly-globe-modal-open');
-      document.body.classList.remove('firefly-globe-modal-open');
       if (window.lenis) window.lenis.start();
-      if (window.scrollY !== preLockScrollY) window.scrollTo(0, preLockScrollY);
-      if (onModalClose) onModalClose();
       closeTimeoutId = null;
     }, modalAnimMs);
 
@@ -1032,7 +1021,6 @@ export default function createGlobeModal({
     const mainCanvas = q('.firefly-globe-canvas');
     if (mainCanvas) mainCanvas.classList.remove('is-modal-active');
     document.documentElement.classList.remove('firefly-globe-modal-open');
-    document.body.classList.remove('firefly-globe-modal-open');
     if (window.lenis) window.lenis.start();
     resetChromeReveal();
   }

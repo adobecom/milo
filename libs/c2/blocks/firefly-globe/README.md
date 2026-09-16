@@ -69,11 +69,15 @@ the CSS fallbacks cover only the frames before the script runs.
 
 ## Modal and the sticky canvas
 
-While the modal is open, `.firefly-globe-world` is pinned to `position: fixed` at its current top
-(`onModalOpen` / `onModalClose`), `camera.z` is frozen (`frozenCameraZ`), `modal.js` shifts the card's
-start/return positions by that top offset (`shiftForCanvasOffset`), and `scrollTo(preLockScrollY)`
-runs on open and close. When testing the modal, cover: opening with the block only partly scrolled
-in, a resize while open, and closing after Lenis restarts.
+The modal canvas is viewport-fixed; the main canvas sits inside the sticky world, whose top is
+above 0 only while the block is still scrolling in. `modal.js` translates the card's lift-off start
+position and its return target by `getCanvasTop()` (`worldEl.getBoundingClientRect().top`, read
+live) in `shiftForCanvasOffset`. Nothing is pinned or frozen while the modal is open.
+
+The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
+only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself
+instead of propagating to the viewport, which makes `body` a scroll container and un-sticks
+`.firefly-globe-world`. globe-gallery can lock both because its canvas and chrome are `fixed`.
 
 ## Reduced motion
 

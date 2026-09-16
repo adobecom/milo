@@ -632,9 +632,8 @@
   user-select: none;
 }
 
-/* Both: either may be the scrolling element, and body alone leaks wheel events on some browsers. */
-html.firefly-globe-modal-open,
-body.firefly-globe-modal-open { overflow: hidden; }
+/* html only: locking body too makes body a scroll container and un-sticks the world. */
+html.firefly-globe-modal-open { overflow: hidden; }
 
 /* Never intercepts canvas drag; tabbable only while interactive. */
 .firefly-globe-a11y {

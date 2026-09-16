@@ -384,7 +384,6 @@ function createGlobeGalleryRuntime(
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   let cameraInsideSphere = false;
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
-  let frozenCameraZ = null;
   let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
   let scrollVel = 0;
   let hintRetired = false;
@@ -799,22 +798,7 @@ function createGlobeGalleryRuntime(
     applyMotionCA,
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
     iconBaseUrl: new URL('./icons/', import.meta.url).href,
-    onModalOpen: () => {
-      frozenCameraZ = camera ? camera.position.z : null;
-      const top = Math.round(worldEl.getBoundingClientRect().top);
-      worldEl.style.position = 'fixed';
-      worldEl.style.top = `${top}px`;
-      worldEl.style.left = '0';
-      worldEl.style.right = '0';
-      return top;
-    },
-    onModalClose: () => {
-      worldEl.style.position = '';
-      worldEl.style.top = '';
-      worldEl.style.left = '';
-      worldEl.style.right = '';
-      frozenCameraZ = null;
-    },
+    getCanvasTop: () => Math.round(worldEl.getBoundingClientRect().top),
   });
 
   function readCssVars() {
@@ -963,9 +947,7 @@ function createGlobeGalleryRuntime(
   }
 
   function updateActiveCamera() {
-    if (frozenCameraZ !== null) {
-      camera.position.z = frozenCameraZ;
-    } else if (!reducedMotion) {
+    if (!reducedMotion) {
       const blockH = root.offsetHeight;
       const prevSmooth = smoothY;
       scrollT = blockH > H
@@ -1712,11 +1694,6 @@ function createGlobeGalleryRuntime(
     drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
     wasBrowsing = false;
     cameraInsideSphere = false;
-    frozenCameraZ = null;
-    worldEl.style.position = '';
-    worldEl.style.top = '';
-    worldEl.style.left = '';
-    worldEl.style.right = '';
     // NOTE: `bp` intentionally NOT cleared — doLayout compares it, initRuntime overwrites it.
   }
 
