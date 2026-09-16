@@ -35,6 +35,7 @@ const BREAKPOINTS = {
     minWidth: 0,
     SPHERE_R: 18,
     CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
+    CAM_Z_ENTRY: 140,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -40,
     NEAR_FADE_START: 2.0,
@@ -48,6 +49,7 @@ const BREAKPOINTS = {
     minWidth: 768,
     SPHERE_R: 35,
     CARD_H_SPHERE: 10.5,
+    CAM_Z_ENTRY: 160,
     CAM_Z_SPHERE: 80,
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.0,
@@ -142,7 +144,6 @@ const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
 const SPHERE_ORIENT_RESET_T = 0.02;
-const BROWSE_VIEW_T = 0.1;
 const CURSOR_RETIRE_LEAD_T = 0.02;
 const CANVAS_HIDE_MARGIN_T = 0.05;
 
@@ -323,6 +324,7 @@ function createGlobeGalleryRuntime(
       SPHERE_R: cfg.SPHERE_R,
       CARD_H_SPHERE: sphereCardH,
       CARD_W_SPHERE: sphereCardH * CARD_ASPECT,
+      CAM_Z_ENTRY: cfg.CAM_Z_ENTRY,
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
       // Near-camera fade band, in mean card-heights of camera depth. START is purely visual; END
@@ -372,6 +374,7 @@ function createGlobeGalleryRuntime(
     copyStr: '',
   };
   let scrollT = 0;
+  let sphereFormed = false;
   let pqAppearT = 1; // scrollT the last card leaves the screen at; see publishPqAppearT
   let canvasHidden = false;
 
@@ -537,10 +540,10 @@ function createGlobeGalleryRuntime(
     if (!pqEl) return;
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     const range = bp.CAM_Z_SPHERE - bp.CAM_Z_END;
-    pqAppearT = range > 0 ? Math.min(1, Math.max(0, (bp.CAM_Z_SPHERE - clearZ) / range)) : 1;
+    const travelT = range > 0 ? Math.min(1, Math.max(0, (bp.CAM_Z_SPHERE - clearZ) / range)) : 1;
+    const pinT = Math.min(1, H / Math.max(1, root.offsetHeight));
+    pqAppearT = pinT + (1 - pinT) * travelT;
     root.style.setProperty('--fg-pq-appear-t', pqAppearT.toFixed(4));
-    // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
-    publishPqPinTop();
   }
 
   function recomputeDragFlip() {
@@ -798,7 +801,6 @@ function createGlobeGalleryRuntime(
     applyMotionCA,
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
     iconBaseUrl: new URL('./icons/', import.meta.url).href,
-    getCanvasTop: () => Math.round(worldEl.getBoundingClientRect().top),
   });
 
   function readCssVars() {
@@ -840,7 +842,7 @@ function createGlobeGalleryRuntime(
 
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
-    const top = Math.max(0, blockDocTop - H + BROWSE_VIEW_T * root.offsetHeight);
+    const top = blockDocTop;
     // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
     // before the callback below lands. Above the block that tick would reset the orientation and
     // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
@@ -871,7 +873,7 @@ function createGlobeGalleryRuntime(
     if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
   };
 
-  const globeFormed = () => modal.getModalIdx() < 0;
+  const globeFormed = () => sphereFormed && modal.getModalIdx() < 0;
   const globeLive = () => globeFormed() && scrollT < pqAppearT;
 
   a11y = createGalleryA11y({
@@ -948,16 +950,24 @@ function createGlobeGalleryRuntime(
 
   function updateActiveCamera() {
     if (!reducedMotion) {
-      const blockH = root.offsetHeight;
+      const blockH = Math.max(H + 1, root.offsetHeight);
       const prevSmooth = smoothY;
-      scrollT = blockH > H
-        ? Math.max(0, Math.min(1, (readScrollY() - (blockDocTop - H)) / blockH))
-        : 0;
-      scrollVel = Math.abs(smoothY - prevSmooth) / frameState.dtScale;
-      camera.position.z = lerpN(bp.CAM_Z_SPHERE, bp.CAM_Z_END, scrollT);
+      const y = readScrollY();
+      scrollT = clamp01((y - (blockDocTop - H)) / blockH);
+      scrollVel = Math.abs(y - prevSmooth) / frameState.dtScale;
+      const entryT = clamp01(1 + (y - blockDocTop) / H);
+      sphereFormed = entryT >= 1;
+      if (sphereFormed) {
+        const pinT = H / blockH;
+        const travelT = clamp01((scrollT - pinT) / Math.max(0.001, 1 - pinT));
+        camera.position.z = lerpN(bp.CAM_Z_SPHERE, bp.CAM_Z_END, travelT);
+      } else {
+        camera.position.z = lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, easeOutCubic(entryT));
+      }
     } else {
       scrollT = 0;
       scrollVel = 0;
+      sphereFormed = true;
       camera.position.z = bp.CAM_Z_SPHERE;
     }
     applyCentringOffset();
@@ -987,8 +997,9 @@ function createGlobeGalleryRuntime(
     // frozen (modal open): holds its rotation. !interactive (still folding): no new drag and no
     // auto-spin, but inertia keeps coasting.
     const frozen = modal.getModalIdx() >= 0;
+    const interactive = sphereFormed;
     // Consume the banked travel; anything but held-and-live drops it (no pooling on resume).
-    const holding = drag.isDragging && !frozen;
+    const holding = drag.isDragging && !frozen && interactive;
     let stepX = 0;
     let stepY = 0;
     if (holding) {
@@ -1014,13 +1025,14 @@ function createGlobeGalleryRuntime(
         // Held: position-driven off the (rate-limited) travel — no smoothing lag on normal frames.
         sphereOrient.y += stepX * dragDir;
         sphereOrient.x += stepY * dragDir;
+        if (!interactive) { drag.velX = 0; drag.velY = 0; } // inert mid-fold: must not fling
       } else {
         // Released: velocity-driven coast.
         const friction = DRAG_FRICTION ** dtScale;
         drag.velX *= friction;
         drag.velY *= friction;
         // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
-        const spin = !reducedMotion && !browsing && !controls.isSpinPaused()
+        const spin = interactive && !reducedMotion && !browsing && !controls.isSpinPaused()
           ? AUTO_ROT_SPEED : 0;
         sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
         sphereOrient.x += drag.velY * dtScale * dragDir;
@@ -1045,7 +1057,7 @@ function createGlobeGalleryRuntime(
     }
 
     let warpTarget = 0;
-    if (!frozen) {
+    if (!frozen && interactive) {
       const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
       const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
       warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + dragSpeed * SPHERE_DRAG_WARP_VEL);
@@ -1159,14 +1171,6 @@ function createGlobeGalleryRuntime(
     if (!pqEl || !pqEl.isConnected) return;
     const halfBox = pqEl.getBoundingClientRect().height / 2;
     root.style.setProperty('--fg-pq-half-box', `${halfBox.toFixed(1)}px`);
-  }
-
-  function publishPqPinTop() {
-    if (!pqEl) return;
-    const optCenter = navH + (H - navH) / 2;
-    const blockH = root.offsetHeight;
-    const pinTop = pqAppearT * blockH + optCenter - H;
-    root.style.setProperty('--fg-pq-pin-top', `${Math.max(0, pinTop).toFixed(1)}px`);
   }
 
   function dropQuoteSelection() {
@@ -1526,7 +1530,7 @@ function createGlobeGalleryRuntime(
       modal.resize(W, H);
       camera.aspect = W / H;
       camera.updateProjectionMatrix();
-      publishPqPinTop();
+      publishPqAppearT();
       relayoutQuote();
       publishPqMetrics();
     }
@@ -1684,6 +1688,7 @@ function createGlobeGalleryRuntime(
     scrollT = 0;
     scrollVel = 0;
     pqAppearT = 1;
+    sphereFormed = false;
     canvasHidden = false;
     smoothY = window.scrollY;
     focusSnapPending = false;

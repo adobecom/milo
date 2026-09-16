@@ -13,9 +13,9 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
-| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, `math.js`, ortho camera) | None. The sphere is fully formed at scroll start. |
-| Camera | Zoom tail eased by `camZAtZoomT` | Linear: `camera.z = lerp(CAM_Z_SPHERE, CAM_Z_END, scrollT)` |
-| Scroll clock | Six derived clocks (`deriveFrame`) | One: `scrollT = (scrollY − (blockDocTop − H)) / blockHeight`, clamped. Runs from the block's top entering the viewport bottom to its bottom leaving the viewport bottom. |
+| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, `math.js`, ortho camera) | Sphere already formed; camera eases `CAM_Z_ENTRY → CAM_Z_SPHERE` while the block scrolls in, landing as the world pins. |
+| Camera | Zoom tail eased by `camZAtZoomT` | Linear from the pin: `camera.z = lerp(CAM_Z_SPHERE, CAM_Z_END, travelT)` |
+| Scroll clock | Six derived clocks (`deriveFrame`) | `scrollT = (scrollY − (blockDocTop − H)) / blockHeight` over the whole block; `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `travelT` spans pin → end. |
 | Arc copy pill | Authoring row 1 | None |
 | "Click & Drag" text plane behind the sphere | WebGL plane (`TEXT_FRAG`) | None. `hintText` (hint row, cell 2) only labels the cursor pill. |
 | Custom cursor | Disc + chevron ring + label; native cursor hidden | Label pill only, beside the native cursor (`grab`/`grabbing`/`pointer`). |
@@ -44,13 +44,19 @@ API prompt locale: `getConfig().locale.ietf` exact match → language-only key �
 `en-US` → first available. The API has no alt text; the prompt (first 120 chars) is the card's `alt`,
 so it is the a11y card label and the modal's sr-only image label.
 
-## Pass-through and the pull-quote cue
+## Phases
 
-The camera travels through the sphere on scroll while the globe is live, so globe-gallery's
-inside-sphere rules are unchanged: `cameraInsideSphere` flips the drag direction, and
-`yawDeltaToCenter` / `cardCenterYawPitch` default to it. The keyboard focus snap
+`sphereFormed` (`entryT >= 1`, i.e. `scrollY >= blockDocTop`, the world pinned) is globe-gallery's
+`interactive` gate: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag
+warp, no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-
+open and keyboard entry are all off. Reduced motion is always formed.
+
+From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
+unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
+`cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
-at `scrollT = BROWSE_VIEW_T`. Orientation and inertia reset only below `SPHERE_ORIENT_RESET_T`.
+at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only below
+`SPHERE_ORIENT_RESET_T`.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
 `LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than
@@ -59,20 +65,21 @@ and passes larger ones through. `scrollVel` is the per-frame delta of that smoot
 the motion CA trail.
 
 `pqAppearT` is the `scrollT` at which the deepest card has faded out (`−SPHERE_R + cardVanishDepth()`
-on the camera span). At it: the pointer path retires (`globeLive`: drag, hover, on-canvas controls;
+on the camera span, offset by the pin: `pinT + (1 − pinT) · travelT`). It depends on `H`, so
+`doLayout` republishes it. At it: the pointer path retires (`globeLive`: drag, hover, on-canvas controls;
 the cursor pill fades `CURSOR_RETIRE_LEAD_T` earlier), the pull-quote reveal starts, and the canvas
-hides `CANVAS_HIDE_MARGIN_T` later. The keyboard path (`globeFormed`: modal closed) is not gated on
-it.
+hides `CANVAS_HIDE_MARGIN_T` later. The keyboard path (`globeFormed`: pinned and modal closed) is
+not gated on it.
 
-`--fg-pq-appear-t` and `--fg-pq-pin-top` are published by JS (`publishPqAppearT`, `publishPqPinTop`);
-the CSS fallbacks cover only the frames before the script runs.
+`--fg-pq-appear-t` is published by JS (`publishPqAppearT`, gg's `publishPqAppearZoomT`); the CSS
+fallback covers only the frames before the script runs. The pin's `top: 100vh` is gg's
+`--gg-formation-vh`: the rail starts at the point where the world sticks.
 
 ## Modal and the sticky canvas
 
-The modal canvas is viewport-fixed; the main canvas sits inside the sticky world, whose top is
-above 0 only while the block is still scrolling in. `modal.js` translates the card's lift-off start
-position and its return target by `getCanvasTop()` (`worldEl.getBoundingClientRect().top`, read
-live) in `shiftForCanvasOffset`. Nothing is pinned or frozen while the modal is open.
+The modal can only open once the world is pinned, so the main canvas and the viewport-fixed modal
+canvas share an origin and `modal.js` needs no offset — it is globe-gallery's file plus the model
+icon/label, prompt and CTA rendering.
 
 The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
 only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself

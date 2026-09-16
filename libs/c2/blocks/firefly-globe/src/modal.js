@@ -56,7 +56,6 @@ export default function createGlobeModal({
   applyMotionCA,
   restoreFocusOnClose,
   iconBaseUrl,
-  getCanvasTop,
 }) {
   const MODEL_ICON = {
     google: 'google.svg',
@@ -248,14 +247,6 @@ export default function createGlobeModal({
     v.x = clamp01(clientX / W);
     v.y = clamp01(1 - clientY / H);
     return v;
-  }
-
-  // The modal canvas is viewport-fixed; the main canvas sits at getCanvasTop() below it.
-  function shiftForCanvasOffset(pos) {
-    const topPx = getCanvasTop ? getCanvasTop() : 0;
-    if (!topPx) return;
-    const depth = getCamera().position.z - pos.z;
-    if (depth > 0.01) pos.y -= topPx / pxPerWorldAt(depth, getViewport().H);
   }
 
   function pushModalWarpUniforms() {
@@ -522,8 +513,6 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
 
-    shiftForCanvasOffset(modalStartPos);
-
     // attach() preserves the world transform.
     if (modalScene) modalScene.attach(modalCard.mesh);
     else getScene().attach(modalCard.mesh);
@@ -698,7 +687,6 @@ export default function createGlobeModal({
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
-        shiftForCanvasOffset(tgtPos);
         // Must match sphere-phase scale + facing tilt exactly, or the card jumps on the last
         // frame when snapToSphereSlot runs.
         tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);

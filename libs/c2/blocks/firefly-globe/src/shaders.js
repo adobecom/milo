@@ -60,16 +60,6 @@ export const MODAL_FRAG = [
   '}',
 ].join('\n');
 
-// uRepeat/uOffset apply the cover-crop by hand — ShaderMaterial does not auto-apply
-// texture.repeat/offset.
-export const CARD_VERT = [
-  'varying vec2 vUv;',
-  'void main() {',
-  '  vUv = uv;',
-  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-  '}',
-].join('\n');
-
 // Card dissolve + near-camera dispersion dials.
 const GRAIN_CELLS = 160;
 const DISPERSE_EXPAND = 2.5;
@@ -80,7 +70,8 @@ const DISPERSE_EDGE_LEAD = 1.4;
 const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
 const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
-// CARD_VERT plus the dispersion overscan.
+// uRepeat/uOffset apply the cover-crop by hand — ShaderMaterial does not auto-apply
+// texture.repeat/offset.
 export const CARD_DISPERSE_VERT = [
   'uniform float uDisperse;',
   'uniform float uAspect;',

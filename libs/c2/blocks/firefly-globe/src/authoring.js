@@ -61,7 +61,7 @@ function parsePullQuote(row) {
 }
 
 // Move the authored <p>s into a container.
-export function renderParagraphs(container, paras) {
+function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }
 

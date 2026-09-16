@@ -15,7 +15,6 @@
   --fg-hang-max: 0.8em;
   --fg-copy-max: 1920px;
   --fg-copy-pad: var(--s2a-spacing-lg);
-  --fg-content-inset: calc(max(0px, 100% - var(--fg-copy-max)) / 2 + var(--fg-copy-pad));
   --fg-crosshair-width: 1px;
   --fg-controls-size: 48px;
   --fg-controls-radius: 6px;
@@ -230,7 +229,7 @@
    the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
 .firefly-globe-pullquote-pin {
   position: absolute;
-  top: var(--fg-pq-pin-top, 60vh);
+  top: 100vh;
   bottom: clamp(0px, var(--fg-pq-half-box, var(--fg-runway-height)), calc(
     (1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center)
   ));
