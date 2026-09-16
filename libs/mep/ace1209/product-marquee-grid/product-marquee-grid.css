@@ -142,9 +142,12 @@ body:has(header.local-nav) .product-marquee-grid {
   background-color: var(--s2a-color-gray-1000);
 }
 
-/* transparent-bg variant: translucent block over the page/media. In light mode
-   the card is already #f8f8f8 via the default background-subtle. */
+/* transparent-bg variant: translucent block over the page/media, frosted with a
+   64px backdrop blur (per Figma) so the surface reads as an intentional panel
+   rather than a flat wash. In light mode the card is already #f8f8f8 via the
+   default background-subtle. Blur applies to the dark variant too (same class). */
 .transparent-bg.product-marquee-grid {
+  backdrop-filter: blur(var(--s2a-blur-64));
   background-color: var(--s2a-color-transparent-white-72);
 }
 
