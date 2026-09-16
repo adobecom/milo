@@ -41,6 +41,7 @@ export default function createGlobeModal({
   stepCard,
   loadModalUpgrade,
   getViewport,
+  getCanvasTop,
   getBP,
   getCardDims,
   cardAspect,
@@ -107,6 +108,7 @@ export default function createGlobeModal({
 
   // Suppresses the synthetic click after touch pointerup, which would self-close.
   let modalOpenedAt = 0;
+  let modalCanvasTopPx = 0;
   // open() cancels a stale one so it can't yank the new modal's state.
   let closeTimeoutId = null;
   // Wired once — the DOM persists across re-inits, so re-adding would stack them.
@@ -255,6 +257,12 @@ export default function createGlobeModal({
     if (!u || !u.uWarp || !u.uWarpCenter) return;
     u.uWarp.value = modalWarp;
     u.uWarpCenter.value.copy(modalWarpCenter);
+  }
+
+  function shiftForCanvasOffset(pos) {
+    if (!modalCanvasTopPx) return;
+    const depth = getCamera().position.z - pos.z;
+    if (depth > 0.01) pos.y -= modalCanvasTopPx / pxPerWorldAt(depth, getViewport().H);
   }
 
   function skewOffsetPx() {
@@ -496,6 +504,7 @@ export default function createGlobeModal({
       clearTimeout(closeTimeoutId);
       closeTimeoutId = null;
     }
+    modalCanvasTopPx = getCanvasTop();
     modalOpenedAt = perfNow();
     modalIdx = i;
     modalCard = cards[i];
@@ -512,6 +521,7 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldPosition(modalStartPos);
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
+    shiftForCanvasOffset(modalStartPos);
 
     // attach() preserves the world transform.
     if (modalScene) modalScene.attach(modalCard.mesh);
@@ -577,6 +587,7 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldQuaternion(modalCloseStartQuat);
     modalCard.mesh.getWorldScale(modalCloseStartScale);
 
+    modalCanvasTopPx = getCanvasTop();
     modalPhase = MODAL_PHASE.CLOSING;
     modalAnimT0 = perfNow();
 
@@ -687,6 +698,7 @@ export default function createGlobeModal({
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
+        shiftForCanvasOffset(tgtPos);
         // Must match sphere-phase scale + facing tilt exactly, or the card jumps on the last
         // frame when snapToSphereSlot runs.
         tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);

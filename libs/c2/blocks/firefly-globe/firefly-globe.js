@@ -147,7 +147,6 @@ const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the 
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
 const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
 
-const SPHERE_ORIENT_RESET_T = 0.02;
 const TEXT_APPEAR_START = 0.10;
 const CURSOR_RETIRE_LEAD_T = 0.02;
 const CANVAS_HIDE_MARGIN_T = 0.05;
@@ -851,6 +850,7 @@ function createGlobeGalleryRuntime(
       return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin);
     },
     getViewport: () => ({ W, H }),
+    getCanvasTop: () => worldEl.getBoundingClientRect().top,
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
@@ -930,8 +930,10 @@ function createGlobeGalleryRuntime(
     else disarmFocusGuard();
   };
 
+  const retireHint = () => { if (frameState.sphereFormed) hintRetired = true; };
+
   const openModalAndDismissHint = (idx, x, y) => {
-    hintRetired = true;
+    retireHint();
     modal.open(idx, x, y);
   };
 
@@ -941,7 +943,7 @@ function createGlobeGalleryRuntime(
     if (modal.getModalIdx() >= 0) a11y?.trackCardOpen(idx);
   };
 
-  const globeFormed = () => frameState.sphereFormed && modal.getModalIdx() < 0;
+  const globeFormed = () => frameState.interactive && modal.getModalIdx() < 0;
   const globeLive = () => globeFormed() && frameState.scrollT < pqAppearT;
 
   a11y = createGalleryA11y({
@@ -968,7 +970,7 @@ function createGlobeGalleryRuntime(
     getVisible: globeLive,
     getHintDismissed: () => hintRetired,
     rotate: (dir) => {
-      hintRetired = true;
+      retireHint();
 
       rotateStep(dir);
     },
@@ -996,7 +998,7 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
-    onDrag: () => { hintRetired = true; },
+    onDrag: retireHint,
   });
 
   function computeFrame(now) {
@@ -1012,12 +1014,23 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
+  const entryRelease = (frame) => (frame.sphereFormed ? 0 : 1 - frame.entryT ** 3);
+
+  let entryReleaseStr = '';
+  function publishEntryRelease(frame) {
+    const str = entryRelease(frame).toFixed(3);
+    if (str === entryReleaseStr) return;
+    entryReleaseStr = str;
+    root.style.setProperty('--fg-entry-release', str);
+  }
+
   function entryLiftPx(frame) {
-    if (frame.sphereFormed) return 0;
+    const release = entryRelease(frame);
+    if (!release) return 0;
     const groupScale = sphereGroup.scale.x || 1;
     const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
     const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - topZ, H);
-    return Math.max(0, H / 2 + navH / 2 - topPx) * (1 - frame.entryT ** 3);
+    return Math.max(0, H / 2 + navH / 2 - topPx) * release;
   }
 
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
@@ -1063,7 +1076,7 @@ function createGlobeGalleryRuntime(
     // frozen (modal open): holds its rotation. !interactive (still folding): no new drag and no
     // auto-spin, but inertia keeps coasting.
     const frozen = modal.getModalIdx() >= 0;
-    const interactive = frame.sphereFormed;
+    const { interactive } = frame;
     // Consume the banked travel; anything but held-and-live drops it (no pooling on resume).
     const holding = drag.isDragging && !frozen && interactive;
     let stepX = 0;
@@ -1134,7 +1147,7 @@ function createGlobeGalleryRuntime(
     // Fast-path flag so the rotation math can be skipped when upright.
     const sphereRotActive = (sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0);
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
-    if (frame.entryT < SPHERE_ORIENT_RESET_T && !focusSnapPending) {
+    if (!interactive && !focusSnapPending) {
       resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;
@@ -1454,6 +1467,7 @@ function createGlobeGalleryRuntime(
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
     updatePullQuote(frame);
+    publishEntryRelease(frame);
 
     renderer.sortObjects = true;
 
@@ -1821,6 +1835,7 @@ function createGlobeGalleryRuntime(
     pq.splitW = 0;
     pqAppearT = 1;
     canvasHidden = false;
+    entryReleaseStr = '';
     focusSnapPending = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();

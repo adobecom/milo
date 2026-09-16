@@ -47,23 +47,31 @@ so it is the a11y card label and the modal's sr-only image label.
 
 ## Phases
 
-`sphereFormed` (`entryT >= 1`, i.e. `scrollY >= blockDocTop`, the world pinned) is globe-gallery's
-`interactive` gate: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag
-warp, no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-
-open and keyboard entry are all off. Reduced motion is always formed.
+`interactive` (`entryT >= SPHERE_INTERACTIVE_T`, `src/utils.js`) is globe-gallery's gate, on the
+entry clock: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag warp,
+no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
+and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
+drags and opens cards before the world pins. `sphereFormed` (`entryT >= 1`, the world pinned) is a
+separate gate for what must wait for the pin: the travel camera, the entry lift's release, the
+inside-sphere drag flip, and retiring the hint (`retireHint`: a drag, rotate or card opened before
+the pin leaves the cursor pill and the text plane in place, so both go out together, after the pin).
+Reduced motion is always formed and interactive.
 
 The view offset also carries an entry lift (`entryLiftPx`): the top edge of the cards — the barrel's
 front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
 distance, is held at the canvas top and released by `1 − entryT³`, so the block scrolls in with no
 empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
-`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph.
+`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph. The same release factor is
+published as `--fg-entry-release` (1 while scrolling in, 0 at the pin) and the spin toggle subtracts
+`--fg-nav-h · --fg-entry-release` from `--fg-controls-top`, so it sits `--fg-controls-inset` below the
+world's top edge during the entry and under the nav once pinned.
 
 From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
 `cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
-at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only below
-`SPHERE_ORIENT_RESET_T`.
+at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only while not
+yet interactive.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
 `LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than
@@ -131,16 +139,20 @@ globe-gallery's WebGL plane (`buildTextMesh`, `TEXT_FRAG`), sphere geometry only
 reaches 0 as the world pins and the globe goes live. Scale tracks `camera.position.z` down to
 `CAM_Z_SPHERE`, holding apparent size through the entry; from the pin it stays 1 and the plane
 grows as the camera travels toward it. Opacity rests at
-`TEXT_OPACITY_RESTING` times `1 − scrollT / pqAppearT`; `uZoom` is `scrollT`. The first drag or
-tap-to-open flips `hintRetired`, and `hintExitT` runs itself 0→1 at `HINT_EXIT_RATE` regardless of the
-gesture. `buildTextMesh` does not create the plane when `entryT` is already past
+`TEXT_OPACITY_RESTING` times `1 − scrollT / pqAppearT`; `uZoom` is `scrollT`. The first drag,
+rotate or tap-to-open after the pin flips `hintRetired` (`retireHint`), and `hintExitT` runs itself
+0→1 at `HINT_EXIT_RATE` regardless of the gesture. `buildTextMesh` does not create the plane when `entryT` is already past
 `TEXT_APPEAR_START` by the time the font loads, so it never pops in mid-entry.
 
 ## Modal and the sticky canvas
 
-The modal can only open once the world is pinned, so the main canvas and the viewport-fixed modal
-canvas share an origin and `modal.js` needs no offset — it is globe-gallery's file plus the model
-icon/label, prompt and CTA rendering.
+`modal.js` is globe-gallery's file plus the model icon/label, prompt and CTA rendering, and one
+offset: the modal canvas is viewport-fixed while the world canvas, until it pins, sits
+`getCanvasTop()` (the world's viewport top) lower. `shiftForCanvasOffset` moves the snapshot the
+opening animation starts from and the slot the closing animation lands on by that many pixels,
+converted to world units at the card's depth, so the card leaves and returns exactly where it is
+drawn. The offset is re-read when the close starts, so a scroll that slips through the lock while
+the modal is open still lands the card on its slot.
 
 The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
 only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself

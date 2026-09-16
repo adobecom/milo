@@ -36,6 +36,8 @@ export function travelTAtCamZ(z, camZSphere, camZEnd) {
   return 1 - ((1 - eased) ** (1 / 3));
 }
 
+export const SPHERE_INTERACTIVE_T = 0.02;
+
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
@@ -51,6 +53,7 @@ export function createFrame() {
     entryT: 0,
     scrollT: 0,
     sphereFormed: false,
+    interactive: false,
     activeCamera: null,
     sphereRotActive: false,
     sphGroupZ: 0,
@@ -85,5 +88,6 @@ export function deriveFrame(frame, input) {
   frame.entryT = clamp01(1 + (scrollY - blockDocTop) / Math.max(1, viewportH));
   frame.scrollT = clamp01((scrollY - blockDocTop) / Math.max(1, blockHeight));
   frame.sphereFormed = frame.entryT >= 1;
+  frame.interactive = frame.entryT >= SPHERE_INTERACTIVE_T;
   return frame;
 }

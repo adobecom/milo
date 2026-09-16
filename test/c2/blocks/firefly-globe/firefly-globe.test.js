@@ -393,6 +393,7 @@ describe('firefly-globe: frame state', () => {
       entryT: 0,
       scrollT: 0,
       sphereFormed: false,
+      interactive: false,
       activeCamera: null,
       sphereRotActive: false,
       sphGroupZ: 0,
@@ -415,6 +416,14 @@ describe('firefly-globe: frame state', () => {
     expect(derive(1000).entryT).to.equal(1);
     expect(derive(999).sphereFormed).to.equal(false);
     expect(derive(1000).sphereFormed).to.equal(true);
+  });
+
+  it('interactive opens at SPHERE_INTERACTIVE_T of the entry, before the pin', () => {
+    const at = (entryT) => derive(1000 - 800 * (1 - entryT));
+    expect(at(0).interactive).to.equal(false);
+    expect(at(TL.SPHERE_INTERACTIVE_T).interactive).to.equal(true);
+    expect(at(0.5).interactive).to.equal(true);
+    expect(at(0.5).sphereFormed).to.equal(false);
   });
 
   it('scrollT is 0 at the pin and 1 when the block bottom passes the viewport top', () => {

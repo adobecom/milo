@@ -175,7 +175,7 @@
 
 .firefly-globe-spin-toggle {
   position: absolute;
-  top: var(--fg-controls-top);
+  top: calc(var(--fg-controls-top) - var(--fg-nav-h) * var(--fg-entry-release, 0));
   inset-inline-end: var(--fg-controls-inset);
 }
 
