@@ -123,6 +123,28 @@ describe('Fragments', () => {
     expect(marquee.innerHTML.includes('This marquee content is pulled from a fragment')).to.be.true;
   });
 
+  it('Resolves a fragment nested inside a row insert without leftover section wrappers', async () => {
+    const parent = document.createElement('div');
+    const rowContainer = document.createElement('div');
+    rowContainer.setAttribute('data-mep-replace-type', 'row');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/row-insert#_inline';
+    rowContainer.appendChild(a);
+    parent.appendChild(rowContainer);
+    document.body.appendChild(parent);
+
+    await getFragment(a);
+
+    const row = parent.querySelector(':scope > div');
+    expect(row).to.exist;
+    expect(row.querySelector('.section')).to.not.exist;
+    expect(row.querySelector('[data-block]')).to.not.exist;
+    expect(row.innerHTML.includes('Nested cell content')).to.be.true;
+    expect(row.querySelector('[data-path*="nested-cell-content"]')).to.exist;
+
+    parent.remove();
+  });
+
   it('Does not inline fragments inside a block in DO_NOT_INLINE list', async () => {
     const cols = document.querySelector('.columns-section');
     await loadArea(cols);
