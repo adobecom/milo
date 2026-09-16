@@ -127,7 +127,7 @@ function generateCheckboxGroups(checkboxGroups) {
   return groups;
 }
 
-// Plans (uber-pricing) uses a plain-HTML filter bar + left drawer instead of
+// Plans (product-pricing) uses a plain-HTML filter bar + left drawer instead of
 // the SWC sidenav. Both write filter/types to the URL hash; the collection
 // re-filters via its own hashchange listener. Group cards, pills, and filter
 // wiring are added in later phases.
@@ -598,7 +598,7 @@ export async function createCollection(el, options) {
       const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
       window.history.pushState({}, '', newUrl);
     }
-    if (collection.variant === 'uber-pricing') {
+    if (collection.variant === 'product-pricing') {
       mountPlansFilter(collection, container);
     } else {
       const sidenav = await getSidenav(collection);
