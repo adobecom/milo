@@ -166,7 +166,7 @@ function cloneSlides(carouselEls) {
   const cloneBack = slides.slice(0, SLIDES_TO_SHOW).map(createSlideClone);
   const cloneFront = slides.slice(-SLIDES_TO_SHOW).map(createSlideClone);
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
-  allSlides.forEach((slide) => {
+  slides.forEach((slide) => {
     slide.querySelectorAll('img').forEach((img) => {
       img?.setAttribute('loading', 'eager');
     });
