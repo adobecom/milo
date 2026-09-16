@@ -1597,8 +1597,6 @@ function createGlobeGalleryRuntime(
     reducedMotion = prefersReducedMotion();
     root.classList.toggle('firefly-globe-reduced', reducedMotion);
 
-    canvas.style.position = 'absolute';
-
     W = window.innerWidth;
     H = measureViewportH();
 
