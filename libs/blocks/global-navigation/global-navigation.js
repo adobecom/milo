@@ -1137,6 +1137,7 @@ class Gnav {
       { mode: 'async' },
     );
 
+    let teardownActiveDialog;
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1153,15 +1154,6 @@ class Gnav {
       showDialog: async (element, _, closeCallback) => {
         const modalId = document.activeElement?.getAttribute('data-modal-id');
         const modalHash = modalId ? `#${modalId}` : '';
-        let restoreUrl;
-        if (modalHash) {
-          restoreUrl = window.location.hash === modalHash
-            ? `${window.location.pathname}${window.location.search}`
-            : `${window.location.pathname}${window.location.search}${window.location.hash}`;
-          if (window.location.hash !== modalHash) {
-            window.history.pushState(window.history.state, '', modalHash);
-          }
-        }
         const isIframe = element.tagName === 'IFRAME';
         if (isIframe) {
           await Promise.all([
@@ -1169,54 +1161,88 @@ class Gnav {
             import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
           ]);
         }
-        document.getElementById('aup-workflow-dialog')?.remove();
-        const dialog = document.createElement('dialog');
-        dialog.id = 'aup-workflow-dialog';
+        teardownActiveDialog?.();
+        let dialog;
         let finishLoading;
-        if (isIframe) {
-          const spinner = toFragment`
-            <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
-              <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
-            </sp-theme>`;
-          dialog.classList.add('loading');
-          dialog.appendChild(spinner);
-          finishLoading = () => {
-            element.removeEventListener('load', finishLoading);
-            dialog.classList.remove('loading');
-            spinner.remove();
-          };
-          element.addEventListener('load', finishLoading, { once: true });
-        }
-        dialog.appendChild(element);
-        document.body.appendChild(dialog);
+        let closeDialog;
+        let onDialogCancel;
+        let onDialogClick;
+        let restoreUrl;
+        let isTornDown = false;
         const retainModalHash = () => { restoreUrl = undefined; };
-        element.addEventListener('success', retainModalHash, { once: true });
-        element.addEventListener('close', () => {
+        const teardown = (restoreHash = true) => {
+          if (isTornDown) return;
+          isTornDown = true;
           finishLoading?.();
           element.removeEventListener('success', retainModalHash);
-          if (restoreUrl && window.location.hash === modalHash) {
+          element.removeEventListener('close', closeDialog);
+          dialog?.removeEventListener('cancel', onDialogCancel);
+          dialog?.removeEventListener('click', onDialogClick);
+          if (dialog?.open) dialog.close();
+          dialog?.remove();
+          document.documentElement.classList.remove('disable-scroll');
+          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          if (restoreHash && restoreUrl && window.location.hash === modalHash) {
             window.history.pushState(window.history.state, '', restoreUrl);
           }
+        };
+        closeDialog = () => {
+          teardown();
           closeCallback({ type: 'close' });
-          dialog.close();
-          dialog.remove();
-          document.documentElement.classList.remove('disable-scroll');
-        }, { once: true });
+        };
         const cancel = () => {
           // The orchestrator settles on cancel; close releases its event listeners.
           element.dispatchEvent(new Event('cancel'));
           element.dispatchEvent(new Event('close'));
         };
-        dialog.addEventListener('cancel', (e) => {
+        onDialogCancel = (e) => {
           if (e.target !== dialog) return;
           e.preventDefault();
           cancel();
-        });
-        dialog.addEventListener('click', (e) => {
+        };
+        onDialogClick = (e) => {
           if (e.target === dialog) cancel();
-        });
-        document.documentElement.classList.add('disable-scroll');
-        dialog.showModal();
+        };
+        try {
+          dialog = document.createElement('dialog');
+          dialog.id = 'aup-workflow-dialog';
+          if (isIframe) {
+            const spinner = toFragment`
+              <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+                <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+              </sp-theme>`;
+            dialog.classList.add('loading');
+            dialog.appendChild(spinner);
+            finishLoading = () => {
+              element.removeEventListener('load', finishLoading);
+              dialog.classList.remove('loading');
+              spinner.remove();
+              finishLoading = undefined;
+            };
+            element.addEventListener('load', finishLoading, { once: true });
+          }
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          element.addEventListener('success', retainModalHash, { once: true });
+          element.addEventListener('close', closeDialog, { once: true });
+          dialog.addEventListener('cancel', onDialogCancel);
+          dialog.addEventListener('click', onDialogClick);
+          teardownActiveDialog = teardown;
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+          if (modalHash) {
+            const previousUrl = window.location.hash === modalHash
+              ? `${window.location.pathname}${window.location.search}`
+              : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+            if (window.location.hash !== modalHash) {
+              window.history.pushState(window.history.state, '', modalHash);
+            }
+            restoreUrl = previousUrl;
+          }
+        } catch (e) {
+          teardown();
+          throw e;
+        }
       },
     });
 
