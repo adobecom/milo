@@ -561,10 +561,10 @@ describe('global navigation', () => {
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
         expect(hashchange.called).to.be.false;
         successfulWorkflow.dispatchEvent(new Event('success'));
-        successfulWorkflow.dispatchEvent(new Event('close'));
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
+        successfulWorkflow.dispatchEvent(new Event('close'));
+        expect(window.location.href).to.equal(originalUrl);
 
-        window.history.replaceState(null, '', originalUrl);
         const canceledWorkflow = document.createElement('div');
         cta.focus();
         await showDialog(canceledWorkflow, {}, sinon.spy());
@@ -664,7 +664,6 @@ describe('global navigation', () => {
         const activeDialog = document.getElementById('aup-workflow-dialog');
         expect(window.location.hash).to.equal('#second-modal');
         expect(activeDialog.contains(secondWorkflow)).to.be.true;
-        expect(removeListener.calledWith('success')).to.be.true;
         expect(removeListener.calledWith('close')).to.be.true;
 
         firstWorkflow.dispatchEvent(new Event('success'));

@@ -1169,12 +1169,10 @@ class Gnav {
         let onDialogClick;
         let restoreUrl;
         let isTornDown = false;
-        const retainModalHash = () => { restoreUrl = undefined; };
         const teardown = (restoreHash = true) => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
-          element.removeEventListener('success', retainModalHash);
           element.removeEventListener('close', closeDialog);
           dialog?.removeEventListener('cancel', onDialogCancel);
           dialog?.removeEventListener('click', onDialogClick);
@@ -1223,7 +1221,6 @@ class Gnav {
           }
           dialog.appendChild(element);
           document.body.appendChild(dialog);
-          element.addEventListener('success', retainModalHash, { once: true });
           element.addEventListener('close', closeDialog, { once: true });
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
