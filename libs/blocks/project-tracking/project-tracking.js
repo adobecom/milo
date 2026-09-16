@@ -274,6 +274,9 @@ export default async function init(block) {
     results.replaceChildren(createTag('p', { class: 'pt-muted' }, 'Checking…'));
     try {
       const data = await client.post('/project-status', { urls: uniqueApis });
+      if (!Array.isArray(data) || data.length !== uniqueApis.length) {
+        throw new Error('unexpected project-status response');
+      }
       const byApi = new Map(uniqueApis.map((api, i) => [api, data[i]]));
       rows = pairs.map(({ original, api }) => ({ ...(byApi.get(api) ?? {}), url: original }));
       view.page = 1;

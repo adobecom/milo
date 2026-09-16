@@ -1,5 +1,8 @@
+import { getConfig } from '../../utils/utils.js';
+
 const DEFAULT_LOCAL = 'http://localhost:8080';
 const PROD_BACKEND = 'https://milo-core-prod.adobe.io';
+const STAGE_BACKEND = 'https://milo-core-stage.adobe.io';
 const IMS_CLIENT_ID = 'milo-logs-claude-mcp';
 const IMS_INSTANCE = 'miloCoreIms';
 const TOKEN_KEY = 'milocore.ims.token';
@@ -17,7 +20,7 @@ function imsEnv(base) {
 }
 
 function relayOriginFor(env) {
-  return env === 'prod' ? PROD_BACKEND : 'https://milo-core-stage.adobe.io';
+  return env === 'prod' ? PROD_BACKEND : STAGE_BACKEND;
 }
 
 let relayedToken = null;
@@ -67,9 +70,12 @@ function loadIms(base) {
       const relayOrigin = relayOriginFor(env);
       listenForRelay(relayOrigin);
       if (!window.adobeImsFactory) {
+        const libsBase = getConfig().miloLibs || getConfig().codeRoot;
         await new Promise((resolve, reject) => {
           const el = document.createElement('script');
-          el.src = 'https://auth.services.adobe.com/imslib/imslib.min.js';
+          el.src = libsBase
+            ? `${libsBase}/deps/imslib.min.js`
+            : 'https://auth.services.adobe.com/imslib/imslib.min.js';
           el.addEventListener('load', resolve, { once: true });
           el.addEventListener('error', () => reject(new Error('imslib failed')), { once: true });
           document.head.appendChild(el);
@@ -117,11 +123,11 @@ function readConfig(block) {
 export async function resolveContext(block) {
   const cfg = readConfig(block);
   const base = cfg.api || defaultBase();
-  if (!cfg.token && base !== DEFAULT_LOCAL) await loadIms(base);
+  if (base !== DEFAULT_LOCAL) await loadIms(base);
   return {
     base,
     clientId: cfg.clientid || IMS_CLIENT_ID,
-    getToken: () => cfg.token || currentToken(),
+    getToken: () => currentToken(),
   };
 }
 
