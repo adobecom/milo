@@ -1,0 +1,35 @@
+.pill-group {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-md);
+
+  ul {
+    --pill-gap: var(--s2a-spacing-2xs);
+
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--pill-gap);
+  }
+}
+
+.pill-group [class*="heading-"] {
+  text-align: center;
+}
+
+.pill-group-cta {
+  border-color: var(--s2a-color-transparent-black-00);
+  background: var(--s2a-color-gray-900);
+  color: var(--s2a-color-gray-25);
+
+  &:hover {
+    background: var(--s2a-color-gray-25);
+    color: var(--s2a-color-gray-1000);
+  }
+}
