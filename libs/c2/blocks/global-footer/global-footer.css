@@ -365,7 +365,7 @@ span.feds-footer-privacyLink-divider {
   "legal";
   row-gap: var(--s2a-spacing-lg);
   align-items: start;
-  margin: 0;
+  row-gap: 0;
   padding-top: var(--s2a-layout-sm);
   padding-bottom: var(--s2a-layout-md);
 }
@@ -375,17 +375,24 @@ span.feds-footer-privacyLink-divider {
   display: flex;
   align-items: center;
   column-gap: var(--s2a-spacing-md);
-  row-gap: var(--s2a-spacing-xs);
+  row-gap: var(--s2a-spacing-xl);
   flex-wrap: wrap;
 }
 
 .global-footer.event .feds-footer-options > .feds-footer-contactSupport {
   grid-area: support;
+  margin-top: var(--s2a-spacing-lg);
 }
 
 .global-footer.event .feds-footer-options > .feds-social {
   grid-area: social;
   justify-self: start;
+  margin-top: var(--s2a-layout-md);
+}
+
+.global-footer.event .feds-footer-options > .feds-footer-miscLinks-legal {
+  grid-area: legal;
+  margin-top: var(--s2a-spacing-3xl);
 }
 
 .global-footer.event .feds-footer-mailingList-text {

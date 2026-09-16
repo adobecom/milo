@@ -807,7 +807,7 @@ class Footer {
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
       ${isEventVersion ? this.elements.mailingList : ''}
-      ${this.elements.regionPicker}
+      ${isEventVersion ? '' : this.elements.regionPicker}
       ${isEventVersion ? this.elements.social : ''}
       ${isEventVersion ? this.elements.contactSupport : ''}
       <div class="feds-footer-miscLinks-legal">
