@@ -387,10 +387,22 @@ const decoratePromo = async (elem, index) => {
     </div>`;
 };
 
-const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {}) => {
+const decorateColumns = async ({
+  content,
+  separatorTagName = 'H5',
+  context,
+  opened = false,
+} = {}) => {
   const hasMultipleColumns = content.children.length > 1;
   // Headline index is defined in the context of a whole menu
   let headlineIndex = 0;
+
+  // POC (MWPW submenu perf): when the menu is opened, we reserve each item's DOM
+  // position synchronously (in order) and kick its mas-field/aem-fragment resolution
+  // off without awaiting, collecting the readiness promises here. The whole batch is
+  // awaited before decorateColumns returns, so the atomic (CLS-safe) reveal is
+  // preserved - the fields just resolve in parallel instead of one-at-a-time.
+  const pending = [];
 
   // The resulting template structure should follow these rules:
   // * a menu can have multiple columns;
@@ -445,7 +457,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
           const wideColumn = document.createElement('div');
           wideColumn.append(...column.childNodes);
           menuItems.append(wideColumn);
-          await decorateColumns({ content: menuItems, context });
+          await decorateColumns({ content: menuItems, context, opened });
         }
       } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
@@ -453,15 +465,46 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         // Since the promo is alone on a column, reset the analytics index
         itemIndex.position = 0;
 
-        const promoElem = await decoratePromo(columnElem, itemIndex);
-
-        itemDestination.append(promoElem);
+        if (opened) {
+          // Reserve the promo's slot, resolve it concurrently, swap when ready.
+          const srcElem = columnElem;
+          const placeholder = toFragment`<div></div>`;
+          itemDestination.append(placeholder);
+          // decoratePromo runs synchronously up to its first await, kicking off the
+          // fragment fetch now; detach srcElem so the while-loop advances this tick.
+          const promoPromise = decoratePromo(srcElem, { position: 0 })
+            .then((promoElem) => placeholder.replaceWith(promoElem));
+          srcElem.remove();
+          pending.push(promoPromise);
+        } else {
+          const promoElem = await decoratePromo(columnElem, itemIndex);
+          itemDestination.append(promoElem);
+        }
       } else if (columnElem.matches('.gnav-image')) {
         resetDestination();
         itemIndex.position = 0;
         const imageElem = decorateGnavImage(columnElem, itemIndex);
 
         itemDestination.append(imageElem);
+      } else if (opened && columnElem.matches('a, .link-group')) {
+        // A single link/link-group decorates to an <li>. Reserve an ordered <li> in
+        // the destination <ul> now (preserving item order), resolve the field
+        // concurrently, then swap the placeholder for the real <li> when ready.
+        const elemDestination = menuItems || itemDestination;
+        let ul = elemDestination.querySelector('ul');
+        if (!ul) {
+          ul = toFragment`<ul></ul>`;
+          elemDestination.append(ul);
+        }
+        const liPlaceholder = toFragment`<li></li>`;
+        ul.append(liPlaceholder);
+        const srcElem = columnElem;
+        // decorateElements runs synchronously up to its first await (capturing the
+        // analytics index and cloning the merch link), kicking off the fetch now.
+        const linkPromise = decorateElements({ elem: srcElem, itemIndex })
+          .then((decoratedElem) => liPlaceholder.replaceWith(decoratedElem));
+        columnElem.remove();
+        pending.push(linkPromise);
       } else {
         let decoratedElem = await decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
@@ -493,6 +536,11 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
     // Replace column with parsed template
     column.replaceWith(wrapper);
   }
+
+  // Wait for all concurrently-resolving fields before returning, so the caller's
+  // atomic reveal (removal of display:none) still happens only once everything is
+  // rendered - same CLS guarantee, resolved in parallel instead of serially.
+  if (pending.length) await Promise.all(pending);
 };
 
 const decorateCrossCloudMenu = async (content) => {
@@ -568,7 +616,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     menuTemplate.style.setProperty('display', 'none');
     config.template?.append(menuTemplate);
 
-    await decorateColumns({ content: menuContent });
+    await decorateColumns({ content: menuContent, opened: config.opened });
 
     if (getActiveLink(menuTemplate) instanceof HTMLElement) {
       // Special handling on desktop, as content is loaded async;
@@ -612,6 +660,10 @@ const decorateMenu = (config) => logErrorFor(async () => {
   // Already attached for asyncDropdownTrigger; append here is a no-op for it in that case.
   config.template?.append(menuTemplate);
   if (config.type === 'asyncDropdownTrigger') {
+    // POC measurement: mark the moment the submenu becomes visible (display:none
+    // removed) so reveal latency can be read faithfully, e.g.
+    // performance.getEntriesByName(`gnav-submenu-reveal-${n}`)[0].startTime
+    performance.mark(`gnav-submenu-reveal-${asyncDropDownCount}${config.opened ? '-opened' : '-prefetch'}`);
     menuTemplate.style.removeProperty('display');
     setAriaAtributes(menuTemplate.previousElementSibling);
     performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);

@@ -1780,9 +1780,12 @@ class Gnav {
       let desktopMegaMenuHTML = null;
       let mobileNavCleanup = () => {};
 
-      const decorateDropdown = () => logErrorFor(async () => {
+      const decorateDropdown = (evtOrOpened) => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
+        // The click listener passes a MouseEvent (user open); the prefetch setTimeout
+        // passes nothing. Only a real open resolves the menu's fields in parallel.
+        const opened = evtOrOpened instanceof Event;
 
         const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         (async () => {
@@ -1793,6 +1796,9 @@ class Gnav {
               item,
               template,
               type: itemType,
+              // Only the user-open path resolves the menu's fields in parallel;
+              // the prefetch timer keeps the original serial behaviour.
+              opened,
             });
             // There are two calls to transformTemplateToMobile
             // One without awaiting decorateMenu, and one after
@@ -1883,6 +1889,8 @@ class Gnav {
         }
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
+      // A user open (click) triggers the parallel field-resolution path; the 800ms
+      // prefetch timer below stays on the original serial path.
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
