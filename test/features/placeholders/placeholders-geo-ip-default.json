@@ -1,0 +1,13 @@
+{
+  "total": 4,
+  "offset": 0,
+  "limit": 4,
+  "data": [
+    { "key": "hello-geo-ip", "default": "hello DEFAULT", "US": "hello US", "AR": "--none--" },
+    { "key": "phone-number-geo-ip", "default": "+1 000 000 0000", "AR": "+54 800 222 2222" },
+    { "key": "explicit-only-geo-ip", "default": "--none--", "AR": "only AR" },
+    { "key": "unlisted-thing-geo-ip", "default": "" }
+  ],
+  "columns": ["key", "default", "US", "AR"],
+  ":type": "sheet"
+}

@@ -3,11 +3,6 @@ import { getSiteEnvKey } from './helix-client.js';
 export default function SiteConfig(org, repo, lingoConfigMap) {
   const key = getSiteEnvKey(org, repo);
 
-  function loadAdminToken() {
-    const tokenKey = `AEM_ADMIN_TOKEN_${key}`;
-    return process.env[tokenKey];
-  }
-
   function loadPreviewRoots() {
     const previewIndexKey = process.env[`PREVIEW_INDEX_KEY_${key}`];
     return lingoConfigMap[previewIndexKey] || [];
@@ -51,7 +46,6 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
       .replaceAll('_', '-');
   }
 
-  const adminToken = loadAdminToken();
   const previewRoots = loadPreviewRoots();
   const canIncludePath = buildPathTester(key);
   const previewIndexFilePath = loadPreviewIndexFilePath();
@@ -61,7 +55,6 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
     repo,
     key,
     lingoConfigMap,
-    adminToken,
     previewRoots,
     canIncludePath,
     previewIndexFilePath,
@@ -86,13 +79,10 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
     sanitizeRegionName,
 
     isValid() {
-      return adminToken && previewRoots.length > 0;
+      return previewRoots.length > 0;
     },
 
     getValidationError() {
-      if (!adminToken) {
-        return `Admin token not found for ${org}/${repo}`;
-      }
       if (!previewRoots.length) {
         return `Preview roots are not setup for ${org}/${repo}`;
       }

@@ -23,6 +23,10 @@ div.accordion:not(.descr-list) {
   line-height: var(--type-body-s-lh);
 }
 
+.accordion .descr-details.is-collapsed {
+  display: none;
+}
+
 .accordion-expand-all {
   display: flex;
   flex-wrap: wrap;
