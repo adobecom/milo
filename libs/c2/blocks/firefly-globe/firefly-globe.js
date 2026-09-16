@@ -21,6 +21,25 @@ import {
 
 const CARD_ASPECT = 456 / 631;
 
+const ICON_BASE_URL = new URL('./icons/', import.meta.url).href;
+const MODEL_ICON = {
+  google: 'google-icon.svg',
+  openai: 'gpt-icon.svg',
+  flux: 'flux-icon.svg',
+  ideogram: 'ideogram-icon.svg',
+  kling: 'kling-icon.svg',
+  luma: 'luma-icon.svg',
+  pika: 'pika-icon.svg',
+  runway: 'runway-icon.svg',
+  seedance: 'seedance-icon.svg',
+  topaz: 'topaz-icon.svg',
+  firefly: 'firefly-icon.svg',
+};
+const modelIconUrl = (modelId) => {
+  const file = MODEL_ICON[modelId?.toLowerCase()];
+  return file ? `${ICON_BASE_URL}${file}` : '';
+};
+
 function sphereCardScale(srcAspect) {
   const a = Number.isFinite(srcAspect) && srcAspect > 0 ? srcAspect : CARD_ASPECT;
   const stretch = Math.sqrt(a / CARD_ASPECT);
@@ -359,6 +378,8 @@ function createGlobeGalleryRuntime(
   let textMesh = null;
   let hintRetired = false;
   let hintExitT = 0;
+  let lastHoverTipIdx = -1;
+  const hoverTipPos = new THREE.Vector3();
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
   // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
   // Euler order 'XYZ' is load-bearing.
@@ -1152,6 +1173,50 @@ function createGlobeGalleryRuntime(
     hintExitT = Math.min(1, hintExitT + frame.dtScale * HINT_EXIT_RATE);
   }
 
+  function updateHoverTooltip() {
+    const tipEl = q('.firefly-globe-hover-card');
+    if (!tipEl || !camera) {
+      if (tipEl) tipEl.style.opacity = '0';
+      return;
+    }
+
+    let hovIdx = -1;
+    let maxT = 0.01;
+    for (let i = 0; i < cards.length; i += 1) {
+      if (cards[i].hoverT > maxT) { maxT = cards[i].hoverT; hovIdx = i; }
+    }
+
+    if (hovIdx < 0 || modal.getModalIdx() >= 0) {
+      tipEl.style.opacity = '0';
+      lastHoverTipIdx = -1;
+      return;
+    }
+
+    if (hovIdx !== lastHoverTipIdx) {
+      lastHoverTipIdx = hovIdx;
+      const meta = getCardMetadata(hovIdx);
+      const iconEl = tipEl.querySelector('.firefly-globe-hover-avatar');
+      const nameEl = tipEl.querySelector('.firefly-globe-hover-name');
+      const promptEl = tipEl.querySelector('.firefly-globe-hover-prompt');
+      const iconUrl = modelIconUrl(meta.modelId);
+      if (iconEl) {
+        iconEl.src = iconUrl || '';
+        iconEl.style.display = iconUrl ? '' : 'none';
+      }
+      if (nameEl) nameEl.textContent = meta.modelVersionName || meta.modelId || meta.name || '';
+      if (promptEl) promptEl.textContent = meta.prompt || '';
+    }
+
+    const card = cards[hovIdx];
+    card.mesh.getWorldPosition(hoverTipPos);
+    camera.updateMatrixWorld();
+    hoverTipPos.project(camera);
+    const sx = (hoverTipPos.x * 0.5 + 0.5) * W;
+    const sy = (-hoverTipPos.y * 0.5 + 0.5) * H;
+    tipEl.style.opacity = String(Math.min(1, maxT * 2));
+    tipEl.style.transform = `translate(calc(${sx}px - 50%), calc(${sy}px - 100% - 12px))`;
+  }
+
   function updateClickDragText() {
     if (!textMesh) return;
     const { uniforms } = textMesh.material;
@@ -1182,6 +1247,7 @@ function createGlobeGalleryRuntime(
     updateCardTransforms(frame);
     updateA11yFocusRing();
     updateHintExit(frame);
+    updateHoverTooltip();
 
     updateClickDragText();
     cursor.update();
@@ -1501,6 +1567,7 @@ function createGlobeGalleryRuntime(
     disposeTextMesh();
     hintRetired = false;
     hintExitT = 0;
+    lastHoverTipIdx = -1;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy();
