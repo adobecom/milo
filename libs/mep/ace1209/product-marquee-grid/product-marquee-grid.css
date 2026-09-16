@@ -142,6 +142,17 @@ body:has(header.local-nav) .product-marquee-grid {
   background-color: var(--s2a-color-gray-1000);
 }
 
+/* transparent-bg variant: translucent block over the page/media. In light mode
+   the card is already #f8f8f8 via the default background-subtle. */
+.transparent-bg.product-marquee-grid {
+  background-color: var(--s2a-color-transparent-white-72);
+}
+
+/* transparent-bg + dark: translucent black block (card surface set at >= 768px). */
+.transparent-bg.dark.product-marquee-grid {
+  background-color: var(--s2a-color-transparent-black-72);
+}
+
 /* MAS variant: stacked on mobile and tablet (< 900px) — foreground grouped at
    the top, promo card pinned to the bottom. Desktop (>= 900px) is side-by-side.
    The non-mas variant keeps its original 768px breakpoint (handled below). */
@@ -275,6 +286,11 @@ body:has(header.local-nav) .product-marquee-grid {
      #000000 hero. */
   .dark.product-marquee-grid .pm-merch-card {
     background: var(--s2a-color-gray-900);
+  }
+
+  /* transparent-bg + dark: translucent black card surface. */
+  .transparent-bg.dark.product-marquee-grid .pm-merch-card {
+    background: var(--s2a-color-transparent-black-32);
   }
 }
 
