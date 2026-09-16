@@ -104,12 +104,13 @@ function generateCheckboxGroups(checkboxGroups) {
   if (!checkboxGroups?.length) return [];
   const groups = [];
   for (const group of checkboxGroups) {
-    const { title, label, deeplink, checkboxes } = group;
+    const { title, label, deeplink, single, checkboxes } = group;
     if (checkboxes?.length) {
       const checkboxGroup = createTag('merch-sidenav-checkbox-group', {
         sidenavCheckboxTitle: title,
         label: label || deeplink,
         deeplink,
+        ...(single ? { single: true } : {}),
       });
       for (const checkbox of checkboxes) {
         const spCheckbox = createTag('sp-checkbox', {
