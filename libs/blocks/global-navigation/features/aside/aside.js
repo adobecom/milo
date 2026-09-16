@@ -25,6 +25,11 @@ export default async function decorateAside({ headerElem, fedsPromoWrapper, prom
   aside.removeAttribute('data-block');
   aside.setAttribute('daa-lh', 'Promo');
 
+  const hasBackgroundImage = !!aside.querySelector(':scope > .background img, :scope > .background picture');
+  if (hasBackgroundImage && !aside.style.backgroundColor) {
+    aside.style.backgroundColor = aside.classList.contains('dark') ? '#000' : '#fff';
+  }
+
   aside.querySelectorAll('a').forEach((link, index) => {
     link.setAttribute('daa-ll', `${processTrackingLabels(link.textContent)}--${index + 1}`);
   });

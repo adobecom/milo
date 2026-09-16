@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { getMetadata as getSectionMetadata } from '../section-metadata/section-metadata.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -399,6 +400,7 @@ function processCellContent(child) {
 }
 
 function isEmptyCellContent(cellDiv) {
+  if (cellDiv.querySelector('.icon-checkmark, .icon-close')) return false;
   const content = cellDiv.textContent.trim();
   return !content || /^-+$/.test(content);
 }
@@ -518,14 +520,25 @@ function setupResponsiveHiding(el) {
 
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
-    replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
-      [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
+    replaceKeyArray(['choose-table-column', 'not-a-feature', 'primary-feature'], getConfig())
+      .then(([ariaLabel, notAFeatureText, primaryFeatureText]) => {
+        [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
-      el.querySelectorAll('.table-cell > .cell-content.empty-cell').forEach((cellDiv) => {
-        if (cellDiv.querySelector('.sr-only')) return;
-        cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
+        el.querySelectorAll('.table-cell > .cell-content').forEach((cellDiv) => {
+          const closeIcon = cellDiv.querySelector('.icon-close');
+          const checkmarkIcon = cellDiv.querySelector('.icon-checkmark');
+          const icon = closeIcon || checkmarkIcon;
+
+          if (icon) {
+            icon.querySelector('title')?.remove();
+            icon.setAttribute('aria-hidden', 'true');
+          } else if (!cellDiv.classList.contains('empty-cell') || cellDiv.querySelector('.sr-only')) {
+            return;
+          }
+
+          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, checkmarkIcon ? primaryFeatureText : notAFeatureText));
+        });
       });
-    });
   });
 }
 
@@ -542,16 +555,7 @@ function setupCollapsingHeader(el) {
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
-  const getNavHeight = () => {
-    const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-    if (!nav) return 0;
-    const pos = getComputedStyle(nav).position;
-    const bottom = (pos === 'fixed' || pos === 'sticky')
-      ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
-    return bottom + (document.querySelector('.feds-localnav')?.offsetHeight ?? 0);
-  };
-
-  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
+  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
@@ -597,8 +601,8 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  const nav = document.querySelector('header > nav') ?? document.querySelector('header');
-  if (nav) new ResizeObserver(syncTop).observe(nav);
+  const header = document.querySelector('header');
+  if (header) new ResizeObserver(syncTop).observe(header);
 
   new ResizeObserver(() => {
     if (!isExpanding) syncHeaderHeight();

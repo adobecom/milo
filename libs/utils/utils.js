@@ -15,7 +15,9 @@ const C1_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'blog-author',
   'brand-concierge',
+  'brand-concierge-global',
   'brick',
   'bulk-publish',
   'bulk-publish-v2',
@@ -111,11 +113,12 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'base-card',
-  'box',
   'brand-concierge',
+  'card-metadata',
   'carousel-c2',
   'comparison-table-c2',
   'elastic-carousel',
+  'email-collection-c2',
   'explore-card',
   'faq',
   'floating-cta',
@@ -134,6 +137,7 @@ const C2_BLOCKS = [
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
+  'quote',
   'region-nav',
   'rich-content',
   'router-marquee',
@@ -174,13 +178,14 @@ const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
+  'hub-hero',
 ];
 
 const ENVS = {
   stage: {
     name: 'stage',
     ims: 'stg1',
-    adobeIO: 'cc-collab-stage.adobe.io',
+    adobeIO: 'pps-stage.adobe.io',
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
@@ -189,7 +194,7 @@ const ENVS = {
   prod: {
     name: 'prod',
     ims: 'prod',
-    adobeIO: 'cc-collab.adobe.io',
+    adobeIO: 'pps.adobe.io',
     adminconsole: 'adminconsole.adobe.com',
     account: 'account.adobe.com',
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
@@ -370,6 +375,12 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export function isAupEnabled(useUniversalNav = false) {
+  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
+    || (new URLSearchParams(window.location.search).get('aup-select')
+      ?? getMetadata('aup-select')) === 'on';
+}
+
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {
@@ -491,6 +502,35 @@ export const getFederatedUrl = (url = '') => {
   }
   return url;
 };
+
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
+  let parsed;
+  try {
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+export function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
 
 function isPathMatch(path, href) {
   if (path.includes('*')) {
@@ -1011,21 +1051,39 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+export function isMasImsLoginEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-ims-login');
+  const metaValue = getMetadata('mas-ims-login');
+  const imsLogin = queryParam ?? metaValue;
+  return imsLogin?.toLowerCase() === 'on';
+}
+
+export function computeDetectedMarketCountry(
+  search,
+  cookieCountry,
+  countryFromGeo,
+  coFromIMS,
+  imsLoginEnabled,
+) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+  const geoCountry = normCountryCode(countryFromGeo);
+  const imsCountry = imsLoginEnabled ? normCountryCode(coFromIMS) : undefined;
+  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
+  const coFromIMS = getCookie('ims_country_code');
   const countryFromGeo = await getCountry();
   return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
+    coFromIMS,
+    isMasImsLoginEnabled(),
   );
 }
 
@@ -1323,6 +1381,8 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
+  const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1354,7 +1414,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1500,6 +1560,8 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
+  if (a.hasAttribute('data-wcs-osi')) return false;
+
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     if (!isTrustedAutoBlock(candidate[key], url)) return false;
@@ -1545,6 +1607,10 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        if (url.hash.startsWith('#transcript')) {
+          a.classList.add('video-transcript-source');
+          import('../features/video-transcript/video-transcript.js');
+        }
         return true;
       }
     }
@@ -1552,6 +1618,14 @@ export function decorateAutoBlock(a) {
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
       return false;
+    }
+
+    // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
+    // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
+    // dependencies out of the critical path when only a field is authored (e.g. in marquee).
+    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+      a.className = 'merch link-block';
+      return true;
     }
 
     a.className = `${key} link-block`;
@@ -1986,7 +2060,7 @@ const getMdValue = (key) => {
   return false;
 };
 
-const getPromoMepEnablement = () => {
+export const getPromoMepEnablement = () => {
   const mds = [
     'apac_manifestnames',
     'emea_manifestnames',
@@ -2027,7 +2101,7 @@ export async function loadIms() {
         return;
       }
       const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
-      const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+      const defaultScope = `AdobeID,openid,gnav,pps.read,read_organizations${unavMeta && unavMeta !== 'off' ? ',firefly_api,additional_info.roles,account_cluster.read' : ''}`;
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
@@ -2048,12 +2122,14 @@ export async function loadIms() {
           clearTimeout(timeout);
         },
         onError: reject,
+        ...adobeid,
         ...(imsGuest === 'on' && {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
+          enableGuestBotDetection: true,
+          guestBotDetectionProvider: 'bfp',
         }),
-        ...adobeid,
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
@@ -2126,7 +2202,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id'];
+  const mepAddons = ['lob'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -2140,6 +2216,141 @@ export function loadMepAddons() {
   return promises;
 }
 
+// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+function isMepNextOverlay() {
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
+}
+
+function initMepOverlay() {
+  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+    .then(({ default: init }) => init());
+}
+
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
+  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
+  return `${baseUrl}/web-components/dist/${component}`;
+}
+
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+  ],
+  merch: [
+    getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
+const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
+  if (block.classList.contains('hide-block')) return null;
+  const { blockPath, hasStyles, name } = getBlockData(block);
+  if (['marquee', 'hero-marquee'].includes(name)) {
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
+  if (!hasStyles) return null;
+  if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
+  return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+}).filter(Boolean);
+
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config, section, isDoc = true) => {
+  if (!lingoActive()) return;
+  const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
+  if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
+export function preloadLcpCodeFiles(area = document) {
+  if (getMetadata('disable-mep-perf-optimization') === 'on') return;
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
+  const config = getConfig();
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    let url;
+    try { url = new URL(a.href); } catch { return; }
+    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+    if (!match) return;
+    const name = Object.keys(match)[0];
+    if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    autoNames.add(name);
+  });
+  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+    autoNames.add('video');
+  }
+  const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+    .filter((el) => !isCommerceBlock(el.classList[0]));
+  const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
+  const allBlocks = [...blocks, ...autoBlockEls];
+  if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
+
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
+  }
+
+  warmGeoIpSheet(config, firstSection);
+
+  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const willDecorateIcons = icons.length && (!iconsExcludeBlocks
+    || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
+  if (willDecorateIcons) {
+    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    loadLink(`${base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
+  }
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -2148,17 +2359,16 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  let countryIPPromise = null;
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
+  preloadLcpCodeFiles();
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = getMepEnablement('mepgeolocation');
   const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
 
   if (!(pzn || pznroc || target || promo || mepParam
@@ -2172,9 +2382,6 @@ async function checkForPageMods() {
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
-  if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountry();
-  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -2216,8 +2423,6 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    countryIPPromise,
-    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
@@ -2369,7 +2574,8 @@ export async function scrollToHashedElement(hash) {
   if (!targetElement) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  if (getMetadata('foundation') === 'c2') {
+  const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
+  if (isC2Gnav) {
     const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
     bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
   }
@@ -2410,11 +2616,8 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
-    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+    if (isMepNextOverlay()) {
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
         .then(({ default: init }) => init());
     } else {
       import('../features/personalization/preview.js')
@@ -2487,6 +2690,15 @@ function getMarketsByRegionPriority(markets, geoIp) {
   return marketsWithPriority.map(({ market }) => market);
 }
 
+function pickPreferredMarket(markets, prefLang, geoIp) {
+  const candidates = markets.filter((m) => m.lang === prefLang);
+  if (!candidates.length) return null;
+  // regionPriorities -> site whose market matches the user's geo -> first-by-order
+  return getMarketsByRegionPriority(candidates, geoIp)?.[0]
+    ?? candidates.find((m) => (m.defaultMarket || '').toLowerCase() === geoIp)
+    ?? candidates[0];
+}
+
 function reserveBannerSpace() {
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
@@ -2547,10 +2759,8 @@ export async function decorateLanguageBanner() {
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
-      market.lang === prefLang
-      && market.supportedRegions.includes(geoIp)
-    ));
+    const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
+    const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
     if (prefMarket) addAndShow(prefMarket);
     else return;
   } else {
@@ -2559,14 +2769,16 @@ export async function decorateLanguageBanner() {
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
     if (useBannerFlow) {
+      // Exclude en-US unless it explicitly lists the geo
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        prefMarketForGeo = pickPreferredMarket(marketsForGeoFiltered, prefLang, geoIp);
         if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
       if (!prefMarketForGeo) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeoFiltered[0]]));
       }
     } else {
       // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
@@ -2689,76 +2901,54 @@ export function partition(arr, fn) {
   );
 }
 
-const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
-const MASLIBS_MAX_LENGTH = 100;
+const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
 
 /**
- * Validates the maslibs URL parameter and returns the MAS base URL.
- * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
- * the resulting host always stays under aem.live (VULN-36379).
- * @param {string} masLibs raw maslibs parameter value
- * @returns {string|null} base URL, or null if the value is missing or invalid
+ * Validates a repo/owner pair intended for use in an *.aem.live host and
+ * returns the resulting origin, or null if either value is missing or does
+ * not look like a safe AEM repo/owner segment. Guards against arbitrary host
+ * injection via the `repo`/`owner` query params (VULN-38270).
+ * @param {string} repo raw repo query parameter value
+ * @param {string} owner raw owner query parameter value
+ * @returns {string|null} origin, or null if repo/owner are missing or invalid
  */
-export function getValidatedMasLibsUrl(masLibs) {
-  if (!masLibs || masLibs.trim() === '') return null;
-  const value = masLibs.trim().toLowerCase();
-  if (value === 'local') return 'http://localhost:3000';
-  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
-  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
-  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+export function getValidatedRepoOwnerOrigin(repo, owner) {
+  if (!repo || !owner) return null;
+  const cleanRepo = repo.trim().toLowerCase();
+  const cleanOwner = owner.trim().toLowerCase();
+  if (
+    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
+  ) return null;
   let url;
   try {
-    url = new URL(`https://${branch}.aem.live`);
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
   } catch {
     // stricter URL parsers (e.g. Node) reject invalid punycode labels
     return null;
   }
-  if (!url.hostname.endsWith('.aem.live')) return null;
+  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
   return url.origin;
 }
 
-function getMasDepUrl(component) {
-  const { hostname } = window.location;
-  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
+const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);
 
-  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
-  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
-  return `${baseUrl}/web-components/dist/${component}`;
+/**
+ * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
+ * repo/owner validation alone can't guarantee a config isn't attacker-owned (VULN-38270).
+ * @param {string} site raw `sharepoint.site` config value
+ * @returns {string|null} the validated site value, or null if unsafe
+ */
+export function getValidatedSharePointSite(site) {
+  if (typeof site !== 'string') return null;
+  return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
 }
-
-const STATIC_BLOCK_DEPS = {
-  'merch-card-autoblock': [
-    getMasDepUrl('lit-all.min.js'),
-    getMasDepUrl('merch-card.js'),
-    getMasDepUrl('merch-quantity-select.js'),
-    getMasDepUrl('mas-field.js'),
-  ],
-  merch: [
-    getMasDepUrl('commerce.js'),
-  ],
-};
-
-const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
-
-export function registerBlockDeps(blockName, ...deps) {
-  blockDeps.set(blockName, deps);
-}
-
-const preloadBlockResources = (blocks = []) => blocks.map((block) => {
-  if (block.classList.contains('hide-block')) return null;
-  const { blockPath, hasStyles, name } = getBlockData(block);
-  if (['marquee', 'hero-marquee'].includes(name)) {
-    const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
-    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
-  }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  (blockDeps.get(name) ?? []).forEach((dep) => {
-    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  });
-  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
-}).filter(Boolean);
 
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
@@ -2833,13 +3023,35 @@ function loadLingoIndexes(area = document) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let jsonLdOptions;
+  let jsonLdInitScheduled = false;
+  const scheduleJsonLdInit = () => {
+    if (!jsonLdOptions || jsonLdInitScheduled) return;
+    jsonLdInitScheduled = true;
+    window.setTimeout(() => {
+      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+        .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
+        .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
+          tags: 'jsonld-graph-manager',
+          severity: 'error',
+        }));
+    }, 0);
+  };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
+    const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+    if (jsonLdFlag === 'true') {
+      jsonLdOptions = {
+        bootScripts: [...document.querySelectorAll('script[type="application/ld+json"]')]
+          .map((scriptEl) => ({ scriptEl, textContent: scriptEl.textContent })),
+      };
+    }
   }
   const config = getConfig();
   const isLingoActive = lingoActive();
@@ -2857,6 +3069,8 @@ export async function loadArea(area = document) {
 
   if (isLingoActive) loadLingoIndexes(area);
 
+  warmGeoIpSheet(config, htmlSections[0], isDoc);
+
   if (isDoc) {
     await decorateDocumentExtras();
     initModalEventListener();
@@ -2873,12 +3087,14 @@ export async function loadArea(area = document) {
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
+    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
+  if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);

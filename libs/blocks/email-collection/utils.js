@@ -113,11 +113,22 @@ export function getPageLocale() {
 const PHONE_FIELD_CONFIG = {
   br: {
     code: '+55',
-    validationPattern: /^\(?\d{2}\)?[\s-]?9\d{4}[-\s]?\d{4}$/,
+    validationPattern: /^\s*(?:\+?55[\s-]?)?\(?\d{2}\)?[\s-]?9\d{4}[-\s]?\d{4}\s*$/,
     icon: getPhoneIconUrl('br-flag.svg'),
     format: (number) => {
-      const digits = number.replace(/\D/g, '');
-      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+      const maxDigits = 11;
+      const d = number.replace(/\D/g, '').slice(-maxDigits);
+      return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    },
+  },
+  in: {
+    code: '+91',
+    validationPattern: /^\s*(?:\+?91[\s-]?|0)?[6-9]\d{4}[\s-]?\d{5}\s*$/,
+    icon: getPhoneIconUrl('in-flag.svg'),
+    format: (number) => {
+      const maxDigits = 10;
+      const d = number.replace(/\D/g, '').slice(-maxDigits);
+      return `${d.slice(0, 5)}-${d.slice(5)}`;
     },
   },
 };
@@ -126,8 +137,10 @@ export function getPhoneFieldConfig() {
   return PHONE_FIELD_CONFIG[getPageLocale()];
 }
 
-export function removePhoneNumberFormat(number) {
-  return number?.replace(/\D/g, '');
+export function normalizePhoneNumber(number) {
+  if (!number) return number;
+  const { format } = getPhoneFieldConfig() ?? {};
+  return (format ? format(number) : number).replace(/\D/g, '');
 }
 
 export function validatePhoneNumber(number) {

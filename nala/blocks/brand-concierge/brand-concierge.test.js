@@ -9,6 +9,23 @@ let webUtil;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+// The floating button's show/hide is driven by a requestAnimationFrame-throttled,
+// passive scroll handler. Webkit (and headless in general) can miss a single
+// programmatic scrollTo, leaving the `bc-floating-hidden` class stale — the main
+// source of flakiness. Re-scroll + re-dispatch on each poll iteration until the
+// button reaches the expected hidden/visible state, instead of a one-shot scroll
+// plus a fixed wait.
+async function pollFloatingState(page, floatingButton, scrollFn, shouldBeHidden) {
+  await expect(async () => {
+    await page.evaluate(scrollFn);
+    if (shouldBeHidden) {
+      await expect(floatingButton).toHaveClass(/bc-floating-hidden/, { timeout: 2000 });
+    } else {
+      await expect(floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 2000 });
+    }
+  }).toPass({ timeout: 20000 });
+}
+
 test.describe('Milo Brand Concierge Block test suite', () => {
   test.beforeEach(async ({ page }) => {
     bc = new BrandConciergeBlock(page);
@@ -269,17 +286,11 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-4: Verify floating button appears after scrolling past hero', async () => {
-        await page.evaluate(() => {
+        await pollFloatingState(page, bc.floatingButton, () => {
           const el = document.querySelector('.brand-concierge.hero');
           window.scrollTo(0, el.scrollHeight + 100);
-          // Webkit doesn't always fire a `scroll` event for programmatic
-          // scrollTo in headless mode, so the BC scroll handler never runs.
-          // Dispatch one manually so the handler updates the bc-floating-hidden
-          // class regardless of browser quirk.
           window.dispatchEvent(new Event('scroll'));
-        });
-        await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
+        }, false);
         expect(await bc.floatingButtonInput.textContent()).toBeTruthy();
       });
 
@@ -496,13 +507,13 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-4: After scrolling past hero, aria-hidden is removed', async () => {
-        await page.evaluate(() => {
+        await pollFloatingState(page, bc.floatingButton, () => {
           const el = document.querySelector('.brand-concierge.hero');
-          if (el) window.scrollTo(0, el.scrollHeight + 1);
-        });
-        await page.waitForTimeout(1000);
-
-        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
+          if (el) {
+            window.scrollTo(0, el.scrollHeight + 1);
+            window.dispatchEvent(new Event('scroll'));
+          }
+        }, false);
         const ariaHidden = await bc.floatingButtonContainer.getAttribute('aria-hidden');
         expect(ariaHidden).toBeNull();
       });
@@ -568,23 +579,19 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-4: Floating button is visible in the middle of the page', async () => {
-        await page.evaluate(() => {
-          // Scroll well past topDelay but well before the footer.
+        // Scroll well past topDelay but well before the footer.
+        await pollFloatingState(page, bc.floatingButton, () => {
           window.scrollTo(0, Math.floor(document.body.scrollHeight / 2));
           window.dispatchEvent(new Event('scroll'));
-        });
-        await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
+        }, false);
       });
 
       await test.step('step-5: Floating button is hidden again near the footer', async () => {
-        await page.evaluate(() => {
-          // Scroll to within anchor-delay distance of the footer.
+        // Scroll to within anchor-delay distance of the footer.
+        await pollFloatingState(page, bc.floatingButton, () => {
           window.scrollTo(0, document.body.scrollHeight);
           window.dispatchEvent(new Event('scroll'));
-        });
-        await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
+        }, true);
       });
 
       await test.step('step-6: Floating button has correct text content', async () => {
@@ -641,7 +648,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — floating-input bar remains attached', async () => {
@@ -656,7 +663,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal — floating-input bar remains attached', async () => {
@@ -746,7 +753,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — floating-input dark bar remains attached', async () => {
@@ -761,7 +768,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal — floating-input dark bar remains attached', async () => {
@@ -853,7 +860,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-8: Close modal via close button — bar remains attached', async () => {
@@ -868,7 +875,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await bc.inputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-10: Close modal via Escape — bar remains attached', async () => {
@@ -965,7 +972,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-9: Close modal via close button — bar remains attached', async () => {
@@ -982,7 +989,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
-        await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount.locator(`text=${data.inputText}`).first()).toBeVisible({ timeout: 10000 });
       });
 
       await test.step('step-11: Close modal via Escape — bar remains attached', async () => {
@@ -1057,7 +1064,10 @@ test.describe('Milo Brand Concierge Block test suite', () => {
 
         await test.step('step-7: Verify marquee background images render', async () => {
           expect(await bc.marqueeImages.count()).toBeGreaterThanOrEqual(data.minimumImageCount);
-          await expect(bc.marqueeImages.first()).toBeVisible();
+          // Marquee authors per-viewport images (mobile-only/tablet-only/
+          // desktop-only), so the first <picture> may be hidden on this
+          // viewport. Assert at least one picture is actually visible.
+          await expect(bc.block.locator('picture:visible').first()).toBeVisible({ timeout: 12000 });
         });
 
         await test.step('step-8: Run accessibility test on the marquee', async () => {

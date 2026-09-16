@@ -7,8 +7,8 @@ function parseColumn(col, isSoftOffer) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
-  const ctaLinkPara = col.querySelector('p:has(em a), p:has(strong a)');
-  const ctaLink = ctaLinkPara?.querySelector('em a, strong a');
+  const ctaLinkPara = col.querySelector('p:has(em a), p:has(strong a), p:has(a[data-wcs-osi])');
+  const ctaLink = ctaLinkPara?.querySelector('em a, strong a, a[data-wcs-osi]');
   ctaLinkPara?.remove();
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');

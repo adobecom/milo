@@ -36,6 +36,29 @@ function getBlockClasses(className) {
   return { name, variants };
 }
 
+const getOrgFlags = (organizations) => {
+  const ORG_TYPE_CCT = 'DIRECT';
+  const ORG_TYPE_CCE = 'Enterprise';
+  const ORG_TYPE_CCE_DEPR = 'INDIRECT';
+  const ROLE_ADMIN = 'GRP_ADMIN';
+
+  const orgs = organizations?.organizations || [];
+  const relevantOrgs = orgs.filter(
+    (org) => org.orgType === ORG_TYPE_CCT
+      || org.orgType === ORG_TYPE_CCE
+      || org.orgType === ORG_TYPE_CCE_DEPR,
+  );
+  const showTeam = relevantOrgs.some(
+    (org) => org.orgType === ORG_TYPE_CCT
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  const showEnterprise = relevantOrgs.some(
+    (org) => (org.orgType === ORG_TYPE_CCE || org.orgType === ORG_TYPE_CCE_DEPR)
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  return { hasOrgs: showTeam || showEnterprise };
+};
+
 class Gnav {
   constructor(body, el) {
     this.el = el;
@@ -477,11 +500,28 @@ class Gnav {
     const accessToken = window.adobeIMS.getAccessToken();
     if (accessToken) {
       const { env } = getConfig();
-      const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
+      let accountId = '';
+      let hasOrgs = false;
+      try {
+        const [imsProfile, organizations] = await Promise.all([
+          window.adobeIMS.getProfile(),
+          window.adobeIMS.getOrganizations(),
+        ]);
+        accountId = imsProfile?.userId || '';
+        hasOrgs = getOrgFlags(organizations).hasOrgs;
+      } catch (e) { /* noop */ }
 
-      if (ioResp.status === 200) {
+      const ioResp = await fetch(`https://${env.adobeIO}/api/profile`, {
+        headers: new Headers({
+          Authorization: `Bearer ${accessToken.token}`,
+          'x-account-id': accountId,
+          'x-api-key': window.adobeid?.client_id,
+        }),
+      });
+
+      if (ioResp.ok) {
         const profile = await import('./gnav-profile.js');
-        profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        profile.default(blockEl, profileEl, this.toggleMenu, ioResp, hasOrgs);
         this.getAppLauncher(profileEl);
       } else {
         await this.decorateSignIn(blockEl, profileEl);

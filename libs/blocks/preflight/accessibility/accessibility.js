@@ -71,7 +71,7 @@ export default function Accessibility() {
               </p>
               <p class="preflight-item-description">
                 ${results.pass
-    ? 'No accessibility issues found.'
+    ? 'No automated issues found. Manual testing still required.'
     : `${results.violations.length} accessibility violations detected.`}
               </p>
               <ul class="summary-list">
@@ -79,9 +79,6 @@ export default function Accessibility() {
                 <li><strong>Test Scope:</strong> body</li>
                 <li><strong>WCAG Tags:</strong> ${AXE_CORE_CONFIG.runOnly?.values?.join(', ') || 'NONE'}</li>
               </ul>
-              <p class="preflight-accessibility-note">
-                <strong>Note:</strong> This test does not include screen reader behavior, focus order, or voice navigation checks.
-              </p>
             </div>
           </div>
         </div>
@@ -167,6 +164,9 @@ export default function Accessibility() {
     `;
   }
   return html`
+  <div class="preflight-accessibility-disclaimer" role="note">
+    <strong>Automated checks only.</strong> Preflight runs automated accessibility tests, which catch only a portion of possible issues. A passing result does not mean the page is fully accessible — manual testing (screen reader, keyboard and focus order, voice navigation) is still required.
+  </div>
   <div class="preflight-columns accessibility-columns">
     ${resultsSummary(testResults, pageURL)}
     <div class="preflight-column violations-column">

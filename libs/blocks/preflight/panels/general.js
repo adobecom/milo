@@ -72,7 +72,7 @@ async function getLocalizationResults() {
   }
 }
 
-async function getStatus(url) {
+export async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   if (!adminUrl) {
     return {

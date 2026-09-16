@@ -398,7 +398,7 @@ const buildForm = ({
     ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
     <h2>${escapeHtml(title)}</h2>
     <fieldset class="nps-radio-group" aria-required="true" aria-describedby="feedback-error">
-      <legend id="nps-question-label">${escapeHtml(radioGroupLabel)} *</legend>
+      <legend id="nps-question-label">${escapeHtml(radioGroupLabel)}</legend>
       <div class="radio-options">
         ${options(radioGroup, npsOptions)}
       </div>

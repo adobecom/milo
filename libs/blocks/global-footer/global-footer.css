@@ -202,6 +202,7 @@
   z-index: 1000;
 }
 
+[dir="rtl"] .global-footer .language-dropdown,
 [dir="rtl"] .global-footer .market-selector-popover {
   left: auto;
   right: 0;

@@ -42,7 +42,7 @@ import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/bl
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -780,6 +780,130 @@ describe('Merch Block', () => {
       expect(result.classList.contains('fill')).not.to.be.true;
       expect(result.classList.contains('con-button')).to.be.true;
     });
+
+    it('pins data-ims-country to the validated market country when mas-geo-detection is on', async () => {
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'US');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us' }] };
+      try {
+        const service = await initService(true);
+        const el = document.createElement('a');
+        el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl');
+        const params = new URLSearchParams({ osi: '123' });
+        const result = await buildCta(el, params);
+        // Signed-in IMS profile in this suite is mocked to 'CH' (see beforeEach), which must
+        // not leak into the checkout link when geo-detection already validated a country.
+        expect(result.dataset.imsCountry).to.equal(service.settings.country);
+        expect(result.dataset.imsCountry).to.not.equal('CH');
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+      }
+    });
+
+    [
+      { akamai: 'AU', expectedCountry: 'AU', expectedLocale: 'en_GB' },
+      { akamai: 'IN', expectedCountry: 'IN', expectedLocale: 'en_GB' },
+    ].forEach(({ akamai, expectedCountry, expectedLocale }) => {
+      it(`sends locale ${expectedLocale} while keeping country ${expectedCountry} for validated market ${akamai} on the EN site`, async () => {
+        const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+        document.head.append(geoDetectionMeta);
+        sessionStorage.setItem('akamai', akamai);
+        getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+        try {
+          const service = await initService(true);
+          expect(service.settings.country).to.equal(expectedCountry);
+          expect(service.settings.locale).to.equal(expectedLocale);
+        } finally {
+          geoDetectionMeta.remove();
+          sessionStorage.removeItem('akamai');
+          delete getConfig().marketsConfig;
+        }
+      });
+    });
+
+    it('resolves en_US to en_GB without a country for validated market GB', async () => {
+      const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'GB');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+      try {
+        const service = await initService(true);
+        expect(service.settings.locale).to.equal('en_GB');
+        // en_GB already resolves the GB market; no explicit country must be stamped.
+        expect(service.getAttribute('country')).to.be.null;
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+      }
+    });
+
+    it('keeps native en_GB/GB for the /uk page when the validated market is GB', async () => {
+      setConfig({ ...config, pathname: '/uk/test.html', locales: { uk: { ietf: 'en-GB' } } });
+      const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'GB');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+      try {
+        const service = await initService(true);
+        // The dedicated GB site already serves en_GB natively; the fallback must not alter it.
+        expect(service.settings.locale).to.equal('en_GB');
+        expect(service.settings.country).to.equal('GB');
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+        setConfig(config);
+      }
+    });
+
+    it('keeps native en_AU/AU for the /au page when the validated market is AU', async () => {
+      setConfig({ ...config, pathname: '/au/test.html', locales: { au: { ietf: 'en-AU' } } });
+      const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'AU');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+      try {
+        const service = await initService(true);
+        // The dedicated AU site must not fall back to the Global-EN (en_GB) catalog.
+        expect(service.settings.locale).to.equal('en_AU');
+        expect(service.settings.country).to.equal('AU');
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+        setConfig(config);
+      }
+    });
+
+    it('does not override the locale for a validated market outside the fallback map', async () => {
+      const geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+      document.head.append(geoDetectionMeta);
+      sessionStorage.setItem('akamai', 'FR');
+      getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,au,in,gb,fr' }] };
+      try {
+        const service = await initService(true);
+        expect(service.settings.country).to.equal('FR');
+        expect(service.settings.locale).to.equal('en_US');
+      } finally {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+      }
+    });
+
+    it('does not set data-ims-country when mas-geo-detection is off', async () => {
+      const el = document.createElement('a');
+      el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl');
+      const params = new URLSearchParams({ osi: '123' });
+      const result = await buildCta(el, params);
+      expect(result.dataset.imsCountry).to.be.undefined;
+    });
   });
 
   describe('Download flow', () => {
@@ -1137,6 +1261,90 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
       checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+    });
+
+    [
+      { content: 'on', calls: 2, aup: true },
+      { content: 'off', query: 'on', aup: true },
+      { content: 'on', query: 'off', legacy: true },
+      { content: 'off', legacy: true },
+      { content: 'off', commercePreload: 'off' },
+      { content: 'on', commercePreload: 'off' },
+      { content: 'off', lateContent: 'on', aup: true },
+      { content: 'on', lateContent: 'off', legacy: true },
+      { content: 'on', missingSdk: true, legacy: true },
+      { content: 'on', failure: 'getOrchestratorContext', aup: true },
+      { content: 'on', failure: 'loadUIComponent', aup: true },
+      { content: 'on', modal: false },
+    ].forEach(({
+      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
+      modal = true, aup = false, legacy = false,
+    }) => {
+      it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
+        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+      })}`, async () => {
+        const previousUrl = window.location.href;
+        const previousDeferred = window.milo.deferredPromise;
+        const previousSdk = window.aupsdk;
+        const sdk = {
+          getOrchestratorContext: sinon.stub().resolves(),
+          loadUIComponent: sinon.stub().resolves(),
+        };
+        if (failure) sdk[failure].rejects(new Error('Preload failed'));
+        window.aupsdk = missingSdk ? undefined : sdk;
+        let resolveDeferred;
+        window.milo.deferredPromise = new Promise((resolve) => { resolveDeferred = resolve; });
+        const meta = createTag('meta', { name: 'aup-select', content });
+        document.head.append(meta);
+        const url = new URL(previousUrl);
+        if (query) url.searchParams.set('aup-select', query);
+        if (commercePreload) url.searchParams.set('commerce.preload', commercePreload);
+        window.history.replaceState(null, '', url);
+        const scripts = [];
+        const { append } = document.head;
+        const appendStub = sinon.stub(document.head, 'append').callsFake((node) => {
+          if (node.id === 'ucv3-preload-script') {
+            scripts.push(node);
+            node.dataset.loaded = 'true';
+          } else {
+            append.call(document.head, node);
+          }
+        });
+        let clock;
+        try {
+          const el = document.createElement('a');
+          el.isOpen3in1Modal = modal;
+          const actions = await Promise.all(Array.from({ length: calls }, () => getModalAction(
+            [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }],
+            { modal: true },
+            el,
+          )));
+          actions.forEach((action) => expect(action.handler).to.be.a('function'));
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          resolveDeferred();
+          await Promise.resolve();
+          if (lateContent) meta.content = lateContent;
+          await clock.tickAsync(999);
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          await clock.tickAsync(1);
+          expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
+          expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
+          expect(scripts.length).to.equal(legacy ? 1 : 0);
+          if (legacy) expect(scripts[0].src).to.include('/store/iframe/preload.js?cli=creative');
+        } finally {
+          clock?.restore();
+          appendStub.restore();
+          meta.remove();
+          window.history.replaceState(null, '', previousUrl);
+          window.milo.deferredPromise = previousDeferred;
+          window.aupsdk = previousSdk;
+        }
+      });
     });
 
     it('getModalAction: returns undefined if modal path is cancelled', async () => {

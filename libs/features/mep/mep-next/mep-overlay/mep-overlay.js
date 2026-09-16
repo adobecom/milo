@@ -3,6 +3,8 @@ import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  safeGetItem,
+  safeSetItem,
   toSlug,
   getPageId,
   getManifestList,
@@ -18,6 +20,7 @@ import {
   setPreviewButton,
   getMasRegions,
   findGeoGroupForLocale,
+  hasRelevantContentChanges,
 } from './mep-overlay-logic.js';
 import {
   TOGGLE_KEYS,
@@ -31,6 +34,22 @@ import svgs from './mep-overlay-svg.js';
 let authenticated = false;
 const domParser = new DOMParser();
 
+const ALIGN_STORAGE_KEY = 'mep-align-left';
+
+function getStoredAlignLeft() {
+  const stored = safeGetItem(ALIGN_STORAGE_KEY);
+  // Left dock is the default; only an explicit 'false' opts back into the right dock.
+  return stored === null ? true : stored === 'true';
+}
+
+function setStoredAlignLeft(alignLeft) {
+  safeSetItem(ALIGN_STORAGE_KEY, String(alignLeft));
+}
+
+function applyStoredAlignment() {
+  document.body.classList.toggle(ALIGN_STORAGE_KEY, getStoredAlignLeft());
+}
+
 const CARD_DATA = {
   actions: [
     ['Highlight', [
@@ -43,7 +62,7 @@ const CARD_DATA = {
       ['Preview Link', 'Add mepButton=off'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
-    ['Spoof Geo', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
+    ['Spoof Country', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
     ['Load Manifest', 'Enter manifest path'],
   ],
   summary: [
@@ -54,6 +73,10 @@ const CARD_DATA = {
     ['CaaS', getCaasSummary],
   ],
 };
+
+const TAB_NAMES = ['Actions', 'Summary'];
+const ACTIONS_TAB_INDEX = String(TAB_NAMES.indexOf('Actions'));
+const SUMMARY_TAB_INDEX = String(TAB_NAMES.indexOf('Summary'));
 
 function svgIcon(key) {
   const el = domParser.parseFromString(svgs[key], 'image/svg+xml').documentElement;
@@ -89,8 +112,12 @@ function getGnavOffset() {
   });
 }
 
+let lastGnavOffset;
 function updateGnavOffset() {
   const offset = calcGnavOffset();
+  if (offset === lastGnavOffset) return;
+  lastGnavOffset = offset;
+
   document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
   const drawer = document.querySelector('#mep-drawer');
   if (drawer) {
@@ -119,17 +146,83 @@ function buildRow(label, value) {
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
-function markExpanded(el, key) {
+function buildNestedSection(label, subPairs) {
+  const rows = subPairs.map(([subLabel, subValue]) => {
+    const isOnOff = subValue === 'on' || subValue === 'off';
+    const valEl = createTag('div', isOnOff ? { class: subValue === 'on' ? 'mep-row-value emphasis' : 'mep-row-value' } : {});
+    valEl.textContent = subValue == null ? '' : String(subValue);
+    return createTag('div', { class: 'mep-surfaces-row' }, [
+      createTag('div', { class: 'mep-row-value' }, subLabel),
+      valEl,
+    ]);
+  });
+  const children = label ? [createTag('h2', {}, label), ...rows] : rows;
+  return createTag('div', { class: 'mep-row-section' }, children);
+}
+
+function markExpanded(el, key, defaultExpanded) {
   el.dataset.cardKey = key;
-  if (getExpandedCards().has(key)) el.classList.add('expanded');
+  const stored = getExpandedCards()[key];
+  const isExpanded = stored === undefined ? defaultExpanded : stored;
+  el.classList.toggle('expanded', isExpanded);
 }
 
 function toggleExpandedCard(cardEl) {
   const key = cardEl.dataset.cardKey;
   const isExpanded = cardEl.classList.toggle('expanded');
   const expanded = getExpandedCards();
-  expanded[isExpanded ? 'add' : 'delete'](key);
-  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+  expanded[key] = isExpanded;
+  safeSetItem(CARD_STORAGE_KEY, JSON.stringify(expanded));
+}
+
+function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
+  }
+  const statusChecks = [
+    {
+      reason: manifest.manifestCountryRestricted,
+      msg: 'User country is restricted.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.disabledPromo === true,
+      msg: 'Outside of promo date range.',
+      level: 'Warning',
+      label: 'Disabled',
+    },
+  ];
+  const severity = { Warning: 0, Error: 1 };
+  const messages = [];
+  let finalLabel = null;
+  let finalLevel = null;
+
+  statusChecks.forEach(({ reason, msg, level, label }) => {
+    if (!reason) return;
+    messages.push(msg);
+    if (!finalLevel || severity[level] > severity[finalLevel]) {
+      finalLevel = level;
+      finalLabel = label || level;
+    }
+  });
+
+  if (!finalLabel) return null;
+  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
+}
+
+function applyManifestStatus(card, manifest) {
+  const status = getManifestStatus(manifest);
+  if (!status) return;
+
+  const { level, label, messages } = status;
+  const list = createTag(
+    'ul',
+    { class: `mep-manifest-${level}-tooltip` },
+    messages.map((message) => createTag('li', {}, message)),
+  );
+  card.classList.add(`manifest-${level}`);
+  card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
 }
 
 function buildManifestCard(manifest) {
@@ -140,16 +233,26 @@ function buildManifestCard(manifest) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('span', { class: 'mep-overline' }, 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
+  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
+  markExpanded(card, manifest.editUrl, false);
+
+  if (manifest.malformed) {
+    card.append(header);
+    applyManifestStatus(card, manifest);
+    return card;
+  }
+
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
-  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   rows.push(buildRow('Source', manifest.source));
   rows.push(buildRow('Mktg Action', manifest.mktgAction));
-  if (manifest.geoRestriction) rows.push(buildRow('Geo', manifest.geoRestriction));
+  if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
+  rows.push(buildRow('Type', manifest.manifestType || 'none'));
+  rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
+  rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
   if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
@@ -159,6 +262,7 @@ function buildManifestCard(manifest) {
     rows.push(onRow, buildRow('Off', manifest.eventEnd));
   }
 
+  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
   manifest.options.forEach((option) => {
     const attrs = {
@@ -174,9 +278,10 @@ function buildManifestCard(manifest) {
     select.append(optEl);
   });
 
-  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
-  markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
+
+  applyManifestStatus(card, manifest);
+
   return card;
 }
 
@@ -275,18 +380,6 @@ async function buildSpoofGeo(card, pageId) {
   return [...rows, selectEl];
 }
 
-function buildNestedSection(label, subPairs) {
-  const rows = subPairs.map(([subLabel, subValue]) => {
-    const valEl = createTag('div', {});
-    valEl.textContent = subValue == null ? '' : String(subValue);
-    return createTag('div', { class: 'mep-surfaces-row' }, [
-      createTag('div', { class: 'mep-row-value' }, subLabel),
-      valEl,
-    ]);
-  });
-  return createTag('div', { class: 'mep-row-section' }, [createTag('h2', {}, label), ...rows]);
-}
-
 async function buildSummaryData(card) {
   const pairs = await card.getData?.();
   if (!pairs) return createTag('div', {}, 'No content available');
@@ -297,13 +390,13 @@ async function buildSummaryData(card) {
 
 function buildCardContent(card, pageId) {
   if (card.getData) return buildSummaryData(card);
-  if (card.header === 'Spoof Geo') return buildSpoofGeo(card, pageId);
+  if (card.header === 'Spoof Country') return buildSpoofGeo(card, pageId);
   if (card.header === 'Load Manifest') return buildLoadManifest(card, pageId);
   if (card.header === 'Toggle' || card.header === 'Highlight') return buildToggle(card, pageId);
   return createTag('div', {}, 'No content available');
 }
 
-function buildCard(card, pageId) {
+function buildCard(card, pageId, defaultExpanded = true) {
   const cardEl = createTag('div', { class: 'mep-card' });
   if (!card?.header) return cardEl;
 
@@ -314,7 +407,7 @@ function buildCard(card, pageId) {
   cardEl.ready = Promise.resolve(buildCardContent(card, pageId))
     .then((nodes) => bodyEl.append(...[nodes].flat()));
 
-  markExpanded(cardEl, card.header);
+  markExpanded(cardEl, card.header, defaultExpanded);
   cardEl.append(headerEl, bodyEl);
   return cardEl;
 }
@@ -353,16 +446,19 @@ function buildActionsContent(pageId) {
 }
 
 function buildTabsAndBody(pageId) {
-  const tabDefs = [
-    ['Actions', buildActionsContent(pageId)],
-    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, pageId))],
-  ];
+  const tabContent = {
+    Actions: buildActionsContent(pageId),
+    Summary: CARD_DATA.summary.map(
+      ([header, data]) => buildCard({ header, getData: data }, pageId),
+    ),
+  };
+  const tabDefs = TAB_NAMES.map((name) => [name, tabContent[name]]);
 
   const tabsEl = createTag('div', { class: 'mep-tabs' });
   const bodyEl = createTag('div', { class: 'mep-body' });
 
   tabDefs.forEach(([name, content], index) => {
-    const isActive = index === 0;
+    const isActive = name === 'Actions';
     const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
     const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
     content.forEach((el) => contentEl.appendChild(el));
@@ -422,7 +518,7 @@ function checkAuthAndBuild(pageId) {
     authenticated = isAuthed;
 
     const drawerEl = document.querySelector('#mep-drawer');
-    const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+    const contentEl = drawerEl?.querySelector(`.mep-tab-content[data-tab="${ACTIONS_TAB_INDEX}"]`);
     if (!contentEl) return;
 
     if (!authenticated) {
@@ -433,21 +529,33 @@ function checkAuthAndBuild(pageId) {
 
     const cards = buildActionsContent(pageId);
     contentEl.replaceChildren(...cards);
-    drawerEl.appendChild(buildFooter());
+    const footerEl = buildFooter();
+    const activeTab = drawerEl.querySelector('.mep-tab.active');
+    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+    drawerEl.appendChild(footerEl);
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
   });
 }
 
+function buildAlignToggle() {
+  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', title: 'Move to other side', 'aria-label': 'Move to other side' });
+  btn.appendChild(svgIcon('icon-swap-horiz'));
+  return btn;
+}
+
 function buildDrawer(gnavOffset, pageId) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
+  const alignToggleBtn = buildAlignToggle();
+
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [alignToggleBtn, closeBtn]);
+  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, actionsEl]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
   const children = [headerEl, bodyEl];
@@ -457,6 +565,7 @@ function buildDrawer(gnavOffset, pageId) {
     id: 'mep-drawer',
     class: 'mep-drawer',
     popover: 'manual',
+    'data-lenis-prevent': '',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
   }, children);
 }
@@ -467,16 +576,38 @@ async function buildAdditionalManifests() {
   if (!manifests.length) return;
 
   const drawerEl = document.querySelector('#mep-drawer');
+  if (drawerEl.querySelector('.mmm-manifest-card')) return;
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
+  if (!lastManifestEl) return;
 
-  if (!lastManifestEl || lastManifestEl.classList.contains('mmm-manifest-card')) return;
-
+  let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
     const manifestEl = buildManifestCard(manifest);
     manifestEl.classList.add('mmm-manifest-card');
-    lastManifestEl.after(manifestEl);
+    insertionPoint.after(manifestEl);
+    insertionPoint = manifestEl;
   }
+}
+
+let additionalManifestsPromise;
+async function toggleManifestManager(event) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const mmmManifestEls = drawerEl?.querySelectorAll('.mmm-manifest-card');
+  if (mmmManifestEls?.length) {
+    mmmManifestEls.forEach((el) => { el.hidden = !event.target.checked; });
+    return;
+  }
+  if (!event.target.checked) return;
+
+  additionalManifestsPromise ??= buildAdditionalManifests().finally(() => {
+    additionalManifestsPromise = null;
+  });
+  await additionalManifestsPromise;
+
+  drawerEl.querySelectorAll('.mmm-manifest-card').forEach((el) => {
+    el.hidden = !event.target.checked;
+  });
 }
 
 let gnavOffsetRaf;
@@ -488,6 +619,39 @@ function scheduleGnavOffsetUpdate() {
   });
 }
 
+const lastSummaryKeys = new Map();
+const summaryCallIds = new Map();
+
+async function refreshSummaryCard(header, getData) {
+  const bodyEl = document.querySelector(`[data-card-key="${header}"] .mep-card-body`);
+  if (!bodyEl) return;
+
+  const callId = (summaryCallIds.get(header) ?? 0) + 1;
+  summaryCallIds.set(header, callId);
+
+  const data = await getData?.();
+  if (summaryCallIds.get(header) !== callId) return;
+  if (!data) return;
+  const dataKey = JSON.stringify(data);
+  if (dataKey === lastSummaryKeys.get(header)) return;
+  lastSummaryKeys.set(header, dataKey);
+
+  const rows = data.flatMap(([label, value]) => (
+    Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
+  ));
+  bodyEl.replaceChildren(...rows);
+}
+
+function refreshSummaryCards() {
+  return Promise.all(
+    CARD_DATA.summary.map(([header, getData]) => refreshSummaryCard(header, getData)),
+  );
+}
+
+function isSummaryTabActive() {
+  return !!document.querySelector(`.mep-tab-content[data-tab="${SUMMARY_TAB_INDEX}"].active`);
+}
+
 function setEventListeners() {
   window.addEventListener('scroll', scheduleGnavOffsetUpdate, { passive: true });
   window.addEventListener('resize', scheduleGnavOffsetUpdate, { passive: true });
@@ -495,12 +659,19 @@ function setEventListeners() {
   const drawerEl = document.querySelector('#mep-drawer');
 
   drawerEl.addEventListener('click', (event) => {
+    if (event.target.closest('.mep-align-toggle')) {
+      const alignLeft = document.body.classList.toggle(ALIGN_STORAGE_KEY);
+      setStoredAlignLeft(alignLeft);
+      return;
+    }
     const tab = event.target.closest('.mep-tab');
     if (tab) {
       const tabIndex = tab.getAttribute('data-tab');
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
       });
+      if (tabIndex === SUMMARY_TAB_INDEX) refreshSummaryCards();
+      drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
     const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
@@ -513,23 +684,13 @@ function setEventListeners() {
   });
 
   drawerEl.addEventListener('input', (event) => {
-    if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
+    if (event.target.id === 'toggle-manifest-manager') toggleManifestManager(event);
     toggleHighlight(event);
     if (event.target.type !== 'checkbox') setPreviewButton(event);
   });
 }
 
-function setMasObserver() {
-  const refreshMasSummary = () => {
-    const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
-    if (!bodyEl) return;
-
-    const rows = getMasSummary().flatMap(([label, value]) => (
-      Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
-    ));
-    bodyEl.replaceChildren(...rows);
-  };
-
+function setSummaryObserver() {
   const refreshSpoofGeoMas = async () => {
     const input = document.querySelector('#spoof-geo-lingo-mas');
     if (!input?.disabled) return;
@@ -553,12 +714,13 @@ function setMasObserver() {
 
   const runRefreshes = () => {
     refreshPageUpdateCounts();
-    refreshMasSummary();
+    if (isSummaryTabActive()) refreshSummaryCards();
     refreshSpoofGeoMas();
   };
 
   let debounceTimer;
-  const masObserver = new MutationObserver(() => {
+  const summaryMutationObserver = new MutationObserver((mutations) => {
+    if (!hasRelevantContentChanges(mutations)) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(runRefreshes, 200);
   });
@@ -567,15 +729,16 @@ function setMasObserver() {
   drawerEl?.addEventListener('toggle', (event) => {
     if (event.newState === 'open') {
       runRefreshes();
-      masObserver.observe(document.body, { childList: true, subtree: true });
+      summaryMutationObserver.observe(document.body, { childList: true, subtree: true });
     } else {
-      masObserver.disconnect();
+      summaryMutationObserver.disconnect();
     }
   });
 }
 
 async function buildOverlay() {
   const gnavOffset = await getGnavOffset();
+  lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
   document.querySelector('main').append(
@@ -586,11 +749,12 @@ async function buildOverlay() {
 }
 
 export default async function init() {
+  applyStoredAlignment();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
   setEventListeners();
-  setMasObserver();
+  setSummaryObserver();
 }
 
 export { buildCardContent as __buildCardContent };

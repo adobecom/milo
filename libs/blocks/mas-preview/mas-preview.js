@@ -1,7 +1,17 @@
 import { createTag, decorateAutoBlock, loadBlock, getConfig } from '../../utils/utils.js';
-import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction } from '../merch/merch.js';
+import { MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction, getMasLibsBaseUrl } from '../merch/merch.js';
 
 const DEFAULT_LOCALE = 'en_US';
+const SURFACE = 'acom';
+const MAS_AEM_LIVE = 'https://main--mas--adobecom.aem.live';
+
+// Get the locales from mas so the dropdowns update when mas adds new ones.
+function getSurfaceLocales() {
+  const base = getMasLibsBaseUrl() || MAS_AEM_LIVE;
+  return import(`${base}/io/www/src/fragment/locales.js`)
+    .then((mod) => mod.getSurfaceLocales(SURFACE))
+    .catch(() => []);
+}
 const TAG_MAS_COM_SERVICE = 'mas-commerce-service';
 const FRAGMENT_ID = 'fragment-id';
 const CONTENT_TYPE = 'content-type';
@@ -98,9 +108,10 @@ export default async function init(el) {
     selectType.value = url.searchParams.get(CONTENT_TYPE);
   }
 
+  const surfaceLocales = await getSurfaceLocales();
+
   const selectCountry = createTag('select');
-  const countries = ['AR', 'BE', 'BR', 'CA', 'CH', 'MX', 'MU', 'DK', 'DE', 'EE', 'EG', 'ES', 'FR', 'GR', 'IE', 'IL', 'IT', 'LV', 'LT', 'LU', 'MY', 'HU', 'NL', 'NO', 'PL', 'PT', 'RO', 'SI', 'SK', 'FI', 'SE', 'TR', 'GB', 'AT', 'CZ', 'BG', 'UA', 'AU', 'IN', 'ID', 'NZ', 'SA', 'SG', 'TW', 'HK', 'JP', 'KR', 'ZA', 'NG', 'US', 'TH', 'CO', 'PE', 'DO', 'CL', 'DZ', 'CR', 'EC', 'GT'];
-  countries.sort();
+  const countries = [...new Set(surfaceLocales.map((locale) => locale.country))].sort();
   countries.unshift('');
   countries.forEach((value) => selectCountry.appendChild(createTag('option', { value }, value)));
   if (url.searchParams.get(COUNTRY)) {
@@ -108,11 +119,7 @@ export default async function init(el) {
   }
 
   const selectLocale = createTag('select');
-  const localeArray = [DEFAULT_LOCALE];
-  for (const [, val] of Object.entries(GeoMap)) {
-    const valArray = val.split('_');
-    localeArray.push(`${valArray[1]}_${valArray[0]}`);
-  }
+  const localeArray = [...new Set([DEFAULT_LOCALE, ...surfaceLocales.map((locale) => `${locale.lang}_${locale.country}`)])];
   localeArray.sort();
   localeArray.forEach((value) => selectLocale.appendChild(createTag('option', { value }, value)));
 

@@ -5,7 +5,7 @@ const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 
 function hangOpeningQuote(header) {
   if (!header) return;
-  const openingQuotes = /^(\p{Pi})/u;
+  const openingQuotes = /^(\p{Pi}|["„‚「『｢﹁﹃＂⹂])/u;
   const match = header.textContent.match(openingQuotes);
   if (!match) return;
   const quote = match[1];

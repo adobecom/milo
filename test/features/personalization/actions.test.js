@@ -359,13 +359,15 @@ describe('custom actions', async () => {
       'mas-block': {
         fragments: {
           '64e0c5b8-9572-43e6-b0a7-fc68563589de': {
-            action: 'replace',
-            content: 'aec092ef-d5b5-4271-8b6f-4bbd535fcc56',
-            manifestId: false,
-            selector: 'https://mas.adobe.com/studio.html#page=content&path=sandbox&query=64e0c5b8-9572-43e6-b0a7-fc68563589de',
-            targetManifestId: false,
-            pageFilter: '',
-            selectorType: 'in-block:',
+            '': {
+              action: 'replace',
+              content: 'aec092ef-d5b5-4271-8b6f-4bbd535fcc56',
+              manifestId: false,
+              selector: 'https://mas.adobe.com/studio.html#page=content&path=sandbox&query=64e0c5b8-9572-43e6-b0a7-fc68563589de',
+              targetManifestId: false,
+              pageFilter: '',
+              selectorType: 'in-block:',
+            },
           },
         },
       },
@@ -392,6 +394,34 @@ describe('custom actions', async () => {
 
     expect(document.querySelector(lcpLink)).to.exist;
     expect(document.querySelector(notLcpLink)).not.to.exist;
+  });
+});
+
+describe('in-block:mas field-scoped replace', () => {
+  it('registers the replace under the targeted field only, not the whole fragment', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestMasFieldReplace.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await init(mepSettings);
+
+    const { fragments } = getConfig().mep.inBlock.mas;
+    const entry = fragments['d4304085-20ed-4478-a0ef-27c146f1c9fd'];
+
+    expect(entry).to.deep.equal({
+      cardTitle: {
+        action: 'replace',
+        content: 'f3151128-a0fb-4946-97a6-72f4acea07e8',
+        manifestId: false,
+        targetManifestId: false,
+        pageFilter: '',
+        selector: 'https://mas.adobe.com/studio.html#content-type=merch-card&page=content&path=acom-cc&query=d4304085-20ed-4478-a0ef-27c146f1c9fd&field=cardTitle',
+        selectorType: 'in-block:',
+      },
+    });
+    // Only the cardTitle field was registered - no unscoped ('') entry that would
+    // leak the override to other fields (description, ctas, ...) sharing this fragment.
+    expect(Object.keys(entry)).to.deep.equal(['cardTitle']);
   });
 });
 

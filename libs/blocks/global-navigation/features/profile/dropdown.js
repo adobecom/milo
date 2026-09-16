@@ -55,7 +55,7 @@ class ProfileDropdown {
     rawElem,
     decoratedElem,
     avatar,
-    sections,
+    hasOrgs,
     buttonElem,
     openOnInit,
   } = {}) {
@@ -64,7 +64,7 @@ class ProfileDropdown {
     this.avatar = avatar;
     this.buttonElem = buttonElem;
     this.decoratedElem = decoratedElem;
-    this.sections = sections;
+    this.hasOrgs = hasOrgs;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
     logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', 'gnav-profile', 'e');
@@ -87,14 +87,13 @@ class ProfileDropdown {
         this.placeholders.profileButton,
         this.placeholders.signOut,
         this.placeholders.viewAccount,
-        this.placeholders.manageTeams,
-        this.placeholders.manageEnterprise,
         this.placeholders.profileAvatar,
+        this.placeholders.goToAdminConsole,
       ],
       { displayName: this.profileData.displayName, email: this.profileData.email },
     ] = await Promise.all([
       replaceKeyArray(
-        ['profile-button', 'sign-out', 'view-account', 'manage-teams', 'manage-enterprise', 'profile-avatar'],
+        ['profile-button', 'sign-out', 'view-account', 'profile-avatar', 'go-to-admin-console'],
         getFedsPlaceholderConfig(),
       ),
       window.adobeIMS.getProfile(),
@@ -137,8 +136,7 @@ class ProfileDropdown {
         </a>
         ${this.localMenu ? this.decorateLocalMenu() : ''}
         <ul class="feds-profile-actions">
-          ${this.sections?.manage?.items?.team?.id ? decorateAction(this.placeholders.manageTeams, '/team') : ''}
-          ${this.sections?.manage?.items?.enterprise?.id ? decorateAction(this.placeholders.manageEnterprise) : ''}
+          ${this.hasOrgs ? decorateAction(this.placeholders.goToAdminConsole || 'Go to Admin Console') : ''}
           ${this.decorateSignOut()}
         </ul>
       </div>

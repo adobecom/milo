@@ -151,9 +151,11 @@ describe('merch-card-collection autoblock', () => {
             mas: {
               fragments: {
                 'e58f8f75-b882-409a-9ff8-8826b36a8368': {
-                  action: 'replace',
-                  manifestId: 'promo1.json',
-                  content: '1234',
+                  '': {
+                    action: 'replace',
+                    manifestId: 'promo1.json',
+                    content: '1234',
+                  },
                 },
               },
             },
@@ -183,14 +185,18 @@ describe('merch-card-collection autoblock', () => {
             mas: {
               fragments: {
                 'should-be-replaced': {
-                  action: 'replace',
-                  manifestId: 'promo1.json',
-                  content: 'promo-1',
+                  '': {
+                    action: 'replace',
+                    manifestId: 'promo1.json',
+                    content: 'promo-1',
+                  },
                 },
                 'should-also-be-replaced': {
-                  action: 'replace',
-                  manifestId: 'promo2.json',
-                  content: 'promo-2',
+                  '': {
+                    action: 'replace',
+                    manifestId: 'promo2.json',
+                    content: 'promo-2',
+                  },
                 },
               },
             },
