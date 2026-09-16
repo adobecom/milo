@@ -558,7 +558,8 @@ export async function setPreviewButton() {
     : simulateHref.searchParams.delete(key));
 
   if (getCheckboxParam(popup, 'toggle-manifest-parameters')) {
-    simulateHref.searchParams.delete('mep');
+    // Bare `mep` still shows the MEP button in prod (utils checks `mepParam === ''`).
+    simulateHref.searchParams.set('mep', '');
   } else {
     simulateHref.searchParams.set('mep', manifestParameter.join('---'));
   }
@@ -569,7 +570,9 @@ export async function setPreviewButton() {
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
-  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
+  // URLSearchParams serializes an empty value as `mep=`; drop the `=` for a bare `mep`.
+  const href = simulateHref.href.replace(/([?&]mep)=(?=[&#]|$)/, '$1');
+  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', href);
 }
 
 export function getLingoRegions() {

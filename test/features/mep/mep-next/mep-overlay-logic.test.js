@@ -889,7 +889,7 @@ describe('setPreviewButton', () => {
   it('sets a href on the preview button containing the "mep" query param', async () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
-    expect(href).to.include('mep=');
+    expect(href).to.match(/[?&]mep\b/);
   });
 
   it('does not throw when the drawer has no manifest inputs', async () => {
@@ -948,7 +948,12 @@ describe('setPreviewButton', () => {
     expect(href).to.not.include('mepButton');
   });
 
-  it('excludes the mep param from href when toggle-manifest-parameters is checked', async () => {
+  it('keeps a bare, valueless mep param in href when toggle-manifest-parameters is checked', async () => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'mep-load-manifest';
+    input.value = 'my-manifest';
+    drawer.append(input);
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.id = 'toggle-manifest-parameters';
@@ -956,10 +961,17 @@ describe('setPreviewButton', () => {
     drawer.append(cb);
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
-    expect(href).to.not.include('mep=');
+    expect(href).to.match(/[?&]mep(&|$)/);
+    expect(href).to.not.match(/[?&]mep=/);
+    expect(href).to.not.include('my-manifest');
   });
 
-  it('includes the mep param in href when toggle-manifest-parameters is unchecked', async () => {
+  it('includes the mep param with its value in href when toggle-manifest-parameters is unchecked', async () => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'mep-load-manifest';
+    input.value = 'my-manifest';
+    drawer.append(input);
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.id = 'toggle-manifest-parameters';
@@ -967,7 +979,7 @@ describe('setPreviewButton', () => {
     drawer.append(cb);
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
-    expect(href).to.include('mep=');
+    expect(href).to.include('mep=my-manifest');
   });
 
   it('includes mepHighlight param when toggle-mep checkbox is checked', async () => {
