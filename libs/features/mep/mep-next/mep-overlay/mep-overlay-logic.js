@@ -55,8 +55,9 @@ export function safeSetItem(key, value) {
 
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(safeGetItem(CARD_STORAGE_KEY)) || []);
-  } catch { return new Set(); }
+    const parsed = JSON.parse(safeGetItem(CARD_STORAGE_KEY));
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch { return {}; }
 }
 
 export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
@@ -466,15 +467,20 @@ export function getMasSummary() {
   ];
 }
 
-const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
+const RELEVANT_CONTENT_SELECTOR = [
+  'merch-card', 'mas-field', '[data-mas-block]', '[data-wcs-osi]',
+  '[data-caas-block]', '[data-card-url]',
+  '[data-manifest-id]', '[data-code-manifest-id]', '[data-removed-manifest-id]',
+  '[data-mep-lingo-roc]', '[data-mep-lingo-fallback]', '[data-fragment-default]', '[data-path]',
+].join(',');
 
-const isMasNode = (node) => (
+const isRelevantContentNode = (node) => (
   node.nodeType === Node.ELEMENT_NODE
-  && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR))
+  && (node.matches(RELEVANT_CONTENT_SELECTOR) || node.querySelector(RELEVANT_CONTENT_SELECTOR))
 );
 
-export const hasMasChanges = (mutations) => mutations.some(
-  ({ addedNodes }) => [...addedNodes].some(isMasNode),
+export const hasRelevantContentChanges = (mutations) => mutations.some(
+  ({ addedNodes }) => [...addedNodes].some(isRelevantContentNode),
 );
 
 let additionalManifests;

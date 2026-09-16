@@ -37,7 +37,6 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // force: true — under CI's throttled EDS pacing, M@S/CaaS content keeps trickling
   // in and shifting the page for many seconds; we assert the resulting state below,
   // so bypassing Playwright's actionability stability wait here is safe.
-  await mepButtonLoc.expandIcon2.click({ force: true });
   await mepButtonLoc.card2toggle1.click({ force: true });
   await mepButtonLoc.card2toggle2.click({ force: true });
   await mepButtonLoc.card2toggle3.click({ force: true });
@@ -127,13 +126,8 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // expand the Highlight card so its toggles are interactable. force: true —
-  // under CI's throttled EDS pacing, page content keeps trickling in and shifting
-  // layout for many seconds; we assert the resulting state, so bypassing
-  // Playwright's actionability stability wait here is safe.
-  await mepButtonLoc.highlightExpandIcon.click({ force: true });
-
   // the checkbox input is visually hidden, so click the switch track to flip it
+  // force: true — see Test 0 for why.
   await mepButtonLoc.toggleMepTrack.click({ force: true });
   await expect(page.locator('body')).toHaveAttribute('data-mep-highlight', 'true');
 
@@ -150,18 +144,18 @@ test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // the Highlight card starts collapsed
-  await expect(mepButtonLoc.highlightCard).not.toHaveClass(/expanded/);
+  // the Highlight card starts expanded
+  await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 
-  // clicking the header expands it. force: true — under CI's throttled EDS pacing,
+  // clicking the header collapses it. force: true — under CI's throttled EDS pacing,
   // page content keeps trickling in and shifting layout for many seconds; we assert
   // the resulting class below, so bypassing the actionability stability wait is safe.
   await mepButtonLoc.highlightExpandIcon.click({ force: true });
-  await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
-
-  // clicking again collapses it
-  await mepButtonLoc.highlightExpandIcon.click({ force: true });
   await expect(mepButtonLoc.highlightCard).not.toHaveClass(/expanded/);
+
+  // clicking again expands it
+  await mepButtonLoc.highlightExpandIcon.click({ force: true });
+  await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 });
 
 // Test 6: enabling MEP highlight should add the mepHighlight param to the Preview button
@@ -173,8 +167,7 @@ test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // enable the MEP highlight toggle. force: true — see Test 4/5 for why.
-  await mepButtonLoc.highlightExpandIcon.click({ force: true });
+  // enable the MEP highlight toggle. force: true — see Test 0 for why.
   await mepButtonLoc.toggleMepTrack.click({ force: true });
 
   // the Preview button href should carry the highlight param through
@@ -190,8 +183,7 @@ test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // enable the Preview Link toggle in the Toggle card. force: true — see Test 4/5 for why.
-  await mepButtonLoc.toggleCardExpandIcon.click({ force: true });
+  // enable the Preview Link toggle in the Toggle card. force: true — see Test 0 for why.
   await mepButtonLoc.previewLinkTrack.click({ force: true });
 
   // the Preview button href should disable the mep button on the previewed page
@@ -227,8 +219,7 @@ test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // expand the Load Manifest card and enter the manifest path
-  await mepButtonLoc.loadManifestExpandIcon.click();
+  // the Load Manifest card starts expanded, so the input is immediately available
   await mepButtonLoc.loadManifestInput.fill(features[9].data.pathToManifest);
 
   // previewing navigates to the page with the manifest applied

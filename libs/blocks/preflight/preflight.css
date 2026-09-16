@@ -1387,12 +1387,17 @@ img:hover ~ .asset-meta,
   word-break: break-all;
 }
 
-.preflight-accessibility-note {
-  margin-top: var(--s2a-spacing-12);
-  font-size: var(--s2a-font-size-12);
-  color: var(--preflight-fg-subtle);
+/* Automated-only disclaimer — persistent warning above the results. */
+.preflight-accessibility-disclaimer {
+  margin: 0 var(--s2a-spacing-16) var(--s2a-spacing-16);
+  padding: var(--s2a-spacing-12) var(--s2a-spacing-16);
+  background: var(--s2a-color-orange-100);
+  border: 1px solid var(--preflight-warning);
+  border-inline-start-width: 4px;
+  border-radius: var(--s2a-border-radius-8);
+  font-size: var(--s2a-font-size-14);
   line-height: 1.5;
-  font-style: italic;
+  color: var(--preflight-fg);
 }
 
 /* Violations Section */
