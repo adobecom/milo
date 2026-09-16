@@ -321,10 +321,12 @@ export function syncPausePlayIcon(video, event) {
   if (!video || video.hasAttribute('data-hoverplay')) return;
   const holder = video.closest('.video-holder');
   if (!holder) return;
-  const offsetFiller = holder.querySelector('.offset-filler');
-  if (!offsetFiller) return;
-  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button') || holder.querySelector('a, button');
+  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button')
+    || holder.querySelector('a, button')
+    || (video.id && document.querySelector(`[aria-controls="${video.id}"]`));
   if (!playPauseBtn) return;
+  const offsetFiller = playPauseBtn.querySelector('.offset-filler');
+  if (!offsetFiller) return;
   if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
   offsetFiller.classList.toggle('is-playing');
   const isPlaying = offsetFiller.classList.contains('is-playing');
@@ -374,7 +376,11 @@ export function handlePause(event) {
   }
   event.preventDefault();
   event.stopPropagation();
-  const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const holder = event.target.closest('.video-holder');
+  const video = holder
+    ? holder.parentElement.querySelector('video')
+    : document.getElementById(event.target.closest('.play-pause-button, .pause-play-wrapper')?.getAttribute('aria-controls'));
+  if (!video) return;
   const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
@@ -531,7 +537,10 @@ function updateFirstVideo() {
 
 function updateAriaLabel(videoEl, videoAttrs) {
   if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
-    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button') || videoEl.closest('.pause-play-wrapper, .play-pause-button');
+    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button')
+      || videoEl.closest('.pause-play-wrapper, .play-pause-button')
+      || (videoEl.id && document.querySelector(`[aria-controls="${videoEl.id}"]`));
+    if (!pausePlayWrapper) return;
     const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
@@ -608,6 +617,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
+  if (anchorTag.closest('div')?.querySelector('a.video-transcript-source')) {
+    import('../features/video-transcript/video-transcript.js')
+      .then(({ default: decorateVideoTranscript }) => decorateVideoTranscript(videoEl));
+  }
   anchorTag.remove();
 }
 

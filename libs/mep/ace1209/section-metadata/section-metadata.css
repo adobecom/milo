@@ -170,7 +170,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     z-index: 4;
   }
 
-  /* 
+  /*
      Deliberately excludes .rounded-corners-top: it only overlaps *upward* */
   &.rounded-corners:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast),
   &.rounded-corners-bottom:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
@@ -432,6 +432,28 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 }
 
+/* Play/pause control relocated out of `.section-background` into the
+   `background-controls` block. */
+:root:has(meta[name="foundation"][content="c2"]) .background-controls {
+  --pp-controls-spacing: var(--s2a-spacing-md);
+
+  position: relative;
+
+  > button.play-pause-button {
+    inset-block: var(--pp-controls-spacing) auto;
+  }
+
+  &.container > button.play-pause-button {
+    inset-inline-end: var(--pp-controls-spacing);
+  }
+
+  > .mobile-only,
+  > .tablet-only,
+  > .desktop-only {
+    display: none;
+  }
+}
+
 .section.scrim .section-background {
   &::after {
     --scrim-stop-start: -84.26%;
@@ -537,7 +559,8 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     }
   }
 
-  .section-background .mobile-only {
+  .section-background .mobile-only,
+  .background-controls > .mobile-only {
     display: block;
   }
 
@@ -584,17 +607,27 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     --scrim-stop-start: 0.88%;
     --scrim-stop-end: 69.65%;
   }
+
+  .background-controls {
+    --pp-controls-spacing: var(--s2a-spacing-lg);
+  }
 }
 
 @media (768px <= width < 1280px) {
-  .section-background .tablet-only {
+  .section-background .tablet-only,
+  .background-controls > .tablet-only {
     display: block;
   }
 }
 
 @media (width >= 1280px) {
-  .section-background .desktop-only {
+  .section-background .desktop-only,
+  .background-controls > .desktop-only {
     display: block;
+  }
+
+  .background-controls {
+    --pp-controls-spacing: var(--s2a-spacing-xl);
   }
 
   .section {
@@ -656,6 +689,14 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       .icon {
         inset: var(--s2a-spacing-xl);
       }
+    }
+  }
+}
+
+@media (width >= 1920px) {
+  :root:has(meta[name="foundation"][content="c2"]) .background-controls {
+    &.container > button.play-pause-button {
+        inset-inline-end: var(--grid-padding);
     }
   }
 }

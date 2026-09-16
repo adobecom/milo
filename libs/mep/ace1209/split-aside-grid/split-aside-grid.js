@@ -8,7 +8,8 @@ const FADE_IN_MS = 160;
 const RIGHT_DRAG_DENOM = 160;
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const DESKTOP_MQ = '(width >= 768px)';
+const NON_MOBILE_MQ = '(width >= 768px)';
+const DESKTOP_MQ = '(width >= 1280px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
   <path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="currentColor"/></svg>`;
@@ -108,14 +109,13 @@ function decorateItem(item, index) {
   return { content, media, toggle };
 }
 
-function setupBlock(el) {
+function setupBlock(el, isDesktop) {
   let stack;
   let medias;
   let items;
   let dotEls;
   let ariaLive;
   let slideNum;
-  let isMobile;
   let itemsWrap;
   let controlsWrap;
   let nextBtn;
@@ -127,6 +127,9 @@ function setupBlock(el) {
   let target = null;
   let resizeObserver = null;
 
+  const nonMobileMQ = window.matchMedia(NON_MOBILE_MQ);
+  const desktopMQ = window.matchMedia(DESKTOP_MQ);
+  const isMobile = () => !nonMobileMQ.matches;
   const isMobileCarousel = el.classList.contains('mobile-carousel');
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
@@ -148,7 +151,7 @@ function setupBlock(el) {
       item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
         focusable.removeAttribute('tabindex');
       });
-      const toHide = isMobile ? item : item.querySelector('.foreground');
+      const toHide = isMobile() ? item : item.querySelector('.foreground');
       toHide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
         focusable.setAttribute('tabindex', isActive ? '0' : '-1');
@@ -206,7 +209,7 @@ function setupBlock(el) {
     });
 
     setAriaHiddenAndTabIndex();
-    if (!isSetup && isMobile) updateAriaLive(ariaLive, items);
+    if (!isSetup && isMobile()) updateAriaLive(ariaLive, items);
   }
 
   function updateStack(dir, progress, ignore) {
@@ -548,9 +551,63 @@ function setupBlock(el) {
     controlsWrap.after(stack);
   }
 
-  const desktopMQ = window.matchMedia(DESKTOP_MQ);
+  function setCutoff() {
+    const activeMedia = medias.find((media) => media.getAttribute('data-slot') === '0');
+    if (!activeMedia) return;
+    const { left, right } = activeMedia.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const cutoff = isRTL ? -left : right - viewportWidth;
+    setInline(stack, { 'stack-cutoff': `${Math.round(cutoff)}px` });
+  }
+
+  function setStackAspectRatio(width, height) {
+    if (!width || !height) return;
+    setInline(stack, { 'aspect-ratio': `${width} / ${height}` });
+    if (isMobile() && !isMobileCarousel) return;
+    setCutoff();
+  }
+
+  function resolveFirstMediaAspectRatio() {
+    const media = medias[0];
+    if (!media) return;
+
+    const asset = media.querySelector('img, video');
+    if (!asset) return;
+
+    const applyRatio = (targetAsset = asset) => {
+      const assetWidth = parseInt(targetAsset.getAttribute('width'), 10) || targetAsset.naturalWidth || targetAsset.videoWidth;
+      const assetHeight = parseInt(targetAsset.getAttribute('height'), 10) || targetAsset.naturalHeight || targetAsset.videoHeight;
+      if (!assetWidth || !assetHeight) return false;
+      setStackAspectRatio(assetWidth, assetHeight);
+      return true;
+    };
+
+    let ratioApplied = applyRatio();
+    if (ratioApplied) return;
+
+    const isVideo = asset.tagName === 'VIDEO';
+    const loadListenerType = isVideo ? 'loadedmetadata' : 'load';
+
+    asset.addEventListener(loadListenerType, () => {
+      if (!asset.isConnected) return;
+      ratioApplied = applyRatio();
+    }, { once: true });
+
+    if (!isVideo) return;
+
+    const poster = asset.getAttribute('poster');
+    if (!poster) return;
+
+    const posterImg = new Image();
+    posterImg.addEventListener('load', () => {
+      if (ratioApplied || !asset.isConnected) return;
+      applyRatio(posterImg);
+    }, { once: true });
+    posterImg.src = poster;
+  }
+
   let mobileBound = false;
-  let desktopBound = false;
+  let nonMobileBound = false;
 
   function enableMobileNavigation() {
     prevBtn.addEventListener('click', handleNavigation);
@@ -578,30 +635,14 @@ function setupBlock(el) {
     mobileCarouselIntersection.observe(el);
   }
 
-  function handleResizeDesktop() {
-    const { scrollWidth } = el;
-    const width = document.documentElement.clientWidth;
-    setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
-  }
-
-  function handleResizeMobileCarousel() {
-    const activeMedia = medias.find((media) => media.getAttribute('data-slot') === '0');
-    const { left, right } = activeMedia.getBoundingClientRect();
-    const viewportWidth = document.documentElement.clientWidth;
-    const cutoff = isRTL ? -left : right - viewportWidth;
-    setInline(stack, { 'stack-cutoff': `${cutoff}px` });
-  }
-
   function addResizeObserver() {
     resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
-      if (isMobileCarousel && isMobile) {
-        goToMobileCarouselActive();
-        handleResizeMobileCarousel();
-      } else handleResizeDesktop();
+      if (isMobileCarousel && isMobile()) goToMobileCarouselActive();
+      setCutoff();
     });
-    resizeObserver.observe(stack);
+    resizeObserver.observe(el);
   }
 
   function removeResizeObserver() {
@@ -637,17 +678,17 @@ function setupBlock(el) {
     removeResizeObserver();
   }
 
-  function bindDesktop() {
-    if (desktopBound) return;
-    desktopBound = true;
+  function bindNonMobile() {
+    if (nonMobileBound) return;
+    nonMobileBound = true;
     items.forEach((item) => item.addEventListener('click', onItemClick));
     addResizeObserver();
     swapStackItems(false);
   }
 
-  function unbindDesktop() {
-    if (!desktopBound) return;
-    desktopBound = false;
+  function unbindNonMobile() {
+    if (!nonMobileBound) return;
+    nonMobileBound = false;
     items.forEach((item) => item.removeEventListener('click', onItemClick));
     removeResizeObserver();
   }
@@ -664,21 +705,22 @@ function setupBlock(el) {
     nextBtn = controlsWrap.querySelector('button.next');
     prevBtn = controlsWrap.querySelector('button.prev');
 
-    if (desktopMQ.matches) {
-      isMobile = false;
-      unbindMobile();
-      bindDesktop();
+    unbindMobile();
+    unbindNonMobile();
+
+    if (nonMobileMQ.matches) {
+      bindNonMobile();
     } else {
-      isMobile = true;
-      unbindDesktop();
       bindMobile();
     }
 
     applyRotation(0, true);
-    if (isMobile && isMobileCarousel) cloneMobileCarouselSlides();
+    resolveFirstMediaAspectRatio();
+    if (isMobile() && isMobileCarousel) cloneMobileCarouselSlides();
   }
 
-  desktopMQ.addEventListener('change', syncBindings);
+  nonMobileMQ.addEventListener('change', syncBindings);
+  if (isDesktop) desktopMQ.addEventListener('change', syncBindings);
   syncBindings();
 }
 
@@ -729,6 +771,6 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
-  setupBlock(el);
+  const { content } = decorateViewportContent(el, decorate);
+  setupBlock(el, !!content?.desktop);
 }

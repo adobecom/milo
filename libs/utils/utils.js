@@ -1604,6 +1604,10 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        if (url.hash.startsWith('#transcript')) {
+          a.classList.add('video-transcript-source');
+          import('../features/video-transcript/video-transcript.js');
+        }
         return true;
       }
     }

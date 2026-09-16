@@ -20,6 +20,10 @@
 }
 
 .split-aside-grid-stack {
+  /* One side of the glass frame that sits outside the video: 8px padding (--s2a-spacing-xs)
+     + 1px border (--s2a-border-width-1) = 9px. Per axis the border-box is 2 * this larger. */
+  --split-aside-grid-glass: calc(var(--s2a-spacing-xs) + var(--s2a-border-width-1)); /* 9px */
+
   position: relative;
   z-index: 1;
   width: 100%;
@@ -59,14 +63,6 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-
-      img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        -webkit-user-drag: none;
-        border-radius: var(--s2a-border-radius-md);
-      }
     }
     .video-holder {
       width: 100%;
@@ -78,7 +74,7 @@
       }
     }
 
-    video {
+    :is(video, img) {
       display: block;
       width: 100%;
       height: 100%;
@@ -114,23 +110,26 @@
       transition: var(--split-aside-grid-container-transition, none);
 
       .media {
+        --split-aside-grid-border: calc(2 * var(--split-aside-grid-glass));
+
         position: static;
         height: auto;
         flex-shrink: 0;
-        /* Cap width so aspect-ratio keeps height at/under 600px while staying 16:9. */
-        width: min(200%, calc(600px * 16 / 9));
         transform: none;
-        aspect-ratio: 16 / 9;
+        box-sizing: content-box;
+        aspect-ratio: var(--split-aside-grid-aspect-ratio, 4 / 3);
+        /* Asset width is 120% of the screen - 48px (margins) with 600px max height */
+        width: min(
+          calc(1.2 * (100vw - 2 * var(--split-aside-grid-gap)) - var(--split-aside-grid-border)),
+          calc((600px - var(--split-aside-grid-border)) * var(--split-aside-grid-aspect-ratio, 4 / 3))
+        );
         border-radius: var(--s2a-border-radius-xs);
 
         :is(img, video) {
+          object-fit: cover;
           border-radius: var(--s2a-border-radius-2xs);
         }
       }
-    }
-
-    .split-aside-grid-controls {
-      margin-top: var(--s2a-spacing-md);
     }
 
     .split-aside-grid-items {
@@ -283,25 +282,19 @@
     align-items: center;
     overflow-x: clip;
     grid-template-columns: repeat(12, 1fr);
-    /* Height scales linearly from 465px at 768vw to 615px at 1280vw, then clamps (150 = 615-465 over 512 = 1280-768). */
-    height: clamp(
-      465px,
-      calc(465px + (100vw - 768px) * 150 / 512),
-      615px
-      );
   }
 
   .split-aside-grid-stack {
     inset-inline-end: calc(-1 * var(--grid-padding));
     grid-column: 6 / -1;
-    height: 100%;
     width: auto;
-    padding-left: 0;
+    height: calc(100% - 2 * var(--split-aside-grid-glass));
+    aspect-ratio: var(--split-aside-grid-aspect-ratio, 4 / 3);
     touch-action: auto;
     user-select: auto;
     align-items: center;
-    aspect-ratio: 213/155;
-    margin-block-end: unset;
+    min-height: 480px;
+    margin: var(--split-aside-grid-glass);
 
     .media {
       opacity: 0;
@@ -310,6 +303,7 @@
       width: 100%;
       height: 100%;
       border-radius: var(--s2a-border-radius-xs);
+      box-sizing: content-box;
 
       .video-holder {
         pointer-events: unset;
@@ -317,12 +311,16 @@
 
       :is(video, img) {
         opacity: 0;
+        object-fit: cover;
+        /* Anchor the crop to the left edge (tablet 480-floor trims horizontally). */
+        object-position: left;
         transition: opacity var(--dropdown-transition);
         border-radius: var(--s2a-border-radius-2xs);
       }
 
       &[data-slot="0"] {
         opacity: 1;
+
         :is(video, img) {
           opacity: 1;
         }
@@ -471,12 +469,7 @@
   }
 }
 
-
 @media (width >= 1280px) {
-  .split-aside-grid {
-    height: auto;
-  }
-
   .split-aside-grid-stack {
     grid-column: 5 / -1;
 
@@ -507,12 +500,16 @@
 
 :root:has(meta[name="foundation"][content="c2"]) {
   .split-aside-grid-stack {
-    --btn-spacing: var(--s2a-spacing-lg);
-    --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
-    --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
+    --btn-spacing: var(--s2a-spacing-md);
+    --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--split-aside-grid-glass) + var(--btn-spacing));
     button.play-pause-button {
-      right: unset;
       inset-inline-end: var(--btn-position);
+    }
+  }
+
+  @media (width >= 768px) {
+    .split-aside-grid-stack {
+      --btn-spacing: var(--s2a-spacing-lg);
     }
   }
 
@@ -545,6 +542,10 @@
   }
 
   @media (width >= 768px) {
+    .split-aside-grid-stack .media :is(video, img) {
+      object-position: right;
+    }
+
     .split-aside-grid-item {
       margin-block-end: unset;
       .foreground {
