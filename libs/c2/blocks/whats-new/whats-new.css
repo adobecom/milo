@@ -179,10 +179,12 @@
   display: flex;
 
   /* `auto` eats the card's leftover height so every CTA lands on ONE baseline
-     regardless of copy length; the padding keeps a real 16px floor (8px flex
-     gap + 8px) on the tallest card, where `auto` resolves to 0. */
+     regardless of copy length; the padding keeps a real 24px floor on the
+     tallest card, where `auto` resolves to 0. 24px is what the frame declares
+     between the copy block and the CTA glyph box, and it is split 8px (the
+     .card-body flex gap) + 16px here. */
   margin-block-start: auto;
-  padding-block-start: var(--s2a-spacing-8, 8px);
+  padding-block-start: var(--s2a-spacing-16, 16px);
 }
 
 .whats-new .card-link {
@@ -195,6 +197,23 @@
   line-height: 18px;
   color: #000;
   text-decoration: none;
+
+  /*
+   * Figma measures this CTA by its GLYPH box (declared h=9) while the browser
+   * lays it out by its LINE box (line-height 18), so the frame's 24px gap is
+   * measured to the ink and CSS padding is measured to the line box. The
+   * difference is the half-leading, (18 - 9) / 2 = 4.5px, which is dead space
+   * belonging to no glyph. Trimming it is what puts the ink on Figma's
+   * declared 428 and the card bottom on its declared 437.
+   *
+   * A negative margin, NOT `line-height: 9px`: both hit the anchors, but
+   * collapsing line-height sets the step between WRAPPED lines to 9px on 14px
+   * text, so a CTA that wraps overlaps itself (measured). A negative margin
+   * trims only the outer leading and leaves the inter-line step at 18px.
+   * `text-box: trim-both` is the standards-track answer but was measured to
+   * leave this inline-flex box at its full 18px in Chromium 145.
+   */
+  margin-block: -4.5px;
 }
 
 .whats-new .card-link::after {
