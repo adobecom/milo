@@ -72,27 +72,25 @@ function gutterOf(el) {
 }
 
 function hangOpeningMark(el, room) {
-  el.style.textIndent = '';
-  const text = el.textContent.trim();
+  const text = el.textContent;
   if (!room || !OPENING_MARK.test(text)) return;
-  const cs = getComputedStyle(el);
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
-  // Canvas ignores letter-spacing, and heading-1 has some.
-  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
-  // Too wide to hang — a CJK bracket, or just past the padding.
-  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
-  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
+  const mark = [...text][0];
+  const span = createTag('span', { class: 'hang-opening-quote' }, mark);
+  el.replaceChildren(span, document.createTextNode(text.slice(mark.length)));
+  const advance = span.offsetWidth;
+  if (advance >= parseFloat(getComputedStyle(el).fontSize) * 0.8 || advance > room) {
+    el.textContent = text;
+  }
 }
 
 const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
 
 // Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
-function measureLines(quoteEl, words) {
-  const probes = words.map((w) => {
+function measureLines(quoteEl, words, room) {
+  const probes = words.map((w, i) => {
     const s = document.createElement('span');
     s.textContent = w;
+    if (!i) hangOpeningMark(s, room);
     return s;
   });
   const nodes = [];
@@ -120,23 +118,19 @@ export function layoutQuote(quoteEl) {
   if (!quoteEl) return [];
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
   const text = QUOTE_TEXT.get(quoteEl).trim();
-  quoteEl.style.textIndent = '';
   quoteEl.classList.remove('firefly-globe-pullquote-lines');
   quoteEl.textContent = text;
   if (!text) return [];
-  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.firefly-globe-pullquote')));
-  const indent = quoteEl.style.textIndent;
-  const lines = measureLines(quoteEl, text.split(/\s+/));
+  const room = gutterOf(quoteEl.closest('.firefly-globe-pullquote'));
+  const lines = measureLines(quoteEl, text.split(/\s+/), room);
   const lineEls = lines.map((wordsOnLine, i) => {
     const inner = createTag('span', { class: 'firefly-globe-pullquote-line-inner' });
     inner.textContent = wordsOnLine.join(' ');
-    // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
-    if (i === 0 && indent) inner.style.marginInlineStart = indent;
+    if (!i) hangOpeningMark(inner, room);
     return createTag('span', { class: 'firefly-globe-pullquote-line', 'aria-hidden': 'true' }, inner);
   });
   const srEl = createTag('span', { class: 'sr-only firefly-globe-pullquote-sr' });
   srEl.textContent = text;
-  quoteEl.style.textIndent = '';
   quoteEl.classList.add('firefly-globe-pullquote-lines');
   // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
   // flex items generates no box, so the layout is untouched.

@@ -26,6 +26,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Scroll budget | `--gg-runway-height` 550vh, `--gg-formation-vh` | `--fg-runway-height` 350vh only. |
 | CSS custom properties | `--gg-*` | `--fg-*` (block-scoped; nothing outside the block reads them). |
 | Tuning | md `CAM_Z_SPHERE` 57, sm `CAM_Z_END` −60, `CYL_COLS_FIT` 0.65 | md `CAM_Z_SPHERE` 80, sm `CAM_Z_END` −40, `CYL_COLS_FIT` 0.55 |
+| Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline: each quote line is an `overflow: hidden` mask with `--fg-hang-max` (0.8em) of side bleed, so a wider mark would be clipped; a CJK `「` needs both raised. |
 | Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, `createFrame`). |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
 
