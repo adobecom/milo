@@ -272,7 +272,7 @@ const getSignInCtaStyle = () => {
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
-    mainNavDropdowns: 800,
+    mainNavDropdowns: 1200,
     loadDelayed: 3000,
     keyboardNav: KEYBOARD_DELAY,
   },
@@ -1780,12 +1780,9 @@ class Gnav {
       let desktopMegaMenuHTML = null;
       let mobileNavCleanup = () => {};
 
-      const decorateDropdown = (evtOrOpened) => logErrorFor(async () => {
+      const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-        // The click listener passes a MouseEvent (user open); the prefetch setTimeout
-        // passes nothing. Only a real open resolves the menu's fields in parallel.
-        const opened = evtOrOpened instanceof Event;
 
         const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         (async () => {
@@ -1796,9 +1793,6 @@ class Gnav {
               item,
               template,
               type: itemType,
-              // Only the user-open path resolves the menu's fields in parallel;
-              // the prefetch timer keeps the original serial behaviour.
-              opened,
             });
             // There are two calls to transformTemplateToMobile
             // One without awaiting decorateMenu, and one after
@@ -1889,8 +1883,8 @@ class Gnav {
         }
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
-      // A user open (click) triggers the parallel field-resolution path; the 800ms
-      // prefetch timer below stays on the original serial path.
+      // Whichever fires first (user click or the prefetch timer below) decorates the
+      // dropdown once; both paths resolve the menu's mas-fields in parallel.
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
