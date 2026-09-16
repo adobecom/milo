@@ -161,6 +161,13 @@
 .whats-new .card-link-wrapper {
   margin-block: 0;
 
+  /* NOT a cosmetic choice. As a block box this <p> wraps ONE inline-flex CTA,
+     and an atomic inline box sits on the line's baseline, leaving ~2px of
+     descender space beneath it that belongs to no glyph. Measured: the card row
+     came out 440px against the frame's declared 437px, and that 2px was the
+     whole difference. `flex` removes the line box, so the wrapper hugs the CTA. */
+  display: flex;
+
   /* `auto` eats the card's leftover height so every CTA lands on ONE baseline
      regardless of copy length; the padding keeps a real 16px floor (8px flex
      gap + 8px) on the tallest card, where `auto` resolves to 0. */
