@@ -1,6 +1,6 @@
-/* Plans (product-pricing) filter bar + drawer. Plain HTML, no SWC. */
+/* Product-pricing filter bar + drawer. Plain HTML, no SWC. */
 
-.plans-filter-bar {
+.product-pricing-filter-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -9,7 +9,7 @@
   margin-bottom: 24px;
 }
 
-.plans-filter-trigger {
+.product-pricing-filter-trigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -31,16 +31,16 @@
   height: 16px;
 }
 
-.plans-filter-trigger .icon svg { fill: #fff; }
+.product-pricing-filter-trigger .icon svg { fill: #fff; }
 
-.plans-filter-pills {
+.product-pricing-filter-pills {
   display: flex;
   gap: 8px;
   flex: 1;
   overflow-x: auto;
 }
 
-.plans-filter-search {
+.product-pricing-filter-search {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -51,7 +51,7 @@
   background: #f8f8f8;
 }
 
-.plans-filter-search-input {
+.product-pricing-filter-search-input {
   border: none;
   background: transparent;
   font-size: 14px;
@@ -60,7 +60,7 @@
 }
 
 /* Drawer (native <dialog>) */
-.plans-drawer {
+.product-pricing-drawer {
   width: 540px;
   max-width: 100%;
   height: 100vh;
@@ -71,29 +71,29 @@
   background: #f8f8f8;
 }
 
-.plans-drawer::backdrop { background: rgb(0 0 0 / 50%); }
+.product-pricing-drawer::backdrop { background: rgb(0 0 0 / 50%); }
 
-.plans-drawer[open] { animation: plans-drawer-in 0.3s ease; }
+.product-pricing-drawer[open] { animation: product-pricing-drawer-in 0.3s ease; }
 
-@keyframes plans-drawer-in {
+@keyframes product-pricing-drawer-in {
   from { transform: translateX(-100%); }
 }
 
-.plans-drawer-inner {
+.product-pricing-drawer-inner {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
 }
 
-.plans-drawer-header {
+.product-pricing-drawer-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 40px 48px 24px;
 }
 
-.plans-drawer-title {
+.product-pricing-drawer-title {
   margin: 0;
   font-size: 48px;
   font-weight: 900;
@@ -101,7 +101,7 @@
   color: #000;
 }
 
-.plans-drawer-close {
+.product-pricing-drawer-close {
   padding: 0;
   border: none;
   background: none;
@@ -109,7 +109,7 @@
   cursor: pointer;
 }
 
-.plans-drawer-subrow {
+.product-pricing-drawer-subrow {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,12 +119,12 @@
   line-height: 18px;
 }
 
-.plans-drawer-counts {
+.product-pricing-drawer-counts {
   display: flex;
   gap: 24px;
 }
 
-.plans-drawer-reset {
+.product-pricing-drawer-reset {
   padding: 0;
   border: none;
   background: none;
@@ -132,20 +132,20 @@
   cursor: pointer;
 }
 
-.plans-drawer-groups {
+.product-pricing-drawer-groups {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 0 24px 24px;
 }
 
-.plans-group {
+.product-pricing-group {
   padding: 24px;
   border-radius: 16px;
   background: #fff;
 }
 
-.plans-group-header {
+.product-pricing-group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -160,15 +160,15 @@
   cursor: pointer;
 }
 
-.plans-group-header[aria-expanded='false'] .icon svg { transform: rotate(-90deg); }
+.product-pricing-group-header[aria-expanded='false'] .icon svg { transform: rotate(-90deg); }
 
-.plans-group-pills {
+.product-pricing-group-pills {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.plans-pill {
+.product-pricing-pill {
   align-self: flex-start;
   height: 40px;
   padding: 0 24px;
@@ -183,16 +183,16 @@
   white-space: nowrap;
 }
 
-.plans-pill[aria-pressed='true'] {
+.product-pricing-pill[aria-pressed='true'] {
   background: #000;
   color: #fff;
 }
 
 @media (max-width: 600px) {
-  .plans-drawer { width: 100%; }
-  .plans-filter-bar { padding: 0 16px; }
+  .product-pricing-drawer { width: 100%; }
+  .product-pricing-filter-bar { padding: 0 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .plans-drawer[open] { animation: none; }
+  .product-pricing-drawer[open] { animation: none; }
 }

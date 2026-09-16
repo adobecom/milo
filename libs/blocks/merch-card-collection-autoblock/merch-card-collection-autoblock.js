@@ -127,7 +127,7 @@ function generateCheckboxGroups(checkboxGroups) {
   return groups;
 }
 
-// Plans (product-pricing) uses a plain-HTML filter bar + left drawer instead of
+// Product-pricing uses a plain-HTML filter bar + left drawer instead of
 // the SWC sidenav. Both write filter/types to the URL hash; the collection
 // re-filters via its own hashchange listener. Group cards, pills, and filter
 // wiring are added in later phases.
@@ -156,7 +156,7 @@ export function countApplied(defaultFilter = 'all') {
 // Normalize collection data into filter groups the drawer and bar both render.
 // Category comes from the single-select hierarchy (deeplink 'filter'); each
 // tagFilter is a multi-select group (deeplink 'types').
-export function plansFilterGroups(data) {
+export function productPricingFilterGroups(data) {
   const { hierarchy = [], sidenavSettings = {}, placeholders = {} } = data;
   const groups = [];
   if (hierarchy.length) {
@@ -186,7 +186,7 @@ export function plansFilterGroups(data) {
 // writes the URL hash; selected state reflects aria-pressed.
 function buildPill({ value, label }, group) {
   const attrs = {
-    class: 'plans-pill',
+    class: 'product-pricing-pill',
     type: 'button',
     'aria-pressed': 'false',
     'data-deeplink': group.deeplink,
@@ -226,7 +226,7 @@ function setHashParam(key, value) {
 
 export function syncPills(root) {
   const params = new URLSearchParams(window.location.hash.slice(1));
-  root.querySelectorAll('.plans-pill').forEach((pill) => {
+  root.querySelectorAll('.product-pricing-pill').forEach((pill) => {
     const raw = params.get(pill.dataset.deeplink) || '';
     const active = pill.dataset.multi === 'true'
       ? raw.split(',').includes(pill.dataset.value)
@@ -236,44 +236,44 @@ export function syncPills(root) {
 }
 
 function buildGroupCard(group) {
-  const heading = createTag('button', { class: 'plans-group-header', type: 'button', 'aria-expanded': 'true' }, [createTag('span', {}, group.title), svgIcon(CHEVRON_ICON)]);
-  const body = createTag('div', { class: 'plans-group-pills' }, group.options.map((opt) => buildPill(opt, group)));
+  const heading = createTag('button', { class: 'product-pricing-group-header', type: 'button', 'aria-expanded': 'true' }, [createTag('span', {}, group.title), svgIcon(CHEVRON_ICON)]);
+  const body = createTag('div', { class: 'product-pricing-group-pills' }, group.options.map((opt) => buildPill(opt, group)));
   heading.addEventListener('click', () => {
     const expanded = heading.getAttribute('aria-expanded') === 'true';
     heading.setAttribute('aria-expanded', String(!expanded));
     body.hidden = expanded;
   });
-  return createTag('div', { class: 'plans-group' }, [heading, body]);
+  return createTag('div', { class: 'product-pricing-group' }, [heading, body]);
 }
 
-function buildPlansDrawer(collection, groups) {
+function buildProductPricingDrawer(collection, groups) {
   const { placeholders = {} } = collection.data;
   const label = (key, fallback) => placeholders[key] || fallback;
 
-  const title = createTag('h2', { class: 'plans-drawer-title' }, label('allFilters', 'All Filters'));
-  const closeBtn = createTag('button', { class: 'plans-drawer-close', type: 'button', 'aria-label': label('catalogSidenavClose', 'Close') }, svgIcon(CLOSE_ICON));
-  const header = createTag('div', { class: 'plans-drawer-header' }, [title, closeBtn]);
+  const title = createTag('h2', { class: 'product-pricing-drawer-title' }, label('allFilters', 'All Filters'));
+  const closeBtn = createTag('button', { class: 'product-pricing-drawer-close', type: 'button', 'aria-label': label('catalogSidenavClose', 'Close') }, svgIcon(CLOSE_ICON));
+  const header = createTag('div', { class: 'product-pricing-drawer-header' }, [title, closeBtn]);
 
-  const applied = createTag('span', { class: 'plans-drawer-applied' });
-  const results = createTag('span', { class: 'plans-drawer-results' });
-  const counts = createTag('div', { class: 'plans-drawer-counts' }, [applied, results]);
-  const reset = createTag('button', { class: 'plans-drawer-reset', type: 'button' }, label('reset', 'Reset'));
-  const subRow = createTag('div', { class: 'plans-drawer-subrow' }, [counts, reset]);
+  const applied = createTag('span', { class: 'product-pricing-drawer-applied' });
+  const results = createTag('span', { class: 'product-pricing-drawer-results' });
+  const counts = createTag('div', { class: 'product-pricing-drawer-counts' }, [applied, results]);
+  const reset = createTag('button', { class: 'product-pricing-drawer-reset', type: 'button' }, label('reset', 'Reset'));
+  const subRow = createTag('div', { class: 'product-pricing-drawer-subrow' }, [counts, reset]);
 
-  const groupsEl = createTag('div', { class: 'plans-drawer-groups' }, groups.map(buildGroupCard));
+  const groupsEl = createTag('div', { class: 'product-pricing-drawer-groups' }, groups.map(buildGroupCard));
 
   // Inner wrapper so backdrop clicks target the dialog while content clicks don't.
-  const inner = createTag('div', { class: 'plans-drawer-inner' }, [header, subRow, groupsEl]);
+  const inner = createTag('div', { class: 'product-pricing-drawer-inner' }, [header, subRow, groupsEl]);
   // <dialog> gives focus trap, Esc-to-close, inert background, and focus restore.
-  return createTag('dialog', { class: 'plans-drawer', 'aria-label': label('allFilters', 'All Filters') }, inner);
+  return createTag('dialog', { class: 'product-pricing-drawer', 'aria-label': label('allFilters', 'All Filters') }, inner);
 }
 
-function buildPlansBar(collection, groups) {
+function buildProductPricingBar(collection, groups) {
   const { placeholders = {} } = collection.data;
   const label = (key, fallback) => placeholders[key] || fallback;
 
-  const triggerLabel = createTag('span', { class: 'plans-trigger-label' }, label('allFilters', 'All Filters'));
-  const triggerAttrs = { class: 'plans-filter-trigger', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' };
+  const triggerLabel = createTag('span', { class: 'product-pricing-trigger-label' }, label('allFilters', 'All Filters'));
+  const triggerAttrs = { class: 'product-pricing-filter-trigger', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' };
   const trigger = createTag('button', triggerAttrs, [svgIcon(SLIDERS_ICON), triggerLabel]);
 
   // Quick pills mirror the Category options; multi-select groups stay in the drawer.
@@ -281,29 +281,29 @@ function buildPlansBar(collection, groups) {
   const quickPills = category
     ? category.options.map((opt) => buildPill(opt, category))
     : [];
-  const pills = createTag('div', { class: 'plans-filter-pills' }, quickPills);
+  const pills = createTag('div', { class: 'product-pricing-filter-pills' }, quickPills);
 
-  const searchInput = createTag('input', { class: 'plans-filter-search-input', type: 'search', placeholder: label('searchText', 'Search') });
-  const search = createTag('div', { class: 'plans-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);
+  const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: label('searchText', 'Search') });
+  const search = createTag('div', { class: 'product-pricing-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);
 
-  return createTag('div', { class: 'plans-filter-bar' }, [trigger, pills, search]);
+  return createTag('div', { class: 'product-pricing-filter-bar' }, [trigger, pills, search]);
 }
 
-function mountPlansFilter(collection, container) {
+function mountProductPricingFilter(collection, container) {
   // preview re-renders the collection; mount once per element.
-  if (collection.plansFilterMounted) return;
-  collection.plansFilterMounted = true;
+  if (collection.productPricingFilterMounted) return;
+  collection.productPricingFilterMounted = true;
   const { base } = getConfig();
   loadStyle(`${base}/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css`);
 
-  const groups = plansFilterGroups(collection.data);
-  const drawer = buildPlansDrawer(collection, groups);
-  const bar = buildPlansBar(collection, groups);
-  const trigger = bar.querySelector('.plans-filter-trigger');
+  const groups = productPricingFilterGroups(collection.data);
+  const drawer = buildProductPricingDrawer(collection, groups);
+  const bar = buildProductPricingBar(collection, groups);
+  const trigger = bar.querySelector('.product-pricing-filter-trigger');
   const open = () => { drawer.showModal(); trigger.setAttribute('aria-expanded', 'true'); };
   const close = () => drawer.close();
   trigger.addEventListener('click', open);
-  drawer.querySelector('.plans-drawer-close').addEventListener('click', close);
+  drawer.querySelector('.product-pricing-drawer-close').addEventListener('click', close);
   drawer.addEventListener('close', () => trigger.setAttribute('aria-expanded', 'false'));
   // Backdrop clicks target the dialog element; content clicks do not.
   drawer.addEventListener('click', (e) => { if (e.target === drawer) close(); });
@@ -312,10 +312,10 @@ function mountPlansFilter(collection, container) {
 
   const { placeholders = {} } = collection.data;
   const allFiltersLabel = placeholders.allFilters || 'All Filters';
-  const appliedEl = drawer.querySelector('.plans-drawer-applied');
-  const resultsEl = drawer.querySelector('.plans-drawer-results');
-  const triggerLabelEl = bar.querySelector('.plans-trigger-label');
-  const searchInput = bar.querySelector('.plans-filter-search-input');
+  const appliedEl = drawer.querySelector('.product-pricing-drawer-applied');
+  const resultsEl = drawer.querySelector('.product-pricing-drawer-results');
+  const triggerLabelEl = bar.querySelector('.product-pricing-trigger-label');
+  const searchInput = bar.querySelector('.product-pricing-filter-search-input');
   const defaultFilter = groups[0]?.options?.[0]?.value;
   let resultCount;
   const updateCounts = () => {
@@ -333,11 +333,11 @@ function mountPlansFilter(collection, container) {
   searchInput.addEventListener('input', debounce(() => setHashParam('search', searchInput.value.trim())));
 
   surfaces.forEach((root) => root.addEventListener('click', (e) => {
-    const pill = e.target.closest('.plans-pill');
+    const pill = e.target.closest('.product-pricing-pill');
     if (!pill) return;
     toggleFilterHash(pill.dataset.deeplink, pill.dataset.value, pill.dataset.multi === 'true');
   }));
-  drawer.querySelector('.plans-drawer-reset').addEventListener('click', () => {
+  drawer.querySelector('.product-pricing-drawer-reset').addEventListener('click', () => {
     const params = new URLSearchParams(window.location.hash.slice(1));
     params.set('filter', defaultFilter || 'all');
     params.delete('types');
@@ -599,7 +599,7 @@ export async function createCollection(el, options) {
       window.history.pushState({}, '', newUrl);
     }
     if (collection.variant === 'product-pricing') {
-      mountPlansFilter(collection, container);
+      mountProductPricingFilter(collection, container);
     } else {
       const sidenav = await getSidenav(collection);
       if (sidenav) {

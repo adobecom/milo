@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
-import init, { plansFilterGroups, toggleFilterHash, syncPills, countApplied } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
+import init, { productPricingFilterGroups, toggleFilterHash, syncPills, countApplied } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
@@ -384,9 +384,9 @@ describe('merch-card-collection autoblock', () => {
     });
   });
 
-  describe('plansFilterGroups', () => {
+  describe('productPricingFilterGroups', () => {
     it('maps hierarchy to a single-select Category group and tagFilters to types groups', () => {
-      const groups = plansFilterGroups({
+      const groups = productPricingFilterGroups({
         placeholders: { sidenavFilterCategories: 'Category' },
         hierarchy: [{ label: 'Photo', queryLabel: 'photo' }, { label: 'Video' }],
         sidenavSettings: {
@@ -412,7 +412,7 @@ describe('merch-card-collection autoblock', () => {
     });
 
     it('returns no groups for empty data', () => {
-      expect(plansFilterGroups({})).to.have.length(0);
+      expect(productPricingFilterGroups({})).to.have.length(0);
     });
   });
 
@@ -449,12 +449,12 @@ describe('merch-card-collection autoblock', () => {
       window.location.hash = 'filter=photo&types=desktop,web';
       const root = document.createElement('div');
       root.innerHTML = `
-        <button class="plans-pill" data-deeplink="filter" data-value="photo" data-multi="false"></button>
-        <button class="plans-pill" data-deeplink="filter" data-value="video" data-multi="false"></button>
-        <button class="plans-pill" data-deeplink="types" data-value="desktop" data-multi="true"></button>
-        <button class="plans-pill" data-deeplink="types" data-value="mobile" data-multi="true"></button>`;
+        <button class="product-pricing-pill" data-deeplink="filter" data-value="photo" data-multi="false"></button>
+        <button class="product-pricing-pill" data-deeplink="filter" data-value="video" data-multi="false"></button>
+        <button class="product-pricing-pill" data-deeplink="types" data-value="desktop" data-multi="true"></button>
+        <button class="product-pricing-pill" data-deeplink="types" data-value="mobile" data-multi="true"></button>`;
       syncPills(root);
-      const pressed = [...root.querySelectorAll('.plans-pill')].map((p) => p.getAttribute('aria-pressed'));
+      const pressed = [...root.querySelectorAll('.product-pricing-pill')].map((p) => p.getAttribute('aria-pressed'));
       expect(pressed).to.deep.equal(['true', 'false', 'true', 'false']);
     });
 
