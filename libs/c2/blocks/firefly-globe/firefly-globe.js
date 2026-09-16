@@ -16,7 +16,7 @@ import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
 import {
   easeInOutCubic, easeOutCubic, easeOutExpo, lerpN, clamp01, coverFit,
-  capDpr, CAM_FOV, TAN_HALF_FOV,
+  capDpr, CAM_FOV, TAN_HALF_FOV, camZAtTravelT, travelTAtCamZ,
   FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX, createFrame,
 } from './src/utils.js';
 
@@ -559,8 +559,7 @@ function createGlobeGalleryRuntime(
   function publishPqAppearT() {
     if (!pqEl) return;
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
-    const range = bp.CAM_Z_SPHERE - bp.CAM_Z_END;
-    pqAppearTravelT = range > 0 ? Math.min(1, Math.max(0, (bp.CAM_Z_SPHERE - clearZ) / range)) : 1;
+    pqAppearTravelT = travelTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
     const pinT = Math.min(1, H / Math.max(1, root.offsetHeight));
     pqAppearT = pinT + (1 - pinT) * pqAppearTravelT;
     root.style.setProperty('--fg-pq-appear-t', pqAppearT.toFixed(4));
@@ -1029,7 +1028,7 @@ function createGlobeGalleryRuntime(
       if (sphereFormed) {
         const pinT = H / blockH;
         travelT = clamp01((scrollT - pinT) / Math.max(0.001, 1 - pinT));
-        camera.position.z = lerpN(bp.CAM_Z_SPHERE, bp.CAM_Z_END, travelT);
+        camera.position.z = camZAtTravelT(travelT, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
       } else {
         travelT = 0;
         camera.position.z = lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, easeOutCubic(entryT));
@@ -1429,7 +1428,7 @@ function createGlobeGalleryRuntime(
     const txtWarpEntrance = lerpN(TEXT_WARP_ENTER_MAX, 0, sfT * sfT);
     // Fill the viewport at the current camera distance + warp-proportional overflow.
     const restDist = CAM_Z_SPHERE + SPHERE_R + TEXT_BEHIND_GAP;
-    const currDist = camera.position.z + SPHERE_R + TEXT_BEHIND_GAP;
+    const currDist = Math.max(camera.position.z, CAM_Z_SPHERE) + SPHERE_R + TEXT_BEHIND_GAP;
     textMesh.scale.setScalar(currDist / restDist + txtWarpEntrance * TEXT_WARP_OVERFLOW);
     const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
       * (1 - clamp01(travelT / pqAppearTravelT));

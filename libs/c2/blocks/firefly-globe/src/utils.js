@@ -25,6 +25,17 @@ export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 
 export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
+export function camZAtTravelT(t, camZSphere, camZEnd) {
+  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+}
+
+export function travelTAtCamZ(z, camZSphere, camZEnd) {
+  const span = camZSphere - camZEnd;
+  if (!(span > 0)) return 0;
+  const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
+  return 1 - ((1 - eased) ** (1 / 3));
+}
+
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
