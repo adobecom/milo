@@ -729,8 +729,8 @@ class Footer {
     if (link) {
       const linkText = link.textContent.trim();
       const description = text.replace(linkText, '').trim();
-      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text">${description}</p>`);
-      link.classList.add('feds-footer-mailingList-cta');
+      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text body-md">${description}</p>`);
+      link.classList.add('feds-footer-mailingList-cta', 'body-md');
       link.setAttribute('daa-ll', getAnalyticsValue(linkText, 1));
       const linkWrapper = link.closest('em, strong') || link;
       linkWrapper.replaceWith(link);
@@ -738,7 +738,7 @@ class Footer {
 
       await this.decorateModalLink(link);
     } else {
-      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text">${text}</p>`);
+      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text body-md">${text}</p>`);
     }
 
     this.elements.mailingList = mailingListElem;
@@ -752,6 +752,8 @@ class Footer {
     if (!contactSupportBlock) return this.elements.contactSupport;
 
     const contactSupportElem = toFragment`<div class="feds-footer-contactSupport" daa-lh="ContactSupport"></div>`;
+
+    contactSupportBlock.querySelectorAll('p').forEach((p) => p.classList.add('body-md'));
 
     contactSupportBlock.querySelectorAll('a').forEach((link, index) => {
       link.classList.add('feds-footer-contactSupport-link');
