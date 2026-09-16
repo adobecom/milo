@@ -2321,11 +2321,6 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
-  // Only prewarm authored divs that resolve to a real block. Denylisting non-blocks (e.g.
-  // `breadcrumbs`, which decorateHeader relocates into the header and gnav loads — there is no
-  // blocks/breadcrumbs/) is unbounded and 404s on a miss. Allowlisting the known-block
-  // registries is defensive: an unrecognized div is simply skipped, never fetched from a path
-  // that does not exist. External-lib blocks are honored so consumer blocks stay warmed.
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
