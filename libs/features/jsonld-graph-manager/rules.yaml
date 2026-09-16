@@ -744,10 +744,11 @@
   interacts_with: [offer-price, softwareapplication-offer-provenance]
   notes: >
     Each Offer MAY include a potentialAction property to express usage
-    actions, e.g. BuyAction, TryAction. When offers are absent, the manager
-    leaves them absent rather than inventing commercial data.
+    actions, e.g. BuyAction, TryAction. When offers are absent or empty, the
+    manager leaves them unchanged by default or emits the opt-in serialized
+    fallback defined by softwareapplication-offer-provenance.
   status: active
-  last_updated: "2026-07-23"
+  last_updated: "2026-09-16"
 
 - name: softwareapplication-rating-or-review
   section: "Type-specific: SoftwareApplication"
@@ -803,21 +804,30 @@
   section: "Type-specific: Offer"
   severity: error
   requirement: >
-    The graph manager MUST NOT synthesize Offer price, currency, availability,
-    category, or trial terms. Every Offer MUST originate from producer data.
-    When no producer supplies an Offer, SoftwareApplication.offers remains
-    absent or empty.
+    By default, every Offer MUST originate from producer data. Only when
+    jsonld-graph-manager-default-offer=true is explicitly enabled MAY the
+    manager serialize an Offer for a SoftwareApplication, WebApplication,
+    MobileApplication, or VideoGame whose offers property is missing or an
+    empty array. The generated Offer MUST have @id
+    {canonicalPageURL}#offer, price "0", priceCurrency "USD", availability
+    "https://schema.org/InStock", and category "Free Trial"; the application
+    MUST reference it as offers: [{"@id":"{canonicalPageURL}#offer"}].
+    Applications with authored Offer references MUST remain unchanged. The
+    manager MUST NOT generate an Offer when no supported application exists
+    or infer an application relationship from a standalone Offer.
   applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [JsonLdGraphManager.rewrite]
+  implements: [JsonLdGraphManager.rewrite, withDefaultOffer]
   tested_by: [manager.test.js]
   interacts_with: [softwareapplication-offers, offer-price]
   notes: >
-    Commercial facts are owned by product and commerce producers, which can
-    supply market-appropriate pricing and terms. Missing data may prevent a
-    Software App rich result, but is preferable to publishing an unsupported
-    claim.
+    The generated fallback is derived serialized output only and MUST NOT be
+    persisted in the manager graph or source maps. A later runtime
+    producer-authored Offer therefore replaces the fallback on the next
+    rebuild rather than coexisting with it. Commercial facts remain owned by
+    product and commerce producers unless page owners explicitly accept the
+    fixed fallback terms.
   status: active
-  last_updated: "2026-07-23"
+  last_updated: "2026-09-16"
 
 - name: aggregaterating-min-rating-value
   section: "Type-specific: AggregateRating"

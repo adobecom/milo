@@ -125,6 +125,30 @@ describe('Rich Results', () => {
     }
   });
 
+  it('passes the default Offer metadata opt-in to the graph manager', async () => {
+    document.head.innerHTML = `
+      <meta name="jsonld-graph-manager" content="true">
+      <meta name="jsonld-graph-manager-default-offer" content="true">
+      <script type="application/ld+json">{"@type":"SoftwareApplication","name":"Photoshop"}</script>
+    `;
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    if (window.miloJsonLd) window.miloJsonLd.manager = null;
+    await loadArea(document);
+    await waitFor(() => window.miloJsonLd?.manager, 2000);
+
+    const { manager } = window.miloJsonLd;
+    try {
+      const graph = JSON.parse(
+        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+      )['@graph'];
+      const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
+      expect(app.offers).to.deep.equal([{ '@id': `${window.location.origin}${window.location.pathname}#offer` }]);
+    } finally {
+      manager.destroy();
+      window.miloJsonLd.manager = null;
+    }
+  });
+
   it('keeps page loading and authored JSON-LD intact when manager initialization fails', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
     document.head.insertAdjacentHTML('beforeend', `

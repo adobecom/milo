@@ -14,6 +14,8 @@ Use AEM [Page Metadata](https://www.aem.live/docs/metadata) or [Bulk Metadata](h
 
 **Ignore-types flag:** `jsonld-graph-manager-ignore`. Comma-separated string, default empty. Ignore existing JSON-LD by case-insenstive `@type`. Producer scripts whose top-level content matches any entry on the list are bypassed entirely — the manager does not parse, normalize, merge, or remove them from the DOM. The pseudo-type `graph` matches any script whose top-level content is a `{ "@graph": [...] }` container, regardless of the types nested inside.
 
+**Default-offer flag:** `jsonld-graph-manager-default-offer`. Boolean, default: `false`. Page or bulk metadata and the URL query parameter are supported, with the query parameter taking precedence. When explicitly set to `true`, a `SoftwareApplication`, `WebApplication`, `MobileApplication`, or `VideoGame` with missing `offers` or an empty array receives a generated free-trial Offer in serialized output. Keep this disabled unless product and localization owners have confirmed the fixed commercial terms are accurate for the page.
+
 ## Testing & verification
 
 The manager is spec-driven, and the spec is executable. [`rules.yaml`](./rules.yaml) is the single source of truth for what a correct managed graph looks like — every rule carries a severity (`error` / `warn` / `info`), the code symbol that implements it, and the test that covers it. The fastest way to understand the system is to read `rules.yaml` next to the golden fixtures; the tests exist to prove the implementation conforms to that spec.
@@ -288,7 +290,20 @@ In addition to identity rewrite and merge, the manager applies a small set of ty
 
 This transform is governed by the `product-to-softwareapplication` requirement.
 
-**Offer provenance.** The manager hoists, normalizes, and relates Offers supplied by producers, but it never creates price, currency, availability, category, or trial terms. When no authoritative producer supplies an Offer, the application remains without one. This may make the page ineligible for a Software App rich result, but avoids publishing unsupported commercial claims. Governed by `softwareapplication-offer-provenance`.
+**Offer provenance and opt-in fallback.** By default, the manager only hoists, normalizes, and relates Offers supplied by producers; applications without authored offers remain unchanged. When `jsonld-graph-manager-default-offer=true` is explicitly enabled, an application with missing `offers` or an empty array receives this exact serialized fallback:
+
+```json
+{
+  "@type": "Offer",
+  "@id": "{canonicalPageURL}#offer",
+  "price": "0",
+  "priceCurrency": "USD",
+  "availability": "https://schema.org/InStock",
+  "category": "Free Trial"
+}
+```
+
+The serialized application references it as `"offers": [{ "@id": "{canonicalPageURL}#offer" }]`. Existing application Offer references are preserved without modification, no fallback is created when the graph has no `SoftwareApplication` or supported subtype, and standalone Offers are never inferred as belonging to an application. The fallback is derived serialized output only: it is not stored in the manager's graph or source maps, so a later runtime producer-authored Offer replaces the fallback on the next rebuild rather than coexisting with stale generated commercial data. Governed by `softwareapplication-offer-provenance`.
 
 **SoftwareApplication subtype preservation.** Schema.org defines `WebApplication`, `MobileApplication`, and `VideoGame` as subtypes of `SoftwareApplication`, and Google's Software App rich result explicitly supports them. When a producer supplies one of these subtypes (e.g., team-hardcoded `WebApplication` markup), the manager preserves the more specific `@type`, lands the node at the canonical `#softwareapplication` `@id`, and merges contributions from other producers (e.g., the review block emitting `Product` → `SoftwareApplication`) at the same id. The baseline `Product → SoftwareApplication` transform does NOT rewrite a producer-supplied subtype down to plain `SoftwareApplication`. Governed by `softwareapplication-subtype-allowed`.
 

@@ -352,6 +352,35 @@ function sortNodes(nodes) {
   });
 }
 
+function withDefaultOffer(nodes) {
+  const applicationIndex = nodes.findIndex(
+    (node) => effectiveType(node['@type']) === 'SoftwareApplication',
+  );
+  if (applicationIndex < 0) return nodes;
+  const application = nodes[applicationIndex];
+  const hasOffers = application.offers != null
+    && !(Array.isArray(application.offers) && application.offers.length === 0);
+  if (hasOffers) return nodes;
+
+  const offerId = pageScopedId('Offer');
+  if (nodes.some((node) => node['@id'] === offerId)) return nodes;
+
+  const serializedNodes = [...nodes];
+  serializedNodes[applicationIndex] = {
+    ...application,
+    offers: [{ '@id': offerId }],
+  };
+  serializedNodes.push({
+    '@type': 'Offer',
+    '@id': offerId,
+    price: '0',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    category: 'Free Trial',
+  });
+  return serializedNodes;
+}
+
 const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered', 'aggregateRating'];
 
 function extractEntity(val) {
@@ -448,6 +477,7 @@ export class JsonLdGraphManager {
     this.observer = null;
     this.isProcessing = false;
     this.ignoreTypes = options.ignoreTypes ?? IGNORE_TYPES;
+    this.generateDefaultOffer = options.generateDefaultOffer === true;
     this.bootScripts = options.bootScripts;
     this.debouncedRebuild = debounce(() => this.rebuild(), DEBOUNCE_MS);
   }
@@ -625,8 +655,9 @@ export class JsonLdGraphManager {
       }
     }
     injectLinks(nodes);
-    const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': nodes }, null, 2);
-    return { nodes, payload };
+    const serializedNodes = this.generateDefaultOffer ? withDefaultOffer(nodes) : nodes;
+    const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': serializedNodes }, null, 2);
+    return { nodes: serializedNodes, payload };
   }
 }
 
