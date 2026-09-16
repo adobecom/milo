@@ -363,7 +363,7 @@ class Footer {
     // We remove and add again the region, social and brand elements from the body to make sure
     // they don't get decorated twice
     [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent]
-    .forEach((parent) => parent?.replaceChildren());
+      .forEach((parent) => parent?.replaceChildren());
 
     await decorateLinksAsync(this.body);
 
@@ -694,20 +694,20 @@ class Footer {
         <span class="footer-logo-image">${logoSvg}</span>
       </span>`;
   };
-  
+
   // eslint-disable-next-line class-methods-use-this
   decorateModalLink = async (link) => {
     if (!link) return;
 
     let url;
 
-    try{
+    try {
       url = new URL(link.href);
     } catch (e) {
-      lanaLog({ message : `Could not create URL for Footer modal link; href : ${link.href}`, tags: 'global-footer', errorType: 'e' });
+      lanaLog({ message: `Could not create URL for Footer modal link; href : ${link.href}`, tags: 'global-footer', errorType: 'e' });
       return;
     }
-    if(!url.hash || url.hash.includes('#_inline')) return;
+    if (!url.hash || url.hash.includes('#_inline')) return;
 
     link.dataset.modalPath = url.pathname;
     link.dataset.modalHash = url.hash;
@@ -721,11 +721,11 @@ class Footer {
   decorateMailingList = async () => {
     this.elements.mailingList = '';
     const mailingListBlock = this.body.querySelector('.mailing-list');
-    if(!mailingListBlock) return this.elements.mailingList;
+    if (!mailingListBlock) return this.elements.mailingList;
     const mailingListElem = toFragment`<div class="feds-footer-mailingList" daa-lh="MailingList"></div>`;
-    const text = mailingListBlock.textContent.replace(/\s+/g,' ').trim();
+    const text = mailingListBlock.textContent.replace(/\s+/g, ' ').trim();
     const link = mailingListBlock.querySelector('a');
-    if(link) {
+    if (link) {
       const linkText = link.textContent.trim();
       const description = text.replace(linkText, '').trim();
       mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text">${description}</p>`);
@@ -748,7 +748,7 @@ class Footer {
   decorateContactSupport = () => {
     this.elements.contactSupport = '';
     const contactSupportBlock = this.body.querySelector('.contact-support');
-    if(!contactSupportBlock) return this.elements.contactSupport;
+    if (!contactSupportBlock) return this.elements.contactSupport;
 
     const contactSupportElem = toFragment`<div class="feds-footer-contactSupport" daa-lh="ContactSupport"></div>`;
 
@@ -784,16 +784,16 @@ class Footer {
     if (!brandBlock) return null;
 
     const backgroundRow = brandBlock.querySelectorAll(':scope > div')[1];
-    if(!backgroundRow) return null;
+    if (!backgroundRow) return null;
 
     const sources = [...backgroundRow.querySelectorAll(':scope > div')]
-    .map((cell) => (cell).querySelector('a')?.textContent.split('|')[0].trim())
-    .filter((src) => bgImageExtensions.test(src))
-    .map((src) => getFederatedUrl(src));
+      .map((cell) => (cell).querySelector('a')?.textContent.split('|')[0].trim())
+      .filter((src) => bgImageExtensions.test(src))
+      .map((src) => getFederatedUrl(src));
 
     if (!sources.length) return null;
 
-    const [mobile, tablet=mobile, desktop=tablet] = sources;
+    const [mobile, tablet = mobile, desktop = tablet] = sources;
     return { mobile, tablet, desktop };
   };
 
