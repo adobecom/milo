@@ -14,7 +14,17 @@
 
 .whats-new {
   --whats-new-content-max: 1192px;
-  --whats-new-gutter: clamp(24px, 8.6vw, 124px);
+
+  /*
+   * Interpolates between the two gutters the frames actually declare: 24px at
+   * 375 (Title Block / card frame padding-inline) and 124px at 1440. Both
+   * anchors are named literally below so the value stays auditable against the
+   * spec. A single-ratio vw cannot pass through both points - 24/375 is 6.4%
+   * but 124/1440 is 8.61% - and the previous clamp(24px, 8.6vw, 124px) missed
+   * the narrow anchor by 8.25px (it computed 32.25px at 375, where the clamp
+   * floor never engages because 8.6vw exceeds 24px above 279px wide).
+   */
+  --whats-new-gutter: clamp(24px, calc(24px + (100 * (100vw - 375px) / 1065)), 124px);
 
   box-sizing: border-box;
   background-color: #f6f6f6;
