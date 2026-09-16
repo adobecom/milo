@@ -648,7 +648,8 @@ function setEventListeners() {
       drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
-    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    if (event.target.closest('a')) return;
+    const cardEl = event.target.closest('.mep-card h1') && event.target.closest('.mep-card');
     if (cardEl) toggleExpandedCard(cardEl);
   });
 
