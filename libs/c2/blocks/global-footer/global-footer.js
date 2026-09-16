@@ -347,13 +347,23 @@ class Footer {
       onFooterError?.(error);
       return;
     }
-    const [region, social, brand, mailingList, contactSupport] = ['.region-selector', '.social', '.brand', '.mailing-list', '.contact-support'].map((selector) => this.body.querySelector(selector));
+    const [region, social, brand, mailingList, contactSupport] = [
+      '.region-selector',
+      '.social', '.brand',
+      '.mailing-list',
+      '.contact-support',
+    ].map((selector) => this.body.querySelector(selector));
     const [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent] = [
-      region?.parentElement, social?.parentElement, brand?.parentElement, mailingList?.parentElement, contactSupport?.parentElement
+      region?.parentElement,
+      social?.parentElement,
+      brand?.parentElement,
+      mailingList?.parentElement,
+      contactSupport?.parentElement,
     ];
     // We remove and add again the region, social and brand elements from the body to make sure
     // they don't get decorated twice
-    [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent].forEach((parent) => parent?.replaceChildren());
+    [regionParent, socialParent, brandParent, mailingListParent, contactSupportParent]
+    .forEach((parent) => parent?.replaceChildren());
 
     await decorateLinksAsync(this.body);
 
@@ -684,9 +694,10 @@ class Footer {
         <span class="footer-logo-image">${logoSvg}</span>
       </span>`;
   };
-
+  
+  // eslint-disable-next-line class-methods-use-this
   decorateModalLink = async (link) => {
-    if(!link) return;
+    if (!link) return;
 
     let url;
 
@@ -711,7 +722,7 @@ class Footer {
     this.elements.mailingList = '';
     const mailingListBlock = this.body.querySelector('.mailing-list');
     if(!mailingListBlock) return this.elements.mailingList;
-    const mailingListElem = toFragment`<dib class="feds-footer-mailingList" daa-lh="MailingList"></div>`;
+    const mailingListElem = toFragment`<div class="feds-footer-mailingList" daa-lh="MailingList"></div>`;
     const text = mailingListBlock.textContent.replace(/\s+/g,' ').trim();
     const link = mailingListBlock.querySelector('a');
     if(link) {
@@ -784,7 +795,7 @@ class Footer {
 
     const [mobile, tablet=mobile, desktop=tablet] = sources;
     return { mobile, tablet, desktop };
-  }
+  };
 
   decorateFooter = () => {
     const isThinVersion = getThinVersion();
@@ -827,8 +838,8 @@ class Footer {
   syncFooterOptionsOrder = () => {
     const options = this.elements.footer?.querySelector('.feds-footer-options');
     if (!options) return;
-    
-    if(getThinVersion()){
+
+    if (getThinVersion()) {
       this.syncFooterMenuLayout();
       return;
     }

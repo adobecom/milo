@@ -365,6 +365,9 @@ span.feds-footer-privacyLink-divider {
   "legal";
   row-gap: var(--s2a-spacing-lg);
   align-items: start;
+  margin: 0;
+  padding-top: var(--s2a-layout-sm);
+  padding-bottom: var(--s2a-layout-md);
 }
 
 .global-footer.thin .feds-footer-options > .feds-footer-mailingList {
@@ -656,6 +659,8 @@ span.feds-footer-privacyLink-divider {
     "social"
     "support"
     "legal";
+    padding-top: var(--s2a-layout-md);
+    padding-bottom: var(--s2a-layout-md);
   }
 
   .global-footer .feds-footer-miscLinks-legal > .feds-footer-legalWrapper {
