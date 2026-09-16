@@ -2305,7 +2305,7 @@ export function preloadLcpCodeFiles(area = document) {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
-  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
@@ -2321,11 +2321,17 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
-  // `breadcrumbs` is authored in the first section but relocated into the header by
-  // decorateHeader(); it never loads from blocks/breadcrumbs/, so preloading that path 404s.
-  const isHeaderRelocatedBlock = (name) => name === 'breadcrumbs';
+  // Only prewarm authored divs that resolve to a real block. Denylisting non-blocks (e.g.
+  // `breadcrumbs`, which decorateHeader relocates into the header and gnav loads — there is no
+  // blocks/breadcrumbs/) is unbounded and 404s on a miss. Allowlisting the known-block
+  // registries is defensive: an unrecognized div is simply skipped, never fetched from a path
+  // that does not exist. External-lib blocks are honored so consumer blocks stay warmed.
+  const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
+  [].concat(externalLibs ?? []).forEach((lib) => {
+    if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
+  });
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]) && !isHeaderRelocatedBlock(el.classList[0]));
+    .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
