@@ -260,7 +260,6 @@ p.preflight-content-heading-edit {
 .preflight-group-expand {
   height: 18px;
   mask: url('./img/expand.svg') no-repeat 50% / 24px;
-  mask: url('./img/expand.svg') no-repeat 50% / 24px;
   background-color: var(--preflight-fg-subtle);
   transition: transform .2s ease-in-out;
   transform: rotate(90deg);
@@ -306,7 +305,6 @@ p.preflight-content-heading-edit {
 .preflight-group-row.preflight-group-detail::before {
   content: '';
   mask: url('./img/empty.svg') no-repeat 50% / 32px;
-  mask: url('./img/empty.svg') no-repeat 50% / 32px;
   background-color: var(--s2a-color-gray-300);
   position: absolute;
   inset-inline-start: 18px;
@@ -318,12 +316,10 @@ p.preflight-content-heading-edit {
 .preflight-group-row.preflight-group-detail.is-checked::before,
 .preflight-group-row.preflight-group-detail.is-checked.not-found::before {
   mask-image: url('./img/check.svg');
-  mask-image: url('./img/check.svg');
   background-color: var(--preflight-success);
 }
 
 .preflight-group-row.preflight-group-detail.is-fetching::before {
-  mask: none;
   mask: none;
   background: none;
   border: 3px solid var(--s2a-color-blue-200);
@@ -357,7 +353,6 @@ a.preflight-edit.da-icon {
 }
 
 .preflight-group-row.preflight-group-detail.not-found::before {
-  mask-image: url('./img/red-error.svg');
   mask-image: url('./img/red-error.svg');
   background-color: var(--preflight-error);
 }
@@ -580,7 +575,6 @@ span.preflight-time {
 
 @keyframes spin {
   100% {
-    transform: rotate(360deg);
     transform: rotate(360deg);
   }
 }
@@ -1421,7 +1415,6 @@ img:hover ~ .asset-meta,
 /* Toggle Arrow */
 .violation-expand {
   height: 18px;
-  mask: url('./img/expand.svg') no-repeat 50% / 24px;
   mask: url('./img/expand.svg') no-repeat 50% / 24px;
   background-color: var(--preflight-fg-subtle);
   transition: transform 0.2s ease-in-out;

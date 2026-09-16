@@ -1,8 +1,4 @@
-import { getPageStatus } from '../adminStatus.js';
-
-function isLocalHost(hostname) {
-  return hostname === 'localhost' || hostname === '127.0.0.1';
-}
+import { getPageStatus, isLocalHost } from '../adminStatus.js';
 
 function toModifiedMs(value) {
   const ms = Date.parse(value ?? '');

@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters } from '../../libs/scripts/delayed.js';
+import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -102,5 +102,42 @@ describe('addRUMCampaignTrackingParameters', () => {
     const sampleRUM = sinon.stub();
     addRUMCampaignTrackingParameters({ sampleRUM });
     expect(sampleRUM.notCalled).to.be.true;
+  });
+});
+
+describe('loadPreflightResults', () => {
+  let fetchStub;
+
+  beforeEach(() => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+      text: async () => '',
+    });
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+    document.querySelector('main')?.remove();
+    document.querySelector('.milo-preflight-overlay')?.remove();
+  });
+
+  it('is exported as a function', () => {
+    expect(loadPreflightResults).to.be.a('function');
+  });
+
+  it('resolves without throwing on the test host', async () => {
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    await loadPreflightResults();
+    expect(true).to.be.true;
+  });
+
+  it('does not render the publish notification on local hosts', async () => {
+    // web-test-runner serves on localhost, so the isLocal branch is exercised
+    // and the sidekick quality-check notification must be skipped.
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    await loadPreflightResults();
+    expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
   });
 });

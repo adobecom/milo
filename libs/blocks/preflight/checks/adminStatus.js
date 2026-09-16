@@ -6,12 +6,16 @@ export function isCrossRepo(pathname) {
   return CROSS_REPO_PREFIXES.some(({ prefix }) => pathname.startsWith(prefix));
 }
 
+export function isLocalHost(hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
 export function getAdminUrl(url, type) {
   const crossRepo = CROSS_REPO_PREFIXES.find(({ prefix }) => url.pathname.startsWith(prefix));
   let owner; let repo; let branch;
   if (crossRepo) {
     ({ owner, repo, branch } = crossRepo);
-  } else if (url.hostname === 'localhost') {
+  } else if (isLocalHost(url.hostname)) {
     [branch, repo, owner] = ['main', 'milo', 'adobecom'];
   } else {
     if (!(/adobecom\.(hlx|aem)\./.test(url.hostname))) return false;

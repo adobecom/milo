@@ -111,16 +111,19 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 export const loadPreflightResults = async () => {
   const { hostname } = window.location;
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-  if (!isLocal && !hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
+  const isPreview = hostname.endsWith('.aem.page');
+  const isLive = hostname.endsWith('.aem.live');
+  if (!isLocal && !isPreview && !isLive) return;
 
   const run = async () => {
-    if (isLocal || hostname.endsWith('.aem.page')) {
+    if (isLocal || isPreview) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
       autoHighlightUnpublished();
     }
-    if (isLocal) return;
-    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
-    await showPreflightNotification();
+    if (!isLocal) {
+      const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
+      await showPreflightNotification();
+    }
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');

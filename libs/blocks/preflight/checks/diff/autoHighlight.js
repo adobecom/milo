@@ -2,10 +2,8 @@ import { loadStyle, getConfig } from '../../../../utils/utils.js';
 import loadC2Tokens from '../../c2-tokens.js';
 import fetchVersions from './fetchVersions.js';
 import computeDiff from './computeDiff.js';
-import collectFragmentChanges, { hasPendingFragments } from './fragments.js';
+import collectFragmentChanges from './fragments.js';
 import { autoHighlightOnPage } from '../../panels/diff-onpage.js';
-
-const PENDING_FRAGMENT_WAIT_MS = 2000;
 
 export default async function autoHighlightUnpublished() {
   const root = document.querySelector('main');
@@ -13,9 +11,6 @@ export default async function autoHighlightUnpublished() {
   try {
     const url = new URL(window.location.href);
     const page = computeDiff(await fetchVersions(url)).content;
-    if (hasPendingFragments(root)) {
-      await new Promise((res) => { setTimeout(res, PENDING_FRAGMENT_WAIT_MS); });
-    }
     const fragments = await collectFragmentChanges(root, url);
     const content = {
       added: [...(page?.added || []), ...fragments.added],
