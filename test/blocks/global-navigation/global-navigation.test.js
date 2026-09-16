@@ -532,6 +532,58 @@ describe('global navigation', () => {
       }
     });
 
+    it('manages the originating merch modal hash without invoking Milo modal routing', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const cta = document.createElement('a');
+      cta.href = '#';
+      cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
+      document.body.append(cta);
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      const hashchange = sinon.spy();
+      window.addEventListener('hashchange', hashchange);
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        const successfulWorkflow = document.createElement('div');
+        cta.focus();
+
+        await showDialog(successfulWorkflow, {}, sinon.spy());
+
+        expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
+        expect(hashchange.called).to.be.false;
+        successfulWorkflow.dispatchEvent(new Event('success'));
+        successfulWorkflow.dispatchEvent(new Event('close'));
+        expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
+
+        window.history.replaceState(null, '', originalUrl);
+        const canceledWorkflow = document.createElement('div');
+        cta.focus();
+        await showDialog(canceledWorkflow, {}, sinon.spy());
+        canceledWorkflow.dispatchEvent(new Event('cancel'));
+        canceledWorkflow.dispatchEvent(new Event('close'));
+
+        expect(window.location.href).to.equal(originalUrl);
+        expect(hashchange.called).to.be.false;
+      } finally {
+        window.removeEventListener('hashchange', hashchange);
+        cta.remove();
+        script.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
+        document.documentElement.classList.remove('disable-scroll');
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
     it('shows a centered spinner until the workflow iframe loads', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;

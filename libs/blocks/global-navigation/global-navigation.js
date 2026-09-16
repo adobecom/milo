@@ -1151,6 +1151,17 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
+        const modalId = document.activeElement?.getAttribute('data-modal-id');
+        const modalHash = modalId ? `#${modalId}` : '';
+        let restoreUrl;
+        if (modalHash) {
+          restoreUrl = window.location.hash === modalHash
+            ? `${window.location.pathname}${window.location.search}`
+            : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+          if (window.location.hash !== modalHash) {
+            window.history.pushState(window.history.state, '', modalHash);
+          }
+        }
         const isIframe = element.tagName === 'IFRAME';
         if (isIframe) {
           await Promise.all([
@@ -1178,8 +1189,14 @@ class Gnav {
         }
         dialog.appendChild(element);
         document.body.appendChild(dialog);
+        const retainModalHash = () => { restoreUrl = undefined; };
+        element.addEventListener('success', retainModalHash, { once: true });
         element.addEventListener('close', () => {
           finishLoading?.();
+          element.removeEventListener('success', retainModalHash);
+          if (restoreUrl && window.location.hash === modalHash) {
+            window.history.pushState(window.history.state, '', restoreUrl);
+          }
           closeCallback({ type: 'close' });
           dialog.close();
           dialog.remove();
