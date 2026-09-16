@@ -56,6 +56,7 @@
 .whats-new .heading-content h2 {
   max-width: 664px;
   font-family: var(--heading-font-family);
+
   /* narrow frame 7849:6299 holds the title at 56px; desktop matches at >=768px */
   font-size: 56px;
   font-weight: 900;
@@ -79,7 +80,11 @@
   /* narrow frame 7849:6299 stacks 1-up with a 40px gap through 767px */
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-40, 40px);
-  align-items: start;
+
+  /* NOT align-items:start. The 1440 frame puts every card CTA on ONE baseline;
+     `start` lets a short-bodied card float its CTA up (measured: card 1's CTA
+     sat 18px above cards 2-3). Cards must stretch so the CTA can bottom-align. */
+  align-items: stretch;
 }
 
 /* ---------- desktop (>=768px): layers the 1440 frame on top ---------- */
@@ -122,7 +127,11 @@
 .whats-new .card-body {
   display: flex;
   flex-direction: column;
-  gap: var(--s2a-spacing-24, 24px);
+
+  /* 8px is the headline->copy pair. The copy->CTA gap is built up on the CTA
+     itself so it can also absorb the card's slack (see .card-link-wrapper). */
+  gap: var(--s2a-spacing-8, 8px);
+  flex: 1;
   padding: var(--s2a-spacing-24, 24px) var(--s2a-spacing-24, 24px) 0;
 }
 
@@ -137,9 +146,6 @@
   line-height: 18px;
   letter-spacing: -0.48px;
   color: #000;
-
-  /* headline and its supporting copy are a tighter pair than the gap to the CTA */
-  margin-block-end: calc(var(--s2a-spacing-8, 8px) - var(--s2a-spacing-24, 24px));
 }
 
 .whats-new .card-body > p:not(.card-link-wrapper) {
@@ -154,6 +160,12 @@
 
 .whats-new .card-link-wrapper {
   margin-block: 0;
+
+  /* `auto` eats the card's leftover height so every CTA lands on ONE baseline
+     regardless of copy length; the padding keeps a real 16px floor (8px flex
+     gap + 8px) on the tallest card, where `auto` resolves to 0. */
+  margin-block-start: auto;
+  padding-block-start: var(--s2a-spacing-8, 8px);
 }
 
 .whats-new .card-link {
