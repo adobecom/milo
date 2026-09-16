@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-relative-packages
+import { createTag } from '../../../../utils/utils.js';
+
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
@@ -49,9 +52,9 @@ function cellParas(cell) {
 
 function parsePullQuote(row) {
   const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent).filter(Boolean);
   return {
-    quote: quoteEl ? quoteEl.textContent.trim() : paras.shift() || '',
+    quote: quoteEl ? quoteEl.textContent : paras.shift() || '',
     name: paras[0] || '',
     role: paras[1] || '',
   };
@@ -60,13 +63,6 @@ function parsePullQuote(row) {
 // Move the authored <p>s into a container.
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
-}
-
-function createTag(tag, attrs, ...children) {
-  const el = document.createElement(tag);
-  if (attrs) Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-  children.forEach((c) => el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-  return el;
 }
 
 const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
@@ -107,13 +103,13 @@ function measureLines(quoteEl, words) {
   quoteEl.replaceChildren(...nodes);
   const lines = [];
   let top = null;
-  probes.forEach((s) => {
+  probes.forEach((s, i) => {
     const y = s.offsetTop;
     if (top === null || y - top > 1) {
       lines.push([]);
       top = y;
     }
-    lines[lines.length - 1].push(s.textContent);
+    lines[lines.length - 1].push(words[i]);
   });
   return lines;
 }
@@ -273,13 +269,12 @@ function apiAssetToCard(asset, locale) {
   const { modelId, modelVersionName } = parseModelTags(asset.machine_tags);
   return {
     img,
-    // The API carries no alt; the prompt is the closest description for the a11y card label.
     alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
     modelId,
     modelVersionName,
     prompt,
     fireflyUrl,
-    crossOrigin: 'anonymous', // cdn.cp.adobe.io is cross-origin; required for WebGL texSubImage2D
+    crossOrigin: 'anonymous',
   };
 }
 
@@ -332,8 +327,6 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 
 // Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
 // the hash is stripped before fetching.
-// Authoring: [cardsRow, hintTextRow, a11yRow, pullQuoteRow]
-// cardsRow first cell: "categoryId || cgenId || ctaLabel" (API) or a fragment link (legacy).
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
@@ -341,7 +334,6 @@ export function parseAuthoredContent(el) {
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  // hintTextRow is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {

@@ -1,4 +1,3 @@
-// Floats the hint label beside the native cursor; the native cursor itself stays visible.
 // eslint-disable-next-line import/no-relative-packages
 import { createTag } from '../../../../utils/utils.js';
 

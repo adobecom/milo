@@ -1,6 +1,3 @@
-// Pure stateless helpers: easings, UV fitting, camera math, frame clock.
-// No THREE, no DOM, no closure state.
-
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
 export function easeOutExpo(t) { return t >= 1 ? 1 : 1 - 2 ** (-10 * t); }
@@ -33,7 +30,6 @@ export const FRAME_MS = 1000 / 60;
 export const DT_SCALE_MIN = 0.25;
 export const DT_SCALE_MAX = 3;
 
-// Allocated once per runtime, mutated in place. Shape stays monomorphic.
 export function createFrame() {
   return {
     dtScale: 1,

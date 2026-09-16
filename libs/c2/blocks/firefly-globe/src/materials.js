@@ -125,7 +125,6 @@ function texAspect(tex) {
   return imgW / imgH;
 }
 
-// onEach fires per settled image, onDone once all `count` settle.
 export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin }, onEach, onDone) {
   let loaded = 0;
   const textures = new Array(count);
@@ -143,7 +142,6 @@ export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin }, onE
   function tryLoad(i) {
     const img = new Image();
     const co = getCrossOrigin ? getCrossOrigin(i) : null;
-    // crossOrigin required for cross-origin WebGL texSubImage2D (e.g. community CDN)
     if (co) img.crossOrigin = co;
     img.onload = () => {
       imageToTexture(img, maxTexH, fitCardDims).then((tex) => done(i, tex));

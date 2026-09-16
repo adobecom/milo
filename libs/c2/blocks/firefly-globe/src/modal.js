@@ -827,7 +827,7 @@ export default function createGlobeModal({
     modalEl = q('.firefly-globe-modal');
     if (!modalEl) return;
     const declaredMs = parseFloat(
-      getComputedStyle(modalEl).getPropertyValue('--gg-modal-anim-ms'),
+      getComputedStyle(modalEl).getPropertyValue('--fg-modal-anim-ms'),
     );
     modalAnimMs = Number.isFinite(declaredMs) && declaredMs > 0 ? declaredMs : MODAL_ANIM_FALLBACK;
     modalStartPos = new THREE.Vector3();
