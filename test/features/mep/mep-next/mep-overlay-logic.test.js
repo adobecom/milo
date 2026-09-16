@@ -44,7 +44,7 @@ const {
   API_URLS,
   getExpandedCards,
   toSlug,
-  hasMasChanges,
+  hasRelevantContentChanges,
   getTopMarketsAvailability,
   getCaasSummary,
   getPageId,
@@ -107,32 +107,39 @@ describe('API_URLS', () => {
 describe('getExpandedCards', () => {
   afterEach(() => localStorage.removeItem(CARD_STORAGE_KEY));
 
-  it('returns an empty Set when localStorage has no entry', () => {
+  it('returns an empty object when localStorage has no entry', () => {
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns a Set populated from a valid JSON array in localStorage', () => {
+  it('returns an object populated from valid JSON in localStorage', () => {
+    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify({ 'card-a': true, 'card-b': false }));
+    const result = getExpandedCards();
+    expect(result['card-a']).to.be.true;
+    expect(result['card-b']).to.be.false;
+    expect(Object.keys(result)).to.have.length(2);
+  });
+
+  it('returns an empty object when localStorage contains a legacy array', () => {
     localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(['card-a', 'card-b']));
     const result = getExpandedCards();
-    expect(result.has('card-a')).to.be.true;
-    expect(result.has('card-b')).to.be.true;
-    expect(result.size).to.equal(2);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when localStorage contains invalid JSON', () => {
+  it('returns an empty object when localStorage contains invalid JSON', () => {
     localStorage.setItem(CARD_STORAGE_KEY, '{not-valid-json');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 
-  it('returns an empty Set when stored value is null (JSON.parse null edge case)', () => {
+  it('returns an empty object when stored value is null (JSON.parse null edge case)', () => {
     localStorage.setItem(CARD_STORAGE_KEY, 'null');
     const result = getExpandedCards();
-    expect(result).to.be.instanceof(Set);
-    expect(result.size).to.equal(0);
+    expect(result).to.be.an('object');
+    expect(Object.keys(result)).to.have.length(0);
   });
 });
 
@@ -168,51 +175,75 @@ describe('toSlug', () => {
   });
 });
 
-describe('hasMasChanges', () => {
+describe('hasRelevantContentChanges', () => {
   function makeMutations(nodes) {
     return [{ addedNodes: nodes }];
   }
 
   it('returns true when a merch-card element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('merch-card')]))).to.be.true;
   });
 
   it('returns true when an element with data-mas-block is added', () => {
     const el = document.createElement('div');
     el.dataset.masBlock = 'collection';
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when an element with data-wcs-osi is added', () => {
     const el = document.createElement('span');
     el.setAttribute('data-wcs-osi', 'osi-1');
-    expect(hasMasChanges(makeMutations([el]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
   });
 
   it('returns true when a mas-field element is added', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('mas-field')]))).to.be.true;
   });
 
   it('returns true when an added node contains a MAS descendant', () => {
     const parent = document.createElement('div');
     parent.append(document.createElement('merch-card'));
-    expect(hasMasChanges(makeMutations([parent]))).to.be.true;
+    expect(hasRelevantContentChanges(makeMutations([parent]))).to.be.true;
   });
 
-  it('returns false for a plain div with no MAS attributes', () => {
-    expect(hasMasChanges(makeMutations([document.createElement('div')]))).to.be.false;
+  it('returns true when an element with data-caas-block is added', () => {
+    const el = document.createElement('div');
+    el.dataset.caasBlock = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-manifest-id is added', () => {
+    const el = document.createElement('div');
+    el.dataset.manifestId = 'manifest-1';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-mep-lingo-roc is added', () => {
+    const el = document.createElement('div');
+    el.dataset.mepLingoRoc = '';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns true when an element with data-path is added', () => {
+    const el = document.createElement('div');
+    el.dataset.path = '/fragments/foo';
+    expect(hasRelevantContentChanges(makeMutations([el]))).to.be.true;
+  });
+
+  it('returns false for a plain div with no relevant attributes', () => {
+    expect(hasRelevantContentChanges(makeMutations([document.createElement('div')]))).to.be.false;
   });
 
   it('returns false for a text node', () => {
-    expect(hasMasChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([document.createTextNode('hello')]))).to.be.false;
   });
 
   it('returns false for an empty mutations array', () => {
-    expect(hasMasChanges([])).to.be.false;
+    expect(hasRelevantContentChanges([])).to.be.false;
   });
 
   it('returns false when mutation has no added nodes', () => {
-    expect(hasMasChanges(makeMutations([]))).to.be.false;
+    expect(hasRelevantContentChanges(makeMutations([]))).to.be.false;
   });
 });
 
@@ -277,7 +308,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a', 'variant-b'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
           analyticsTitle: 'Test',
@@ -299,7 +330,7 @@ describe('getManifestList', () => {
           variantNames: ['variant-a'],
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
-          geoRestriction: null,
+          countryRestriction: null,
           mktgAction: null,
           disabled: false,
         }],
@@ -380,24 +411,24 @@ describe('getManifestList', () => {
     expect(va.selected).to.be.false;
   });
 
-  it('uppercases geoRestriction when present', () => {
+  it('uppercases countryRestriction when present', () => {
     setConfig({
       ...config,
       mep: {
         ...config.mep,
         experiments: [{
-          name: 'Geo Test',
-          manifest: '/homepage/fragments/mep/geo.json',
+          name: 'Country Test',
+          manifest: '/homepage/fragments/mep/country.json',
           variantNames: ['v-a'],
           selectedVariantName: 'v-a',
           source: 'helix',
-          geoRestriction: 'emea',
+          countryRestriction: 'emea',
           disabled: false,
         }],
       },
     });
     const { manifests } = getManifestList();
-    expect(manifests[0].geoRestriction).to.equal('EMEA');
+    expect(manifests[0].countryRestriction).to.equal('EMEA');
   });
 
   it('sets showActive and isActive correctly when experiment is disabled', () => {
@@ -439,6 +470,43 @@ describe('getManifestList', () => {
     expect(manifests[0].index).to.equal(1);
     expect(manifests[1].index).to.equal(2);
   });
+
+  it('appends a malformed entry for each mep.manifestErrors record', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [{
+          name: 'Valid', manifest: '/valid.json', variantNames: ['v'], selectedVariantName: 'v', source: 'helix', disabled: false,
+        }],
+        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(2);
+    const [valid, malformed] = manifests;
+    expect(valid.malformed).to.be.undefined;
+    expect(malformed).to.include({
+      index: 2,
+      editUrl: '/broken.json',
+      fileName: 'Broken Manifest',
+      malformed: true,
+    });
+  });
+
+  it('returns only malformed entries when mep has manifestErrors but no experiments', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [],
+        manifestErrors: [{ name: 'Broken', manifestPath: '/broken.json' }],
+      },
+    });
+    const { manifests } = getManifestList();
+    expect(manifests).to.have.lengthOf(1);
+    expect(manifests[0]).to.include({ index: 1, malformed: true });
+  });
 });
 
 describe('getPageSummary', () => {
@@ -453,14 +521,44 @@ describe('getPageSummary', () => {
     });
   });
 
-  it('includes Manifests Found, Foundation, Theme, Target Integration, Personalization', async () => {
+  it('includes Manifests Found, Foundation, Theme, Load Target Faster (v2), Manifest Sources', async () => {
     const pairs = await getPageSummary();
     const labels = pairs.map(([l]) => l);
     expect(labels).to.include('Manifests Found');
     expect(labels).to.include('Foundation');
     expect(labels).to.include('Theme');
-    expect(labels).to.include('Target Integration');
-    expect(labels).to.include('Personalization');
+    expect(labels).to.include('Load Target Faster (v2)');
+    expect(labels).to.include('Manifest Sources');
+  });
+
+  it('Manifest Sources nests Target Integration, Personalization Metadata, Promo Metadata, MEP Param', async () => {
+    const pairs = await getPageSummary();
+    const [, manifestSources] = pairs.find(([l]) => l === 'Manifest Sources');
+    const subLabels = manifestSources.map(([l]) => l);
+    expect(subLabels).to.deep.equal(['Target Integration', 'Personalization Metadata', 'Promo Metadata', 'MEP Param']);
+    const [, targetIntegration] = manifestSources.find(([l]) => l === 'Target Integration');
+    expect(targetIntegration).to.equal('on');
+    manifestSources
+      .filter(([l]) => l !== 'Target Integration')
+      .forEach(([, value]) => expect(value).to.equal('off'));
+  });
+
+  it('Load Target Faster (v2) is n/a when Target is off', async () => {
+    setConfig({ ...config, mep: { ...config.mep, targetEnabled: false } });
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('n/a');
+  });
+
+  it('Load Target Faster (v2) reflects personalization-v2 metadata when Target is on', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'personalization-v2';
+    meta.content = 'on';
+    document.head.append(meta);
+    const pairs = await getPageSummary();
+    const [, loadTargetFaster] = pairs.find(([l]) => l === 'Load Target Faster (v2)');
+    expect(loadTargetFaster).to.equal('on');
+    meta.remove();
   });
 
   it('reports 0 manifests found when experiments array is empty', async () => {

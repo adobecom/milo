@@ -1,5 +1,6 @@
 import { createTag, getConfig, reloadPage } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { sanitizeUrl, sanitizeTarget } from './sanitize.js';
 
 const MANAGE_PLAN_MSG_SUBTYPE = {
   AppLoaded: 'AppLoaded',
@@ -57,7 +58,8 @@ function buildUrl(upgradeOffer, upgradable, env) {
   return url.toString();
 }
 
-export const handleIFrameEvents = ({ data: msgData }) => {
+export const handleIFrameEvents = ({ data: msgData, origin }) => {
+  if (!['https://commerce.adobe.com', 'https://commerce-stg.adobe.com', 'https://plan.adobe.com', 'https://stage.plan.adobe.com'].includes(origin)) return;
   let parsedMsg = null;
   try {
     parsedMsg = JSON.parse(msgData);
@@ -67,6 +69,9 @@ export const handleIFrameEvents = ({ data: msgData }) => {
   const { app, subType, data } = parsedMsg || {};
 
   if (app !== 'ManagePlan') return;
+  const sanitizedExternalUrl = sanitizeUrl(data?.externalUrl);
+  const sanitizedReturnUrl = sanitizeUrl(data?.returnUrl);
+  const sanitizedTarget = sanitizeTarget(data?.target);
   switch (subType) {
     case MANAGE_PLAN_MSG_SUBTYPE.AppLoaded:
       document.querySelector('.upgrade-flow-content iframe')?.classList?.remove('loading');
@@ -74,22 +79,22 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       lanaLog('Showing modal', subType);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.EXTERNAL:
-      if (!data?.externalUrl || !data.target) return;
+      if (!sanitizedExternalUrl || !sanitizedTarget) return;
       lanaLog('Opening external URL', subType);
-      window.open(data.externalUrl, data.target);
+      window.open(sanitizedExternalUrl, sanitizedTarget);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.SWITCH:
-      if (!data?.externalUrl || !data.target) return;
+      if (!sanitizedExternalUrl || !sanitizedTarget) return;
       lanaLog('Opening external URL (SWITCH)', subType);
-      window.open(data.externalUrl, data.target);
+      window.open(sanitizedExternalUrl, sanitizedTarget);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK:
-      if (!data?.externalUrl || !data.target) return;
-      if (data.returnUrl) {
-        window.sessionStorage.setItem('upgradeModalReturnUrl', data.returnUrl);
+      if (!sanitizedExternalUrl || !sanitizedTarget) return;
+      if (sanitizedReturnUrl) {
+        window.sessionStorage.setItem('upgradeModalReturnUrl', sanitizedReturnUrl);
       }
       lanaLog('Opening external URL (RETURN_BACK)', subType);
-      window.open(data.externalUrl, data.target);
+      window.open(sanitizedExternalUrl, sanitizedTarget);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.OrderComplete:
       shouldRefetchEntitlements = true;

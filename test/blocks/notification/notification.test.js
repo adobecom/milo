@@ -14,7 +14,9 @@ setConfig(conf);
 
 const mockBody = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/notification/notification.js');
-document.head.innerHTML = '<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
+// End date one year out so the countdown-timer fixture never expires over time.
+const futureCdtEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+document.head.innerHTML = `<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,${futureCdtEnd}">`;
 
 describe('notification', async () => {
   let notifs;

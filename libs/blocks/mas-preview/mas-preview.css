@@ -1,6 +1,7 @@
 
 .fragment-meta {
-    margin: 10px 50px 20px 50px;
+    width: var(--grid-container-width);
+    margin: 10px auto 20px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -44,7 +45,8 @@
 
 .fragment-preview {
   min-height: 100px;
-  margin: 0 0 10px 50px;
+  width: var(--grid-container-width);
+  margin: 0 auto 10px;
 }
 
 .fragment-preview.hidden {
