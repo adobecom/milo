@@ -771,14 +771,18 @@
     img {
       max-width: 100%;
       box-sizing: border-box;
+      aspect-ratio: 1/1;
+      border-radius: var(--s2a-border-radius-4);
     }
 
-    .media-cell div.video-container {
-      border: none;
-      border-radius: var(--s2a-border-radius-4);
-      padding: unset;
+    .media-cell {
+      :is(picture, div.video-container) {
+        border: none;
+        border-radius: var(--s2a-border-radius-4);
+        padding: unset;
+      }
 
-      video {
+      div.video-container video {
         aspect-ratio: 1/1;
       }
     }
