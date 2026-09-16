@@ -1,5 +1,5 @@
 .product-marquee-grid {
-  --pmg-base-height: 500px;
+  --pmg-base-height: 350px;
   --pmg-content-block-start: var(--s2a-spacing-3xl);
 
   background: var(--s2a-color-background-default);
@@ -108,8 +108,6 @@
   }
 
   .firefly & {
-    --pmg-base-height: 350px;
-
     background-color: var(--s2a-color-transparent-black-72);
     backdrop-filter: blur(250px);
   }
