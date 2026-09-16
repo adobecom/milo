@@ -138,7 +138,7 @@ body:has(header.local-nav) .product-marquee-grid {
 /* Dark variant (default marquee): deepen the surface combination to match Figma
    — #000000 hero (card surface is set at >= 768px below). Firefly keeps its own
    media surface; non-mas keeps its own colors. */
-.dark .product-marquee-grid {
+.dark.product-marquee-grid {
   background-color: var(--s2a-color-gray-1000);
 }
 
@@ -274,7 +274,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
   /* Dark variant: promo card surface (#131313), one step lighter than the
      #000000 hero. */
-  .dark .product-marquee-grid .pm-merch-card {
+  .dark.product-marquee-grid .pm-merch-card {
     background: var(--s2a-color-gray-900);
   }
 }
