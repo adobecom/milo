@@ -1,4 +1,4 @@
-import { createTag, getConfig, localizeLinkAsync } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
@@ -125,6 +125,240 @@ function generateCheckboxGroups(checkboxGroups) {
   }
 
   return groups;
+}
+
+// Plans (uber-pricing) uses a plain-HTML filter bar + left drawer instead of
+// the SWC sidenav. Both write filter/types to the URL hash; the collection
+// re-filters via its own hashchange listener. Group cards, pills, and filter
+// wiring are added in later phases.
+const SLIDERS_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6M12 4h2M2 8h2M8 8h6M2 12h6M12 12h2" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/><circle cx="6" cy="8" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/></svg>';
+const CLOSE_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg>';
+const CHEVRON_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
+const SEARCH_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.5"/></svg>';
+
+const svgIcon = (markup) => createTag('span', { class: 'icon' }, markup);
+
+// Dispatched by the collection after each render; detail.resultCount is the
+// full filtered set size (before pagination).
+const COLLECTION_LITERALS_CHANGED = 'merch-card-collection:literals-changed';
+
+// Count of active filters shown as "N Applied" and in the trigger label.
+// The default category (and 'all') do not count.
+export function countApplied(defaultFilter = 'all') {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const filter = params.get('filter');
+  const category = filter && filter !== defaultFilter && filter !== 'all' ? 1 : 0;
+  const types = (params.get('types') || '').split(',').filter(Boolean).length;
+  const pricing = params.get('pricing') ? 1 : 0;
+  return category + types + pricing;
+}
+
+// Normalize collection data into filter groups the drawer and bar both render.
+// Category comes from the single-select hierarchy (deeplink 'filter'); each
+// tagFilter is a multi-select group (deeplink 'types').
+export function plansFilterGroups(data) {
+  const { hierarchy = [], sidenavSettings = {}, placeholders = {} } = data;
+  const groups = [];
+  if (hierarchy.length) {
+    groups.push({
+      title: placeholders.sidenavFilterCategories || 'Category',
+      deeplink: 'filter',
+      multi: false,
+      options: hierarchy.map((node) => ({
+        value: node.queryLabel || node.label.toLowerCase(),
+        label: node.label,
+      })),
+    });
+  }
+  (sidenavSettings.tagFilters || [])
+    .filter((group) => group.checkboxes?.length)
+    .forEach((group) => groups.push({
+      title: group.title || group.label || group.deeplink,
+      deeplink: group.deeplink,
+      // types combines (multi); other tag groups (e.g. pricing) are exclusive.
+      multi: group.deeplink === 'types',
+      options: group.checkboxes.map((cb) => ({ value: cb.name, label: cb.label })),
+    }));
+  return groups;
+}
+
+// Pill toggle. A delegated click handler reads these data attributes and
+// writes the URL hash; selected state reflects aria-pressed.
+function buildPill({ value, label }, group) {
+  const attrs = {
+    class: 'plans-pill',
+    type: 'button',
+    'aria-pressed': 'false',
+    'data-deeplink': group.deeplink,
+    'data-value': value,
+    'data-multi': String(group.multi),
+  };
+  return createTag('button', attrs, label);
+}
+
+// filter is single-select (radio); types is a comma-joined multi-select list.
+// MAS's own hashchange listener re-filters the grid when the hash changes.
+export function toggleFilterHash(deeplink, value, multi) {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  if (multi) {
+    const values = (params.get(deeplink) || '').split(',').filter(Boolean);
+    const idx = values.indexOf(value);
+    if (idx >= 0) values.splice(idx, 1);
+    else values.push(value);
+    if (values.length) params.set(deeplink, values.join(','));
+    else params.delete(deeplink);
+  } else if (params.get(deeplink) === value && deeplink !== 'filter') {
+    params.delete(deeplink); // exclusive group: re-click clears it
+  } else {
+    params.set(deeplink, value);
+  }
+  params.sort();
+  window.location.hash = params.toString();
+}
+
+function setHashParam(key, value) {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  if (value) params.set(key, value);
+  else params.delete(key);
+  params.sort();
+  window.location.hash = params.toString();
+}
+
+export function syncPills(root) {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  root.querySelectorAll('.plans-pill').forEach((pill) => {
+    const raw = params.get(pill.dataset.deeplink) || '';
+    const active = pill.dataset.multi === 'true'
+      ? raw.split(',').includes(pill.dataset.value)
+      : raw === pill.dataset.value;
+    pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function buildGroupCard(group) {
+  const heading = createTag('button', { class: 'plans-group-header', type: 'button', 'aria-expanded': 'true' }, [createTag('span', {}, group.title), svgIcon(CHEVRON_ICON)]);
+  const body = createTag('div', { class: 'plans-group-pills' }, group.options.map((opt) => buildPill(opt, group)));
+  heading.addEventListener('click', () => {
+    const expanded = heading.getAttribute('aria-expanded') === 'true';
+    heading.setAttribute('aria-expanded', String(!expanded));
+    body.hidden = expanded;
+  });
+  return createTag('div', { class: 'plans-group' }, [heading, body]);
+}
+
+function buildPlansDrawer(collection, groups) {
+  const { placeholders = {} } = collection.data;
+  const label = (key, fallback) => placeholders[key] || fallback;
+
+  const title = createTag('h2', { class: 'plans-drawer-title' }, label('allFilters', 'All Filters'));
+  const closeBtn = createTag('button', { class: 'plans-drawer-close', type: 'button', 'aria-label': label('catalogSidenavClose', 'Close') }, svgIcon(CLOSE_ICON));
+  const header = createTag('div', { class: 'plans-drawer-header' }, [title, closeBtn]);
+
+  const applied = createTag('span', { class: 'plans-drawer-applied' });
+  const results = createTag('span', { class: 'plans-drawer-results' });
+  const counts = createTag('div', { class: 'plans-drawer-counts' }, [applied, results]);
+  const reset = createTag('button', { class: 'plans-drawer-reset', type: 'button' }, label('reset', 'Reset'));
+  const subRow = createTag('div', { class: 'plans-drawer-subrow' }, [counts, reset]);
+
+  const groupsEl = createTag('div', { class: 'plans-drawer-groups' }, groups.map(buildGroupCard));
+
+  // Inner wrapper so backdrop clicks target the dialog while content clicks don't.
+  const inner = createTag('div', { class: 'plans-drawer-inner' }, [header, subRow, groupsEl]);
+  // <dialog> gives focus trap, Esc-to-close, inert background, and focus restore.
+  return createTag('dialog', { class: 'plans-drawer', 'aria-label': label('allFilters', 'All Filters') }, inner);
+}
+
+function buildPlansBar(collection, groups) {
+  const { placeholders = {} } = collection.data;
+  const label = (key, fallback) => placeholders[key] || fallback;
+
+  const triggerLabel = createTag('span', { class: 'plans-trigger-label' }, label('allFilters', 'All Filters'));
+  const triggerAttrs = { class: 'plans-filter-trigger', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' };
+  const trigger = createTag('button', triggerAttrs, [svgIcon(SLIDERS_ICON), triggerLabel]);
+
+  // Quick pills mirror the Category options; multi-select groups stay in the drawer.
+  const category = groups[0];
+  const quickPills = category
+    ? category.options.map((opt) => buildPill(opt, category))
+    : [];
+  const pills = createTag('div', { class: 'plans-filter-pills' }, quickPills);
+
+  const searchInput = createTag('input', { class: 'plans-filter-search-input', type: 'search', placeholder: label('searchText', 'Search') });
+  const search = createTag('div', { class: 'plans-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);
+
+  return createTag('div', { class: 'plans-filter-bar' }, [trigger, pills, search]);
+}
+
+function mountPlansFilter(collection, container) {
+  // preview re-renders the collection; mount once per element.
+  if (collection.plansFilterMounted) return;
+  collection.plansFilterMounted = true;
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css`);
+
+  const groups = plansFilterGroups(collection.data);
+  const drawer = buildPlansDrawer(collection, groups);
+  const bar = buildPlansBar(collection, groups);
+  const trigger = bar.querySelector('.plans-filter-trigger');
+  const open = () => { drawer.showModal(); trigger.setAttribute('aria-expanded', 'true'); };
+  const close = () => drawer.close();
+  trigger.addEventListener('click', open);
+  drawer.querySelector('.plans-drawer-close').addEventListener('click', close);
+  drawer.addEventListener('close', () => trigger.setAttribute('aria-expanded', 'false'));
+  // Backdrop clicks target the dialog element; content clicks do not.
+  drawer.addEventListener('click', (e) => { if (e.target === drawer) close(); });
+
+  const surfaces = [bar, drawer];
+
+  const { placeholders = {} } = collection.data;
+  const allFiltersLabel = placeholders.allFilters || 'All Filters';
+  const appliedEl = drawer.querySelector('.plans-drawer-applied');
+  const resultsEl = drawer.querySelector('.plans-drawer-results');
+  const triggerLabelEl = bar.querySelector('.plans-trigger-label');
+  const searchInput = bar.querySelector('.plans-filter-search-input');
+  const defaultFilter = groups[0]?.options?.[0]?.value;
+  let resultCount;
+  const updateCounts = () => {
+    const applied = countApplied(defaultFilter);
+    appliedEl.textContent = `${applied} ${placeholders.applied || 'Applied'}`;
+    triggerLabelEl.textContent = `${allFiltersLabel} (${applied})`;
+    resultsEl.textContent = resultCount == null ? '' : `${resultCount} ${placeholders.results || 'Results'}`;
+  };
+  const sync = () => {
+    surfaces.forEach(syncPills);
+    updateCounts();
+    const term = new URLSearchParams(window.location.hash.slice(1)).get('search') || '';
+    if (document.activeElement !== searchInput) searchInput.value = term;
+  };
+  searchInput.addEventListener('input', debounce(() => setHashParam('search', searchInput.value.trim())));
+
+  surfaces.forEach((root) => root.addEventListener('click', (e) => {
+    const pill = e.target.closest('.plans-pill');
+    if (!pill) return;
+    toggleFilterHash(pill.dataset.deeplink, pill.dataset.value, pill.dataset.multi === 'true');
+  }));
+  drawer.querySelector('.plans-drawer-reset').addEventListener('click', () => {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    params.set('filter', defaultFilter || 'all');
+    params.delete('types');
+    params.delete('pricing');
+    params.delete('search');
+    params.sort();
+    window.location.hash = params.toString();
+  });
+  collection.addEventListener(COLLECTION_LITERALS_CHANGED, (e) => {
+    resultCount = e.detail?.resultCount;
+    updateCounts();
+  });
+  window.addEventListener('hashchange', sync);
+  // Default to the first category (e.g. Featured) when no filter is deep-linked.
+  if (defaultFilter && !new URLSearchParams(window.location.hash.slice(1)).get('filter')) {
+    setHashParam('filter', defaultFilter);
+  }
+  sync();
+
+  container.prepend(bar);
+  container.append(drawer);
 }
 
 async function getSidenav(collection) {
@@ -364,9 +598,13 @@ export async function createCollection(el, options) {
       const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
       window.history.pushState({}, '', newUrl);
     }
-    const sidenav = await getSidenav(collection);
-    if (sidenav) {
-      collection.attachSidenav(sidenav);
+    if (collection.variant === 'uber-pricing') {
+      mountPlansFilter(collection, container);
+    } else {
+      const sidenav = await getSidenav(collection);
+      if (sidenav) {
+        collection.attachSidenav(sidenav);
+      }
     }
   }
 

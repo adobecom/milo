@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
-import init from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
+import init, { plansFilterGroups, toggleFilterHash, syncPills, countApplied } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
@@ -381,6 +381,90 @@ describe('merch-card-collection autoblock', () => {
       expect(container, 'collection container should be created inside the test wrap').to.exist;
       expect(container.dataset.masBlock).to.equal(undefined);
       expect(mepMasStudioUrls.get(container)).to.equal(undefined);
+    });
+  });
+
+  describe('plansFilterGroups', () => {
+    it('maps hierarchy to a single-select Category group and tagFilters to types groups', () => {
+      const groups = plansFilterGroups({
+        placeholders: { sidenavFilterCategories: 'Category' },
+        hierarchy: [{ label: 'Photo', queryLabel: 'photo' }, { label: 'Video' }],
+        sidenavSettings: {
+          tagFilters: [
+            { title: 'Type', deeplink: 'types', checkboxes: [{ name: 'desktop', label: 'Desktop' }] },
+            { title: 'Empty', deeplink: 'types', checkboxes: [] },
+          ],
+        },
+      });
+      expect(groups).to.have.length(2);
+      expect(groups[0]).to.deep.equal({
+        title: 'Category',
+        deeplink: 'filter',
+        multi: false,
+        options: [{ value: 'photo', label: 'Photo' }, { value: 'video', label: 'Video' }],
+      });
+      expect(groups[1]).to.deep.equal({
+        title: 'Type',
+        deeplink: 'types',
+        multi: true,
+        options: [{ value: 'desktop', label: 'Desktop' }],
+      });
+    });
+
+    it('returns no groups for empty data', () => {
+      expect(plansFilterGroups({})).to.have.length(0);
+    });
+  });
+
+  describe('filter hash wiring', () => {
+    afterEach(() => { window.location.hash = ''; });
+
+    it('sets a single-select filter and replaces it', () => {
+      toggleFilterHash('filter', 'photo', false);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('photo');
+      toggleFilterHash('filter', 'video', false);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('video');
+    });
+
+    it('treats a non-types single-select group as exclusive with toggle-off', () => {
+      toggleFilterHash('pricing', 'individual', false);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('pricing')).to.equal('individual');
+      toggleFilterHash('pricing', 'team', false);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('pricing')).to.equal('team');
+      toggleFilterHash('pricing', 'team', false);
+      expect(new URLSearchParams(window.location.hash.slice(1)).has('pricing')).to.equal(false);
+    });
+
+    it('adds and removes multi-select types', () => {
+      toggleFilterHash('types', 'desktop', true);
+      toggleFilterHash('types', 'mobile', true);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('desktop,mobile');
+      toggleFilterHash('types', 'desktop', true);
+      expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('mobile');
+      toggleFilterHash('types', 'mobile', true);
+      expect(new URLSearchParams(window.location.hash.slice(1)).has('types')).to.equal(false);
+    });
+
+    it('reflects hash state onto pill aria-pressed', () => {
+      window.location.hash = 'filter=photo&types=desktop,web';
+      const root = document.createElement('div');
+      root.innerHTML = `
+        <button class="plans-pill" data-deeplink="filter" data-value="photo" data-multi="false"></button>
+        <button class="plans-pill" data-deeplink="filter" data-value="video" data-multi="false"></button>
+        <button class="plans-pill" data-deeplink="types" data-value="desktop" data-multi="true"></button>
+        <button class="plans-pill" data-deeplink="types" data-value="mobile" data-multi="true"></button>`;
+      syncPills(root);
+      const pressed = [...root.querySelectorAll('.plans-pill')].map((p) => p.getAttribute('aria-pressed'));
+      expect(pressed).to.deep.equal(['true', 'false', 'true', 'false']);
+    });
+
+    it('counts applied filters, ignoring the default all category', () => {
+      window.location.hash = '';
+      expect(countApplied()).to.equal(0);
+      window.location.hash = 'filter=all';
+      expect(countApplied()).to.equal(0);
+      window.location.hash = 'filter=photo&types=desktop,web';
+      expect(countApplied()).to.equal(3);
     });
   });
 });
