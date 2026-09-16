@@ -209,7 +209,7 @@ export function refreshPageUpdateCounts() {
   document.querySelectorAll('.mep-toggle-text h2').forEach((h2) => {
     const label = h2.textContent;
     if (!PAGE_UPDATE_SELECTORS[label]) return;
-    const valueEl = h2.nextElementSibling;
+    const valueEl = h2.closest('.mep-toggle-text')?.querySelector('.mep-row-value');
     const newText = `${getPageUpdateCount(label)} Page Updates`;
     if (valueEl && valueEl.textContent !== newText) valueEl.textContent = newText;
   });
