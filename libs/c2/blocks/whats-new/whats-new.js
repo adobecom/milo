@@ -1,14 +1,18 @@
-import { decorateBlockText, decorateButtons } from '../../../utils/decorate.js';
+import { createTag } from '../../../utils/utils.js';
+import { decorateBlockText } from '../../../utils/decorate.js';
 
-const CARD_TEXT_CONFIG = { heading: '4', body: 'm', detail: 's' };
+const HEADING_TEXT_CONFIG = { heading: '2', body: 'l', detail: 'm', button: 'l' };
+const CARD_TEXT_CONFIG = { heading: '4', body: 'm', detail: 's', button: 'm' };
 
 function decorateHeadingRow(row) {
   row.classList.add('whats-new-heading');
   const cell = row.children[0];
   if (!cell) return;
   cell.classList.add('heading-content');
-  decorateBlockText(cell, { heading: '2', body: 'l', detail: 'm' });
-  decorateButtons(cell, 'l-button');
+  // decorateBlockText runs decorateButtons internally with `button-${size}`;
+  // calling decorateButtons again here would be a no-op (the em/strong wrappers
+  // it keys off are already consumed), so the size must ride the sizeMap.
+  decorateBlockText(cell, HEADING_TEXT_CONFIG);
 }
 
 function decorateCardRow(row) {
@@ -22,7 +26,7 @@ function decorateCardRow(row) {
   if (!body) return;
   body.classList.add('card-body');
   decorateBlockText(body, CARD_TEXT_CONFIG);
-  body.querySelectorAll('a').forEach((a) => {
+  body.querySelectorAll('a:not(.con-button)').forEach((a) => {
     const parent = a.parentElement;
     if (parent && parent.textContent.trim() === a.textContent.trim()) {
       a.classList.add('card-link');
@@ -40,8 +44,7 @@ export default function init(el) {
 
   if (!cardRows.length) return;
 
-  const grid = document.createElement('div');
-  grid.className = 'whats-new-grid';
+  const grid = createTag('div', { class: 'whats-new-grid' });
   cardRows.forEach((row) => {
     decorateCardRow(row);
     grid.append(row);
