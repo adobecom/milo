@@ -122,11 +122,11 @@ export async function loadDecorateMenu() {
   return cachedDecorateMenu;
 }
 
-const [setThinVersion, getThinVersion] = (() => {
-  let thinVersion = false;
+const [setEventVersion, getEventVersion] = (() => {
+  let eventVersion = false;
   return [
-    (url) => { thinVersion = url.includes('#thin'); },
-    () => thinVersion,
+    (url) => { eventVersion = url.includes('#event'); },
+    () => eventVersion,
   ];
 })();
 class Footer {
@@ -329,9 +329,10 @@ class Footer {
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
-    const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-    setThinVersion(url);
-    this.block.classList.toggle('thin', getThinVersion());
+    const source = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+    const [url] = source.split('#');
+    setEventVersion(source);
+    this.block.classList.toggle('event', getEventVersion());
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
@@ -778,7 +779,7 @@ class Footer {
   };
 
   decorateAuthoredBackground = () => {
-    if (!getThinVersion()) return null;
+    if (!getEventVersion()) return null;
     const bgImageExtensions = /\.(svg|jpeg|png)(\?|$)/i;
     const brandBlock = this.body.querySelector('.brand');
     if (!brandBlock) return null;
@@ -798,20 +799,20 @@ class Footer {
   };
 
   decorateFooter = () => {
-    const isThinVersion = getThinVersion();
+    const isEventVersion = getEventVersion();
     this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
-      ${isThinVersion ? this.elements.mailingList : ''}
+      ${isEventVersion ? this.elements.mailingList : ''}
       ${this.elements.regionPicker}
-      ${isThinVersion ? this.elements.social : ''}
-      ${isThinVersion ? this.elements.contactSupport : ''}
+      ${isEventVersion ? this.elements.social : ''}
+      ${isEventVersion ? this.elements.contactSupport : ''}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
         ${this.decorateLogo()}
       </div>
-      ${!isThinVersion ? this.elements.social : ''}
+      ${!isEventVersion ? this.elements.social : ''}
       </div>
     </div>`;
     const authoredBackround = this.decorateAuthoredBackground();
@@ -839,7 +840,7 @@ class Footer {
     const options = this.elements.footer?.querySelector('.feds-footer-options');
     if (!options) return;
 
-    if (getThinVersion()) {
+    if (getEventVersion()) {
       this.syncFooterMenuLayout();
       return;
     }
