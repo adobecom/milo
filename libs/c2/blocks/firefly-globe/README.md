@@ -25,7 +25,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Three.js | Vendored `three.module.min.js` built by esbuild | Shared `libs/deps/three.js` (r160). A `THREE.*` symbol must be in its export list. |
 | Scroll budget | `--gg-runway-height` + `--gg-formation-vh`, per breakpoint | `--fg-runway-height` only, per breakpoint. The entry happens in the viewport before the block top, so the whole runway is travel. |
 | CSS custom properties | `--gg-*` | `--fg-*` (block-scoped; nothing outside the block reads them). |
-| Tuning | — | sm `SPHERE_R` and `CAM_Z_END` are tuned for the entry and the pull-quote hold; `CAM_Z_ENTRY` is the only extra breakpoint field. |
+| Tuning | — | `SPHERE_R`, `CAM_Z_SPHERE` and `CAM_Z_END` are tuned per breakpoint for the scroll budget below; `CAM_Z_ENTRY` is the only extra breakpoint field. |
 | Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline: each quote line is an `overflow: hidden` mask with `--fg-hang-max` (0.8em) of side bleed, so a wider mark would be clipped; a CJK `「` needs both raised. |
 | Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`). |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
@@ -52,11 +52,11 @@ so it is the a11y card label and the modal's sr-only image label.
 warp, no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-
 open and keyboard entry are all off. Reduced motion is always formed.
 
-On the barrel the view offset also carries an entry lift (`entryLiftPx`): the wall's top edge,
-projected at the live camera distance, is held at the canvas top and released by `1 − entryT³`, so
-the block scrolls in with no empty band above the barrel and the wall settles nav-centred as the
-world pins. `wallTopY` is written with `fadeRefH` in `recomputeDragFlip`, so it follows the masonry
-morph.
+The view offset also carries an entry lift (`entryLiftPx`): the top edge of the cards — the barrel's
+front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
+distance, is held at the canvas top and released by `1 − entryT³`, so the block scrolls in with no
+empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
+`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph.
 
 From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
@@ -84,6 +84,45 @@ has `(1 − pqAppearT) · runway` left to scroll; the quote scrolls out over the
 plus half its box of that, and the rest is hold. The world un-sticks one viewport before the block ends,
 so a hold shorter than the gap between the quote's bottom and the viewport bottom has the canvas
 sliding up during the last cards.
+
+## Tuning the scroll budget
+
+Per breakpoint, the scroll after the pin splits into three parts that cannot be set independently:
+
+- **travel** — the pin until the last card has faded (`pqAppearT · runway`),
+- **scroll-out** — the quote's box moving off with the next section, fixed at
+  `--fg-optical-center + half the quote box` (the "floor"),
+- **hold** — whatever remains: `(1 − pqAppearT) · runway − floor`.
+
+`--fg-runway-height` scales travel and hold together at the current share; `CAM_Z_END` moves scroll
+between them. `pqAppearT` is not a free number — it is `travelTAtCamZ(clearZ)`, and `clearZ` depends
+on the rendered card height, so read it from the page rather than deriving it.
+
+Read the inputs at the breakpoint being tuned, on the page as authored (the quote box height is in
+them):
+
+```js
+(e => [
+  getComputedStyle(e).getPropertyValue('--fg-pq-appear-t'),
+  e.style.getPropertyValue('--fg-pq-half-box'),
+  getComputedStyle(e).getPropertyValue('--fg-optical-center'),
+  innerHeight,
+].join(' | '))(document.querySelector('.firefly-globe'))
+```
+
+Then, with `S = CAM_Z_SPHERE`, `E = CAM_Z_END`, `p` the first value, `H` the last, and everything in
+vh (`px / H · 100`):
+
+1. `clearZ = S − (S − E) · (1 − (1 − p)³)` — recovers where the last card fades.
+2. `travel = p · runway`; `floor = optical-center + half-box`; `hold = runway − travel − floor`.
+   This is the current state; check it matches what is felt before changing anything.
+3. Choose the new `travel` and `hold`: `runway = travel + floor + hold`.
+4. `p* = travel / runway`; `E* = S − (S − clearZ) / (1 − (1 − p*)³)`.
+5. Set `--fg-runway-height` and `CAM_Z_END`, reload, re-read `p` and confirm it landed on `p*`.
+
+Changing `SPHERE_R`, `CAM_Z_SPHERE`, `CARD_H_SPHERE` or the near-fade bands moves `clearZ`, so start
+again from the reading. A hold shorter than the gap between the quote's bottom edge and the viewport
+bottom (`100vh − floor`) has the sticky world sliding up during the last fading cards.
 
 ## "Click & Drag" hint text
 

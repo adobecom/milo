@@ -389,7 +389,8 @@ function createGlobeGalleryRuntime(
     frameStr: '',
     copyStr: '',
   };
-  let pqAppearT = 1; // scrollT the last card leaves the screen at; see publishPqAppearT
+  // scrollT the last card leaves the screen at; see publishPqAppearT.
+  let pqAppearT = 1;
   let canvasHidden = false;
 
   // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
@@ -771,7 +772,7 @@ function createGlobeGalleryRuntime(
   }
 
   // a11y.js's centerCard: the shared yaw/pitch solve plus the screen-Z roll that cancels the
-  // card's residual tilt. snapPending = focus is about to scroll us back to the browse position,
+  // card's residual tilt. snapPending = focus is about to scroll us back to the formed position,
   // where the camera sits OUTSIDE the sphere: solve for THERE, not for wherever the user scrolled
   // to. Trusting the live flag from inside the zoom aims at the far wall (yaw + π, pitch negated)
   // and the card lands out of view.
@@ -1012,9 +1013,10 @@ function createGlobeGalleryRuntime(
   }
 
   function entryLiftPx(frame) {
-    if (!bp.CYLINDER || frame.sphereFormed) return 0;
+    if (frame.sphereFormed) return 0;
     const groupScale = sphereGroup.scale.x || 1;
-    const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - bp.SPHERE_R, H);
+    const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
+    const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - topZ, H);
     return Math.max(0, H / 2 + navH / 2 - topPx) * (1 - frame.entryT ** 3);
   }
 
@@ -1266,9 +1268,9 @@ function createGlobeGalleryRuntime(
       canvas.style.display = 'block';
       return;
     }
-    // Past the reveal every card is prox-faded out; the scene holds nothing else, so the draw is
-    // skipped too. The modal is the exception: its backdrop blurs this canvas, so hiding it would
-    // leave the blur with nothing to sample.
+    // Past the reveal every card is prox-faded out and the hint text has finished; the scene
+    // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
+    // blurs this canvas, so hiding it would leave the blur with nothing to sample.
     canvasHidden = modal.getModalIdx() < 0 && frame.scrollT >= pqAppearT + CANVAS_HIDE_MARGIN_T;
     canvas.style.display = canvasHidden ? 'none' : 'block';
   }
