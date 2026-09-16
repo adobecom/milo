@@ -112,6 +112,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'audience-router',
   'base-card',
   'brand-concierge',
   'card-metadata',
