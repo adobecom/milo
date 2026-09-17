@@ -279,8 +279,6 @@ export const createContent = async (
 
   const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
-  // if (el?.parentElement.nodeName !== 'MAIN') return frag;
-  // return createTag('div', undefined, frag);
   return frag;
 };
 

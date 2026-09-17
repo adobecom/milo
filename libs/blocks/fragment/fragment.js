@@ -31,7 +31,8 @@ const updateFragMap = async (fragment, a, href) => {
 
   if (!fragLinksWithLocalizations.length) return;
 
-  if (document.body.contains(a) && !a.parentElement?.closest('.fragment')) {
+  const parentHref = a.closest('[data-path]')?.getAttribute('data-path');
+  if (document.body.contains(a) && !a.parentElement?.closest('.fragment') && !parentHref) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinksWithLocalizations.forEach((localizedHref) => {
@@ -57,7 +58,10 @@ const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const rowOrCellInsertContainer = a.closest('[data-mep-replace-type]');
   const rowOrCellInsertValue = rowOrCellInsertContainer?.getAttribute('data-mep-replace-type');
-  const fragmentBlock = sections[0].querySelector('div[class]:not([class*="section"])');
+  const section = sections[0];
+  const sectionBlockCandidates = [...section.children]
+    .filter((child) => child.matches('div[class]:not([class*="section"])'));
+  const fragmentBlock = sectionBlockCandidates[0];
   let fragChildren;
 
   if (rowOrCellInsertValue === 'row') {
@@ -65,11 +69,10 @@ const insertInlineFrag = async (sections, a, relHref) => {
   } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
     fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
   } else {
-    fragChildren = [...sections[0].children];
+    fragChildren = [...section.children];
   }
   if (!fragChildren.length) return;
 
-  // if (rowOrCellInsertValue === 'cell' && !fragmentBlock) a.replaceWith(...fragChildren);
   if (rowOrCellInsertContainer && fragmentBlock) {
     rowOrCellInsertContainer.replaceWith(...fragChildren);
   } else if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {

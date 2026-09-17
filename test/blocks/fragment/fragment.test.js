@@ -145,6 +145,42 @@ describe('Fragments', () => {
     parent.remove();
   });
 
+  it('Stops circular references across nested row inserts', async () => {
+    window.lana.log.resetHistory();
+    const parent = document.createElement('div');
+    const rowContainer = document.createElement('div');
+    rowContainer.setAttribute('data-mep-replace-type', 'row');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/inline-cycle#_inline';
+    rowContainer.appendChild(a);
+    parent.appendChild(rowContainer);
+    document.body.appendChild(parent);
+
+    const fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const resource = String(url);
+      if (resource.includes('/inline-cycle.plain.html')) {
+        return Promise.resolve(new Response(
+          '<div><div class="cycle-block"><div><div><a href="/test/blocks/fragment/mocks/fragments/inline-cycle-child#_inline">Child</a></div></div></div></div>',
+          { status: 200 },
+        ));
+      }
+      if (resource.includes('/inline-cycle-child.plain.html')) {
+        return Promise.resolve(new Response(
+          '<div><div class="cycle-block"><div><div><a href="/test/blocks/fragment/mocks/fragments/inline-cycle#_inline">Parent</a></div></div></div></div>',
+          { status: 200 },
+        ));
+      }
+      return originalFetch(url);
+    });
+
+    await getFragment(a);
+
+    expect(window.lana.log.calledWithMatch('Fragment Circular Reference loading')).to.be.true;
+
+    fetchStub.restore();
+    parent.remove();
+  });
+
   it('Does not inline fragments inside a block in DO_NOT_INLINE list', async () => {
     const cols = document.querySelector('.columns-section');
     await loadArea(cols);
