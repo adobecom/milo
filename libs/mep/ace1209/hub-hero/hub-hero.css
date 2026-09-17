@@ -781,16 +781,22 @@
   /* iOS Safari only: animating max-width reflows this box (and everything
      that chases its width) on every scroll frame, which fights position:sticky
      recalculation on the slides/header sharing this flow, causing visible
-     jitter. Freeze it at final size here; the equivalent grow-in look is
-     re-created per-item below on .hub-hero-carousel-item-container instead,
-     since that's a child (not an ancestor) of the sticky slide elements and
-     a transform there can't disturb their sticky containing block the way a
-     transform on this shared ancestor would. Other browsers keep the
-     max-width version above. */
-  @supports (-webkit-touch-callout: none) {
+     jitter. Freeze the box at final size and reveal it with clip-path
+     instead -- clip-path doesn't reflow (paint-only, like transform), and
+     unlike transform it doesn't establish a containing block for the
+     position:sticky slides underneath, so it's safe to keep on this shared
+     ancestor rather than duplicating it per slide. Other browsers keep the
+     max-width version above.
+     TEMP: also matching Chrome (`or (not (-moz-appearance: none))`, i.e.
+     "not Firefox") so this can be tuned live in Chrome DevTools without
+     pushing to the branch for every iOS check -- remove the `or` clause
+     once it's dialed in. */
+  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
     .hub-hero-carousel-container {
       max-width: 100%;
-      animation: none;
+      animation: carouselMobileContainerExpandSafariClip ease forwards;
+      animation-timeline: --hub-hero;
+      animation-range: entry 100% exit 100%;
     }
   }
 
@@ -883,25 +889,6 @@
     animation: elasticItemsShrink ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
-  }
-
-  /* iOS Safari only: recreate the container-level grow-in (frozen out, above)
-     here instead, since this element is a child, not an ancestor, of the
-     sticky slide items. */
-  @supports (-webkit-touch-callout: none) {
-    .hub-hero-carousel-item-container {
-      will-change: transform, scale;
-      animation: elasticItemsShrink ease both, carouselMobileContainerExpandSafari ease forwards;
-      animation-timeline: --hub-hero, --hub-hero;
-      animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    }
-
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
-      will-change: transform, opacity, scale;
-      animation: elasticItemsShrink ease both, elasticMobileFirstSlideSafari ease both;
-      animation-timeline: --hub-hero, --hub-hero;
-      animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    }
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -1568,33 +1555,26 @@
   }
 }
 
-/* Safari-only equivalent of carouselMobileContainerExpand above, using a
-   transform instead of max-width so it doesn't force a reflow (see the
-   @supports (-webkit-touch-callout: none) rule that references this). Uses
-   the transform property (not the standalone scale property, which
-   elasticItemsShrink already animates on this same element -- transform and
-   scale compose independently, but two animations both targeting scale
-   would just fight over the final value). Scales both axes uniformly: a
-   transform can't replicate the original's object-fit: cover recrop as it
-   widens, so scaleX() alone would stretch the image; a uniform scale() just
-   shrinks the whole card proportionally instead. */
-@keyframes carouselMobileContainerExpandSafari {
+/* Safari-only equivalent of carouselMobileContainerExpand above, using
+   clip-path instead of max-width so it doesn't force a reflow (see the
+   @supports rule that references this). clip-path reveals the box (already
+   at full size) rather than resizing it, so there's no distortion and no
+   need to duplicate this per slide -- one shared clip on the container
+   uncovers every stacked slide at once, same as the original max-width
+   version did. */
+@keyframes carouselMobileContainerExpandSafariClip {
   0% {
-    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
+    clip-path: inset(0 calc((1 - (var(--grid-img-width-min) / var(--media-mobile-max-width))) * 50%));
   }
 
-  /* finish early (matches elasticMobileFirstSlideSafari) so a slide is
-     already fully grown by the time it's peeking into the stack, rather
-     than still mid-grow when it first becomes visible */
-  30% {
-    transform: scale(1);
+  75% {
+    clip-path: inset(0 0);
   }
 
   100% {
-    transform: scale(1);
+    clip-path: inset(0 0);
   }
 }
-
 
 @keyframes slideOneHeaderReveal {
   0% {
@@ -1653,38 +1633,6 @@
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: .2;
-    filter: contrast(var(--stack-contrast, 1));
-  }
-}
-
-/* iOS Safari only: elasticMobileFirstSlide's stack-offset translateY and the
-   grow-in scale both need to live in one `transform` value here (two
-   animations both setting `transform` on the same element don't combine --
-   whichever is listed last just wins), so this merges them instead of
-   stacking carouselMobileContainerExpandSafari alongside it. */
-@keyframes elasticMobileFirstSlideSafari {
-  0% {
-    filter: contrast(1);
-    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
-  }
-
-  15% {
-    opacity: 1;
-    filter: contrast(1);
-  }
-
-  30% {
-    filter: contrast(1);
-    transform: scale(1);
-  }
-
-  65% {
-    filter: contrast(1);
-    transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-  }
-
-  100% {
-    transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast, 1));
   }
 }
