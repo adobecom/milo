@@ -300,21 +300,21 @@ body:has(header.local-nav) .product-marquee-grid {
      on the light hero, a light card (#f8f8f8) on the dark hero. The block colors
      already match the defaults, so only the card flips. Main text uses
      content-inverse (white in light mode, black in dark mode) to stay readable. */
-  .special-promo.product-marquee-grid .pm-merch-content {
+  /* .special-promo.product-marquee-grid .pm-merch-content {
     .mas-description,
     .mas-price {
       color: var(--s2a-color-content-inverse);
     }
-  }
+  } */
 
   .special-promo.product-marquee-grid:not(.dark) {
     .pm-merch-card {
       background: var(--s2a-color-gray-900);
     }
 
-    .pm-merch-content .mas-price-commitment {
+    /* .pm-merch-content .mas-price-commitment {
       color: var(--s2a-color-transparent-white-64);
-    }
+    } */
   }
 
   .special-promo.dark.product-marquee-grid {
@@ -322,9 +322,9 @@ body:has(header.local-nav) .product-marquee-grid {
       background: var(--s2a-color-gray-50);
     }
 
-    .pm-merch-content .mas-price-commitment {
+    /* .pm-merch-content .mas-price-commitment {
       color: var(--s2a-color-transparent-black-64);
-    }
+    } */
   }
 }
 
