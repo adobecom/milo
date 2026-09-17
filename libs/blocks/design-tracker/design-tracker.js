@@ -492,10 +492,18 @@ function boxToPercent(box, nodeBox) {
   // The day's screenshot captures the tracked frame's box once, but its
   // changedElements can come from any version that day — if the frame grew
   // taller/wider later that day, an element's box can land just past the
-  // captured edge. Clamp into the visible image instead of letting it
-  // dangle off the edge as a near-invisible sliver.
-  pct.top = Math.min(Math.max(pct.top, 0), Math.max(100 - pct.height, 0));
-  pct.left = Math.min(Math.max(pct.left, 0), Math.max(100 - pct.width, 0));
+  // captured edge. Clamp the ORIGIN into the visible image instead of letting
+  // it dangle off the edge as a near-invisible sliver.
+  pct.top = Math.min(Math.max(pct.top, 0), 100);
+  pct.left = Math.min(Math.max(pct.left, 0), 100);
+  // Then clamp the SIZE to what's left of the image from that origin. An
+  // element genuinely taller/wider than the captured frame box (e.g. a whole
+  // section whose height exceeds the day's nodeBox height) would otherwise
+  // give width/height > 100% and spill far past the image edge — the "box
+  // extends way beyond the design" case. Cap it at the visible edge so the
+  // overlay always stays inside the preview.
+  pct.width = Math.min(pct.width, 100 - pct.left);
+  pct.height = Math.min(pct.height, 100 - pct.top);
   return pct;
 }
 
