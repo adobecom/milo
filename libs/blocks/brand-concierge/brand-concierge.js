@@ -91,7 +91,7 @@ export default async function init(el) {
   });
 
   sideOverlayTop();
-  initAnalytics();
+  initAnalytics('BC-Inline-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;

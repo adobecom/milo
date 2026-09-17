@@ -151,7 +151,7 @@ export default function init(el) {
     }
   });
 
-  initAnalytics();
+  initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
