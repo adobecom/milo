@@ -774,17 +774,16 @@
   /* iOS Safari only: animating max-width reflows this box (and everything
      that chases its width) on every scroll frame, which fights position:sticky
      recalculation on the slides/header sharing this flow, causing visible
-     jitter. Keep the box at its final size and fake the grow with a transform
-     (compositor-only, no reflow) instead. Other browsers don't show this
-     jitter, so they keep the max-width version above. */
+     jitter. Freeze it at final size here; the equivalent grow-in look is
+     re-created per-item below on .hub-hero-carousel-item-container instead,
+     since that's a child (not an ancestor) of the sticky slide elements and
+     a transform there can't disturb their sticky containing block the way a
+     transform on this shared ancestor would. Other browsers keep the
+     max-width version above. */
   @supports (-webkit-touch-callout: none) {
     .hub-hero-carousel-container {
       max-width: 100%;
-      transform-origin: top center;
-      will-change: transform;
-      animation: carouselMobileContainerExpandSafari ease forwards;
-      animation-timeline: --hub-hero;
-      animation-range: entry 100% exit 100%;
+      animation: none;
     }
   }
 
@@ -877,6 +876,25 @@
     animation: elasticItemsShrink ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
+  }
+
+  /* iOS Safari only: recreate the container-level grow-in (frozen out, above)
+     here instead, since this element is a child, not an ancestor, of the
+     sticky slide items. */
+  @supports (-webkit-touch-callout: none) {
+    .hub-hero-carousel-item-container {
+      will-change: transform, scale;
+      animation: elasticItemsShrink ease both, carouselMobileContainerExpandSafari ease forwards;
+      animation-timeline: --hub-hero, --hub-hero;
+      animation-range: entry 50% exit 100%, entry 100% exit 100%;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
+      will-change: transform, opacity, scale;
+      animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both, carouselMobileContainerExpandSafari ease forwards;
+      animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+      animation-range: entry 50% exit 100%, entry 100% exit 100%, entry 100% exit 100%;
+    }
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
