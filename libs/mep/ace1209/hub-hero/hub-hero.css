@@ -1668,11 +1668,12 @@
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  30% {
+  15% {
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  40% {
+  30% {
+    filter: contrast(1);
     transform: scale(1);
   }
 
