@@ -1669,7 +1669,8 @@
   }
 
   15% {
-    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
+    opacity: 1;
+    filter: contrast(1);
   }
 
   30% {
