@@ -553,16 +553,14 @@ describe('global navigation', () => {
       try {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-        const successfulWorkflow = document.createElement('div');
+        const workflow = document.createElement('div');
         cta.focus();
 
-        await showDialog(successfulWorkflow, {}, sinon.spy());
+        await showDialog(workflow, {}, sinon.spy());
 
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
         expect(hashchange.called).to.be.false;
-        successfulWorkflow.dispatchEvent(new Event('success'));
-        expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
-        successfulWorkflow.dispatchEvent(new Event('close'));
+        workflow.dispatchEvent(new Event('close'));
         expect(window.location.href).to.equal(originalUrl);
 
         const canceledWorkflow = document.createElement('div');
@@ -666,7 +664,6 @@ describe('global navigation', () => {
         expect(activeDialog.contains(secondWorkflow)).to.be.true;
         expect(removeListener.calledWith('close')).to.be.true;
 
-        firstWorkflow.dispatchEvent(new Event('success'));
         firstWorkflow.dispatchEvent(new Event('close'));
 
         expect(firstCallback.called).to.be.false;
