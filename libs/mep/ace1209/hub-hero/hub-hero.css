@@ -475,6 +475,11 @@
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
       aspect-ratio: 0.78;
+      /* border-radius + overflow:hidden alone don't reliably clip this
+         element while its box is being resized by the aspect-ratio
+         animation below (confirmed: computed styles are correct but the
+         corner renders sharp) -- clip-path doesn't have that problem. */
+      clip-path: inset(0 round var(--s2a-border-radius-md));
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
       animation-range: entry 100% exit 100%;
