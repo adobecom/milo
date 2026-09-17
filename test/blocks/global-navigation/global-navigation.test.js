@@ -436,6 +436,16 @@ describe('global navigation', () => {
     let preload;
     let meta;
     let originalUrl;
+    const createAupSdkInstance = () => {
+      const orchestrator = { setMessageHandler: sinon.stub() };
+      return {
+        instance: {
+          getOrchestratorContext: sinon.stub().resolves(orchestrator),
+          updateConfig: sinon.stub().resolves(),
+        },
+        orchestrator,
+      };
+    };
 
     beforeEach(async () => {
       originalUrl = window.location.href;
@@ -461,10 +471,10 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance } = createAupSdkInstance();
       window.aupsdk = undefined;
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
@@ -510,14 +520,14 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
       meta = document.createElement('meta');
       meta.name = 'aup-select';
       meta.content = 'on';
       document.head.append(meta);
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance } = createAupSdkInstance();
       window.aupsdk = undefined;
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
@@ -538,7 +548,7 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
       const cta = document.createElement('a');
@@ -546,29 +556,44 @@ describe('global navigation', () => {
       cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
       document.body.append(cta);
       window.aupsdk = undefined;
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance, orchestrator } = createAupSdkInstance();
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       const hashchange = sinon.spy();
       window.addEventListener('hashchange', hashchange);
       try {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-        const successfulWorkflow = document.createElement('div');
+        const completedWorkflow = document.createElement('div');
         cta.focus();
 
-        await showDialog(successfulWorkflow, {}, sinon.spy());
+        await showDialog(completedWorkflow, {}, sinon.spy());
 
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
         expect(hashchange.called).to.be.false;
-        successfulWorkflow.dispatchEvent(new Event('success'));
+        const messageHandler = orchestrator.setMessageHandler.firstCall.args[0];
+        const executeDefaultAction = sinon.spy();
+        const openUrlPayload = { executeDefaultAction };
+        const openUrlParentHandler = sinon.spy();
+        messageHandler('OpenURL', openUrlPayload, openUrlParentHandler);
+        expect(executeDefaultAction.calledOnce).to.be.true;
+        expect(openUrlParentHandler.calledOnceWithExactly('OpenURL', openUrlPayload)).to.be.true;
+        const completedPayload = {
+          subType: 'AppClosed',
+          data: { statusCode: 10 },
+        };
+        const parentHandler = sinon.spy();
+        messageHandler('System', completedPayload, parentHandler);
+        completedWorkflow.dispatchEvent(new Event('close'));
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
-        successfulWorkflow.dispatchEvent(new Event('close'));
-        expect(window.location.href).to.equal(originalUrl);
+        expect(parentHandler.calledOnceWithExactly('System', completedPayload)).to.be.true;
 
         const canceledWorkflow = document.createElement('div');
         cta.focus();
         await showDialog(canceledWorkflow, {}, sinon.spy());
-        canceledWorkflow.dispatchEvent(new Event('cancel'));
+        messageHandler('System', {
+          subType: 'AppClosed',
+          data: { statusCode: 1 },
+        }, sinon.spy());
         canceledWorkflow.dispatchEvent(new Event('close'));
 
         expect(window.location.href).to.equal(originalUrl);
@@ -590,7 +615,7 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
       const cta = document.createElement('a');
@@ -603,7 +628,7 @@ describe('global navigation', () => {
         locales: { '': { ietf: 'en-US' } },
       });
       window.aupsdk = undefined;
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance } = createAupSdkInstance();
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
         await gnav.constructor.preloadAupSdk();
@@ -633,7 +658,7 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
       const cta = document.createElement('a');
@@ -641,7 +666,7 @@ describe('global navigation', () => {
       cta.dataset.modalId = 'first-modal';
       document.body.append(cta);
       window.aupsdk = undefined;
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance } = createAupSdkInstance();
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
         await gnav.constructor.preloadAupSdk();
@@ -666,7 +691,6 @@ describe('global navigation', () => {
         expect(activeDialog.contains(secondWorkflow)).to.be.true;
         expect(removeListener.calledWith('close')).to.be.true;
 
-        firstWorkflow.dispatchEvent(new Event('success'));
         firstWorkflow.dispatchEvent(new Event('close'));
 
         expect(firstCallback.called).to.be.false;
@@ -694,11 +718,11 @@ describe('global navigation', () => {
       const previousSdkFactory = window.AUPSDK;
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
       window.aupsdk = undefined;
-      const instance = { updateConfig: sinon.stub().resolves() };
+      const { instance } = createAupSdkInstance();
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
         await gnav.constructor.preloadAupSdk();
@@ -750,16 +774,16 @@ describe('global navigation', () => {
         const previousSdkFactory = window.AUPSDK;
         const script = document.createElement('script');
         script.type = 'javascript/blocked';
-        script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+        script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.803/main.js';
         script.dataset.loaded = 'true';
         document.head.append(script);
         window.aupsdk = undefined;
-        const instance = { updateConfig: sinon.stub().resolves() };
+        const { instance } = createAupSdkInstance();
         window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
         try {
           await gnav.constructor.preloadAupSdk();
           const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-          for (const method of ['escape', 'backdrop', 'workflow-cancel', 'workflow-success']) {
+          for (const method of ['escape', 'backdrop', 'workflow-close']) {
             const element = document.createElement(tag);
             if (tag === 'iframe') element.srcdoc = '<p>Workflow</p>';
             const removeListener = sinon.spy(element, 'removeEventListener');
@@ -771,10 +795,6 @@ describe('global navigation', () => {
             const close = sinon.spy();
             element.addEventListener('cancel', cancel);
             element.addEventListener('close', close);
-            const outcome = new Promise((resolve) => {
-              element.addEventListener('cancel', () => resolve('cancel'), { once: true });
-              element.addEventListener('success', () => resolve('success'), { once: true });
-            });
             expect(dialog.open).to.be.true;
             expect(document.documentElement.classList.contains('disable-scroll')).to.be.true;
             if (method === 'escape') {
@@ -782,11 +802,9 @@ describe('global navigation', () => {
             } else if (method === 'backdrop') {
               dialog.click();
             } else {
-              element.dispatchEvent(new CustomEvent(method.replace('workflow-', ''), { bubbles: true }));
               element.dispatchEvent(new CustomEvent('close', { bubbles: true }));
             }
-            expect(await outcome).to.equal(method === 'workflow-success' ? 'success' : 'cancel');
-            expect(cancel.callCount).to.equal(method === 'workflow-success' ? 0 : 1);
+            expect(cancel.callCount).to.equal(method === 'workflow-close' ? 0 : 1);
             expect(close.calledOnce).to.be.true;
             expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
             expect(document.getElementById('aup-workflow-dialog')).to.be.null;
