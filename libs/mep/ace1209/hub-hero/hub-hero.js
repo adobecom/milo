@@ -172,6 +172,33 @@ const initHeaderPin = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
+// .hub-hero-carousel-header fades in via a scroll-linked CSS animation, but stays
+// in the DOM (and readable by screen readers) the whole time. Mirror its real
+// rendered visibility into aria-hidden so it isn't announced before it's shown.
+const initCarouselHeaderA11y = (hubHero, header) => {
+  const a11yController = new AbortController();
+
+  const sync = () => {
+    const hidden = parseFloat(getComputedStyle(header).opacity) < 0.05;
+    header.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { sync(); ticking = false; });
+  }, { signal: a11yController.signal, passive: true });
+  sync();
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      a11yController.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -535,5 +562,6 @@ export default async function init(el) {
   el.append(heroHeader, grid, elasticCarousel);
   handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
   initHeaderPin(el, heroHeader);
+  initCarouselHeaderA11y(el, carouselHeader);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
