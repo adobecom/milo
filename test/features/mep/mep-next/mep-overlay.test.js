@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 const { setConfig, updateConfig, getConfig } = await import('../../../../libs/utils/utils.js');
-const { CARD_STORAGE_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
+const { CARD_STORAGE_KEY, EXCLUDE_MANIFEST_PARAMS_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
 
 // icon-mep has onclick/onload attributes to exercise svgIcon() sanitization branch
 const SVG_DATA = {
@@ -43,6 +43,11 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake((url) => {
   }
   if (href.includes('supported-markets')) {
     return Promise.resolve({ ok: true, json: async () => ({ languages: { data: [] } }) });
+  }
+  // isWithinFirewall()'s corp-only reachability check: reject by default so tests
+  // exercise the intended Sidekick-auth path instead of always bypassing via firewall.
+  if ((url instanceof URL ? url.hostname : new URL(href).hostname) === 'mep-auth-check.awesome-sites.corp.adobe.com') {
+    return Promise.reject(new Error('offline'));
   }
   // Lambda/API calls return 404 by default so getAdditionalManifests returns undefined
   return Promise.resolve({ ok: false, status: 404, json: async () => ({}), text: async () => '' });
@@ -215,6 +220,18 @@ describe('init: DOM structure — stage env first call', () => {
     expect(mainEl.querySelector('#toggle-preview-link')).to.exist;
   });
 
+  it('persists the Manifest Parameters toggle to sessionStorage on change', () => {
+    const cb = mainEl.querySelector('#toggle-manifest-parameters');
+    expect(cb).to.exist;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('true');
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('false');
+    sessionStorage.removeItem(EXCLUDE_MANIFEST_PARAMS_KEY);
+  });
+
   it('MEP highlight toggle has function-computed description (0 Page Updates)', () => {
     const label = mainEl.querySelector('[data-card-key="Highlight"] .mep-row-value');
     expect(label?.textContent).to.include('Page Updates');
@@ -289,7 +306,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           selectedVariantName: 'v-a',
           source: 'adobe-target',
           countryRestriction: 'emea',
-          mktgAction: 'buy now',
+          consentType: 'promo or no offer changes',
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
         },
@@ -300,7 +317,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           selectedVariantName: 'not-in-list',
           source: 'helix',
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: true,
         },
       ],
@@ -417,7 +434,7 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           selectedVariantName: XSS, // → Experience row (buildRow)
           source: XSS, // → Source row (buildRow)
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: false,
         },
       ],
@@ -878,6 +895,14 @@ describe('setEventListeners: toggleExpandedCard', () => {
     const stored = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY) || '{}');
     expect(stored).to.be.an('object');
     expect(stored[key]).to.equal(card.classList.contains('expanded'));
+  });
+
+  it('clicking a Spoof Country radio-row SVG does not collapse the card', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Spoof Country"]');
+    const radioSvg = card.querySelector('.mep-radio-row svg');
+    const was = card.classList.contains('expanded');
+    radioSvg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(card.classList.contains('expanded')).to.equal(was);
   });
 });
 

@@ -17,7 +17,7 @@ const config = {
     experiments: [],
     prefix: '',
     highlight: true,
-    consentState: { functional: true, advertising: true },
+    consentState: { performance: true, advertising: true },
     targetEnabled: true,
   },
   env: { name: 'stage' },
@@ -40,9 +40,12 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake(fetchFn);
 
 const {
   CARD_STORAGE_KEY,
+  EXCLUDE_MANIFEST_PARAMS_KEY,
   TOP_MARKETS,
   API_URLS,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   toSlug,
   hasRelevantContentChanges,
   getTopMarketsAvailability,
@@ -74,6 +77,26 @@ describe('CARD_STORAGE_KEY', () => {
 
   it('equals "mep-expanded-cards"', () => {
     expect(CARD_STORAGE_KEY).to.equal('mep-expanded-cards');
+  });
+});
+
+describe('exclude manifest params persistence', () => {
+  afterEach(() => sessionStorage.removeItem(EXCLUDE_MANIFEST_PARAMS_KEY));
+
+  it('defaults to false when nothing is stored', () => {
+    expect(getExcludeManifestParams()).to.be.false;
+  });
+
+  it('round-trips true through sessionStorage', () => {
+    setExcludeManifestParams(true);
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('true');
+    expect(getExcludeManifestParams()).to.be.true;
+  });
+
+  it('round-trips false through sessionStorage', () => {
+    setExcludeManifestParams(true);
+    setExcludeManifestParams(false);
+    expect(getExcludeManifestParams()).to.be.false;
   });
 });
 
@@ -309,7 +332,7 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: false,
           analyticsTitle: 'Test',
         }],
@@ -331,7 +354,7 @@ describe('getManifestList', () => {
           selectedVariantName: 'variant-a',
           source: 'adobe-target',
           countryRestriction: null,
-          mktgAction: null,
+          consentType: null,
           disabled: false,
         }],
       },
@@ -596,20 +619,20 @@ describe('getConsentSummary', () => {
     expect(pairs).to.be.an('array').with.lengthOf(2);
   });
 
-  it('returns "on" for performance (functional) when consentState.functional is true', async () => {
+  it('returns "on" for performance when consentState.performance is true', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: true, advertising: false } },
+      mep: { ...config.mep, consentState: { performance: true, advertising: false } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 2 | Performance');
     expect(val).to.equal('on');
   });
 
-  it('returns "off" for performance when consentState.functional is false', async () => {
+  it('returns "off" for performance when consentState.performance is false', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: false, advertising: true } },
+      mep: { ...config.mep, consentState: { performance: false, advertising: true } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 2 | Performance');
@@ -619,7 +642,7 @@ describe('getConsentSummary', () => {
   it('returns "on" for advertising when consentState.advertising is true', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: false, advertising: true } },
+      mep: { ...config.mep, consentState: { performance: false, advertising: true } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 4 | Advertising');
@@ -629,7 +652,7 @@ describe('getConsentSummary', () => {
   it('returns "off" for advertising when consentState.advertising is false', async () => {
     setConfig({
       ...config,
-      mep: { ...config.mep, consentState: { functional: true, advertising: false } },
+      mep: { ...config.mep, consentState: { performance: true, advertising: false } },
     });
     const pairs = await getConsentSummary();
     const [, val] = pairs.find(([l]) => l === 'Level 4 | Advertising');
@@ -866,7 +889,7 @@ describe('setPreviewButton', () => {
   it('sets a href on the preview button containing the "mep" query param', async () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
-    expect(href).to.include('mep=');
+    expect(href).to.match(/[?&]mep\b/);
   });
 
   it('does not throw when the drawer has no manifest inputs', async () => {
@@ -886,9 +909,10 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.include('akamaiLocale=de');
+    expect(href).to.include('mboxOverride.browserIp=2.247.255.255');
   });
 
-  it('removes akamaiLocale from href when spoof geo select value is empty', async () => {
+  it('removes akamaiLocale and the browser IP from href when spoof geo select value is empty', async () => {
     const select = document.createElement('select');
     select.className = 'mep-spoof-geo';
     const opt = document.createElement('option');
@@ -899,6 +923,7 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.not.include('akamaiLocale');
+    expect(href).to.not.include('mboxOverride.browserIp');
   });
 
   it('includes mepButton=off when toggle-preview-link checkbox is checked', async () => {
@@ -921,6 +946,40 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.not.include('mepButton');
+  });
+
+  it('keeps a bare, valueless mep param in href when toggle-manifest-parameters is checked', async () => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'mep-load-manifest';
+    input.value = 'my-manifest';
+    drawer.append(input);
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-manifest-parameters';
+    cb.checked = true;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.match(/[?&]mep(&|$)/);
+    expect(href).to.not.match(/[?&]mep=/);
+    expect(href).to.not.include('my-manifest');
+  });
+
+  it('includes the mep param with its value in href when toggle-manifest-parameters is unchecked', async () => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'mep-load-manifest';
+    input.value = 'my-manifest';
+    drawer.append(input);
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-manifest-parameters';
+    cb.checked = false;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.include('mep=my-manifest');
   });
 
   it('includes mepHighlight param when toggle-mep checkbox is checked', async () => {
