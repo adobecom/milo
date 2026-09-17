@@ -20,6 +20,8 @@ const selectors = {
   regionPicker: '.feds-regionPicker',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
+  contactSupportLink: '.feds-footer-contactSupport-link',
+  mailingListCta: 'feds-footer-mailingList-cta',
 };
 
 selectors.popupItems = `
@@ -29,7 +31,9 @@ selectors.popupItems = `
   ${selectors.cta},
   ${selectors.regionPicker},
   ${selectors.socialLink},
-  ${selectors.privacyLink}
+  ${selectors.privacyLink},
+  ${selectors.contactSupportLink},
+  ${selectors.mailingListCta}
 `;
 
 const firstFocusableInSection = '.feds-navLink, .feds-cta--button, .feds-cta--link';
