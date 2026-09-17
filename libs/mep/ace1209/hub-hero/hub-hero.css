@@ -1664,33 +1664,25 @@
    stacking carouselMobileContainerExpandSafari alongside it. */
 @keyframes elasticMobileFirstSlideSafari {
   0% {
-    opacity: 1;
     filter: contrast(1);
-    border-radius: var(--s2a-border-radius-sm);
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  15% {
-    opacity: 1;
-    filter: contrast(1);
-    border-radius: var(--s2a-border-radius-md);
-    transform: scale(0.7);
+  30% {
+    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  30% {
-    filter: contrast(1);
+  40% {
     transform: scale(1);
   }
 
   65% {
     filter: contrast(1);
     transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    opacity: 1;
   }
 
   100% {
     transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    opacity: .2;
     filter: contrast(var(--stack-contrast, 1));
   }
 }
