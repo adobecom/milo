@@ -363,11 +363,28 @@ function withDefaultOffer(nodes) {
   if (hasOffers) return nodes;
 
   const offerId = pageScopedId('Offer');
-  if (nodes.some((node) => node['@id'] === offerId)) return nodes;
-
-  const serializedNodes = [...nodes];
+  let serializedNodes = [...nodes];
+  const collisionIndex = nodes.findIndex((node) => node['@id'] === offerId);
+  if (collisionIndex >= 0) {
+    serializedNodes = JSON.parse(JSON.stringify(nodes));
+    const nodeIds = new Set(nodes.map((node) => node['@id']));
+    let collisionId = `${offerId}-authored`;
+    let suffix = 2;
+    while (nodeIds.has(collisionId)) {
+      collisionId = `${offerId}-authored-${suffix}`;
+      suffix += 1;
+    }
+    serializedNodes[collisionIndex]['@id'] = collisionId;
+    const collisionRemap = new Map([[offerId, collisionId]]);
+    for (const node of serializedNodes) {
+      for (const [key, val] of Object.entries(node)) {
+        if (key === '@id') continue;
+        remapReferences(val, collisionRemap);
+      }
+    }
+  }
   serializedNodes[applicationIndex] = {
-    ...application,
+    ...serializedNodes[applicationIndex],
     offers: [{ '@id': offerId }],
   };
   serializedNodes.push({

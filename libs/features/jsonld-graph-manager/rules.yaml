@@ -813,7 +813,10 @@
     MUST reference it as offers: [{"@id":"{canonicalPageURL}#offer"}].
     Applications with authored Offer references MUST remain unchanged. The
     manager MUST NOT generate an Offer when no supported application exists
-    or infer an application relationship from a standalone Offer.
+    or infer an application relationship from a standalone Offer. If an
+    unrelated node already uses the reserved fallback @id, the manager MUST
+    preserve it and its references under a distinct serialized @id while
+    reserving {canonicalPageURL}#offer for the generated fallback.
   applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
   implements: [JsonLdGraphManager.rewrite, withDefaultOffer]
   tested_by: [manager.test.js]

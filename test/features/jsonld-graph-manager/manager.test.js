@@ -568,6 +568,40 @@ describe('SoftwareApplication default Offer synthesis', () => {
     expect(graph.find((n) => ['SoftwareApplication', 'WebApplication', 'MobileApplication', 'VideoGame'].includes(n['@type']))).to.not.exist;
   });
 
+  it('preserves and remaps an unrelated node that collides with the fallback Offer ID', () => {
+    document.head.append(
+      makeScript({
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+      }),
+      makeScript({
+        '@type': 'Event',
+        name: 'Launch event',
+        offers: { '@id': `${PAGE_URL}#offer` },
+      }),
+      makeScript({
+        '@type': 'Offer',
+        '@id': `${PAGE_URL}#offer`,
+        description: 'Standalone event offer',
+      }),
+    );
+    const manager = trackedManager();
+    manager.init();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const fallback = graph.find((n) => n['@id'] === `${PAGE_URL}#offer`);
+    expect(fallback.price).to.equal('0');
+    expect(fallback.category).to.equal('Free Trial');
+    const standalone = graph.find((n) => n.description === 'Standalone event offer');
+    expect(standalone['@id']).to.equal(`${PAGE_URL}#offer-authored`);
+    const event = graph.find((n) => n['@type'] === 'Event');
+    expect(event.offers).to.deep.equal({ '@id': `${PAGE_URL}#offer-authored` });
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.true;
+    expect(manager.graph.has(`${PAGE_URL}#offer-authored`)).to.be.false;
+  });
+
   it('replaces the serialized fallback when a runtime producer authors an Offer', () => {
     document.head.appendChild(makeScript({
       '@type': 'SoftwareApplication',
