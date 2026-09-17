@@ -307,7 +307,8 @@ body:has(header.local-nav) .product-marquee-grid {
     } */
   }
 
-  .product-marquee-grid .pm-merch-card.light {
+  .product-marquee-grid .pm-merch-card.light,
+  .product-marquee-grid.dark .pm-merch-card.light {
     --s2a-color-content-default: var(--s2a-color-gray-1000);
     --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
 
