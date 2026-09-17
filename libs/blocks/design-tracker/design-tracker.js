@@ -47,16 +47,21 @@ function dayKey(entry, day) {
 
 // Rewrites each entry's image references in place to the gallery's resolved
 // (already re-hosted) src, so every render function downstream can keep
-// treating figmaThumbnailUrl/dayScreenshots[day].path as a plain usable URL
-// — falls back to the original DA URL when the key isn't in the gallery
-// (e.g. local/dev testing without a real Helix render pass having run).
+// treating figmaThumbnailUrl/dayScreenshots[day].path as a plain usable URL.
+// Looks the gallery up BY URL first — embed_page.py now emits one <img> per
+// unique image URL (keyed by the URL as its alt), so identical renders shared
+// across days collapse to a single re-hosted image and the page stays under
+// Helix's 200-image cap. Falls back to the older per-(node,day)/thumb key for
+// pages generated before that change, and finally leaves the original DA URL
+// untouched when neither is present (e.g. local/dev with no Helix render pass).
 function resolveImages(entries, gallery) {
   entries.forEach((entry) => {
-    const tKey = thumbKey(entry);
-    if (entry.figmaThumbnailUrl && gallery[tKey]) entry.figmaThumbnailUrl = gallery[tKey];
+    const thumb = entry.figmaThumbnailUrl;
+    const tResolved = (thumb && gallery[thumb]) || gallery[thumbKey(entry)];
+    if (thumb && tResolved) entry.figmaThumbnailUrl = tResolved;
     Object.entries(entry.dayScreenshots || {}).forEach(([day, shot]) => {
-      const dKey = dayKey(entry, day);
-      if (shot.path && gallery[dKey]) shot.path = gallery[dKey];
+      const resolved = (shot.path && gallery[shot.path]) || gallery[dayKey(entry, day)];
+      if (shot.path && resolved) shot.path = resolved;
     });
   });
   return entries;

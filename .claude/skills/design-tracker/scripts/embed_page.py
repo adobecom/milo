@@ -250,27 +250,35 @@ def offload_oversized_days(entries, token, org_repo, branch, page_path):
     return offloaded
 
 
-def thumb_key(entry):
-    return f"dt-thumb-{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}"
-
-
-def day_key(entry, day):
-    return f"dt-day-{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}"
-
-
 def build_gallery(entries):
-    images = []  # (key, url)
+    """Emit one hidden <img> per UNIQUE image URL, keyed by the URL itself
+    (as its `alt`), so Helix re-hosts each image same-origin exactly once.
+
+    Deduping by URL is what keeps a large design under Helix's hard 200-image
+    cap per page (`maximum number of images reached: N of 200 max` -> preview
+    409): identical Figma renders across different days (common — Figma renders
+    instance-heavy frames identically version-to-version, see diff_versions.py's
+    pixel-diff caveat) are pointed at a single canonical DA URL upstream (see
+    the sync flow's screenshot dedup), so they collapse to one <img> here
+    instead of one per day. A real case: 10 frames x ~210 change-days = 220
+    <img> tags (over 200) with only 186 unique images.
+
+    design-tracker.js resolveImages() looks each entry's figmaThumbnailUrl /
+    dayScreenshots[day].path up in this gallery BY URL (with a fallback to the
+    older per-(node,day) key so previously-generated pages keep working)."""
+    seen = set()
+    urls = []
     for entry in entries:
-        if entry.get("figmaThumbnailUrl"):
-            images.append((thumb_key(entry), entry["figmaThumbnailUrl"]))
-        for day, shot in (entry.get("dayScreenshots") or {}).items():
-            if shot.get("path"):
-                images.append((day_key(entry, day), shot["path"]))
+        for url in [entry.get("figmaThumbnailUrl"),
+                    *[s.get("path") for s in (entry.get("dayScreenshots") or {}).values()]]:
+            if url and url not in seen:
+                seen.add(url)
+                urls.append(url)
     tags = "\n".join(
-        f'          <img src="{html.escape(url, quote=True)}" alt="{html.escape(key, quote=True)}">'
-        for key, url in images
+        f'          <img src="{html.escape(url, quote=True)}" alt="{html.escape(url, quote=True)}">'
+        for url in urls
     )
-    return tags, [k for k, _ in images]
+    return tags, urls
 
 
 PAGE_TEMPLATE = """<body>
