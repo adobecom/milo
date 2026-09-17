@@ -1,0 +1,217 @@
+/* jtbd -- GENERATED from Figma 8510:87744 "Section - JTBD".
+ *
+ * Do not hand-edit: regenerate. Every rule below comes from that node's OWN
+ * declared Figma values; selectors are grouped only where the declarations
+ * turned out identical, never by assuming one item stands for the others.
+ *
+ * Reference frame width: 1440px. This description is NOT
+ * responsive -- a single Figma frame describes a single width, so there are
+ * deliberately no media queries rather than invented ones.
+ */
+
+/* Figma's width/height are OUTER-box measurements: a node declared 892x1000
+ * with 32px padding still occupies 892x1000. CSS's default content-box
+ * ADDS the padding, which inflated that same node to 956x1064 and pushed
+ * every sibling out of place. Every element the generator emits therefore
+ * declares border-box, so the numbers below mean what Figma meant. */
+.jtbd, .jtbd * { box-sizing: border-box; }
+
+.jtbd {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+  padding: 124px 0 24px 0;
+  background: #f6f6f6;
+  border-radius: 32px 32px 0 0;
+}
+.jtbd .jtbd-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.jtbd .jtbd-title-2 {
+  max-width: 540px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 56px;
+  line-height: 56px;
+  letter-spacing: -1.68px;
+  text-align: center;
+  color: #000000;
+  margin: 0;
+}
+.jtbd .jtbd-body {
+  max-width: 616px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  font-size: 20px;
+  line-height: 24px;
+  letter-spacing: 0;
+  text-align: center;
+  color: #131313;
+  margin: 0;
+}
+.jtbd .jtbd-frame-2147230420 {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 24px;
+  width: 100%;
+  height: 1000px;
+}
+.jtbd .jtbd-asset-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: flex-start;
+  padding: 32px 32px;
+  width: 892px;
+  height: 1000px;
+  border-radius: 16px;
+  border: 1.8184px solid #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+.jtbd .jtbd-boc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  width: 828px;
+  height: 936px;
+}
+.jtbd .jtbd-copy-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 0 24px 0 0;
+  width: 499px;
+}
+.jtbd .jtbd-headline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 475px;
+}
+.jtbd .jtbd-headline {
+  max-width: 475px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  color: #ffffff;
+  margin: 0;
+}
+.jtbd .jtbd-sub-headline {
+  max-width: 303px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #ffffff;
+  margin: 0;
+}
+.jtbd .jtbd-frame-2147230418 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 492px;
+}
+.jtbd .jtbd-frame-2147230324 {
+  width: 492px;
+  height: 600px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.jtbd .jtbd-shaodw {
+  width: 292px;
+  height: 446.59px;
+  box-shadow: 0 2.59px 2.0741px rgb(0 0 0 / 0.02), 0 6.23px 4.9844px rgb(0 0 0 / 0.03), 0 11.73px 9.3851px rgb(0 0 0 / 0.04), 0 20.93px 16.7415px rgb(0 0 0 / 0.04), 0 39.14px 31.3131px rgb(0 0 0 / 0.05), 0 93.69px 74.9519px rgb(0 0 0 / 0.07);
+}
+.jtbd .jtbd-glass-border {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5.6214px 5.6214px;
+  background: rgb(157 157 255 / 0.05);
+  border-radius: 9.369px;
+  border: 0.9369px solid #9d9dff;
+}
+.jtbd .jtbd-corner-radius-stroke {
+  display: flex;
+  flex-direction: row;
+  gap: 7.4952px;
+  align-items: center;
+  border-radius: 4.6845px;
+  border: 0.9369px solid #ffffff;
+  overflow: hidden;
+}
+.jtbd .jtbd-assetdetails-comments {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 343.53px;
+  position: relative;
+}
+.jtbd .jtbd-copy-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 24px 24px 0 24px;
+  width: 391px;
+}
+.jtbd .jtbd-headline-body-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 343px;
+}
+.jtbd .jtbd-headline-2 {
+  max-width: 343px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  color: #000000;
+  margin: 0;
+}
+.jtbd .jtbd-sub-headline-2 {
+  max-width: 343px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: rgb(0 0 0 / 0.64);
+  margin: 0;
+}
+.jtbd .jtbd-asset-frame > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.jtbd .jtbd-assetdetails-comments > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}

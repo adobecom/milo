@@ -1,0 +1,187 @@
+/* audience-resting -- GENERATED from Figma 8510:87627 "Audience - Resting".
+ *
+ * Do not hand-edit: regenerate. Every rule below comes from that node's OWN
+ * declared Figma values; selectors are grouped only where the declarations
+ * turned out identical, never by assuming one item stands for the others.
+ *
+ * Reference frame width: 1440px. This description is NOT
+ * responsive -- a single Figma frame describes a single width, so there are
+ * deliberately no media queries rather than invented ones.
+ */
+
+/* Figma's width/height are OUTER-box measurements: a node declared 892x1000
+ * with 32px padding still occupies 892x1000. CSS's default content-box
+ * ADDS the padding, which inflated that same node to 956x1064 and pushed
+ * every sibling out of place. Every element the generator emits therefore
+ * declares border-box, so the numbers below mean what Figma meant. */
+.audience-resting, .audience-resting * { box-sizing: border-box; }
+
+.audience-resting {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+  padding: 124px 0;
+  background: #ffffff;
+  border-radius: 0 0 32px 32px;
+  overflow: hidden;
+}
+.audience-resting .audience-resting-routing-carousel {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+.audience-resting .audience-resting-firefly,
+.audience-resting .audience-resting-firefly-2,
+.audience-resting .audience-resting-acrobat,
+.audience-resting .audience-resting-genstudio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 292px;
+  background: #f6f6f6;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.audience-resting .audience-resting-frame-2087327505,
+.audience-resting .audience-resting-frame-2087327505-2,
+.audience-resting .audience-resting-frame-2087327505-3,
+.audience-resting .audience-resting-frame-2087327505-4 {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  padding: 24px 24px;
+  width: 292px;
+}
+.audience-resting .audience-resting-eyebrow,
+.audience-resting .audience-resting-eyebrow-3,
+.audience-resting .audience-resting-eyebrow-5,
+.audience-resting .audience-resting-eyebrow-7 {
+  max-width: 225px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  color: #000000;
+  margin: 0;
+}
+.audience-resting .audience-resting-vector,
+.audience-resting .audience-resting-vector-2,
+.audience-resting .audience-resting-vector-3,
+.audience-resting .audience-resting-vector-4 {
+  width: 3px;
+  height: 6px;
+  position: relative;
+}
+.audience-resting .audience-resting-asset,
+.audience-resting .audience-resting-asset-2,
+.audience-resting .audience-resting-frame-2087328029 {
+  width: 292px;
+  height: 394px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+.audience-resting .audience-resting-frame-2087327722,
+.audience-resting .audience-resting-frame-2087327722-2,
+.audience-resting .audience-resting-frame-2087327722-3,
+.audience-resting .audience-resting-frame-2087327774 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 24px;
+  width: 292px;
+}
+.audience-resting .audience-resting-eyebrow-2,
+.audience-resting .audience-resting-eyebrow-4,
+.audience-resting .audience-resting-eyebrow-6,
+.audience-resting .audience-resting-eyebrow-8 {
+  max-width: 244px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #000000;
+  margin: 0;
+}
+.audience-resting .audience-resting-frame-2087327770 {
+  width: 292px;
+  height: 394px;
+  position: relative;
+}
+.audience-resting .audience-resting-layer-1 {
+  width: 28px;
+  height: 17px;
+  overflow: hidden;
+}
+.audience-resting .audience-resting-vector > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-asset > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-vector-2 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-asset-2 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-vector-3 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-frame-2087327770 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-vector-4 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.audience-resting .audience-resting-frame-2087328029 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}

@@ -112,6 +112,12 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'frame-2147230423',
+  'offer',
+  'hero',
+  'what-s-new',
+  'audience-resting',
+  'jtbd',
   'audience-router',
   'base-card',
   'brand-concierge',

@@ -1,0 +1,209 @@
+/* what-s-new -- GENERATED from Figma 8510:88027 "Section - What's New".
+ *
+ * Do not hand-edit: regenerate. Every rule below comes from that node's OWN
+ * declared Figma values; selectors are grouped only where the declarations
+ * turned out identical, never by assuming one item stands for the others.
+ *
+ * Reference frame width: 1440px. This description is NOT
+ * responsive -- a single Figma frame describes a single width, so there are
+ * deliberately no media queries rather than invented ones.
+ */
+
+/* Figma's width/height are OUTER-box measurements: a node declared 892x1000
+ * with 32px padding still occupies 892x1000. CSS's default content-box
+ * ADDS the padding, which inflated that same node to 956x1064 and pushed
+ * every sibling out of place. Every element the generator emits therefore
+ * declares border-box, so the numbers below mean what Figma meant. */
+.what-s-new, .what-s-new * { box-sizing: border-box; }
+
+.what-s-new {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  padding: 0 124px 124px 124px;
+  background: #f6f6f6;
+}
+.what-s-new .what-s-new-section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  justify-content: center;
+  align-items: center;
+  width: 1192px;
+}
+.what-s-new .what-s-new-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.what-s-new .what-s-new-eyebrow {
+  max-width: 150px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-align: center;
+  color: rgb(0 0 0 / 0.64);
+  margin: 0;
+}
+.what-s-new .what-s-new-title-2 {
+  max-width: 664px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 56px;
+  line-height: 56px;
+  letter-spacing: -1.68px;
+  text-align: center;
+  color: #000000;
+  margin: 0;
+}
+.what-s-new .what-s-new-3-column {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 1192px;
+}
+.what-s-new .what-s-new-column,
+.what-s-new .what-s-new-column-2,
+.what-s-new .what-s-new-column-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 392px;
+}
+.what-s-new .what-s-new-asset,
+.what-s-new .what-s-new-asset-2,
+.what-s-new .what-s-new-asset-3 {
+  width: 392px;
+  height: 294px;
+  background: #ffffff;
+  border-radius: 16px;
+  position: relative;
+}
+.what-s-new .what-s-new-copy-2,
+.what-s-new .what-s-new-copy-3,
+.what-s-new .what-s-new-copy-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 24px 24px 0 24px;
+  width: 392px;
+}
+.what-s-new .what-s-new-headline-body,
+.what-s-new .what-s-new-headline-body-2,
+.what-s-new .what-s-new-headline-body-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 344px;
+}
+.what-s-new .what-s-new-headline,
+.what-s-new .what-s-new-headline-body-3,
+.what-s-new .what-s-new-headline-2 {
+  max-width: 344px;
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+  font-size: 18px;
+  line-height: 18px;
+  letter-spacing: -0.48px;
+  color: #000000;
+  margin: 0;
+}
+.what-s-new .what-s-new-sub-headline,
+.what-s-new .what-s-new-sub-headline-2,
+.what-s-new .what-s-new-sub-headline-3 {
+  max-width: 344px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: rgb(0 0 0 / 0.64);
+  margin: 0;
+}
+.what-s-new .what-s-new-cta,
+.what-s-new .what-s-new-cta-2,
+.what-s-new .what-s-new-cta-link {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+.what-s-new .what-s-new-call-to-action,
+.what-s-new .what-s-new-call-to-action-2,
+.what-s-new .what-s-new-call-to-action-3 {
+  max-width: 69px;
+  font-family: var(--s2a-font-family-adobe-clean);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: 14px;
+  line-height: 18px;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  letter-spacing: 0;
+  text-align: center;
+  color: #000000;
+  margin: 0;
+}
+.what-s-new .what-s-new-vector,
+.what-s-new .what-s-new-vector-2,
+.what-s-new .what-s-new-vector-3 {
+  width: 3px;
+  height: 6px;
+  position: relative;
+}
+.what-s-new .what-s-new-asset > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.what-s-new .what-s-new-vector > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.what-s-new .what-s-new-asset-2 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.what-s-new .what-s-new-vector-2 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.what-s-new .what-s-new-asset-3 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.what-s-new .what-s-new-vector-3 > :is(picture, img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
