@@ -301,10 +301,10 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid .pm-merch-card.dark {
     background: var(--s2a-color-gray-900);
 
-    .con-button.outline {
+    /* .con-button.outline {
       border-color: var(--s2a-color-gray-25);
       color: var(--s2a-color-gray-25);
-    }
+    } */
   }
 
   .product-marquee-grid .pm-merch-card.light {
@@ -312,6 +312,9 @@ body:has(header.local-nav) .product-marquee-grid {
     --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
 
     background: var(--s2a-color-gray-50);
+    /* set color, not just the token: un-classed mas-field text (shortDescription,
+       legal) inherits `color`, which the block's .dark otherwise keeps white. */
+    color: var(--s2a-color-content-default);
   }
 
   /* transparent-bg + dark: translucent black card surface. */
