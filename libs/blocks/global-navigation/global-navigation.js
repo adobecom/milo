@@ -1132,35 +1132,12 @@ class Gnav {
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.803/main.js`,
+      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
 
-    let activeDialog;
-    let orchestratorMessageHandlerPromise;
-    const configureOrchestratorMessageHandler = () => {
-      orchestratorMessageHandlerPromise ||= window.aupsdk.getOrchestratorContext()
-        .then((orchestrator) => {
-          orchestrator.setMessageHandler((name, payload, parentHandler) => {
-            if (
-              name === 'System'
-              && payload?.subType === 'AppClosed'
-              && payload?.data?.statusCode === 10
-            ) {
-              activeDialog?.markCompleted();
-            } else if (name === 'OpenURL') {
-              payload?.executeDefaultAction?.();
-            }
-            parentHandler?.(name, payload);
-          });
-        })
-        .catch((e) => {
-          orchestratorMessageHandlerPromise = undefined;
-          throw e;
-        });
-      return orchestratorMessageHandlerPromise;
-    };
+    let teardownActiveDialog;
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1184,17 +1161,15 @@ class Gnav {
             import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
           ]);
         }
-        await configureOrchestratorMessageHandler();
-        activeDialog?.teardown();
+        teardownActiveDialog?.();
         let dialog;
         let finishLoading;
         let closeDialog;
         let onDialogCancel;
         let onDialogClick;
         let restoreUrl;
-        let isCompleted = false;
         let isTornDown = false;
-        const teardown = () => {
+        const teardown = (restoreHash = true) => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
@@ -1204,8 +1179,8 @@ class Gnav {
           if (dialog?.open) dialog.close();
           dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
-          if (activeDialog?.teardown === teardown) activeDialog = undefined;
-          if (!isCompleted && restoreUrl && window.location.hash === modalHash) {
+          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          if (restoreHash && restoreUrl && window.location.hash === modalHash) {
             window.history.pushState(window.history.state, '', restoreUrl);
           }
         };
@@ -1249,10 +1224,7 @@ class Gnav {
           element.addEventListener('close', closeDialog, { once: true });
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
-          activeDialog = {
-            markCompleted: () => { isCompleted = true; },
-            teardown,
-          };
+          teardownActiveDialog = teardown;
           document.documentElement.classList.add('disable-scroll');
           dialog.showModal();
           if (modalHash) {
