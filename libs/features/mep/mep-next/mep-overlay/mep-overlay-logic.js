@@ -100,7 +100,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryDisabled, mktgAction,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryEnabled,
+  consentType, consentNotSpecified, consentEnabled,
   manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
@@ -118,8 +119,10 @@ function toActivity({
     pathname,
     analyticsTitle,
     countryRestriction,
-    countryDisabled,
-    mktgAction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -179,8 +182,10 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     disabled,
     disabledPromo,
     countryRestriction,
-    countryDisabled,
-    mktgAction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -228,8 +233,11 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isDefaultSelected,
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
-    mktgAction,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
+    countryEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder: getExecutionOrderLabel(executionOrder),
@@ -237,7 +245,6 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isActive: disabled ? 'inactive' : 'active',
     withinDateRange: !disabled,
     disabledPromo: !!disabledPromo,
-    manifestCountryRestricted: !!countryDisabled,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
@@ -336,7 +343,7 @@ function getPersonalizationMetadata() {
 
 function getPerformanceConsent() {
   const { consentState } = getConfig().mep;
-  return consentState?.functional ? 'on' : 'off';
+  return consentState?.performance ? 'on' : 'off';
 }
 
 function getAdvertisingConsent() {
