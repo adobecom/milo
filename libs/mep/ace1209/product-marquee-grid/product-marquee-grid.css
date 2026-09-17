@@ -127,7 +127,7 @@ body:has(header.local-nav) .product-marquee-grid {
 }
 
 .transparent-bg.product-marquee-grid {
-  backdrop-filter: blur(var(--s2a-blur-64));
+  backdrop-filter: blur(var(--s2a-blur-128));
   background-color: var(--s2a-color-transparent-white-72);
 }
 
@@ -187,6 +187,10 @@ body:has(header.local-nav) .product-marquee-grid {
 }
 
 @media (width >= 768px) {
+  .transparent-bg.product-marquee-grid {
+    backdrop-filter: blur(calc(var(--s2a-blur-128) / 2));
+  }
+
   .product-marquee-grid {
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
