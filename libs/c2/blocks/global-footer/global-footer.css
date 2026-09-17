@@ -377,6 +377,7 @@ span.feds-footer-privacyLink-divider {
   column-gap: var(--s2a-spacing-md);
   row-gap: var(--s2a-spacing-xl);
   flex-wrap: wrap;
+  max-width: 327px;
 }
 
 .global-footer.event .feds-footer-options > .feds-footer-contactSupport {
@@ -413,7 +414,6 @@ span.feds-footer-privacyLink-divider {
 
 .global-footer.event .feds-footer-mailingList-text {
   margin: 0;
-  max-width: 327px;
   color: var(--s2a-color-gray-25);
   font-size: var(--s2a-font-size-20);
   line-height: var(--s2a-font-line-height-20);
@@ -524,11 +524,14 @@ span.feds-footer-privacyLink-divider {
     background-image: var(--footer-background-desktop);
   }
   .global-footer.event .feds-footer-mailingList-text {
-    max-width: 492px;
     font-size: var(--s2a-font-size-36);
     line-height: var(--s2a-font-line-height-32);
     letter-spacing: var(--s2a-font-letter-spacing-neg-1);
   }
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList {
+    max-width: 492px;
+  }
+
 }
 
 @media (min-width: 1440px) {
