@@ -625,10 +625,10 @@
   }
 
   .hub-hero-carousel-header {
-    /* the heading now reliably wraps to 2 lines (see max-inline-size below),
-       so the gap only needs to clear that fixed 2-line height plus a small
-       breathing margin, not the old 1-line assumption's spacing-4xl gap */
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-lg) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
+    /* the heading now reliably wraps to 2 lines (see max-inline-size below);
+       reserve room for that plus the original spacing-4xl clearance -- a
+       tighter gap here previously let the first slide overlap the heading */
+    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
@@ -1583,7 +1583,14 @@
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  75% {
+  15% {
+    transform: scale(0.7);
+  }
+
+  /* finish early (matches elasticMobileFirstSlideSafari) so a slide is
+     already fully grown by the time it's peeking into the stack, rather
+     than still mid-grow when it first becomes visible */
+  30% {
     transform: scale(1);
   }
 
@@ -1682,6 +1689,9 @@
   }
 
   75% {
+    /* hold contrast at 1 until here so it only starts shifting once slide 1
+       is actually getting covered, instead of drifting from 30% onward */
+    filter: contrast(1);
     transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: 1;
   }
