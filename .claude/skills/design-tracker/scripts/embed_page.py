@@ -55,6 +55,7 @@ import argparse
 import html
 import json
 import re
+import time
 import urllib.error
 import urllib.request
 
@@ -76,6 +77,17 @@ DETAIL_DOC_TEMPLATE = """<body>
 """
 
 
+# Transient statuses worth retrying on the DA/Helix admin APIs. 409 Conflict
+# is the important one here: uploading + previewing 75+ detail docs in quick
+# succession intermittently 409s (the content-bus is still settling a just-
+# written sibling), which — with no retry — silently trimmed a *different*
+# random day's detail on each run. 429/5xx are the usual transient throttling/
+# server blips. Verified: without this, back-to-back full rebuilds each dropped
+# one day's drill-down detail (never the same day twice).
+DA_RETRY_STATUSES = {409, 429, 500, 502, 503, 504}
+DA_MAX_ATTEMPTS = 5
+
+
 def da_request(method, url, token, data=None, content_type=None):
     # Cloudflare (fronting admin.da.live/admin.hlx.page) 403s on urllib's
     # default User-Agent ("Python-urllib/3.x") even with a valid auth token
@@ -87,18 +99,72 @@ def da_request(method, url, token, data=None, content_type=None):
     if content_type:
         headers["Content-Type"] = content_type
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    # Bounded timeout: an unbounded urlopen() blocks forever on a dead
-    # connection (laptop sleep/wake, network switch) instead of raising —
-    # confirmed directly causing an unrecoverable hang in diff_versions.py.
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.status, resp.read()
+    for attempt in range(DA_MAX_ATTEMPTS):
+        try:
+            # Bounded timeout: an unbounded urlopen() blocks forever on a dead
+            # connection (laptop sleep/wake, network switch) instead of raising
+            # — confirmed directly causing an unrecoverable hang in
+            # diff_versions.py.
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return resp.status, resp.read()
+        except urllib.error.HTTPError as e:
+            retryable = e.code in DA_RETRY_STATUSES and attempt < DA_MAX_ATTEMPTS - 1
+            if not retryable:
+                raise
+            # Honor Retry-After (seconds) when present, else exponential backoff.
+            try:
+                wait = int(e.headers.get("Retry-After", "")) or (2 ** attempt)
+            except (TypeError, ValueError):
+                wait = 2 ** attempt
+            e.close()
+            time.sleep(wait)
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            if attempt >= DA_MAX_ATTEMPTS - 1:
+                raise
+            time.sleep(2 ** attempt)
+
+
+# A single detail doc must itself stay under Helix's content-bus per-document
+# limit — confirmed the boundary sits around ~1.0-1.05MB (a 1.00MB doc uploaded
+# fine on one page; a 1.09MB one persistently 409'd on another, retries and
+# all). A day with many versions of dense change-detail (e.g. a big early-build
+# day: 27 versions / 11,644 elements / 1.09MB) blows past that as ONE doc, so
+# it's split across several sub-docs each kept safely under this. Set well below
+# the observed ~1.0MB failure point for headroom (template + entity escaping add
+# a little on top of the raw JSON measured here).
+SAFE_DETAIL_DOC_BYTES = 800_000
+
+
+def _chunk_changes_by_size(changes, limit=SAFE_DETAIL_DOC_BYTES):
+    """Group a day's version-changes into as few {versionId: changedElements}
+    maps as possible while keeping each map's serialized size under `limit`.
+    Splits between whole versions (never mid-version), so the JS can merge the
+    parts by simply combining the maps. A lone version whose own detail already
+    exceeds the limit is a degenerate case handled by the caller."""
+    chunks = []
+    cur = {}
+    for c in changes:
+        vid = c["versionId"]
+        els = c.get("changedElements") or []
+        trial = dict(cur)
+        trial[vid] = els
+        if cur and len(json.dumps(trial)) > limit:
+            chunks.append(cur)
+            cur = {vid: els}
+        else:
+            cur = trial
+    if cur:
+        chunks.append(cur)
+    return chunks
 
 
 def upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path):
-    """Uploads one day's full (untrimmed) changedElements as its own DA doc,
-    previews it, and returns the resulting relative URL (same-origin with
-    the main page) — or None if anything failed, in which case the caller
-    falls back to trimming that day instead of leaving a broken reference.
+    """Uploads one day's full (untrimmed) changedElements as its own DA doc(s),
+    previews them, and returns the resulting same-origin relative URL — a single
+    string when one doc suffices, or a LIST of strings when the day was too big
+    for one doc and had to be split (the block's loadOffloadedDay merges the
+    parts). Returns None if anything failed, in which case the caller falls back
+    to trimming that day instead of leaving a broken reference.
 
     Confirmed directly: Helix serves the previewed webPath all-lowercase
     regardless of the source doc's path casing (e.g. a Figma fileKey with
@@ -107,29 +173,35 @@ def upload_detail_doc(entry, day, changes, token, org_repo, branch, page_path):
     mixed-case reference 404s even though the doc genuinely exists — the
     key must be lowercased here to match what will actually be fetchable."""
     org, repo = org_repo.split("/")
-    key = f"{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}".lower()
-    doc_path = f"{page_path}/detail/{key}"
-    payload = json.dumps({c["versionId"]: c.get("changedElements") or [] for c in changes})
-    body = DETAIL_DOC_TEMPLATE.format(data=html.escape(payload, quote=False)).encode()
-
-    try:
-        da_request(
-            "POST", f"https://admin.da.live/source/{org}/{repo}/{doc_path}.html",
-            token, data=body, content_type="text/html",
-        )
-        da_request(
-            "POST", f"https://admin.hlx.page/preview/{org}/{repo}/{branch}/{doc_path}",
-            token,
-        )
-    except Exception as e:
-        print(json.dumps({"detailDocError": key, "reason": str(e)}))
-        return None
-    # Absolute (leading /), not "./detail/{key}" — confirmed directly that a
-    # relative reference resolves against the page URL's own "directory"
-    # (everything up to the last /), which for a page at .../design-tracker
-    # (no trailing slash) is .../drafts/dusan/, not .../design-tracker/ —
-    # silently 404ing at a sibling path instead of the intended nested one.
-    return f"/{page_path}/detail/{key}"
+    base_key = f"{entry['figmaFileKey']}-{(entry.get('figmaNodeId') or 'file').replace(':', '-')}-{day}".lower()
+    chunks = _chunk_changes_by_size(changes)
+    # Single doc keeps the original key (no "-pN" suffix) so already-published
+    # pages' references stay valid and the common case is unchanged.
+    multi = len(chunks) > 1
+    urls = []
+    for i, chunk_map in enumerate(chunks):
+        key = f"{base_key}-p{i + 1}" if multi else base_key
+        doc_path = f"{page_path}/detail/{key}"
+        body = DETAIL_DOC_TEMPLATE.format(data=html.escape(json.dumps(chunk_map), quote=False)).encode()
+        try:
+            da_request(
+                "POST", f"https://admin.da.live/source/{org}/{repo}/{doc_path}.html",
+                token, data=body, content_type="text/html",
+            )
+            da_request(
+                "POST", f"https://admin.hlx.page/preview/{org}/{repo}/{branch}/{doc_path}",
+                token,
+            )
+        except Exception as e:
+            print(json.dumps({"detailDocError": key, "reason": str(e)}))
+            return None
+        # Absolute (leading /), not "./detail/{key}" — confirmed directly that a
+        # relative reference resolves against the page URL's own "directory"
+        # (everything up to the last /), which for a page at .../design-tracker
+        # (no trailing slash) is .../drafts/dusan/, not .../design-tracker/ —
+        # silently 404ing at a sibling path instead of the intended nested one.
+        urls.append(f"/{page_path}/detail/{key}")
+    return urls if multi else urls[0]
 
 
 def offload_oversized_days(entries, token, org_repo, branch, page_path):

@@ -807,15 +807,8 @@ function renderDayScreenshot(dayBucket, entry, summary) {
 // rest of the summary on it.
 const offloadedDayCache = new Map();
 
-async function loadOffloadedDay(entry, day) {
-  const url = entry.offloadedDays?.[day];
-  if (!url) return;
-  const cacheKey = `${entry.figmaFileKey}-${entry.figmaNodeId}-${day}`;
-  if (offloadedDayCache.has(cacheKey)) {
-    await offloadedDayCache.get(cacheKey);
-    return;
-  }
-  const promise = fetch(url)
+function fetchDetailDoc(url) {
+  return fetch(url)
     .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
     .then((text) => {
       // The detail doc is authored/previewed the same way as any other DA
@@ -828,8 +821,27 @@ async function loadOffloadedDay(entry, day) {
       const payload = doc.querySelector('main p')?.textContent;
       if (!payload) throw new Error('detail doc missing expected <main><div><p> payload');
       return JSON.parse(payload);
-    })
-    .then((byVersionId) => {
+    });
+}
+
+async function loadOffloadedDay(entry, day) {
+  // A day's detail may be one doc (a plain URL string) or, when it was too big
+  // for a single content-bus doc, several sub-docs (an array of URLs written by
+  // embed_page.py's _chunk_changes_by_size). Normalize to an array and merge
+  // every part's {versionId: changedElements} map — the split is between whole
+  // versions, so a plain Object.assign reunites them with no key collisions.
+  const ref = entry.offloadedDays?.[day];
+  if (!ref) return;
+  const urls = Array.isArray(ref) ? ref : [ref];
+  if (!urls.length) return;
+  const cacheKey = `${entry.figmaFileKey}-${entry.figmaNodeId}-${day}`;
+  if (offloadedDayCache.has(cacheKey)) {
+    await offloadedDayCache.get(cacheKey);
+    return;
+  }
+  const promise = Promise.all(urls.map(fetchDetailDoc))
+    .then((maps) => {
+      const byVersionId = Object.assign({}, ...maps);
       (entry.versionChanges || []).forEach((change) => {
         if (change.date.slice(0, 10) === day && byVersionId[change.versionId]) {
           change.changedElements = byVersionId[change.versionId];
