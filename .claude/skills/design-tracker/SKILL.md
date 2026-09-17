@@ -529,6 +529,24 @@ Steps:
 1. **Build the page HTML** with `embed_page.py` (embeds `entries.json`'s
    data + an image gallery, and offloads any oversized day's detail to its
    own DA doc — see "Version-history change bars"):
+
+   **It also drops `magnitude == 0` versions from the embedded copy**
+   (`filter_zero_magnitude()`) — never from DA's `entries.json`, which stays
+   the complete raw pull. A magnitude-0 version is a file-wide Figma save whose
+   change was in some *other* frame, so the tracked node didn't change; it
+   renders identically to a day with no activity (`groupByDay()` synthesizes
+   empty placeholder days across the continuous range client-side anyway), so
+   removing it is visually lossless. This matters because Helix rejects a page
+   source **larger than 1MB** (`html source larger than 1MB` → preview `409`),
+   and on a large umbrella design these dominate the byte count — a real case:
+   10 frames × ~650 versions embedded as 6472 records / ~1.15MB, **92% of them
+   magnitude 0**, which blew the limit even after every day's `changedElements`
+   was offloaded (offloading empties `changedElements` but keeps the version
+   *record*). `magnitude is None` (not computed, e.g. whole-file mode) is kept —
+   only the exact 0 case is dropped. Reported as `zeroMagnitudeFiltered` in the
+   output. **Don't re-add the 0-mag records to the embed to "match older pages"
+   — earlier pages embedded them only because they were small enough to stay
+   under 1MB, not because the UI needs them.**
    ```bash
    TOKEN=$(da-auth-helper token)
    python3 $SKILL_DIR/scripts/embed_page.py \

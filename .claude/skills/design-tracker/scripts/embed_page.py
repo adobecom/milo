@@ -355,6 +355,23 @@ def extract_input_table(page_html, block_class):
     return None            # unbalanced — treat as no table rather than half a block
 
 
+def filter_zero_magnitude(entries):
+    """Strip magnitude==0 version records from each entry's versionChanges in
+    place, returning the count removed. Keeps magnitude>0 (real changes) and
+    magnitude is None (not computed, e.g. whole-file mode) — only the exact 0.0
+    "the tracked node didn't change this version" case is dropped. See the
+    call site for why (Helix 1MB source limit on large designs)."""
+    removed = 0
+    for entry in entries:
+        vc = entry.get("versionChanges")
+        if not vc:
+            continue
+        kept = [v for v in vc if v.get("magnitude") != 0]
+        removed += len(vc) - len(kept)
+        entry["versionChanges"] = kept
+    return removed
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--entries", required=True, help="path to the db entries.json (plain DA URLs)")
@@ -373,6 +390,20 @@ def main():
 
     with open(args.entries) as f:
         entries = json.load(f)
+
+    # Drop magnitude-0 versions from the EMBEDDED copy only (never from DA's
+    # entries.json, which stays the complete raw pull for incremental --since
+    # re-syncs). A magnitude-0 version is a file-wide Figma save whose change
+    # was in some *other* frame, so the tracked node didn't change — it renders
+    # identically to a day with no activity, because groupByDay() synthesizes
+    # empty placeholder days across the continuous date range client-side
+    # regardless. On a large umbrella design (many frames x long history) these
+    # dominate the byte count: 10 frames x ~650 versions was 6472 records /
+    # ~1.15MB embedded (92% of them magnitude 0), pushing the page past Helix's
+    # hard 1MB source limit (html source larger than 1MB -> preview 409). We keep
+    # magnitude is None (not computed) untouched — only == 0 is the "means
+    # nothing" case. This is visually lossless; the full history is still in DA.
+    zero_mag_filtered = filter_zero_magnitude(entries)
 
     # Preserve the user's hand-edited input table: read the current page and
     # carry its "Design Links" table across untouched, so regenerating the
@@ -407,6 +438,7 @@ def main():
         "images": len(keys),
         "outputBytes": len(page),
         "daysOffloaded": offloaded,
+        "zeroMagnitudeFiltered": zero_mag_filtered,
         "inputTablePreserved": bool(input_table),
         "title": args.title or (extract_title(current_page) and "preserved") or None,
     }))
