@@ -891,9 +891,9 @@
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
       will-change: transform, opacity, scale;
-      animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both, carouselMobileContainerExpandSafari ease forwards;
-      animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-      animation-range: entry 50% exit 100%, entry 100% exit 100%, entry 100% exit 100%;
+      animation: elasticItemsShrink ease both, elasticMobileFirstSlideSafari ease both;
+      animation-timeline: --hub-hero, --hub-hero;
+      animation-range: entry 50% exit 100%, entry 100% exit 100%;
     }
   }
 
@@ -1642,6 +1642,43 @@
 
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: .2;
+    filter: contrast(var(--stack-contrast, 1));
+  }
+}
+
+/* iOS Safari only: elasticMobileFirstSlide's stack-offset translateY and the
+   grow-in scale both need to live in one `transform` value here (two
+   animations both setting `transform` on the same element don't combine --
+   whichever is listed last just wins), so this merges them instead of
+   stacking carouselMobileContainerExpandSafari alongside it. */
+@keyframes elasticMobileFirstSlideSafari {
+  0% {
+    opacity: 1;
+    filter: contrast(1);
+    border-radius: var(--s2a-border-radius-sm);
+    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
+  }
+
+  30% {
+    opacity: 1;
+    filter: contrast(1);
+    border-radius: var(--s2a-border-radius-md);
+    transform: scale(0.6);
+  }
+
+  50% {
+    filter: contrast(1);
+    transform: scale(0.78);
+  }
+
+  75% {
+    transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: .2;
     filter: contrast(var(--stack-contrast, 1));
   }
