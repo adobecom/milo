@@ -316,6 +316,7 @@ export const formSuccess = (formEl, formData) => {
   const mktoSubmit = new Event('mktoSubmit');
 
   clearTimeout(el.dataset.submitTimeoutId);
+  clearTimeout(el.dataset.renderTimeoutId);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
@@ -406,7 +407,7 @@ export const loadMarketo = (el, formData) => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      formTimeout(el, () => !isVisible(el.querySelector('form')), LANA_MESSAGE.RENDER_FAILED);
+      el.dataset.renderTimeoutId = formTimeout(el, () => !isVisible(el.querySelector('form')), LANA_MESSAGE.RENDER_FAILED);
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID, () => { setDataLayer(FORM_STATUS, 'loaded'); });
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
 
