@@ -480,22 +480,6 @@
       animation-range: entry 100% exit 100%;
     }
 
-    /* iOS Safari only: the slides-3 variant has its own copy of this
-       selector (immediately above), which is more specific than the
-       general one in the non-slides-3 mobile block (it's nested under
-       .hub-hero.slides-3), so it needs its own copy of the Safari
-       clip-path override too -- otherwise slideOneMediaAspect above wins
-       and the clip-path reveal never applies for this variant. */
-    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-      .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
-        aspect-ratio: unset;
-        will-change: clip-path;
-        animation: mediaMobileGrowInSafariClip ease forwards;
-        animation-timeline: --hub-hero;
-        animation-range: entry 100% exit 100%;
-      }
-    }
-
     .hub-hero-carousel-item:nth-child(2) {
       --stack-contrast: .75;
     }
@@ -939,26 +923,6 @@
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
     border-radius: inherit;
-  }
-
-  /* iOS Safari only: slide 1's grow-in reveal, scoped to the media element
-     specifically -- NOT .hub-hero-carousel-item-container, because the
-     header/footer are positioned outside that container's own box (e.g.
-     top: calc(var(--slide-header-h) * -1)) and clip-path clips a box's
-     entire rendered content to its shape, including children that overflow
-     outside it. Putting the clip on the container hid the header/footer
-     entirely regardless of inset amount. The media element has no such
-     overflowing children, so it's safe here. Top-anchored vertically (only
-     the bottom is inset) so the reveal doesn't look like it's centered
-     lower than it should be; horizontal stays symmetric via the inherited
-     --carousel-grow-inset. */
-  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
-      will-change: clip-path;
-      animation: mediaMobileGrowInSafariClip ease forwards;
-      animation-timeline: --hub-hero;
-      animation-range: entry 100% exit 100%;
-    }
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media video {
@@ -1620,26 +1584,6 @@
 
   100% {
     clip-path: inset(0);
-  }
-}
-
-/* iOS Safari only: slide 1's media reveal (see the nth-child(1)
-   .hub-hero-carousel-item-media @supports rule that references this).
-   Top-anchored vertically (only the bottom is inset, by 2x the horizontal
-   per-side amount, so the overall shrink ratio matches) instead of
-   symmetric top+bottom, so the reveal doesn't look centered lower than it
-   should be. Horizontal stays symmetric via --carousel-grow-inset. */
-@keyframes mediaMobileGrowInSafariClip {
-  0% {
-    clip-path: inset(0 var(--carousel-grow-inset) calc(var(--carousel-grow-inset) * 2) var(--carousel-grow-inset) round var(--s2a-border-radius-md));
-  }
-
-  75% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
-  }
-
-  100% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
   }
 }
 
