@@ -1432,9 +1432,6 @@ span.hang-opening-quote {
       position: relative;
       view-timeline-name: --gd-text-vt;
       view-timeline-axis: block;
-      animation: garage-door-text-parallax linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 76%;
 
       .content > *,
       & > :not(.content) {
@@ -1486,15 +1483,10 @@ span.hang-opening-quote {
     }
   }
 
-  @keyframes garage-door-text-parallax {
-    from { transform: translateY(-7.5vh); }
-    to { transform: translateY(7.5vh); }
-  }
-
   @keyframes garage-door-text-reveal {
     from {
       opacity: 0;
-      translate: 0 calc(var(--gd-item-order, 0) * 20px);
+      translate: 0 calc(var(--gd-item-order, 0) * 10px);
     }
 
     to {
