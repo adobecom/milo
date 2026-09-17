@@ -35,6 +35,7 @@ Behavior:
     on disk. The caller uploads it to DA afterward.
 """
 import argparse
+import hashlib
 import json
 import sys
 
@@ -47,6 +48,16 @@ def to_da_url(path, scratch_dir, da_base):
     return path  # already a DA URL (or unrecognized prefix) — pass through as-is
 
 
+def file_md5(path):
+    """md5 of a local file, or None if it can't be read (already a DA URL from a
+    prior run, or missing) — in which case dedup is skipped for that day."""
+    try:
+        with open(path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+    except (OSError, TypeError):
+        return None
+
+
 def merge_version_changes(existing, new_results):
     by_id = {v["versionId"]: v for v in existing}
     for v in new_results:
@@ -55,9 +66,26 @@ def merge_version_changes(existing, new_results):
 
 
 def merge_day_screenshots(existing, new_shots, scratch_dir, da_base):
+    """Merge this run's day-screenshots into the entry, rewriting each local
+    scratch path to its DA URL — and deduping identical images to a single
+    canonical URL. Figma renders instance-heavy frames identically version to
+    version (see diff_versions.py's pixel-diff caveat), so many days of one
+    frame share byte-identical PNGs; pointing the duplicates at one canonical
+    DA URL is what keeps a large design under Helix's 200-image-per-page cap
+    (embed_page.build_gallery emits one <img> per unique URL). Each day keeps
+    its own nodeBox — only the image URL is shared; the highlight overlay comes
+    from the per-day JSON diff, not the shared image. Dedup is by local-file
+    content within this run; days whose file can't be hashed (already a DA URL
+    from a prior incremental sync) fall through to a plain rewrite."""
     merged = dict(existing)
-    for day, shot in new_shots.items():
-        merged[day] = {"path": to_da_url(shot["path"], scratch_dir, da_base), "nodeBox": shot["nodeBox"]}
+    canonical_by_hash = {}
+    for day in sorted(new_shots):  # sorted so the earliest day is canonical, deterministically
+        shot = new_shots[day]
+        da_url = to_da_url(shot["path"], scratch_dir, da_base)
+        digest = file_md5(shot["path"])
+        if digest is not None:
+            da_url = canonical_by_hash.setdefault(digest, da_url)
+        merged[day] = {"path": da_url, "nodeBox": shot["nodeBox"]}
     return merged
 
 

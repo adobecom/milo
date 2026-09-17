@@ -483,6 +483,23 @@ rewrites the reference, it doesn't upload. If you must merge by hand
 instead, replicate that dedupe behavior rather than blindly overwriting
 the array.
 
+**It also dedups identical day-screenshots to a single canonical DA URL**
+(`file_md5` in `merge_day_screenshots`): Figma renders instance-heavy frames
+byte-identically version to version (see the pixel-diff caveat below), so many
+days of one frame share the exact same PNG. The merge hashes each new day's
+local file and points every duplicate at the earliest day's DA URL, keeping
+each day's own `nodeBox` (the highlight overlay is per-day from the JSON diff,
+not from the shared image). This is what keeps the published page under Helix's
+**hard 200-image-per-page cap** — `embed_page.build_gallery` emits one `<img>`
+per *unique* URL, so without this dedup a large design (many frames × many
+change-days) exceeds 200 and preview fails with `409 maximum number of images
+reached: N of 200 max`. Real case: 10 frames × ~210 change-days = 220 images,
+but only 186 unique. Dedup is by local-file content within one run (a day whose
+file is already a DA URL from a prior incremental sync is left as-is). The
+duplicate PNGs still get uploaded (harmless orphans); only the canonical URL is
+referenced. **If you merge by hand, replicate this** — pointing duplicate days
+at one URL — or the page can silently blow the 200-image cap.
+
 **Token-expiry vs rate-limiting**: an `HTTP 401`/`403` from any script's
 `api_get`/Jira call almost always means the token itself is dead — tell
 the user to regenerate it (Figma: account settings → Personal access
