@@ -1567,13 +1567,14 @@
    at full size) rather than resizing it, so there's no distortion and no
    need to duplicate this per slide -- one shared clip on the container
    uncovers every stacked slide at once, same as the original max-width
-   version did. Insets both axes by the same amount (see --carousel-grow-inset)
-   so the window grows from the center, and rounds the clip edge to match
-   the card's own border-radius so the reveal doesn't cut across it with
-   square corners. */
+   version did. Horizontal inset only -- this container spans nearly the
+   whole hero's scroll height, so a vertical inset here clips almost
+   everything out instead of revealing one card's height. Rounds the clip
+   edge to match the card's own border-radius so the reveal doesn't cut
+   across it with square corners. */
 @keyframes carouselMobileContainerExpandSafariClip {
   0% {
-    clip-path: inset(var(--carousel-grow-inset) round var(--s2a-border-radius-md));
+    clip-path: inset(0 var(--carousel-grow-inset) round var(--s2a-border-radius-md));
   }
 
   75% {
