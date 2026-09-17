@@ -1414,6 +1414,9 @@ span.hang-opening-quote {
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
     --gd-bg-shift: calc((100vh + 100vh) * 0.06);
+    animation: garage-door-section-parallax ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 36%;
 
     .section-background {
       overflow: hidden;
@@ -1498,6 +1501,11 @@ span.hang-opening-quote {
   @keyframes garage-door-bg-parallax {
     from { transform: translateY(0); }
     to { transform: translateY(calc(-1 * var(--gd-bg-shift, 0px))); }
+  }
+
+  @keyframes garage-door-section-parallax {
+    from { transform: translateY(-10vh); }
+    to { transform: translateY(0); }
   }
 
   /* Section 1 to section 2 parallax declarations */
