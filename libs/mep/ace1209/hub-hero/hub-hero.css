@@ -841,21 +841,6 @@
     animation-range: entry 50% exit 100%, entry 100% exit 100%;
   }
 
-  /* iOS Safari only: slide 1 only. Adds a vertical (top-to-bottom) clip-path
-     reveal on top of this rule's existing animations -- clip-path doesn't
-     conflict with elasticItemsShrink (scale/border-radius) or
-     elasticMobileFirstSlide (transform/opacity/filter), so it's safe to add
-     as a third animation here. Reuses --carousel-grow-inset, inherited from
-     .hub-hero-carousel-container. */
-  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
-      will-change: transform, opacity, scale, clip-path;
-      animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both, cardMobileGrowInSafariClip ease forwards;
-      animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-      animation-range: entry 50% exit 100%, entry 100% exit 100%, entry 100% exit 100%;
-    }
-  }
-
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
     top: 0;
     opacity: 0;
@@ -938,6 +923,26 @@
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
     border-radius: inherit;
+  }
+
+  /* iOS Safari only: slide 1's grow-in reveal, scoped to the media element
+     specifically -- NOT .hub-hero-carousel-item-container, because the
+     header/footer are positioned outside that container's own box (e.g.
+     top: calc(var(--slide-header-h) * -1)) and clip-path clips a box's
+     entire rendered content to its shape, including children that overflow
+     outside it. Putting the clip on the container hid the header/footer
+     entirely regardless of inset amount. The media element has no such
+     overflowing children, so it's safe here. Top-anchored vertically (only
+     the bottom is inset) so the reveal doesn't look like it's centered
+     lower than it should be; horizontal stays symmetric via the inherited
+     --carousel-grow-inset. */
+  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
+      will-change: clip-path;
+      animation: mediaMobileGrowInSafariClip ease forwards;
+      animation-timeline: --hub-hero;
+      animation-range: entry 100% exit 100%;
+    }
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media video {
@@ -1584,30 +1589,33 @@
    uncovers every stacked slide at once, same as the original max-width
    version did. Horizontal inset only -- this container spans nearly the
    whole hero's scroll height, so a vertical inset here clips almost
-   everything out instead of revealing one card's height. Rounds the clip
-   edge to match the card's own border-radius so the reveal doesn't cut
-   across it with square corners. */
+   everything out instead of revealing one card's height. No rounding here:
+   this mask spans multiple stacked cards, not one bordered box, so
+   rounding it doesn't line up with any individual card's real corners --
+   each card handles its own rounding separately (see below). */
 @keyframes carouselMobileContainerExpandSafariClip {
   0% {
-    clip-path: inset(0 var(--carousel-grow-inset) round var(--s2a-border-radius-md));
+    clip-path: inset(0 var(--carousel-grow-inset));
   }
 
   75% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
+    clip-path: inset(0);
   }
 
   100% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
+    clip-path: inset(0);
   }
 }
 
-/* iOS Safari only: vertical reveal for slide 1's own card (see the
-   nth-child(1) .hub-hero-carousel-item-container @supports rule that
-   references this). Vertical-only inset -- horizontal is already handled by
-   carouselMobileContainerExpandSafariClip above on the shared container. */
-@keyframes cardMobileGrowInSafariClip {
+/* iOS Safari only: slide 1's media reveal (see the nth-child(1)
+   .hub-hero-carousel-item-media @supports rule that references this).
+   Top-anchored vertically (only the bottom is inset, by 2x the horizontal
+   per-side amount, so the overall shrink ratio matches) instead of
+   symmetric top+bottom, so the reveal doesn't look centered lower than it
+   should be. Horizontal stays symmetric via --carousel-grow-inset. */
+@keyframes mediaMobileGrowInSafariClip {
   0% {
-    clip-path: inset(var(--carousel-grow-inset) 0 round var(--s2a-border-radius-md));
+    clip-path: inset(0 var(--carousel-grow-inset) calc(var(--carousel-grow-inset) * 2) var(--carousel-grow-inset) round var(--s2a-border-radius-md));
   }
 
   75% {
