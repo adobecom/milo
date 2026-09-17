@@ -1667,16 +1667,18 @@
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  30% {
+  15% {
     opacity: 1;
     filter: contrast(1);
     border-radius: var(--s2a-border-radius-md);
-    transform: scale(0.6);
+    transform: scale(0.7);
   }
 
-  50% {
+  /* fully grown well before the stack-offset (still keyed to 75%/100% below,
+     to stay in sync with the other slides' peek timing) kicks in */
+  30% {
     filter: contrast(1);
-    transform: scale(0.78);
+    transform: scale(1);
   }
 
   75% {
