@@ -184,11 +184,6 @@ body:has(header.local-nav) .product-marquee-grid {
 
     background-color: transparent;
   }
-
-  .special-promo.dark.product-marquee-grid .con-button.outline {
-    border-color: var(--s2a-color-content-default);
-    color: var(--s2a-color-content-default);
-  }
 }
 
 @media (width >= 768px) {
