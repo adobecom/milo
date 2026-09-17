@@ -841,10 +841,12 @@
     animation-range: entry 50% exit 100%, entry 100% exit 100%;
   }
 
-  /* iOS Safari only: this selector is more specific than the plain
-     .hub-hero-carousel-item-container @supports rule above, so it needs its
-     own copy of the vertical clip-path reveal added -- otherwise this rule's
-     animation list would just win outright and slide 1 wouldn't get it. */
+  /* iOS Safari only: slide 1 only. Adds a vertical (top-to-bottom) clip-path
+     reveal on top of this rule's existing animations -- clip-path doesn't
+     conflict with elasticItemsShrink (scale/border-radius) or
+     elasticMobileFirstSlide (transform/opacity/filter), so it's safe to add
+     as a third animation here. Reuses --carousel-grow-inset, inherited from
+     .hub-hero-carousel-container. */
   @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
       will-change: transform, opacity, scale, clip-path;
@@ -908,21 +910,6 @@
     animation: elasticItemsShrink ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
-  }
-
-  /* iOS Safari only: reveal each card vertically too (top-to-bottom), same
-     idea as the horizontal reveal on the shared container above, but scoped
-     to one card's own height instead of the whole (much taller) shared
-     container -- clip-path doesn't conflict with elasticItemsShrink above
-     since that only touches scale/border-radius, not clip-path. Reuses
-     --carousel-grow-inset, inherited from .hub-hero-carousel-container. */
-  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-    .hub-hero-carousel-item-container {
-      will-change: scale, clip-path;
-      animation: elasticItemsShrink ease both, cardMobileGrowInSafariClip ease forwards;
-      animation-timeline: --hub-hero, --hub-hero;
-      animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    }
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -1614,9 +1601,9 @@
   }
 }
 
-/* iOS Safari only: vertical half of the per-card reveal (see the
-   .hub-hero-carousel-item-container @supports rule that references this).
-   Vertical-only inset -- horizontal is already handled by
+/* iOS Safari only: vertical reveal for slide 1's own card (see the
+   nth-child(1) .hub-hero-carousel-item-container @supports rule that
+   references this). Vertical-only inset -- horizontal is already handled by
    carouselMobileContainerExpandSafariClip above on the shared container. */
 @keyframes cardMobileGrowInSafariClip {
   0% {
