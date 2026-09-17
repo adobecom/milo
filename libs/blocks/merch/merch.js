@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
@@ -157,6 +157,7 @@ export const GeoMap = {
   id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
+  ara: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
   cn: 'CN_zh',
@@ -496,6 +497,31 @@ export async function loadMasComponent(componentName) {
   return loadPromise;
 }
 
+const aupSelectPreloads = new WeakMap();
+
+async function preloadAupSelect(sdk) {
+  try {
+    await Promise.all([
+      sdk.getOrchestratorContext(),
+      // The orchestrator mounts this registered component when Select launches.
+      sdk.loadUIComponent('commerce-select'),
+    ]);
+  } catch (error) {
+    log?.warn('AUP Select preload failed', error);
+  }
+}
+
+function getAupSelectPreload() {
+  const sdk = window.aupsdk;
+  if (!sdk) return undefined;
+  let preload = aupSelectPreloads.get(sdk);
+  if (!preload) {
+    preload = preloadAupSelect(sdk);
+    aupSelectPreloads.set(sdk, preload);
+  }
+  return preload;
+}
+
 function getCommercePreloadUrl() {
   const { env } = getConfig();
   if (env.name === 'prod') {
@@ -721,6 +747,7 @@ export async function getUpgradeAction(
     );
   }
 
+  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
@@ -1011,12 +1038,17 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
-    const baseUrl = getCommercePreloadUrl();
-    // The script can preload more, based on clientId, but for the ones in use
-    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
-    const client = 'creative';
     window.milo.deferredPromise.then(() => {
-      setTimeout(() => {
+      setTimeout(async () => {
+        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
+        if (aupSelectPreload) {
+          await aupSelectPreload;
+          return;
+        }
+        const baseUrl = getCommercePreloadUrl();
+        // The script can preload more, based on clientId, but for the ones in use
+        // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+        const client = 'creative';
         loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
       }, 1000);
     });
@@ -1902,6 +1934,7 @@ function decorateInlineCtas(masField, content) {
       // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
       content.remove();
     }
+    masField.querySelector('aem-fragment')?.remove();
     upgradeCommerceLinks(masField);
     ensureInlinePriceStyle(masField);
     hoisted = masField.querySelector('a, button');

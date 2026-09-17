@@ -375,6 +375,12 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export function isAupEnabled(useUniversalNav = false) {
+  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
+    || (new URLSearchParams(window.location.search).get('aup-select')
+      ?? getMetadata('aup-select')) === 'on';
+}
+
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {
@@ -1375,6 +1381,8 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
+  const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1406,7 +1414,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -2361,10 +2369,10 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
+  const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
   const { base } = getConfig();
   loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
@@ -2419,7 +2427,7 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
-    mepMarketingDecrease,
+    nonPznOffer,
     akamaiCode,
   });
 }
@@ -2453,6 +2461,14 @@ function initModalEventListener() {
     const details = await findDetails(e.detail.hash);
     if (details) getModal(details);
   });
+}
+
+let fontsPromise;
+function importFonts(locale = getConfig().locale) {
+  fontsPromise ??= import('./fonts.js')
+    .then(({ default: loadFonts }) => loadFonts(locale))
+    .catch((e) => window.lana?.log(`Failed to load fonts: ${e}`, { tags: 'fonts', severity: 'error' }));
+  return fontsPromise;
 }
 
 async function loadPostLCP(config) {
@@ -2498,8 +2514,7 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  importFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
@@ -2566,7 +2581,8 @@ export async function scrollToHashedElement(hash) {
   if (!targetElement) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  if (getMetadata('foundation') === 'c2') {
+  const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
+  if (isC2Gnav) {
     const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
     bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
   }
@@ -3013,6 +3029,11 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function warmTypekit() {
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3031,6 +3052,10 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    if (getMetadata('foundation') === 'c2') {
+      warmTypekit();
+      importFonts();
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
