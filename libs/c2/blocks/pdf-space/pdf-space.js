@@ -1518,7 +1518,8 @@ export default function init(el) {
   };
 
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const prefersReducedMotion = () => reducedMotionQuery.matches;
+  const shortViewportQuery = window.matchMedia('(max-height: 400px) and (min-resolution: 1.5dppx)');
+  const prefersReducedMotion = () => reducedMotionQuery.matches || shortViewportQuery.matches;
 
   let teardownMotion = null;
   let mountedReduced = null;
@@ -1543,11 +1544,13 @@ export default function init(el) {
 
   syncMotionPreference();
   reducedMotionQuery.addEventListener('change', syncMotionPreference);
+  shortViewportQuery.addEventListener('change', syncMotionPreference);
 
   const removalObserver = new MutationObserver((_, observer) => {
     if (document.contains(el)) return;
     teardownMotion?.();
     reducedMotionQuery.removeEventListener('change', syncMotionPreference);
+    shortViewportQuery.removeEventListener('change', syncMotionPreference);
     observer.disconnect();
   });
   if (el.parentElement) {

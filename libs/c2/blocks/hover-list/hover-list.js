@@ -183,6 +183,9 @@ function addCursorFollower(list) {
   list.addEventListener('mouseleave', () => {
     deactivate();
   });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') deactivate();
+  });
   window.addEventListener('scroll', () => {
     if (!DESKTOP_MQ.matches || !cursor.hasPrev || !activeItem) return;
     const item = document.elementFromPoint(cursor.x, cursor.y)?.closest('.hover-list-item');
