@@ -625,13 +625,20 @@
   }
 
   .hub-hero-carousel-header {
-    /* reserve room for the heading to wrap onto 2 lines instead of colliding with the first slide */
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
+    /* the heading now reliably wraps to 2 lines (see max-inline-size below),
+       so the gap only needs to clear that fixed 2-line height plus a small
+       breathing margin, not the old 1-line assumption's spacing-4xl gap */
+    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-lg) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
     animation: none;
+  }
+
+  .hub-hero-carousel-header>div :is(h1, h2, h3, h4, h5, h6) {
+    max-inline-size: 15ch;
+    margin-inline: auto;
   }
 
   .hub-hero-carousel-header>div {
