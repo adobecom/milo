@@ -301,6 +301,11 @@
   display: block;
   height: 100%;
   width: 100%;
+  /* Rounding only the ancestors (media div, picture) isn't reliably clipping
+     this img in Chrome, at least before the carousel item is scrolled into
+     its sticky/animated state -- round the img itself directly too, since
+     that doesn't depend on any ancestor's overflow/clip-path behavior. */
+  border-radius: inherit;
 }
 
 .hub-hero-carousel-item-footer {
