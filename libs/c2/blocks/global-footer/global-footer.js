@@ -710,7 +710,8 @@ class Footer {
     }
     if (!url.hash || url.hash.includes('#_inline')) return;
 
-    link.dataset.modalPath = url.pathname;
+    const isSameOrigin = url.origin === window.location.origin;
+    link.dataset.modalPath = isSameOrigin ? url.pathname : `${url.origin}${url.pathname}`;
     link.dataset.modalHash = url.hash;
     link.href = url.hash;
     decorateAutoBlock(link);
