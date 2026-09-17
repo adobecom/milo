@@ -1,5 +1,6 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
+import { acomAssistantRouteInput } from './acom-assistant-bootstrap.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -24,6 +25,8 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
+let cardsEl;
+let useAcomAssistant = false;
 
 function checkGlobal() {
   const params = new URLSearchParams(window.location.search);
@@ -37,6 +40,10 @@ function checkGlobal() {
 }
 
 function routeInput(text) {
+  if (useAcomAssistant) {
+    acomAssistantRouteInput(text, cardsEl);
+    return;
+  }
   if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
@@ -73,6 +80,7 @@ function handleFloatingButton() {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
@@ -95,6 +103,7 @@ export default async function init(el) {
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
+  cardsEl = cards;
 
   setAuthoredContent(header, cards, input);
 
@@ -194,6 +203,8 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  if (useAcomAssistant) return;
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {

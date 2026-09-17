@@ -5,6 +5,7 @@
   --bc-susi-standard-padding: 24px;
 }
 
+
 .brand-concierge {
   --bc-header-font-size: 36px;
   --bc-header-line-height: 45px;
@@ -1484,3 +1485,9 @@
 }
 
 /* stylelint-enable no-descending-specificity */
+
+/* AcomAssistant sets this class on <html> when it renders its own GNav entry point --
+   hide our FAB so the two CTAs don't both show at once. */
+html.adobe-assistant-gnav-active .bc-floating-button {
+  display: none !important;
+}

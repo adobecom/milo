@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -15,8 +15,10 @@ import {
   sideOverlayTop,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
+import { ensureAcomAssistant } from '../brand-concierge/acom-assistant-bootstrap.js';
 
 let stayActive = false;
+let useAcomAssistant = false;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -68,7 +70,30 @@ function promptUp() {
   stayActive = false;
 }
 
+function decorateAcomGnav(cards, topNav) {
+  const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
+  if (!bcWrapper) return;
+
+  // Per the wiki, the client discovers this mount point and builds its own GNav
+  // icon/expanded-input/minimized states into it -- Milo doesn't build any GNav UI
+  // itself on this path.
+  const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
+  bcWrapper.appendChild(mount);
+  ensureAcomAssistant(cards);
+
+  if (window?.milo) {
+    window.milo.brandConcierge = { brandConciergeGlobal: true };
+  } else {
+    window.milo = { brandConcierge: { brandConciergeGlobal: true } };
+  }
+}
+
 function decorateGnav(cards, input, topNav, el) {
+  if (useAcomAssistant) {
+    decorateAcomGnav(cards, topNav);
+    return;
+  }
+
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
   const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
@@ -135,21 +160,25 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   initAnalytics();
 
@@ -167,6 +196,8 @@ export default function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  if (useAcomAssistant) return;
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {

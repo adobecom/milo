@@ -559,3 +559,45 @@ describe('Brand Concierge back-navigation analytics', () => {
   });
 });
 /* eslint-enable no-underscore-dangle */
+
+describe('Brand Concierge - AcomAssistant flag', () => {
+  let sendUserMessageSpy;
+
+  beforeEach(() => {
+    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
+      initialize: (cfg) => { cfg.callbacks?.onReadyCallback?.(); },
+      reinitialize: () => {},
+      sendUserMessage: () => {},
+      openMessagingWindow: () => {},
+    };
+    sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
+  });
+
+  afterEach(() => {
+    sendUserMessageSpy.restore();
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+  });
+
+  it('routes typed input through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Hello acom';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
+  });
+});

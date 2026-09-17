@@ -5,6 +5,14 @@
   --bc-susi-standard-padding: 24px;
 }
 
+/* Reserved space for the client-built GNav entry point (default 224x40, expanded 340x40).
+   The id is the client's fixed mount-point contract (camelCase), not ours to rename. */
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper #acomAssistant-gnav-mount {
+  width: 100%;
+  height: 40px;
+}
+
 .global-navigation .feds-bc-wrapper {
   width: 340px;
   margin-inline-start: auto;
