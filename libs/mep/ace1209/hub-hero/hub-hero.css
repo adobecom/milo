@@ -625,7 +625,8 @@
   }
 
   .hub-hero-carousel-header {
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
+    /* reserve room for the heading to wrap onto 2 lines instead of colliding with the first slide */
+    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
@@ -741,7 +742,7 @@
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --carousel-items-top: 38%;
+    --carousel-items-top: 46%;
     --slide-one-header-footer-reveal: 45% 50%;
 
     position: relative;
@@ -791,10 +792,18 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.88;
     z-index: 1;
-    will-change: transform, opacity;
-    animation: elasticMobileFirstSlide ease both;
-    animation-timeline: --hub-hero;
-    animation-range: entry 100% exit 100%;
+
+    /* cancel the base rule's transform animation on this sticky element (see below) */
+    animation: none;
+  }
+
+  /* Safari jitters a position:sticky element whose own transform is animating.
+     Keep the sticky box itself transform-free; animate the card inside it instead. */
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
+    will-change: transform, opacity, scale;
+    animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: entry 50% exit 100%, entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
