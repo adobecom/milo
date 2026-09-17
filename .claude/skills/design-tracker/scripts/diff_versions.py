@@ -25,6 +25,7 @@ import concurrent.futures
 import json
 import os
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -34,11 +35,72 @@ API = "https://api.figma.com/v1"
 FIGMA_TOKEN = os.environ.get("FIGMA_TOKEN")
 MAX_CHANGED_ELEMENTS = 500  # safety cap for pathological cases (e.g. library/token syncs)
 MAX_RETRIES = 6
+
+# --- Rate limiting -----------------------------------------------------------
+# The dominant call in a full-history pull is GET /v1/files/:key/nodes, one per
+# version. That endpoint is Figma's most-restricted **Tier 1** tier: on Full/Dev
+# seats it allows only 10/min (Starter), 15/min (Professional), or ~20/min
+# (Organization/Enterprise) — verified against Figma's published rate-limit
+# table. There is no way to raise this per token; it's the account's plan.
+#
+# The old approach — FETCH_POOL_WORKERS=6 firing 6 requests near-instantly with
+# no global pacing — blew straight past that ~20/min ceiling and triggered
+# Figma's leaky-bucket 429s en masse. Verified real, silent data loss: a
+# 634-version file came back with 384/634 (61%) of versions failing as genuine
+# HTTP 429 after exhausting every retry — an actual hole in the history, not the
+# benign "node didn't exist yet" case. Per-call retry/backoff alone can't fix
+# this: 6 threads share one account-wide bucket and retry in sync, re-tripping
+# the limit together (a thundering herd).
+#
+# The fix is to pace *request starts* globally, across all worker threads, to
+# stay under the ceiling — not to tune the worker count. MAX_REQUESTS_PER_MINUTE
+# is deliberately set below the ~20/min Org/Enterprise cap to leave the leaky
+# bucket headroom; override with --rpm / FIGMA_MAX_RPM only if you know the
+# account's real tier. This makes a large-file full-history pull inherently slow
+# (634 versions / ~15 per min ≈ 42 min for ONE frame; four frames ≈ a couple of
+# hours) — that is the real, unavoidable cost of complete data on this plan, and
+# a slow complete pull always beats a fast one with silent gaps.
+MAX_REQUESTS_PER_MINUTE = int(os.environ.get("FIGMA_MAX_RPM") or 15)
+
 # Per-version document fetches are independent (only diffing needs sequential
-# order), so they run concurrently. Kept modest — high enough to hide network
-# latency, low enough not to make Figma's rate limiter (see api_get()) worse
-# than running sequentially would.
-FETCH_POOL_WORKERS = 6
+# order), so they run concurrently. With the global RateLimiter below enforcing
+# the real ceiling, worker count no longer controls the request rate — it only
+# needs to be high enough that one slow request (e.g. a screenshot render) can't
+# starve the pacing. Kept small; the limiter, not this number, is the throttle.
+FETCH_POOL_WORKERS = 3
+
+
+class RateLimiter:
+    """Thread-safe global pacer. Serializes request *starts* so no more than
+    `rpm` fire per rolling minute across every worker thread, and lets any
+    thread that sees a 429 push the whole fleet's next slot back (honoring
+    Retry-After) instead of each thread backing off independently and then
+    retrying in sync — the herd that made the old code re-trip the limit."""
+
+    def __init__(self, rpm):
+        self._interval = 60.0 / max(rpm, 1)
+        self._lock = threading.Lock()
+        self._next_available = 0.0  # monotonic time the next request may start
+
+    def wait(self):
+        with self._lock:
+            now = time.monotonic()
+            start = max(now, self._next_available)
+            self._next_available = start + self._interval
+        delay = start - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
+
+    def penalize(self, seconds):
+        """Push every subsequent request's earliest start forward by `seconds`
+        (a global backoff shared by all threads), used on a 429 Retry-After."""
+        with self._lock:
+            target = time.monotonic() + seconds
+            if target > self._next_available:
+                self._next_available = target
+
+
+RATE_LIMITER = RateLimiter(MAX_REQUESTS_PER_MINUTE)
 
 
 # No timeout on urlopen() means a socket read blocks forever if the
@@ -62,16 +124,21 @@ def api_get(url, timeout=REQUEST_TIMEOUT):
     safe_url = urllib.parse.quote(url, safe=":/?&=")
     req = urllib.request.Request(safe_url, headers={"X-Figma-Token": FIGMA_TOKEN})
     for attempt in range(MAX_RETRIES):
+        # Global pacing: block until this request is allowed to start, so the
+        # whole worker pool stays under the account's per-minute ceiling. This
+        # is the primary defense against 429s; the retry/backoff below is only a
+        # safety net for the occasional one that still slips through.
+        RATE_LIMITER.wait()
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as e:
             # HTTPError wraps a still-open connection (it's itself a
-            # file-like response object) — confirmed directly: under 6-way
-            # concurrent fetching against a rate limiter, retrying without
-            # closing it here left 100+ sockets stuck in CLOSE_WAIT within
-            # minutes (one leaked per 429), on track to exhaust the process's
-            # file descriptors. Close it on every path, retried or not.
+            # file-like response object) — confirmed directly: under concurrent
+            # fetching against a rate limiter, retrying without closing it here
+            # left 100+ sockets stuck in CLOSE_WAIT within minutes (one leaked
+            # per 429), on track to exhaust the process's file descriptors.
+            # Close it on every path, retried or not.
             e.close()
             if e.code == 429 and attempt < MAX_RETRIES - 1:
                 retry_after = e.headers.get("Retry-After", "")
@@ -80,7 +147,13 @@ def api_get(url, timeout=REQUEST_TIMEOUT):
                 except ValueError:
                     # Retry-After can be an HTTP-date instead of seconds; fall back to backoff.
                     wait = 2 ** attempt
-                time.sleep(wait)
+                # Back off the WHOLE fleet, not just this thread: a 429 means the
+                # shared account bucket is empty, so every other in-flight worker
+                # should also hold off. penalize() pushes the global next-start
+                # forward; this thread's next RATE_LIMITER.wait() then honors it
+                # too. This is what stops the sync-retry herd that re-tripped the
+                # limit under the old per-thread-only backoff.
+                RATE_LIMITER.penalize(wait)
                 continue
             raise
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
@@ -166,6 +239,97 @@ def full_file_document(file_key, version_id):
 
 def fetch_document(file_key, node_id, version_id):
     return node_document(file_key, node_id, version_id) if node_id else full_file_document(file_key, version_id)
+
+
+def nodes_documents(file_key, node_ids, version_id):
+    """Batch multi-node mode: fetch the documents for SEVERAL nodes of the same
+    file at one version in a SINGLE request (`/nodes?ids=n1,n2,...&version=v`),
+    returning `{node_id: document_or_None}`. When an umbrella design is tracked
+    as N viewport-variant frames of one file (the common case — see the skill's
+    "Add a new pair" splitting logic), this is the big win: the per-version
+    `/nodes` call is Tier-1 rate-limited *per request*, not per node, so asking
+    for all N frames in one call costs one rate-limit slot instead of N. On a
+    ~1200-version file that's the difference between ~1200 and ~1200*N paced
+    requests — verified in practice to turn a ~5.5h four-frame pull into ~1.5h,
+    with identical data. A node that didn't exist yet at this version comes back
+    as `None` here (same meaning as node_document's ValueError), which the
+    caller records as the benign "did not exist yet" per-node error."""
+    ids = ",".join(node_ids)
+    data = api_get(f"{API}/files/{file_key}/nodes?ids={ids}&version={version_id}")
+    nodes = data.get("nodes") or {}
+    out = {}
+    for nid in node_ids:
+        node = nodes.get(nid)
+        out[nid] = node["document"] if node else None
+    return out
+
+
+class NodeAccum:
+    """Per-node running state for a history pull: the previous version's document
+    (diff baseline) plus the accumulating results/errors/day-tracking. Batch mode
+    keeps one of these per tracked node; single-node/whole-file mode keeps exactly
+    one, so both paths share process_transition()/render_day_screenshots() below
+    instead of duplicating the diff and screenshot logic (which drifted before)."""
+
+    def __init__(self):
+        self.prev_doc = None
+        self.results = []
+        self.errors = []
+        self.day_last_version = {}   # day -> versionId of the last version seen that day
+        self.day_root_box = {}       # day -> node's own absoluteBoundingBox at that version
+        self.day_has_change = set()  # days with at least one magnitude > 0 transition
+
+
+def process_transition(acc, doc, v):
+    """Diff `doc` (this node's document at version `v`) against acc.prev_doc and
+    append one entry to acc.results, updating day tracking. Mirrors the original
+    single-node loop body exactly; shared by both modes."""
+    try:
+        magnitude = None
+        changes, changed_count = [], 0
+        if acc.prev_doc is not None:
+            # A malformed node or pathologically deep tree could raise here
+            # (e.g. RecursionError) — that should be one bad version recorded in
+            # errors, not a crash of the whole run.
+            changes, changed_count, magnitude = changed_elements(acc.prev_doc, doc)
+    except Exception as e:
+        acc.errors.append({"versionId": v["id"], "date": v["created_at"], "reason": str(e)})
+        return
+
+    day = v["created_at"][:10]
+    acc.day_last_version[day] = v["id"]
+    acc.day_root_box[day] = doc.get("absoluteBoundingBox")
+    if magnitude:
+        acc.day_has_change.add(day)
+
+    acc.results.append({
+        "versionId": v["id"],
+        "date": v["created_at"],
+        "author": (v.get("user") or {}).get("handle"),
+        "label": v.get("label") or "",
+        "magnitude": magnitude,
+        "changedElements": changes,
+        "changedElementCount": changed_count,
+    })
+    acc.prev_doc = doc  # old prev_doc has no remaining references, eligible for GC
+
+
+def render_day_screenshots(file_key, node_id, screenshot_dir, acc):
+    """Fetch one best-effort end-of-day preview per changed day into
+    `screenshot_dir` and return the dayScreenshots dict; screenshot failures are
+    appended to acc.errors. Shared by both modes."""
+    day_screenshots = {}
+    os.makedirs(screenshot_dir, exist_ok=True)
+    for day in sorted(acc.day_has_change):
+        version_id = acc.day_last_version[day]
+        path = os.path.join(screenshot_dir, f"{day}.png")
+        scale = scale_for_box(acc.day_root_box[day])
+        try:
+            if fetch_screenshot(file_key, node_id, version_id, path, scale=scale):
+                day_screenshots[day] = {"path": path, "nodeBox": acc.day_root_box[day]}
+        except Exception as e:
+            acc.errors.append({"versionId": version_id, "date": day, "reason": f"screenshot: {e}"})
+    return day_screenshots
 
 
 def download(url, path, timeout=REQUEST_TIMEOUT):
@@ -408,6 +572,13 @@ def main():
     parser.add_argument("--file-key", required=True)
     parser.add_argument("--node-id", help="omit to track the WHOLE file (every page/canvas) "
                          "instead of one node's subtree — see full_file_document()")
+    parser.add_argument("--node-ids", help="BATCH multi-node mode: comma-separated node ids of "
+                         "several frames in the SAME file (e.g. the sm/md/lg/xl viewport variants "
+                         "of one umbrella design). Fetches all of them per version in ONE request "
+                         "instead of one run per node — see nodes_documents(). Mutually exclusive "
+                         "with --node-id. Output is {\"nodes\": {nodeId: {results,errors,"
+                         "dayScreenshots}}} (merge_entry.py reads a node out of it by --node-id). "
+                         "--screenshot-dir becomes a parent dir; each node gets its own subdir.")
     parser.add_argument("--since", help="YYYY-MM-DD; omit to pull full available history. "
                         "When set, paging stops at the first version older than this date, so a "
                         "repeat sync only pulls the delta since the design's last recorded change.")
@@ -417,11 +588,31 @@ def main():
                          "(best-effort, see fetch_screenshot docstring) for each day that had "
                          "a real (magnitude > 0) change, saved into this directory. Ignored in "
                          "whole-file mode (--node-id omitted) — there's no single node to render.")
+    parser.add_argument("--rpm", type=int, default=None,
+                        help="max Figma API requests per minute (global, across all worker "
+                             "threads). Default 15 (or $FIGMA_MAX_RPM), deliberately under the "
+                             "~20/min Tier-1 ceiling on Org/Enterprise. Raise only if you know "
+                             "the account allows it; lower it if you still see 429s.")
     args = parser.parse_args()
 
     if not FIGMA_TOKEN:
         print(json.dumps({"error": "FIGMA_TOKEN not set"}))
         sys.exit(1)
+
+    if args.node_ids and args.node_id:
+        print(json.dumps({"error": "pass --node-id OR --node-ids, not both"}))
+        sys.exit(1)
+    is_batch = bool(args.node_ids)
+    if is_batch:
+        batch_node_ids = [n.strip() for n in args.node_ids.split(",") if n.strip()]
+        if len(batch_node_ids) < 2:
+            print(json.dumps({"error": "--node-ids needs 2+ ids; use --node-id for a single node"}))
+            sys.exit(1)
+
+    if args.rpm:
+        # Reconfigure the global pacer before any request goes out.
+        global RATE_LIMITER
+        RATE_LIMITER = RateLimiter(args.rpm)
 
     versions = fetch_all_versions(args.file_key, since=args.since, max_versions=args.max_versions)
     versions.sort(key=lambda v: v["created_at"])
@@ -436,106 +627,107 @@ def main():
             # no new versions since the design's last recorded change. Nothing to
             # pull; emit an empty (successful) result so merge is a no-op and the
             # existing history is left intact.
-            print(json.dumps({"results": [], "errors": [], "dayScreenshots": {},
-                              "note": f"no versions on/after {args.since}"}))
+            empty = {"results": [], "errors": [], "dayScreenshots": {},
+                     "note": f"no versions on/after {args.since}"}
+            if is_batch:
+                print(json.dumps({"nodes": {n: dict(empty) for n in batch_node_ids}}))
+            else:
+                print(json.dumps(empty))
             return
         # Include one version before --since as the baseline for the first diff.
         start_idx = max(start_idx - 1, 0)
         versions = versions[start_idx:]
 
-    results = []
-    errors = []
-    day_last_version = {}   # day -> versionId of the last version seen that day
-    day_root_box = {}       # day -> tracked node's own absoluteBoundingBox at that version
-    day_has_change = set()  # days with at least one magnitude > 0 transition
+    # One accumulator per tracked node. Single/whole-file mode has exactly one
+    # (keyed by args.node_id, which may be None for whole-file); batch mode has
+    # one per node. Both feed the SAME process_transition()/render_day_screenshots()
+    # helpers, so the diff and screenshot logic can't drift between the two paths.
+    node_ids = batch_node_ids if is_batch else [args.node_id]
+    accums = {nid: NodeAccum() for nid in node_ids}
 
-    # fetch_document() per version is the dominant cost of a full-history pull
-    # (one API call per version — confirmed directly: a run against a large,
-    # heavily-shared file spent 2+ hours almost entirely blocked in a socket
-    # read, ~16s of actual CPU time, one request at a time). Figma's versions
-    # API is file-wide, not node-scoped, so a file with a long shared edit
-    # history pays that cost regardless of how small the tracked node is.
-    # Each fetch is independent (only the diff step needs sequential order),
-    # so overlapping them in a thread pool turns N sequential network waits
-    # into N/POOL_WORKERS — api_get()'s existing per-call retry/backoff still
-    # applies per thread, so this doesn't bypass rate-limit handling, it just
-    # stops paying for it one request at a time.
-    docs_by_version = {}
-    fetch_errors = {}
+    # The per-version fetch is the dominant cost of a full-history pull (Figma's
+    # versions API is file-wide, so a long shared edit history is paid regardless
+    # of how small the tracked node is — a real run spent 2+ hours almost entirely
+    # blocked in socket reads, ~16s of actual CPU). In BATCH mode one request
+    # returns every tracked node's document for that version, so N frames of one
+    # file cost ONE rate-limit slot per version instead of N — see
+    # nodes_documents(). Fetches are independent (only diffing needs sequential
+    # order), so a thread pool overlaps their network waits; the global
+    # RateLimiter still paces the request starts underneath.
+    #
+    # Bounded pipeline, not "fetch every version into memory, then diff": only a
+    # small window (PREFETCH_WINDOW) of fetches runs ahead of the sequential diff
+    # position, so a diffed version's document is freed immediately instead of
+    # pinning every version's JSON in memory at once (which once drove ~192GB RSS
+    # and crashed the host with several such runs going).
+    def _fetch_version(vid):
+        if is_batch:
+            return nodes_documents(args.file_key, node_ids, vid)  # {nid: doc_or_None}
+        # single/whole-file: normalize to the same {nid: doc} shape. A not-exist
+        # node raises here (as before) and is attributed as this version's error.
+        return {args.node_id: fetch_document(args.file_key, args.node_id, vid)}
+
+    PREFETCH_WINDOW = FETCH_POOL_WORKERS * 2
+    version_iter = iter(versions)
+    pending = []  # list of (version, Future), oldest-submitted first
+
+    def _submit_next(pool):
+        v = next(version_iter, None)
+        if v is None:
+            return False
+        pending.append((v, pool.submit(_fetch_version, v["id"])))
+        return True
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=FETCH_POOL_WORKERS) as pool:
-        future_to_version = {
-            pool.submit(fetch_document, args.file_key, args.node_id, v["id"]): v
-            for v in versions
-        }
-        for future in concurrent.futures.as_completed(future_to_version):
-            v = future_to_version[future]
+        for _ in range(PREFETCH_WINDOW):
+            if not _submit_next(pool):
+                break
+
+        while pending:
+            v, fut = pending.pop(0)
+            _submit_next(pool)  # keep the window full as we consume one
             try:
-                docs_by_version[v["id"]] = future.result()
+                docmap = fut.result()
             except Exception as e:
-                fetch_errors[v["id"]] = str(e)
+                # Whole request failed (rate limit exhausted, 500, network). Record
+                # it once per tracked node so none silently loses this version. In
+                # single mode this is also the not-exist path (fetch_document raises).
+                for nid in node_ids:
+                    accums[nid].errors.append({"versionId": v["id"], "date": v["created_at"], "reason": str(e)})
+                continue
 
-    prev_doc = None
-    for v in versions:
-        if v["id"] in fetch_errors:
-            errors.append({"versionId": v["id"], "date": v["created_at"], "reason": fetch_errors[v["id"]]})
-            continue
-        doc = docs_by_version[v["id"]]
+            for nid in node_ids:
+                doc = docmap.get(nid)
+                if doc is None:
+                    # Batch mode: this node didn't exist yet at this version (single
+                    # mode surfaces that as the exception handled above instead).
+                    accums[nid].errors.append({"versionId": v["id"], "date": v["created_at"],
+                                               "reason": f"node {nid} did not exist yet at version {v['id']}"})
+                    continue
+                process_transition(accums[nid], doc, v)
 
-        try:
-            magnitude = None
-            changes, changed_count = [], 0
-            if prev_doc is not None:
-                # Also covered by this try: a malformed node (unexpected shape)
-                # or a pathologically deep whole-file tree could raise here
-                # (e.g. RecursionError) — that should be one bad version
-                # recorded in `errors`, not a crash of the whole run.
-                #
-                # No separate whole-doc json.dumps() equality pre-check here:
-                # changed_elements() below already walks both trees comparing
-                # only the specific tracked fields per node (node_signature()),
-                # which is cheaper than serializing every field of every node
-                # via sort_keys=True — and it naturally yields magnitude 0.0
-                # when nothing tracked differs, so the pre-check bought no
-                # speed, just doubled the work on versions that did change.
-                changes, changed_count, magnitude = changed_elements(prev_doc, doc)
-        except Exception as e:
-            errors.append({"versionId": v["id"], "date": v["created_at"], "reason": str(e)})
-            continue
+    if is_batch:
+        out_nodes = {}
+        for nid in node_ids:
+            acc = accums[nid]
+            day_screenshots = {}
+            if args.screenshot_dir:
+                # Per-node subdir so two frames of the same file don't collide.
+                day_screenshots = render_day_screenshots(
+                    args.file_key, nid, os.path.join(args.screenshot_dir, nid.replace(":", "-")), acc)
+            out_nodes[nid] = {"results": acc.results, "errors": acc.errors, "dayScreenshots": day_screenshots}
+        print(json.dumps({"nodes": out_nodes}, indent=2))
+        return
 
-        day = v["created_at"][:10]
-        day_last_version[day] = v["id"]
-        day_root_box[day] = doc.get("absoluteBoundingBox")
-        if magnitude:
-            day_has_change.add(day)
-
-        results.append({
-            "versionId": v["id"],
-            "date": v["created_at"],
-            "author": (v.get("user") or {}).get("handle"),
-            "label": v.get("label") or "",
-            "magnitude": magnitude,
-            "changedElements": changes,
-            "changedElementCount": changed_count,
-        })
-        prev_doc = doc
-
+    acc = accums[args.node_id]
     day_screenshots = {}
     if args.screenshot_dir and not args.node_id:
-        errors.append({"versionId": None, "date": None,
-                        "reason": "--screenshot-dir ignored: no single node to render in whole-file mode (--node-id omitted)"})
+        acc.errors.append({"versionId": None, "date": None,
+                            "reason": "--screenshot-dir ignored: no single node to render in whole-file mode (--node-id omitted)"})
     elif args.screenshot_dir:
-        os.makedirs(args.screenshot_dir, exist_ok=True)
-        for day in sorted(day_has_change):
-            version_id = day_last_version[day]
-            path = os.path.join(args.screenshot_dir, f"{day}.png")
-            scale = scale_for_box(day_root_box[day])
-            try:
-                if fetch_screenshot(args.file_key, args.node_id, version_id, path, scale=scale):
-                    day_screenshots[day] = {"path": path, "nodeBox": day_root_box[day]}
-            except Exception as e:
-                errors.append({"versionId": version_id, "date": day, "reason": f"screenshot: {e}"})
+        day_screenshots = render_day_screenshots(args.file_key, args.node_id, args.screenshot_dir, acc)
 
-    print(json.dumps({"results": results, "errors": errors, "dayScreenshots": day_screenshots}, indent=2))
+    print(json.dumps({"results": acc.results, "errors": acc.errors, "dayScreenshots": day_screenshots}, indent=2))
 
 
 if __name__ == "__main__":

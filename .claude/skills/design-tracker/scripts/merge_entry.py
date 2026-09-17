@@ -79,6 +79,19 @@ def main():
     with open(args.diff_output) as f:
         diff_data = json.load(f)
 
+    # Batch diff output from `diff_versions.py --node-ids` is
+    # {"nodes": {nodeId: {results, errors, dayScreenshots}}} — select this
+    # node's block. Single-node output has results/errors/dayScreenshots at the
+    # top level and is used as-is (backward compatible). This is why one batched
+    # multi-frame pull can be merged frame-by-frame with the same command.
+    if "nodes" in diff_data:
+        node_block = diff_data["nodes"].get(args.node_id)
+        if node_block is None:
+            print(json.dumps({"error": f"--diff-output is batch output with no node {args.node_id}; "
+                                        f"available: {list(diff_data['nodes'])}"}))
+            sys.exit(1)
+        diff_data = node_block
+
     matches = [
         e for e in entries
         if e.get("figmaFileKey") == args.file_key and e.get("figmaNodeId") == args.node_id

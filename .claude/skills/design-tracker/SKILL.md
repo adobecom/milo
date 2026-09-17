@@ -105,6 +105,49 @@ date>` pull is enough because `merge_entry.py` unions + dedupes it into the
 existing history; an entry with no prior history gets a full pull. Either way
 the end state is complete — that's the requirement.)
 
+**Figma rate limits are the binding constraint on a full-history pull — the
+script now paces itself to stay under them; do not defeat that pacing.** The
+dominant call in a history pull is `GET /v1/files/:key/nodes` (one per
+version), which is Figma's most-restricted **Tier 1** endpoint: on Full/Dev
+seats it allows only ~10/min (Starter), 15/min (Professional), or ~20/min
+(Organization/Enterprise) — this is a per-account plan limit, not raisable per
+token. `diff_versions.py` enforces a **global, thread-safe rate limiter**
+(`RateLimiter`, `MAX_REQUESTS_PER_MINUTE`, default **15/min**, override with
+`--rpm` or `$FIGMA_MAX_RPM`) that paces *request starts* across all worker
+threads and, on any `429`, backs off the whole fleet together (honoring
+`Retry-After`) instead of each thread retrying in sync. `FETCH_POOL_WORKERS`
+is now **3** and is no longer the throttle — the limiter is; workers only exist
+so one slow request can't starve the pacing. **Consequence, set expectations
+accordingly:** a full pull is inherently slow — 634 versions ÷ 15/min ≈ 42 min
+for *one* frame, so a multi-frame umbrella design is a couple of hours. That is
+the real, unavoidable cost of complete data on this plan; a slow complete pull
+always beats a fast one with silent gaps.
+
+**Why this matters — the failure it fixes.** The old code fired
+`FETCH_POOL_WORKERS = 6` requests near-instantly with no global pacing, blowing
+past the ~20/min ceiling and triggering Figma's leaky-bucket 429s en masse.
+**Verified real, silent data loss, not just slowness:** a single 634-version
+file (one frame, run *sequentially*, nothing else competing) came back with
+**384/634 (61%) of versions failing as genuine `HTTP 429`** after exhausting
+every retry — an actual hole in the history with no bar for real changes that
+day, not the benign "node didn't exist yet at this early version" case. Raising
+worker count or per-call retries never fixed this; only global pacing under the
+ceiling does. **Do not raise `--rpm` above ~20, bump `FETCH_POOL_WORKERS` back
+up, or strip the `RateLimiter`/`penalize()` path to "speed things up" — that
+re-introduces the 61% silent loss.**
+
+**Multiple pages in one invocation: still run their full-history pulls
+sequentially, never in parallel.** The limiter caps a *single* process, but two
+`diff_versions.py` processes don't share a limiter, so running several pages'
+pulls at once (e.g. one background agent per page) still stacks their request
+rates against the one account-wide bucket and re-triggers the throttling. When
+a sync covers more than one page, process pages one at a time (or at minimum,
+never run more than one *new-entry full-history* pull concurrently). If a
+page's pull still came back with a high 429-failure rate, a subsequent full
+re-run (no `--since`, so it revisits everything) at a lower `--rpm` will
+backfill the gaps, since `merge_entry.py` unions `versionChanges` by
+`versionId` and won't duplicate what already succeeded.
+
 Each tracker page carries a hand-editable **"Design Links"** block (a
 two-column table in the DA editor: Figma link, optional Jira link — stored as
 `<div class="design-links">`) right alongside its generated `design-tracker`
@@ -186,6 +229,22 @@ Steps:
    Merge every pull result into the scratch `entries.json` via
    `merge_entry.py` as usual.
 
+   **Batch frames of the same file into ONE pull (big rate-limit win).** When
+   several targets in this sync share a `figmaFileKey` — the common case, since
+   an umbrella design splits into sm/md/lg/xl frames of one file — pull them
+   together with `diff_versions.py --node-ids n1,n2,n3,n4` instead of one run
+   per frame. The per-version `/nodes` call returns every listed node at once,
+   so N frames cost **one** Tier-1 rate-limit slot per version instead of N —
+   verified to turn a ~5.5h four-frame pull into ~1.5h with identical data (the
+   version list is file-wide, so it's paged once regardless). The output is
+   `{"nodes": {nodeId: {results, errors, dayScreenshots}}}`; point
+   `--screenshot-dir` at a parent dir (each node gets its own `<nodeId>` subdir)
+   and then merge each frame out of that one file with the usual
+   `merge_entry.py --node-id <frame>` (it selects the node's block from the
+   batch output automatically). Use plain `--node-id` only for a genuinely
+   single-frame design or whole-file mode. Frames from *different* files still
+   get one pull per file (batch within a file, not across).
+
 7. **Upload `entries.json`** back to `<page-path>/entries.json` ("Writing
    back" step 3), then **regenerate and re-publish the page** ("Publishing
    the dashboard page") — `embed_page.py` keeps the `design-links` input
@@ -240,6 +299,32 @@ editor — the skill only reads it on sync.
      means in practice. Only fall back to true whole-file tracking (see
      "Whole-file tracking" below) if the user explicitly asks to track
      everything as one unit.
+   - **A `node-id` being present in the URL is not proof it's a single
+     trackable frame — always verify the node's `type` before treating it
+     as resolved, even when the user handed you the link directly.**
+     `get_metadata` (or `GET /v1/files/:key/nodes?ids=<id>`) returns the
+     node's `type`; if it's `CANVAS` (a whole Figma page) or any other
+     container whose children are themselves the real viewport-variant
+     designs, this is exactly the same "one umbrella design, several
+     variants side by side" situation as the no-node-id case above — apply
+     the identical splitting logic to its children (skip annotation/test/
+     spacer children the same way), not the whole-canvas node itself. Only
+     `FRAME` (or another node type with its own real `absoluteBoundingBox`
+     representing one actual design) is a valid single-entry target.
+     **Verified this is a real, not hypothetical, failure mode**: four
+     separate Figma links, each with an explicit `node-id`, all resolved to
+     `CANVAS`-type page nodes rather than frames. Tracked as-is (skipping
+     this check), this produced oversized day-screenshots (CANVAS nodes
+     have no `absoluteBoundingBox`, so `scale_for_box()` fell back to a
+     fixed scale instead of computing a real one — one entry alone produced
+     63 images totaling ~266MB, individual files up to ~7000×4700px) and
+     highlight-overlay boxes with nothing valid to position against. If the
+     canvas's children themselves turn out to be a large, mixed bag of
+     unrelated components/assets rather than a clean set of viewport
+     variants (seen in practice — one file's canvas had 82 children with no
+     coherent per-viewport pattern), that's the "genuinely ambiguous" case
+     above: ask the user which specific node(s) represent the actual design
+     to track, don't guess a split.
 2. Parse the Jira URL: `jiraKey` is the path segment after `/browse/`.
 3. Download the current `entries.json` from DA (see "Writing back") and
    append a new entry object (create the array if empty) with `addedDate`
@@ -496,6 +581,16 @@ python3 $SKILL_DIR/scripts/diff_versions.py \
   [--since <YYYY-MM-DD>]
 ```
 
+**Tracking several frames of the same file? Use `--node-ids` to batch them**
+(4× fewer requests — see "Run the pulls per bucket" step 6 for the why):
+```bash
+python3 $SKILL_DIR/scripts/diff_versions.py \
+  --file-key <figmaFileKey> --node-ids <n1>,<n2>,<n3>,<n4> \
+  --screenshot-dir <parentDir> [--since <YYYY-MM-DD>]
+# output: {"nodes": {nodeId: {results, errors, dayScreenshots}}}
+# merge each frame: merge_entry.py --node-id <n1> --diff-output <thatOneBatchFile> ...
+```
+
 **Pull ALL history — there is no version cap.** By default the script pages
 the entire available version history (no `--max-versions` limit). Pass
 `--since <date>` to make a repeat sync efficient: **set it to the design's
@@ -556,13 +651,19 @@ and keep this line in sync if you add another property to track — and
 library-sync events, not a UI truncation — the page renders the full list
 in a scrollable region). Include these fields as-is in `versionChanges`.
 
-**Figma's API rate-limits hard under repeated use.** Running this script
-many times in a session (e.g. iterating on the diff logic) will eventually
-hit `HTTP 429`. `api_get()` retries with backoff (honors `Retry-After`,
-falls back to exponential backoff, `MAX_RETRIES` attempts) — don't strip
-this out. If you see many `errors` entries in the output all saying
-`HTTP Error 429`, that's this happening; consider spacing out repeated
-full-history reruns rather than looping tightly.
+**Figma's API rate-limits hard; the script paces itself under the ceiling.**
+The `/nodes` call this makes per version is Tier 1 (~20/min max on
+Org/Enterprise — see "Figma rate limits are the binding constraint" above for
+the full breakdown). `diff_versions.py` enforces a **global `RateLimiter`**
+(default 15/min, `--rpm`/`$FIGMA_MAX_RPM`) that spaces all requests and backs
+the whole worker pool off together on a 429; `api_get()`'s per-call retry
+(honors `Retry-After`, `MAX_RETRIES` attempts) remains as a safety net — don't
+strip either out. With correct pacing a full pull should show **near-zero**
+`429` entries in `errors` (only benign "node didn't exist yet" ones). If you
+still see many `HTTP Error 429`, the account's real tier is below the default —
+lower `--rpm` (e.g. 10) and re-run; the re-run unions in via `merge_entry.py`.
+Expect a full pull to be slow by design (≈42 min per 634-version frame at
+15/min) — that is correct, not a hang.
 
 Take the JSON `results` array it prints and set it directly as the entry's
 `versionChanges` field in `entries.json`.
