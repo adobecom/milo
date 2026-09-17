@@ -1,8 +1,11 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { onSidekickAuth } from '../../sidekick-auth.js';
+import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
+import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   safeGetItem,
   safeSetItem,
   toSlug,
@@ -32,6 +35,7 @@ import {
 import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
+let authStateRendered = false;
 const domParser = new DOMParser();
 
 const ALIGN_STORAGE_KEY = 'mep-align-left';
@@ -60,6 +64,7 @@ const CARD_DATA = {
     ]],
     ['Toggle', [
       ['Preview Link', 'Add mepButton=off'],
+      ['Manifest Parameters', 'Exclude from URL'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
     ['Spoof Country', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
@@ -75,7 +80,6 @@ const CARD_DATA = {
 };
 
 const TAB_NAMES = ['Actions', 'Summary'];
-const ACTIONS_TAB_INDEX = String(TAB_NAMES.indexOf('Actions'));
 const SUMMARY_TAB_INDEX = String(TAB_NAMES.indexOf('Summary'));
 
 function svgIcon(key) {
@@ -181,7 +185,7 @@ function getManifestStatus(manifest) {
   }
   const statusChecks = [
     {
-      reason: manifest.manifestCountryRestricted,
+      reason: !manifest.countryEnabled,
       msg: 'User country is restricted.',
       level: 'Warning',
       label: 'Ineligible',
@@ -191,6 +195,24 @@ function getManifestStatus(manifest) {
       msg: 'Outside of promo date range.',
       level: 'Warning',
       label: 'Disabled',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === NON_PERSONALIZED_OFFER_TEST,
+      msg: 'Target off due to user\'s consent.',
+      level: 'Warning',
+      label: 'MEP used instead of Target',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === PERSONALIZED_OFFER,
+      msg: 'Disabled due to user\'s consent.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.consentNotSpecified,
+      msg: 'Consent type not specified.',
+      level: 'Error',
+      label: 'Urgent warning',
     },
   ];
   const severity = { Warning: 0, Error: 1 };
@@ -248,7 +270,7 @@ function buildManifestCard(manifest) {
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
   rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Mktg Action', manifest.mktgAction));
+  rows.push(buildRow('Consent Req', manifest.consentType));
   if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
   rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
@@ -422,13 +444,6 @@ function buildFAB(gnavOffset) {
   return fab;
 }
 
-function buildLoginCard() {
-  return createTag('div', { class: 'mep-card expanded center' }, [
-    createTag('h1', {}, 'Content Unavailable'),
-    createTag('p', { class: 'mep-card-body' }, 'Sign into AEM Sidekick for options.'),
-  ]);
-}
-
 function buildFooter() {
   return createTag('div', { class: 'mep-footer' }, [
     createTag('a', { class: 'con-button button-l fill', title: 'Preview' }, 'Preview'),
@@ -436,7 +451,7 @@ function buildFooter() {
 }
 
 function buildActionsContent(pageId) {
-  if (!authenticated) return [buildLoginCard()];
+  if (!authenticated) return [];
   return [
     ...buildManifestList(),
     ...CARD_DATA.actions.map(([header, data]) => (
@@ -468,7 +483,6 @@ function buildTabsAndBody(pageId) {
 
   return { tabsEl, bodyEl };
 }
-
 async function setDefaultValues() {
   const {
     mepCaasHighlight,
@@ -489,6 +503,9 @@ async function setDefaultValues() {
     checkbox.toggleAttribute('checked', true);
     toggleHighlight({ target: checkbox });
   });
+
+  const excludeManifestsEl = document.querySelector('#toggle-manifest-parameters');
+  if (excludeManifestsEl) excludeManifestsEl.checked = getExcludeManifestParams();
 
   const selectEl = document.querySelector('select.mep-spoof-geo');
   if (!selectEl) return;
@@ -512,30 +529,53 @@ async function setDefaultValues() {
   selectEl.value = mepAkamaiLocale;
 }
 
+async function refreshFirewallAuth(refreshAuth) {
+  if (await isWithinFirewall()) await refreshAuth();
+}
+
+function buildLoginCard(onRefresh) {
+  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
+  refreshButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+    await refreshFirewallAuth(onRefresh);
+  });
+  return createTag('div', { class: 'mep-card expanded center' }, [
+    createTag('h1', {}, 'Content Unavailable'),
+    createTag('div', { class: 'mep-card-body' }, [
+      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
+      refreshButton,
+    ]),
+  ]);
+}
+
+async function renderAuthState(pageId, isAuthed) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+  if (!contentEl) return;
+  if (isAuthed === authenticated && authStateRendered) return;
+  authenticated = isAuthed;
+  authStateRendered = true;
+
+  if (!authenticated) {
+    contentEl.replaceChildren(buildLoginCard(() => renderAuthState(pageId, true)));
+    drawerEl.querySelector('.mep-footer')?.remove();
+    return;
+  }
+
+  const cards = buildActionsContent(pageId);
+  contentEl.replaceChildren(...cards);
+  const footerEl = buildFooter();
+  const activeTab = drawerEl.querySelector('.mep-tab.active');
+  footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
+  drawerEl.appendChild(footerEl);
+  await Promise.all(cards.map((c) => c.ready).filter(Boolean));
+  setDefaultValues();
+  setPreviewButton();
+}
+
 function checkAuthAndBuild(pageId) {
   onSidekickAuth(async (isAuthed) => {
-    if (isAuthed === authenticated) return;
-    authenticated = isAuthed;
-
-    const drawerEl = document.querySelector('#mep-drawer');
-    const contentEl = drawerEl?.querySelector(`.mep-tab-content[data-tab="${ACTIONS_TAB_INDEX}"]`);
-    if (!contentEl) return;
-
-    if (!authenticated) {
-      contentEl.replaceChildren(buildLoginCard());
-      drawerEl.querySelector('.mep-footer')?.remove();
-      return;
-    }
-
-    const cards = buildActionsContent(pageId);
-    contentEl.replaceChildren(...cards);
-    const footerEl = buildFooter();
-    const activeTab = drawerEl.querySelector('.mep-tab.active');
-    footerEl.classList.toggle('hidden', activeTab?.textContent !== 'Actions');
-    drawerEl.appendChild(footerEl);
-    await Promise.all(cards.map((c) => c.ready).filter(Boolean));
-    setDefaultValues();
-    setPreviewButton();
+    await renderAuthState(pageId, isAuthed);
   });
 }
 
@@ -674,12 +714,13 @@ function setEventListeners() {
       drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
-    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    const cardEl = event.target.closest('.mep-card h1 svg') && event.target.closest('.mep-card');
     if (cardEl) toggleExpandedCard(cardEl);
   });
 
   drawerEl.addEventListener('change', (event) => {
     if (event.target.type === 'checkbox') event.target.toggleAttribute('checked', event.target.checked);
+    if (event.target.id === 'toggle-manifest-parameters') setExcludeManifestParams(event.target.checked);
     setPreviewButton(event);
   });
 
