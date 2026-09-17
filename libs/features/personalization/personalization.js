@@ -237,7 +237,6 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
     || (el.nodeName === 'P' && action.includes('pend')) // parent el IS a p tag, AND you're prepending/appending
     || containerType === 'row'
     || containerType === 'cell';
-  // const frag = noParagraphWrap ? a : createTag('p', undefined, a);
   let frag = a;
 
   if (!noParagraphWrap) frag = createTag('p', undefined, frag);
