@@ -64,16 +64,29 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
+function toSubtext(el) {
+  const level = el.tagName.match(/^H([1-6])$/)?.[1];
+  if (!level) {
+    el.classList.add('pm-subtext');
+    return el;
+  }
+  const p = createTag('p', null, el.innerHTML);
+  p.className = el.className;
+  p.classList.add('pm-subtext', `heading-${level}`);
+  if (el.id) p.id = el.id;
+  return p;
+}
+
 function decorate(block, blockEl = block) {
   const row = block.children[0];
   const col = row?.children[0];
   if (!col) return;
 
   const { iconEl, heading, bodyEls } = parseLeftColumn(col);
-  bodyEls.forEach((el) => el.classList.add('pm-subtext'));
+  const subtextEls = bodyEls.map(toSubtext);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
-  foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
+  foreground.append(buildChicletRow(iconEl, heading), ...subtextEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
