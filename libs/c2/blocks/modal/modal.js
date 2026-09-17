@@ -324,7 +324,14 @@ export async function getModal(details, custom) {
     if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
   } else {
     const firstHeading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
-    if (firstHeading) dialog.setAttribute('aria-label', firstHeading.textContent.trim());
+    const eyebrow = firstHeading?.closest('.tour-header')?.querySelector('.eyebrow');
+    if (eyebrow && firstHeading) {
+      eyebrow.id ||= `${id}-eyebrow`;
+      firstHeading.id ||= `${id}-heading`;
+      dialog.setAttribute('aria-labelledby', `${eyebrow.id} ${firstHeading.id}`);
+    } else if (firstHeading) {
+      dialog.setAttribute('aria-label', firstHeading.textContent.trim());
+    }
   }
 
   return dialog;

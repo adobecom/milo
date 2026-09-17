@@ -140,7 +140,9 @@ export default function init(el) {
       const eyebrow = headerRow.querySelector('p');
       eyebrow?.classList.add('eyebrow');
       eyebrow?.setAttribute('tabindex', '-1');
-      headerRow.querySelector('h3')?.classList.add('heading-6');
+      const heading = headerRow.querySelector('h3');
+      heading?.classList.add('heading-6');
+      heading?.setAttribute('tabindex', '-1');
     }
   }
 
@@ -189,6 +191,8 @@ export default function init(el) {
   addOutsideClickClose(el);
   el.closest('.fragment')?.setAttribute('tabindex', '-1'); // prevent Firefox scroll-focus
   window.addEventListener('milo:modal:loaded', () => {
-    el.querySelector('.tour-header .eyebrow')?.focus();
+    // Focus the heading, not the eyebrow paragraph: focusing a plain <p> here
+    // makes NVDA fall into "say all" through the entire dialog content.
+    el.querySelector('.tour-header h3')?.focus();
   }, { once: true });
 }

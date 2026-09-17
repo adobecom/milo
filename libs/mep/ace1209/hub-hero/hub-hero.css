@@ -589,7 +589,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (max-width: 320px) {
   .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
     display: revert;
     min-width: var(--grid-img-width-min);
@@ -1256,7 +1256,7 @@
 }
 
 /** prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (max-width: 320px) {
 
   .hub-hero,
   .hub-hero *,
@@ -1352,7 +1352,7 @@
 
 }
 
-@media (prefers-reduced-motion: reduce) and (width < 768px) {
+@media (prefers-reduced-motion: reduce) and (width < 768px), (max-width: 320px) {
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
   .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
