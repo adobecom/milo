@@ -541,8 +541,16 @@ const SCREENSHOT_CAPTION_TEXT = 'This preview image can look the same as another
 // into the modal isn't nested under any summary (the modal is a singleton
 // appended straight to <body>).
 function renderHighlights(container, dayBucket, nodeBox, summary) {
+  // Paint larger boxes first so they sit BEHIND smaller ones in the stacking
+  // order (siblings stack by DOM order). Without this, a big box (e.g. a whole
+  // section) painted over a small box inside it swallows every click, making
+  // the small box unreachable — now the small box stacks on top and stays
+  // clickable, while clicks on empty area of the big box still land on it.
+  const boxArea = (b) => (b ? (b.width || 0) * (b.height || 0) : 0);
   dayBucket.changes
     .flatMap((c) => c.changedElements || [])
+    .slice()
+    .sort((a, b) => boxArea(b.box) - boxArea(a.box))
     .forEach((el) => {
       const pct = boxToPercent(el.box, nodeBox);
       if (!pct) return;
@@ -552,6 +560,13 @@ function renderHighlights(container, dayBucket, nodeBox, summary) {
       box.style.top = `${pct.top}%`;
       box.style.width = `${pct.width}%`;
       box.style.height = `${pct.height}%`;
+      // A box that already spans most of a dimension (e.g. the tracked frame's
+      // own node, ~100%×100%, or a full-width section) must NOT get the
+      // hover/active scale-up emphasis — scaling it 1.3-1.6x pushes it well
+      // past the preview edges ("box extends way beyond the design"). Tag it so
+      // the CSS keeps the color/outline emphasis but drops the transform. The
+      // 60% threshold is below where even the 1.6x active scale could overflow.
+      if (pct.width > 60 || pct.height > 60) box.classList.add('roadmap-highlight-large');
       // matched against a clicked row in the version-summary list, see jumpToHighlight()
       box.dataset.elId = el.id;
       // No title tooltip: hover already surfaces this via the version-

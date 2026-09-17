@@ -699,6 +699,24 @@ body.image-modal-open {
   z-index: 1;
 }
 
+/* A large box (whole tracked node or a full-width section) would spill far past
+   the preview edges if scaled up — see roadmap-highlight-large in
+   design-tracker.js. Keep every other emphasis (outline, color, z-index) but
+   drop the transform so it stays put. Placed after the hover/active rules
+   above so it wins the cascade at equal specificity. */
+.roadmap-highlight-large:hover:not(.roadmap-highlight-active) {
+  transform: none;
+  /* Don't let a hovered large box rise above the small boxes stacked on top of
+     it (renderHighlights paints large boxes first, on purpose) — the base
+     :hover rule sets z-index:1, which would re-cover an inner small box and
+     make it unclickable again. Keep it behind. */
+  z-index: auto;
+}
+
+.roadmap-highlight-large.roadmap-highlight-active {
+  transform: none;
+}
+
 .roadmap-legend {
   display: flex;
   flex-wrap: wrap;
