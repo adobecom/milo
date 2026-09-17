@@ -771,6 +771,23 @@
     animation-range: entry 100% exit 100%;
   }
 
+  /* iOS Safari only: animating max-width reflows this box (and everything
+     that chases its width) on every scroll frame, which fights position:sticky
+     recalculation on the slides/header sharing this flow, causing visible
+     jitter. Keep the box at its final size and fake the grow with a transform
+     (compositor-only, no reflow) instead. Other browsers don't show this
+     jitter, so they keep the max-width version above. */
+  @supports (-webkit-touch-callout: none) {
+    .hub-hero-carousel-container {
+      max-width: 100%;
+      transform-origin: top center;
+      will-change: transform;
+      animation: carouselMobileContainerExpandSafari ease forwards;
+      animation-timeline: --hub-hero;
+      animation-range: entry 100% exit 100%;
+    }
+  }
+
   .hub-hero-carousel-item {
     position: sticky;
     overflow: visible;
@@ -1523,6 +1540,23 @@
 
   100% {
     max-width: 100%;
+  }
+}
+
+/* Safari-only equivalent of carouselMobileContainerExpand above, using a
+   transform instead of max-width so it doesn't force a reflow (see the
+   @supports (-webkit-touch-callout: none) rule that references this). */
+@keyframes carouselMobileContainerExpandSafari {
+  0% {
+    transform: scaleX(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
+  }
+
+  75% {
+    transform: scaleX(1);
+  }
+
+  100% {
+    transform: scaleX(1);
   }
 }
 
