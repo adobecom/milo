@@ -1563,18 +1563,25 @@
 
 /* Safari-only equivalent of carouselMobileContainerExpand above, using a
    transform instead of max-width so it doesn't force a reflow (see the
-   @supports (-webkit-touch-callout: none) rule that references this). */
+   @supports (-webkit-touch-callout: none) rule that references this). Uses
+   the transform property (not the standalone scale property, which
+   elasticItemsShrink already animates on this same element -- transform and
+   scale compose independently, but two animations both targeting scale
+   would just fight over the final value). Scales both axes uniformly: a
+   transform can't replicate the original's object-fit: cover recrop as it
+   widens, so scaleX() alone would stretch the image; a uniform scale() just
+   shrinks the whole card proportionally instead. */
 @keyframes carouselMobileContainerExpandSafari {
   0% {
-    transform: scaleX(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
+    transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
   75% {
-    transform: scaleX(1);
+    transform: scale(1);
   }
 
   100% {
-    transform: scaleX(1);
+    transform: scale(1);
   }
 }
 
