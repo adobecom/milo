@@ -1583,10 +1583,6 @@
     transform: scale(calc(var(--grid-img-width-min) / var(--media-mobile-max-width)));
   }
 
-  15% {
-    transform: scale(0.7);
-  }
-
   /* finish early (matches elasticMobileFirstSlideSafari) so a slide is
      already fully grown by the time it's peeking into the stack, rather
      than still mid-grow when it first becomes visible */
@@ -1681,16 +1677,12 @@
     transform: scale(0.7);
   }
 
-  /* fully grown well before the stack-offset (still keyed to 75%/100% below,
-     to stay in sync with the other slides' peek timing) kicks in */
   30% {
     filter: contrast(1);
     transform: scale(1);
   }
 
-  75% {
-    /* hold contrast at 1 until here so it only starts shifting once slide 1
-       is actually getting covered, instead of drifting from 30% onward */
+  65% {
     filter: contrast(1);
     transform: scale(1) translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: 1;
