@@ -2463,6 +2463,14 @@ function initModalEventListener() {
   });
 }
 
+let fontsPromise;
+function importFonts(locale = getConfig().locale) {
+  fontsPromise ??= import('./fonts.js')
+    .then(({ default: loadFonts }) => loadFonts(locale))
+    .catch((e) => window.lana?.log(`Failed to load fonts: ${e}`, { tags: 'fonts', severity: 'error' }));
+  return fontsPromise;
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
 
@@ -2506,8 +2514,7 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  importFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
@@ -3021,6 +3028,11 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function warmTypekit() {
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3039,6 +3051,10 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    if (getMetadata('foundation') === 'c2') {
+      warmTypekit();
+      importFonts();
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
