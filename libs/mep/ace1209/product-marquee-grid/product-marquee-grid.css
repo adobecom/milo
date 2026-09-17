@@ -44,6 +44,15 @@
     flex-direction: column;
     flex-shrink: 0;
     gap: var(--s2a-spacing-lg);
+
+    .icon-button {
+      background: transparent;
+      border-color: transparent;
+
+      path {
+        fill: var(--s2a-color-content-subtle);
+      }
+    }
   }
 
   .pm-merch-content {
