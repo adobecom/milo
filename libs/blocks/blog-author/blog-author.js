@@ -30,8 +30,19 @@ function decorateSocial(row) {
   loadIcons(row.querySelectorAll('span.icon'));
 }
 
+function collapseWhitespace(text) {
+  return text?.replace(/\s+/g, ' ').trim();
+}
+
+function trimNameWhitespace(row) {
+  const { firstChild, lastChild } = row;
+  const isText = (n) => n?.nodeType === Node.TEXT_NODE;
+  if (isText(firstChild)) firstChild.textContent = firstChild.textContent.trimStart();
+  if (isText(lastChild)) lastChild.textContent = lastChild.textContent.trimEnd();
+}
+
 function injectSchema(el, company) {
-  const name = el.querySelector('.blog-author-name')?.textContent;
+  const name = collapseWhitespace(el.querySelector('.blog-author-name')?.textContent);
   if (!name) return;
 
   const schema = {
@@ -46,11 +57,11 @@ function injectSchema(el, company) {
     schema.worksFor = { '@type': 'Organization', name: company };
   }
 
-  const title = el.querySelector('.blog-author-title')?.textContent;
+  const title = collapseWhitespace(el.querySelector('.blog-author-title')?.textContent);
   if (title) schema.jobTitle = title;
 
-  const desc = [...el.querySelectorAll('.blog-author-description')]
-    .map((p) => p.textContent).join(' ');
+  const desc = collapseWhitespace([...el.querySelectorAll('.blog-author-description')]
+    .map((p) => p.textContent).join(' '));
   if (desc) schema.description = desc;
 
   const img = el.querySelector('picture img')?.src;
@@ -105,12 +116,13 @@ export default async function init(el) {
     }
 
     if (socialContainer) {
-      company = text;
+      company = text.replace(/\s+/g, ' ');
       row.parentElement.remove();
       return;
     }
 
     row.className = TEXT_CLASSES[Math.min(textIdx, 2)];
+    if (row.className === 'blog-author-name') trimNameWhitespace(row);
     textIdx += 1;
   }
 
