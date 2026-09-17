@@ -480,6 +480,22 @@
       animation-range: entry 100% exit 100%;
     }
 
+    /* iOS Safari only: the slides-3 variant has its own copy of this
+       selector (immediately above), which is more specific than the
+       general one in the non-slides-3 mobile block (it's nested under
+       .hub-hero.slides-3), so it needs its own copy of the Safari
+       clip-path override too -- otherwise slideOneMediaAspect above wins
+       and the clip-path reveal never applies for this variant. */
+    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
+      .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
+        aspect-ratio: unset;
+        will-change: clip-path;
+        animation: mediaMobileGrowInSafariClip ease forwards;
+        animation-timeline: --hub-hero;
+        animation-range: entry 100% exit 100%;
+      }
+    }
+
     .hub-hero-carousel-item:nth-child(2) {
       --stack-contrast: .75;
     }
