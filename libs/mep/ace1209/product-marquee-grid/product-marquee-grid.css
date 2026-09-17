@@ -315,6 +315,10 @@ body:has(header.local-nav) .product-marquee-grid {
     /* set color, not just the token: un-classed mas-field text (shortDescription,
        legal) inherits `color`, which the block's .dark otherwise keeps white. */
     color: var(--s2a-color-content-default);
+
+    .con-button.outline {
+      border-color: var(--s2a-color-content-default);
+    }
   }
 
   /* transparent-bg + dark: translucent black card surface. */
