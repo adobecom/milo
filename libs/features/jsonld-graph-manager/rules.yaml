@@ -745,8 +745,8 @@
   notes: >
     Each Offer MAY include a potentialAction property to express usage
     actions, e.g. BuyAction, TryAction. When offers are absent or empty, the
-    manager leaves them unchanged by default or emits the opt-in serialized
-    fallback defined by softwareapplication-offer-provenance.
+    manager emits the serialized fallback defined by
+    softwareapplication-offer-provenance.
   status: active
   last_updated: "2026-09-16"
 
@@ -804,11 +804,10 @@
   section: "Type-specific: Offer"
   severity: error
   requirement: >
-    By default, every Offer MUST originate from producer data. Only when
-    jsonld-graph-manager-default-offer=true is explicitly enabled MAY the
-    manager serialize an Offer for a SoftwareApplication, WebApplication,
-    MobileApplication, or VideoGame whose offers property is missing or an
-    empty array. The generated Offer MUST have @id
+    The manager MUST serialize an Offer for a SoftwareApplication,
+    WebApplication, MobileApplication, or VideoGame whose offers property is
+    missing or an empty array. This applies to SoftwareApplication nodes
+    transformed from Product. The generated Offer MUST have @id
     {canonicalPageURL}#offer, price "0", priceCurrency "USD", availability
     "https://schema.org/InStock", and category "Free Trial"; the application
     MUST reference it as offers: [{"@id":"{canonicalPageURL}#offer"}].
@@ -823,9 +822,7 @@
     The generated fallback is derived serialized output only and MUST NOT be
     persisted in the manager graph or source maps. A later runtime
     producer-authored Offer therefore replaces the fallback on the next
-    rebuild rather than coexisting with it. Commercial facts remain owned by
-    product and commerce producers unless page owners explicitly accept the
-    fixed fallback terms.
+    rebuild rather than coexisting with it.
   status: active
   last_updated: "2026-09-16"
 

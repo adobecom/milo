@@ -470,25 +470,12 @@ describe('AggregateRating quality thresholds', () => {
 });
 
 describe('SoftwareApplication default Offer synthesis', () => {
-  it('does not synthesize an Offer unless explicitly enabled', () => {
+  it('transforms an offer-less Product and serializes the fallback Offer with exact fields', () => {
     document.head.appendChild(makeScript({
-      '@type': 'SoftwareApplication',
+      '@type': 'Product',
       name: 'Photoshop',
     }));
     const manager = trackedManager();
-    manager.init();
-    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
-    expect(app.offers).to.be.undefined;
-  });
-
-  it('serializes the fallback Offer with exact fields when offers are missing', () => {
-    document.head.appendChild(makeScript({
-      '@type': 'SoftwareApplication',
-      name: 'Photoshop',
-    }));
-    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offer = graph.find((n) => n['@type'] === 'Offer');
@@ -501,6 +488,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       category: 'Free Trial',
     });
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app['@type']).to.equal('SoftwareApplication');
     expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
     expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.false;
     expect(manager.sources.has(`${PAGE_URL}#offer`)).to.be.false;
@@ -513,7 +501,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       name: 'Photoshop',
       offers: [],
     }));
-    const manager = trackedManager({ generateDefaultOffer: true });
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
@@ -528,7 +516,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       '@id': `${PAGE_URL}#webapplication`,
       name: 'Compress PDF',
     }));
-    const manager = trackedManager({ generateDefaultOffer: true });
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
@@ -550,7 +538,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
         },
       ],
     }));
-    const manager = trackedManager({ generateDefaultOffer: true });
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offers = graph.filter((n) => n['@type'] === 'Offer');
@@ -571,7 +559,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
         priceCurrency: 'USD',
       }),
     );
-    const manager = trackedManager({ generateDefaultOffer: true });
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offers = graph.filter((n) => n['@type'] === 'Offer');
@@ -585,7 +573,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       '@type': 'SoftwareApplication',
       name: 'Photoshop',
     }));
-    const manager = trackedManager({ generateDefaultOffer: true });
+    const manager = trackedManager();
     manager.init();
 
     const runtime = makeScript({
