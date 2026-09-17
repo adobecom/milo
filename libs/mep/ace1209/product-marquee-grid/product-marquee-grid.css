@@ -90,6 +90,9 @@
       flex: 1;
       justify-content: center;
       text-align: center;
+      /* changes here */
+      border-color: var(--s2a-color-content-default);
+      color: var(--s2a-color-content-default);
     }
   }
 
