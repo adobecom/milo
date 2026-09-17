@@ -288,8 +288,11 @@
 }
 
 .hub-hero-carousel-item-media picture {
+  display: block;
   height: 100%;
   width: 100%;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .hub-hero-carousel-item-media img {
@@ -478,7 +481,12 @@
       /* border-radius + overflow:hidden alone don't reliably clip this
          element while its box is being resized by the aspect-ratio
          animation below (confirmed: computed styles are correct but the
-         corner renders sharp) -- clip-path doesn't have that problem. */
+         corner renders sharp) -- clip-path doesn't have that problem in
+         Chrome. Keep border-radius too: the picture/img children inherit
+         it (see the general .hub-hero-carousel-item-media picture rule),
+         which is a plain overflow:hidden clip -- belt-and-suspenders in
+         case Safari doesn't honor the round() part of clip-path here. */
+      border-radius: var(--s2a-border-radius-md);
       clip-path: inset(0 round var(--s2a-border-radius-md));
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
