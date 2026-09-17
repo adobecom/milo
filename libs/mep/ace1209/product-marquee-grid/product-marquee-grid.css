@@ -291,40 +291,32 @@ body:has(header.local-nav) .product-marquee-grid {
     background: var(--s2a-color-gray-900);
   }
 
+  /* Inverse promo card. The JS adds .dark / .light to .pm-merch-card for the
+     special-promo variant (.dark when the hero is light, .light when the hero
+     is dark), so the card renders in the opposite mode to the block.
+     .dark reuses the global dark token set — text flips automatically — so only
+     the surface and the hardcoded outlined con-button need setting here.
+     There is no global .light class, so the light card resets its content tokens
+     directly; its default (dark) con-button already reads on the light surface. */
+  .product-marquee-grid .pm-merch-card.dark {
+    background: var(--s2a-color-gray-900);
+
+    .con-button.outline {
+      border-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-25);
+    }
+  }
+
+  .product-marquee-grid .pm-merch-card.light {
+    --s2a-color-content-default: var(--s2a-color-gray-1000);
+    --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
+
+    background: var(--s2a-color-gray-50);
+  }
+
   /* transparent-bg + dark: translucent black card surface. */
   .transparent-bg.dark.product-marquee-grid .pm-merch-card {
     background: var(--s2a-color-transparent-black-32);
-  }
-
-  /* special-promo: the promo card is an inverse surface — a dark card (#131313)
-     on the light hero, a light card (#f8f8f8) on the dark hero. The block colors
-     already match the defaults, so only the card flips. Main text uses
-     content-inverse (white in light mode, black in dark mode) to stay readable. */
-  /* .special-promo.product-marquee-grid .pm-merch-content {
-    .mas-description,
-    .mas-price {
-      color: var(--s2a-color-content-inverse);
-    }
-  } */
-
-  .special-promo.product-marquee-grid:not(.dark) {
-    .pm-merch-card {
-      background: var(--s2a-color-gray-900);
-    }
-
-    /* .pm-merch-content .mas-price-commitment {
-      color: var(--s2a-color-transparent-white-64);
-    } */
-  }
-
-  .special-promo.dark.product-marquee-grid {
-    .pm-merch-card {
-      background: var(--s2a-color-gray-50);
-    }
-
-    /* .pm-merch-content .mas-price-commitment {
-      color: var(--s2a-color-transparent-black-64);
-    } */
   }
 }
 

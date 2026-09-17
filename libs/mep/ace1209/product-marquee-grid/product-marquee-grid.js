@@ -64,7 +64,7 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
-function decorate(block) {
+function decorate(block, blockEl = block) {
   const row = block.children[0];
   const col = row?.children[0];
   if (!col) return;
@@ -77,7 +77,15 @@ function decorate(block) {
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
-  if (col2?.children.length) promoArea.append(buildMerchCard(col2));
+  if (col2?.children.length) {
+    const merchCard = buildMerchCard(col2);
+    // special-promo inverts the card vs the hero: light hero -> dark card,
+    // dark hero -> light card. The mode class flips its content via tokens.
+    if (blockEl.classList.contains('special-promo')) {
+      merchCard.classList.add(blockEl.classList.contains('dark') ? 'light' : 'dark');
+    }
+    promoArea.append(merchCard);
+  }
 
   const content = createTag('div', { class: 'pm-content container' });
   content.append(foreground, promoArea);
