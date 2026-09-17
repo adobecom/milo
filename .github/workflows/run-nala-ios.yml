@@ -1,0 +1,91 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this into  <your milo repo>/.github/workflows/run-nala-ios.yml
+#
+# Real iOS Simulator screenshots on self-hosted macOS runners — PURE simctl,
+# no Appium / no Node (only Xcode). Dispatched by nala-auto's Run Console (kind: ios).
+# Vendor the `ios-runner/` folder from nala-auto into this repo (or add a checkout).
+#
+# Prereqs on each [self-hosted, macOS, ios-sim] runner:
+#   - Full Xcode 16 selected (`xcode-select -p` -> /Applications/Xcode*.app/...)
+#     with at least one iOS runtime, running in a logged-in GUI (Aqua) session
+#   - jq
+# ─────────────────────────────────────────────────────────────────────────────
+name: Nala iOS (Simulator) Screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 'Site (matches nala/features/visual/sot.<site>.yml)'
+        required: true
+        default: 'bacom'
+        type: string
+      milo_libs:
+        description: 'Query string appended to the candidate URL'
+        required: false
+        default: '?milolibs=stage'
+        type: string
+      ios_versions:
+        description: 'Comma-separated iOS versions, e.g. 17.5,18.3'
+        required: true
+        default: '18.3'
+        type: string
+      device:
+        description: 'Simulator device'
+        required: false
+        default: 'iPhone 15'
+        type: string
+
+jobs:
+  prepare:
+    runs-on: [self-hosted, macOS, ios-sim]
+    outputs:
+      matrix: ${{ steps.split.outputs.matrix }}
+    steps:
+      - id: split
+        shell: bash
+        run: |
+          IFS=',' read -ra V <<< "${{ inputs.ios_versions }}"
+          json=$(printf '%s\n' "${V[@]}" | sed 's/ //g' | jq -R . | jq -cs '{ios: .}')
+          echo "matrix=$json" >> "$GITHUB_OUTPUT"
+
+  capture:
+    needs: prepare
+    runs-on: [self-hosted, macOS, ios-sim]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure iOS runtime ${{ matrix.ios }}
+        run: ./ios-runner/simulators.sh ensure "${{ matrix.ios }}" || true
+
+      - name: Resolve URLs for ${{ inputs.site }}
+        id: urls
+        run: echo "list=$(./ios-runner/site-urls.sh '${{ inputs.site }}' '${{ inputs.milo_libs }}')" >> "$GITHUB_OUTPUT"
+
+      - name: Capture on iOS ${{ matrix.ios }} (fresh sim, simctl)
+        env:
+          LAB_DEVICE: ${{ inputs.device }}
+          LAB_VERSION: ${{ matrix.ios }}
+          LAB_URLS: ${{ steps.urls.outputs.list }}
+          LAB_OUT: shots/${{ inputs.site }}/ios-${{ matrix.ios }}
+        run: ./ios-runner/simctl-capture.sh
+
+      - name: Upload screenshots artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ inputs.site }}-${{ matrix.ios }}
+          path: shots/${{ inputs.site }}/ios-${{ matrix.ios }}
+
+      # TODO(integration): push into the nala-auto results format so shots show at
+      # /imagediff/${{ inputs.site }} — reuse tools/screenshot-diff/lib/upload-one.js
+      # with S3ACCESSKEY / S3SECRETKEY, matching results.json / timestamp.json.
+      - name: Upload to S3 (nala-auto results)  # placeholder — wire to your uploader
+        if: ${{ false }}
+        env:
+          S3ACCESSKEY: ${{ secrets.S3ACCESSKEY }}
+          S3SECRETKEY: ${{ secrets.S3SECRETKEY }}
+        run: echo "wire this to your existing upload-one.js"
