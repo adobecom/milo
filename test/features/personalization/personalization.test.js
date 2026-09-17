@@ -182,6 +182,106 @@ describe('Functional Test', () => {
     expect(fragment).to.be.null;
   });
 
+  it('records a manifestErrors entry when the manifest fails to fetch (bad location)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    window.fetch = stub().returns(Promise.resolve({ ok: false, status: 404, json: () => ({}), text: () => '' }));
+    const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
+    await applyPers({ manifests: badManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest' });
+  });
+
+  it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({ data: [] });
+    const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
+    await applyPers({ manifests: emptyManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
+  });
+
+  it('fires "was served" analytics when the consent requirement is met', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Personalized offer' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-served/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.calledOnce).to.be.true;
+    const [, payload] = trackStub.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('manifest was served');
+    delete window._satellite;
+  });
+
+  it('does not fire "was served" analytics when the consent requirement is promo or no offer changes', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Promo or no offer changes' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-skipped/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.called).to.be.false;
+    delete window._satellite;
+  });
+
   it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};

@@ -65,7 +65,7 @@ export const API_URLS = {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, countryRestriction, consentType,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -80,8 +80,8 @@ function toActivity({
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
-    mktgAction,
+    countryRestriction,
+    consentType,
   };
 }
 
@@ -361,8 +361,8 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
-      geoRestriction,
-      mktgAction,
+      countryRestriction,
+      consentType,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -413,11 +413,11 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
                   <span>${escapeHtml(source)}</span>
-                  <span>Mktg action</span>
-                  <span>${escapeHtml(mktgAction)}</span>
-                ${geoRestriction ? `
-                  <span>Geo</span>
-                  <span>${escapeHtml(geoRestriction.toUpperCase())}</span>` : ''}
+                  <span>Consent req</span>
+                  <span>${escapeHtml(consentType)}</span>
+                ${countryRestriction ? `
+                  <span>Allowed User Countries</span>
+                  <span>${escapeHtml(countryRestriction.toUpperCase())}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
                   <span>${disabled ? 'inactive' : 'active'}</span>` : ''}

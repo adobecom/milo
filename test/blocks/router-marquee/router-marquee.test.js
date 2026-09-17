@@ -173,6 +173,19 @@ describe('Router Marquee', () => {
     expect(video.closest('.rm-slide').classList.contains('is-active')).to.be.true;
   });
 
+  it('leaves paragraphs rendered inside a mas-field where they are', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/nested-paragraphs.html' });
+    const block = document.querySelector('.router-marquee');
+    // mas-field resolves before the block decorates and writes its own paragraphs
+    document.querySelector('mas-field [data-role="mas-field-content"]').innerHTML = '<p>A$9.99/mo</p><p>Terms apply.</p>';
+    init(block);
+
+    const body = mobileVp(block).querySelector('.rm-slide .rm-body');
+    expect(body.querySelectorAll(':scope > p').length).to.equal(1);
+    expect(body.querySelectorAll('mas-field p').length).to.equal(2);
+    expect(body.textContent.match(/A\$9\.99\/mo/g).length).to.equal(1);
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');

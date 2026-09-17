@@ -1,8 +1,8 @@
 {
   "configs": {
-    "total": 2,
+    "total": 4,
     "offset": 0,
-    "limit": 2,
+    "limit": 4,
     "data": [
       {
         "key": "prod.sharepoint.site",
@@ -12,6 +12,16 @@
       {
         "key": "prod.sharepoint.driveId",
         "value": "attacker-drive-id",
+        "Comments": ""
+      },
+      {
+        "key": "prod.sharepoint.clientId",
+        "value": "attacker-client-id-00000000-0000-0000-0000-000000000000",
+        "Comments": ""
+      },
+      {
+        "key": "prod.sharepoint.authority",
+        "value": "https://login.microsoftonline.com/attacker-tenant-00000000-0000-0000-0000-000000000000",
         "Comments": ""
       }
     ]

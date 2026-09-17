@@ -613,7 +613,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-modal-info {
   position: absolute;
   inset: auto 0 0;
-  max-height: 60dvh;
+  max-height: 45dvh;
   margin: 0;
   padding: var(--gg-modal-edge) var(--gg-modal-edge) calc(var(--gg-modal-edge) * 2 + var(--gg-control-size));
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
