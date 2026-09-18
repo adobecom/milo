@@ -509,35 +509,29 @@ describe('global navigation', () => {
       }
     });
 
-    it('resolves the Commerce environment for www.stage without changing other hosts', () => {
+    it('uses production Commerce unless Stage is explicitly requested', () => {
       const cases = [
         {
-          location: { hostname: 'www.stage.adobe.com', search: '' },
+          query: '',
           environment: 'prod',
         },
         {
-          location: {
-            hostname: 'www.stage.adobe.com',
-            search: '?commerce.env=stage&commerce.landscape=DRAFT',
-          },
+          query: '?commerce.env=stage&commerce.landscape=DRAFT',
           environment: 'stage',
         },
         {
-          location: {
-            hostname: 'business.stage.adobe.com',
-            search: '?commerce.env=prod',
-          },
-          environment: 'stage',
+          query: '?commerce.env=prod',
+          environment: 'prod',
+        },
+        {
+          query: '?commerce.env=invalid',
+          environment: 'prod',
         },
       ];
 
-      cases.forEach(({ location, environment }) => {
-        const commerceEnvironment = new URLSearchParams(location.search).get('commerce.env');
-        expect(resolveAupEnvironment(
-          'stage',
-          location.hostname,
-          commerceEnvironment,
-        )).to.equal(environment);
+      cases.forEach(({ query, environment }) => {
+        const commerceEnvironment = new URLSearchParams(query).get('commerce.env');
+        expect(resolveAupEnvironment(commerceEnvironment)).to.equal(environment);
       });
     });
 
@@ -556,7 +550,7 @@ describe('global navigation', () => {
         window.aupsdk = undefined;
         await gnav.constructor.preloadAupSdk();
         expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
-          environment: 'stage',
+          environment: 'prod',
           cdnEnvironment: 'stage',
         });
       } finally {

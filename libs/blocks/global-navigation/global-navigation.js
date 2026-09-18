@@ -1130,11 +1130,7 @@ class Gnav {
     const { imsClientId } = config;
     const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
     const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
-    const environment = resolveAupEnvironment(
-      cdnEnvironment,
-      window.location.hostname,
-      commerceEnvironment,
-    );
+    const environment = resolveAupEnvironment(commerceEnvironment);
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 

@@ -26,8 +26,8 @@ const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
 export const KEYBOARD_DELAY = 8000;
 
-export const resolveAupEnvironment = (cdnEnvironment, hostname, commerceEnvironment) => (
-  hostname === 'www.stage.adobe.com' ? commerceEnvironment || 'prod' : cdnEnvironment
+export const resolveAupEnvironment = (commerceEnvironment) => (
+  commerceEnvironment === 'stage' ? 'stage' : 'prod'
 );
 
 const selectorMap = {
