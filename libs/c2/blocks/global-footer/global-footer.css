@@ -245,7 +245,7 @@
 
 .global-footer .feds-footer-logo img {
   display: block;
-  width: calc(100% + 56px);
+  width: 100%;
   max-width: none;
   height: auto;
   flex-shrink: 0;
