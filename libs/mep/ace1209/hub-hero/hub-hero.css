@@ -277,13 +277,23 @@
   transition: color .1s var(--paralax-easing);
 }
 
+/* Wraps .hub-hero-carousel-item-media. Confirmed in real Chrome (not
+   reproducible in automated testing) that no clipping technique
+   (overflow: hidden/clip, border-radius, clip-path, contain: paint)
+   reliably rounds an element whose own box is being resized by a live
+   scroll-driven animation (slide 1's animated aspect-ratio) -- every
+   *other* slide, none of which animate their own box size, rounds fine
+   with the exact same properties. This wrapper is never itself animated
+   or resized by anything, so it isn't subject to that bug; it just
+   auto-sizes to whatever its (animated) child currently measures. */
+.hub-hero-carousel-item-media-mask {
+  overflow: clip;
+  contain: paint;
+  border-radius: var(--s2a-border-radius-md);
+}
+
 .hub-hero-carousel-item-media {
   text-align: center;
-  /* overflow: clip (not hidden) + contain: paint forces real paint
-     containment instead of relying on compositor clipping, which is
-     unreliable in Chrome on an element whose box is actively resized by a
-     scroll-driven animation (confirmed: overflow: hidden computed
-     correctly here but rendered square corners in real Chrome). */
   overflow: clip;
   contain: paint;
   max-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));

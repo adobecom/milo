@@ -311,9 +311,11 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
       <div class='hub-hero-carousel-item-header'>
         ${eyebrow?.outerHTML}
       </div>
-      <div class='hub-hero-carousel-item-media'>
-        ${asset?.outerHTML}
-        ${icon?.outerHTML ?? ''}
+      <div class='hub-hero-carousel-item-media-mask'>
+        <div class='hub-hero-carousel-item-media'>
+          ${asset?.outerHTML}
+          ${icon?.outerHTML ?? ''}
+        </div>
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
