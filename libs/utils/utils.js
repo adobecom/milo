@@ -282,8 +282,6 @@ function hydrateLocale(locales, key) {
       }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
-    // Only a Lingo base locale gets `regions`. Omitting the key when there are no regional
-    // children keeps legacy locale-based sites out of the Lingo link path entirely.
     if (!Object.keys(hydratedChildren).length) return hydratedBase;
     return { ...hydratedBase, regions: hydratedChildren };
   }
@@ -298,9 +296,6 @@ function hydrateLocale(locales, key) {
   return { ...locale };
 }
 
-// A Lingo base locale has at least one regional child. Count the entries rather than
-// testing `locale.regions` for truthiness: an empty object is truthy, which would make
-// every legacy locale-based site look like a Lingo base page.
 function hasLingoRegions(locale) {
   return !!Object.keys(locale?.regions ?? {}).length;
 }
