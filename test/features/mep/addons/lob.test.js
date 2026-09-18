@@ -69,21 +69,25 @@ describe('lob', () => {
     const lob = await init(true);
     expect(lob).to.be.false;
   });
-  it('should preserve an existing alloy_all get/set and push tracking values', async () => {
+  it('should not call the SDK get/set (single-arg) that already exist on alloy_all', async () => {
     setCookie(AMCV_COOKIE, 'MCMID|1234567890');
     setFetchResponse(API_RESPONSE);
     const customArray = [];
-    const existingGet = stub().callsFake(traverseGet);
-    const existingSet = stub().callsFake(traverseSet);
+    // The real AEP SDK installs single-arg get(path)/set(path,val) closures.
+    // Calling them with (obj, path) throws "t.split is not a function".
+    const sdkGet = stub().callsFake((path) => traverseGet(window.alloy_all, path));
+    const sdkSet = stub().callsFake((path, val) => traverseSet(window.alloy_all, path, val));
     window.alloy_all = {
-      get: existingGet,
-      set: existingSet,
+      get: sdkGet,
+      set: sdkSet,
       data: { _adobe_corpnew: { event: { custom: customArray } } },
     };
     const lob = await init(true);
     expect(lob).to.equal('smb');
-    expect(window.alloy_all.get).to.equal(existingGet);
-    expect(window.alloy_all.set).to.equal(existingSet);
+    expect(sdkGet.called).to.be.false;
+    expect(sdkSet.called).to.be.false;
+    expect(window.alloy_all.get).to.equal(sdkGet);
+    expect(window.alloy_all.set).to.equal(sdkSet);
     expect(customArray).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },
       { propertyName: 'spectraScore', propertyValue: 0.528565269468545 },
@@ -94,8 +98,6 @@ describe('lob', () => {
     setFetchResponse(API_RESPONSE);
     const lob = await init(true);
     expect(lob).to.equal('smb');
-    expect(window.alloy_all.get).to.be.a('function');
-    expect(window.alloy_all.set).to.be.a('function');
     // eslint-disable-next-line no-underscore-dangle
     expect(window.alloy_all.data._adobe_corpnew.event.custom).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },

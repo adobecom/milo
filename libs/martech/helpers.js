@@ -675,22 +675,23 @@ const getPayloadsByType = (data, type) => data?.handle?.filter((d) => d.type ===
   .map((d) => d.payload)
   .reduce((acc, curr) => [...acc, ...curr], []);
 
+// Local path helpers; do not reuse alloy_all.get/set (Launch's are single-arg)
+const getAlloyPath = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
+
+const setAlloyPath = (obj, path, val) => {
+  path.split('.').reduce((current, segment, index, segments) => {
+    if (index === segments.length - 1) current[segment] = val;
+    else current[segment] = current[segment] || {};
+    return current[segment];
+  }, obj);
+  return obj;
+};
+
 const setWindowAlloy = (alloyData) => {
-  const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
-
-  const set = (obj, path, val) => {
-    path.split('.').reduce((current, segment, index, segments) => {
-      if (index === segments.length - 1) current[segment] = val;
-      else current[segment] = current[segment] || {};
-      return current[segment];
-    }, obj);
-
-    return obj;
-  };
-  window.alloy_all = window.alloy_all || { get, set };
+  window.alloy_all = window.alloy_all || {};
   if (alloyData?.destinations) {
     const xlgValue = 'data._adobe_corpnew.digitalData.adobe.xlg';
-    const existingXlg = window.alloy_all.get(window.alloy_all, xlgValue) || '';
+    const existingXlg = getAlloyPath(window.alloy_all, xlgValue) || '';
     const xlgIds = existingXlg ? new Set(existingXlg.split(',')) : new Set();
 
     for (const destination of alloyData.destinations) {
@@ -700,16 +701,17 @@ const setWindowAlloy = (alloyData) => {
       }
     }
     const updatedXlg = Array.from(xlgIds).join(',');
-    window.alloy_all.set(window.alloy_all, xlgValue, updatedXlg);
+    setAlloyPath(window.alloy_all, xlgValue, updatedXlg);
   }
 };
 
 const setTTMetaAndAlloyTarget = (propositions) => {
+  window.alloy_all = window.alloy_all || {};
   const regex = /,|:/;
   const isEmpty = (val) => !val || val?.length === 0;
   const offerNames = [];
   const activityNames = [];
-  let targetResponse = window.alloy_all.get(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response') || '';
+  let targetResponse = getAlloyPath(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response') || '';
   const clean = (str) => (str || '').replace(regex, '');
 
   propositions.forEach((proposition) => {
@@ -745,7 +747,7 @@ const setTTMetaAndAlloyTarget = (propositions) => {
       }
     });
   });
-  window.alloy_all.set(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response', targetResponse);
+  setAlloyPath(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response', targetResponse);
 };
 
 function filterPropositionInJson(payloads) {

@@ -35,7 +35,7 @@ function addAlloyTracking(lobObject) {
     modelScore: 'spectraScore',
   };
 
-  // Define helper functions for alloy_all if not already available
+  // Local path helpers; do not reuse alloy_all.get/set (SDK's are single-arg)
   const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
   const set = (obj, path, val) => {
     path.split('.').reduce((current, segment, index, segments) => {
@@ -47,12 +47,10 @@ function addAlloyTracking(lobObject) {
   };
 
   window.alloy_all = window.alloy_all || {};
-  window.alloy_all.get = window.alloy_all.get || get;
-  window.alloy_all.set = window.alloy_all.set || set;
 
   const dataObjString = 'data._adobe_corpnew.event.custom';
-  const customEvents = window.alloy_all.get(window.alloy_all, dataObjString) || [];
-  window.alloy_all.set(window.alloy_all, dataObjString, customEvents);
+  const customEvents = get(window.alloy_all, dataObjString) || [];
+  set(window.alloy_all, dataObjString, customEvents);
 
   Object.entries(lobObject).forEach(([key, value]) => {
     if (!spectraValues[key]) return;
