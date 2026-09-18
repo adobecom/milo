@@ -207,12 +207,7 @@
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  /* will-change was promoting this to its own compositing layer, which
-     Safari's scroll-driven-animation implementation doesn't reliably
-     repaint on scroll-direction reversal -- once faded in, it stayed
-     stuck visible on scroll-up until a full reload. transform/opacity are
-     already compositor-friendly without the hint, and this animation is
-     scroll-timeline-driven (not JS-triggered), so nothing here needs it. */
+  will-change: opacity;
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -282,15 +277,9 @@
   transition: color .1s var(--paralax-easing);
 }
 
-.hub-hero-carousel-item-media-mask {
-  overflow: clip;
-  border-radius: var(--s2a-border-radius-md);
-  background-color: var(--s2a-color-gray-1000);
-}
-
 .hub-hero-carousel-item-media {
   text-align: center;
-  overflow: clip;
+  overflow: hidden;
   max-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
   display: flex;
   align-items: center;
@@ -299,11 +288,8 @@
 }
 
 .hub-hero-carousel-item-media picture {
-  display: block;
   height: 100%;
   width: 100%;
-  overflow: clip;
-  border-radius: inherit;
 }
 
 .hub-hero-carousel-item-media img {
@@ -312,7 +298,6 @@
   display: block;
   height: 100%;
   width: 100%;
-  border-radius: inherit;
 }
 
 .hub-hero-carousel-item-footer {
@@ -401,13 +386,6 @@
   min-width: unset;
   max-width: unset;
   z-index: 1;
-  /* This picture wrapper inherits border-radius (and overflow: clip) from
-     the general .hub-hero-carousel-item-media picture rule, meant for the
-     real photo. Slide 1's media has a visible border-radius, so the badge's
-     own tall/narrow wrapper became a rounded clip box too, biting into the
-     18x18 icon sitting in its corner. The icon needs square corners here
-     regardless of the photo's rounding. */
-  border-radius: 0;
 }
 
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img,
@@ -497,38 +475,9 @@
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
       aspect-ratio: 0.78;
-      border-radius: var(--s2a-border-radius-md);
-      clip-path: inset(0 round var(--s2a-border-radius-md));
-      contain: paint;
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
       animation-range: entry 100% exit 100%;
-    }
-
-    /* TEMP: also matching non-Firefox (`or (not (-moz-appearance: none))`)
-       so this can be checked live in Mac Safari (which doesn't recognize
-       -webkit-touch-callout at all -- it's iOS-only, confirmed via
-       CSS.supports) without needing an iOS device for every check --
-       remove the `or` clause once it's confirmed working on iOS. */
-    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-      .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media-mask {
-        contain: paint;
-        animation: mediaMaskGrowInSafariClip ease forwards;
-        animation-timeline: --hub-hero;
-        animation-range: entry 100% exit 100%;
-      }
-    }
-
-    /* Only slide 1 has the rounded, overflow:clip mask wrapping its media
-       (see .hub-hero-carousel-item-media-mask) -- every other slide's badge
-       sits at the default icon-padding inset (12px), which is fine since
-       nothing there clips it. Slide 1's mask corner radius (16px) is bigger
-       than that inset, so the badge's own square corner falls inside the
-       mask's rounded-corner arc and gets visibly bitten into. Push the
-       badge out to the radius itself so it clears the arc entirely. */
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media picture:nth-child(2) {
-      top: var(--s2a-border-radius-md);
-      left: var(--s2a-border-radius-md);
     }
 
     .hub-hero-carousel-item:nth-child(2) {
@@ -543,10 +492,12 @@
       margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
     }
 
+
     .hub-hero-carousel-item-footer * {
       white-space: wrap;
     }
   }
+
 
   .hub-hero-carousel-item-media>p:nth-child(2),
   .hub-hero-carousel-item-media>p:has(picture),
@@ -674,17 +625,12 @@
   }
 
   .hub-hero-carousel-header {
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
+    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
     animation: none;
-  }
-
-  .hub-hero-carousel-header>div :is(h1, h2, h3, h4, h5, h6) {
-    max-inline-size: 15ch;
-    margin-inline: auto;
   }
 
   .hub-hero-carousel-header>div {
@@ -711,7 +657,7 @@
     text-align: center;
   }
 
-  .hub-hero:not(.slides-3) .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
+  .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
     will-change: transform;
     animation: hubHeroGridCarouselSlideHover ease both;
@@ -795,7 +741,7 @@
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --carousel-items-top: 46%;
+    --carousel-items-top: 38%;
     --slide-one-header-footer-reveal: 45% 50%;
 
     position: relative;
@@ -805,9 +751,11 @@
     contain: layout;
     width: 100%;
     margin: 0;
+    padding-bottom: calc(var(--slide-footer-h) / 2);
   }
 
   .hub-hero-carousel-container {
+    margin-top: var(--elastic-mobile-first-slide-offset);
     height: 100%;
     position: relative;
     flex-direction: column;
@@ -817,38 +765,9 @@
     max-width: var(--grid-img-width);
     max-height: unset;
     width: 100%;
-    padding-bottom: var(--offset-adjuster);
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
-  }
-
-  .hub-hero:not(.slides-3) .hub-hero-carousel-container {
-    margin-top: var(--elastic-mobile-first-slide-offset);
-  }
-
-  /* iOS Safari only: animating max-width reflows this box (and everything
-     that chases its width) on every scroll frame, which fights position:sticky
-     recalculation on the slides/header sharing this flow, causing visible
-     jitter. Freeze the box at final size and reveal it with clip-path
-     instead -- clip-path doesn't reflow (paint-only, like transform), and
-     unlike transform it doesn't establish a containing block for the
-     position:sticky slides underneath, so it's safe to keep on this shared
-     ancestor rather than duplicating it per slide. Other browsers keep the
-     max-width version above.
-     TEMP: also matching non-Firefox (`or (not (-moz-appearance: none))`) so
-     this can be checked live in Mac Safari (which doesn't recognize
-     -webkit-touch-callout at all -- it's iOS-only, confirmed via
-     CSS.supports) without needing an iOS device for every check -- remove
-     the `or` clause once it's confirmed working on iOS. */
-  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
-    .hub-hero-carousel-container {
-      max-width: 100%;
-      --carousel-grow-inset: calc((1 - (var(--grid-img-width-min) / var(--media-mobile-max-width))) * 50%);
-      animation: carouselMobileContainerExpandSafariClip ease forwards;
-      animation-timeline: --hub-hero;
-      animation-range: entry 100% exit 100%;
-    }
   }
 
   .hub-hero-carousel-item {
@@ -872,17 +791,10 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.88;
     z-index: 1;
-    animation: none;
-  }
-
-  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
-    /* Same stale-compositing issue as .hub-hero-carousel-header above --
-       this container wraps slide 1's header/footer/mask, so a stuck layer
-       here is what made all three appear to stay visible on scroll-up. */
-    will-change: auto;
-    animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both;
-    animation-timeline: --hub-hero, --hub-hero;
-    animation-range: entry 50% exit 100%, entry 100% exit 100%;
+    will-change: transform, opacity;
+    animation: elasticMobileFirstSlide ease both;
+    animation-timeline: --hub-hero;
+    animation-range: entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
@@ -931,6 +843,7 @@
 
   .hub-hero-carousel-item-container {
     position: relative;
+    background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
     justify-content: unset;
     transform-origin: top center;
@@ -1317,6 +1230,8 @@
     --grid-col-three-offset: 252px;
     --grid-col-four-offset: 158px;
   }
+
+
 }
 
 /* below large */
@@ -1602,33 +1517,6 @@
   }
 }
 
-@keyframes carouselMobileContainerExpandSafariClip {
-  0% {
-    clip-path: inset(0 var(--carousel-grow-inset));
-  }
-
-  40% {
-    clip-path: inset(0);
-  }
-
-  100% {
-    clip-path: inset(0);
-  }
-}
-
-@keyframes mediaMaskGrowInSafariClip {
-  0% {
-    clip-path: inset(0 var(--carousel-grow-inset) calc(var(--carousel-grow-inset) * 2) var(--carousel-grow-inset) round var(--s2a-border-radius-md));
-  }
-
-  40% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
-  }
-
-  100% {
-    clip-path: inset(0 round var(--s2a-border-radius-md));
-  }
-}
 
 @keyframes slideOneHeaderReveal {
   0% {
@@ -1697,11 +1585,11 @@
   }
 
   20% {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 5 / 4;
   }
 
   100% {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 5 / 4;
   }
 }
 
