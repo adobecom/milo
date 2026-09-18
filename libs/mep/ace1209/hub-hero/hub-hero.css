@@ -500,7 +500,12 @@
       animation-range: entry 100% exit 100%;
     }
 
-    @supports (-webkit-touch-callout: none) {
+    /* TEMP: also matching non-Firefox (`or (not (-moz-appearance: none))`)
+       so this can be checked live in Mac Safari (which doesn't recognize
+       -webkit-touch-callout at all -- it's iOS-only, confirmed via
+       CSS.supports) without needing an iOS device for every check --
+       remove the `or` clause once it's confirmed working on iOS. */
+    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
       .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media-mask {
         contain: paint;
         animation: mediaMaskGrowInSafariClip ease forwards;
@@ -817,7 +822,21 @@
     margin-top: var(--elastic-mobile-first-slide-offset);
   }
 
-  @supports (-webkit-touch-callout: none) {
+  /* iOS Safari only: animating max-width reflows this box (and everything
+     that chases its width) on every scroll frame, which fights position:sticky
+     recalculation on the slides/header sharing this flow, causing visible
+     jitter. Freeze the box at final size and reveal it with clip-path
+     instead -- clip-path doesn't reflow (paint-only, like transform), and
+     unlike transform it doesn't establish a containing block for the
+     position:sticky slides underneath, so it's safe to keep on this shared
+     ancestor rather than duplicating it per slide. Other browsers keep the
+     max-width version above.
+     TEMP: also matching non-Firefox (`or (not (-moz-appearance: none))`) so
+     this can be checked live in Mac Safari (which doesn't recognize
+     -webkit-touch-callout at all -- it's iOS-only, confirmed via
+     CSS.supports) without needing an iOS device for every check -- remove
+     the `or` clause once it's confirmed working on iOS. */
+  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
     .hub-hero-carousel-container {
       max-width: 100%;
       --carousel-grow-inset: calc((1 - (var(--grid-img-width-min) / var(--media-mobile-max-width))) * 50%);
