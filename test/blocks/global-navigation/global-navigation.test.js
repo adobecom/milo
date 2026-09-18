@@ -13,7 +13,11 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import {
+  isDesktop,
+  isTangentToViewport,
+  toFragment,
+} from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
@@ -497,6 +501,41 @@ describe('global navigation', () => {
 
         window.adobeIMS = undefined;
         expect(await getProfile()).to.be.undefined;
+      } finally {
+        script.remove();
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('uses production Commerce unless Stage is explicitly requested', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      try {
+        window.aupsdk = undefined;
+        await gnav.constructor.preloadAupSdk();
+        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+          environment: 'prod',
+          cdnEnvironment: 'stage',
+        });
+
+        const url = new URL(originalUrl);
+        url.searchParams.set('commerce.env', 'stage');
+        window.history.replaceState(null, '', url);
+        window.aupsdk = undefined;
+        await gnav.constructor.preloadAupSdk();
+        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+          environment: 'stage',
+          cdnEnvironment: 'stage',
+        });
       } finally {
         script.remove();
         window.aupsdk = previousSdk;
