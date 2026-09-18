@@ -625,12 +625,21 @@
   }
 
   .hub-hero-carousel-header {
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
+    /* the heading now reliably wraps to 2 lines (see max-inline-size below),
+       so the gap needs to clear the FULL 2-line height (line-height * 2),
+       not just one line, plus a small breathing margin -- otherwise the
+       second line collides with the first slide underneath it */
+    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-lg) - var(--s2a-spacing-md) - (var(--s2a-typography-line-height-heading-2) * 2));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
     animation: none;
+  }
+
+  .hub-hero-carousel-header>div :is(h1, h2, h3, h4, h5, h6) {
+    max-inline-size: 15ch;
+    margin-inline: auto;
   }
 
   .hub-hero-carousel-header>div {
@@ -766,12 +775,17 @@
     display: grid;
     gap: 20vh;
     min-width: unset;
-    max-width: var(--grid-img-width);
+    /* Used to animate max-width narrow-to-wide here, but this element is the
+       containing block for every position:sticky card underneath it --
+       animating its size reflows all of them on every scroll frame and
+       fights their sticky recalculation, causing jitter/shake (worst on
+       Safari, but not exclusive to it). The narrow-to-wide reveal now lives
+       on each card's own .hub-hero-carousel-item-container instead (a child
+       of the sticky item, not an ancestor of it), so this box just sits at
+       its final full size the whole time and never reflows. */
+    max-width: 100%;
     max-height: unset;
     width: 100%;
-    animation: carouselMobileContainerExpand ease forwards;
-    animation-timeline: --hub-hero;
-    animation-range: entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item {
@@ -795,10 +809,19 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.88;
     z-index: 1;
-    will-change: transform, opacity;
-    animation: elasticMobileFirstSlide ease both;
-    animation-timeline: --hub-hero;
-    animation-range: entry 100% exit 100%;
+    /* Animating transform directly on a position:sticky element makes Safari
+       jitter it (the sticky offset recalculation fights the transform).
+       Cancel the base rule's animation here and apply the equivalent effect
+       to .hub-hero-carousel-item-container below instead -- that's a child
+       of this sticky item, not the sticky item itself, so it can animate
+       freely without disturbing the sticky positioning. */
+    animation: none;
+  }
+
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
+    animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both, cardMobileExpand ease forwards;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: entry 50% exit 100%, entry 100% exit 100%, entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
@@ -852,9 +875,13 @@
     justify-content: unset;
     transform-origin: top center;
     will-change: scale;
-    animation: elasticItemsShrink ease both;
-    animation-timeline: --hub-hero;
-    animation-range: entry 50% exit 100%;
+    /* margin-inline:auto keeps this centered within the (fixed-width)
+       sticky item as cardMobileExpand below narrows it -- without this it
+       would hug the start edge instead of growing from the center. */
+    margin-inline: auto;
+    animation: elasticItemsShrink ease both, cardMobileExpand ease forwards;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: entry 50% exit 100%, entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -1507,7 +1534,9 @@
   }
 }
 
-@keyframes carouselMobileContainerExpand {
+/* Now applied per-card (.hub-hero-carousel-item-container) instead of on
+   the shared .hub-hero-carousel-container -- see that rule's comment. */
+@keyframes cardMobileExpand {
   0% {
     max-width: var(--grid-img-width-min);
   }
