@@ -809,8 +809,8 @@
     missing or an empty array. This applies to SoftwareApplication nodes
     transformed from Product. The generated Offer MUST have @id
     {canonicalPageURL}#offer, price "0", priceCurrency "USD", availability
-    "https://schema.org/InStock", and category "Free Trial"; the application
-    MUST reference it as offers: [{"@id":"{canonicalPageURL}#offer"}].
+    "https://schema.org/InStock"; the application MUST reference it as
+    offers: [{"@id":"{canonicalPageURL}#offer"}].
     Applications with authored Offer references MUST remain unchanged. The
     manager MUST NOT generate an Offer when no supported application exists
     or infer an application relationship from a standalone Offer. If an

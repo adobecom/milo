@@ -43,8 +43,7 @@
       "@id": "https://www.adobe.com/products/photoshop.html#offer",
       "price": "0",
       "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "category": "Free Trial"
+      "availability": "https://schema.org/InStock"
     }
   ]
 }

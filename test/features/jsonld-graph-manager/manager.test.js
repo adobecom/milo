@@ -485,7 +485,6 @@ describe('SoftwareApplication default Offer synthesis', () => {
       price: '0',
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
-      category: 'Free Trial',
     });
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app['@type']).to.equal('SoftwareApplication');
@@ -591,7 +590,6 @@ describe('SoftwareApplication default Offer synthesis', () => {
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const fallback = graph.find((n) => n['@id'] === `${PAGE_URL}#offer`);
     expect(fallback.price).to.equal('0');
-    expect(fallback.category).to.equal('Free Trial');
     const standalone = graph.find((n) => n.description === 'Standalone event offer');
     expect(standalone['@id']).to.equal(`${PAGE_URL}#offer-authored`);
     const event = graph.find((n) => n['@type'] === 'Event');

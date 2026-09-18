@@ -296,8 +296,7 @@ This transform is governed by the `product-to-softwareapplication` requirement.
   "@id": "{canonicalPageURL}#offer",
   "price": "0",
   "priceCurrency": "USD",
-  "availability": "https://schema.org/InStock",
-  "category": "Free Trial"
+  "availability": "https://schema.org/InStock"
 }
 ```
 
