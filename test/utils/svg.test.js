@@ -37,6 +37,19 @@ describe('Decorate SVGs', () => {
     expect(pic.querySelector('img').src).to.equal('https://milo.adobe.com/fragments/my-icon.svg');
   });
 
+  it('Keeps the authored host only when the SVG comes from another AEM site', () => {
+    const base = document.head.appendChild(document.createElement('base'));
+    base.href = 'https://main--da-bacom--adobecom.aem.live/';
+    const srcOf = (id) => decorateSVG(document.querySelector(id)).querySelector('img').src;
+
+    try {
+      expect(srcOf('#same-site')).to.equal('https://main--da-bacom--adobecom.aem.live/same-site.svg');
+      expect(srcOf('#cross-repo')).to.equal('https://main--bacom--adobecom.aem.live/cross-repo.svg');
+    } finally {
+      base.remove();
+    }
+  });
+
   it('Alt text SVG', async () => {
     const el = document.querySelector('#alttext');
     const pic = decorateSVG(el);

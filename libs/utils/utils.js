@@ -1460,23 +1460,26 @@ export async function loadBlock(block) {
   return block;
 }
 
+const getAemSite = ({ hostname }) => (/\.(hlx|aem)\./.test(hostname)
+  ? hostname.split('.')[0].split('--').slice(-2).join('--')
+  : null);
+
 export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
   try {
-    // Mine for URL and alt text
     const splitText = textContent.split('|');
     const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
 
-    // Relative link checking
     const hrefUrl = a.href.startsWith('/')
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
-      ? authoredUrl.pathname
-      : authoredUrl;
+    const authoredSite = getAemSite(authoredUrl);
+    const currentSite = getAemSite(new URL(a.baseURI));
+    const isCrossSite = currentSite && currentSite !== authoredSite;
+    const src = authoredSite && !isCrossSite ? authoredUrl.pathname : authoredUrl;
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
