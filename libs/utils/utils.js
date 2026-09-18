@@ -1468,10 +1468,12 @@ export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
   try {
+    // Mine for URL and alt text
     const splitText = textContent.split('|');
     const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
 
+    // Relative link checking
     const hrefUrl = a.href.startsWith('/')
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
