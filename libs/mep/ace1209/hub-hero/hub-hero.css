@@ -813,7 +813,16 @@
     contain: layout;
     width: 100%;
     margin: 0;
-    padding-bottom: calc(var(--slide-footer-h) / 2);
+    /* The last sticky slide needs scroll room *after* its natural position
+       to finish settling at top: 46% before this container runs out --
+       otherwise it never fully un-crops. padding-bottom provides that
+       (it's part of this element's own content height, so children's
+       sticky containing-block calculations see the extra room), and the
+       matching negative margin-bottom cancels the visual gap it would
+       otherwise leave before whatever comes next (margin doesn't affect
+       this element's own height, so the scroll room stays intact). */
+    padding-bottom: var(--hub-hero-carousel-container-height);
+    margin-bottom: calc(var(--hub-hero-carousel-container-height) * -1);
   }
 
   .hub-hero-carousel-container {
