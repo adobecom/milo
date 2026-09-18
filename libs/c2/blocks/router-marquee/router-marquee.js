@@ -200,13 +200,17 @@ const getActiveViewport = () => {
   return 'mobile';
 };
 
-const loadVideo = (video) => {
-  if (!video || video.dataset.loaded) return;
-  // Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
-  // hidden viewports/slides never fetch them; promote to a real poster when the video loads.
-  if (video.dataset.rmPoster && !video.getAttribute('poster')) {
+// Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
+// hidden viewports/slides never fetch them; promote to a real poster when the video loads.
+const promotePoster = (video) => {
+  if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
     video.setAttribute('poster', video.dataset.rmPoster);
   }
+};
+
+const loadVideo = (video) => {
+  if (!video || video.dataset.loaded) return;
+  promotePoster(video);
 
   const src = video.dataset.lazySrc;
   if (src && !video.querySelector('source')) {
@@ -233,7 +237,7 @@ const stashSlideImage = (slide) => {
   }
 };
 
-const loadSlideImage = (slide) => {
+const loadSlideImage = (slide, lowPriority = false) => {
   const pic = slide?.querySelector('.rm-background picture');
   if (!pic || pic.dataset.loaded) return;
   pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
@@ -242,6 +246,7 @@ const loadSlideImage = (slide) => {
   });
   const img = pic.querySelector('img');
   if (img?.dataset.lazySrc) {
+    if (lowPriority) img.setAttribute('fetchpriority', 'low');
     img.setAttribute('src', img.dataset.lazySrc);
     delete img.dataset.lazySrc;
   }
@@ -252,6 +257,37 @@ const loadSlideImage = (slide) => {
 const loadSlideMedia = (slide) => {
   loadSlideImage(slide);
   loadVideo(slide?.querySelector('video'));
+};
+
+const schedule = (fn) => {
+  if ('requestIdleCallback' in window) return requestIdleCallback(fn, { timeout: 5000 });
+  return setTimeout(fn, 300);
+};
+
+// Calls loadSlideImage/promotePoster directly instead of loadSlideMedia - that also
+// triggers the video body's full fetch, which this warm-up must not do.
+const preloadRemainingSlides = (slides) => {
+  const queue = [...slides].filter((slide) => !slide.classList.contains('is-active'));
+  let handle = null;
+  let cancelled = false;
+
+  const loadNext = () => {
+    if (cancelled) return;
+    const slide = queue.shift();
+    if (!slide) return;
+    loadSlideImage(slide, true);
+    promotePoster(slide.querySelector('video'));
+    if (queue.length) handle = schedule(loadNext);
+  };
+
+  handle = schedule(loadNext);
+  return {
+    cancel: () => {
+      cancelled = true;
+      if ('cancelIdleCallback' in window) cancelIdleCallback(handle);
+      else clearTimeout(handle);
+    },
+  };
 };
 
 const playActiveVideo = (video) => {
@@ -717,6 +753,8 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   // next slide's media) out of the hero's poster->first-frame window, so LCP stays
   // on the heading instead of being dragged to the late video paint. It also keeps
   // the progress bar honest: it begins when the video is actually playing.
+  let resolveHeroReady;
+  const heroReady = new Promise((resolve) => { resolveHeroReady = resolve; });
   const heroVideo = slides[active]?.querySelector('video');
   if (gateOnFirstFrame && heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
     let started = false;
@@ -726,6 +764,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       started = true;
       clearTimeout(fallbackTimer);
       beginAutoplay();
+      resolveHeroReady();
     };
     heroVideo.requestVideoFrameCallback(() => kick());
     ['error', 'stalled', 'loadeddata'].forEach((ev) => {
@@ -733,7 +772,10 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     });
     fallbackTimer = setTimeout(kick, FIRST_FRAME_FALLBACK_MS);
   } else {
-    requestAnimationFrame(beginAutoplay);
+    requestAnimationFrame(() => {
+      beginAutoplay();
+      resolveHeroReady();
+    });
   }
 
   const getActive = () => active;
@@ -747,7 +789,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     activate(target, 1, { instant: true });
   };
 
-  return { pause, resume, getActive, syncTo };
+  return { pause, resume, heroReady, getActive, syncTo };
 };
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
@@ -797,6 +839,7 @@ export default function init(el) {
   el.replaceChildren(...containers);
   const controllersByVp = new Map();
   let activeVpName = null;
+  let pendingPreload = null;
   // Only the currently visible viewport's controller should ever run. Switching breakpoints
   // (mobile/tablet/desktop) pauses the outgoing viewport - so its autoplay timer and hero
   // video don't keep running inside a display:none container - and resumes (or lazily creates)
@@ -822,6 +865,11 @@ export default function init(el) {
       // viewports created later on resize don't affect LCP, so start them right away.
       controller = startAutoplay(slides, cards, container, el, controllersByVp.size === 0);
       controllersByVp.set(activeVp, controller);
+      controller.heroReady.then(() => {
+        if (getActiveViewport() !== activeVp) return;
+        pendingPreload?.cancel();
+        pendingPreload = preloadRemainingSlides(slides);
+      });
     }
     if (carryIndex != null) controller.syncTo(carryIndex);
     controller.resume();
