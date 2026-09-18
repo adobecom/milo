@@ -207,7 +207,12 @@
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  will-change: opacity;
+  /* will-change was promoting this to its own compositing layer, which
+     Safari's scroll-driven-animation implementation doesn't reliably
+     repaint on scroll-direction reversal -- once faded in, it stayed
+     stuck visible on scroll-up until a full reload. transform/opacity are
+     already compositor-friendly without the hint, and this animation is
+     scroll-timeline-driven (not JS-triggered), so nothing here needs it. */
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -871,7 +876,10 @@
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
-    will-change: transform, opacity, scale;
+    /* Same stale-compositing issue as .hub-hero-carousel-header above --
+       this container wraps slide 1's header/footer/mask, so a stuck layer
+       here is what made all three appear to stay visible on scroll-up. */
+    will-change: auto;
     animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both;
     animation-timeline: --hub-hero, --hub-hero;
     animation-range: entry 50% exit 100%, entry 100% exit 100%;
