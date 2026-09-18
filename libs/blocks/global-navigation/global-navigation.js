@@ -1124,15 +1124,18 @@ class Gnav {
     await this.decorateProfile();
   };
 
-  static preloadAupSdk = async () => {
+  static preloadAupSdk = async (pageUrl = new URL(window.location.href)) => {
     const config = getConfig();
     const { imsClientId } = config;
-    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const environment = pageUrl.hostname === 'www.stage.adobe.com'
+      ? pageUrl.searchParams.get('commerce.env') || 'prod'
+      : cdnEnvironment;
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
@@ -1145,7 +1148,7 @@ class Gnav {
         window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
       ),
       environment,
-      cdnEnvironment: environment,
+      cdnEnvironment,
       locale,
       appName: 'adobecom',
       appVersion: '1.0',

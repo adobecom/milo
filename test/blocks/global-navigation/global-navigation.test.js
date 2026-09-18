@@ -504,6 +504,47 @@ describe('global navigation', () => {
       }
     });
 
+    it('uses production Commerce on www.stage while preserving overrides and other hosts', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      const cases = [
+        {
+          url: 'https://www.stage.adobe.com/products',
+          environment: 'prod',
+        },
+        {
+          url: 'https://www.stage.adobe.com/products?commerce.env=stage&commerce.landscape=DRAFT',
+          environment: 'stage',
+        },
+        {
+          url: 'https://business.stage.adobe.com/products?commerce.env=prod',
+          environment: 'stage',
+        },
+      ];
+      try {
+        for (const { url, environment } of cases) {
+          window.aupsdk = undefined;
+          await gnav.constructor.preloadAupSdk(new URL(url));
+          expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+            environment,
+            cdnEnvironment: 'stage',
+          });
+        }
+      } finally {
+        script.remove();
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
     it('enables AUP Select in the mini app context when configured', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;

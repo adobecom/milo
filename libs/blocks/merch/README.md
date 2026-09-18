@@ -1,5 +1,16 @@
 # Commerce Settings
 
+## AUP Select environments
+
+`aup-select` normally uses the Commerce environment that matches the current Milo environment.
+On `www.stage.adobe.com`, it uses Commerce production by default while continuing to load the
+Stage AUP SDK bundle. This makes the site production-like without changing other Stage hosts.
+
+Use the following query parameters for targeted validation on `www.stage.adobe.com`:
+
+* `?commerce.landscape=DRAFT` uses draft offers from Commerce production.
+* `?commerce.env=stage` overrides the default and uses Commerce Stage.
+
 ## WCS Locale
 To check which locale was used to render the price/CTA:
 * In the network tab search for a 'wcs' request, e.g.
