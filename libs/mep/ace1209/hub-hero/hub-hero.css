@@ -277,10 +277,6 @@
   transition: color .1s var(--paralax-easing);
 }
 
-/* Wraps .hub-hero-carousel-item-media. This wrapper is never itself
-   animated or resized by anything, so it isn't subject to the Chrome
-   clipping bug described on the nth-child(1) rules below; it just
-   auto-sizes to whatever its child currently measures. */
 .hub-hero-carousel-item-media-mask {
   overflow: clip;
   border-radius: var(--s2a-border-radius-md);
@@ -311,10 +307,6 @@
   display: block;
   height: 100%;
   width: 100%;
-  /* Rounding only the ancestors (media div, picture) isn't reliably clipping
-     this img in Chrome, at least before the carousel item is scrolled into
-     its sticky/animated state -- round the img itself directly too, since
-     that doesn't depend on any ancestor's overflow/clip-path behavior. */
   border-radius: inherit;
 }
 
@@ -493,39 +485,15 @@
 
     .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
       aspect-ratio: 0.78;
-      /* border-radius + overflow:hidden alone don't reliably clip this
-         element while its box is being resized by the aspect-ratio
-         animation below (confirmed: computed styles are correct but the
-         corner renders sharp) -- clip-path doesn't have that problem in
-         Chrome. Keep border-radius too: the picture/img children inherit
-         it (see the general .hub-hero-carousel-item-media picture rule),
-         which is a plain overflow:hidden clip -- belt-and-suspenders in
-         case Safari doesn't honor the round() part of clip-path here. */
       border-radius: var(--s2a-border-radius-md);
       clip-path: inset(0 round var(--s2a-border-radius-md));
-      /* contain: paint here (and on the mask below) is scoped to slide 1
-         only -- it was previously on the general/unconditional rules,
-         which meant every slide got it even though only slide 1 (whose own
-         box is resized by the animation below) needed it. contain: paint
-         on a descendant of an actively transform-animated ancestor
-         (elasticItemsShrink's scale, present on every slide's container)
-         appears to cause a dynamic crop -- removing it from slides that
-         don't need it avoids that. */
       contain: paint;
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
       animation-range: entry 100% exit 100%;
     }
 
-    /* iOS Safari only: the shared .hub-hero-carousel-container clip
-       (carouselMobileContainerExpandSafariClip, unrounded -- see its
-       comment) is what's actually visible cropping slide 1 during its
-       0%-75% reveal, not slide 1's own edge, so slide 1's rounding never
-       showed until the shared clip fully opened. Give slide 1's mask its
-       own matching horizontal reveal, but WITH rounding, so its own
-       (tighter, rounded) edge is what's visually binding throughout,
-       instead of the shared mask's sharp one. */
-    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
+    @supports (-webkit-touch-callout: none) {
       .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media-mask {
         contain: paint;
         animation: mediaMaskGrowInSafariClip ease forwards;
@@ -546,12 +514,10 @@
       margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
     }
 
-
     .hub-hero-carousel-item-footer * {
       white-space: wrap;
     }
   }
-
 
   .hub-hero-carousel-item-media>p:nth-child(2),
   .hub-hero-carousel-item-media>p:has(picture),
@@ -679,9 +645,6 @@
   }
 
   .hub-hero-carousel-header {
-    /* the heading now reliably wraps to 2 lines (see max-inline-size below);
-       reserve room for that plus the original spacing-4xl clearance -- a
-       tighter gap here previously let the first slide overlap the heading */
     --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md) - var(--s2a-typography-line-height-heading-2));
     position: sticky;
     top: var(--carousel-header-top);
@@ -813,16 +776,6 @@
     contain: layout;
     width: 100%;
     margin: 0;
-    /* The last sticky slide needs scroll room *after* its natural position
-       to finish settling at top: 46% before this container runs out --
-       otherwise it never fully un-crops. padding-bottom provides that
-       (it's part of this element's own content height, so children's
-       sticky containing-block calculations see the extra room), and the
-       matching negative margin-bottom cancels the visual gap it would
-       otherwise leave before whatever comes next (margin doesn't affect
-       this element's own height, so the scroll room stays intact). */
-    padding-bottom: var(--hub-hero-carousel-container-height);
-    margin-bottom: calc(var(--hub-hero-carousel-container-height) * -1);
   }
 
   .hub-hero-carousel-container {
@@ -835,6 +788,7 @@
     max-width: var(--grid-img-width);
     max-height: unset;
     width: 100%;
+    padding-bottom: var(--offset-adjuster);
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -844,24 +798,9 @@
     margin-top: var(--elastic-mobile-first-slide-offset);
   }
 
-  /* iOS Safari only: animating max-width reflows this box (and everything
-     that chases its width) on every scroll frame, which fights position:sticky
-     recalculation on the slides/header sharing this flow, causing visible
-     jitter. Freeze the box at final size and reveal it with clip-path
-     instead -- clip-path doesn't reflow (paint-only, like transform), and
-     unlike transform it doesn't establish a containing block for the
-     position:sticky slides underneath, so it's safe to keep on this shared
-     ancestor rather than duplicating it per slide. Other browsers keep the
-     max-width version above.
-     TEMP: also matching Chrome (`or (not (-moz-appearance: none))`, i.e.
-     "not Firefox") so this can be tuned live in Chrome DevTools without
-     pushing to the branch for every iOS check -- remove the `or` clause
-     once it's dialed in. */
-  @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
+  @supports (-webkit-touch-callout: none) {
     .hub-hero-carousel-container {
       max-width: 100%;
-      /* symmetric inset on both axes -- keeps the revealed window centered
-         as it grows, matching the original's centered narrow-to-wide look */
       --carousel-grow-inset: calc((1 - (var(--grid-img-width-min) / var(--media-mobile-max-width))) * 50%);
       animation: carouselMobileContainerExpandSafariClip ease forwards;
       animation-timeline: --hub-hero;
@@ -890,13 +829,9 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.88;
     z-index: 1;
-
-    /* cancel the base rule's transform animation on this sticky element (see below) */
     animation: none;
   }
 
-  /* Safari jitters a position:sticky element whose own transform is animating.
-     Keep the sticky box itself transform-free; animate the card inside it instead. */
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
     will-change: transform, opacity, scale;
     animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both;
@@ -950,13 +885,6 @@
 
   .hub-hero-carousel-item-container {
     position: relative;
-    /* background-color moved to .hub-hero-carousel-item-media-mask (see
-       above) -- this element can't safely have its own clip-path/overflow
-       (the header/footer need to render outside its bounds via negative
-       offsets), so its background isn't reliably scoped to the card's true
-       width during the reveal animation and was visibly leaking past the
-       card into neighboring slides. The mask is already correctly clipped
-       to the exact same shape as the photo. */
     border-radius: var(--s2a-border-radius-md);
     justify-content: unset;
     transform-origin: top center;
@@ -1343,8 +1271,6 @@
     --grid-col-three-offset: 252px;
     --grid-col-four-offset: 158px;
   }
-
-
 }
 
 /* below large */
@@ -1630,18 +1556,6 @@
   }
 }
 
-/* Safari-only equivalent of carouselMobileContainerExpand above, using
-   clip-path instead of max-width so it doesn't force a reflow (see the
-   @supports rule that references this). clip-path reveals the box (already
-   at full size) rather than resizing it, so there's no distortion and no
-   need to duplicate this per slide -- one shared clip on the container
-   uncovers every stacked slide at once, same as the original max-width
-   version did. Horizontal inset only -- this container spans nearly the
-   whole hero's scroll height, so a vertical inset here clips almost
-   everything out instead of revealing one card's height. No rounding here:
-   this mask spans multiple stacked cards, not one bordered box, so
-   rounding it doesn't line up with any individual card's real corners --
-   each card handles its own rounding separately (see below). */
 @keyframes carouselMobileContainerExpandSafariClip {
   0% {
     clip-path: inset(0 var(--carousel-grow-inset));
@@ -1656,17 +1570,8 @@
   }
 }
 
-/* Same horizontal reveal as carouselMobileContainerExpandSafariClip above,
-   but rounded -- applied to slide 1's own mask (see the nth-child(1)
-   .hub-hero-carousel-item-media-mask rule that references this) so its own
-   rounded edge is what's visible during the reveal, not the shared
-   (unrounded, wrong-scale-to-round) container mask above it. */
 @keyframes mediaMaskGrowInSafariClip {
   0% {
-    /* top-anchored vertically (only the bottom is inset, by 2x the
-       horizontal per-side amount) so the initial box looks like a
-       proportioned 3:4-ish card instead of the full (very tall)
-       aspect-ratio: 0.78 height rendered at an already-narrow width */
     clip-path: inset(0 var(--carousel-grow-inset) calc(var(--carousel-grow-inset) * 2) var(--carousel-grow-inset) round var(--s2a-border-radius-md));
   }
 
@@ -1746,11 +1651,11 @@
   }
 
   20% {
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 3 / 4;
   }
 
   100% {
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 3 / 4;
   }
 }
 
