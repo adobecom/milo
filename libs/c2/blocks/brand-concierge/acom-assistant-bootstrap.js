@@ -32,9 +32,8 @@ async function ensureAcomAssistant(cards) {
  *  mount element is created here. */
 export default async function acomAssistantRouteInput(text, cards) {
   await ensureAcomAssistant(cards);
+  await openAcomAssistantChat({ sourceType: 'button', sourceText: chatLabelText });
   if (text) {
     await sendAcomAssistantUserMessage({ label: text });
-  } else {
-    await openAcomAssistantChat({ sourceType: 'button', sourceText: chatLabelText });
   }
 }

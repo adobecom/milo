@@ -562,6 +562,7 @@ describe('Brand Concierge back-navigation analytics', () => {
 
 describe('Brand Concierge - AcomAssistant flag', () => {
   let sendUserMessageSpy;
+  let openMessagingWindowSpy;
 
   beforeEach(() => {
     window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
@@ -571,10 +572,12 @@ describe('Brand Concierge - AcomAssistant flag', () => {
       openMessagingWindow: () => {},
     };
     sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
+    openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
   });
 
   afterEach(() => {
     sendUserMessageSpy.restore();
+    openMessagingWindowSpy.restore();
     document.head.querySelector('meta[name="acom-assistant"]')?.remove();
     document.getElementById('brand-concierge-modal')?.remove();
     document.querySelector('.modal-curtain')?.remove();
@@ -599,5 +602,6 @@ describe('Brand Concierge - AcomAssistant flag', () => {
 
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
     expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
+    expect(openMessagingWindowSpy.called).to.be.true;
   });
 });

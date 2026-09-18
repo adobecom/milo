@@ -1,7 +1,6 @@
 import { createTag, getMetadata } from '../../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import acomAssistantRouteInput from './acom-assistant-bootstrap.js';
-import { getAcomAssistantClient } from '../../../features/acom-assistant.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -79,18 +78,20 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory && !getAcomAssistantClient()) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   initAnalytics();
 
