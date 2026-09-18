@@ -1506,32 +1506,6 @@ function observeUpgradeAriaLabel(cta, originalText) {
   setTimeout(() => observer.disconnect(), 5000);
 }
 
-let pendingAupModalTrigger;
-
-export function trackAupModalTrigger(element) {
-  element.addEventListener('click', () => {
-    const previousLaunch = element.aupCheckoutPromise;
-    queueMicrotask(() => {
-      const launch = element.aupCheckoutPromise;
-      const { modalId } = element.dataset;
-      if (!modalId || !launch || launch === previousLaunch) return;
-
-      const trigger = { launch, modalId };
-      pendingAupModalTrigger = trigger;
-      const clear = () => {
-        if (pendingAupModalTrigger === trigger) pendingAupModalTrigger = undefined;
-      };
-      Promise.resolve(launch).then(clear, clear);
-    });
-  });
-}
-
-export function consumeAupModalTrigger() {
-  const modalId = pendingAupModalTrigger?.modalId;
-  pendingAupModalTrigger = undefined;
-  return modalId;
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1544,7 +1518,6 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
-  trackAupModalTrigger(cta);
   if (isMasGeoDetectionEnabled() && service.settings.country) {
     const country = await resolveCheckoutCountry(service);
     if (country) cta.setAttribute('data-ims-country', country);
