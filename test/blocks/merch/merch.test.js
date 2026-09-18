@@ -37,7 +37,6 @@ import merch, {
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
-  consumeAupModalTrigger,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1513,7 +1512,8 @@ describe('Merch Block', () => {
       expect(setCtaHash()).to.be.undefined;
     });
 
-    it('getModalAction: captures the modal ID when M@S invokes AUP', async () => {
+    it('getModalAction: manages AUP hash lifecycle from the M@S callback', async () => {
+      const previousUrl = window.location.href;
       const el = document.createElement('a');
       el.dataset.modal = 'crm';
       el.isOpen3in1Modal = false;
@@ -1523,19 +1523,31 @@ describe('Merch Block', () => {
         offerType: 'BASE',
         productArrangement: { productFamily: 'ILLUSTRATOR' },
       }], { modal: true }, el);
+      const hashchange = sinon.spy();
+      window.addEventListener('hashchange', hashchange);
 
-      expect(action.handler).to.be.a('function');
-      expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
-      expect(consumeAupModalTrigger()).to.be.undefined;
+      try {
+        expect(action.aupHandler).to.be.a('function');
+        expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
 
-      const launch = Promise.resolve();
-      el.aupCheckoutPromise = launch;
+        action.aupHandler({ type: 'open', element: el, modalId: el.dataset.modalId });
 
-      expect(el.aupCheckoutPromise).to.equal(launch);
-      expect(consumeAupModalTrigger()).to.equal('crm-buy-illustrator');
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(hashchange.called).to.be.false;
+
+        action.aupHandler({ type: 'close', element: el, modalId: el.dataset.modalId });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(hashchange.called).to.be.false;
+      } finally {
+        action.aupHandler({ type: 'close', element: el, modalId: el.dataset.modalId });
+        window.removeEventListener('hashchange', hashchange);
+        window.history.replaceState(null, '', previousUrl);
+      }
     });
 
-    it('getModalAction: keeps the latest M@S AUP launch context', async () => {
+    it('getModalAction: ignores a stale AUP close after a replacement opens', async () => {
+      const previousUrl = window.location.href;
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       const createAction = async (productFamily) => {
@@ -1550,16 +1562,41 @@ describe('Merch Block', () => {
       };
       const first = await createAction('ILLUSTRATOR');
       const second = await createAction('AUDITION');
-      let settleFirst;
-      const firstLaunch = new Promise((resolve) => { settleFirst = resolve; });
-      const secondLaunch = new Promise(() => {});
 
-      first.el.aupCheckoutPromise = firstLaunch;
-      second.el.aupCheckoutPromise = secondLaunch;
-      settleFirst();
-      await Promise.resolve();
+      try {
+        first.action.aupHandler({
+          type: 'open',
+          element: first.el,
+          modalId: first.el.dataset.modalId,
+        });
+        second.action.aupHandler({
+          type: 'open',
+          element: second.el,
+          modalId: second.el.dataset.modalId,
+        });
+        first.action.aupHandler({
+          type: 'close',
+          element: first.el,
+          modalId: first.el.dataset.modalId,
+        });
 
-      expect(consumeAupModalTrigger()).to.equal('crm-buy-audition');
+        expect(window.location.hash).to.equal('#crm-buy-audition');
+
+        second.action.aupHandler({
+          type: 'close',
+          element: second.el,
+          modalId: second.el.dataset.modalId,
+        });
+
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        second.action.aupHandler({
+          type: 'close',
+          element: second.el,
+          modalId: second.el.dataset.modalId,
+        });
+        window.history.replaceState(null, '', previousUrl);
+      }
     });
 
     it('applyDexterPromo: applies promo to external modal', () => {

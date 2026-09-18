@@ -907,46 +907,32 @@ const closeModalWithoutEvent = (modalId) => {
 
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
-const trackedAupModalTriggers = new WeakMap();
-let pendingAupModalTrigger;
+let activeAupModalHash;
 
-export function trackAupModalTrigger(element, modalId) {
-  if (!element || !modalId) return;
-  const tracked = trackedAupModalTriggers.get(element);
-  if (tracked) {
-    tracked.modalId = modalId;
-    return;
+function restoreAupModalHash(modalHashState) {
+  if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
+    window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
   }
-
-  const descriptor = Object.getOwnPropertyDescriptor(element, 'aupCheckoutPromise');
-  if (descriptor && !descriptor.configurable) return;
-  const state = {
-    launch: element.aupCheckoutPromise,
-    modalId,
-  };
-  trackedAupModalTriggers.set(element, state);
-  Object.defineProperty(element, 'aupCheckoutPromise', {
-    configurable: true,
-    enumerable: descriptor?.enumerable ?? true,
-    get: () => state.launch,
-    set: (launch) => {
-      state.launch = launch;
-      const triggerModalId = element.dataset.modalId || state.modalId;
-      if (!launch || !triggerModalId) return;
-      const trigger = { launch, modalId: triggerModalId };
-      pendingAupModalTrigger = trigger;
-      const clear = () => {
-        if (pendingAupModalTrigger === trigger) pendingAupModalTrigger = undefined;
-      };
-      Promise.resolve(launch).then(clear, clear);
-    },
-  });
 }
 
-export function consumeAupModalTrigger() {
-  const modalId = pendingAupModalTrigger?.modalId;
-  pendingAupModalTrigger = undefined;
-  return modalId;
+function handleAupModalHash(fallbackModalId, { type, modalId } = {}) {
+  const id = modalId || fallbackModalId;
+  const hash = id ? `#${id}` : '';
+  if (!hash) return;
+
+  if (type === 'open') {
+    restoreAupModalHash(activeAupModalHash);
+    const restoreUrl = window.location.hash === hash
+      ? `${window.location.pathname}${window.location.search}`
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(window.history.state, '', hash);
+    }
+    activeAupModalHash = { hash, restoreUrl };
+  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
+    restoreAupModalHash(activeAupModalHash);
+    activeAupModalHash = undefined;
+  }
 }
 
 export async function updateModalState({ cta, closedByUser } = {}) {
@@ -1117,7 +1103,6 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
-  trackAupModalTrigger(el, hash);
   let url = checkoutLinkConfig[columnName];
 
   if (url?.includes('|') && !el?.isOpen3in1Modal) {
@@ -1139,6 +1124,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    aupHandler: (event) => handleAupModalHash(hash, event),
   };
 }
 
