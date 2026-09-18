@@ -380,6 +380,10 @@ span.feds-footer-privacyLink-divider {
   max-width: 327px;
 }
 
+.global-footer.event .feds-footer-options > .feds-footer-mailingList p {
+  max-width: 211px;
+}
+
 .global-footer.event .feds-footer-options > .feds-footer-contactSupport {
   grid-area: support;
   margin-top: var(--s2a-spacing-lg);
@@ -530,6 +534,10 @@ span.feds-footer-privacyLink-divider {
   }
   .global-footer.event .feds-footer-options > .feds-footer-mailingList {
     max-width: 492px;
+  }
+
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList p {
+    max-width: 384px;
   }
 
 }
