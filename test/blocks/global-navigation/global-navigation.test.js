@@ -13,6 +13,7 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
+import { trackAupModalTrigger } from '../../../libs/utils/aup.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
@@ -436,6 +437,18 @@ describe('global navigation', () => {
     let preload;
     let meta;
     let originalUrl;
+    const createAupTrigger = (modalId, parent = document.body) => {
+      const trigger = document.createElement('a');
+      trigger.href = '#';
+      trigger.dataset.modalId = modalId;
+      trackAupModalTrigger(trigger);
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        trigger.aupCheckoutPromise = new Promise(() => {});
+      });
+      parent.append(trigger);
+      return trigger;
+    };
 
     beforeEach(async () => {
       originalUrl = window.location.href;
@@ -541,38 +554,131 @@ describe('global navigation', () => {
       script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
-      document.body.append(cta);
+      const cta = createAupTrigger('miniplans-buy-lightroom-classic');
+      const unrelatedButton = document.createElement('button');
+      document.body.append(unrelatedButton);
       window.aupsdk = undefined;
       const instance = { updateConfig: sinon.stub().resolves() };
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       const hashchange = sinon.spy();
+      const pushState = sinon.spy(window.history, 'pushState');
+      const replaceState = sinon.spy(window.history, 'replaceState');
       window.addEventListener('hashchange', hashchange);
       try {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
         const workflow = document.createElement('div');
-        cta.focus();
+        cta.click();
+        await Promise.resolve();
+        unrelatedButton.focus();
 
         await showDialog(workflow, {}, sinon.spy());
 
         expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
         expect(hashchange.called).to.be.false;
+        expect(pushState.calledOnce).to.be.true;
         workflow.dispatchEvent(new Event('close'));
         expect(window.location.href).to.equal(originalUrl);
+        expect(pushState.calledOnce).to.be.true;
+        expect(replaceState.calledOnce).to.be.true;
 
         const canceledWorkflow = document.createElement('div');
-        cta.focus();
+        cta.click();
+        await Promise.resolve();
         await showDialog(canceledWorkflow, {}, sinon.spy());
         canceledWorkflow.dispatchEvent(new Event('cancel'));
         canceledWorkflow.dispatchEvent(new Event('close'));
 
         expect(window.location.href).to.equal(originalUrl);
         expect(hashchange.called).to.be.false;
+        expect(pushState.callCount).to.equal(2);
+        expect(replaceState.callCount).to.equal(2);
       } finally {
         window.removeEventListener('hashchange', hashchange);
+        cta.remove();
+        unrelatedButton.remove();
+        script.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
+        document.documentElement.classList.remove('disable-scroll');
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('closes the active AUP dialog when browser history leaves its modal hash', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const cta = createAupTrigger('miniplans-buy-lightroom-classic');
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        const workflow = document.createElement('div');
+        const cancel = sinon.spy();
+        const closeCallback = sinon.spy();
+        workflow.addEventListener('cancel', cancel);
+        cta.click();
+        await Promise.resolve();
+        await showDialog(workflow, {}, closeCallback);
+
+        const popped = new Promise((resolve) => {
+          window.addEventListener('popstate', resolve, { once: true });
+        });
+        window.history.back();
+        await popped;
+
+        expect(cancel.calledOnce).to.be.true;
+        expect(closeCallback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+        expect(document.getElementById('aup-workflow-dialog')).to.be.null;
+        expect(window.location.href).to.equal(originalUrl);
+      } finally {
+        cta.remove();
+        script.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
+        document.documentElement.classList.remove('disable-scroll');
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('preserves a matching modal hash that existed before the AUP dialog opened', async () => {
+      preload.restore();
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      const modalId = 'miniplans-buy-lightroom-classic';
+      const cta = createAupTrigger(modalId);
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      window.history.replaceState(window.history.state, '', `#${modalId}`);
+      const pushState = sinon.spy(window.history, 'pushState');
+      const replaceState = sinon.spy(window.history, 'replaceState');
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        const workflow = document.createElement('div');
+        cta.click();
+        await Promise.resolve();
+        await showDialog(workflow, {}, sinon.spy());
+        workflow.dispatchEvent(new Event('close'));
+
+        expect(window.location.hash).to.equal(`#${modalId}`);
+        expect(pushState.called).to.be.false;
+        expect(replaceState.called).to.be.false;
+      } finally {
         cta.remove();
         script.remove();
         document.getElementById('aup-workflow-dialog')?.remove();
@@ -591,10 +697,7 @@ describe('global navigation', () => {
       script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
-      document.body.append(cta);
+      const cta = createAupTrigger('miniplans-buy-lightroom-classic');
       setConfig({
         codeRoot: '/missing-aup-dialog-dependencies',
         imsClientId: 'test-client',
@@ -606,7 +709,8 @@ describe('global navigation', () => {
       try {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-        cta.focus();
+        cta.click();
+        await Promise.resolve();
         const error = await showDialog(
           document.createElement('iframe'),
           {},
@@ -634,10 +738,7 @@ describe('global navigation', () => {
       script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'first-modal';
-      document.body.append(cta);
+      const cta = createAupTrigger('first-modal');
       window.aupsdk = undefined;
       const instance = { updateConfig: sinon.stub().resolves() };
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
@@ -645,16 +746,16 @@ describe('global navigation', () => {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
         const firstWorkflow = document.createElement('div');
-        const replacementTrigger = document.createElement('button');
-        replacementTrigger.dataset.modalId = 'second-modal';
-        firstWorkflow.append(replacementTrigger);
+        const replacementTrigger = createAupTrigger('second-modal', firstWorkflow);
         const removeListener = sinon.spy(firstWorkflow, 'removeEventListener');
         const firstCallback = sinon.spy();
-        cta.focus();
+        cta.click();
+        await Promise.resolve();
         await showDialog(firstWorkflow, {}, firstCallback);
         expect(window.location.hash).to.equal('#first-modal');
 
-        replacementTrigger.focus();
+        replacementTrigger.click();
+        await Promise.resolve();
         const secondWorkflow = document.createElement('div');
         const secondCallback = sinon.spy();
         await showDialog(secondWorkflow, {}, secondCallback);

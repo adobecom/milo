@@ -4,6 +4,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { trackAupModalTrigger } from '../../utils/aup.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
@@ -1518,6 +1519,7 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  trackAupModalTrigger(cta);
   if (isMasGeoDetectionEnabled() && service.settings.country) {
     const country = await resolveCheckoutCountry(service);
     if (country) cta.setAttribute('data-ims-country', country);

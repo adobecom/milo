@@ -17,6 +17,7 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
+import { consumeAupModalTrigger } from '../../utils/aup.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -1152,7 +1153,7 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
-        const modalId = document.activeElement?.getAttribute('data-modal-id');
+        const modalId = consumeAupModalTrigger();
         const modalHash = modalId ? `#${modalId}` : '';
         const isIframe = element.tagName === 'IFRAME';
         if (isIframe) {
@@ -1167,21 +1168,27 @@ class Gnav {
         let closeDialog;
         let onDialogCancel;
         let onDialogClick;
-        let restoreUrl;
+        let onPopState;
+        let restoreLocation;
         let isTornDown = false;
-        const teardown = (restoreHash = true) => {
+        const teardown = () => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
           element.removeEventListener('close', closeDialog);
           dialog?.removeEventListener('cancel', onDialogCancel);
           dialog?.removeEventListener('click', onDialogClick);
+          window.removeEventListener('popstate', onPopState);
           if (dialog?.open) dialog.close();
           dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
           if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
-          if (restoreHash && restoreUrl && window.location.hash === modalHash) {
-            window.history.pushState(window.history.state, '', restoreUrl);
+          if (restoreLocation && window.location.hash === modalHash) {
+            window.history.replaceState(
+              restoreLocation.state,
+              '',
+              restoreLocation.url,
+            );
           }
         };
         closeDialog = () => {
@@ -1200,6 +1207,9 @@ class Gnav {
         };
         onDialogClick = (e) => {
           if (e.target === dialog) cancel();
+        };
+        onPopState = () => {
+          if (modalHash && window.location.hash !== modalHash) cancel();
         };
         try {
           dialog = document.createElement('dialog');
@@ -1224,17 +1234,16 @@ class Gnav {
           element.addEventListener('close', closeDialog, { once: true });
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
+          window.addEventListener('popstate', onPopState);
           teardownActiveDialog = teardown;
           document.documentElement.classList.add('disable-scroll');
           dialog.showModal();
-          if (modalHash) {
-            const previousUrl = window.location.hash === modalHash
-              ? `${window.location.pathname}${window.location.search}`
-              : `${window.location.pathname}${window.location.search}${window.location.hash}`;
-            if (window.location.hash !== modalHash) {
-              window.history.pushState(window.history.state, '', modalHash);
-            }
-            restoreUrl = previousUrl;
+          if (modalHash && window.location.hash !== modalHash) {
+            restoreLocation = {
+              state: window.history.state,
+              url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            };
+            window.history.pushState(window.history.state, '', modalHash);
           }
         } catch (e) {
           teardown();
