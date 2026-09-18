@@ -11,12 +11,11 @@ function decorateMasField(cardContent) {
     const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
     if (classes) masField.classList.add(...classes);
   });
-  const priceParent = cardContent.querySelector(':has(> .mas-price)');
+  const priceParent = cardContent.querySelector('.mas-price')?.parentElement;
   const commitmentEl = priceParent?.nextElementSibling;
-  if (commitmentEl?.matches('p') && commitmentEl.children.length === 0 && commitmentEl.textContent.trim()) {
-    priceParent.append(commitmentEl);
-    commitmentEl.classList.add('mas-price-commitment');
-  }
+  if (!commitmentEl?.matches('p') || commitmentEl.children.length || !commitmentEl.textContent.trim()) return;
+  priceParent.append(commitmentEl);
+  commitmentEl.classList.add('mas-price-commitment');
 }
 
 function parseLeftColumn(col) {
@@ -26,10 +25,10 @@ function parseLeftColumn(col) {
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('heading-super');
 
-  const allTextEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+  const bodyEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
     .filter((el) => el !== heading && el.textContent.trim());
 
-  return { iconEl, heading, bodyEls: allTextEls };
+  return { iconEl, heading, bodyEls };
 }
 
 function buildChicletRow(iconEl, heading) {
@@ -70,11 +69,10 @@ function toSubtext(el) {
     el.classList.add('pm-subtext');
     return el;
   }
-  const p = createTag('p', null, el.innerHTML);
-  p.className = el.className;
-  p.classList.add('pm-subtext', `heading-${level}`);
-  if (el.id) p.id = el.id;
-  return p;
+  return createTag('p', {
+    class: [el.className, 'pm-subtext', `heading-${level}`].filter(Boolean).join(' '),
+    ...(el.id && { id: el.id }),
+  }, el.innerHTML);
 }
 
 function decorate(block, blockEl = block) {
