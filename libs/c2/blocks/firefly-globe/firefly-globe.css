@@ -91,7 +91,7 @@
 
 @media (width >= 768px) {
   .firefly-globe {
-    --fg-runway-height: 333vh;
+    --fg-runway-height: 340vh;
     --fg-copy-pad: var(--s2a-spacing-3xl);
     --fg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -253,7 +253,8 @@
   --fg-pq-pad-block: var(--fg-copy-pad);
   --fg-pq-copy-rise: 14px;
   --fg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
-  --fg-pq-line-wave: calc(100% / 3);
+  --fg-pq-line-wave: 20%;
+  --fg-pq-line-fade-from: 0.6;
   --fg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --fg-pq-rule-color: var(--s2a-color-gray-800);
 
@@ -330,23 +331,17 @@
   mask-size: 51% 100%;
 }
 
-/* Each line's arrival is one 0..1 var written per frame, already eased and staggered in JS; the 1
-   fallbacks are the rest state. Opening mark is outdented by authoring.js; `hanging-punctuation`
-   deliberately unused. See README. */
+/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
+   README. */
 .firefly-globe-pullquote-quote {
-  opacity: var(--fg-pq-copy-q, 1);
-  transform: translateY(calc(var(--fg-pq-copy-rise) * (1 - var(--fg-pq-copy-q, 1))));
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
-/* Written by the split; an unsplit quote keeps the plain flow and the fade/rise below. Flex so the
-   lines' negative bleed margins meet without collapsing. */
+/* Written by the split. Flex so the lines' negative bleed margins meet without collapsing. */
 .firefly-globe-pullquote-lines {
   display: flex;
   flex-direction: column;
-  opacity: 1;
-  transform: none;
 }
 
 /* One mask per rendered line, so each rolls up into place from under it. JS writes
@@ -354,6 +349,9 @@
 .firefly-globe-pullquote-line {
   display: block;
   overflow: hidden;
+  transform: translate3d(0, calc(
+    (1 - var(--fg-pq-line-v, 1)) * var(--fg-pq-line-rank, 0) * var(--fg-pq-line-wave)
+  ), 0);
 
   /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
   padding: var(--fg-pq-line-bleed) var(--fg-hang-max);
@@ -362,10 +360,11 @@
 
 .firefly-globe-pullquote-line-inner {
   display: inline-block;
-  transform: translate3d(0, calc(
-    (1 - var(--fg-pq-line-v, 1))
-    * (var(--fg-pq-line-start) + var(--fg-pq-line-rank, 0) * var(--fg-pq-line-wave))
-  ), 0);
+  opacity: calc(
+    var(--fg-pq-line-fade-from)
+    + (1 - var(--fg-pq-line-fade-from)) * var(--fg-pq-line-o, 1)
+  );
+  transform: translate3d(0, calc((1 - var(--fg-pq-line-v, 1)) * var(--fg-pq-line-start)), 0);
 }
 
 .firefly-globe-pullquote-sr {
@@ -421,16 +420,12 @@
   mask-image: none;
 }
 
-/* Full reveal. The copy needs no override: updatePullQuote returns early, so its vars stay unset
-   at their 1 fallback. */
-.firefly-globe-reduced .firefly-globe-pullquote-quote,
-.firefly-globe-reduced .firefly-globe-pullquote-name,
-.firefly-globe-reduced .firefly-globe-pullquote-role {
-  transition: none;
-}
-
 /* RM can be toggled after the lines already carry a written progress var. */
-.firefly-globe-reduced .firefly-globe-pullquote-line-inner { transform: none; }
+.firefly-globe-reduced .firefly-globe-pullquote-line,
+.firefly-globe-reduced .firefly-globe-pullquote-line-inner {
+  opacity: 1;
+  transform: none;
+}
 
 .firefly-globe-modal {
   position: fixed;

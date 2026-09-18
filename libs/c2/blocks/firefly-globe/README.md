@@ -95,18 +95,33 @@ sliding up during the last cards.
 
 ### Pull-quote copy reveal
 
-`PQ_REVEAL_IN_MS` is the whole sweep. `PQ_DRAW_*`, `PQ_COPY_LAG` and the line timings are shares of
+`PQ_REVEAL_IN_MS` is the whole sweep. `PQ_DRAW_*`, `PQ_COPY_PARTS` and the line timings are shares of
 it, so it is the one knob for overall pace. `PQ_REVEAL_OUT_MS` is the scroll-back exit and is
 absolute, not a share.
 
 Lines are staggered by `PQ_COPY_LINE_STAGGER` of the sweep, capped at `PQ_COPY_LINE_LAG_MAX` for the
 last line, so every line is in flight at once rather than arriving in turn.
 
-The wave is distance, not timing. A line waits `--fg-pq-line-start + rank × --fg-pq-line-wave` below
-its mask, rank being its index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank`
-on each split. Lower lines cover more ground in the same window, so the visible gap between lines
-widens down the stack mid-flight and closes to the authored line-height as they land. Raise
-`--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
+Each line carries two vars: `--fg-pq-line-v` for position and `--fg-pq-line-o` for opacity. Position
+is `easeOutQuart` over `lag → lag + span`; opacity is linear over `lag → 1`, the same window the name
+and role use. The fade must not be an ease-out: that spends its range while the line is still clipped
+by its mask, so the line is opaque before it clears and the fade cannot be seen. CSS maps that
+progress onto `--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from nothing;
+that floor, not the curve, is the knob with real visual authority.
+The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
+`PQ_COPY_PARTS` and the `--fg-pq-copy-rise` lift apply to the name and role only.
+
+The wave is distance, not timing, and it rides on the mask box rather than the glyphs. Every line's
+inner span waits the same `--fg-pq-line-start` below its mask, so every line starts revealing as soon
+as its own clock does. The mask itself is offset by `rank × --fg-pq-line-wave`, rank being the line's
+index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank` on each split. A mask
+carries its clip rect with it, so that offset opens the gap without changing how much of the line
+shows: the spacing widens down the stack mid-flight and closes to the authored line-height on
+landing.
+
+Keep the wave off `--fg-pq-line-start`. A line is wholly hidden while its offset exceeds its own
+height, so adding the wave there delays the lower lines' first appearance and the reveal reads line
+by line. Raise `--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
 
 ## Tuning the scroll budget
 
@@ -178,6 +193,10 @@ instead of propagating to the viewport, which makes `body` a scroll container an
 
 Same contract as globe-gallery: `.firefly-globe-reduced` un-sticks `.firefly-globe-world` and leaves
 it at `height: 100vh`. `worldEl.offsetHeight` is the one viewport height every clock reads.
+
+The pull-quote copy needs no override to show in full: `updatePullQuote` returns early, so its
+progress vars stay unset at their `1` fallbacks. The line rules are the exception — RM can be
+toggled after a value has already been written, so they reset `opacity` and `transform` explicitly.
 
 ## Tests
 
