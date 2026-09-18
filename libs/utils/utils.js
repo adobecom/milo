@@ -2313,7 +2313,7 @@ export function preloadLcpCodeFiles(area = document) {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
-  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
@@ -2329,8 +2329,12 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
+  [].concat(externalLibs ?? []).forEach((lib) => {
+    if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
+  });
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+    .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
