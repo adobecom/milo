@@ -2546,7 +2546,7 @@ async function loadPostLCP(config) {
         '.ot-sdk-container',
         'div[data-testid="main-content-area"]',
       ];
-      // Drive rAF manually , pause when idle, save on CPU work
+      // Drive rAF manually so it pauses when idle and saves CPU
       window.lenis = new window.Lenis({
         autoRaf: false,
         lerp,

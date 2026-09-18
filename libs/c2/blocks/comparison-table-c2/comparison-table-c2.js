@@ -598,6 +598,7 @@ function setupCollapsingHeader(el) {
     resizeRafPending = true;
     requestAnimationFrame(() => {
       resizeRafPending = false;
+      syncTop();
       removeCollapsed();
     });
   });

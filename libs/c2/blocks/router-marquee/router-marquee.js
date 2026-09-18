@@ -727,8 +727,8 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       clearTimeout(fallbackTimer);
       beginAutoplay();
     };
-    heroVideo.requestVideoFrameCallback(() => kick());
-    ['error', 'stalled', 'loadeddata'].forEach((ev) => {
+    heroVideo.requestVideoFrameCallback(kick);
+    ['error', 'loadeddata'].forEach((ev) => {
       heroVideo.addEventListener(ev, kick, { once: true });
     });
     fallbackTimer = setTimeout(kick, FIRST_FRAME_FALLBACK_MS);
