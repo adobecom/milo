@@ -290,6 +290,7 @@
   overflow: clip;
   contain: paint;
   border-radius: var(--s2a-border-radius-md);
+  background-color: var(--s2a-color-gray-1000);
 }
 
 .hub-hero-carousel-item-media {
@@ -938,7 +939,13 @@
 
   .hub-hero-carousel-item-container {
     position: relative;
-    background-color: var(--s2a-color-gray-1000);
+    /* background-color moved to .hub-hero-carousel-item-media-mask (see
+       above) -- this element can't safely have its own clip-path/overflow
+       (the header/footer need to render outside its bounds via negative
+       offsets), so its background isn't reliably scoped to the card's true
+       width during the reveal animation and was visibly leaking past the
+       card into neighboring slides. The mask is already correctly clipped
+       to the exact same shape as the photo. */
     border-radius: var(--s2a-border-radius-md);
     justify-content: unset;
     transform-origin: top center;
@@ -1629,7 +1636,7 @@
     clip-path: inset(0 var(--carousel-grow-inset));
   }
 
-  65% {
+  45% {
     clip-path: inset(0);
   }
 
@@ -1648,7 +1655,7 @@
     clip-path: inset(0 var(--carousel-grow-inset) round var(--s2a-border-radius-md));
   }
 
-  65% {
+  45% {
     clip-path: inset(0 round var(--s2a-border-radius-md));
   }
 
