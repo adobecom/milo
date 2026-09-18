@@ -1414,10 +1414,15 @@ span.hang-opening-quote {
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
     --gd-bg-shift: calc((100vh + 100vh) * 0.06);
-    --gd-section-shift: -10vh;
-    animation: garage-door-section-parallax ease-out both;
+    --gd-section-shift: clamp(-100px, -16vh, -60px);
+    animation: garage-door-section-parallax var(--parallax-easing) both;
     animation-timeline: view();
     animation-range: entry 0% cover 64%;
+
+    /* Mobile/tablet: shallower cap, same viewport-relative curve */
+    @media (width < 1280px) {
+      --gd-section-shift: clamp(-60px, -16vh, -40px);
+    }
 
     .section-background {
       overflow: hidden;
