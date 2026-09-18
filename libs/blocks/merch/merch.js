@@ -915,13 +915,30 @@ function restoreAupModalHash(modalHashState) {
   }
 }
 
+function clearAupModalHash(modalHashState) {
+  if (!modalHashState) return;
+  if (activeAupModalHash === modalHashState) activeAupModalHash = undefined;
+  restoreAupModalHash(modalHashState);
+}
+
+export function getAupModalHashCleanup() {
+  const modalHashState = activeAupModalHash;
+  if (!modalHashState) return undefined;
+  let cleaned = false;
+  return () => {
+    if (cleaned) return;
+    cleaned = true;
+    clearAupModalHash(modalHashState);
+  };
+}
+
 function handleAupModalHash(fallbackModalId, { type, element } = {}) {
   const id = element?.dataset.modalId || fallbackModalId;
   const hash = id ? `#${id}` : '';
   if (!hash) return;
 
   if (type === 'open') {
-    restoreAupModalHash(activeAupModalHash);
+    clearAupModalHash(activeAupModalHash);
     const restoreUrl = window.location.hash === hash
       ? `${window.location.pathname}${window.location.search}`
       : `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -930,8 +947,7 @@ function handleAupModalHash(fallbackModalId, { type, element } = {}) {
     }
     activeAupModalHash = { hash, restoreUrl };
   } else if (type === 'close' && activeAupModalHash?.hash === hash) {
-    restoreAupModalHash(activeAupModalHash);
-    activeAupModalHash = undefined;
+    clearAupModalHash(activeAupModalHash);
   }
 }
 

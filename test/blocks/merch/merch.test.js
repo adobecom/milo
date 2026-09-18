@@ -37,6 +37,7 @@ import merch, {
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
+  getAupModalHashCleanup,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1546,6 +1547,37 @@ describe('Merch Block', () => {
       }
     });
 
+    it('getModalAction: provides hash cleanup for the host AUP dialog', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+
+      try {
+        action.aupHandler({ type: 'open', element: el });
+        const cleanup = getAupModalHashCleanup();
+
+        expect(cleanup).to.be.a('function');
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+
+        cleanup();
+        cleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        action.aupHandler({ type: 'close', element: el });
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
     it('getModalAction: ignores a stale AUP close after a replacement opens', async () => {
       const previousUrl = window.location.href;
       fetchCheckoutLinkConfigs.promise = undefined;
@@ -1568,10 +1600,13 @@ describe('Merch Block', () => {
           type: 'open',
           element: first.el,
         });
+        const firstCleanup = getAupModalHashCleanup();
         second.action.aupHandler({
           type: 'open',
           element: second.el,
         });
+        const secondCleanup = getAupModalHashCleanup();
+        firstCleanup();
         first.action.aupHandler({
           type: 'close',
           element: first.el,
@@ -1579,10 +1614,7 @@ describe('Merch Block', () => {
 
         expect(window.location.hash).to.equal('#crm-buy-audition');
 
-        second.action.aupHandler({
-          type: 'close',
-          element: second.el,
-        });
+        secondCleanup();
 
         expect(window.location.href).to.equal(previousUrl);
       } finally {
