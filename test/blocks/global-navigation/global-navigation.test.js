@@ -13,7 +13,12 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import {
+  isDesktop,
+  isTangentToViewport,
+  resolveAupEnvironment,
+  toFragment,
+} from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
@@ -527,11 +532,16 @@ describe('global navigation', () => {
       ];
 
       cases.forEach(({ location, environment }) => {
-        expect(gnav.constructor.getAupEnvironment('stage', location)).to.equal(environment);
+        const commerceEnvironment = new URLSearchParams(location.search).get('commerce.env');
+        expect(resolveAupEnvironment(
+          'stage',
+          location.hostname,
+          commerceEnvironment,
+        )).to.equal(environment);
       });
     });
 
-    it('passes the resolved Commerce and CDN environments to the SDK', async () => {
+    it('passes the Commerce and CDN environments to the SDK', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;
       const previousSdkFactory = window.AUPSDK;
@@ -543,11 +553,10 @@ describe('global navigation', () => {
       const instance = { updateConfig: sinon.stub().resolves() };
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
       try {
-        sinon.stub(gnav.constructor, 'getAupEnvironment').returns('prod');
         window.aupsdk = undefined;
         await gnav.constructor.preloadAupSdk();
         expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
-          environment: 'prod',
+          environment: 'stage',
           cdnEnvironment: 'stage',
         });
       } finally {

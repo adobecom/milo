@@ -114,6 +114,7 @@ const {
   KEYBOARD_DELAY,
   isSmallScreen,
   updateGnavActiveLink,
+  resolveAupEnvironment,
 } = utilities;
 
 export { updateGnavActiveLink };
@@ -1124,17 +1125,16 @@ class Gnav {
     await this.decorateProfile();
   };
 
-  static getAupEnvironment = (cdnEnvironment, location = window.location) => (
-    location.hostname === 'www.stage.adobe.com'
-      ? new URLSearchParams(location.search).get('commerce.env') || 'prod'
-      : cdnEnvironment
-  );
-
   static preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
     const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const environment = this.getAupEnvironment(cdnEnvironment);
+    const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
+    const environment = resolveAupEnvironment(
+      cdnEnvironment,
+      window.location.hostname,
+      commerceEnvironment,
+    );
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
