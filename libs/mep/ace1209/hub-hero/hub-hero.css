@@ -658,13 +658,15 @@
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
-    visibility: hidden;
     will-change: transform;
     animation: hubHeroGridCarouselSlideHover ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
 
+  .hub-hero:not(.slides-3) .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
+    visibility: hidden;
+  }
   .hub-hero:not(.slides-3) .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) img {
     width: 100%;
     object-fit: none;
@@ -754,8 +756,10 @@
     padding-bottom: calc(var(--slide-footer-h) / 2);
   }
 
-  .hub-hero-carousel-container {
+  .hub-hero:not(.slides-3) .hub-hero-carousel-container {
     margin-top: var(--elastic-mobile-first-slide-offset);
+  }
+  .hub-hero-carousel-container {
     height: 100%;
     position: relative;
     flex-direction: column;
