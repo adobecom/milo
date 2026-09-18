@@ -65,18 +65,24 @@ async function createJsonLd(el, options) {
   const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
-  await checkReady(merchCard, options.fragment);
-  const fragmentEl = merchCard.querySelector('aem-fragment');
-  const fields = fragmentEl?.data?.fields;
-  const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
-    ?? merchCard.querySelector('[is="inline-price"]:not([data-template="strikethrough"]):not([data-template="legal"])');
-  const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
-  const offer = priceEl?.value?.[0];
-  const regularOffer = strikethroughEl?.value?.[0];
-  const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
-  injectJsonLd(fields, offer, regularOffer, document.location.href);
-  merchCard.remove();
-  el.remove();
+  // JSON-LD failures must not expose the authored Studio link.
+  try {
+    await checkReady(merchCard, options.fragment);
+    const fragmentEl = merchCard.querySelector('aem-fragment');
+    const fields = fragmentEl?.data?.fields;
+    const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
+      ?? merchCard.querySelector('[is="inline-price"]:not([data-template="strikethrough"]):not([data-template="legal"])');
+    const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
+    const offer = priceEl?.value?.[0];
+    const regularOffer = strikethroughEl?.value?.[0];
+    const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
+    injectJsonLd(fields, offer, regularOffer, document.location.href);
+  } catch (e) {
+    window.lana?.log(`Failed to inject JSON-LD: ${e.message}`, { tags: 'merch-card-autoblock', severity: 'info' });
+  } finally {
+    merchCard.remove();
+    el.remove();
+  }
 }
 
 export async function createCard(el, options) {
