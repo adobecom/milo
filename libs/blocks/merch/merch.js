@@ -907,6 +907,33 @@ const closeModalWithoutEvent = (modalId) => {
 
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
+let activeAupModalHash;
+
+function restoreAupModalHash(modalHashState) {
+  if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
+    window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
+  }
+}
+
+function handleAupModalHash(fallbackModalId, { type, modalId } = {}) {
+  const id = modalId || fallbackModalId;
+  const hash = id ? `#${id}` : '';
+  if (!hash) return;
+
+  if (type === 'open') {
+    restoreAupModalHash(activeAupModalHash);
+    const restoreUrl = window.location.hash === hash
+      ? `${window.location.pathname}${window.location.search}`
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(window.history.state, '', hash);
+    }
+    activeAupModalHash = { hash, restoreUrl };
+  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
+    restoreAupModalHash(activeAupModalHash);
+    activeAupModalHash = undefined;
+  }
+}
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
@@ -1097,6 +1124,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    aupHandler: (event) => handleAupModalHash(hash, event),
   };
 }
 
