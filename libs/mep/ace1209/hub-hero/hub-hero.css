@@ -396,6 +396,13 @@
   min-width: unset;
   max-width: unset;
   z-index: 1;
+  /* This picture wrapper inherits border-radius (and overflow: clip) from
+     the general .hub-hero-carousel-item-media picture rule, meant for the
+     real photo. Slide 1's media has a visible border-radius, so the badge's
+     own tall/narrow wrapper became a rounded clip box too, biting into the
+     18x18 icon sitting in its corner. The icon needs square corners here
+     regardless of the photo's rounding. */
+  border-radius: 0;
 }
 
 .hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img,
@@ -500,6 +507,18 @@
         animation-timeline: --hub-hero;
         animation-range: entry 100% exit 100%;
       }
+    }
+
+    /* Only slide 1 has the rounded, overflow:clip mask wrapping its media
+       (see .hub-hero-carousel-item-media-mask) -- every other slide's badge
+       sits at the default icon-padding inset (12px), which is fine since
+       nothing there clips it. Slide 1's mask corner radius (16px) is bigger
+       than that inset, so the badge's own square corner falls inside the
+       mask's rounded-corner arc and gets visibly bitten into. Push the
+       badge out to the radius itself so it clears the arc entirely. */
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media picture:nth-child(2) {
+      top: var(--s2a-border-radius-md);
+      left: var(--s2a-border-radius-md);
     }
 
     .hub-hero-carousel-item:nth-child(2) {
