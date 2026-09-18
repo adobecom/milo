@@ -1463,6 +1463,7 @@ span.hang-opening-quote {
   .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
     display: grid;
     grid-template-rows: auto auto;
+    z-index: 1;
 
     &.has-background {
       height: auto;
