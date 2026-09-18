@@ -277,18 +277,12 @@
   transition: color .1s var(--paralax-easing);
 }
 
-/* Wraps .hub-hero-carousel-item-media. Confirmed in real Chrome (not
-   reproducible in automated testing) that no clipping technique
-   (overflow: hidden/clip, border-radius, clip-path, contain: paint)
-   reliably rounds an element whose own box is being resized by a live
-   scroll-driven animation (slide 1's animated aspect-ratio) -- every
-   *other* slide, none of which animate their own box size, rounds fine
-   with the exact same properties. This wrapper is never itself animated
-   or resized by anything, so it isn't subject to that bug; it just
-   auto-sizes to whatever its (animated) child currently measures. */
+/* Wraps .hub-hero-carousel-item-media. This wrapper is never itself
+   animated or resized by anything, so it isn't subject to the Chrome
+   clipping bug described on the nth-child(1) rules below; it just
+   auto-sizes to whatever its child currently measures. */
 .hub-hero-carousel-item-media-mask {
   overflow: clip;
-  contain: paint;
   border-radius: var(--s2a-border-radius-md);
   background-color: var(--s2a-color-gray-1000);
 }
@@ -296,7 +290,6 @@
 .hub-hero-carousel-item-media {
   text-align: center;
   overflow: clip;
-  contain: paint;
   max-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
   display: flex;
   align-items: center;
@@ -309,7 +302,6 @@
   height: 100%;
   width: 100%;
   overflow: clip;
-  contain: paint;
   border-radius: inherit;
 }
 
@@ -511,6 +503,15 @@
          case Safari doesn't honor the round() part of clip-path here. */
       border-radius: var(--s2a-border-radius-md);
       clip-path: inset(0 round var(--s2a-border-radius-md));
+      /* contain: paint here (and on the mask below) is scoped to slide 1
+         only -- it was previously on the general/unconditional rules,
+         which meant every slide got it even though only slide 1 (whose own
+         box is resized by the animation below) needed it. contain: paint
+         on a descendant of an actively transform-animated ancestor
+         (elasticItemsShrink's scale, present on every slide's container)
+         appears to cause a dynamic crop -- removing it from slides that
+         don't need it avoids that. */
+      contain: paint;
       animation: slideOneMediaAspect ease both;
       animation-timeline: --hub-hero;
       animation-range: entry 100% exit 100%;
@@ -526,6 +527,7 @@
        instead of the shared mask's sharp one. */
     @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
       .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media-mask {
+        contain: paint;
         animation: mediaMaskGrowInSafariClip ease forwards;
         animation-timeline: --hub-hero;
         animation-range: entry 100% exit 100%;
@@ -1636,7 +1638,7 @@
     clip-path: inset(0 var(--carousel-grow-inset));
   }
 
-  45% {
+  40% {
     clip-path: inset(0);
   }
 
@@ -1652,10 +1654,14 @@
    (unrounded, wrong-scale-to-round) container mask above it. */
 @keyframes mediaMaskGrowInSafariClip {
   0% {
-    clip-path: inset(0 var(--carousel-grow-inset) round var(--s2a-border-radius-md));
+    /* top-anchored vertically (only the bottom is inset, by 2x the
+       horizontal per-side amount) so the initial box looks like a
+       proportioned 3:4-ish card instead of the full (very tall)
+       aspect-ratio: 0.78 height rendered at an already-narrow width */
+    clip-path: inset(0 var(--carousel-grow-inset) calc(var(--carousel-grow-inset) * 2) var(--carousel-grow-inset) round var(--s2a-border-radius-md));
   }
 
-  45% {
+  40% {
     clip-path: inset(0 round var(--s2a-border-radius-md));
   }
 
