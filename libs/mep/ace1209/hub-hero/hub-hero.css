@@ -279,7 +279,13 @@
 
 .hub-hero-carousel-item-media {
   text-align: center;
-  overflow: hidden;
+  /* overflow: clip (not hidden) + contain: paint forces real paint
+     containment instead of relying on compositor clipping, which is
+     unreliable in Chrome on an element whose box is actively resized by a
+     scroll-driven animation (confirmed: overflow: hidden computed
+     correctly here but rendered square corners in real Chrome). */
+  overflow: clip;
+  contain: paint;
   max-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
   display: flex;
   align-items: center;
@@ -291,7 +297,8 @@
   display: block;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow: clip;
+  contain: paint;
   border-radius: inherit;
 }
 
