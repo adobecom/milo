@@ -515,6 +515,22 @@
       animation-range: entry 100% exit 100%;
     }
 
+    /* iOS Safari only: the shared .hub-hero-carousel-container clip
+       (carouselMobileContainerExpandSafariClip, unrounded -- see its
+       comment) is what's actually visible cropping slide 1 during its
+       0%-75% reveal, not slide 1's own edge, so slide 1's rounding never
+       showed until the shared clip fully opened. Give slide 1's mask its
+       own matching horizontal reveal, but WITH rounding, so its own
+       (tighter, rounded) edge is what's visually binding throughout,
+       instead of the shared mask's sharp one. */
+    @supports (-webkit-touch-callout: none) or (not (-moz-appearance: none)) {
+      .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media-mask {
+        animation: mediaMaskGrowInSafariClip ease forwards;
+        animation-timeline: --hub-hero;
+        animation-range: entry 100% exit 100%;
+      }
+    }
+
     .hub-hero-carousel-item:nth-child(2) {
       --stack-contrast: .75;
     }
@@ -1619,6 +1635,25 @@
 
   100% {
     clip-path: inset(0);
+  }
+}
+
+/* Same horizontal reveal as carouselMobileContainerExpandSafariClip above,
+   but rounded -- applied to slide 1's own mask (see the nth-child(1)
+   .hub-hero-carousel-item-media-mask rule that references this) so its own
+   rounded edge is what's visible during the reveal, not the shared
+   (unrounded, wrong-scale-to-round) container mask above it. */
+@keyframes mediaMaskGrowInSafariClip {
+  0% {
+    clip-path: inset(0 var(--carousel-grow-inset) round var(--s2a-border-radius-md));
+  }
+
+  75% {
+    clip-path: inset(0 round var(--s2a-border-radius-md));
+  }
+
+  100% {
+    clip-path: inset(0 round var(--s2a-border-radius-md));
   }
 }
 
