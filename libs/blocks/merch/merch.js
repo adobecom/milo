@@ -915,8 +915,8 @@ function restoreAupModalHash(modalHashState) {
   }
 }
 
-function handleAupModalHash(fallbackModalId, { type, modalId } = {}) {
-  const id = modalId || fallbackModalId;
+function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+  const id = element?.dataset.modalId || fallbackModalId;
   const hash = id ? `#${id}` : '';
   if (!hash) return;
 

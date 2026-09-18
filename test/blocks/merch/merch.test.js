@@ -1530,17 +1530,17 @@ describe('Merch Block', () => {
         expect(action.aupHandler).to.be.a('function');
         expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
 
-        action.aupHandler({ type: 'open', element: el, modalId: el.dataset.modalId });
+        action.aupHandler({ type: 'open', element: el });
 
         expect(window.location.hash).to.equal('#crm-buy-illustrator');
         expect(hashchange.called).to.be.false;
 
-        action.aupHandler({ type: 'close', element: el, modalId: el.dataset.modalId });
+        action.aupHandler({ type: 'close', element: el });
 
         expect(window.location.href).to.equal(previousUrl);
         expect(hashchange.called).to.be.false;
       } finally {
-        action.aupHandler({ type: 'close', element: el, modalId: el.dataset.modalId });
+        action.aupHandler({ type: 'close', element: el });
         window.removeEventListener('hashchange', hashchange);
         window.history.replaceState(null, '', previousUrl);
       }
@@ -1567,17 +1567,14 @@ describe('Merch Block', () => {
         first.action.aupHandler({
           type: 'open',
           element: first.el,
-          modalId: first.el.dataset.modalId,
         });
         second.action.aupHandler({
           type: 'open',
           element: second.el,
-          modalId: second.el.dataset.modalId,
         });
         first.action.aupHandler({
           type: 'close',
           element: first.el,
-          modalId: first.el.dataset.modalId,
         });
 
         expect(window.location.hash).to.equal('#crm-buy-audition');
@@ -1585,7 +1582,6 @@ describe('Merch Block', () => {
         second.action.aupHandler({
           type: 'close',
           element: second.el,
-          modalId: second.el.dataset.modalId,
         });
 
         expect(window.location.href).to.equal(previousUrl);
@@ -1593,7 +1589,6 @@ describe('Merch Block', () => {
         second.action.aupHandler({
           type: 'close',
           element: second.el,
-          modalId: second.el.dataset.modalId,
         });
         window.history.replaceState(null, '', previousUrl);
       }
