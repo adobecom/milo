@@ -1,6 +1,8 @@
 import * as THREE from '../three.module.min.js';
 import { createModalMaterial } from './materials.js';
-import { easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt } from './math.js';
+import {
+  easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
+} from './math.js';
 import { escapeHtml, renderParagraphs, hangParagraphs } from './authoring.js';
 /* eslint-disable import/no-relative-packages */
 import { processTrackingLabels } from '../../../../martech/attributes.js';
@@ -253,7 +255,7 @@ export default function createGlobeModal({
     const card = cardOverride || modalCard;
     const camera = getCamera();
     const { W, H } = getViewport();
-    const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
+    const { h: CARD_H_SPHERE } = getCardDims();
     const camZ = camera.position.z;
     const dist = MODAL_CAM_DIST;
 
@@ -266,10 +268,10 @@ export default function createGlobeModal({
       scaleX;
 
     if (isMobile) {
-      // Full-bleed width, top-aligned, square corners; height follows aspect.
-      const cardHPx = W / uAspect;
-      scaleX = W / (CARD_W_SPHERE * pxPerWorld);
-      scaleY = scaleX / sScaleX;
+      // Width-first fit, capped by height so tall portraits never overflow the viewport.
+      const cardHPx = Math.min(W / uAspect, H);
+      scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
+      scaleX = scaleY * sScaleX;
       outPos.set(0, (H / 2 - cardHPx / 2 + skewOffsetPx()) / pxPerWorld, camZ - dist);
     } else {
       // Contain-fit to the viewport minus DT_IMG_MARGIN, aspect kept.
@@ -375,9 +377,10 @@ export default function createGlobeModal({
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
-    const posEl = targetEl.querySelector('.globe-gallery-modal-position');
     const position = cardLabel(authoredNo(i), getCount());
-    if (posEl) posEl.textContent = position;
+    targetEl.querySelectorAll('.globe-gallery-modal-position').forEach((el) => {
+      el.textContent = position;
+    });
     announce(speak ? [meta.name, meta.role, position].filter(Boolean).join('. ') : '');
     const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
     badgesEl.innerHTML = '';
@@ -596,7 +599,7 @@ export default function createGlobeModal({
     if (closeBtn) closeBtn.click(); else close();
   }
 
-  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info';
+  const TAP_KEEP_SEL = 'button, a, .globe-gallery-modal-info, .globe-gallery-modal-counter';
   function backdropTap(touch) {
     const rect = photoRectPx();
     if (!rect) return;
@@ -760,7 +763,7 @@ export default function createGlobeModal({
 
   function resize(w, h) {
     if (!modalRenderer) return;
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const dpr = capDpr();
     if (dpr !== appliedModalDpr) {
       appliedModalDpr = dpr;
       modalRenderer.setPixelRatio(dpr);
@@ -778,7 +781,7 @@ export default function createGlobeModal({
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
-      appliedModalDpr = Math.min(window.devicePixelRatio, 2);
+      appliedModalDpr = capDpr();
       modalRenderer.setPixelRatio(appliedModalDpr);
       modalRenderer.setSize(W, H);
       modalRenderer.setClearColor(0x000000, 0);
@@ -843,6 +846,24 @@ export default function createGlobeModal({
 
     // Follows POINTER type, not the width band, mirroring usesCylinderGeometry.
     const isTouchPrimary = () => !!window.matchMedia?.('(pointer: coarse)').matches;
+
+    let clickStartX = 0;
+    let clickStartY = 0;
+    let clickStartTarget = null;
+    evtRoot.addEventListener('pointerdown', (e) => {
+      clickStartX = e.clientX;
+      clickStartY = e.clientY;
+      clickStartTarget = e.target;
+    });
+
+    evtRoot.addEventListener('click', (e) => {
+      if (isTouchPrimary()) return;
+      if (modalIdx < 0) return;
+      if (e.target !== clickStartTarget) return;
+      if (Math.abs(e.clientX - clickStartX) > AXIS_LOCK_PX
+        || Math.abs(e.clientY - clickStartY) > AXIS_LOCK_PX) return;
+      backdropTap(e);
+    });
 
     // Attach to the dialog, not modalEl — modalEl goes inert under showModal().
     evtRoot.addEventListener('touchstart', (e) => {

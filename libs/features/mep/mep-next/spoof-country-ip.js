@@ -1,0 +1,106 @@
+// `akamaiLocale` spoofs geo for Milo's own resolution but not for Adobe Target,
+// which resolves geo from the real request IP at the Edge. Emitting a matching
+// IP via Target's `mboxOverride.browserIp` QA param keeps both in sync. Values
+// are representative addresses inside each country's allocated block.
+export const COUNTRY_BROWSER_IP = {
+  US: '11.255.255.254',
+  GB: '5.10.159.255',
+  AU: '1.0.0.255',
+  NZ: '14.1.58.255',
+  CA: '23.91.159.255',
+  FR: '2.15.255.255',
+  DE: '2.247.255.255',
+  JP: '1.0.31.255',
+  AT: '37.143.191.254',
+  BE: '2.22.55.255',
+  BG: '5.32.135.255',
+  BR: '139.82.255.255',
+  CH: '5.44.112.0',
+  CY: '31.216.127.254',
+  CZ: '5.1.63.255',
+  DK: '2.131.255.255',
+  EE: '5.44.191.255',
+  ES: '5.45.175.255',
+  FI: '5.23.63.255',
+  GR: '2.16.179.255',
+  HU: '5.204.255.254',
+  IE: '5.61.119.255',
+  IT: '5.77.64.0',
+  LT: '5.20.255.255',
+  LU: '80.208.207.255',
+  LV: '5.44.223.255',
+  MT: '37.75.63.255',
+  MX: '8.14.226.255',
+  NL: '2.21.95.255',
+  NO: '2.151.255.255',
+  PL: '5.173.255.254',
+  PT: '2.83.255.255',
+  RO: '5.2.255.255',
+  SE: '2.16.69.255',
+  SI: '5.32.143.255',
+  SK: '5.22.154.255',
+  ZA: '41.66.191.254',
+  HK: '14.136.255.255',
+  IL: '31.210.191.25',
+  IN: '1.187.255.23',
+  KR: '1.201.255.255',
+  TR: '5.47.255.255',
+  RU: '5.8.223.25',
+  CN: '61.28.64.10',
+  TW: '27.51.255.25',
+  HR: '31.217.127.254',
+  RS: '46.240.255.25',
+  UA: '5.105.255.25',
+  BH: '46.184.255.254',
+  EG: '41.65.255.254',
+  SA: '2.91.255.254',
+  KW: '37.34.255.255',
+  LB: '78.108.175.255',
+  OM: '46.40.255.255',
+  QA: '78.101.255.255',
+  AE: '5.38.127.255',
+  YE: '89.189.64.1',
+  DZ: '80.249.79.254',
+  MA: '41.143.255.255',
+  JO: '37.123.95.255',
+  TN: '160.159.255.255',
+  PH: '49.151.255.254',
+  SG: '1.32.191.255',
+  ID: '66.96.255.255',
+  MY: '27.110.95.255',
+  TH: '1.4.255.255',
+  VN: '1.55.255.255',
+  CO: '128.90.108.7',
+  CL: '200.73.20.100',
+  AR: '190.210.180.181',
+  CR: '128.90.107.151',
+  PE: '190.60.30.254',
+  VE: '172.111.133.46',
+  EC: '104.224.10.55',
+  GT: '45.74.17.37',
+  PA: '181.179.127.255',
+  BO: '167.157.255.255',
+  DO: '148.101.255.255',
+  PY: '186.2.239.255',
+  SV: '23.92.127.255',
+  UY: '186.8.255.255',
+  TT: '190.6.239.255',
+  AF: '117.55.207.255',
+  NG: '41.184.255.255',
+  PR: '66.50.255.255',
+};
+
+const BROWSER_IP_PARAM = 'mboxOverride.browserIp';
+
+// akamaiLocale is written lowercase; map keys are uppercase → normalize on lookup.
+export function applyGeoSpoof(searchParams, countryCode) {
+  if (!countryCode) {
+    searchParams.delete('akamaiLocale');
+    searchParams.delete(BROWSER_IP_PARAM);
+    return;
+  }
+  searchParams.set('akamaiLocale', countryCode);
+  const ip = COUNTRY_BROWSER_IP[countryCode.toUpperCase()];
+  if (ip) searchParams.set(BROWSER_IP_PARAM, ip);
+  else searchParams.delete(BROWSER_IP_PARAM);
+}

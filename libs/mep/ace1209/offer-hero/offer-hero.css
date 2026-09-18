@@ -10,7 +10,7 @@
 
   > .section-background {
     overflow: clip;
-    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+    border-radius: 0 0 var(--s2a-border-radius-22) var(--s2a-border-radius-22);
   }
 }
 
@@ -360,6 +360,12 @@
 }
 
 @media (width >= 1280px) {
+  .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
+    > .section-background {
+      border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+    }
+  }
+
   .offer-hero {
     .hero-content {
       padding-inline: 120px;

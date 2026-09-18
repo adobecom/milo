@@ -55,7 +55,8 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
 
   buttons.forEach((button) => {
-    if (button.classList.contains('merch-card-autoblock') && button.classList.contains('link-block')) return;
+    if ((button.classList.contains('merch-card-autoblock') || button.classList.contains('merch'))
+      && button.classList.contains('link-block')) return;
     const parent = button.parentElement;
     if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
@@ -607,6 +608,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
+  if (anchorTag.closest('div')?.querySelector('a.video-transcript-source')) {
+    import('../features/video-transcript/video-transcript.js')
+      .then(({ default: decorateVideoTranscript }) => decorateVideoTranscript(videoEl));
+  }
   anchorTag.remove();
 }
 

@@ -362,7 +362,11 @@ body:has(header.local-nav) .roller-carousel {
       max-width: 1920px;
       margin-inline: auto;
     }
+  }
+}
 
+@media (width >= 1600px) {
+  .roller-carousel {
     .rcc-item {
       font-size: var(--s2a-typography-font-size-super);
       line-height: var(--s2a-typography-line-height-super);

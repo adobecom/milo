@@ -117,6 +117,15 @@ export default async function init(a) {
     const path = !a.href.includes('/federal/') ? url.pathname
       : a.href.replace('#_inline', '');
     mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
+
+    // Lingo rewrote the href with a geo prefix; match the authored originalHref path.
+    if (!mepFrag && a.dataset.mepLingo === 'true' && a.dataset.originalHref) {
+      const { origin } = window.location;
+      const origPath = new URL(a.dataset.originalHref, origin).pathname;
+      const key = Object.keys(mep?.fragments || {})
+        .find((k) => new URL(k, origin).pathname === origPath);
+      if (key) mepFrag = mep.fragments[key];
+    }
   } catch (e) {
     // do nothing
   }
@@ -124,6 +133,15 @@ export default async function init(a) {
     const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
     relHref = handleFragmentCommand(mepFrag, a);
     if (!relHref) return;
+    // Replace wins — drop the lingo link's stale state.
+    ['mepLingo', 'originalHref', 'mepLingoInsert', 'mepLingoRemove',
+      'mepLingoSectionSwap', 'mepLingoBlockSwap', 'mepLingoSkippedQI']
+      .forEach((k) => delete a.dataset[k]);
+    // Replacement is itself a lingo link — resolve it regionally (inherits LCP/skip-QI).
+    if (a.href.includes('#_mep-lingo')) {
+      a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+      relHref = a.href;
+    }
   }
 
   if (a.href.includes('#_inline')) {
