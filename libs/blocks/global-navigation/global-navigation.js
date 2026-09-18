@@ -67,7 +67,11 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const {
+  getAupModalHashCleanup,
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} = merch;
 
 const {
   clearSignOutCookies,
@@ -1137,6 +1141,7 @@ class Gnav {
       { mode: 'async' },
     );
 
+    let teardownActiveDialog;
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1151,55 +1156,86 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
+        const cleanupAupModalHash = getAupModalHashCleanup();
         const isIframe = element.tagName === 'IFRAME';
-        if (isIframe) {
-          await Promise.all([
-            import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-            import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-          ]);
+        try {
+          if (isIframe) {
+            await Promise.all([
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ]);
+          }
+        } catch (e) {
+          cleanupAupModalHash?.();
+          throw e;
         }
-        document.getElementById('aup-workflow-dialog')?.remove();
-        const dialog = document.createElement('dialog');
-        dialog.id = 'aup-workflow-dialog';
+        teardownActiveDialog?.();
+        let dialog;
         let finishLoading;
-        if (isIframe) {
-          const spinner = toFragment`
-            <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
-              <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
-            </sp-theme>`;
-          dialog.classList.add('loading');
-          dialog.appendChild(spinner);
-          finishLoading = () => {
-            element.removeEventListener('load', finishLoading);
-            dialog.classList.remove('loading');
-            spinner.remove();
-          };
-          element.addEventListener('load', finishLoading, { once: true });
-        }
-        dialog.appendChild(element);
-        document.body.appendChild(dialog);
-        element.addEventListener('close', () => {
+        let closeDialog;
+        let onDialogCancel;
+        let onDialogClick;
+        let isTornDown = false;
+        const teardown = () => {
+          if (isTornDown) return;
+          isTornDown = true;
           finishLoading?.();
-          closeCallback({ type: 'close' });
-          dialog.close();
-          dialog.remove();
+          element.removeEventListener('close', closeDialog);
+          dialog?.removeEventListener('cancel', onDialogCancel);
+          dialog?.removeEventListener('click', onDialogClick);
+          if (dialog?.open) dialog.close();
+          dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
-        }, { once: true });
+          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          cleanupAupModalHash?.();
+        };
+        closeDialog = () => {
+          teardown();
+          closeCallback({ type: 'close' });
+        };
         const cancel = () => {
           // The orchestrator settles on cancel; close releases its event listeners.
           element.dispatchEvent(new Event('cancel'));
           element.dispatchEvent(new Event('close'));
         };
-        dialog.addEventListener('cancel', (e) => {
+        onDialogCancel = (e) => {
           if (e.target !== dialog) return;
           e.preventDefault();
           cancel();
-        });
-        dialog.addEventListener('click', (e) => {
+        };
+        onDialogClick = (e) => {
           if (e.target === dialog) cancel();
-        });
-        document.documentElement.classList.add('disable-scroll');
-        dialog.showModal();
+        };
+        try {
+          dialog = document.createElement('dialog');
+          dialog.id = 'aup-workflow-dialog';
+          if (isIframe) {
+            const spinner = toFragment`
+              <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+                <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+              </sp-theme>`;
+            dialog.classList.add('loading');
+            dialog.appendChild(spinner);
+            finishLoading = () => {
+              element.removeEventListener('load', finishLoading);
+              dialog.classList.remove('loading');
+              spinner.remove();
+              finishLoading = undefined;
+            };
+            element.addEventListener('load', finishLoading, { once: true });
+          }
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          element.addEventListener('close', closeDialog, { once: true });
+          dialog.addEventListener('cancel', onDialogCancel);
+          dialog.addEventListener('click', onDialogClick);
+          teardownActiveDialog = teardown;
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+        } catch (e) {
+          teardown();
+          throw e;
+        }
       },
     });
 

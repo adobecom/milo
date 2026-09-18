@@ -38,6 +38,7 @@ import merch, {
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
+  getAupModalHashCleanup,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1530,6 +1531,119 @@ describe('Merch Block', () => {
 
     it('setCtaHash: does nothing with invalid params', async () => {
       expect(setCtaHash()).to.be.undefined;
+    });
+
+    it('getModalAction: manages AUP hash lifecycle from the M@S callback', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+      const hashchange = sinon.spy();
+      window.addEventListener('hashchange', hashchange);
+
+      try {
+        expect(action.aupHandler).to.be.a('function');
+        expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
+
+        action.aupHandler({ type: 'open', element: el });
+
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(hashchange.called).to.be.false;
+
+        action.aupHandler({ type: 'close', element: el });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(hashchange.called).to.be.false;
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.removeEventListener('hashchange', hashchange);
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: provides hash cleanup for the host AUP dialog', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+
+      try {
+        action.aupHandler({ type: 'open', element: el });
+        const cleanup = getAupModalHashCleanup();
+
+        expect(cleanup).to.be.a('function');
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+
+        cleanup();
+        cleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        action.aupHandler({ type: 'close', element: el });
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: ignores a stale AUP close after a replacement opens', async () => {
+      const previousUrl = window.location.href;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const createAction = async (productFamily) => {
+        const el = document.createElement('a');
+        el.dataset.modal = 'crm';
+        el.isOpen3in1Modal = false;
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily },
+        }], { modal: true }, el);
+        return { action, el };
+      };
+      const first = await createAction('ILLUSTRATOR');
+      const second = await createAction('AUDITION');
+
+      try {
+        first.action.aupHandler({
+          type: 'open',
+          element: first.el,
+        });
+        const firstCleanup = getAupModalHashCleanup();
+        second.action.aupHandler({
+          type: 'open',
+          element: second.el,
+        });
+        const secondCleanup = getAupModalHashCleanup();
+        firstCleanup();
+        first.action.aupHandler({
+          type: 'close',
+          element: first.el,
+        });
+
+        expect(window.location.hash).to.equal('#crm-buy-audition');
+
+        secondCleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        second.action.aupHandler({
+          type: 'close',
+          element: second.el,
+        });
+        window.history.replaceState(null, '', previousUrl);
+      }
     });
 
     it('applyDexterPromo: applies promo to external modal', () => {
