@@ -1115,6 +1115,10 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   return regionKey ? regions[regionKey] : null;
 }
 
+export function isKrMarket(...regions) {
+  return regions.some((region) => region?.prefix === '/kr');
+}
+
 export async function getGeoLocalePrefix() {
   const region = await getLingoRegion();
   return region?.prefix ?? null;
@@ -3028,13 +3032,36 @@ export async function loadArea(area = document) {
   const scheduleJsonLdInit = () => {
     if (!jsonLdOptions || jsonLdInitScheduled) return;
     jsonLdInitScheduled = true;
-    window.setTimeout(() => {
-      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
-        .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
-        .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
+    window.setTimeout(async () => {
+      try {
+        const jsonLdModule = import('../features/jsonld-graph-manager/jsonld-graph-manager.js');
+        const regionResults = lingoActive()
+          ? await Promise.allSettled([
+            getLingoRegion(),
+            getLingoRegion({ useGeoLocation: true }),
+          ])
+          : [];
+        const regionLookupFailed = regionResults.some(({ status }) => status === 'rejected');
+        regionResults
+          .filter(({ status }) => status === 'rejected')
+          .forEach(({ reason }) => window.lana?.log(`Failed to resolve JSON-LD market: ${reason}`, {
+            tags: 'jsonld-graph-manager',
+            severity: 'warn',
+          }));
+        const regions = regionResults
+          .filter(({ status }) => status === 'fulfilled')
+          .map(({ value }) => value);
+        const { default: initJsonLd } = await jsonLdModule;
+        await initJsonLd({
+          ...jsonLdOptions,
+          generateDefaultOffer: !regionLookupFailed && !isKrMarket(getConfig()?.locale, ...regions),
+        });
+      } catch (e) {
+        window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
           tags: 'jsonld-graph-manager',
           severity: 'error',
-        }));
+        });
+      }
     }, 0);
   };
   if (isDoc) {

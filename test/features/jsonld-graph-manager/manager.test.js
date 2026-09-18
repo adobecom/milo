@@ -525,6 +525,19 @@ describe('SoftwareApplication default Offer synthesis', () => {
     expect(graph.find((n) => n['@id'] === `${PAGE_URL}#offer`)).to.exist;
   });
 
+  it('does not serialize the fallback when disabled for market compliance', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+    }));
+    const manager = trackedManager({ generateDefaultOffer: false });
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.be.undefined;
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
+  });
+
   it('preserves producer-supplied Offers without generating a fallback', () => {
     document.head.appendChild(makeScript({
       '@type': 'SoftwareApplication',

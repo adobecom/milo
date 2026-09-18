@@ -494,6 +494,7 @@ export class JsonLdGraphManager {
     this.observer = null;
     this.isProcessing = false;
     this.ignoreTypes = options.ignoreTypes ?? IGNORE_TYPES;
+    this.generateDefaultOffer = options.generateDefaultOffer ?? true;
     this.bootScripts = options.bootScripts;
     this.debouncedRebuild = debounce(() => this.rebuild(), DEBOUNCE_MS);
   }
@@ -671,7 +672,7 @@ export class JsonLdGraphManager {
       }
     }
     injectLinks(nodes);
-    const serializedNodes = withDefaultOffer(nodes);
+    const serializedNodes = this.generateDefaultOffer ? withDefaultOffer(nodes) : nodes;
     const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': serializedNodes }, null, 2);
     return { nodes: serializedNodes, payload };
   }

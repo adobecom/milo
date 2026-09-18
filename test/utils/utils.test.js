@@ -3173,6 +3173,12 @@ describe('Utils', () => {
       expect(region).to.be.null;
     });
 
+    it('identifies Korea from page, selected, or geo-resolved market', () => {
+      expect(lingoModule.isKrMarket({ prefix: '/kr' })).to.be.true;
+      expect(lingoModule.isKrMarket({ prefix: '/es' }, { prefix: '/kr' })).to.be.true;
+      expect(lingoModule.isKrMarket({ prefix: '/es' }, { prefix: '/us' })).to.be.false;
+    });
+
     it('returns matching region when lingo is active and country matches', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
