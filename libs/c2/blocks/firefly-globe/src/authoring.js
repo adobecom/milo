@@ -144,82 +144,6 @@ export function layoutQuote(quoteEl) {
   return lineEls;
 }
 
-// The <em>/<strong> text, but only when it IS the whole paragraph.
-function wholeParaChild(p, selector) {
-  const child = p.querySelector(selector);
-  const text = child?.textContent.trim();
-  return text && text === p.textContent.trim() ? text : '';
-}
-
-function parseFragmentCardSegment(nodes) {
-  let img = null;
-  let prompt = ''; let name = '';
-
-  nodes.forEach((node) => {
-    const tag = node.nodeName && node.nodeName.toUpperCase();
-    if (!tag) return;
-
-    if (/^H[1-6]$/.test(tag)) {
-      if (!name) name = node.textContent.trim();
-    } else if (tag === 'P') {
-      const inlineImg = node.querySelector('img'); // <picture> or bare <img>; first wins
-      if (inlineImg) {
-        if (!img) img = inlineImg;
-        return;
-      }
-      if (!prompt) {
-        const em = wholeParaChild(node, 'em');
-        if (em) { prompt = em; return; }
-      }
-      if (!name) {
-        const strong = wholeParaChild(node, 'strong');
-        if (strong) { name = strong; }
-      }
-    } else if (tag === 'PICTURE' || tag === 'IMG') {
-      const bare = tag === 'IMG' ? node : node.querySelector('img');
-      if (!img && bare) img = bare;
-    }
-  });
-
-  if (!img) {
-    const label = nodes.map((n) => n.textContent || '').join(' ').trim().slice(0, 60);
-    window.lana?.log?.(
-      `firefly-globe: fragment section skipped, no image — "${label}"`,
-      { tags: 'firefly-globe', severity: 'info' },
-    );
-    return null;
-  }
-  return {
-    img: img.currentSrc || img.getAttribute('src') || img.src,
-    alt: (img.getAttribute('alt') || '').trim(),
-    name,
-    prompt,
-  };
-}
-
-const CARD_CONTENT_TAGS = /^(P|PICTURE|IMG|H[1-6])$/;
-
-function parseFragmentCards(row) {
-  const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
-
-  if (!hasDirectContent) {
-    const divs = [...row.querySelectorAll(':scope > div')];
-    return divs.flatMap((div) => parseFragmentCards(div));
-  }
-
-  const segments = [];
-  let current = [];
-  [...row.childNodes].forEach((node) => {
-    if (node.nodeName === 'HR') {
-      if (current.length) { segments.push(current); current = []; }
-    } else if (node.nodeType !== Node.TEXT_NODE || node.textContent.trim()) {
-      current.push(node);
-    }
-  });
-  if (current.length) segments.push(current);
-  return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
-}
-
 const ALT_MAX_CHARS = 120;
 const FF_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const FF_API_KEY = 'milo-ff-gallery-unity';
@@ -290,23 +214,6 @@ export async function fetchFireflyAssets(categoryId, locale) {
   }
 }
 
-export async function fetchFragmentCards(href) {
-  try {
-    const resp = await fetch(`${href}.plain.html`);
-    if (!resp.ok) return null;
-    const html = await resp.text();
-    // DOMParser yields an inert document, so card <img>/<picture> never fetch here — only the
-    // right-sized texture URL is downloaded.
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const cards = [...doc.body.querySelectorAll(':scope > div')]
-      .flatMap((section) => parseFragmentCards(section))
-      .filter(Boolean);
-    return cards.length ? cards : null;
-  } catch (e) {
-    return null;
-  }
-}
-
 // Cards ask by height, the modal by width; non-media URLs pass through.
 export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
@@ -319,22 +226,18 @@ export function optimizeImgUrl(src, px, axis = 'width') {
   }
 }
 
-// Positional rows. Fragment links are authored with #_dnb so Milo skips auto-resolution;
-// the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
   const [categoryId = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
-  const fragmentLink = cardsRow?.querySelector('a[href]');
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     categoryId: categoryId || null,
     cgenId,
     ctaLabel,
-    fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
     hintText: cellText(cells[1]) || DEFAULT_HINT,
     instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,

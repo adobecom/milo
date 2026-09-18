@@ -20,7 +20,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
 | Custom cursor | Disc + chevron ring + label; native cursor hidden | Label pill only, beside the native cursor (`grab`/`grabbing`/`pointer`). |
 | Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.firefly-globe-world`, so it travels with the block: at `entryT` 0 the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
-| Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`), or a fragment link. Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
+| Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`). Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
 | Modal info | `<h2>` name, role, description paragraphs, badge list | Model icon + version label, prompt, CTA to `fireflyUrl`. |
 | Three.js | Vendored `three.module.min.js` built by esbuild | Shared `libs/deps/three.js` (r160). A `THREE.*` symbol must be in its export list. |
 | Scroll budget | `--gg-runway-height` + `--gg-formation-vh`, per breakpoint | `--fg-runway-height` only, per breakpoint. The entry happens in the viewport before the block top, so the whole runway is travel. |
@@ -32,11 +32,11 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 
 ## Authoring
 
-Positional rows. A fragment link is authored with `#_dnb`; the hash is stripped before fetch.
+Positional rows.
 
 | Row | Content |
 |---|---|
-| 1 | `categoryId \|\| cgenId \|\| ctaLabel` **or** a fragment link. `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
+| 1 | `categoryId \|\| cgenId \|\| ctaLabel`. No `categoryId` renders nothing (`firefly-globe-empty`). `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
 | 2 | Two cells: the barrel's bottom-row copy (touch hint), then the cursor label. |
 | 3 | `instructions \|\| rotateLeft \|\| rotateRight \|\| pauseSpin \|\| resumeSpin \|\| prevCard \|\| {index} of {count} \|\| nextCard \|\| close` — empty parts fall back to defaults. |
 | 4 | Optional pull quote: `<blockquote>` (or heading), then name and role paragraphs. No row → no pin. |
@@ -92,6 +92,21 @@ has `(1 − pqAppearT) · runway` left to scroll; the quote scrolls out over the
 plus half its box of that, and the rest is hold. The world un-sticks one viewport before the block ends,
 so a hold shorter than the gap between the quote's bottom and the viewport bottom has the canvas
 sliding up during the last cards.
+
+### Pull-quote copy reveal
+
+`PQ_REVEAL_IN_MS` is the whole sweep. `PQ_DRAW_*`, `PQ_COPY_LAG` and the line timings are shares of
+it, so it is the one knob for overall pace. `PQ_REVEAL_OUT_MS` is the scroll-back exit and is
+absolute, not a share.
+
+Lines are staggered by `PQ_COPY_LINE_STAGGER` of the sweep, capped at `PQ_COPY_LINE_LAG_MAX` for the
+last line, so every line is in flight at once rather than arriving in turn.
+
+The wave is distance, not timing. A line waits `--fg-pq-line-start + rank × --fg-pq-line-wave` below
+its mask, rank being its index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank`
+on each split. Lower lines cover more ground in the same window, so the visible gap between lines
+widens down the stack mid-flight and closes to the authored line-height as they land. Raise
+`--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
 
 ## Tuning the scroll budget
 
@@ -167,5 +182,5 @@ it at `height: 100vh`. `worldEl.offsetHeight` is the one viewport height every c
 ## Tests
 
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
-quote), `buildGlobeDom`, fragment and API card mapping (rendition URL cap, model tags, locale fallback,
+quote), `buildGlobeDom`, API card mapping (rendition URL cap, model tags, locale fallback,
 alt fallback), the frame shape, the clock endpoints (`deriveFrame`) and the travel camera inverse pair. There is no Nala/E2E coverage of the WebGL path.

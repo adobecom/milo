@@ -1,7 +1,7 @@
 import * as THREE from '../../../deps/three.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
-  parseAuthoredContent, fetchFragmentCards, fetchFireflyAssets, buildGlobeDom,
+  parseAuthoredContent, fetchFireflyAssets, buildGlobeDom,
   optimizeImgUrl, scatterCards, layoutQuote,
 } from './src/authoring.js';
 import {
@@ -15,7 +15,7 @@ import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
 import {
-  easeInOutCubic, easeOutCubic, easeOutExpo, lerpN, clamp01, coverFit,
+  easeInOutCubic, easeOutCubic, easeOutQuart, lerpN, clamp01, coverFit,
   capDpr, CAM_FOV, TAN_HALF_FOV, pxPerWorldAt, camZAtTravelT, travelTAtCamZ,
   createFrame, createFrameInput, deriveFrame, FRAME_MS,
 } from './src/utils.js';
@@ -137,15 +137,17 @@ const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not 
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_REVEAL_IN_MS = 700;
-const PQ_REVEAL_OUT_MS = 225;
+const PQ_REVEAL_IN_MS = 900;
+const PQ_REVEAL_OUT_MS = 250;
 
 // Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
 const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
 const PQ_COPY_KEYS = ['q', 'n', 'r'];
-const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
+const PQ_COPY_LINE_STAGGER = 0.05;
+const PQ_COPY_LINE_LAG_MAX = 0.2;
+const PQ_COPY_LINE_RANK_CAP = 4;
 
 const TEXT_APPEAR_START = 0.10;
 const CURSOR_RETIRE_LEAD_T = 0.02;
@@ -1200,10 +1202,9 @@ function createGlobeGalleryRuntime(
       vals.push(arrive(PQ_COPY_LAG[i]));
       str += `${vals[i].toFixed(3)};`;
     }
-    const lineVals = lines.map((_, i) => {
-      const lag = last > 0 ? ((1 - PQ_COPY_LINE_SPAN) * i) / last : 0;
-      return easeOutExpo(clamp01((reveal - lag) / PQ_COPY_LINE_SPAN));
-    });
+    const lagStep = last > 0 ? Math.min(PQ_COPY_LINE_STAGGER, PQ_COPY_LINE_LAG_MAX / last) : 0;
+    const span = 1 - lagStep * last;
+    const lineVals = lines.map((_, i) => easeOutQuart(clamp01((reveal - lagStep * i) / span)));
     lineVals.forEach((v) => { str += `${v.toFixed(3)};`; });
     if (str === pq.copyStr) return;
     pq.copyStr = str;
@@ -1220,6 +1221,12 @@ function createGlobeGalleryRuntime(
     updatePullQuoteCopy(reveal);
   }
 
+  function writeLineRanks() {
+    pq.lineEls.forEach((el, i) => {
+      el.style.setProperty('--fg-pq-line-rank', Math.min(i, PQ_COPY_LINE_RANK_CAP));
+    });
+  }
+
   function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
     const w = pqEl.clientWidth;
@@ -1228,6 +1235,7 @@ function createGlobeGalleryRuntime(
     pq.quoteEl.style.removeProperty('font-size');
     pq.quoteEl.style.removeProperty('letter-spacing');
     pq.lineEls = layoutQuote(pq.quoteEl);
+    writeLineRanks();
     pq.copyStr = '';
     if (!reducedMotion) {
       const bandH = H - navH;
@@ -1240,6 +1248,7 @@ function createGlobeGalleryRuntime(
           if (Math.abs(next - fs) < 0.5) break;
           pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
           pq.lineEls = layoutQuote(pq.quoteEl);
+          writeLineRanks();
         }
       }
       writePullQuoteFrame(pq.revealT);
@@ -1856,14 +1865,13 @@ export default async function init(el) {
   // Before buildGlobeDom() wipes the children.
   const {
     hintText, touchHint, instructions, labels,
-    categoryId, cgenId, ctaLabel, fragmentHref, pullQuote,
+    categoryId, cgenId, ctaLabel, pullQuote,
   } = parseAuthoredContent(el);
 
   const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel, pullQuote });
 
   let authored = null;
   if (categoryId) authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf);
-  else if (fragmentHref) authored = await fetchFragmentCards(fragmentHref);
   if (cgenId && authored) {
     authored.forEach((card) => {
       if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;

@@ -253,6 +253,7 @@
   --fg-pq-pad-block: var(--fg-copy-pad);
   --fg-pq-copy-rise: 14px;
   --fg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
+  --fg-pq-line-wave: calc(100% / 3);
   --fg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --fg-pq-rule-color: var(--s2a-color-gray-800);
 
@@ -361,7 +362,10 @@
 
 .firefly-globe-pullquote-line-inner {
   display: inline-block;
-  transform: translate3d(0, calc((1 - var(--fg-pq-line-v, 1)) * var(--fg-pq-line-start)), 0);
+  transform: translate3d(0, calc(
+    (1 - var(--fg-pq-line-v, 1))
+    * (var(--fg-pq-line-start) + var(--fg-pq-line-rank, 0) * var(--fg-pq-line-wave))
+  ), 0);
 }
 
 .firefly-globe-pullquote-sr {

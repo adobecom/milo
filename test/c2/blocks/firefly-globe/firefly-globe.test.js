@@ -7,7 +7,6 @@ import {
   scatterCards,
   parseAuthoredContent,
   buildGlobeDom,
-  fetchFragmentCards,
   fetchFireflyAssets,
 } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
 
@@ -100,20 +99,13 @@ describe('firefly-globe: scatterCards', () => {
 // ──────────────────────────────────────────────────────────────────
 describe('firefly-globe: parseAuthoredContent — positional rows', () => {
   // Row layout: [cardsRow, hintTextRow, a11yRow, pullQuoteRow]
-  function makeBlock({ fragmentUrl = 'https://example.com/cards', hintCell1 = '', hintCell2 = 'Drag', a11y = '' } = {}) {
+  function makeBlock({ cards = 'cat-123', hintCell1 = '', hintCell2 = 'Drag', a11y = '' } = {}) {
     return makeEl(`
-      ${makeRow(`<a href="${fragmentUrl}#_dnb">Cards</a>`)}
+      ${makeRow(`<div><p>${cards}</p></div>`)}
       ${makeRow(`<div><p>${hintCell1}</p></div><div><p>${hintCell2}</p></div>`)}
       ${makeRow(a11y)}
     `);
   }
-
-  it('parses fragmentHref from first row', () => {
-    const el = makeBlock({ fragmentUrl: 'https://example.com/gallery' });
-    const { fragmentHref } = parseAuthoredContent(el);
-    // Hash stripped
-    expect(fragmentHref).to.equal('https://example.com/gallery');
-  });
 
   it('parses hintText from cell 2 of hintTextRow', () => {
     const el = makeBlock({ hintCell2: 'Click & Drag' });
@@ -146,21 +138,20 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    const { categoryId, cgenId, ctaLabel, fragmentHref } = parseAuthoredContent(el);
+    const { categoryId, cgenId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
     expect(cgenId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
-    expect(fragmentHref).to.be.null;
   });
 
-  it('categoryId is null for a fragment-link cards row', () => {
-    const { categoryId } = parseAuthoredContent(makeBlock());
+  it('categoryId is null when the cards cell is empty', () => {
+    const { categoryId } = parseAuthoredContent(makeBlock({ cards: '' }));
     expect(categoryId).to.be.null;
   });
 
   it('parses the optional pull-quote row', () => {
     const el = makeEl(`
-      ${makeRow('<a href="https://x.com/c#_dnb">Cards</a>')}
+      ${makeRow('<div><p>cat-123</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
       ${makeRow('<blockquote>A quote</blockquote><p>Name</p><p>Role</p>')}
@@ -178,12 +169,11 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
     // The new parser ignores extra rows gracefully.
     const el = makeEl(`
       ${makeRow('<h2>Arc Title</h2>')}
-      ${makeRow('<a href="https://x.com/c">Cards</a>')}
+      ${makeRow('<div><p>cat-123</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
       ${makeRow('<blockquote>A quote</blockquote>')}
     `);
-    // Should not throw; fragmentHref comes from row 1 of old format (arc-copy), which has no link.
     expect(() => parseAuthoredContent(el)).not.to.throw();
   });
 });
@@ -268,57 +258,6 @@ describe('firefly-globe: buildGlobeDom', () => {
     expect(gid1).to.be.a('number');
     expect(gid2).to.be.a('number');
     expect(gid2).to.be.greaterThan(gid1);
-  });
-});
-
-// ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: fetchFragmentCards', () => {
-  let fetchStub;
-
-  afterEach(() => {
-    fetchStub?.restore();
-  });
-
-  it('returns null when fetch fails', async () => {
-    fetchStub = sinon.stub(window, 'fetch').rejects(new Error('network'));
-    const result = await fetchFragmentCards('https://example.com/cards');
-    expect(result).to.be.null;
-  });
-
-  it('returns null when response is not ok', async () => {
-    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false });
-    const result = await fetchFragmentCards('https://example.com/cards');
-    expect(result).to.be.null;
-  });
-
-  it('returns null when fragment has no parseable cards', async () => {
-    fetchStub = sinon.stub(window, 'fetch').resolves({
-      ok: true,
-      text: async () => '<html><body><div><div><p>No image here</p></div></div></body></html>',
-    });
-    const result = await fetchFragmentCards('https://example.com/cards');
-    expect(result).to.be.null;
-  });
-
-  it('parses cards from well-formed fragment HTML', async () => {
-    const html = `
-      <html><body>
-        <div>
-          <div>
-            <p><img src="https://example.aem.live/media_card1.jpg" alt="Artist 1"></p>
-            <p><em>A prompt</em></p>
-            <p><strong>Artist One</strong></p>
-          </div>
-        </div>
-      </body></html>
-    `;
-    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, text: async () => html });
-    const cards = await fetchFragmentCards('https://example.com/cards');
-    expect(cards).to.be.an('array').with.length(1);
-    expect(cards[0].name).to.equal('Artist One');
-    expect(cards[0].prompt).to.equal('A prompt');
-    expect(cards[0].alt).to.equal('Artist 1');
-    expect(cards[0].img).to.include('media_card1.jpg');
   });
 });
 
