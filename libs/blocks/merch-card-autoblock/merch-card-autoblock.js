@@ -32,7 +32,7 @@ async function loadCoreDependencies() {
     throw new Error('Failed to initialize mas commerce service');
   }
   const service = await servicePromise;
-  log = service.Log.module('merch-card');
+  log = service.Log.module('merch-card-autoblock');
 
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
@@ -78,7 +78,7 @@ async function createJsonLd(el, options) {
     const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
     injectJsonLd(fields, offer, regularOffer, document.location.href);
   } catch (e) {
-    window.lana?.log(`Failed to inject JSON-LD: ${e.message}`, { tags: 'merch-card-autoblock', severity: 'info' });
+    log.error('Failed to inject JSON-LD', e);
   } finally {
     merchCard.remove();
     el.remove();
