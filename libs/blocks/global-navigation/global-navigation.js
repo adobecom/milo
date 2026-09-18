@@ -17,7 +17,6 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
-import { consumeAupModalTrigger } from '../../utils/aup.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -68,7 +67,11 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const {
+  consumeAupModalTrigger,
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} = merch;
 
 const {
   clearSignOutCookies,

@@ -13,7 +13,7 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import { trackAupModalTrigger } from '../../../libs/utils/aup.js';
+import { trackAupModalTrigger } from '../../../libs/blocks/merch/merch.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
