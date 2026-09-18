@@ -483,7 +483,6 @@ describe('SoftwareApplication default Offer synthesis', () => {
       '@type': 'Offer',
       '@id': `${PAGE_URL}#offer`,
       price: '0',
-      priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
     });
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);

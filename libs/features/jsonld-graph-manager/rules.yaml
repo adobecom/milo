@@ -787,16 +787,19 @@
 - name: offer-price
   section: "Type-specific: Offer"
   severity: error
-  requirement: An Offer node MUST have price and priceCurrency properties.
+  requirement: >
+    An Offer node referenced by SoftwareApplication.offers MUST have a price
+    property. When price is greater than zero, it SHOULD also have a
+    priceCurrency property.
   applies_to: [Offer]
   implements: []
   tested_by: []
   interacts_with: [softwareapplication-offers, softwareapplication-offer-provenance]
   notes: >
-    Required for the Google Software App rich result. Evaluated for any
-    Offer node referenced by SoftwareApplication.offers. Not validated at
-    runtime in v1; producer-supplied Offers without these fields ship
-    through unchecked.
+    Price is required for the Google Software App rich result. Google
+    recommends priceCurrency only when price is greater than zero. Not
+    validated at runtime in v1; producer-supplied Offers without these fields
+    ship through unchecked.
   status: unimplemented
   last_updated: "2026-05-29"
 
@@ -808,9 +811,9 @@
     WebApplication, MobileApplication, or VideoGame whose offers property is
     missing or an empty array. This applies to SoftwareApplication nodes
     transformed from Product. The generated Offer MUST have @id
-    {canonicalPageURL}#offer, price "0", priceCurrency "USD", availability
-    "https://schema.org/InStock"; the application MUST reference it as
-    offers: [{"@id":"{canonicalPageURL}#offer"}].
+    {canonicalPageURL}#offer, price "0", and availability
+    "https://schema.org/InStock"; the application MUST reference it as offers:
+    [{"@id":"{canonicalPageURL}#offer"}].
     Applications with authored Offer references MUST remain unchanged. The
     manager MUST NOT generate an Offer when no supported application exists
     or infer an application relationship from a standalone Offer. If an

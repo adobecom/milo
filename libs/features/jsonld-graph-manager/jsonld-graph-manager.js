@@ -391,7 +391,6 @@ function withDefaultOffer(nodes) {
     '@type': 'Offer',
     '@id': offerId,
     price: '0',
-    priceCurrency: 'USD',
     availability: 'https://schema.org/InStock',
   });
   return serializedNodes;

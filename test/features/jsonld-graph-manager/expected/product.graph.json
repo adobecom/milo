@@ -42,7 +42,6 @@
       "@type": "Offer",
       "@id": "https://www.adobe.com/products/photoshop.html#offer",
       "price": "0",
-      "priceCurrency": "USD",
       "availability": "https://schema.org/InStock"
     }
   ]

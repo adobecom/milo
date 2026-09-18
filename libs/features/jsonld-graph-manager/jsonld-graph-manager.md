@@ -295,7 +295,6 @@ This transform is governed by the `product-to-softwareapplication` requirement.
   "@type": "Offer",
   "@id": "{canonicalPageURL}#offer",
   "price": "0",
-  "priceCurrency": "USD",
   "availability": "https://schema.org/InStock"
 }
 ```
@@ -412,7 +411,7 @@ Coverage strategy: Google rich-result eligibility is consumer #1. Other consumer
 | `HowTo` | `name`, `step[]` of `HowToStep` | Rich result deprecated by Google in 2023; markup still ingested for general understanding. |
 | `FAQPage` | `mainEntity[]` of `Question` with `acceptedAnswer.Answer.text` | Rich result restricted to authoritative government/health sites since 2023; otherwise still consumed by Search/LLMs. |
 | `VideoObject` | `name`, `thumbnailUrl`, `uploadDate` (`description`, `contentUrl`, `embedUrl`, `duration`) | |
-| `Offer` | `price`, `priceCurrency` (when referenced from `SoftwareApplication`) | |
+| `Offer` | `price` (`priceCurrency` when `price` is greater than zero) | |
 | `AggregateRating` | `ratingValue`, `ratingCount` (or `reviewCount`) | Required by the Software App, Product, Course, and Review-snippet rich results when present on the host entity. |
 | `Event` | `name`, `startDate`, `location` (`description`, `endDate`, `image`, `offers`) | Passed through; not a primary page type. |
 | `WebSite` | `potentialAction` `SearchAction` with `target` + `query-input` | Sitelinks search box; emitted only when explicitly authored. |
