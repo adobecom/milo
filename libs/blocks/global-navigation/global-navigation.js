@@ -1124,13 +1124,17 @@ class Gnav {
     await this.decorateProfile();
   };
 
-  static preloadAupSdk = async (pageUrl = new URL(window.location.href)) => {
+  static getAupEnvironment = (cdnEnvironment, location = window.location) => (
+    location.hostname === 'www.stage.adobe.com'
+      ? new URLSearchParams(location.search).get('commerce.env') || 'prod'
+      : cdnEnvironment
+  );
+
+  static preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
     const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const environment = pageUrl.hostname === 'www.stage.adobe.com'
-      ? pageUrl.searchParams.get('commerce.env') || 'prod'
-      : cdnEnvironment;
+    const environment = this.getAupEnvironment(cdnEnvironment);
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 

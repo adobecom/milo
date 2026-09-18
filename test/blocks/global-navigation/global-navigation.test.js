@@ -504,7 +504,34 @@ describe('global navigation', () => {
       }
     });
 
-    it('uses production Commerce on www.stage while preserving overrides and other hosts', async () => {
+    it('resolves the Commerce environment for www.stage without changing other hosts', () => {
+      const cases = [
+        {
+          location: { hostname: 'www.stage.adobe.com', search: '' },
+          environment: 'prod',
+        },
+        {
+          location: {
+            hostname: 'www.stage.adobe.com',
+            search: '?commerce.env=stage&commerce.landscape=DRAFT',
+          },
+          environment: 'stage',
+        },
+        {
+          location: {
+            hostname: 'business.stage.adobe.com',
+            search: '?commerce.env=prod',
+          },
+          environment: 'stage',
+        },
+      ];
+
+      cases.forEach(({ location, environment }) => {
+        expect(gnav.constructor.getAupEnvironment('stage', location)).to.equal(environment);
+      });
+    });
+
+    it('passes the resolved Commerce and CDN environments to the SDK', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;
       const previousSdkFactory = window.AUPSDK;
@@ -515,29 +542,14 @@ describe('global navigation', () => {
       document.head.append(script);
       const instance = { updateConfig: sinon.stub().resolves() };
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-      const cases = [
-        {
-          url: 'https://www.stage.adobe.com/products',
-          environment: 'prod',
-        },
-        {
-          url: 'https://www.stage.adobe.com/products?commerce.env=stage&commerce.landscape=DRAFT',
-          environment: 'stage',
-        },
-        {
-          url: 'https://business.stage.adobe.com/products?commerce.env=prod',
-          environment: 'stage',
-        },
-      ];
       try {
-        for (const { url, environment } of cases) {
-          window.aupsdk = undefined;
-          await gnav.constructor.preloadAupSdk(new URL(url));
-          expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
-            environment,
-            cdnEnvironment: 'stage',
-          });
-        }
+        sinon.stub(gnav.constructor, 'getAupEnvironment').returns('prod');
+        window.aupsdk = undefined;
+        await gnav.constructor.preloadAupSdk();
+        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+          environment: 'prod',
+          cdnEnvironment: 'stage',
+        });
       } finally {
         script.remove();
         window.aupsdk = previousSdk;
