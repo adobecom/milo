@@ -3,7 +3,7 @@ import {
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
@@ -2002,20 +2002,21 @@ function watchPromoPlaceholders() {
 }
 
 /**
- * A promo `mas-field` may resolve to a single sentinel link labelled "modal" whose href is a
- * fragment path (no hash — authors give none). Under a promotion project we open that fragment
- * as a modal and remove the link so it never renders. Non-promo variations resolve empty, so
- * no link exists and nothing opens.
+ * A promo `mas-field` may resolve to a link labelled "modal" whose href is a fragment path
+ * (no hash — authors give none). The field may contain other content and links; only the
+ * sentinel is consumed. Non-promo variations resolve empty, so no link exists and nothing opens.
  */
 let promoModalsWatched = false;
+const promoModalsLoading = new Set();
 function watchPromoModals() {
   if (promoModalsWatched) return;
   promoModalsWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD') return;
     if (!isPromoVariation(mf)) return;
-    const anchor = mf.querySelector('a[href]');
-    if (!anchor || anchor.textContent.trim().toLowerCase() !== 'modal') return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'modal');
+    if (!anchor) return;
     let path;
     try {
       ({ pathname: path } = new URL(anchor.href, window.location.href));
@@ -2025,14 +2026,51 @@ function watchPromoModals() {
     const id = path.split('/').filter(Boolean).pop();
     if (!id) return;
     anchor.remove(); // consume: the link only carried the modal path, never render it
-    if (document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    if (promoModalsLoading.has(id) || document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    promoModalsLoading.add(id);
     try {
       const { miloLibs, codeRoot } = getConfig();
       const { getModal } = await import('../modal/modal.js');
       loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
-      getModal({ id, path });
+      await getModal({ id, path });
     } catch (e) {
       log?.error('Failed to open promo modal', e);
+    } finally {
+      promoModalsLoading.delete(id);
+    }
+  });
+}
+
+/**
+ * A countdown-timer field may contain a sentinel link (text "countdown-timer") alongside its
+ * regular content. As with the backend (see adobecom/mas#1279), the sentinel link itself is
+ * what drives the countdown: no separate block variant/class is required. Only the sentinel is
+ * consumed; the rest of the field content is preserved. Page metadata-based CDT behavior is
+ * unaffected elsewhere.
+ */
+let masCountdownTimersWatched = false;
+const masCountdownTimersLoading = new WeakSet();
+function watchMasCountdownTimers() {
+  if (masCountdownTimersWatched) return;
+  masCountdownTimersWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'countdown-timer');
+    if (!anchor) return;
+    const { cdtStart, cdtEnd } = mf.querySelector('aem-fragment')?.rawData ?? {};
+    if (!cdtStart || !cdtEnd) return;
+
+    anchor.remove(); // consume: the link only carries the sentinel, never render it
+    const target = mf.parentElement ?? mf;
+    // Guard against duplicate rendering: the rendered timer itself carries a `.countdown-timer`
+    // class, and mas:ready may fire more than once while a previous render is in flight.
+    if (masCountdownTimersLoading.has(target) || target.querySelector(':scope > .countdown-timer')) return;
+    masCountdownTimersLoading.add(target);
+    try {
+      await loadCDT(target, target.classList, `${cdtStart},${cdtEnd}`);
+    } finally {
+      masCountdownTimersLoading.delete(target);
     }
   });
 }
@@ -2072,6 +2110,7 @@ export async function initMasField(el) {
   watchMasFieldCtas();
   watchPromoPlaceholders();
   watchPromoModals();
+  watchMasCountdownTimers();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return el;

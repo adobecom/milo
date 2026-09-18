@@ -839,10 +839,15 @@ describe('mas-field', () => {
         document.body.classList.remove('disable-scroll');
       });
 
-      const buildModalField = (href, { promo = 'proj', text = 'modal' } = {}) => {
+      const buildModalField = (href, { promo = 'proj', text = 'modal', content = '' } = {}) => {
         const mf = document.createElement('mas-field');
         mf.setAttribute('field', 'shortDescription');
         if (promo) mf.setAttribute('data-promotion-project', promo);
+        if (content) {
+          const copy = document.createElement('p');
+          copy.innerHTML = content;
+          mf.append(copy);
+        }
         const a = document.createElement('a');
         a.href = href;
         a.textContent = text;
@@ -875,6 +880,17 @@ describe('mas-field', () => {
         expect(a.isConnected, 'sentinel link removed').to.be.false;
       });
 
+      it('finds and consumes the modal link when the field also contains existing content', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/content-modal', { content: 'Existing copy <a href="/terms">Terms</a>' });
+        dispatchReady(mf);
+
+        const opened = await waitFor(() => document.querySelector('.dialog-modal[id="content-modal"]'));
+        expect(opened, 'modal dialog opened').to.exist;
+        expect(a.isConnected, 'sentinel link removed').to.be.false;
+        expect(mf.textContent).to.include('Existing copy');
+        expect(mf.querySelector('a[href="/terms"]')).to.exist;
+      });
+
       it('processes the modal: id from the path, fragment content, close button and curtain', async () => {
         const { mf } = buildModalField('/drafts/promo/offer-modal');
         dispatchReady(mf);
@@ -894,11 +910,11 @@ describe('mas-field', () => {
       it('opens a modal only once when mas:ready fires repeatedly for the same field', async () => {
         const { mf } = buildModalField('/drafts/promo/dupe-modal');
         dispatchReady(mf);
-        await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
-        // A second resolution (e.g. mas re-render) must not stack a second dialog.
+        // Fire again before the first modal finishes loading.
         dispatchReady(mf);
-        await new Promise((resolve) => { setTimeout(resolve, 200); });
+        const dialog = await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
 
+        expect(dialog).to.exist;
         expect(document.querySelectorAll('.dialog-modal[id="dupe-modal"]').length).to.equal(1);
       });
 
@@ -918,6 +934,86 @@ describe('mas-field', () => {
 
         expect(a.isConnected, 'link untouched').to.be.true;
         expect(document.querySelector('.dialog-modal')).to.not.exist;
+      });
+    });
+
+    describe('MAS countdown timer', () => {
+      const futureCdtEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      const waitFor = async (fn, ms = 2000) => {
+        const start = Date.now();
+        let value = fn();
+        while (!value && Date.now() - start < ms) {
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => { setTimeout(resolve, 10); });
+          value = fn();
+        }
+        return value;
+      };
+
+      const buildCountdownField = () => {
+        const mf = document.createElement('mas-field');
+        const fragment = document.createElement('aem-fragment');
+        fragment.rawData = {
+          cdtStart: '2001-12-12T12:12:00Z',
+          cdtEnd: futureCdtEnd,
+        };
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = 'Existing copy <a href="/terms">Terms</a> <a href="#">countdown-timer</a>';
+        mf.append(fragment, content);
+        return mf;
+      };
+
+      it('loads the timer from cdtStart and cdtEnd on the resolved fragment', async () => {
+        document.head.innerHTML = '';
+        const container = document.createElement('div');
+        container.classList.add('countdown-timer');
+        const mf = buildCountdownField();
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect([...mf.querySelectorAll('a')].some((a) => a.textContent.trim() === 'countdown-timer')).to.be.false;
+        expect(mf.textContent).to.include('Existing copy Terms');
+        expect(mf.querySelector('a[href="/terms"]')).to.exist;
+        const timer = await waitFor(() => container.querySelector('.timer-label'));
+        expect(timer).to.exist;
+      });
+
+      it('renders the timer from the sentinel link alone, with no block variant class required', async () => {
+        document.head.innerHTML = '';
+        const container = document.createElement('div');
+        const mf = buildCountdownField();
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect([...mf.querySelectorAll('a')].some((a) => a.textContent.trim() === 'countdown-timer')).to.be.false;
+        const timer = await waitFor(() => container.querySelector('.timer-label'));
+        expect(timer).to.exist;
+      });
+
+      it('keeps the sentinel link when the resolved fragment has no cdtStart/cdtEnd', async () => {
+        const mf = document.createElement('mas-field');
+        const fragment = document.createElement('aem-fragment');
+        fragment.rawData = {};
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = 'Existing copy <a href="#">countdown-timer</a>';
+        mf.append(fragment, content);
+        const container = document.createElement('div');
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect(mf.querySelector('a')).to.exist;
+        expect(container.querySelector('.timer-label')).to.not.exist;
       });
     });
   });
