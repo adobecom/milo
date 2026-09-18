@@ -7,8 +7,9 @@ import { setConfig } from '../../../libs/utils/utils.js';
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
-const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { updateReplicatedValue, getChatSessionId } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
 const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
+const { bcAnalytics } = await import('../../../libs/blocks/brand-concierge/bc-analytics.js');
 
 describe('Brand Concierge', () => {
   afterEach(() => {
@@ -326,9 +327,9 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       const wrappers = background.querySelectorAll(':scope > div');
       expect(wrappers.length).to.equal(3);
-      expect(wrappers[0].classList.contains('desktop-only')).to.be.true;
+      expect(wrappers[0].classList.contains('mobile-only')).to.be.true;
       expect(wrappers[1].classList.contains('tablet-only')).to.be.true;
-      expect(wrappers[2].classList.contains('mobile-only')).to.be.true;
+      expect(wrappers[2].classList.contains('desktop-only')).to.be.true;
       wrappers.forEach((wrapper) => expect(wrapper.querySelector('picture')).to.exist);
     });
 
@@ -357,6 +358,22 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       expect(background.querySelectorAll('picture').length).to.equal(1);
       expect(background.querySelector('.desktop-only, .tablet-only, .mobile-only')).to.be.null;
+    });
+
+    it('renders the title (not an eyebrow) when only a single heading is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-no-eyebrow.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const header = block.querySelector('.bc-header');
+      expect(header).to.exist;
+      expect(header.querySelector('.bc-header-eyebrow')).to.be.null;
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      const kids = [...header.children];
+      expect(kids[0].classList.contains('bc-header-title')).to.be.true;
+      expect(kids[1].classList.contains('bc-header-subtitle')).to.be.true;
     });
   });
 
@@ -451,3 +468,94 @@ describe('Brand Concierge', () => {
     // Should not throw even without onSuccessfulToken handler
   });
 });
+
+/* eslint-disable no-underscore-dangle */
+describe('Brand Concierge back-navigation analytics', () => {
+  const SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
+  afterEach(() => {
+    document.cookie = `${SESSION_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    delete window._satellite;
+    sinon.restore();
+  });
+
+  describe('getChatSessionId', () => {
+    it('returns the decoded session id from the cookie', () => {
+      document.cookie = `${SESSION_COOKIE}=${encodeURIComponent('sess 123')}; path=/`;
+      expect(getChatSessionId()).to.equal('sess 123');
+    });
+
+    it('returns an empty string when the cookie is absent', () => {
+      expect(getChatSessionId()).to.equal('');
+    });
+  });
+
+  describe('bcAnalytics navigation:backNavigation', () => {
+    it('tracks a back-navigation event with all required fields', () => {
+      const track = sinon.spy();
+      window._satellite = { track };
+
+      bcAnalytics({
+        eventType: 'navigation:backNavigation',
+        data: {
+          clickType: 'inline_hyperlink',
+          sessionId: 'sess-1',
+          sourcePage: 'https://www.adobe.com/source',
+          destinationPage: 'https://www.adobe.com/dest',
+          loginStatus: 'logged-in',
+          navigatedBack: true,
+        },
+      });
+
+      expect(track.calledOnce).to.be.true;
+      const [type, payload] = track.firstCall.args;
+      expect(type).to.equal('event');
+      const eventName = 'BC-chat_inline_hyperlink_back_navigation';
+      expect(payload.data.web.webInteraction.name).to.equal(`${eventName}|loginStatus:logged-in`);
+      expect(payload.data.bc).to.include({
+        eventName,
+        sessionId: 'sess-1',
+        clickType: 'inline_hyperlink',
+        sourcePage: 'https://www.adobe.com/source',
+        destinationPage: 'https://www.adobe.com/dest',
+        navigatedBack: true,
+        loginStatus: 'logged-in',
+      });
+      expect(payload.data.bc.timestamp).to.be.a('string');
+    });
+
+    it('does not track when _satellite is unavailable', () => {
+      delete window._satellite;
+      expect(() => bcAnalytics({
+        eventType: 'navigation:backNavigation',
+        data: { clickType: 'cta' },
+      })).to.not.throw();
+    });
+  });
+
+  describe('card:clicked navigation recording', () => {
+    it('records the resolved destinationUrl from the event payload', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: { destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card' },
+      });
+
+      expect(replaceState.calledOnce).to.be.true;
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcClickType).to.equal('product_card_cta');
+      expect(state.bcDestinationPage).to.equal('https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+    });
+
+    it('stores an empty destination without falling back to the referrer', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({ eventType: 'card:clicked', data: {} });
+
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcDestinationPage).to.equal('');
+    });
+  });
+});
+/* eslint-enable no-underscore-dangle */

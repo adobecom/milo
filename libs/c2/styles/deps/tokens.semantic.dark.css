@@ -79,7 +79,7 @@
   --s2a-color-iconbutton-background-accent-solid-on-light-default: var(--s2a-color-blue-900);
   --s2a-color-iconbutton-background-accent-solid-on-light-hover: var(--s2a-color-blue-1000);
   --s2a-color-iconbutton-background-primary-outlined-on-dark-active: var(--s2a-color-gray-25);
-  --s2a-color-iconbutton-background-primary-outlined-on-dark-defatul: var(--s2a-color-transparent-white-24);
+  --s2a-color-iconbutton-background-primary-outlined-on-dark-default: var(--s2a-color-transparent-white-24);
   --s2a-color-iconbutton-background-primary-outlined-on-dark-hover: var(--s2a-color-transparent-white-64);
   --s2a-color-iconbutton-background-primary-outlined-on-light-active: var(--s2a-color-gray-25);
   --s2a-color-iconbutton-background-primary-outlined-on-light-default: var(--s2a-color-transparent-white-00);
@@ -97,12 +97,14 @@
   --s2a-color-iconbutton-background-primary-transparent-on-light-default: var(--s2a-color-transparent-white-00);
   --s2a-color-iconbutton-background-primary-transparent-on-light-hover: var(--s2a-color-transparent-white-12);
   --s2a-color-iconbutton-border-primary-outlined-default: var(--s2a-color-gray-25);
-  --s2a-color-iconbutton-border-primary-outlined-on-dark: var(--s2a-color-gray-700);
-  --s2a-color-iconbutton-border-primary-solid-default: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-border-primary-outlined-on-dark-default: var(--s2a-color-gray-700);
+  --s2a-color-iconbutton-border-primary-solid-on-dark-default: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-border-primary-solid-on-light-default: var(--s2a-color-gray-25);
   --s2a-color-iconbutton-content-primary-outlined-default: var(--s2a-color-gray-25);
   --s2a-color-iconbutton-content-primary-outlined-knockout: var(--s2a-color-gray-25);
   --s2a-color-iconbutton-content-primary-solid-default: var(--s2a-color-gray-1000);
   --s2a-color-iconbutton-content-primary-solid-inverse: var(--s2a-color-gray-1000);
   --s2a-color-iconbutton-content-primary-transparent-default: var(--s2a-color-gray-25);
   --s2a-color-iconbutton-content-primary-transparent-knockout: var(--s2a-color-gray-25);
+  --s2a-color-promo-cta-button-background-neutral-on-image-on-dark-active: var(--s2a-color-background-inverse);
 }

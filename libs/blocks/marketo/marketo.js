@@ -16,6 +16,7 @@
 import {
   parseEncodedConfig,
   loadScript,
+  loadStyle,
   loadLink,
   localizeLinkAsync,
   createTag,
@@ -26,6 +27,9 @@ import {
   MILO_EVENTS,
 } from '../../utils/utils.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+
+const sanitizeFormHtml = (value) => (typeof value === 'string' ? sanitizeHtmlBody(value).innerHTML : value);
 
 const ROOT_MARGIN = 50;
 const FAILURE_TIMEOUT = 10000;
@@ -35,6 +39,7 @@ export const LANA_MESSAGE = {
   RENDER_RECOVERED: 'Marketo form rendered after timeout',
   SUBMIT_FAILED: 'Marketo form submit failed',
   MARKETO_FORMS_JS: 'Marketo form failed to load forms2.min.js',
+  HIDDEN_REQUIRED_FIELD: 'Marketo form has a hidden field marked as required',
 };
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
@@ -58,7 +63,43 @@ const FORM_MAP = {
   'hardcoded-poi': 'program.poi',
   'cta-override': 'form.cta.override',
 };
-export const FORM_PARAM = 'form';
+export const UNGATED_PARAM = 'form';
+export const FORM_ID_PARAM = 'marketoform';
+export const NAMED_FORM_IDS = { stage: '1723', prod: '2277' };
+export const MARKETO_LIBS_PARAM = 'marketolibs';
+export const MARKETO_LIBS_META = 'marketo-libs';
+export const MARKETO_LIBS_CLASS = 'da-marketo';
+const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
+
+export function getMarketoLibsBase(el, location = window.location, getMeta = getMetadata) {
+  const { hostname, search } = location;
+  const param = new URLSearchParams(search).get(MARKETO_LIBS_PARAM);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (meta) branch = 'main';
+  if (el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  if (param != null) branch = param || 'main';
+  if (!branch) return null;
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) throw new Error(`Invalid ${MARKETO_LIBS_PARAM} branch name: ${branch}`);
+  if (!['.aem.', '.hlx.', '.stage.', 'local', '.da.'].some((i) => hostname.includes(i))) return '/mkto';
+  if (branch === 'local') return 'http://localhost:6586/mkto';
+  return branch.includes('--')
+    ? `https://${branch}.aem.live/mkto`
+    : `https://${branch}--da-marketo--adobecom.aem.live/mkto`;
+}
+
+export async function loadDaMarketoBlock(el, marketoBase) {
+  try {
+    loadStyle(`${marketoBase}/blocks/da-marketo/da-marketo.css`);
+    const { default: daInit } = await import(`${marketoBase}/blocks/da-marketo/da-marketo.js`);
+    await daInit(el);
+    return true;
+  } catch (e) {
+    window.lana?.log(`da-marketo block load failed: ${e.message}`, { tags: 'marketo', severity: 'w' });
+    return false;
+  }
+}
 
 const isVisible = (el) => !!el && (typeof el.checkVisibility === 'function'
   ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
@@ -87,6 +128,9 @@ export const getDataLayer = (key = '') => key
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+  if (formEl.querySelectorAll('.mktoHidden:has(.mktoRequired)').length) {
+    window.lana?.log(LANA_MESSAGE.HIDDEN_REQUIRED_FIELD, { tags: 'marketo', severity: 'w', sampleRate: 100 });
+  }
 };
 
 export const decorateURL = async (destination, baseURL = window.location) => {
@@ -248,13 +292,11 @@ export const logFailure = (el, msg) => {
   decorateOverlay(el, `${msg}: ${tags.join(', ')}`, () => { window.location.reload(); });
 };
 
-export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => {
-  setTimeout(() => {
-    if (condition()) {
-      logFailure(el, message);
-    }
-  }, timeout);
-};
+export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => setTimeout(() => {
+  if (condition()) {
+    logFailure(el, message);
+  }
+}, timeout);
 
 const toggleSuccessSection = (formData) => {
   showSuccessSection(formData);
@@ -265,7 +307,7 @@ export const formSubmit = (formEl) => {
   const el = formEl.closest('.marketo');
   const testRecord = window.mkto_isTestRecord?.();
   if (testRecord && testRecord !== 'not_test') return;
-  formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
+  el.dataset.submitTimeoutId = formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
 };
 
 export const formSuccess = (formEl, formData) => {
@@ -273,6 +315,7 @@ export const formSuccess = (formEl, formData) => {
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
 
+  clearTimeout(el.dataset.submitTimeoutId);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
@@ -385,12 +428,12 @@ function decorateForm(el, formData) {
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
   if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    const title = createTag('h3', { class: 'marketo-title' }, sanitizeFormHtml(formData.title));
     formWrapper.append(title);
   }
 
   if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    const description = createTag('p', { class: 'marketo-description' }, sanitizeFormHtml(formData.description));
     formWrapper.append(description);
   }
 
@@ -416,6 +459,9 @@ function decorateForm(el, formData) {
 }
 
 export default async function init(el) {
+  const marketoBase = getMarketoLibsBase(el);
+  if (marketoBase && await loadDaMarketoBlock(el, marketoBase)) return;
+
   setDataLayer(FORM_STATUS, 'init');
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
@@ -440,6 +486,17 @@ export default async function init(el) {
     }
   });
 
+  const isProd = getConfig().env?.name === 'prod';
+  const searchParams = new URLSearchParams(window.location.search);
+  const formIdParam = searchParams.get(FORM_ID_PARAM);
+  const setFormId = formIdParam in NAMED_FORM_IDS ? NAMED_FORM_IDS[formIdParam] : formIdParam;
+
+  if (/^\d{4}$/.test(setFormId)) {
+    if (!isProd || Object.values(NAMED_FORM_IDS).includes(setFormId)) {
+      formData[FORM_ID] = setFormId;
+    }
+  }
+
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
@@ -450,8 +507,7 @@ export default async function init(el) {
     return;
   }
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const ungated = searchParams.get(FORM_PARAM) === 'off';
+  const ungated = searchParams.get(UNGATED_PARAM) === 'off';
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');

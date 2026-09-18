@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 const { setConfig, updateConfig, getConfig } = await import('../../../../libs/utils/utils.js');
-const { CARD_STORAGE_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
+const { CARD_STORAGE_KEY, EXCLUDE_MANIFEST_PARAMS_KEY } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-logic.js');
 
 // icon-mep has onclick/onload attributes to exercise svgIcon() sanitization branch
 const SVG_DATA = {
@@ -43,6 +43,11 @@ const fetchStub = sinon.stub(window, 'fetch').callsFake((url) => {
   }
   if (href.includes('supported-markets')) {
     return Promise.resolve({ ok: true, json: async () => ({ languages: { data: [] } }) });
+  }
+  // isWithinFirewall()'s corp-only reachability check: reject by default so tests
+  // exercise the intended Sidekick-auth path instead of always bypassing via firewall.
+  if ((url instanceof URL ? url.hostname : new URL(href).hostname) === 'mep-auth-check.awesome-sites.corp.adobe.com') {
+    return Promise.reject(new Error('offline'));
   }
   // Lambda/API calls return 404 by default so getAdditionalManifests returns undefined
   return Promise.resolve({ ok: false, status: 404, json: async () => ({}), text: async () => '' });
@@ -194,9 +199,9 @@ describe('init: DOM structure — stage env first call', () => {
     expect(content.querySelector('[data-card-key="Toggle"]')).to.exist;
   });
 
-  it('Spoof Geo card is present with select.mep-spoof-geo', () => {
+  it('Spoof Country card is present with select.mep-spoof-geo', () => {
     const content = mainEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.querySelector('[data-card-key="Spoof Geo"]')).to.exist;
+    expect(content.querySelector('[data-card-key="Spoof Country"]')).to.exist;
     expect(content.querySelector('select.mep-spoof-geo')).to.exist;
   });
 
@@ -213,6 +218,18 @@ describe('init: DOM structure — stage env first call', () => {
 
   it('Preview Link toggle exists (string description in buildToggleRow)', () => {
     expect(mainEl.querySelector('#toggle-preview-link')).to.exist;
+  });
+
+  it('persists the Manifest Parameters toggle to sessionStorage on change', () => {
+    const cb = mainEl.querySelector('#toggle-manifest-parameters');
+    expect(cb).to.exist;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('true');
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY)).to.equal('false');
+    sessionStorage.removeItem(EXCLUDE_MANIFEST_PARAMS_KEY);
   });
 
   it('MEP highlight toggle has function-computed description (0 Page Updates)', () => {
@@ -288,8 +305,8 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a', 'v-b'],
           selectedVariantName: 'v-a',
           source: 'adobe-target',
-          geoRestriction: 'emea',
-          mktgAction: 'buy now',
+          countryRestriction: 'emea',
+          consentType: 'promo or no offer changes',
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
         },
@@ -299,8 +316,8 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           variantNames: ['v-a'],
           selectedVariantName: 'not-in-list',
           source: 'helix',
-          geoRestriction: null,
-          mktgAction: null,
+          countryRestriction: null,
+          consentType: null,
           disabled: true,
         },
       ],
@@ -328,7 +345,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('My Campaign');
   });
 
-  it('geoRestriction is uppercased in manifest card (EMEA)', () => {
+  it('countryRestriction is uppercased in manifest card (EMEA)', () => {
     expect(mainEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
   });
 
@@ -416,8 +433,8 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           variantNames: [XSS], // → <option> label
           selectedVariantName: XSS, // → Experience row (buildRow)
           source: XSS, // → Source row (buildRow)
-          geoRestriction: null,
-          mktgAction: null,
+          countryRestriction: null,
+          consentType: null,
           disabled: false,
         },
       ],
@@ -451,6 +468,79 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
     expect(card.textContent).to.include(XSS);
     const option = [...card.querySelectorAll('option')].find((o) => o.textContent === XSS);
     expect(option, 'variant option label rendered as text').to.exist;
+  });
+});
+
+// ============================================================
+// Malformed manifests (mep.manifestErrors): a manifest that failed to load
+// or parse never becomes a full experiment, so it's rendered as a lean card
+// via the same error tooltip used by buildManifestCard's getManifestStatus.
+// ============================================================
+describe('init: buildManifestCard — malformed manifest via mep.manifestErrors', () => {
+  let mainEl;
+  let headerEl;
+
+  const malformedConfig = {
+    ...BASE_CONFIG,
+    mep: {
+      ...BASE_CONFIG.mep,
+      experiments: [
+        {
+          name: 'Valid Campaign',
+          manifest: '/frags/mep/valid.json',
+          variantNames: ['v-a'],
+          selectedVariantName: 'v-a',
+          source: 'helix',
+          disabled: false,
+        },
+      ],
+      manifestErrors: [{ name: 'broken-manifest', manifestPath: '/frags/mep/broken.json', error: 'Manifest' }],
+    },
+  };
+
+  before(async () => {
+    setConfig(malformedConfig);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+  });
+
+  it('renders one card per valid experiment plus one per malformed manifest', () => {
+    expect(mainEl.querySelectorAll('.mep-manifest-card').length).to.equal(2);
+  });
+
+  it('renders the malformed manifest name and marks the card as an error', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard, 'malformed manifest card rendered').to.exist;
+    expect(malformedCard.classList.contains('manifest-error')).to.be.true;
+  });
+
+  it('lists the malformed reason in the error tooltip', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    const tooltip = malformedCard.querySelector('.mep-manifest-error-tooltip');
+    expect(tooltip.textContent).to.include('Manifest not found.');
+  });
+
+  it('does not render a variant select or body rows for the malformed card', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
+    expect(malformedCard.querySelector('select.mep-manifest-variants')).to.be.null;
+    expect(malformedCard.querySelector('.mep-card-body')).to.be.null;
+  });
+
+  it('still renders the valid manifest card without an error class', () => {
+    const cards = [...mainEl.querySelectorAll('.mep-manifest-card')];
+    const validCard = cards.find((c) => c.textContent.includes('Valid Campaign'));
+    expect(validCard, 'valid manifest card rendered').to.exist;
+    expect(validCard.classList.contains('manifest-error')).to.be.false;
   });
 });
 
@@ -637,20 +727,35 @@ describe('buildAdditionalManifests: no base manifest cards → early return', ()
 });
 
 // ============================================================
-// GROUP 5: markExpanded — pre-expanded from localStorage
+// GROUP 5: markExpanded — per-type defaults and localStorage overrides
 // auth state: true → true
 // ============================================================
-describe('markExpanded: pre-expands card when key is in localStorage', () => {
+const CONFIG_WITH_DEFAULT_EXP = {
+  ...BASE_CONFIG,
+  mep: {
+    ...BASE_CONFIG.mep,
+    experiments: [{
+      name: 'Default Card',
+      manifest: '/frags/mep/default-exp.json',
+      variantNames: [],
+      selectedVariantName: 'default',
+      source: 'adobe-target',
+    }],
+  },
+};
+
+describe('markExpanded: defaults with no localStorage entry', () => {
   let mainEl;
   let headerEl;
 
   before(async () => {
-    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(['Highlight']));
-    setConfig(BASE_CONFIG);
+    localStorage.removeItem(CARD_STORAGE_KEY);
+    setConfig(CONFIG_WITH_DEFAULT_EXP);
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
-    await wait(100);
+    await wait(150);
+    setConfig(BASE_CONFIG);
   });
 
   after(() => {
@@ -658,9 +763,52 @@ describe('markExpanded: pre-expands card when key is in localStorage', () => {
     setConfig(BASE_CONFIG);
   });
 
-  it('Highlight card starts expanded when its key is in localStorage', () => {
+  it('manifest cards start collapsed by default', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card.classList.contains('expanded')).to.be.false;
+  });
+
+  it('action cards (e.g. Highlight) start expanded by default', () => {
     const card = mainEl.querySelector('#mep-drawer [data-card-key="Highlight"]');
     expect(card.classList.contains('expanded')).to.be.true;
+  });
+
+  it('summary cards (e.g. Page) start expanded by default', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Page"]');
+    expect(card.classList.contains('expanded')).to.be.true;
+  });
+});
+
+describe('markExpanded: localStorage overrides the per-type default', () => {
+  let mainEl;
+  let headerEl;
+
+  before(async () => {
+    localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify({
+      '/frags/mep/default-exp.json': true,
+      Highlight: false,
+    }));
+    setConfig(CONFIG_WITH_DEFAULT_EXP);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+    setConfig(BASE_CONFIG);
+  });
+
+  it('manifest card starts expanded when localStorage explicitly sets it true', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card.classList.contains('expanded')).to.be.true;
+  });
+
+  it('Highlight card starts collapsed when localStorage explicitly sets it false', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Highlight"]');
+    expect(card.classList.contains('expanded')).to.be.false;
   });
 });
 
@@ -744,13 +892,17 @@ describe('setEventListeners: toggleExpandedCard', () => {
     const svg = card.querySelector('svg');
     const key = card.dataset.cardKey;
     svg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    const stored = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY) || '[]');
-    expect(stored).to.be.an('array');
-    if (card.classList.contains('expanded')) {
-      expect(stored).to.include(key);
-    } else {
-      expect(stored).to.not.include(key);
-    }
+    const stored = JSON.parse(localStorage.getItem(CARD_STORAGE_KEY) || '{}');
+    expect(stored).to.be.an('object');
+    expect(stored[key]).to.equal(card.classList.contains('expanded'));
+  });
+
+  it('clicking a Spoof Country radio-row SVG does not collapse the card', () => {
+    const card = mainEl.querySelector('#mep-drawer [data-card-key="Spoof Country"]');
+    const radioSvg = card.querySelector('.mep-radio-row svg');
+    const was = card.classList.contains('expanded');
+    radioSvg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(card.classList.contains('expanded')).to.equal(was);
   });
 });
 
@@ -968,7 +1120,7 @@ describe('getGnavOffset: MutationObserver resolves when header gains height', ()
 });
 
 // ============================================================
-// GROUP 13: Spoof Geo radio change and select change handlers
+// GROUP 13: Spoof Country radio change and select change handlers
 // auth state: true → true
 // ============================================================
 describe('buildSpoofGeo: radio change and select change handlers', () => {

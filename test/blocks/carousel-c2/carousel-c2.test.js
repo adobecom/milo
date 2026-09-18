@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
+import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import init from '../../../libs/c2/blocks/carousel-c2/carousel-c2.js';
 
 describe('Carousel C2', () => {
@@ -119,5 +120,139 @@ describe('Carousel C2', () => {
     expect(indicators[0].classList.contains('active')).to.be.false;
     expect(indicators[1].classList.contains('active')).to.be.true;
     expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 3');
+  });
+
+  it('does not pad the wrapper when there are three or more slides', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+
+    const wrapperSlides = [...block.querySelectorAll('.carousel-wrapper > .carousel-slide')];
+    expect(wrapperSlides.length).to.equal(3);
+    expect(block.querySelectorAll('.carousel-wrapper [data-cloned]').length).to.equal(0);
+  });
+
+  describe('with only two slides (MWPW-203780)', () => {
+    it('fills the trailing hint slot so no blank slide shows before interaction', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      const wrapperSlides = [...block.querySelectorAll('.carousel-wrapper > .carousel-slide')];
+      // padded to three so both the left and right peek slots are filled
+      expect(wrapperSlides.length).to.equal(3);
+      // active authored slide sits at wrapper index 1 (CSS centers index 1)
+      expect(wrapperSlides[1].classList.contains('active')).to.be.true;
+      expect(wrapperSlides[1].getAttribute('data-index')).to.equal('0');
+      // the right hint slot (index 2) is filled by a clone instead of being blank
+      expect(wrapperSlides[2].getAttribute('data-cloned')).to.equal('true');
+    });
+
+    it('keeps only the two authored slides real, with two indicators', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      const realSlides = block.querySelectorAll('.carousel-wrapper > .carousel-slide:not([data-cloned])');
+      expect(realSlides.length).to.equal(2);
+
+      const indicators = block.querySelectorAll('.indicators-container .slide-indicator');
+      expect(indicators.length).to.equal(2);
+      expect(indicators[0].getAttribute('aria-label')).to.equal('Slide 1 of 2');
+    });
+
+    it('hides the padded clone from assistive tech and removes it from the tab order', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      const clone = block.querySelector('.carousel-wrapper > .carousel-slide[data-cloned]');
+      expect(clone.getAttribute('aria-hidden')).to.equal('true');
+      expect(clone.hasAttribute('data-index')).to.be.false;
+      expect(clone.querySelector('a').getAttribute('tabindex')).to.equal('-1');
+    });
+
+    it('still advances through the loop clones when clicking next', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      block.querySelector('button.next').click();
+
+      const active = block.querySelector('.carousel-wrapper .active:not([data-cloned])');
+      expect(active.getAttribute('data-index')).to.equal('1');
+      // first interaction rebuilds the full loop ring
+      expect(block.querySelector('.carousel-wrapper').getAttribute('data-slides-cloned')).to.equal('true');
+
+      const indicators = block.querySelectorAll('.indicators-container .slide-indicator');
+      expect(indicators[1].classList.contains('active')).to.be.true;
+      expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 2');
+    });
+
+    it('rebuilds the padded hint clone once the source slide gains a section-background', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      const wrapper = block.querySelector('.carousel-wrapper');
+      const source = wrapper.children[0]; // the slide the trailing clone was made from
+      const staleClone = wrapper.querySelector('.carousel-slide[data-cloned]');
+      expect(staleClone.querySelector('.section-background')).to.be.null;
+      const spreadSign = staleClone.style.getPropertyValue('--slide-spread-sign');
+
+      // a slide's section-metadata block appends .section-background asynchronously,
+      // after init has already snapshotted the hint clone
+      const bg = document.createElement('div');
+      bg.className = 'section-background';
+      bg.innerHTML = '<img src="https://example.com/bg.png">';
+      source.insertAdjacentElement('afterbegin', bg);
+      // MILO_EVENTS.DEFERRED fires once every section's background has processed
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+
+      const clone = wrapper.querySelector('.carousel-slide[data-cloned]');
+      expect(clone.querySelector(':scope > .section-background')).to.not.be.null;
+      expect(clone.getAttribute('aria-hidden')).to.equal('true');
+      expect(clone.hasAttribute('data-index')).to.be.false;
+      expect(clone.style.getPropertyValue('--slide-spread-sign')).to.equal(spreadSign);
+      expect(clone.querySelector('a').getAttribute('tabindex')).to.equal('-1');
+    });
+
+    it('rebuilds the loop-ring clones when a background arrives after interaction', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-slides.html' });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+
+      // interact first so the permanent loop ring is built from the still-blank slides
+      block.querySelector('button.next').click();
+      const wrapper = block.querySelector('.carousel-wrapper');
+      expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+      const ringClone = wrapper.querySelector('.carousel-slide[data-cloned]');
+      expect(ringClone.querySelector(':scope > .section-background')).to.be.null;
+
+      // the source slide gains its background afterwards, then DEFERRED fires
+      wrapper.querySelectorAll('.carousel-slide:not([data-cloned])').forEach((slide) => {
+        const bg = document.createElement('div');
+        bg.className = 'section-background';
+        bg.innerHTML = '<img src="https://example.com/bg.png">';
+        slide.insertAdjacentElement('afterbegin', bg);
+      });
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+
+      wrapper.querySelectorAll('.carousel-slide[data-cloned]').forEach((clone) => {
+        expect(clone.querySelector(':scope > .section-background')).to.not.be.null;
+      });
+    });
+
+    it('clears the block for a single-slide carousel instead of throwing', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/one-slide.html' });
+      const block = document.querySelector('.carousel-c2');
+      expect(() => init(block)).to.not.throw();
+      // no carousel is built and the raw config rows are removed
+      expect(block.querySelector('.carousel-wrapper')).to.be.null;
+      expect(block.textContent.trim()).to.equal('');
+      // the lone section is not left half-decorated
+      expect(document.querySelector('.section .carousel-slide')).to.be.null;
+      expect(document.querySelector('[data-index]')).to.be.null;
+    });
   });
 });

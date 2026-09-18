@@ -13,6 +13,8 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
   initBulkPublisherLingoMapping,
+  isLingoLangFirstPath,
+  getLanguageFirstCountryAndLang,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -861,8 +863,8 @@ describe('getCountryAndLang', () => {
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
         'site-locales': {
           data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '/be, /ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: '/be, /us' },
           ],
         },
       }),
@@ -1486,6 +1488,136 @@ describe('isLocaleInRegionalSites helper function tests', () => {
       const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
       expect(result).to.be.false;
     });
+  });
+});
+
+describe('isLingoLangFirstPath', () => {
+  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/
+  // /gb/ and /au/ are English regionals
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: '/at' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('returns null when origin is absent from the mapping', async () => {
+    const result = await isLingoLangFirstPath('unknown-origin', '/de/article', 'test');
+    expect(result).to.be.null;
+  });
+
+  it('returns true when locale matches the baseSite of a non-English entry', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns true when locale is a regional site of a non-English baseSite', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/at/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false when locale is an English regional site', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/gb/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('returns true for an unprefixed path (base English page, no locale segment)', async () => {
+    // e.g. business.adobe.com/products/brand-concierge.html: the first path
+    // segment ("products") is real content, not a locale, and must not be
+    // mistaken for one just because it occupies that position in the URL.
+    const result = await isLingoLangFirstPath('bacom', '/products/brand-concierge.html', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false for a real locale code that is simply not onboarded to this site\'s Lingo mapping', async () => {
+    // 'uk' is not in bacom-site's mapping (mock has no /uk anywhere) but IS a
+    // real locale prefix in Milo's classic locale table — it must fall
+    // through to the classic non-LFL lookup, not be swept into the
+    // unprefixed root family the way genuine content segments (e.g.
+    // "products") are.
+    const result = await isLingoLangFirstPath('bacom', '/uk/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('throws when fetch fails so the caller can surface it as an error', async () => {
+    window.fetch = stub().rejects(new Error('network error'));
+    initBulkPublisherLingoMapping();
+    let caught;
+    try {
+      await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).to.be.instanceOf(Error);
+    expect(caught.message).to.equal('network error');
+  });
+});
+
+describe('getLanguageFirstCountryAndLang', () => {
+  // Same shape as bacom's real lingo-site-mapping entry: a root ('/') English
+  // family plus a French family, each with their own regional variants.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/fr', regionalSites: '/be_fr' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('resolves an unprefixed base-English path to en/xx, not the classic en-US fallback', async () => {
+    const result = await getLanguageFirstCountryAndLang('/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'en' });
+  });
+
+  it('resolves a French-prefixed path to fr/xx', async () => {
+    const result = await getLanguageFirstCountryAndLang('/fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'fr' });
+  });
+
+  it('resolves an English-regional path to its country with language en (not blank)', async () => {
+    const result = await getLanguageFirstCountryAndLang('/gb/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
+  });
+
+  it('resolves a French-regional path to its country with language fr', async () => {
+    const result = await getLanguageFirstCountryAndLang('/be_fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'be', lang: 'fr' });
+  });
+
+  it('falls through to the classic locale for a real locale code not onboarded to this site', async () => {
+    // 'uk' isn't in this mock's mapping (no /uk anywhere), but it IS a real
+    // locale in Milo's classic locale table (en-GB) — it must resolve via
+    // that classic lookup, not be misclassified as the unprefixed root
+    // family's en/xx.
+    const result = await getLanguageFirstCountryAndLang('/uk/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
   });
 });
 

@@ -162,6 +162,11 @@
   color: var(--color-black);
 }
 
+.article-author a:any-link:hover,
+.article-author a:any-link:focus {
+  color: var(--link-hover-color);
+}
+
 .article-author p {
   margin: 0;
 }
