@@ -528,7 +528,7 @@ export default function init() {
     scrollTasks.length = 0;
   });
 
-  // Lenis is skipped on mobile, so fall back to native scroll there.
+  // Bind to Lenis's scroll event when it's running; otherwise fall back to native scroll
   if (window.lenis) {
     window.lenis.on('scroll', ({ scroll }) => {
       scrollTasks.forEach((task) => task(scroll));

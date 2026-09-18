@@ -1277,7 +1277,8 @@ span.hang-opening-quote {
     will-change: scale;
 
     @media (width >= 768px) {
-      /* 8.333% grid margin as a length (a % can't resolve inside atan2) */
+      /* 8.333% grid margin as a length (a % can't resolve inside atan2)
+      Keep value in sync with --grid-margin-width-base */
       &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
     }
 

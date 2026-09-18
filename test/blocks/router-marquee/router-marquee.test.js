@@ -1,7 +1,11 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 import init from '../../../libs/c2/blocks/router-marquee/router-marquee.js';
+
+const AUTOPLAY_MS = 5000;
+const FIRST_FRAME_FALLBACK_MS = 8000;
 
 const mobileVp = (block) => block.querySelector('.rm-viewport[data-viewport="mobile"]');
 
@@ -195,5 +199,106 @@ describe('Router Marquee', () => {
     // starting-marquee=2 promotes the second authored slide to the front
     expect(slides[0].querySelector('.rm-title').textContent.trim()).to.equal('Slide two title');
     expect(slides[1].querySelector('.rm-title').textContent.trim()).to.equal('Slide one title');
+  });
+});
+
+describe('Router Marquee — autoplay first-frame gating', () => {
+  let clock;
+  let capturedFrameCb;
+  let origRvfc;
+  let origPlay;
+  let origLoad;
+  let origAdd;
+
+  const activeVpName = () => {
+    if (window.matchMedia('(width >= 1280px)').matches) return 'desktop';
+    if (window.matchMedia('(width > 767px)').matches) return 'tablet';
+    return 'mobile';
+  };
+  const activeVp = (block) => block.querySelector(`.rm-viewport[data-viewport="${activeVpName()}"]`);
+  const bars = (block) => [...activeVp(block).querySelectorAll('.rm-card-progress-bar')];
+  // startFill sets a `transform <AUTOPLAY_MS>ms linear` transition; use that as the signal
+  // that autoplay actually began for a given slide index.
+  const fillRunning = (block, i) => (bars(block)[i]?.style.transition || '').includes(`${AUTOPLAY_MS}ms`);
+  const activeIndex = (block) => [...activeVp(block).querySelectorAll('.rm-slide')]
+    .findIndex((s) => s.classList.contains('is-active'));
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    capturedFrameCb = null;
+    // Capture the first-frame callback instead of firing it, so the test decides when
+    // (if ever) the hero video presents its first frame.
+    origRvfc = window.HTMLVideoElement.prototype.requestVideoFrameCallback;
+    window.HTMLVideoElement.prototype.requestVideoFrameCallback = function reqFrame(cb) {
+      capturedFrameCb = cb;
+      return 1;
+    };
+    origPlay = window.HTMLMediaElement.prototype.play;
+    window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+    origLoad = window.HTMLMediaElement.prototype.load;
+    window.HTMLMediaElement.prototype.load = () => {};
+    // The block's only media error/loadeddata listeners are the first-frame kick; drop them
+    // so the captured rVFC callback and the fallback timer are the sole ways autoplay starts.
+    origAdd = window.HTMLMediaElement.prototype.addEventListener;
+    window.HTMLMediaElement.prototype.addEventListener = function add(type, cb, opts) {
+      if (['error', 'loadeddata', 'stalled'].includes(type)) return undefined;
+      return origAdd.call(this, type, cb, opts);
+    };
+  });
+
+  afterEach(() => {
+    window.HTMLVideoElement.prototype.requestVideoFrameCallback = origRvfc;
+    window.HTMLMediaElement.prototype.play = origPlay;
+    window.HTMLMediaElement.prototype.load = origLoad;
+    window.HTMLMediaElement.prototype.addEventListener = origAdd;
+    clock.restore();
+  });
+
+  const setup = async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/video.html' });
+    const block = document.querySelector('.router-marquee');
+    init(block);
+    return block;
+  };
+
+  it('does not start autoplay before the hero video presents its first frame', async () => {
+    const block = await setup();
+    expect(capturedFrameCb).to.be.a('function');
+    // Past a full autoplay cycle but under the fallback: with the frame withheld, nothing runs.
+    clock.tick(AUTOPLAY_MS + 100);
+    expect(fillRunning(block, 0)).to.be.false;
+    expect(activeIndex(block)).to.equal(0);
+  });
+
+  it('starts the fill and advance timer once the first frame fires', async () => {
+    const block = await setup();
+    expect(fillRunning(block, 0)).to.be.false;
+    capturedFrameCb();
+    expect(fillRunning(block, 0)).to.be.true;
+    clock.tick(AUTOPLAY_MS);
+    expect(activeIndex(block)).to.equal(1);
+  });
+
+  it('falls back to starting autoplay after the timeout when no frame fires', async () => {
+    const block = await setup();
+    clock.tick(FIRST_FRAME_FALLBACK_MS - 1);
+    expect(fillRunning(block, 0)).to.be.false;
+    clock.tick(1);
+    expect(fillRunning(block, 0)).to.be.true;
+  });
+
+  it('lets the first frame govern advance timing when resumed during the gate', async () => {
+    const block = await setup();
+    const btn = activeVp(block).querySelector('.rm-pause-play');
+    btn.click(); // pause
+    btn.click(); // resume -> schedules an advance at t+AUTOPLAY_MS
+    clock.tick(2000);
+    capturedFrameCb(); // first frame at t=2000 -> advance timer should re-anchor to t=7000
+    // At t=AUTOPLAY_MS the stray resume-timer must NOT have advanced the slide.
+    clock.tick(AUTOPLAY_MS - 2000);
+    expect(activeIndex(block)).to.equal(0);
+    // The frame-anchored timer advances at t=2000+AUTOPLAY_MS.
+    clock.tick(2000);
+    expect(activeIndex(block)).to.equal(1);
   });
 });
