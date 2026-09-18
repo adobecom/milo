@@ -16,7 +16,6 @@ import { setConfig, getLocale } from '../../../libs/utils/utils.js';
 import {
   isDesktop,
   isTangentToViewport,
-  resolveAupEnvironment,
   toFragment,
 } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
@@ -509,33 +508,7 @@ describe('global navigation', () => {
       }
     });
 
-    it('uses production Commerce unless Stage is explicitly requested', () => {
-      const cases = [
-        {
-          query: '',
-          environment: 'prod',
-        },
-        {
-          query: '?commerce.env=stage&commerce.landscape=DRAFT',
-          environment: 'stage',
-        },
-        {
-          query: '?commerce.env=prod',
-          environment: 'prod',
-        },
-        {
-          query: '?commerce.env=invalid',
-          environment: 'prod',
-        },
-      ];
-
-      cases.forEach(({ query, environment }) => {
-        const commerceEnvironment = new URLSearchParams(query).get('commerce.env');
-        expect(resolveAupEnvironment(commerceEnvironment)).to.equal(environment);
-      });
-    });
-
-    it('passes the Commerce and CDN environments to the SDK', async () => {
+    it('uses production Commerce unless Stage is explicitly requested', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;
       const previousSdkFactory = window.AUPSDK;
@@ -551,6 +524,16 @@ describe('global navigation', () => {
         await gnav.constructor.preloadAupSdk();
         expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
           environment: 'prod',
+          cdnEnvironment: 'stage',
+        });
+
+        const url = new URL(originalUrl);
+        url.searchParams.set('commerce.env', 'stage');
+        window.history.replaceState(null, '', url);
+        window.aupsdk = undefined;
+        await gnav.constructor.preloadAupSdk();
+        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+          environment: 'stage',
           cdnEnvironment: 'stage',
         });
       } finally {

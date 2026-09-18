@@ -26,10 +26,6 @@ const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
 export const KEYBOARD_DELAY = 8000;
 
-export const resolveAupEnvironment = (commerceEnvironment) => (
-  commerceEnvironment === 'stage' ? 'stage' : 'prod'
-);
-
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
   localNavTitle: '.feds-navLink[aria-expanded="true"]',

@@ -114,7 +114,6 @@ const {
   KEYBOARD_DELAY,
   isSmallScreen,
   updateGnavActiveLink,
-  resolveAupEnvironment,
 } = utilities;
 
 export { updateGnavActiveLink };
@@ -1130,7 +1129,7 @@ class Gnav {
     const { imsClientId } = config;
     const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
     const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
-    const environment = resolveAupEnvironment(commerceEnvironment);
+    const environment = commerceEnvironment === 'stage' ? 'stage' : 'prod';
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
