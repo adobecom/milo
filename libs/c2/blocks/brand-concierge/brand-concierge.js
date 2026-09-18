@@ -1,6 +1,7 @@
 import { createTag, getMetadata } from '../../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import acomAssistantRouteInput from './acom-assistant-bootstrap.js';
+import { getAcomAssistantClient } from '../../../features/acom-assistant.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -72,13 +73,14 @@ function handleFloatingButton() {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
-  useAcomAssistant = getMetadata('acom-assistant') === 'on';
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
+    if (!window.adobe?.concierge?.clearHistory && !getAcomAssistantClient()) {
       loadWebclient();
     }
     if (window.adobe?.concierge?.clearHistory) {
