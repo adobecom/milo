@@ -807,9 +807,7 @@
     The manager MUST serialize an Offer for a SoftwareApplication,
     WebApplication, MobileApplication, or VideoGame whose offers property is
     missing or an empty array. This applies to SoftwareApplication nodes
-    transformed from Product. The fallback MUST be suppressed when the page
-    locale, selected Lingo market, or geo-resolved Lingo market is Korea. The
-    generated Offer MUST have @id
+    transformed from Product. The generated Offer MUST have @id
     {canonicalPageURL}#offer, price "0", priceCurrency "USD", availability
     "https://schema.org/InStock", and category "Free Trial"; the application
     MUST reference it as offers: [{"@id":"{canonicalPageURL}#offer"}].

@@ -125,34 +125,6 @@ describe('Rich Results', () => {
     }
   });
 
-  it('suppresses the generated free-trial Offer for the Korea market', async () => {
-    document.head.innerHTML = `
-      <meta name="jsonld-graph-manager" content="true">
-      <script type="application/ld+json">{"@type":"SoftwareApplication","name":"Photoshop"}</script>
-    `;
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    setConfig({
-      locales: { kr: { ietf: 'ko-KR', tk: 'qjs5sfm' } },
-      pathname: '/kr/products/photoshop',
-    });
-    if (window.miloJsonLd) window.miloJsonLd.manager = null;
-    await loadArea(document);
-    await waitFor(() => window.miloJsonLd?.manager, 2000);
-
-    const { manager } = window.miloJsonLd;
-    try {
-      const graph = JSON.parse(
-        document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
-      )['@graph'];
-      const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
-      expect(app.offers).to.be.undefined;
-      expect(graph.find((node) => node['@type'] === 'Offer')).to.not.exist;
-    } finally {
-      manager.destroy();
-      window.miloJsonLd.manager = null;
-    }
-  });
-
   it('keeps page loading and authored JSON-LD intact when manager initialization fails', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
     document.head.insertAdjacentHTML('beforeend', `
