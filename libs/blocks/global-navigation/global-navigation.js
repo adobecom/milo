@@ -1169,7 +1169,7 @@ class Gnav {
         let onDialogClick;
         let restoreUrl;
         let isTornDown = false;
-        const teardown = (restoreHash = true) => {
+        const teardown = () => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
@@ -1180,7 +1180,7 @@ class Gnav {
           dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
           if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
-          if (restoreHash && restoreUrl && window.location.hash === modalHash) {
+          if (restoreUrl && window.location.hash === modalHash) {
             window.history.pushState(window.history.state, '', restoreUrl);
           }
         };
