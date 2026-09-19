@@ -1,13 +1,17 @@
-import {
+import * as utils from '../utils/utils.js';
+
+const {
   customFetch,
   getConfig,
-  geoIpSiteKey,
   getGeoIpWarmSheet,
   getMetadata,
   lingoActive,
   normCountryCode,
   resolveDetectedMarketCountry,
-} from '../utils/utils.js';
+} = utils;
+
+const geoIpSiteKey = utils.geoIpSiteKey
+  ?? (({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en');
 
 const fetchedPlaceholders = {};
 const fetchedGeoSheets = {};
