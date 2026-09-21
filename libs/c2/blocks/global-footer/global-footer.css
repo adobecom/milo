@@ -499,6 +499,7 @@ span.feds-footer-privacyLink-divider {
 }
 
 .global-footer.event .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: relative;
   padding-left: 0;
 }
 
