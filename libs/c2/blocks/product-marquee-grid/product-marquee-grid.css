@@ -50,10 +50,6 @@
       vertical-align: -0.2em;
       height: 18px;
 
-      svg {
-        block-size: 100%;
-        inline-size: 100%;
-      }
 
       path {
         fill: var(--s2a-color-content-subtle);
