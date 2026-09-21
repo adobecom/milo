@@ -46,7 +46,7 @@ function injectSchema(el, company) {
     schema.worksFor = { '@type': 'Organization', name: company };
   }
 
-  const title = el.querySelector('.blog-author-title')?.innerText.trim();
+  const title = el.querySelector('.blog-author-title')?.textContent.trim();
   if (title) schema.jobTitle = title;
 
   const desc = [...el.querySelectorAll('.blog-author-description')]
