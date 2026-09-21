@@ -1157,6 +1157,7 @@ class Gnav {
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
         const cleanupAupModalHash = getAupModalHashCleanup();
+        const modalHash = cleanupAupModalHash && window.location.hash;
         const isIframe = element.tagName === 'IFRAME';
         try {
           if (isIframe) {
@@ -1175,6 +1176,7 @@ class Gnav {
         let closeDialog;
         let onDialogCancel;
         let onDialogClick;
+        let onNavigation;
         let isTornDown = false;
         const teardown = () => {
           if (isTornDown) return;
@@ -1183,6 +1185,8 @@ class Gnav {
           element.removeEventListener('close', closeDialog);
           dialog?.removeEventListener('cancel', onDialogCancel);
           dialog?.removeEventListener('click', onDialogClick);
+          window.removeEventListener('popstate', onNavigation);
+          window.removeEventListener('hashchange', onNavigation);
           if (dialog?.open) dialog.close();
           dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
@@ -1197,6 +1201,9 @@ class Gnav {
           // The orchestrator settles on cancel; close releases its event listeners.
           element.dispatchEvent(new Event('cancel'));
           element.dispatchEvent(new Event('close'));
+        };
+        onNavigation = () => {
+          if (modalHash && window.location.hash !== modalHash) cancel();
         };
         onDialogCancel = (e) => {
           if (e.target !== dialog) return;
@@ -1229,9 +1236,12 @@ class Gnav {
           element.addEventListener('close', closeDialog, { once: true });
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
+          window.addEventListener('popstate', onNavigation);
+          window.addEventListener('hashchange', onNavigation);
           teardownActiveDialog = teardown;
           document.documentElement.classList.add('disable-scroll');
           dialog.showModal();
+          onNavigation();
         } catch (e) {
           teardown();
           throw e;
