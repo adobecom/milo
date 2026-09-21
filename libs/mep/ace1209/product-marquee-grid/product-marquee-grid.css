@@ -48,6 +48,13 @@
     .icon-button {
       background: transparent;
       border-color: transparent;
+      vertical-align: -0.2em;
+      height: 18px;
+
+      svg {
+        block-size: 100%;
+        inline-size: 100%;
+      }
 
       path {
         fill: var(--s2a-color-content-subtle);
@@ -191,8 +198,8 @@ body:has(header.local-nav) .product-marquee-grid {
       gap: var(--s2a-spacing-lg);
 
       img.icon {
-        block-size: 80px;
-        inline-size: 80px;
+        block-size: 64px;
+        inline-size: 64px;
       }
     }
 
