@@ -2,7 +2,7 @@ import * as THREE from '../../../deps/three.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   parseAuthoredContent, fetchFireflyAssets, buildGlobeDom,
-  optimizeImgUrl, scatterCards, layoutQuote,
+  fireflyRenditionUrl, scatterCards, layoutQuote,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -850,7 +850,8 @@ function createGlobeGalleryRuntime(
       const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
       if (modalCap <= base) return null;
       const meta = getCardMetadata(idx);
-      const src = optimizeImgUrl(meta.img, modalCap);
+      const axis = (meta.maxHeight || 0) > (meta.maxWidth || 0) ? 'height' : 'width';
+      const src = fireflyRenditionUrl(meta, modalCap, axis);
       return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin);
     },
     getViewport: () => ({ W, H }),
@@ -1773,7 +1774,7 @@ function createGlobeGalleryRuntime(
     loadCardTextures({
       count: bp.N_TOTAL,
       // Ask at the cap, by HEIGHT, matching fitCardDims.
-      getSrc: (i) => optimizeImgUrl(getCardMetadata(i).img, cardMaxTexH, 'height'),
+      getSrc: (i) => fireflyRenditionUrl(getCardMetadata(i), cardMaxTexH, 'height'),
       maxTexH: cardMaxTexH,
       getCrossOrigin: (i) => getCardMetadata(i).crossOrigin || null,
     }, onEachTexture, onDoneTextures);

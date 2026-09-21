@@ -307,15 +307,3 @@ Confirmed providers as of 2026-09 — no icon URLs are in the API; map them your
 ```js
 `https://cdn.cp.adobe.io/content/2/dcx/${asset.id}/content/manifest/version/0/component/path/output/resource`
 ```
-
----
-
-## Applying to firefly-globe
-
-Implemented in `src/authoring.js` (`fetchFireflyAssets` → `apiAssetToCard`): the rendition URL is
-requested at `min(max_width, 1024)` and `optimizeImgUrl` passes it through; the optional authored
-`machineTag` is added to the query as `machine_tag`; `machine_tags` supply
-`modelId` / `modelVersionName`; the prompt is picked by page locale; `urn` builds the Firefly deep link
-the modal CTA opens. Images are loaded with `crossOrigin: 'anonymous'` because the CDN is cross-origin
-and the card textures go through WebGL. See `README.md` for the authoring row that carries the
-`categoryId`.

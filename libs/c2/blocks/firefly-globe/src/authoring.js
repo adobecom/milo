@@ -148,10 +148,16 @@ const ALT_MAX_CHARS = 120;
 const FF_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const FF_API_KEY = 'milo-ff-gallery-unity';
 
-function buildRenditionUrl(href, size) {
+function componentRenditionHref(previewHref, id) {
+  const base = previewHref.split('/rendition/')[0];
+  const tmpl = 'format/{format}/dimension/{dimension}/size/{size}';
+  return `${base}/dcx/${id}/rendition/output/resource/version/0/${tmpl}`;
+}
+
+function buildRenditionUrl(href, size, dimension = 'width') {
   return href
     .replace(/{format}/g, 'jpg')
-    .replace(/{dimension}/g, 'width')
+    .replace(/{dimension}/g, dimension)
     .replace(/{size}/g, size);
 }
 
@@ -175,9 +181,7 @@ function parseModelTags(machineTags) {
 function apiAssetToCard(asset, locale) {
   // eslint-disable-next-line no-underscore-dangle
   const rendition = asset?._links?.rendition;
-  if (!rendition?.href) return null;
-  const width = Math.min(rendition.max_width || 1024, 1024);
-  const img = buildRenditionUrl(rendition.href, width);
+  if (!rendition?.href || !asset.id) return null;
 
   const prompts = asset.custom?.input?.['firefly#prompts'];
   const prompt = getLocalizedPrompt(prompts, locale);
@@ -186,7 +190,9 @@ function apiAssetToCard(asset, locale) {
     : null;
   const { modelId, modelVersionName } = parseModelTags(asset.machine_tags);
   return {
-    img,
+    renditionHref: componentRenditionHref(rendition.href, asset.id),
+    maxWidth: rendition.max_width || null,
+    maxHeight: rendition.max_height || null,
     alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
     modelId,
     modelVersionName,
@@ -198,41 +204,42 @@ function apiAssetToCard(asset, locale) {
 
 export async function fetchFireflyAssets(categoryId, locale, machineTag) {
   const loc = locale || 'en-US';
+  const params = new URLSearchParams({
+    size: '50',
+    sort: 'updated_desc',
+    include_pending_assets: 'false',
+    cursor: '',
+    category_id: categoryId,
+  });
+  // The API escapes single quotes / backslashes in machine tags with a backslash.
+  if (machineTag) params.append('machine_tag', machineTag.replace(/(['\\])/g, '\\$1'));
+  const url = `${FF_API_URL}?${params}`;
   try {
-    const params = new URLSearchParams({
-      size: '50',
-      sort: 'updated_desc',
-      include_pending_assets: 'false',
-      cursor: '',
-      category_id: categoryId,
-    });
-    // The API escapes single quotes / backslashes in machine tags with a backslash.
-    if (machineTag) params.append('machine_tag', machineTag.replace(/(['\\])/g, '\\$1'));
-    const resp = await fetch(
-      `${FF_API_URL}?${params}`,
-      { headers: { 'x-api-key': FF_API_KEY } },
-    );
-    if (!resp.ok) return null;
+    const resp = await fetch(url, { headers: { 'x-api-key': FF_API_KEY } });
+    if (!resp.ok) {
+      window.lana?.log?.(
+        `firefly-globe: assets request failed (${resp.status}): ${url}`,
+        { tags: 'firefly-globe', severity: 'error' },
+      );
+      return null;
+    }
     const data = await resp.json();
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
     const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
     return cards.length ? cards : null;
   } catch (e) {
+    window.lana?.log?.(
+      `firefly-globe: assets fetch error (${e.message}): ${url}`,
+      { tags: 'firefly-globe', severity: 'error' },
+    );
     return null;
   }
 }
 
-// Cards ask by height, the modal by width; non-media URLs pass through.
-export function optimizeImgUrl(src, px, axis = 'width') {
-  if (!src) return src;
-  try {
-    const url = new URL(src, window.location.href);
-    if (!/(^|\/)media_[0-9a-f]/i.test(url.pathname)) return src;
-    return `${url.origin}${url.pathname}?${axis}=${Math.round(px)}&format=webply`;
-  } catch (e) {
-    return src;
-  }
+export function fireflyRenditionUrl(card, px, axis = 'width') {
+  if (!card?.renditionHref) return '';
+  return buildRenditionUrl(card.renditionHref, Math.round(px), axis);
 }
 
 export function parseAuthoredContent(el) {

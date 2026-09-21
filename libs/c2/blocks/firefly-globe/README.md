@@ -45,6 +45,25 @@ API prompt locale: `getConfig().locale.ietf` exact match → language-only key �
 `en-US` → first available. The API has no alt text; the prompt (first 120 chars) is the card's `alt`,
 so it is the a11y card label and the modal's sr-only image label.
 
+## Image sourcing
+
+`apiAssetToCard` (`src/authoring.js`) ignores the API's `_links.rendition` (a ≤600px preview) and
+instead stores a rendition template for the full-resolution DCX `output/resource` component, built
+from the asset `id` and the CDN base taken from the preview href (`<base>/rendition/<id>/…` →
+`<base>/dcx/<id>/…`):
+
+```
+<base>/dcx/<id>/rendition/output/resource/version/0/format/{format}/dimension/{dimension}/size/{size}
+```
+
+`fireflyRenditionUrl(card, px, axis)` fills it as a `jpg` (the component serves only `jpg`/`png`;
+`webp`/`avif` → HTTP 415) at the requested px. The CDN caps `size` at the component's native
+resolution, which the API does not report, so there is no client-side clamp. Cards request by height
+at `CARD_TEX_SM`/`CARD_TEX_MD` (384/768); the modal requests its longest side at
+`MODAL_TEX_SM`/`MODAL_TEX_MD` (1024/2048), the axis chosen from `max_width`/`max_height`. Textures load
+`crossOrigin: 'anonymous'` because the CDN is cross-origin and the cards go through WebGL. See
+`FIREFLY-API.md` for the API response the mapping reads.
+
 ## Phases
 
 `interactive` (`entryT >= SPHERE_INTERACTIVE_T`, `src/utils.js`) is globe-gallery's gate, on the
@@ -228,8 +247,9 @@ toggled after a value has already been written, so they reset `opacity` and `tra
 ## Tests
 
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
-quote), `buildGlobeDom`, API card mapping (rendition URL cap, model tags, locale fallback, alt
-fallback), the frame shape, the clock endpoints (`deriveFrame`) and the travel camera inverse pair.
+quote), `buildGlobeDom`, API card mapping (component rendition template, model tags, locale
+fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the clock endpoints
+(`deriveFrame`) and the travel camera inverse pair.
 
 `layoutQuote` is covered against real layout — the split reads `offsetTop` per word, so those cases
 attach the quote to the document at a width that forces a wrap. They pin the parts a relayout can

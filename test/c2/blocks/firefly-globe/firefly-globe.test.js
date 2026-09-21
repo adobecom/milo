@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
 import {
   escapeHtml,
-  optimizeImgUrl,
+  fireflyRenditionUrl,
   scatterCards,
   parseAuthoredContent,
   buildGlobeDom,
@@ -39,29 +39,37 @@ describe('firefly-globe: escapeHtml', () => {
 });
 
 // ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: optimizeImgUrl', () => {
-  it('appends width and webply format to media_ URLs', () => {
-    const src = 'https://example.aem.live/media_abc123def.png';
-    const result = optimizeImgUrl(src, 512);
-    expect(result).to.include('width=512');
-    expect(result).to.include('format=webply');
+describe('firefly-globe: fireflyRenditionUrl', () => {
+  const card = (over = {}) => ({
+    renditionHref: 'https://cdn.cp.adobe.io/x/{format}/{dimension}/{size}',
+    maxWidth: 600,
+    maxHeight: 600,
+    ...over,
   });
 
-  it('appends height param when axis=height', () => {
-    const src = 'https://example.aem.live/media_abc123.jpg';
-    const result = optimizeImgUrl(src, 256, 'height');
-    expect(result).to.include('height=256');
-    expect(result).to.not.include('width=');
+  it('fills the template as a jpg rendition at the requested width', () => {
+    expect(fireflyRenditionUrl(card(), 512))
+      .to.equal('https://cdn.cp.adobe.io/x/jpg/width/512');
   });
 
-  it('passes non-media URLs through unchanged', () => {
-    const src = 'https://example.com/assets/logo.svg';
-    expect(optimizeImgUrl(src, 100)).to.equal(src);
+  it('measures by height when axis=height', () => {
+    expect(fireflyRenditionUrl(card(), 256, 'height'))
+      .to.equal('https://cdn.cp.adobe.io/x/jpg/height/256');
   });
 
-  it('returns the src as-is when src is falsy', () => {
-    expect(optimizeImgUrl('', 100)).to.equal('');
-    expect(optimizeImgUrl(null, 100)).to.equal(null);
+  it('does not clamp the requested size — the CDN caps at native', () => {
+    // The component's true resolution is unknown here (max* describe the preview), so we ask big
+    // and let the CDN re-serve native for anything larger.
+    expect(fireflyRenditionUrl(card(), 2048)).to.equal('https://cdn.cp.adobe.io/x/jpg/width/2048');
+  });
+
+  it('rounds a fractional px request', () => {
+    expect(fireflyRenditionUrl(card(), 383.6)).to.equal('https://cdn.cp.adobe.io/x/jpg/width/384');
+  });
+
+  it('returns an empty string when there is no rendition template', () => {
+    expect(fireflyRenditionUrl({ maxWidth: 600 }, 512)).to.equal('');
+    expect(fireflyRenditionUrl(null, 512)).to.equal('');
   });
 });
 
@@ -296,11 +304,19 @@ describe('firefly-globe: fetchFireflyAssets', () => {
 
   afterEach(() => {
     fetchStub?.restore();
+    delete window.lana;
   });
 
   const asset = (over = {}) => ({
+    id: 'asset-1',
     urn: 'urn:aaid:sc:1',
-    _links: { rendition: { href: 'https://cdn.cp.adobe.io/x/{format}/{dimension}/{size}', max_width: 2048 } },
+    _links: {
+      rendition: {
+        href: 'https://cdn.cp.adobe.io/content/2/rendition/asset-1/version/0/format/{format}/dimension/{dimension}/size/{size}',
+        max_width: 600,
+        max_height: 600,
+      },
+    },
     custom: { input: { 'firefly#prompts': { 'en-US': 'English', 'fr-FR': 'Français', 'de-DE': 'Deutsch' } } },
     machine_tags: ['modelId:firefly', 'modelVersionName:Firefly Image 4'],
     ...over,
@@ -313,19 +329,61 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     });
   }
 
-  it('returns null when the request fails', async () => {
-    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false });
-    expect(await fetchFireflyAssets('cat')).to.be.null;
+  it('logs the status and request URL and returns null when the request fails', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false, status: 503 });
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    const [msg, opts] = log.firstCall.args;
+    expect(msg).to.include('503');
+    expect(msg).to.include('category_id=cat');
+    expect(msg).to.include('machine_tag=acom_ff_globe_assets');
+    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'error' });
   });
 
-  it('maps an asset to a card with a capped rendition URL and model tags', async () => {
+  it('logs and returns null on a network or JSON error', async () => {
+    fetchStub = sinon.stub(window, 'fetch').rejects(new Error('boom'));
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    expect(log.firstCall.args[0]).to.include('boom');
+  });
+
+  it('maps an asset to a card with the high-res component-rendition template and model tags', async () => {
     stubAssets([asset()]);
     const [card] = await fetchFireflyAssets('cat', 'en-US');
-    expect(card.img).to.equal('https://cdn.cp.adobe.io/x/jpg/width/1024');
+    // Built from the asset id, targeting the full-res output/resource component — not the preview.
+    expect(card.renditionHref).to.equal(
+      'https://cdn.cp.adobe.io/content/2/dcx/asset-1/rendition/output/resource/version/0/format/{format}/dimension/{dimension}/size/{size}',
+    );
+    expect(card.maxWidth).to.equal(600);
     expect(card.modelId).to.equal('firefly');
     expect(card.modelVersionName).to.equal('Firefly Image 4');
     expect(card.fireflyUrl).to.include('id=urn:aaid:sc:1');
     expect(card.crossOrigin).to.equal('anonymous');
+  });
+
+  it('skips an asset that has no id even if it has a rendition', async () => {
+    stubAssets([asset({ id: undefined }), asset()]);
+    expect(await fetchFireflyAssets('cat')).to.have.length(1);
+  });
+
+  it('derives the CDN base from the preview href rather than hardcoding it', async () => {
+    stubAssets([asset({
+      _links: {
+        rendition: {
+          href: 'https://example-cdn.test/content/9/rendition/asset-1/version/0/format/{format}/dimension/{dimension}/size/{size}',
+          max_width: 600,
+          max_height: 600,
+        },
+      },
+    })]);
+    const [card] = await fetchFireflyAssets('cat');
+    expect(card.renditionHref).to.equal(
+      'https://example-cdn.test/content/9/dcx/asset-1/rendition/output/resource/version/0/format/{format}/dimension/{dimension}/size/{size}',
+    );
   });
 
   it('localizes the prompt: exact, language-only, then en-US', async () => {
