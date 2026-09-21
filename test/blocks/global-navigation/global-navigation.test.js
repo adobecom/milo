@@ -742,6 +742,85 @@ describe('global navigation', () => {
       }
     });
 
+    it('reopens AUP Select after repeated Back and Forward navigation', async () => {
+      preload.restore();
+      const { fetchCheckoutLinkConfigs, getModalAction, modalState } = await import('../../../libs/blocks/merch/merch.js');
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const previousConfigs = fetchCheckoutLinkConfigs.promise;
+      const previousModalState = modalState.isOpen;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      fetchCheckoutLinkConfigs.promise = Promise.resolve({
+        data: [{
+          PRODUCT_FAMILY: 'PHOTOGRAPHY',
+          LOCALE: '',
+          BUY_NOW_HASH: 'buy-photography',
+          BUY_NOW_PATH: '/test/aup-select',
+        }],
+      });
+      const cta = document.createElement('a');
+      cta.setAttribute('is', 'checkout-link');
+      document.body.append(cta);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'PHOTOGRAPHY' },
+      }], { modal: true }, cta);
+      let element;
+      let clock;
+      let shown;
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        cta.addEventListener('click', () => {
+          action.aupHandler({ type: 'open', element: cta });
+          element = document.createElement('div');
+          shown = showDialog(element, {}, sinon.spy());
+        });
+        const url = new URL(originalUrl);
+        url.hash = '';
+        window.history.replaceState(null, '', url);
+        cta.click();
+        await shown;
+        expect(document.getElementById('aup-workflow-dialog').open).to.be.true;
+
+        for (const direction of ['back', 'forward', 'back', 'forward']) {
+          const navigated = new Promise((resolve) => {
+            window.addEventListener('hashchange', resolve, { once: true });
+          });
+          window.history[direction]();
+          await navigated;
+          if (direction === 'back') {
+            expect(window.location.href).to.equal(url.href);
+            expect(document.getElementById('aup-workflow-dialog')).to.be.null;
+          } else {
+            await shown;
+            expect(window.location.hash).to.equal(`#${cta.dataset.modalId}`);
+            expect(document.getElementById('aup-workflow-dialog')).to.exist;
+            expect(document.getElementById('aup-workflow-dialog').open).to.be.true;
+            await clock.tickAsync(1000);
+          }
+        }
+      } finally {
+        element?.dispatchEvent(new Event('close'));
+        action.aupHandler({ type: 'close', element: cta });
+        clock?.restore();
+        cta.remove();
+        script.remove();
+        modalState.isOpen = previousModalState;
+        fetchCheckoutLinkConfigs.promise = previousConfigs;
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
     ['div', 'iframe'].forEach((tag) => {
       it(`settles and cleans up repeated ${tag} workflows for every dialog close path`, async () => {
         preload.restore();

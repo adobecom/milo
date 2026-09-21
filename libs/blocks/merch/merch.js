@@ -924,7 +924,10 @@ function restoreAupModalHash(modalHashState) {
 
 function clearAupModalHash(modalHashState) {
   if (!modalHashState) return;
-  if (activeAupModalHash === modalHashState) activeAupModalHash = undefined;
+  if (activeAupModalHash === modalHashState) {
+    activeAupModalHash = undefined;
+    modalState.isOpen = false;
+  }
   restoreAupModalHash(modalHashState);
 }
 
@@ -953,6 +956,7 @@ function handleAupModalHash(fallbackModalId, { type, element } = {}) {
       window.history.pushState(window.history.state, '', hash);
     }
     activeAupModalHash = { hash, restoreUrl };
+    modalState.isOpen = true;
   } else if (type === 'close' && activeAupModalHash?.hash === hash) {
     clearAupModalHash(activeAupModalHash);
   }

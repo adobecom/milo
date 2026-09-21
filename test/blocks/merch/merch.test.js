@@ -1555,11 +1555,13 @@ describe('Merch Block', () => {
 
         expect(window.location.hash).to.equal('#crm-buy-illustrator');
         expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.true;
 
         action.aupHandler({ type: 'close', element: el });
 
         expect(window.location.href).to.equal(previousUrl);
         expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
       } finally {
         action.aupHandler({ type: 'close', element: el });
         window.removeEventListener('hashchange', hashchange);
@@ -1585,11 +1587,13 @@ describe('Merch Block', () => {
 
         expect(cleanup).to.be.a('function');
         expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(modalState.isOpen).to.be.true;
 
         cleanup();
         cleanup();
 
         expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
         action.aupHandler({ type: 'close', element: el });
         expect(window.location.href).to.equal(previousUrl);
       } finally {
@@ -1633,10 +1637,12 @@ describe('Merch Block', () => {
         });
 
         expect(window.location.hash).to.equal('#crm-buy-audition');
+        expect(modalState.isOpen).to.be.true;
 
         secondCleanup();
 
         expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
       } finally {
         second.action.aupHandler({
           type: 'close',
