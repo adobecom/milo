@@ -29,6 +29,17 @@ const getTargetHeight = (target) => {
 
 const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
 
+export function hasChatCookie() {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i += 1) {
+    const cookie = cookies[i].trim();
+    if (cookie.includes(BC_SESSION_COOKIE)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Get session ID used to correlate analytics events */
 export function getChatSessionId() {
   const match = document.cookie
@@ -36,6 +47,20 @@ export function getChatSessionId() {
     .map((cookie) => cookie.trim())
     .find((cookie) => cookie.startsWith(`${BC_SESSION_COOKIE}=`));
   return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
+}
+
+export function setCssGnavHeight() {
+  const gnav = document.querySelector('header.global-navigation');
+  const localGnav = document.querySelector('div.feds-localnav');
+  const localNavStyle = localGnav ? getComputedStyle(localGnav) : null;
+  const localNavOn = localGnav && localNavStyle ? localNavStyle.display !== 'none' : false;
+
+  if (!gnav) return;
+  const rootStyles = getComputedStyle(document.documentElement);
+  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
+  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
+  const newHeight = gnavHeight + (localGnav && localNavOn ? localNavHeight : 0);
+  document.documentElement.style.setProperty('--bc-gnav-height', `${newHeight}px`);
 }
 
 export function handleConsent(el) {
@@ -225,14 +250,10 @@ export function decorateMarqueeBackground(el, background) {
 
 export function decorateHeader(el, header, { eyebrow: withEyebrow = false } = {}) {
   const headerSection = createTag('section', { class: 'bc-header' });
-  let title;
-  let eyebrow = null;
 
-  if (withEyebrow) {
-    [eyebrow, title] = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  } else {
-    title = header.querySelector('h1, h2, h3, h4, h5, h6');
-  }
+  const headings = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const useEyebrow = withEyebrow && headings.length > 1;
+  const [eyebrow, title] = useEyebrow ? headings : [null, headings[0]];
   const subTitle = header.querySelector('p');
 
   if (eyebrow) {
