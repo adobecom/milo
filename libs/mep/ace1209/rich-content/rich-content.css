@@ -516,6 +516,7 @@
   .media-cell {
     position: relative;
     z-index: 1;
+    width: 100%;
 
     p {
       margin: 0;
@@ -614,6 +615,7 @@
 
     :is(img, video) {
       border-radius: var(--s2a-border-radius-4);
+      max-width: 100%;
 
       @media (width >= 1024px) {
         border-radius: var(--s2a-border-radius-8);
@@ -775,7 +777,7 @@
   }
 }
 
-@media (width < 1280px) {
+@media (width < 768px) {
   .rich-content.media.full-width {
     --grid-margin-width: 0px;
 
@@ -801,7 +803,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@media (width >= 768px) {
   .rich-content.media.full-width {
     --grid-margin-width: var(--grid-margin-width-base);
   }
