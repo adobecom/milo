@@ -19,8 +19,8 @@ const DEPS_DIR = './libs/c2/styles/deps';
 // flat list of `.tgz` files; the package name has no consistent naming pattern,
 // so it is pinned here and bumped manually when a new release ships.
 const DEPS_RELEASE_BASE_URL = 'https://github.com/adobecom/consonant/raw/main/releases';
-const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.17.tgz';
-const DEPS_PACKAGE_SHA256 = 'fc1f98e52b723fd2d7c7060826c66a1c0bd3afc4b730478ae6d9609f542bf4a4';
+const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.21.tgz';
+const DEPS_PACKAGE_SHA256 = '105edbd0dceaf702af5987255e231a701bc678190d9b5fda475d54fba46b408d';
 // Path inside the extracted package that holds the CSS sources we want to
 // mirror into DEPS_DIR.
 const DEPS_PACKAGE_CSS_SUBPATH = path.join('css', 'dev');
@@ -45,6 +45,9 @@ const EXCLUDED_VAR_PATTERNS = [
   /* waiting for some clarity */
   '--s2a-color-button-*',
   '--s2a-color-iconbutton-*',
+  /* Deprecated */
+  '--s2a-spacing-124',
+  '--s2a-viewport-vertical-padding-*',
 ];
 
 // S2A Build Logic

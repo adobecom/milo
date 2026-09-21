@@ -31,7 +31,8 @@ const updateFragMap = async (fragment, a, href) => {
 
   if (!fragLinksWithLocalizations.length) return;
 
-  if (document.body.contains(a) && !a.parentElement?.closest('.fragment')) {
+  const parentHref = a.closest('[data-path]')?.getAttribute('data-path');
+  if (document.body.contains(a) && !a.parentElement?.closest('.fragment') && !parentHref) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinksWithLocalizations.forEach((localizedHref) => {
@@ -55,8 +56,26 @@ const updateFragMap = async (fragment, a, href) => {
 
 const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
-  const fragChildren = [...sections[0].children];
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+  const rowOrCellInsertContainer = a.closest('[data-mep-replace-type]');
+  const rowOrCellInsertValue = rowOrCellInsertContainer?.getAttribute('data-mep-replace-type');
+  const section = sections[0];
+  const sectionBlockCandidates = [...section.children]
+    .filter((child) => child.matches('div[class]:not([class*="section"])'));
+  const fragmentBlock = sectionBlockCandidates[0];
+  let fragChildren;
+
+  if (rowOrCellInsertValue === 'row') {
+    fragChildren = fragmentBlock?.querySelectorAll(':scope > div') || [];
+  } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
+    fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
+  } else {
+    fragChildren = [...section.children];
+  }
+  if (!fragChildren.length) return;
+
+  if (rowOrCellInsertContainer && fragmentBlock) {
+    rowOrCellInsertContainer.replaceWith(...fragChildren);
+  } else if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
     a.replaceWith(...fragChildren);
@@ -64,8 +83,16 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
-    if (a.dataset.skipLoadArea !== 'true' && child.querySelector('a[href*="/fragments/"]')) {
+    const nestedFragments = child.querySelectorAll('a[href*="/fragments/"]');
+    if (a.dataset.skipLoadArea === 'true' || !nestedFragments.length) {
+      return;
+    }
+    if (rowOrCellInsertValue === 'row' || rowOrCellInsertValue === 'cell') {
+      nestedFragments.forEach((nestedFragment) => {
+        // eslint-disable-next-line no-use-before-define
+        promises.push(init(nestedFragment));
+      });
+    } else {
       promises.push(loadArea(child));
     }
   });
@@ -117,6 +144,15 @@ export default async function init(a) {
     const path = !a.href.includes('/federal/') ? url.pathname
       : a.href.replace('#_inline', '');
     mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
+
+    // Lingo rewrote the href with a geo prefix; match the authored originalHref path.
+    if (!mepFrag && a.dataset.mepLingo === 'true' && a.dataset.originalHref) {
+      const { origin } = window.location;
+      const origPath = new URL(a.dataset.originalHref, origin).pathname;
+      const key = Object.keys(mep?.fragments || {})
+        .find((k) => new URL(k, origin).pathname === origPath);
+      if (key) mepFrag = mep.fragments[key];
+    }
   } catch (e) {
     // do nothing
   }
@@ -124,6 +160,15 @@ export default async function init(a) {
     const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
     relHref = handleFragmentCommand(mepFrag, a);
     if (!relHref) return;
+    // Replace wins — drop the lingo link's stale state.
+    ['mepLingo', 'originalHref', 'mepLingoInsert', 'mepLingoRemove',
+      'mepLingoSectionSwap', 'mepLingoBlockSwap', 'mepLingoSkippedQI']
+      .forEach((k) => delete a.dataset[k]);
+    // Replacement is itself a lingo link — resolve it regionally (inherits LCP/skip-QI).
+    if (a.href.includes('#_mep-lingo')) {
+      a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+      relHref = a.href;
+    }
   }
 
   if (a.href.includes('#_inline')) {
