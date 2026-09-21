@@ -1,6 +1,6 @@
-# firefly-globe — C2 block
+# firefly-globe — MEP test block (ace1209)
 
-A simplified fork of `libs/mep/ace1209/globe-gallery`. The sphere, drag/inertia, hover, near-camera
+A simplified fork of `globe-gallery` (same folder). Lives under `libs/mep/ace1209` while it is tested via a MEP manifest; the folder sits at the same depth as `libs/c2/blocks/`, so it moves back without import changes. The sphere, drag/inertia, hover, near-camera
 fade, modal, on-canvas controls, keyboard/a11y path, pull-quote and reduced-motion handling are the
 same code with the class prefix renamed. **Everything not listed under "What is different" is
 documented in the globe-gallery README, and that document is the spec for this block too.** Keep the
@@ -227,7 +227,7 @@ toggled after a value has already been written, so they reset `opacity` and `tra
 
 ## Tests
 
-`test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
+`test/mep/ace1209/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
 quote), `buildGlobeDom`, API card mapping (rendition URL cap, model tags, locale fallback, alt
 fallback), the frame shape, the clock endpoints (`deriveFrame`) and the travel camera inverse pair.
 

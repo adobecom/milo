@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
+import * as TL from '../../../../libs/mep/ace1209/firefly-globe/src/utils.js';
 import {
   escapeHtml,
   optimizeImgUrl,
@@ -9,7 +9,7 @@ import {
   buildGlobeDom,
   fetchFireflyAssets,
   layoutQuote,
-} from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
+} from '../../../../libs/mep/ace1209/firefly-globe/src/authoring.js';
 
 // Helpers
 function makeEl(innerHTML) {
