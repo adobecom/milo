@@ -1,8 +1,11 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import { onSidekickAuth } from '../../sidekick-auth.js';
+import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
+  getExcludeManifestParams,
+  setExcludeManifestParams,
   safeGetItem,
   safeSetItem,
   toSlug,
@@ -60,6 +63,7 @@ const CARD_DATA = {
     ]],
     ['Toggle', [
       ['Preview Link', 'Add mepButton=off'],
+      ['Manifest Parameters', 'Exclude from URL'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
     ['Spoof Country', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
@@ -181,7 +185,7 @@ function getManifestStatus(manifest) {
   }
   const statusChecks = [
     {
-      reason: manifest.manifestCountryRestricted,
+      reason: !manifest.countryEnabled,
       msg: 'User country is restricted.',
       level: 'Warning',
       label: 'Ineligible',
@@ -191,6 +195,24 @@ function getManifestStatus(manifest) {
       msg: 'Outside of promo date range.',
       level: 'Warning',
       label: 'Disabled',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === NON_PERSONALIZED_OFFER_TEST,
+      msg: 'Target off due to user\'s consent.',
+      level: 'Warning',
+      label: 'MEP used instead of Target',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === PERSONALIZED_OFFER,
+      msg: 'Disabled due to user\'s consent.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.consentNotSpecified,
+      msg: 'Consent type not specified.',
+      level: 'Error',
+      label: 'Urgent warning',
     },
   ];
   const severity = { Warning: 0, Error: 1 };
@@ -248,7 +270,7 @@ function buildManifestCard(manifest) {
   const rows = [];
   if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
   rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Mktg Action', manifest.mktgAction));
+  rows.push(buildRow('Consent Req', manifest.consentType));
   if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
   rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
@@ -490,6 +512,9 @@ async function setDefaultValues() {
     toggleHighlight({ target: checkbox });
   });
 
+  const excludeManifestsEl = document.querySelector('#toggle-manifest-parameters');
+  if (excludeManifestsEl) excludeManifestsEl.checked = getExcludeManifestParams();
+
   const selectEl = document.querySelector('select.mep-spoof-geo');
   if (!selectEl) return;
 
@@ -674,12 +699,13 @@ function setEventListeners() {
       drawerEl.querySelector('.mep-footer')?.classList.toggle('hidden', tab.textContent !== 'Actions');
       return;
     }
-    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    const cardEl = event.target.closest('.mep-card h1 svg') && event.target.closest('.mep-card');
     if (cardEl) toggleExpandedCard(cardEl);
   });
 
   drawerEl.addEventListener('change', (event) => {
     if (event.target.type === 'checkbox') event.target.toggleAttribute('checked', event.target.checked);
+    if (event.target.id === 'toggle-manifest-parameters') setExcludeManifestParams(event.target.checked);
     setPreviewButton(event);
   });
 
