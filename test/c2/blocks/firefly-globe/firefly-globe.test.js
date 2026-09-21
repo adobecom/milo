@@ -133,17 +133,45 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
     expect(labels.rotateLeft).to.equal('Rotate left');
   });
 
-  it('parses "categoryId || cgenId || ctaLabel" from the cards cell', () => {
+  it('parses "categoryId || machineTag || cgenId || ctaLabel" from the cards cell', () => {
     const el = makeEl(`
-      ${makeRow('<div><p>cat-123 || promo-9 || Open in Firefly</p></div>')}
+      ${makeRow('<div><p>cat-123 || acom_ff_globe_assets || promo-9 || Open in Firefly</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    const { categoryId, cgenId, ctaLabel } = parseAuthoredContent(el);
+    const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
+    expect(machineTag).to.equal('acom_ff_globe_assets');
     expect(cgenId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
   });
+
+  it('machineTag is null when omitted', () => {
+    const el = makeEl(`
+      ${makeRow('<div><p>cat-123</p></div>')}
+      ${makeRow('<div></div><div><p>Drag</p></div>')}
+      ${makeRow('')}
+    `);
+    expect(parseAuthoredContent(el).machineTag).to.be.null;
+  });
+
+  // Authors can skip the machineTag slot with an empty field and keep the
+  // later slots in place: "cat || || cgen || cta" or "cat |||| cgen || cta".
+  ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
+    .forEach((cards) => {
+      it(`treats an empty machineTag slot as none: "${cards}"`, () => {
+        const el = makeEl(`
+          ${makeRow(`<div><p>${cards}</p></div>`)}
+          ${makeRow('<div></div><div><p>Drag</p></div>')}
+          ${makeRow('')}
+        `);
+        const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
+        expect(categoryId).to.equal('cat-123');
+        expect(machineTag).to.be.null;
+        expect(cgenId).to.equal('promo-9');
+        expect(ctaLabel).to.equal('Open in Firefly');
+      });
+    });
 
   it('categoryId is null when the cards cell is empty', () => {
     const { categoryId } = parseAuthoredContent(makeBlock({ cards: '' }));
@@ -319,6 +347,21 @@ describe('firefly-globe: fetchFireflyAssets', () => {
   it('skips assets without a rendition', async () => {
     stubAssets([asset({ _links: {} }), asset()]);
     expect(await fetchFireflyAssets('cat')).to.have.length(1);
+  });
+
+  it('adds machine_tag to the query when authored', async () => {
+    stubAssets([asset()]);
+    await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets');
+    const url = new URL(fetchStub.firstCall.args[0]);
+    expect(url.searchParams.get('category_id')).to.equal('cat');
+    expect(url.searchParams.get('machine_tag')).to.equal('acom_ff_globe_assets');
+  });
+
+  it('omits machine_tag when not authored', async () => {
+    stubAssets([asset()]);
+    await fetchFireflyAssets('cat', 'en-US');
+    const url = new URL(fetchStub.firstCall.args[0]);
+    expect(url.searchParams.has('machine_tag')).to.be.false;
   });
 });
 

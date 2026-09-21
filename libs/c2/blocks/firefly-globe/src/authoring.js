@@ -196,11 +196,20 @@ function apiAssetToCard(asset, locale) {
   };
 }
 
-export async function fetchFireflyAssets(categoryId, locale) {
+export async function fetchFireflyAssets(categoryId, locale, machineTag) {
   const loc = locale || 'en-US';
   try {
+    const params = new URLSearchParams({
+      size: '50',
+      sort: 'updated_desc',
+      include_pending_assets: 'false',
+      cursor: '',
+      category_id: categoryId,
+    });
+    // The API escapes single quotes / backslashes in machine tags with a backslash.
+    if (machineTag) params.append('machine_tag', machineTag.replace(/(['\\])/g, '\\$1'));
     const resp = await fetch(
-      `${FF_API_URL}?size=50&sort=updated_desc&include_pending_assets=false&cursor=&category_id=${categoryId}`,
+      `${FF_API_URL}?${params}`,
       { headers: { 'x-api-key': FF_API_KEY } },
     );
     if (!resp.ok) return null;
@@ -229,13 +238,14 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
-  const [categoryId = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
+  const [categoryId = '', machineTag = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     categoryId: categoryId || null,
+    machineTag: machineTag || null,
     cgenId,
     ctaLabel,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },

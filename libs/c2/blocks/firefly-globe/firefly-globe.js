@@ -1869,13 +1869,15 @@ export default async function init(el) {
   // Before buildGlobeDom() wipes the children.
   const {
     hintText, touchHint, instructions, labels,
-    categoryId, cgenId, ctaLabel, pullQuote,
+    categoryId, machineTag, cgenId, ctaLabel, pullQuote,
   } = parseAuthoredContent(el);
 
   const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel, pullQuote });
 
   let authored = null;
-  if (categoryId) authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf);
+  if (categoryId) {
+    authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf, machineTag);
+  }
   if (cgenId && authored) {
     authored.forEach((card) => {
       if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;

@@ -11,6 +11,7 @@ GET https://community-hubs.adobe.io/api/v2/ff_community/assets
     &include_pending_assets=false
     &cursor=
     &category_id=<categoryId>
+    &machine_tag=<machineTag>   # optional
 ```
 
 Header: `x-api-key: milo-ff-gallery-unity`
@@ -20,6 +21,11 @@ The `categoryId` is authored into the block. Known values:
 - `VideoGeneration` — video assets
 - Custom curated categories (e.g. `NQCJQWSV`) — returns empty if the category
   has no published assets or the ID is wrong
+
+The optional `machine_tag` further restricts results to assets carrying that
+tag (e.g. `acom_ff_globe_assets`), letting editorial curate a subset within a
+category. Multiple tags default to `machine_tag_op=and`. Any `'` or `\` in a
+tag must be backslash-escaped. Omit the param for no restriction.
 
 ### Pagination
 
@@ -307,7 +313,8 @@ Confirmed providers as of 2026-09 — no icon URLs are in the API; map them your
 ## Applying to firefly-globe
 
 Implemented in `src/authoring.js` (`fetchFireflyAssets` → `apiAssetToCard`): the rendition URL is
-requested at `min(max_width, 1024)` and `optimizeImgUrl` passes it through; `machine_tags` supply
+requested at `min(max_width, 1024)` and `optimizeImgUrl` passes it through; the optional authored
+`machineTag` is added to the query as `machine_tag`; `machine_tags` supply
 `modelId` / `modelVersionName`; the prompt is picked by page locale; `urn` builds the Firefly deep link
 the modal CTA opens. Images are loaded with `crossOrigin: 'anonymous'` because the CDN is cross-origin
 and the card textures go through WebGL. See `README.md` for the authoring row that carries the

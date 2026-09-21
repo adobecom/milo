@@ -36,7 +36,7 @@ Positional rows.
 
 | Row | Content |
 |---|---|
-| 1 | `categoryId \|\| cgenId \|\| ctaLabel`. No `categoryId` renders nothing (`firefly-globe-empty`). `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
+| 1 | `categoryId \|\| machineTag \|\| cgenId \|\| ctaLabel`. No `categoryId` renders nothing (`firefly-globe-empty`). `machineTag` (optional) restricts the API query to assets carrying that machine tag (e.g. `acom_ff_globe_assets`); empty means no restriction. `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
 | 2 | Two cells: the barrel's bottom-row copy (touch hint), then the cursor label. |
 | 3 | `instructions \|\| rotateLeft \|\| rotateRight \|\| pauseSpin \|\| resumeSpin \|\| prevCard \|\| {index} of {count} \|\| nextCard \|\| close` — empty parts fall back to defaults. |
 | 4 | Optional pull quote: `<blockquote>` (or heading), then name and role paragraphs. No row → no pin. |
