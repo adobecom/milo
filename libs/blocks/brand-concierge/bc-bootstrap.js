@@ -1,6 +1,6 @@
 import { getModal, closeModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
-import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
+import { createTag, getConfig, getMetadata, loadScript } from '../../utils/utils.js';
+import { getBetaLabel, waitForCondition, expandIcon, setCssGnavHeight } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -16,6 +16,30 @@ const susiScopes = 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.rol
 
 let bcToken;
 let susiListener;
+let lastImsState = null;
+
+function handleLocalNav() {
+  const localGnav = document.querySelector('div.feds-localnav');
+  let lastDisplay = localGnav ? window.getComputedStyle(localGnav).display : null;
+  if (localGnav) {
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes') {
+          const currentDisplay = window.getComputedStyle(localGnav).display;
+
+          if (currentDisplay !== lastDisplay) {
+            lastDisplay = currentDisplay;
+            setCssGnavHeight();
+          }
+        }
+      }
+    });
+    observer.observe(localGnav, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+    });
+  }
+}
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -239,6 +263,18 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
       bcToken = window.adobeIMS?.getAccessToken()?.token;
     }
 
+    const isSignedIn = !!window.adobeIMS?.isSignedInUser();
+    const guestToken = getMetadata('ims-guest-token');
+    const imsState = `${isSignedIn}:${!!bcToken}:${!!guestToken}`;
+    if (imsState !== lastImsState) {
+      lastImsState = imsState;
+      const severity = (!bcToken && isSignedIn) || (!bcToken && guestToken) || !guestToken ? 'warn' : 'info';
+      window.lana?.log(
+        `Brand Concierge IMS state — signedIn: ${isSignedIn}, accessToken: ${!!bcToken}, guestToken: ${!!guestToken}`,
+        { tags: 'brand-concierge', severity, sampleRate: 50 },
+      );
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
@@ -267,6 +303,7 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
         _dc: { language },
       },
       homeAddress: { region: locale.region },
+      arpSessionToken: window.adobeArp?.sessionToken,
     };
 
     if (consentConfObject?.length) {
@@ -345,6 +382,7 @@ export async function openSideModal(initialMessage, bootstrap) {
     id: 'brand-concierge-side',
     content: innerModal,
     closeCallback: async () => {
+      window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
       localStorage.setItem('bc-side-overlay', 'closed');
       document.body.classList.remove('bc-side-open');
       modal.classList.add('closing');
@@ -353,6 +391,7 @@ export async function openSideModal(initialMessage, bootstrap) {
       });
     },
   });
+  window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
 
   setTimeout(() => {
     modal.classList.remove('opening');
@@ -365,6 +404,8 @@ export async function openSideModal(initialMessage, bootstrap) {
     });
     susiListener = 'signIn:decorateNav';
   }
+
+  handleLocalNav();
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));

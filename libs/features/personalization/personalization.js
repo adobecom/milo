@@ -13,7 +13,11 @@ import {
   isSignedOut,
   isTrustedUrl,
   isSameOriginManifestPath,
-  resolveDetectedMarketCountry,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -1035,14 +1039,6 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -1074,9 +1070,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob, event } = config.mep.promises;
+    const { lob } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1091,10 +1086,6 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
-
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1141,8 +1132,8 @@ export const overrideVariant = (manifestPath, variantName) => {
 export const getGeoRestriction = (manifestConfig) => {
   const { geoRestriction, manifestPath } = manifestConfig;
   if (!geoRestriction) return true;
-  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+  const geoArray = geoRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  const isAllowed = geoArray.includes(getConfig().mep.countryIP);
   if (!isAllowed) overrideVariant(manifestPath, 'Default');
   return isAllowed;
 };
@@ -1418,6 +1409,16 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
+
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
@@ -1655,7 +1656,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1675,8 +1676,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),

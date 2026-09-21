@@ -1110,7 +1110,7 @@ export const getConfig = async (originalState, strs = {}) => {
     excludedCardsWithCurrent = excludedCards;
   }
 
-  const products = state.detailsTextOption === 'productName' ? await getProducts(state) : {};
+  const products = state.detailsTextOption.startsWith('product') ? await getProducts(state) : {};
 
   const config = {
     collection: {

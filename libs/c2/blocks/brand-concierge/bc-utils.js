@@ -58,7 +58,11 @@ export function waitForCondition(checkFn, timeout = 5000, interval = 100) {
 }
 
 export function floatingElement(targetEl, el, variants, focusableEl = null) {
+  // handleScroll calls these unconditionally on most scroll frames; bail out
+  // when the target is already in the requested state to avoid a style
+  // recalc (classList + attribute writes) on every single rAF tick.
   const hideFloating = () => {
+    if (targetEl.classList.contains('bc-floating-hidden')) return;
     if (focusableEl) {
       focusableEl.setAttribute('aria-hidden', 'true');
       focusableEl.setAttribute('tabindex', '-1');
@@ -69,6 +73,7 @@ export function floatingElement(targetEl, el, variants, focusableEl = null) {
   };
 
   const showFloating = () => {
+    if (targetEl.classList.contains('bc-floating-show')) return;
     if (focusableEl) {
       focusableEl.removeAttribute('aria-hidden');
       focusableEl.removeAttribute('tabindex');
@@ -110,9 +115,14 @@ export function floatingElement(targetEl, el, variants, focusableEl = null) {
     hideFloating();
   }
 
+  let lastBottomPx = null;
+  let lastSpacerCssText = null;
   const handleScroll = (target) => {
     // only values that need to be calculated on scroll are here, to optimize performance
-    const threshold = window.scrollY + window.innerHeight - mainTop;
+    // scrollY is read once and reused below — re-reading it after the style writes further
+    // down in this function would force a synchronous layout flush of those writes.
+    const { scrollY } = window;
+    const threshold = scrollY + window.innerHeight - mainTop;
     const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
     const bottomValue = threshold - mainHeight;
 
@@ -122,21 +132,31 @@ export function floatingElement(targetEl, el, variants, focusableEl = null) {
     }
 
     if (threshold > mainHeight) {
-      target.style.bottom = `${bottomValue}px`;
+      if (lastBottomPx !== bottomValue) {
+        target.style.bottom = `${bottomValue}px`;
+        lastBottomPx = bottomValue;
+      }
       if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
         hideFloating();
       } else {
-        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+        const spacerCssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+        if (lastSpacerCssText !== spacerCssText) {
+          floatingSpacer.style.cssText = spacerCssText;
+          lastSpacerCssText = spacerCssText;
+        }
       }
     } else {
       showFloating();
-      target.style.bottom = '0';
+      if (lastBottomPx !== 0) {
+        target.style.bottom = '0';
+        lastBottomPx = 0;
+      }
     }
     if (hasDelay) {
-      if (window.scrollY > topDelay && threshold <= mainHeight) {
+      if (scrollY > topDelay && threshold <= mainHeight) {
         showFloating();
       }
-      if (window.scrollY < topDelay
+      if (scrollY < topDelay
         || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
         hideFloating();
       }
@@ -184,7 +204,7 @@ export function decorateMarqueeBackground(el, background) {
   if (pictures.length === 1) {
     backgroundLayer.append(pictures[0]);
   } else {
-    const viewports = ['desktop-only', 'tablet-only', 'mobile-only'];
+    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
     pictures.forEach((picture, index) => {
       backgroundLayer.append(createTag('div', { class: viewports[index] || 'mobile-only' }, picture));
     });
@@ -357,6 +377,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   if (variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
+  let pillVisibilityRaf;
   function updatePillVisibility(target) {
     const prompts = target.querySelector('.bc-prompt-cards');
     if (!prompts) return;
@@ -364,7 +385,9 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
     const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
     buttons.forEach((btn) => { btn.style.display = ''; });
 
-    requestAnimationFrame(() => {
+    if (pillVisibilityRaf) cancelAnimationFrame(pillVisibilityRaf);
+    pillVisibilityRaf = requestAnimationFrame(() => {
+      pillVisibilityRaf = null;
       const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
 
       buttons.forEach((btn) => {
@@ -382,12 +405,10 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
-  const updateLayout = () => {
-    updatePillVisibility(floatingInput);
-  };
+  const updateLayout = () => updatePillVisibility(floatingInput);
 
   window.addEventListener('resize', updateLayout);
-  requestAnimationFrame(updateLayout);
+  updateLayout();
   floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;

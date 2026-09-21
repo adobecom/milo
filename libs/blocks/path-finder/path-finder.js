@@ -2,7 +2,7 @@ import login from '../../tools/sharepoint/login.js';
 import { account } from '../../tools/sharepoint/state.js';
 import getServiceConfig from '../../utils/service-config.js';
 import { getReqOptions } from '../../tools/sharepoint/msal.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getValidatedSharePointSite } from '../../utils/utils.js';
 
 const SCOPES = ['files.readwrite', 'sites.readwrite.all'];
 const TELEMETRY = { application: { appName: 'Milo - Path Finder' } };
@@ -15,9 +15,11 @@ const getSharePointDetails = (() => {
   return async () => {
     if (site && driveId && reqOpts) return { site, driveId, reqOpts };
 
-    // Fetching SharePoint details
+    // `sharepoint.site` is where the Bearer token below gets sent, so it must
+    // resolve to Adobe's real Graph host (VULN-38270).
     const { sharepoint } = await getServiceConfig();
-    ({ site } = sharepoint);
+    site = getValidatedSharePointSite(sharepoint.site);
+    if (!site) throw new Error('Could not verify SharePoint site.');
     driveId = sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive';
     reqOpts = getReqOptions();
 
