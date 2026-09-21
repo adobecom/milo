@@ -2216,9 +2216,9 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
+// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
 function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
 }
 
 function initMepOverlay() {
@@ -2624,7 +2624,6 @@ export async function loadDeferred(area, blocks, config) {
   }
   if (config.mep?.preview) {
     if (isMepNextOverlay()) {
-      // The overlay itself is initialized once via initMepOverlay() in loadArea.
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
         .then(({ default: init }) => init());
     } else {
