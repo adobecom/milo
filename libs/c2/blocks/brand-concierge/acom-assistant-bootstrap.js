@@ -19,8 +19,8 @@ async function ensureAcomAssistant(cards) {
   // appid/appver are provisioned per-surface by the Assistant team (onboarding form) --
   // read from metadata so a real value can be authored once provisioning is complete.
   await loadAcomAssistant({
-    appid: getMetadata('acom-assistant-id') || getConfig().acomAssistant?.id,
-    appver: getMetadata('acom-assistant-version') || getConfig().acomAssistant?.version || '1.0',
+    appid: getMetadata('acom-assistant-id') || getMetadata('jarvis-surface-id') || getConfig().jarvis?.id || getConfig().acomAssistant?.id,
+    appver: getMetadata('acom-assistant-version') || getMetadata('jarvis-surface-version') || getConfig().jarvis?.version || getConfig().acomAssistant?.version || '1.0',
     componentid: 'brand-concierge',
     context: { prompts: extractCardPrompts(cards) },
     callbacks: { analyticsCallback: acomAssistantAnalyticsAdapter },
