@@ -32,12 +32,29 @@ function measure(section, cards) {
   const gnav = document.querySelector('header.global-navigation nav');
   const bottom = gnav?.getBoundingClientRect().bottom;
   if (bottom > 0) section.style.setProperty('--gnav-offset', `${Math.round(bottom)}px`);
+
+  // --phone-h drives the stack's stagger/offset math (--last-offset, the tail
+  // scroll buffer, etc). It defaults to a fixed 775px in CSS, which assumes a
+  // typical phone viewport. Browser zoom shrinks the real viewport height
+  // without shrinking those offsets, so the reveal ends up needing many more
+  // screens of scrolling than intended. Override it with the real, current
+  // viewport height so the stagger stays proportional at any zoom level.
+  if (window.innerHeight) section.style.setProperty('--phone-h', `${Math.round(window.innerHeight)}px`);
+
+  // Safety net: if a single card's natural height doesn't even fit the real
+  // viewport (extreme browser zoom), the sticky/scroll-linked stack has no
+  // room to work with — no amount of stagger tuning fixes that. Fall back to
+  // the plain static layout (mirrors the existing @supports-not-view() and
+  // prefers-reduced-motion fallbacks) rather than leaving cards unreachable.
+  section.classList.toggle('bento-stack-cramped', max > 0 && max >= window.innerHeight);
 }
 
 function clearMeasurements(section) {
   section.style.removeProperty('--card-height');
   section.style.removeProperty('--title-height');
   section.style.removeProperty('--gnav-offset');
+  section.style.removeProperty('--phone-h');
+  section.classList.remove('bento-stack-cramped');
 }
 
 export function contentReady(cards) {
@@ -77,6 +94,7 @@ export default function initBentoStack(section) {
       if (!section.isConnected) {
         ro?.disconnect();
         mq.removeEventListener('change', update);
+        window.removeEventListener('resize', update);
         return;
       }
       // (clearing/setting --card-height resizes the observed content).
@@ -97,5 +115,9 @@ export default function initBentoStack(section) {
     const title = section.querySelector(':scope > .rich-content');
     if (title) ro.observe(title);
     mq.addEventListener('change', update);
+    // ResizeObserver only reacts to element (card/title) size changes, and mq
+    // only reacts to width crossing 768px — neither fires on a pure viewport
+    // height change (e.g. desktop browser zoom), so --phone-h would go stale.
+    window.addEventListener('resize', update);
   });
 }

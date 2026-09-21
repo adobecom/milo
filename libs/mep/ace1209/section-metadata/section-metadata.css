@@ -262,7 +262,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     }
 
     .content-aux {
-      aspect-ratio: 1 / 1.1;
+      aspect-ratio: 1 / .88;
       display: block;
       height: auto;
       order: -1;
@@ -492,6 +492,14 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
     &:not(:has(> .rich-content)) {
       --card-front-y: var(--stack-pin-top);
+    }
+
+    > .explore-card .explore-card-content .content-aux {
+      /* Bound content-aux to viewport height, not just card width. Otherwise a
+         wide-but-short (zoomed) viewport inflates the width-driven aspect-ratio
+         height, growing --card-height and the scroll distance needed to
+         reveal each stacked card far beyond what the viewport can show. */
+      max-height: 35dvh;
     }
 
     > .explore-card {
@@ -724,6 +732,34 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
     .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
   }
+}
+
+/* Safety net for extreme browser zoom: bento-stack.js measures the tallest
+   card's natural height against the real viewport and adds this class when
+   even a single card can't fit — no stagger/offset tuning can make the
+   sticky/scroll-linked stack usable at that point. Same static fallback as
+   the @supports-not-view() and prefers-reduced-motion cases above. */
+@media (width < 768px) {
+  .section.bento.stack-mobile.bento-stack-cramped {
+    display: flex;
+    flex-direction: column;
+    gap: var(--title-card-gap, 24px);
+  }
+
+  .section.bento.stack-mobile.bento-stack-cramped > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-cramped > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-cramped > .explore-card .explore-card-content::after { content: none; }
 }
 
 @media (prefers-reduced-motion: reduce) and (width < 768px) {
