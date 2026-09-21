@@ -61,7 +61,8 @@ The view offset also carries an entry lift (`entryLiftPx`): the top edge of the 
 front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
 distance, is held at the canvas top and released by `1 − entryT²`, so the block scrolls in with no
 empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
-`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph. The same release factor is
+`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph.
+
 The spin toggle has two safe positions and `--fg-entry-release` (1 while scrolling in, 0 at the pin)
 crossfades between them: `--fg-controls-entry-top` while the world's top edge is still below the nav,
 `--fg-controls-top` once pinned and the nav is over it.
@@ -109,25 +110,23 @@ last line, so every line is in flight at once rather than arriving in turn.
 
 Each line carries two vars: `--fg-pq-line-v` for position and `--fg-pq-line-o` for opacity. Position
 is `easeOutQuart` over `lag → lag + span`; opacity is linear over `lag → 1`, the same window the name
-and role use. The fade is clamped by the mask for its first stretch
-by its mask, so an ease-out is spent before the line clears and reads as no fade at all. CSS maps
-that progress onto `--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from
-nothing.
+and role use. The mask clips the line for the first part of that window, so an ease-out would be
+spent before the line clears and read as no fade at all. CSS maps the progress onto
+`--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from nothing.
 
 The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
 `PQ_COPY_PARTS` and the `--fg-pq-copy-rise` lift apply to the name and role only.
 
-The wave is distance, not timing, and it rides on the mask box rather than the glyphs. Every line's
-inner span waits the same `--fg-pq-line-start` below its mask, so every line starts revealing as soon
-as its own clock does. The mask itself is offset by `rank × --fg-pq-line-wave`, rank being the line's
-index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank` on each split. A mask
-carries its clip rect with it, so that offset opens the gap without changing how much of the line
-shows: the spacing widens down the stack mid-flight and closes to the authored line-height on
-landing.
+The wave is distance, not timing, and it rides on the mask box rather than the glyphs. A line is
+wholly hidden while its offset exceeds its own height, so every line's inner span waits the same
+`--fg-pq-line-start` and starts revealing as soon as its own clock does; rolled into that start
+distance, the wave would delay each lower line's first appearance.
 
-A line is wholly hidden while its offset exceeds its own height, which is why the wave rides the mask
-and `--fg-pq-line-start` stays uniform: rolled into the start distance it would delay each lower
-line's first appearance. Raise `--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
+The mask itself is offset by `rank × --fg-pq-line-wave`, rank being the line's index capped at
+`PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank` on each split. A mask carries its clip
+rect with it, so that offset opens the gap without changing how much of the line shows: the spacing
+widens down the stack mid-flight and closes to the authored line-height on landing. Raise
+`--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
 
 ### Entry reveal
 
