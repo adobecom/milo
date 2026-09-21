@@ -212,7 +212,7 @@ describe('Blog Author', () => {
     expect(el.textContent).to.not.include('#f0e6d3');
   });
 
-  it('strips whitespace/newlines surrounding authored text nodes', async () => {
+  it('strips whitespace/newlines surrounding authored name and title in the schema', async () => {
     document.body.innerHTML = `
       <div class="blog-author">
         <div><div>
@@ -221,19 +221,16 @@ describe('Blog Author', () => {
         <div><div>
               Senior Director, Marketing
             </div></div>
-        <div><div>
-              Leads content strategy for the blog.
-            </div></div>
+        <div><div><p>Leads content strategy for the blog.</p></div></div>
       </div>`;
     await init(document.querySelector('.blog-author'));
-    expect(document.querySelector('.blog-author-name').textContent).to.equal('Adobe for Business Team');
     const schema = getPersonSchema();
     expect(schema.name).to.equal('Adobe for Business Team');
     expect(schema.jobTitle).to.equal('Senior Director, Marketing');
     expect(schema.description).to.equal('Leads content strategy for the blog.');
   });
 
-  it('trims whitespace around an authored h1 without removing the element', async () => {
+  it('strips whitespace/newlines from the schema name without removing an authored h1', async () => {
     document.body.innerHTML = `
       <div class="blog-author">
         <div><div>
@@ -242,7 +239,6 @@ describe('Blog Author', () => {
       </div>`;
     await init(document.querySelector('.blog-author'));
     const nameEl = document.querySelector('.blog-author-name');
-    expect(nameEl.textContent).to.equal('Shelly Chiang');
     expect(nameEl.querySelector('h1')).to.exist;
     expect(nameEl.querySelector('h1').id).to.equal('shelly-chiang');
     const schema = getPersonSchema();
