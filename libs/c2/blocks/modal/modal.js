@@ -6,6 +6,11 @@ import { sendAnalytics } from '../../../martech/helpers.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video, .faas), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+const CLOSE_BUTTON_CIRCLE_MEDIA = {
+  'close-button-circle-mobile': '(width < 768px)',
+  'close-button-circle-tablet': '(768px <= width < 1280px)',
+  'close-button-circle-desktop': '(width >= 1280px)',
+};
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
     <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/>
@@ -94,6 +99,7 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
+      mod._closeButtonCircleCleanup?.();
       const modalCurtain = !mod.matches('.dialog-modal.curtain-off') && document.querySelector(`#${id}~.modal-curtain`);
       if (modalCurtain) {
         modalCurtain.remove();
@@ -149,6 +155,26 @@ function getCustomModal(custom, dialog) {
   dialog.append(custom.content);
 }
 
+function configureCloseButtonCircle(dialog) {
+  if (dialog.classList.contains('close-button-circle')) return;
+  const mediaQueries = Object.entries(CLOSE_BUTTON_CIRCLE_MEDIA)
+    .filter(([className]) => dialog.classList.contains(className))
+    .map(([, query]) => window.matchMedia(query));
+  if (!mediaQueries.length) return;
+
+  const update = () => {
+    dialog.classList.toggle(
+      'close-button-circle',
+      mediaQueries.some((mediaQuery) => mediaQuery.matches),
+    );
+  };
+  mediaQueries.forEach((mediaQuery) => mediaQuery.addEventListener('change', update));
+  dialog._closeButtonCircleCleanup = () => {
+    mediaQueries.forEach((mediaQuery) => mediaQuery.removeEventListener('change', update));
+  };
+  update();
+}
+
 async function getPathModal(path, dialog) {
   let href = path;
   if (path.includes('/federal/')) {
@@ -197,6 +223,7 @@ export async function getModal(details, custom) {
   }
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
+  configureCloseButtonCircle(dialog);
   if (delayedModalId === id) {
     dialog.classList.add('delayed-modal');
     const mediaBlock = dialog.querySelector('div.media');
