@@ -1,5 +1,6 @@
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
+import { applyGeoSpoof } from '../spoof-country-ip.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../../utils/market.js';
 import {
   hasMasSurfaces,
@@ -55,8 +56,25 @@ export function safeSetItem(key, value) {
 
 export function getExpandedCards() {
   try {
-    return new Set(JSON.parse(safeGetItem(CARD_STORAGE_KEY)) || []);
-  } catch { return new Set(); }
+    const parsed = JSON.parse(safeGetItem(CARD_STORAGE_KEY));
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch { return {}; }
+}
+
+// Session-scoped so the choice survives a preview reload but doesn't linger into
+// a later QA session (a sticky "don't apply manifests" would be a footgun).
+export const EXCLUDE_MANIFEST_PARAMS_KEY = 'mep-exclude-manifest-params';
+
+export function getExcludeManifestParams() {
+  try {
+    return sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY) === 'true';
+  } catch { return false; }
+}
+
+export function setExcludeManifestParams(on) {
+  try {
+    sessionStorage.setItem(EXCLUDE_MANIFEST_PARAMS_KEY, on ? 'true' : 'false');
+  } catch { /* storage unavailable (private mode) — non-fatal */ }
 }
 
 export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
@@ -99,7 +117,8 @@ function parsePageAndUrl(config, windowLocation, prefix) {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryEnabled,
+  consentType, consentNotSpecified, consentEnabled,
   manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
@@ -110,12 +129,17 @@ function toActivity({
     selectedVariantName,
     url: manifest,
     disabled,
+    disabledPromo,
     source,
     eventStart: event?.start,
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
+    countryRestriction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -173,7 +197,12 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart,
     eventEnd,
     disabled,
-    geoRestriction,
+    disabledPromo,
+    countryRestriction,
+    countryEnabled,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder,
@@ -221,12 +250,18 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     isDefaultSelected,
     selectedVariantName,
     source: Array.isArray(source) ? source.join(', ') : source,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
+    countryRestriction: countryRestriction ? countryRestriction.toUpperCase() : null,
+    countryEnabled,
     manifestType,
     manifestOverrideName,
     executionOrder: getExecutionOrderLabel(executionOrder),
-    geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
     showActive: !!(eventStart && eventEnd) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
+    withinDateRange: !disabled,
+    disabledPromo: !!disabledPromo,
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
@@ -236,18 +271,32 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
+function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx) {
+  return {
+    index: mIdx + 1,
+    editUrl: manifestPath,
+    fileName: name,
+    malformed: true,
+    error,
+  };
+}
+
 export function getManifestList() {
   const mepConfig = parseMepConfig();
-  if (!mepConfig) return { manifests: [], manifestParameter: [] };
-  const { activities, page } = mepConfig;
-  const { pageId = 0 } = page;
+  const manifestErrors = getConfig().mep?.manifestErrors ?? [];
+  const { activities, page } = mepConfig ?? {};
+  const { pageId = 0 } = page ?? {};
   const manifestParameter = [];
 
-  const manifests = activities.map(
+  const manifests = activities?.map(
     (manifest, mIdx) => buildManifestEntry(manifest, mIdx, pageId, manifestParameter),
+  ) ?? [];
+
+  const malformedManifests = manifestErrors.map(
+    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx),
   );
 
-  return { manifests, manifestParameter };
+  return { manifests: [...manifests, ...malformedManifests], manifestParameter };
 }
 
 function getManifestsFound() {
@@ -311,7 +360,7 @@ function getPersonalizationMetadata() {
 
 function getPerformanceConsent() {
   const { consentState } = getConfig().mep;
-  return consentState?.functional ? 'on' : 'off';
+  return consentState?.performance ? 'on' : 'off';
 }
 
 function getAdvertisingConsent() {
@@ -442,15 +491,20 @@ export function getMasSummary() {
   ];
 }
 
-const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
+const RELEVANT_CONTENT_SELECTOR = [
+  'merch-card', 'mas-field', '[data-mas-block]', '[data-wcs-osi]',
+  '[data-caas-block]', '[data-card-url]',
+  '[data-manifest-id]', '[data-code-manifest-id]', '[data-removed-manifest-id]',
+  '[data-mep-lingo-roc]', '[data-mep-lingo-fallback]', '[data-fragment-default]', '[data-path]',
+].join(',');
 
-const isMasNode = (node) => (
+const isRelevantContentNode = (node) => (
   node.nodeType === Node.ELEMENT_NODE
-  && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR))
+  && (node.matches(RELEVANT_CONTENT_SELECTOR) || node.querySelector(RELEVANT_CONTENT_SELECTOR))
 );
 
-export const hasMasChanges = (mutations) => mutations.some(
-  ({ addedNodes }) => [...addedNodes].some(isMasNode),
+export const hasRelevantContentChanges = (mutations) => mutations.some(
+  ({ addedNodes }) => [...addedNodes].some(isRelevantContentNode),
 );
 
 let additionalManifests;
@@ -506,19 +560,26 @@ export async function setPreviewButton() {
   ];
 
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
-
   const setOrDelete = (key, value) => (value
     ? simulateHref.searchParams.set(key, value)
     : simulateHref.searchParams.delete(key));
 
-  setOrDelete('akamaiLocale', getSpoofGeoParams(popup));
+  if (getCheckboxParam(popup, 'toggle-manifest-parameters')) {
+    // Bare `mep` still shows the MEP button in prod (utils checks `mepParam === ''`).
+    simulateHref.searchParams.set('mep', '');
+  } else {
+    simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  }
+
+  applyGeoSpoof(simulateHref.searchParams, getSpoofGeoParams(popup));
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
-  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
+  // URLSearchParams serializes an empty value as `mep=`; drop the `=` for a bare `mep`.
+  const href = simulateHref.href.replace(/([?&]mep)=(?=[&#]|$)/, '$1');
+  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', href);
 }
 
 export function getLingoRegions() {

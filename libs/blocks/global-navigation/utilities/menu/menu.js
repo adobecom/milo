@@ -52,6 +52,21 @@ function getAnalyticsValue(str, index) {
   return analyticsValue;
 }
 
+// mas-field CTAs resolve after decoratePromo runs; move feds-cta onto the real anchor when ready.
+let promoCtasWatched = false;
+function watchPromoCtas() {
+  if (promoCtasWatched) return;
+  promoCtasWatched = true;
+  document.addEventListener('mas:ready', ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD' || !mf.classList.contains('feds-cta')) return;
+    const link = mf.querySelector('a');
+    if (!link) return;
+    link.className = mf.className;
+    if (mf.hasAttribute('daa-ll')) link.setAttribute('daa-ll', mf.getAttribute('daa-ll'));
+    mf.replaceWith(link);
+  });
+}
+
 function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
@@ -296,7 +311,13 @@ const decorateGnavImage = (elem) => {
 const decoratePromo = async (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
-  const promoHeader = elem.querySelector('p > strong');
+  watchPromoCtas();
+  // Header is a <strong> that isn't just a CTA wrapper; a CTA's <strong> holds only its
+  // anchor (or an unresolved <mas-field>), so skip those to find the real heading.
+  const wrapsOnlyCta = (s) => s.children.length === 1
+    && ['A', 'MAS-FIELD'].includes(s.children[0].tagName)
+    && s.textContent.trim() === s.children[0].textContent.trim();
+  const promoHeader = [...elem.querySelectorAll('p > strong')].find((s) => !wrapsOnlyCta(s));
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
@@ -597,5 +618,5 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
-export { decorateLinkGroupWithEmbeddedMerch };
+export { decorateLinkGroupWithEmbeddedMerch, decoratePromo };
 export default { decorateMenu, decorateLinkGroup, decorateHeadline };
