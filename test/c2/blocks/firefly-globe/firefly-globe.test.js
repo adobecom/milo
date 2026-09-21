@@ -8,6 +8,7 @@ import {
   parseAuthoredContent,
   buildGlobeDom,
   fetchFireflyAssets,
+  layoutQuote,
 } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
 
 // Helpers
@@ -407,5 +408,109 @@ describe('firefly-globe: frame state', () => {
 
   it('FRAME_MS is ~16.67ms (60fps target)', () => {
     expect(TL.FRAME_MS).to.be.closeTo(16.667, 0.001);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────
+describe('firefly-globe: layoutQuote', () => {
+  let host;
+
+  // Real layout: the split reads offsetTop per word, so the node must be in the document
+  // and narrow enough to wrap.
+  function makeQuote(text, width = 220) {
+    host = makeEl(`<div class="firefly-globe-pullquote" style="width:${width}px;padding-inline:0">
+      <blockquote class="firefly-globe-pullquote-quote"
+        style="font:16px/1.2 monospace;margin:0">${text}</blockquote></div>`);
+    document.body.append(host);
+    return host.querySelector('.firefly-globe-pullquote-quote');
+  }
+
+  const lineTexts = (el) => [...el.querySelectorAll('.firefly-globe-pullquote-line-inner')]
+    .map((n) => n.textContent);
+
+  afterEach(() => {
+    host?.remove();
+    host = null;
+  });
+
+  it('wraps a long quote into more than one masked line', () => {
+    const quoteEl = makeQuote('one two three four five six seven eight nine ten eleven twelve');
+    const lines = layoutQuote(quoteEl);
+    expect(lines.length).to.be.above(1);
+    lines.forEach((line) => {
+      expect(line.classList.contains('firefly-globe-pullquote-line')).to.be.true;
+      expect(line.querySelector('.firefly-globe-pullquote-line-inner')).to.exist;
+    });
+  });
+
+  it('returns the rendered lines and marks the quote as split', () => {
+    const quoteEl = makeQuote('alpha beta gamma delta epsilon zeta eta theta');
+    const lines = layoutQuote(quoteEl);
+    expect(quoteEl.classList.contains('firefly-globe-pullquote-lines')).to.be.true;
+    expect(lines).to.have.length(quoteEl.querySelectorAll('.firefly-globe-pullquote-line').length);
+  });
+
+  it('preserves every word, in order, across the split', () => {
+    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa';
+    const quoteEl = makeQuote(text);
+    layoutQuote(quoteEl);
+    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
+  });
+
+  it('keeps a space between lines so textContent does not run words together', () => {
+    const quoteEl = makeQuote('alpha beta gamma delta epsilon zeta eta theta iota kappa');
+    layoutQuote(quoteEl);
+    const visible = [...quoteEl.querySelectorAll('.firefly-globe-pullquote-line')]
+      .map((n) => n.textContent).join('');
+    expect(quoteEl.textContent).to.not.equal(`${visible}${visible}`);
+    expect(quoteEl.textContent).to.include('alpha beta');
+  });
+
+  it('re-splits from the authored text, not from the already-split DOM', () => {
+    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa';
+    const quoteEl = makeQuote(text);
+    layoutQuote(quoteEl);
+    const wide = layoutQuote(quoteEl); // same width: same typesetting, no nesting
+    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
+    expect(quoteEl.querySelectorAll('.firefly-globe-pullquote-line-inner .firefly-globe-pullquote-line')).to.have.length(0);
+    expect(wide.length).to.be.above(0);
+  });
+
+  it('re-typesets to fewer lines when the box gets wider', () => {
+    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu';
+    const quoteEl = makeQuote(text, 160);
+    const narrow = layoutQuote(quoteEl).length;
+    quoteEl.closest('.firefly-globe-pullquote').style.width = '900px';
+    const wide = layoutQuote(quoteEl).length;
+    expect(wide).to.be.below(narrow);
+    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
+  });
+
+  it('carries the full text in one sr-only node and hides the visual lines', () => {
+    const text = 'alpha beta gamma delta epsilon zeta eta theta';
+    const quoteEl = makeQuote(text);
+    const lines = layoutQuote(quoteEl);
+    const sr = quoteEl.querySelector('.firefly-globe-pullquote-sr');
+    expect(sr).to.exist;
+    expect(sr.textContent).to.equal(text);
+    lines.forEach((line) => expect(line.getAttribute('aria-hidden')).to.equal('true'));
+  });
+
+  it('hangs an opening quote mark off the first line only', () => {
+    const quoteEl = makeQuote('\u201Calpha beta gamma delta epsilon zeta eta theta\u201D');
+    quoteEl.closest('.firefly-globe-pullquote').style.paddingInline = '40px';
+    const lines = layoutQuote(quoteEl);
+    expect(lines[0].querySelectorAll('.hang-opening-quote')).to.have.length(1);
+    lines.slice(1).forEach((l) => expect(l.querySelector('.hang-opening-quote')).to.be.null);
+  });
+
+  it('returns [] and leaves the quote unsplit when there is no text', () => {
+    const quoteEl = makeQuote('   ');
+    expect(layoutQuote(quoteEl)).to.deep.equal([]);
+    expect(quoteEl.classList.contains('firefly-globe-pullquote-lines')).to.be.false;
+  });
+
+  it('returns [] for a missing element', () => {
+    expect(layoutQuote(null)).to.deep.equal([]);
   });
 });

@@ -35,7 +35,7 @@ const BREAKPOINTS = {
   sm: {
     minWidth: 0,
     SPHERE_R: 16,
-    CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
+    CARD_H_SPHERE: 11.0,
     CAM_Z_ENTRY: 100,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -18,
@@ -49,8 +49,8 @@ const BREAKPOINTS = {
   md: {
     minWidth: 768,
     SPHERE_R: 35,
-    CARD_H_SPHERE: 10.5,
-    CAM_Z_ENTRY: 160,
+    CARD_H_SPHERE: 10,
+    CAM_Z_ENTRY: 140,
     CAM_Z_SPHERE: 80,
     CAM_Z_END: -30,
     NEAR_FADE_START: 2.0,
@@ -147,6 +147,9 @@ const PQ_COPY_PARTS = [['n', 0.18], ['r', 0.28]];
 const PQ_COPY_LINE_STAGGER = 0.05;
 const PQ_COPY_LINE_LAG_MAX = 0.2;
 const PQ_COPY_LINE_RANK_CAP = 4;
+
+const ENTRY_LIFT_MIN_H = 0.45;
+const ENTRY_RELEASE_PEAK = 2; // peak |slope| of entryRelease; caps the lift at H / this
 
 const TEXT_APPEAR_START = 0.10;
 const CURSOR_RETIRE_LEAD_T = 0.02;
@@ -1015,7 +1018,7 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
-  const entryRelease = (frame) => (frame.sphereFormed ? 0 : 1 - frame.entryT ** 3);
+  const entryRelease = (frame) => (frame.sphereFormed ? 0 : 1 - frame.entryT ** 2);
 
   let entryReleaseStr = '';
   function publishEntryRelease(frame) {
@@ -1031,7 +1034,8 @@ function createGlobeGalleryRuntime(
     const groupScale = sphereGroup.scale.x || 1;
     const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
     const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - topZ, H);
-    return Math.max(0, H / 2 + navH / 2 - topPx) * release;
+    const lift = Math.max(H * ENTRY_LIFT_MIN_H, H / 2 + navH / 2 - topPx);
+    return Math.min(H / ENTRY_RELEASE_PEAK, lift) * release;
   }
 
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
@@ -1475,8 +1479,8 @@ function createGlobeGalleryRuntime(
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
-    updatePullQuote(frame);
     publishEntryRelease(frame);
+    updatePullQuote(frame);
 
     renderer.sortObjects = true;
 
@@ -1833,6 +1837,7 @@ function createGlobeGalleryRuntime(
     modal.destroy();
     a11y.teardown();
     frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
+    entryReleaseStr = '';
     frameState.entryT = 0; frameState.scrollT = 0; frameState.sphereFormed = false;
     if (pqEl) pqEl.style.cssText = '';
     pq.revealT = 0;
@@ -1842,7 +1847,6 @@ function createGlobeGalleryRuntime(
     pq.splitW = 0;
     pqAppearT = 1;
     canvasHidden = false;
-    entryReleaseStr = '';
     focusSnapPending = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();

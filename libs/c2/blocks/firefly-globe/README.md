@@ -59,12 +59,17 @@ Reduced motion is always formed and interactive.
 
 The view offset also carries an entry lift (`entryLiftPx`): the top edge of the cards — the barrel's
 front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
-distance, is held at the canvas top and released by `1 − entryT³`, so the block scrolls in with no
+distance, is held at the canvas top and released by `1 − entryT²`, so the block scrolls in with no
 empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
 `fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph. The same release factor is
-published as `--fg-entry-release` (1 while scrolling in, 0 at the pin) and the spin toggle subtracts
-`--fg-nav-h · --fg-entry-release` from `--fg-controls-top`, so it sits `--fg-controls-inset` below the
-world's top edge during the entry and under the nav once pinned.
+The spin toggle has two safe positions and `--fg-entry-release` (1 while scrolling in, 0 at the pin)
+crossfades between them: `--fg-controls-entry-top` while the world's top edge is still below the nav,
+`--fg-controls-top` once pinned and the nav is over it.
+
+The entry value is one `--s2a-border-radius-xl` plus the inset. A section that rounds its corners
+overlaps its neighbour by exactly one radius (`margin-block: calc(-1 * var(--s2a-border-radius-xl))`
+in `section-metadata.css`) and carries `z-index: 3`, so it paints over this block's first 32px. No
+z-index here escapes that: stacking is settled between the two sections, above this block.
 
 From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
@@ -104,10 +109,11 @@ last line, so every line is in flight at once rather than arriving in turn.
 
 Each line carries two vars: `--fg-pq-line-v` for position and `--fg-pq-line-o` for opacity. Position
 is `easeOutQuart` over `lag → lag + span`; opacity is linear over `lag → 1`, the same window the name
-and role use. The fade must not be an ease-out: that spends its range while the line is still clipped
-by its mask, so the line is opaque before it clears and the fade cannot be seen. CSS maps that
-progress onto `--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from nothing;
-that floor, not the curve, is the knob with real visual authority.
+and role use. The fade is clamped by the mask for its first stretch
+by its mask, so an ease-out is spent before the line clears and reads as no fade at all. CSS maps
+that progress onto `--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from
+nothing.
+
 The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
 `PQ_COPY_PARTS` and the `--fg-pq-copy-rise` lift apply to the name and role only.
 
@@ -119,9 +125,31 @@ carries its clip rect with it, so that offset opens the gap without changing how
 shows: the spacing widens down the stack mid-flight and closes to the authored line-height on
 landing.
 
-Keep the wave off `--fg-pq-line-start`. A line is wholly hidden while its offset exceeds its own
-height, so adding the wave there delays the lower lines' first appearance and the reveal reads line
-by line. Raise `--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
+A line is wholly hidden while its offset exceeds its own height, which is why the wave rides the mask
+and `--fg-pq-line-start` stays uniform: rolled into the start distance it would delay each lower
+line's first appearance. Raise `--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
+
+### Entry reveal
+
+`entryLiftPx` floors the lift at `ENTRY_LIFT_MIN_H` of the viewport, so at `entryT` 0 the cards sit
+that far above the canvas top and are clipped by the render target itself. `1 − entryT²` releases it,
+so they descend into frame and are fully in view at the pin. The reveal is entirely inside the canvas;
+the block's box, margins and runway are untouched.
+
+The descent is masked by the page: pre-pin the world tracks the scroll at −1 while the lift unwinds
+at `2 · lift · entryT / viewportH`, so the globe still rises, just slower than the page. That
+difference is the reveal.
+
+A lift that unwinds faster than the page scrolls stalls the globe and then sinks it, so
+`entryLiftPx` clamps to `viewportH / ENTRY_RELEASE_PEAK` — the release curve's steepest slope, 2 for
+`1 − t²`. **`ENTRY_RELEASE_PEAK` has to move with the curve.** The clamp bounds the geometric term
+as well as `ENTRY_LIFT_MIN_H`: `H / 2 + navH / 2 − topPx` passes the ceiling on its own once the
+entry globe is small enough that `topPx < navH / 2`. Under the cap, the leftover speed at the pin is
+`1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
+
+The lift also has to stay under what the globe can cover: displacing it by `ENTRY_LIFT_MIN_H` needs
+the entry globe to render at least `1 + ENTRY_LIFT_MIN_H` viewports tall, or empty canvas shows below
+it. That is `CAM_Z_ENTRY`'s job.
 
 ## Tuning the scroll budget
 
@@ -201,5 +229,17 @@ toggled after a value has already been written, so they reset `opacity` and `tra
 ## Tests
 
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
-quote), `buildGlobeDom`, API card mapping (rendition URL cap, model tags, locale fallback,
-alt fallback), the frame shape, the clock endpoints (`deriveFrame`) and the travel camera inverse pair. There is no Nala/E2E coverage of the WebGL path.
+quote), `buildGlobeDom`, API card mapping (rendition URL cap, model tags, locale fallback, alt
+fallback), the frame shape, the clock endpoints (`deriveFrame`) and the travel camera inverse pair.
+
+`layoutQuote` is covered against real layout — the split reads `offsetTop` per word, so those cases
+attach the quote to the document at a width that forces a wrap. They pin the parts a relayout can
+break: every word survives in order, lines stay separated by a text node so `textContent` does not
+run them together, the `sr-only` node carries the whole quote while the visual lines are
+`aria-hidden`, the opening mark hangs off the first line only, and a re-split re-typesets from the
+authored text in the `QUOTE_TEXT` map rather than from the already-split DOM — including widening
+the box to fewer lines.
+
+The reveal maths (`entryLiftPx`, `entryRelease`, `updatePullQuoteCopy`) are closures inside
+`createGlobeGalleryRuntime` and are not reachable from a test. There is no Nala/E2E coverage of the
+WebGL path.

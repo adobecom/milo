@@ -24,6 +24,7 @@
   --fg-band-h: calc(100vh - var(--fg-nav-h));
   --fg-optical-center: calc(var(--fg-nav-h) + var(--fg-band-h) / 2);
   --fg-controls-top: calc(var(--fg-nav-h) + var(--fg-controls-inset));
+  --fg-controls-entry-top: calc(var(--s2a-border-radius-xl) + var(--fg-controls-inset));
   --fg-runway-height: 240vh;
 
   height: var(--fg-runway-height);
@@ -175,7 +176,10 @@
 
 .firefly-globe-spin-toggle {
   position: absolute;
-  top: calc(var(--fg-controls-top) - var(--fg-nav-h) * var(--fg-entry-release, 0));
+  top: calc(
+    var(--fg-controls-top)
+    - (var(--fg-controls-top) - var(--fg-controls-entry-top)) * var(--fg-entry-release, 0)
+  );
   inset-inline-end: var(--fg-controls-inset);
 }
 
