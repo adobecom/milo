@@ -767,7 +767,7 @@ async function buildOverlay() {
   lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
-  document.querySelector('main').append(
+  document.body.append(
     buildFAB(gnavOffset),
     buildDrawer(gnavOffset, pageId),
   );
