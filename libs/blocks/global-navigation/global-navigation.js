@@ -67,7 +67,11 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const {
+  getAupModalHashCleanup,
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} = merch;
 
 const {
   clearSignOutCookies,
@@ -1152,14 +1156,18 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
-        const modalId = document.activeElement?.getAttribute('data-modal-id');
-        const modalHash = modalId ? `#${modalId}` : '';
+        const cleanupAupModalHash = getAupModalHashCleanup();
         const isIframe = element.tagName === 'IFRAME';
-        if (isIframe) {
-          await Promise.all([
-            import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-            import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-          ]);
+        try {
+          if (isIframe) {
+            await Promise.all([
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ]);
+          }
+        } catch (e) {
+          cleanupAupModalHash?.();
+          throw e;
         }
         teardownActiveDialog?.();
         let dialog;
@@ -1167,9 +1175,8 @@ class Gnav {
         let closeDialog;
         let onDialogCancel;
         let onDialogClick;
-        let restoreUrl;
         let isTornDown = false;
-        const teardown = (restoreHash = true) => {
+        const teardown = () => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
@@ -1180,9 +1187,7 @@ class Gnav {
           dialog?.remove();
           document.documentElement.classList.remove('disable-scroll');
           if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
-          if (restoreHash && restoreUrl && window.location.hash === modalHash) {
-            window.history.pushState(window.history.state, '', restoreUrl);
-          }
+          cleanupAupModalHash?.();
         };
         closeDialog = () => {
           teardown();
@@ -1227,15 +1232,6 @@ class Gnav {
           teardownActiveDialog = teardown;
           document.documentElement.classList.add('disable-scroll');
           dialog.showModal();
-          if (modalHash) {
-            const previousUrl = window.location.hash === modalHash
-              ? `${window.location.pathname}${window.location.search}`
-              : `${window.location.pathname}${window.location.search}${window.location.hash}`;
-            if (window.location.hash !== modalHash) {
-              window.history.pushState(window.history.state, '', modalHash);
-            }
-            restoreUrl = previousUrl;
-          }
         } catch (e) {
           teardown();
           throw e;

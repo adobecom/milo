@@ -532,58 +532,6 @@ describe('global navigation', () => {
       }
     });
 
-    it('manages the originating merch modal hash without invoking Milo modal routing', async () => {
-      preload.restore();
-      const previousSdk = window.aupsdk;
-      const previousSdkFactory = window.AUPSDK;
-      const script = document.createElement('script');
-      script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
-      script.dataset.loaded = 'true';
-      document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
-      document.body.append(cta);
-      window.aupsdk = undefined;
-      const instance = { updateConfig: sinon.stub().resolves() };
-      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-      const hashchange = sinon.spy();
-      window.addEventListener('hashchange', hashchange);
-      try {
-        await gnav.constructor.preloadAupSdk();
-        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-        const successfulWorkflow = document.createElement('div');
-        cta.focus();
-
-        await showDialog(successfulWorkflow, {}, sinon.spy());
-
-        expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
-        expect(hashchange.called).to.be.false;
-        successfulWorkflow.dispatchEvent(new Event('success'));
-        expect(window.location.hash).to.equal('#miniplans-buy-lightroom-classic');
-        successfulWorkflow.dispatchEvent(new Event('close'));
-        expect(window.location.href).to.equal(originalUrl);
-
-        const canceledWorkflow = document.createElement('div');
-        cta.focus();
-        await showDialog(canceledWorkflow, {}, sinon.spy());
-        canceledWorkflow.dispatchEvent(new Event('cancel'));
-        canceledWorkflow.dispatchEvent(new Event('close'));
-
-        expect(window.location.href).to.equal(originalUrl);
-        expect(hashchange.called).to.be.false;
-      } finally {
-        window.removeEventListener('hashchange', hashchange);
-        cta.remove();
-        script.remove();
-        document.getElementById('aup-workflow-dialog')?.remove();
-        document.documentElement.classList.remove('disable-scroll');
-        window.aupsdk = previousSdk;
-        window.AUPSDK = previousSdkFactory;
-      }
-    });
-
     it('does not change the URL when iframe dialog prerequisites fail', async () => {
       preload.restore();
       const previousSdk = window.aupsdk;
@@ -593,10 +541,6 @@ describe('global navigation', () => {
       script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'miniplans-buy-lightroom-classic';
-      document.body.append(cta);
       setConfig({
         codeRoot: '/missing-aup-dialog-dependencies',
         imsClientId: 'test-client',
@@ -608,7 +552,6 @@ describe('global navigation', () => {
       try {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
-        cta.focus();
         const error = await showDialog(
           document.createElement('iframe'),
           {},
@@ -620,7 +563,6 @@ describe('global navigation', () => {
         expect(document.getElementById('aup-workflow-dialog')).to.be.null;
         expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
       } finally {
-        cta.remove();
         script.remove();
         window.aupsdk = previousSdk;
         window.AUPSDK = previousSdkFactory;
@@ -636,10 +578,6 @@ describe('global navigation', () => {
       script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
       script.dataset.loaded = 'true';
       document.head.append(script);
-      const cta = document.createElement('a');
-      cta.href = '#';
-      cta.dataset.modalId = 'first-modal';
-      document.body.append(cta);
       window.aupsdk = undefined;
       const instance = { updateConfig: sinon.stub().resolves() };
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
@@ -647,39 +585,27 @@ describe('global navigation', () => {
         await gnav.constructor.preloadAupSdk();
         const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
         const firstWorkflow = document.createElement('div');
-        const replacementTrigger = document.createElement('button');
-        replacementTrigger.dataset.modalId = 'second-modal';
-        firstWorkflow.append(replacementTrigger);
         const removeListener = sinon.spy(firstWorkflow, 'removeEventListener');
         const firstCallback = sinon.spy();
-        cta.focus();
         await showDialog(firstWorkflow, {}, firstCallback);
-        expect(window.location.hash).to.equal('#first-modal');
 
-        replacementTrigger.focus();
         const secondWorkflow = document.createElement('div');
         const secondCallback = sinon.spy();
         await showDialog(secondWorkflow, {}, secondCallback);
-
         const activeDialog = document.getElementById('aup-workflow-dialog');
-        expect(window.location.hash).to.equal('#second-modal');
         expect(activeDialog.contains(secondWorkflow)).to.be.true;
         expect(removeListener.calledWith('close')).to.be.true;
 
-        firstWorkflow.dispatchEvent(new Event('success'));
         firstWorkflow.dispatchEvent(new Event('close'));
 
         expect(firstCallback.called).to.be.false;
         expect(secondCallback.called).to.be.false;
-        expect(window.location.hash).to.equal('#second-modal');
         expect(document.getElementById('aup-workflow-dialog')).to.equal(activeDialog);
         expect(document.documentElement.classList.contains('disable-scroll')).to.be.true;
 
         secondWorkflow.dispatchEvent(new Event('close'));
         expect(secondCallback.calledOnceWithExactly({ type: 'close' })).to.be.true;
-        expect(window.location.href).to.equal(originalUrl);
       } finally {
-        cta.remove();
         script.remove();
         document.getElementById('aup-workflow-dialog')?.remove();
         document.documentElement.classList.remove('disable-scroll');
