@@ -34,16 +34,15 @@ function stepSpring(item, dt) {
 }
 
 function createFloatingCtaAnimation(pill) {
-  const intro = pill.querySelector('.floating-cta__intro');
-  const background = pill.querySelector('.floating-cta__background');
-  const actions = pill.querySelector('.floating-cta__actions');
-  const content = pill.querySelector('.floating-cta__lockup');
+  const intro = pill.querySelector('.floating-cta-intro');
+  const background = pill.querySelector('.floating-cta-background');
+  const actions = pill.querySelector('.floating-cta-actions');
+  const content = pill.querySelector('.floating-cta-lockup');
   let frame = 0;
   let fullWidth = 0;
   let actionCenterOffset = 0;
   const motion = {
     ctaY: spring(180, 100, 13),
-    introX: spring(-19, 100, 13),
     introW: spring(38, 100, 13),
     introH: spring(96, 100, 13),
     introScale: spring(1.3, 160, 24),
@@ -52,9 +51,7 @@ function createFloatingCtaAnimation(pill) {
     bgScale: spring(1.3, 160, 24),
     bgAlpha: spring(0),
     actionX: spring(0, 110, 20),
-    actionScale: spring(0),
-    contentScale: spring(0.5),
-    contentAlpha: spring(0),
+    content: spring(0),
   };
 
   function measure() {
@@ -63,7 +60,7 @@ function createFloatingCtaAnimation(pill) {
     content.style.transform = '';
     const pillRect = pill.getBoundingClientRect();
     const actionRect = actions.getBoundingClientRect();
-    fullWidth = pillRect.width;
+    if (pillRect.width) fullWidth = pillRect.width;
     actionCenterOffset = pillRect.left + pillRect.width / 2
       - (actionRect.left + actionRect.width / 2);
   }
@@ -72,16 +69,14 @@ function createFloatingCtaAnimation(pill) {
     pill.style.setProperty('--cta-ty', `${motion.ctaY.value}px`);
     intro.style.width = `${motion.introW.value}px`;
     intro.style.height = `${motion.introH.value}px`;
-    intro.style.transform = `translate(${motion.introX.value}px, -50%)`
+    intro.style.transform = `translate(${-motion.introW.value / 2}px, -50%)`
       + ` scale(${motion.introScale.value})`;
     background.style.width = `${motion.bgW.value}px`;
     background.style.height = `${motion.bgH.value}px`;
     background.style.transform = `translate(-50%, -50%) scale(${motion.bgScale.value})`;
     background.style.setProperty('--spring-alpha', `${motion.bgAlpha.value}`);
-    actions.style.transform = `translateX(${motion.actionX.value}px)`
-      + ` scale(${motion.actionScale.value})`;
-    content.style.opacity = `${motion.contentAlpha.value}`;
-    content.style.transform = `scale(${motion.contentScale.value})`;
+    actions.style.transform = `translateX(${motion.actionX.value}px)`;
+    content.style.setProperty('--lockup-in', `${motion.content.value}`);
   }
 
   function setInitialDesktop() {
@@ -89,7 +84,6 @@ function createFloatingCtaAnimation(pill) {
     pill.classList.remove('is-active');
     measure();
     setSpring(motion.ctaY, 180);
-    setSpring(motion.introX, -19);
     setSpring(motion.introW, 38);
     setSpring(motion.introH, 96);
     setSpring(motion.introScale, 1.3);
@@ -98,9 +92,8 @@ function createFloatingCtaAnimation(pill) {
     setSpring(motion.bgScale, 1.3);
     setSpring(motion.bgAlpha, 0);
     setSpring(motion.actionX, actionCenterOffset);
-    setSpring(motion.actionScale, 0);
-    setSpring(motion.contentScale, 0.5);
-    setSpring(motion.contentAlpha, 0);
+    setSpring(motion.content, 0);
+    pill.classList.remove('is-action-in');
     intro.style.opacity = '0';
     paintDesktop();
   }
@@ -114,14 +107,14 @@ function createFloatingCtaAnimation(pill) {
     setSpring(motion.bgScale, 1);
     setSpring(motion.bgAlpha, 1);
     setSpring(motion.actionX, 0);
-    setSpring(motion.actionScale, 1);
-    setSpring(motion.contentScale, 1);
-    setSpring(motion.contentAlpha, 1);
+    setSpring(motion.content, 1);
+    pill.classList.add('is-action-in');
     paintDesktop();
   }
 
   function springIn() {
     setInitialDesktop();
+    measure();
     pill.classList.add('is-active');
     intro.style.opacity = '1';
     if (reducedMotion.matches) {
@@ -136,12 +129,9 @@ function createFloatingCtaAnimation(pill) {
       elapsed += dt;
       if (elapsed >= 0.02) motion.introScale.target = 0.8;
       if (elapsed >= 0.03) motion.ctaY.target = 0;
-      if (elapsed >= 0.05) {
-        motion.introX.target = -36;
-        motion.introW.target = 72;
-      }
+      if (elapsed >= 0.05) motion.introW.target = 72;
       if (elapsed >= 0.15) motion.introH.target = 72;
-      if (elapsed >= 0.20) motion.actionScale.target = 1;
+      if (elapsed >= 0.20) pill.classList.add('is-action-in');
       if (elapsed >= 0.30) motion.bgScale.target = 1;
       if (elapsed >= 0.40) {
         motion.bgW.target = fullWidth;
@@ -151,10 +141,7 @@ function createFloatingCtaAnimation(pill) {
         motion.bgAlpha.target = 1;
         intro.style.opacity = '0';
       }
-      if (elapsed >= 0.50) {
-        motion.contentScale.target = 1;
-        motion.contentAlpha.target = 1;
-      }
+      if (elapsed >= 0.50) motion.content.target = 1;
       if (elapsed >= 0.60) motion.bgH.target = 72;
       Object.values(motion).forEach((item) => stepSpring(item, dt));
       paintDesktop();
@@ -178,10 +165,9 @@ function createFloatingCtaAnimation(pill) {
       const actionProgress = easeInOutCubic(clamp01((progress - 0.06) / 0.46));
       const collapseProgress = easeInOutCubic(clamp01((progress - 0.08) / 0.62));
       const dropProgress = easeInOutCubic(clamp01((progress - 0.46) / 0.54));
-      motion.contentAlpha.value = 1 - contentProgress;
-      motion.contentScale.value = lerp(1, 0.5, contentProgress);
+      motion.content.value = 1 - contentProgress;
       motion.actionX.value = lerp(0, actionCenterOffset, actionProgress);
-      motion.actionScale.value = 1 - actionProgress;
+      if (actionProgress > 0) pill.classList.remove('is-action-in');
       motion.bgW.value = lerp(fullWidth, 52, collapseProgress);
       motion.bgH.value = lerp(72, 48, collapseProgress);
       motion.bgScale.value = lerp(1, 1.3, collapseProgress);
@@ -193,78 +179,40 @@ function createFloatingCtaAnimation(pill) {
     frame = requestAnimationFrame(tick);
   }
 
-  function resetMobileContent() {
-    cancelAnimationFrame(frame);
-    pill.classList.add('is-active');
-    actions.style.transform = '';
-    content.style.opacity = '';
-    content.style.transform = '';
-  }
-
-  function parkMobile() {
-    resetMobileContent();
-    pill.style.setProperty('--cta-ty', '160px');
-    pill.classList.remove('is-active');
-  }
-
-  function slideMobile(to, duration, onDone) {
-    resetMobileContent();
-    if (reducedMotion.matches) {
-      pill.style.setProperty('--cta-ty', `${to}px`);
-      if (onDone) onDone();
+  function resetForViewport() {
+    if (mobileQuery.matches) {
+      cancelAnimationFrame(frame);
       return;
     }
-    const from = parseFloat(getComputedStyle(pill).getPropertyValue('--cta-ty')) || 0;
-    const start = performance.now();
-    const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = to === 0 ? 1 - ((1 - progress) ** 3) : progress ** 3;
-      pill.style.setProperty('--cta-ty', `${from + (to - from) * eased}px`);
-      if (progress < 1) frame = requestAnimationFrame(tick);
-      else if (onDone) onDone();
-    };
-    frame = requestAnimationFrame(tick);
-  }
-
-  function animateIn() {
-    if (mobileQuery.matches) slideMobile(0, 420);
-    else springIn();
-  }
-
-  function animateOut() {
-    if (mobileQuery.matches) slideMobile(160, 360, parkMobile);
-    else springOut();
-  }
-
-  function resetForViewport() {
-    const isActive = pill.classList.contains('active');
-    if (mobileQuery.matches) {
-      resetMobileContent();
-      pill.style.setProperty('--cta-ty', isActive ? '0px' : '160px');
-      pill.classList.toggle('is-active', isActive);
-    } else if (isActive) {
+    if (pill.classList.contains('active')) {
       measure();
       finishDesktop();
     } else setInitialDesktop();
   }
 
   mobileQuery.addEventListener('change', resetForViewport);
-  if (mobileQuery.matches) parkMobile();
-  else setInitialDesktop();
-  return { animateIn, animateOut };
+  if (!mobileQuery.matches) setInitialDesktop();
+  return {
+    animateIn() {
+      if (!mobileQuery.matches) springIn();
+    },
+    animateOut() {
+      if (!mobileQuery.matches) springOut();
+    },
+  };
 }
 
 function decorateAnimatedCta(cta, img, text, trailing) {
-  const intro = createTag('span', { class: 'floating-cta__intro', 'aria-hidden': 'true' });
+  const intro = createTag('span', { class: 'floating-cta-intro', 'aria-hidden': 'true' });
   const background = createTag('span', {
-    class: 'floating-cta__background',
+    class: 'floating-cta-background',
     'aria-hidden': 'true',
   });
-  const label = createTag('span', { class: 'floating-cta__label' });
+  const label = createTag('span', { class: 'floating-cta-label' });
   label.textContent = text;
-  const lockup = createTag('span', { class: 'floating-cta__lockup' }, [...(img ? [img] : []), label]);
-  const actions = createTag('span', { class: 'floating-cta__actions' }, trailing);
-  const content = createTag('span', { class: 'floating-cta__content' }, [lockup, actions]);
+  const lockup = createTag('span', { class: 'floating-cta-lockup' }, [...(img ? [img] : []), label]);
+  const actions = createTag('span', { class: 'floating-cta-actions' }, trailing);
+  const content = createTag('span', { class: 'floating-cta-content' }, [lockup, actions]);
   cta.replaceChildren(intro, background, content);
   return createFloatingCtaAnimation(cta);
 }
@@ -293,25 +241,15 @@ function waitForCheckoutLink(linkPara, timeoutMs = 10000) {
 
 function applyCustomHide(el, ctaEl, animation) {
   const marqueeSelector = [
-    '.marquee',
-    '.hero-marquee',
-    '.product-marquee-grid',
-    '.quiz-marquee',
-    '.router-marquee',
-    '.caas-marquee',
     '.hub-hero',
     '.offer-hero',
     '.plans-hero',
+    '.product-marquee-grid',
+    '.router-marquee',
   ].join(', ');
   const exitSelector = [
-    '.merch',
-    '.merch-card',
-    'merch-card',
-    '.merch-offers',
-    '.merch-card-collection',
-    '[class*="-merch-card"]',
-    'footer',
     '.global-footer',
+    'merch-card',
   ].join(', ');
   const getBoundary = (element) => element?.closest('.section') || element;
   const ctaBoundary = getBoundary(el);
@@ -322,9 +260,10 @@ function applyCustomHide(el, ctaEl, animation) {
   function getMarqueeBoundary() {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
-    const precedingCandidates = allCandidates.filter((candidate) =>
+    const precedingCandidates = allCandidates.filter((candidate) => (
       // eslint-disable-next-line no-bitwise
-      candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING);
+      candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING
+    ));
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
     let sibling = ctaBoundary?.previousElementSibling;
@@ -414,11 +353,15 @@ export default async function init(el) {
 
   const img = contentDiv.querySelector('img, svg');
   const links = [...contentDiv.querySelectorAll('a')];
-  const isButtonLink = (a) => a.classList.contains('con-button') || a.parentElement?.classList.contains('con-button');
+  const isButtonLink = (a) => a.classList.contains('con-button')
+    || a.parentElement?.classList.contains('con-button');
   const actionLink = !img ? (links.find(isButtonLink) ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
-  const actionConBtn = actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement;
-  const actionEl = actionLink ? actionConBtn : null;
+  let actionEl = null;
+  if (actionLink) {
+    actionEl = actionLink.classList.contains('con-button')
+      ? actionLink : actionLink.parentElement;
+  }
   let labelText;
   if (actionEl) {
     const labelSource = contentDiv.cloneNode(true);
