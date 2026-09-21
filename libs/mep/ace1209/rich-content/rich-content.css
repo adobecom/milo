@@ -512,7 +512,6 @@
 
     img {
       border-radius: var(--s2a-border-radius-24);
-      max-width: 214px;
       margin: 0 auto;
     }
   }
@@ -619,7 +618,6 @@
 
     :is(img, video) {
       border-radius: var(--s2a-border-radius-4);
-      max-width: 100%;
 
       @media (width >= 1024px) {
         border-radius: var(--s2a-border-radius-8);
@@ -782,26 +780,38 @@
 }
 
 @media (width < 768px) {
-  .rich-content.media.full-width {
-    --grid-margin-width: 0px;
+  .rich-content.media {
+    &:not(.full-width) {
+      .media-cell {
+        width: unset;
 
-    img {
-      max-width: 100%;
-      box-sizing: border-box;
-      aspect-ratio: 1/1;
-      border-radius: var(--s2a-border-radius-4);
-      border: none;
+        picture img {
+          max-width: 214px;
+        }
+      }
     }
 
-    .media-cell {
-      :is(picture, div.video-container) {
-        border: none;
+    &.full-width {
+      --grid-margin-width: 0px;
+
+      img {
+        max-width: 100%;
+        box-sizing: border-box;
+        aspect-ratio: 1/1;
         border-radius: var(--s2a-border-radius-4);
-        padding: unset;
+        border: none;
       }
 
-      div.video-container video {
-        aspect-ratio: 1/1;
+      .media-cell {
+        :is(picture, div.video-container) {
+          border: none;
+          border-radius: var(--s2a-border-radius-4);
+          padding: unset;
+        }
+
+        div.video-container video {
+          aspect-ratio: 1/1;
+        }
       }
     }
   }
