@@ -10,6 +10,8 @@ import { getConfig } from '../../utils/utils.js';
 
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';
 const USER_BUTTON_SELECTOR = 'login-button#user';
+const LOGIN_ACTION_SELECTOR = 'sk-action-button.login';
+const USER_MENU_SELECTOR = 'sk-action-menu';
 const NOT_AUTHED_CLASS = 'not-authorized';
 // Catch class flips (not-authorized) and node re-renders in the shadow.
 const AUTH_MO = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
@@ -28,10 +30,16 @@ function getPluginActionBarShadow() {
   return getSidekick()?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot;
 }
 
-// Authed iff the always-present user button lacks the not-authorized marker.
+// The login button's shadow content is authoritative: the login action is signed
+// out, while the user menu is signed in. Keep the host class as a signed-out
+// fallback for the brief period before the button renders its shadow content.
 function isAuthedIn(pluginBarShadow) {
   const user = pluginBarShadow?.querySelector(USER_BUTTON_SELECTOR);
-  return !!user && !user.classList.contains(NOT_AUTHED_CLASS);
+  if (!user || user.classList.contains(NOT_AUTHED_CLASS)) return false;
+  const userShadow = user.shadowRoot;
+  if (!userShadow) return false;
+  return !!userShadow.querySelector(USER_MENU_SELECTOR)
+    && !userShadow.querySelector(LOGIN_ACTION_SELECTOR);
 }
 
 export function isSidekickAuthed() {

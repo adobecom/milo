@@ -12,9 +12,9 @@ const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
 
 // The real <aem-sidekick> exposes no config/status to page JS. The page-world
 // signal is its nested open shadow DOM: login-button#user is ALWAYS rendered
-// inside plugin-action-bar's shadow and carries the `not-authorized` class when
-// signed out, dropping it when an authenticated status is fetched.
-function mountSidekick({ authed = false, withUser = true } = {}) {
+// inside plugin-action-bar's shadow. Its own shadow contains the login action
+// when signed out and the user menu when signed in.
+function mountSidekick({ authed = false, withUser = true, userContent = true } = {}) {
   const sk = document.createElement('aem-sidekick');
   const skShadow = sk.attachShadow({ mode: 'open' });
   const bar = document.createElement('plugin-action-bar');
@@ -25,14 +25,27 @@ function mountSidekick({ authed = false, withUser = true } = {}) {
     user = document.createElement('login-button');
     user.id = 'user';
     if (!authed) user.classList.add('not-authorized');
+    if (userContent) {
+      const userShadow = user.attachShadow({ mode: 'open' });
+      const action = document.createElement(authed ? 'sk-action-menu' : 'sk-action-button');
+      if (!authed) action.classList.add('login');
+      userShadow.appendChild(action);
+    }
     barShadow.appendChild(user);
   }
   document.body.appendChild(sk);
   return { sk, barShadow, user };
 }
 
-const signIn = (user) => user.classList.remove('not-authorized');
-const signOut = (user) => user.classList.add('not-authorized');
+const setUserState = (user, authed) => {
+  user.classList.toggle('not-authorized', !authed);
+  const action = document.createElement(authed ? 'sk-action-menu' : 'sk-action-button');
+  if (!authed) action.classList.add('login');
+  user.shadowRoot.replaceChildren(action);
+};
+
+const signIn = (user) => setUserState(user, true);
+const signOut = (user) => setUserState(user, false);
 
 describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   afterEach(() => {
@@ -83,9 +96,15 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       expect(isSidekickAuthed()).to.equal(false);
     });
 
-    it('returns true when the user button lacks not-authorized (signed in)', () => {
+    it('returns true when the user menu is present (signed in)', () => {
       mountSidekick({ authed: true });
       expect(isSidekickAuthed()).to.equal(true);
+    });
+
+    it('returns false when the host class is empty but the login action is present', () => {
+      const { user } = mountSidekick({ authed: false });
+      user.classList.remove('not-authorized');
+      expect(isSidekickAuthed()).to.equal(false);
     });
 
     it('returns false when the user button is not present yet', () => {
