@@ -117,17 +117,7 @@ describe('Modal (c2)', () => {
       expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
     });
 
-    it('maps responsive circle variants to the shared close-button modifier', async () => {
-      const listeners = [];
-      const removeEventListener = sinon.spy();
-      let matches = true;
-      sinon.stub(window, 'matchMedia').callsFake((query) => ({
-        get matches() {
-          return matches && query === '(width < 768px)';
-        },
-        addEventListener: (event, listener) => listeners.push({ event, listener }),
-        removeEventListener,
-      }));
+    it('applies a close-button-circle breakpoint modifier verbatim, with no JS translation', async () => {
       const content = createTag('div', {}, 'Body');
       const modal = await getModal(null, {
         id: 'c2-circle',
@@ -136,17 +126,8 @@ describe('Modal (c2)', () => {
         class: 'close-button-circle-mobile',
       });
 
-      expect(modal.classList.contains('close-button-circle')).to.be.true;
-      expect(listeners).to.have.lengthOf(1);
-
-      matches = false;
-      listeners[0].listener();
+      expect(modal.classList.contains('close-button-circle-mobile')).to.be.true;
       expect(modal.classList.contains('close-button-circle')).to.be.false;
-
-      modal.querySelector('button.dialog-close').click();
-      await waitForRemoval('#c2-circle');
-
-      expect(removeEventListener.calledOnceWith('change', listeners[0].listener)).to.be.true;
     });
   });
 
