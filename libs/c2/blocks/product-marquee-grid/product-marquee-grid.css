@@ -191,8 +191,8 @@ body:has(header.local-nav) .product-marquee-grid {
       gap: var(--s2a-spacing-lg);
 
       img.icon {
-        block-size: 80px;
-        inline-size: 80px;
+        block-size: 64px;
+        inline-size: 64px;
       }
     }
 

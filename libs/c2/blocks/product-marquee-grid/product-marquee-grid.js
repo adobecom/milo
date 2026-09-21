@@ -23,7 +23,6 @@ function parseLeftColumn(col) {
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
-  heading?.classList.add('heading-super');
 
   const bodyEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
     .filter((el) => el !== heading && el.textContent.trim());
