@@ -1,5 +1,6 @@
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
+import { applyGeoSpoof } from '../spoof-country-ip.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../../utils/market.js';
 import {
   hasMasSurfaces,
@@ -58,6 +59,22 @@ export function getExpandedCards() {
     const parsed = JSON.parse(safeGetItem(CARD_STORAGE_KEY));
     return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
   } catch { return {}; }
+}
+
+// Session-scoped so the choice survives a preview reload but doesn't linger into
+// a later QA session (a sticky "don't apply manifests" would be a footgun).
+export const EXCLUDE_MANIFEST_PARAMS_KEY = 'mep-exclude-manifest-params';
+
+export function getExcludeManifestParams() {
+  try {
+    return sessionStorage.getItem(EXCLUDE_MANIFEST_PARAMS_KEY) === 'true';
+  } catch { return false; }
+}
+
+export function setExcludeManifestParams(on) {
+  try {
+    sessionStorage.setItem(EXCLUDE_MANIFEST_PARAMS_KEY, on ? 'true' : 'false');
+  } catch { /* storage unavailable (private mode) — non-fatal */ }
 }
 
 export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
@@ -543,19 +560,26 @@ export async function setPreviewButton() {
   ];
 
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
-
   const setOrDelete = (key, value) => (value
     ? simulateHref.searchParams.set(key, value)
     : simulateHref.searchParams.delete(key));
 
-  setOrDelete('akamaiLocale', getSpoofGeoParams(popup));
+  if (getCheckboxParam(popup, 'toggle-manifest-parameters')) {
+    // Bare `mep` still shows the MEP button in prod (utils checks `mepParam === ''`).
+    simulateHref.searchParams.set('mep', '');
+  } else {
+    simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  }
+
+  applyGeoSpoof(simulateHref.searchParams, getSpoofGeoParams(popup));
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
-  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
+  // URLSearchParams serializes an empty value as `mep=`; drop the `=` for a bare `mep`.
+  const href = simulateHref.href.replace(/([?&]mep)=(?=[&#]|$)/, '$1');
+  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', href);
 }
 
 export function getLingoRegions() {
