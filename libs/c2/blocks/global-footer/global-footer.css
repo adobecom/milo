@@ -245,7 +245,7 @@
 
 .global-footer .feds-footer-logo img {
   display: block;
-  width: 100%;
+  width: calc(100% + 56px);
   max-width: none;
   height: auto;
   flex-shrink: 0;
@@ -498,8 +498,16 @@ span.feds-footer-privacyLink-divider {
   letter-spacing: 0.015em;
 }
 
+.global-footer.event .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  padding-left: 0;
+}
+
 .global-footer.event .feds-footer-social.feds-social-item.feds-social-link {
   color: var(--s2a-color-gray-25);
+}
+
+.global-footer.event .feds-footer-logo img {
+  width: calc(100% + 6px);
 }
 
 .global-footer.event .feds-footer-wrapper.has-authored-background {
@@ -518,6 +526,24 @@ span.feds-footer-privacyLink-divider {
     background-image: var(--footer-background-tablet);
   }
   .global-footer.event .feds-footer-mailingList-text {
+    font-size: var(--s2a-font-size-24);
+    line-height: var(--s2a-font-line-height-24);
+  }
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList {
+    max-width: 349px;
+  }
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList p {
+    max-width: 253px;
+    justify-self: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .global-footer.event .feds-footer-wrapper.has-authored-background {
+    --footer-background-offset: var(--s2a-layout-lg);
+    background-image: var(--footer-background-desktop);
+  }
+  .global-footer.event .feds-footer-mailingList-text {
     font-size: var(--s2a-font-size-36);
     line-height: var(--s2a-font-line-height-32);
     letter-spacing: var(--s2a-font-letter-spacing-neg-1);
@@ -531,16 +557,15 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1024px) {
-  .global-footer.event .feds-footer-wrapper.has-authored-background {
-    --footer-background-offset: var(--s2a-layout-lg);
-    background-image: var(--footer-background-desktop);
-  }
-}
-
 @media (min-width: 1440px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     --footer-background-offset: var(--s2a-layout-xl);
+  }
+}
+
+@media (min-width: 1920px) {
+  .global-footer.event .feds-footer-logo img {
+    width: 100%;
   }
 }
 
