@@ -42,6 +42,7 @@
   --bc-dark-input-border-color: linear-gradient(98deg, #9A3CF9 0%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 100%);
   --bc-dark-button-color: rgba(255 255 255 / 80%);
   --bc-dark-button-hover-color: rgba(255 255 255 / 90%);
+  --bc-gnav-height: 64px;
 
   box-sizing: border-box;
   padding: 40px 24px 12px;
@@ -118,21 +119,12 @@
 
 .prompt-card-text {
   color: var(--bc-card-text-color);
-  display: grid;
-  grid-template-columns: 16px auto;
   font-size: var(--bc-card-font-size);
   gap: 8px;
   line-height: var(--bc-card-line-height);
   margin: 0;
   padding: 12px 16px;
   text-align: left;
-}
-
-.prompt-card-text .card-icon {
-  align-self: flex-start;
-  margin-top: 4px;
-  width: 16px;
-  height: 16px;
 }
 
 .prompt-card-text p {
@@ -327,7 +319,7 @@
 
 .input-field-button:disabled,
 .bc-floating-submit {
-  background: transparent;
+  background: #e9e9e9;
   color: #0004;
   pointer-events: none;
 }
@@ -430,7 +422,6 @@
 }
 
 .bc-floating-submit {
-  background: transparent;
   margin-bottom: 8px;
 }
 
@@ -477,12 +468,6 @@
   margin-bottom: 40px;
 }
 
-.hero .card-icon,
-.pill-cards .card-icon {
-  align-self: flex-start;
-  margin-top: 4px;
-}
-
 /* c2-dark */
 .c2-dark .bc-header-title,
 .c2-dark .bc-header-subtitle {
@@ -518,15 +503,6 @@
     linear-gradient(#fff 0 0) padding-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
-}
-
-.c2-dark .prompt-card-text,
-.c2-dark.hero .prompt-card-text {
-  grid-template-columns: auto;
-}
-
-.c2-dark .card-icon {
-  display: none;
 }
 
 .c2-dark .prompt-card-text p {
@@ -572,8 +548,8 @@
 }
 
 .c2-dark .input-field-button:disabled {
-  background: transparent;
-  color: #C6C6C6;
+  background: #2C2C2C;
+  color: #444;
 }
 
 .c2-dark .bc-legal,
@@ -764,6 +740,7 @@
   --bc-fi-pill-text: var(--bc-fi-text);
   --bc-button-color: var(--bc-fi-text);
   --bc-fi-icon-color: #C6C6C6;
+  --bc-fi-icon-bg-color: #292929;
   --bc-fi-input-hover-bg: #292929;
   --bc-fi-pill-hover-bg: #222;
 }
@@ -784,6 +761,7 @@
 
 /* stylelint-disable */
 .floating-input-dark .bc-floating-input .input-field-button {
+  background-color: var(--bc-fi-icon-bg-color);
   color: var(--bc-fi-icon-color);
 }
 /* stylelint-enable */
@@ -969,7 +947,7 @@
   text-transform: uppercase;
   color: #6A6A6A;
   background: #f2f2f2;
-  border-radius: 50%;
+  border-radius: 4px;
   height: 14px;
   width: 30px;
   text-align: center;
@@ -1020,11 +998,6 @@
     padding: 56px 24px 12px;
   }
 
-  .c2-dark .bc-header-title {
-    font-size: 48px;
-    line-height: 48px;
-  }
-
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -1054,14 +1027,6 @@
   .prompt-card-image  {
     display: block;
     border-radius: var(--bc-card-radius) var(--bc-card-radius) 0 0;
-  }
-
-  .prompt-card-text {
-    grid-template-columns: auto;
-  }
-
-  .prompt-card-text .card-icon {
-    margin-top: 0;
   }
 
   .bc-input-field {
@@ -1112,19 +1077,7 @@
 
   .hero .prompt-card-text,
   .pill-cards .prompt-card-text {
-    display: grid;
-    grid-template-columns: 16px auto;
     padding: 8px 16px;
-  }
-
-  .hero .prompt-card-text .card-icon,
-  .pill-cards .prompt-card-text .card-icon {
-    margin-top: 4px;
-  }
-
-  .c2-dark .prompt-card-text,
-  .c2-dark.hero .prompt-card-text {
-    grid-template-columns: auto;
   }
 
   #brand-concierge-modal.dialog-modal {
@@ -1146,6 +1099,12 @@
 
   .floating-input .bc-floating-input .bc-input-field {
     min-width: 340px;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .bc-mobile-only .bc-floating-element {
+    display: none;
   }
 }
 
@@ -1357,7 +1316,6 @@
 }
 
 .brand-concierge.marquee .prompt-card-text {
-  grid-template-columns: auto;
   padding: 6px 16px;
 }
 

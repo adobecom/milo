@@ -15,7 +15,7 @@
   --bc-card-font-size: 14px;
   --bc-card-line-height: 21px;
   --bc-card-radius: 18px;
-  --bc-card-border-color: rgba(0 0 0 / 12%);
+  --bc-card-border-color: rgba(0 0 0 / 15%);
   --bc-card-border-color-hover: rgba(0 0 0 / 22%);
   --bc-card-text-color: #292929;
   --bc-keyboard-focus-color: #5574F7;
@@ -26,8 +26,9 @@
   --bc-input-radius: 26px;
   --bc-input-height: 40px;
   --bc-input-border-size: 1px;
-  --bc-input-border-color: rgba(0 0 0 / 12%);
-  --bc-button-dimensions: 32px;
+  --bc-input-border-color: rgba(0 0 0 / 15%);
+  --bc-input-border-color-hover: rgba(0 0 0 / 22%);
+  --bc-button-dimensions: 24px;
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
@@ -120,7 +121,7 @@
 
 .bc-gnav-button .gnav-button {
   background: #fff;
-  border: none;
+  border: 1px solid rgba(0 0 0 / 15%);
   border-radius: 20px;
   cursor: pointer;
   display: flex;
@@ -129,6 +130,10 @@
   padding: 0;
   height: 40px;
   width: 40px;
+}
+
+.bc-gnav-button .gnav-button:hover{
+  border: 1px solid rgba(0 0 0 / 22%);
 }
 
 .bc-gnav-button .gnav-button svg {
@@ -151,9 +156,9 @@
   box-shadow: 0 4px 12px 0 rgba(0 0 0 / 6%);
   display: flex;
   max-height: var(--bc-input-height);
-  padding: 0 4px 0 6px;
+  padding: 0 8px 0 6px;
   position: relative;
-  gap: 12px;
+  gap: 8px;
   z-index: 3;
   margin: 0;
   width: 100%;
@@ -173,17 +178,19 @@
   z-index: 1;
 }
 
+.bc-gnav .bc-input-field:hover::before {
+  border-color: var(--bc-input-border-color-hover)
+}
+
 .bc-gnav .bc-input-field-label {
   border-radius: var(--bc-button-radius);
-  outline-offset: 6px;
   display: flex;
   align-items: center;
   user-select: none;
-  align-self: start;
-  margin-right: -8px;
-  margin-top: 4px;
-  height: 32px;
-  width: 32px;
+  align-self: center;
+  margin: 0;
+  height: 24px;
+  width: 24px;
   justify-content: center;
 }
 
@@ -287,8 +294,8 @@
   height: var(--bc-button-dimensions);
   transition: background 0.3s ease;
   width: var(--bc-button-dimensions);
-  align-self: end;
-  margin-bottom: 4px;
+  align-self: center;
+  margin-bottom: 0;
   padding: 0;
 }
 
@@ -302,7 +309,7 @@
 }
 
 .bc-gnav .input-field-button:disabled{
-  background: transparent;
+  background: #e9e9e9;
   color: #0004;
   pointer-events: none;
 }
