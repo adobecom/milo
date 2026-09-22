@@ -150,7 +150,7 @@ describe('hub-hero block', () => {
 
     it('falls back to the default carousel name when no name is authored', () => {
       const carousel = block.querySelector('.hub-hero-carousel');
-      expect(carousel.dataset.ariaLabel).to.equal('Adobe Cards');
+      expect(carousel.dataset.ariaLabel).to.equal('Adobe slides');
     });
 
     it('still produces the full header/grid/carousel structure', () => {

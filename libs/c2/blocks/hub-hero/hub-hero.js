@@ -248,7 +248,7 @@ const onHover = (event) => {
 };
 
 const buildSlide = ({ slide, idx, slidesTotal }) => {
-  if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
+  if (!slide?.children) return createTag('a', { class: ['hub-hero-carousel-item', slide?.class].filter(Boolean).join(' ') });
   const children = [...slide.children];
   const left = children[0];
   const right = children[1] ?? children[0];
@@ -367,7 +367,7 @@ const upgradeVideoPreload = (carousel) => {
 
 const handleCarousel = (hubHero, slds, isThreeSlides) => {
   // add middle "invisible" slide when carousel has 4 slides
-  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
+  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
