@@ -191,6 +191,21 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       expect(cb.calledWith(false)).to.be.true;
     });
 
+    it('catches a sign-in that only flips the login-button shadow (no host class change)', async () => {
+      // example-3 shape: empty host class while logged out. Signing in swaps only the
+      // nested shadow content, which the outer plugin-bar observer can't see.
+      setConfig({ env: { name: 'prod' } });
+      const { user } = mountSidekick({ authed: false });
+      user.classList.remove('not-authorized');
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await wait(RESOLVE_WINDOW);
+      expect(cb.calledWith(false)).to.be.true; // committed logged-out
+      user.shadowRoot.replaceChildren(document.createElement('sk-action-menu'));
+      await wait(50);
+      expect(cb.calledWith(true)).to.be.true;
+    });
+
     it('resolves unauthed promptly with no sidekick, then flips true when it mounts', async () => {
       setConfig({ env: { name: 'prod' } });
       const cb = sinon.spy();

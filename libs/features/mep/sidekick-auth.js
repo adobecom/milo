@@ -93,10 +93,29 @@ export function onSidekickAuth(callback) {
   // Resolve true eagerly; defer the negative verdict to the bounded default so a
   // late render doesn't flash a prompt. Observer re-resolves on class toggle / re-render.
   const watchAuthState = (pluginBarShadow) => {
-    if (isAuthedIn(pluginBarShadow)) set(true);
-    const observer = new MutationObserver(() => {
+    let userShadow;
+    let userShadowObserver;
+    const evaluate = () => {
       if (isAuthedIn(pluginBarShadow)) set(true);
       else if (authed === true) set(false);
+    };
+    // The authoritative signal (login action vs user menu) lives inside login-button's
+    // own shadow root; a MutationObserver can't see across that boundary, so watch it
+    // directly and re-point when the button (re-)mounts or attaches its shadow.
+    const syncUserShadowObserver = () => {
+      const nextShadow = pluginBarShadow.querySelector(USER_BUTTON_SELECTOR)?.shadowRoot;
+      if (nextShadow === userShadow) return;
+      userShadowObserver?.disconnect();
+      userShadow = nextShadow;
+      if (!userShadow) return;
+      userShadowObserver = new MutationObserver(evaluate);
+      userShadowObserver.observe(userShadow, { childList: true, subtree: true });
+    };
+    syncUserShadowObserver();
+    evaluate();
+    const observer = new MutationObserver(() => {
+      syncUserShadowObserver();
+      evaluate();
     });
     observer.observe(pluginBarShadow, AUTH_MO);
     // Steady state: left running for the page's life (never torn down) so logout is
