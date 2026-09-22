@@ -33,15 +33,23 @@ function getPluginActionBarShadow() {
 }
 
 // The login button's shadow content is authoritative: the login action is signed
-// out, while the user menu is signed in. Keep the host class as a signed-out
-// fallback for the brief period before the button renders its shadow content.
-function isAuthedIn(pluginBarShadow) {
+// out, the user menu is signed in. 'unknown' = no button/shadow yet or a transient
+// empty re-render — hold the current verdict rather than flip. The host's
+// not-authorized class is a fast definitive signed-out marker.
+const AUTH_STATE = { authed: 'authed', unauthed: 'unauthed', unknown: 'unknown' };
+function readAuthState(pluginBarShadow) {
   const user = pluginBarShadow?.querySelector(USER_BUTTON_SELECTOR);
-  if (!user || user.classList.contains(NOT_AUTHED_CLASS)) return false;
+  if (!user) return AUTH_STATE.unknown;
+  if (user.classList.contains(NOT_AUTHED_CLASS)) return AUTH_STATE.unauthed;
   const userShadow = user.shadowRoot;
-  if (!userShadow) return false;
-  return !!userShadow.querySelector(USER_MENU_SELECTOR)
-    && !userShadow.querySelector(LOGIN_ACTION_SELECTOR);
+  if (userShadow?.querySelector(USER_MENU_SELECTOR)
+    && !userShadow.querySelector(LOGIN_ACTION_SELECTOR)) return AUTH_STATE.authed;
+  if (userShadow?.querySelector(LOGIN_ACTION_SELECTOR)) return AUTH_STATE.unauthed;
+  return AUTH_STATE.unknown;
+}
+
+function isAuthedIn(pluginBarShadow) {
+  return readAuthState(pluginBarShadow) === AUTH_STATE.authed;
 }
 
 export function isSidekickAuthed() {
@@ -98,8 +106,11 @@ export function onSidekickAuth(callback) {
     let userShadow;
     let userShadowObserver;
     const evaluate = () => {
-      if (isAuthedIn(pluginBarShadow)) set(true);
-      else if (authed === true) set(false);
+      const state = readAuthState(pluginBarShadow);
+      if (state === AUTH_STATE.authed) set(true);
+      // Only a definitive signed-out reading flips to false; a transient 'unknown'
+      // (mid re-render) holds the current verdict so signed-in users don't flash logout.
+      else if (authed === true && state === AUTH_STATE.unauthed) set(false);
     };
     // The authoritative signal (login action vs user menu) lives inside login-button's
     // own shadow root; a MutationObserver can't see across that boundary, so watch it
