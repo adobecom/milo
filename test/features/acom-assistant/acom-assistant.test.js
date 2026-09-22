@@ -17,7 +17,10 @@ describe('AcomAssistant shared client', () => {
   before(() => {
     setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
     window.AdobeMessagingExperienceClient = {
-      initialize: sinon.spy((cfg) => { onReadyCallback = cfg.callbacks.onReadyCallback; }),
+      initialize: sinon.spy((cfg) => {
+        onReadyCallback = cfg.callbacks.onReadyCallback;
+        cfg.callbacks.initCallback?.({ releaseControl: { showAdobeMessaging: true } });
+      }),
       reinitialize: sinon.spy(),
       sendUserMessage: sinon.spy(),
       getPrompts: sinon.stub().returns({ prompts: [] }),
@@ -72,5 +75,67 @@ describe('AcomAssistant shared client', () => {
 
     await openAcomAssistantChat({ sourceType: 'button' });
     expect(window.AdobeMessagingExperienceClient.openMessagingWindow.calledWith({ sourceType: 'button' })).to.be.true;
+  });
+});
+
+describe('AcomAssistant shared client retry after a failed load', () => {
+  it('retries on the next call instead of caching a failed load forever', async function retryTest() {
+    this.timeout(8000);
+    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
+    delete window.AdobeMessagingExperienceClient;
+
+    const { loadAcomAssistant: freshLoad } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
+
+    const loadScript = sinon.stub().resolves();
+    const loadStyle = sinon.stub();
+
+    // First attempt: the script loads but never exposes the global (e.g. dropped connection),
+    // so waitForCondition times out and the load fails.
+    const firstResult = await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
+    expect(firstResult).to.equal(null);
+    expect(loadScript.calledOnce).to.be.true;
+
+    // The client becomes available before the next caller tries again.
+    window.AdobeMessagingExperienceClient = {
+      initialize: sinon.spy(),
+      reinitialize: sinon.spy(),
+    };
+
+    const secondResult = await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
+
+    expect(secondResult === window.AdobeMessagingExperienceClient).to.be.true;
+    expect(loadScript.calledTwice).to.be.true;
+    expect(window.AdobeMessagingExperienceClient.initialize.calledOnce).to.be.true;
+  });
+});
+
+describe('AcomAssistant shared client defers reinitialize until init settles', () => {
+  it('does not call reinitialize() while the first initialize() is still in flight', async () => {
+    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
+    let capturedInitCallback;
+    window.AdobeMessagingExperienceClient = {
+      initialize: sinon.spy((cfg) => { capturedInitCallback = cfg.callbacks.initCallback; }),
+      reinitialize: sinon.spy(),
+    };
+
+    const { loadAcomAssistant: freshLoad } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
+
+    const loadScript = sinon.stub().resolves();
+    const loadStyle = sinon.stub();
+
+    const first = freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
+    const second = freshLoad({ appid: 'surface-two' }, { loadScript, loadStyle });
+    await Promise.all([first, second]);
+
+    // initCallback hasn't fired yet -- init is still "in progress" per the client's own
+    // docs, and reinitialize() during that window is blocked/dropped server-side.
+    expect(window.AdobeMessagingExperienceClient.reinitialize.called).to.be.false;
+
+    capturedInitCallback({ releaseControl: { showAdobeMessaging: true } });
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(window.AdobeMessagingExperienceClient.reinitialize.calledOnce).to.be.true;
+    const reinitArgs = window.AdobeMessagingExperienceClient.reinitialize.getCall(0).args[0];
+    expect(reinitArgs.appid === 'surface-two').to.be.true;
   });
 });

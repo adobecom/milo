@@ -17,6 +17,7 @@ let clientPromise = null;
 let resolvedClient = null;
 let mergedConfig = {};
 let isReady = false;
+let initSettledPromise = null;
 const pendingMessages = [];
 
 function mergeCallbacks(target = {}, source = {}) {
@@ -116,7 +117,9 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
   if (clientPromise) {
     const client = await clientPromise;
     if (client && (partialConfig.context || partialConfig.appid || partialConfig.accessToken)) {
-      client.reinitialize(partialConfig);
+      // Deferred: calling reinitialize() while the first initialize() is still mid-flight
+      // is blocked/dropped server-side ({ status: 'blocked', type: 'init_in_progress' }).
+      initSettledPromise.then(() => client.reinitialize(partialConfig));
     }
     return client;
   }
@@ -134,19 +137,29 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
     const clientReady = await waitForCondition(() => !!window.AdobeMessagingExperienceClient);
     if (!clientReady) {
       window.lana?.log('AcomAssistant: client script did not expose window.AdobeMessagingExperienceClient', { tags: 'acom-assistant', severity: 'error' });
+      clientPromise = null;
       return null;
     }
 
     const client = window.AdobeMessagingExperienceClient;
+    let resolveInitSettled;
+    initSettledPromise = new Promise((resolve) => { resolveInitSettled = resolve; });
+    setTimeout(resolveInitSettled, 5000);
+
     client.initialize({
       ...mergedConfig,
       callbacks: {
         ...mergedConfig.callbacks,
+        initCallback: (...args) => {
+          resolveInitSettled();
+          mergedConfig.callbacks?.initCallback?.(...args);
+        },
         onReadyCallback: (...args) => {
           flushPendingMessages(client);
           mergedConfig.callbacks?.onReadyCallback?.(...args);
         },
         initErrorCallback: (...args) => {
+          resolveInitSettled();
           window.lana?.log(`AcomAssistant: init failed (${args[0]})`, { tags: 'acom-assistant', severity: 'error' });
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
