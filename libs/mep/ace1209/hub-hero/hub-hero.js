@@ -319,6 +319,15 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
   });
 
+  if (isModal) {
+    slideEl.addEventListener('keydown', (e) => {
+      if (e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();
+      if (e.repeat) return;
+      slideEl.click();
+    });
+  }
+
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
   slideEl.addEventListener('focus', onHover);

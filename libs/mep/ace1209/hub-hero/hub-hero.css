@@ -625,7 +625,8 @@
   }
 
   .hub-hero-carousel-header {
-    --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
+    --carousel-header-top: max(calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
+        calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px) + var(--s2a-spacing-md)));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
@@ -1165,8 +1166,8 @@
 
 @media (768px <=width <=890px) {
   .hub-hero.touch-scroll.slides-3 {
-    --hub-hero-carousel-item-min-width: var(--slide-width);
-    --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-width)) + (var(--end-gap) * (var(--slides) - 1)));
+    --hub-hero-carousel-item-min-width: var(--slide-max-width);
+    --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-max-width)) + (var(--end-gap) * (var(--slides) - 1)));
   }
 }
 
@@ -1213,6 +1214,7 @@
 
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-container {
     inset-inline-start: 0;
+    min-width: 100%;
     transform: none;
   }
 
@@ -2211,5 +2213,15 @@
     .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
       height: var(--slide-footer-h);
     }
+  }
+}
+
+@media (height < 500px) {
+  .hub-hero-header,
+  .hub-hero-header>* {
+    animation: none;
+    opacity: 1;
+    translate: none;
+    z-index: auto;
   }
 }
