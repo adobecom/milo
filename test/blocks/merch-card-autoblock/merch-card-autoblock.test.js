@@ -7,6 +7,7 @@ const { default: init } = await import('../../../libs/blocks/merch-card-autobloc
 
 const originalFetch = window.fetch;
 const { adobeIMS } = window;
+let jsonLd404Requested = false;
 async function mockIms(countryCode) {
   window.adobeIMS = {
     initialized: true,
@@ -26,6 +27,10 @@ describe('merch-card-autoblock autoblock', () => {
     before(async () => {
       await mockIms();
       sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('jsonld-404')) {
+          jsonLd404Requested = true;
+          return new Response('', { status: 404, statusText: 'Not Found' });
+        }
         let fileName = '';
         if (url.includes('/mas/io/fragment')) {
           fileName = 'fragment.json';
@@ -148,6 +153,18 @@ describe('merch-card-autoblock autoblock', () => {
       expect(frags[0].getAttribute('loading')).to.not.exist;
       expect(frags[1].getAttribute('loading')).to.not.exist;
     });
+
+    it('removes the jsonld source link even when the fragment 404s', async () => {
+      setConfig({ codeRoot: '/libs' });
+      jsonLd404Requested = false;
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=jsonld-404&jsonld=on');
+      document.body.append(a);
+      await init(a);
+      expect(jsonLd404Requested).to.be.true;
+      expect(a.isConnected).to.be.false;
+      expect(document.querySelector('merch-card[hidden] aem-fragment[fragment="jsonld-404"]')).to.be.null;
+    }).timeout(7000);
   });
 
   describe('Simplified Pricing Express Card', () => {

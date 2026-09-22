@@ -74,8 +74,8 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(secondFrag).to.not.be.null;
 
-    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
-    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
     expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
     expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
