@@ -174,6 +174,12 @@ body:has(header.local-nav) .product-marquee-grid {
   --pm-content-subtle: var(--s2a-color-transparent-black-64);
 
   background-color: transparent;
+
+  .con-button.outline {
+    background-color: transparent;
+    border-color: var(--pm-content);
+    color: var(--pm-content);
+  }
 }
 
 @media (width < 900px) {
