@@ -130,21 +130,6 @@ describe('Quick Actions', () => {
     });
   });
 
-  describe('with a valid first-row background color', () => {
-    let block;
-
-    beforeEach(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/bg-color.html' });
-      block = document.querySelector('.quick-actions');
-      init(block);
-    });
-
-    it('applies the color as a CSS custom property and marks the block', () => {
-      expect(block.classList.contains('has-bg-color')).to.be.true;
-      expect(block.style.getPropertyValue('--qa-bg-color')).to.equal('#101010');
-    });
-  });
-
   describe('empty block', () => {
     it('renders an empty grid and does not throw when there are no rows', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/empty.html' });

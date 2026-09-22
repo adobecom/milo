@@ -3,6 +3,21 @@ import { createTag } from '../../../utils/utils.js';
 
 const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+const BG_COLOR_CLASS = 'quick-actions-bg-color';
+
+function decorateBackgroundColor(block) {
+  const firstRow = block.children[0];
+  if (!firstRow || firstRow.children.length !== 1) return null;
+  const cell = firstRow.children[0];
+  if (cell.querySelector('h1, h2, h3, h4, h5, h6, a, picture, img')) return null;
+  const color = cell.textContent.trim();
+  if (!color || !CSS.supports('color', color)) return null;
+  firstRow.remove();
+  const bgColorEl = createTag('div', { class: BG_COLOR_CLASS });
+  bgColorEl.style.backgroundColor = color;
+  return bgColorEl;
+}
+
 function decorateSectionHeader(block) {
   const firstRow = block.children[0];
   if (!firstRow) return null;
@@ -48,6 +63,7 @@ const mediaQueries = {
 const N_UP = { mobile: 'two-up', tablet: 'three-up', desktop: 'six-up' };
 
 function decorate(block) {
+  const bgColorEl = decorateBackgroundColor(block);
   const header = decorateSectionHeader(block);
   const tileRows = [...block.children].filter((row) => row.children.length >= 2);
   const grid = createTag('div', { class: 'quick-actions-grid parallax-stagger-ltr' });
@@ -64,7 +80,7 @@ function decorate(block) {
   applyNUp();
   Object.keys(mediaQueries).forEach((k) => mediaQueries[k].addEventListener('change', applyNUp));
 
-  block.replaceChildren(...[header, grid].filter(Boolean));
+  block.replaceChildren(...[bgColorEl, header, grid].filter(Boolean));
 }
 
 export default function init(el) {
