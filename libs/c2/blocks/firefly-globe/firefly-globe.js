@@ -1394,18 +1394,12 @@ function createGlobeGalleryRuntime(
     if (CA_ENABLED) {
       mesh.material.uniforms.uCA.value = card.hoverT * HOVER_CA
         + sphereDragWarp * SPHERE_DRAG_CA_MUL;
-      mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP;
       if (card.hoverT > 0.01) {
         mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
       } else {
         mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
       }
     }
-
-    mesh.material.uniforms.uReveal.value = card.revealT;
-    mesh.material.uniforms.uContourFade.value = 1;
-    mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
-    mesh.material.uniforms.uDisperse.value = 0;
 
     placeSphereCard(card, mesh, frame);
     applyCardOrder(card, mesh, frame);
