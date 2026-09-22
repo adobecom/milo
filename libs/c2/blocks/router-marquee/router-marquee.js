@@ -302,6 +302,9 @@ const loadViewportVideos = (el) => {
   const video = activeSlide?.querySelector('video');
   if (!video) return;
   playActiveVideo(video);
+  // LCP-FIX(preload-next): load slide 1's media up front (original 'load 0 and 1').
+  const nextSlide = activeSlide.nextElementSibling;
+  if (nextSlide?.classList.contains('rm-slide')) loadSlideMedia(nextSlide);
 };
 
 const decorateSlide = (slide) => {
