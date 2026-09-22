@@ -4,6 +4,10 @@ header.global-navigation.c2-gnav-c1-host {
   background-color: var(--feds-background-nav, #fff);
 }
 
+html:has(body.unav-no-scroll) {
+  overflow: hidden;
+}
+
 @media (min-width: 900px) {
   .appPrompt {
     z-index: 10;

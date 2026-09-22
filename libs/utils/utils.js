@@ -2536,6 +2536,7 @@ async function loadPostLCP(config) {
     ];
     window.lenis = new window.Lenis({
       autoRaf: true,
+      autoToggle: true,
       lerp,
       wheelMultiplier: 0.7,
       prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
