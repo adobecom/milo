@@ -32,6 +32,7 @@ div.accordion:not(.descr-list) {
 .accordion .descr-details.open {
   grid-template-rows: 1fr;
   visibility: visible;
+  padding: var(--spacing-xs);
 }
 
 .accordion-expand-all {
