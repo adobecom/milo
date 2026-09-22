@@ -240,10 +240,11 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   let frag = a;
 
   if (!noParagraphWrap) frag = createTag('p', undefined, frag);
+  const hideTarget = frag; // inner p/anchor survives loadArea's top-level section-class reset
   if (containerType === 'row' || containerType === 'section') frag = createTag('div', undefined, frag);
   if (containerType === 'row' || containerType === 'cell') frag = createTag('div', { 'data-mep-replace-type': containerType }, frag);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
-  if (isDelayedModalAnchor) frag.classList.add('hide-block');
+  if (isDelayedModalAnchor) hideTarget.classList.add('hide-block');
   if (isInLcpSection(el)) {
     loadLink(`${await localizeLinkAsync(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
