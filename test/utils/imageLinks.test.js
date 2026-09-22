@@ -44,4 +44,23 @@ describe('Image Link', () => {
     const url = new URL(p.querySelector('a').href);
     expect(url.search).to.equal('?form=off');
   });
+
+  it('Keeps cross-repo AEM image links absolute', () => {
+    const base = document.head.appendChild(document.createElement('base'));
+    const container = document.createElement('div');
+    base.href = 'https://main--da-bacom--adobecom.aem.live/';
+    container.innerHTML = `
+      <picture>
+        <img src="/poster.png" alt="https://main--bacom--adobecom.aem.live/assets/demo.png | Demo">
+      </picture>
+    `;
+
+    try {
+      decorateImageLinks(container);
+      expect(container.querySelector('a').href)
+        .to.equal('https://main--bacom--adobecom.aem.live/assets/demo.png');
+    } finally {
+      base.remove();
+    }
+  });
 });

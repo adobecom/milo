@@ -1466,6 +1466,12 @@ function getAemSite({ hostname }) {
   return parts.slice(-2).join('--');
 }
 
+function shouldUseRelativeAemUrl(authoredUrl, baseURI) {
+  const authoredSite = getAemSite(authoredUrl);
+  const currentSite = getAemSite(new URL(baseURI));
+  return authoredSite && (!currentSite || currentSite === authoredSite);
+}
+
 export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
@@ -1480,10 +1486,9 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const authoredSite = getAemSite(authoredUrl);
-    const currentSite = getAemSite(new URL(a.baseURI));
-    const isCrossSite = currentSite && currentSite !== authoredSite;
-    const src = authoredSite && !isCrossSite ? authoredUrl.pathname : authoredUrl;
+    const src = shouldUseRelativeAemUrl(authoredUrl, a.baseURI)
+      ? authoredUrl.pathname
+      : authoredUrl;
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
@@ -1519,7 +1524,9 @@ export function decorateImageLinks(el) {
     try {
       if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
-      const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
+      const href = shouldUseRelativeAemUrl(url, img.baseURI)
+        ? `${url.pathname}${url.search}${url.hash}`
+        : url.href;
       img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
