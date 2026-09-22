@@ -6,7 +6,7 @@
  * https://wiki.corp.adobe.com/spaces/Infinity/pages/3998335900/WIP+Acom+Assistant+Client
  */
 
-import { loadAcomAssistant, openAcomAssistantChat, getAcomAssistantClient } from './acom-assistant.js';
+import { loadAcomAssistant, openAcomAssistantChat, getAcomAssistantClient, setAcomAssistantIdentity } from './acom-assistant.js';
 
 let chatInitialized = false;
 let jarvisSecMeta = null;
@@ -249,18 +249,6 @@ async function ensureAcomAssistant(config, getMetadata, event, onDemand, deps) {
       onReadyCallback: () => {
         if (onDemand) openChat(event);
       },
-      getContextCallback: () => {
-        let appId; let appVer;
-        if (jarvisSecMeta) {
-          appId = jarvisSecMeta['jarvis-surface-id'];
-          appVer = jarvisSecMeta['jarvis-surface-version'];
-          jarvisSecMeta = null;
-        }
-        return {
-          appid: appId || getMetadata('jarvis-surface-id') || config.jarvis?.id,
-          appver: appVer || getMetadata('jarvis-surface-version') || config.jarvis?.version,
-        };
-      },
       signInProvider: () => window.adobeIMS?.signIn(config.signInContext),
       analyticsCallback,
     },
@@ -306,6 +294,12 @@ const initAcomAssistantGnavLink = async (
       }
     }
     event.preventDefault();
+    // Other surfaces (e.g. Brand Concierge) share this same client -- report the Jarvis
+    // identity for this specific open, without disturbing whichever appid initialize() used.
+    setAcomAssistantIdentity({
+      appid: jarvisSecMeta?.['jarvis-surface-id'] || getMetadata('jarvis-surface-id') || config.jarvis?.id,
+      appver: jarvisSecMeta?.['jarvis-surface-version'] || getMetadata('jarvis-surface-version') || config.jarvis?.version,
+    });
     if (onDemand && !chatInitialized) {
       await ensureAcomAssistant(config, getMetadata, event, onDemand, deps);
       addEventListeners();

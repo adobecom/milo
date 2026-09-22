@@ -177,3 +177,34 @@ describe('AcomAssistant shared client defers openMessagingWindow until ready', (
     expect(openArgs.sourceType === 'button').to.be.true;
   });
 });
+
+describe('AcomAssistant shared client per-click identity via getContextCallback', () => {
+  it('falls back to the initialize()-time appid, then reflects whichever identity was set most recently', async () => {
+    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
+    let capturedGetContext;
+    const onInit = (cfg) => { capturedGetContext = cfg.callbacks.getContextCallback; };
+    window.AdobeMessagingExperienceClient = { initialize: sinon.spy(onInit) };
+
+    const {
+      loadAcomAssistant: freshLoad,
+      setAcomAssistantIdentity: freshSetIdentity,
+    } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
+
+    const loadScript = sinon.stub().resolves();
+    const loadStyle = sinon.stub();
+
+    await freshLoad({ appid: 'surface-a', appver: '2.0' }, { loadScript, loadStyle });
+
+    // No surface has set an identity yet -- falls back to the appid initialize() used.
+    let context = capturedGetContext();
+    expect(context.appid === 'surface-a' && context.appver === '2.0').to.be.true;
+
+    freshSetIdentity({ appid: 'jarvis-x', appver: '9.9' });
+    context = capturedGetContext();
+    expect(context.appid === 'jarvis-x' && context.appver === '9.9').to.be.true;
+
+    freshSetIdentity({ appid: 'bc-bacom', appver: '1.0' });
+    context = capturedGetContext();
+    expect(context.appid === 'bc-bacom' && context.appver === '1.0').to.be.true;
+  });
+});

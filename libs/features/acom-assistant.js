@@ -19,7 +19,18 @@ let mergedConfig = {};
 let isReady = false;
 let initSettledPromise = null;
 let readyPromise = null;
+let pendingIdentity = null;
 const pendingMessages = [];
+
+/**
+ * Sets which surface's identity getContextCallback should report on the next CTA/host-link
+ * click. Surfaces sharing this one client (GNav Jarvis link, Brand Concierge) call this right
+ * before triggering their own open, so a single session can serve a different appid/appver
+ * per entry point instead of being locked to whichever surface won the initialize() race.
+ */
+export function setAcomAssistantIdentity(identity) {
+  pendingIdentity = identity;
+}
 
 function mergeCallbacks(target = {}, source = {}) {
   const merged = { ...target };
@@ -168,6 +179,9 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           window.lana?.log(`AcomAssistant: init failed (${args[0]})`, { tags: 'acom-assistant', severity: 'error' });
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
+        getContextCallback: (...args) => pendingIdentity
+          || mergedConfig.callbacks?.getContextCallback?.(...args)
+          || { appid: mergedConfig.appid, appver: mergedConfig.appver },
       },
     });
     resolvedClient = client;

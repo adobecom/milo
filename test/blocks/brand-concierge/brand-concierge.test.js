@@ -563,10 +563,14 @@ describe('Brand Concierge back-navigation analytics', () => {
 describe('Brand Concierge - AcomAssistant flag', () => {
   let sendUserMessageSpy;
   let openMessagingWindowSpy;
+  let capturedInitConfig;
 
   beforeEach(() => {
     window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
-      initialize: (cfg) => { cfg.callbacks?.onReadyCallback?.(); },
+      initialize: (cfg) => {
+        capturedInitConfig = cfg;
+        cfg.callbacks?.onReadyCallback?.();
+      },
       reinitialize: () => {},
       sendUserMessage: () => {},
       openMessagingWindow: () => {},
@@ -603,5 +607,31 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
     expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
     expect(openMessagingWindowSpy.called).to.be.true;
+
+    // Uses the Assistant team's bc-bacom test appid, not a Jarvis-borrowed one, and
+    // getContextCallback reports that same identity by default (no Jarvis link clicked).
+    expect(capturedInitConfig.appid === 'bc-bacom').to.be.true;
+    const context = capturedInitConfig.callbacks.getContextCallback();
+    expect(context.appid === 'bc-bacom').to.be.true;
+  });
+
+  it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+    const block = document.querySelector('.brand-concierge.marquee');
+    await init(block);
+
+    const button = block.querySelector('.prompt-card-button');
+    const cardText = button.querySelector('.prompt-card-text').textContent.trim();
+    button.click();
+
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: cardText })).to.be.true;
   });
 });
