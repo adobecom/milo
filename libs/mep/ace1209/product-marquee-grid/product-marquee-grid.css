@@ -175,6 +175,7 @@ body:has(header.local-nav) .product-marquee-grid {
 
   background-color: transparent;
 
+
   .con-button.outline {
     background-color: transparent;
     border-color: var(--pm-content);
