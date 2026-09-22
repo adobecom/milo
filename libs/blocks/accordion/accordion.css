@@ -17,14 +17,28 @@ div.accordion:not(.descr-list) {
 }
 
 .accordion .descr-details {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.2s ease, visibility 0s linear 0.2s;
   margin: 0;
-  padding: var(--spacing-xs);
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
 }
 
-.accordion .descr-details:not(.open) {
-  display: none;
+.accordion .descr-details > * {
+  overflow: hidden;
+  padding: 0 var(--spacing-xs);
+}
+
+.accordion .descr-details.open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.2s ease, visibility 0s linear 0s;
+}
+
+.accordion .descr-details.open > * {
+  padding: var(--spacing-xs);
 }
 
 .accordion-expand-all {
