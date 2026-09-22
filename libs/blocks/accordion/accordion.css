@@ -17,21 +17,15 @@ div.accordion:not(.descr-list) {
 }
 
 .accordion .descr-details {
-  display: grid;
-  grid-template-rows: 0fr;
-  visibility: hidden;
+  height: 0;
+  overflow: hidden;
   margin: 0;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
 }
 
-.accordion .descr-details > * {
-  overflow: hidden;
-}
-
 .accordion .descr-details.open {
-  grid-template-rows: 1fr;
-  visibility: visible;
+  height: auto;
   padding: var(--spacing-xs);
 }
 
