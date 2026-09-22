@@ -625,10 +625,6 @@
   }
 
   .hub-hero-carousel-header {
-    /* the heading now reliably wraps to 2 lines (see max-inline-size below),
-       so the gap needs to clear the FULL 2-line height (line-height * 2),
-       not just one line, plus a small breathing margin -- otherwise the
-       second line collides with the first slide underneath it */
     --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-lg) - var(--s2a-spacing-md) - (var(--s2a-typography-line-height-heading-2) * 2));
     position: sticky;
     top: var(--carousel-header-top);
@@ -643,11 +639,10 @@
   }
 
   .hub-hero-carousel-header>div {
-    animation: hubHeroCarouselHeaderMobileLeave ease both;
+    animation: trackProgressHeader linear both;
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 107%;
     position: relative;
-    will-change: transform, opacity;
     left: unset;
     right: unset;
     transform: none;
@@ -775,16 +770,8 @@
     display: grid;
     gap: 20vh;
     min-width: unset;
-    /* Used to animate max-width narrow-to-wide here, but this element is the
-       containing block for every position:sticky card underneath it --
-       animating its size reflows all of them on every scroll frame and
-       fights their sticky recalculation, causing jitter/shake (worst on
-       Safari, but not exclusive to it). The narrow-to-wide reveal now lives
-       on each card's own .hub-hero-carousel-item-container instead (a child
-       of the sticky item, not an ancestor of it), so this box just sits at
-       its final full size the whole time and never reflows. */
     max-width: 100%;
-    max-height: unset;
+    max-height: 50%;
     width: 100%;
   }
 
@@ -809,19 +796,13 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.88;
     z-index: 1;
-    /* Animating transform directly on a position:sticky element makes Safari
-       jitter it (the sticky offset recalculation fights the transform).
-       Cancel the base rule's animation here and apply the equivalent effect
-       to .hub-hero-carousel-item-container below instead -- that's a child
-       of this sticky item, not the sticky item itself, so it can animate
-       freely without disturbing the sticky positioning. */
     animation: none;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container {
-    animation: elasticItemsShrink ease both, elasticMobileFirstSlide ease both, cardMobileExpand ease forwards;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: entry 50% exit 100%, entry 100% exit 100%, entry 100% exit 100%;
+    animation: trackProgressA linear both, trackProgressB linear both;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: entry 50% exit 100%, entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
@@ -875,9 +856,6 @@
     justify-content: unset;
     transform-origin: top center;
     will-change: scale;
-    /* margin-inline:auto keeps this centered within the (fixed-width)
-       sticky item as cardMobileExpand below narrows it -- without this it
-       would hug the start edge instead of growing from the center. */
     margin-inline: auto;
     animation: elasticItemsShrink ease both, cardMobileExpand ease forwards;
     animation-timeline: --hub-hero, --hub-hero;
@@ -1583,35 +1561,6 @@
   }
 }
 
-@keyframes elasticMobileFirstSlide {
-  0% {
-    opacity: 1;
-    filter: contrast(1);
-    border-radius: var(--s2a-border-radius-sm);
-  }
-
-  30% {
-    opacity: 1;
-    filter: contrast(1);
-    border-radius: var(--s2a-border-radius-md);
-  }
-
-  50% {
-    filter: contrast(1);
-  }
-
-  75% {
-    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    opacity: .2;
-    filter: contrast(var(--stack-contrast, 1));
-  }
-}
-
 @keyframes slideOneMediaAspect {
   0% {
     aspect-ratio: 0.78;
@@ -1743,25 +1692,44 @@
   }
 }
 
-@keyframes hubHeroCarouselHeaderMobileLeave {
-  0% {
-    transform: translate(0, 0%);
-    opacity: 0;
-  }
+/* Purely-numeric, invisible progress trackers -- see the comments on
+   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container
+   and .hub-hero-carousel-header>div above. Each just lets a real
+   scroll-driven CSS animation compute an accurate 0-1 progress value using
+   the browser's own entry/exit/contain range math; JS in hub-hero.js reads
+   the resulting custom property each scroll frame and applies the actual
+   visual styles by hand, so nothing here is ever painted directly. */
+@property --progress-a {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
 
-  10% {
-    opacity: 1;
-  }
+@property --progress-b {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
 
-  94% {
-    transform: translate(0, -30%);
-    opacity: 1;
-  }
+@property --progress-header {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
 
-  100% {
-    transform: translate(0, -100%);
-    opacity: 0;
-  }
+@keyframes trackProgressA {
+  from { --progress-a: 0; }
+  to { --progress-a: 1; }
+}
+
+@keyframes trackProgressB {
+  from { --progress-b: 0; }
+  to { --progress-b: 1; }
+}
+
+@keyframes trackProgressHeader {
+  from { --progress-header: 0; }
+  to { --progress-header: 1; }
 }
 
 @keyframes hubHeroCarouselHeaderShrink {

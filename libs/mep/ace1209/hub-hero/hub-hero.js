@@ -199,6 +199,121 @@ const initCarouselHeaderA11y = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = (n) => Math.min(1, Math.max(0, n));
+
+// A continuously scroll-driven CSS animation living inside a position:sticky
+// subtree visibly shakes on mobile, even when the transform is on a child of
+// the sticky element rather than the sticky element itself: native sticky
+// offset recalculation (layout, main thread) and animation-timeline updates
+// (compositor thread) sample scroll position through two separate pipelines
+// that don't always land in the same frame, and any mismatch between them
+// shows up as jitter.
+// The two functions below keep the CSS animations (trackProgressA/B and
+// trackProgressHeader in hub-hero.css) purely as accurate, invisible 0-1
+// progress calculators -- they don't paint anything themselves, so there's
+// no need to hand-derive the entry/exit/contain range math. JS reads the
+// resulting custom property each scroll frame and applies the real visual
+// styles by hand, which puts style application on the same thread/frame as
+// sticky recalculation, leaving nothing to desync.
+const readProgress = (cs, prop) => clamp01(parseFloat(cs.getPropertyValue(prop)) || 0);
+
+const skipScrollDrivenStyling = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)')
+  || isMobile(); // isMobile() actually means "desktop width" -- see its definition above
+
+const initSlide1ScrollAnimation = (hubHero, container) => {
+  if (!container || skipScrollDrivenStyling()) return;
+
+  const controller = new AbortController();
+  const cs = getComputedStyle(container);
+  const stackScaleX = parseFloat(cs.getPropertyValue('--stack-scale-x')) || 1;
+  const stackContrast = parseFloat(cs.getPropertyValue('--stack-contrast'));
+  const targetContrast = Number.isNaN(stackContrast) ? 1 : stackContrast;
+
+  const update = () => {
+    const pa = readProgress(cs, '--progress-a');
+    const pb = readProgress(cs, '--progress-b');
+
+    // elasticItemsShrink: scale holds at 1 until pa=50%, then eases to
+    // --stack-scale-x; border-radius steps sm->md at the same point.
+    const shrinkT = clamp01((pa - 0.5) / 0.5);
+    container.style.scale = String(lerp(1, stackScaleX, shrinkT));
+    container.style.borderRadius = pa >= 0.5 ? 'var(--s2a-border-radius-md)' : 'var(--s2a-border-radius-sm)';
+
+    // elasticMobileFirstSlide: opacity holds at 1 until pb=75%, then eases to
+    // .2; contrast holds at 1 until pb=50%, then eases to --stack-contrast;
+    // the stack-offset transform is a hard step at pb=75% in the original
+    // keyframes (no earlier keyframe specifies it), so it stays a step here.
+    container.style.opacity = String(lerp(1, 0.2, clamp01((pb - 0.75) / 0.25)));
+    container.style.filter = `contrast(${lerp(1, targetContrast, clamp01((pb - 0.5) / 0.5))})`;
+    container.style.transform = pb >= 0.75
+      ? 'translateY(calc(var(--stack-offset) - var(--offset-adjuster)))'
+      : 'none';
+
+    // cardMobileExpand: max-width eases from --grid-img-width-min to 100%
+    // over pb 0-75%, then holds at 100%. Mixing % and var() inside calc()
+    // lets the browser resolve the actual pixel math -- no unit conversion
+    // needed here.
+    const expandT = clamp01(pb / 0.75);
+    container.style.maxWidth = `calc(var(--grid-img-width-min) + (100% - var(--grid-img-width-min)) * ${expandT})`;
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { update(); ticking = false; });
+  }, { signal: controller.signal, passive: true });
+  update();
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
+const initHeaderScrollAnimation = (hubHero, header) => {
+  const div = header?.querySelector(':scope > div');
+  if (!div || skipScrollDrivenStyling()) return;
+
+  const controller = new AbortController();
+  const cs = getComputedStyle(div);
+
+  const update = () => {
+    const p = readProgress(cs, '--progress-header');
+
+    let opacity;
+    if (p <= 0.10) opacity = lerp(0, 1, p / 0.10);
+    else if (p <= 0.94) opacity = 1;
+    else opacity = lerp(1, 0, (p - 0.94) / 0.06);
+
+    let translateYPct;
+    if (p <= 0.94) translateYPct = lerp(0, -30, p / 0.94);
+    else translateYPct = lerp(-30, -100, (p - 0.94) / 0.06);
+
+    div.style.opacity = String(opacity);
+    div.style.transform = `translate(0, ${translateYPct}%)`;
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { update(); ticking = false; });
+  }, { signal: controller.signal, passive: true });
+  update();
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -563,5 +678,7 @@ export default async function init(el) {
   handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
   initHeaderPin(el, heroHeader);
   initCarouselHeaderA11y(el, carouselHeader);
+  initSlide1ScrollAnimation(el, elasticCarousel.querySelector('.hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-container'));
+  initHeaderScrollAnimation(el, carouselHeader);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
