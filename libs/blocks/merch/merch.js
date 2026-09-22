@@ -256,6 +256,12 @@ export function isMasGeoDetectionEnabled() {
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
 }
 
+export function getMerchCardHeadingLevel() {
+  const raw = getMetadata('mas-heading-level');
+  const match = raw && String(raw).trim().match(/^h?([1-6])$/i);
+  return match ? Number(match[1]) : null;
+}
+
 /**
  * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
  * user's real IMS profile country when it's a supported market, otherwise Milo's own
@@ -908,6 +914,53 @@ const closeModalWithoutEvent = (modalId) => {
 
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
+let activeAupModalHash;
+
+function restoreAupModalHash(modalHashState) {
+  if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
+    window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
+  }
+}
+
+function clearAupModalHash(modalHashState) {
+  if (!modalHashState) return;
+  if (activeAupModalHash === modalHashState) {
+    activeAupModalHash = undefined;
+    modalState.isOpen = false;
+  }
+  restoreAupModalHash(modalHashState);
+}
+
+export function getAupModalHashCleanup() {
+  const modalHashState = activeAupModalHash;
+  if (!modalHashState) return undefined;
+  let cleaned = false;
+  return () => {
+    if (cleaned) return;
+    cleaned = true;
+    clearAupModalHash(modalHashState);
+  };
+}
+
+function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+  const id = element?.dataset.modalId || fallbackModalId;
+  const hash = id ? `#${id}` : '';
+  if (!hash) return;
+
+  if (type === 'open') {
+    clearAupModalHash(activeAupModalHash);
+    const restoreUrl = window.location.hash === hash
+      ? `${window.location.pathname}${window.location.search}`
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(window.history.state, '', hash);
+    }
+    activeAupModalHash = { hash, restoreUrl };
+    modalState.isOpen = true;
+  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
+    clearAupModalHash(activeAupModalHash);
+  }
+}
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
@@ -1098,6 +1151,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    aupHandler: (event) => handleAupModalHash(hash, event),
   };
 }
 
