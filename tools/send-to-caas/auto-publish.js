@@ -39,7 +39,7 @@ import { getCustomConfig } from '../utils/utils.js';
 // from this module (used by tests and any host that already depends on it).
 export { isDisabledOnPage };
 
-const CONFIG_PATH = '/.milo/caas/config.json';
+export const CONFIG_PATH = '/.milo/caas/config.json';
 
 const DEFAULT_TARGETS = {
   preview: [
@@ -65,13 +65,27 @@ export const matchesUrl = (pattern, path) => {
   return pattern === path;
 };
 
-// Most-specific (longest pattern) wins so per-directory rules can override
-// per-site rules without an explicit precedence flag.
+// Effective specificity of a rule's pattern: the '**' suffix is match syntax,
+// not literal path characters, so it must not count toward length — otherwise
+// a wildcard rule can tie (or even beat) an exact-match rule of the same raw
+// string length despite covering a shorter, less specific prefix.
+const ruleSpecificity = (url) => {
+  if (typeof url !== 'string') return -1;
+  return url.endsWith('**') ? url.length - 2 : url.length;
+};
+
+// Most-specific (longest effective pattern) wins so per-directory rules can
+// override per-site rules without an explicit precedence flag. Ties (e.g. an
+// exact match and a wildcard of equal effective specificity) favor the exact
+// match, since it unambiguously identifies a single path rather than a family
+// of paths.
 export const resolveRule = (rules, path) => {
   if (!Array.isArray(rules) || !path) return null;
-  const sorted = [...rules].sort(
-    (a, b) => (b?.url?.length || 0) - (a?.url?.length || 0),
-  );
+  const sorted = [...rules].sort((a, b) => {
+    const diff = ruleSpecificity(b?.url) - ruleSpecificity(a?.url);
+    if (diff !== 0) return diff;
+    return (a?.url?.endsWith('**') ? 1 : 0) - (b?.url?.endsWith('**') ? 1 : 0);
+  });
   return sorted.find((rule) => rule?.url && matchesUrl(rule.url, path)) || null;
 };
 

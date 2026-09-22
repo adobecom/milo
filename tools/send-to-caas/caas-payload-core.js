@@ -282,11 +282,14 @@ const LOCALES = {
 };
 
 // In libs/blocks/caas/utils.js, pageLocales derives from the page-level config
-// (pageConfigHelper().locales). The leaf must not import utils.js, and the
-// send-to-caas config carries no `.locales`, so the page locale list is empty
-// here. getPageLocale then defaults to '' (en_US), matching the browser path
-// for the send-to-caas tool which never populates page locales.
-const pageLocales = [];
+// (pageConfigHelper().locales) — the per-site subset of locale prefixes that
+// site actually supports. The leaf must not import utils.js and has no access
+// to that per-site config, so it falls back to the full classic LOCALES table
+// (already inlined above, and already used as the source of truth elsewhere
+// in this file, e.g. getBulkPublishLangAttr's getLocale(LOCALES, path) call).
+// A hardcoded [] here made localizeCtaUrl's caaslocaleinject feature a
+// permanent no-op, since getPageLocale never had anything to match against.
+const pageLocales = Object.keys(LOCALES);
 
 // Copied verbatim from libs/blocks/caas/utils.js (getPageLocale).
 function getPageLocale(currentPath, locales = pageLocales) {
@@ -578,17 +581,22 @@ const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
 // CaaS card -> XDM payload logic (moved verbatim from send-utils.js)
 // ---------------------------------------------------------------------------
 
+// `document` is referenced lazily (inside getConfig, not at module-eval time)
+// for the same reason as getPageUrl above: every real caller sets doc via
+// setConfig before reading it back, but a vm sandbox may not have shimmed a
+// global `document` at all, so touching it eagerly would throw on import.
 const [setConfig, getConfig] = (() => {
-  let config = {
-    isInjectedDoc: () => this.doc !== document,
-    doc: document,
-  };
+  let config = {};
   return [
     (c) => {
       config = { ...config, ...c };
       return config;
     },
-    () => config,
+    () => ({
+      isInjectedDoc: () => config.doc !== document,
+      ...config,
+      doc: 'doc' in config ? config.doc : document,
+    }),
   ];
 })();
 
@@ -781,7 +789,7 @@ export const getOrigin = (fgColor) => {
     return originLC;
   }
 
-  if (window.location.hostname.endsWith('.page')) {
+  if (typeof window !== 'undefined' && window.location?.hostname.endsWith('.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
     return processRepoForFloodgate(singlePageRepo, fgColor);
   }
@@ -810,7 +818,8 @@ const getImagePathMd = (keyName) => {
           const urlWithoutFile = getUrlWithoutFile(getConfig().pageUrl);
           imgSrc = `${urlWithoutFile}${rawImgSrc}`;
         } else if (rawImgSrc.startsWith('/')) {
-          imgSrc = `${new URL(getConfig.pageUrl.origin)}${rawImgSrc}`;
+          const { origin } = new URL(prefixHttps(getConfig().pageUrl));
+          imgSrc = `${origin}${rawImgSrc}`;
         } else {
           imgSrc = rawImgSrc;
         }
@@ -1118,7 +1127,7 @@ const props = {
 
   playurl: (s) => checkUrl(s, `Invalid PlayURL: ${s}`),
   primarytag: (s) => {
-    const tag = getTag(s);
+    const tag = getTag(s, []);
     return tag ? { id: tag.tagID } : {};
   },
   style: (s) => s || 'default',
@@ -1295,8 +1304,15 @@ const buildCaasXdmPayload = async ({
     repo,
   });
   await loadCaasTags();
+  // Card identity (contentId/entityId, hashed from options.prodUrl) must be
+  // scheme-less to match the untouched legacy bulk-publish-to-caas.js tool's
+  // own prodUrl convention, or the same page hashes to two different uuids
+  // depending on which publisher touched it. `pageUrl` itself stays schemed
+  // above (config.pageUrl) since getCaasProps' graybox lookup and the image
+  // resolution in getImagePathMd both need to parse it as a real URL.
+  const prodUrl = pageUrl?.replace(/^https?:\/\//, '') ?? pageUrl;
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({
-    prodUrl: pageUrl,
+    prodUrl,
     host,
     repo,
     floodgatecolor,
@@ -1318,10 +1334,13 @@ const hasContentTypeTag = (tags) => Array.isArray(tags)
 
 // Canonical production-URL builder — the single source of how a card's identity
 // URL is formed, shared by every publisher (the browser bulk-publish hook, the
-// milo-caas poller, and the manual send-to-caas tool). The exact prodUrl string
-// IS the card identity (contentId = uuid(prodUrl)), so all paths MUST build it
-// identically or the same page yields duplicate cards. Mirror of the manual
-// tool's `${prodHost}${pathname}${useHtml ? '.html' : ''}`.
+// milo-caas poller, and the manual send-to-caas tool). Returns a scheme-qualified
+// URL (needed so callers can also use it as a real, parseable/fetchable URL —
+// e.g. buildCaasXdmPayload's graybox-experience-ID lookup via getCaasProps, or
+// getConfig().pageUrl-based image resolution). The exact PATHNAME portion is
+// what matters for card identity; buildCaasXdmPayload strips the scheme before
+// hashing it into contentId/entityId, to match the (untouched) legacy tool's
+// own scheme-less `${prodHost}${pathname}${useHtml ? '.html' : ''}` exactly.
 // `htmlExt` accepts a boolean or the string 'true' (config sheets store strings).
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';

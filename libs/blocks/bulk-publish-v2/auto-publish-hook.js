@@ -25,12 +25,10 @@
  *     successful resource on a supported topic.
  */
 
-import { caasAutoPublish } from '../../../tools/send-to-caas/auto-publish.js';
+import { caasAutoPublish, CONFIG_PATH } from '../../../tools/send-to-caas/auto-publish.js';
 import { getCustomConfig, getImsToken } from '../../../tools/utils/utils.js';
 import { loadScript } from '../../utils/utils.js';
 import { isSuccess } from './utils.js';
-
-const CONFIG_PATH = '/.milo/caas/config.json';
 
 const SUPPORTED_TOPICS = new Set(['preview', 'publish']);
 

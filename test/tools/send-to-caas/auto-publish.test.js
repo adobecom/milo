@@ -155,6 +155,15 @@ describe('auto-publish: resolveRule', () => {
     expect(resolveRule([{ url: '/blog/**' }], '/products/x')).to.be.null;
   });
 
+  it('prefers an exact match over a wildcard rule with the same raw pattern length', () => {
+    // '/a/**' (5 chars) and '/a/bc' (5 chars) tie on raw string length, but
+    // the wildcard's effective specificity (dir length, 3) is lower than the
+    // exact match's (5) — the exact rule must win regardless of array order.
+    const rules = [{ url: '/a/**' }, { url: '/a/bc' }];
+    expect(resolveRule(rules, '/a/bc').url).to.equal('/a/bc');
+    expect(resolveRule([...rules].reverse(), '/a/bc').url).to.equal('/a/bc');
+  });
+
   it('skips rules without a url field', () => {
     expect(resolveRule([{ enabled: true }, { url: '/foo' }], '/foo').url).to.equal('/foo');
   });
@@ -512,7 +521,11 @@ describe('auto-publish: caasAutoPublish posting', () => {
     });
     expect(result.skipped).to.be.false;
     expect(postedProps.url).to.equal('https://business.adobe.com/x.html');
-    expect(postedProps.contentId).to.equal(await getUuid('https://business.adobe.com/x.html'));
+    // contentId is hashed from a scheme-less prodUrl, matching the legacy
+    // bulk-publish-to-caas.js tool's own (untouched) hash input exactly, so
+    // this path and the legacy tool never produce two different card
+    // identities for the same page.
+    expect(postedProps.contentId).to.equal(await getUuid('business.adobe.com/x.html'));
   });
 
   it('posts twice in parallel on preview action (prod-draft + stage-live)', async () => {

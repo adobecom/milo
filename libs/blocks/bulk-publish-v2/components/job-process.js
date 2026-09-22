@@ -29,6 +29,17 @@ export const mergeRetriedResources = (resources, queue) => {
   });
 };
 
+// Re-applies updateRetry's fresh statuses (for entries still eligible for
+// another round) onto the full accumulated queue, keeping entries that already
+// succeeded or exhausted their retries instead of dropping them. Dropping them
+// would make mergeRetriedResources fall back to their stale original 503.
+export const applyRetryUpdate = (queue, updated) => {
+  const updatedByKey = new Map(
+    updated.map((item) => [item.webPath || item.path, item]),
+  );
+  return queue.map((item) => updatedByKey.get(item.webPath || item.path) ?? item);
+};
+
 class JobProcess extends LitElement {
   static get properties() {
     return {
@@ -78,7 +89,7 @@ class JobProcess extends LitElement {
     // on retry is permanently skipped.
     if (stopped && !this.caasAutoPublishFired && !retriesPending(this.queue)) {
       this.caasAutoPublishFired = true;
-      const resources = mergeRetriedResources(this.jobStatus.data.resources, this.queue);
+      const resources = mergeRetriedResources(this.jobStatus?.data?.resources, this.queue);
       const jobStatus = { ...this.jobStatus, data: { ...this.jobStatus.data, resources } };
       // Fire-and-forget: caasAutoPublish is best-effort and must never
       // block or affect the bulk publish UI. Errors are swallowed; the
@@ -91,13 +102,14 @@ class JobProcess extends LitElement {
   async retry(timeouts) {
     if (!timeouts.length) return;
     if (this.queue.length) {
-      const queue = this.queue.filter(({ count, status }) => status === 503 && count <= 3);
-      if (queue.length) {
-        this.queue = await updateRetry({
-          queue,
-          urls: queue.map(({ path }) => `${this.job.origin}${path}`),
+      const pending = this.queue.filter(({ count, status }) => status === 503 && count <= 3);
+      if (pending.length) {
+        const updated = await updateRetry({
+          queue: pending,
+          urls: pending.map(({ path }) => `${this.job.origin}${path}`),
           process: this.jobStatus.topic,
         });
+        this.queue = applyRetryUpdate(this.queue, updated);
       }
     } else {
       this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
@@ -125,7 +137,7 @@ class JobProcess extends LitElement {
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
     let { status } = resource ?? jobData;
 
-    const retry = this.queue?.find((item) => item.path === path);
+    const retry = this.queue?.find((item) => (item.webPath || item.path) === path);
     if (retry) status = retry.status;
 
     const origin = ['publish', 'index'].includes(topic) && isSuccess(status)

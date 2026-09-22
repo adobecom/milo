@@ -3,7 +3,11 @@ import { setConfig } from '../../../../libs/utils/utils.js';
 
 setConfig({ miloLibs: 'http://localhost:2000/libs' });
 
-const { retriesPending, mergeRetriedResources } = await import('../../../../libs/blocks/bulk-publish-v2/components/job-process.js');
+const {
+  retriesPending,
+  mergeRetriedResources,
+  applyRetryUpdate,
+} = await import('../../../../libs/blocks/bulk-publish-v2/components/job-process.js');
 
 describe('job-process: retriesPending', () => {
   it('returns false for an empty queue', () => {
@@ -61,5 +65,36 @@ describe('job-process: mergeRetriedResources', () => {
   it('returns an empty array instead of throwing when jobStatus.data.resources is not an array', () => {
     expect(mergeRetriedResources(undefined, [])).to.deep.equal([]);
     expect(mergeRetriedResources(null, [])).to.deep.equal([]);
+  });
+});
+
+describe('job-process: applyRetryUpdate', () => {
+  it('keeps an already-succeeded entry instead of dropping it from the queue', () => {
+    // /a succeeded on an earlier round and is no longer eligible for retry,
+    // so it's absent from `updated` (only the still-pending /b was retried).
+    const queue = [
+      { path: '/a', status: 200, count: 1 },
+      { path: '/b', status: 503, count: 1 },
+    ];
+    const updated = [{ path: '/b', status: 503, count: 2 }];
+    expect(applyRetryUpdate(queue, updated)).to.deep.equal([
+      { path: '/a', status: 200, count: 1 },
+      { path: '/b', status: 503, count: 2 },
+    ]);
+  });
+
+  it('keeps an exhausted-retry entry instead of dropping it from the queue', () => {
+    const queue = [{ path: '/a', status: 503, count: 4 }];
+    expect(applyRetryUpdate(queue, [])).to.deep.equal([
+      { path: '/a', status: 503, count: 4 },
+    ]);
+  });
+
+  it('matches on webPath when path is absent', () => {
+    const queue = [{ webPath: '/a', status: 503, count: 1 }];
+    const updated = [{ webPath: '/a', status: 200, count: 2 }];
+    expect(applyRetryUpdate(queue, updated)).to.deep.equal([
+      { webPath: '/a', status: 200, count: 2 },
+    ]);
   });
 });
