@@ -139,3 +139,41 @@ describe('AcomAssistant shared client defers reinitialize until init settles', (
     expect(reinitArgs.appid === 'surface-two').to.be.true;
   });
 });
+
+describe('AcomAssistant shared client defers openMessagingWindow until ready', () => {
+  it('does not open the messaging window before onReadyCallback fires', async () => {
+    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
+    let capturedOnReady;
+    window.AdobeMessagingExperienceClient = {
+      initialize: sinon.spy((cfg) => { capturedOnReady = cfg.callbacks.onReadyCallback; }),
+      openMessagingWindow: sinon.spy(),
+    };
+
+    const {
+      loadAcomAssistant: freshLoad,
+      openAcomAssistantChat: freshOpen,
+    } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
+
+    const loadScript = sinon.stub().resolves();
+    const loadStyle = sinon.stub();
+
+    await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
+
+    let openResolved = false;
+    const openPromise = freshOpen({ sourceType: 'button' }).then(() => { openResolved = true; });
+
+    // Give pending microtasks a chance to run -- openMessagingWindow must not fire yet,
+    // since onReadyCallback hasn't been invoked.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(window.AdobeMessagingExperienceClient.openMessagingWindow.called).to.be.false;
+    expect(openResolved).to.be.false;
+
+    capturedOnReady();
+    await openPromise;
+
+    expect(window.AdobeMessagingExperienceClient.openMessagingWindow.calledOnce).to.be.true;
+    const openArgs = window.AdobeMessagingExperienceClient.openMessagingWindow.getCall(0).args[0];
+    expect(openArgs.sourceType === 'button').to.be.true;
+  });
+});

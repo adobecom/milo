@@ -18,6 +18,7 @@ let resolvedClient = null;
 let mergedConfig = {};
 let isReady = false;
 let initSettledPromise = null;
+let readyPromise = null;
 const pendingMessages = [];
 
 function mergeCallbacks(target = {}, source = {}) {
@@ -143,8 +144,11 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
 
     const client = window.AdobeMessagingExperienceClient;
     let resolveInitSettled;
+    let resolveReady;
     initSettledPromise = new Promise((resolve) => { resolveInitSettled = resolve; });
+    readyPromise = new Promise((resolve) => { resolveReady = resolve; });
     setTimeout(resolveInitSettled, 5000);
+    setTimeout(resolveReady, 5000);
 
     client.initialize({
       ...mergedConfig,
@@ -156,6 +160,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
         },
         onReadyCallback: (...args) => {
           flushPendingMessages(client);
+          resolveReady();
           mergedConfig.callbacks?.onReadyCallback?.(...args);
         },
         initErrorCallback: (...args) => {
@@ -193,5 +198,7 @@ export async function getAcomAssistantPrompts() {
 
 export async function openAcomAssistantChat(sourceInfo) {
   const client = await clientPromise;
-  client?.openMessagingWindow(sourceInfo);
+  if (!client) return;
+  await readyPromise;
+  client.openMessagingWindow(sourceInfo);
 }
