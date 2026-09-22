@@ -725,7 +725,16 @@ function processQueryIndexMap(link, domain, fetchOptions = {}) {
   };
 
   result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        window.lana?.log(`Query index not available (${response.status}): ${link}`, {
+          tags: 'utils',
+          severity: response.status === 404 ? 'info' : 'error',
+        });
+        return { data: [] };
+      }
+      return response.json();
+    })
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
       window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
