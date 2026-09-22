@@ -91,11 +91,11 @@ function isMobile() {
 }
 
 function getCDTTimeRange(cdtMetadata) {
-  const promoEnabled = getMepEnablement('manifestnames', 'promo');
-  const PAGE_URL = new URL(window.location.href);
-  const persManifests = getPromoManifests(promoEnabled, PAGE_URL.searchParams);
   let metadata = cdtMetadata;
   if (!metadata) {
+    const promoEnabled = getMepEnablement('manifestnames', 'promo');
+    const PAGE_URL = new URL(window.location.href);
+    const persManifests = getPromoManifests(promoEnabled, PAGE_URL.searchParams);
     persManifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       if (!manifest.event.cdtStart || !manifest.event.cdtEnd) return;

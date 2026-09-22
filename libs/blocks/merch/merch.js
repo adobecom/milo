@@ -3,7 +3,7 @@ import {
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { decorateButtons, getBlockSize, loadCDT } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
@@ -2049,7 +2049,6 @@ function watchPromoModals() {
  * unaffected elsewhere.
  */
 let masCountdownTimersWatched = false;
-const masCountdownTimersLoading = new WeakSet();
 function watchMasCountdownTimers() {
   if (masCountdownTimersWatched) return;
   masCountdownTimersWatched = true;
@@ -2063,15 +2062,13 @@ function watchMasCountdownTimers() {
 
     anchor.remove(); // consume: the link only carries the sentinel, never render it
     const target = mf.parentElement ?? mf;
-    // Guard against duplicate rendering: the rendered timer itself carries a `.countdown-timer`
-    // class, and mas:ready may fire more than once while a previous render is in flight.
-    if (masCountdownTimersLoading.has(target) || target.querySelector(':scope > .countdown-timer')) return;
-    masCountdownTimersLoading.add(target);
-    try {
-      await loadCDT(target, target.classList, `${cdtStart},${cdtEnd}`);
-    } finally {
-      masCountdownTimersLoading.delete(target);
-    }
+    // loadCDT claims the block scope synchronously, so a block that also renders its own
+    // countdown (e.g. a `countdown-timer` marquee) never ends up with two timers.
+    await loadCDT(target, getCdtScope(target).classList, `${cdtStart},${cdtEnd}`);
+    const timer = target.querySelector(':scope > .countdown-timer');
+    // `normalizeBlockFieldWrappers` can replace the authored wrapper we started from while the
+    // timer was loading; re-home the timer next to the field so it stays on the page.
+    if (timer && !timer.isConnected) (mf.parentElement ?? mf).append(timer);
   });
 }
 

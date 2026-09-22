@@ -1015,6 +1015,67 @@ describe('mas-field', () => {
         expect(mf.querySelector('a')).to.exist;
         expect(container.querySelector('.timer-label')).to.not.exist;
       });
+
+      it('keeps the timer attached when the authored wrapper is replaced while loading', async () => {
+        document.head.innerHTML = '';
+        const block = document.createElement('div');
+        block.classList.add('marquee');
+        const wrapper = document.createElement('p');
+        const mf = buildCountdownField();
+        wrapper.append(mf);
+        block.append(wrapper);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        // normalizeBlockFieldWrappers replaces the authored <p> while loadCDT is still awaiting.
+        wrapper.replaceWith(mf);
+
+        const timer = await waitFor(() => block.querySelector('.countdown-timer'));
+        expect(timer, 'timer rendered inside the block').to.exist;
+        expect(timer.isConnected, 'timer stays attached to the document').to.be.true;
+        expect(block.querySelector('.timer-label')).to.exist;
+      });
+
+      it('renders a single timer when the block also loads its own countdown', async () => {
+        document.head.innerHTML = '';
+        const { loadCDT } = await import('../../../libs/utils/decorate.js');
+        const block = document.createElement('div');
+        block.classList.add('marquee', 'countdown-timer');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        // marquee.init() renders its own countdown from page metadata right after.
+        await loadCDT(text, block.classList, '2001-12-12T12:12:00Z,2036-12-12T12:12:00Z');
+
+        await waitFor(() => block.querySelector('.timer-label'));
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
+        expect(block.querySelectorAll('.timer-label').length).to.equal(1);
+      });
+
+      it('skips MAS activation when the block rendered its countdown first', async () => {
+        document.head.innerHTML = '';
+        const { loadCDT } = await import('../../../libs/utils/decorate.js');
+        const block = document.createElement('div');
+        block.classList.add('marquee', 'countdown-timer');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        await loadCDT(text, block.classList, '2001-12-12T12:12:00Z,2036-12-12T12:12:00Z');
+        await waitFor(() => block.querySelector('.timer-label'));
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 100); });
+
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
+      });
     });
   });
 
