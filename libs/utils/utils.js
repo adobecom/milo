@@ -614,6 +614,15 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
+const KR_ALLOWED_CTA_PATTERNS = ['무료 앱 다운로드'];
+const KR_TRIAL_PATTERNS = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
+
+const matchesKrTrialCopy = (link) => {
+  const text = link.textContent?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
+  if (KR_ALLOWED_CTA_PATTERNS.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
+  return KR_TRIAL_PATTERNS.some((pattern) => text.includes(pattern.toLowerCase()));
+};
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -628,8 +637,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
     || shouldAllowKrTrial(link, localePrefix)
     || localePrefix !== '/kr'
     || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+      && !matchesKrTrialCopy(link))) {
     return false;
   }
 
