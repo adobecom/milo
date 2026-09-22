@@ -230,7 +230,10 @@ export function decorateBackground(el, background) {
   }
 }
 
-export function decorateMarqueeBackground(el, background) {
+export function decorateMarqueeBackground(el, background, customGradient) {
+  if (customGradient) {
+    el.style.setProperty('--bc-marquee-gradient', customGradient);
+  }
   const pictures = [...background.querySelectorAll('picture')];
   if (!pictures.length) {
     decorateBackground(el, background);
