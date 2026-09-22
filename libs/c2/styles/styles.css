@@ -1,7 +1,10 @@
 @font-face {
   font-family: 'Arial Bold Adjusted';
   font-weight: 900;
-  size-adjust: 92%;
+  size-adjust: 93%;
+  ascent-override: 91%;
+  descent-override: 25%;
+  line-gap-override: 0%;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 
@@ -1492,6 +1495,16 @@ span.hang-opening-quote {
     /* Shorter viewports in the common laptop width band need more travel */
     @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
       --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
+    }
+
+    /* Once the promo bar has scrolled out (feds-header-scrolled), it no longer
+       offsets this section, so drop the var and move by the flat vh amount. */
+    body:has(header.feds-header-scrolled) & {
+      --parallax-move-up-to: -35vh;
+
+      @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+        --parallax-move-up-to: -50vh;
+      }
     }
 
     &::after {

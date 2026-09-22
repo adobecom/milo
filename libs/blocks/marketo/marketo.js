@@ -27,6 +27,9 @@ import {
   MILO_EVENTS,
 } from '../../utils/utils.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+
+const sanitizeFormHtml = (value) => (typeof value === 'string' ? sanitizeHtmlBody(value).innerHTML : value);
 
 const ROOT_MARGIN = 50;
 const FAILURE_TIMEOUT = 10000;
@@ -36,6 +39,7 @@ export const LANA_MESSAGE = {
   RENDER_RECOVERED: 'Marketo form rendered after timeout',
   SUBMIT_FAILED: 'Marketo form submit failed',
   MARKETO_FORMS_JS: 'Marketo form failed to load forms2.min.js',
+  HIDDEN_REQUIRED_FIELD: 'Marketo form has a hidden field marked as required',
 };
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
@@ -124,6 +128,9 @@ export const getDataLayer = (key = '') => key
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+  if (formEl.querySelectorAll('.mktoHidden:has(.mktoRequired)').length) {
+    window.lana?.log(LANA_MESSAGE.HIDDEN_REQUIRED_FIELD, { tags: 'marketo', severity: 'w', sampleRate: 100 });
+  }
 };
 
 export const decorateURL = async (destination, baseURL = window.location) => {
@@ -285,13 +292,11 @@ export const logFailure = (el, msg) => {
   decorateOverlay(el, `${msg}: ${tags.join(', ')}`, () => { window.location.reload(); });
 };
 
-export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => {
-  setTimeout(() => {
-    if (condition()) {
-      logFailure(el, message);
-    }
-  }, timeout);
-};
+export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => setTimeout(() => {
+  if (condition()) {
+    logFailure(el, message);
+  }
+}, timeout);
 
 const toggleSuccessSection = (formData) => {
   showSuccessSection(formData);
@@ -302,7 +307,7 @@ export const formSubmit = (formEl) => {
   const el = formEl.closest('.marketo');
   const testRecord = window.mkto_isTestRecord?.();
   if (testRecord && testRecord !== 'not_test') return;
-  formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
+  el.dataset.submitTimeoutId = formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
 };
 
 export const formSuccess = (formEl, formData) => {
@@ -310,6 +315,7 @@ export const formSuccess = (formEl, formData) => {
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
 
+  clearTimeout(el.dataset.submitTimeoutId);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
@@ -422,12 +428,12 @@ function decorateForm(el, formData) {
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
   if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    const title = createTag('h3', { class: 'marketo-title' }, sanitizeFormHtml(formData.title));
     formWrapper.append(title);
   }
 
   if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    const description = createTag('p', { class: 'marketo-description' }, sanitizeFormHtml(formData.description));
     formWrapper.append(description);
   }
 

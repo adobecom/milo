@@ -13,7 +13,11 @@ import {
   isSignedOut,
   isTrustedUrl,
   isSameOriginManifestPath,
-  resolveDetectedMarketCountry,
+  isBot,
+  computeDetectedMarketCountry,
+  getCookie,
+  isMasImsLoginEnabled,
+  normCountryCode,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -68,6 +72,10 @@ const SELECTOR_TYPES = {
   twpButtons: 'twp-buttons',
   other: 'other',
 };
+
+export const PROMO_OR_NO_OFFER_CHANGES = 'promo or no offer changes';
+export const NON_PERSONALIZED_OFFER_TEST = 'non-personalized offer test';
+export const PERSONALIZED_OFFER = 'personalized offer';
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -218,9 +226,22 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  const noParagraphWrap = !!el?.parentElement?.closest('p')
-    || (el.nodeName === 'P' && action.includes('pend'));
-  const frag = noParagraphWrap ? a : createTag('p', undefined, a);
+  let containerType = 'other';
+  const parent = el.parentElement;
+  const grandParent = el.parentElement?.parentElement;
+  if (parent?.nodeName === 'MAIN') containerType = 'section';
+  else if (parent?.nodeName === 'DIV' && parent?.classList.length && !parent?.classList.contains('section')) containerType = 'row';
+  else if (grandParent?.nodeName === 'DIV' && grandParent?.classList.length && !grandParent?.classList.contains('section')) containerType = 'cell';
+
+  const noParagraphWrap = !!el?.parentElement?.closest('p') // parent el is already inside a paragraph
+    || (el.nodeName === 'P' && action.includes('pend')) // parent el IS a p tag, AND you're prepending/appending
+    || containerType === 'row'
+    || containerType === 'cell';
+  let frag = a;
+
+  if (!noParagraphWrap) frag = createTag('p', undefined, frag);
+  if (containerType === 'row' || containerType === 'section') frag = createTag('div', undefined, frag);
+  if (containerType === 'row' || containerType === 'cell') frag = createTag('div', { 'data-mep-replace-type': containerType }, frag);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
@@ -257,8 +278,7 @@ export const createContent = async (
 
   const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
-  if (el?.parentElement.nodeName !== 'MAIN') return frag;
-  return createTag('div', undefined, frag);
+  return frag;
 };
 
 export const handleTwpButtons = (el, selector) => {
@@ -1035,18 +1055,12 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function setMepCountry(config) {
-  const resolvedCountry = await resolveDetectedMarketCountry();
-  config.mep = config.mep || {};
-  if (resolvedCountry) {
-    config.mep.countryIP = resolvedCountry;
-  }
-}
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
   variantLabel = null,
+  manifestConfig,
+  source,
 ) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
@@ -1091,16 +1105,19 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
-
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
+  const { consentType } = manifestConfig;
+  if (consentType === NON_PERSONALIZED_OFFER_TEST && source?.includes('target')) {
+    try {
+      localStorage.setItem(`mep-${manifestPath}`, matchingVariant ?? 'Default');
+    } catch { /* do nothing */ }
+  }
   return matchingVariant;
 }
 
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
+  disabledPromo: true,
   event: manifest.event,
   manifest: manifest.manifestPath,
   executionOrder: '1-1',
@@ -1137,41 +1154,72 @@ export const overrideVariant = (manifestPath, variantName) => {
   }
 };
 
-export const getGeoRestriction = (manifestConfig) => {
-  const { geoRestriction, manifestPath } = manifestConfig;
-  if (!geoRestriction) return true;
-  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
-  if (!isAllowed) overrideVariant(manifestPath, 'Default');
-  return isAllowed;
-};
-
-export function getManifestMarketingAction(mktgAction, source) {
-  const coreServicesNonMarketing = 'core services/non-marketing';
-  const allowedServices = [coreServicesNonMarketing, 'non-marketing', 'marketing decrease', 'marketing increase'];
-  const normalizedMktgAction = mktgAction === 'core services' ? coreServicesNonMarketing : mktgAction;
-  if (allowedServices.includes(normalizedMktgAction)) return normalizedMktgAction;
-  if (source?.includes('promo')) return coreServicesNonMarketing;
-  return 'marketing increase';
+export function setCountryEnabled(manifestConfig) {
+  manifestConfig.countryEnabled = true;
+  const { countryRestriction, manifestPath } = manifestConfig;
+  if (!countryRestriction) return;
+  const countryArray = countryRestriction.split(',').map((item) => normCountryCode(item.trim()));
+  manifestConfig.countryEnabled = countryArray.includes(getConfig().mep.countryIP);
+  if (!manifestConfig.countryEnabled) overrideVariant(manifestPath, 'Default');
 }
 
-export function canServeManifest(manifestConfig) {
-  if (!getGeoRestriction(manifestConfig)) return false;
-  const { mktgAction, variantNames, manifestPath } = manifestConfig;
-  if (mktgAction?.includes('core services')) return true;
+export function normalizeConsentType(consentType, manifestConfig, source) {
+  if (!consentType) manifestConfig.consentNotSpecified = true;
+  const normalized = consentType?.toLowerCase();
+  const promoAliases = [
+    PROMO_OR_NO_OFFER_CHANGES,
+    'core services',
+    'core services/non-marketing',
+    'non-marketing',
+  ];
+  const nonPznAliases = [NON_PERSONALIZED_OFFER_TEST, 'marketing decrease', 'marketing increase'];
+  if (promoAliases.includes(normalized)) return PROMO_OR_NO_OFFER_CHANGES;
+  if (nonPznAliases.includes(normalized)) return NON_PERSONALIZED_OFFER_TEST;
+  if (normalized === PERSONALIZED_OFFER) return PERSONALIZED_OFFER;
+  if (source?.includes('promo')) return PROMO_OR_NO_OFFER_CHANGES;
+  return PERSONALIZED_OFFER;
+}
+
+function pickNonPznVariant(manifestPath, variantNames) {
+  const storageKey = `mep-${manifestPath}`;
+  let saved;
+  try {
+    saved = localStorage.getItem(storageKey);
+  } catch { /* do nothing */ }
+  if (saved) return saved;
+
+  const options = [...variantNames, 'Default'];
+  const choice = options[Math.floor(Math.random() * options.length)];
+  try {
+    localStorage.setItem(storageKey, choice);
+  } catch { /* do nothing */ }
+  return choice;
+}
+
+export function setConsentEnabled(manifestConfig) {
+  const { consentType, variantNames, manifestPath } = manifestConfig;
+  manifestConfig.consentEnabled = true;
+  if (consentType === PROMO_OR_NO_OFFER_CHANGES) return;
 
   const { performance, advertising } = getConfig().mep.consentState;
-
-  if (mktgAction?.startsWith('marketing') && performance && advertising) {
-    const fileName = getFileName(manifestPath)?.replace('.json', '');
-    sendAnalytics(`${fileName} was served`);
+  if (consentType === NON_PERSONALIZED_OFFER_TEST) {
+    if (performance) return;
+    manifestConfig.consentEnabled = false;
+    // geo-ineligible users are already restricted to 'Default'; never allocate a real variant
+    if (manifestConfig.countryEnabled === false) return;
+    overrideVariant(manifestPath, pickNonPznVariant(manifestPath, variantNames));
+    return;
   }
 
-  if (mktgAction === 'non-marketing') return performance;
-  if (mktgAction === 'marketing increase') return advertising;
+  if (performance && advertising) return;
+  manifestConfig.consentEnabled = false;
+  overrideVariant(manifestPath, 'Default');
+}
 
-  if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
-  return true;
+function recordManifestError(name, manifestPath, error) {
+  const config = getConfig();
+  config.mep.manifestErrors ??= [];
+  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1192,13 +1240,20 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
-    if (fetchData) data = fetchedData;
+    data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
+    if (!data) {
+      recordManifestError(name, manifestPath, 'Manifest');
+      return null;
+    }
   }
 
-  const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
-  const infoTab = manifestInfo || data?.info?.data;
+  const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
+  if (!persData) {
+    recordManifestError(name, manifestPath, 'Experiences tab');
+    return null;
+  }
+  const infoTab = manifestInfo || data.info?.data;
+
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
     return acc;
@@ -1208,8 +1263,8 @@ async function getManifestConfig(info, variantOverride) {
   const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
-    /* c8 ignore next 3 */
     log('Error loading personalization manifestConfig: ', name || manifestPath);
+    recordManifestError(name, manifestPath, 'Experience columns');
     return null;
   }
   const infoKeyMap = {
@@ -1234,35 +1289,39 @@ async function getManifestConfig(info, variantOverride) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-    manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
-    manifestConfig.geoRestriction = infoObj['manifest-geo-restriction']?.toLowerCase();
+    manifestConfig.consentType = normalizeConsentType(infoObj['manifest-consent-type']
+      || infoObj['manifest-marketing-action'], manifestConfig, source);
+    manifestConfig.countryRestriction = infoObj['manifest-country-restriction']?.toLowerCase()
+      || infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
+    manifestConfig.consentNotSpecified = true;
+    manifestConfig.consentType = PERSONALIZED_OFFER;
   }
 
-  let finalDisabled = disabled;
-  manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const isAllowed = canServeManifest(manifestConfig);
-  if (!isAllowed) {
-    overrideVariant(normalizePath(manifestPath), 'Default');
-    if (!getConfig().mep?.preview) return null;
-    finalDisabled = true;
+  setCountryEnabled(manifestConfig);
+  setConsentEnabled(manifestConfig, source);
+  if (manifestConfig.consentType !== PROMO_OR_NO_OFFER_CHANGES
+    && manifestConfig.consentEnabled && manifestConfig.countryEnabled) {
+    sendAnalytics(`${fileName} was served`);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
+    manifestConfig,
+    source,
   );
 
   manifestConfig.placeholderData = manifestPlaceholders || data?.placeholders?.data;
   manifestConfig.name = name;
   manifestConfig.manifest = manifestPath;
   manifestConfig.manifestUrl = manifestUrl;
-  manifestConfig.disabled = finalDisabled;
+  manifestConfig.disabled = disabled;
   manifestConfig.event = event;
   if (source?.length) manifestConfig.source = source;
   return manifestConfig;
@@ -1417,6 +1476,16 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
+  if (!config.mep.countryIP && !isBot()) {
+    config.mep.countryIP = computeDetectedMarketCountry(
+      window.location.search,
+      getCookie('country'),
+      config.mep.akamaiCode,
+      getCookie('ims_country_code'),
+      isMasImsLoginEnabled(),
+    );
+  }
+
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
@@ -1487,14 +1556,14 @@ export const combineMepSources = async (
   rocPersEnabled,
   promoEnabled,
   mepParam,
-  mepMarketingDecrease,
+  nonPznOffer,
 ) => {
   let persManifests = [];
 
   const sources = {
     pzn: persEnabled,
     'pzn-roc': rocPersEnabled,
-    'mktg-decrease': mepMarketingDecrease,
+    'non-pzn-offer': nonPznOffer,
   };
   Object.entries(sources).forEach(([source, value]) => {
     if (!value) return;
@@ -1654,8 +1723,8 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, promises, mepMarketingDecrease, akamaiCode,
+    target, ajo, targetInteractionPromise, calculatedTimeout,
+    postLCP, promises, nonPznOffer, akamaiCode,
   } = enablements;
   const config = getConfig();
 
@@ -1674,8 +1743,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
-      geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
       akamaiCode: akamaiCode?.toLowerCase(),
@@ -1687,7 +1754,7 @@ export async function init(enablements = {}) {
       pznroc,
       promo,
       mepParam,
-      mepMarketingDecrease,
+      nonPznOffer,
     ));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
@@ -1715,9 +1782,9 @@ export async function init(enablements = {}) {
       // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
-      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on'
-        ? '../mep/mep-next/mep-next.js' : './preview.js';
+      // TEMP: ?mepnext=off -> preview.js, else mep-next; gate + toLowerCase() hack die on removal.
+      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off'
+        ? './preview.js' : '../mep/mep-next/mep-next.js';
       import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
