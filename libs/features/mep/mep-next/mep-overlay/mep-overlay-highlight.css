@@ -15,9 +15,6 @@
   --lingo-primary: rgb(56,142,60); /* Green 700 */
   --lingo-secondary: rgb(232,245,233); /* Green 50 */
 
-  --lingo-fallback-primary: rgba(175,180,43,1); /* Lime 700 */
-  --lingo-fallback-secondary: rgba(249,251,231,1); /* Lime 50 */
-
   /* Other Toggle*/
   --other-primary: #455a64; /* Blue-Grey 700 */
   --other-secondary: #eceff1; /* Blue-Grey 50 */
@@ -178,15 +175,15 @@ body[data-mep-lingo-highlight='true'] [data-mep-lingo-roc]::before {
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback] {
   position: relative !important;
-  outline: 2px dashed var(--lingo-fallback-primary) !important;
+  outline: 2px dashed var(--lingo-primary) !important;
 }
 
 body[data-mep-lingo-highlight='true'] [data-mep-lingo-fallback]::before {
   content: 'MEP Lingo Fallback:  ' attr(data-mep-lingo-fallback);
-  --mep-link-icon-background: var(--lingo-fallback-primary);
-  border: 2px solid var(--lingo-fallback-primary);
-  color: var(--lingo-fallback-primary);
-  background-color: var(--lingo-fallback-secondary);
+  --mep-link-icon-background: var(--lingo-primary);
+  border: 2px solid var(--lingo-primary);
+  color: var(--lingo-primary);
+  background-color: var(--lingo-secondary);
 }
 
 body[data-mep-highlight='true'] [data-removed-manifest-id] {
