@@ -400,11 +400,6 @@
   border-color: var(--bc-floating-button-border-color-hover);
 }
 
-.bc-floating-button:hover .bc-floating-icon svg {
-  height: 22px;
-  width: 22px;
-}
-
 .bc-floating-button.modal-open .bc-floating-button-container {
   background: #fff;
 }
