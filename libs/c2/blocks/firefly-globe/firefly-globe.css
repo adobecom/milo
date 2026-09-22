@@ -661,6 +661,7 @@ html.firefly-globe-modal-open { overflow: hidden; }
 .firefly-globe-a11y-cards {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
 /* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
@@ -676,6 +677,7 @@ html.firefly-globe-modal-open { overflow: hidden; }
   border: 0;
   background: transparent;
   transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 .firefly-globe-a11y-card:focus { outline: none; }
 

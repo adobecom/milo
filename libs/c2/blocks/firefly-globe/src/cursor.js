@@ -51,6 +51,7 @@ export default function createCursor(deps) {
       text: container.querySelector('.firefly-globe-cursor-text-wrap'),
     };
     textWidth = els.text.offsetWidth;
+    document.fonts?.ready?.then(() => { if (els) textWidth = els.text.offsetWidth; });
 
     canvasEl = canvas;
     canvas.addEventListener('mouseenter', onEnter);

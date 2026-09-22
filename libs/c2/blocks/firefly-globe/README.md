@@ -234,6 +234,9 @@ converted to world units at the card's depth, so the card leaves and returns exa
 drawn. The offset is re-read when the close starts, so a scroll that slips through the lock while
 the modal is open still lands the card on its slot.
 
+The modal's `WebGLRenderer` is created lazily on the first `open()` (`ensureModalRenderer()`), not in
+`setup()`; it is disposed on every `destroy()` and recreated on the next `open()`.
+
 The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
 only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself
 instead of propagating to the viewport, which makes `body` a scroll container and un-sticks
@@ -242,11 +245,16 @@ instead of propagating to the viewport, which makes `body` a scroll container an
 ### Modal stacking
 
 `modal.js` reparents `.firefly-globe-modal` (the `z-index: 13` backdrop scrim) and
-`.firefly-globe-modal-canvas` (`z-index: 14`, the photo) to `<body>` in `setup()`, and removes them
-in `destroy()`. Their z-indexes only resolve at the `<body>` root; the block sits under a section
-whose `rounded-corners-bottom` gives it a `z-index: 3` stacking context that would otherwise clamp
-them. The `<dialog>` chrome stays in the block and paints above both via the top layer
-(`showModal()`).
+`.firefly-globe-modal-canvas` (`z-index: 14`, the photo) to `<body>` in `setup()`. Their z-indexes
+only resolve at the `<body>` root; the block sits under a section whose `rounded-corners-bottom`
+gives it a `z-index: 3` stacking context that would otherwise clamp them. The `<dialog>` chrome
+stays in the block and paints above both via the top layer (`showModal()`).
+
+The reparented nodes persist across re-inits (band crossing, reduced-motion toggle, WebGL context
+restore). `destroy(false)` disposes the modal renderer but keeps the nodes and their once-wired
+listeners; `destroy(true)` — the default, on block removal — detaches the nodes. `setup()` re-acquires
+a node only when not already held and reparents only when not already at `<body>`: a root-scoped
+`q()` cannot find a node that already lives under `<body>`.
 
 `--fg-modal-anim-ms` is set inline on `.firefly-globe-modal` right after the reparent — it is
 block-scoped and does not inherit at `<body>`, and the scrim's opacity transition reads it.

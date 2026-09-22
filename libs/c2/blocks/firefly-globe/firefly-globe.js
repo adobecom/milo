@@ -1497,7 +1497,7 @@ function createGlobeGalleryRuntime(
   }
 
   let rafId = 0;
-  function rafLoop(now) { tick(now); rafId = requestAnimationFrame(rafLoop); }
+  function rafLoop(now) { rafId = requestAnimationFrame(rafLoop); tick(now); }
   function startTicker() {
     if (rafId) return;
     // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
@@ -1543,7 +1543,7 @@ function createGlobeGalleryRuntime(
       { tags: 'firefly-globe', severity: collapsed ? 'error' : 'info' },
     );
     // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
-    destroy();
+    destroy(false);
     // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
     if (collapsed || initRuntime() === false) {
       root.classList.add('firefly-globe-empty');
@@ -1660,7 +1660,7 @@ function createGlobeGalleryRuntime(
       const nextReducedMotion = prefersReducedMotion();
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
-        destroy();
+        destroy(false);
         if (initRuntime() === false) root.classList.add('firefly-globe-empty');
         return;
       }
@@ -1781,7 +1781,7 @@ function createGlobeGalleryRuntime(
     return true;
   }
 
-  function destroy() {
+  function destroy(finalize = true) {
     stopTicker();
     renderReady = false;
     textureLoadGeneration += 1; // invalidate any loadCardTextures callback still in flight
@@ -1835,7 +1835,7 @@ function createGlobeGalleryRuntime(
     hintExitT = 0;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; sphereGroup = null;
-    modal.destroy();
+    modal.destroy(finalize);
     a11y.teardown();
     frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     entryReleaseStr = '';
@@ -1905,7 +1905,7 @@ export default async function init(el) {
     runtime.destroy();
     removalObserver.disconnect();
   });
-  removalObserver.observe(document.body, { childList: true, subtree: true });
+  removalObserver.observe(el.parentNode || document.body, { childList: true });
 
   return el;
 }
