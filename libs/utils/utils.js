@@ -1460,9 +1460,11 @@ export async function loadBlock(block) {
   return block;
 }
 
-const getAemSite = ({ hostname }) => (/\.(hlx|aem)\./.test(hostname)
-  ? hostname.split('.')[0].split('--').slice(-2).join('--')
-  : null);
+function getAemSite({ hostname }) {
+  const parts = hostname.split('.')[0].split('--');
+  if (!/\.(hlx|aem)\.(page|live|reviews)$/.test(hostname) || parts.length < 3) return null;
+  return parts.slice(-2).join('--');
+}
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
