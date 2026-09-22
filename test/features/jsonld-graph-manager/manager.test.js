@@ -469,37 +469,61 @@ describe('AggregateRating quality thresholds', () => {
   });
 });
 
-describe('SoftwareApplication Offer provenance', () => {
-  it('does not synthesize an Offer when one is absent', () => {
+describe('SoftwareApplication default Offer synthesis', () => {
+  it('transforms an offer-less Product and serializes the fallback Offer with exact fields', () => {
     document.head.appendChild(makeScript({
-      '@type': 'SoftwareApplication',
+      '@type': 'Product',
       name: 'Photoshop',
     }));
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offer = graph.find((n) => n['@type'] === 'Offer');
+    expect(offer).to.deep.equal({
+      '@type': 'Offer',
+      '@id': `${PAGE_URL}#offer`,
+      price: '0',
+      availability: 'https://schema.org/InStock',
+    });
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
-    expect(app.offers).to.be.undefined;
+    expect(app['@type']).to.equal('SoftwareApplication');
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.false;
+    expect(manager.sources.has(`${PAGE_URL}#offer`)).to.be.false;
+    expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.be.undefined;
   });
 
-  it('does not synthesize an Offer for an empty subtype offers array', () => {
+  it('serializes the fallback Offer when offers is an empty array', () => {
     document.head.appendChild(makeScript({
-      '@type': 'WebApplication',
-      '@id': `${PAGE_URL}#webapplication`,
-      name: 'Compress PDF',
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
       offers: [],
     }));
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app['@type']).to.equal('WebApplication');
-    expect(app.offers).to.deep.equal([]);
-    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(graph.find((n) => n['@id'] === `${PAGE_URL}#offer`)).to.exist;
+    expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.deep.equal([]);
   });
 
-  it('preserves producer-supplied Offers without adding commercial data', () => {
+  it('serializes the fallback Offer for a supported SoftwareApplication subtype', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app['@type']).to.equal('WebApplication');
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(graph.find((n) => n['@id'] === `${PAGE_URL}#offer`)).to.exist;
+  });
+
+  it('preserves producer-supplied Offers without generating a fallback', () => {
     document.head.appendChild(makeScript({
       '@type': 'SoftwareApplication',
       name: 'Photoshop',
@@ -521,6 +545,89 @@ describe('SoftwareApplication Offer provenance', () => {
     expect(offers[0].price).to.equal('19.99');
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+  });
+
+  it('does not generate or attach an Offer when no application exists', () => {
+    document.head.append(
+      makeScript({ '@type': 'Article', headline: 'Hello' }),
+      makeScript({
+        '@type': 'Offer',
+        '@id': `${PAGE_URL}#standalone`,
+        price: '5',
+        priceCurrency: 'USD',
+      }),
+    );
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offers = graph.filter((n) => n['@type'] === 'Offer');
+    expect(offers).to.have.length(1);
+    expect(offers[0]['@id']).to.equal(`${PAGE_URL}#standalone`);
+    expect(graph.find((n) => ['SoftwareApplication', 'WebApplication', 'MobileApplication', 'VideoGame'].includes(n['@type']))).to.not.exist;
+  });
+
+  it('preserves and remaps an unrelated node that collides with the fallback Offer ID', () => {
+    document.head.append(
+      makeScript({
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+      }),
+      makeScript({
+        '@type': 'Event',
+        name: 'Launch event',
+        offers: { '@id': `${PAGE_URL}#offer` },
+      }),
+      makeScript({
+        '@type': 'Offer',
+        '@id': `${PAGE_URL}#offer`,
+        description: 'Standalone event offer',
+      }),
+    );
+    const manager = trackedManager();
+    manager.init();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const fallback = graph.find((n) => n['@id'] === `${PAGE_URL}#offer`);
+    expect(fallback.price).to.equal('0');
+    const standalone = graph.find((n) => n.description === 'Standalone event offer');
+    expect(standalone['@id']).to.equal(`${PAGE_URL}#offer-authored`);
+    const event = graph.find((n) => n['@type'] === 'Event');
+    expect(event.offers).to.deep.equal({ '@id': `${PAGE_URL}#offer-authored` });
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.true;
+    expect(manager.graph.has(`${PAGE_URL}#offer-authored`)).to.be.false;
+  });
+
+  it('replaces the serialized fallback when a runtime producer authors an Offer', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+    }));
+    const manager = trackedManager();
+    manager.init();
+
+    const runtime = makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: [{
+        '@type': 'Offer',
+        '@id': `${PAGE_URL}#paid`,
+        price: '19.99',
+        priceCurrency: 'USD',
+      }],
+    });
+    document.head.appendChild(runtime);
+    manager.enqueue(runtime, 'runtime');
+    manager.rebuild();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offers = graph.filter((n) => n['@type'] === 'Offer');
+    expect(offers).to.have.length(1);
+    expect(offers[0]['@id']).to.equal(`${PAGE_URL}#paid`);
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+    expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.false;
   });
 
   it('preserves distinct producer fragments (#paid, #free-trial) — repeatable-types rule', () => {

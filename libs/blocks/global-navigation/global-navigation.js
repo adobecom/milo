@@ -3,6 +3,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupEnabled,
   loadIms,
   loadStyle,
   loadLana,
@@ -66,7 +67,11 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const {
+  getAupModalHashCleanup,
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} = merch;
 
 const {
   clearSignOutCookies,
@@ -368,6 +373,7 @@ export const osMap = {
 };
 
 export const LANGMAP = {
+  ar: ['ara'],
   cs: ['cz'],
   da: ['dk'],
   de: ['at'],
@@ -986,7 +992,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+    if (isAupEnabled(this.useUniversalNav)) {
       this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
@@ -1135,11 +1141,14 @@ class Gnav {
       { mode: 'async' },
     );
 
+    let teardownActiveDialog;
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      getProfile: async () => (
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
+      ),
       environment,
       cdnEnvironment: environment,
       locale,
@@ -1147,31 +1156,102 @@ class Gnav {
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       showDialog: async (element, _, closeCallback) => {
-        document.getElementById('feds-manage-people-dialog')?.remove();
-        const dialog = document.createElement('dialog');
-        dialog.id = 'feds-manage-people-dialog';
-        dialog.appendChild(element);
-        document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
-          closeCallback({ type: 'close' });
-          dialog.close();
-          dialog.remove();
-          document.documentElement.classList.remove('disable-scroll');
-        });
-        dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
-            closeCallback({ type: 'close' });
-            dialog.close();
-            dialog.remove();
-            document.documentElement.classList.remove('disable-scroll');
+        const cleanupAupModalHash = getAupModalHashCleanup();
+        const modalHash = cleanupAupModalHash && window.location.hash;
+        const isIframe = element.tagName === 'IFRAME';
+        try {
+          if (isIframe) {
+            await Promise.all([
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ]);
           }
-        });
-        document.documentElement.classList.add('disable-scroll');
-        dialog.showModal();
+        } catch (e) {
+          cleanupAupModalHash?.();
+          throw e;
+        }
+        teardownActiveDialog?.();
+        let dialog;
+        let finishLoading;
+        let closeDialog;
+        let onDialogCancel;
+        let onDialogClick;
+        let onNavigation;
+        let isTornDown = false;
+        const teardown = () => {
+          if (isTornDown) return;
+          isTornDown = true;
+          finishLoading?.();
+          element.removeEventListener('close', closeDialog);
+          dialog?.removeEventListener('cancel', onDialogCancel);
+          dialog?.removeEventListener('click', onDialogClick);
+          window.removeEventListener('popstate', onNavigation);
+          window.removeEventListener('hashchange', onNavigation);
+          if (dialog?.open) dialog.close();
+          dialog?.remove();
+          document.documentElement.classList.remove('disable-scroll');
+          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          cleanupAupModalHash?.();
+        };
+        closeDialog = () => {
+          teardown();
+          closeCallback({ type: 'close' });
+        };
+        const cancel = () => {
+          // The orchestrator settles on cancel; close releases its event listeners.
+          element.dispatchEvent(new Event('cancel'));
+          element.dispatchEvent(new Event('close'));
+        };
+        onNavigation = () => {
+          if (modalHash && window.location.hash !== modalHash) cancel();
+        };
+        onDialogCancel = (e) => {
+          if (e.target !== dialog) return;
+          e.preventDefault();
+          cancel();
+        };
+        onDialogClick = (e) => {
+          if (e.target === dialog) cancel();
+        };
+        try {
+          dialog = document.createElement('dialog');
+          dialog.id = 'aup-workflow-dialog';
+          if (isIframe) {
+            const spinner = toFragment`
+              <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+                <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+              </sp-theme>`;
+            dialog.classList.add('loading');
+            dialog.appendChild(spinner);
+            finishLoading = () => {
+              element.removeEventListener('load', finishLoading);
+              dialog.classList.remove('loading');
+              spinner.remove();
+              finishLoading = undefined;
+            };
+            element.addEventListener('load', finishLoading, { once: true });
+          }
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          element.addEventListener('close', closeDialog, { once: true });
+          dialog.addEventListener('cancel', onDialogCancel);
+          dialog.addEventListener('click', onDialogClick);
+          window.addEventListener('popstate', onNavigation);
+          window.addEventListener('hashchange', onNavigation);
+          teardownActiveDialog = teardown;
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+          onNavigation();
+        } catch (e) {
+          teardown();
+          throw e;
+        }
       },
     });
 
-    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    const features = ['useToasts'];
+    if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
+    await window.aupsdk.updateConfig({ miniAppContext: { features } });
     return window.aupsdk;
   };
 
