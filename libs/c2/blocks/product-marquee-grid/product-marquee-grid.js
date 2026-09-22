@@ -68,10 +68,10 @@ function toSubtext(el) {
     el.classList.add('pm-subtext');
     return el;
   }
-  return createTag('p', {
-    class: [el.className, 'pm-subtext', `heading-${level}`].filter(Boolean).join(' '),
-    ...(el.id && { id: el.id }),
-  }, el.innerHTML);
+  const p = createTag('p', null, el.innerHTML);
+  [...el.attributes].forEach(({ name, value }) => p.setAttribute(name, value));
+  p.classList.add('pm-subtext', `heading-${level}`);
+  return p;
 }
 
 function decorate(block, blockEl = block) {
