@@ -23,7 +23,7 @@ div.accordion:not(.descr-list) {
   line-height: var(--type-body-s-lh);
 }
 
-.accordion .descr-details.is-collapsed {
+.accordion .descr-details:not(.open) {
   display: none;
 }
 
