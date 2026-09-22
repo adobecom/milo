@@ -469,6 +469,10 @@ span.feds-footer-privacyLink-divider {
   gap: var(--s2a-spacing-xs);
 }
 
+.global-footer.event .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: relative;
+}
+
 .global-footer.event .feds-footer-privacy-listitem:not(:last-child)::after {
   content: "/";
   margin-left: var(--s2a-spacing-xs);
