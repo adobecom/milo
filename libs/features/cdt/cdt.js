@@ -141,4 +141,5 @@ export default async function initCDT(el, classList, cdtMetadata) {
   if (classList.contains('center')) cdtDiv.classList.add('center');
 
   loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
+  return cdtDiv;
 }

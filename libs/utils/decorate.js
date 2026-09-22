@@ -514,19 +514,24 @@ export function getCdtScope(el) {
 }
 
 // One countdown timer per block, whichever loader (block decoration or MAS field) claims it
-// first. The claim is synchronous, so two loaders racing on the same block can't both render.
-const cdtScopes = new WeakSet();
+// first. The claim is taken synchronously so two loaders racing on the same block can't both
+// render, and it is released once the rendered timer leaves the block (e.g. a MAS re-render
+// replaced the field content) so the timer can be rebuilt.
+const PENDING = Symbol('cdt-pending');
+const cdtScopes = new WeakMap();
 
 export async function loadCDT(el, classList, cdtMetadata) {
   const scope = getCdtScope(el);
-  if (cdtScopes.has(scope)) return;
-  cdtScopes.add(scope);
+  const claim = cdtScopes.get(scope);
+  if (claim === PENDING || (claim && scope.contains(claim))) return;
+  cdtScopes.set(scope, PENDING);
   try {
-    await Promise.all([
+    const [, timer] = await Promise.all([
       loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
       import('../features/cdt/cdt.js')
         .then(({ default: initCDT }) => initCDT(el, classList, cdtMetadata)),
     ]);
+    cdtScopes.set(scope, timer);
   } catch (error) {
     cdtScopes.delete(scope);
     window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });

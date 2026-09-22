@@ -1076,6 +1076,33 @@ describe('mas-field', () => {
 
         expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
       });
+
+      it('rebuilds the timer when a MAS re-render wipes the previous one', async () => {
+        document.head.innerHTML = '';
+        const block = document.createElement('div');
+        block.classList.add('marquee');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await waitFor(() => block.querySelector('.timer-label'));
+
+        // MAS re-resolves the field and replaces its content, taking the timer with it.
+        block.querySelector('.countdown-timer').remove();
+        const resentinel = document.createElement('a');
+        resentinel.href = '#';
+        resentinel.textContent = 'countdown-timer';
+        mf.querySelector('[data-role="mas-field-content"]').append(resentinel);
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+
+        const timer = await waitFor(() => block.querySelector('.countdown-timer'));
+        expect(timer, 'timer rebuilt after re-render').to.exist;
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
+      });
     });
   });
 
