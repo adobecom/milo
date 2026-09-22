@@ -352,6 +352,50 @@ function sortNodes(nodes) {
   });
 }
 
+function withDefaultOffer(nodes) {
+  const applicationIndex = nodes.findIndex(
+    (node) => effectiveType(node['@type']) === 'SoftwareApplication',
+  );
+  if (applicationIndex < 0) return nodes;
+  const application = nodes[applicationIndex];
+  const hasOffers = application.offers != null
+    && !(Array.isArray(application.offers) && application.offers.length === 0);
+  if (hasOffers) return nodes;
+
+  const offerId = pageScopedId('Offer');
+  let serializedNodes = [...nodes];
+  const collisionIndex = nodes.findIndex((node) => node['@id'] === offerId);
+  if (collisionIndex >= 0) {
+    serializedNodes = JSON.parse(JSON.stringify(nodes));
+    const nodeIds = new Set(nodes.map((node) => node['@id']));
+    let collisionId = `${offerId}-authored`;
+    let suffix = 2;
+    while (nodeIds.has(collisionId)) {
+      collisionId = `${offerId}-authored-${suffix}`;
+      suffix += 1;
+    }
+    serializedNodes[collisionIndex]['@id'] = collisionId;
+    const collisionRemap = new Map([[offerId, collisionId]]);
+    for (const node of serializedNodes) {
+      for (const [key, val] of Object.entries(node)) {
+        if (key === '@id') continue;
+        remapReferences(val, collisionRemap);
+      }
+    }
+  }
+  serializedNodes[applicationIndex] = {
+    ...serializedNodes[applicationIndex],
+    offers: [{ '@id': offerId }],
+  };
+  serializedNodes.push({
+    '@type': 'Offer',
+    '@id': offerId,
+    price: '0',
+    availability: 'https://schema.org/InStock',
+  });
+  return serializedNodes;
+}
+
 const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered', 'aggregateRating'];
 
 function extractEntity(val) {
@@ -625,8 +669,9 @@ export class JsonLdGraphManager {
       }
     }
     injectLinks(nodes);
-    const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': nodes }, null, 2);
-    return { nodes, payload };
+    const serializedNodes = withDefaultOffer(nodes);
+    const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': serializedNodes }, null, 2);
+    return { nodes: serializedNodes, payload };
   }
 }
 

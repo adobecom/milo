@@ -1224,6 +1224,12 @@
   }
 }
 
+@media screen and (min-width: 900px) {
+  .bc-mobile-only .bc-floating-element {
+    display: none;
+  }
+}
+
 /* tablet wide up */
 @media screen and (min-width: 960px) {
   .brand-concierge.hero {
