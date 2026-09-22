@@ -4,8 +4,10 @@ import { getConfig } from '../../utils/utils.js';
  * Detects AEM Sidekick login from the page world. <aem-sidekick> is defined in the
  * extension's isolated world, so page JS sees no config/status and its status event
  * fires before we attach. The page-world signal: login-button#user in
- * plugin-action-bar's shadow is always present and carries `not-authorized` while
- * signed out. Auth is orthogonal to the adobe.com session (logged-out pages preview).
+ * plugin-action-bar's shadow. Its own shadow root is authoritative — a login action
+ * (sk-action-button.login) while signed out, a user menu (sk-action-menu) while
+ * signed in; the host's `not-authorized` class is only a fast signed-out fallback.
+ * Auth is orthogonal to the adobe.com session (logged-out pages preview).
  */
 
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';
@@ -144,6 +146,18 @@ export function onSidekickAuth(callback) {
     sk.addEventListener('logged-out', () => set(false));
   };
 
+  // login-button present and unmarked, yet its shadow exposes neither the login action
+  // nor the user menu — closed shadow or the extension's internals changed. We can't
+  // read auth (fail safe to gated); surface it once so the drift is diagnosable.
+  const logIfUnreadable = () => {
+    const user = getPluginActionBarShadow()?.querySelector(USER_BUTTON_SELECTOR);
+    if (!user || user.classList.contains(NOT_AUTHED_CLASS)) return;
+    const userShadow = user.shadowRoot;
+    if (userShadow?.querySelector(USER_MENU_SELECTOR)
+      || userShadow?.querySelector(LOGIN_ACTION_SELECTOR)) return;
+    window.lana?.log('sidekick-auth: login-button exposes no readable auth state', { tags: 'mep', errorType: 'i' });
+  };
+
   // The sidekick element may mount after we run — wait for it.
   const sk = getSidekick();
   if (sk?.shadowRoot) {
@@ -151,7 +165,10 @@ export function onSidekickAuth(callback) {
     watchPluginActionBar(sk.shadowRoot);
     // Sidekick present: brief head start before defaulting to unauthed, so a late
     // status resolution doesn't flash a sign-in prompt.
-    setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
+    setTimeout(() => {
+      if (authed === undefined) set(false);
+      logIfUnreadable();
+    }, RESOLVE_DELAY_MS);
   } else {
     // No sidekick → unauthed now (delay 0): no flash to avoid, and nothing lingering
     // to fire after a consumer tears down. Still watch for a late mount.

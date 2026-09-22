@@ -52,6 +52,7 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
     sinon.restore();
     document.querySelectorAll('aem-sidekick, helix-sidekick').forEach((el) => el.remove());
     setConfig({ env: { name: 'stage' } });
+    delete window.lana;
   });
 
   describe('isUngatedHost (gate defaults to on for anything not a preview/dev host)', () => {
@@ -204,6 +205,20 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       user.shadowRoot.replaceChildren(document.createElement('sk-action-menu'));
       await wait(50);
       expect(cb.calledWith(true)).to.be.true;
+    });
+
+    it('logs once when the login-button exposes no readable auth state', async () => {
+      // unmarked host with no readable shadow markers (closed shadow / extension drift)
+      setConfig({ env: { name: 'prod' } });
+      const logSpy = sinon.spy();
+      window.lana = { log: logSpy };
+      const { user } = mountSidekick({ authed: false, userContent: false });
+      user.classList.remove('not-authorized');
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await wait(RESOLVE_WINDOW);
+      expect(cb.calledWith(false)).to.be.true; // fails safe to gated
+      expect(logSpy.calledOnce).to.be.true;
     });
 
     it('resolves unauthed promptly with no sidekick, then flips true when it mounts', async () => {
