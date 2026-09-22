@@ -52,7 +52,8 @@ function buildMerchCard(col) {
     .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  allParas.forEach((el) => cardContent.append(el));
+  // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
+  allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
