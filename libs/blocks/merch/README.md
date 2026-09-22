@@ -8,7 +8,8 @@ CDN matching the current Milo environment.
 Use the following query parameters for targeted validation:
 
 * `?commerce.landscape=DRAFT` uses draft offers from Commerce production.
-* `?commerce.env=stage` explicitly uses Commerce Stage.
+* `?commerce.env=stage` uses Commerce Stage only in non-production Milo environments.
+  The value is case-insensitive; production ignores this override.
 
 ## WCS Locale
 To check which locale was used to render the price/CTA:

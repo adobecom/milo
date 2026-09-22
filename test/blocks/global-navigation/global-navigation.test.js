@@ -12,7 +12,7 @@ import {
   unavVersion,
   addMetaDataV2,
 } from './test-utilities.js';
-import { setConfig, getLocale } from '../../../libs/utils/utils.js';
+import { setConfig, getLocale, getConfig as getMiloConfig } from '../../../libs/utils/utils.js';
 import {
   isDesktop,
   isTangentToViewport,
@@ -508,39 +508,46 @@ describe('global navigation', () => {
       }
     });
 
-    it('uses production Commerce unless Stage is explicitly requested', async () => {
-      preload.restore();
-      const previousSdk = window.aupsdk;
-      const previousSdkFactory = window.AUPSDK;
-      const script = document.createElement('script');
-      script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
-      script.dataset.loaded = 'true';
-      document.head.append(script);
-      const instance = { updateConfig: sinon.stub().resolves() };
-      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-      try {
+    [
+      ['stage', null, 'prod', 'stage'],
+      ['stage', 'stage', 'stage', 'stage'],
+      ['stage', 'StAgE', 'stage', 'stage'],
+      ['stage', 'invalid', 'prod', 'stage'],
+      ['local', null, 'prod', 'stage'],
+      ['local', 'STAGE', 'stage', 'stage'],
+      ['prod', null, 'prod', 'prod'],
+      ['prod', 'stage', 'prod', 'prod'],
+      ['prod', 'StAgE', 'prod', 'prod'],
+    ].forEach(([miloEnv, commerceEnv, environment, cdnEnvironment]) => {
+      it(`uses ${environment} Commerce for ${miloEnv} with commerce.env=${commerceEnv}`, async () => {
+        preload.restore();
+        sinon.stub(getMiloConfig().env, 'name').value(miloEnv);
+        const previousSdk = window.aupsdk;
+        const previousSdkFactory = window.AUPSDK;
+        const script = document.createElement('script');
+        script.type = 'javascript/blocked';
+        script.src = `https://shared-components.${cdnEnvironment === 'prod' ? '' : 'stage.'}adobe.com/aup-sdk/1.0.756/main.js`;
+        script.dataset.loaded = 'true';
+        document.head.append(script);
+        const instance = { updateConfig: sinon.stub().resolves() };
+        window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
         window.aupsdk = undefined;
-        await gnav.constructor.preloadAupSdk();
-        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
-          environment: 'prod',
-          cdnEnvironment: 'stage',
-        });
-
-        const url = new URL(originalUrl);
-        url.searchParams.set('commerce.env', 'stage');
-        window.history.replaceState(null, '', url);
-        window.aupsdk = undefined;
-        await gnav.constructor.preloadAupSdk();
-        expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
-          environment: 'stage',
-          cdnEnvironment: 'stage',
-        });
-      } finally {
-        script.remove();
-        window.aupsdk = previousSdk;
-        window.AUPSDK = previousSdkFactory;
-      }
+        try {
+          const url = new URL(originalUrl);
+          if (commerceEnv === null) url.searchParams.delete('commerce.env');
+          else url.searchParams.set('commerce.env', commerceEnv);
+          window.history.replaceState(null, '', url);
+          await gnav.constructor.preloadAupSdk();
+          expect(window.AUPSDK.preloadSDK.lastCall.args[1]).to.include({
+            environment,
+            cdnEnvironment,
+          });
+        } finally {
+          script.remove();
+          window.aupsdk = previousSdk;
+          window.AUPSDK = previousSdkFactory;
+        }
+      });
     });
 
     it('enables AUP Select in the mini app context when configured', async () => {
