@@ -1,0 +1,15 @@
+{
+  "total": 1,
+  "offset": 0,
+  "limit": 1,
+  "data": [
+    {
+      "action": "replace",
+      "selector": ".how-to",
+      "page filter (optional)": "",
+      "country filter (optional)": "de, jp",
+      "all": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion"
+    }
+  ],
+  ":type": "sheet"
+}
