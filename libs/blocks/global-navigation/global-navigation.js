@@ -1129,7 +1129,8 @@ class Gnav {
     const { imsClientId } = config;
     const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
     const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
-    const environment = commerceEnvironment === 'stage' ? 'stage' : 'prod';
+    const allowOverride = config.env.name !== 'prod';
+    const environment = allowOverride && commerceEnvironment?.toLowerCase() === 'stage' ? 'stage' : 'prod';
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
