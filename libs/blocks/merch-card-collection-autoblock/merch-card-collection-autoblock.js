@@ -236,7 +236,7 @@ async function getSidenav(collection) {
 }
 
 function generateCardName(card) {
-  let name = card.querySelector('h3')?.textContent;
+  let name = card.querySelector('h1,h2,h3,h4,h5,h6')?.textContent;
   if (!name) return '';
   name = name.toLowerCase().replace(/[^0-9a-z]/gi, ' ').trim().replaceAll(' ', '-');
   while (name.includes('--')) {
