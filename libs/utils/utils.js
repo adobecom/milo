@@ -614,13 +614,13 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
-const KR_ALLOWED_CTA_PATTERNS = ['무료 앱 다운로드'];
-const KR_TRIAL_PATTERNS = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
+const KR_CTA_ALLOWLIST = ['무료 앱 다운로드'];
+const KR_CTA_BLOCKLIST = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
 
 const matchesKrTrialCopy = (link) => {
   const text = link.textContent?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
-  if (KR_ALLOWED_CTA_PATTERNS.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
-  return KR_TRIAL_PATTERNS.some((pattern) => text.includes(pattern.toLowerCase()));
+  if (KR_CTA_ALLOWLIST.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
+  return KR_CTA_BLOCKLIST.some((pattern) => text.includes(pattern.toLowerCase()));
 };
 
 /**
