@@ -30,7 +30,7 @@ export const HIGHLIGHT_KEYS = {
 
 export const TOGGLE_KEYS = {
   mep: 'toggle-mep',
-  lingo: 'toggle-lingo',
+  lingo: 'toggle-mep-lingo',
   caas: 'toggle-caas',
   mas: 'toggle-mas',
   other: 'toggle-other-fragments',
@@ -179,7 +179,7 @@ const PAGE_UPDATE_SELECTORS = {
     [data-manifest-id],
     [data-removed-manifest-id]
   `,
-  Lingo: `
+  'MEP Lingo': `
     [data-mep-lingo-fallback],
     [data-mep-lingo-roc]
   `,

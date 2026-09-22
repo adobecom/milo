@@ -1373,8 +1373,8 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
     expect(cb?.hasAttribute('checked')).to.be.true;
   });
 
-  it('#toggle-lingo checkbox gets "checked" attribute set', () => {
-    const cb = mainEl.querySelector('#toggle-lingo');
+  it('#toggle-mep-lingo checkbox gets "checked" attribute set', () => {
+    const cb = mainEl.querySelector('#toggle-mep-lingo');
     expect(cb?.hasAttribute('checked')).to.be.true;
   });
 });
@@ -1484,7 +1484,7 @@ describe('setDefaultValues: akamaiLocale matching lingo region', () => {
     lingoMeta.name = 'langfirst';
     lingoMeta.content = 'on';
     document.head.append(lingoMeta);
-    window.history.replaceState({}, '', '/?akamaiLocale=ch_de');
+    window.history.replaceState({}, '', '/?akamaiLocale=ch');
     // setConfig overwrites locale via getLocale(), so we must patch regions
     // afterward via updateConfig (direct assignment, no processing).
     setConfig(BASE_CONFIG);

@@ -67,8 +67,8 @@ describe('TOGGLE_KEYS', () => {
     expect(TOGGLE_KEYS.caas).to.equal('toggle-caas');
   });
 
-  it('lingo key maps to "toggle-lingo"', () => {
-    expect(TOGGLE_KEYS.lingo).to.equal('toggle-lingo');
+  it('lingo key maps to "toggle-mep-lingo"', () => {
+    expect(TOGGLE_KEYS.lingo).to.equal('toggle-mep-lingo');
   });
 
   it('mas key maps to "toggle-mas"', () => {
@@ -214,7 +214,7 @@ describe('getPageUpdates', () => {
   });
 
   it('returns "0 Page Updates" for Lingo label when no Lingo elements exist', () => {
-    expect(getPageUpdates('Lingo')).to.equal('0 Page Updates');
+    expect(getPageUpdates('MEP Lingo')).to.equal('0 Page Updates');
   });
 
   it('returns "0 Page Updates" for Caas label when no Caas elements exist', () => {
@@ -242,7 +242,7 @@ describe('getPageUpdates', () => {
     const fallback = document.createElement('div');
     fallback.setAttribute('data-mep-lingo-fallback', '/fallback/test');
     document.body.append(roc, fallback);
-    expect(getPageUpdates('Lingo')).to.equal('2 Page Updates');
+    expect(getPageUpdates('MEP Lingo')).to.equal('2 Page Updates');
   });
 
   it('counts [data-caas-block] elements for the Caas label', () => {

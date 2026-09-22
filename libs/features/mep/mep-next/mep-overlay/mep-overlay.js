@@ -54,7 +54,7 @@ const CARD_DATA = {
   actions: [
     ['Highlight', [
       ['MEP', getPageUpdates],
-      ['Lingo', getPageUpdates],
+      ['MEP Lingo', getPageUpdates],
       ['Caas', getPageUpdates],
       ['M@S', getPageUpdates],
       ['Other Fragments', getPageUpdates],
@@ -69,7 +69,7 @@ const CARD_DATA = {
   summary: [
     ['Page', getPageSummary],
     ['Consent', getConsentSummary],
-    ['Lingo', getLingoSummary],
+    ['MEP Lingo', getLingoSummary],
     ['M@S', getMasSummary],
     ['CaaS', getCaasSummary],
   ],
@@ -302,7 +302,7 @@ function buildLoadManifest(card, pageId) {
 
 const HIGHLIGHT_DOT_CLASSES = {
   MEP: 'mep',
-  Lingo: 'lingo',
+  'MEP Lingo': 'lingo',
   Caas: 'caas',
   'M@S': 'mas',
   'Other Fragments': 'other',
@@ -722,6 +722,12 @@ function setSummaryObserver() {
 
       const masRegions = await getMasRegions();
       if (!masRegions.includes(mepAkamaiLocale)) return;
+
+      // Only take over the selection if lingo-mas is the highest-priority
+      // group for this locale; a higher-priority group (e.g. top markets)
+      // may have already claimed it.
+      const matchedId = await findGeoGroupForLocale(mepAkamaiLocale);
+      if (matchedId !== 'spoof-geo-lingo-mas') return;
 
       input.checked = true;
       const selectEl = document.querySelector('select.mep-spoof-geo');

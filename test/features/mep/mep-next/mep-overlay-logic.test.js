@@ -839,7 +839,7 @@ describe('findGeoGroupForLocale', () => {
       lingoMeta.content = 'on';
       document.head.append(lingoMeta);
       updateConfig({ ...config, locale: { ...config.locale, regions: { ch_de: {} } } });
-      expect(await findGeoGroupForLocale('ch_de')).to.equal('spoof-geo-mep-lingo');
+      expect(await findGeoGroupForLocale('ch')).to.equal('spoof-geo-mep-lingo');
     } finally {
       lingoMeta?.remove();
       setConfig(config);
@@ -934,10 +934,10 @@ describe('setPreviewButton', () => {
     expect(href).to.include('mepHighlight=true');
   });
 
-  it('includes mepLingoHighlight param when toggle-lingo checkbox is checked', async () => {
+  it('includes mepLingoHighlight param when toggle-mep-lingo checkbox is checked', async () => {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
-    cb.id = 'toggle-lingo';
+    cb.id = 'toggle-mep-lingo';
     cb.checked = true;
     drawer.append(cb);
     await setPreviewButton();
