@@ -114,9 +114,13 @@ not gated on it.
 fallback covers only the frames before the script runs. gg's `--gg-formation-vh` is 0 here: the
 travel starts at the block top, so the pin starts there too. After the reveal the block
 has `(1 − pqAppearT) · runway` left to scroll; the quote scrolls out over the last `--fg-optical-center`
-plus half its box of that, and the rest is hold. The world un-sticks one viewport before the block ends,
-so a hold shorter than the gap between the quote's bottom and the viewport bottom has the canvas
-sliding up during the last cards.
+plus half its box of that, and the rest is hold. The pin's `bottom` also adds one
+`--s2a-border-radius-xl`: a rounded next section (the C2 convention) is pulled up over this block by
+that radius and paints above it (`z-index: 3`, over the un-z-indexed pin), so release lands its painted
+top — not its flow top — on the quote's bottom edge. This mirrors the overlap the entry already assumes;
+a non-rounded next section leaves that radius as a small gap instead. The world un-sticks one viewport
+before the block ends, so a hold shorter than the gap between the quote's bottom and the viewport bottom
+has the canvas sliding up during the last cards.
 
 ### Pull-quote copy reveal
 

@@ -230,14 +230,14 @@
   transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 }
 
-/* Ends half a quote box above the runway end, so the rail lets go as the next section's top reaches
-   the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
 .firefly-globe-pullquote-pin {
   position: absolute;
   top: 0;
-  bottom: clamp(0px, var(--fg-pq-half-box, var(--fg-runway-height)), calc(
-    (1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center)
-  ));
+  bottom: clamp(
+    0px,
+    calc(var(--fg-pq-half-box, var(--fg-runway-height)) + var(--s2a-border-radius-xl)),
+    calc((1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center))
+  );
   left: 0;
   right: 0;
   pointer-events: none;
