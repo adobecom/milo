@@ -259,10 +259,14 @@ function usePublishProps(item) {
   };
 }
 
+export function isStatusFetching(item) {
+  return item.preview === 'Fetching' || item.live === 'Fetching';
+}
+
 function Item({ name, item, idx }) {
   const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
-  const isFetching = item.edit || item.preview === nonEDSContent ? '' : ' is-fetching';
+  const isFetching = isStatusFetching(item) ? ' is-fetching' : '';
   const editIcon = item.edit && item.edit.includes(DA_DOMAIN) ? 'da-icon' : 'sharepoint-icon';
   const prettyUrl = item.externalUrl ? item.externalUrl.href : prettyPath(item.url);
   if (!item.url) return undefined;

@@ -2,7 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../../libs/deps/htm-preact.js';
-import General, { runGeneralChecks, getStatus } from '../../../../libs/blocks/preflight/panels/general.js';
+import General, {
+  getStatus,
+  isStatusFetching,
+  runGeneralChecks,
+} from '../../../../libs/blocks/preflight/panels/general.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 
 const waitFor = async (fn, tries = 80) => {
@@ -15,6 +19,13 @@ const waitFor = async (fn, tries = 80) => {
 };
 
 describe('preflight panels general', () => {
+  it('only treats unresolved status requests as fetching', () => {
+    expect(isStatusFetching({ edit: '', preview: '2024-01-01', live: '2024-02-01' }))
+      .to.be.false;
+    expect(isStatusFetching({ edit: '', preview: 'Fetching', live: 'Fetching' }))
+      .to.be.true;
+  });
+
   describe('runGeneralChecks', () => {
     let main;
     let header;
