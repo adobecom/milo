@@ -35,7 +35,7 @@ function addAlloyTracking(lobObject) {
     modelScore: 'spectraScore',
   };
 
-  // Local path helpers; do not reuse alloy_all.get/set (SDK's are single-arg)
+  // Local path helpers; do not reuse alloy_all.get/set (Launch's are single-arg)
   const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
   const set = (obj, path, val) => {
     path.split('.').reduce((current, segment, index, segments) => {
