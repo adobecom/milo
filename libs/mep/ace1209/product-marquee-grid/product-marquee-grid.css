@@ -173,8 +173,7 @@ body:has(header.local-nav) .product-marquee-grid {
   --pm-content: var(--s2a-color-gray-1000);
   --pm-content-subtle: var(--s2a-color-transparent-black-64);
 
-  /* background-color: transparent; */
-
+  background-color: transparent;
 
   .con-button.outline {
     background-color: transparent;
