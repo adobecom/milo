@@ -3080,6 +3080,13 @@ function warmTypekit() {
     .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
 }
 
+// Preconnect to the MAS fragment/libs and commerce origins so inline mas-field and price
+// fetches (dominant third-party origin on C2 marquee pages) start their connection sooner.
+function warmMas() {
+  ['https://www.adobe.com', 'https://commerce.adobe.com']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3100,6 +3107,7 @@ export async function loadArea(area = document) {
     if (document.getElementById('page-load-ok-milo')) return;
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
+      warmMas();
       importFonts();
     }
     setCountry();
