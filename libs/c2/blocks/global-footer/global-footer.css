@@ -512,6 +512,12 @@ span.feds-footer-privacyLink-divider {
   padding-top: var(--footer-background-offset);
 }
 
+.global-footer.event .footer-logo-image svg {
+  path {
+    fill: var(--s2a-color-content-knockout);
+  }
+}
+
 @media (min-width: 768px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     background-image: var(--footer-background-tablet);
