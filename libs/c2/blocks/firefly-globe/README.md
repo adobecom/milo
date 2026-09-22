@@ -235,6 +235,21 @@ only. With `html` already non-visible, an `overflow: hidden` on `body` applies t
 instead of propagating to the viewport, which makes `body` a scroll container and un-sticks
 `.firefly-globe-world`. globe-gallery can lock both because its canvas and chrome are `fixed`.
 
+### Modal stacking
+
+`modal.js` reparents `.firefly-globe-modal` (the `z-index: 13` backdrop scrim) and
+`.firefly-globe-modal-canvas` (`z-index: 14`, the photo) to `<body>` in `setup()`, and removes them
+in `destroy()`. Their z-indexes only resolve at the `<body>` root; the block sits under a section
+whose `rounded-corners-bottom` gives it a `z-index: 3` stacking context that would otherwise clamp
+them. The `<dialog>` chrome stays in the block and paints above both via the top layer
+(`showModal()`).
+
+`--fg-modal-anim-ms` is set inline on `.firefly-globe-modal` right after the reparent — it is
+block-scoped and does not inherit at `<body>`, and the scrim's opacity transition reads it.
+
+`html:has(.firefly-globe)` sets `scrollbar-gutter: stable`, so the modal's `overflow: hidden` lock
+leaves the layout width unchanged.
+
 ## Reduced motion
 
 Same contract as globe-gallery: `.firefly-globe-reduced` un-sticks `.firefly-globe-world` and leaves

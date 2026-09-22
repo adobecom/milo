@@ -635,6 +635,8 @@
   user-select: none;
 }
 
+html:has(.firefly-globe) { scrollbar-gutter: stable; }
+
 /* html only: locking body too makes body a scroll container and un-sticks the world. */
 html.firefly-globe-modal-open { overflow: hidden; }
 

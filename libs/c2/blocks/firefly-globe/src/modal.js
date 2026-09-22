@@ -804,6 +804,7 @@ export default function createGlobeModal({
 
     modalCanvasEl = q('.firefly-globe-modal-canvas');
     if (modalCanvasEl) {
+      document.body.appendChild(modalCanvasEl);
       const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
       appliedModalDpr = capDpr();
@@ -819,6 +820,8 @@ export default function createGlobeModal({
       getComputedStyle(modalEl).getPropertyValue('--fg-modal-anim-ms'),
     );
     modalAnimMs = Number.isFinite(declaredMs) && declaredMs > 0 ? declaredMs : MODAL_ANIM_FALLBACK;
+    document.body.appendChild(modalEl);
+    modalEl.style.setProperty('--fg-modal-anim-ms', modalAnimMs);
     modalStartPos = new THREE.Vector3();
     modalStartQuat = new THREE.Quaternion();
     modalStartScale = new THREE.Vector3();
@@ -1033,6 +1036,8 @@ export default function createGlobeModal({
       modalRenderer.dispose();
       modalRenderer = null;
     }
+    if (modalCanvasEl) { modalCanvasEl.remove(); modalCanvasEl = null; }
+    if (modalEl) { modalEl.remove(); modalEl = null; }
     modalScene = null;
     closeModalIdentity();
     dnNavActive = false;
