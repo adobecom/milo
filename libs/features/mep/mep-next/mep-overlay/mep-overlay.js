@@ -254,8 +254,10 @@ function buildManifestCard(manifest) {
     createTag('span', {}, `${manifest.index}. `),
     filename,
   ]);
+  // Malformed manifests have no card body, so there's nothing to expand/collapse.
+  const titleChildren = manifest.malformed ? [link] : [link, svgIcon('icon-expand-circle-down')];
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
+    createTag('h1', {}, titleChildren),
   ]);
 
   const card = createTag('div', { class: 'mep-card mep-manifest-card' });
