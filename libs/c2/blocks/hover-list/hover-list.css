@@ -87,6 +87,12 @@
     padding-block: var(--s2a-spacing-sm);
   }
 
+  /* compact-headline variant: cap the headline content (heading + body) at 35vw,
+     leaving the headline border and block padding at full width */
+  .hover-list.compact-headline .hover-list-headline > * {
+    max-inline-size: 35vw;
+  }
+
   .hover-list-col {
     flex: 1;
   }
@@ -150,6 +156,16 @@
     @media (hover: hover) {
       &:hover {
         background: var(--s2a-color-transparent-white-08);
+      }
+    }
+  }
+
+  .hover-list.no-animation .hover-list-item {
+    cursor: default;
+
+    @media (hover: hover) {
+      &:hover {
+        background: transparent;
       }
     }
   }

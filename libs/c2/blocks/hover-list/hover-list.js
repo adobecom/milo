@@ -105,9 +105,7 @@ function addCursorFollower(list, noAnimation) {
 
   const activate = (item) => {
     if (item === activeItem) return;
-    // no-animation variant: author opted out of the hover media entirely.
     if (noAnimation) return;
-    // Reduced motion: show the media statically, without the cursor-follow animation.
     if (REDUCED_MOTION.matches) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;
