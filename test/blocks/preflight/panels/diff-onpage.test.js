@@ -65,6 +65,21 @@ describe('preflight diff-onpage', () => {
       expect(el).to.equal(root.querySelectorAll('.brick')[1]);
     });
 
+    it('accepts a block whose text similarity is exactly the matching threshold', () => {
+      const root = document.createElement('main');
+      root.innerHTML = '<div class="brick"><p>one two three four five six</p></div>';
+
+      const el = resolveOnPage(
+        '/div[1]/div[1]',
+        root,
+        'block',
+        'one two three seven eight nine ten',
+        'brick',
+      );
+
+      expect(el).to.equal(root.querySelector('.brick'));
+    });
+
     it('returns null when no block of the given name matches the change text', () => {
       const root = document.createElement('main');
       root.innerHTML = '<div class="brick"><h2>Completely unrelated content</h2></div>';

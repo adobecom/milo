@@ -1,6 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import { normalizeText } from '../checks/diff/nodePath.js';
-import { textSimilarity } from '../checks/diff/diffContent.js';
+import { SIMILARITY_THRESHOLD, textSimilarity } from '../checks/diff/diffContent.js';
 
 const OVERLAY_CLASS = 'preflight-diff-overlay';
 const ADDED_MODIFIER = 'is-added';
@@ -46,10 +46,10 @@ function descendantMatch(context, seg) {
 function resolveBlock(root, blockName, expectedText) {
   if (!blockName || !expectedText) return null;
   let best = null;
-  let bestScore = 0.3;
+  let bestScore = SIMILARITY_THRESHOLD;
   root.querySelectorAll(`.${CSS.escape(blockName)}`).forEach((block) => {
     const score = textSimilarity(normalizeText(block.textContent), expectedText);
-    if (score > bestScore) { best = block; bestScore = score; }
+    if (score >= bestScore) { best = block; bestScore = score; }
   });
   return best;
 }
@@ -77,7 +77,9 @@ export function resolveOnPage(path, root, kind, expectedText, blockName) {
   if (matchedLevels === 0) return null;
 
   if (usedFallback && expectedText && normalizeText(context.textContent)) {
-    if (textSimilarity(normalizeText(context.textContent), expectedText) < 0.3) return null;
+    if (textSimilarity(normalizeText(context.textContent), expectedText) < SIMILARITY_THRESHOLD) {
+      return null;
+    }
   }
   return context;
 }

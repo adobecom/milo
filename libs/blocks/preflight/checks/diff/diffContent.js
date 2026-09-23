@@ -1,8 +1,7 @@
 import { normalizeText, getXPath } from './nodePath.js';
 
 export const CONTENT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, li, a, img, button, blockquote';
-
-const SIMILARITY_THRESHOLD = 0.3;
+export const SIMILARITY_THRESHOLD = 0.3;
 
 function elementText(el) {
   if (el.tagName === 'IMG') return normalizeText(el.getAttribute('alt') || '');

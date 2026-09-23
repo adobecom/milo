@@ -140,4 +140,25 @@ describe('loadPreflightResults', () => {
     await loadPreflightResults();
     expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
   });
+
+  it('waits for auto-highlight to finish before resolving', async () => {
+    let resolveFetch;
+    const pendingFetch = new Promise((resolve) => { resolveFetch = resolve; });
+    fetchStub.resetBehavior();
+    fetchStub.returns(pendingFetch);
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+
+    let settled = false;
+    const loading = loadPreflightResults().then(() => { settled = true; });
+    for (let i = 0; i < 20 && !fetchStub.called; i += 1) {
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+    }
+    expect(fetchStub.called).to.equal(true);
+    await Promise.resolve();
+    const settledBeforeFetch = settled;
+    resolveFetch({ ok: false, status: 500 });
+    await loading;
+    expect(settledBeforeFetch).to.equal(false);
+    expect(settled).to.equal(true);
+  });
 });
