@@ -17,6 +17,9 @@ const FRAGMENT_ID = 'fragment-id';
 const CONTENT_TYPE = 'content-type';
 const LOCALE = 'locale';
 const COUNTRY = 'country';
+const MAS_PREVIEW = 'mas.preview';
+const MASK = 'mask';
+const PZN = 'pzn';
 
 function registerCheckoutAction() {
   const service = document.head.querySelector(TAG_MAS_COM_SERVICE);
@@ -45,12 +48,32 @@ const MODEL_IDS = {
   L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ: MAS_MERCH_CARD,
 };
 
-async function preview(divPreview, selectType, selectLoc, selectCo, fragmentEl, btn, deeplink) {
+function setSearchParam(url, el, param) {
+  if (el.value) {
+    url.searchParams.set(param, el.value);
+  } else {
+    url.searchParams.delete(param);
+  }
+}
+
+async function preview(args) {
+  const {
+    divPreview,
+    selectType,
+    selectLocale,
+    selectCountry,
+    fragmentIdEl,
+    masPreview,
+    maskEl,
+    pznEl,
+    btnPreview,
+    deeplink,
+  } = args;
   divPreview.innerHTML = '';
 
   registerCheckoutAction();
 
-  fetch(`https://odinpreview.corp.adobe.com/adobe/contentFragments/${fragmentEl.value}`)
+  fetch(`https://odinpreview.corp.adobe.com/adobe/contentFragments/${fragmentIdEl.value}`)
     // eslint-disable-next-line consistent-return
     .then((resp) => {
       if (resp.ok) {
@@ -62,37 +85,52 @@ async function preview(divPreview, selectType, selectLoc, selectCo, fragmentEl, 
     .then((fragment) => {
       if (fragment?.model?.id && MODEL_IDS[fragment.model.id] !== selectType.value) {
         selectType.value = MODEL_IDS[fragment.model.id];
-        btn.click();
+        btnPreview.click();
       }
     });
 
-  const href = `https://mas.adobe.com/studio.html#content-type=${selectType.value}&page=content&path=acom&query=${fragmentEl.value}`;
-  const autoblock = createTag('a', { href });
-  divPreview.appendChild(autoblock);
-  decorateAutoBlock(autoblock);
-  await loadBlock(autoblock);
-  const merchBlock = divPreview.querySelector(selectType.value);
-  if (!merchBlock) return;
-  await merchBlock.checkReady();
-  divPreview.classList.remove('hidden');
-  if ((selectType.value === MAS_MERCH_CARD && !merchBlock.variant)
-    || (selectType.value === MAS_MERCH_CARD_COLLECTION && !merchBlock.classList.length)) {
-    divPreview.innerText = 'Cannot load fragment';
-  } else if (deeplink) {
-    const urlDeeplink = new URL(window.location.href.split('#')[0]);
-    urlDeeplink.searchParams.set(FRAGMENT_ID, fragmentEl.value);
-    urlDeeplink.searchParams.set(CONTENT_TYPE, selectType.value);
-    urlDeeplink.searchParams.set(LOCALE, selectLoc.value);
-    if (selectCo.value) {
-      urlDeeplink.searchParams.set(COUNTRY, selectCo.value);
-    } else {
-      urlDeeplink.searchParams.delete(COUNTRY);
+  const reloadPage = deeplink && (masPreview.initialValue || '') !== (masPreview.value || '');
+
+  if (!reloadPage) {
+    const mask = document.querySelector('.mask').value;
+    const maskParam = mask ? `&mask=${mask}` : '';
+    const pzn = document.querySelector('.pzn').value;
+    const pznParam = pzn ? `&pzn=${pzn}` : '';
+    const href = `https://mas.adobe.com/studio.html#content-type=${selectType.value}&page=content&path=acom&query=${fragmentIdEl.value}${maskParam}${pznParam}`;
+    const autoblock = createTag('a', { href });
+    divPreview.appendChild(autoblock);
+    decorateAutoBlock(autoblock);
+    await loadBlock(autoblock);
+    const merchBlock = divPreview.querySelector(selectType.value);
+    if (!merchBlock) return;
+    await merchBlock.checkReady();
+    divPreview.classList.remove('hidden');
+
+    if ((selectType.value === MAS_MERCH_CARD && !merchBlock.variant)
+      || (selectType.value === MAS_MERCH_CARD_COLLECTION && !merchBlock.classList.length)) {
+      divPreview.innerText = 'Cannot load fragment';
     }
+
+    if (selectType.value === MAS_MERCH_CARD_COLLECTION) {
+      const firstSidenavItem = divPreview.querySelector('sp-sidenav-item');
+      if (firstSidenavItem) firstSidenavItem.click();
+    }
+  }
+
+  if (deeplink) {
+    const urlDeeplink = new URL(window.location.href.split('#')[0]);
+    urlDeeplink.searchParams.set(FRAGMENT_ID, fragmentIdEl.value);
+    urlDeeplink.searchParams.set(CONTENT_TYPE, selectType.value);
+    urlDeeplink.searchParams.set(LOCALE, selectLocale.value);
+
+    setSearchParam(urlDeeplink, maskEl, MASK);
+    setSearchParam(urlDeeplink, pznEl, PZN);
+    setSearchParam(urlDeeplink, selectCountry, COUNTRY);
+
     window.history.replaceState(window.history.state, '', urlDeeplink.href);
   }
-  if (selectType.value === MAS_MERCH_CARD_COLLECTION) {
-    const firstSidenavItem = divPreview.querySelector('sp-sidenav-item');
-    if (firstSidenavItem) firstSidenavItem.click();
+  if (reloadPage) {
+    window.location.reload();
   }
 }
 
@@ -131,9 +169,25 @@ export default async function init(el) {
   const btnCopy = createTag('button', { type: 'button' }, 'Copy URL');
   const btnPreview = createTag('button', { type: 'button' }, 'Preview');
   const divPreview = createTag('div', { class: 'fragment-preview hidden' });
+  const masPreview = createTag('select', { id: 'preview-toggle' });
+  const maskEl = createTag('input', { class: MASK, type: 'text', size: 20, placeholder: MASK });
+  const pznEl = createTag('input', { class: PZN, type: 'text', size: 20, placeholder: PZN });
+
   btnPreview.addEventListener('click', () => {
     divPreview.classList.add('hidden');
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview, true);
+    const args = {
+      divPreview,
+      selectType,
+      selectLocale,
+      selectCountry,
+      fragmentIdEl,
+      masPreview,
+      maskEl,
+      pznEl,
+      btnPreview,
+      deeplink: true,
+    };
+    preview(args);
   });
   selectLocale.addEventListener('change', async () => {
     createMasCommerceService(selectLocale, selectCountry);
@@ -152,10 +206,65 @@ export default async function init(el) {
   divMeta.appendChild(btnPreview);
   divMeta.appendChild(btnCopy);
   el.appendChild(divMeta);
+
+  const divMask = createTag('div', { class: 'fragment-mask' });
+  divMask.appendChild(maskEl);
+  divMask.appendChild(pznEl);
+
+  const previewEmpty = createTag('option', { value: '' }, '');
+  masPreview.appendChild(previewEmpty);
+  const { hostname } = window.location;
+  if (hostname === 'milo.adobe.com' || hostname.endsWith('.aem.live')) {
+    masPreview.appendChild(createTag('option', { value: 'on' }, 'on'));
+  } else {
+    masPreview.appendChild(createTag('option', { value: 'off' }, 'off'));
+  }
+  const masPreviewLabel = createTag('label', { for: 'preview-toggle' }, 'Preview');
+  divMask.appendChild(masPreviewLabel);
+  divMask.appendChild(masPreview);
+
+  if (url.searchParams.get(MAS_PREVIEW)) {
+    masPreview.value = url.searchParams.get(MAS_PREVIEW);
+    masPreview.initialValue = masPreview.value;
+  }
+  if (url.searchParams.get(MASK)) {
+    maskEl.value = url.searchParams.get(MASK);
+  }
+  if (url.searchParams.get(PZN)) {
+    pznEl.value = url.searchParams.get(PZN);
+  }
+
+  masPreview.addEventListener('change', async () => {
+    const val = masPreview.value;
+    const urlDeeplink = new URL(window.location.href.split('#')[0]);
+    if (val) {
+      urlDeeplink.searchParams.set(MAS_PREVIEW, val);
+    } else {
+      urlDeeplink.searchParams.delete(MAS_PREVIEW);
+    }
+    window.history.replaceState(window.history.state, '', urlDeeplink.href);
+  });
+
+  el.appendChild(divMask);
   el.appendChild(divPreview);
   if (fragmentIdEl.value) {
-    await preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
-    divPreview.classList.remove('hidden');
+    setTimeout(async () => {
+      document.body.style.cursor = 'progress';
+      const args = {
+        divPreview,
+        selectType,
+        selectLocale,
+        selectCountry,
+        fragmentIdEl,
+        masPreview,
+        maskEl,
+        pznEl,
+        btnPreview,
+      };
+      await preview(args);
+      preview(args);
+      divPreview.classList.remove('hidden');
+      document.body.style.cursor = 'default';
+    }, 1);
   }
 }

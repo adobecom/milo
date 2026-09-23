@@ -150,7 +150,7 @@ export default function init(el) {
     }
   });
 
-  initAnalytics();
+  initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
@@ -166,6 +166,8 @@ export default function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {

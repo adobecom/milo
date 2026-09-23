@@ -555,9 +555,15 @@ function setupCollapsingHeader(el) {
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
-  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
-
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
+
+  let stickyTopCache = 0;
+
+  const syncTop = () => {
+    cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
+    stickyTopCache = getStickyTop();
+  };
+  syncTop();
 
   const syncHeaderHeight = () => {
     if (isMobile()) { headerContent.style.minHeight = ''; return; }
@@ -586,8 +592,15 @@ function setupCollapsingHeader(el) {
     syncHeaderHeight();
   });
 
+  let resizeRafPending = false;
   window.addEventListener('resize', () => {
-    removeCollapsed();
+    if (resizeRafPending) return;
+    resizeRafPending = true;
+    requestAnimationFrame(() => {
+      resizeRafPending = false;
+      syncTop();
+      removeCollapsed();
+    });
   });
 
   window.addEventListener('scroll', () => {
@@ -595,7 +608,7 @@ function setupCollapsingHeader(el) {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;
-    const isStuck = cardsContainer.getBoundingClientRect().top <= getStickyTop();
+    const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
     if (!isStuck) { removeCollapsed(); return; }
     if (goingDown && !wasCollapsed) applyCollapsed();
     if (!goingDown && wasCollapsed) removeCollapsed();
