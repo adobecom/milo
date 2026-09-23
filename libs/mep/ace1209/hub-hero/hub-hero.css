@@ -625,6 +625,7 @@
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: -5%;
+    --carousel-items-shift: calc(var(--slide-header-h) + var(--s2a-spacing-md));
   }
 
   .hub-hero-carousel-header {
@@ -652,6 +653,10 @@
     max-width: 80%;
     margin-inline: auto;
     text-wrap: balance;
+  }
+
+  .hub-hero-carousel-scroll {
+    translate: 0 var(--carousel-items-shift);
   }
 
   .hub-hero-image-grid-container {
