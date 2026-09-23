@@ -3,203 +3,59 @@ import icons from '../../../c2/assets/icons.js';
 import { decorateButtons } from '../../../utils/decorate.js';
 
 const mobileQuery = window.matchMedia('(max-width: 767px)');
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const clamp01 = (value) => Math.max(0, Math.min(1, value));
-const lerp = (from, to, progress) => from + (to - from) * progress;
-const easeInOutCubic = (value) => (
-  value < 0.5 ? 4 * value * value * value : 1 - ((-2 * value + 2) ** 3) / 2
-);
-const spring = (value, stiffness = 100, damping = 20) => ({
-  value,
-  target: value,
-  velocity: 0,
-  stiffness,
-  damping,
-});
 
-function setSpring(item, value) {
-  item.value = value;
-  item.target = value;
-  item.velocity = 0;
-}
-
-function stepSpring(item, dt) {
-  const acceleration = -item.stiffness * (item.value - item.target)
-    - item.damping * item.velocity;
-  item.velocity += acceleration * dt;
-  item.value += item.velocity * dt;
-  if (Math.abs(item.velocity) < 0.001 && Math.abs(item.target - item.value) < 0.001) {
-    item.value = item.target;
-    item.velocity = 0;
-  }
-}
-
+/**
+ * The whole spring choreography now lives in CSS (see floating-cta.css:
+ * `@property` registered vars + `linear()` spring easings + staggered
+ * transition delays, all keyed off the `.active` class).
+ *
+ * JS keeps only the two things CSS cannot do:
+ *   1. measure the pill's final width and the action's offset from centre, and
+ *      expose them to CSS as custom properties, and
+ *   2. re-measure on resize / breakpoint change.
+ *
+ * The `.active` class itself is toggled by applyCustomHide (show/hide), so
+ * animateIn/animateOut only make sure the measured values are fresh before the
+ * CSS transition runs.
+ */
 function createFloatingCtaAnimation(pill) {
-  const intro = pill.querySelector('.floating-cta-intro');
-  const background = pill.querySelector('.floating-cta-background');
   const actions = pill.querySelector('.floating-cta-actions');
-  const content = pill.querySelector('.floating-cta-lockup');
-  let frame = 0;
-  let fullWidth = 0;
-  let actionCenterOffset = 0;
-  const motion = {
-    ctaY: spring(180, 100, 13),
-    introW: spring(38, 100, 13),
-    introH: spring(96, 100, 13),
-    introScale: spring(1.3, 160, 24),
-    bgW: spring(52),
-    bgH: spring(48),
-    bgScale: spring(1.3, 160, 24),
-    bgAlpha: spring(0),
-    actionX: spring(0, 110, 20),
-    content: spring(0),
-  };
+  let scheduled = 0;
 
   function measure() {
-    pill.classList.add('is-dropped');
-    actions.style.transform = '';
-    content.style.transform = '';
-    const pillRect = pill.getBoundingClientRect();
-    const actionRect = actions.getBoundingClientRect();
-    if (pillRect.width) fullWidth = pillRect.width;
-    actionCenterOffset = pillRect.left + pillRect.width / 2
-      - (actionRect.left + actionRect.width / 2);
+    if (mobileQuery.matches) return;
+    // Read geometry from layout properties (offsetWidth/clientWidth/offsetLeft),
+    // which ignore CSS transforms. That means we can measure at any time - even
+    // mid-animation - without neutralising transforms or disabling transitions,
+    // so measuring never snaps the spring to its end state.
+    const fullWidth = pill.offsetWidth;
+    if (fullWidth) pill.style.setProperty('--cta-full-width', `${fullWidth}px`);
+    // Distance the action must slide to sit on the pill's centre. Both centres are
+    // taken from the pill's inner-left edge, so asymmetric padding is handled.
+    const actionOffset = pill.clientWidth / 2
+      - (actions.offsetLeft + actions.offsetWidth / 2);
+    pill.style.setProperty('--cta-action-offset', `${actionOffset}px`);
   }
 
-  function paintDesktop() {
-    intro.style.width = `${motion.introW.value}px`;
-    intro.style.height = `${motion.introH.value}px`;
-    intro.style.transform = `translate(${-motion.introW.value / 2}px, -50%)`
-      + ` scale(${motion.introScale.value})`;
-    background.style.width = `${motion.bgW.value}px`;
-    background.style.height = `${motion.bgH.value}px`;
-    background.style.transform = `translate(-50%, -50%) scale(${motion.bgScale.value})`;
-    background.style.setProperty('--spring-alpha', `${motion.bgAlpha.value}`);
-    actions.style.transform = `translateX(${motion.actionX.value}px)`;
-    content.style.setProperty('--lockup-in', `${motion.content.value}`);
-  }
-
-  function setInitialDesktop() {
-    cancelAnimationFrame(frame);
-    pill.classList.remove('is-active');
-    measure();
-    pill.classList.remove('is-dropped');
-    setSpring(motion.introW, 38);
-    setSpring(motion.introH, 96);
-    setSpring(motion.introScale, 1.3);
-    setSpring(motion.bgW, 52);
-    setSpring(motion.bgH, 48);
-    setSpring(motion.bgScale, 1.3);
-    setSpring(motion.bgAlpha, 0);
-    setSpring(motion.actionX, actionCenterOffset);
-    setSpring(motion.content, 0);
-    pill.classList.remove('is-action-in');
-    intro.style.opacity = '0';
-    paintDesktop();
-  }
-
-  function finishDesktop() {
-    pill.classList.add('is-active');
-    intro.style.opacity = '0';
-    pill.classList.add('is-dropped');
-    setSpring(motion.bgW, fullWidth);
-    setSpring(motion.bgH, 72);
-    setSpring(motion.bgScale, 1);
-    setSpring(motion.bgAlpha, 1);
-    setSpring(motion.actionX, 0);
-    setSpring(motion.content, 1);
-    pill.classList.add('is-action-in');
-    paintDesktop();
-  }
-
-  function springIn() {
-    setInitialDesktop();
-    measure();
-    pill.classList.add('is-active');
-    intro.style.opacity = '1';
-    if (reducedMotion.matches) {
-      finishDesktop();
-      return;
-    }
-    let elapsed = 0;
-    let lastTime = performance.now();
-    const tick = (now) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.032);
-      lastTime = now;
-      elapsed += dt;
-      if (elapsed >= 0.02) motion.introScale.target = 0.8;
-      if (elapsed >= 0.03) pill.classList.add('is-dropped');
-      if (elapsed >= 0.05) motion.introW.target = 72;
-      if (elapsed >= 0.15) motion.introH.target = 72;
-      if (elapsed >= 0.20) pill.classList.add('is-action-in');
-      if (elapsed >= 0.30) motion.bgScale.target = 1;
-      if (elapsed >= 0.40) {
-        motion.bgW.target = fullWidth;
-        motion.actionX.target = 0;
-      }
-      if (elapsed >= 0.43) {
-        motion.bgAlpha.target = 1;
-        intro.style.opacity = '0';
-      }
-      if (elapsed >= 0.50) motion.content.target = 1;
-      if (elapsed >= 0.60) motion.bgH.target = 72;
-      Object.values(motion).forEach((item) => stepSpring(item, dt));
-      paintDesktop();
-      if (elapsed < 2.2) frame = requestAnimationFrame(tick);
-      else finishDesktop();
-    };
-    frame = requestAnimationFrame(tick);
-  }
-
-  function springOut() {
-    cancelAnimationFrame(frame);
-    finishDesktop();
-    if (reducedMotion.matches) {
-      setInitialDesktop();
-      return;
-    }
-    const start = performance.now();
-    const tick = (now) => {
-      const progress = clamp01((now - start) / 620);
-      const contentProgress = easeInOutCubic(clamp01((progress - 0.24) / 0.40));
-      const actionProgress = easeInOutCubic(clamp01((progress - 0.06) / 0.46));
-      const collapseProgress = easeInOutCubic(clamp01((progress - 0.08) / 0.62));
-      const dropProgress = easeInOutCubic(clamp01((progress - 0.46) / 0.54));
-      motion.content.value = 1 - contentProgress;
-      motion.actionX.value = lerp(0, actionCenterOffset, actionProgress);
-      if (actionProgress > 0) pill.classList.remove('is-action-in');
-      motion.bgW.value = lerp(fullWidth, 52, collapseProgress);
-      motion.bgH.value = lerp(72, 48, collapseProgress);
-      motion.bgScale.value = lerp(1, 1.3, collapseProgress);
-      if (dropProgress > 0) pill.classList.remove('is-dropped');
-      paintDesktop();
-      if (progress < 1) frame = requestAnimationFrame(tick);
-      else setInitialDesktop();
-    };
-    frame = requestAnimationFrame(tick);
-  }
-
-  function resetForViewport() {
-    if (mobileQuery.matches) {
-      cancelAnimationFrame(frame);
-      return;
-    }
-    if (pill.classList.contains('active')) {
+  function scheduleMeasure() {
+    if (scheduled) return;
+    scheduled = requestAnimationFrame(() => {
+      scheduled = 0;
       measure();
-      finishDesktop();
-    } else setInitialDesktop();
+    });
   }
 
-  mobileQuery.addEventListener('change', resetForViewport);
-  reducedMotion.addEventListener('change', resetForViewport);
-  if (!mobileQuery.matches) setInitialDesktop();
+  mobileQuery.addEventListener('change', scheduleMeasure);
+  window.addEventListener('resize', scheduleMeasure);
+  // Measure synchronously now (the pill is already in the DOM) so the very first
+  // reveal has real values even if it happens before the next animation frame.
+  measure();
+
   return {
     animateIn() {
-      if (!mobileQuery.matches) springIn();
+      measure();
     },
-    animateOut() {
-      if (!mobileQuery.matches) springOut();
-    },
+    animateOut() {},
   };
 }
 
