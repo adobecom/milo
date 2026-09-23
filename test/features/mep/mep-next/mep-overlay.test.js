@@ -235,6 +235,20 @@ describe('init: DOM structure — stage env first call', () => {
     expect(label?.textContent).to.include('Page Updates');
   });
 
+  it('Highlight toggles render outlined circle keys for each highlight type', () => {
+    const card = bodyEl.querySelector('[data-card-key="Highlight"]');
+    expect(card.querySelector('.mep-toggle-key-mep')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-lingo')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-caas')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-mas')).to.exist;
+    expect(card.querySelector('.mep-toggle-key-other')).to.exist;
+  });
+
+  it('non-Highlight toggles do not render outlined circle keys', () => {
+    const card = bodyEl.querySelector('[data-card-key="Toggle"]');
+    expect(card.querySelector('.mep-toggle-key')).to.not.exist;
+  });
+
   it('spoof-geo-top-markets radio is checked by default', () => {
     const radio = bodyEl.querySelector('#spoof-geo-top-markets');
     expect(radio).to.exist;
@@ -1346,7 +1360,7 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   let headerEl;
 
   before(async () => {
-    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
+    window.history.replaceState({}, '', '/?mepHighlight=true&mepLingoHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
     setConfig(BASE_CONFIG);
     bodyEl = makeBody();
     headerEl = makeHeader();
@@ -1358,6 +1372,7 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
     window.history.replaceState({}, '', window.location.pathname);
     cleanup(bodyEl, headerEl);
     delete document.body.dataset.mepHighlight;
+    delete document.body.dataset.mepLingoHighlight;
     delete document.body.dataset.mepCaasHighlight;
     delete document.body.dataset.mepMasHighlight;
     delete document.body.dataset.otherHighlight;
@@ -1372,8 +1387,17 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
     expect(document.body.dataset.mepCaasHighlight).to.equal('true');
   });
 
+  it('mepLingoHighlight param sets body.dataset.mepLingoHighlight to "true"', () => {
+    expect(document.body.dataset.mepLingoHighlight).to.equal('true');
+  });
+
   it('#toggle-mep checkbox gets "checked" attribute set', () => {
     const cb = bodyEl.querySelector('#toggle-mep');
+    expect(cb?.hasAttribute('checked')).to.be.true;
+  });
+
+  it('#toggle-mep-lingo checkbox gets "checked" attribute set', () => {
+    const cb = bodyEl.querySelector('#toggle-mep-lingo');
     expect(cb?.hasAttribute('checked')).to.be.true;
   });
 });
@@ -1483,7 +1507,7 @@ describe('setDefaultValues: akamaiLocale matching lingo region', () => {
     lingoMeta.name = 'langfirst';
     lingoMeta.content = 'on';
     document.head.append(lingoMeta);
-    window.history.replaceState({}, '', '/?akamaiLocale=ch_de');
+    window.history.replaceState({}, '', '/?akamaiLocale=ch');
     // setConfig overwrites locale via getLocale(), so we must patch regions
     // afterward via updateConfig (direct assignment, no processing).
     setConfig(BASE_CONFIG);

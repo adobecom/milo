@@ -574,6 +574,7 @@ export async function setPreviewButton() {
   applyGeoSpoof(simulateHref.searchParams, getSpoofGeoParams(popup));
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
+  setOrDelete(HIGHLIGHT_KEYS.lingo, getCheckboxParam(popup, 'toggle-mep-lingo'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
@@ -614,11 +615,13 @@ const toGeoOption = (key, currentAkamaiLocale) => ({
   selected: currentAkamaiLocale === key,
 });
 
+const regionPrefix = (key) => (key?.includes('_') ? key.split('_')[0] : key);
+
 export async function findGeoGroupForLocale(locale) {
   const masRegions = await getMasRegions();
   const groups = [
     ['spoof-geo-top-markets', TOP_MARKETS],
-    ['spoof-geo-mep-lingo', getLingoRegions()],
+    ['spoof-geo-mep-lingo', getLingoRegions().map(regionPrefix)],
     ['spoof-geo-lingo-mas', masRegions],
   ];
   const match = groups.find(([, regions]) => regions.includes(locale));
@@ -631,7 +634,7 @@ export async function getSpoofGeoOptions(id) {
   const currentAkamaiLocale = masMarketChecked ? null : urlParams.get('akamaiLocale');
 
   const toOption = (key) => {
-    const region = key?.includes('_') ? key.split('_')[0] : key;
+    const region = regionPrefix(key);
     const opt = toGeoOption(region, currentAkamaiLocale);
     return { ...opt, label: region ? region.toUpperCase() : "None (Don't spoof)" };
   };

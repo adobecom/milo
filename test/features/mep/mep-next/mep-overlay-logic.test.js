@@ -862,7 +862,7 @@ describe('findGeoGroupForLocale', () => {
       lingoMeta.content = 'on';
       document.head.append(lingoMeta);
       updateConfig({ ...config, locale: { ...config.locale, regions: { ch_de: {} } } });
-      expect(await findGeoGroupForLocale('ch_de')).to.equal('spoof-geo-mep-lingo');
+      expect(await findGeoGroupForLocale('ch')).to.equal('spoof-geo-mep-lingo');
     } finally {
       lingoMeta?.remove();
       setConfig(config);
@@ -991,6 +991,17 @@ describe('setPreviewButton', () => {
     await setPreviewButton();
     const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
     expect(href).to.include('mepHighlight=true');
+  });
+
+  it('includes mepLingoHighlight param when toggle-mep-lingo checkbox is checked', async () => {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-mep-lingo';
+    cb.checked = true;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.include('mepLingoHighlight=true');
   });
 
   it('includes manifest path in mep param when a manifest text input has a value', async () => {

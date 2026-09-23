@@ -8,6 +8,15 @@ import MepButton from './mep-next-button.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+// force: true bypasses Playwright's visibility/stability checks (needed because content
+// keeps trickling in under CI's throttled EDS pacing), but it does not bypass the
+// requirement that the click point be on-screen. With all cards defaulting to expanded
+// the drawer is taller, so scroll explicitly first to avoid "outside of the viewport" errors.
+async function forceClick(locator) {
+  await locator.scrollIntoViewIfNeeded();
+  await locator.click({ force: true });
+}
+
 let mepButtonLoc;
 test.beforeEach(async ({ page }) => {
   mepButtonLoc = new MepButton(page);
@@ -34,10 +43,11 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // highlight options
   await mepButtonLoc.mepButton.click();
 
-  await mepButtonLoc.card2toggle1.click();
-  await mepButtonLoc.card2toggle2.click();
-  await mepButtonLoc.card2toggle3.click();
-  await mepButtonLoc.card2toggle4.click();
+  // see forceClick above for why we bypass actionability checks here
+  await forceClick(mepButtonLoc.card2toggle1);
+  await forceClick(mepButtonLoc.card2toggle2);
+  await forceClick(mepButtonLoc.card2toggle3);
+  await forceClick(mepButtonLoc.card2toggle4);
 
   // test the positive case
   const fragment1attribute = await mepButtonLoc.fragment1.getAttribute('data-manifest-display');
@@ -124,10 +134,10 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
   // the checkbox input is visually hidden, so click the switch track to flip it
-  await mepButtonLoc.toggleMepTrack.click();
+  await forceClick(mepButtonLoc.toggleMepTrack);
   await expect(page.locator('body')).toHaveAttribute('data-mep-highlight', 'true');
 
-  await mepButtonLoc.toggleMepTrack.click();
+  await forceClick(mepButtonLoc.toggleMepTrack);
   await expect(page.locator('body')).toHaveAttribute('data-mep-highlight', 'false');
 });
 
@@ -144,11 +154,11 @@ test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, 
   await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 
   // clicking the header collapses it
-  await mepButtonLoc.highlightExpandIcon.click();
+  await forceClick(mepButtonLoc.highlightExpandIcon);
   await expect(mepButtonLoc.highlightCard).not.toHaveClass(/expanded/);
 
   // clicking again expands it
-  await mepButtonLoc.highlightExpandIcon.click();
+  await forceClick(mepButtonLoc.highlightExpandIcon);
   await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 });
 
@@ -161,7 +171,8 @@ test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  await mepButtonLoc.toggleMepTrack.click();
+  // enable the MEP highlight toggle
+  await forceClick(mepButtonLoc.toggleMepTrack);
 
   // the Preview button href should carry the highlight param through
   await expect(mepButtonLoc.previewButton).toHaveAttribute('href', /mepHighlight=true/);
@@ -176,7 +187,8 @@ test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  await mepButtonLoc.previewLinkTrack.click();
+  // enable the Preview Link toggle in the Toggle card
+  await forceClick(mepButtonLoc.previewLinkTrack);
 
   // the Preview button href should disable the mep button on the previewed page
   await expect(mepButtonLoc.previewButton).toHaveAttribute('href', /mepButton=off/);
