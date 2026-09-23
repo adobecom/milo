@@ -932,6 +932,112 @@ describe('global navigation', () => {
       });
     });
 
+    /* eslint-disable no-underscore-dangle */
+    it('sends modalClose analytics for user-initiated AUP dialog closes only', async () => {
+      preload.restore();
+      const { fetchCheckoutLinkConfigs, getModalAction } = await import('../../../libs/blocks/merch/merch.js');
+      const previousSdk = window.aupsdk;
+      const previousSdkFactory = window.AUPSDK;
+      const previousSatellite = window._satellite;
+      const previousConfigs = fetchCheckoutLinkConfigs.promise;
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+      script.dataset.loaded = 'true';
+      document.head.append(script);
+      window.aupsdk = undefined;
+      const instance = { updateConfig: sinon.stub().resolves() };
+      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      fetchCheckoutLinkConfigs.promise = Promise.resolve({
+        data: [{
+          PRODUCT_FAMILY: 'PHOTOGRAPHY',
+          LOCALE: '',
+          BUY_NOW_HASH: 'buy-photography',
+          BUY_NOW_PATH: '/test/aup-select',
+        }],
+      });
+      const cta = document.createElement('a');
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'PHOTOGRAPHY' },
+      }], { modal: true }, cta);
+      try {
+        await gnav.constructor.preloadAupSdk();
+        const { showDialog } = window.AUPSDK.preloadSDK.firstCall.args[1];
+        const cases = [
+          ['escape', 'buy-photography:modalClose:escapeClose'],
+          ['backdrop', 'buy-photography:modalClose:curtainClose'],
+          ['workflow-cancel', 'buy-photography:modalClose:buttonClose'],
+          ['workflow-success', null],
+          ['navigation', null],
+          ['no-hash-backdrop', 'aup-workflow:modalClose:curtainClose'],
+        ];
+        for (const [method, expectedName] of cases) {
+          window._satellite = { track: sinon.spy() };
+          const url = new URL(originalUrl);
+          url.hash = '';
+          window.history.replaceState(null, '', url);
+          if (method !== 'no-hash-backdrop') action.aupHandler({ type: 'open', element: cta });
+          const element = document.createElement('div');
+          await showDialog(element, {}, sinon.spy());
+          const dialog = document.getElementById('aup-workflow-dialog');
+          if (method === 'escape') {
+            dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+          } else if (method.endsWith('backdrop')) {
+            dialog.click();
+          } else if (method === 'navigation') {
+            const navigated = new Promise((resolve) => {
+              window.addEventListener('hashchange', resolve, { once: true });
+            });
+            window.history.back();
+            await navigated;
+          } else {
+            element.dispatchEvent(new CustomEvent(method.replace('workflow-', '')));
+            element.dispatchEvent(new CustomEvent('close'));
+          }
+          expect(document.getElementById('aup-workflow-dialog')).to.be.null;
+          if (expectedName) {
+            expect(window._satellite.track.calledOnce).to.be.true;
+            const [type, payload] = window._satellite.track.firstCall.args;
+            expect(type).to.equal('event');
+            expect(payload.data.web.webInteraction.name).to.equal(expectedName);
+            expect(payload.data.web.webInteraction.linkClicks).to.deep.equal({ value: 1 });
+          } else {
+            expect(window._satellite.track.called).to.be.false;
+          }
+          action.aupHandler({ type: 'close', element: cta });
+        }
+      } finally {
+        script.remove();
+        document.getElementById('aup-workflow-dialog')?.remove();
+        document.documentElement.classList.remove('disable-scroll');
+        fetchCheckoutLinkConfigs.promise = previousConfigs;
+        window._satellite = previousSatellite;
+        window.aupsdk = previousSdk;
+        window.AUPSDK = previousSdkFactory;
+      }
+    });
+
+    it('defers AUP dialog close analytics until Launch is ready', async () => {
+      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
+      const previousSatellite = window._satellite;
+      try {
+        window._satellite = undefined;
+        sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
+        window._satellite = { track: sinon.spy() };
+        window.dispatchEvent(new Event('alloy_sendEvent'));
+        window.dispatchEvent(new Event('alloy_sendEvent'));
+        const names = window._satellite.track.args
+          .map(([, payload]) => payload?.data?.web?.webInteraction?.name);
+        expect(names.filter((name) => name === 'buy-now:modalClose:buttonClose'))
+          .to.have.lengthOf(1);
+      } finally {
+        window._satellite = previousSatellite;
+      }
+    });
+
+    /* eslint-enable no-underscore-dangle */
+
     it('keeps preloading for signed-in Universal Nav users without metadata', async () => {
       gnav.useUniversalNav = true;
       window.adobeIMS.isSignedInUser.returns(true);
