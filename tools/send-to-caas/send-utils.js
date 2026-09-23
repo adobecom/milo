@@ -47,7 +47,13 @@ const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/
 setConfig({
   getCaasTagsFallback: () => import('../../libs/blocks/caas-config/caas-tags.js')
     .then((m) => m.default),
-  locales: getMiloConfig().locales,
+  // `|| {}`, not the bare value: an explicit empty object (site has no
+  // locales configured at all -- Object.keys gives [], a correct no-op,
+  // matching pre-refactor behavior) must stay distinguishable from `undefined`
+  // (this key was never injected in the first place -- the milo-caas vm/backend
+  // context, which falls back to the full LOCALES table instead; see pageLocales
+  // in caas-payload-core.js).
+  locales: getMiloConfig().locales || {},
 });
 
 const isPagePublished = async () => {
