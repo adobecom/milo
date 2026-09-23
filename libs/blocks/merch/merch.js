@@ -1986,6 +1986,10 @@ function isPromoVariation(mf) {
  * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
  * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
  * `data-promotion-project`), the container is revealed; otherwise it stays hidden.
+ *
+ * A container can name a group via `data-promo-group` to reveal companion placeholders that
+ * cannot hold the field themselves - e.g. a carousel reveals a promo slide and, elsewhere in
+ * the DOM, that slide's navigation item.
  */
 let promoPlaceholdersWatched = false;
 function watchPromoPlaceholders() {
@@ -1995,9 +1999,12 @@ function watchPromoPlaceholders() {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const container = mf.closest('.promo-placeholder');
     if (!container || container.classList.contains('promo-resolved')) return;
-    if (isPromoVariation(mf)) {
-      container.classList.add('promo-resolved');
-    }
+    if (!isPromoVariation(mf)) return;
+    const { promoGroup } = container.dataset;
+    const group = promoGroup
+      ? document.querySelectorAll(`.promo-placeholder[data-promo-group="${CSS.escape(promoGroup)}"]`)
+      : [container];
+    group.forEach((el) => el.classList.add('promo-resolved'));
   });
 }
 
