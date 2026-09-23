@@ -66,7 +66,8 @@ function setupStickyBoundary(headline, list) {
   tabletMQ.addEventListener('change', update);
 }
 
-function addCursorFollower(list) {
+function addCursorFollower(list, noAnimation) {
+  const staticMode = () => noAnimation || REDUCED_MOTION.matches;
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
   let activeLayers = [];
@@ -105,7 +106,7 @@ function addCursorFollower(list) {
 
   const activate = (item) => {
     if (item === activeItem) return;
-    if (REDUCED_MOTION.matches) {
+    if (staticMode()) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;
       const media = item.querySelector('.hover-list-media');
@@ -156,7 +157,7 @@ function addCursorFollower(list) {
 
   const deactivate = () => {
     if (!activeItem) return;
-    if (REDUCED_MOTION.matches) {
+    if (staticMode()) {
       hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = null;
       activeLayers = [];
@@ -190,9 +191,10 @@ function addCursorFollower(list) {
   }, { passive: true });
 }
 
-function decorate(block) {
+function decorate(block, el) {
   const rows = [...block.children];
   if (!rows.length) return;
+  const noAnimation = el.classList.contains('no-animation');
 
   const headline = createTag('div', { class: 'hover-list-headline' });
   const headingCol = rows[0]?.children[0];
@@ -222,7 +224,7 @@ function decorate(block) {
 
   const headlineWrapper = createTag('div', { class: 'hover-list-headline-wrapper' });
   headlineWrapper.append(headline);
-  addCursorFollower(list);
+  addCursorFollower(list, noAnimation);
   const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
   block.replaceChildren(headlineWrapper, listCol);
