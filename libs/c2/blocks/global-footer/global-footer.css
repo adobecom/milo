@@ -245,7 +245,7 @@
 
 .global-footer .feds-footer-logo img {
   display: block;
-  width: 100%;
+  width: calc(100% + 56px);
   max-width: none;
   height: auto;
   flex-shrink: 0;
@@ -372,16 +372,16 @@ span.feds-footer-privacyLink-divider {
 
 .global-footer.event .feds-footer-options > .feds-footer-mailingList {
   grid-area: mailing;
-  display: flex;
+  display: grid;
   align-items: center;
-  column-gap: var(--s2a-spacing-md);
-  row-gap: var(--s2a-spacing-xl);
   flex-wrap: wrap;
+  gap: var(--s2a-spacing-md);
   max-width: 327px;
 }
 
 .global-footer.event .feds-footer-options > .feds-footer-mailingList p {
   max-width: 211px;
+  justify-self: start;
 }
 
 .global-footer.event .feds-footer-options > .feds-footer-contactSupport {
@@ -423,6 +423,7 @@ span.feds-footer-privacyLink-divider {
   line-height: var(--s2a-font-line-height-20);
   letter-spacing: 0.48px;
   font-width: var(--s2a-font-weight-adobe-clean-black);
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
 }
 
 .global-footer.event .feds-footer-mailingList-cta {
@@ -497,8 +498,17 @@ span.feds-footer-privacyLink-divider {
   letter-spacing: 0.015em;
 }
 
+.global-footer.event .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: relative;
+  padding-left: 0;
+}
+
 .global-footer.event .feds-footer-social.feds-social-item.feds-social-link {
   color: var(--s2a-color-gray-25);
+}
+
+.global-footer.event .feds-footer-logo img {
+  width: calc(100% + 6px);
 }
 
 .global-footer.event .feds-footer-wrapper.has-authored-background {
@@ -520,6 +530,13 @@ span.feds-footer-privacyLink-divider {
     font-size: var(--s2a-font-size-24);
     line-height: var(--s2a-font-line-height-24);
   }
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList {
+    max-width: 349px;
+  }
+  .global-footer.event .feds-footer-options > .feds-footer-mailingList p {
+    max-width: 253px;
+    justify-self: start;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -535,16 +552,21 @@ span.feds-footer-privacyLink-divider {
   .global-footer.event .feds-footer-options > .feds-footer-mailingList {
     max-width: 492px;
   }
-
   .global-footer.event .feds-footer-options > .feds-footer-mailingList p {
     max-width: 384px;
+    justify-self: start;
   }
-
 }
 
 @media (min-width: 1440px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     --footer-background-offset: var(--s2a-layout-xl);
+  }
+}
+
+@media (min-width: 1920px) {
+  .global-footer.event .feds-footer-logo img {
+    width: 100%;
   }
 }
 

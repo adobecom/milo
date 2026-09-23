@@ -51,7 +51,7 @@ describe('Brand Concierge', () => {
     // input field
     const inputField = block.querySelector('.bc-input-field');
     expect(inputField).to.exist;
-    const input = inputField.querySelector('#bc-input-field');
+    const input = inputField.querySelector('.bc-input-field textarea');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal("Tell us what you'd like to do or create");
     const tooltip = inputField.querySelector('#bc-label-tooltip');
@@ -83,7 +83,7 @@ describe('Brand Concierge', () => {
 
     await init(block);
 
-    const input = block.querySelector('#bc-input-field');
+    const input = block.querySelector('.bc-input-field textarea');
     const button = block.querySelector('button.input-field-button');
     expect(button.disabled).to.equal(true);
 
@@ -106,7 +106,7 @@ describe('Brand Concierge', () => {
     expect(curtain.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
 
     // input cleared after opening
-    expect(block.querySelector('#bc-input-field').value).to.equal('');
+    expect(block.querySelector('.bc-input-field textarea').value).to.equal('');
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
@@ -250,7 +250,7 @@ describe('Brand Concierge', () => {
 
     await init(block);
 
-    const input = block.querySelector('#bc-input-field');
+    const input = block.querySelector('.bc-input-field textarea');
     input.value = 'Test message';
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));

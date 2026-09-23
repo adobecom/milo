@@ -614,6 +614,15 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
+const KR_CTA_ALLOWLIST = ['무료 앱 다운로드'];
+const KR_CTA_BLOCKLIST = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
+
+const matchesKrTrialCopy = (link) => {
+  const text = link.textContent?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
+  if (KR_CTA_ALLOWLIST.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
+  return KR_CTA_BLOCKLIST.some((pattern) => text.includes(pattern.toLowerCase()));
+};
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -628,8 +637,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
     || shouldAllowKrTrial(link, localePrefix)
     || localePrefix !== '/kr'
     || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+      && !matchesKrTrialCopy(link))) {
     return false;
   }
 
@@ -2216,9 +2224,9 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
 function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on';
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
 }
 
 function initMepOverlay() {
@@ -2624,6 +2632,7 @@ export async function loadDeferred(area, blocks, config) {
   }
   if (config.mep?.preview) {
     if (isMepNextOverlay()) {
+      // The overlay itself is initialized once via initMepOverlay() in loadArea.
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
         .then(({ default: init }) => init());
     } else {
