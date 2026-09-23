@@ -2471,6 +2471,17 @@ function initModalEventListener() {
   });
 }
 
+function shouldSkipLenis() {
+  if (navigator.connection?.saveData
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
+  const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
+  const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
+  return isWindows
+    ? deviceMemory <= 4 || cores <= 4
+    : deviceMemory <= 4 && cores <= 4;
+}
+
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
   fontsPromise ??= import('./fonts.js')
@@ -2529,37 +2540,64 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    await Promise.all([
-      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-      loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
-    const lerp = 0.06;
-    const fsThreshold = 110;
-    const fsFactor = 0.11;
-    const fsDelay = 700;
-    const lenisPreventSelectors = [
-      '.dialog-modal',
-      '.ot-sdk-container',
-      'div[data-testid="main-content-area"]',
-    ];
-    window.lenis = new window.Lenis({
-      autoRaf: true,
-      lerp,
-      wheelMultiplier: 0.7,
-      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-    });
-    if (document.querySelector('.modal-curtain.is-open')) {
-      window.lenis.stop();
-    }
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
-    window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+    if (!shouldSkipLenis()) {
+      await Promise.all([
+        new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+        loadScript(`${config.base}/deps/lenis.min.js`),
+      ]);
+      const lerp = 0.06;
+      const fsThreshold = 110;
+      const fsFactor = 0.11;
+      const fsDelay = 700;
+      const lenisPreventSelectors = [
+        '.dialog-modal',
+        '.ot-sdk-container',
+        'div[data-testid="main-content-area"]',
+      ];
+      // Drive rAF manually so it pauses when idle and saves CPU
+      window.lenis = new window.Lenis({
+        autoRaf: false,
+        lerp,
+        wheelMultiplier: 0.7,
+        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+      });
+      let lenisRaf = null;
+      const runLenisFrame = (time) => {
+        window.lenis.raf(time);
+        lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
+      };
+      const startLenisRaf = () => {
+        if (lenisRaf === null) lenisRaf = requestAnimationFrame(runLenisFrame);
+      };
+
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+      const onScrollKey = (e) => {
+        if (!scrollKeys.includes(e.key)) return;
+        if (document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) return;
+        startLenisRaf();
+      };
+      window.addEventListener('keydown', onScrollKey, { passive: true });
+
+      ['wheel', 'touchstart', 'touchmove', 'scroll'].forEach((evt) => {
+        window.addEventListener(evt, startLenisRaf, { passive: true });
+      });
+
+      const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
+      window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
+
+      if (document.querySelector('.modal-curtain.is-open')) {
+        window.lenis.stop();
       }
-    }, { passive: true });
+      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+      let fsScrollTimer;
+      window.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > fsThreshold) {
+          window.lenis.options.lerp = fsFactor;
+          clearTimeout(fsScrollTimer);
+          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        }
+      }, { passive: true });
+    }
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
