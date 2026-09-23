@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 import icons from '../../assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
@@ -136,6 +137,27 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
     requestAnimationFrame(() => { checkLock(); ticking = false; });
   }, { signal: lockController.signal, passive: true });
   requestAnimationFrame(checkLock);
+};
+
+// Reads the real, currently-rendered nav height (accounts for localnav/promo banner)
+// instead of relying on the static --feds-height-nav/--hub-hero-nav-h CSS fallbacks,
+// matching the pattern used in comparison-table-c2.js's setupCollapsingHeader.
+const initNavHeight = (hubHero) => {
+  const header = document.querySelector('header');
+  if (!header) return;
+
+  const syncNavHeight = () => hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
+  syncNavHeight();
+
+  const navResizeObserver = new ResizeObserver(syncNavHeight);
+  navResizeObserver.observe(header);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      navResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 };
 
 const initHeaderPin = (hubHero, header) => {
@@ -345,10 +367,9 @@ const decorateCarousel = (slides) => {
   const carouselScroll = createTag('div', { class: 'hub-hero-carousel-scroll' }, carouselContainer);
   carousel.replaceChildren();
   carousel.append(carouselScroll);
-  carousel.dataset.role = 'group';
-  carousel.dataset.ariaRoledescription = 'carousel';
-  carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
-  carousel.dataset.ariaRole = 'group';
+  carousel.setAttribute('role', 'group');
+  carousel.setAttribute('aria-roledescription', 'carousel');
+  carousel.setAttribute('aria-label', getCarouselName(slides[0]?.querySelector('a')));
   return carousel;
 };
 
@@ -534,6 +555,7 @@ export default async function init(el) {
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
   handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+  initNavHeight(el);
   initHeaderPin(el, heroHeader);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
