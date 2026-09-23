@@ -78,9 +78,9 @@ function resolveBP(w) {
 }
 
 // Card caps are on texture HEIGHT; modal caps are on the longest side.
-const CARD_TEX_SM = 256;
+const CARD_TEX_SM = 384;
 const CARD_TEX_MD = 768;
-const MODAL_TEX_SM = 768;
+const MODAL_TEX_SM = 1024;
 const MODAL_TEX_MD = 2048;
 const ANTIALIAS_SM = false;
 const ANTIALIAS_MD = true;
