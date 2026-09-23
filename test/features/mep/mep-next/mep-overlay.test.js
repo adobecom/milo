@@ -236,7 +236,7 @@ describe('init: DOM structure — stage env first call', () => {
   });
 
   it('Highlight toggles render outlined circle keys for each highlight type', () => {
-    const card = mainEl.querySelector('[data-card-key="Highlight"]');
+    const card = bodyEl.querySelector('[data-card-key="Highlight"]');
     expect(card.querySelector('.mep-toggle-key-mep')).to.exist;
     expect(card.querySelector('.mep-toggle-key-lingo')).to.exist;
     expect(card.querySelector('.mep-toggle-key-caas')).to.exist;
@@ -245,7 +245,7 @@ describe('init: DOM structure — stage env first call', () => {
   });
 
   it('non-Highlight toggles do not render outlined circle keys', () => {
-    const card = mainEl.querySelector('[data-card-key="Toggle"]');
+    const card = bodyEl.querySelector('[data-card-key="Toggle"]');
     expect(card.querySelector('.mep-toggle-key')).to.not.exist;
   });
 
@@ -1397,7 +1397,7 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   });
 
   it('#toggle-mep-lingo checkbox gets "checked" attribute set', () => {
-    const cb = mainEl.querySelector('#toggle-mep-lingo');
+    const cb = bodyEl.querySelector('#toggle-mep-lingo');
     expect(cb?.hasAttribute('checked')).to.be.true;
   });
 });
