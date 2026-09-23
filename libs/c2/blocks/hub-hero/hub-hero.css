@@ -2087,7 +2087,7 @@
   .hub-hero-image-grid-container-col:nth-child(3),
   .hub-hero-image-grid-container-col:nth-child(4),
   .hub-hero-image-grid-container-col:nth-child(5) {
-    animation: none !important;
+    animation: none;
     transition: none;
     position: relative;
     --hub-hero-height: auto;
@@ -2102,7 +2102,7 @@
   }
 
   .hub-hero-carousel-header > div {
-    animation: none !important;
+    animation: none;
   }
 
   .hub-hero-header div[class^="body"] {
@@ -2133,7 +2133,7 @@
 
     .hub-hero-image-grid-container-col div:nth-child(2),
     .hub-hero-image-grid-container-col div:nth-child(3) {
-      animation: none !important;
+      animation: none;
       translate: 0 0;
     }
 
@@ -2148,20 +2148,16 @@
       gap: var(--s2a-spacing-sm);
     }
 
-    .hub-hero-carousel-item:nth-child(3) {
-      margin-top: 0 !important;
+    .hub-hero-carousel-item.hub-hero-carousel-item {
+      animation: none;
+      position: relative;
+      top: unset;
     }
 
     .hub-hero-carousel-header {
       position: relative;
       top: unset;
       height: auto;
-    }
-
-    .hub-hero-carousel-item {
-      animation: none !important;
-      position: relative;
-      top: unset;
     }
 
     .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
@@ -2199,6 +2195,11 @@
     .hub-hero-carousel-item:nth-child(5) {
       margin: 0;
       padding: 0;
+    }
+
+    .hub-hero-carousel-item.hub-hero-carousel-item:nth-child(3),
+    .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
+      margin-top: 0;
     }
 
     .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
