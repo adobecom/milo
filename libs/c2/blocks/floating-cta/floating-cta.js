@@ -1,5 +1,6 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import icons from '../../assets/icons.js';
+import { decorateButtons } from '../../../utils/decorate.js';
 
 const mobileQuery = window.matchMedia('(max-width: 767px)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -55,7 +56,7 @@ function createFloatingCtaAnimation(pill) {
   };
 
   function measure() {
-    pill.style.setProperty('--cta-ty', '0px');
+    pill.classList.add('is-dropped');
     actions.style.transform = '';
     content.style.transform = '';
     const pillRect = pill.getBoundingClientRect();
@@ -66,7 +67,6 @@ function createFloatingCtaAnimation(pill) {
   }
 
   function paintDesktop() {
-    pill.style.setProperty('--cta-ty', `${motion.ctaY.value}px`);
     intro.style.width = `${motion.introW.value}px`;
     intro.style.height = `${motion.introH.value}px`;
     intro.style.transform = `translate(${-motion.introW.value / 2}px, -50%)`
@@ -83,7 +83,7 @@ function createFloatingCtaAnimation(pill) {
     cancelAnimationFrame(frame);
     pill.classList.remove('is-active');
     measure();
-    setSpring(motion.ctaY, 180);
+    pill.classList.remove('is-dropped');
     setSpring(motion.introW, 38);
     setSpring(motion.introH, 96);
     setSpring(motion.introScale, 1.3);
@@ -101,7 +101,7 @@ function createFloatingCtaAnimation(pill) {
   function finishDesktop() {
     pill.classList.add('is-active');
     intro.style.opacity = '0';
-    setSpring(motion.ctaY, 0);
+    pill.classList.add('is-dropped');
     setSpring(motion.bgW, fullWidth);
     setSpring(motion.bgH, 72);
     setSpring(motion.bgScale, 1);
@@ -128,7 +128,7 @@ function createFloatingCtaAnimation(pill) {
       lastTime = now;
       elapsed += dt;
       if (elapsed >= 0.02) motion.introScale.target = 0.8;
-      if (elapsed >= 0.03) motion.ctaY.target = 0;
+      if (elapsed >= 0.03) pill.classList.add('is-dropped');
       if (elapsed >= 0.05) motion.introW.target = 72;
       if (elapsed >= 0.15) motion.introH.target = 72;
       if (elapsed >= 0.20) pill.classList.add('is-action-in');
@@ -171,7 +171,7 @@ function createFloatingCtaAnimation(pill) {
       motion.bgW.value = lerp(fullWidth, 52, collapseProgress);
       motion.bgH.value = lerp(72, 48, collapseProgress);
       motion.bgScale.value = lerp(1, 1.3, collapseProgress);
-      motion.ctaY.value = lerp(0, 180, dropProgress);
+      if (dropProgress > 0) pill.classList.remove('is-dropped');
       paintDesktop();
       if (progress < 1) frame = requestAnimationFrame(tick);
       else setInitialDesktop();
@@ -191,6 +191,7 @@ function createFloatingCtaAnimation(pill) {
   }
 
   mobileQuery.addEventListener('change', resetForViewport);
+  reducedMotion.addEventListener('change', resetForViewport);
   if (!mobileQuery.matches) setInitialDesktop();
   return {
     animateIn() {
@@ -351,16 +352,21 @@ export default async function init(el) {
   const contentDiv = el.querySelector('div > div');
   if (!contentDiv) return;
 
+  decorateButtons(contentDiv);
   const img = contentDiv.querySelector('img, svg');
   const links = [...contentDiv.querySelectorAll('a')];
   const isButtonLink = (a) => a.classList.contains('con-button')
     || a.parentElement?.classList.contains('con-button');
-  const actionLink = !img ? (links.find(isButtonLink) ?? null) : null;
+  const actionLink = !img ? (links.find(isButtonLink) ?? links[links.length - 1] ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
   let actionEl = null;
   if (actionLink) {
-    actionEl = actionLink.classList.contains('con-button')
-      ? actionLink : actionLink.parentElement;
+    if (actionLink.classList.contains('con-button')) actionEl = actionLink;
+    else if (actionLink.parentElement?.classList.contains('con-button')) actionEl = actionLink.parentElement;
+    else {
+      actionEl = actionLink;
+      actionEl.classList.add('con-button', 'blue');
+    }
   }
   let labelText;
   if (actionEl) {
