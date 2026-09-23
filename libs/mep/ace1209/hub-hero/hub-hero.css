@@ -32,15 +32,12 @@
   --end-gap: .5rem;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --gap-shrink-timeline: ease;
-  --hub-hero-nav-h: calc(var(--global-height-nav, 80px) + var(--feds-breadcrumbs-height, 52px));
-  --hub-hero-chrome-floor: calc(var(--hub-hero-nav-h) + var(--s2a-spacing-md));
-  --carousel-items-floor: calc(var(--hub-hero-chrome-floor) + var(--slide-header-h));
-  --carousel-items-top: max(calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 90px), var(--carousel-items-floor));
+  --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height) / 2 + 90px);
   --slide-max-width: min(var(--hub-hero-carousel-item-max-width), calc(var(--slide-media-available-height) * 0.75));
   --slide-media-available-height: calc(var(--hub-hero-carousel-container-height) - var(--slide-footer-h) - var(--slide-header-h));
   --carousel-item-media-height: var(--slide-media-available-height);
   --carousel-header-top: max(calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
-      var(--hub-hero-chrome-floor));
+      calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px) + var(--s2a-spacing-md)));
 
   --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-max-width)) + ((var(--end-gap) * (var(--slides) - 1))) + var(--invisible-slide-width));
 
@@ -625,12 +622,12 @@
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: -5%;
-    --carousel-items-shift: calc(var(--slide-header-h) + var(--s2a-spacing-md));
+    --hub-hero-nav-h: 124px;
+    --carousel-header-top: max(20%, calc(var(--hub-hero-nav-h) + var(--s2a-spacing-md)));
+    --carousel-items-top: calc(var(--carousel-header-top) + 2 * var(--s2a-typography-font-size-heading-2) + var(--slide-header-h) + var(--s2a-spacing-3xl));
   }
 
   .hub-hero-carousel-header {
-    --carousel-header-top: max(calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md)),
-        var(--hub-hero-chrome-floor));
     position: sticky;
     top: var(--carousel-header-top);
     height: 0;
@@ -653,10 +650,6 @@
     max-width: 80%;
     margin-inline: auto;
     text-wrap: balance;
-  }
-
-  .hub-hero-carousel-scroll {
-    translate: 0 var(--carousel-items-shift);
   }
 
   .hub-hero-image-grid-container {
@@ -756,7 +749,6 @@
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --carousel-items-top: max(38%, var(--carousel-items-floor));
     --slide-one-header-footer-reveal: 45% 50%;
 
     position: relative;
