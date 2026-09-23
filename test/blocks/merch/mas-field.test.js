@@ -614,6 +614,35 @@ describe('mas-field', () => {
       expect(link.classList.contains('con-button')).to.be.true;
     });
 
+    it('re-localizes a non-CTA link (e.g. "See Terms") when its mas-field re-renders late', async () => {
+      // Regression: block-level content (not an inline CTA) is left attached in the DOM
+      // (MWPW-207700-adjacent code path). If the external mas-field component re-renders it
+      // independently after the initial decoration (e.g. router-marquee toggling
+      // visibility/inert), the fresh anchor it injects must still get localized.
+      setConfig({
+        codeRoot: '/libs',
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: ['www.adobe.com'],
+      });
+      const p = document.createElement('p');
+      p.innerHTML = '<mas-field field="description"><span data-role="mas-field-content">'
+        + '<h3>Starting at $9.99/mo.</h3><a href="https://www.adobe.com/">See terms</a>'
+        + '</span></mas-field>';
+      document.body.append(p);
+
+      // Late/independent re-render: the component regenerates its content with a fresh,
+      // un-localized anchor, then fires mas:ready again.
+      p.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const link = p.querySelector('mas-field a');
+      expect(link.href).to.equal('https://www.adobe.com/fr/');
+      p.remove();
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');

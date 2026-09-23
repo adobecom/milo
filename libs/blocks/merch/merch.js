@@ -2014,13 +2014,18 @@ function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
-    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
-    if (isCtaFieldContent(content)) {
+    if (!content?.querySelector('a')) return;
+    if (isCtaFieldContent(content) && mf.closest('em, strong')) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
       decorateInlineCtas(mf, content);
+    } else {
+      // late re-rendered and relocalized
+      await decorateContentLinks(content);
+      upgradeCommerceLinks(content);
     }
   });
 }
