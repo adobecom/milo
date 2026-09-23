@@ -44,10 +44,36 @@ const PREVIEW = 'target-preview';
 // shimmed window.location yet when this module is first evaluated.
 const getPageUrl = () => new URL(window.location.href);
 
-// Copied verbatim from libs/utils/utils.js (getMetadata).
-function getMetadata(name, doc = document) {
+// `document` is referenced lazily (inside getConfig, not at module-eval time)
+// for the same reason as getPageUrl above: every real caller sets doc via
+// setConfig before reading it back, but a vm sandbox may not have shimmed a
+// global `document` at all, so touching it eagerly would throw on import.
+// Defined this early (rather than alongside the rest of the payload logic
+// further down) so getMetadata/getPageLocale below can read it too.
+const [setConfig, getConfig] = (() => {
+  let config = {};
+  return [
+    (c) => {
+      config = { ...config, ...c };
+      return config;
+    },
+    () => ({
+      isInjectedDoc: () => config.doc !== document,
+      ...config,
+      doc: 'doc' in config ? config.doc : document,
+    }),
+  ];
+})();
+
+// Adapted from libs/utils/utils.js (getMetadata): defaults to getConfig().doc
+// (like getMetaContent right below it in this file) instead of the ambient
+// `document` global, since a vm sandbox's injected page document is never the
+// ambient `document` and the browser bulk-publish/auto-publish flow processes
+// a page other than the one `document` refers to.
+function getMetadata(name, doc) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  const targetDoc = doc || getConfig().doc;
+  const meta = targetDoc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
@@ -283,16 +309,20 @@ const LOCALES = {
 
 // In libs/blocks/caas/utils.js, pageLocales derives from the page-level config
 // (pageConfigHelper().locales) — the per-site subset of locale prefixes that
-// site actually supports. The leaf must not import utils.js and has no access
-// to that per-site config, so it falls back to the full classic LOCALES table
-// (already inlined above, and already used as the source of truth elsewhere
-// in this file, e.g. getBulkPublishLangAttr's getLocale(LOCALES, path) call).
-// A hardcoded [] here made localizeCtaUrl's caaslocaleinject feature a
-// permanent no-op, since getPageLocale never had anything to match against.
+// site actually supports. The leaf itself must not import utils.js, so it falls
+// back to the full classic LOCALES table (already inlined above, and already
+// used as the source of truth elsewhere in this file, e.g. getBulkPublishLangAttr's
+// getLocale(LOCALES, path) call) whenever a real site config isn't available — a
+// hardcoded [] here made localizeCtaUrl's caaslocaleinject feature a permanent
+// no-op, since getPageLocale never had anything to match against. Browser callers
+// (send-utils.js) inject the real per-site subset via setConfig({ locales }), so
+// only the milo-caas vm/backend context (which has no live page config to inject)
+// falls all the way back to the full table.
 const pageLocales = Object.keys(LOCALES);
 
 // Copied verbatim from libs/blocks/caas/utils.js (getPageLocale).
-function getPageLocale(currentPath, locales = pageLocales) {
+function getPageLocale(currentPath, locales = (getConfig().locales
+  ? Object.keys(getConfig().locales) : pageLocales)) {
   const possibleLocale = currentPath.split('/')[1];
   if (locales.includes(possibleLocale)) {
     return possibleLocale;
@@ -580,25 +610,6 @@ const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
 // ---------------------------------------------------------------------------
 // CaaS card -> XDM payload logic (moved verbatim from send-utils.js)
 // ---------------------------------------------------------------------------
-
-// `document` is referenced lazily (inside getConfig, not at module-eval time)
-// for the same reason as getPageUrl above: every real caller sets doc via
-// setConfig before reading it back, but a vm sandbox may not have shimmed a
-// global `document` at all, so touching it eagerly would throw on import.
-const [setConfig, getConfig] = (() => {
-  let config = {};
-  return [
-    (c) => {
-      config = { ...config, ...c };
-      return config;
-    },
-    () => ({
-      isInjectedDoc: () => config.doc !== document,
-      ...config,
-      doc: 'doc' in config ? config.doc : document,
-    }),
-  ];
-})();
 
 const getKeyValPairs = (s) => {
   if (!s) return [];
@@ -1019,13 +1030,20 @@ function checkCtaUrl(s, options, i) {
  * @param {string|object} val - The result from checkCtaUrl (either URL string or error object).
  * @returns {string|object} - Possibly modified URL string or original value.
  */
-function localizeCtaUrl(val) {
+function localizeCtaUrl(val, options = {}) {
   if (typeof val !== 'string' || val.trim() === '') return val;
   try {
     const injectFlag = (getMetadata('caaslocaleinject') || '').toLowerCase() === 'true';
-    const pageLocale = getPageLocale(window.location.pathname);
+    // options.prodUrl is the page actually being processed in bulk-publish/
+    // auto-publish contexts; window.location is only correct for true single
+    // live-page contexts (send-to-caas.js, da-live) that never set it — same
+    // rule getCountryAndLang documents above for the same reason.
+    const currentPath = options.prodUrl
+      ? prodUrlToPathname(options.prodUrl) : window.location.pathname;
+    const pageLocale = getPageLocale(currentPath);
     if (!injectFlag || !pageLocale) return val;
-    const urlObj = new URL(val, window.location.origin);
+    const base = options.prodUrl ? prefixHttps(options.prodUrl) : window.location.origin;
+    const urlObj = new URL(val, base);
     if (!getPageLocale(urlObj.pathname)) {
       // prepend locale segment to the URL path (pathname always starts with '/')
       urlObj.pathname = `/${pageLocale}${urlObj.pathname}`;
@@ -1088,7 +1106,7 @@ const props = {
   cta1style: 0,
   cta1target: 0,
   cta1text: 0,
-  cta1url: (s, options) => localizeCtaUrl(checkCtaUrl(s, options, 1)),
+  cta1url: (s, options) => localizeCtaUrl(checkCtaUrl(s, options, 1), options),
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
   cta2target: 0,
@@ -1357,10 +1375,14 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 // identity is fully determined by the prodUrl, exactly as on publish
 // (contentId = uuid(prodUrl); entityId = uuid(prodUrl + floodgate salt)).
 const getCaasIds = async (prodUrl, floodgatecolor = 'default') => {
+  // Strip the scheme the same way buildCaasXdmPayload does before hashing, so a
+  // schemed prodUrl (e.g. from getProdUrl()) hashes to the same contentId/entityId
+  // as the one computed at publish time, instead of a different, unmatched id.
+  const bareProdUrl = prodUrl?.replace(/^https?:\/\//, '') ?? prodUrl;
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
-    getUuid(prodUrl),
-    getUuid(`${prodUrl}${salt}`),
+    getUuid(bareProdUrl),
+    getUuid(`${bareProdUrl}${salt}`),
   ]);
   return { contentId, entityId };
 };

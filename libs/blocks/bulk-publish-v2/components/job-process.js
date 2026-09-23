@@ -137,7 +137,11 @@ class JobProcess extends LitElement {
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
     let { status } = resource ?? jobData;
 
-    const retry = this.queue?.find((item) => (item.webPath || item.path) === path);
+    // Compare-either (not coalesce-then-compare), matching the resource lookup
+    // two lines up — otherwise an item with both fields set where `path` matches
+    // item.path but not item.webPath is found by one lookup but not the other,
+    // leaving a successful retry's updated status stuck behind the stale one.
+    const retry = this.queue?.find((item) => item.path === path || item.webPath === path);
     if (retry) status = retry.status;
 
     const origin = ['publish', 'index'].includes(topic) && isSuccess(status)

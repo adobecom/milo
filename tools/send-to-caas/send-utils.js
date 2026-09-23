@@ -22,10 +22,15 @@ import {
   hasContentTypeTag,
   initBulkPublisherLingoMapping,
   isDisabledOnPage,
+  LANG_FIRST_SOURCE_MAPPINGS,
   loadCaasTags,
   runLanguageFirstRetry,
   setConfig,
 } from './caas-payload-core.js';
+// Only the browser wrapper imports utils.js — the standalone backend bundle
+// (build/caas-payload-builder.js) imports straight from the leaf and never
+// pulls this file in, so it never pays the utils.js bootstrap cost.
+import { getConfig as getMiloConfig } from '../../libs/utils/utils.js';
 
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
@@ -35,9 +40,14 @@ const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/
 // network fetch to the chimera tags API fails. The leaf (caas-payload-core.js)
 // stays free of the 706KB data module so it can be bundled standalone; the
 // browser loads it on demand only when actually needed.
+// Also inject the site's real configured locale subset (mirrors
+// libs/blocks/caas/utils.js's own pageConfigHelper().locales read, at the same
+// module-eval timing) so getPageLocale/localizeCtaUrl match against the site's
+// actual locales instead of the leaf's full fallback table.
 setConfig({
   getCaasTagsFallback: () => import('../../libs/blocks/caas-config/caas-tags.js')
     .then((m) => m.default),
+  locales: getMiloConfig().locales,
 });
 
 const isPagePublished = async () => {
@@ -105,6 +115,7 @@ export {
   initBulkPublisherLingoMapping,
   isDisabledOnPage,
   isPagePublished,
+  LANG_FIRST_SOURCE_MAPPINGS,
   loadCaasTags,
   postDataToCaaS,
   runLanguageFirstRetry,
