@@ -1131,15 +1131,12 @@ class Gnav {
   static preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
-    const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
-    const allowOverride = config.env.name !== 'prod';
-    const environment = allowOverride && commerceEnvironment?.toLowerCase() === 'stage' ? 'stage' : 'prod';
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
@@ -1153,7 +1150,7 @@ class Gnav {
         window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
       ),
       environment,
-      cdnEnvironment,
+      cdnEnvironment: environment,
       locale,
       appName: 'adobecom',
       appVersion: '1.0',
