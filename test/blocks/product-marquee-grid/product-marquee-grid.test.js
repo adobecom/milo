@@ -30,12 +30,13 @@ describe('Product Marquee Grid', () => {
       expect(content.children[1].classList.contains('pm-promo-area')).to.be.true;
     });
 
-    it('builds the chiclet row with the icon and the super heading', () => {
+    it('builds the chiclet row with the icon and the heading', () => {
       const chicletRow = content.querySelector('.pm-foreground .pm-chiclet-row');
       expect(chicletRow).to.exist;
       expect(chicletRow.querySelector('img.icon')).to.exist;
 
-      const heading = chicletRow.querySelector('h1.heading-super');
+      // The heading keeps its authored tag; the block no longer adds `heading-super`.
+      const heading = chicletRow.querySelector('h1');
       expect(heading).to.exist;
       expect(heading.textContent).to.equal('Photoshop');
     });
@@ -103,7 +104,7 @@ describe('Product Marquee Grid', () => {
       const chicletRow = block.querySelector('.pm-chiclet-row');
       expect(chicletRow).to.exist;
       expect(chicletRow.querySelector('img.icon')).to.be.null;
-      expect(chicletRow.querySelector('h1.heading-super')).to.exist;
+      expect(chicletRow.querySelector('h1')).to.exist;
     });
 
     it('is a no-op and does not throw when the block has no rows', async () => {
