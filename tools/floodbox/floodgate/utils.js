@@ -29,6 +29,43 @@ function tryAemPageUrlToPath(trimmed) {
   return `/${org}/${repo}${suffix}`.replace(/\/+/g, '/');
 }
 
+/**
+ * Extract the floodgate color from a single input line, color-agnostically.
+ * Inspects only the repo (2nd) path segment, so a `-fg-` marker deeper in the
+ * path is ignored. AEM URLs and a trailing wildcard are normalized first.
+ * Returns the color string (e.g. 'pink', 'dark-pink') or null.
+ */
+function extractFgColorFromLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+  const asPath = tryAemPageUrlToPath(trimmed) || trimmed;
+  if (!asPath.startsWith('/')) return null;
+  const noWild = asPath.endsWith('*') ? asPath.slice(0, -1) : asPath;
+  const parts = noWild.split('/').filter(Boolean);
+  if (parts.length < 2) return null;
+  // Greedy prefix so hyphenated repos work (da-events) and the last -fg- delimits the color.
+  const m = parts[1].match(/^(.+)-fg-(.+)$/);
+  return m ? m[2] : null;
+}
+
+/**
+ * Detect the single floodgate color present across all pasted lines.
+ * @returns {{ color: string|null, conflict: boolean, colors?: string[] }}
+ *   color set when exactly one distinct color is found; conflict true when two
+ *   or more distinct colors appear (with the offending colors listed).
+ */
+function detectFloodgateColor(rawText) {
+  const colors = new Set();
+  for (const line of rawText.split(/\r?\n/)) {
+    const c = extractFgColorFromLine(line);
+    if (c) colors.add(c);
+  }
+  const list = [...colors];
+  if (list.length === 0) return { color: null, conflict: false };
+  if (list.length > 1) return { color: null, conflict: true, colors: list };
+  return { color: list[0], conflict: false };
+}
+
 /** One input line → path for validation (AEM URLs converted; -fg- strip when not copy). */
 function lineToPathForValidation(trimmed, fgCopy, color) {
   const fromUrl = tryAemPageUrlToPath(trimmed);
@@ -179,6 +216,7 @@ export {
   validatePaths,
   parsePathInput,
   getValidPathsForInput,
+  detectFloodgateColor,
   expandWildcardPaths,
   getValidFloodgate,
 };

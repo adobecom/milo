@@ -7,6 +7,7 @@ import {
   validatePaths,
   parsePathInput,
   getValidPathsForInput,
+  detectFloodgateColor,
   getValidFloodgate,
 } from './utils.js';
 import * as floodbox from '../floodbox.js';
@@ -82,6 +83,12 @@ export default class MiloFloodgate extends LitElement {
     this._pathCount = 0;
     this._pathsRawValue = '';
     this._invalidPathLineIndices = new Set();
+
+    // Set when the pasted paths contain a -fg-<color> floodgate repo. Locks the
+    // action to Promote/Delete (Copy disabled) and locks the color to the one in
+    // the path. _fgColorInvalid is set when that color is not in the site config.
+    this._fgPathLock = false;
+    this._fgColorInvalid = false;
 
     this._previewAfterCopy = false;
     this._publishAfterPromote = false;
@@ -181,7 +188,7 @@ export default class MiloFloodgate extends LitElement {
       this._configLoadController = null;
       this._floodgateConfig = {};
       this._configLoading = false;
-      this._selectedColor = '';
+      if (!this._fgPathLock) this._selectedColor = '';
       this._configContextKey = '';
       this._configLoadKey = '';
       this._configLoadPromise = null;
@@ -220,8 +227,12 @@ export default class MiloFloodgate extends LitElement {
         this._floodgateConfig = cfg;
         this._configContextKey = key;
 
-        const colors = cfg.colors ?? [];
-        [this._selectedColor] = colors.length > 0 ? colors : [''];
+        // A pasted -fg-<color> path already set the color; don't overwrite it
+        // with the config default.
+        if (!this._fgPathLock) {
+          const colors = cfg.colors ?? [];
+          [this._selectedColor] = colors.length > 0 ? colors : [''];
+        }
 
         if (this._sourceRepo && this._selectedColor) {
           this._floodgateRepo = `${this._sourceRepo}-fg-${this._selectedColor}`;
@@ -249,6 +260,18 @@ export default class MiloFloodgate extends LitElement {
     if (this._configLoading || !(this._floodgateConfig instanceof FloodgateConfig)) return;
 
     const cfg = this._floodgateConfig;
+
+    // A pasted floodgate color must be one the site is configured for.
+    if (this._fgPathLock && this._selectedColor
+      && !(cfg.colors ?? []).includes(this._selectedColor)) {
+      const configured = (cfg.colors ?? []).join(', ') || 'none';
+      this._fgColorInvalid = true;
+      this._errorMessage = `Unknown floodgate color "${this._selectedColor}". This site is configured for: ${configured}.`;
+      this.requestUpdate();
+      return;
+    }
+    this._fgColorInvalid = false;
+
     const accessOpts = {
       allAccessUsers: cfg.allAccessUsers,
       copyOnlyUsers: cfg.copyOnlyUsers,
@@ -261,8 +284,10 @@ export default class MiloFloodgate extends LitElement {
     // Determine user role with a copy operation to get the base mode
     const roleCheck = evaluateFloodgateAccess({ ...accessOpts, paths: [], operation: 'copy' });
 
-    // Force operation to copy if user only has copy permissions
-    if (roleCheck.mode === 'copyOnly' && this._selectedOption !== 'fgCopy') {
+    // Force operation to copy if user only has copy permissions — unless the
+    // pasted paths are floodgate paths, which cannot be copied (let access block
+    // with an accurate message instead of silently switching to Copy).
+    if (!this._fgPathLock && roleCheck.mode === 'copyOnly' && this._selectedOption !== 'fgCopy') {
       this._selectedOption = 'fgCopy';
     }
 
@@ -278,6 +303,7 @@ export default class MiloFloodgate extends LitElement {
 
   _accessBlocksFind() {
     if (!this.token) return true;
+    if (this._fgColorInvalid) return true;
     if (this._configLoading) return true;
     if (!(this._floodgateConfig instanceof FloodgateConfig)) return true;
     if (this._accessBlockScope === 'all') return true;
@@ -335,6 +361,45 @@ export default class MiloFloodgate extends LitElement {
       return;
     }
 
+    // Detect pasted floodgate (-fg-<color>) paths. A single color locks the app
+    // to Promote/Delete on the source repo; multiple colors are invalid.
+    const { color: fgColor, conflict: fgConflict, colors: fgColors } = detectFloodgateColor(
+      this._pathsRawValue,
+    );
+    if (fgConflict) {
+      this._invalidPathLineIndices = new Set();
+      this._pathsLines = this._pathsRawValue.split(/\r?\n/);
+      this._pathCount = 0;
+      this._org = '';
+      this._sourceRepo = '';
+      this._floodgateRepo = '';
+      this._canStart = false;
+      this._repoReady = false;
+      this._fgPathLock = true;
+      this._fgColorInvalid = false;
+      this._errorMessage = `Multiple floodgate colors detected (${fgColors.join(', ')}). Use one color at a time.`;
+      this.requestUpdate();
+      return;
+    }
+    if (fgColor) {
+      this._selectedColor = fgColor;
+      this._fgPathLock = true;
+      this._fgColorInvalid = false;
+      if (this._selectedOption === 'fgCopy') this._selectedOption = 'fgPromote';
+    } else {
+      const wasLocked = this._fgPathLock;
+      this._fgPathLock = false;
+      this._fgColorInvalid = false;
+      // If unlocking from a color the site doesn't offer (e.g. a rejected
+      // unknown color), restore a valid default so the color select isn't blank.
+      if (wasLocked) {
+        const colors = this._floodgateConfig?.colors ?? [];
+        if (this._selectedColor && !colors.includes(this._selectedColor)) {
+          [this._selectedColor] = colors.length > 0 ? colors : [''];
+        }
+      }
+    }
+
     const { invalidLines, validPaths, lines } = parsePathInput(
       this._pathsRawValue,
       this._selectedOption === 'fgCopy',
@@ -383,6 +448,11 @@ export default class MiloFloodgate extends LitElement {
   }
 
   handleOptionChange(event) {
+    // Copy is disabled while floodgate paths are pasted; ignore any attempt.
+    if (this._fgPathLock && event.target.value === 'fgCopy') {
+      event.target.value = this._selectedOption;
+      return;
+    }
     this._selectedOption = event.target.value;
     this._resetWorkflowState();
     const textarea = this.shadowRoot.querySelector('textarea[name="paths"]');
@@ -394,6 +464,11 @@ export default class MiloFloodgate extends LitElement {
   }
 
   handleColorChange(event) {
+    // The color is dictated by the pasted floodgate path while locked.
+    if (this._fgPathLock) {
+      event.target.value = this._selectedColor;
+      return;
+    }
     this._selectedColor = event.target.value;
     this._floodgateRepo = this._sourceRepo && this._selectedColor
       ? `${this._sourceRepo}-fg-${this._selectedColor}` : '';
@@ -755,6 +830,9 @@ export default class MiloFloodgate extends LitElement {
     this._accessMode = 'unknown';
     this._accessInfoMessage = '';
     this._accessBlockScope = 'none';
+    this._fgPathLock = false;
+    this._fgColorInvalid = false;
+    this._selectedOption = 'fgCopy';
     this.requestUpdate();
   }
 
@@ -920,11 +998,11 @@ export default class MiloFloodgate extends LitElement {
         ${this._errorMessage ? html`<p class="error-message">${this._errorMessage}</p>` : nothing}
         <div class="button-row ${this._tabUiStart ? 'hide' : ''}">
           <select class="action-select" .disabled=${!this.token || isRunning} .value=${this._selectedOption} @change=${(e) => this.handleOptionChange(e)}>
-            <option value="fgCopy">Copy to Floodgate</option>
+            <option value="fgCopy" ?disabled=${this._fgPathLock}>Copy to Floodgate</option>
             <option value="fgPromote" ?disabled=${this._accessMode === 'copyOnly'}>Promote from Floodgate</option>
             <option value="fgDelete" ?disabled=${this._accessMode === 'copyOnly'}>Delete from Floodgate</option>
           </select>
-          <select class="color-select" .disabled=${!this.token || isRunning} .value=${this._selectedColor} @change=${(e) => this.handleColorChange(e)}>
+          <select class="color-select" .disabled=${!this.token || isRunning || this._fgPathLock} .value=${this._selectedColor} @change=${(e) => this.handleColorChange(e)}>
             ${this._floodgateConfig?.colors?.map((color) => html`
               <option value="${color}">${color.charAt(0).toUpperCase() + color.slice(1)}</option>
             `)}
