@@ -104,8 +104,7 @@ function addCursorFollower(list, noAnimation) {
   const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(tick); };
 
   const activate = (item) => {
-    if (item === activeItem) return;
-    if (noAnimation) return;
+    if (item === activeItem || noAnimation) return;
     if (REDUCED_MOTION.matches) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;

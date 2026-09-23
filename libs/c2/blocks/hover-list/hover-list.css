@@ -63,6 +63,10 @@
   overflow: hidden;
 }
 
+.hover-list.no-animation .hover-list-media {
+  display: none;
+}
+
 .hover-list-media picture,
 .hover-list-media img {
   block-size: 100%;
