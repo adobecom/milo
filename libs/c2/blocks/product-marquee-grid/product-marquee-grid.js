@@ -46,11 +46,11 @@ function buildMerchCard(col) {
   const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
   buttons.forEach((btn) => btn.remove());
 
-  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+  const contentLines = [...col.children]
     .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  allParas.forEach((el) => cardContent.append(el));
+  contentLines.forEach((el) => cardContent.append(el));
   decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
