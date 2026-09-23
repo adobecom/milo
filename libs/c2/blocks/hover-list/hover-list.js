@@ -67,7 +67,6 @@ function setupStickyBoundary(headline, list) {
 }
 
 function addCursorFollower(list, noAnimation) {
-  const staticMode = () => noAnimation || REDUCED_MOTION.matches;
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
   let activeLayers = [];
@@ -106,7 +105,10 @@ function addCursorFollower(list, noAnimation) {
 
   const activate = (item) => {
     if (item === activeItem) return;
-    if (staticMode()) {
+    // no-animation variant: author opted out of the hover media entirely.
+    if (noAnimation) return;
+    // Reduced motion: show the media statically, without the cursor-follow animation.
+    if (REDUCED_MOTION.matches) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;
       const media = item.querySelector('.hover-list-media');
@@ -157,7 +159,7 @@ function addCursorFollower(list, noAnimation) {
 
   const deactivate = () => {
     if (!activeItem) return;
-    if (staticMode()) {
+    if (REDUCED_MOTION.matches) {
       hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = null;
       activeLayers = [];
