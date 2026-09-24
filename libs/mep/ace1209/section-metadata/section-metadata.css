@@ -748,3 +748,27 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
   .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
 }
+
+/* JS-detected desktop page-zoom (bento-stack.js): Fall back to the same static layout */
+@media (width < 768px) {
+  .section.bento.stack-mobile.bento-stack-zoomed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--title-card-gap, 24px);
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card .explore-card-content::after { content: none; }
+}
