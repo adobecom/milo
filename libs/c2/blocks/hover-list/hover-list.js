@@ -36,6 +36,7 @@ function renderLayer(layer) {
   const { config: c, pic } = layer;
   const fade = (1 - layer.exit) ** 1.9;
   const scale = introScale(layer.intro);
+  pic.classList.add('is-active');
   pic.style.transform = `translate3d(${layer.x + c.stagger.x}px, ${layer.y + c.stagger.y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
   pic.style.opacity = String(fade);
 }
@@ -44,6 +45,7 @@ function hideMedia(media) {
   if (!media) return;
   if (media.matches(':popover-open')) media.hidePopover();
   media.querySelectorAll('picture').forEach((p) => {
+    p.classList.remove('is-active');
     p.style.transform = '';
     p.style.opacity = '';
   });
@@ -180,6 +182,9 @@ function addCursorFollower(list) {
   });
   list.addEventListener('mouseleave', () => {
     deactivate();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') deactivate();
   });
   window.addEventListener('scroll', () => {
     if (!DESKTOP_MQ.matches || !cursor.hasPrev || !activeItem) return;

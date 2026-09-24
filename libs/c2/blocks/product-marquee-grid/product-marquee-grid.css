@@ -102,11 +102,26 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
 
-    .con-button {
-      flex: 1;
-      justify-content: center;
-      text-align: center;
-      backdrop-filter: none;
+mas-field .icon-button {
+      display: inline;
+      background: none;
+      border: none;
+      border-radius: 0;
+      block-size: auto;
+      inline-size: auto;
+      margin-inline-start: 3px;
+
+      svg {
+        block-size: 18px;
+        inline-size: auto;
+        position: relative;
+        top: 4px;
+        color: #292929;
+
+        path {
+          fill: currentcolor;
+        }
+      }
     }
   }
 

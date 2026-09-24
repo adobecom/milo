@@ -1224,6 +1224,12 @@
   }
 }
 
+@media screen and (min-width: 900px) {
+  .bc-mobile-only .bc-floating-element {
+    display: none;
+  }
+}
+
 /* tablet wide up */
 @media screen and (min-width: 960px) {
   .brand-concierge.hero {
@@ -1296,8 +1302,8 @@
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: calc(100vh - 48px - var(--bc-gnav-height));
-    margin: 24px 24px 24px auto;
+    height: calc(100vh - 40px - var(--bc-side-overlay-top));
+    margin: 20px 20px 20px auto;
     bottom: 0;
     right: 0;
     width: 448px;
@@ -1440,7 +1446,7 @@
 }
 
 .brand-concierge.marquee .bc-header {
-  gap: 8px;
+  gap: 0;
   margin-bottom: 8px;
   padding: 0;
 }
@@ -1462,7 +1468,7 @@
 }
 
 .brand-concierge.marquee .bc-header-subtitle {
-  margin: 0;
+  margin: 8px 0 0;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.5;
@@ -1483,7 +1489,7 @@
 
 .brand-concierge.marquee .bc-prompt-cards {
   flex-flow: column nowrap;
-  gap: 12px;
+  gap: 8px;
   padding: 8px 0 64px;
 }
 
@@ -1599,12 +1605,11 @@
   }
 
   .brand-concierge.marquee .bc-header-subtitle {
-    margin-top: 4px;
     font-size: 20px;
   }
 
   .brand-concierge.marquee .bc-prompt-cards {
-    margin: 8px 0 56px;
+    margin: 0 0 56px;
   }
 
   .brand-concierge.marquee.dark .background::after {
