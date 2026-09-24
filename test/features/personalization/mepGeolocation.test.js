@@ -103,4 +103,20 @@ describe('mepGeolocation', () => {
     await init({ ...mepSettings, akamaiCode: 'us' });
     expect(document.querySelector('.how-to')).to.be.null;
   });
+
+  it('applies action when country filter matches countryIP', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    await init({ ...mepSettings, akamaiCode: 'de' });
+    expect(document.querySelector('.how-to')).to.be.null;
+  });
+
+  it('skips action when country filter does not match countryIP', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'us' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    await init({ ...mepSettings, akamaiCode: 'us' });
+    expect(document.querySelector('.how-to')).to.not.be.null;
+  });
 });

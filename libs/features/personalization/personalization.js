@@ -88,6 +88,8 @@ const MANIFEST_KEYS = [
   'pagefilter',
   'page filter',
   'page filter optional',
+  'country filter',
+  'country filter optional',
 ];
 
 export const DATA_TYPE = {
@@ -809,6 +811,14 @@ export async function handleCommands(
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
+export const matchesCountryFilter = (countryFilter, config = getConfig()) => {
+  const countryList = countryFilter.split(',')
+    .map((country) => normCountryCode(country.trim()))
+    .filter(Boolean);
+  if (!countryList.length) return true;
+  return countryList.includes(config.mep?.countryIP);
+};
+
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
   const config = getConfig();
   let manifestId = getFileName(manifestPath);
@@ -823,9 +833,11 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
     return;
   }
   const pageFilter = line['page filter'] || line['page filter optional'];
+  const countryFilter = line['country filter'] || line['country filter optional'];
   const { selector } = line;
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
+  if (countryFilter && !matchesCountryFilter(countryFilter, config)) return;
 
   if (!config.mep?.preview) manifestId = false;
   const { origin } = PAGE_URL;
