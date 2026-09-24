@@ -180,6 +180,149 @@ describe('MiloFloodgate', () => {
     });
   });
 
+  describe('paste-to-promote (-fg- detection)', () => {
+    async function setLoadedConfig(element, {
+      colors = ['pink', 'blue'],
+      allAccessUsers = ['user@test.com'],
+      copyOnlyUsers = [],
+      draftsAllowed = false,
+      org = 'adobecom',
+      sourceRepo = 'da-events',
+    } = {}) {
+      const { default: FC } = await import('../../../../tools/floodbox/floodgate/floodgate-config.js');
+      const cfg = new FC(org, sourceRepo, 'test-token');
+      cfg.colors = colors;
+      cfg.allAccessUsers = allAccessUsers;
+      cfg.copyOnlyUsers = copyOnlyUsers;
+      cfg.draftsAllowed = draftsAllowed;
+      element._floodgateConfig = cfg;
+      // Match context so handleInputChange does not trigger a config reload.
+      element._configContextKey = `${org}|${sourceRepo}`;
+      element._prevOrg = org;
+      element._prevSourceRepo = sourceRepo;
+      return cfg;
+    }
+
+    const change = (element, value) => element.handleInputChange({ target: { value } });
+
+    beforeEach(() => {
+      el = createComponent();
+    });
+
+    it('switches to promote, locks, and derives repos from an fg path', () => {
+      change(el, '/adobecom/da-events-fg-pink/events/my/stuff');
+      expect(el._selectedColor).to.equal('pink');
+      expect(el._selectedOption).to.equal('fgPromote');
+      expect(el._fgPathLock).to.be.true;
+      expect(el._sourceRepo).to.equal('da-events');
+      expect(el._floodgateRepo).to.equal('da-events-fg-pink');
+    });
+
+    it('keeps Delete selected when an fg path is pasted while Delete is active', () => {
+      el._selectedOption = 'fgDelete';
+      change(el, '/adobecom/da-events-fg-pink/a');
+      expect(el._selectedOption).to.equal('fgDelete');
+      expect(el._fgPathLock).to.be.true;
+    });
+
+    it('disables the Copy option and color select while locked', async () => {
+      change(el, '/adobecom/da-events-fg-pink/a');
+      await el.updateComplete;
+      const copyOption = el.shadowRoot.querySelector('.action-select option[value="fgCopy"]');
+      const colorSelect = el.shadowRoot.querySelector('.color-select');
+      expect(copyOption.disabled).to.be.true;
+      expect(colorSelect.disabled).to.be.true;
+    });
+
+    it('flags a conflict for two different colors and preserves the error', () => {
+      change(el, '/adobecom/da-events-fg-pink/a\n/adobecom/da-events-fg-blue/b');
+      expect(el._fgPathLock).to.be.true;
+      expect(el._canStart).to.be.false;
+      expect(el._repoReady).to.be.false;
+      expect(el._errorMessage).to.contain('Multiple floodgate colors');
+    });
+
+    it('allows plain paths mixed with a single fg color', () => {
+      change(el, '/adobecom/da-events/a\n/adobecom/da-events-fg-pink/b');
+      expect(el._selectedColor).to.equal('pink');
+      expect(el._sourceRepo).to.equal('da-events');
+      expect(el._canStart).to.be.true;
+    });
+
+    it('does not overwrite a detected color with the config default (TRAP 1)', async () => {
+      // Deterministically drive a config load whose default first color is blue,
+      // while a pasted fg path has already set the color to pink under the lock.
+      sinon.restore();
+      sinon.stub(window, 'fetch').callsFake((input) => {
+        const u = resolveFetchUrl(input);
+        if (u.includes('floodgate/config.json')) {
+          return Promise.resolve(new Response(
+            JSON.stringify({ data: [{ key: 'colors', value: 'blue,pink' }] }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ));
+        }
+        return Promise.resolve(mockDaLiveFetchResponse(u));
+      });
+      el._fgPathLock = true;
+      el._selectedColor = 'pink';
+      el._org = 'adobecom';
+      el._sourceRepo = 'da-events';
+      await el._loadFloodgateConfig();
+      expect(el._floodgateConfig.colors).to.eql(['blue', 'pink']);
+      expect(el._selectedColor).to.equal('pink');
+    });
+
+    it('blocks an unknown color not in config', async () => {
+      await setLoadedConfig(el, { colors: ['pink', 'blue'] });
+      change(el, '/adobecom/da-events-fg-purple/a');
+      el._evaluateAccess();
+      expect(el._fgColorInvalid).to.be.true;
+      expect(el._accessBlocksFind()).to.be.true;
+      expect(el._errorMessage).to.contain('purple');
+    });
+
+    it('does not force copy for a copyOnly user on fg paths (TRAP 2)', async () => {
+      await setLoadedConfig(el, {
+        colors: ['pink'],
+        allAccessUsers: [],
+        copyOnlyUsers: ['user@test.com'],
+      });
+      change(el, '/adobecom/da-events-fg-pink/a');
+      el._evaluateAccess();
+      expect(el._selectedOption).to.equal('fgPromote');
+      expect(el._accessBlocksFind()).to.be.true;
+      expect(el._errorMessage).to.contain('Promote and Delete');
+    });
+
+    it('evaluates access against the source repo, never the floodgate repo', async () => {
+      const cfg = await setLoadedConfig(el, { colors: ['pink'] });
+      change(el, '/adobecom/da-events-fg-pink/a');
+      el._evaluateAccess();
+      expect(el._sourceRepo).to.equal('da-events');
+      expect(cfg.repo).to.equal('da-events');
+    });
+
+    it('prevents switching to Copy while locked', () => {
+      change(el, '/adobecom/da-events-fg-pink/a');
+      el.handleOptionChange({ target: { value: 'fgCopy' } });
+      expect(el._selectedOption).to.equal('fgPromote');
+    });
+
+    it('no-ops color change while locked', () => {
+      change(el, '/adobecom/da-events-fg-pink/a');
+      el.handleColorChange({ target: { value: 'blue' } });
+      expect(el._selectedColor).to.equal('pink');
+    });
+
+    it('clears the lock when fg paths are removed', () => {
+      change(el, '/adobecom/da-events-fg-pink/a');
+      expect(el._fgPathLock).to.be.true;
+      change(el, '/adobecom/da-events/a');
+      expect(el._fgPathLock).to.be.false;
+      expect(el._sourceRepo).to.equal('da-events');
+    });
+  });
+
   describe('tabUi', () => {
     beforeEach(() => {
       el = createComponent();
