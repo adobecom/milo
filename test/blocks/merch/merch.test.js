@@ -16,6 +16,7 @@ import merch, {
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
+  getUpgradeAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
@@ -905,7 +906,26 @@ describe('Merch Block', () => {
         }, 1);
       });
       const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
-      expect(action).to.be.empty;
+      expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: returns undefined and does not throw on empty offers', async () => {
+      mockIms('US');
+      const options = { entitlement: true, upgrade: true };
+      const action = await getCheckoutAction([], options, Promise.resolve(true));
+      expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: returns undefined and does not throw when offers is undefined', async () => {
+      mockIms('US');
+      const options = { entitlement: true, upgrade: true };
+      const action = await getCheckoutAction(undefined, options, Promise.resolve(true));
+      expect(action).to.be.undefined;
+    });
+
+    it('getDownloadAction: returns undefined on empty offers', async () => {
+      const action = await getDownloadAction({ entitlement: true }, Promise.resolve(true), []);
+      expect(action).to.be.undefined;
     });
   });
 
@@ -913,6 +933,64 @@ describe('Merch Block', () => {
     beforeEach(() => {
       getMasBase.baseUrl = undefined;
       updateSearch({});
+    });
+
+    it('getUpgradeAction: returns undefined when no upgrade offer is on the page', async () => {
+      mockIms('US');
+      getUpgradeAction.offer = undefined;
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+      try {
+        const action = await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          null,
+        );
+        expect(action).to.be.undefined;
+      } finally {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        getUpgradeAction.offer = undefined;
+      }
+    });
+
+    it('getUpgradeAction: does not cache a miss, so a later upgrade offer is still resolved', async () => {
+      mockIms('US');
+      getUpgradeAction.offer = undefined;
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+      const missAction = await getUpgradeAction(
+        { upgrade: true },
+        Promise.resolve(true),
+        [{ productArrangement: { productFamily: 'ACROBAT' } }],
+        null,
+      );
+      expect(missAction).to.be.undefined;
+      expect(getUpgradeAction.offer, 'a miss must not be cached').to.not.be.ok;
+
+      const offerEl = document.createElement('a');
+      offerEl.setAttribute('data-wcs-osi', 'TEST_OSI');
+      const container = document.createElement('div');
+      container.classList.add('merch-offers', 'upgrade');
+      container.appendChild(offerEl);
+      document.body.appendChild(container);
+      try {
+        await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+          null,
+        );
+        expect(getUpgradeAction.offer).to.equal(offerEl);
+      } finally {
+        container.remove();
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        getUpgradeAction.offer = undefined;
+      }
     });
 
     it('updates CTA text to Upgrade Now', async () => {

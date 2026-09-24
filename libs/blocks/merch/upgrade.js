@@ -40,7 +40,7 @@ export const lanaLog = async (msg, subType, severity) => {
 let shouldRefetchEntitlements = false;
 
 function buildUrl(upgradeOffer, upgradable, env) {
-  const toOffer = upgradeOffer?.value[0].offerId;
+  const toOffer = upgradeOffer?.value?.[0]?.offerId;
   const fromOffer = upgradable?.offer?.offer_id;
   if (!toOffer || !fromOffer) return undefined;
   const url = new URL(env?.name === 'prod' ? 'https://plan.adobe.com' : 'https://stage.plan.adobe.com');
