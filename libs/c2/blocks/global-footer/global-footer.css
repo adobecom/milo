@@ -470,6 +470,10 @@ span.feds-footer-privacyLink-divider {
   gap: var(--s2a-spacing-xs);
 }
 
+.global-footer.event .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: relative;
+}
+
 .global-footer.event .feds-footer-privacy-listitem:not(:last-child)::after {
   content: "/";
   margin-left: var(--s2a-spacing-xs);
@@ -520,6 +524,12 @@ span.feds-footer-privacyLink-divider {
   background-size: cover;
   margin-top: calc(var(--footer-background-offset) * -1);
   padding-top: var(--footer-background-offset);
+}
+
+.global-footer.event .footer-logo-image svg {
+  path {
+    fill: var(--s2a-color-content-knockout);
+  }
 }
 
 @media (min-width: 768px) {

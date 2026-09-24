@@ -614,6 +614,35 @@ describe('mas-field', () => {
       expect(link.classList.contains('con-button')).to.be.true;
     });
 
+    it('re-localizes a non-CTA link (e.g. "See Terms") when its mas-field re-renders late', async () => {
+      // Regression: block-level content (not an inline CTA) is left attached in the DOM
+      // (MWPW-207700-adjacent code path). If the external mas-field component re-renders it
+      // independently after the initial decoration (e.g. router-marquee toggling
+      // visibility/inert), the fresh anchor it injects must still get localized.
+      setConfig({
+        codeRoot: '/libs',
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: ['www.adobe.com'],
+      });
+      const p = document.createElement('p');
+      p.innerHTML = '<mas-field field="description"><span data-role="mas-field-content">'
+        + '<h3>Starting at $9.99/mo.</h3><a href="https://www.adobe.com/">See terms</a>'
+        + '</span></mas-field>';
+      document.body.append(p);
+
+      // Late/independent re-render: the component regenerates its content with a fresh,
+      // un-localized anchor, then fires mas:ready again.
+      p.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const link = p.querySelector('mas-field a');
+      expect(link.href).to.equal('https://www.adobe.com/fr/');
+      p.remove();
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
@@ -839,10 +868,15 @@ describe('mas-field', () => {
         document.body.classList.remove('disable-scroll');
       });
 
-      const buildModalField = (href, { promo = 'proj', text = 'modal' } = {}) => {
+      const buildModalField = (href, { promo = 'proj', text = 'modal', content = '' } = {}) => {
         const mf = document.createElement('mas-field');
         mf.setAttribute('field', 'shortDescription');
         if (promo) mf.setAttribute('data-promotion-project', promo);
+        if (content) {
+          const copy = document.createElement('p');
+          copy.innerHTML = content;
+          mf.append(copy);
+        }
         const a = document.createElement('a');
         a.href = href;
         a.textContent = text;
@@ -875,6 +909,17 @@ describe('mas-field', () => {
         expect(a.isConnected, 'sentinel link removed').to.be.false;
       });
 
+      it('finds and consumes the modal link when the field also contains existing content', async () => {
+        const { mf, a } = buildModalField('/drafts/promo/content-modal', { content: 'Existing copy <a href="/terms">Terms</a>' });
+        dispatchReady(mf);
+
+        const opened = await waitFor(() => document.querySelector('.dialog-modal[id="content-modal"]'));
+        expect(opened, 'modal dialog opened').to.exist;
+        expect(a.isConnected, 'sentinel link removed').to.be.false;
+        expect(mf.textContent).to.include('Existing copy');
+        expect(mf.querySelector('a[href="/terms"]')).to.exist;
+      });
+
       it('processes the modal: id from the path, fragment content, close button and curtain', async () => {
         const { mf } = buildModalField('/drafts/promo/offer-modal');
         dispatchReady(mf);
@@ -894,11 +939,11 @@ describe('mas-field', () => {
       it('opens a modal only once when mas:ready fires repeatedly for the same field', async () => {
         const { mf } = buildModalField('/drafts/promo/dupe-modal');
         dispatchReady(mf);
-        await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
-        // A second resolution (e.g. mas re-render) must not stack a second dialog.
+        // Fire again before the first modal finishes loading.
         dispatchReady(mf);
-        await new Promise((resolve) => { setTimeout(resolve, 200); });
+        const dialog = await waitFor(() => document.querySelector('.dialog-modal[id="dupe-modal"]'));
 
+        expect(dialog).to.exist;
         expect(document.querySelectorAll('.dialog-modal[id="dupe-modal"]').length).to.equal(1);
       });
 
@@ -918,6 +963,174 @@ describe('mas-field', () => {
 
         expect(a.isConnected, 'link untouched').to.be.true;
         expect(document.querySelector('.dialog-modal')).to.not.exist;
+      });
+    });
+
+    describe('MAS countdown timer', () => {
+      const futureCdtEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      const waitFor = async (fn, ms = 2000) => {
+        const start = Date.now();
+        let value = fn();
+        while (!value && Date.now() - start < ms) {
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => { setTimeout(resolve, 10); });
+          value = fn();
+        }
+        return value;
+      };
+
+      const buildCountdownField = () => {
+        const mf = document.createElement('mas-field');
+        const fragment = document.createElement('aem-fragment');
+        fragment.rawData = {
+          cdtStart: '2001-12-12T12:12:00Z',
+          cdtEnd: futureCdtEnd,
+        };
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = 'Existing copy <a href="/terms">Terms</a> <a href="#">countdown-timer</a>';
+        mf.append(fragment, content);
+        return mf;
+      };
+
+      it('loads the timer from cdtStart and cdtEnd on the resolved fragment', async () => {
+        document.head.innerHTML = '';
+        const container = document.createElement('div');
+        container.classList.add('countdown-timer');
+        const mf = buildCountdownField();
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect([...mf.querySelectorAll('a')].some((a) => a.textContent.trim() === 'countdown-timer')).to.be.false;
+        expect(mf.textContent).to.include('Existing copy Terms');
+        expect(mf.querySelector('a[href="/terms"]')).to.exist;
+        const timer = await waitFor(() => container.querySelector('.timer-label'));
+        expect(timer).to.exist;
+      });
+
+      it('renders the timer from the sentinel link alone, with no block variant class required', async () => {
+        document.head.innerHTML = '';
+        const container = document.createElement('div');
+        const mf = buildCountdownField();
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect([...mf.querySelectorAll('a')].some((a) => a.textContent.trim() === 'countdown-timer')).to.be.false;
+        const timer = await waitFor(() => container.querySelector('.timer-label'));
+        expect(timer).to.exist;
+      });
+
+      it('keeps the sentinel link when the resolved fragment has no cdtStart/cdtEnd', async () => {
+        const mf = document.createElement('mas-field');
+        const fragment = document.createElement('aem-fragment');
+        fragment.rawData = {};
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        content.innerHTML = 'Existing copy <a href="#">countdown-timer</a>';
+        mf.append(fragment, content);
+        const container = document.createElement('div');
+        container.append(mf);
+        document.body.append(container);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect(mf.querySelector('a')).to.exist;
+        expect(container.querySelector('.timer-label')).to.not.exist;
+      });
+
+      it('keeps the timer attached when the authored wrapper is replaced while loading', async () => {
+        document.head.innerHTML = '';
+        const block = document.createElement('div');
+        block.classList.add('marquee');
+        const wrapper = document.createElement('p');
+        const mf = buildCountdownField();
+        wrapper.append(mf);
+        block.append(wrapper);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        // normalizeBlockFieldWrappers replaces the authored <p> while loadCDT is still awaiting.
+        wrapper.replaceWith(mf);
+
+        const timer = await waitFor(() => block.querySelector('.countdown-timer'));
+        expect(timer, 'timer rendered inside the block').to.exist;
+        expect(timer.isConnected, 'timer stays attached to the document').to.be.true;
+        expect(block.querySelector('.timer-label')).to.exist;
+      });
+
+      it('renders a single timer when the block also loads its own countdown', async () => {
+        document.head.innerHTML = '';
+        const { loadCDT } = await import('../../../libs/utils/decorate.js');
+        const block = document.createElement('div');
+        block.classList.add('marquee', 'countdown-timer');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        // marquee.init() renders its own countdown from page metadata right after.
+        await loadCDT(text, block.classList, '2001-12-12T12:12:00Z,2036-12-12T12:12:00Z');
+
+        await waitFor(() => block.querySelector('.timer-label'));
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
+        expect(block.querySelectorAll('.timer-label').length).to.equal(1);
+      });
+
+      it('skips MAS activation when the block rendered its countdown first', async () => {
+        document.head.innerHTML = '';
+        const { loadCDT } = await import('../../../libs/utils/decorate.js');
+        const block = document.createElement('div');
+        block.classList.add('marquee', 'countdown-timer');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        await loadCDT(text, block.classList, '2001-12-12T12:12:00Z,2036-12-12T12:12:00Z');
+        await waitFor(() => block.querySelector('.timer-label'));
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 100); });
+
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
+      });
+
+      it('rebuilds the timer when a MAS re-render wipes the previous one', async () => {
+        document.head.innerHTML = '';
+        const block = document.createElement('div');
+        block.classList.add('marquee');
+        const text = document.createElement('div');
+        text.classList.add('text');
+        const mf = buildCountdownField();
+        text.append(mf);
+        block.append(text);
+        document.body.append(block);
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await waitFor(() => block.querySelector('.timer-label'));
+
+        // MAS re-resolves the field and replaces its content, taking the timer with it.
+        block.querySelector('.countdown-timer').remove();
+        const resentinel = document.createElement('a');
+        resentinel.href = '#';
+        resentinel.textContent = 'countdown-timer';
+        mf.querySelector('[data-role="mas-field-content"]').append(resentinel);
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+
+        const timer = await waitFor(() => block.querySelector('.countdown-timer'));
+        expect(timer, 'timer rebuilt after re-render').to.exist;
+        expect(block.querySelectorAll('.countdown-timer').length).to.equal(1);
       });
     });
   });
