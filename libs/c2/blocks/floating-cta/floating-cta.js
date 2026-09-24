@@ -207,6 +207,7 @@ export default async function init(el) {
     || a.parentElement?.classList.contains('con-button');
   const actionLink = !img ? (links.find(isButtonLink) ?? links[links.length - 1] ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
+<<<<<<< HEAD
   let actionEl = null;
   if (actionLink) {
     if (actionLink.classList.contains('con-button')) actionEl = actionLink;
@@ -216,6 +217,10 @@ export default async function init(el) {
       actionEl.classList.add('con-button', 'blue');
     }
   }
+=======
+  const actionConBtn = actionLink.classList.contains('con-buton') ? actionLink : actionLink.parentElement;
+  const actionEl = actionLink ? actionConBtn : null;
+>>>>>>> 05871f289 (minor change for sticky cta)
   let labelText;
   if (actionEl) {
     const labelSource = contentDiv.cloneNode(true);
