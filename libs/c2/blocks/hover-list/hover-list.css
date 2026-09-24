@@ -8,6 +8,7 @@
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
   color: var(--s2a-color-content-knockout);
   padding-block: var(--s2a-spacing-md);
+  text-wrap: balance;
 }
 
 .hover-list-items {
@@ -52,6 +53,7 @@
   flex: 1;
   letter-spacing: var(--s2a-font-letter-spacing-4xl);
   margin: 0;
+  text-wrap: pretty;
 }
 
 .hover-list-media {
