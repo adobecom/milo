@@ -83,14 +83,13 @@ function decorateLinkFarms(el) {
   });
 }
 
-// Doodlebug grid-cta CTAs render a decorative "opens in new window" icon via a CSS
-// pseudo-element, which is invisible to screen readers. Expose it on the anchor itself.
+// Exposing doodlebug CTA icon for screen readers
 async function decorateOpensInAria(el) {
   const links = el.querySelectorAll('.cta-container .action-area a.con-button');
   if (!links.length) return;
   const label = await replaceKey('opens-in-new-window', getConfig());
   links.forEach((a) => {
-    if (a.querySelector('.sr-only')) return; // idempotent
+    if (a.querySelector('.sr-only')) return;
     a.append(createTag('span', { class: 'sr-only' }, ` (${label})`));
   });
 }
