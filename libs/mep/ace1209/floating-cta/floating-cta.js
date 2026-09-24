@@ -98,23 +98,17 @@ function applyCustomHide(el, ctaEl, animation) {
   function getMarqueeBoundary() {
     const allCandidates = [...document.querySelectorAll(marqueeSelector)]
       .filter((candidate) => !candidate.closest('.floating-cta'));
-<<<<<<< HEAD
-<<<<<<< HEAD
     const precedingCandidates = allCandidates.filter((candidate) => (
       // eslint-disable-next-line no-bitwise
       candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING
     ));
-=======
     const precedingCandidates = allCandidates.filter((candidate) =>
       // eslint-disable-next-line no-bitwise
       candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING);
->>>>>>> ead98c970 (Fixed minor issues)
-=======
     const precedingCandidates = allCandidates.filter((candidate) => (
       // eslint-disable-next-line no-bitwise
       candidate.compareDocumentPosition(ctaBoundary) & Node.DOCUMENT_POSITION_FOLLOWING
     ));
->>>>>>> 8cfa53693 (Addressed issues with cta not loading and pr comments)
     const marquee = precedingCandidates[precedingCandidates.length - 1] || allCandidates[0];
     if (marquee) return getBoundary(marquee);
     let sibling = ctaBoundary?.previousElementSibling;
@@ -219,6 +213,7 @@ export default async function init(el) {
   const isButtonLink = (a) => a.classList.contains('con-button')
     || a.parentElement?.classList.contains('con-button');
 <<<<<<< HEAD
+<<<<<<< HEAD
   const actionLink = !img ? (links.find(isButtonLink) ?? links[links.length - 1] ?? null) : null;
   const linkEl = links.find((a) => a !== actionLink) ?? null;
   let actionEl = null;
@@ -237,6 +232,18 @@ export default async function init(el) {
     actionEl = actionLink.classList.contains('con-button')
       ? actionLink : actionLink.parentElement;
 >>>>>>> 8cfa53693 (Addressed issues with cta not loading and pr comments)
+=======
+  const actionLink = !img ? (links.find(isButtonLink) ?? links[links.length - 1] ?? null) : null;
+  const linkEl = links.find((a) => a !== actionLink) ?? null;
+  let actionEl = null;
+  if (actionLink) {
+    if (actionLink.classList.contains('con-button')) actionEl = actionLink;
+    else if (actionLink.parentElement?.classList.contains('con-button')) actionEl = actionLink.parentElement;
+    else {
+      actionEl = actionLink;
+      actionEl.classList.add('con-button', 'blue');
+    }
+>>>>>>> e9d5a4885 (Fixed issue with button click on mobile)
   }
   let labelText;
   if (actionEl) {
