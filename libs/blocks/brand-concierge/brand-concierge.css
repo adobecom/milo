@@ -1407,11 +1407,15 @@
 }
 
 .brand-concierge.marquee.dark .background::after {
-  background: linear-gradient(270deg, rgba(0 0 0 / 0%) -100%, #000 100%);
+  background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(0 0 0 / 0%) -100%, rgba(0 0 0 / 60%) 100%));
 }
 
 .brand-concierge.marquee.light .background::after {
-  background: linear-gradient(270deg, rgba(255 255 255 / 0%) 0%, #FFF 100%);
+  background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(255 255 255 / 0%) 0%, rgba(255 255 255 / 60%) 100%));
+}
+
+.brand-concierge.marquee.no-gradient .background::after {
+  content: none;
 }
 
 .brand-concierge.marquee .background .tablet-only,
@@ -1557,6 +1561,14 @@
   .brand-concierge.marquee .bc-legal {
     max-width: 600px;
   }
+
+  .brand-concierge.marquee.dark .background::after {
+    background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(0 0 0 / 0%) -100%, #000 100%));
+  }
+
+  .brand-concierge.marquee.light .background::after {
+    background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(255 255 255 / 0%) 0%, #FFF 100%));
+  }
 }
 
 @media screen and (min-width: 768px) {
@@ -1613,11 +1625,11 @@
   }
 
   .brand-concierge.marquee.dark .background::after {
-    background: linear-gradient(270deg, rgba(0 0 0 / 0%) -0.39%, #000 100%);
+    background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(0 0 0 / 0%) -0.39%, #000 100%));
   }
 
   .brand-concierge.marquee.light .background::after {
-    background: linear-gradient(270deg, rgba(255 255 255 / 0%) -0.39%, #FFF 100%);
+    background: var(--bc-marquee-gradient, linear-gradient(270deg, rgba(255 255 255 / 0%) -0.39%, #FFF 100%));
   }
 
   .brand-concierge.marquee .bc-header-title,
