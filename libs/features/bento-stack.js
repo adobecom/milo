@@ -1,5 +1,22 @@
 const MOBILE = '(width < 768px)';
 
+// Desktop page-zoom (Ctrl/Cmd +/-) shrinks the layout viewport in BOTH dimensions
+// while window.screen stays pinned to the physical monitor, so screen/inner ratios
+// climb together. A narrow device (or split-screen/multi-window, which only
+// narrows width) keeps at least one ratio near 1, so requiring both to exceed the
+// threshold isolates true zoom from real small/narrow viewports.
+const ZOOM_RATIO_THRESHOLD = 1.3;
+
+function isZoomed() {
+  const { width: screenW, height: screenH } = window.screen || {};
+  if (!screenW || !screenH || !window.innerWidth || !window.innerHeight) return false;
+  const wRatio = screenW / window.innerWidth;
+  const hRatio = screenH / window.innerHeight;
+  // eslint-disable-next-line no-console
+  console.debug('[bento-stack] zoom check', { wRatio, hRatio, zoomed: wRatio > ZOOM_RATIO_THRESHOLD && hRatio > ZOOM_RATIO_THRESHOLD });
+  return wRatio > ZOOM_RATIO_THRESHOLD && hRatio > ZOOM_RATIO_THRESHOLD;
+}
+
 export function getCards(section) {
   return [...section.querySelectorAll(':scope > .explore-card')];
 }
@@ -32,12 +49,15 @@ function measure(section, cards) {
   const gnav = document.querySelector('header.global-navigation nav');
   const bottom = gnav?.getBoundingClientRect().bottom;
   if (bottom > 0) section.style.setProperty('--gnav-offset', `${Math.round(bottom)}px`);
+
+  section.classList.toggle('bento-stack-zoomed', isZoomed());
 }
 
 function clearMeasurements(section) {
   section.style.removeProperty('--card-height');
   section.style.removeProperty('--title-height');
   section.style.removeProperty('--gnav-offset');
+  section.classList.remove('bento-stack-zoomed');
 }
 
 export function contentReady(cards) {
@@ -77,6 +97,7 @@ export default function initBentoStack(section) {
       if (!section.isConnected) {
         ro?.disconnect();
         mq.removeEventListener('change', update);
+        window.removeEventListener('resize', update);
         return;
       }
       // (clearing/setting --card-height resizes the observed content).
@@ -97,5 +118,9 @@ export default function initBentoStack(section) {
     const title = section.querySelector(':scope > .rich-content');
     if (title) ro.observe(title);
     mq.addEventListener('change', update);
+    // Zoom can change window dimensions without crossing the MOBILE width
+    // breakpoint (e.g. already-narrow mobile, or re-zooming while still <768px),
+    // so isZoomed() needs re-evaluation on any resize, not just mq changes.
+    window.addEventListener('resize', update);
   });
 }
