@@ -74,6 +74,73 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('isAupEnabled', () => {
+    let originalUrl;
+    let meta;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.delete('aup-select');
+      window.history.replaceState(null, '', url);
+      meta = document.createElement('meta');
+      meta.name = 'aup-select';
+    });
+
+    afterEach(() => {
+      meta.remove();
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('defaults to disabled and reads metadata insertion, replacement, and removal', () => {
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      document.head.append(meta);
+      expect(utils.isAupEnabled()).to.be.true;
+      const replacement = meta.cloneNode();
+      replacement.content = 'off';
+      meta.replaceWith(replacement);
+      meta = replacement;
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      expect(utils.isAupEnabled()).to.be.true;
+      meta.remove();
+      expect(utils.isAupEnabled()).to.be.false;
+    });
+
+    it('enables AUP for signed-in Universal Nav users', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled()).to.be.false;
+        expect(utils.isAupEnabled(true)).to.be.true;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
+    });
+
+    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
+      it(`requires exact on for metadata "${value}"`, () => {
+        meta.content = value;
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+      });
+
+      it(`reads query "${value}" with and without metadata`, () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('aup-select', value);
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        meta.content = value === 'on' ? 'off' : 'on';
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        url.searchParams.delete('aup-select');
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+      });
+    });
+  });
+
   describe('prerendered support', () => {
     it('loads milo minimally when document is prerendered', async () => {
       document.head.innerHTML = head;
@@ -97,6 +164,122 @@ describe('Utils', () => {
       expect(marqueeDecoratePreload).to.exist;
       expect(scriptPreload).to.exist;
       expect(stylePreload).to.exist;
+    });
+  });
+
+  describe('preloadLcpCodeFiles', () => {
+    const preloadSel = 'link[rel="preload"], link[rel="modulepreload"]';
+
+    beforeEach(() => {
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      utils.setConfig(config);
+    });
+
+    it('does nothing when the disable-mep-perf-optimization kill switch is on', () => {
+      document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('preloads authored first-section blocks (js + warmed css, not applied)', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
+      expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    it('preloads non-commerce autoblocks but excludes merch/mas', () => {
+      document.body.innerHTML = `<main><div>
+        <a href="https://www.youtube.com/watch?v=abc">watch</a>
+        <a href="https://www.adobe.com/tools/ost?ci=1">buy</a>
+        <a href="https://mas.adobe.com/studio.html#content-type=mas-compare-chart">chart</a>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/youtube/youtube.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('excludes authored merch/mas blocks, not just link-derived autoblocks', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="merch"></div>
+        <div class="mas-compare-chart-autoblock"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('only warms the video autoblock for media_*.mp4 anchors', () => {
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.not.exist;
+
+      document.head.innerHTML = '';
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/media_9.mp4">media_9.mp4</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('warms the video autoblock from a media_*.mp4 image alt', () => {
+      document.body.innerHTML = '<main><div><img alt="media_9.mp4"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('preloads placeholders.js when the first section uses {{ }} tokens', () => {
+      document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
+      // as=fetch preloads only get reused by the later customFetch() call if crossorigin is
+      // set - otherwise the browser treats them as a mismatched resource and double-fetches.
+      const placeholderPreload = document.head.querySelector('link[rel="preload"][as="fetch"][href*="/placeholders.json"]');
+      expect(placeholderPreload).to.exist;
+      expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
+    });
+
+    it('does not treat a block whose name merely contains "merch" as commerce', () => {
+      document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.exist;
+    });
+
+    it('warms icons.js and icons.css when the first section contains icons', () => {
+      document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/features/icons/icons.css"]')).to.exist;
+    });
+
+    const geoIpUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    it('warms the geo-ip sheet when lingo is active and the LCP has a -geo-ip token', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-pos' });
+      document.head.innerHTML = '<meta name="langfirst" content="on">';
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'geo-ip sheet warmed').to.exist;
+    });
+
+    it('does not warm the geo-ip sheet when lingo is inactive', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-neg' });
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no geo-ip warm without lingo').to.be.undefined;
+    });
+
+    it('does nothing when there is no first section', () => {
+      document.body.innerHTML = '<header></header>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
     });
   });
 
@@ -1510,7 +1693,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when some icons are not excluded
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -1536,7 +1719,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when no exclusion config
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -3438,6 +3621,104 @@ describe('Utils', () => {
       const url = geoUrl();
       await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
       expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+  });
+
+  describe('shouldBlockFreeTrialLinks', () => {
+    let originalPrefix;
+
+    const createLink = (text, attrs = {}) => {
+      const link = document.createElement('a');
+      link.href = 'https://www.adobe.com/kr';
+      link.textContent = text;
+      Object.entries(attrs).forEach(([key, val]) => link.setAttribute(key, val));
+      document.body.append(link);
+      return link;
+    };
+
+    beforeEach(() => {
+      const { locale } = utils.getConfig();
+      originalPrefix = locale.prefix;
+      locale.prefix = '/kr';
+    });
+
+    afterEach(() => {
+      utils.getConfig().locale.prefix = originalPrefix;
+    });
+
+    it('blocks free trial CTAs on the KR locale', () => {
+      ['무료 체험판', '무료 체험하기', 'Free Trial', 'free-trial', '{{try-for-free}}', '무료로 시작하기', 'Start for free'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(link.isConnected).to.be.false;
+      });
+    });
+
+    it('removes the wrapping STRONG or EM when the link is its only child', () => {
+      ['STRONG', 'EM'].forEach((tagName) => {
+        const wrapper = document.createElement(tagName);
+        document.body.append(wrapper);
+        const link = createLink('무료 체험판');
+        wrapper.append(link);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(wrapper.isConnected).to.be.false;
+      });
+    });
+
+    it('does not block the free app download CTA', () => {
+      ['무료 앱 다운로드', '무료  앱\n다운로드', '지금 무료 앱 다운로드'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+        expect(link.isConnected).to.be.true;
+        link.remove();
+      });
+    });
+
+    it('blocks trial modal links regardless of copy', () => {
+      const link = createLink('무료 앱 다운로드');
+      link.dataset.modalPath = '/kr/cc-shared/fragments/trial-modals/photoshop';
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+      expect(link.isConnected).to.be.false;
+    });
+
+    it('does not block links allowed by attribute or hash', () => {
+      const withAttribute = createLink('무료 체험판', { 'data-allow-kr-free-trial': 'true' });
+      expect(utils.shouldBlockFreeTrialLinks(withAttribute)).to.be.false;
+      expect(withAttribute.isConnected).to.be.true;
+      withAttribute.remove();
+
+      const withHash = createLink('무료 체험판');
+      withHash.href = 'https://www.adobe.com/kr#_allow-kr-trial';
+      expect(utils.shouldBlockFreeTrialLinks(withHash)).to.be.false;
+      expect(withHash.getAttribute('data-allow-kr-free-trial')).to.equal('true');
+      expect(withHash.href).to.not.include('_allow-kr-trial');
+      withHash.remove();
+    });
+
+    it('does not block when the allow-kr-free-trial metadata is on', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'allow-kr-free-trial';
+      meta.content = 'on';
+      document.head.append(meta);
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+      meta.remove();
+    });
+
+    it('does not block unrelated copy', () => {
+      const link = createLink('지금 구매하기');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+    });
+
+    it('does not block outside the KR locale', () => {
+      utils.getConfig().locale.prefix = '';
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      link.remove();
     });
   });
 });

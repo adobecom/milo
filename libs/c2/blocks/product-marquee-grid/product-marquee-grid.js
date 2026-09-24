@@ -46,11 +46,12 @@ function buildMerchCard(col) {
   const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
   buttons.forEach((btn) => btn.remove());
 
-  const contentLines = [...col.children]
+  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
     .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  contentLines.forEach((el) => cardContent.append(el));
+  // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
+  allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });

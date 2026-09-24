@@ -1,7 +1,10 @@
 @font-face {
   font-family: 'Arial Bold Adjusted';
   font-weight: 900;
-  size-adjust: 92%;
+  size-adjust: 93%;
+  ascent-override: 91%;
+  descent-override: 25%;
+  line-gap-override: 0%;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 
@@ -1034,10 +1037,8 @@ p {
   inline-size: 32px;
   justify-content: center;
   transition: background-color 0.2s ease, border-color 0.2s ease;
-  will-change: background-color, border-color;
   path {
     transition: fill 0.2s ease;
-    will-change: fill;
   }
 
   .dark & {
@@ -1264,21 +1265,29 @@ span.hang-opening-quote {
 
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
+    --parallax-scale-grid-margin: var(--grid-margin-width);
+    --grid-scale-multiplier: tan(atan2(
+      min(var(--grid-max-width-fluid), 100vw),
+      min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
+    ));
+
     animation-name: enable-grid-parallax;
-    will-change: padding-inline;
-    overflow: clip;
+    transform-origin: top center;
+    overflow-x: clip;
+    will-change: scale;
+
+    @media (width >= 768px) {
+      /* 8.333% grid margin as a length (a % can't resolve inside atan2)
+      Keep value in sync with --grid-margin-width-base */
+      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
+    }
+
+    :has(> &) { overflow-x: clip; }
   }
 
   @keyframes enable-grid-parallax {
-    from {
-      --grid-max-width: var(--grid-max-width-fluid);
-      --grid-margin-width: 0px;
-    }
-
-    to {
-      --grid-max-width: var(--grid-max-width-target);
-      --grid-margin-width: var(--grid-margin-width-target);
-    }
+    from { scale: var(--grid-scale-multiplier, 1); }
+    to   { scale: 1; }
   }
 
   /* Stagger parallax declarations */
@@ -1492,6 +1501,16 @@ span.hang-opening-quote {
     /* Shorter viewports in the common laptop width band need more travel */
     @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
       --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
+    }
+
+    /* Once the promo bar has scrolled out (feds-header-scrolled), it no longer
+       offsets this section, so drop the var and move by the flat vh amount. */
+    body:has(header.feds-header-scrolled) & {
+      --parallax-move-up-to: -35vh;
+
+      @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+        --parallax-move-up-to: -50vh;
+      }
     }
 
     &::after {
