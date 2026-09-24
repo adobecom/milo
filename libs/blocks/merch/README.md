@@ -10,6 +10,8 @@ Use the following query parameters for targeted validation:
 * `?commerce.landscape=DRAFT` uses draft offers from Commerce production.
 * `?commerce.env=stage` uses Commerce Stage only in non-production Milo environments.
   The value is case-insensitive; production ignores this override.
+  The deferred commerce `preload.js` (loaded for both AUP Select and the legacy 3-in-1 modal)
+  follows the same Commerce environment as `mas-commerce-service`.
 
 ## WCS Locale
 To check which locale was used to render the price/CTA:

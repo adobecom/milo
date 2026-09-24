@@ -528,12 +528,13 @@ function getAupSelectPreload() {
   return preload;
 }
 
-function getCommercePreloadUrl() {
-  const { env } = getConfig();
-  if (env.name === 'prod') {
-    return 'https://commerce.adobe.com/store/iframe/preload.js';
+export function getCommercePreloadUrl() {
+  // Match the commerce env the checkout/modal URLs are built for (commerce.env override included).
+  const commerceEnv = document.head.querySelector('mas-commerce-service')?.settings?.env;
+  if (commerceEnv === 'STAGE') {
+    return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
   }
-  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+  return 'https://commerce.adobe.com/store/iframe/preload.js';
 }
 
 export async function polyfills() {
@@ -1092,12 +1093,10 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
-      setTimeout(async () => {
-        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
-        if (aupSelectPreload) {
-          await aupSelectPreload;
-          return;
-        }
+      setTimeout(() => {
+        if (isAupEnabled()) getAupSelectPreload();
+        // AUP Select still renders the commerce.adobe.com segmentation iframe,
+        // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
         // The script can preload more, based on clientId, but for the ones in use
         // ('mini-plans', 'creative') there is no difference, so we can just use either one.
