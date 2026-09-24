@@ -1,5 +1,5 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import icons from '../../assets/icons.js';
+import icons from '../../../c2/assets/icons.js';
 import { decorateButtons } from '../../../utils/decorate.js';
 
 const mobileQuery = window.matchMedia('(max-width: 767px)');
