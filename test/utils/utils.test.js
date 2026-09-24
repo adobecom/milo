@@ -2098,6 +2098,65 @@ describe('Utils', () => {
       a.remove();
     });
 
+    it('logs a missing (404) query index below error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 404 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 404 query index should still be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, '404 must not log at error severity').to.equal('info');
+      });
+      // functional behaviour unchanged: still falls back to the base prefix
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
+    it('logs an unexpected (5xx) query index status at error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 500 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 5xx query index should be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, 'unexpected status must stay at error severity').to.equal('error');
+      });
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
     it('should revert to regional prefix for domains not configured in lingo site mapping', async () => {
       lingoUtils.setConfig({
         ...defaultTestConfig,
