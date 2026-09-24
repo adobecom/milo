@@ -218,6 +218,25 @@ const initBackNavAnalytics = () => {
   }
 };
 
-export const initAnalytics = () => {
+const blockRenderAnalytics = (blockValue) => {
+  window.alloy_all = window.alloy_all || {};
+  window.alloy_all.data = window.alloy_all.data || {};
+  window.alloy_all.data._adobe_corpnew = window.alloy_all.data._adobe_corpnew || {};
+  window.alloy_all.data._adobe_corpnew.event = window.alloy_all.data._adobe_corpnew.event || {};
+
+  const bcCustomExisting = window.alloy_all.data._adobe_corpnew.event.custom;
+  const bcAlreadyPresent = bcCustomExisting
+  && bcCustomExisting.some((e) => e.propertyName === blockValue);
+
+  if (!bcAlreadyPresent) {
+    // eslint-disable-next-line max-len
+    window.alloy_all.data._adobe_corpnew.event.custom = window.alloy_all.data._adobe_corpnew.event.custom || [];
+    const bcCustom = window.alloy_all.data._adobe_corpnew.event.custom;
+    bcCustom.push({ propertyName: blockValue, propertyValue: 'true', propertyType: 'string' });
+  }
+};
+
+export const initAnalytics = (blockValue) => {
   initBackNavAnalytics();
+  blockRenderAnalytics(blockValue);
 };
