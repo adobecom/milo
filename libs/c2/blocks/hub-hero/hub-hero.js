@@ -331,27 +331,19 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
-    class: 'hub-hero-carousel-item',
-    tabindex: 0,
-    href: link?.href,
-    'data-index': index + 1,
-    role: isModal ? 'button' : 'link',
-    ...(labelledBy && { 'aria-labelledby': labelledBy }),
-    'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
-  }, content);
 
   if (link?.dataset?.modalHash) slideEl.dataset.modalHash = link.dataset.modalHash;
   if (link?.dataset?.modalPath) slideEl.dataset.modalPath = link.dataset.modalPath;
 
-  slideEl.addEventListener('click', (e) => {
-    if (!slideEl.href) return;
-    e.preventDefault();
-    const oldURL = window.location.href;
-    window.history.pushState(null, '', new URL(slideEl.href).hash);
-    window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
-  });
-
   if (isModal) {
+    slideEl.addEventListener('click', (e) => {
+      if (!slideEl.href) return;
+      e.preventDefault();
+      const oldURL = window.location.href;
+      window.history.pushState(null, '', new URL(slideEl.href).hash);
+      window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
+    });
+
     slideEl.addEventListener('keydown', (e) => {
       if (e.key !== ' ' && e.key !== 'Spacebar') return;
       e.preventDefault();
@@ -489,18 +481,25 @@ const prepareVideo = (video) => {
   video.load();
 };
 
+const MAX_AUTOPLAY_DURATION = 5.1;
+const canAutoplay = (video) => !(video.duration > MAX_AUTOPLAY_DURATION);
+
 const playVideo = (video) => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const attemptPlay = () => { if (canAutoplay(video)) video.play().catch(() => { }); };
   if (video.readyState >= 3) {
-    video.play().catch(() => { });
+    attemptPlay();
     return;
   }
   prepareVideo(video);
-  video.addEventListener('canplay', () => video.play().catch(() => { }), { once: true });
+  if (video.readyState < 1) {
+    video.addEventListener('loadedmetadata', () => {
+      video.addEventListener('canplay', attemptPlay, { once: true });
+    }, { once: true });
+  } else {
+    video.addEventListener('canplay', attemptPlay, { once: true });
+  }
 };
-
-const MAX_AUTOPLAY_DURATION = 5.1;
-const canAutoplay = (video) => !(video.duration > MAX_AUTOPLAY_DURATION);
 
 const handleSlidesThreeVideos = (hubHero) => {
   // Grid videos: play when 50% in viewport, pause when scrolled out
@@ -508,8 +507,8 @@ const handleSlidesThreeVideos = (hubHero) => {
     const container = video.closest('.video-holder') || video;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && canAutoplay(video)) playVideo(video);
-        else if (!entry.isIntersecting) video.pause();
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
       },
       { threshold: 0.5 },
     );
@@ -522,8 +521,8 @@ const handleSlidesThreeVideos = (hubHero) => {
     const slide = video.closest('.hub-hero-carousel-item');
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && canAutoplay(video)) playVideo(video);
-        else if (!entry.isIntersecting) video.pause();
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
       },
       { threshold: 0.5 },
     );
