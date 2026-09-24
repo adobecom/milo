@@ -326,6 +326,16 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
+    'aria-setsize': slidesTotal,
+    'aria-posinset': index + 1,
+    ...(labelledBy && { 'aria-labelledby': labelledBy }),
+    'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
+  }, content);
+    class: 'hub-hero-carousel-item',
+    tabindex: 0,
+    href: link?.href,
+    'data-index': index + 1,
+    role: isModal ? 'button' : 'link',
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
