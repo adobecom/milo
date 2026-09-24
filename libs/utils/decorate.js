@@ -360,7 +360,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   `;
 
   const control = isC2
-    ? `<button class='play-pause-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
+    ? `<button class='play-pause-button video-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
     : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
 
   return `<div class='video-container video-holder'>${videoString}${control}</div>`;
