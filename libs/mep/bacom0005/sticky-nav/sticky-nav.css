@@ -124,8 +124,8 @@
 .ssn-bar-current {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.5;
   color: var(--color-black, #2c2c2c);
   overflow: hidden;
@@ -155,8 +155,8 @@
 
 .ssn-bar-icon {
   flex-shrink: 0;
-  font-size: 18px;
-  font-weight: 300;
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1;
   color: var(--color-black, #2c2c2c);
   width: 18px;
