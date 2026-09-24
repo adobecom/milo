@@ -408,7 +408,7 @@ function isEmptyCellContent(cellDiv) {
 function markEmptyCell(cellDiv) {
   if (!isEmptyCellContent(cellDiv)) return;
   cellDiv?.classList.add('empty-cell');
-  cellDiv?.setAttribute('aria-hidden', 'true');
+  [...cellDiv.children].forEach((child) => child.setAttribute('aria-hidden', 'true'));
 }
 
 function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
