@@ -8,7 +8,6 @@
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
   color: var(--s2a-color-content-knockout);
   padding-block: var(--s2a-spacing-md);
-  text-wrap: balance;
 }
 
 .hover-list-items {
@@ -53,7 +52,6 @@
   flex: 1;
   letter-spacing: var(--s2a-font-letter-spacing-4xl);
   margin: 0;
-  text-wrap: pretty;
 }
 
 .hover-list-media {
@@ -63,10 +61,6 @@
   flex-shrink: 0;
   inline-size: 80px;
   overflow: hidden;
-}
-
-.hover-list.no-animation .hover-list-media {
-  display: none;
 }
 
 .hover-list-media picture,
@@ -91,10 +85,6 @@
 
   .hover-list-headline {
     padding-block: var(--s2a-spacing-sm);
-  }
-
-  .hover-list.compact-headline .hover-list-headline > * {
-    max-inline-size: 35vw;
   }
 
   .hover-list-col {
@@ -160,16 +150,6 @@
     @media (hover: hover) {
       &:hover {
         background: var(--s2a-color-transparent-white-08);
-      }
-    }
-  }
-
-  .hover-list.no-animation .hover-list-item {
-    cursor: default;
-
-    @media (hover: hover) {
-      &:hover {
-        background: transparent;
       }
     }
   }

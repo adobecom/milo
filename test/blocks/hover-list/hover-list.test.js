@@ -71,16 +71,6 @@ describe('Hover List', () => {
     expect(items[2].querySelector('.hover-list-media')).to.be.null;
   });
 
-  it('decorates normally with the no-animation variant', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-    const block = document.querySelector('.hover-list');
-    block.classList.add('no-animation');
-    init(block);
-
-    expect(block.classList.contains('no-animation')).to.be.true;
-    expect(block.querySelectorAll('.hover-list-items > li.hover-list-item').length).to.equal(3);
-  });
-
   it('does nothing when the block has no rows', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/empty.html' });
     const block = document.querySelector('.hover-list');
