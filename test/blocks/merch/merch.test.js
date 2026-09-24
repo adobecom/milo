@@ -1355,8 +1355,9 @@ describe('Merch Block', () => {
           await clock.tickAsync(1);
           expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
           expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
-          expect(scripts.length).to.equal(legacy ? 1 : 0);
-          if (legacy) expect(scripts[0].src).to.include('/store/iframe/preload.js?cli=creative');
+          const commerce = aup || legacy;
+          expect(scripts.length > 0).to.equal(commerce);
+          scripts.forEach((script) => expect(script.src).to.include('/store/iframe/preload.js?cli=creative'));
         } finally {
           clock?.restore();
           appendStub.restore();

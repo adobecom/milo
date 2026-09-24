@@ -1092,12 +1092,10 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
-      setTimeout(async () => {
-        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
-        if (aupSelectPreload) {
-          await aupSelectPreload;
-          return;
-        }
+      setTimeout(() => {
+        if (isAupEnabled()) getAupSelectPreload();
+        // AUP Select still renders the commerce.adobe.com segmentation iframe,
+        // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
         // The script can preload more, based on clientId, but for the ones in use
         // ('mini-plans', 'creative') there is no difference, so we can just use either one.
