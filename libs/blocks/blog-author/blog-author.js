@@ -31,7 +31,7 @@ function decorateSocial(row) {
 }
 
 function injectSchema(el, company) {
-  const name = el.querySelector('.blog-author-name')?.textContent;
+  const name = el.querySelector('.blog-author-name')?.textContent.trim();
   if (!name) return;
 
   const schema = {
@@ -46,7 +46,7 @@ function injectSchema(el, company) {
     schema.worksFor = { '@type': 'Organization', name: company };
   }
 
-  const title = el.querySelector('.blog-author-title')?.textContent;
+  const title = el.querySelector('.blog-author-title')?.textContent.trim();
   if (title) schema.jobTitle = title;
 
   const desc = [...el.querySelectorAll('.blog-author-description')]
