@@ -528,12 +528,13 @@ function getAupSelectPreload() {
   return preload;
 }
 
-function getCommercePreloadUrl() {
-  const { env } = getConfig();
-  if (env.name === 'prod') {
-    return 'https://commerce.adobe.com/store/iframe/preload.js';
+export function getCommercePreloadUrl() {
+  // Match the commerce env the checkout/modal URLs are built for (commerce.env override included).
+  const commerceEnv = document.head.querySelector('mas-commerce-service')?.settings?.env;
+  if (commerceEnv === 'STAGE') {
+    return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
   }
-  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+  return 'https://commerce.adobe.com/store/iframe/preload.js';
 }
 
 export async function polyfills() {

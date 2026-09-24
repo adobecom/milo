@@ -18,6 +18,7 @@ import merch, {
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
+  getCommercePreloadUrl,
   getUpgradeAction,
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
@@ -1365,6 +1366,26 @@ describe('Merch Block', () => {
           window.history.replaceState(null, '', previousUrl);
           window.milo.deferredPromise = previousDeferred;
           window.aupsdk = previousSdk;
+        }
+      });
+    });
+
+    [
+      { env: 'STAGE', host: 'https://commerce-stg.adobe.com' },
+      { env: 'PRODUCTION', host: 'https://commerce.adobe.com' },
+      { env: undefined, host: 'https://commerce.adobe.com' },
+      { noService: true, host: 'https://commerce.adobe.com' },
+    ].forEach(({ env, noService, host }) => {
+      it(`getCommercePreloadUrl follows the commerce env: ${JSON.stringify({ env, noService })}`, () => {
+        const { querySelector } = document.head;
+        const stub = sinon.stub(document.head, 'querySelector').callsFake((selector) => {
+          if (selector !== 'mas-commerce-service') return querySelector.call(document.head, selector);
+          return noService ? null : { settings: { env } };
+        });
+        try {
+          expect(getCommercePreloadUrl()).to.equal(`${host}/store/iframe/preload.js`);
+        } finally {
+          stub.restore();
         }
       });
     });
