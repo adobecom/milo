@@ -19,6 +19,7 @@ div.accordion:not(.descr-list) {
 .accordion .descr-details {
   height: 0;
   overflow: hidden;
+  visibility: hidden;
   margin: 0;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
@@ -26,6 +27,7 @@ div.accordion:not(.descr-list) {
 
 .accordion .descr-details.open {
   height: auto;
+  visibility: visible;
   padding: var(--spacing-xs);
 }
 
