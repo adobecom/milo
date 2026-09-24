@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -55,6 +56,30 @@ describe('Three-in-One Modal', () => {
       expect(theme.style.display).to.equal('block');
       clock.tick(15000);
       expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+    });
+
+    it('does not fire the reload timeout while the page is hidden (MWPW-207104)', () => {
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const msgWrapper = document.querySelector('.error-wrapper');
+      const handleTimeoutErrorSpy = sinon.spy();
+      const visibility = stubVisibility();
+      try {
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+
+        // Frozen webview: the checkout error UI must not appear on resume.
+        visibility.hide();
+        clock.tick(60000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+
+        visibility.show();
+        clock.tick(14999);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        clock.tick(1);
+        expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+      } finally {
+        visibility.restore();
+      }
     });
 
     it('should create error message with retry button', async () => {

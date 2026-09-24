@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, raceForegroundTimeout } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
@@ -52,10 +52,11 @@ export async function checkReady(masElement, fragment) {
     }
   }
 
-  const readyPromise = masElement.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
+  // Foreground-time budget: a frozen webview must not burn the deadline while suspended
+  // and report a timeout the moment it resumes.
+  const success = await raceForegroundTimeout(masElement.checkReady(), CARD_AUTOBLOCK_TIMEOUT);
   if (success === 'timeout') {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
+    log.error(`${masElement.tagName} did not initialize within given timeout`);
   } else if (!success) {
     log.error(`${masElement.tagName} failed to initialize`);
   }

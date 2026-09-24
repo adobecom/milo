@@ -1,5 +1,5 @@
 /* eslint-disable import/no-relative-packages */
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, setForegroundTimeout, clearForegroundTimeout } from '../../utils/utils.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
@@ -30,7 +30,9 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   iframe.src = iframe.src;
   iframe.classList.add('loading');
   theme.style.display = 'block';
-  setTimeout(handleTimeoutError, 15000);
+  // Foreground-time budget: a frozen webview must not burn the deadline while suspended
+  // and show the checkout error UI the moment it resumes.
+  setForegroundTimeout(handleTimeoutError, 15000);
 };
 
 export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
@@ -163,9 +165,9 @@ export default async function openThreeInOneModal(el) {
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
   const content = createContent(iframeUrl);
-  const timeoutId = setTimeout(handleTimeoutError, 15000);
+  const timeoutId = setForegroundTimeout(handleTimeoutError, 15000);
   const clearTimeoutOnClose = () => {
-    clearTimeout(timeoutId);
+    clearForegroundTimeout(timeoutId);
     window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
   };
   window.addEventListener('milo:modal:closed', clearTimeoutOnClose);

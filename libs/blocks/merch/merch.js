@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled, raceForegroundTimeout,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
@@ -1810,6 +1810,12 @@ function withTimeout(promise) {
   ]);
 }
 
+// Foreground-time budget: a frozen webview must not burn the deadline while suspended
+// and report a timeout the moment it resumes.
+function withForegroundTimeout(promise) {
+  return raceForegroundTimeout(promise, FIELD_TIMEOUT);
+}
+
 async function loadFieldDependencies() {
   const servicePromise = initService();
   const success = await withTimeout(servicePromise);
@@ -1833,7 +1839,7 @@ async function checkFieldReady(masField, fragment) {
     }
   }
 
-  const success = await withTimeout(masField.checkReady());
+  const success = await withForegroundTimeout(masField.checkReady());
   if (success === 'timeout') {
     fieldLog.error(`${masField.tagName} did not initialize within given timeout`);
   } else if (!success) {
@@ -1901,7 +1907,7 @@ export function holdCtaUntilPrice(container) {
   if (!price?.checkReady) return;
   container.style.visibility = 'hidden';
   const reveal = () => { container.style.visibility = ''; };
-  withTimeout(price.checkReady().catch(() => false)).then(reveal);
+  withForegroundTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
 /**
