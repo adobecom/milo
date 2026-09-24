@@ -938,6 +938,7 @@ describe('Merch Block', () => {
     it('getUpgradeAction: returns undefined when no upgrade offer is on the page', async () => {
       mockIms('US');
       getUpgradeAction.offer = undefined;
+      getUpgradeAction.missReported = false;
       const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
         (el) => [el, el.parentNode, el.nextSibling],
       );
@@ -953,12 +954,60 @@ describe('Merch Block', () => {
       } finally {
         detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
         getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
       }
+    });
+
+    it('getUpgradeAction: reports a missing upgrade offer to lana once, with the CTA osi', async () => {
+      mockIms('US');
+      getUpgradeAction.offer = undefined;
+      getUpgradeAction.missReported = false;
+      // bind merch.js' Log module without mutating the shared fixtures
+      const probe = createTag('a', { class: 'merch', href: '/tools/ost?osi=abc&type=price' });
+      document.body.appendChild(probe);
+      (await merch(probe))?.remove();
+
+      const lanaLogs = [];
+      const originalLana = window.lana;
+      window.lana = { log: (msg) => lanaLogs.push(msg) };
+      Log.reset();
+      Log.use(Log.Plugins.lanaAppender);
+
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+      const cta = createTag('a', { 'data-wcs-osi': 'BROKEN_OSI' });
+      try {
+        await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          cta,
+        );
+        await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          cta,
+        );
+      } finally {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        window.lana = originalLana;
+        Log.reset();
+        Log.use(Log.Plugins.quietFilter);
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+      }
+      const reported = lanaLogs.filter((msg) => msg.includes('merch-offers.upgrade'));
+      expect(reported.length, 'must be reported exactly once per page').to.equal(1);
+      expect(reported[0]).to.include('BROKEN_OSI');
     });
 
     it('getUpgradeAction: does not cache a miss, so a later upgrade offer is still resolved', async () => {
       mockIms('US');
       getUpgradeAction.offer = undefined;
+      getUpgradeAction.missReported = false;
       const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
         (el) => [el, el.parentNode, el.nextSibling],
       );
@@ -990,6 +1039,7 @@ describe('Merch Block', () => {
         container.remove();
         detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
         getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
       }
     });
 

@@ -691,7 +691,17 @@ export async function getUpgradeAction(options, imsSignedInPromise, offers, el) 
   // never cache a miss: the upgrade offer may be added to the DOM later on.
   getUpgradeAction.offer ??= document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
   const upgradeOffer = getUpgradeAction.offer;
-  if (!upgradeOffer) return undefined;
+  if (!upgradeOffer) {
+    // Authoring error: the CTA asks for an upgrade but the page has no upgrade offer,
+    // so it silently stays a regular CTA. Reported once, as every upgrade CTA on the
+    // page hits the same condition and would otherwise flood the logs.
+    if (!getUpgradeAction.missReported) {
+      getUpgradeAction.missReported = true;
+      const osi = el?.getAttribute?.('data-wcs-osi') ?? el?.href ?? 'unknown';
+      log?.error(`Upgrade CTA (osi: ${osi}) cannot be resolved: page has no '.merch-offers.upgrade [data-wcs-osi]' element`);
+    }
+    return undefined;
+  }
 
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
