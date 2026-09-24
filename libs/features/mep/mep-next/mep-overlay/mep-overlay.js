@@ -247,6 +247,24 @@ function applyManifestStatus(card, manifest) {
   card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
 }
 
+function buildVariantSelect(options) {
+  const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
+  options.forEach((option) => {
+    const attrs = {
+      name: option.name,
+      value: option.value,
+      title: option.title,
+      ...(option.id && { id: option.id }),
+      ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
+    };
+    const optEl = createTag('option', attrs);
+    optEl.textContent = option.label ?? '';
+    if (option.selected) optEl.selected = true;
+    select.append(optEl);
+  });
+  return select;
+}
+
 function buildManifestCard(manifest) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
@@ -264,7 +282,8 @@ function buildManifestCard(manifest) {
   markExpanded(card, manifest.editUrl, false);
 
   if (manifest.malformed) {
-    card.append(header);
+    // No variant data exists, so the select only offers the "don't add manifest" placeholder.
+    card.append(header, buildVariantSelect(manifest.options ?? []));
     applyManifestStatus(card, manifest);
     return card;
   }
@@ -287,20 +306,7 @@ function buildManifestCard(manifest) {
   }
 
   rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
-  const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
-  manifest.options.forEach((option) => {
-    const attrs = {
-      name: option.name,
-      value: option.value,
-      title: option.title,
-      ...(option.id && { id: option.id }),
-      ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
-    };
-    const optEl = createTag('option', attrs);
-    optEl.textContent = option.label ?? '';
-    if (option.selected) optEl.selected = true;
-    select.append(optEl);
-  });
+  const select = buildVariantSelect(manifest.options);
 
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
 

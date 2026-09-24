@@ -522,10 +522,15 @@ describe('init: buildManifestCard — malformed manifest via mep.manifestErrors'
     expect(tooltip.textContent).to.include('Manifest not found.');
   });
 
-  it('does not render a variant select or body rows for the malformed card', () => {
+  it('renders a "don\'t add manifest" placeholder plus a Default option, and no body rows, for the malformed card', () => {
     const cards = [...bodyEl.querySelectorAll('.mep-manifest-card')];
     const malformedCard = cards.find((c) => c.textContent.includes('broken-manifest'));
-    expect(malformedCard.querySelector('select.mep-manifest-variants')).to.be.null;
+    const select = malformedCard.querySelector('select.mep-manifest-variants');
+    expect(select).to.exist;
+    expect(select.options).to.have.lengthOf(2);
+    expect(select.options[0].value).to.equal('');
+    expect(select.options[0].selected).to.be.true;
+    expect(select.options[1].value).to.equal('default');
     expect(malformedCard.querySelector('.mep-card-body')).to.be.null;
   });
 
