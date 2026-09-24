@@ -137,6 +137,7 @@
 :root:lang(ar) {
   --body-font-family: adobe-clean-arabic, 'Adobe Clean', adobe-clean, adobe-arabic, myriad-arabic, 'Trebuchet MS', sans-serif;
   --font-size-multiplier: 1.25;
+  --type-heading-xxxl-lh: calc(var(--type-heading-xxxl-size) * 1.1);
 }
 
 :root:lang(he) {
