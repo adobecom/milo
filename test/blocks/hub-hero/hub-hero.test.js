@@ -50,9 +50,10 @@ describe('hub-hero block', () => {
       expect(header.classList.contains('hub-hero-carousel-header')).to.be.true;
       expect(header.querySelector('h2').textContent).to.contain('Featured cards');
       expect(carousel.querySelector('.hub-hero-carousel-container')).to.exist;
-      expect(carousel.dataset.ariaRoledescription).to.equal('carousel');
+      expect(carousel.getAttribute('role')).to.equal('group');
+      expect(carousel.getAttribute('aria-roledescription')).to.equal('carousel');
       // name comes from the first slide link text after the pipe
-      expect(carousel.dataset.ariaLabel).to.equal('Adobe Creative Cloud');
+      expect(carousel.getAttribute('aria-label')).to.equal('Adobe Creative Cloud');
     });
   });
 
@@ -150,7 +151,7 @@ describe('hub-hero block', () => {
 
     it('falls back to the default carousel name when no name is authored', () => {
       const carousel = block.querySelector('.hub-hero-carousel');
-      expect(carousel.dataset.ariaLabel).to.equal('Adobe Cards');
+      expect(carousel.getAttribute('aria-label')).to.equal('Adobe slides');
     });
 
     it('still produces the full header/grid/carousel structure', () => {
