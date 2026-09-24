@@ -3216,3 +3216,58 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+const foregroundTimers = new Map();
+let foregroundTimerId = 0;
+
+export function clearForegroundTimeout(id) {
+  const dispose = foregroundTimers.get(id);
+  if (!dispose) return;
+  dispose();
+  foregroundTimers.delete(id);
+}
+
+export function setForegroundTimeout(callback, ms) {
+  foregroundTimerId += 1;
+  const id = foregroundTimerId;
+  let remaining = ms;
+  let startedAt = performance.now();
+  let timer;
+  const fire = () => {
+    clearForegroundTimeout(id);
+    callback();
+  };
+  const start = () => {
+    startedAt = performance.now();
+    timer = setTimeout(fire, remaining);
+  };
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      clearTimeout(timer);
+      remaining -= performance.now() - startedAt;
+    } else {
+      start();
+    }
+  };
+  foregroundTimers.set(id, () => {
+    clearTimeout(timer);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  });
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  if (document.visibilityState !== 'hidden') start();
+  return id;
+}
+
+/**
+ * Races `promise` against a foreground-time budget, resolving `timeoutValue` if the budget
+ * elapses first. The timer and its listener are always released once the race settles, so
+ * nothing stays armed for the rest of the budget.
+ */
+export function raceForegroundTimeout(promise, ms, timeoutValue = 'timeout') {
+  let id;
+  const timeoutPromise = new Promise((resolve) => {
+    id = setForegroundTimeout(() => resolve(timeoutValue), ms);
+  });
+  return Promise.race([promise, timeoutPromise])
+    .finally(() => clearForegroundTimeout(id));
+}

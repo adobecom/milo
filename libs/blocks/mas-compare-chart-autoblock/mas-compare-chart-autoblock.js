@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, raceForegroundTimeout } from '../../utils/utils.js';
 import {
   getOptions,
   initService,
@@ -15,12 +15,6 @@ const COMPARE_CHART_AUTOBLOCK_TIMEOUT = 5000;
 const seenFragments = new Set();
 let stylesLoaded;
 
-function getTimeoutPromise() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve('timeout'), COMPARE_CHART_AUTOBLOCK_TIMEOUT);
-  });
-}
-
 function hasOnlyTargetContent(parent, target) {
   if (!parent || !target || target.parentElement !== parent) return false;
   return [...parent.childNodes].every((node) => {
@@ -30,8 +24,12 @@ function hasOnlyTargetContent(parent, target) {
 }
 
 async function checkReady(compareChart) {
-  const readyPromise = compareChart.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
+  // Foreground-time budget: a frozen webview must not burn the deadline while suspended
+  // and report a timeout the moment it resumes.
+  const success = await raceForegroundTimeout(
+    compareChart.checkReady(),
+    COMPARE_CHART_AUTOBLOCK_TIMEOUT,
+  );
   if (success && success !== 'timeout') return;
 
   const service = await initService();

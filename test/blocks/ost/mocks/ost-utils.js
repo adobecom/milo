@@ -158,6 +158,15 @@ const shouldBlockFreeTrialLinks = () => false;
 const isAupEnabled = () => false;
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
+const setForegroundTimeout = (callback, ms) => setTimeout(callback, ms);
+const clearForegroundTimeout = (id) => clearTimeout(id);
+const raceForegroundTimeout = (promise, ms, timeoutValue = 'timeout') => {
+  let timeoutId;
+  const timeoutPromise = new Promise((resolve) => {
+    timeoutId = setForegroundTimeout(() => resolve(timeoutValue), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearForegroundTimeout(timeoutId));
+};
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -213,4 +222,7 @@ export {
   isAupEnabled,
   decorateLinksAsync,
   loadBlock,
+  setForegroundTimeout,
+  clearForegroundTimeout,
+  raceForegroundTimeout,
 };
