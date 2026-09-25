@@ -1,0 +1,376 @@
+/* Product-pricing filter bar + drawer. Plain HTML, no SWC. */
+
+/* Horizontal margins come from the collection container, so the bar lines up
+   with the cards. */
+.product-pricing-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.product-pricing-filter-row {
+  display: flex;
+  position: relative; /* anchors the scroll-affordance pseudos */
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+
+  /* Lets the row's pseudos read the scroller's progress (it is a descendant). */
+  timeline-scope: --pp-pills;
+}
+
+.product-pricing-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  flex: none; /* a flex item in the scroller: keep its width, don't squash */
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 75px;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.product-pricing-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.product-pricing-filter-trigger .product-pricing-icon svg { fill: #fff; }
+
+.product-pricing-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-timeline: --pp-pills inline;
+}
+
+.product-pricing-filter-group {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.product-pricing-filter-search {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 8px;
+  flex: 0 1 261px;
+  height: 40px;
+  padding: 0 16px;
+  margin-left: auto;
+  border-radius: 75px;
+  background: #f8f8f8;
+}
+
+.product-pricing-filter-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  line-height: 18px;
+  outline: none;
+}
+
+.product-pricing-drawer {
+  width: 540px;
+  max-width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: #f8f8f8;
+}
+
+.product-pricing-drawer::backdrop { background: rgb(0 0 0 / 50%); }
+
+.product-pricing-drawer[open] { animation: product-pricing-drawer-in 0.3s ease; }
+
+@keyframes product-pricing-drawer-in {
+  from { transform: translateX(-100%); }
+}
+
+.product-pricing-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.product-pricing-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 40px 48px 24px;
+}
+
+.product-pricing-drawer-title {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 48px;
+  letter-spacing: -1.44px;
+  color: #000;
+}
+
+.product-pricing-drawer-close {
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.product-pricing-drawer-subrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px 48px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.product-pricing-drawer-counts {
+  display: flex;
+  gap: 24px;
+  color: rgb(0 0 0 / 64%);
+}
+
+.product-pricing-drawer-reset {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.product-pricing-drawer-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 24px 24px;
+}
+
+.product-pricing-group {
+  padding: 24px;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.product-pricing-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 24px;
+  letter-spacing: -0.48px;
+  color: #000;
+  list-style: none;
+  cursor: pointer;
+}
+
+.product-pricing-group-header::-webkit-details-marker { display: none; }
+
+.product-pricing-group:not([open]) .product-pricing-group-header { margin-bottom: 0; }
+
+.product-pricing-group-header .product-pricing-icon svg { transition: transform 0.2s ease; }
+
+.product-pricing-group:not([open]) .product-pricing-group-header .product-pricing-icon svg {
+  transform: rotate(-90deg);
+}
+
+.product-pricing-group-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* The input holds the state, the label paints it. */
+.product-pricing-pill {
+  display: inline-flex;
+  position: relative; /* contains the absolute input, or it escapes the scroller */
+  align-items: center;
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 75px;
+  background: rgb(0 0 0 / 4%);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.product-pricing-pill input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.product-pricing-pill:has(input:checked) {
+  background: #000;
+  color: #fff;
+}
+
+.product-pricing-pill:has(input:focus-visible) {
+  outline: 2px solid var(--link-color, #1473e6);
+  outline-offset: 2px;
+}
+
+/* Category collapses to its selected pill; the drawer holds the rest. */
+.product-pricing-filter-group-active-only .product-pricing-pill:not(:has(input:checked)) {
+  display: none;
+}
+
+/* Sits where the grid would be, so :empty has to keep the padding out of the
+   flow while there are results. */
+.product-pricing-results {
+  padding: 80px 0 240px;
+  color: rgb(0 0 0 / 64%);
+  font-size: 20px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.product-pricing-results:empty { display: none; }
+
+.product-pricing-results p { margin: 0; }
+
+/* The authored copy marks the count up as <strong>, but the design emphasises
+   it with fill at the same weight. */
+.product-pricing-results strong {
+  color: #000;
+  font-weight: inherit;
+}
+
+/* Below desktop: search stacks above the filter row. */
+@media (width < 1280px) {
+  .product-pricing-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .product-pricing-filter-search {
+    order: -1;
+    flex: none;
+    width: 327px;
+    max-width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
+
+/* Tablet up centres both rows. */
+@media (width >= 600px) and (width < 1280px) {
+  .product-pricing-filter-row { justify-content: center; }
+  .product-pricing-filter-pills { flex: 0 1 auto; }
+  .product-pricing-filter-search { margin-inline: auto; }
+}
+
+@media (width < 600px) {
+  .product-pricing-drawer { width: 100%; }
+
+  /* Fade + chevron mark the pill row as scrollable. Decoration only: swipe and
+     arrow keys already scroll it. Nothing to tab to. */
+  .product-pricing-filter-row::before,
+  .product-pricing-filter-row::after {
+    content: '';
+    position: absolute;
+    z-index: 1; /* the pills are position:relative, so they'd paint over these */
+    top: 0;
+    width: 80px;
+    height: 40px;
+    pointer-events: none;
+  }
+
+  /* Sections on a non-white background override --pp-fade-color. */
+  .product-pricing-filter-row::before {
+    left: 0;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat left 24px center / 20px 20px,
+      linear-gradient(to left, transparent, var(--pp-fade-color, #fff) 70%);
+    opacity: 0; /* nothing scrolled past yet */
+  }
+
+  .product-pricing-filter-row::after {
+    right: 0;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
+      linear-gradient(to right, transparent, var(--pp-fade-color, #fff) 70%);
+  }
+
+  /* Each edge shows only while there is content past it: left once scrolled,
+     right until the end. Guarded because without scroll-timeline support these
+     would run on a time timeline; the unanimated state above is the static
+     right-only fade. */
+  @supports (animation-timeline: scroll()) {
+    .product-pricing-filter-row::before,
+    .product-pricing-filter-row::after {
+      animation: pp-edge-fade both linear;
+      animation-timeline: --pp-pills;
+    }
+
+    .product-pricing-filter-row::before { animation-range: 0 40px; }
+
+    .product-pricing-filter-row::after {
+      animation-direction: reverse;
+      animation-range: calc(100% - 40px) 100%;
+    }
+  }
+
+  .product-pricing-drawer-title {
+    font-size: 24px;
+    line-height: 24px;
+    letter-spacing: -0.48px;
+  }
+
+  .product-pricing-drawer-header { padding: 8px 24px 24px; }
+  .product-pricing-drawer-subrow { padding: 0 24px 24px; }
+}
+
+/* 0 → 1 across the range; the right edge reverses it. */
+@keyframes pp-edge-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (width >= 2560px) {
+  .product-pricing-filter-search { flex-basis: 474px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-pricing-drawer[open] { animation: none; }
+}
+
+/* The EDU card is a `pro` card inside a product-pricing collection. MAS already
+   sizes it (pro.css.js: max-width 1068px, "wider than the default grid track"),
+   but max-width cannot widen a grid item and the tracks here are 261-474px, so
+   it renders one track wide and 2.4x too tall. Span every track instead.
+   Scoped to the card, not the container, so the narrow cards keep their columns
+   when a query returns both. */
+merch-card-collection.product-pricing merch-card[variant='pro'][size='edu'] {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
