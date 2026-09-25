@@ -1,4 +1,4 @@
-import { loadStyle } from '../utils/utils.js';
+import { loadStyle, loadLink } from '../utils/utils.js';
 
 const blockConfig = [
   {
@@ -225,6 +225,23 @@ export default async function loadBlock(configs, customLib) {
     });
     return;
   }
+  // Standalone consumers don't run Milo's loadArea bootstrap, which is what
+  // normally loads the Typekit stylesheet that defines Adobe Clean / Adobe
+  // Clean Display Black. Without it, gnav/footer headings fall back to a
+  // substitute font. Warm the Typekit origins, then load the font stylesheet
+  // (fire-and-forget so it doesn't block gnav/footer decoration).
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+  import('../utils/fonts.js')
+    .then(({ default: loadFonts }) => {
+      const configLocale = getConfig().locale;
+      return loadFonts(configLocale?.tk ? configLocale : { tk: 'hah7vzn.css' });
+    })
+    .catch((e) => window.lana?.log(`${e.message} | standalone-gnav failed to load fonts | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    }));
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
