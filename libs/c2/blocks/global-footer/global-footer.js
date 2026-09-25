@@ -125,7 +125,10 @@ export async function loadDecorateMenu() {
 const [setEventVersion, getEventVersion] = (() => {
   let eventVersion = false;
   return [
-    (url) => { eventVersion = url.includes('#event'); },
+    (url) => {
+      const { isEvent } = getConfig();
+      eventVersion = typeof isEvent === 'boolean' ? isEvent : url.includes('#event');
+    },
     () => eventVersion,
   ];
 })();

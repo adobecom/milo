@@ -210,6 +210,7 @@ export default async function loadBlock(configs, customLib) {
     allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
     onFooterError: footer?.onError,
+    isEvent: footer?.isEvent,
     ...paramConfigs,
   };
   try {
