@@ -11,6 +11,7 @@ import init, {
   emptyResultsMarkup,
   filterBarLabels,
   resetParams,
+  defaultParams,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -542,20 +543,38 @@ describe('merch-card-collection autoblock', () => {
         .to.equal('<p>none for <span data-placeholder="filter">Featured</span></p>');
     });
 
-    it('resets every authored group and restores the default category', () => {
-      const groups = [{ deeplink: 'filter' }, { deeplink: 'types' }, { deeplink: 'audience' }];
-      const active = new URLSearchParams('filter=photo&types=desktop,web&audience=teams&search=acrobat&keep=me');
-      const params = resetParams(active, groups, 'featured');
+    it('defaults every single-select group to its first option, and types to none', () => {
+      const groups = [
+        { deeplink: 'filter', multi: false, options: [{ value: 'featured' }, { value: 'photo' }] },
+        { deeplink: 'pricing', multi: false, options: [{ value: 'individuals' }, { value: 'business' }] },
+        { deeplink: 'types', multi: true, options: [{ value: 'desktop' }] },
+      ];
+      expect(defaultParams(groups)).to.deep.equal([
+        ['filter', 'featured'],
+        ['pricing', 'individuals'],
+      ]);
+      // An authored group with no options contributes nothing.
+      expect(defaultParams([{ deeplink: 'filter', multi: false, options: [] }])).to.deep.equal([]);
+      expect(defaultParams([])).to.deep.equal([]);
+    });
+
+    it('resets every authored group and restores the defaults', () => {
+      const groups = [
+        { deeplink: 'filter', multi: false, options: [{ value: 'featured' }] },
+        { deeplink: 'pricing', multi: false, options: [{ value: 'individuals' }] },
+        { deeplink: 'types', multi: true, options: [{ value: 'desktop' }] },
+      ];
+      const active = new URLSearchParams('filter=photo&pricing=business&types=desktop,web&search=acrobat&keep=me');
+      const params = resetParams(active, groups);
+      // Category and Pricing come back at their defaults, Types clears.
       expect(params.get('filter')).to.equal('featured');
+      expect(params.get('pricing')).to.equal('individuals');
       expect(params.get('types')).to.equal(null);
-      expect(params.get('audience')).to.equal(null);
       expect(params.get('search')).to.equal(null);
       // Params the block does not own are left alone.
       expect(params.get('keep')).to.equal('me');
       // The given filter set is not mutated.
       expect(active.get('types')).to.equal('desktop,web');
-      // No default category authored: 'all' means unfiltered.
-      expect(resetParams(active, groups).get('filter')).to.equal('all');
     });
   });
 
@@ -593,13 +612,18 @@ describe('merch-card-collection autoblock', () => {
       document.body.innerHTML = '';
     });
 
-    it('seeds the default category and renders both surfaces', () => {
+    it('seeds the defaults and renders both surfaces', () => {
       const { container } = mount();
-      // No filter deep-linked, so the first category is applied.
-      expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('featured');
+      // Nothing deep-linked, so Category and Pricing take their first option.
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      expect(params.get('filter')).to.equal('featured');
+      expect(params.get('pricing')).to.equal('individuals');
+      // Types is deselectable to zero, so it seeds nothing.
+      expect(params.get('types')).to.equal(null);
       expect(container.querySelector('.product-pricing-filter-bar')).to.exist;
       expect(container.querySelector('.product-pricing-drawer')).to.exist;
-      expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (1)');
+      // Both seeded pills count toward the applied total.
+      expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (2)');
       // Multi groups are drawer-only.
       const barGroupLabels = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-filter-group')]
         .map((g) => g.getAttribute('aria-label'));
@@ -608,12 +632,16 @@ describe('merch-card-collection autoblock', () => {
       expect(container.querySelector('.product-pricing-filter-pills > .product-pricing-filter-trigger')).to.exist;
     });
 
-    it('keeps a deep-linked filter instead of seeding the default', () => {
+    it('keeps a deep-linked value and still seeds the groups that have none', () => {
       window.location.hash = 'filter=photo';
       const { container } = mount();
-      expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('photo');
-      const checked = container.querySelector('.product-pricing-filter-bar .product-pricing-pill input:checked');
-      expect(checked.value).to.equal('photo');
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      expect(params.get('filter')).to.equal('photo');
+      // Pricing was not deep-linked, so it still gets its default.
+      expect(params.get('pricing')).to.equal('individuals');
+      const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
+        .map((i) => i.value).sort();
+      expect(checked).to.deep.equal(['individuals', 'photo']);
     });
 
     it('mounts once per collection', () => {
@@ -658,10 +686,11 @@ describe('merch-card-collection autoblock', () => {
 
     it('clears filters and search on Reset', () => {
       const { container } = mount();
-      window.location.hash = 'filter=photo&types=desktop&search=acrobat';
+      window.location.hash = 'filter=photo&pricing=business&types=desktop&search=acrobat';
       container.querySelector('.product-pricing-drawer-reset').click();
       const params = new URLSearchParams(window.location.hash.slice(1));
       expect(params.get('filter')).to.equal('featured');
+      expect(params.get('pricing')).to.equal('individuals');
       expect(params.get('types')).to.equal(null);
       expect(params.get('search')).to.equal(null);
     });

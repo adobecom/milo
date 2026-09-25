@@ -255,11 +255,18 @@ export function filterBarLabels(params, groups, placeholders, resultCount) {
   };
 }
 
-export function resetParams(params, groups, defaultFilter) {
+// Types is deselectable to zero and seeds nothing, which `multi` encodes today.
+export function defaultParams(groups) {
+  return groups
+    .filter((group) => !group.multi && group.options.length)
+    .map((group) => [group.deeplink, group.options[0].value]);
+}
+
+export function resetParams(params, groups) {
   const reset = new URLSearchParams(params);
   groups.forEach(({ deeplink }) => reset.delete(deeplink));
   reset.delete('search');
-  reset.set('filter', defaultFilter || 'all');
+  defaultParams(groups).forEach(([key, value]) => reset.set(key, value));
   return reset;
 }
 
@@ -360,8 +367,6 @@ export function mountProductPricingFilter(collection, container) {
 
   const { placeholders = {} } = collection.data;
   const { searchInput } = bar;
-  const category = groups.find((group) => group.category);
-  const defaultFilter = category?.options?.[0]?.value;
   // Replaces the grid when a filter set matches nothing.
   const emptyEl = createTag('div', { class: 'product-pricing-results', role: 'status', 'aria-live': 'polite' });
   let resultCount;
@@ -387,15 +392,18 @@ export function mountProductPricingFilter(collection, container) {
     toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.multi === 'true');
   }));
   drawer.reset.addEventListener('click', () => {
-    writeHash(resetParams(hashParams(), groups, defaultFilter));
+    writeHash(resetParams(hashParams(), groups));
   });
   collection.addEventListener(COLLECTION_LITERALS_CHANGED, (e) => {
     resultCount = e.detail?.resultCount;
     renderLabels(hashParams());
   });
   window.addEventListener('hashchange', sync);
-  if (defaultFilter && !hashParams().get('filter')) {
-    setHashParam('filter', defaultFilter);
+  const initial = hashParams();
+  const missing = defaultParams(groups).filter(([key]) => !initial.get(key));
+  if (missing.length) {
+    missing.forEach(([key, value]) => initial.set(key, value));
+    writeHash(initial);
   }
   sync();
 
