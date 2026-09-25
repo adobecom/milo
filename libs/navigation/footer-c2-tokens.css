@@ -31,6 +31,8 @@
   --grid-margin-width-target: var(--grid-margin-width-base);
   --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
+
+  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 }
 
 @media (width >= 768px) {
@@ -84,3 +86,21 @@
   line-height: var(--s2a-typography-line-height-caption);
   letter-spacing: var(--s2a-typography-letter-spacing-caption);
 }
+
+h1, h2, h3, h4, h5, h6, [class*="heading-"] {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  line-height: 100%;
+  scroll-margin-top: var(--feds-totalheight-nav, 0);
+
+  strong {
+    font-weight: inherit;
+  }
+
+  a,
+  a:is(:hover, :focus, :active) {
+    color: currentcolor;
+  }
+}
+
