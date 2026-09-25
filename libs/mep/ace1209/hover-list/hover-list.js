@@ -66,7 +66,7 @@ function setupStickyBoundary(desc, list) {
   tabletMQ.addEventListener('change', update);
 }
 
-function addCursorFollower(list) {
+function addCursorFollower(list, noAnimation) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
   let activeLayers = [];
@@ -104,7 +104,7 @@ function addCursorFollower(list) {
   const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(tick); };
 
   const activate = (item) => {
-    if (item === activeItem) return;
+    if (item === activeItem || noAnimation) return;
     if (REDUCED_MOTION.matches) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;
@@ -193,9 +193,10 @@ function addCursorFollower(list) {
   }, { passive: true });
 }
 
-function decorate(block) {
+function decorate(block, el) {
   const rows = [...block.children];
   if (!rows.length) return;
+  const noAnimation = el.classList.contains('no-animation');
 
   const desc = createTag('div', { class: 'hover-list-desc' });
   const descCol = rows[0]?.children[0];
@@ -231,7 +232,7 @@ function decorate(block) {
 
   const descWrapper = createTag('div', { class: 'hover-list-desc-wrapper' });
   descWrapper.append(desc);
-  addCursorFollower(list);
+  addCursorFollower(list, noAnimation);
   const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
   block.replaceChildren(descWrapper, listCol);
