@@ -28,12 +28,6 @@
   white-space: nowrap;
 }
 
-.quick-actions.center .quick-actions-header {
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
 .quick-actions-grid {
   grid-column: 1 / -1;
   gap: var(--s2a-spacing-xs);
@@ -129,6 +123,12 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
+  .quick-actions.center-mobile .quick-actions-header {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
   .quick-actions-grid[class*="up"] {
     grid-template-columns: repeat(2, 1fr);
   }
