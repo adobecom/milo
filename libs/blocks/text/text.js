@@ -86,9 +86,10 @@ function decorateLinkFarms(el) {
 // Exposing doodlebug CTA icon for screen readers
 async function decorateOpensInAria(el) {
   const links = el.querySelectorAll('.cta-container .action-area a.con-button');
-  if (!links.length) return;
+  const newWindowLinks = [...links].filter((a) => a.target === '_blank');
+  if (!newWindowLinks.length) return;
   const label = await replaceKey('opens-in-new-window', getConfig());
-  links.forEach((a) => {
+  newWindowLinks.forEach((a) => {
     if (a.querySelector('.sr-only')) return;
     a.append(createTag('span', { class: 'sr-only' }, ` (${label})`));
   });
