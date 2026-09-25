@@ -94,6 +94,31 @@ const clearInlineStyles = (el, props) => {
 
 const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
 
+// A slide can be authored as a promotion placeholder through a block variant class,
+// `promo-placeholder-slide-<n>` (1-based, e.g. "router-marquee (promo placeholder slide 3)").
+// The block only tags that slide, and its nav card, with merch.js' shared `.promo-placeholder`
+// plus a common `data-promo-group`: styles.css hides them and watchPromoPlaceholders reveals
+// the group once the slide's mas-field resolves to a promotion. The slide keeps its index
+// throughout, so all the block has to do is step over it while it is still hidden.
+const PROMO_PLACEHOLDER = 'promo-placeholder';
+const PROMO_SLIDE_CLASS = /^promo-placeholder-slide-(\d+)$/;
+
+const isPromoPending = (el) => !!el?.matches('.promo-placeholder:not(.promo-resolved)');
+
+const markPromoSlides = (el, viewports) => {
+  const indexes = [...el.classList]
+    .map((name) => name.match(PROMO_SLIDE_CLASS)?.[1])
+    .filter(Boolean)
+    .map((n) => Number(n) - 1);
+  Object.entries(viewports).forEach(([viewport, slides]) => {
+    indexes.forEach((i) => {
+      if (!slides[i]) return;
+      slides[i].classList.add(PROMO_PLACEHOLDER);
+      slides[i].dataset.promoGroup = `rm-${viewport}-${i}`;
+    });
+  });
+};
+
 const resetSlide = (slide) => {
   clearInlineStyles(slide, ['zIndex', 'pointerEvents', 'transform', 'transition']);
   const content = slide.querySelector('.rm-content');
@@ -362,7 +387,15 @@ const buildReset = () => createTag('button', {
 
 const buildCards = (slides) => {
   const cards = createTag('div', { class: 'rm-cards', role: 'tablist' });
-  slides.forEach((slide) => cards.append(buildCard(slide)));
+  slides.forEach((slide) => {
+    const card = buildCard(slide);
+    const { promoGroup } = slide.dataset;
+    if (promoGroup) {
+      card.classList.add(PROMO_PLACEHOLDER);
+      card.dataset.promoGroup = promoGroup;
+    }
+    cards.append(card);
+  });
   cards.append(buildReset());
   return cards;
 };
@@ -420,7 +453,7 @@ const updateControlsLayout = (el) => {
   const playPause = vp?.querySelector('.rm-pause-play');
   if (!controls || !playPause) return;
   const cardsWrapper = vp.querySelector('.rm-cards');
-  const cards = vp.querySelectorAll('.rm-card');
+  const cards = [...vp.querySelectorAll('.rm-card')].filter((c) => !isPromoPending(c));
   // the best thing I could find to determine when the play button is running out of space
   // is this formula of: (side paddings) + (cards max width) + (cards gaps) + (play button width)
   // which gives the min total width of the controls section.
@@ -475,7 +508,15 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   const playPauseBtn = container.querySelector('.rm-pause-play');
   const filler = playPauseBtn?.querySelector('.offset-filler');
   const srHint = container.querySelector('.rm-sr-hint');
-  let active = 0; // index of the current active slide
+  // Slides keep their authored index; a still-pending promo slide is simply stepped over.
+  const step = (from, dir) => {
+    for (let n = 1; n <= slides.length; n += 1) {
+      const i = (from + (dir * n) + (slides.length * n)) % slides.length;
+      if (!isPromoPending(slides[i])) return i;
+    }
+    return from;
+  };
+  let active = Math.max([...slides].findIndex((s) => s.classList.contains('is-active')), 0);
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
   let userPaused = false; // paused via explicit user action - survives breakpoint/scroll resume
@@ -594,15 +635,14 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   };
 
   const preloadNextVideo = () => {
-    const nextIdx = (active + 1) % slides.length;
-    loadSlideMedia(slides[nextIdx]);
+    loadSlideMedia(slides[step(active, 1)]);
   };
 
   const advance = () => {
     if (paused) return;
     clearTimeout(timer);
     clearFill(active);
-    activate((active + 1) % cardEls.length, 1);
+    activate(step(active, 1), 1);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
@@ -661,12 +701,13 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
 
   const resetBtn = cards.querySelector('.rm-card-reset');
   resetBtn?.addEventListener('click', () => {
-    if (active === 0) return;
+    const firstIdx = [...slides].findIndex((s) => !isPromoPending(s));
+    if (active === firstIdx) return;
     clearTimeout(timer);
     clearFill(active);
     paused = true;
     userPaused = true;
-    activate(0, -1);
+    activate(firstIdx, -1);
   });
 
   // this is to handle the use case where the user is on desktop, but shrinks
@@ -685,7 +726,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     playPause.before(controlsTop);
     controlsTop.append(playPause, nextBtn);
     nextBtn.addEventListener('click', () => {
-      const next = (active + 1) % cardEls.length;
+      const next = step(active, 1);
       clearTimeout(timer);
       clearFill(active);
       paused = true;
@@ -728,7 +769,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     clearTimeout(timer);
     clearFill(active);
     const dir = dx < 0 ? 1 : -1;
-    const next = (active + dir + cardEls.length) % cardEls.length;
+    const next = step(active, dir);
     activate(next, dir);
     paused = true;
     userPaused = true;
@@ -781,9 +822,12 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   const getActive = () => active;
   // Jump straight to a slide with no transition, so a hidden viewport can be lined up
   // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
-  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one.
+  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one;
+  // if that lands on a still-pending promo slide, step back to the nearest visible one
+  // rather than activating a display:none slide.
   const syncTo = (index) => {
-    const target = Math.min(index, slides.length - 1);
+    const clamped = Math.min(index, slides.length - 1);
+    const target = isPromoPending(slides[clamped]) ? step(clamped, -1) : clamped;
     if (target === active) return;
     clearFill(active);
     activate(target, 1, { instant: true });
@@ -794,6 +838,10 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
+  // A pending promo slide is display:none and commonly stays that way for the whole visit
+  // (no promotion for this user), so the first *visible* slide - not index 0 - is the one
+  // whose image must stay eager, otherwise the hero lazy-loads and LCP moves to it.
+  const firstIdx = slides.findIndex((s) => !isPromoPending(s));
   slides.forEach((slide, i) => {
     decorateSlide(slide);
     slide.setAttribute('role', 'tabpanel');
@@ -801,12 +849,12 @@ const buildViewport = (viewport, slides, isActiveViewport) => {
     // Keep only the active viewport's first slide image eager; every other slide
     // image is lazy-loaded when it becomes active. (Videos default to lazy in
     // prepareVideo, so only the image needs this active-slide exception.)
-    if (!(isActiveViewport && i === 0)) stashSlideImage(slide);
+    if (!(isActiveViewport && i === firstIdx)) stashSlideImage(slide);
   });
-  slides[0]?.classList.add('is-active');
+  slides[firstIdx]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
-  const firstCard = cards.children[0];
+  const firstCard = cards.children[firstIdx];
   firstCard?.classList.add('is-active');
   firstCard?.setAttribute('aria-selected', 'true');
   const controls = createTag('div', { class: 'rm-controls' });
@@ -832,6 +880,7 @@ const reorderSlidesMaybe = (el, viewports) => {
 
 export default function init(el) {
   const viewports = groupByViewport(el);
+  markPromoSlides(el, viewports);
   reorderSlidesMaybe(el, viewports);
   const initialVp = getActiveViewport();
   const containers = Object.entries(viewports)
@@ -877,6 +926,14 @@ export default function init(el) {
 
   loadViewportVideos(el);
   syncViewportAutoplay();
+
+  // merch.js reveals a resolved promo slide and its nav card; only the layout is ours to redo.
+  if (el.querySelector(`.${PROMO_PLACEHOLDER}`)) {
+    el.addEventListener('mas:ready', () => {
+      requestAnimationFrame(() => dynamicLayoutUpdates(el));
+    });
+  }
+
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
   // syncViewportAutoplay/loadViewportVideos stay un-debounced: getActiveViewport() is a
   // cheap matchMedia check, and delaying the outgoing viewport's pause until resize settles

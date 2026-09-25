@@ -190,6 +190,62 @@ describe('Router Marquee', () => {
     expect(body.textContent.match(/A\$9\.99\/mo/g).length).to.equal(1);
   });
 
+  it('resets to the first slide via the reset button, and is a no-op once there', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.router-marquee');
+    // Force a true desktop context: nav-card hover is only wired on the active
+    // viewport, and on a narrow-but-hoverable window handleDesktopSmallVp swaps the
+    // reset button out for the next arrow, so the reset path would never be reachable.
+    const realMatchMedia = window.matchMedia.bind(window);
+    const forced = {
+      '(width >= 1280px)': true,
+      '(min-width: 1280px)': true,
+      '(hover: none)': false,
+      '(prefers-reduced-motion: reduce)': false,
+    };
+    window.matchMedia = (q) => {
+      if (!(q in forced)) return realMatchMedia(q);
+      return { matches: forced[q], addEventListener() {}, removeEventListener() {} };
+    };
+
+    try {
+      init(block);
+
+      const vp = block.querySelector('.rm-viewport[data-viewport="desktop"]');
+      const slides = vp.querySelectorAll('.rm-slide');
+      const cards = vp.querySelectorAll('.rm-card');
+      const resetBtn = vp.querySelector('.rm-card-reset');
+      expect(resetBtn).to.exist;
+
+      // hovering the second card is how nav-card navigation moves the active slide
+      cards[1].dispatchEvent(new Event('mouseenter'));
+      expect(slides[1].classList.contains('is-active')).to.be.true;
+
+      resetBtn.click();
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+
+      // clicking reset while already on the first slide is a no-op (early return)
+      resetBtn.click();
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('re-runs dynamic layout updates when merch.js signals a promo slide resolved', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/promo.html' });
+    const block = document.querySelector('.router-marquee');
+    const rafSpy = sinon.spy(window, 'requestAnimationFrame');
+    init(block);
+    const callsAfterInit = rafSpy.callCount;
+
+    block.dispatchEvent(new CustomEvent('mas:ready'));
+    expect(rafSpy.callCount).to.equal(callsAfterInit + 1);
+
+    rafSpy.restore();
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');
@@ -300,5 +356,162 @@ describe('Router Marquee — autoplay first-frame gating', () => {
     // The frame-anchored timer advances at t=2000+AUTOPLAY_MS.
     clock.tick(2000);
     expect(activeIndex(block)).to.equal(1);
+  });
+});
+
+const slideHtml = (title) => `
+  <div>
+    <div>
+      <h1>${title}</h1>
+      <p><a class="merch" href="https://mas.adobe.com/studio.html#field=promo">promo</a></p>
+      <p><em><strong><a href="/cta">CTA</a></strong></em></p>
+    </div>
+    <div><p>background</p></div>
+  </div>`;
+
+const buildBlock = (rows, variant = '') => {
+  const section = document.createElement('div');
+  section.className = 'section';
+  section.setAttribute('daa-lh', 'section');
+  section.innerHTML = `<div class="router-marquee ${variant}">
+    <div><div>mobile</div></div>
+    ${rows}
+  </div>`;
+  document.body.append(section);
+  return section.querySelector('.router-marquee');
+};
+
+/** Stands in for merch.js upgrading the authored `a.merch` into a resolved mas-field. */
+const resolveField = (slide, { promo }) => {
+  const link = slide.querySelector('a.merch');
+  const masField = document.createElement('mas-field');
+  const content = document.createElement('div');
+  content.setAttribute('data-role', 'mas-field-content');
+  if (promo) content.setAttribute('data-promotion-project', 'black-friday');
+  masField.append(content);
+  link.replaceWith(masField);
+  masField.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+};
+
+const viewports = (block) => [...block.querySelectorAll('.rm-viewport')];
+const pendingSlide = (vp) => vp.querySelector('.rm-slide.promo-placeholder:not(.promo-resolved)');
+
+/** Same as slideHtml, but with a real background image src for stashSlideImage to stash. */
+const slideWithImage = (title) => `
+  <div>
+    <div>
+      <h1>${title}</h1>
+      <p><a class="merch" href="https://mas.adobe.com/studio.html#field=promo">promo</a></p>
+      <p><em><strong><a href="/cta">CTA</a></strong></em></p>
+    </div>
+    <div><picture><img src="/media/${title}.png" alt="${title}" /></picture></div>
+  </div>`;
+
+describe('router-marquee promo placeholder slide', () => {
+  let block;
+
+  before(async () => {
+    const { setConfig } = await import('../../../libs/utils/utils.js');
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    // registers the shared watchPromoPlaceholders listener that performs the reveal
+    const { initMasField } = await import('../../../libs/blocks/merch/merch.js');
+    const probe = document.createElement('a');
+    probe.href = 'https://mas.adobe.com/studio.html#';
+    await initMasField(probe);
+  });
+
+  afterEach(() => {
+    block?.closest('.section')?.remove();
+    block = null;
+  });
+
+  it('marks the variant-designated slide and its nav card as one placeholder group', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slides.length).to.equal(2);
+      expect(cards.length).to.equal(2);
+      expect(slides[1].classList.contains('promo-placeholder')).to.be.true;
+      expect(cards[1].classList.contains('promo-placeholder')).to.be.true;
+      expect(cards[1].dataset.promoGroup).to.equal(slides[1].dataset.promoGroup);
+      // the first visible slide is the active one
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('is-active')).to.be.true;
+    });
+  });
+
+  it('lets merch.js reveal the slide and its card on a resolved promotion', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slide = pendingSlide(vp);
+      resolveField(slide, { promo: true });
+
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slide.classList.contains('promo-resolved')).to.be.true;
+      expect(cards[1].classList.contains('promo-resolved')).to.be.true;
+      // revealing must not steal the active slide
+      expect(slide.classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('is-active')).to.be.true;
+    });
+  });
+
+  it('keeps the slide hidden when the field resolves without a promotion', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      resolveField(pendingSlide(vp), { promo: false });
+      expect(vp.querySelectorAll('.promo-resolved').length).to.equal(0);
+      expect(pendingSlide(vp)).to.exist;
+    });
+  });
+
+  it('leaves a block without the variant untouched', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Two')}`);
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      expect(vp.querySelectorAll('.promo-placeholder').length).to.equal(0);
+      expect(vp.querySelectorAll('.rm-slide').length).to.equal(2);
+    });
+  });
+
+  it('keeps the eager hero image on the first visible slide when the promo slide is first', () => {
+    block = buildBlock(`${slideWithImage('One')}${slideWithImage('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      expect(slides[0].classList.contains('promo-placeholder')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.true;
+      // a display:none promo slide must never hold the eager (LCP) image
+      expect(slides[0].querySelector('.rm-background img').getAttribute('src')).to.be.null;
+    });
+
+    const eager = [...block.querySelectorAll('.rm-slide')]
+      .filter((s) => s.querySelector('.rm-background img[src]'));
+    expect(eager.length).to.equal(1);
+    expect(eager[0].classList.contains('is-active')).to.be.true;
+    expect(eager[0].classList.contains('promo-placeholder')).to.be.false;
+  });
+
+  it('keeps analytics slide indexes stable before and after the reveal', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}${slideHtml('Three')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    // only the viewport matching the current breakpoint is analytics-initialized
+    const initialized = viewports(block).find((vp) => vp.querySelector('.rm-slide[daa-lh]'));
+    const labels = [...initialized.querySelectorAll('.rm-slide')].map((s) => s.getAttribute('daa-lh'));
+    expect(labels).to.deep.equal(['b1|rm-slide', 'b2|rm-slide', 'b3|rm-slide']);
+
+    resolveField(pendingSlide(initialized), { promo: true });
+    const after = [...initialized.querySelectorAll('.rm-slide')].map((s) => s.getAttribute('daa-lh'));
+    expect(after).to.deep.equal(labels);
   });
 });
