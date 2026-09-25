@@ -1,5 +1,6 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig, loadBlock, getMetadata } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -82,6 +83,19 @@ function decorateLinkFarms(el) {
   });
 }
 
+// Exposing doodlebug CTA icon for screen readers
+async function decorateOpensInAria(el) {
+  const links = [...el.querySelectorAll('.cta-container .action-area a.con-button')];
+  if (!links.length) return;
+  links.filter((a) => a.target !== '_blank').forEach((a) => a.classList.add('no-openin-icon'));
+  const newWindowLinks = links.filter((a) => a.target === '_blank');
+  if (!newWindowLinks.length) return;
+  const label = await replaceKey('opens-in-new-window', getConfig());
+  newWindowLinks.forEach((a) => {
+    a.setAttribute('aria-label', `${a.textContent.trim()} (${label})`);
+  });
+}
+
 function addStyle(filename) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
@@ -153,5 +167,9 @@ export default async function init(el) {
         bodyElem.classList.add('link-list');
       }
     });
+  }
+
+  if (el.classList.contains('grid-cta') && getMetadata('theme') === 'doodlebug') {
+    await decorateOpensInAria(el);
   }
 }
