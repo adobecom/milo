@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, handleFocalpoint } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 function decorate(block) {
@@ -11,6 +11,7 @@ function decorate(block) {
   const picture = mediaCell?.querySelector('picture');
   if (picture) {
     picture.querySelector('img')?.setAttribute('loading', 'eager');
+    handleFocalpoint(picture, mediaCell, true);
     media.append(picture);
   }
 
