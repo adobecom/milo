@@ -2090,23 +2090,42 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 
 let imsLoaded;
 export async function loadIms() {
+  /* eslint-disable no-console */
+  console.log('[IMS DEBUG] loadIms() called', { alreadyMemoized: !!imsLoaded });
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
+    const lingoIsActive = lingoActive();
+    console.log('[IMS DEBUG] lingoActive():', lingoIsActive);
+    const lingoRegion = lingoIsActive ? await getLingoRegion({ useGeoLocation: true }) : null;
+    console.log('[IMS DEBUG] lingoRegion resolved:', lingoRegion);
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, imsAdditionalScopes, env, base, adobeid, imsTimeout,
         imsGuestBotDetection,
       } = getConfig();
+      console.log('[IMS DEBUG] config snapshot:', {
+        imsClientId,
+        imsScope,
+        imsAdditionalScopes,
+        envName: env?.name,
+        envIms: env?.ims,
+        base,
+        imsTimeout,
+        imsGuestBotDetection,
+        adobeidOverride: adobeid,
+      });
       if (!imsClientId) {
+        console.log('[IMS DEBUG] rejecting: missing imsClientId');
         reject(new Error('Missing IMS Client ID'));
         return;
       }
       const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
+      console.log('[IMS DEBUG] metadata:', { unavMeta, ahomeMeta, imsGuest });
       const defaultScope = `AdobeID,openid,gnav,pps.read,read_organizations${unavMeta && unavMeta !== 'off' ? ',firefly_api,additional_info.roles,account_cluster.read' : ''}`;
       const startTime = Date.now();
       let timedOut = false;
       const timeout = setTimeout(() => {
         timedOut = true;
+        console.log(`[IMS DEBUG] IMS timeout fired after ${imsTimeout || 5000}ms. window.adobeIMS at timeout:`, window.adobeIMS);
         window.lana?.log(`IMS did not become ready within ${imsTimeout || 5000}ms (guest requested: ${imsGuest === 'on'})`, { tags: 'ims', severity: 'error' });
         reject(new Error('IMS timeout'));
       }, imsTimeout || 5000);
@@ -2134,6 +2153,16 @@ export async function loadIms() {
             accountTypeError = e?.message || e;
           }
           const elapsed = Date.now() - startTime;
+          console.log('[IMS DEBUG] onReady fired', {
+            elapsed,
+            timedOut,
+            guestRequested: imsGuest === 'on',
+            accountType,
+            accountTypeError,
+            isSignedInUser: window.adobeIMS?.isSignedInUser?.(),
+            accessToken: window.adobeIMS?.getAccessToken?.(),
+            initialized: window.adobeIMS?.initialized,
+          });
           window.lana?.log(
             `IMS ready after ${elapsed}ms${timedOut ? ' (following an IMS timeout)' : ''} — guest requested: ${imsGuest === 'on'}, accountType: ${accountType || 'none'}${accountTypeError ? `, getAccountType error: ${accountTypeError}` : ''}`,
             { tags: 'ims', severity: (imsGuest === 'on' && !accountType) ? 'warn' : 'info' },
@@ -2142,6 +2171,7 @@ export async function loadIms() {
         },
         onError: (type, message, error) => {
           clearTimeout(timeout);
+          console.log('[IMS DEBUG] onError fired', { type, message, error, timedOut });
           window.lana?.log(`IMS onError (guest requested: ${imsGuest === 'on'}): ${[type, message, error?.message || error].filter(Boolean).join(' — ')}`, { tags: 'ims', severity: 'error' });
           if (!timedOut) reject(error instanceof Error ? error : new Error(message || type || 'IMS error'));
         },
@@ -2156,12 +2186,19 @@ export async function loadIms() {
           }),
         }),
       };
+      console.log('[IMS DEBUG] window.adobeid set to:', window.adobeid);
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
         : `${base}/deps/imslib.min.js`;
-      loadScript(path);
+      console.log('[IMS DEBUG] loading imslib script from:', path);
+      loadScript(path).then((script) => {
+        console.log('[IMS DEBUG] imslib script tag loaded (load event fired):', script?.src);
+      }).catch((e) => {
+        console.log('[IMS DEBUG] imslib script tag FAILED to load:', e);
+      });
     });
   })().then(() => {
+    console.log('[IMS DEBUG] loadIms() promise resolved. window.adobeIMS:', window.adobeIMS);
     if (getMepEnablement('xlg') === 'loggedout') {
       /* c8 ignore next */
       getConfig().entitlements();
@@ -2169,9 +2206,11 @@ export async function loadIms() {
       getConfig().entitlements([]);
     }
   }).catch((e) => {
+    console.log('[IMS DEBUG] loadIms() promise rejected:', e);
     getConfig().entitlements([]);
     throw e;
   });
+  /* eslint-enable no-console */
 
   return imsLoaded;
 }
