@@ -3451,6 +3451,51 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadIms guest token', () => {
+    let imsModule;
+    let originalAdobeId;
+
+    const imsGuestConfig = {
+      locales: { '': { ietf: 'en-US' } },
+      pathname: '/',
+      codeRoot: '/libs',
+      imsClientId: 'test-client-id',
+    };
+
+    beforeEach(async () => {
+      originalAdobeId = window.adobeid;
+      const timestamp = Date.now();
+      imsModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
+      const guestMeta = document.createElement('meta');
+      guestMeta.setAttribute('name', 'ims-guest-token');
+      guestMeta.setAttribute('content', 'on');
+      document.head.append(guestMeta);
+    });
+
+    afterEach(() => {
+      document.querySelector('meta[name="ims-guest-token"]')?.remove();
+      window.adobeid = originalAdobeId;
+    });
+
+    it('enables guest bot detection by default when ims-guest-token is on', async () => {
+      imsModule.setConfig(imsGuestConfig);
+      imsModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.enableGuestAccounts).to.equal(true);
+      expect(window.adobeid.enableGuestBotDetection).to.equal(true);
+      expect(window.adobeid.guestBotDetectionProvider).to.equal('bfp');
+    });
+
+    it('omits guest bot detection when imsGuestBotDetection is set to false', async () => {
+      imsModule.setConfig({ ...imsGuestConfig, imsGuestBotDetection: false });
+      imsModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.enableGuestAccounts).to.equal(true);
+      expect(window.adobeid.enableGuestBotDetection).to.equal(undefined);
+      expect(window.adobeid.guestBotDetectionProvider).to.equal(undefined);
+    });
+  });
+
   describe('getCountry bot detection', () => {
     const originalUserAgent = navigator.userAgent;
     let savedFetch;

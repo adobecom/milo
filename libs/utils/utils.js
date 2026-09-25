@@ -2095,6 +2095,7 @@ export async function loadIms() {
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, imsAdditionalScopes, env, base, adobeid, imsTimeout,
+        imsGuestBotDetection,
       } = getConfig();
       if (!imsClientId) {
         reject(new Error('Missing IMS Client ID'));
@@ -2102,7 +2103,13 @@ export async function loadIms() {
       }
       const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
       const defaultScope = `AdobeID,openid,gnav,pps.read,read_organizations${unavMeta && unavMeta !== 'off' ? ',firefly_api,additional_info.roles,account_cluster.read' : ''}`;
-      const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
+      const startTime = Date.now();
+      let timedOut = false;
+      const timeout = setTimeout(() => {
+        timedOut = true;
+        window.lana?.log(`IMS did not become ready within ${imsTimeout || 5000}ms (guest requested: ${imsGuest === 'on'})`, { tags: 'ims', severity: 'error' });
+        reject(new Error('IMS timeout'));
+      }, imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
         scope: imsScope || (imsAdditionalScopes?.length ? `${defaultScope},${imsAdditionalScopes.join(',')}` : defaultScope),
@@ -2118,17 +2125,35 @@ export async function loadIms() {
         environment: env.ims,
         useLocalStorage: false,
         onReady: () => {
-          resolve();
           clearTimeout(timeout);
+          let accountType;
+          let accountTypeError;
+          try {
+            accountType = window.adobeIMS?.getAccountType?.();
+          } catch (e) {
+            accountTypeError = e?.message || e;
+          }
+          const elapsed = Date.now() - startTime;
+          window.lana?.log(
+            `IMS ready after ${elapsed}ms${timedOut ? ' (following an IMS timeout)' : ''} — guest requested: ${imsGuest === 'on'}, accountType: ${accountType || 'none'}${accountTypeError ? `, getAccountType error: ${accountTypeError}` : ''}`,
+            { tags: 'ims', severity: (imsGuest === 'on' && !accountType) ? 'warn' : 'info' },
+          );
+          if (!timedOut) resolve();
         },
-        onError: reject,
+        onError: (type, message, error) => {
+          clearTimeout(timeout);
+          window.lana?.log(`IMS onError (guest requested: ${imsGuest === 'on'}): ${[type, message, error?.message || error].filter(Boolean).join(' — ')}`, { tags: 'ims', severity: 'error' });
+          if (!timedOut) reject(error instanceof Error ? error : new Error(message || type || 'IMS error'));
+        },
         ...adobeid,
         ...(imsGuest === 'on' && {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          enableGuestBotDetection: true,
-          guestBotDetectionProvider: 'bfp',
+          ...(imsGuestBotDetection !== false && {
+            enableGuestBotDetection: true,
+            guestBotDetectionProvider: 'bfp',
+          }),
         }),
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
