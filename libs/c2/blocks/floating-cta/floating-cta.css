@@ -1,58 +1,344 @@
 .section {
-  &:has(.floating-cta .promo-cta .icon-button) {
+  &:has(.floating-cta):has(.floating-cta .promo-cta) {
     bottom: 0;
     position: sticky;
-    z-index: 4;
+    z-index: 5;
   }
+
   &.rounded-corners-bottom,
   &.rounded-corners {
     & + .section {
       &:has(.floating-cta) {
         margin-block: var(--s2a-spacing-xl) calc(-1 * var(--s2a-spacing-xl));
+
+        /* cancel section-metadata's generic rounded-corners overlap spacer
+           so the two don't stack */
+        &::before {
+          content: none;
+        }
       }
+    }
+  }
+
+  /* the reverse adjacency: cancel section-metadata's generic overlap spacer the same way. */
+  &:has(.floating-cta):has(+ .rounded-corners),
+  &:has(.floating-cta):has(+ .rounded-corners-top) {
+    &::after {
+      content: none;
     }
   }
 }
 
 .floating-cta {
+  bottom: 0px;
   display: flex;
-  justify-content: center;
+  inline-size: 100%;
+  inset-inline: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 6;
+
   .promo-cta {
-    bottom: var(--s2a-spacing-20);
-    clip-path: inset(50% round var(--s2a-border-radius-12));
-    opacity: 0;
-    position: absolute;
-    transform: translateY(var(--s2a-spacing-lg));
-    transition:
-      opacity 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
-      clip-path 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
-      transform 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53);
-    will-change: opacity, transform;
+    --cta-ty: 160px;
+    background: var(--s2a-color-transparent-black-48);
+    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+    border-radius: var(--s2a-border-radius-8) var(--s2a-border-radius-8) 0 0;
+    bottom: 0;
+    box-shadow: 0 -8px 30px var(--s2a-color-transparent-black-24);
+    box-sizing: border-box;
+    display: flex;
+    gap: var(--s2a-spacing-md);
+    inline-size: 100%;
+    isolation: isolate;
+    justify-content: center;
+    overflow: visible;
+    letter-spacing: normal;
+    padding: 22px var(--s2a-spacing-lg)
+      calc(var(--s2a-spacing-md) + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    position: relative;
+    transform: translateY(var(--cta-ty));
+    transition: transform 0.36s cubic-bezier(0.32, 0, 0.67, 0);
+    transform-origin: center center;
+    backdrop-filter: blur(27px);
+    -webkit-backdrop-filter: blur(27px);
+    will-change: transform;
+    white-space: nowrap;
+
     &.active {
-      clip-path: inset(0% round var(--s2a-border-radius-12));
-      opacity: 1;
-      transform: translateY(0);
-      transition:
-        opacity 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        clip-path 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-      &:focus-visible {
-        clip-path: inset(-3px round var(--s2a-border-radius-12));
-        outline-offset: var(--s2a-border-width-2);
+      --cta-ty: 0px;
+
+      transition-duration: 0.42s;
+      transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    &.active .floating-cta-actions,
+    &.active .floating-cta-actions * {
+      pointer-events: auto;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--s2a-color-transparent-white-88);
+      outline-offset: 3px;
+    }
+
+    > :not(.floating-cta-intro, .floating-cta-background) {
+      position: relative;
+      z-index: 2;
+    }
+
+    .floating-cta-content,
+    .floating-cta-lockup,
+    .floating-cta-actions {
+      align-items: center;
+      display: flex;
+    }
+
+    .floating-cta-content {
+      gap: var(--s2a-spacing-md);
+    }
+
+    .floating-cta-lockup {
+      gap: 14px;
+      transform-origin: right center;
+      will-change: opacity, transform;
+      flex: 0 1 auto;
+      min-inline-size: 0;
+
+      img {
+        block-size: var(--s2a-spacing-32);
+        display: block;
+        flex: 0 0 var(--s2a-spacing-32);
+        inline-size: var(--s2a-spacing-32);
+        object-fit: contain;
       }
+    }
+
+    .floating-cta-label {
+      color: var(--s2a-color-content-knockout);
+      font-size: var(--s2a-typography-font-size-body-md);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      line-height: var(--s2a-typography-line-height-body-md);
+    }
+
+    .floating-cta-actions {
+      gap: var(--s2a-spacing-xs);
+      transform-origin: center;
+      will-change: transform;
+      flex: 0 0 auto;
+
+      > * {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+    }
+
+    .icon-button {
+      background-color: var(--s2a-color-transparent-black-04);
+      border-color: var(--s2a-color-transparent-black-08);
+      border-radius: var(--s2a-border-radius-6);
+      margin-inline-start: 0;
+
+      path {
+        fill: var(--s2a-color-content-knockout);
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .floating-cta {
+    bottom: 22px;
+    inline-size: auto;
+    justify-content: center;
+
+    .promo-cta {
+      --spring-intro: linear(0, 0.067, 0.194, 0.369, 0.527, 0.671, 0.807, 0.901, 0.971, 1.022, 1.049, 1.062, 1.063, 1.059, 1.049, 1.039, 1.029, 1.019, 1.011, 1);
+      --spring-snap: linear(0, 0.063, 0.187, 0.328, 0.445, 0.566, 0.667, 0.738, 0.805, 0.856, 0.891, 0.921, 0.943, 0.958, 0.97, 0.979, 0.985, 0.989, 0.993, 1);
+      --spring-action: linear(0, 0.068, 0.186, 0.319, 0.447, 0.561, 0.658, 0.738, 0.801, 0.851, 0.893, 0.921, 0.943, 0.958, 0.97, 0.979, 0.985, 0.989, 0.993, 1);
+      --spring-settle: linear(0, 0.074, 0.215, 0.353, 0.495, 0.614, 0.702, 0.778, 0.837, 0.877, 0.911, 0.933, 0.952, 0.966, 0.974, 0.982, 0.987, 0.99, 0.993, 1);
+      --spring-intro-fallback: cubic-bezier(0.34, 1.3, 0.64, 1);
+      --spring-snap-fallback: cubic-bezier(0.16, 0.68, 0.3, 1);
+      --spring-action-fallback: cubic-bezier(0.22, 0.61, 0.36, 1);
+      --spring-settle-fallback: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --ease-exit: cubic-bezier(0.65, 0, 0.35, 1);
+
+      --cta-full-width: 100%;
+      --cta-action-offset: 0px;
+      --cta-ty: 180px;
+      position: relative;
+      background: transparent;
+      block-size: 72px;
+      border-color: transparent;
+      border-radius: var(--s2a-border-radius-round);
+      bottom: auto;
+      box-shadow: none;
+      inline-size: auto;
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-lg)
+        var(--s2a-spacing-md) var(--s2a-spacing-xl);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transition: transform 0.45s var(--ease-exit) 0.6s;
+
+      .floating-cta-content {
+        block-size: 100%;
+      }
+
+      .floating-cta-lockup {
+        opacity: 0;
+        scale: 0.5;
+        transform-origin: right center;
+      }
+
+      .floating-cta-actions {
+        opacity: 0;
+        transform-origin: center;
+      }
+      
+      &:not(.active) {
+        .floating-cta-lockup {
+          opacity: 0;
+          scale: 0.5;
+          transition: 
+            opacity 0.18s var(--ease-exit),
+            scale 0.18s var(--ease-exit);
+        }
+        .floating-cta-actions {
+          opacity: 0;
+          transition: opacity 0.18s var(--ease-exit);
+        }
+      }
+
+      .floating-cta-intro,
+      .floating-cta-background {
+        border: 0;
+        border-radius: var(--s2a-border-radius-round);
+        inset-inline-start: 50%;
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        translate: -50% -50%;
+        transform-origin: center;
+        will-change: block-size, inline-size, opacity, scale;
+      }
+
+      .floating-cta-intro {
+        display: none;
+        background: var(--s2a-color-transparent-black-48);
+        block-size: var(--s2a-spacing-96);
+        box-shadow: inset 0 0 0 var(--s2a-border-width-md) var(--s2a-color-transparent-white-04);
+        inline-size: 38px;
+        opacity: 0;
+        scale: 1.3;
+        backdrop-filter: blur(27px);
+        -webkit-backdrop-filter: blur(27px);
+        z-index: 0;
+      }
+
+      .floating-cta-background {
+        block-size: var(--s2a-spacing-48);
+        inline-size: 52px;
+        scale: 1.3;
+        backdrop-filter: blur(27px);
+        -webkit-backdrop-filter: blur(27px);
+        z-index: 1;
+        transition:
+          block-size 0.4s var(--ease-exit) 0.2s,
+          inline-size 0.4s var(--ease-exit) 0.2s,
+          scale 0.4s var(--ease-exit) 0.2s;
+        &::before {
+          background: var(--s2a-color-transparent-black-48);
+          border-radius: inherit;
+          box-shadow:
+            inset 0 0 0 var(--s2a-border-width-md) var(--s2a-color-transparent-white-04)
+            0 12px 40px var(--s2a-color-transparent-black-24);
+          content: '';
+          inset: 0;
+          opacity: 0;
+          position: absolute;
+          transition: opacity 0.3s var(--ease-exit) 0.75s; 
+        }
+      }
+
+      &.active {
+        --cta-ty: 0px;
+
+        transition: transform 0.6s var(--spring-intro-fallback) 0.03s;
+        transition: transform 0.6s var(--spring-intro) 0.03s;
+
+        .floating-cta-lockup {
+          opacity: 1;
+          scale: 1;
+          transition:
+            opacity 0.3s var(--spring-settle-fallback) 1.45s,
+            scale 0.3s var(--spring-settle-fallback) 1.45s;
+          transition:
+            opacity 0.3s var(--spring-settle) 1.45s,
+            scale 0.3s var(--spring-settle) 1.45s;
+        }
+
+        .floating-cta-actions {
+          opacity: 1;
+          transition: opacity 0.3s var(--ease-exit) 1.45s;
+        }
+
+        .floating-cta-background {
+          block-size: 72px;
+          inline-size: var(--cta-full-width);
+          scale: 1;
+          transition:
+            scale 0.7s var(--spring-snap-fallback) 0.7s,
+            inline-size 0.7s var(--spring-settle-fallback) 0.7s,
+            block-size 0.7s var(--spring-action-fallback) 0.7s;
+          transition:
+            scale 0.7s var(--spring-snap) 0.7s,
+            inline-size 0.7s var(--spring-settle) 0.7s,
+            block-size 0.7s var(--spring-action) 0.7s;
+
+          &::before {
+            opacity: 1;
+            transition: opacity 0.18s var(--ease-exit) 0.62s;
+            transition: opacity 0.18s var(--ease-exit) 0.62s;
+          }
+        }
+      }
+
+      &:hover,
+      &:focus,
+      &:active {
+        .floating-cta-background {
+          background: var(--s2a-color-transparent-black-64);
+        }
+      }
+    }
+  }
+
+  @keyframes floating-cta-intro-flash {
+    0%,
+    26% {
+      opacity: 0;
+    }
+    30%,
+    44% {
+      opacity: 1;
+    }
+    52%,
+    100% {
+      opacity: 0;
     }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .floating-cta {
-    .promo-cta {
-      clip-path: none;
-      transform: none;
+    .promo-cta,
+    .floating-cta-intro,
+    .floating-cta-background,
+    .floating-cta-actions,
+    .floating-cta-background::before,
+    .floating-cta-lockup {
+      animation: none;
       transition: none;
-      &.active {
-        transition: none;
-      }
     }
   }
 }
