@@ -25,6 +25,8 @@ export default {
       widgetsInMessageContentTypes: [
         'cta-actions',
         'firefly-community-gallery',
+        'price-card',
+        'disclaimer',
       ],
     },
     privacyNotice: {
