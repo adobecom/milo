@@ -42,6 +42,7 @@
   .pm-merch-card {
     --pm-content: var(--s2a-color-content-default);
     --pm-content-subtle: var(--s2a-color-content-subtle);
+    --pm-badge-color: var(--s2a-color-content-inverse);
 
     color: var(--pm-content);
     display: flex;
@@ -77,6 +78,18 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
+    position: relative;
+
+    /* Badge is the inverse of the card surface: dark on a light card, light on a
+       dark card. Its background follows the card's own content color (--pm-content)
+       and the text takes the opposite (--pm-badge-color). These are set inline on
+       <merch-badge> by the web component, so the overrides need !important to win. */
+    merch-badge {
+      --merch-badge-background-color: var(--pm-content) !important;
+      --merch-badge-border: 1px solid var(--pm-content) !important;
+      --merch-badge-border-radius: var(--s2a-border-radius-2xs) !important;
+      --merch-badge-color: var(--pm-badge-color) !important;
+    }
 
     .mas-description,
     .mas-price-commitment {
@@ -95,6 +108,22 @@
     .mas-price {
       color: var(--pm-content);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+
+    /* Reserve room so a long title wraps before it reaches the badge. */
+    > p:first-of-type {
+      padding-inline-end: var(--s2a-spacing-4xl);
+    }
+
+    /* Badge is pinned to the top-right, level with the card title row. Anchored to
+       .pm-merch-content (the padded content box) so it sits flush with the content
+       edge on mobile and 24px in from the card edge on desktop where the card is
+       padded. */
+    p:has(> mas-field[field="badge"]) {
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      margin: 0;
+      position: absolute;
     }
   }
 
@@ -186,6 +215,7 @@ body:has(header.local-nav) .product-marquee-grid {
 .product-marquee-grid .pm-merch-card.dark {
   --pm-content: var(--s2a-color-gray-1000);
   --pm-content-subtle: var(--s2a-color-transparent-black-64);
+  --pm-badge-color: var(--s2a-color-gray-25);
 
   background-color: transparent;
 
@@ -276,6 +306,7 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid .pm-merch-card.dark {
     --pm-content: var(--s2a-color-gray-25);
     --pm-content-subtle: var(--s2a-color-transparent-white-64);
+    --pm-badge-color: var(--s2a-color-gray-1000);
 
     background: var(--s2a-color-gray-900);
   }
@@ -288,6 +319,7 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid.dark .pm-merch-card.light {
     --pm-content: var(--s2a-color-gray-1000);
     --pm-content-subtle: var(--s2a-color-transparent-black-64);
+    --pm-badge-color: var(--s2a-color-gray-25);
 
     background: var(--s2a-color-gray-50);
   }
