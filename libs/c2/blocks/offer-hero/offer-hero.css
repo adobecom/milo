@@ -1,10 +1,16 @@
+@property --hero-eyebrow-gap {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
   overflow: visible;
 
   > .section-background {
     overflow: clip;
-    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+    border-radius: 0 0 var(--s2a-border-radius-22) var(--s2a-border-radius-22);
   }
 }
 
@@ -19,7 +25,7 @@
 
   .hero-content {
     padding-inline: var(--s2a-spacing-lg);
-    margin-top: 190px;
+    padding-top: 190px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,7 +73,7 @@
   }
 
   .hero-eyebrow {
-    --hero-eyebrow-gap: var(--s2a-spacing-lg);
+    --hero-eyebrow-gap: var(--s2a-spacing-2xl);
 
     position: fixed;
     top: 0;
@@ -85,7 +91,7 @@
   .hero-cards {
     max-width: var(--grid-max-width-default);
     margin-inline: auto;
-    padding-inline: var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-xs);
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--grid-gutter);
@@ -124,7 +130,7 @@
     box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
     overflow: hidden;
     transform-origin: top left;
-    padding-top: calc(100% * 100 / 109);
+    padding-top: calc(100% * 110 / 100);
     will-change: transform;
   }
 
@@ -323,7 +329,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 0;
-      margin-top: 184px;
+      padding-top: 184px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: calc(100% - 482px);
@@ -335,10 +341,11 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
+      --hero-eyebrow-gap: calc(var(--s2a-spacing-96) + var(--s2a-spacing-xl));
     }
 
     .hero-cards {
+      padding-inline: var(--s2a-spacing-lg);
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -353,10 +360,16 @@
 }
 
 @media (width >= 1280px) {
+  .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
+    > .section-background {
+      border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+    }
+  }
+
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
-      margin-top: 177px;
+      padding-top: 177px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;
@@ -373,6 +386,18 @@
 
     .hero-card-text {
       padding: var(--s2a-spacing-3xl);
+    }
+  }
+}
+
+.dark {
+  .offer-hero {
+    .hero-card-tile {
+      background: transparent;
+    }
+
+    .hero-card-body-text {
+      color: var(--s2a-color-transparent-white-64);
     }
   }
 }

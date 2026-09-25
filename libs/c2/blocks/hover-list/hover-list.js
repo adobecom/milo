@@ -51,13 +51,13 @@ function hideMedia(media) {
   });
 }
 
-function setupStickyBoundary(headline, list) {
+function setupStickyBoundary(desc, list) {
   const tabletMQ = window.matchMedia('(width >= 768px) and (width < 1280px)');
-  const wrapper = headline.parentElement;
+  const wrapper = desc.parentElement;
 
   const update = () => {
     if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
-    let { height } = headline.getBoundingClientRect();
+    let { height } = desc.getBoundingClientRect();
     for (let i = 0, stop = list.children.length - 2; i < stop; i += 1) {
       height += list.children[i].getBoundingClientRect().height;
     }
@@ -68,7 +68,7 @@ function setupStickyBoundary(headline, list) {
   tabletMQ.addEventListener('change', update);
 }
 
-function addCursorFollower(list) {
+function addCursorFollower(list, noAnimation) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
   let activeLayers = [];
@@ -106,7 +106,7 @@ function addCursorFollower(list) {
   const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(tick); };
 
   const activate = (item) => {
-    if (item === activeItem) return;
+    if (item === activeItem || noAnimation) return;
     if (REDUCED_MOTION.matches) {
       if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
       activeItem = item;
@@ -195,15 +195,22 @@ function addCursorFollower(list) {
   }, { passive: true });
 }
 
-function decorate(block) {
+function decorate(block, el) {
   const rows = [...block.children];
   if (!rows.length) return;
+  const noAnimation = el.classList.contains('no-animation');
 
-  const headline = createTag('div', { class: 'hover-list-headline' });
-  const headingCol = rows[0]?.children[0];
-  if (headingCol) {
-    decorateBlockText(headingCol, { heading: '2' });
-    headline.append(...headingCol.childNodes);
+  const desc = createTag('div', { class: 'hover-list-desc' });
+  const descCol = rows[0]?.children[0];
+  if (descCol) {
+    decorateBlockText(descCol, { heading: '2' });
+    const standalone = descCol.querySelector(':scope > :last-child:has(a:only-child)');
+    if (standalone) {
+      const bodyClass = [...standalone.classList].find((c) => c.startsWith('body-'));
+      if (bodyClass) standalone.classList.replace(bodyClass, 'label');
+      standalone.querySelector('a').classList.add('standalone-link');
+    }
+    desc.append(...descCol.childNodes);
   }
 
   const list = createTag('ol', { class: 'hover-list-items' });
@@ -225,13 +232,13 @@ function decorate(block) {
     list.append(item);
   });
 
-  const headlineWrapper = createTag('div', { class: 'hover-list-headline-wrapper' });
-  headlineWrapper.append(headline);
-  addCursorFollower(list);
+  const descWrapper = createTag('div', { class: 'hover-list-desc-wrapper' });
+  descWrapper.append(desc);
+  addCursorFollower(list, noAnimation);
   const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
-  block.replaceChildren(headlineWrapper, listCol);
-  setupStickyBoundary(headline, list);
+  block.replaceChildren(descWrapper, listCol);
+  setupStickyBoundary(desc, list);
 }
 
 export default function init(el) {

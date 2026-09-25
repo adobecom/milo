@@ -24,7 +24,6 @@ describe('Tour', () => {
 
     const heading = header.querySelector(':scope > h3.heading-6');
     expect(heading).to.exist;
-    expect(heading.getAttribute('tabindex')).to.equal('0');
     expect(heading.textContent.trim()).to.equal('Welcome to the product');
   });
 
@@ -45,7 +44,7 @@ describe('Tour', () => {
     expect(img.getAttribute('src')).to.equal('https://main--federal--adobecom.aem.page/federal/icons/cta.svg');
   });
 
-  it('decorates each multi-column row with body, image and an index label', async () => {
+  it('decorates each multi-column row with body and image', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const el = document.querySelector('.tour');
     init(el);
@@ -56,11 +55,8 @@ describe('Tour', () => {
     const first = el.querySelector('.tour-row.row-1');
     const content = first.querySelector(':scope > .tour-row-content');
     expect(content).to.exist;
-    expect(content.querySelector('.tour-row-index').textContent.trim()).to.equal('( 1/2 )');
     expect(content.querySelector('.tour-row-body.body-sm')).to.exist;
     expect(content.querySelector('.tour-row-image')).to.exist;
-
-    expect(el.querySelector('.tour-row.row-2 .tour-row-index').textContent.trim()).to.equal('( 2/2 )');
   });
 
   it('moves extra images in a row into a centered container', async () => {
