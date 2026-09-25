@@ -271,7 +271,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
-function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx, pageId) {
+function buildMalformedManifestEntry({ name, manifestPath, error, source }, mIdx, pageId) {
   const editPath = normalizePath(manifestPath);
   return {
     index: mIdx + 1,
@@ -279,6 +279,7 @@ function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx, pageId
     fileName: name,
     malformed: true,
     error,
+    source: Array.isArray(source) ? source.join(', ') : source,
     // Broken manifests never have variants; Default is offered in case the file loads again.
     options: [
       { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)", selected: true },

@@ -272,18 +272,16 @@ function buildManifestCard(manifest) {
     createTag('span', {}, `${manifest.index}. `),
     filename,
   ]);
-  // Malformed manifests have no card body, so there's nothing to expand/collapse.
-  const titleChildren = manifest.malformed ? [link] : [link, svgIcon('icon-expand-circle-down')];
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('h1', {}, titleChildren),
+    createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
   const card = createTag('div', { class: 'mep-card mep-manifest-card' });
   markExpanded(card, manifest.editUrl, false);
 
   if (manifest.malformed) {
-    // No variant data exists, so the select only offers the "don't add manifest" placeholder.
-    card.append(header, buildVariantSelect(manifest.options ?? []));
+    const body = createTag('div', { class: 'mep-card-body' }, [buildRow('Source', manifest.source)]);
+    card.append(header, body, buildVariantSelect(manifest.options ?? []));
     applyManifestStatus(card, manifest);
     return card;
   }
