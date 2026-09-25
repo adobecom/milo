@@ -116,6 +116,19 @@ describe('Modal (c2)', () => {
       expect(document.querySelector('.modal-curtain')).to.be.null;
       expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
     });
+
+    it('applies a close-button-circle breakpoint modifier verbatim, with no JS translation', async () => {
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, {
+        id: 'c2-circle',
+        content,
+        title: 'Modal: Circle',
+        class: 'close-button-circle-mobile',
+      });
+
+      expect(modal.classList.contains('close-button-circle-mobile')).to.be.true;
+      expect(modal.classList.contains('close-button-circle')).to.be.false;
+    });
   });
 
   describe('init', () => {

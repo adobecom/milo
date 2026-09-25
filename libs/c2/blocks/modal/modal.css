@@ -281,11 +281,24 @@
   --dialog-modal-close-size: 12px;
   --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 1.33);
   --dialog-modal-close-line-thickness: 2px;
+  --dialog-modal-close-bg: transparent;
+  --dialog-modal-close-outline-color: var(--modal-focus-color);
+
+  /*
+    Single source of truth for the close-button-circle look. The
+    breakpoint-scoped modifiers below only decide *when* it turns on;
+    keeping size/color here means the variants can't drift from each other.
+  */
+  --close-button-circle-size: 40px;
+  --close-button-circle-line-width: calc(var(--close-button-circle-size) * 0.375);
+  --close-button-circle-bg: var(--s2a-color-gray-200);
+  --close-button-circle-outline-color: var(--s2a-color-blue-1000);
   border-radius: var(--s2a-spacing-md);
 
   button.dialog-close {
     width: var(--dialog-modal-close-size);
     height: var(--dialog-modal-close-size);
+    background: var(--dialog-modal-close-bg);
     border: none;
     right: var(--s2a-spacing-lg);
     top: var(--s2a-spacing-lg);
@@ -314,6 +327,45 @@
     &::after {
       transform: translate(-50%, -50%) rotate(-45deg);
     }
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .dialog-close:focus-visible {
+    outline-color: var(--dialog-modal-close-outline-color);
+  }
+}
+
+.dialog-modal.close-button-circle {
+  --dialog-modal-close-size: var(--close-button-circle-size);
+  --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+  --dialog-modal-close-bg: var(--close-button-circle-bg);
+  --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+}
+
+@media (width < 768px) {
+  .dialog-modal.close-button-circle-mobile {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .dialog-modal.close-button-circle-tablet {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+  }
+}
+
+@media (width >= 1280px) {
+  .dialog-modal.close-button-circle-desktop {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
   }
 }
 
