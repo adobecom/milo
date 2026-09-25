@@ -21,16 +21,20 @@ import {
   sideOverlayTop,
   setAuthoredContent,
   mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 
 const variants = {};
 
 function checkGlobal() {
-  let global = false;
+  const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    global = window.milo.brandConcierge.brandConciergeGlobal;
+    return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  return global;
+  if (params.get('side-overlay') === 'true') {
+    return true;
+  }
+  return false;
 }
 
 function routeInput(text) {
@@ -88,7 +92,7 @@ export default async function init(el) {
   });
 
   sideOverlayTop();
-  initAnalytics();
+  initAnalytics('BC-Inline-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
@@ -192,8 +196,11 @@ export default async function init(el) {
     el.removeChild(row);
   });
 
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

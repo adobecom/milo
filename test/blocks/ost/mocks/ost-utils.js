@@ -155,6 +155,7 @@ const createIntersectionObserver = () => {};
 const getFederatedContentRoot = () => '';
 const getFedsPlaceholderConfig = () => ({});
 const shouldBlockFreeTrialLinks = () => false;
+const isAupEnabled = () => false;
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
 
@@ -209,6 +210,7 @@ export {
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  isAupEnabled,
   decorateLinksAsync,
   loadBlock,
 };

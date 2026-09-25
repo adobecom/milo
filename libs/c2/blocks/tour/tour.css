@@ -208,6 +208,12 @@
       border-color: var(--s2a-color-gray-400);
     }
 
+    &:focus-visible {
+      outline: var(--s2a-border-width-2) solid var(--s2a-color-gray-1000);
+      outline-offset: var(--s2a-border-width-2);
+      box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-gray-25);
+    }
+
     &:active {
       background-color: var(--s2a-color-background-knockout);
       border-color: var(--s2a-color-gray-700);
@@ -221,7 +227,6 @@
   & + .modal-curtain.is-open {
     background: var(--s2a-color-transparent-black-64);
     backdrop-filter: blur(var(--s2a-blur-32));
-    will-change: backdrop-filter;
   }
 }
 

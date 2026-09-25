@@ -74,6 +74,73 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('isAupEnabled', () => {
+    let originalUrl;
+    let meta;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.delete('aup-select');
+      window.history.replaceState(null, '', url);
+      meta = document.createElement('meta');
+      meta.name = 'aup-select';
+    });
+
+    afterEach(() => {
+      meta.remove();
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('defaults to disabled and reads metadata insertion, replacement, and removal', () => {
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      document.head.append(meta);
+      expect(utils.isAupEnabled()).to.be.true;
+      const replacement = meta.cloneNode();
+      replacement.content = 'off';
+      meta.replaceWith(replacement);
+      meta = replacement;
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      expect(utils.isAupEnabled()).to.be.true;
+      meta.remove();
+      expect(utils.isAupEnabled()).to.be.false;
+    });
+
+    it('enables AUP for signed-in Universal Nav users', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled()).to.be.false;
+        expect(utils.isAupEnabled(true)).to.be.true;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
+    });
+
+    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
+      it(`requires exact on for metadata "${value}"`, () => {
+        meta.content = value;
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+      });
+
+      it(`reads query "${value}" with and without metadata`, () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('aup-select', value);
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        meta.content = value === 'on' ? 'off' : 'on';
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        url.searchParams.delete('aup-select');
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+      });
+    });
+  });
+
   describe('prerendered support', () => {
     it('loads milo minimally when document is prerendered', async () => {
       document.head.innerHTML = head;
@@ -3554,6 +3621,104 @@ describe('Utils', () => {
       const url = geoUrl();
       await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
       expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+  });
+
+  describe('shouldBlockFreeTrialLinks', () => {
+    let originalPrefix;
+
+    const createLink = (text, attrs = {}) => {
+      const link = document.createElement('a');
+      link.href = 'https://www.adobe.com/kr';
+      link.textContent = text;
+      Object.entries(attrs).forEach(([key, val]) => link.setAttribute(key, val));
+      document.body.append(link);
+      return link;
+    };
+
+    beforeEach(() => {
+      const { locale } = utils.getConfig();
+      originalPrefix = locale.prefix;
+      locale.prefix = '/kr';
+    });
+
+    afterEach(() => {
+      utils.getConfig().locale.prefix = originalPrefix;
+    });
+
+    it('blocks free trial CTAs on the KR locale', () => {
+      ['무료 체험판', '무료 체험하기', 'Free Trial', 'free-trial', '{{try-for-free}}', '무료로 시작하기', 'Start for free'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(link.isConnected).to.be.false;
+      });
+    });
+
+    it('removes the wrapping STRONG or EM when the link is its only child', () => {
+      ['STRONG', 'EM'].forEach((tagName) => {
+        const wrapper = document.createElement(tagName);
+        document.body.append(wrapper);
+        const link = createLink('무료 체험판');
+        wrapper.append(link);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(wrapper.isConnected).to.be.false;
+      });
+    });
+
+    it('does not block the free app download CTA', () => {
+      ['무료 앱 다운로드', '무료  앱\n다운로드', '지금 무료 앱 다운로드'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+        expect(link.isConnected).to.be.true;
+        link.remove();
+      });
+    });
+
+    it('blocks trial modal links regardless of copy', () => {
+      const link = createLink('무료 앱 다운로드');
+      link.dataset.modalPath = '/kr/cc-shared/fragments/trial-modals/photoshop';
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+      expect(link.isConnected).to.be.false;
+    });
+
+    it('does not block links allowed by attribute or hash', () => {
+      const withAttribute = createLink('무료 체험판', { 'data-allow-kr-free-trial': 'true' });
+      expect(utils.shouldBlockFreeTrialLinks(withAttribute)).to.be.false;
+      expect(withAttribute.isConnected).to.be.true;
+      withAttribute.remove();
+
+      const withHash = createLink('무료 체험판');
+      withHash.href = 'https://www.adobe.com/kr#_allow-kr-trial';
+      expect(utils.shouldBlockFreeTrialLinks(withHash)).to.be.false;
+      expect(withHash.getAttribute('data-allow-kr-free-trial')).to.equal('true');
+      expect(withHash.href).to.not.include('_allow-kr-trial');
+      withHash.remove();
+    });
+
+    it('does not block when the allow-kr-free-trial metadata is on', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'allow-kr-free-trial';
+      meta.content = 'on';
+      document.head.append(meta);
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+      meta.remove();
+    });
+
+    it('does not block unrelated copy', () => {
+      const link = createLink('지금 구매하기');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+    });
+
+    it('does not block outside the KR locale', () => {
+      utils.getConfig().locale.prefix = '';
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      link.remove();
     });
   });
 });
