@@ -110,15 +110,18 @@
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
     }
 
-    /* Reserve room so a long title wraps before it reaches the badge. */
-    > p:first-of-type {
-      padding-inline-end: var(--s2a-spacing-4xl);
+    mas-field[field="subtitle"] {
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
     }
 
-    /* Badge is pinned to the top-right, level with the card title row. Anchored to
-       .pm-merch-content (the padded content box) so it sits flush with the content
-       edge on mobile and 24px in from the card edge on desktop where the card is
-       padded. */
+    > p:first-of-type {
+      padding-inline-end: var(--s2a-spacing-3xl);
+    }
+
     p:has(> mas-field[field="badge"]) {
       inset-block-start: 0;
       inset-inline-end: 0;
