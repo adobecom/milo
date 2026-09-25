@@ -1,0 +1,86 @@
+/* s2a design tokens required by the c2 footer (../c2/blocks/global-footer).
+   These @imports point at the actual token source files Milo's c2 styles.css
+   is generated from, so this file stays in sync automatically as tokens change
+   — do not hand-copy values here. Order matters: later files override/extend
+   variables declared in earlier ones (mirrors the order in ../c2/styles/styles.css). */
+@import '../c2/styles/deps/tokens.primitives.css';
+@import '../c2/styles/deps/tokens.primitives.light.css';
+@import '../c2/styles/deps/tokens.semantic.css';
+@import '../c2/styles/deps/tokens.semantic.light.css';
+@import '../c2/styles/deps/tokens.responsive.sm.css';
+@import '../c2/styles/deps/tokens.responsive.md.css';
+@import '../c2/styles/deps/tokens.responsive.lg.css';
+@import '../c2/styles/deps/tokens.responsive.xl.css';
+
+/* Legacy --feds-* variables the c2 footer still references for its region-picker
+   dropdown (global-footer.css) and menu border (global-footer/menu/menu.css).
+   Copied from ../blocks/global-navigation/base.css — importing that whole file
+   would pull in unrelated legacy gnav styles, so just the values are duplicated
+   here, same approach as common.css above. */
+:root {
+  --feds-background-nav: #f8f8f8;
+  --feds-borderColor: #eaeaea;
+  --feds-borderColor-menu: #e1e1e1;
+  --feds-background-link--hover: #e9e9e9;
+
+  /* Milo grid variables backing the .container utility class below, not part
+     of the s2a token deps above. Copied from ../c2/styles/styles.css. */
+  --grid-margin-width-base: var(--s2a-spacing-24);
+  --grid-margin-width-fixed: var(--s2a-spacing-24);
+  --grid-margin-width: var(--grid-margin-width-base);
+  --grid-margin-width-target: var(--grid-margin-width-base);
+  --grid-max-width-default: 1920px;
+  --grid-max-width-fluid: 2560px;
+}
+
+@media (width >= 768px) {
+  :root {
+    --grid-margin-width-base: 8.333%;
+  }
+}
+
+/* Utility classes the c2 footer's markup applies (global-footer.js:
+   `.container`, `.body-md`, `.caption`) that are defined in Milo's global
+   ../c2/styles/styles.css rather than in global-footer.css itself. Copied
+   here since importing all of styles.css would pull in unrelated page-layout
+   rules that don't apply outside a Milo page. */
+.container {
+  --grid-max-width: var(--grid-max-width-default);
+  --grid-max-width-target: var(--grid-max-width-default);
+  --grid-content-width: var(--grid-max-width);
+  --grid-padding: max(
+    var(--grid-margin-width),
+    calc((100% - var(--grid-content-width)) / 2)
+  );
+
+  width: auto;
+  max-width: none;
+  padding-inline: var(--grid-padding);
+
+  &.fluid {
+    --grid-max-width: var(--grid-max-width-fluid);
+    --grid-margin-width: 0px;
+  }
+
+  &.fixed {
+    --grid-margin-width: var(--grid-margin-width-fixed);
+    --grid-margin-width-target: var(--grid-margin-width-fixed);
+  }
+
+  .container {
+    padding-inline: 0;
+  }
+}
+
+.body-md {
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+}
+
+.caption, [class*="caption-"] {
+  font-weight: var(--s2a-font-weight-caption);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  letter-spacing: var(--s2a-typography-letter-spacing-caption);
+}
