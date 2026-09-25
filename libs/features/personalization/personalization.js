@@ -1217,10 +1217,15 @@ export function setConsentEnabled(manifestConfig) {
   overrideVariant(manifestPath, 'Default');
 }
 
-function recordManifestError(name, manifestPath, error) {
+function recordManifestError(name, manifestPath, error, source) {
   const config = getConfig();
   config.mep.manifestErrors ??= [];
-  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
+  config.mep.manifestErrors.push({
+    name: name || getFileName(manifestPath),
+    manifestPath,
+    error,
+    source,
+  });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1243,14 +1248,14 @@ async function getManifestConfig(info, variantOverride) {
   if (!data) {
     data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
     if (!data) {
-      recordManifestError(name, manifestPath, 'Manifest');
+      recordManifestError(name, manifestPath, 'Manifest', source);
       return null;
     }
   }
 
   const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
   if (!persData) {
-    recordManifestError(name, manifestPath, 'Experiences tab');
+    recordManifestError(name, manifestPath, 'Experiences tab', source);
     return null;
   }
   const infoTab = manifestInfo || data.info?.data;
@@ -1265,7 +1270,7 @@ async function getManifestConfig(info, variantOverride) {
 
   if (!manifestConfig) {
     log('Error loading personalization manifestConfig: ', name || manifestPath);
-    recordManifestError(name, manifestPath, 'Experience columns');
+    recordManifestError(name, manifestPath, 'Experience columns', source);
     return null;
   }
   const infoKeyMap = {

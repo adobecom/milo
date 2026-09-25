@@ -502,7 +502,7 @@ describe('getManifestList', () => {
         experiments: [{
           name: 'Valid', manifest: '/valid.json', variantNames: ['v'], selectedVariantName: 'v', source: 'helix', disabled: false,
         }],
-        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json' }],
+        manifestErrors: [{ name: 'Broken Manifest', manifestPath: '/broken.json', source: ['mep param'] }],
       },
     });
     const { manifests } = getManifestList();
@@ -514,6 +514,7 @@ describe('getManifestList', () => {
       editUrl: '/broken.json',
       fileName: 'Broken Manifest',
       malformed: true,
+      source: 'mep param',
     });
   });
 

@@ -317,6 +317,8 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
 .mep-drawer .mep-card .mep-manifest-warning svg {
   flex-shrink: 0;
   fill: var(--mep-white-100);
+  padding: 4px;
+  margin: -4px;
 }
 
 .mep-drawer .mep-card .mep-manifest-error-tooltip,
@@ -346,8 +348,13 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   border: 1px solid var(--mep-white-100);
 }
 
-.mep-drawer .mep-card .mep-manifest-error:hover .mep-manifest-error-tooltip,
-.mep-drawer .mep-card .mep-manifest-warning:hover .mep-manifest-warning-tooltip {
+.mep-drawer .mep-card .mep-manifest-error svg:hover,
+.mep-drawer .mep-card .mep-manifest-warning svg:hover {
+  cursor: pointer;
+}
+
+.mep-drawer .mep-card .mep-manifest-error svg:hover ~ .mep-manifest-error-tooltip,
+.mep-drawer .mep-card .mep-manifest-warning svg:hover ~ .mep-manifest-warning-tooltip {
   display: block;
 }
 

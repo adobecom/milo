@@ -271,13 +271,27 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
-function buildMalformedManifestEntry({ name, manifestPath, error }, mIdx) {
+function buildMalformedManifestEntry({ name, manifestPath, error, source }, mIdx, pageId) {
+  const editPath = normalizePath(manifestPath);
   return {
     index: mIdx + 1,
     editUrl: manifestPath,
     fileName: name,
     malformed: true,
     error,
+    source: Array.isArray(source) ? source.join(', ') : source,
+    // Broken manifests never have variants; Default is offered in case the file loads again.
+    options: [
+      { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)", selected: true },
+      {
+        name: `${editPath}${pageId}`,
+        value: 'default',
+        id: `${editPath}${pageId}--default`,
+        dataManifest: editPath,
+        title: 'Default (control)',
+        label: 'Default (control)',
+      },
+    ],
   };
 }
 
@@ -293,7 +307,7 @@ export function getManifestList() {
   ) ?? [];
 
   const malformedManifests = manifestErrors.map(
-    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx),
+    (error, mIdx) => buildMalformedManifestEntry(error, manifests.length + mIdx, pageId),
   );
 
   return { manifests: [...manifests, ...malformedManifests], manifestParameter };
