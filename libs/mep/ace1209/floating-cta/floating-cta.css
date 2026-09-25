@@ -165,7 +165,6 @@
 
       --cta-full-width: 100%;
       --cta-action-offset: 0px;
-      --cta-ty: 180px;
       position: relative;
       background: transparent;
       block-size: 72px;
@@ -196,6 +195,7 @@
       }
       
       &:not(.active) {
+        --cta-ty: 180px;
         .floating-cta-lockup {
           opacity: 0;
           scale: 0.5;
