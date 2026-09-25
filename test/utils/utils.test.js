@@ -3494,6 +3494,22 @@ describe('Utils', () => {
       expect(window.adobeid.enableGuestBotDetection).to.equal(undefined);
       expect(window.adobeid.guestBotDetectionProvider).to.equal(undefined);
     });
+
+    // Regression test for event-libs' `adobeid: { enableGuestBotDetection: false }`
+    // (event-libs/scripts/scripts.js) being silently clobbered back to `true` by
+    // milo's own guest-token defaults, which used to spread after `...adobeid`
+    // unconditionally.
+    it('respects a consumer adobeid override that explicitly disables guest bot detection', async () => {
+      imsModule.setConfig({
+        ...imsGuestConfig,
+        adobeid: { enableGuestBotDetection: false },
+      });
+      imsModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.enableGuestAccounts).to.equal(true);
+      expect(window.adobeid.enableGuestBotDetection).to.equal(false);
+      expect(window.adobeid.guestBotDetectionProvider).to.equal(undefined);
+    });
   });
 
   describe('getCountry bot detection', () => {

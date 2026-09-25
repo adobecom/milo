@@ -2180,7 +2180,11 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          ...(imsGuestBotDetection !== false && {
+          // Respect an explicit consumer opt-out (either via their own `adobeid`
+          // override, e.g. event-libs' `enableGuestBotDetection: false`, or via
+          // the milo-level `imsGuestBotDetection` config flag) instead of always
+          // re-enabling bot detection after the `...adobeid` spread above.
+          ...(imsGuestBotDetection !== false && adobeid?.enableGuestBotDetection !== false && {
             enableGuestBotDetection: true,
             guestBotDetectionProvider: 'bfp',
           }),
