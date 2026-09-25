@@ -1,37 +1,10 @@
 .quick-actions {
   position: relative;
-  isolation: isolate;
+  background: transparent;
 
   &.blur-background {
-    isolation: isolate;
-    background: transparent;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
-      backdrop-filter: blur(47px);
-      mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
-    }
-
-    .section:has(+ .section[class*="rounded-corners-top"]) &::before {
-      inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0;
-    }
+    background: var(--s2a-color-background-knockout);
   }
-}
-
-.quick-actions-bg-color {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.section:has(+ .section[class*="rounded-corners-top"]) .quick-actions-bg-color {
-  inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0;
 }
 
 .quick-actions-header {
@@ -109,8 +82,8 @@ img.quick-actions-media {
 
 .quick-actions-tile-footer {
   grid-area: 1 / 1;
-  align-self: end;
   z-index: 1;
+  align-self: end;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -166,6 +139,30 @@ img.quick-actions-media {
 
       > :not([class*="section-"]) {
         animation-name: enable-parallax-stagger;
+      }
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .quick-actions {
+    &.blur-background {
+      isolation: isolate;
+      background: transparent;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
+        backdrop-filter: blur(47px);
+        mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
+      }
+
+      .section:has(+ .section[class*="rounded-corners-top"]) &::before {
+        inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0;
       }
     }
   }
