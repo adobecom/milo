@@ -314,6 +314,8 @@ export function getLocale(locales, pathname = window.location.pathname) {
     matchedKey = localeString;
   }
 
+  if (!(matchedKey in locales)) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
   const locale = hydrateLocale(locales, matchedKey);
   if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;

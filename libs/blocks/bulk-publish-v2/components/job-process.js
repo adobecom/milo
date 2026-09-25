@@ -2,12 +2,43 @@ import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { getStatusProps, updateJobUrls, isSuccess, isDelete, delay } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
+import { runAutoPublishForJob } from '../auto-publish-hook.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/job-process.css`);
+
+// True while at least one queued entry still has another 503 retry
+// attempt coming (retry() bumps count each round; 4 exhausts the 3 retries).
+export const retriesPending = (queue) => queue.some(
+  ({ count, status }) => status === 503 && count <= 3,
+);
+
+// jobStatus never changes after the job stops, so a resource that only
+// succeeded via a 503 retry (tracked separately in the queue) would still
+// show its original 503 and be skipped by collectSuccessfulPaths unless its
+// status is folded back in here first.
+export const mergeRetriedResources = (resources, queue) => {
+  if (!Array.isArray(resources)) return [];
+  return resources.map((resource) => {
+    const resourceKey = resource.webPath || resource.path;
+    const retried = queue.find((item) => (item.webPath || item.path) === resourceKey);
+    return retried ? { ...resource, status: retried.status } : resource;
+  });
+};
+
+// Re-applies updateRetry's fresh statuses (for entries still eligible for
+// another round) onto the full accumulated queue, keeping entries that already
+// succeeded or exhausted their retries instead of dropping them. Dropping them
+// would make mergeRetriedResources fall back to their stale original 503.
+export const applyRetryUpdate = (queue, updated) => {
+  const updatedByKey = new Map(
+    updated.map((item) => [item.webPath || item.path, item]),
+  );
+  return queue.map((item) => updatedByKey.get(item.webPath || item.path) ?? item);
+};
 
 class JobProcess extends LitElement {
   static get properties() {
@@ -23,6 +54,7 @@ class JobProcess extends LitElement {
     super();
     this.jobStatus = undefined;
     this.queue = [];
+    this.caasAutoPublishFired = false;
   }
 
   async connectedCallback() {
@@ -52,18 +84,32 @@ class JobProcess extends LitElement {
       const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
       this.retry(timeouts);
     }
+    // Wait for the 503 retry queue to settle (succeed or exhaust retries)
+    // before firing CaaS auto-publish, otherwise a page that only succeeds
+    // on retry is permanently skipped.
+    if (stopped && !this.caasAutoPublishFired && !retriesPending(this.queue)) {
+      this.caasAutoPublishFired = true;
+      const resources = mergeRetriedResources(this.jobStatus?.data?.resources, this.queue);
+      const jobStatus = { ...this.jobStatus, data: { ...this.jobStatus.data, resources } };
+      // Fire-and-forget: caasAutoPublish is best-effort and must never
+      // block or affect the bulk publish UI. Errors are swallowed; the
+      // shared library gates itself on per-site /.milo/caas/config.json.
+      runAutoPublishForJob({ job: this.job, jobStatus })
+        .catch(() => {});
+    }
   }
 
   async retry(timeouts) {
     if (!timeouts.length) return;
     if (this.queue.length) {
-      const queue = this.queue.filter(({ count, status }) => status === 503 && count <= 3);
-      if (queue.length) {
-        this.queue = await updateRetry({
-          queue,
-          urls: queue.map(({ path }) => `${this.job.origin}${path}`),
+      const pending = this.queue.filter(({ count, status }) => status === 503 && count <= 3);
+      if (pending.length) {
+        const updated = await updateRetry({
+          queue: pending,
+          urls: pending.map(({ path }) => `${this.job.origin}${path}`),
           process: this.jobStatus.topic,
         });
+        this.queue = applyRetryUpdate(this.queue, updated);
       }
     } else {
       this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
@@ -91,7 +137,11 @@ class JobProcess extends LitElement {
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
     let { status } = resource ?? jobData;
 
-    const retry = this.queue?.find((item) => item.path === path);
+    // Compare-either (not coalesce-then-compare), matching the resource lookup
+    // two lines up — otherwise an item with both fields set where `path` matches
+    // item.path but not item.webPath is found by one lookup but not the other,
+    // leaving a successful retry's updated status stuck behind the stale one.
+    const retry = this.queue?.find((item) => item.path === path || item.webPath === path);
     if (retry) status = retry.status;
 
     const origin = ['publish', 'index'].includes(topic) && isSuccess(status)
