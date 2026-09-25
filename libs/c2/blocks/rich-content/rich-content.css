@@ -12,6 +12,10 @@
     height: 640px;
   }
 
+  &:has(+ .split-aside-grid) .eyebrow {
+    --s2a-color-content-eyebrow: var(--s2a-color-content-default);
+  }
+
   &.dark {
     background-color: unset;
   }
@@ -29,7 +33,7 @@
     }
 
     .eyebrow:has(picture) {
-      color: var(--s2a-color-content-knockout);
+      --s2a-color-content-eyebrow: var(--s2a-color-content-knockout);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,7 +96,7 @@
     }
 
     .eyebrow {
-      color: var(--s2a-color-content-knockout);
+      --s2a-color-content-eyebrow: var(--s2a-color-content-knockout);
     }
 
     .eyebrow:has(picture, img) {
