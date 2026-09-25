@@ -396,6 +396,17 @@ const resolveField = (slide, { promo }) => {
 const viewports = (block) => [...block.querySelectorAll('.rm-viewport')];
 const pendingSlide = (vp) => vp.querySelector('.rm-slide.promo-placeholder:not(.promo-resolved)');
 
+/** Same as slideHtml, but with a real background image src for stashSlideImage to stash. */
+const slideWithImage = (title) => `
+  <div>
+    <div>
+      <h1>${title}</h1>
+      <p><a class="merch" href="https://mas.adobe.com/studio.html#field=promo">promo</a></p>
+      <p><em><strong><a href="/cta">CTA</a></strong></em></p>
+    </div>
+    <div><picture><img src="/media/${title}.png" alt="${title}" /></picture></div>
+  </div>`;
+
 describe('router-marquee promo placeholder slide', () => {
   let block;
 
@@ -469,6 +480,25 @@ describe('router-marquee promo placeholder slide', () => {
       expect(vp.querySelectorAll('.promo-placeholder').length).to.equal(0);
       expect(vp.querySelectorAll('.rm-slide').length).to.equal(2);
     });
+  });
+
+  it('keeps the eager hero image on the first visible slide when the promo slide is first', () => {
+    block = buildBlock(`${slideWithImage('One')}${slideWithImage('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      expect(slides[0].classList.contains('promo-placeholder')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.true;
+      // a display:none promo slide must never hold the eager (LCP) image
+      expect(slides[0].querySelector('.rm-background img').getAttribute('src')).to.be.null;
+    });
+
+    const eager = [...block.querySelectorAll('.rm-slide')]
+      .filter((s) => s.querySelector('.rm-background img[src]'));
+    expect(eager.length).to.equal(1);
+    expect(eager[0].classList.contains('is-active')).to.be.true;
+    expect(eager[0].classList.contains('promo-placeholder')).to.be.false;
   });
 
   it('keeps analytics slide indexes stable before and after the reveal', () => {

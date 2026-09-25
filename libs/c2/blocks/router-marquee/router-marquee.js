@@ -822,9 +822,12 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   const getActive = () => active;
   // Jump straight to a slide with no transition, so a hidden viewport can be lined up
   // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
-  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one.
+  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one;
+  // if that lands on a still-pending promo slide, step back to the nearest visible one
+  // rather than activating a display:none slide.
   const syncTo = (index) => {
-    const target = Math.min(index, slides.length - 1);
+    const clamped = Math.min(index, slides.length - 1);
+    const target = isPromoPending(slides[clamped]) ? step(clamped, -1) : clamped;
     if (target === active) return;
     clearFill(active);
     activate(target, 1, { instant: true });
@@ -835,6 +838,10 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
+  // A pending promo slide is display:none and commonly stays that way for the whole visit
+  // (no promotion for this user), so the first *visible* slide - not index 0 - is the one
+  // whose image must stay eager, otherwise the hero lazy-loads and LCP moves to it.
+  const firstIdx = slides.findIndex((s) => !isPromoPending(s));
   slides.forEach((slide, i) => {
     decorateSlide(slide);
     slide.setAttribute('role', 'tabpanel');
@@ -842,9 +849,8 @@ const buildViewport = (viewport, slides, isActiveViewport) => {
     // Keep only the active viewport's first slide image eager; every other slide
     // image is lazy-loaded when it becomes active. (Videos default to lazy in
     // prepareVideo, so only the image needs this active-slide exception.)
-    if (!(isActiveViewport && i === 0)) stashSlideImage(slide);
+    if (!(isActiveViewport && i === firstIdx)) stashSlideImage(slide);
   });
-  const firstIdx = slides.findIndex((s) => !isPromoPending(s));
   slides[firstIdx]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
