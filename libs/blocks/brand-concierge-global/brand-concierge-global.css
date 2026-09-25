@@ -19,6 +19,12 @@
   padding: 0 8px;
 }
 
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
+  display: flex;
+  align-items: center;
+}
+
 .bc-gnav {
   --bc-card-font-size: 14px;
   --bc-card-line-height: 21px;
