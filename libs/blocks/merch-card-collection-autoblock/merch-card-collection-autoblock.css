@@ -363,3 +363,14 @@
 @media (prefers-reduced-motion: reduce) {
   .product-pricing-drawer[open] { animation: none; }
 }
+
+/* The EDU card is a `pro` card inside a product-pricing collection. MAS already
+   sizes it (pro.css.js: max-width 1068px, "wider than the default grid track"),
+   but max-width cannot widen a grid item and the tracks here are 261-474px, so
+   it renders one track wide and 2.4x too tall. Span every track instead.
+   Scoped to the card, not the container, so the narrow cards keep their columns
+   when a query returns both. */
+merch-card-collection.product-pricing merch-card[variant='pro'][size='edu'] {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
