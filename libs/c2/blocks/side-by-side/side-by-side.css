@@ -1,14 +1,42 @@
 .side-by-side {
+  --card-overlay-gradient-bottom: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
+  --card-overlay-gradient-top: linear-gradient(140deg, var(--s2a-color-transparent-black-48) -1.92%, var(--s2a-color-transparent-black-00) 38.8%);
+  --card-gap: var(--s2a-spacing-xs);
+
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--s2a-spacing-xs);
+  gap: var(--card-gap);
+
+  &.dark,
+  .card.dark {
+    background-color: unset;
+  }
+
+  .foreground {
+    max-width: 450px;
+  }
 
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
+
+    .foreground {
+      [class^='body-'] {
+        color: inherit;
+      }
+    }
+  }
+
+  > .card:first-child {
+    --parallax-stagger-index: 0.5;
+  }
+
+  > .card:last-child {
+    --parallax-stagger-index: 1.5;
   }
 
   .media {
+    position: relative;
     border-radius: inherit;
 
     picture,
@@ -20,70 +48,131 @@
       border-radius: inherit;
     }
 
+    .video-container {
+      border-radius: inherit;
+      width: 100%;
+    }
+
     video, img {
       object-fit: cover;
     }
+
+    .icon {
+      position: absolute;
+      width: 32px;
+      height: auto;
+      z-index: 1;
+      inset-block-start: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
+    }
+  }
+
+  /* Not named body-* — that prefix is reserved by decorateTextOverrides()
+     (libs/utils/decorate.js) for block-level text-size overrides and gets
+     stripped/corrupted if used here. */
+  &.content-subtle .card .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
+  }
+
+  .card.content-subtle .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
+  }
+
+  .card.content-solid .foreground [class^='body-'] {
+    color: inherit;
   }
 
   .card-overlay {
-    --parallax-stagger-index: 0.5;
+    --card-overlay-gradient: var(--card-overlay-gradient-bottom);
 
-    position: relative;
     overflow: hidden;
-    aspect-ratio: 33/37;
+    display: flex;
+    flex-direction: column;
 
-    &.dark {
-      background-color: unset;
+    .content-aux {
+      aspect-ratio: 1 / 1.1;
+      width: 100%;
+      height: auto;
     }
 
     .media {
       position: absolute;
       inset: 0;
+
+      :is(img, video) {
+        object-position: top;
+      }
     }
 
     .media::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(144deg, var(--s2a-color-transparent-black-88) 6.95%, var(--s2a-color-transparent-black-00) 27.98%);
+      background: var(--card-overlay-gradient);
       filter: blur(0px);
       pointer-events: none;
     }
 
-    .video-container {
-      border-radius: inherit;
-      width: 100%;
-    }
-
     .foreground {
+      --card-overlay-padding: var(--s2a-spacing-lg);
+
       position: relative;
-      padding: var(--s2a-spacing-lg);
+      padding-block: 0 var(--card-overlay-padding);
+      padding-inline: var(--card-overlay-padding);
       z-index: 1;
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-      max-width: 320px;
     }
+  }
+
+  &.scrim-off .card-overlay,
+  .card-overlay:not(.dark) {
+    --card-overlay-gradient: transparent;
   }
 
   .card-stacked {
     --parallax-stagger-index: 1.5;
+    --card-stack-padding: 15%;
 
     display: flex;
     flex-direction: column;
-    padding-left: 15%;
+    padding-inline: var(--card-stack-padding) 0;
 
     .foreground {
       padding: var(--s2a-spacing-md);
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
-      max-width: 400px;
-
-      [class^='body-'] {
-        color: var(--s2a-color-content-subtle);
-      }
     }
+
+    .media {
+      aspect-ratio: 4/5;
+    }
+
+  }
+
+  .foreground .link-container {
+    margin-block-start: var(--s2a-spacing-2xs);
+
+    .standalone-link {
+      text-decoration: none;
+    }
+  }
+
+  &.featured {
+    .card-overlay {
+      display: flex;
+      border: none;
+    }
+
+    &:has(+ .side-by-side.equal) {
+      margin-block-end: var(--card-gap);
+    }
+  }
+
+  &.small-left .card-stacked {
+    padding-inline: 0 var(--card-stack-padding);;
   }
 }
 
@@ -95,20 +184,57 @@
     align-items: start;
 
     .card-overlay {
+      --card-overlay-gradient: var(--card-overlay-gradient-top);
+
+      flex-direction: row;
+      aspect-ratio: 1 / 1.1;
+      align-items: flex-start;
       .foreground {
-        max-width: 480px;
+        --card-overlay-padding-bottom: var(--card-overlay-padding);
+
+        padding: var(--card-overlay-padding);
       }
+
+      .content-aux { display: none; }
     }
 
     .card-stacked {
-      padding-left: 0;
+      --card-stack-padding: 0;
 
       .media {
         min-height: 306px;
+
+        .icon {
+          inset-block-start: var(--s2a-spacing-lg);
+          inset-inline-start: var(--s2a-spacing-lg);
+        }
+      }
+    }
+
+    &.reverse {
+      grid-template-columns: 1fr 1.81fr;
+    }
+
+    &.equal {
+      grid-template-columns: 0.81fr 1fr 1fr;
+
+      > :first-child {
+        grid-column: 2;
+      }
+    }
+
+    &.featured {
+      grid-template-columns: 1fr;
+      .card-overlay {
+        --card-overlay-gradient: var(--card-overlay-gradient-bottom);
+
+        align-items: flex-end;
+        aspect-ratio: 16 / 9;
       }
 
-      .foreground {
-        max-width: 480px;
+      &.scrim-off .card-overlay,
+      .card-overlay:not(.dark) {
+        --card-overlay-gradient: transparent;
       }
     }
   }
@@ -116,17 +242,29 @@
 
 @media (width >= 1280px) {
   .side-by-side {
-    .card-overlay {
-      .foreground {
-        padding: var(--s2a-spacing-xl);
-      }
+    .card-overlay .foreground {
+      --card-overlay-padding: var(--s2a-spacing-xl);
     }
 
     .card-stacked {
-      padding-left: 0;
       .foreground {
         padding: var(--s2a-spacing-xl);
       }
+
+      .media .icon {
+        inset-block-start: var(--s2a-spacing-xl);
+        inset-inline-start: var(--s2a-spacing-xl);
+      }
     }
+
+    &.featured .card-overlay .foreground {
+      --card-overlay-padding: var(--s2a-spacing-2xl);
+    }
+  }
+}
+
+@media (width < 768px) {
+  .side-by-side .card-overlay button.play-pause-button {
+    inset-block-start: var(--s2a-spacing-md);
   }
 }
