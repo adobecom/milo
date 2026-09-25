@@ -33,8 +33,11 @@
   bottom: 0px;
   display: flex;
   inline-size: 100%;
+  inset-inline: 0;
   pointer-events: none;
-  position: relative;
+  position: fixed;
+  z-index: 6;
+
   .promo-cta {
     --cta-ty: 160px;
     background: var(--s2a-color-transparent-black-48);
@@ -53,7 +56,7 @@
     padding: 22px var(--s2a-spacing-lg)
       calc(var(--s2a-spacing-md) + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
-    position: absolute;
+    position: relative;
     transform: translateY(var(--cta-ty));
     transition: transform 0.36s cubic-bezier(0.32, 0, 0.67, 0);
     transform-origin: center center;
