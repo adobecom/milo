@@ -74,8 +74,8 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(secondFrag).to.not.be.null;
 
-    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
-    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
     expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
     expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
@@ -180,6 +180,106 @@ describe('Functional Test', () => {
 
     const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
     expect(fragment).to.be.null;
+  });
+
+  it('records a manifestErrors entry when the manifest fails to fetch (bad location)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    window.fetch = stub().returns(Promise.resolve({ ok: false, status: 404, json: () => ({}), text: () => '' }));
+    const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
+    await applyPers({ manifests: badManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest' });
+  });
+
+  it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({ data: [] });
+    const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
+    await applyPers({ manifests: emptyManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
+  });
+
+  it('fires "was served" analytics when the consent requirement is met', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Personalized offer' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-served/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.calledOnce).to.be.true;
+    const [, payload] = trackStub.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('manifest was served');
+    delete window._satellite;
+  });
+
+  it('does not fire "was served" analytics when the consent requirement is promo or no offer changes', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Promo or no offer changes' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-skipped/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.called).to.be.false;
+    delete window._satellite;
   });
 
   it('test or promo manifest', async () => {
@@ -595,6 +695,29 @@ describe('matchGlob function', () => {
     );
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
+  });
+
+  it('keeps a section-level delayed modal hidden after loadArea resets the section class', async () => {
+    const main = document.createElement('main');
+    const el = document.createElement('div');
+    main.appendChild(el);
+    const wrapper = await createContent(
+      el,
+      {
+        content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
+        manifestId: 'manifest',
+        targetManifestId: '',
+        action: 'insertafter',
+        modifiers: [],
+      },
+    );
+    // hide-block must sit on an inner node, not the top-level div loadArea reclasses to `section`
+    expect(wrapper.tagName).to.equal('DIV');
+    expect(wrapper.classList.contains('hide-block')).to.be.false;
+    const anchor = wrapper.querySelector('a');
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+    wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
+    expect(anchor.closest('.hide-block')).to.not.be.null;
   });
 });
 

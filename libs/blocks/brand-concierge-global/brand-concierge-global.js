@@ -5,7 +5,6 @@ import {
   decorateCards,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
 } from '../brand-concierge/bc-utils.js';
 import {
@@ -13,7 +12,10 @@ import {
   bcBootstrap,
   openSideModal,
   setAuthoredContent,
+  sideOverlayTop,
+  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
+import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
 
@@ -39,7 +41,6 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -47,7 +48,6 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -115,7 +115,12 @@ function decorateGnav(cards, input, topNav, el) {
       }, 500);
       if (document.body.classList.contains('bc-side-open')) {
         const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          document.body.classList.remove('bc-side-open');
+          handleGnavButton(event);
+        }
       } else handleGnavButton(event);
     });
     if (window?.milo) {
@@ -145,7 +150,7 @@ export default function init(el) {
     }
   });
 
-  setCssGnavHeight();
+  initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
@@ -162,8 +167,11 @@ export default function init(el) {
     el.removeChild(row);
   });
 
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

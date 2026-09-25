@@ -1,13 +1,17 @@
 .product-marquee-grid {
+  --pmg-base-height: 350px;
+  --pmg-content-block-start: var(--s2a-spacing-3xl);
+
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: 494px;
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px));
+  position: relative;
 
   .pm-content {
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-lg);
+    padding-block: var(--pmg-content-block-start) var(--s2a-spacing-lg);
   }
 
   .pm-foreground {
@@ -15,9 +19,10 @@
     flex: 1;
     flex-direction: column;
     justify-content: space-between;
+    padding-top: var(--s2a-spacing-3xl);
 
-    .heading-5 {
-      max-width: 400px;
+    .pm-subtext {
+      max-inline-size: 400px;
     }
   }
 
@@ -34,138 +39,289 @@
     }
   }
 
-  .pm-promo-area {
-    margin-block-start: var(--s2a-spacing-lg);
-  }
+  .pm-merch-card {
+    --pm-content: var(--s2a-color-content-default);
+    --pm-content-subtle: var(--s2a-color-content-subtle);
 
-  .pm-promo-button {
-    align-items: center;
-    background: var(--s2a-color-background-knockout);
-    border-radius: var(--s2a-border-radius-md);
+    color: var(--pm-content);
     display: flex;
-    gap: var(--s2a-spacing-md);
-    padding: var(--s2a-spacing-sm);
-    text-decoration: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: var(--s2a-spacing-lg);
 
-    .pm-promo-text {
-      color: var(--s2a-color-content-knockout);
-      flex: 1;
-      padding-inline-start: var(--s2a-spacing-2xs);
+    .icon-button {
+      background: transparent;
+      border-color: transparent;
+      vertical-align: -0.2em;
+      height: 18px;
+
+      svg {
+        block-size: 100%;
+        inline-size: 100%;
+      }
+
+      path {
+        fill: var(--pm-content-subtle);
+      }
     }
 
-    .pm-promo-chevron {
-      border-radius: var(--s2a-border-radius-2xs);
-      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
-      background: var(--s2a-color-transparent-white-16);
+    .con-button.outline {
+      border-color: var(--pm-content);
+      color: var(--pm-content);
+    }
+  }
+
+  .pm-merch-content {
+    align-items: flex-start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+
+    .mas-description,
+    .mas-price-commitment {
+      color: var(--pm-content);
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price-commitment {
+      color: var(--pm-content-subtle);
+    }
+
+    .mas-price {
+      color: var(--pm-content);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+  }
+
+  .pm-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+mas-field .icon-button {
+      display: inline;
+      background: none;
+      border: none;
+      border-radius: 0;
+      block-size: auto;
+      inline-size: auto;
+      margin-inline-start: 3px;
+
+      svg {
+        block-size: 18px;
+        inline-size: auto;
+        position: relative;
+        top: 4px;
+        color: #292929;
+
+        path {
+          fill: currentcolor;
+        }
+      }
+    }
+  }
+
+  .price.price-strikethrough {
+    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
+  }
+
+  .firefly & {
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+  }
+
+  &.cta-pill {
+    .pm-content {
+      justify-content: space-between;
+    }
+
+    .pm-foreground {
+      flex: none;
+      gap: var(--s2a-spacing-lg);
+      justify-content: flex-start;
+    }
+
+    .pm-promo-area {
+      inline-size: auto;
+    }
+
+    .pm-merch-card {
+      gap: var(--s2a-section-spacing-3xs);
+    }
+
+    .pm-merch-content {
       align-items: center;
-      block-size: 32px;
-      color: var(--s2a-color-content-knockout);
-      display: flex;
-      flex-shrink: 0;
-      inline-size: 32px;
-      justify-content: center;
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      text-align: center;
     }
   }
 }
 
-/* featured-offer variant */
+body:has(header.has-breadcrumbs) .product-marquee-grid {
+  --pmg-content-block-start: calc(var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 
-.pm-promo-cta {
-  align-items: stretch;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2a-spacing-md);
-  white-space: nowrap;
-  width: 100%;
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 }
 
-.pm-promo-cta-label {
-  color: var(--s2a-color-content-default);
-  font-size: var(--s2a-typography-font-size-body-md);
-  font-weight: var(--s2a-font-weight-body);
-  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
-  line-height: var(--s2a-typography-line-height-body-md);
-  margin: 0;
+body:has(header.local-nav) .product-marquee-grid {
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
 }
 
-.pm-promo-cta-label strong {
-  display: block;
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+.dark.product-marquee-grid {
+  background-color: var(--s2a-color-gray-1000);
 }
 
-.pm-promo-cta .con-button {
-  background: #006CF0;
-  border-color: #006CF0;
-  width: 100%;
+.transparent-bg.product-marquee-grid {
+  backdrop-filter: blur(var(--s2a-blur-128));
+  background-color: var(--s2a-color-transparent-white-72);
 }
 
-@media (width < 768px) {
-  .product-marquee-grid:not(.featured-offer) .pm-foreground {
-    gap: var(--s2a-spacing-lg);
-    justify-content: flex-start;
+.transparent-bg.dark.product-marquee-grid {
+  background-color: var(--s2a-color-transparent-black-72);
+}
+
+.product-marquee-grid .pm-merch-card.dark {
+  --pm-content: var(--s2a-color-gray-1000);
+  --pm-content-subtle: var(--s2a-color-transparent-black-64);
+
+  background-color: transparent;
+
+  .con-button.outline {
+    background-color: transparent;
+    border-color: var(--pm-content);
+    color: var(--pm-content);
   }
 }
 
 @media (width >= 768px) {
-  .product-marquee-grid {
-    min-block-size: 500px;
+  .transparent-bg.product-marquee-grid {
+    backdrop-filter: blur(var(--s2a-blur-64));
+  }
 
+  .product-marquee-grid {
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
-      flex-direction: row;
-      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+
+      padding-block: var(--pmg-content-block-start) var(--s2a-spacing-3xl);
     }
 
     .pm-chiclet-row {
       gap: var(--s2a-spacing-lg);
-    }
 
-    .pm-chiclet-row img.icon {
-      block-size: 80px;
-      inline-size: 80px;
-    }
-
-    .pm-foreground {
-      .heading-5 {
-        max-width: min(467px, 80%);
+      img.icon {
+        block-size: 64px;
+        inline-size: 64px;
       }
     }
 
-    .pm-promo-area {
-      align-self: flex-end;
-      margin-block-start: 0;
+    .pm-foreground .pm-subtext {
+      max-inline-size: min(467px, 80%);
+    }
+
+    .pm-merch-card {
+      background: var(--s2a-color-background-subtle);
+      border-radius: var(--s2a-border-radius-12);
+      padding: var(--s2a-spacing-lg);
+    }
+
+    .pm-merch-content .mas-description,
+    .pm-merch-content .mas-price-commitment {
+      font-size: var(--s2a-typography-font-size-body-md);
+      line-height: var(--s2a-typography-line-height-body-md);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     }
   }
 
-  .product-marquee-grid.featured-offer .pm-promo-area {
-    flex: 0 0 25%;
-    min-width: 260px;
+  .product-marquee-grid.cta-pill {
+    .pm-content {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+    }
+
+    .pm-foreground {
+      flex: 1;
+      gap: normal;
+      justify-content: space-between;
+    }
+
+    .pm-promo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block-start: var(--s2a-spacing-4xl);
+    }
+
+    .pm-merch-card {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2a-section-spacing-2xs);
+      padding-block: var(--s2a-spacing-lg);
+      padding-inline: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
+      border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+      border-radius: var(--s2a-border-radius-round);
+    }
+
+    .pm-merch-content {
+      align-items: flex-start;
+      align-self: center;
+      text-align: start;
+    }
   }
 
-  .product-marquee-grid:not(.featured-offer) .pm-content {
-    gap: var(--s2a-spacing-xs);
+  .dark.product-marquee-grid .pm-merch-card,
+  .product-marquee-grid .pm-merch-card.dark {
+    --pm-content: var(--s2a-color-gray-25);
+    --pm-content-subtle: var(--s2a-color-transparent-white-64);
+
+    background: var(--s2a-color-gray-900);
   }
 
-  .pm-promo-cta {
-    gap: var(--s2a-spacing-xs);
+  .transparent-bg.dark.product-marquee-grid .pm-merch-card {
+    background: var(--s2a-color-transparent-black-32);
+  }
+
+  .product-marquee-grid .pm-merch-card.light,
+  .product-marquee-grid.dark .pm-merch-card.light {
+    --pm-content: var(--s2a-color-gray-1000);
+    --pm-content-subtle: var(--s2a-color-transparent-black-64);
+
+    background: var(--s2a-color-gray-50);
   }
 }
 
-@media (768px <= width < 1280px) {
-  .product-marquee-grid:not(.featured-offer) .pm-promo-area {
-    width: 242px;
+@media (width < 900px) {
+  .product-marquee-grid .pm-content {
+    justify-content: space-between;
+    gap: var(--s2a-spacing-xl);
   }
 
-  .pm-promo-cta-label {
-    padding-inline-start: var(--s2a-spacing-xs);
-  }
-}
-
-@media (width >= 1280px) {
-  .pm-promo-cta {
-    align-items: center;
-    flex-direction: row;
+  .product-marquee-grid .pm-foreground {
+    flex: none;
     gap: var(--s2a-spacing-lg);
-    justify-content: flex-end;
+    justify-content: flex-start;
+  }
+
+  .product-marquee-grid .pm-promo-area {
+    margin-block-start: 0;
+  }
+}
+
+@media (width >= 900px) {
+  .product-marquee-grid {
+    .pm-content {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+    }
+
+    .pm-promo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      inline-size: min(370px, 45%);
+    }
   }
 }

@@ -51,7 +51,7 @@ export const ARC_COPY_OUT_FORM_END = 0.90;
 
 export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-export const HINT_DISMISS_T = 0.12; // hintDismissProgress at which the barrel hint retires
+export const CURSOR_ZOOM_RETIRE_T = 0.35; // zoomT
 
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 

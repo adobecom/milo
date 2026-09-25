@@ -360,7 +360,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   `;
 
   const control = isC2
-    ? `<button class='play-pause-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
+    ? `<button class='play-pause-button video-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
     : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
 
   return `<div class='video-container video-holder'>${videoString}${control}</div>`;
@@ -505,14 +505,41 @@ export function decorateMultiViewport(el) {
   return foreground;
 }
 
-export async function loadCDT(el, classList) {
+/**
+ * Resolves the block-level element a countdown timer belongs to: the highest ancestor of `el`
+ * that still sits inside the same section/main/body. Used to scope one timer per block.
+ */
+export function getCdtScope(el) {
+  let node = el;
+  let parent = node?.parentElement;
+  while (parent && !parent.matches?.('.section, main, body')) {
+    node = parent;
+    parent = node.parentElement;
+  }
+  return node ?? el;
+}
+
+// One countdown timer per block, whichever loader (block decoration or MAS field) claims it
+// first. The claim is taken synchronously so two loaders racing on the same block can't both
+// render, and it is released once the rendered timer leaves the block (e.g. a MAS re-render
+// replaced the field content) so the timer can be rebuilt.
+const PENDING = Symbol('cdt-pending');
+const cdtScopes = new WeakMap();
+
+export async function loadCDT(el, classList, cdtMetadata) {
+  const scope = getCdtScope(el);
+  const claim = cdtScopes.get(scope);
+  if (claim === PENDING || (claim && scope.contains(claim))) return;
+  cdtScopes.set(scope, PENDING);
   try {
-    await Promise.all([
+    const [, timer] = await Promise.all([
       loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
       import('../features/cdt/cdt.js')
-        .then(({ default: initCDT }) => initCDT(el, classList)),
+        .then(({ default: initCDT }) => initCDT(el, classList, cdtMetadata)),
     ]);
+    cdtScopes.set(scope, timer);
   } catch (error) {
+    cdtScopes.delete(scope);
     window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });
   }
 }
@@ -574,7 +601,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  let attrs = getVideoAttrs(anchorTag.hash, dataset);
+  // Router Marquee poster deferred to a private attr
+  // until slide activates, avoiding eager fetch when hidden.
+  if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
