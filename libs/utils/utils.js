@@ -2165,7 +2165,7 @@ export async function loadIms() {
           });
           window.lana?.log(
             `IMS ready after ${elapsed}ms${timedOut ? ' (following an IMS timeout)' : ''} — guest requested: ${imsGuest === 'on'}, accountType: ${accountType || 'none'}${accountTypeError ? `, getAccountType error: ${accountTypeError}` : ''}`,
-            { tags: 'ims', severity: (imsGuest === 'on' && !accountType) ? 'warn' : 'info' },
+            { tags: 'ims', severity: (imsGuest === 'on' && !accountType) ? 'warning' : 'info' },
           );
           if (!timedOut) resolve();
         },
