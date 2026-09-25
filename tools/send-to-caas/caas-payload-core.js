@@ -1111,7 +1111,7 @@ const props = {
   cta2style: 0,
   cta2target: 0,
   cta2text: 0,
-  cta2url: (s) => localizeCtaUrl(checkCtaUrl(s, {}, 2)),
+  cta2url: (s, options) => localizeCtaUrl(checkCtaUrl(s, {}, 2), options),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
   entityid: (_, options) => {
