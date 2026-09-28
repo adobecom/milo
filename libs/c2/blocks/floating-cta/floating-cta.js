@@ -1,4 +1,4 @@
-import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, MILO_EVENTS } from '../../../utils/utils.js';
 import { decorateButtons } from '../../../utils/decorate.js';
 import icons from '../../assets/icons.js';
 
@@ -92,6 +92,15 @@ function revealCta(ctaEl) {
     ctaEl.classList.add('disable-animation');
   });
   anchor?.addEventListener('blur', update);
+
+  if (hideTrigger.matches('merch-card')) return;
+
+  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
+    const merchCards = document.querySelector('merch-card');
+    if (!merchCards) return;
+    revealObserver.unobserve(hideTrigger);
+    revealObserver.observe(merchCards);
+  });
 }
 
 export default async function init(el) {
