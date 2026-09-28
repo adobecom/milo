@@ -215,6 +215,16 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
 
+    it('does not preload breadcrumbs, which is not a known block (gnav loads it, not blocks/)', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="breadcrumbs"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/breadcrumbs/"]')).to.not.exist;
+    });
+
     it('only warms the video autoblock for media_*.mp4 anchors', () => {
       document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
       utils.preloadLcpCodeFiles();
@@ -243,10 +253,19 @@ describe('Utils', () => {
       expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
     });
 
-    it('does not treat a block whose name merely contains "merch" as commerce', () => {
+    it('does not prewarm an authored div whose class is not a known block (defensive allowlist)', () => {
+      // aftermerch is not in C1_BLOCKS/C2_BLOCKS; the allowlist skips it rather than 404ing.
       document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
       utils.preloadLcpCodeFiles();
-      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.not.exist;
+    });
+
+    it('prewarms an external-lib block that is not in C1/C2_BLOCKS', () => {
+      utils.setConfig({ ...config, externalLibs: [{ base: 'https://x.example/libs', blocks: ['ext-hero'] }] });
+      document.body.innerHTML = '<main><div><div class="ext-hero"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/blocks/ext-hero/ext-hero.js"]')).to.exist;
+      utils.setConfig(config);
     });
 
     it('warms icons.js and icons.css when the first section contains icons', () => {
