@@ -43,7 +43,7 @@
 .article-byline .article-author-image,
 .article-byline .article-author-image img {
   flex: 0 0 64px;
-  margin: 0 var(--spacing-xs) 0 0;
+  margin: 0 var(--spacing-xs) 10px 16px;
   height: 64px;
   width: 64px;
   border-radius: 50%;
@@ -239,6 +239,11 @@
   .article-feature-video video {
     height: 580px;
     width: 100%;
+  }
+
+  .article-byline .article-author-image,
+  .article-byline .article-author-image img {
+    margin: 0 var(--spacing-xs) 0 16px;
   }
 }
 
