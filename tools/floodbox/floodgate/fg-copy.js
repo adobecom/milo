@@ -2,6 +2,7 @@
 import { Queue } from 'https://da.live/nx/public/utils/tree.js';
 import { DA_ORIGIN } from '../constants.js';
 import RequestHandler from '../request-handler.js';
+import searchAndReplace from '../search-replace.js';
 import { getFileExtension, getFileName, isEditableFile } from '../utils.js';
 
 class FloodgateCopy {
@@ -22,16 +23,11 @@ class FloodgateCopy {
     this.signal = signal;
 
     this.requestHandler = new RequestHandler(accessToken, { signal });
+    this.fgColor = fgColor;
     this.destRepo = `${repo}-fg-${fgColor}`;
     this.srcSitePath = `/${org}/${repo}`;
     this.destSitePath = `/${org}/${this.destRepo}`;
     this.filesToCopy = [];
-  }
-
-  adjustUrlDomains(content) {
-    const searchValue = `--${this.repo}--${this.org}.`;
-    const replaceValue = `--${this.destRepo}--${this.org}.`;
-    return content.replaceAll(searchValue, replaceValue);
   }
 
   async processFile(file) {
@@ -41,7 +37,15 @@ class FloodgateCopy {
       if (response.ok) {
         let content = isEditableFile(file.ext) ? await response.text() : await response.blob();
         if (file.ext === 'html') {
-          content = this.adjustUrlDomains(content);
+          // Copy moves content from the source repo to the floodgate repo.
+          content = searchAndReplace({
+            content,
+            searchType: 'floodgate',
+            org: this.org,
+            repo: this.repo,
+            color: this.fgColor,
+            direction: 'toFloodgate',
+          });
         }
         const destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
         const status = await this.requestHandler.uploadContent(destFilePath, content, file.ext);

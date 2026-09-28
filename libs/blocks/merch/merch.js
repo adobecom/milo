@@ -1,9 +1,10 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { mepMasStudioUrls } from './mas-mep-utils.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -156,6 +157,7 @@ export const GeoMap = {
   id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
+  ara: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
   cn: 'CN_zh',
@@ -181,6 +183,11 @@ export const GeoMap = {
  * @type {Record<string, string>}
  */
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
+
+/**
+ * MAS locale overrides for markets that share a language but have different country codes
+ */
+const MARKET_LOCALE_OVERRIDES = { en: { AU: 'en_GB', IN: 'en_GB', GB: 'en_GB' } };
 
 /**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
@@ -247,6 +254,64 @@ export function isMasGeoDetectionEnabled() {
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export function getMerchCardHeadingLevel() {
+  const raw = getMetadata('mas-heading-level');
+  const match = raw && String(raw).trim().match(/^h?([1-6])$/i);
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * Resolves the country to stamp onto a checkout link's `data-ims-country`: the signed-in
+ * user's real IMS profile country when it's a supported market, otherwise Milo's own
+ * geo-validated market country. Prevents MAS's checkout-mixin from substituting an
+ * unsupported/unvalidated IMS profile country at render time.
+ */
+export async function resolveCheckoutCountry(service) {
+  const fallback = service.settings.country;
+  try {
+    const imsCountry = await service.imsCountryPromise;
+    if (imsCountry) {
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(imsCountry)) return imsCountry;
+    }
+  } catch { /* ignore, fall back to validated market country */ }
+  return fallback;
+}
+
+let checkoutLinkImsCountryObserver;
+
+/**
+ * MAS's own checkout-mixin re-stamps `data-ims-country` asynchronously, after the checkout
+ * link has already rendered, with the signed-in user's raw IMS profile country -- with no
+ * validation against the page's supported markets. Milo doesn't own that code (it ships
+ * from the external MAS web-components package), so instead of pre-empting it, this watches
+ * for those re-stamps and corrects any unsupported country back to the page's validated
+ * market, re-triggering MAS's re-render with the corrected value.
+ */
+function guardCheckoutLinkImsCountry(service) {
+  if (typeof MutationObserver === 'undefined') return;
+  checkoutLinkImsCountryObserver?.disconnect();
+  checkoutLinkImsCountryObserver = new MutationObserver((mutations) => {
+    mutations.forEach(async (mutation) => {
+      const cta = mutation.target;
+      if (!cta.matches?.('a[is="checkout-link"]')) return;
+      const country = cta.dataset.imsCountry;
+      const fallback = service.settings.country;
+      // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
+      // bailing out here (value already matches fallback) is what stops the loop.
+      if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
+      const { isSupportedMarket } = await import('../../utils/market.js');
+      if (await isSupportedMarket(country)) return;
+      cta.dataset.imsCountry = fallback;
+    });
+  });
+  checkoutLinkImsCountryObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-ims-country'],
+    subtree: true,
+  });
 }
 
 export async function getLocaleSettings(miloLocale) {
@@ -341,57 +406,16 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 
 /**
- * Given a url, calculates the hostname of MAS platform.
- * Supports, www prod, stage, local and feature branches.
- * if params are missing, it will return the latest calculated or default value.
- * @param {string} hostname optional
- * @param {string} maslibs optional
- * @returns base url for mas platform
+ * Parses the maslibs URL parameter and returns a validated base URL.
+ * Ignored on www.adobe.com; elsewhere the value must be a branch,
+ * branch--repo or branch--repo--owner shape (VULN-36379).
+ * @param {string} [hostname] hostname to evaluate the prod guard against
+ * @returns {string | null} Base URL or null if maslibs not present or invalid
  */
-export function getMasBase(hostname, maslibs) {
-  let { baseUrl } = getMasBase;
-  if (!baseUrl) {
-    if (maslibs === 'stage') {
-      baseUrl = 'https://www.stage.adobe.com/mas';
-    } else if (maslibs === 'local') {
-      baseUrl = 'http://localhost:9001';
-    } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.aem.${extension}`;
-    } else {
-      baseUrl = 'https://www.adobe.com/mas';
-    }
-    getMasBase.baseUrl = baseUrl;
-  }
-  return baseUrl;
-}
-
-/**
- * Parses maslibs URL parameter and returns base URL
- * @returns {string | null} Base URL or null if maslibs not present
- */
-export function getMasLibsBaseUrl() {
+export function getMasLibsBaseUrl(hostname = window.location.hostname) {
+  if (hostname === 'www.adobe.com') return null;
   const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitized = masLibs.trim().toLowerCase();
-
-  if (sanitized === 'local') {
-    return 'http://localhost:3000';
-  }
-
-  if (sanitized === 'main') {
-    return 'https://main--mas--adobecom.aem.live';
-  }
-
-  let branch = sanitized;
-  if (!sanitized.includes('--')) {
-    branch = `${sanitized}--mas--adobecom`;
-  }
-
-  return `https://${branch}.aem.live`;
+  return getValidatedMasLibsUrl(urlParams.get('maslibs'));
 }
 
 /**
@@ -476,6 +500,31 @@ export async function loadMasComponent(componentName) {
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
   return loadPromise;
+}
+
+const aupSelectPreloads = new WeakMap();
+
+async function preloadAupSelect(sdk) {
+  try {
+    await Promise.all([
+      sdk.getOrchestratorContext(),
+      // The orchestrator mounts this registered component when Select launches.
+      sdk.loadUIComponent('commerce-select'),
+    ]);
+  } catch (error) {
+    log?.warn('AUP Select preload failed', error);
+  }
+}
+
+function getAupSelectPreload() {
+  const sdk = window.aupsdk;
+  if (!sdk) return undefined;
+  let preload = aupSelectPreloads.get(sdk);
+  if (!preload) {
+    preload = preloadAupSelect(sdk);
+    aupSelectPreloads.set(sdk, preload);
+  }
+  return preload;
 }
 
 function getCommercePreloadUrl() {
@@ -703,6 +752,7 @@ export async function getUpgradeAction(options, imsSignedInPromise, offers, el) 
     return undefined;
   }
 
+  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
@@ -863,6 +913,53 @@ const closeModalWithoutEvent = (modalId) => {
 
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
+let activeAupModalHash;
+
+function restoreAupModalHash(modalHashState) {
+  if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
+    window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
+  }
+}
+
+function clearAupModalHash(modalHashState) {
+  if (!modalHashState) return;
+  if (activeAupModalHash === modalHashState) {
+    activeAupModalHash = undefined;
+    modalState.isOpen = false;
+  }
+  restoreAupModalHash(modalHashState);
+}
+
+export function getAupModalHashCleanup() {
+  const modalHashState = activeAupModalHash;
+  if (!modalHashState) return undefined;
+  let cleaned = false;
+  return () => {
+    if (cleaned) return;
+    cleaned = true;
+    clearAupModalHash(modalHashState);
+  };
+}
+
+function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+  const id = element?.dataset.modalId || fallbackModalId;
+  const hash = id ? `#${id}` : '';
+  if (!hash) return;
+
+  if (type === 'open') {
+    clearAupModalHash(activeAupModalHash);
+    const restoreUrl = window.location.hash === hash
+      ? `${window.location.pathname}${window.location.search}`
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(window.history.state, '', hash);
+    }
+    activeAupModalHash = { hash, restoreUrl };
+    modalState.isOpen = true;
+  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
+    clearAupModalHash(activeAupModalHash);
+  }
+}
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
@@ -993,12 +1090,17 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
-    const baseUrl = getCommercePreloadUrl();
-    // The script can preload more, based on clientId, but for the ones in use
-    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
-    const client = 'creative';
     window.milo.deferredPromise.then(() => {
-      setTimeout(() => {
+      setTimeout(async () => {
+        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
+        if (aupSelectPreload) {
+          await aupSelectPreload;
+          return;
+        }
+        const baseUrl = getCommercePreloadUrl();
+        // The script can preload more, based on clientId, but for the ones in use
+        // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+        const client = 'creative';
         loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
       }, 1000);
     });
@@ -1048,6 +1150,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    aupHandler: (event) => handleAupModalHash(hash, event),
   };
 }
 
@@ -1115,34 +1218,50 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(COMMERCE_LIBRARY);
-
-      // Load fragment-client.js when maslibs is present
-      const fragmentClientUrl = getFragmentClientUrl();
-      if (fragmentClientUrl) {
-        const { loadScript: loadScriptUtil } = await import('../../utils/utils.js');
-        try {
-          await loadScriptUtil(fragmentClientUrl, 'module');
-        } catch (e) {
-          log?.error('Failed to load fragment-client.js:', e);
-        }
-      }
-
-      const { language, locale, country } = await getLocaleSettings(miloLocale);
       const useGeoMarket = isMasGeoDetectionEnabled();
+
+      // Load all independent resources in parallel
+      const fragmentClientUrl = getFragmentClientUrl();
+      const localeSettingsPromise = getLocaleSettings(miloLocale);
+      const [, , { language, locale, country }, validatedMarket] = await Promise.all([
+        loadMasComponent(COMMERCE_LIBRARY),
+        fragmentClientUrl
+          ? loadScript(fragmentClientUrl, 'module').catch((e) => {
+            log?.error('Failed to load fragment-client.js:', e);
+          })
+          : Promise.resolve(),
+        localeSettingsPromise,
+        useGeoMarket
+          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          : Promise.resolve(null),
+      ]);
+
       let countryFromMarket = country;
-      if (useGeoMarket) {
-        const { getValidatedMarket } = await import('../../utils/market.js');
-        const validatedMarket = await getValidatedMarket();
-        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      let localeFromMarket = locale;
+      if (useGeoMarket && validatedMarket) {
+        const market = validatedMarket.toUpperCase();
+        countryFromMarket = market;
+        // `country` above is already geo-adjusted; the page's own market comes from its native
+        // milo locale. Only fall back to a market's Global-EN locale when the page isn't
+        // already that market's localized site: e.g. the / EN site (en_US) serving an AU/IN/GB
+        // visitor, never /au, /in or /uk, which keep their native locale.
+        const { country: pageCountry } = getMiloLocaleSettings(miloLocale);
+        if (market !== pageCountry) {
+          const localeOverride = MARKET_LOCALE_OVERRIDES[language]?.[market];
+          if (localeOverride) {
+            localeFromMarket = localeOverride;
+            // en_GB already resolves the GB market; don't also stamp a (non-GB) country.
+            if (localeOverride.endsWith(`_${market}`)) countryFromMarket = undefined;
+          }
+        }
       }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
-          locale,
+          locale: localeFromMarket,
           language,
-          country: countryFromMarket,
+          ...(countryFromMarket ? { country: countryFromMarket } : {}),
           ...attributes,
           ...commerce,
         });
@@ -1167,8 +1286,13 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-      } else if (useGeoMarket && countryFromMarket !== country) {
-        service.setAttribute('country', countryFromMarket);
+        if (useGeoMarket) guardCheckoutLinkImsCountry(service);
+      } else if (useGeoMarket) {
+        if (countryFromMarket !== country) {
+          if (countryFromMarket) service.setAttribute('country', countryFromMarket);
+          else service.removeAttribute('country');
+        }
+        if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
@@ -1448,6 +1572,10 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  if (isMasGeoDetectionEnabled() && service.settings.country) {
+    const country = await resolveCheckoutCountry(service);
+    if (country) cta.setAttribute('data-ims-country', country);
+  }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
@@ -1496,15 +1624,32 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.removeAttribute('data-hide-kr-free-trial');
-      return;
+  const localePrefix = getConfig()?.locale?.prefix;
+  if (localePrefix === '/kr') {
+    const hasAllowKrTrial = shouldAllowKrTrial(el, localePrefix);
+    const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+    const elAlreadyHasAllow = el.getAttribute('data-allow-kr-free-trial') === 'true';
+
+    if (hasAllowKrTrial || hasAllowKrTrialMeta || elAlreadyHasAllow) {
+      cta.setAttribute('data-allow-kr-free-trial', 'true');
+      return cta;
     }
-    cta.remove();
-  });
+
+    cta.setAttribute('data-hide-kr-free-trial', crypto.randomUUID());
+    cta.onceSettled().then(() => {
+      const uuid = cta.getAttribute('data-hide-kr-free-trial');
+      const { offerType: ctaOfferType } = cta.value?.[0] || {};
+      if (ctaOfferType === OFFER_TYPE_TRIAL) cta.remove();
+      else cta.removeAttribute('data-hide-kr-free-trial');
+
+      const ctaClone = [...document.querySelectorAll(`[data-hide-kr-free-trial="${uuid}"]`)]
+        .find((clone) => clone !== cta);
+      if (!ctaClone) return;
+      const { offerType: cloneOfferType } = ctaClone.value?.[0] || {};
+      if (!cloneOfferType || cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
+      else ctaClone.removeAttribute('data-hide-kr-free-trial');
+    });
+  }
 
   return cta;
 }
@@ -1541,13 +1686,22 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  if (fragments) {
-    const command = fragments[fragment];
-    if (command && command.action === 'replace') {
-      return { ...options, fragment: command.content };
-    }
+  const command = fragments?.[fragment]?.[options.field || ''];
+  if (command && command.action === 'replace') {
+    return { ...options, fragment: command.content };
   }
   return options;
+}
+
+export function createAemFragment(options, seenFragments = null) {
+  const { fragment, pzn, mask } = options;
+  const cacheKey = `${fragment}|${pzn || ''}|${mask || ''}`;
+  const attrs = Object.fromEntries(
+    Object.entries({ pzn, mask, fragment }).filter(([, v]) => v != null),
+  );
+  if (seenFragments?.has(cacheKey)) attrs.loading = 'cache';
+  seenFragments?.add(cacheKey);
+  return createTag('aem-fragment', attrs);
 }
 
 export function getOptions(el) {
@@ -1556,34 +1710,30 @@ export function getOptions(el) {
   const searchParams = new URLSearchParams(hashValue);
   const options = {};
   for (const [key, value] of searchParams.entries()) {
-    if (key === 'sidenav') options.sidenav = value === 'true';
-    else if (key === 'fragment' || key === 'query') options.fragment = value;
-    else if (key === 'field') options.field = value;
-    else if (key === 'jsonld') options.jsonld = value === 'on';
+    switch (key) {
+      case 'sidenav':
+        options.sidenav = value === 'true';
+        break;
+
+      case 'fragment':
+      case 'query':
+        options.fragment = value;
+        break;
+
+      case 'mask':
+      case 'pzn':
+      case 'field':
+        options[key] = value;
+        break;
+
+      case 'jsonld':
+        options.jsonld = value === 'on';
+        break;
+      default:
+        break;
+    }
   }
   return options;
-}
-
-export default async function init(el) {
-  if (!el?.classList?.contains('merch')) return undefined;
-  const { searchParams } = new URL(el.href);
-  const isCta = searchParams.get('type') === 'checkoutUrl';
-  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
-  const service = await initService();
-  log = service.Log.module('merch');
-  if (merch) {
-    log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
-    // Rebuilt merch href keeps only the OSI; stash the original for
-    // the "Edit OSI" badge.
-    if (getConfig()?.mep?.preview) {
-      mepMasStudioUrls.set(merch, el.href);
-      merch.dataset.masBlock = 'ost';
-    }
-    el.replaceWith(merch);
-    return merch;
-  }
-  log.warn('Failed to get context:', { el });
-  return null;
 }
 
 const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
@@ -1612,6 +1762,482 @@ export async function createFragmentErrorEl(uuid, label = 'Card', status = null)
   const idEl = createTag('p', { class: 'mas-frag-error-id' }, uuid || 'unknown');
   el.append(badgeEl, labelEl, idEl);
   return el;
+}
+
+// Renders a single inline fragment field (price / description / CTA) without loading
+// merch-card, so a field-only link (e.g. authored in a marquee) doesn't pull in
+// merch-card's own dependencies.
+
+const FIELD_TIMEOUT = 5000;
+const seenFragments = new Set();
+let fieldLog;
+
+const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
+const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
+const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
+
+// A description with a link (e.g. "save 40%. Terms apply") isn't a button (MWPW-207084).
+function isCtaFieldContent(content) {
+  if (!content || content.querySelector(BLOCK_CONTENT_SELECTOR)) return false;
+  const anchors = [...content.querySelectorAll('a')];
+  if (!anchors.length) return false;
+  const strip = (text) => text.replace(/\s+/g, '');
+  return strip(content.textContent) === strip(anchors.map((a) => a.textContent).join(''));
+}
+
+/**
+ * Upgrades plain commerce elements (missing `is` attribute) to their proper
+ * customized built-in equivalents so the commerce service resolves them.
+ * e.g. <a data-wcs-osi="..."> → <a is="checkout-link" data-wcs-osi="...">
+ */
+const COMMERCE_IS_BY_TAG = { a: 'checkout-link', button: 'checkout-button', span: 'inline-price' };
+function upgradeCommerceLinks(content) {
+  content.querySelectorAll('[data-wcs-osi]:not([is])').forEach((el) => {
+    const isValue = COMMERCE_IS_BY_TAG[el.tagName.toLowerCase()];
+    if (!isValue) return;
+    const upgraded = document.createElement(el.tagName.toLowerCase(), { is: isValue });
+    [...el.attributes].forEach(({ name, value }) => upgraded.setAttribute(name, value));
+    upgraded.innerHTML = el.innerHTML;
+    el.replaceWith(upgraded);
+  });
+}
+
+function withTimeout(promise) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => { setTimeout(() => resolve('timeout'), FIELD_TIMEOUT); }),
+  ]);
+}
+
+async function loadFieldDependencies() {
+  const servicePromise = initService();
+  const success = await withTimeout(servicePromise);
+  if (success === 'timeout' || !success) {
+    throw new Error('Failed to initialize mas commerce service');
+  }
+  const service = await servicePromise;
+  fieldLog = service.Log.module('mas-field');
+  await loadMasComponent(MAS_FIELD);
+}
+
+async function checkFieldReady(masField, fragment) {
+  if (isMasErrorEnv()) {
+    const uuid = fragment ?? masField.querySelector('aem-fragment')?.getAttribute('fragment');
+    if (masField.hasAttribute('failed')) {
+      createFragmentErrorEl(uuid, 'Field').then((el) => masField.insertAdjacentElement('beforebegin', el));
+    } else {
+      masField.addEventListener('aem:error', async (e) => {
+        masField.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Field', e.detail?.status));
+      }, { once: true });
+    }
+  }
+
+  const success = await withTimeout(masField.checkReady());
+  if (success === 'timeout') {
+    fieldLog.error(`${masField.tagName} did not initialize within given timeout`);
+  } else if (!success) {
+    fieldLog.error(`${masField.tagName} failed to initialize`);
+  }
+}
+
+function hasOnlyTargetContent(parent, target) {
+  if (!parent || !target || target.parentElement !== parent) return false;
+  return [...parent.childNodes].every((node) => {
+    if (node === target) return true;
+    return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '';
+  });
+}
+
+function unwrapInlineWrappers(masField) {
+  let parent = masField.parentElement;
+  while (parent?.matches?.(INLINE_WRAPPER_SELECTOR)
+    && hasOnlyTargetContent(parent, masField)) {
+    parent.replaceWith(masField);
+    parent = masField.parentElement;
+  }
+}
+function normalizeBlockFieldWrappers(masField) {
+  const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
+  if (!content?.querySelector(BLOCK_CONTENT_SELECTOR)) return;
+
+  unwrapInlineWrappers(masField);
+
+  const parent = masField.parentElement;
+  if (!parent || !hasOnlyTargetContent(parent, masField)) return;
+
+  if (parent.matches(HEADING_SELECTOR)) {
+    const innerHeading = [...content.children]
+      .find((child) => child.matches?.(HEADING_SELECTOR));
+    if (innerHeading) {
+      if (parent.id && !innerHeading.id) innerHeading.id = parent.id;
+      parent.classList.forEach((className) => innerHeading.classList.add(className));
+    }
+  }
+
+  if (parent.matches('p') || parent.matches(HEADING_SELECTOR)) {
+    parent.replaceWith(masField);
+  }
+}
+
+// Inline prices need merch.css, which the card would otherwise have loaded.
+function ensureInlinePriceStyle(content) {
+  if (content.querySelector('span[is="inline-price"]')) {
+    loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  }
+}
+
+// Hold the CTA's container hidden until its card's price mas-field is ready, so the CTA
+// can't paint above an unresolved price (reveals anyway after FIELD_TIMEOUT).
+export function holdCtaUntilPrice(container) {
+  if (!container?.style) return;
+  let scope = container.parentElement;
+  let price = null;
+  while (scope && !scope.classList?.contains('section')) {
+    price = scope.querySelector('mas-field[field="prices"]');
+    if (price) break;
+    scope = scope.parentElement;
+  }
+  if (!price?.checkReady) return;
+  container.style.visibility = 'hidden';
+  const reveal = () => { container.style.visibility = ''; };
+  withTimeout(price.checkReady().catch(() => false)).then(reveal);
+}
+
+/**
+ * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
+ * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
+ * sibling isn't matched by 'em a'/'strong a' with the wrong parent (its content span).
+ */
+function decorateInlineCtas(masField, content) {
+  const container = masField.closest('p, div');
+  holdCtaUntilPrice(container);
+  // router-marquee styles CTAs itself via plain em/strong/a selectors and doesn't need
+  // mas-field to stay attached, so fully unwrap it there instead of keeping it in the DOM --
+  // otherwise a later, independent re-render from the external mas-field component injects a
+  // stray duplicate content span onto it.
+  const selfDecoratesCtas = !!container?.closest('.router-marquee');
+
+  // The block this CTA belongs to (direct child of a section). Bounds the sibling
+  // lookup so a foreign block's button can't dictate this CTA's size.
+  let blockEl = container?.parentElement;
+  while (blockEl?.parentElement && !blockEl.parentElement.classList.contains('section')
+    && blockEl.parentElement !== document.body) {
+    blockEl = blockEl.parentElement;
+  }
+
+  // Only a sized sibling counts: mas-field self-styles CTAs with con-button but no size,
+  // and using an unsized one as reference would drop button-xl on every CTA.
+  const SIZE_CLASS = /^button-(s|m|l|xl)$/;
+  const siblingBtn = [...(blockEl?.querySelectorAll('.con-button') ?? [])]
+    .find((b) => !masField.contains(b) && [...b.classList].some((c) => SIZE_CLASS.test(c)));
+  let size;
+  let utilClasses = [];
+
+  if (siblingBtn) {
+    // Inherit the sibling's exact size and utility classes.
+    size = [...siblingBtn.classList].find((c) => SIZE_CLASS.test(c));
+    utilClasses = [...siblingBtn.classList].filter((c) => c.startsWith('button-') && c !== size);
+  } else {
+    // No decorated sibling yet — derive size from the block, mirroring its decorateButtons call.
+    const btnVariant = [...(blockEl?.classList ?? [])].find((c) => c.endsWith('-button'));
+    if (btnVariant) {
+      size = `button-${btnVariant.split('-')[0]}`;
+    } else if (blockEl?.classList.contains('hero-marquee')) {
+      // Mirror hero-marquee's extendButtonsClass; the util class keeps CTAs full-width on mobile.
+      size = 'button-xl';
+      utilClasses = ['button-justified-mobile'];
+    } else if (blockEl?.classList.contains('accordion') || blockEl?.classList.contains('media')) {
+      size = null;
+    } else {
+      const blockSize = getBlockSize(blockEl ?? container);
+      size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
+    }
+  }
+  if (masField.merchLink) {
+    [...masField.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
+      content.querySelectorAll('a').forEach((link) => {
+        link.classList.add(match[1]);
+      });
+    });
+  }
+
+  let hoisted;
+  if (selfDecoratesCtas) {
+    upgradeCommerceLinks(content);
+    ensureInlinePriceStyle(content);
+    hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
+    masField.replaceWith(...content.childNodes);
+  } else {
+    // Keep mas-field as the CTA's ancestor so decorateButtons' 'em a'/'strong a' still match
+    // once re-nested, and its promo/id context survives by structure. Move content while it's
+    // still a plain <a>; upgrading to is="checkout-link" is deferred until it settles into its
+    // final position so the custom element only connects once.
+    const innerWrapper = masField.parentElement;
+    let outer = masField;
+    while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
+      && hasOnlyTargetContent(outer.parentElement, outer)) {
+      outer = outer.parentElement;
+    }
+    if (outer === masField) {
+      masField.replaceChildren(...content.childNodes);
+    } else {
+      outer.replaceWith(masField);
+      innerWrapper.append(...content.childNodes);
+      masField.append(outer);
+      // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
+      content.remove();
+    }
+    masField.querySelector('aem-fragment')?.remove();
+    upgradeCommerceLinks(masField);
+    ensureInlinePriceStyle(masField);
+    hoisted = masField.querySelector('a, button');
+  }
+
+  // decorateButtons would strip the <strong> and misclassify router-marquee's CTAs as outline.
+  const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
+  if (container && !pendingCTAs?.length && !selfDecoratesCtas) {
+    decorateButtons(container, size);
+    if (utilClasses.length) {
+      container.querySelectorAll('.con-button').forEach((b) => utilClasses.forEach((c) => b.classList.add(c)));
+    }
+  }
+  return hoisted;
+}
+
+/**
+ * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network),
+ * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
+ */
+let masReadyWatched = false;
+function watchMasFieldCtas() {
+  if (masReadyWatched) return;
+  masReadyWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
+    if (isCtaFieldContent(content)) {
+      // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
+      upgradeCommerceLinks(content);
+      await decorateContentLinks(content);
+      decorateInlineCtas(mf, content);
+    }
+  });
+}
+
+/** True when a mas-field (or one of its descendants) resolved to a promotion variation. */
+function isPromoVariation(mf) {
+  return mf.matches('[data-promotion-project]') || mf.querySelector('[data-promotion-project]');
+}
+
+/**
+ * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
+ * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
+ * `data-promotion-project`), the container is revealed; otherwise it stays hidden.
+ */
+let promoPlaceholdersWatched = false;
+function watchPromoPlaceholders() {
+  if (promoPlaceholdersWatched) return;
+  promoPlaceholdersWatched = true;
+  document.addEventListener('mas:ready', ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const container = mf.closest('.promo-placeholder');
+    if (!container || container.classList.contains('promo-resolved')) return;
+    if (isPromoVariation(mf)) {
+      container.classList.add('promo-resolved');
+    }
+  });
+}
+
+/**
+ * A promo `mas-field` may resolve to a single sentinel link labelled "modal" whose href is a
+ * fragment path (no hash — authors give none). Under a promotion project we open that fragment
+ * as a modal and remove the link so it never renders. Non-promo variations resolve empty, so
+ * no link exists and nothing opens.
+ */
+let promoModalsWatched = false;
+function watchPromoModals() {
+  if (promoModalsWatched) return;
+  promoModalsWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    if (!isPromoVariation(mf)) return;
+    const anchor = mf.querySelector('a[href]');
+    if (!anchor || anchor.textContent.trim().toLowerCase() !== 'modal') return;
+    let path;
+    try {
+      ({ pathname: path } = new URL(anchor.href, window.location.href));
+    } catch (e) {
+      return;
+    }
+    const id = path.split('/').filter(Boolean).pop();
+    if (!id) return;
+    anchor.remove(); // consume: the link only carried the modal path, never render it
+    if (document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    try {
+      const { miloLibs, codeRoot } = getConfig();
+      const { getModal } = await import('../modal/modal.js');
+      loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
+      getModal({ id, path });
+    } catch (e) {
+      log?.error('Failed to open promo modal', e);
+    }
+  });
+}
+
+/** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
+async function createInlineField(el, options) {
+  const aemFragment = createAemFragment(options, seenFragments);
+  const masField = createTag('mas-field', { field: options.field }, aemFragment);
+  if (getConfig()?.mep?.preview) {
+    const { mepMasStudioUrls } = await import('./mas-mep-utils.js');
+    mepMasStudioUrls.set(masField, el.href);
+    masField.dataset.masBlock = 'inline';
+  }
+  masField.merchLink = el.href;
+
+  el.replaceWith(masField);
+  await checkFieldReady(masField, options.fragment);
+  normalizeBlockFieldWrappers(masField);
+  await localizePreviewLinks(masField);
+
+  const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
+  if (!content) return masField;
+
+  await decorateContentLinks(content);
+
+  // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
+  if (isCtaFieldContent(content)) {
+    return decorateInlineCtas(masField, content) ?? masField;
+  }
+
+  // Non-CTA (block) fields never move after this point, so upgrading now is safe.
+  upgradeCommerceLinks(content);
+  return masField;
+}
+
+export async function initMasField(el) {
+  watchMasFieldCtas();
+  watchPromoPlaceholders();
+  watchPromoModals();
+  let options = getOptions(el);
+  const { fragment } = options;
+  if (!fragment) return el;
+  options = overrideOptions(fragment, options);
+  await loadFieldDependencies();
+  return createInlineField(el, options);
+}
+
+/** An <a>, or a <strong>/<em> uniquely wrapping one <a> - the two shapes a split field-link
+ *  segment can take (see resolveSplitFieldLink). Returns the segment's own anchor. */
+function fieldLinkAnchor(node) {
+  if (!node || node.nodeType !== Node.ELEMENT_NODE) return null;
+  if (node.tagName === 'A') return node;
+  if (['STRONG', 'EM'].includes(node.tagName)
+    && node.childElementCount === 1
+    && node.firstElementChild.tagName === 'A') {
+    return node.firstElementChild;
+  }
+  return null;
+}
+
+/** The segment carrying `anchor` - `anchor` itself, or its unique strong/em wrapper. */
+function fieldLinkSegment(anchor) {
+  const { parentElement } = anchor;
+  return fieldLinkAnchor(parentElement) === anchor ? parentElement : anchor;
+}
+
+// Anchors discarded by resolveSplitFieldLink below. Tracked explicitly rather than inferred
+// from DOM attachment (isConnected/parentNode): a discarded anchor keeps getting reused as a
+// clone's source (global-navigation's menu.js clones a live `.merch` anchor and only attaches
+// the clone, if at all, after it resolves), so an unparented element is routine input here, not
+// a signal that it was discarded.
+const discardedFieldLinks = new WeakSet();
+
+/**
+ * Doc-authored content can't nest a partially bold/italic run inside a single <a>, so an
+ * inline mas-field link whose label has a bolded/italicized substring (e.g. "ctas[**Buy
+ * now**]") round-trips as sibling anchors that all share the same href - a plain <a> and a
+ * <strong>/<em> wrapping another <a>. Each would otherwise reach initMasField independently
+ * and duplicate the CTA. Collapse the group to a single canonical segment - the strong/em
+ * one, so the CTA still resolves to the button style that wrapper implies, or the first in
+ * document order if none is wrapped - discarding the rest (their label text is decorative;
+ * mas-field replaces it once the field resolves anyway).
+ *
+ * Returns true if `el` is the canonical anchor (safe to pass to initMasField), false if
+ * `el`'s own segment was just discarded in favor of a sibling, or previously was.
+ */
+function resolveSplitFieldLink(el) {
+  if (discardedFieldLinks.has(el)) return false;
+  const segment = fieldLinkSegment(el);
+  const { href } = el;
+  const group = [segment];
+  let sibling = segment.previousSibling;
+  while (sibling) {
+    if (sibling.nodeType === Node.TEXT_NODE && !sibling.textContent.trim()) {
+      sibling = sibling.previousSibling;
+    } else {
+      const anchor = fieldLinkAnchor(sibling);
+      if (!anchor || anchor.href !== href) break;
+      group.unshift(sibling);
+      sibling = sibling.previousSibling;
+    }
+  }
+  sibling = segment.nextSibling;
+  while (sibling) {
+    if (sibling.nodeType === Node.TEXT_NODE && !sibling.textContent.trim()) {
+      sibling = sibling.nextSibling;
+    } else {
+      const anchor = fieldLinkAnchor(sibling);
+      if (!anchor || anchor.href !== href) break;
+      group.push(sibling);
+      sibling = sibling.nextSibling;
+    }
+  }
+  if (group.length === 1) return true;
+  const discard = (seg) => {
+    discardedFieldLinks.add(fieldLinkAnchor(seg) ?? seg);
+    seg.remove();
+  };
+  const canonical = group.find((seg) => seg.tagName === 'STRONG')
+    ?? group.find((seg) => seg.tagName === 'EM')
+    ?? group[0];
+  if (canonical !== segment) {
+    discard(segment);
+    return false;
+  }
+  group.forEach((seg) => { if (seg !== segment) discard(seg); });
+  return true;
+}
+
+export default async function init(el) {
+  if (!el?.classList?.contains('merch')) return undefined;
+  const url = new URL(el.href);
+  // Inline fragment field links (mas.adobe.com/studio.html#...&field=...) are routed here
+  // instead of merch-card-autoblock (see decorateAutoBlock in utils.js) so a field render
+  // never pulls in merch-card.
+  if (url.hash.includes('field=')) {
+    if (!resolveSplitFieldLink(el)) return undefined;
+    return initMasField(el);
+  }
+  const { searchParams } = url;
+  const isCta = searchParams.get('type') === 'checkoutUrl';
+  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
+  const service = await initService();
+  log = service.Log.module('merch');
+  if (merch) {
+    log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    // Rebuilt merch href keeps only the OSI; stash the original for
+    // the "Edit OSI" badge.
+    if (getConfig()?.mep?.preview) {
+      const { mepMasStudioUrls } = await import('./mas-mep-utils.js');
+      mepMasStudioUrls.set(merch, el.href);
+      merch.dataset.masBlock = 'ost';
+    }
+    el.replaceWith(merch);
+    return merch;
+  }
+  log.warn('Failed to get context:', { el });
+  return null;
 }
 
 window.addEventListener('hashchange', updateModalState);

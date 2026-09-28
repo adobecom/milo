@@ -46,10 +46,10 @@ module.exports = {
           sectionId: 'deeplink-business',
           attributes: {
             'data-modal': 'twp',
-            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=TEAM&pa=phsp_direct_indirect_team',
-            'aria-label': 'Free trial - Photoshop - Business',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=TEAM&pa=apcc_direct_indirect_team',
+            'aria-label': 'Free trial - Acrobat - Business',
           },
-          iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=team',
+          iframeSrc: 'https://www.adobe.com/mini-plans/acrobat-pro.html?mid=ft&web=1&plan=team',
         },
         {
           sectionId: 'deeplink-students-override',

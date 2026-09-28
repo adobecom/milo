@@ -2,7 +2,8 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock } from '../../../libs/blocks/merch/autoblock.js';
+import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, overrideCardHeadingLevel } from '../../../libs/blocks/merch/autoblock.js';
+import { getMerchCardHeadingLevel } from '../../../libs/blocks/merch/merch.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 setConfig({ locales, miloLibs: '/libs' });
@@ -158,6 +159,108 @@ describe('autoblock', () => {
 
       await postProcessAutoblock(container, false);
       expect(card.checkReady.called).to.be.true;
+    });
+  });
+
+  describe('getMerchCardHeadingLevel', () => {
+    afterEach(() => {
+      document.head.querySelectorAll('meta[name="mas-heading-level"]').forEach((m) => m.remove());
+    });
+
+    const setMeta = (content) => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-heading-level');
+      meta.setAttribute('content', content);
+      document.head.appendChild(meta);
+    };
+
+    it('returns null when nothing is set', () => {
+      expect(getMerchCardHeadingLevel()).to.equal(null);
+    });
+
+    it('reads a numeric metadata value', () => {
+      setMeta('2');
+      expect(getMerchCardHeadingLevel()).to.equal(2);
+    });
+
+    it('reads an h-prefixed metadata value', () => {
+      setMeta('H4');
+      expect(getMerchCardHeadingLevel()).to.equal(4);
+    });
+
+    it('returns null for out-of-range or invalid values', () => {
+      setMeta('7');
+      expect(getMerchCardHeadingLevel()).to.equal(null);
+      document.head.querySelector('meta[name="mas-heading-level"]').setAttribute('content', 'foo');
+      expect(getMerchCardHeadingLevel()).to.equal(null);
+    });
+  });
+
+  describe('overrideCardHeadingLevel', () => {
+    const makeCard = (tags) => {
+      const card = document.createElement('merch-card');
+      tags.forEach((tag) => {
+        const h = document.createElement(tag);
+        h.textContent = tag;
+        h.setAttribute('slot', `heading-${tag}`);
+        card.appendChild(h);
+      });
+      return card;
+    };
+
+    it('shifts all headings by the delta, preserving relative structure', () => {
+      const card = makeCard(['h3', 'h4', 'h4']);
+      overrideCardHeadingLevel(card, 2);
+      const levels = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => h.tagName);
+      expect(levels).to.deep.equal(['H2', 'H3', 'H3']);
+    });
+
+    it('preserves attributes and content when swapping', () => {
+      const card = makeCard(['h3']);
+      overrideCardHeadingLevel(card, 2);
+      const heading = card.querySelector('h2');
+      expect(heading.getAttribute('slot')).to.equal('heading-h3');
+      expect(heading.textContent).to.equal('h3');
+    });
+
+    it('clamps to a maximum of h6', () => {
+      const card = makeCard(['h3', 'h5']);
+      overrideCardHeadingLevel(card, 5);
+      const levels = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => h.tagName);
+      expect(levels).to.deep.equal(['H5', 'H6']);
+    });
+
+    it('is idempotent across repeated calls', () => {
+      const card = makeCard(['h3', 'h4']);
+      overrideCardHeadingLevel(card, 2);
+      overrideCardHeadingLevel(card, 2);
+      const levels = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => h.tagName);
+      expect(levels).to.deep.equal(['H2', 'H3']);
+    });
+
+    it('does nothing when there are no headings', () => {
+      const card = document.createElement('merch-card');
+      expect(() => overrideCardHeadingLevel(card, 2)).to.not.throw();
+    });
+
+    it('leaves headings that wrap a customized built-in (inline-price) untouched', () => {
+      const card = makeCard(['h3']);
+      const priceHeading = document.createElement('h3');
+      priceHeading.innerHTML = '<span is="inline-price">$9.99</span>';
+      card.appendChild(priceHeading);
+      overrideCardHeadingLevel(card, 2);
+      expect(card.querySelectorAll('h2').length).to.equal(1);
+      expect(priceHeading.tagName).to.equal('H3');
+      expect(priceHeading.querySelector('[is="inline-price"]')).to.not.equal(null);
+    });
+
+    it('leaves headings that wrap a custom element untouched', () => {
+      const card = makeCard(['h3']);
+      const heading = document.createElement('h4');
+      heading.innerHTML = '<mas-mnemonic></mas-mnemonic>';
+      card.appendChild(heading);
+      overrideCardHeadingLevel(card, 2);
+      expect(heading.tagName).to.equal('H4');
     });
   });
 });

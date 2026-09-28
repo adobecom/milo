@@ -1,3 +1,8 @@
+import { getMetadata } from '../utils/utils.js';
+
+let c2DefferTimeout = null;
+const isC2 = getMetadata('foundation') === 'c2';
+
 function getActiveEl(target) {
   let active = target.shadowRoot?.activeElement ?? target;
   while (active.shadowRoot?.activeElement) {
@@ -96,7 +101,17 @@ function scrollTabFocusedElIntoView() {
 
   document.addEventListener('focusin', (e) => {
     if (!isTab && !e.target.closest('footer')) return;
-    scrollElement(e.target);
+    const { target } = e;
+    if (!isC2) {
+      scrollElement(target);
+      return;
+    }
+
+    clearTimeout(c2DefferTimeout);
+    c2DefferTimeout = setTimeout(() => {
+      if (document.activeElement !== target) return;
+      scrollElement(target);
+    });
   });
 }
 

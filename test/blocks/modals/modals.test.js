@@ -168,6 +168,57 @@ describe('Modals', () => {
     expect(document.getElementById('milo')).not.to.exist;
   });
 
+  it('shows a focus ring on the initial focus target when the confirmed trigger was reached via keyboard', async () => {
+    sinon.stub(Element.prototype, 'matches').callThrough().withArgs(':focus-visible').returns(true);
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+
+    document.getElementById('milo-modal-link').focus();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await delay(100);
+
+    const initialFocusCall = focusSpy.getCalls().find((call) => call.thisValue.id === 'milo-button-1');
+    expect(initialFocusCall).to.exist;
+    expect(initialFocusCall.args[0]).to.include({ focusVisible: true });
+
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('does not force a focus ring on the initial focus target when the confirmed trigger was reached via mouse', async () => {
+    sinon.stub(Element.prototype, 'matches').callThrough().withArgs(':focus-visible').returns(false);
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+
+    document.getElementById('milo-modal-link').focus();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await delay(100);
+
+    const initialFocusCall = focusSpy.getCalls().find((call) => call.thisValue.id === 'milo-button-1');
+    expect(initialFocusCall).to.exist;
+    expect(initialFocusCall.args[0]).to.include({ focusVisible: false });
+
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('defaults to showing a focus ring when there is no confirmed trigger element (e.g. deep link or auto-shown modal)', async () => {
+    sinon.stub(Element.prototype, 'matches').callThrough().withArgs(':focus-visible').returns(false);
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+
+    document.activeElement?.blur?.();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await delay(100);
+
+    const initialFocusCall = focusSpy.getCalls().find((call) => call.thisValue.id === 'milo-button-1');
+    expect(initialFocusCall).to.exist;
+    expect(initialFocusCall.args[0]).to.include({ focusVisible: true });
+
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
   it('Focuses on close when there are no other focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-paragraph';
@@ -182,7 +233,7 @@ describe('Modals', () => {
     await waitForRemoval('#paragraph');
   });
 
-  it('Focuses on a header when there are no other focusables', async () => {
+  it('Focuses on close instead of heading when there are no focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-title';
     meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
@@ -191,7 +242,8 @@ describe('Modals', () => {
     await delay(200);
     await waitForElement('#title');
     expect(document.getElementById('title')).to.exist;
-    expect(document.activeElement.getAttribute('id')).to.equal('test-title');
+    expect(document.querySelector('#test-title')?.hasAttribute('tabindex')).to.be.false;
+    expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
     window.location.hash = '';
     await waitForRemoval('#title');
   });

@@ -135,8 +135,16 @@
 }
 
 :root:lang(ar) {
-  --body-font-family: adobe-arabic, myriad-arabic, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --body-font-family: adobe-clean-arabic, 'Adobe Clean', adobe-clean, adobe-arabic, myriad-arabic, 'Trebuchet MS', sans-serif;
   --font-size-multiplier: 1.25;
+}
+
+:root:lang(he) {
+  --body-font-family: adobe-clean-hebrew, 'Adobe Clean', adobe-clean, myriad-hebrew, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(hi) {
+  --body-font-family: adobe-clean-devanagari, 'Adobe Clean', adobe-clean, myriad-devanagari, 'Trebuchet MS', sans-serif;
 }
 
 :root:lang(ko-KR),
@@ -165,6 +173,21 @@
 
 :root:lang(th) {
   --body-font-family: adobe-clean-thai, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root header.c2-gnav-c1-host {
+  --global-height-nav: 80px;
+  --global-height-breadcrumbs: 46px;
+}
+
+:root header.c2-gnav-c1-host.is-compact:has(.feds-localnav-bar) {
+  --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+}
+
+@media (max-width: 1023px) {
+  :root header.c2-gnav-c1-host:has(.feds-localnav-bar) {
+    --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+  }
 }
 
 @media (min-width: 1200px) {
@@ -753,12 +776,12 @@ header.global-navigation a {
   text-decoration: unset;
 }
 
-header.global-navigation + .feds-localnav {
+header.global-navigation:not(.c2-gnav-c1-host) + .feds-localnav {
   display: block;
   height: var(--feds-localnav-height);
 }
 
-.feds-promo-aside-wrapper {
+.feds-promo-aside-wrapper:not(:has(+ header.c2-gnav-c1-host)) {
   position: sticky;
   top: 0;
   z-index: 11;
@@ -782,7 +805,7 @@ sr-only, .sr-only, .feds-sr-only {
   border: 0;
 }
 
-header.global-navigation.has-promo {
+header.global-navigation.has-promo:not(.c2-gnav-c1-host) {
   top: var(--global-height-navPromo);
 }
 
@@ -798,12 +821,17 @@ body.mweb-enabled {
 }
 
 @media (min-width: 900px) {
-  header.global-navigation.has-breadcrumbs {
+  header.global-navigation.has-breadcrumbs:not(.c2-gnav-c1-host) {
     padding-bottom: var(--global-height-breadcrumbs);
   }
 
-  header.global-navigation + .feds-localnav {
+  header.global-navigation:not(.c2-gnav-c1-host) + .feds-localnav {
     display: none;
+  }
+}
+@media (min-width: 1204px) {
+  header.global-navigation.has-breadcrumbs:not(.is-compact) {
+    padding-bottom: var(--global-height-breadcrumbs);
   }
 }
 
@@ -1122,4 +1150,10 @@ a.static:active  {
 /* desktop large < 1440 */
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
+}
+
+/* Placeholder for a promotion: hidden until its mas-fields resolve with content
+   (see watchPromoPlaceholders in blocks/merch/merch.js). */
+.promo-placeholder:not(.promo-resolved) {
+  display: none;
 }

@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../../utils/utils.js';
 
 const PREV = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="9" viewBox="0 0 11 9" fill="none">
   <title>Previous slide</title>
@@ -13,8 +13,13 @@ const NEXT = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="9" view
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
 const MIN_SLIDE_TRANISTION_DURATION = 100;
 const MAX_SLIDE_TRANISTION_DURATION = 500;
+const SLIDES_TO_SHOW = 3;
+// Maps a clone back to the authored slide it was made from, so a clone can be
+// rebuilt once its source's async .section-background is decorated.
+const cloneSources = new WeakMap();
 let carouselGap = 8;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isRTL = document.documentElement.dir === 'rtl';
 
 function setSlideSpreadSign(activeSlide, slides) {
   if (!activeSlide || !slides) return;
@@ -24,7 +29,7 @@ function setSlideSpreadSign(activeSlide, slides) {
     const newSign = i - activeIndex;
     const current = parseInt(slide.style.getPropertyValue('--slide-spread-sign'), 10);
     if (current === newSign) return;
-    slide.style.setProperty('--slide-spread-sign', newSign);
+    slide.style.setProperty('--slide-spread-sign', newSign * (isRTL ? -1 : 1));
   });
 }
 
@@ -101,12 +106,8 @@ function getCarouselDimensions(slide) {
   return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth, maxSlideWidth };
 }
 
-function isRTL() {
-  return document.documentElement.dir === 'rtl';
-}
-
 function getDirection(direction) {
-  if (!isRTL()) return direction;
+  if (!isRTL) return direction;
   return direction === 'next' ? 'prev' : 'next';
 }
 
@@ -115,7 +116,7 @@ function goToActive(carouselEls) {
   const actualSlideWidth = parseFloat(el.style.getPropertyValue('--actual-slide-width'));
   const indexOfActive = [...wrapper.children].indexOf(activeSlide);
   const gaps = indexOfActive * carouselGap;
-  const translateValue = isRTL()
+  const translateValue = isRTL
     ? indexOfActive * actualSlideWidth - marginWidth + gaps
     : indexOfActive * actualSlideWidth * -1 + marginWidth - gaps;
   wrapper.style.transition = 'none';
@@ -126,18 +127,46 @@ function goToActive(carouselEls) {
   wrapper._timeout = null;
 }
 
+function createSlideClone(slide) {
+  const clone = slide.cloneNode(true);
+  clone.setAttribute('data-cloned', 'true');
+  clone.removeAttribute('data-index');
+  clone.classList.remove('active');
+  clone.style.removeProperty('--slide-spread-sign');
+  clone.querySelectorAll('img').forEach((img) => img.setAttribute('loading', 'eager'));
+  cloneSources.set(clone, slide);
+  return clone;
+}
+
+function refreshCloneBackgrounds(carouselEls) {
+  const { wrapper, allSlides } = carouselEls;
+  [...wrapper.children].forEach((node) => {
+    if (!node.hasAttribute('data-cloned')) return;
+    const source = cloneSources.get(node);
+    if (!source?.querySelector(':scope > .section-background') || node.querySelector(':scope > .section-background')) return;
+    const fresh = createSlideClone(source);
+    fresh.style.setProperty('--slide-spread-sign', node.style.getPropertyValue('--slide-spread-sign'));
+    fresh.classList.toggle('active-clone', node.classList.contains('active-clone'));
+    const idx = allSlides?.indexOf(node) ?? -1;
+    if (idx > -1) allSlides[idx] = fresh;
+    if (carouselEls.activeClone === node) carouselEls.activeClone = fresh;
+    node.replaceWith(fresh);
+  });
+}
+
+function fillHintSlides(wrapper, slides) {
+  while (slides.length && wrapper.children.length < SLIDES_TO_SHOW) {
+    const source = slides[wrapper.children.length % slides.length];
+    wrapper.append(createSlideClone(source));
+  }
+}
+
 function cloneSlides(carouselEls) {
   const { wrapper, slides, activeSlide } = carouselEls;
-  const cloneBack = slides.slice(0, 3).map((slide) => slide.cloneNode(true));
-  const cloneFront = slides.slice(-3).map((slide) => slide.cloneNode(true));
-  [...cloneFront, ...cloneBack].forEach((slide) => {
-    slide.setAttribute('data-cloned', 'true');
-    slide.removeAttribute('data-index');
-    slide.style.removeProperty('--slide-spread-sign');
-    slide.classList.remove('active');
-  });
+  const cloneBack = slides.slice(0, SLIDES_TO_SHOW).map(createSlideClone);
+  const cloneFront = slides.slice(-SLIDES_TO_SHOW).map(createSlideClone);
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
-  allSlides.forEach((slide) => {
+  slides.forEach((slide) => {
     slide.querySelectorAll('img').forEach((img) => {
       img?.setAttribute('loading', 'eager');
     });
@@ -173,7 +202,7 @@ function slideAnimation(carouselEls, direction) {
     wrapper.style.setProperty('--transition-duration', `${eventInterval}ms`);
     duration = eventInterval;
   }
-  const negate = (direction === 'next') !== isRTL() ? -1 : 1;
+  const negate = (direction === 'next') !== isRTL ? -1 : 1;
   const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
   setSlideSpreadSign(activeClone, allSlides);
@@ -329,14 +358,22 @@ export default function init(el) {
   const candidateKeys = parentArea.querySelectorAll('div.section-metadata > div > div:first-child');
   const slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
-      const slide = key.closest('.section');
-      slide.classList.add('carousel-slide');
-      rdx.push(slide);
-      const slideIndex = rdx.indexOf(slide);
-      slide.setAttribute('data-index', slideIndex);
+      rdx.push(key.closest('.section'));
     }
     return rdx;
   }, []);
+
+  // Carousel behavior needs at least two slides; the layout below reads slides[1].
+  // Clear the block so its raw config rows don't render as stray text.
+  if (slides.length < 2) {
+    el.textContent = '';
+    return;
+  }
+
+  slides.forEach((slide, index) => {
+    slide.classList.add('carousel-slide');
+    slide.setAttribute('data-index', index);
+  });
 
   const indicatorsContainer = createTag('ul', { class: 'indicators-container' });
   slides.forEach((slide, index) => {
@@ -357,12 +394,13 @@ export default function init(el) {
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
-  setSlideSpreadSign(slides[1], slides);
   indicatorsContainer.children[0]?.classList.add('active');
   indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
 
   el.textContent = '';
   wrapper.append(...slides);
+  fillHintSlides(wrapper, slides);
+  setSlideSpreadSign(slides[1], [...wrapper.children]);
   const [prevBtn, nextBtn] = decorateNavigation();
   el.append(ariaLive, prevBtn, wrapper, nextBtn, indicatorsContainer);
 
@@ -379,6 +417,12 @@ export default function init(el) {
     activeSlide: slides[1],
   };
 
-  setAriaHiddenAndTabIndex(slides, slides[1]);
+  setAriaHiddenAndTabIndex([...wrapper.children], slides[1]);
   attachListeners(carouselEls);
+
+  const handleDeferred = () => {
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferred, true);
+    refreshCloneBackgrounds(carouselEls);
+  };
+  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferred, true);
 }

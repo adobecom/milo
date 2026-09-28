@@ -3,9 +3,13 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
+  const element = document.querySelector(`.${name}`)
+    ?? (() => {
+      const block = createTag(targetEl, { class: name });
+      document.body[blockConfig.appendType](block);
+      return block;
+    })();
   const setNavLayout = () => {
-    const element = document.querySelector(`.${name}`);
-
     if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
@@ -14,13 +18,15 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   };
 
-  if (!document.querySelector(`.${name}`)) {
-    const block = createTag(targetEl, { class: name });
-    document.body[blockConfig.appendType](block);
-  }
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
     setNavLayout();
+    const promo = document.querySelector('meta[name="gnav-promo-source"]')?.content;
+    if (promo?.length) {
+      const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
+      element.before(fedsPromoWrapper);
+      element.classList.add('has-promo');
+    }
     if (blockConfig.isLocalNav) {
       const localNavWrapper = createTag('div', { class: 'feds-localnav' });
       const header = document.querySelector('header.global-navigation') || document.querySelector('header');
@@ -30,7 +36,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     document.querySelector('footer.global-footer').classList.add('responsive-container');
   }
 
-  await initBlock(document.querySelector(`.${name}`));
+  await initBlock(element);
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {

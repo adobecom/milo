@@ -115,7 +115,7 @@
   width: 6px;
   height: 6px;
   left: 4px;
-  top: -8px;
+  top: -7px;
   font-size: 18px;
   font-weight: 600;
 }
@@ -181,6 +181,35 @@
 .dynamic-nav-status .disable-values td {
   border: 1px solid rgb(160 160 160);
   padding: 8px 10px;
+}
+
+[dir="rtl"] .dynamic-nav-status {
+  right: auto;
+  left: 32px;
+  justify-content: center;
+}
+
+[dir="rtl"] .dynamic-nav-status .title {
+  align-items: center;
+}
+
+[dir="rtl"] .dynamic-nav-status .dns-badge {
+  margin: 4px 0 4px 8px;
+}
+
+[dir="rtl"] .dynamic-nav-status .details {
+  right: auto;
+  left: -14px;
+}
+
+[dir="rtl"] .dynamic-nav-status .dns-close::after {
+  top: -4px;
+  left: 6px;
+}
+
+[dir="rtl"] .dynamic-nav-status .details::before {
+  right: auto;
+  left: 75px;
 }
 
 @media screen and (max-width: 600px) {

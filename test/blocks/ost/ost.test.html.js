@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { DEFAULT_CTA_TEXT, createLinkMarkup, addToggleSwitches } from '../../../libs/blocks/ost/ost.js';
+import { DEFAULT_CTA_TEXT, createLinkMarkup, addToggleSwitches, getMasLibsBase } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
   offer_id: 'aeb0bf53517d46e89a1b039f859cf573',
@@ -58,6 +58,35 @@ beforeEach(() => {
 
 afterEach(() => {
   unmockOstDeps();
+});
+
+describe('OST: getMasLibsBase', () => {
+  const originalHref = window.location.href;
+
+  afterEach(() => {
+    window.history.pushState({}, '', originalHref);
+  });
+
+  it('returns mas.adobe.com when maslibs is absent or main', () => {
+    window.history.pushState({}, '', '/');
+    expect(getMasLibsBase()).to.equal('https://mas.adobe.com');
+    window.history.pushState({}, '', '/?maslibs=main');
+    expect(getMasLibsBase()).to.equal('https://mas.adobe.com');
+  });
+
+  it('resolves a feature branch', () => {
+    window.history.pushState({}, '', '/?maslibs=feature-branch');
+    expect(getMasLibsBase()).to.equal('https://feature-branch--mas--adobecom.aem.live');
+  });
+
+  it('falls back to mas.adobe.com for hostile maslibs values (VULN-36379)', () => {
+    // eslint-disable-next-line no-script-url -- payload must prove script URLs are rejected
+    const hostile = ['evil.com', 'evil.com%23', 'a--b@evil.com', 'javascript:alert(1)'];
+    hostile.forEach((payload) => {
+      window.history.pushState({}, '', `/?maslibs=${payload}`);
+      expect(getMasLibsBase(), payload).to.equal('https://mas.adobe.com');
+    });
+  });
 });
 
 describe('OST: loadOstEnv', async () => {

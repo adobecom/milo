@@ -2,11 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl, fetchData, DATA_TYPE,
+  fetchData, DATA_TYPE, categorizeActions,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -74,8 +74,8 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(secondFrag).to.not.be.null;
 
-    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
-    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
     expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
     expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
@@ -180,6 +180,106 @@ describe('Functional Test', () => {
 
     const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
     expect(fragment).to.be.null;
+  });
+
+  it('records a manifestErrors entry when the manifest fails to fetch (bad location)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    window.fetch = stub().returns(Promise.resolve({ ok: false, status: 404, json: () => ({}), text: () => '' }));
+    const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
+    await applyPers({ manifests: badManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest' });
+  });
+
+  it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({ data: [] });
+    const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
+    await applyPers({ manifests: emptyManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns' });
+  });
+
+  it('fires "was served" analytics when the consent requirement is met', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Personalized offer' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-served/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.calledOnce).to.be.true;
+    const [, payload] = trackStub.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('manifest was served');
+    delete window._satellite;
+  });
+
+  it('does not fire "was served" analytics when the consent requirement is promo or no offer changes', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Promo or no offer changes' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-skipped/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.called).to.be.false;
+    delete window._satellite;
   });
 
   it('test or promo manifest', async () => {
@@ -596,6 +696,29 @@ describe('matchGlob function', () => {
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });
+
+  it('keeps a section-level delayed modal hidden after loadArea resets the section class', async () => {
+    const main = document.createElement('main');
+    const el = document.createElement('div');
+    main.appendChild(el);
+    const wrapper = await createContent(
+      el,
+      {
+        content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
+        manifestId: 'manifest',
+        targetManifestId: '',
+        action: 'insertafter',
+        modifiers: [],
+      },
+    );
+    // hide-block must sit on an inner node, not the top-level div loadArea reclasses to `section`
+    expect(wrapper.tagName).to.equal('DIV');
+    expect(wrapper.classList.contains('hide-block')).to.be.false;
+    const anchor = wrapper.querySelector('a');
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+    wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+  });
 });
 
 describe('MEP Utils', () => {
@@ -804,6 +927,41 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl([])).to.be.false;
     });
   });
+  describe('isSameOriginManifestPath', () => {
+    it('allows same-origin absolute paths', () => {
+      expect(isSameOriginManifestPath('/path/to/data/')).to.be.true;
+      expect(isSameOriginManifestPath('/content/dam/cc/')).to.be.true;
+      expect(isSameOriginManifestPath('/drafts/x/')).to.be.true;
+    });
+    it('rejects absolute URLs, even same-origin or trusted', () => {
+      expect(isSameOriginManifestPath(`${window.location.origin}/x`)).to.be.false;
+      expect(isSameOriginManifestPath('https://www.adobe.com/x')).to.be.false;
+      expect(isSameOriginManifestPath('http://www.adobe.com/x')).to.be.false;
+    });
+    it('rejects protocol-relative paths', () => {
+      expect(isSameOriginManifestPath('//evil.com/')).to.be.false;
+    });
+    it('rejects paths that normalize to a cross-origin host', () => {
+      expect(isSameOriginManifestPath('/\\evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('\\/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\t/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\n/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\r/evil.com/')).to.be.false;
+    });
+    it('rejects non-path schemes', () => {
+      // eslint-disable-next-line no-script-url
+      expect(isSameOriginManifestPath('javascript:alert(1)')).to.be.false;
+      expect(isSameOriginManifestPath('data:text/html,x')).to.be.false;
+    });
+    it('rejects null/empty and non-string inputs', () => {
+      expect(isSameOriginManifestPath(null)).to.be.false;
+      expect(isSameOriginManifestPath(undefined)).to.be.false;
+      expect(isSameOriginManifestPath('')).to.be.false;
+      expect(isSameOriginManifestPath(123)).to.be.false;
+      expect(isSameOriginManifestPath({})).to.be.false;
+      expect(isSameOriginManifestPath([])).to.be.false;
+    });
+  });
   describe('fetchData', () => {
     it('forwards redirect option to underlying fetch', async () => {
       const originalFetch = window.fetch;
@@ -929,5 +1087,43 @@ describe('analyticifseen', () => {
     expect(window._satellite.track.calledOnce).to.be.true;
     const [, payload] = window._satellite.track.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+  });
+});
+
+describe('categorizeActions ordering (parallelization-safe)', () => {
+  const mkExp = (name, page, fw) => ({
+    manifestPath: `/m-${name}.json`,
+    selectedVariant: {
+      name,
+      replacepage: page ? [{ val: page }] : undefined,
+      updateframework: fw ? [fw] : undefined,
+    },
+  });
+
+  it('applies the later experiment replacepage/updateframework (last write wins)', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    delete config.mep.updateframework;
+
+    // applyPers runs categorizeActions via Promise.all(experiments.map(...)).
+    // categorizeActions has no internal awaits, so .map invokes each body
+    // synchronously in execution order and the last manifest's writes win —
+    // identical to the old sequential loop. Pin that observable contract.
+    const experiments = [mkExp('a', '/page-a', 'fw-a'), mkExp('b', '/page-b', 'fw-b')];
+    await Promise.all(experiments.map((exp) => categorizeActions(exp, config)));
+
+    expect(config.mep.replacepage).to.deep.equal({ val: '/page-b' });
+    expect(config.mep.updateframework).to.equal('fw-b');
+  });
+
+  it('returns { experiment } for a default variant without touching shared config', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    const experiment = { manifestPath: '/d.json', selectedVariant: 'default' };
+    const result = await categorizeActions(experiment, config);
+    expect(result).to.deep.equal({ experiment });
+    expect(config.mep.replacepage).to.be.undefined;
   });
 });

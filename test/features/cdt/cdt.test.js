@@ -7,6 +7,9 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
+// End date one year out so the "active timer" fixtures never expire over time.
+const futureCdtEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('CDT test error case no metadata', () => {
   it('check for countdown-timer meta data', async () => {
@@ -29,7 +32,7 @@ describe('CDT test error case invalid date', () => {
 
 describe('CDT test success case', () => {
   before(() => {
-    document.head.innerHTML = '<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
+    document.head.innerHTML = `<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,${futureCdtEnd}">`;
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
@@ -63,7 +66,7 @@ describe('CDT test start is equal to end date', () => {
 
 describe('CDT test start is equal to end date', () => {
   before(() => {
-    document.head.innerHTML = '<meta name="manifestnames" content="black-friday-offer,twp-cct"><meta name="schedule" content=", black-friday-offer | 2024-03-22T05:00:00 | 2038-03-31T05:00:00 | https://main--milo--adobecom.aem.page/drafts/nala/features/promotions/manifests/promo-with-fragments-insert.json |  | 2024-08-26T12:00:00 | 2026-08-30T00:00:00, mwpw-159157-delayed-modal-space-between | 2024-09-26T00:00:00 | 2026-11-30T00:00:00 | https://main--milo--adobecom.aem.live/fragments/mirafedas/promos/2024/global/delayed-modal-promo/delayed-modal-promo.json |  |  |">';
+    document.head.innerHTML = `<meta name="manifestnames" content="black-friday-offer,twp-cct"><meta name="schedule" content=", black-friday-offer | 2024-03-22T05:00:00 | 2038-03-31T05:00:00 | https://main--milo--adobecom.aem.page/drafts/nala/features/promotions/manifests/promo-with-fragments-insert.json |  | 2024-08-26T12:00:00 | ${futureCdtEnd}, mwpw-159157-delayed-modal-space-between | 2024-09-26T00:00:00 | 2026-11-30T00:00:00 | https://main--milo--adobecom.aem.live/fragments/mirafedas/promos/2024/global/delayed-modal-promo/delayed-modal-promo.json |  |  |">`;
   });
   it('check for countdown-timer meta data by MEP', async () => {
     const container = document.getElementById('cdt-container');

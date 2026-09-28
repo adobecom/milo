@@ -4,6 +4,7 @@ import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autob
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
@@ -235,7 +236,7 @@ async function getSidenav(collection) {
 }
 
 function generateCardName(card) {
-  let name = card.querySelector('h3')?.textContent;
+  let name = card.querySelector('h1,h2,h3,h4,h5,h6')?.textContent;
   if (!name) return '';
   name = name.toLowerCase().replace(/[^0-9a-z]/gi, ' ').trim().replaceAll(' ', '-');
   while (name.includes('--')) {
@@ -309,7 +310,7 @@ function paintStPriceRed(collection, locale) {
 }
 
 export async function createCollection(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const aemFragment = createAemFragment(options);
   // Get MEP overrides if available
   const { mep, locale } = getConfig();
   const mepFragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments || {};
@@ -317,9 +318,10 @@ export async function createCollection(el, options) {
   let attributes;
   if (Object.keys(mepFragments).length > 0) {
     const overrides = Object.entries(mepFragments)
-      .map(([fragment, data]) => `${fragment}:${data.content}`)
+      .filter(([, data]) => data['']?.content)
+      .map(([fragment, data]) => `${fragment}:${data[''].content}`)
       .join(',');
-    attributes = { overrides };
+    if (overrides) attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
@@ -330,7 +332,7 @@ export async function createCollection(el, options) {
     // immediately after dispatching aem:load. Dynamic import keeps
     // preview-only code out of the production bundle.
     const { attachAemLoadListener } = await import(
-      '../../features/personalization/preview-mas-subcollection.js'
+      '../../features/mep/mep-next/mep-mas-subcollection.js'
     );
     attachAemLoadListener(aemFragment, container);
   }

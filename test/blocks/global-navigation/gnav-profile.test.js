@@ -87,7 +87,7 @@ describe('profile', () => {
       window.adobeIMS = undefined;
     });
 
-    it('calls ims signOut', async () => {
+    it('calls ims signOut with current page as redirect_uri', async () => {
       await createFullGlobalNavigation();
 
       const signOut = document.querySelector("[daa-ll='Sign Out']");
@@ -96,6 +96,8 @@ describe('profile', () => {
       signOut.click();
 
       expect(window.adobeIMS.signOut.callCount).to.equal(1);
+      expect(window.adobeIMS.signOut.firstCall.args[0])
+        .to.deep.equal({ redirect_uri: window.location.href });
       window.adobeIMS = undefined;
     });
   });

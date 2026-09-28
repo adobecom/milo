@@ -77,7 +77,7 @@
               animation-fill-mode: var(--carousel-animation-fill);
               animation-range: var(--carousel-text-animation-range);
 
-              :is([class*="title-"]) {
+              :is([class*="heading-"]) {
                 margin-bottom: 8px;
               }
 
@@ -316,6 +316,7 @@
 
   button {
     &.prev {
+      --btn-animation-start: calc(var(--btn-position) + 70vw);
       left: unset;
       right: var(--btn-position);
 
@@ -327,6 +328,7 @@
     }
 
     &.next {
+      --btn-animation-start: calc(var(--btn-position) - 70vw);
       left: unset;
       right: var(--btn-position);
 

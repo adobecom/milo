@@ -53,7 +53,7 @@ export const viewports = {
   wide: { width: 1600, height: 1024 },
 };
 
-export const unavVersion = '1.5';
+export const unavVersion = '1.6';
 
 export const addMetaDataV2 = (value) => {
   const metaTag = document.createElement('meta');

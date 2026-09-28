@@ -16,6 +16,7 @@
 import {
   parseEncodedConfig,
   loadScript,
+  loadStyle,
   loadLink,
   localizeLinkAsync,
   createTag,
@@ -25,13 +26,26 @@ import {
   SLD,
   MILO_EVENTS,
 } from '../../utils/utils.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+
+const sanitizeFormHtml = (value) => (typeof value === 'string' ? sanitizeHtmlBody(value).innerHTML : value);
 
 const ROOT_MARGIN = 50;
-const IFRAME_TIMEOUT = 3000;
+const FAILURE_TIMEOUT = 10000;
+export const LANA_MESSAGE = {
+  RENDER_FAILED: 'Marketo form did not render',
+  HANDSHAKE_FAILED: 'Marketo form handshake failed',
+  RENDER_RECOVERED: 'Marketo form rendered after timeout',
+  SUBMIT_FAILED: 'Marketo form submit failed',
+  MARKETO_FORMS_JS: 'Marketo form failed to load forms2.min.js',
+  HIDDEN_REQUIRED_FIELD: 'Marketo form has a hidden field marked as required',
+};
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
+const FORM_STATUS = 'form.status';
+const FORM_XDFRAME = 'form.xdframe';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
@@ -47,12 +61,76 @@ const FORM_MAP = {
   'sfdc-campaign-id': 'program.campaignids.sfdc',
   'poi-field': 'field_filters.products',
   'hardcoded-poi': 'program.poi',
+  'cta-override': 'form.cta.override',
 };
-export const FORM_PARAM = 'form';
+export const UNGATED_PARAM = 'form';
+export const FORM_ID_PARAM = 'marketoform';
+export const NAMED_FORM_IDS = { stage: '1723', prod: '2277' };
+export const MARKETO_LIBS_PARAM = 'marketolibs';
+export const MARKETO_LIBS_META = 'marketo-libs';
+export const MARKETO_LIBS_CLASS = 'da-marketo';
+const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
+
+export function getMarketoLibsBase(el, location = window.location, getMeta = getMetadata) {
+  const { hostname, search } = location;
+  const param = new URLSearchParams(search).get(MARKETO_LIBS_PARAM);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (meta) branch = 'main';
+  if (el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  if (param != null) branch = param || 'main';
+  if (!branch) return null;
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) throw new Error(`Invalid ${MARKETO_LIBS_PARAM} branch name: ${branch}`);
+  if (!['.aem.', '.hlx.', '.stage.', 'local', '.da.'].some((i) => hostname.includes(i))) return '/mkto';
+  if (branch === 'local') return 'http://localhost:6586/mkto';
+  return branch.includes('--')
+    ? `https://${branch}.aem.live/mkto`
+    : `https://${branch}--da-marketo--adobecom.aem.live/mkto`;
+}
+
+export async function loadDaMarketoBlock(el, marketoBase) {
+  try {
+    loadStyle(`${marketoBase}/blocks/da-marketo/da-marketo.css`);
+    const { default: daInit } = await import(`${marketoBase}/blocks/da-marketo/da-marketo.js`);
+    await daInit(el);
+    return true;
+  } catch (e) {
+    window.lana?.log(`da-marketo block load failed: ${e.message}`, { tags: 'marketo', severity: 'w' });
+    return false;
+  }
+}
+
+const isVisible = (el) => !!el && (typeof el.checkVisibility === 'function'
+  ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+  : !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+
+export const setDataLayer = (key = '', value = '') => {
+  window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
+  if (!value || !key.includes('.')) return;
+  const keyParts = key.split('.');
+  const lastKey = keyParts.pop();
+  const formDataObject = keyParts.reduce((obj, part) => {
+    obj[part] = obj[part] || {};
+    return obj[part];
+  }, window.mcz_marketoForm_pref);
+  formDataObject[lastKey] = value;
+};
+
+export const setDataLayerObj = (formData) => {
+  Object.entries(formData).forEach(([key, value]) => setDataLayer(key, value));
+};
+
+export const getDataLayer = (key = '') => key
+  .split('.')
+  .reduce((obj, part) => obj?.[part], window.mcz_marketoForm_pref);
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+  if (formEl.querySelectorAll('.mktoHidden:has(.mktoRequired)').length) {
+    window.lana?.log(LANA_MESSAGE.HIDDEN_REQUIRED_FIELD, { tags: 'marketo', severity: 'w', sampleRate: 100 });
+  }
 };
 
 export const decorateURL = async (destination, baseURL = window.location) => {
@@ -89,23 +167,6 @@ export const decorateURL = async (destination, baseURL = window.location) => {
   }
 
   return null;
-};
-
-const setPreference = (key = '', value = '') => {
-  window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
-  if (!value || !key.includes('.')) return;
-  const keyParts = key.split('.');
-  const lastKey = keyParts.pop();
-  const formDataObject = keyParts.reduce((obj, part) => {
-    obj[part] = obj[part] || {};
-    return obj[part];
-  }, window.mcz_marketoForm_pref);
-  formDataObject[lastKey] = value;
-};
-
-export const setPreferences = (formData) => {
-  setPreference('form.status', 'pending');
-  Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
 const showSuccessSection = (formData) => {
@@ -167,9 +228,86 @@ const hideSuccessSection = (formData) => {
   );
 };
 
+export const debugTags = () => {
+  const len = document.cookie.length;
+  const tags = ['marketo'];
+  const signedIn = window.adobeIMS?.isSignedInUser();
+  const frameStatus = getDataLayer(FORM_XDFRAME);
+  if (getDataLayer('form.id')) tags.push(`form-${getDataLayer('form.id')}`);
+  if (getDataLayer('program.id')) tags.push(`program-${getDataLayer('program.id')}`);
+  if (getDataLayer(FORM_STATUS)) tags.push(`status-${getDataLayer(FORM_STATUS)}`);
+  if (len >= 8192) tags.push('cookie-8k');
+  else if (len >= 6144) tags.push('cookie-6k');
+  else if (len >= 4096) tags.push('cookie-4k');
+  tags.push(`ims-${signedIn ? 'signed-in' : 'signed-out'}`);
+  tags.push(frameStatus === 'ready' ? 'sync-ok' : 'sync-error');
+  if (getDataLayer('form.progressive')) tags.push('progressive');
+  if (getDataLayer('profile.known_visitor') === true) tags.push('known-visitor');
+  tags.push(`pref-lang-${getDataLayer('profile.prefLanguage') ?? ''}`);
+  return tags;
+};
+
+const decorateOverlay = async (el, message, callback) => {
+  if (el.querySelector('.marketo-overlay')) return;
+  const [errorRefresh, tryAgain] = await replaceKeyArray(['marketo-load-error', 'marketo-try-again'], getConfig());
+  const formEl = el.querySelector('form');
+  if (formEl) formEl.inert = true;
+  const searchParams = new URLSearchParams(window.location.search);
+  const debugMsg = searchParams.get('preview') === '1' ? message : '';
+  const errorMessage = createTag('p', { class: 'error', id: 'marketo-error-message' }, errorRefresh);
+  const formError = createTag('div', { class: 'error-container' }, errorMessage);
+  if (debugMsg) {
+    const debugInfo = createTag('p', { class: 'debug-info' });
+    debugInfo.textContent = debugMsg;
+    formError.appendChild(debugInfo);
+  }
+  const retryButton = createTag('button', { class: 'retry-button' }, tryAgain);
+  formError.appendChild(retryButton);
+  const errorOverlay = createTag(
+    'div',
+    {
+      class: 'marketo-overlay',
+      role: 'alertdialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'marketo-error-message',
+    },
+    formError,
+  );
+
+  retryButton.addEventListener('click', () => {
+    /* c8 ignore next 3 */
+    if (formEl) formEl.inert = false;
+    errorOverlay.remove();
+    if (callback) callback();
+  });
+
+  el.appendChild(errorOverlay);
+};
+
+export const logFailure = (el, msg) => {
+  if (el.dataset.mktoFailed) return;
+  const tags = debugTags();
+  el.dataset.mktoFailed = 'true';
+  window.lana?.log(msg, { tags: tags.join(','), severity: 'e', sampleRate: 100 });
+  decorateOverlay(el, `${msg}: ${tags.join(', ')}`, () => { window.location.reload(); });
+};
+
+export const formTimeout = (el, condition, message, timeout = FAILURE_TIMEOUT) => setTimeout(() => {
+  if (condition()) {
+    logFailure(el, message);
+  }
+}, timeout);
+
 const toggleSuccessSection = (formData) => {
   showSuccessSection(formData);
   hideSuccessSection(formData);
+};
+
+export const formSubmit = (formEl) => {
+  const el = formEl.closest('.marketo');
+  const testRecord = window.mkto_isTestRecord?.();
+  if (testRecord && testRecord !== 'not_test') return;
+  el.dataset.submitTimeoutId = formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
 };
 
 export const formSuccess = (formEl, formData) => {
@@ -177,6 +315,7 @@ export const formSuccess = (formEl, formData) => {
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
 
+  clearTimeout(el.dataset.submitTimeoutId);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
@@ -194,7 +333,7 @@ export const formSuccess = (formEl, formData) => {
     const param = getMetadata('marketo-ims');
 
     if (param && email) {
-      window.location.href = `${redirect}?${param}=${email.replace(/[^\w.%+@-]/g, '')}`;
+      window.location.href = `${redirect}?${param}=${encodeURIComponent(email)}`;
     } else {
       window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
     }
@@ -210,75 +349,8 @@ export const formSuccess = (formEl, formData) => {
 
   if (formData?.[SUCCESS_TYPE] !== 'section') return true;
   toggleSuccessSection(formData);
-  setPreference(SUCCESS_TYPE, 'message');
+  setDataLayer(SUCCESS_TYPE, 'message');
   return false;
-};
-
-export const handleIframeTimeout = (el) => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const config = getConfig();
-  const iframe = document.querySelector('iframe[src*="/index.php/form/XDFrame"]');
-  const formEl = el.querySelector('form');
-  let iframeTimeout = null;
-
-  const handleIframeReady = (event) => {
-    if (event.origin !== 'https://engage.adobe.com') return;
-    const message = JSON.parse(event.data);
-    if (!message.mktoReady) return;
-    setPreference('form.status', 'ready');
-    if (iframeTimeout) clearTimeout(iframeTimeout);
-    const errorOverlay = el.querySelector('.marketo-overlay');
-    if (formEl) formEl.inert = false;
-    if (errorOverlay) errorOverlay.remove();
-    window.removeEventListener('message', handleIframeReady);
-  };
-
-  const decorateOverlay = async () => {
-    const cookieSize = document.cookie.length > 4096 ? '> 4k' : '< 4k';
-    window.lana?.log(`Marketo iframe timeout - Cookie Size ${cookieSize}`, { tags: 'marketo', severity: 'e' });
-    setPreference('form.status', 'error');
-    if (el.querySelector('.marketo-overlay')) return;
-    if (!config.marketo?.showError && searchParams.get('marketoOverlay') !== 'error') return;
-
-    const marketoErrorText = await replaceKey('marketo-load-error', config);
-    const marketoTryAgainText = await replaceKey('marketo-try-again', config);
-    if (formEl) formEl.inert = true;
-
-    const errorMessage = createTag('p', { class: 'error', id: 'marketo-error-message' }, marketoErrorText);
-    const retryButton = createTag('button', { class: 'retry-button' }, marketoTryAgainText);
-    const formError = createTag('div', { class: 'error-container' }, [errorMessage, retryButton]);
-    const errorOverlay = createTag(
-      'div',
-      {
-        class: 'marketo-overlay',
-        role: 'alertdialog',
-        'aria-modal': 'true',
-        'aria-labelledby': 'marketo-error-message',
-      },
-      formError,
-    );
-
-    retryButton.addEventListener('click', () => {
-      const iframeSrc = iframe.src;
-      errorOverlay.remove();
-      if (formEl) formEl.inert = false;
-      iframe.src = '';
-      iframe.src = iframeSrc;
-      clearTimeout(iframeTimeout);
-      iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
-    });
-
-    el.appendChild(errorOverlay);
-  };
-
-  /* c8 ignore next 4 */
-  if (searchParams.get('marketoOverlay') === 'error') {
-    decorateOverlay();
-    return;
-  }
-
-  iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
-  window.addEventListener('message', handleIframeReady);
 };
 
 const readyForm = (form, formData) => {
@@ -286,7 +358,24 @@ const readyForm = (form, formData) => {
   const el = formEl.closest('.marketo');
   const isDesktop = matchMedia('(min-width: 900px)');
   el.classList.remove('loading');
-  handleIframeTimeout(el);
+
+  const handleIframeReady = (event) => {
+    if (event.origin !== 'https://engage.adobe.com') return;
+    const message = JSON.parse(event.data);
+    if (!message.mktoReady) return;
+    const hadFailed = el.dataset.mktoFailed === 'true';
+    setDataLayer(FORM_XDFRAME, 'ready');
+    const formVisible = isVisible(formEl);
+    if (hadFailed && formVisible) {
+      window.lana?.log(LANA_MESSAGE.RENDER_RECOVERED, { tags: 'marketo,render-recovered', severity: 'i', sampleRate: 100 });
+      delete el.dataset.mktoFailed;
+      el.querySelector('.marketo-overlay')?.remove();
+      formEl.inert = false;
+    }
+    window.removeEventListener('message', handleIframeReady);
+  };
+  window.addEventListener('message', handleIframeReady);
+  formTimeout(el, () => getDataLayer(FORM_XDFRAME) !== 'ready', LANA_MESSAGE.HANDSHAKE_FAILED);
 
   formEl.addEventListener('focus', ({ target }) => {
     /* c8 ignore next 9 */
@@ -301,21 +390,24 @@ const readyForm = (form, formData) => {
     window.scrollTo(0, offsetPosition);
   }, true);
   form.onValidate(() => formValidate(formEl));
+  form.onSubmit(() => formSubmit(formEl));
   form.onSuccess(() => formSuccess(formEl, formData));
 };
 
 export const loadMarketo = (el, formData) => {
+  setDataLayer(FORM_STATUS, 'loading');
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
   const formID = formData[FORM_ID];
   const { base } = getConfig();
 
-  loadScript(`${base}/deps/forms2.min.js`)
+  return loadScript(`${base}/deps/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
+      formTimeout(el, () => !isVisible(el.querySelector('form')), LANA_MESSAGE.RENDER_FAILED);
+      MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID, () => { setDataLayer(FORM_STATUS, 'loaded'); });
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
 
       /* c8 ignore next 3 */
@@ -326,7 +418,7 @@ export const loadMarketo = (el, formData) => {
     .catch(() => {
       /* c8 ignore next 2 */
       el.style.display = 'none';
-      window.lana?.log(`Error loading Marketo form for ${munchkinID}_${formID}`, { tags: 'marketo', severity: 'e' });
+      logFailure(el, LANA_MESSAGE.MARKETO_FORMS_JS);
     });
 };
 
@@ -336,12 +428,12 @@ function decorateForm(el, formData) {
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
   if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    const title = createTag('h3', { class: 'marketo-title' }, sanitizeFormHtml(formData.title));
     formWrapper.append(title);
   }
 
   if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    const description = createTag('p', { class: 'marketo-description' }, sanitizeFormHtml(formData.description));
     formWrapper.append(description);
   }
 
@@ -367,6 +459,10 @@ function decorateForm(el, formData) {
 }
 
 export default async function init(el) {
+  const marketoBase = getMarketoLibsBase(el);
+  if (marketoBase && await loadDaMarketoBlock(el, marketoBase)) return;
+
+  setDataLayer(FORM_STATUS, 'init');
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
@@ -390,6 +486,17 @@ export default async function init(el) {
     }
   });
 
+  const isProd = getConfig().env?.name === 'prod';
+  const searchParams = new URLSearchParams(window.location.search);
+  const formIdParam = searchParams.get(FORM_ID_PARAM);
+  const setFormId = formIdParam in NAMED_FORM_IDS ? NAMED_FORM_IDS[formIdParam] : formIdParam;
+
+  if (/^\d{4}$/.test(setFormId)) {
+    if (!isProd || Object.values(NAMED_FORM_IDS).includes(setFormId)) {
+      formData[FORM_ID] = setFormId;
+    }
+  }
+
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
@@ -400,8 +507,7 @@ export default async function init(el) {
     return;
   }
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const ungated = searchParams.get(FORM_PARAM) === 'off';
+  const ungated = searchParams.get(UNGATED_PARAM) === 'off';
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');
@@ -423,7 +529,8 @@ export default async function init(el) {
     if (destinationUrl) formData[SUCCESS_CONTENT] = destinationUrl;
   }
 
-  setPreferences(formData);
+  formData[FORM_STATUS] = 'decorated';
+  setDataLayerObj(formData);
   decorateForm(el, formData);
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });

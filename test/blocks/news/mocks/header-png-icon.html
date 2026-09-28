@@ -1,0 +1,27 @@
+<!-- The .png icon src is intentionally an unresolvable fixture path: the test asserts a
+     non-svg header icon src is left as-authored (not rewritten via getFederatedUrl). The
+     404 wtr logs for it is harmless and expected — the image is never loaded, only its src read. -->
+<main>
+  <div class="section">
+    <div class="news">
+      <div>
+        <div>
+          <picture><img src="/federal/icons/news-icon.png" alt="news icon" /></picture>
+          <p>Latest news</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>Item one headline</h3>
+          <p>Body copy for item one.</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>Item two headline</h3>
+          <p>Body copy for item two.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

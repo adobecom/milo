@@ -1,0 +1,564 @@
+/*
+ * ace1225 ONLY — temporary MEP test code, NOT suitable for rollout/production.
+ * Forked from da-cc creativecloud/blocks/upload-marquee and delivered via MEP
+ * useBlockCode; hardcoded to this test's design (layout, fixed sizes, dashed dropzone).
+ * Delete during the RTP process — see libs/mep/readme.md.
+ */
+
+/* stylelint-disable no-descending-specificity */
+
+/* ===== BASE / TOKENS ===== */
+.upload-marquee-block {
+  --um-white: #fff;
+  --um-heading-text: #f2f2f2;
+  --um-body-muted: #dbdbdb;
+  --um-accent: #5681ff;
+  --um-accent-focus: #7f96ff;
+  --um-accent-strong: #3b63fb;
+  --um-hover-bg: #0f1c52;
+  --um-radius-sm: 8px;
+  --um-radius-md: 20px;
+  --um-radius-pill: 999px;
+  --um-shadow-media: 0 2px 12px rgb(0 0 0 / 8%);
+  --um-shadow-layout: 0 4px 24px rgb(0 0 0 / 12%);
+  --um-text-shadow: 0 4px 39px rgb(0 0 0 / 25%);
+  --um-drop-zone-border: 1px dashed rgb(255 255 255 / 50%);
+  --um-cta-border: 2px solid var(--um-white);
+  --um-button-font-size: 19px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-marquee-block .hide { display: none; }
+
+/* ===== BUTTON ===== */
+.upload-marquee-block .upload-action-container {
+  margin: 0 auto;
+}
+
+.upload-marquee-block .action-button {
+  font-family: var(--body-font-family);
+  border-radius: var(--um-radius-pill);
+  border: 0;
+  background: var(--um-accent-strong);
+  color: var(--um-white);
+  cursor: pointer;
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px 14px;
+  font-size: var(--um-button-font-size);
+  font-weight: 700;
+  line-height: 24px;
+  text-decoration: none;
+}
+
+.upload-marquee-block .action-button > picture {
+  margin-inline-end: 0;
+}
+
+.upload-marquee-block .action-button > picture,
+.upload-marquee-block .action-button > picture > img {
+  width: 24px;
+  height: 24px;
+}
+
+.upload-marquee-block .action-button .icon-upload-to-cloud-outline svg {
+  height: 1.3em;
+  width: 1.3em;
+  line-height: 0;
+}
+
+.upload-marquee-block .action-button:focus-visible {
+  background: var(--um-accent-strong);
+  color: var(--um-white);
+  text-decoration: none;
+}
+
+/* ===== LAYOUT =====
+   ace1225: card wraps media + widget at every breakpoint. Mobile/tablet stack vertically
+   (widget on top, media on the bottom); desktop is two columns (media left, widget right). */
+.upload-marquee-block .upload-marquee-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 0 var(--grid-margins-width) 40px;
+  padding: 8px;
+  background: rgb(255 255 255 / 10%);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.upload-marquee-block .upload-marquee-left {
+  background: transparent;
+  color: var(--um-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+}
+
+.upload-marquee-block .upload-marquee-right {
+  order: 1; /* media below the widget when stacked */
+  height: auto;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.upload-marquee-block .upload-marquee-media {
+  width: 100%;
+  max-width: 910px;
+  align-self: center;
+}
+
+.upload-marquee-block .upload-marquee-right .media-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--um-shadow-media);
+}
+
+.upload-marquee-block .upload-marquee-right .media-container .video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Pause/play control: absolute + reserved 40x40 box so the async icon SVGs don't shift the
+   media (CLS). Mirrors libs/blocks/video/video.css, which a useBlockCode block doesn't load. */
+.upload-marquee-block .video-container .pause-play-wrapper {
+  position: absolute;
+  bottom: 2%;
+  top: auto;
+  inset-inline-end: 2%;
+  inset-inline-start: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 3px;
+  border-radius: 50%;
+  z-index: 3;
+  cursor: pointer;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: inherit;
+  background: var(--color-gray-800);
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper:focus-visible {
+  outline: 2px solid var(--um-accent-focus);
+  outline-offset: 2px;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper img.accessibility-control {
+  width: 40px;
+  height: 40px;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler.is-playing .play-icon,
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler:not(.is-playing) .pause-icon {
+  display: none;
+}
+
+.upload-marquee-block .upload-marquee-uploads > .tablet-up,
+.upload-marquee-block .upload-marquee-uploads > .tablet-up.desktop-up,
+.upload-marquee-block .upload-marquee-uploads > .desktop-up,
+.upload-marquee-block .upload-marquee-media > .tablet-up,
+.upload-marquee-block .upload-marquee-media > .tablet-up.desktop-up,
+.upload-marquee-block .upload-marquee-media > .desktop-up {
+  display: none;
+}
+
+/* ===== CONTENT (ace1225: centered hero above the card) ===== */
+.upload-marquee-block .upload-marquee-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: 48px var(--grid-margins-width) 24px;
+}
+
+.upload-marquee-block .upload-marquee-content p,
+.upload-marquee-block .upload-marquee-content h1,
+.upload-marquee-block .upload-marquee-content h2 {
+  color: inherit;
+  margin: 0;
+  text-align: center;
+}
+
+.upload-marquee-block .upload-marquee-content p:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  margin-bottom: 12px;
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding {
+  margin-bottom: 20px;
+  padding-bottom: 0;
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding-first picture,
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding-second picture {
+  display: block;
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding-first img,
+.upload-marquee-block .upload-marquee-content .upload-marquee-branding-second img {
+  width: auto;
+  height: 30px;
+  display: block;
+  object-fit: contain;
+}
+
+.upload-marquee-block .upload-marquee-content p:first-child picture,
+.upload-marquee-block .upload-marquee-content p:first-child img {
+  height: 26px;
+  display: block;
+}
+
+.upload-marquee-block .upload-marquee-content > *:first-child > picture img,
+.upload-marquee-block .upload-marquee-content > *:first-child > picture svg {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+.upload-marquee-block .upload-marquee-content p.upload-marquee-branding .upload-marquee-branding-second picture {
+  height: 15.5px;
+  margin-top: 2.75px;
+}
+
+.upload-marquee-block .upload-marquee-content p.upload-marquee-branding .upload-marquee-branding-second img {
+  height: 15.5px;
+}
+
+.upload-marquee-block .upload-marquee-content a {
+  color: var(--um-white);
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-cta {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 18px 10px;
+  background: transparent;
+  color: var(--um-white);
+  border: var(--um-cta-border);
+  border-radius: var(--um-radius-pill);
+  box-sizing: border-box;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 21px;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.upload-marquee-block .upload-marquee-content h1 {
+  color: var(--um-white);
+  text-shadow: var(--um-text-shadow);
+  font-family: var(--body-font-family);
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 125%;
+  letter-spacing: -1.8px;
+  margin-bottom: 16px;
+}
+
+:root:lang(en) .upload-marquee-block .upload-marquee-content h1 {
+  line-height: 98%;
+}
+
+.upload-marquee-block .upload-marquee-content p {
+  color: var(--um-white);
+  text-shadow: var(--um-text-shadow);
+  font-family: var(--body-font-family);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 136%;
+  letter-spacing: var(--letter-spacing, 0);
+  margin-bottom: 16px;
+}
+
+.upload-marquee-block .upload-marquee-content .upload-marquee-dropzone-label {
+  font-size: 16px;
+  line-height: 150%;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  text-shadow: none;
+}
+
+/* ===== PROMPT VARIANT ===== */
+.upload-marquee-block .upload-marquee-left.copy {
+  justify-content: center;
+}
+
+.upload-marquee-block.unity-prompt {
+  overflow: visible;
+}
+
+.upload-marquee-block.unity-prompt .upload-marquee-layout {
+  overflow: visible;
+}
+
+/* ===== DROP ZONE ===== */
+.upload-marquee-block .drop-zone-container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  max-width: none;
+  text-align: center;
+}
+
+.upload-marquee-block .drop-zone {
+  border-radius: var(--um-radius-sm);
+  padding: 34px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+  background-color: inherit;
+  border: 1px dashed #fff;
+
+  /* dotted texture inside the dropzone (all breakpoints) to match the Figma */
+  background-image: radial-gradient(circle, rgb(255 255 255 / 18%) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+.upload-marquee-block .upload-marquee-left:has(.upload-marquee-dropzone-label) .drop-zone {
+  margin-top: 0;
+}
+
+.upload-marquee-block .drop-zone:hover,
+.upload-marquee-block .drop-zone.active {
+  background-image: none;
+  cursor: pointer;
+  border: 2px solid var(--um-accent);
+  background-color: var(--um-hover-bg);
+}
+
+.upload-marquee-block .drop-zone:focus-visible {
+  outline: 2px solid var(--um-accent-focus);
+  outline-offset: 2px;
+  border-color: var(--um-accent);
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:first-child {
+  color: var(--um-white);
+  margin: 0;
+  text-align: center;
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:first-child img,
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:first-child svg {
+  display: block;
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+  opacity: 0.9;
+}
+
+.upload-marquee-block .drop-zone .upload-action-container {
+  margin: 4px 0 2px;
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone-container > p:last-child {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  margin: 16px auto 0;
+  max-width: 347px;
+  color: var(--um-white);
+  text-align: center;
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:not(:first-child):not(:last-child):not(.upload-action-container) {
+  color: var(--um-white);
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.upload-marquee-block .drop-zone > .drop-zone-heading {
+  color: var(--um-heading-text);
+  font-size: 17px; /* mobile/tablet; desktop bumps to 22px */
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+  margin: 0 auto;
+  max-width: 380px;
+  text-align: center;
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > .drop-zone-body {
+  color: var(--um-body-muted);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  max-width: 380px;
+  margin: 0;
+  text-align: center;
+}
+
+.upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone-container > p:last-child a {
+  color: var(--um-white);
+  text-decoration: underline;
+}
+
+/* ===== MEDIA ASSETS ===== */
+.upload-marquee-block .foreground .upload-marquee-layout .upload-marquee-right .media-container picture,
+.upload-marquee-block .foreground .upload-marquee-layout .upload-marquee-right .media-container picture > img,
+.upload-marquee-block .foreground .upload-marquee-layout .upload-marquee-right .media-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  line-height: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media screen and (max-width: 350px) {
+  .upload-marquee-block {
+    --um-button-font-size: 16px;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .upload-marquee-block .upload-marquee-right .media-container {
+    border-radius: 10px;
+  }
+
+  .upload-marquee-block .upload-marquee-left {
+    margin: 48px var(--grid-margins-width) 0;
+  }
+
+  .upload-marquee-block .upload-marquee-uploads > .tablet-up,
+  .upload-marquee-block .upload-marquee-uploads > .tablet-up.desktop-up,
+  .upload-marquee-block .upload-marquee-media > .tablet-up,
+  .upload-marquee-block .upload-marquee-media > .tablet-up.desktop-up {
+    display: block;
+  }
+
+  .upload-marquee-block .upload-marquee-uploads > .mobile-up,
+  .upload-marquee-block .upload-marquee-uploads > .desktop-up,
+  .upload-marquee-block .upload-marquee-media > .mobile-up,
+  .upload-marquee-block .upload-marquee-media > .desktop-up {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .upload-marquee-block .drop-zone { 
+    margin: 16px 4px 0 0;
+    padding: 34px 24px 0;
+  } 
+
+  .upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:first-child {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 8px 0 16px;
+  }
+
+  .upload-marquee-block .upload-marquee-layout .upload-marquee-left .drop-zone > p:last-child {
+    margin-top: 0;
+  }
+
+  .upload-marquee-block .upload-marquee-layout .upload-marquee-left .upload-marquee-content h1 {
+    font-size: 64px;
+    letter-spacing: -2.88px;
+  }
+
+  .upload-marquee-block .upload-marquee-left {
+    margin: 0;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+
+  /* ace1225: the grid IS the rounded card wrapping media (left) + widget (right) */
+  .upload-marquee-block .upload-marquee-layout {
+    grid-template-columns: 500fr 461fr; /* Figma: media 500 / widget 461 */
+    grid-template-rows: 1fr;
+    gap: 16px;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    padding: 14px;
+    background: rgb(255 255 255 / 10%);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .upload-marquee-block .upload-marquee-right {
+    order: 0; /* media back to the left column on desktop */
+    min-height: auto;
+    height: 100%;
+    align-self: stretch; /* media fills the card height so there's no gap below it */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .upload-marquee-block .upload-marquee-media {
+    height: 100%;
+    width: 100%;
+  }
+
+  .upload-marquee-block .upload-marquee-right .media-container {
+    width: 100%;
+    max-height: 100%;
+  }
+
+  .upload-marquee-block .upload-marquee-uploads > .desktop-up,
+  .upload-marquee-block .upload-marquee-uploads > .tablet-up.desktop-up,
+  .upload-marquee-block .upload-marquee-media > .desktop-up,
+  .upload-marquee-block .upload-marquee-media > .tablet-up.desktop-up {
+    display: block;
+  }
+
+  .upload-marquee-block .upload-marquee-uploads > .mobile-up,
+  .upload-marquee-block .upload-marquee-uploads > .tablet-up,
+  .upload-marquee-block .upload-marquee-media > .mobile-up,
+  .upload-marquee-block .upload-marquee-media > .tablet-up {
+    display: none;
+  }
+
+  .upload-marquee-block .upload-marquee-right .media-container .video-container .pause-play-wrapper {
+    bottom: 2%;
+    top: auto;
+    inset-inline-end: 2%;
+    inset-inline-start: auto;
+  }
+}

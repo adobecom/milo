@@ -15,7 +15,9 @@ const C1_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'blog-author',
   'brand-concierge',
+  'brand-concierge-global',
   'brick',
   'bulk-publish',
   'bulk-publish-v2',
@@ -111,22 +113,40 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'base-card',
-  'box',
   'brand-concierge',
+  'card-metadata',
   'carousel-c2',
+  'comparison-table-c2',
   'elastic-carousel',
+  'email-collection-c2',
   'explore-card',
+  'faq',
+  'floating-cta',
   'global-footer',
   'global-navigation',
+  'hover-list',
+  'hub-hero',
   'iframe',
+  'logo-ticker',
   'martech-metadata',
-  'modal',
   'modal-metadata',
+  'modal',
   'news',
+  'offer-hero',
+  'pdf-space',
+  'plans-hero',
+  'product-marquee-grid',
+  'quick-actions',
+  'quote',
   'region-nav',
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'side-by-side',
+  'social-proof',
+  'split-aside-grid',
+  'tabs',
+  'tour',
   'visually-hidden',
 ];
 
@@ -158,13 +178,14 @@ const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
+  'hub-hero',
 ];
 
 const ENVS = {
   stage: {
     name: 'stage',
     ims: 'stg1',
-    adobeIO: 'cc-collab-stage.adobe.io',
+    adobeIO: 'pps-stage.adobe.io',
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
@@ -173,7 +194,7 @@ const ENVS = {
   prod: {
     name: 'prod',
     ims: 'prod',
-    adobeIO: 'cc-collab.adobe.io',
+    adobeIO: 'pps.adobe.io',
     adminconsole: 'adminconsole.adobe.com',
     account: 'account.adobe.com',
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
@@ -354,6 +375,12 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export function isAupEnabled(useUniversalNav = false) {
+  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
+    || (new URLSearchParams(window.location.search).get('aup-select')
+      ?? getMetadata('aup-select')) === 'on';
+}
+
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {
@@ -476,6 +503,35 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
+  let parsed;
+  try {
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+export function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 function isPathMatch(path, href) {
   if (path.includes('*')) {
     const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
@@ -550,11 +606,21 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
   const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
+    link.setAttribute('data-allow-kr-free-trial', 'true');
     link.href = link.href.replace(allowKrTrialHash, '');
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
   }
   return localePrefix === '/kr' && hasAllowKrTrial;
+};
+
+const KR_CTA_ALLOWLIST = ['무료 앱 다운로드'];
+const KR_CTA_BLOCKLIST = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
+
+const matchesKrTrialCopy = (link) => {
+  const text = link.textContent?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
+  if (KR_CTA_ALLOWLIST.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
+  return KR_CTA_BLOCKLIST.some((pattern) => text.includes(pattern.toLowerCase()));
 };
 
 /**
@@ -564,15 +630,14 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
-  if (shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
-      || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  if (link.dataset.wcsOsi) {
-    link.dataset.hideKrFreeTrial = 'true';
+  const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+  const hasAllowAttribute = link.getAttribute('data-allow-kr-free-trial') === 'true';
+  if (hasAllowKrTrialMeta
+    || hasAllowAttribute
+    || shouldAllowKrTrial(link, localePrefix)
+    || localePrefix !== '/kr'
+    || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !matchesKrTrialCopy(link))) {
     return false;
   }
 
@@ -660,14 +725,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain) {
+function processQueryIndexMap(link, domain, fetchOptions = {}) {
   const result = {
     pathsRequest: null,
     requestResolved: false,
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(`${link}?limit=30000`)
+  result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -727,12 +792,16 @@ async function loadQueryIndexes(prefix, links = []) {
   const host = window.location.hostname;
   const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
-  queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
+  const primaryUrl = indexUrl(prefix);
+  queryIndexes[siteId] = processQueryIndexMap(primaryUrl, host);
 
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
+  const baseUrl = indexUrl(basePfx, '');
+  baseQueryIndex = primaryUrl === baseUrl
+    ? queryIndexes[siteId]
+    : processQueryIndexMap(baseUrl, host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
@@ -754,23 +823,37 @@ async function loadQueryIndexes(prefix, links = []) {
         });
       }
 
-      siteQueryIndexMapLingo
+      const crossSiteEntries = siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
-          const hasRegional = localesData
-            .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
-          if (!hasRegional) return;
-          const prodDomain = getDomainLingo(queryIndexWebPath);
-          const { url, host: envHost } = resolveCrossSiteIndex(
-            { queryIndexWebPath, stageHost },
-            prefix,
-            suffix,
-            window.location.hostname,
-          );
-          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
-          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
-        });
+        .filter(({ uniqueSiteId: uid }) => localesData
+          .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix)));
+
+      const startCrossSiteIndex = (entry, fetchOptions = {}) => {
+        const { uniqueSiteId: uid, queryIndexWebPath, stageHost } = entry;
+        const prodDomain = getDomainLingo(queryIndexWebPath);
+        const { url, host: envHost } = resolveCrossSiteIndex(
+          { queryIndexWebPath, stageHost },
+          prefix,
+          suffix,
+          window.location.hostname,
+        );
+        queryIndexes[uid] = processQueryIndexMap(url, prodDomain, fetchOptions);
+        if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
+      };
+
+      const priorityEntries = crossSiteEntries.filter((d) => d.fetchPriority === 'yes');
+      priorityEntries.forEach((d) => startCrossSiteIndex(d));
+
+      await Promise.all([
+        queryIndexes[siteId]?.pathsRequest,
+        baseQueryIndex?.pathsRequest,
+        ...priorityEntries.map((d) => queryIndexes[d.uniqueSiteId]?.pathsRequest),
+      ].filter(Boolean));
+
+      crossSiteEntries
+        .filter((d) => d.fetchPriority !== 'yes')
+        .forEach((d) => startCrossSiteIndex(d, { priority: 'low' }));
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
@@ -947,12 +1030,13 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export async function getCountry(skipFallback = false) {
+export async function getCountry(skipFallback = false, searchParams = PAGE_URL.searchParams) {
   if (isBot()) return null;
 
-  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
-  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
-  const country = akamaiLocale || sessionStorage.getItem('akamai');
+  const validate = (v) => (typeof v === 'string' && /^[a-zA-Z]{2,6}$/.test(v) ? v : null);
+  const country = validate(searchParams.get('country'))
+    || validate(searchParams.get('akamaiLocale'))
+    || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
@@ -975,34 +1059,43 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+export function isMasImsLoginEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-ims-login');
+  const metaValue = getMetadata('mas-ims-login');
+  const imsLogin = queryParam ?? metaValue;
+  return imsLogin?.toLowerCase() === 'on';
+}
+
+export function computeDetectedMarketCountry(
+  search,
+  cookieCountry,
+  countryFromGeo,
+  coFromIMS,
+  imsLoginEnabled,
+) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+  const geoCountry = normCountryCode(countryFromGeo);
+  const imsCountry = imsLoginEnabled ? normCountryCode(coFromIMS) : undefined;
+  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
+  const coFromIMS = getCookie('ims_country_code');
   const countryFromGeo = await getCountry();
-  let detectedMarket = computeDetectedMarketCountry(
+  return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
+    coFromIMS,
+    isMasImsLoginEnabled(),
   );
-  if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = normCountryCode(await getAkamaiCode());
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-    }
-  }
-  return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1010,7 +1103,9 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
+  const country = useGeoLocation
+    ? normCountryCode(await getCountry())
+    : (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -1140,7 +1235,10 @@ export function localizeLink(
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
+  const selector = rel === 'stylesheet'
+    ? `link[href="${href}"][rel="stylesheet"]`
+    : `link[href="${href}"]`;
+  let link = document.head.querySelector(selector);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -1291,6 +1389,8 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
+  const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1322,7 +1422,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1443,25 +1543,6 @@ export function decorateImageLinks(el) {
   });
 }
 
-export function decoratePictures(area) {
-  area.querySelectorAll('picture').forEach((picture) => {
-    if (picture.classList.contains('large-image-decorated')) return;
-    const sources = picture.querySelectorAll('source');
-    const image = picture.querySelector('img');
-    if (!sources.length || !image) return;
-    if (Number(image.getAttribute('width')) < 2000) return;
-    const path = image.src.split('?')[0];
-    const largeImageSource = createTag('source', {
-      type: 'image/webp',
-      srcset: `${path}?width=3000&format=webply`,
-      media: '(min-width: 1920px)',
-    });
-
-    picture.prepend(largeImageSource);
-    picture.classList.add('large-image-decorated');
-  });
-}
-
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
@@ -1486,6 +1567,8 @@ export function decorateAutoBlock(a) {
     });
     return false;
   }
+
+  if (a.hasAttribute('data-wcs-osi')) return false;
 
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
@@ -1532,6 +1615,10 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        if (url.hash.startsWith('#transcript')) {
+          a.classList.add('video-transcript-source');
+          import('../features/video-transcript/video-transcript.js');
+        }
         return true;
       }
     }
@@ -1539,6 +1626,14 @@ export function decorateAutoBlock(a) {
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
       return false;
+    }
+
+    // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
+    // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
+    // dependencies out of the critical path when only a field is authored (e.g. in marquee).
+    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+      a.className = 'merch link-block';
+      return true;
     }
 
     a.className = `${key} link-block`;
@@ -1907,7 +2002,6 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -1974,7 +2068,7 @@ const getMdValue = (key) => {
   return false;
 };
 
-const getPromoMepEnablement = () => {
+export const getPromoMepEnablement = () => {
   const mds = [
     'apac_manifestnames',
     'emea_manifestnames',
@@ -2005,24 +2099,29 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
-        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+        locale, imsClientId, imsScope, imsAdditionalScopes, env, base, adobeid, imsTimeout,
       } = getConfig();
       if (!imsClientId) {
         reject(new Error('Missing IMS Client ID'));
         return;
       }
       const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
-      const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+      const defaultScope = `AdobeID,openid,gnav,pps.read,read_organizations${unavMeta && unavMeta !== 'off' ? ',firefly_api,additional_info.roles,account_cluster.read' : ''}`;
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
-        scope: imsScope || defaultScope,
+        scope: imsScope || (imsAdditionalScopes?.length ? `${defaultScope},${imsAdditionalScopes.join(',')}` : defaultScope),
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+          ? (() => {
+            const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
+            const acomPrefix = (lingoRegion?.prefix || locale.prefix).slice(1);
+            if (acomPrefix === 'cn' || acomPrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            return `${baseUrl}/home${acomPrefix ? `?acomLocale=${acomPrefix}` : ''}`;
+          })() : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,
@@ -2031,12 +2130,14 @@ export async function loadIms() {
           clearTimeout(timeout);
         },
         onError: reject,
+        ...adobeid,
         ...(imsGuest === 'on' && {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
+          enableGuestBotDetection: true,
+          guestBotDetectionProvider: 'bfp',
         }),
-        ...adobeid,
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
@@ -2109,7 +2210,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id'];
+  const mepAddons = ['lob'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -2123,6 +2224,141 @@ export function loadMepAddons() {
   return promises;
 }
 
+// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
+function isMepNextOverlay() {
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
+}
+
+function initMepOverlay() {
+  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+    .then(({ default: init }) => init());
+}
+
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
+  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
+  return `${baseUrl}/web-components/dist/${component}`;
+}
+
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+  ],
+  merch: [
+    getMasDepUrl('commerce.js'),
+    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
+const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
+  if (block.classList.contains('hide-block')) return null;
+  const { blockPath, hasStyles, name } = getBlockData(block);
+  if (['marquee', 'hero-marquee'].includes(name)) {
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    const url = typeof dep === 'function' ? dep(blockPath) : dep;
+    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
+  if (!hasStyles) return null;
+  if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
+  return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+}).filter(Boolean);
+
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+
+const geoIpWarm = {};
+export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
+const warmGeoIpSheet = (config, section, isDoc = true) => {
+  if (!lingoActive()) return;
+  const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
+  if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
+  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
+    .then((r) => (r?.ok ? r.json() : null))
+    .catch(() => null);
+};
+
+export function preloadLcpCodeFiles(area = document) {
+  if (getMetadata('disable-mep-perf-optimization') === 'on') return;
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
+  const config = getConfig();
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    let url;
+    try { url = new URL(a.href); } catch { return; }
+    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+    if (!match) return;
+    const name = Object.keys(match)[0];
+    if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    autoNames.add(name);
+  });
+  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+    autoNames.add('video');
+  }
+  const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+    .filter((el) => !isCommerceBlock(el.classList[0]));
+  const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
+  const allBlocks = [...blocks, ...autoBlockEls];
+  if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
+
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
+  }
+
+  warmGeoIpSheet(config, firstSection);
+
+  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const willDecorateIcons = icons.length && (!iconsExcludeBlocks
+    || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
+  if (willDecorateIcons) {
+    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    loadLink(`${base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
+  }
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -2131,29 +2367,29 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  let countryIPPromise = null;
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
+  preloadLcpCodeFiles();
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = getMepEnablement('mepgeolocation');
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
+  const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
-  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  const { base } = getConfig();
+  loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
-  if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountry();
-  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -2195,13 +2431,11 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    countryIPPromise,
-    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
     promises,
-    mepMarketingDecrease,
+    nonPznOffer,
     akamaiCode,
   });
 }
@@ -2235,6 +2469,14 @@ function initModalEventListener() {
     const details = await findDetails(e.detail.hash);
     if (details) getModal(details);
   });
+}
+
+let fontsPromise;
+function importFonts(locale = getConfig().locale) {
+  fontsPromise ??= import('./fonts.js')
+    .then(({ default: loadFonts }) => loadFonts(locale))
+    .catch((e) => window.lana?.log(`Failed to load fonts: ${e}`, { tags: 'fonts', severity: 'error' }));
+  return fontsPromise;
 }
 
 async function loadPostLCP(config) {
@@ -2280,8 +2522,7 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  importFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
@@ -2292,16 +2533,24 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lerp = 0.06;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
-    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    const lenisPreventSelectors = [
+      '.dialog-modal',
+      '.ot-sdk-container',
+      'div[data-testid="main-content-area"]',
+    ];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
-      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+      wheelMultiplier: 0.7,
+      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
+    }
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {
@@ -2311,6 +2560,7 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
+
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
@@ -2324,7 +2574,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2337,8 +2587,15 @@ export function scrollToHashedElement(hash) {
     });
   }
   if (!targetElement) return;
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+
+  let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
+  if (isC2Gnav) {
+    const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+    bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
+  }
+
+  const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
     behavior: 'smooth',
@@ -2374,8 +2631,14 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    if (isMepNextOverlay()) {
+      // The overlay itself is initialized once via initMepOverlay() in loadArea.
+      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+        .then(({ default: init }) => init());
+    } else {
+      import('../features/personalization/preview.js')
+        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    }
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
@@ -2443,6 +2706,15 @@ function getMarketsByRegionPriority(markets, geoIp) {
   return marketsWithPriority.map(({ market }) => market);
 }
 
+function pickPreferredMarket(markets, prefLang, geoIp) {
+  const candidates = markets.filter((m) => m.lang === prefLang);
+  if (!candidates.length) return null;
+  // regionPriorities -> site whose market matches the user's geo -> first-by-order
+  return getMarketsByRegionPriority(candidates, geoIp)?.[0]
+    ?? candidates.find((m) => (m.defaultMarket || '').toLowerCase() === geoIp)
+    ?? candidates[0];
+}
+
 function reserveBannerSpace() {
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
@@ -2503,10 +2775,8 @@ export async function decorateLanguageBanner() {
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
-      market.lang === prefLang
-      && market.supportedRegions.includes(geoIp)
-    ));
+    const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
+    const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
     if (prefMarket) addAndShow(prefMarket);
     else return;
   } else {
@@ -2515,14 +2785,16 @@ export async function decorateLanguageBanner() {
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
     if (useBannerFlow) {
+      // Exclude en-US unless it explicitly lists the geo
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        prefMarketForGeo = pickPreferredMarket(marketsForGeoFiltered, prefLang, geoIp);
         if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
       if (!prefMarketForGeo) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeoFiltered[0]]));
       }
     } else {
       // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
@@ -2645,15 +2917,54 @@ export function partition(arr, fn) {
   );
 }
 
-const preloadBlockResources = (blocks = []) => blocks.map((block) => {
-  if (block.classList.contains('hide-block')) return null;
-  const { blockPath, hasStyles, name } = getBlockData(block);
-  if (['marquee', 'hero-marquee'].includes(name)) {
-    loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
+
+/**
+ * Validates a repo/owner pair intended for use in an *.aem.live host and
+ * returns the resulting origin, or null if either value is missing or does
+ * not look like a safe AEM repo/owner segment. Guards against arbitrary host
+ * injection via the `repo`/`owner` query params (VULN-38270).
+ * @param {string} repo raw repo query parameter value
+ * @param {string} owner raw owner query parameter value
+ * @returns {string|null} origin, or null if repo/owner are missing or invalid
+ */
+export function getValidatedRepoOwnerOrigin(repo, owner) {
+  if (!repo || !owner) return null;
+  const cleanRepo = repo.trim().toLowerCase();
+  const cleanOwner = owner.trim().toLowerCase();
+  if (
+    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
+    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
+  ) return null;
+  let url;
+  try {
+    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
-}).filter(Boolean);
+  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
+  return url.origin;
+}
+
+export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
+const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);
+
+/**
+ * Pins `sharepoint.site` to Adobe's real Graph/SharePoint host, since
+ * repo/owner validation alone can't guarantee a config isn't attacker-owned (VULN-38270).
+ * @param {string} site raw `sharepoint.site` config value
+ * @returns {string|null} the validated site value, or null if unsafe
+ */
+export function getValidatedSharePointSite(site) {
+  if (typeof site !== 'string') return null;
+  return GRAPH_SHAREPOINT_SITE_PATTERN.test(site) ? site : null;
+}
 
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
@@ -2726,15 +3037,46 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function warmTypekit() {
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let jsonLdOptions;
+  let jsonLdInitScheduled = false;
+  const scheduleJsonLdInit = () => {
+    if (!jsonLdOptions || jsonLdInitScheduled) return;
+    jsonLdInitScheduled = true;
+    window.setTimeout(() => {
+      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+        .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
+        .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
+          tags: 'jsonld-graph-manager',
+          severity: 'error',
+        }));
+    }, 0);
+  };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    if (getMetadata('foundation') === 'c2') {
+      warmTypekit();
+      importFonts();
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
+    const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+    if (jsonLdFlag === 'true') {
+      jsonLdOptions = {
+        bootScripts: [...document.querySelectorAll('script[type="application/ld+json"]')]
+          .map((scriptEl) => ({ scriptEl, textContent: scriptEl.textContent })),
+      };
+    }
   }
   const config = getConfig();
   const isLingoActive = lingoActive();
@@ -2743,15 +3085,21 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
+  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
+  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
+
+  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
+    loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  }
+
+  if (isLingoActive) loadLingoIndexes(area);
+
+  warmGeoIpSheet(config, htmlSections[0], isDoc);
+
   if (isDoc) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-
-  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
-  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
-
-  if (isLingoActive) loadLingoIndexes(area);
 
   const areaBlocks = [];
   let lcpSectionId = null;
@@ -2764,12 +3112,14 @@ export async function loadArea(area = document) {
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
+    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
+  if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);

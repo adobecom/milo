@@ -1,4 +1,7 @@
 import { createAxiosWithRetry } from './utils.js';
+import { getImsToken } from './ims-client.js';
+
+const MAX_REDIRECT_ENTRIES = 999999;
 
 const axiosWithRetry = createAxiosWithRetry();
 
@@ -14,17 +17,10 @@ const axiosWithRetryError = async (request) => {
   }
 };
 
-const {
-  AEM_LIVE_ADMIN_TOKEN = '',
-  LOCAL_RUN = '',
-} = process.env;
+const { AEM_ORG_AUTH_TOKEN: aemOrgToken } = process.env;
 const JOB_STATUS_POLL_INTERVAL = Number(process.env.JOB_STATUS_POLL_INTERVAL || '15');
 const JOB_STATUS_TIMEOUT = Number(process.env.JOB_STATUS_TIMEOUT || '2700');
 const LOG_FETCH_MAX_REQUESTS = Number(process.env.LOG_FETCH_MAX_REQUESTS || '10');
-
-if (!LOCAL_RUN) {
-  console.log({ AEM_LIVE_ADMIN_TOKEN: !!AEM_LIVE_ADMIN_TOKEN });
-}
 
 const getSiteEnvKey = (owner, repo, prefix = '') => `${prefix || ''}${owner}_${repo}`.replaceAll('-', '_').toUpperCase();
 
@@ -35,8 +31,7 @@ function delay(ms) {
 }
 
 async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
-  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   console.log(`Fetching logs for site: ${siteOrg}/${siteRepo}...`);
   const initialUrl = `https://admin.hlx.page/log/${siteOrg}/${siteRepo}/main?from=${fromParam}&to=${toParam}`;
   const entriesSet = new Set();
@@ -52,7 +47,7 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
       console.debug(`Fetching page ${requestCount} for ${siteRepo}: ${nextUrl}`);
       const request = await fetch(nextUrl, {
         method: 'GET',
-        headers: { Authorization: `token ${adminToken}` },
+        headers: { Authorization: `Bearer ${adminToken}` },
       });
 
       if (!request.ok) {
@@ -105,27 +100,25 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
 }
 
 async function triggerPreview(owner, repo, path) {
-  const adminTokenKey = getSiteEnvKey(owner, repo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   const url = `https://admin.hlx.page/preview/${owner}/${repo}/main${path}`;
   console.log(`previewing path: ${url}`);
   const response = await axiosWithRetryError({
     method: 'POST',
     url,
-    headers: { Authorization: `token ${adminToken}` },
+    headers: { Authorization: `Bearer ${adminToken}` },
   });
   return response.data;
 }
 
-async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now()) {
+async function awaitBulkJobStatus(jobStatusUrl, startedAt = Date.now()) {
   console.log(`Awaiting bulk job status: ${jobStatusUrl}`);
-  const { adminToken } = options;
   let response;
   try {
     response = await axiosWithRetryError({
       method: 'GET',
       url: jobStatusUrl,
-      headers: { Authorization: `token ${adminToken}` }
+      headers: { Authorization: `Bearer ${await getImsToken()}` }
     });
   } catch (error) {
     console.error(`Error fetching job status: ${jobStatusUrl}`);
@@ -142,13 +135,12 @@ async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now())
     console.error(`Job status timeout: ${jobStatusUrl}`);
     return null;
   }
-  return awaitBulkJobStatus(json.links.self, { adminToken }, startedAt);
+  return awaitBulkJobStatus(json.links.self, startedAt);
 }
 
 async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   const path = regionPath.endsWith('/') ? regionPath : `${regionPath}/`;
-  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
-  const adminToken = process.env[adminTokenKey];
+  const adminToken = await getImsToken();
   const body = {
     select: ['preview'],
     paths: [`${path}*`],
@@ -161,19 +153,19 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     method: 'POST',
     url: initialUrl,
     headers: {
-      Authorization: `token ${adminToken}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     },
     data: JSON.stringify(body)
   });
   const job = response.data;
-  const detailsUrl = await awaitBulkJobStatus(job.links.self, { adminToken });
+  const detailsUrl = await awaitBulkJobStatus(job.links.self);
   if (detailsUrl) {
     console.debug(`Fetching job details: ${detailsUrl}`);
     const detailsResponse = await axiosWithRetryError({
       method: 'GET',
       url: detailsUrl,
-      headers: { Authorization: `token ${adminToken}` }
+      headers: { Authorization: `Bearer ${await getImsToken()}` }
     });
     const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
@@ -188,4 +180,23 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   throw new Error(`Job not stopped: ${job.links.self}`);
 }
 
-export { getSiteEnvKey, fetchLogsForSite, triggerPreview, getPreviewPathsForRegion };
+async function getRedirects(siteOrg, siteRepo) {
+  const url = `https://main--${siteRepo}--${siteOrg}.aem.page/redirects.json?limit=${MAX_REDIRECT_ENTRIES}`;
+  try {
+    const response = await axiosWithRetryError({
+      method: 'GET',
+      url,
+      headers: { Authorization: `token ${aemOrgToken}` }
+    });
+    return response.data?.data?.map(item => item.Source) || [];
+  } catch (error) {
+    const status = error.status || error.response?.status;
+    if (status === 404 || status === 401) {
+      console.warn(`Redirects not found or unauthorized for ${siteOrg}/${siteRepo} (status ${status}). Returning empty list.`);
+      return [];
+    }
+    throw error;
+  }
+}
+
+export { getSiteEnvKey, fetchLogsForSite, triggerPreview, getPreviewPathsForRegion, getRedirects };

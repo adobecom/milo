@@ -212,6 +212,27 @@ describe('Comparison Table', () => {
       const accessibilityHeaders = comparisonTable.querySelectorAll('.accessibility-header-cell[data-column-index]');
       expect(accessibilityHeaders.length).to.be.greaterThan(0);
     });
+
+    it('close icon has an accessible name distinguishing it from an empty cell', async () => {
+      await delay(100);
+      const closeIcon = comparisonTable.querySelector('.icon-close');
+      expect(closeIcon).to.exist;
+      expect(closeIcon.getAttribute('aria-hidden')).to.equal('true');
+      const srOnly = closeIcon.closest('div').querySelector('.sr-only');
+      expect(srOnly).to.exist;
+      expect(srOnly.textContent).to.equal('not a feature');
+    });
+
+    it('checkmark icon has an sr-only accessible name and no native title', async () => {
+      await delay(100);
+      const checkmarkIcon = comparisonTable.querySelector('.icon-checkmark');
+      expect(checkmarkIcon).to.exist;
+      expect(checkmarkIcon.getAttribute('aria-hidden')).to.equal('true');
+      expect(checkmarkIcon.querySelector('title')).to.not.exist;
+      const srOnly = checkmarkIcon.closest('div').querySelector('.sr-only');
+      expect(srOnly).to.exist;
+      expect(srOnly.textContent).to.equal('primary feature');
+    });
   });
 
   describe('Mobile Filter Select', () => {

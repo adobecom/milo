@@ -7,17 +7,10 @@ import {
   showLogin,
 } from './state.js';
 import { getVersions, createVersion } from '../../tools/sharepoint/version.js';
+import { getSiteOrigin } from '../../utils/service-config.js';
 
 const TELEMETRY = { application: { appName: 'Adobe Version History' } };
 const CREATE_ERROR = 'Error creating version.';
-
-function getSiteOrigin() {
-  const search = new URLSearchParams(window.location.search);
-  const repo = search.get('repo');
-  const owner = search.get('owner');
-
-  return repo && owner ? `https://main--${repo}--${owner}.aem.live` : window.location.origin;
-}
 
 function getItemId() {
   const referrer = new URLSearchParams(window.location.search).get('referrer');

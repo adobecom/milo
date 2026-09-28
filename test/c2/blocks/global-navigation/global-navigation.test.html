@@ -1,0 +1,160 @@
+<html>
+  <head>
+    <!--
+      On localhost getEnv() resolves to ENVS.local, so getFederalDomain() returns
+      main--federal--adobecom.aem.page and the wrapper dynamic-imports main() from
+      the URL mapped below. A declarative import map is the reliable seam for
+      remapping a remote import (see twitter/vimeo .test.html) — everything else
+      (utils.js, placeholders.js) runs for real against the local fixtures under
+      /test/features/placeholders, exactly like placeholders.test.js.
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "https://main--federal--adobecom.aem.page/federal/libs/global-navigation/dist/main.js": "/test/c2/blocks/global-navigation/mocks/federal-main.js"
+        }
+      }
+    </script>
+    <meta name="gnav-source" content="https://main--federal--adobecom.aem.page/gnav">
+  </head>
+  <body></body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import sinon from 'sinon';
+    import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
+    import { calls } from './mocks/federal-main.js';
+    import init from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+
+    const gnavSheet = '/test/features/placeholders/placeholders-geo-ip-gnav.json';
+    let langfirstMeta;
+
+    // Activates lingo/geo-IP against local fixtures. The wrapper's geo-IP source is the remote
+    // federal domain, so the fetch stub below redirects it to the local gnav sheet.
+    function enableLingo() {
+      langfirstMeta = document.createElement('meta');
+      langfirstMeta.name = 'langfirst';
+      langfirstMeta.content = 'on';
+      document.head.appendChild(langfirstMeta);
+      sessionStorage.setItem('akamai', 'us');
+      setConfig({
+        locales: {
+          '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+          '/fr': { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+        },
+        locale: { region: 'fr' },
+        contentRoot: '',
+      });
+      const cfg = getConfig();
+      cfg.locale.prefix = '/fr';
+      cfg.locale.contentRoot = '/test/features/placeholders';
+      return cfg;
+    }
+
+    function disableLingo() {
+      setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } }, locale: {}, contentRoot: '' });
+      const cfg = getConfig();
+      cfg.locale.contentRoot = '/test/features/placeholders';
+      return cfg;
+    }
+
+    async function runInit() {
+      calls.length = 0;
+      await init(document.createElement('header'));
+      return calls[0];
+    }
+
+    runTests(() => {
+      describe('C2 global-navigation wrapper wiring', () => {
+        let paramsGetStub;
+        let fetchStub;
+
+        before(() => {
+          // keep the runner URL's query out of getFederalDomain/getEnv/lingoActive
+          paramsGetStub = sinon.stub(URLSearchParams.prototype, 'get');
+          paramsGetStub.withArgs('cache').returns('off');
+          // Redirect the remote federal geo-IP sheet to the local fixture; pass everything else through.
+          const realFetch = window.fetch.bind(window);
+          fetchStub = sinon.stub(window, 'fetch').callsFake((resource, opts) => {
+            const url = typeof resource === 'string' ? resource : resource?.url;
+            if (url?.includes('placeholders-geo-ip.json')) return realFetch(gnavSheet);
+            return realFetch(resource, opts);
+          });
+        });
+
+        after(() => {
+          paramsGetStub.restore();
+          fetchStub.restore();
+        });
+
+        afterEach(() => {
+          if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
+          langfirstMeta = null;
+          sessionStorage.removeItem('akamai');
+        });
+
+        it('passes mepMartech from config.mep.martech', async () => {
+          const cfg = enableLingo();
+          cfg.mep = { martech: 'nopzn--var1|hp-red--ace1165v3' };
+          const args = await runInit();
+          expect(args.mepMartech).to.equal('nopzn--var1|hp-red--ace1165v3');
+        });
+
+        it('defaults mepMartech to an empty string when MEP has not populated it', async () => {
+          enableLingo();
+          const args = await runInit();
+          expect(args.mepMartech).to.equal('');
+        });
+
+        it('wires decorateBody when lingo is active', async () => {
+          enableLingo();
+          const args = await runInit();
+          expect(args.decorateBody).to.be.a('function');
+        });
+
+        it('omits decorateBody when lingo is inactive', async () => {
+          disableLingo();
+          const args = await runInit();
+          expect(args.decorateBody).to.equal(undefined);
+        });
+
+        it('decorateBody localizes hrefs without converting authored .svg icon anchors to <picture>', async () => {
+          enableLingo();
+          const args = await runInit();
+          const body = document.createElement('div');
+          // Icon anchor authored as text = .svg URL — the form decorateSVG
+          // would convert to <picture>. Regression guard: MWPW-198294.
+          const iconUrl = 'https://main--federal--adobecom.aem.page/assets/icon.svg';
+          body.innerHTML = `
+            <a class="icon" href="${iconUrl}">${iconUrl}</a>
+            <a class="lingo" href="https://main--federal--adobecom.aem.page/fr/plans.html#_mep-lingo">Plans</a>`;
+          await args.decorateBody(body);
+
+          expect(body.querySelector('picture')).to.equal(null);
+          const svgAnchor = body.querySelector('a.icon');
+          expect(svgAnchor).to.exist;
+          expect(svgAnchor.href).to.include('.svg');
+
+          // Proves href localization still ran (mep-lingo marker consumed).
+          const lingoAnchor = body.querySelector('a.lingo');
+          expect(lingoAnchor.dataset.mepLingo).to.equal('true');
+          expect(lingoAnchor.href).to.not.include('#_mep-lingo');
+        });
+
+        it('merges geo-IP overrides into the placeholder map when lingo is active', async () => {
+          enableLingo();
+          const args = await runInit();
+          const map = await args.placeholders;
+          expect(map.get('hello-geo-ip')).to.equal('hello US GNAV');
+        });
+
+        it('leaves the base value when lingo is inactive (no geo-IP merge)', async () => {
+          disableLingo();
+          const args = await runInit();
+          const map = await args.placeholders;
+          expect(map.get('phone-number-geo-ip')).to.equal('800 555 1234');
+        });
+      });
+    });
+  </script>
+</html>

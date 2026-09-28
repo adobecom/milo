@@ -1,5 +1,5 @@
-import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
-import { norm } from '../../utils/market.js';
+/* eslint-disable no-underscore-dangle */
+import { getFederatedContentRoot, getCountry, setMarket, normCountryCode as norm } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -8,8 +8,26 @@ let createTag;
 let getMetadata;
 let loadBlock;
 let loadStyle;
-let sendAnalyticsFunc;
 let isC2Page;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalytics(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -437,8 +455,7 @@ async function showModal(details) {
     import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[4];
-  sendAnalyticsFunc = sendAnalytics;
+  const { getModal } = result[4];
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
@@ -503,7 +520,7 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         const akamaiCode = await getCountry();
         const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:${storedInter || 'none'}`;
-        sendAnalyticsFunc(new Event(eventString));
+        sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }
@@ -528,7 +545,7 @@ export default async function loadGeoRouting(
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:none`;
-        sendAnalyticsFunc(new Event(eventString));
+        sendAnalytics(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }

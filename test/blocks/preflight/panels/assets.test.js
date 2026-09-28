@@ -3,6 +3,15 @@ import sinon from 'sinon';
 import { html, render } from '../../../../libs/deps/htm-preact.js';
 import Assets from '../../../../libs/blocks/preflight/panels/assets.js';
 
+const waitFor = async (fn, tries = 100) => {
+  for (let i = 0; i < tries; i += 1) {
+    if (fn()) return;
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => { setTimeout(r, 15); });
+  }
+  throw new Error('waitFor timed out');
+};
+
 describe('Preflight Assets Panel', () => {
   let container;
   let originalWindowProps = {};
@@ -56,5 +65,47 @@ describe('Preflight Assets Panel', () => {
     expect(container.querySelector('.assets-item')).to.exist;
     expect(container.querySelector('.assets-item-title')).to.exist;
     expect(container.querySelector('.assets-item-description')).to.exist;
+  });
+});
+
+describe('Preflight Assets Panel (render paths)', () => {
+  let container;
+
+  afterEach(() => {
+    render(null, container);
+    container.remove();
+    document.querySelectorAll('main, .preflight-return-popover').forEach((n) => n.remove());
+    sinon.restore();
+  });
+
+  const mount = () => {
+    container = document.createElement('div');
+    document.body.append(container);
+  };
+
+  it('shows the resize prompt when the viewport becomes too small', async () => {
+    sinon.stub(window, 'matchMedia').returns({ matches: false }); // isViewportTooSmall -> true
+    mount();
+    render(html`<${Assets} />`, container);
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => container.textContent.includes('Please resize'));
+    expect(container.querySelector('.assets-image-grid-item.full-width').textContent).to.contain('1200px');
+  });
+
+  it('renders the three asset groups (empty) for an excluded page', async () => {
+    sinon.stub(window, 'matchMedia').returns({ matches: true }); // viewport ok
+    sinon.stub(window, 'fetch').callsFake((url) => {
+      if (String(url).includes('preflight-exclusions')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [{ path: '**' }] }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
+    });
+    mount();
+    render(html`<${Assets} />`, container);
+    await new Promise((r) => { setTimeout(r, 50); }); // let the effect attach its resize listener
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => container.querySelector('.assets-columns') && !container.textContent.includes('Please resize'));
+    await waitFor(() => container.querySelectorAll('.grid-heading').length >= 3);
+    expect(container.textContent).to.contain('No critical asset issues.');
   });
 });

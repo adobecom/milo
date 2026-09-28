@@ -1,0 +1,244 @@
+/* ── Two-column layout ───────────────────────────────────── */
+.ssn-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  padding-left: var(--grid-margins-width-10);
+  padding-right: var(--grid-margins-width-10);
+  padding-bottom: var(--spacing-m, 24px);
+}
+
+.ssn-nav-col {
+  width: 268px;
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--nav-height, 80px);
+  align-self: flex-start;
+  box-sizing: border-box;
+}
+
+.ssn-content-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Desktop side nav ────────────────────────────────────── */
+.ssn-label {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-black, #2c2c2c);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ssn-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ssn-nav-col .ssn-link {
+  display: block;
+  padding-top: 16px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-black, #2c2c2c) !important;
+  text-decoration: none !important;
+  transition: opacity 0.15s;
+}
+
+.ssn-nav-col .ssn-link:hover {
+  opacity: 0.65;
+}
+
+.ssn-nav-col .ssn-link.is-active {
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+/* Numbered nav */
+.ssn-link .ssn-num,
+.ssn-dropdown-link .ssn-num {
+  display: inline-block;
+  min-width: 24px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.ssn-link .ssn-num::after,
+.ssn-dropdown-link .ssn-num::after {
+  content: ':';
+}
+
+.ssn-nav-col .ssn-link:has(.ssn-num),
+.ssn-dropdown-link:has(.ssn-num) {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.ssn-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+}
+
+.ssn-overlay.is-open {
+  display: block;
+}
+
+/* ── Mobile/tablet sticky bar ────────────────────────────── */
+.ssn-mobile {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.ssn-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+/* Closed: current section name */
+.ssn-bar-current {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-black, #2c2c2c);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Open: "JUMP TO SECTION" header */
+.ssn-bar-label {
+  display: none;
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-black, #2c2c2c);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ssn-mobile.is-open .ssn-bar-current {
+  display: none;
+}
+
+.ssn-mobile.is-open .ssn-bar-label {
+  display: block;
+}
+
+.ssn-bar-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--color-black, #2c2c2c);
+  width: 18px;
+  text-align: center;
+}
+
+.ssn-dropdown {
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-200);
+  padding: 8px 20px 24px;
+}
+
+.ssn-dropdown[hidden] {
+  display: none;
+}
+
+.ssn-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ssn-dropdown-link {
+  display: block;
+  padding-top: 16px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-black, #2c2c2c);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.ssn-dropdown-link:hover {
+  opacity: 0.65;
+}
+
+.ssn-dropdown-link.is-active {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* ── Breakpoints ─────────────────────────────────────────── */
+@media (max-width: 1199px) {
+  .ssn-layout {
+    display: block;
+    padding: 0;
+  }
+
+  .ssn-nav-col {
+    display: none;
+  }
+
+  .ssn-mobile {
+    display: block;
+  }
+}
+
+@media (min-width: 1200px) {
+  .ssn-layout {
+    padding-bottom: var(--spacing-xl, 48px);
+  }
+
+  .ssn-mobile {
+    display: none !important;
+  }
+
+  .ssn-overlay {
+    display: none !important;
+  }
+
+  /* Strip section's own grid-width centering at desktop only — layout owns it */
+  .ssn-content-col .section {
+    max-width: none;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Aligns intro/outro sections to the same content column as sticky-nav sections */
+  .sticky-nav-align {
+    padding-left: calc(var(--grid-margins-width-10) + 268px + 40px) !important;
+  }
+}

@@ -43,14 +43,14 @@ function openPanel(btn, panel) {
   const analyticsValue = btn.getAttribute('daa-ll');
   btn.setAttribute('aria-expanded', 'true');
   btn.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
-  panel.removeAttribute('hidden');
+  panel.classList.remove('is-collapsed');
 }
 
 function closePanel(btn, panel) {
   const analyticsValue = btn.getAttribute('daa-ll');
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
-  panel.setAttribute('hidden', '');
+  panel.classList.add('is-collapsed');
 }
 
 function closeMediaPanel({ displayArea, el, dd, clickedId }) {
@@ -138,7 +138,7 @@ function createItem(accordion, id, heading, num, isEditorial) {
   const dtAttrs = hTag ? { class: 'descr-term' } : { role: 'heading', 'aria-level': 3, class: 'descr-term' };
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
-  const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
+  const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, class: 'descr-details is-collapsed' }, panel);
   if (isEditorial) dd.prepend(mediaCollection[id][num - 1]);
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });

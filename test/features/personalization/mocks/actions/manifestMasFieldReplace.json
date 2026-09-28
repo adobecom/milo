@@ -1,0 +1,61 @@
+{
+  "info": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "key": "manifest-type",
+        "value": "Personalization"
+      },
+      {
+        "key": "manifest-override-name",
+        "value": ""
+      },
+      {
+        "key": "manifest-execution-order",
+        "value": "Normal"
+      }
+    ],
+    "columns": [
+      "key",
+      "value"
+    ]
+  },
+  "experiences": {
+    "total": 1,
+    "offset": 0,
+    "limit": 1,
+    "data": [
+      {
+        "action": "replace",
+        "selector": "in-block:mas https://mas.adobe.com/studio.html#content-type=merch-card&page=content&path=acom-cc&query=d4304085-20ed-4478-a0ef-27c146f1c9fd&field=cardTitle",
+        "page filter (optional)": "",
+        "all": "https://mas.adobe.com/studio.html#content-type=merch-card&page=content&path=acom-cc&query=f3151128-a0fb-4946-97a6-72f4acea07e8&field=cardTitle"
+      }
+    ],
+    "columns": [
+      "action",
+      "selector",
+      "page filter (optional)",
+      "all"
+    ]
+  },
+  "placeholders": {
+    "total": 0,
+    "offset": 0,
+    "limit": 0,
+    "data": [],
+    "columns": [
+      "key",
+      "value"
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "info",
+    "experiences",
+    "placeholders"
+  ],
+  ":type": "multi-sheet"
+}

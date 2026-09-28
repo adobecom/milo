@@ -5,6 +5,10 @@
 .section {
   &.has-background {
     background-color: unset;
+
+    > .content {
+      z-index: 0;
+    }
   }
 
   &.divider {
@@ -18,19 +22,19 @@
   &.rounded-corners,
   &.rounded-corners-top,
   &.rounded-corners-bottom {
-    border-radius: var(--s2a-border-radius-lg);
+    border-radius: var(--s2a-border-radius-xl);
     overflow: clip;
     z-index: 3;
-    margin-block: calc(-1 * var(--s2a-border-radius-lg));
+    margin-block: calc(-1 * var(--s2a-border-radius-xl));
   }
 
   &.rounded-corners-top {
-    border-radius: var(--s2a-border-radius-lg) var(--s2a-border-radius-lg) 0 0;
+    border-radius: var(--s2a-border-radius-xl) var(--s2a-border-radius-xl) 0 0;
     margin-bottom: initial;
   }
 
   &.rounded-corners-bottom {
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
     margin-top: initial;
   }
 
