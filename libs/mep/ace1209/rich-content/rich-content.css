@@ -228,7 +228,11 @@
 
     &.has-background .section-background {
       --merch-bg-img-h: calc(100vw * 434 / 375);
-      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
+      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.08);
+
+      @media (width >= 1280px) {
+        --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
+      }
 
       img {
         aspect-ratio: 375 / 434;

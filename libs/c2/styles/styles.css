@@ -1492,6 +1492,14 @@ span.hang-opening-quote {
         width: 100%;
         height: auto;
         object-fit: cover;
+
+        /* Mobile/tablet: the whole image fits in the viewport, so ending the
+           parallax mid-cover reads as a visible stop. Run it across the full
+           cover-length window, shifted earlier so it starts before the image
+           enters and settles sooner. */
+        @media (width < 1280px) {
+          animation-range: cover -30% cover 70%;
+        }
       }
     }
   }
