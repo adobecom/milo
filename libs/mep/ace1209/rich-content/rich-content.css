@@ -491,26 +491,29 @@
   }
 }
 
+:where(.rich-content.media) {
+  padding-block: calc(var(--rc-media-spacing-top, var(--s2a-spacing-4xl)) + var(--rc-pull-offset)) var(--rc-media-spacing-bottom, var(--s2a-spacing-4xl));
+}
+
 .rich-content.media {
   background: var(--s2a-color-background-inverse);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--s2a-spacing-lg);
-  padding-block: calc(var(--rc-media-spacing-top, var(--s2a-spacing-4xl)) + var(--rc-pull-offset)) var(--rc-media-spacing-bottom, var(--s2a-spacing-4xl));
   overflow: clip;
-  --grid-margin-width: 0px; /* Keep unit for calc */
-
-  @media (width >= 768px) {
-    --grid-margin-width: var(--grid-margin-width-base);
-  }
 
   .action-area {
     margin-top: 0;
   }
 
-  img {
-    border-radius: var(--s2a-border-radius-24);
+  picture {
+    border: 9px solid var(--s2a-color-transparent-white-04);
+
+    img {
+      border-radius: var(--s2a-border-radius-24);
+      margin: 0 auto;
+    }
   }
 
   .media-cell {
@@ -525,7 +528,6 @@
     .video-container,
     picture {
       display: block;
-      width: 100%;
       border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
@@ -615,7 +617,6 @@
     }
 
     :is(img, video) {
-      max-width: 100%;
       border-radius: var(--s2a-border-radius-4);
 
       @media (width >= 1024px) {
@@ -626,9 +627,11 @@
 }
 
 @media (width >= 768px) {
-  .rich-content.media {
+  :where(.rich-content.media) {
     padding-block: var(--rc-media-spacing-top, var(--s2a-layout-sm)) var(--rc-media-spacing-bottom, var(--s2a-layout-sm));
+  }
 
+  .rich-content.media {
     img {
       max-width: unset;
     }
@@ -749,9 +752,12 @@
 }
 
 @media (width >= 1024px) {
+  :where(.rich-content.media) {
+    padding-block: var(--rc-media-spacing-top, var(--s2a-layout-lg)) var(--rc-media-spacing-bottom, var(--s2a-layout-lg));
+  }
+
   .rich-content.media {
     gap: var(--s2a-spacing-3xl);
-    padding-block: var(--rc-media-spacing-top, var(--s2a-layout-lg)) var(--rc-media-spacing-bottom, var(--s2a-layout-lg));
   }
 
   .rich-content.media img {
@@ -770,6 +776,50 @@
   .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-pull-offset: 120px;
     --rc-sweep-offset: 200px;
+  }
+}
+
+@media (width < 768px) {
+  .rich-content.media {
+    &:not(.full-width) {
+      .media-cell {
+        width: unset;
+
+        picture img {
+          max-width: 214px;
+        }
+      }
+    }
+
+    &.full-width {
+      --grid-margin-width: 0px;
+
+      img {
+        max-width: 100%;
+        box-sizing: border-box;
+        aspect-ratio: 1/1;
+        border-radius: var(--s2a-border-radius-4);
+        border: none;
+      }
+
+      .media-cell {
+        :is(picture, div.video-container) {
+          border: none;
+          border-radius: var(--s2a-border-radius-4);
+          padding: unset;
+        }
+
+        div.video-container video {
+          aspect-ratio: 1/1;
+        }
+      }
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .rich-content.media.full-width {
+    --grid-margin-width: var(--grid-margin-width-base);
   }
 }
 
