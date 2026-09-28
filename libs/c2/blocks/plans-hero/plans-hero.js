@@ -9,10 +9,7 @@ function decorate(block) {
 
   const media = createTag('div', { class: 'plans-hero-media' });
   const picture = mediaCell?.querySelector('picture');
-  if (picture) {
-    picture.querySelector('img')?.setAttribute('loading', 'eager');
-    media.append(picture);
-  }
+  if (picture) media.append(picture);
 
   if (textCell) {
     decorateBlockText(textCell, { heading: '2', body: 'md' });
