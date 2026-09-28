@@ -395,6 +395,10 @@ const resolveField = (slide, { promo }) => {
 
 const viewports = (block) => [...block.querySelectorAll('.rm-viewport')];
 const pendingSlide = (vp) => vp.querySelector('.rm-slide.promo-placeholder:not(.promo-resolved)');
+const nextFrame = () => new Promise((resolve) => { requestAnimationFrame(resolve); });
+const initializedViewport = (block) => viewports(block).find((vp) => vp.querySelector('.rm-slide[daa-lh]'));
+const fillRunning = (vp, index) => vp.querySelectorAll('.rm-card-progress-bar')[index]
+  .style.transition.includes(`${AUTOPLAY_MS}ms`);
 
 /** Same as slideHtml, but with a real background image src for stashSlideImage to stash. */
 const slideWithImage = (title) => `
@@ -459,6 +463,118 @@ describe('router-marquee promo placeholder slide', () => {
       expect(slide.classList.contains('is-active')).to.be.false;
       expect(cards[0].classList.contains('is-active')).to.be.true;
     });
+  });
+
+  it('activates the first slide when its promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    const cards = [...activeVp.querySelectorAll('.rm-card')];
+    expect(slides[1].classList.contains('is-active')).to.be.true;
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(slides[0].classList.contains('promo-resolved')).to.be.true;
+    expect(slides[0].classList.contains('is-active')).to.be.true;
+    expect(slides[1].classList.contains('is-active')).to.be.false;
+    expect(cards[0].classList.contains('is-active')).to.be.true;
+    expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+  });
+
+  it('restarts autoplay from the first slide after its promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    await nextFrame();
+    expect(fillRunning(activeVp, 1)).to.be.true;
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(fillRunning(activeVp, 0)).to.be.true;
+    expect(fillRunning(activeVp, 1)).to.be.false;
+  });
+
+  it('keeps autoplay paused when the first promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    await nextFrame();
+    activeVp.querySelector('.rm-pause-play').click();
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(slides[0].classList.contains('is-active')).to.be.true;
+    expect(fillRunning(activeVp, 0)).to.be.false;
+    expect(activeVp.querySelector('.rm-pause-play').getAttribute('aria-label')).to.equal('Play');
+  });
+
+  it('does not start autoplay under reduced motion when the first promotion resolves', async () => {
+    const realMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query) => {
+      if (query === '(prefers-reduced-motion: reduce)') {
+        return { matches: true, addEventListener() {}, removeEventListener() {} };
+      }
+      return realMatchMedia(query);
+    };
+
+    try {
+      block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+      init(block);
+
+      const activeVp = initializedViewport(block);
+      const slides = [...activeVp.querySelectorAll('.rm-slide')];
+      await nextFrame();
+      resolveField(slides[0], { promo: true });
+      await nextFrame();
+
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(fillRunning(activeVp, 0)).to.be.false;
+      expect(activeVp.querySelector('.rm-pause-play').getAttribute('aria-label')).to.equal('Play');
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('carries the resolved first promo slide across breakpoints', async () => {
+    const realMatchMedia = window.matchMedia.bind(window);
+    let viewport = 'mobile';
+    const media = (matches) => ({ matches, addEventListener() {}, removeEventListener() {} });
+    window.matchMedia = (query) => {
+      if (query === '(width >= 1280px)' || query === '(min-width: 1280px)') {
+        return media(viewport === 'desktop');
+      }
+      if (query === '(width > 767px)') return media(viewport !== 'mobile');
+      return realMatchMedia(query);
+    };
+
+    try {
+      block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+      init(block);
+
+      viewports(block).forEach((vp) => resolveField(pendingSlide(vp), { promo: true }));
+      await nextFrame();
+      const mobile = block.querySelector('.rm-viewport[data-viewport="mobile"]');
+      expect(mobile.querySelectorAll('.rm-slide')[0].classList.contains('is-active')).to.be.true;
+
+      viewport = 'desktop';
+      window.dispatchEvent(new Event('resize'));
+      await nextFrame();
+
+      const desktop = block.querySelector('.rm-viewport[data-viewport="desktop"]');
+      expect(desktop.querySelectorAll('.rm-slide')[0].classList.contains('is-active')).to.be.true;
+      expect(desktop.querySelectorAll('.rm-card')[0].getAttribute('aria-selected')).to.equal('true');
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
   });
 
   it('keeps the slide hidden when the field resolves without a promotion', () => {

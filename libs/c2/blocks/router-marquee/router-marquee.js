@@ -522,6 +522,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   let userPaused = false; // paused via explicit user action - survives breakpoint/scroll resume
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
+  let autoplayStarted = false;
 
   const isMobile = () => !window.matchMedia('(min-width: 1280px)').matches;
   const isDesktopSmallVp = isMobile()
@@ -784,6 +785,7 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       return;
     }
     if (paused) return;
+    autoplayStarted = true;
     clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
@@ -833,7 +835,22 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     activate(target, 1, { instant: true });
   };
 
-  return { pause, resume, heroReady, getActive, syncTo };
+  const activateResolvedFirstPromo = () => {
+    if (active === 0 || !slides[0]?.matches('.promo-placeholder.promo-resolved')) return;
+    clearTimeout(timer);
+    clearFill(active);
+    activate(0, -1, { instant: true });
+    if (autoplayStarted && !paused) beginAutoplay();
+  };
+
+  return {
+    pause,
+    resume,
+    heroReady,
+    getActive,
+    syncTo,
+    activateResolvedFirstPromo,
+  };
 };
 
 const buildViewport = (viewport, slides, isActiveViewport) => {
@@ -927,10 +944,14 @@ export default function init(el) {
   loadViewportVideos(el);
   syncViewportAutoplay();
 
-  // merch.js reveals a resolved promo slide and its nav card; only the layout is ours to redo.
+  // merch.js reveals a resolved promo slide and its nav card. If the authored first slide was
+  // skipped while pending, make it active once the promotion resolves.
   if (el.querySelector(`.${PROMO_PLACEHOLDER}`)) {
     el.addEventListener('mas:ready', () => {
-      requestAnimationFrame(() => dynamicLayoutUpdates(el));
+      requestAnimationFrame(() => {
+        controllersByVp.get(activeVpName)?.activateResolvedFirstPromo();
+        dynamicLayoutUpdates(el);
+      });
     });
   }
 
