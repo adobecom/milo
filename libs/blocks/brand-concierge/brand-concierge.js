@@ -92,7 +92,7 @@ export default async function init(el) {
   });
 
   sideOverlayTop();
-  initAnalytics();
+  initAnalytics('BC-Inline-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
@@ -195,6 +195,8 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {

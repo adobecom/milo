@@ -696,6 +696,29 @@ describe('matchGlob function', () => {
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });
+
+  it('keeps a section-level delayed modal hidden after loadArea resets the section class', async () => {
+    const main = document.createElement('main');
+    const el = document.createElement('div');
+    main.appendChild(el);
+    const wrapper = await createContent(
+      el,
+      {
+        content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
+        manifestId: 'manifest',
+        targetManifestId: '',
+        action: 'insertafter',
+        modifiers: [],
+      },
+    );
+    // hide-block must sit on an inner node, not the top-level div loadArea reclasses to `section`
+    expect(wrapper.tagName).to.equal('DIV');
+    expect(wrapper.classList.contains('hide-block')).to.be.false;
+    const anchor = wrapper.querySelector('a');
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+    wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+  });
 });
 
 describe('MEP Utils', () => {

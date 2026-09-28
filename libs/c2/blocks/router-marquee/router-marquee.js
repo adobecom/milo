@@ -1,6 +1,7 @@
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 let USER_ACTION = false;
@@ -73,6 +74,7 @@ const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5
 const RESET_SVG = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><g clip-path="url(#clip0_3399_7947)"><rect x="0.333984" y="2" width="1" height="8" rx="0.5" fill="white"/><path d="M7.10412 1.28574C7.36448 1.02559 7.78654 1.02546 8.04682 1.28574C8.30711 1.54602 8.30698 1.96808 8.04682 2.22845L4.94201 5.33327H11.3326C11.7008 5.33327 11.9993 5.63174 11.9993 5.99993C11.9993 6.36812 11.7008 6.6666 11.3326 6.6666H4.94201L8.04682 9.77142C8.30698 10.0318 8.30711 10.4538 8.04682 10.7141C7.78654 10.9744 7.36448 10.9743 7.10412 10.7141L2.86128 6.47129C2.60093 6.21094 2.60093 5.78893 2.86128 5.52858L7.10412 1.28574Z" fill="white"/></g><defs><clipPath id="clip0_3399_7947"><rect width="12" height="12" fill="white"/></clipPath></defs></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
 const AUTOPLAY_MS = 5000;
+const FIRST_FRAME_FALLBACK_MS = 8000;
 const SLIDE_MS = 300;
 const STAGGER_MS = 1000;
 const STAGGER_BASE = 60;
@@ -180,6 +182,10 @@ const prepareVideo = (imageCol) => {
   });
   video.muted = true;
   video.removeAttribute('autoplay');
+  // Lazy by default so no slide video is eager-fetched (decorate.js re-appends a
+  // <source> via a 1000px-rootMargin observer, which would otherwise starve the
+  // hero poster's download). loadVideo opts a video back in when its slide loads.
+  video.preload = 'none';
   const src = video.dataset.videoSource || video.src;
   video.removeAttribute('src');
   video.querySelectorAll('source').forEach((s) => s.remove());
@@ -194,29 +200,108 @@ const getActiveViewport = () => {
   return 'mobile';
 };
 
+// Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
+// hidden viewports/slides never fetch them; promote to a real poster when the video loads.
+const promotePoster = (video) => {
+  if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
+    video.setAttribute('poster', video.dataset.rmPoster);
+  }
+};
+
 const loadVideo = (video) => {
   if (!video || video.dataset.loaded) return;
+  promotePoster(video);
+
   const src = video.dataset.lazySrc;
   if (src && !video.querySelector('source')) {
     video.appendChild(createTag('source', { src, type: 'video/mp4' }));
   }
+  video.preload = 'auto';
   video.load();
   video.dataset.loaded = 'true';
 };
 
-const loadViewportVideos = (el) => {
-  const active = getActiveViewport();
-  el.querySelectorAll('.rm-viewport').forEach((vp) => {
-    const isActive = vp.dataset.viewport === active;
-    vp.querySelectorAll('.rm-background video').forEach((v) => {
-      if (!isActive) return;
-      const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
-      if (isActiveSlide) {
-        loadVideo(v);
-        if (!prefersReducedMotion()) v.play().catch(() => {});
-      }
-    });
+// Slides are stacked at inset:0, so loading="lazy" never defers the off-screen
+// ones. Stash the picture sources and restore them only when the slide is needed.
+const stashSlideImage = (slide) => {
+  const pic = slide?.querySelector('.rm-background picture');
+  if (!pic) return;
+  pic.querySelectorAll('source[srcset]').forEach((s) => {
+    s.dataset.lazySrcset = s.getAttribute('srcset');
+    s.removeAttribute('srcset');
   });
+  const img = pic.querySelector('img');
+  if (img?.getAttribute('src')) {
+    img.dataset.lazySrc = img.getAttribute('src');
+    img.removeAttribute('src');
+  }
+};
+
+const loadSlideImage = (slide, lowPriority = false) => {
+  const pic = slide?.querySelector('.rm-background picture');
+  if (!pic || pic.dataset.loaded) return;
+  pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
+    s.setAttribute('srcset', s.dataset.lazySrcset);
+    delete s.dataset.lazySrcset;
+  });
+  const img = pic.querySelector('img');
+  if (img?.dataset.lazySrc) {
+    if (lowPriority) img.setAttribute('fetchpriority', 'low');
+    img.setAttribute('src', img.dataset.lazySrc);
+    delete img.dataset.lazySrc;
+  }
+  pic.dataset.loaded = 'true';
+};
+
+// Load a slide's picture and video together (slide change / preload).
+const loadSlideMedia = (slide) => {
+  loadSlideImage(slide);
+  loadVideo(slide?.querySelector('video'));
+};
+
+const schedule = (fn) => {
+  if ('requestIdleCallback' in window) return requestIdleCallback(fn, { timeout: 5000 });
+  return setTimeout(fn, 300);
+};
+
+// Calls loadSlideImage/promotePoster directly instead of loadSlideMedia - that also
+// triggers the video body's full fetch, which this warm-up must not do.
+const preloadRemainingSlides = (slides) => {
+  const queue = [...slides].filter((slide) => !slide.classList.contains('is-active'));
+  let handle = null;
+  let cancelled = false;
+
+  const loadNext = () => {
+    if (cancelled) return;
+    const slide = queue.shift();
+    if (!slide) return;
+    loadSlideImage(slide, true);
+    promotePoster(slide.querySelector('video'));
+    if (queue.length) handle = schedule(loadNext);
+  };
+
+  handle = schedule(loadNext);
+  return {
+    cancel: () => {
+      cancelled = true;
+      if ('cancelIdleCallback' in window) cancelIdleCallback(handle);
+      else clearTimeout(handle);
+    },
+  };
+};
+
+const playActiveVideo = (video) => {
+  loadVideo(video);
+  if (!prefersReducedMotion()) video.play().catch(() => {});
+};
+
+const loadViewportVideos = (el) => {
+  const vp = el.querySelector(`.rm-viewport[data-viewport="${getActiveViewport()}"]`);
+  const activeSlide = vp?.querySelector('.rm-slide.is-active');
+  loadSlideImage(activeSlide);
+  const video = activeSlide?.querySelector('video');
+  if (!video) return;
+  playActiveVideo(video);
 };
 
 const decorateSlide = (slide) => {
@@ -356,17 +441,21 @@ const updateContentSpacing = (el) => {
   const controls = vp?.querySelector('.rm-controls');
   if (!wrapper || !content || !controls || !vp) return;
 
-  // Set min-height so the viewport never shrinks below what the content needs
+  // Read all layout up front, then write, so a minHeight write doesn't invalidate
+  // layout and force the subsequent getBoundingClientRect reads to reflow again.
   const wrapperPadTop = getCssPx(wrapper, 'padding-top');
   const contentH = content.offsetHeight;
-  const needed = wrapperPadTop + contentH + 24 + controls.offsetHeight;
+  const controlsH = controls.offsetHeight;
+  const controlsTop = controls.getBoundingClientRect().top - 24;
+  const contentBottom = content.getBoundingClientRect().bottom;
 
-  vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  // Set min-height so the viewport never shrinks below what the content needs
+  const needed = wrapperPadTop + contentH + 24 + controlsH;
+  const minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
   // Applied to all wrappers to handle slide changes
   const allWrappers = vp.querySelectorAll('.rm-content-wrapper');
-  const controlsTop = controls.getBoundingClientRect().top - 24;
-  const contentBottom = content.getBoundingClientRect().bottom;
   const isCompact = wrapper.classList.contains('rm-compact');
   if (!isCompact && contentBottom >= controlsTop) {
     allWrappers.forEach((w) => w.classList.add('rm-compact'));
@@ -380,7 +469,7 @@ const dynamicLayoutUpdates = (el) => {
   updateContentSpacing(el);
 };
 
-const startAutoplay = (slides, cards, container, block) => {
+const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true) => {
   const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
@@ -389,6 +478,7 @@ const startAutoplay = (slides, cards, container, block) => {
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
+  let userPaused = false; // paused via explicit user action - survives breakpoint/scroll resume
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
 
@@ -445,14 +535,16 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
-  const activate = (index, direction = 1, { skipTrack = false } = {}) => {
+  const activate = (index, direction = 1, { skipTrack = false, instant = false } = {}) => {
     finishSlideTransition();
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
     const vid = newSlide.querySelector('video');
-    loadVideo(vid);
-    const reducedMotion = prefersReducedMotion();
+    loadSlideMedia(newSlide);
+    // instant skips the slide-transition animation - used when a hidden viewport is
+    // synced to another viewport's slide, so it's already correct once revealed.
+    const reducedMotion = prefersReducedMotion() || instant;
 
     oldSlide.classList.remove('is-active');
     newSlide.classList.add('is-active');
@@ -498,12 +590,12 @@ const startAutoplay = (slides, cards, container, block) => {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
 
-    requestAnimationFrame(() => dynamicLayoutUpdates(block));
+    requestAnimationFrame(() => updateContentSpacing(block));
   };
 
   const preloadNextVideo = () => {
     const nextIdx = (active + 1) % slides.length;
-    loadVideo(slides[nextIdx]?.querySelector('video'));
+    loadSlideMedia(slides[nextIdx]);
   };
 
   const advance = () => {
@@ -516,7 +608,8 @@ const startAutoplay = (slides, cards, container, block) => {
     preloadNextVideo();
   };
 
-  const pause = () => {
+  const pause = (manual = false) => {
+    if (manual) userPaused = true;
     if (paused) return;
     clearTimeout(timer);
     finishSlideTransition();
@@ -526,19 +619,27 @@ const startAutoplay = (slides, cards, container, block) => {
     slides[active]?.querySelector('video')?.pause();
   };
 
-  const resume = () => {
+  // manual=true is the explicit Play-button click: it always takes effect (clearing a
+  // sticky user-pause) and still updates playback/UI under reduced motion, just without
+  // scheduling auto-advance. manual=false is a system resume (breakpoint switch, scroll
+  // back into view) and defers to a standing user pause or a reduced-motion preference.
+  const resume = (manual = false) => {
     if (!paused) return;
+    if (!manual && (userPaused || prefersReducedMotion())) return;
+    if (manual) userPaused = false;
     paused = false;
     setPlayingState(true);
+    slides[active]?.querySelector('video')?.play().catch(() => {});
+    if (prefersReducedMotion()) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
     if (target && !target.closest('.rm-pause-play')) {
-      if (!paused) pause();
+      if (!paused) pause(true);
     }
   };
 
@@ -547,10 +648,11 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      if (i === active) { pause(); return; }
+      if (i === active) { pause(true); return; }
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
       USER_ACTION = true;
@@ -563,6 +665,7 @@ const startAutoplay = (slides, cards, container, block) => {
     clearTimeout(timer);
     clearFill(active);
     paused = true;
+    userPaused = true;
     activate(0, -1);
   });
 
@@ -586,6 +689,7 @@ const startAutoplay = (slides, cards, container, block) => {
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      userPaused = true;
       setPlayingState(false);
       activate(next, 1);
     });
@@ -595,15 +699,15 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', (e) => {
-    if (!e.target.closest('.rm-pause-play') && !paused) pause();
+    if (!e.target.closest('.rm-pause-play') && !paused) pause(true);
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     if (paused) {
-      resume();
+      resume(true);
     } else {
-      pause();
+      pause(true);
     }
   });
 
@@ -627,31 +731,77 @@ const startAutoplay = (slides, cards, container, block) => {
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
     paused = true;
+    userPaused = true;
     USER_ACTION = true;
     setPlayingState(false);
   }, { passive: true });
 
-  requestAnimationFrame(() => {
+  const beginAutoplay = () => {
     if (prefersReducedMotion()) {
       paused = true;
       setPlayingState(false);
       return;
     }
+    if (paused) return;
+    clearTimeout(timer);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
-  });
+  };
+  // Start the progress bar, advance timer, and next-slide preload only once the
+  // hero video presents its first frame. This keeps the first transition (and the
+  // next slide's media) out of the hero's poster->first-frame window, so LCP stays
+  // on the heading instead of being dragged to the late video paint. It also keeps
+  // the progress bar honest: it begins when the video is actually playing.
+  let resolveHeroReady;
+  const heroReady = new Promise((resolve) => { resolveHeroReady = resolve; });
+  const heroVideo = slides[active]?.querySelector('video');
+  if (gateOnFirstFrame && heroVideo && typeof heroVideo.requestVideoFrameCallback === 'function' && !prefersReducedMotion()) {
+    let started = false;
+    let fallbackTimer = null;
+    const kick = () => {
+      if (started) return;
+      started = true;
+      clearTimeout(fallbackTimer);
+      beginAutoplay();
+      resolveHeroReady();
+    };
+    heroVideo.requestVideoFrameCallback(kick);
+    ['error', 'loadeddata'].forEach((ev) => {
+      heroVideo.addEventListener(ev, kick, { once: true });
+    });
+    fallbackTimer = setTimeout(kick, FIRST_FRAME_FALLBACK_MS);
+  } else {
+    requestAnimationFrame(() => {
+      beginAutoplay();
+      resolveHeroReady();
+    });
+  }
 
-  return { pause, resume };
+  const getActive = () => active;
+  // Jump straight to a slide with no transition, so a hidden viewport can be lined up
+  // with the one the user is leaving. clearFill resets the outgoing card's progress bar.
+  // Clamped in case the incoming viewport has fewer authored slides than the outgoing one.
+  const syncTo = (index) => {
+    const target = Math.min(index, slides.length - 1);
+    if (target === active) return;
+    clearFill(active);
+    activate(target, 1, { instant: true });
+  };
+
+  return { pause, resume, heroReady, getActive, syncTo };
 };
 
-const buildViewport = (viewport, slides) => {
+const buildViewport = (viewport, slides, isActiveViewport) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide, i) => {
     decorateSlide(slide);
     slide.setAttribute('role', 'tabpanel');
     slide.setAttribute('aria-roledescription', 'slide');
-    if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
+    // Keep only the active viewport's first slide image eager; every other slide
+    // image is lazy-loaded when it becomes active. (Videos default to lazy in
+    // prepareVideo, so only the image needs this active-slide exception.)
+    if (!(isActiveViewport && i === 0)) stashSlideImage(slide);
   });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
@@ -683,38 +833,66 @@ const reorderSlidesMaybe = (el, viewports) => {
 export default function init(el) {
   const viewports = groupByViewport(el);
   reorderSlidesMaybe(el, viewports);
-  const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
+  const initialVp = getActiveViewport();
+  const containers = Object.entries(viewports)
+    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
   el.replaceChildren(...containers);
-  const initializedVps = new Set();
-  const autoplayControllers = [];
-  const initViewportAutoplay = () => {
+  const controllersByVp = new Map();
+  let activeVpName = null;
+  let pendingPreload = null;
+  // Only the currently visible viewport's controller should ever run. Switching breakpoints
+  // (mobile/tablet/desktop) pauses the outgoing viewport - so its autoplay timer and hero
+  // video don't keep running inside a display:none container - and resumes (or lazily creates)
+  // the incoming one, carrying the outgoing viewport's active slide across so the breakpoints
+  // stay in sync instead of each tracking its own index.
+  const syncViewportAutoplay = () => {
     const activeVp = getActiveViewport();
-    if (initializedVps.has(activeVp)) return;
-    initializedVps.add(activeVp);
-    const container = containers.find((c) => c.dataset.viewport === activeVp);
-    if (!container) return;
-    const slides = container.querySelectorAll('.rm-slide');
-    const cards = container.querySelector('.rm-cards');
-    setSlideObserver(slides);
-    setAnalytics(slides, cards, container, el);
-    autoplayControllers.push(startAutoplay(slides, cards, container, el));
+    if (activeVp === activeVpName) return;
+    const outgoing = activeVpName ? controllersByVp.get(activeVpName) : null;
+    const carryIndex = outgoing?.getActive();
+    outgoing?.pause();
+    activeVpName = activeVp;
+
+    let controller = controllersByVp.get(activeVp);
+    if (!controller) {
+      const container = containers.find((c) => c.dataset.viewport === activeVp);
+      if (!container) return;
+      const slides = container.querySelectorAll('.rm-slide');
+      const cards = container.querySelector('.rm-cards');
+      setSlideObserver(slides);
+      setAnalytics(slides, cards, container, el);
+      // Gate autoplay on the hero's first frame only for the initial viewport (LCP);
+      // viewports created later on resize don't affect LCP, so start them right away.
+      controller = startAutoplay(slides, cards, container, el, controllersByVp.size === 0);
+      controllersByVp.set(activeVp, controller);
+      controller.heroReady.then(() => {
+        if (getActiveViewport() !== activeVp) return;
+        pendingPreload?.cancel();
+        pendingPreload = preloadRemainingSlides(slides);
+      });
+    }
+    if (carryIndex != null) controller.syncTo(carryIndex);
+    controller.resume();
   };
 
   loadViewportVideos(el);
-  initViewportAutoplay();
+  syncViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
+  // syncViewportAutoplay/loadViewportVideos stay un-debounced: getActiveViewport() is a
+  // cheap matchMedia check, and delaying the outgoing viewport's pause until resize settles
+  // would let its hidden video/timer keep running for the whole drag - the leak this fixes.
   window.addEventListener('resize', () => {
-    dynamicLayoutUpdates(el);
     loadViewportVideos(el);
-    initViewportAutoplay();
+    syncViewportAutoplay();
   });
+  window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {
     new IntersectionObserver(([entry]) => {
       const action = entry.isIntersecting ? 'pause' : 'resume';
       if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
-        autoplayControllers.forEach((ctrl) => ctrl[action]());
+        controllersByVp.get(activeVpName)?.[action]();
       }
     }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
   }

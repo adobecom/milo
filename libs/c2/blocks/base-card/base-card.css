@@ -12,6 +12,12 @@
     position: relative;
     clip-path: inset(0 round var(--s2a-border-radius-md));
     overflow: clip;
+    z-index: 2;
+    pointer-events: none;
+
+    .play-pause-button {
+      pointer-events: auto;
+    }
 
     > picture {
       height: 100%;
@@ -83,7 +89,6 @@
 
     .parallax-featured-card-media {
       animation-name: grow-featured-card-radius;
-      will-change: clip-path;
     }
   }
 }
