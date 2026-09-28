@@ -529,8 +529,8 @@ describe('init: buildManifestCard — malformed manifest via mep.manifestErrors'
     expect(select).to.exist;
     expect(select.options).to.have.lengthOf(2);
     expect(select.options[0].value).to.equal('');
-    expect(select.options[0].selected).to.be.true;
     expect(select.options[1].value).to.equal('default');
+    expect(select.options[1].selected).to.be.true;
   });
 
   it('renders the Source row and an expand icon for the malformed card', () => {
