@@ -94,6 +94,14 @@ header.global-navigation {
   display: none;
 }
 
+.aside.promobar .foreground.container > :first-child {
+  align-items: center;
+}
+
+.aside.promobar .action-area .con-button {
+  height:fit-content;
+}
+
 
 .feds-promo-aside-wrapper .aside.promobar {
   min-height: var(--global-height-navPromo);

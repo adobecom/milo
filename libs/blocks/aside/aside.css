@@ -580,7 +580,6 @@
 
 .aside.promobar .foreground.container > :first-child {
   padding: var(--spacing-xs) 0;
-  align-items: center;
 }
 
 .aside.promobar .promo-text[data-align="center"],
@@ -589,7 +588,6 @@
 }
 
 .aside.promobar .action-area .con-button {
-  height:fit-content;
   white-space: nowrap;
 }
 
