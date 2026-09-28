@@ -821,11 +821,11 @@ const matchesCountryList = (countryList, config) => {
   return !!countryIP && countryList.includes(countryIP);
 };
 
-export const matchesCountryFilter = (countryFilter, config = getConfig()) => {
-  if (!countryFilter.trim()) return true;
-  const countryList = getCountryList(countryFilter);
+export const matchesCountryFilter = (filterValue, config = getConfig()) => {
+  if (!filterValue.trim()) return true;
+  const countryList = getCountryList(filterValue);
   if (!countryList.length) {
-    log('Country filter contains no country codes:', countryFilter);
+    log('Country filter contains no country codes:', filterValue);
     return false;
   }
   return matchesCountryList(countryList, config);
