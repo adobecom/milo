@@ -1498,7 +1498,7 @@ span.hang-opening-quote {
            cover-length window, shifted earlier so it starts before the image
            enters and settles sooner. */
         @media (width < 1280px) {
-          animation-range: cover -30% cover 70%;
+          animation-range: cover -40% cover 60%;
         }
       }
     }
