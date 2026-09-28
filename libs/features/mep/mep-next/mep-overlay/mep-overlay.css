@@ -300,8 +300,10 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   padding: 4px 16px;
   border-radius: 8px 8px 0 0;
   color: var(--mep-white-100);
-  font: var(--mep-body-font);
-  letter-spacing: var(--mep-body-letter-spacing);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .05em;
   cursor: default;
 }
 

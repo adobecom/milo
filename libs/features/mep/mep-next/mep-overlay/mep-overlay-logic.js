@@ -282,7 +282,7 @@ function buildMalformedManifestEntry({ name, manifestPath, error, source }, mIdx
     source: Array.isArray(source) ? source.join(', ') : source,
     // Broken manifests never have variants; Default is offered in case the file loads again.
     options: [
-      { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)", selected: true },
+      { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
       {
         name: `${editPath}${pageId}`,
         value: 'default',
@@ -290,6 +290,7 @@ function buildMalformedManifestEntry({ name, manifestPath, error, source }, mIdx
         dataManifest: editPath,
         title: 'Default (control)',
         label: 'Default (control)',
+        selected: true,
       },
     ],
   };
