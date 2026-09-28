@@ -528,14 +528,7 @@ export default function init() {
     scrollTasks.length = 0;
   });
 
-  // Bind to Lenis's scroll event when it's running; otherwise fall back to native scroll
-  if (window.lenis) {
-    window.lenis.on('scroll', ({ scroll }) => {
-      scrollTasks.forEach((task) => task(scroll));
-    });
-  } else {
-    window.addEventListener('scroll', () => {
-      scrollTasks.forEach((task) => task(window.scrollY));
-    }, { passive: true });
-  }
+  window.lenis.on('scroll', ({ scroll }) => {
+    scrollTasks.forEach((task) => task(scroll));
+  });
 }
