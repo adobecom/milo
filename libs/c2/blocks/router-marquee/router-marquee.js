@@ -104,6 +104,9 @@ const PROMO_PLACEHOLDER = 'promo-placeholder';
 const PROMO_SLIDE_CLASS = /^promo-placeholder-slide-(\d+)$/;
 
 const isPromoPending = (el) => !!el?.matches('.promo-placeholder:not(.promo-resolved)');
+const hasResolvedPromo = (el) => !!el?.querySelector(
+  'mas-field[data-promotion-project], mas-field [data-promotion-project]',
+);
 
 const markPromoSlides = (el, viewports) => {
   const indexes = [...el.classList]
@@ -115,6 +118,7 @@ const markPromoSlides = (el, viewports) => {
       if (!slides[i]) return;
       slides[i].classList.add(PROMO_PLACEHOLDER);
       slides[i].dataset.promoGroup = `rm-${viewport}-${i}`;
+      if (hasResolvedPromo(slides[i])) slides[i].classList.add('promo-resolved');
     });
   });
 };
@@ -393,6 +397,7 @@ const buildCards = (slides) => {
     if (promoGroup) {
       card.classList.add(PROMO_PLACEHOLDER);
       card.dataset.promoGroup = promoGroup;
+      if (slide.classList.contains('promo-resolved')) card.classList.add('promo-resolved');
     }
     cards.append(card);
   });

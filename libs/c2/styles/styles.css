@@ -1179,6 +1179,12 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
+/* Placeholder for a promotion: hidden until its mas-fields resolve with content
+   (see watchPromoPlaceholders in blocks/merch/merch.js). */
+.promo-placeholder:not(.promo-resolved) {
+  display: none;
+}
+
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }

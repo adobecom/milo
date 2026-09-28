@@ -484,6 +484,24 @@ describe('router-marquee promo placeholder slide', () => {
     expect(cards[0].getAttribute('aria-selected')).to.equal('true');
   });
 
+  it('starts on the first promo slide when it resolved before initialization', () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    const authoredPromoSlide = block.querySelectorAll(':scope > div')[1];
+    resolveField(authoredPromoSlide, { promo: true });
+
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slides[0].classList.contains('promo-resolved')).to.be.true;
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('promo-resolved')).to.be.true;
+      expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+    });
+  });
+
   it('restarts autoplay from the first slide after its promotion resolves', async () => {
     block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
     init(block);
