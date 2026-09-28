@@ -1,5 +1,18 @@
 # Commerce Settings
 
+## AUP Select modes
+
+The `aup-select` metadata (or the `?aup-select=` query parameter, which takes precedence) routes
+CTAs through the AUP SDK:
+
+| Value | Behavior |
+|---|---|
+| `ucv3_in_iframe` | AUP SDK with the current 3-in-1 modals (`tmp_aupsdk_ucv3_in_iframe` is added to `miniAppContext.features`) |
+| `on` | AUP SDK with the true Select experience (no `tmp_aupsdk_ucv3_in_iframe`) |
+| absent / other | AUP SDK routing disabled |
+
+`ucv3_in_iframe` is temporary until the full switch to the true Select experience.
+
 ## AUP Select environments
 
 `aup-select` uses the environment matching the current Milo environment by default (Stage on
