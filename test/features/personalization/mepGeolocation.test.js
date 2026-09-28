@@ -66,6 +66,13 @@ describe('mepGeolocation', () => {
     expect(document.querySelector('.how-to')).to.be.null;
   });
 
+  it('normalizes countryIP variant country codes', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'gb' });
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
+    await init({ ...mepSettings, akamaiCode: 'gb' });
+    expect(document.querySelector('.how-to')).to.be.null;
+  });
+
   it('country cookie overrides geo for countryIP', async () => {
     await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
     document.cookie = 'country=us';
@@ -118,5 +125,12 @@ describe('mepGeolocation', () => {
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init({ ...mepSettings, akamaiCode: 'us' });
     expect(document.querySelector('.how-to')).to.not.be.null;
+  });
+
+  it('normalizes country filter country codes', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'gb' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    await init({ ...mepSettings, akamaiCode: 'gb' });
+    expect(document.querySelector('.how-to')).to.be.null;
   });
 });

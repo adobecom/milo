@@ -7,7 +7,7 @@
       "action": "replace",
       "selector": ".how-to",
       "page filter (optional)": "",
-      "country filter (optional)": "de, jp",
+      "country filter (optional)": " DE, JP, UK ",
       "all": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion"
     }
   ],

@@ -811,13 +811,28 @@ export async function handleCommands(
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
-export const matchesCountryFilter = (countryFilter, config = getConfig()) => {
-  const countryList = countryFilter.split(',')
+const matchesCountryList = (countryValues, config, emptyMatches = false) => {
+  const countryList = countryValues.split(',')
     .map((country) => normCountryCode(country.trim()))
     .filter(Boolean);
-  if (!countryList.length) return true;
-  return countryList.includes(config.mep?.countryIP);
+  if (!countryList.length) return emptyMatches;
+  const countryIP = normCountryCode(config.mep?.countryIP);
+  return !!countryIP && countryList.includes(countryIP);
 };
+
+export const matchesCountryFilter = (countryFilter, config = getConfig()) => (
+  matchesCountryList(countryFilter, config, true)
+);
+
+const matchesCountryIP = (name, config) => {
+  const countryList = name.match(/countryip\(([^)]+)\)/)?.[1];
+  if (!countryList) return false;
+  return matchesCountryList(countryList, config);
+};
+
+function hasCountryMatch(str, config) {
+  return str.includes('countryip') && matchesCountryIP(str, config);
+}
 
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
   const config = getConfig();
@@ -940,21 +955,6 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-const matchesCountryIP = (name, config) => {
-  if (!name.includes('countryip')) return false;
-  const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
-  if (!countryList?.length) return false;
-  return countryList.includes(config.mep?.countryIP);
-};
-
-function hasCountryMatch(str, config) {
-  if (str.includes('countryip')) {
-    const modifiedStr = str.replace('uk', 'gb');
-    return matchesCountryIP(modifiedStr, config);
-  }
-  return false;
-}
-
 export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP } = config.mep || {};
