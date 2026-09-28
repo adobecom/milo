@@ -119,25 +119,43 @@ describe('Utils', () => {
       }
     });
 
-    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
-      it(`requires exact on for metadata "${value}"`, () => {
+    const modes = ['on', 'ucv3_in_iframe'];
+    const expectedMode = (value) => (modes.includes(value) ? value : null);
+
+    ['on', 'ucv3_in_iframe', 'off', '', 'ON', 'UCV3_IN_IFRAME', 'true'].forEach((value) => {
+      it(`requires an exact mode for metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
+        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
       });
 
       it(`reads query "${value}" with and without metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
-        meta.content = value === 'on' ? 'off' : 'on';
+        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
+        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
+        meta.content = value === 'on' ? 'ucv3_in_iframe' : 'on';
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
+        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+        expect(utils.getAupSelectMode()).to.equal(meta.content);
+        expect(utils.isAupEnabled()).to.be.true;
       });
+    });
+
+    it('does not report a mode for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectMode()).to.be.null;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
     });
   });
 
