@@ -70,6 +70,7 @@ const C1_BLOCKS = [
   'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
+  'mmm-2',
   'mnemonic-list',
   'mobile-app-banner',
   'modal',

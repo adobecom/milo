@@ -41,6 +41,24 @@ function categorize(urlListText, metadataRows) {
   return categories;
 }
 
+const POD_SKELETON_ITEM_COUNTS = [3, 5, 2, 4];
+
+// Mirrors the real .mmm2-metadata-pod card shape (heading + a few item rows).
+function MetadataPodsSkeleton() {
+  return html`
+    <div class="mmm2-metadata-results">
+      ${POD_SKELETON_ITEM_COUNTS.map((itemCount, i) => html`
+        <div class="mmm2-skeleton-pod" key=${i}>
+          <span class="mmm2-skeleton mmm2-skeleton-heading" style=${{ width: '55%' }}></span>
+          ${Array.from({ length: itemCount }).map((_, j) => html`
+            <span class="mmm2-skeleton mmm2-skeleton-text" key=${j} style=${{ width: `${80 - (j % 3) * 15}%` }}></span>
+          `)}
+        </div>
+      `)}
+    </div>
+  `;
+}
+
 function UrlPod({ title, list, onCopy }) {
   if (!list.length) return null;
   return html`
@@ -138,7 +156,7 @@ function MetadataLookupView() {
           onChange=${(v) => setState((prev) => ({ ...prev, urlListText: v }))}
         />
       </div>
-      ${loading ? html`<div class="mmm2-loading">Loading…</div>` : html`
+      ${loading ? html`<${MetadataPodsSkeleton} />` : html`
         <div class="mmm2-metadata-results">
           ${Object.keys(categories).map((key) => html`
             <${UrlPod}

@@ -12,8 +12,27 @@ import {
   TARGETSETTING_OPTIONS,
   MANIFESTSRC_OPTIONS,
   LOCAL_STORAGE_KEYS,
+  REFERENCE_PAGES,
+  fetchReferenceConfig,
   toFilterParam,
 } from '../utils.js';
+
+// Varied so the skeleton reads as organic placeholder text, not a robotic repeat.
+const PAGE_ROW_SKELETON_WIDTHS = ['55%', '70%', '40%', '62%', '48%', '35%'];
+
+function PageListSkeleton() {
+  return html`
+    ${PAGE_ROW_SKELETON_WIDTHS.map((width, i) => html`
+      <div class="mmm2-page-item" key=${i}>
+        <div class="mmm2-page-trigger">
+          <span class="mmm2-skeleton mmm2-skeleton-circle"></span>
+          <span class="mmm2-skeleton mmm2-skeleton-text mmm2-page-heading" style=${{ width }}></span>
+          <span class="mmm2-skeleton mmm2-skeleton-text" style=${{ width: '110px' }}></span>
+        </div>
+      </div>
+    `)}
+  `;
+}
 
 const DEFAULT_FILTERS = {
   pageNum: 1,
@@ -35,19 +54,25 @@ const optionsFromEnumKV = (obj) => Object.values(obj)
 
 /**
  * Today's "base" mmm variant: page search/filter tool. Config for the `pages` and
- * `geos` dropdowns is authored directly on this same page/block (parsed in mmm-2.js's
- * init() and passed in as `searchConfig`), matching the original mmm.js behavior for
- * this variant (no cross-page fetch needed here).
+ * `geos` dropdowns is authored on the original (pre-mmm-2) /mmm report page, not this
+ * one - fetched once client-side via the Franklin `.plain.html` convention (see
+ * fetchReferenceConfig in utils.js), same pattern InactivityReportView uses for its own
+ * geos dropdown, rather than requiring that content to be re-authored on /mmm-2.
  */
-function SearchView({ searchConfig }) {
+function SearchView() {
   const [filters, setFilters] = useLocalStorageState(
     LOCAL_STORAGE_KEYS.search,
     () => DEFAULT_FILTERS,
   );
   const [result, setResult] = useState({ result: [], totalRecords: 0 });
   const [loading, setLoading] = useState(false);
+  const [authoredConfig, setAuthoredConfig] = useState({});
 
-  const authoredConfig = searchConfig ?? {};
+  useEffect(() => {
+    fetchReferenceConfig(REFERENCE_PAGES.search, '.mmm')
+      .then(setAuthoredConfig)
+      .catch(() => setAuthoredConfig({}));
+  }, []);
 
   const setFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value, pageNum: 1 }));
@@ -134,7 +159,7 @@ function SearchView({ searchConfig }) {
       </div>
       <div class="mmm2-page-list">
         ${loading
-    ? html`<div class="mmm2-loading">Loading…</div>`
+    ? html`<${PageListSkeleton} />`
     : (result.result ?? []).map((page) => html`
           <${PageListItem}
             key=${page.pageId}

@@ -24,6 +24,24 @@ const DEFAULT_FILTERS = {
   order: 'asc',
 };
 
+const REPORT_ROW_SKELETON_WIDTHS = ['65%', '45%', '75%', '52%', '38%', '60%'];
+
+// Mirrors the real table row shape (checkbox + 4 columns) so nothing jumps once the
+// report resolves.
+function ReportRowsSkeleton() {
+  return html`
+    ${REPORT_ROW_SKELETON_WIDTHS.map((width, i) => html`
+      <tr class="mmm2-report-row" key=${i}>
+        <td><span class="mmm2-skeleton mmm2-skeleton-circle"></span></td>
+        <td><span class="mmm2-skeleton mmm2-skeleton-text" style=${{ width }}></span></td>
+        <td><span class="mmm2-skeleton mmm2-skeleton-text" style=${{ width: '50px' }}></span></td>
+        <td><span class="mmm2-skeleton mmm2-skeleton-text" style=${{ width: '90%' }}></span></td>
+        <td><span class="mmm2-skeleton mmm2-skeleton-text" style=${{ width: '80%' }}></span></td>
+      </tr>
+    `)}
+  `;
+}
+
 // Report only ever offers the 4 shortest windows (matches original mmm.js).
 const REPORT_LAST_SEEN_KEYS = ['day', 'week', 'month', 'threeMonths'];
 const reportLastSeenOptions = Object.entries(LAST_SEEN_OPTIONS)
@@ -31,13 +49,55 @@ const reportLastSeenOptions = Object.entries(LAST_SEEN_OPTIONS)
   .map(([, o]) => ({ value: o.key, label: o.value }));
 
 const HEADERS = [
-  { label: 'URL', orderBy: 'p.url' },
-  { label: 'Target', orderBy: 'p.target' },
-  { label: 'Last Seen from Target', orderBy: 'a.lastSeen' },
-  { label: 'Page Last Seen', orderBy: 'p.lastSeen' },
+  { label: 'URL', orderBy: 'p.url', colKey: 'url' },
+  { label: 'Target', orderBy: 'p.target', colKey: 'target' },
+  { label: 'Last Seen from Target', orderBy: 'a.lastSeen', colKey: 'lastSeen' },
+  { label: 'Page Last Seen', orderBy: 'p.lastSeen', colKey: 'pageLastSeen' },
 ];
 
+const MIN_COL_WIDTH = 20;
+
+const DEFAULT_COL_WIDTHS = {
+  select: 48,
+  url: 420,
+  target: 90,
+  lastSeen: 220,
+  pageLastSeen: 160,
+};
+
 const SORT_ARROW = html`<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="currentColor"/></svg>`;
+
+/**
+ * Drag handle on a column's right edge. Plain document-level pointermove/pointerup
+ * listeners (added on pointerdown, removed on pointerup) rather than pointer capture -
+ * simpler, and works uniformly for mouse/touch/pen via the Pointer Events API.
+ */
+function ColumnResizer({ colKey, width, onResize, resizing, setResizing }) {
+  const onPointerDown = (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = width;
+    setResizing(colKey);
+    const onMove = (moveEvent) => {
+      const next = Math.max(MIN_COL_WIDTH, startWidth + (moveEvent.clientX - startX));
+      onResize(colKey, next);
+    };
+    const onUp = () => {
+      setResizing(null);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  };
+
+  return html`
+    <span
+      class="mmm2-col-resizer ${resizing === colKey ? 'is-resizing' : ''}"
+      onPointerDown=${onPointerDown}
+    ></span>
+  `;
+}
 
 /**
  * Today's "target-cleanup" mmm variant: the Target-inactivity report. Its `geos`
@@ -55,6 +115,12 @@ function InactivityReportView() {
   const [geosConfig, setGeosConfig] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [copyState, setCopyState] = useState('idle'); // idle | error | success
+  const [colWidths, setColWidths] = useState(DEFAULT_COL_WIDTHS);
+  const [resizingCol, setResizingCol] = useState(null);
+
+  const resizeCol = (colKey, width) => {
+    setColWidths((prev) => ({ ...prev, [colKey]: width }));
+  };
 
   useEffect(() => {
     fetchReferenceConfig(REFERENCE_PAGES.inactivity, '.mmm.target-cleanup')
@@ -156,29 +222,53 @@ function InactivityReportView() {
         />
       </div>
       <div class="mmm2-report">
-        <div class="mmm2-report-header">
-          <div class="mmm2-report-select-all">
-            <input type="checkbox" id="mmm2-report-select-all" checked=${allSelected} onChange=${toggleAll} />
-            <label for="mmm2-report-select-all">Select All</label>
-          </div>
-          ${HEADERS.map((header) => html`
-            <div key=${header.orderBy} class="mmm2-report-sortable" onClick=${() => sortBy(header.orderBy)}>
-              ${header.label}
-              ${filters.orderBy === header.orderBy ? html`<span class="mmm2-sort-arrow mmm2-sort-${filters.order}">${SORT_ARROW}</span>` : null}
-            </div>
-          `)}
-        </div>
-        <div class="mmm2-report-body">
-          ${loading ? html`<div class="mmm2-loading">Loading…</div>` : rows.map((item) => html`
-            <div class="mmm2-report-row" key=${item.pageId}>
-              <div><input type="checkbox" checked=${selected.has(item.url)} onChange=${() => toggleRow(item.url)} /></div>
-              <div><a href="${item.url}?mep" target="_blank" rel="noopener">${item.url}</a></div>
-              <div>${item.target}</div>
-              <div>${getDate(item.aLastSeen)}<br/><a class="mmm2-small" target="_blank" rel="noopener" href=${getAbsUrl(item.manifestUrl, item.url)}>${item.targetActivityName}</a></div>
-              <div>${getDate(item.pLastSeen)}</div>
-            </div>
-          `)}
-        </div>
+        <table class="mmm2-report-table">
+          <colgroup>
+            <col style=${{ width: `${colWidths.select}px` }} />
+            ${HEADERS.map((header) => html`<col key=${header.colKey} style=${{ width: `${colWidths[header.colKey]}px` }} />`)}
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="mmm2-report-select-all">
+                <input type="checkbox" id="mmm2-report-select-all" checked=${allSelected} onChange=${toggleAll} />
+                <label for="mmm2-report-select-all">Select All</label>
+                <${ColumnResizer}
+                  colKey="select"
+                  width=${colWidths.select}
+                  onResize=${resizeCol}
+                  resizing=${resizingCol}
+                  setResizing=${setResizingCol}
+                />
+              </th>
+              ${HEADERS.map((header) => html`
+                <th key=${header.colKey}>
+                  <div class="mmm2-report-sortable" onClick=${() => sortBy(header.orderBy)}>
+                    ${header.label}
+                    ${filters.orderBy === header.orderBy ? html`<span class="mmm2-sort-arrow mmm2-sort-${filters.order}">${SORT_ARROW}</span>` : null}
+                  </div>
+                  <${ColumnResizer}
+                    colKey=${header.colKey}
+                    width=${colWidths[header.colKey]}
+                    onResize=${resizeCol}
+                    resizing=${resizingCol}
+                    setResizing=${setResizingCol}
+                  />
+                </th>
+              `)}
+            </tr>
+          </thead>
+          <tbody>
+            ${loading ? html`<${ReportRowsSkeleton} />` : rows.map((item) => html`
+              <tr class="mmm2-report-row" key=${item.pageId}>
+                <td><input type="checkbox" checked=${selected.has(item.url)} onChange=${() => toggleRow(item.url)} /></td>
+                <td><a class="mmm2-primary-link" href="${item.url}?mep" target="_blank" rel="noopener">${item.url}</a></td>
+                <td>${item.target}</td>
+                <td>${getDate(item.aLastSeen)}<br/><a class="mmm2-small" target="_blank" rel="noopener" href=${getAbsUrl(item.manifestUrl, item.url)}>${item.targetActivityName}</a></td>
+                <td>${getDate(item.pLastSeen)}</td>
+              </tr>
+            `)}
+          </tbody>
+        </table>
       </div>
       <${Pagination}
         pageNum=${filters.pageNum}

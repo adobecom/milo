@@ -66,7 +66,13 @@ export const METADATA_URLS_CATEGORIES = {
 
 // Reference pages whose authored config tables (e.g. the geos list) this SPA reads via
 // a cross-page fetch, instead of duplicating that content on the /mmm-2 page itself.
-export const REFERENCE_PAGES = { inactivity: '/docs/authoring/features/mmm/mep-target-inactivity' };
+export const REFERENCE_PAGES = {
+  inactivity: '/docs/authoring/features/mmm/mep-target-inactivity',
+  // The original (pre-mmm-2) report page - source of the Search tab's geos/pages config.
+  // Must be `/mmm/index`, not bare `/mmm` - the bare path's `.plain.html` is a "this page
+  // has been moved" redirect stub, not the real block content (verified directly).
+  search: '/docs/authoring/features/mmm/index',
+};
 
 export function debounce(func, delay = DEBOUNCE_TIME) {
   let timeout;

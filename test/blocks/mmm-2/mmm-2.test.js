@@ -22,6 +22,19 @@ const FAKE_INACTIVITY_PLAIN_HTML = `
   </body>
 `;
 
+// The original (pre-mmm-2) /mmm report page - source of the Search tab's pages/geos
+// dropdown config, fetched cross-page (see REFERENCE_PAGES.search in mmm-2/utils.js).
+const FAKE_SEARCH_PLAIN_HTML = `
+  <body>
+    <div class="mmm">
+      <div><div>Menu: geos</div><div>Regions/Top Geos</div></div>
+      <div><div>us,ca</div><div>NA all geos: US, CA</div></div>
+      <div><div>Menu: pages</div><div>Top Pages</div></div>
+      <div><div>/</div><div>Homepage</div></div>
+    </div>
+  </body>
+`;
+
 function jsonResponse(data) {
   return { ok: true, json: () => Promise.resolve(data) };
 }
@@ -60,7 +73,10 @@ describe('mmm-2', () => {
   });
 
   it('renders the search view by default with the authored pages/geos dropdowns', async () => {
-    setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
+    setRoutedFetch({
+      '/get-pages': jsonResponse(getPagesData),
+      'mmm/index.plain.html': textResponse(FAKE_SEARCH_PLAIN_HTML),
+    });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
     await delay();
@@ -81,6 +97,7 @@ describe('mmm-2', () => {
     setRoutedFetch({
       '/get-pages': jsonResponse(getPagesData),
       '/get-page': jsonResponse(getPageData),
+      'mmm/index.plain.html': textResponse(FAKE_SEARCH_PLAIN_HTML),
     });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
@@ -94,11 +111,36 @@ describe('mmm-2', () => {
     expect(document.querySelector('.mmm2-page-detail .mep-popup')).to.exist;
   });
 
+  it('can be re-expanded after collapsing (regression: content must reappear)', async () => {
+    setRoutedFetch({
+      '/get-pages': jsonResponse(getPagesData),
+      '/get-page': jsonResponse(getPageData),
+      'mmm/index.plain.html': textResponse(FAKE_SEARCH_PLAIN_HTML),
+    });
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
+    await delay();
+
+    const trigger = document.querySelector('.mmm2-page-trigger');
+    trigger.click(); // expand
+    await delay();
+    expect(document.querySelector('.mmm2-page-detail .mep-popup')).to.exist;
+
+    trigger.click(); // collapse
+    await delay();
+    expect(document.querySelector('.mmm2-page-detail')).to.not.exist;
+
+    trigger.click(); // re-expand
+    await delay();
+    expect(document.querySelector('.mmm2-page-detail .mep-popup')).to.exist;
+  });
+
   it('switches tabs, updates the URL, and loads the inactivity report via the cross-page geos fetch', async () => {
     window.history.pushState({}, '', window.location.pathname);
     setRoutedFetch({
       '/get-pages': jsonResponse(getPagesData),
-      '.plain.html': textResponse(FAKE_INACTIVITY_PLAIN_HTML),
+      'mmm/index.plain.html': textResponse(FAKE_SEARCH_PLAIN_HTML),
+      '/mep-target-inactivity.plain.html': textResponse(FAKE_INACTIVITY_PLAIN_HTML),
       '/get-report': jsonResponse(getReportData),
     });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');

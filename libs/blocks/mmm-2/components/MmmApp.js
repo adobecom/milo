@@ -19,7 +19,7 @@ function setTabInUrl(tab) {
   window.history.pushState({ mmm2Tab: tab }, '', url);
 }
 
-function MmmApp({ searchConfig }) {
+function MmmApp() {
   const [activeTab, setActiveTab] = useState(getTabFromUrl);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ function MmmApp({ searchConfig }) {
         aria-labelledby="mmm2-tab-${activeTab}"
         class="mmm2-tabpanel"
       >
-        ${activeTab === 'search' && html`<${SearchView} searchConfig=${searchConfig} />`}
+        ${activeTab === 'search' && html`<${SearchView} />`}
         ${activeTab === 'inactivity' && html`<${InactivityReportView} />`}
         ${activeTab === 'metadata-lookup' && html`<${MetadataLookupView} />`}
       </div>
