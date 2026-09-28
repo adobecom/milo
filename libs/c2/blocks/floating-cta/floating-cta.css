@@ -58,23 +58,27 @@
     pointer-events: none;
     position: relative;
     transform: translateY(var(--cta-ty));
-    transition: transform 0.36s cubic-bezier(0.32, 0, 0.67, 0);
     transform-origin: center center;
     backdrop-filter: blur(27px);
     -webkit-backdrop-filter: blur(27px);
     will-change: transform;
     white-space: nowrap;
 
-    &.active {
-      --cta-ty: 0px;
-
-      transition-duration: 0.42s;
-      transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-    }
-
     &.active .floating-cta-actions,
     &.active .floating-cta-actions * {
       pointer-events: auto;
+    }
+
+    &.active:is(a.promo-cta) {
+      pointer-events: auto;
+
+      &:hover,
+      &:focus-visible,
+      &:active {
+        .floating-cta-background {
+          background: var(--s2a-color-transparent-black-64);
+        }
+      }
     }
 
     &:focus-visible {
@@ -178,7 +182,7 @@
         var(--s2a-spacing-md) var(--s2a-spacing-xl);
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-      transition: transform 0.45s var(--ease-exit) 0.6s;
+      transition: transform 0.62s var(--ease-exit) 0.285s;
 
       .floating-cta-content {
         block-size: 100%;
@@ -243,9 +247,9 @@
         -webkit-backdrop-filter: blur(27px);
         z-index: 1;
         transition:
-          block-size 0.4s var(--ease-exit) 0.2s,
+          scale 0.4s var(--ease-exit) 0.2s,
           inline-size 0.4s var(--ease-exit) 0.2s,
-          scale 0.4s var(--ease-exit) 0.2s;
+          block-size 0.4s var(--ease-exit) 0.2s;
         &::before {
           background: var(--s2a-color-transparent-black-48);
           border-radius: inherit;
@@ -270,16 +274,35 @@
           opacity: 1;
           scale: 1;
           transition:
-            opacity 0.3s var(--spring-settle-fallback) 1.45s,
-            scale 0.3s var(--spring-settle-fallback) 1.45s;
+            opacity 0.3s var(--spring-settle-fallback) 0.5s,
+            scale 0.3s var(--spring-settle-fallback) 0.5s;
           transition:
-            opacity 0.3s var(--spring-settle) 1.45s,
-            scale 0.3s var(--spring-settle) 1.45s;
+            opacity 0.3s var(--spring-settle) 0.5s,
+            scale 0.3s var(--spring-settle) 0.5s;
         }
 
         .floating-cta-actions {
           opacity: 1;
-          transition: opacity 0.3s var(--ease-exit) 1.45s;
+          transition: opacity 0.3s var(--ease-exit) 0.5s;
+        }
+
+        .floating-cta-intro {
+          inline-size: 72px;
+          block-size: 72px;
+          scale: 0.8;
+          opacity: 0;
+
+          transition:
+            scale 0.7s var(--spring-intro-fallback) 0.02s,
+            inline-size 0.7s var(--spring-intro-fallback) 0.05s,
+            block-size 0.7s var(--spring-action-fallback) 0.15s,
+            opacity 0.18s var(--ease-exit) 0.43s;
+
+          transition:
+            scale 0.7s var(--spring-intro) 0.02s,
+            inline-size 0.7s var(--spring-intro) 0.05s,
+            block-size 0.7s var(--spring-action) 0.15s,
+            opacity 0.18s var(--ease-exit) 0.43s;
         }
 
         .floating-cta-background {
@@ -287,18 +310,17 @@
           inline-size: var(--cta-full-width);
           scale: 1;
           transition:
-            scale 0.7s var(--spring-snap-fallback) 0.7s,
-            inline-size 0.7s var(--spring-settle-fallback) 0.7s,
-            block-size 0.7s var(--spring-action-fallback) 0.7s;
+            scale 0.7s var(--spring-snap-fallback) 0.3s,
+            inline-size 0.7s var(--spring-settle-fallback) 0.4s,
+            block-size 0.7s var(--spring-action-fallback) 0.6s;
           transition:
-            scale 0.7s var(--spring-snap) 0.7s,
-            inline-size 0.7s var(--spring-settle) 0.7s,
-            block-size 0.7s var(--spring-action) 0.7s;
+            scale 0.7s var(--spring-snap) 0.3s,
+            inline-size 0.7s var(--spring-settle) 0.4s,
+            block-size 0.7s var(--spring-action) 0.6s;
 
           &::before {
             opacity: 1;
-            transition: opacity 0.18s var(--ease-exit) 0.62s;
-            transition: opacity 0.18s var(--ease-exit) 0.62s;
+            transition: opacity 0.18s var(--ease-exit) 0.43s;
           }
         }
       }
@@ -310,21 +332,6 @@
           background: var(--s2a-color-transparent-black-64);
         }
       }
-    }
-  }
-
-  @keyframes floating-cta-intro-flash {
-    0%,
-    26% {
-      opacity: 0;
-    }
-    30%,
-    44% {
-      opacity: 1;
-    }
-    52%,
-    100% {
-      opacity: 0;
     }
   }
 }
