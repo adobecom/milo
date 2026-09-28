@@ -169,8 +169,11 @@
           translate 0.2s var(--spring-out);
       }
 
-      &.measuring {
+      &.measuring,
+      &.measuring.active,
+      &.measuring.disable-animation {
         transition: none;
+        animation: none;
         visibility: hidden;
         inline-size: max-content;
       }

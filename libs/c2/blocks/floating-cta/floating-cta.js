@@ -2,7 +2,7 @@ import { createTag, getFederatedUrl, MILO_EVENTS } from '../../../utils/utils.js
 import { decorateButtons } from '../../../utils/decorate.js';
 import icons from '../../assets/icons.js';
 
-const mobileQuery = window.matchMedia('(width < 767px)');
+const mobileQuery = window.matchMedia('(width < 768px)');
 
 function waitForCheckoutLink(linkPara, timeoutMs = 10000) {
   const existing = linkPara.querySelector('a');
@@ -43,7 +43,7 @@ function decorateCta(container, lockupItems, action) {
     container.classList.remove('measuring');
   };
   requestAnimationFrame(() => measure());
-  mobileQuery.addEventListener('change', measure, { once: true });
+  mobileQuery.addEventListener('change', measure);
 }
 
 function moveFloatingSection(el) {
@@ -93,14 +93,17 @@ function revealCta(ctaEl) {
   });
   anchor?.addEventListener('blur', update);
 
-  if (hideTrigger.matches('merch-card')) return;
+  if (hideTrigger?.matches('merch-card')) return;
 
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    const merchCards = document.querySelector('merch-card');
-    if (!merchCards) return;
-    revealObserver.unobserve(hideTrigger);
-    revealObserver.observe(merchCards);
-  });
+  const retargetOutro = () => {
+    const merchCard = document.querySelector('merch-card');
+    if (!merchCard) return;
+    if (hideTrigger) revealObserver.unobserve(hideTrigger);
+    revealObserver.observe(merchCard);
+  };
+
+  document.addEventListener(MILO_EVENTS.DEFERRED, retargetOutro);
+  window.milo?.deferredPromise?.then(retargetOutro);
 }
 
 export default async function init(el) {
