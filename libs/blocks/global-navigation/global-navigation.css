@@ -94,11 +94,11 @@ header.global-navigation {
   display: none;
 }
 
-.aside.promobar .foreground.container > :first-child {
+.global-navigation .aside.promobar .foreground.container > :first-child {
   align-items: center;
 }
 
-.aside.promobar .action-area .con-button {
+.global-navigation .aside.promobar .action-area .con-button {
   height:fit-content;
 }
 
