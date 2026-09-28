@@ -95,11 +95,15 @@ function revealCta(ctaEl) {
 
   if (hideTrigger?.matches('merch-card')) return;
 
+  let retargeted = false;
   const retargetOutro = () => {
-    const merchCard = document.querySelector('merch-card');
-    if (!merchCard) return;
+    if (retargeted) return;
+    const merchSection = document.querySelector('merch-card')?.closest('.section');
+    if (!merchSection) return;
+    retargeted = true;
+    moveFloatingSection(ctaEl);
     if (hideTrigger) revealObserver.unobserve(hideTrigger);
-    revealObserver.observe(merchCard);
+    revealObserver.observe(merchSection);
   };
 
   document.addEventListener(MILO_EVENTS.DEFERRED, retargetOutro);
