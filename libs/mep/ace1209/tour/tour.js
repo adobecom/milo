@@ -139,7 +139,6 @@ export default function init(el) {
       headerRow.replaceChildren(...headerInner.children);
       const eyebrow = headerRow.querySelector('p');
       eyebrow?.classList.add('eyebrow');
-      eyebrow?.setAttribute('tabindex', '-1');
       headerRow.querySelector('h3')?.classList.add('heading-6');
     }
   }
@@ -189,6 +188,15 @@ export default function init(el) {
   addOutsideClickClose(el);
   el.closest('.fragment')?.setAttribute('tabindex', '-1'); // prevent Firefox scroll-focus
   window.addEventListener('milo:modal:loaded', () => {
-    el.querySelector('.tour-header .eyebrow')?.focus();
+    const dialog = el.closest('.dialog-modal');
+    if (!dialog) return;
+    const labelIds = [
+      el.querySelector('.tour-header .eyebrow'),
+      el.querySelector('.tour-header h3'),
+    ].filter(Boolean).map((node, index) => {
+      if (!node.id) node.id = `${dialog.id || 'tour'}-label-${index}`;
+      return node.id;
+    });
+    if (labelIds.length) dialog.setAttribute('aria-labelledby', labelIds.join(' '));
   }, { once: true });
 }

@@ -230,7 +230,10 @@ export function decorateBackground(el, background) {
   }
 }
 
-export function decorateMarqueeBackground(el, background) {
+export function decorateMarqueeBackground(el, background, customGradient) {
+  if (customGradient) {
+    el.style.setProperty('--bc-marquee-gradient', customGradient);
+  }
   const pictures = [...background.querySelectorAll('picture')];
   if (!pictures.length) {
     decorateBackground(el, background);
@@ -320,9 +323,10 @@ export function decorateCards(
 }
 
 export function decorateInput(el, input, inputEvents, iconPrefix = '') {
+  const inputId = `bc-input-field-${Math.random().toString(36).substring(2, 9)}`;
   const fieldSection = createTag('section', { class: 'bc-input-field' });
   const fieldLabel = createTag('label', {
-    for: 'bc-input-field',
+    for: inputId,
     class: 'bc-input-field-label',
     'aria-describedby': 'bc-label-tooltip',
     tabindex: 0,
@@ -332,7 +336,7 @@ export function decorateInput(el, input, inputEvents, iconPrefix = '') {
   fieldLabel.append(fieldLabelToolTip);
 
   const fieldInput = createTag('textarea', {
-    id: 'bc-input-field',
+    id: inputId,
     rows: 1,
     placeholder: input.textContent.trim(),
   });

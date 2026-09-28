@@ -744,10 +744,11 @@
   interacts_with: [offer-price, softwareapplication-offer-provenance]
   notes: >
     Each Offer MAY include a potentialAction property to express usage
-    actions, e.g. BuyAction, TryAction. When offers are absent, the manager
-    leaves them absent rather than inventing commercial data.
+    actions, e.g. BuyAction, TryAction. When offers are absent or empty, the
+    manager emits the serialized fallback defined by
+    softwareapplication-offer-provenance.
   status: active
-  last_updated: "2026-07-23"
+  last_updated: "2026-09-16"
 
 - name: softwareapplication-rating-or-review
   section: "Type-specific: SoftwareApplication"
@@ -786,16 +787,19 @@
 - name: offer-price
   section: "Type-specific: Offer"
   severity: error
-  requirement: An Offer node MUST have price and priceCurrency properties.
+  requirement: >
+    An Offer node referenced by SoftwareApplication.offers MUST have a price
+    property. When price is greater than zero, it SHOULD also have a
+    priceCurrency property.
   applies_to: [Offer]
   implements: []
   tested_by: []
   interacts_with: [softwareapplication-offers, softwareapplication-offer-provenance]
   notes: >
-    Required for the Google Software App rich result. Evaluated for any
-    Offer node referenced by SoftwareApplication.offers. Not validated at
-    runtime in v1; producer-supplied Offers without these fields ship
-    through unchecked.
+    Price is required for the Google Software App rich result. Google
+    recommends priceCurrency only when price is greater than zero. Not
+    validated at runtime in v1; producer-supplied Offers without these fields
+    ship through unchecked.
   status: unimplemented
   last_updated: "2026-05-29"
 
@@ -803,21 +807,30 @@
   section: "Type-specific: Offer"
   severity: error
   requirement: >
-    The graph manager MUST NOT synthesize Offer price, currency, availability,
-    category, or trial terms. Every Offer MUST originate from producer data.
-    When no producer supplies an Offer, SoftwareApplication.offers remains
-    absent or empty.
+    The manager MUST serialize an Offer for a SoftwareApplication,
+    WebApplication, MobileApplication, or VideoGame whose offers property is
+    missing or an empty array. This applies to SoftwareApplication nodes
+    transformed from Product. The generated Offer MUST have @id
+    {canonicalPageURL}#offer, price "0", and availability
+    "https://schema.org/InStock"; the application MUST reference it as offers:
+    [{"@id":"{canonicalPageURL}#offer"}].
+    Applications with authored Offer references MUST remain unchanged. The
+    manager MUST NOT generate an Offer when no supported application exists
+    or infer an application relationship from a standalone Offer. If an
+    unrelated node already uses the reserved fallback @id, the manager MUST
+    preserve it and its references under a distinct serialized @id while
+    reserving {canonicalPageURL}#offer for the generated fallback.
   applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [JsonLdGraphManager.rewrite]
+  implements: [JsonLdGraphManager.rewrite, withDefaultOffer]
   tested_by: [manager.test.js]
   interacts_with: [softwareapplication-offers, offer-price]
   notes: >
-    Commercial facts are owned by product and commerce producers, which can
-    supply market-appropriate pricing and terms. Missing data may prevent a
-    Software App rich result, but is preferable to publishing an unsupported
-    claim.
+    The generated fallback is derived serialized output only and MUST NOT be
+    persisted in the manager graph or source maps. A later runtime
+    producer-authored Offer therefore replaces the fallback on the next
+    rebuild rather than coexisting with it.
   status: active
-  last_updated: "2026-07-23"
+  last_updated: "2026-09-16"
 
 - name: aggregaterating-min-rating-value
   section: "Type-specific: AggregateRating"

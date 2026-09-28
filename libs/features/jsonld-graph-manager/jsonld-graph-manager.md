@@ -288,7 +288,18 @@ In addition to identity rewrite and merge, the manager applies a small set of ty
 
 This transform is governed by the `product-to-softwareapplication` requirement.
 
-**Offer provenance.** The manager hoists, normalizes, and relates Offers supplied by producers, but it never creates price, currency, availability, category, or trial terms. When no authoritative producer supplies an Offer, the application remains without one. This may make the page ineligible for a Software App rich result, but avoids publishing unsupported commercial claims. Governed by `softwareapplication-offer-provenance`.
+**Offer fallback.** The manager hoists, normalizes, and relates Offers supplied by producers. When a `SoftwareApplication` or supported subtype has missing `offers` or an empty array, the manager adds this exact fallback to serialized output:
+
+```json
+{
+  "@type": "Offer",
+  "@id": "{canonicalPageURL}#offer",
+  "price": "0",
+  "availability": "https://schema.org/InStock"
+}
+```
+
+The serialized application references it as `"offers": [{ "@id": "{canonicalPageURL}#offer" }]`. This applies after normalization, so an offer-less producer `Product` is first transformed to `SoftwareApplication` and then receives the fallback. Existing application Offer references are preserved without modification, no fallback is created when the graph has no `SoftwareApplication` or supported subtype, and standalone Offers are never inferred as belonging to an application. If an unrelated node already uses the reserved fallback `#offer` ID, its serialized copy and existing references are moved to a distinct `#offer-authored` ID so both entities remain in the output without attaching the unrelated Offer to the application. The fallback is derived serialized output only: it is not stored in the manager's graph or source maps, so a later runtime producer-authored Offer replaces the fallback on the next rebuild rather than coexisting with stale generated commercial data. Governed by `softwareapplication-offer-provenance`.
 
 **SoftwareApplication subtype preservation.** Schema.org defines `WebApplication`, `MobileApplication`, and `VideoGame` as subtypes of `SoftwareApplication`, and Google's Software App rich result explicitly supports them. When a producer supplies one of these subtypes (e.g., team-hardcoded `WebApplication` markup), the manager preserves the more specific `@type`, lands the node at the canonical `#softwareapplication` `@id`, and merges contributions from other producers (e.g., the review block emitting `Product` → `SoftwareApplication`) at the same id. The baseline `Product → SoftwareApplication` transform does NOT rewrite a producer-supplied subtype down to plain `SoftwareApplication`. Governed by `softwareapplication-subtype-allowed`.
 
@@ -400,7 +411,7 @@ Coverage strategy: Google rich-result eligibility is consumer #1. Other consumer
 | `HowTo` | `name`, `step[]` of `HowToStep` | Rich result deprecated by Google in 2023; markup still ingested for general understanding. |
 | `FAQPage` | `mainEntity[]` of `Question` with `acceptedAnswer.Answer.text` | Rich result restricted to authoritative government/health sites since 2023; otherwise still consumed by Search/LLMs. |
 | `VideoObject` | `name`, `thumbnailUrl`, `uploadDate` (`description`, `contentUrl`, `embedUrl`, `duration`) | |
-| `Offer` | `price`, `priceCurrency` (when referenced from `SoftwareApplication`) | |
+| `Offer` | `price` (`priceCurrency` when `price` is greater than zero) | |
 | `AggregateRating` | `ratingValue`, `ratingCount` (or `reviewCount`) | Required by the Software App, Product, Course, and Review-snippet rich results when present on the host entity. |
 | `Event` | `name`, `startDate`, `location` (`description`, `endDate`, `image`, `offers`) | Passed through; not a primary page type. |
 | `WebSite` | `potentialAction` `SearchAction` with `target` + `query-input` | Sitelinks search box; emitted only when explicitly authored. |

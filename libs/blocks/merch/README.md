@@ -1,5 +1,16 @@
 # Commerce Settings
 
+## AUP Select environments
+
+`aup-select` uses the environment matching the current Milo environment by default (Stage on
+non-production hosts, production on production). The AUP SDK bundle loads from the matching CDN.
+
+Use the following query parameters for targeted validation:
+
+* `?commerce.env=prod` uses Commerce production only in non-production Milo environments.
+  The value is case-insensitive; production ignores this override.
+* `?commerce.landscape=DRAFT` combined with `?commerce.env=prod` uses draft offers from Commerce production.
+
 ## WCS Locale
 To check which locale was used to render the price/CTA:
 * In the network tab search for a 'wcs' request, e.g.

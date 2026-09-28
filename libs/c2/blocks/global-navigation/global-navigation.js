@@ -180,6 +180,10 @@ export default async function init(el) {
       handleCommands: personalizationHandler,
       resolveFragmentHref,
     },
+    merchDecorators: {
+      merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
+      masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
+    },
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
