@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
-import { init } from '../../../libs/features/personalization/personalization.js';
+import { init, matchesCountryFilter } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepGeolocationSettings.js';
 
 const setFetchResponse = async (manifestPath) => {
@@ -132,5 +132,12 @@ describe('mepGeolocation', () => {
     await setFetchResponse('./mocks/manifestCountryFilter.json');
     await init({ ...mepSettings, akamaiCode: 'gb' });
     expect(document.querySelector('.how-to')).to.be.null;
+  });
+
+  it('leaves blank country filters unrestricted and rejects empty country lists', () => {
+    const testConfig = { mep: { countryIP: 'de' } };
+    expect(matchesCountryFilter('', testConfig)).to.be.true;
+    expect(matchesCountryFilter('   ', testConfig)).to.be.true;
+    expect(matchesCountryFilter(' , , ', testConfig)).to.be.false;
   });
 });

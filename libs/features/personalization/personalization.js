@@ -811,23 +811,30 @@ export async function handleCommands(
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
-const matchesCountryList = (countryValues, config, emptyMatches = false) => {
-  const countryList = countryValues.split(',')
-    .map((country) => normCountryCode(country.trim()))
-    .filter(Boolean);
-  if (!countryList.length) return emptyMatches;
+const getCountryList = (countryValues) => countryValues.split(',')
+  .map((country) => normCountryCode(country.trim()))
+  .filter(Boolean);
+
+const matchesCountryList = (countryList, config) => {
+  if (!countryList.length) return false;
   const countryIP = normCountryCode(config.mep?.countryIP);
   return !!countryIP && countryList.includes(countryIP);
 };
 
-export const matchesCountryFilter = (countryFilter, config = getConfig()) => (
-  matchesCountryList(countryFilter, config, true)
-);
+export const matchesCountryFilter = (countryFilter, config = getConfig()) => {
+  if (!countryFilter.trim()) return true;
+  const countryList = getCountryList(countryFilter);
+  if (!countryList.length) {
+    log('Country filter contains no country codes:', countryFilter);
+    return false;
+  }
+  return matchesCountryList(countryList, config);
+};
 
 const matchesCountryIP = (name, config) => {
-  const countryList = name.match(/countryip\(([^)]+)\)/)?.[1];
-  if (!countryList) return false;
-  return matchesCountryList(countryList, config);
+  const countryValues = name.match(/countryip\(([^)]+)\)/)?.[1];
+  if (!countryValues) return false;
+  return matchesCountryList(getCountryList(countryValues), config);
 };
 
 function hasCountryMatch(str, config) {
