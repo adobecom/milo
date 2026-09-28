@@ -81,7 +81,7 @@ function revealCta(ctaEl) {
       });
       update();
     },
-    { threshold: 0 },
+    { threshold: 0, rootMargin: '-25% 0px 25% 0px' },
   );
   [revealTrigger, hideTrigger].filter(Boolean).forEach((trigger) => {
     revealObserver.observe(trigger);
