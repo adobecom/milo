@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
@@ -602,7 +602,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: 'Hello acom' }));
 
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
     expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
@@ -629,7 +629,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     const cardText = button.querySelector('.prompt-card-text').textContent.trim();
     button.click();
 
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: cardText }));
 
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
     expect(sendUserMessageSpy.calledWith({ label: cardText })).to.be.true;

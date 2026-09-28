@@ -20,6 +20,8 @@ let isReady = false;
 let initSettledPromise = null;
 let readyPromise = null;
 let pendingIdentity = null;
+let pendingReinitializeConfig = {};
+let reinitializePromise = null;
 const pendingMessages = [];
 
 /**
@@ -114,6 +116,18 @@ function flushPendingMessages(client) {
   pendingMessages.splice(0).forEach((payload) => client.sendUserMessage(payload));
 }
 
+function scheduleReinitialize(client, config) {
+  pendingReinitializeConfig = mergeAcomConfig(pendingReinitializeConfig, config);
+  if (reinitializePromise) return;
+
+  reinitializePromise = initSettledPromise.then(() => {
+    const reinitializeConfig = pendingReinitializeConfig;
+    pendingReinitializeConfig = {};
+    reinitializePromise = null;
+    return client.reinitialize(reinitializeConfig);
+  });
+}
+
 /**
  * Idempotently loads and initializes the AcomAssistant Client, merging in
  * partialConfig (appid/context/callbacks, etc). The first caller wins the race
@@ -131,7 +145,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
     if (client && (partialConfig.context || partialConfig.appid || partialConfig.accessToken)) {
       // Deferred: calling reinitialize() while the first initialize() is still mid-flight
       // is blocked/dropped server-side ({ status: 'blocked', type: 'init_in_progress' }).
-      initSettledPromise.then(() => client.reinitialize(partialConfig));
+      scheduleReinitialize(client, partialConfig);
     }
     return client;
   }

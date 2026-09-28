@@ -15,10 +15,10 @@ import {
   sideOverlayTop,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
-import { ensureAcomAssistant } from '../brand-concierge/acom-assistant-bootstrap.js';
 
 let stayActive = false;
 let useAcomAssistant = false;
+let acomAssistantModulePromise;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -79,7 +79,8 @@ function decorateAcomGnav(cards, topNav) {
   // itself on this path.
   const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
   bcWrapper.appendChild(mount);
-  ensureAcomAssistant(cards);
+  acomAssistantModulePromise ||= import('../brand-concierge/acom-assistant-bootstrap.js');
+  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards));
 
   if (window?.milo) {
     window.milo.brandConcierge = { brandConciergeGlobal: true };
@@ -159,6 +160,23 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
+function decorateWhenNavIsReady(cards, input, el) {
+  const selector = 'header.global-navigation nav.feds-topnav';
+  const topNav = document.querySelector(selector);
+  if (topNav) {
+    decorateGnav(cards, input, topNav, el);
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    const addedTopNav = document.querySelector(selector);
+    if (!addedTopNav) return;
+    observer.disconnect();
+    decorateGnav(cards, input, addedTopNav, el);
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 export default function init(el) {
   const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
   useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
@@ -186,13 +204,7 @@ export default function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
-  const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
-    if (topNav) {
-      clearInterval(navCheck);
-      decorateGnav(cards, input, topNav, el);
-    }
-  }, 100);
+  decorateWhenNavIsReady(cards, input, el);
 
   rows.forEach((row) => {
     el.removeChild(row);

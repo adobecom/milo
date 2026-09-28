@@ -125,10 +125,15 @@ describe('AcomAssistant shared client defers reinitialize until init settles', (
 
     const first = freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
     const second = freshLoad({ appid: 'surface-two' }, { loadScript, loadStyle });
-    await Promise.all([first, second]);
+    const third = freshLoad({
+      appid: 'surface-three',
+      context: { userData: { source: 'footer' } },
+    }, { loadScript, loadStyle });
+    await Promise.all([first, second, third]);
 
     // initCallback hasn't fired yet -- init is still "in progress" per the client's own
     // docs, and reinitialize() during that window is blocked/dropped server-side.
+    expect(window.AdobeMessagingExperienceClient.initialize.calledOnce).to.be.true;
     expect(window.AdobeMessagingExperienceClient.reinitialize.called).to.be.false;
 
     capturedInitCallback({ releaseControl: { showAdobeMessaging: true } });
@@ -136,7 +141,8 @@ describe('AcomAssistant shared client defers reinitialize until init settles', (
 
     expect(window.AdobeMessagingExperienceClient.reinitialize.calledOnce).to.be.true;
     const reinitArgs = window.AdobeMessagingExperienceClient.reinitialize.getCall(0).args[0];
-    expect(reinitArgs.appid === 'surface-two').to.be.true;
+    expect(reinitArgs.appid === 'surface-three').to.be.true;
+    expect(reinitArgs.context.userData.source === 'footer').to.be.true;
   });
 });
 

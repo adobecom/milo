@@ -1,6 +1,5 @@
 import { createTag, getMetadata } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
-import { acomAssistantRouteInput } from './acom-assistant-bootstrap.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -27,21 +26,25 @@ import {
 const variants = {};
 let cardsEl;
 let useAcomAssistant = false;
+let acomAssistantModulePromise;
+
+async function routeAcomAssistantInput(text, cards) {
+  acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
+  const { acomAssistantRouteInput } = await acomAssistantModulePromise;
+  return acomAssistantRouteInput(text, cards);
+}
 
 function checkGlobal() {
   const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
     return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  if (params.get('side-overlay') === 'true') {
-    return true;
-  }
-  return false;
+  return params.get('side-overlay') === 'true';
 }
 
 function routeInput(text) {
   if (useAcomAssistant) {
-    acomAssistantRouteInput(text, cardsEl);
+    routeAcomAssistantInput(text, cardsEl);
     return;
   }
   if (checkGlobal()) {
