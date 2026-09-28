@@ -9,8 +9,10 @@
    The id is the client's fixed mount-point contract (camelCase), not ours to rename. */
 /* stylelint-disable-next-line selector-id-pattern */
 .global-navigation .feds-bc-wrapper #acomAssistant-gnav-mount {
-  width: 100%;
+  display: flex;
   height: 40px;
+  justify-content: flex-end;
+  max-width: 340px;
 }
 
 .global-navigation .feds-bc-wrapper {
@@ -23,6 +25,7 @@
 .global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
   display: flex;
   align-items: center;
+  width: auto;
 }
 
 .bc-gnav {
