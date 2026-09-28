@@ -2894,11 +2894,16 @@ export async function decorateLanguageBanner() {
 
 export function preloadMarketsConfig(callback) {
   const config = getConfig();
-  if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
   const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
   if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
+  // market.js is only reached via dynamic import, deep in the MAS chain
+  // (merch.js initService -> getValidatedMarket). By then it's on the LCP critical path,
+  // so a cold round trip for a sub-1KB module costs ~575ms on a slow connection.
+  // Warm it here, alongside the config it reads, rather than when merch.js finally asks.
+  loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  if (config.marketsConfig) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
