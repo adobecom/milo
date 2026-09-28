@@ -2343,6 +2343,12 @@ export function preloadLcpCodeFiles(area = document) {
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
+  if (autoNames.has('merch-card-autoblock')) {
+    import(`${base}/blocks/merch/merch.js`)
+      .then(({ initService }) => initService())
+      .catch(() => {});
+  }
+
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
