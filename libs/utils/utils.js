@@ -2343,9 +2343,20 @@ export function preloadLcpCodeFiles(area = document) {
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
+  // merch/mas blocks are excluded from the preload above: the merch-card component chain is
+  // heavy and stays off the critical path. An inline MAS field needs only the pricing service,
+  // so boot that and nothing else - the service resolves its own geo/market asynchronously.
   if (autoNames.has('merch-card-autoblock')) {
     import(`${base}/blocks/merch/merch.js`)
-      .then(({ initService }) => initService())
+      .then((mod) => mod.initService().catch((e) => {
+        // initService memoizes its promise and only clears it when called with `force`, so a
+        // failed speculative boot would otherwise poison the lazy path that follows.
+        mod.initService.promise = undefined;
+        window.lana?.log(
+          `MAS: eager initService failed, falling back to lazy init - ${e}`,
+          { severity: 'info', tags: 'mas-lcp' },
+        );
+      }))
       .catch(() => {});
   }
 
