@@ -2347,6 +2347,9 @@ export function preloadLcpCodeFiles(area = document) {
     import(`${base}/blocks/merch/merch.js`)
       .then(({ initService }) => initService())
       .catch(() => {});
+    ['mas-field.js', 'lit-all.min.js', 'merch-card.js'].forEach((dep) => {
+      loadLink(getMasDepUrl(dep), { rel: 'modulepreload', crossorigin: 'anonymous' });
+    });
   }
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
