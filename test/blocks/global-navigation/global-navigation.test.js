@@ -550,32 +550,48 @@ describe('global navigation', () => {
       });
     });
 
-    it('enables AUP Select in the mini app context when configured', async () => {
-      preload.restore();
-      const previousSdk = window.aupsdk;
-      const previousSdkFactory = window.AUPSDK;
-      const script = document.createElement('script');
-      script.type = 'javascript/blocked';
-      script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
-      script.dataset.loaded = 'true';
-      document.head.append(script);
-      meta = document.createElement('meta');
-      meta.name = 'aup-select';
-      meta.content = 'on';
-      document.head.append(meta);
-      const instance = { updateConfig: sinon.stub().resolves() };
-      window.aupsdk = undefined;
-      window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-      try {
-        await gnav.constructor.preloadAupSdk();
-        expect(instance.updateConfig.calledOnceWithExactly(
-          { miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } },
-        )).to.be.true;
-      } finally {
-        script.remove();
-        window.aupsdk = previousSdk;
-        window.AUPSDK = previousSdkFactory;
-      }
+    [
+      { content: 'ucv3_in_iframe', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
+      { query: 'ucv3_in_iframe', content: 'on', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
+      { content: 'on', features: ['useToasts'] },
+      { query: 'on', content: 'ucv3_in_iframe', features: ['useToasts'] },
+      { features: ['useToasts'] },
+    ].forEach(({ content, query, features }) => {
+      it(`sets mini app context features for ${JSON.stringify({ content, query })}`, async () => {
+        preload.restore();
+        const previousSdk = window.aupsdk;
+        const previousSdkFactory = window.AUPSDK;
+        const previousUrl = window.location.href;
+        const script = document.createElement('script');
+        script.type = 'javascript/blocked';
+        script.src = 'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js';
+        script.dataset.loaded = 'true';
+        document.head.append(script);
+        if (content) {
+          meta = document.createElement('meta');
+          meta.name = 'aup-select';
+          meta.content = content;
+          document.head.append(meta);
+        }
+        const url = new URL(previousUrl);
+        if (query) url.searchParams.set('aup-select', query);
+        else url.searchParams.delete('aup-select');
+        window.history.replaceState(null, '', url);
+        const instance = { updateConfig: sinon.stub().resolves() };
+        window.aupsdk = undefined;
+        window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+        try {
+          await gnav.constructor.preloadAupSdk();
+          expect(instance.updateConfig.calledOnceWithExactly(
+            { miniAppContext: { features } },
+          )).to.be.true;
+        } finally {
+          script.remove();
+          window.history.replaceState(null, '', previousUrl);
+          window.aupsdk = previousSdk;
+          window.AUPSDK = previousSdkFactory;
+        }
+      });
     });
 
     it('does not change the URL when iframe dialog prerequisites fail', async () => {
@@ -946,23 +962,24 @@ describe('global navigation', () => {
         expect(preload.called).to.be.false;
       });
 
-      ['on', 'off', ''].forEach((query) => {
+      ['on', 'ucv3_in_iframe', 'off', ''].forEach((query) => {
         it(`uses query "${query}" over metadata for signed-out users (Universal Nav: ${useUniversalNav})`, async () => {
           gnav.useUniversalNav = useUniversalNav;
+          const enabled = ['on', 'ucv3_in_iframe'].includes(query);
           meta = document.createElement('meta');
           meta.name = 'aup-select';
-          meta.content = query === 'on' ? 'off' : 'on';
+          meta.content = enabled ? 'off' : 'on';
           document.head.append(meta);
           const url = new URL(originalUrl);
           url.searchParams.set('aup-select', query);
           window.history.replaceState(null, '', url);
           await gnav.imsReady();
           await gnav.aupsdkInstancePromise;
-          expect(preload.calledOnce).to.equal(query === 'on');
+          expect(preload.calledOnce).to.equal(enabled);
         });
       });
 
-      ['on', 'off', ''].forEach((content) => {
+      ['on', 'ucv3_in_iframe', 'off', ''].forEach((content) => {
         it(`checks AUP for signed-out users with aup-select="${content}" (Universal Nav: ${useUniversalNav})`, async () => {
           gnav.useUniversalNav = useUniversalNav;
           meta = document.createElement('meta');
@@ -971,7 +988,7 @@ describe('global navigation', () => {
           document.head.append(meta);
           await gnav.imsReady();
           await gnav.aupsdkInstancePromise;
-          expect(preload.calledOnce).to.equal(content === 'on');
+          expect(preload.calledOnce).to.equal(['on', 'ucv3_in_iframe'].includes(content));
         });
       });
     });

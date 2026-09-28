@@ -1,6 +1,8 @@
 /* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
 import {
+  AUP_SELECT_MODES,
+  getAupSelectMode,
   getConfig,
   getMetadata,
   isAupEnabled,
@@ -1253,7 +1255,9 @@ class Gnav {
     });
 
     const features = ['useToasts'];
-    if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
+    if (getAupSelectMode() === AUP_SELECT_MODES.UCV3_IN_IFRAME) {
+      features.push('tmp_aupsdk_ucv3_in_iframe');
+    }
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
     return window.aupsdk;
   };
