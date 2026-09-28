@@ -509,12 +509,13 @@ describe('global navigation', () => {
     });
 
     [
-      ['stage', null, 'prod', 'stage'],
+      ['stage', null, 'stage', 'stage'],
+      ['stage', 'prod', 'prod', 'stage'],
+      ['stage', 'PrOd', 'prod', 'stage'],
       ['stage', 'stage', 'stage', 'stage'],
-      ['stage', 'StAgE', 'stage', 'stage'],
-      ['stage', 'invalid', 'prod', 'stage'],
-      ['local', null, 'prod', 'stage'],
-      ['local', 'STAGE', 'stage', 'stage'],
+      ['stage', 'invalid', 'stage', 'stage'],
+      ['local', null, 'stage', 'stage'],
+      ['local', 'PROD', 'prod', 'stage'],
       ['prod', null, 'prod', 'prod'],
       ['prod', 'stage', 'prod', 'prod'],
       ['prod', 'StAgE', 'prod', 'prod'],
