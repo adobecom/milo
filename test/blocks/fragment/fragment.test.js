@@ -48,7 +48,7 @@ const config = {
 setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: getFragment, removeMepLingoRow } = await import('../../../libs/blocks/fragment/fragment.js');
+const { default: getFragment, removeMepLingoRow, replaceDotMedia } = await import('../../../libs/blocks/fragment/fragment.js');
 
 // Store original fetch for passthrough
 const originalFetch = window.fetch;
@@ -194,6 +194,96 @@ describe('Fragments', () => {
     await loadArea(section);
     expect(section.querySelector('source[srcset^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
     expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+  });
+
+  it('Reuses a live-document media URL instead of rebasing to the fragment path', () => {
+    const ref = './media_15abc.png?width=750&format=png&optimize=medium';
+    const live = document.createElement('img');
+    live.setAttribute('src', ref);
+    document.body.appendChild(live);
+    const liveHref = new URL(ref, window.location).href;
+
+    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    try {
+      replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    } finally {
+      live.remove();
+    }
+
+    const fragImg = fragDoc.querySelector('img');
+    expect(fragImg.getAttribute('src')).to.equal(liveHref);
+    expect(fragImg.getAttribute('src')).to.not.include('/cc-shared/fragments/');
+  });
+
+  it('Does not reuse a live-document media URL with a different query', () => {
+    const live = document.createElement('img');
+    live.setAttribute('src', './media_16query.png?width=2000&format=webply&optimize=medium');
+    document.body.appendChild(live);
+
+    const fragDoc = new DOMParser().parseFromString('<img src="./media_16query.png?width=750&format=webply&optimize=medium">', 'text/html');
+    try {
+      replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    } finally {
+      live.remove();
+    }
+
+    const { src } = fragDoc.querySelector('img');
+    expect(src).to.include('/cc-shared/fragments/some/media_16query.png');
+    expect(src).to.include('width=750');
+  });
+
+  it('Rebases media to the fragment path when the live document has no match', () => {
+    const ref = './media_9nomatch.png?width=750&format=png&optimize=medium';
+    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/some/media_9nomatch.png');
+  });
+
+  it('Reuses an already-fetched media URL from Resource Timing when not in the live DOM', () => {
+    const query = '?width=750&format=webply&optimize=medium';
+    const fetched = `${window.location.origin}/products/media_7fetched.png${query}`;
+    const entriesStub = stub(performance, 'getEntriesByType');
+    entriesStub.withArgs('resource').returns([{ name: fetched }]);
+    const fragDoc = new DOMParser().parseFromString(`<picture><source srcset="./media_7fetched.png${query}"><img src="./media_7fetched.png${query}"></picture>`, 'text/html');
+    try {
+      replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    } finally {
+      entriesStub.restore();
+    }
+
+    expect(fragDoc.querySelector('source').getAttribute('srcset')).to.equal(fetched);
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.equal(fetched);
+  });
+
+  it('Ignores already-fetched media from a different origin', () => {
+    const ref = './media_8foreign.png?width=750&format=webply&optimize=medium';
+    const entriesStub = stub(performance, 'getEntriesByType');
+    entriesStub.withArgs('resource').returns([{ name: `https://evil.example.com/x/${ref.slice(2)}` }]);
+    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    try {
+      replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    } finally {
+      entriesStub.restore();
+    }
+
+    const { src } = fragDoc.querySelector('img');
+    expect(new URL(src).origin).to.equal(window.location.origin);
+    expect(src).to.include('/cc-shared/fragments/some/media_8foreign.png');
+  });
+
+  it('Ignores already-fetched media that failed to load', () => {
+    const ref = './media_9failed.png?width=750&format=webply&optimize=medium';
+    const entriesStub = stub(performance, 'getEntriesByType');
+    entriesStub.withArgs('resource').returns([{ name: `${window.location.origin}/products/${ref.slice(2)}`, responseStatus: 404 }]);
+    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    try {
+      replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    } finally {
+      entriesStub.restore();
+    }
+
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/some/media_9failed.png');
   });
 
   it('"decorated" class added by decorateArea()', async () => {

@@ -99,10 +99,40 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-function replaceDotMedia(path, doc) {
+// Same media_<hash> under a different doc path is the same bytes; reuse the already-fetched URL.
+function mediaDedupeKey(ref) {
+  if (!ref || ref.includes(',') || ref.trim().includes(' ')) return null;
+  const { pathname, search } = new URL(ref, window.location);
+  const seg = pathname.lastIndexOf('/media_');
+  return seg === -1 ? null : pathname.slice(seg) + search;
+}
+
+function liveMediaMap(origin) {
+  const map = new Map();
+  const add = (ref) => {
+    if (!ref?.includes('/media_')) return;
+    const key = mediaDedupeKey(ref);
+    if (!key || map.has(key)) return;
+    const url = new URL(ref, window.location);
+    if (url.origin === origin) map.set(key, url.href);
+  };
+  document.querySelectorAll('img[src*="/media_"], source[srcset*="/media_"]').forEach((el) => {
+    add(el.getAttribute(el.tagName === 'SOURCE' ? 'srcset' : 'src'));
+  });
+  performance.getEntriesByType('resource').forEach(({ name, responseStatus }) => {
+    if (!(responseStatus >= 400)) add(name);
+  });
+  return map;
+}
+
+export function replaceDotMedia(path, doc) {
+  const liveMedia = liveMediaMap(new URL(path, window.location).origin);
   const resetAttributeBase = (tag, attr) => {
     doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
-      el[attr] = new URL(el.getAttribute(attr), new URL(path, window.location)).href;
+      const authored = el.getAttribute(attr);
+      const key = mediaDedupeKey(authored);
+      const reused = key && liveMedia.get(key);
+      el[attr] = reused || new URL(authored, new URL(path, window.location)).href;
     });
   };
   resetAttributeBase('img', 'src');
