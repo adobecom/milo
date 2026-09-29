@@ -121,6 +121,7 @@
   margin-bottom: var(--spacing-xl);
   background: var(--color-gray-100);
   border-radius: 16px;
+  border: 1px solid #ddd;
 }
 
 .mmm-2 .mmm2-form-field {
@@ -440,18 +441,59 @@
 }
 
 .mmm-2 .mmm2-report-table td:nth-child(3),
-.mmm-2 .mmm2-report-table td:nth-child(4),
 .mmm-2 .mmm2-report-table td:nth-child(5) {
   text-align: center;
+}
+
+/* border-collapse: collapse can bleed hard-edged cell backgrounds past the
+   wrapper's rounded corners despite overflow: hidden - round the actual
+   corner cells to match so the shadow/mask reads as fully rounded. */
+.mmm-2 .mmm2-report-table thead tr:first-child th:first-child {
+  border-top-left-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table thead tr:first-child th:last-child {
+  border-top-right-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 1rem;
 }
 
 /* Note: .mmm2-report-select-all is applied directly to the <th> (it's a table
    cell, not a wrapper div) - it must NOT set display: flex here, since that
    would take the cell out of table layout entirely (breaks column width,
-   borders, and row height). Centering the lone checkbox is handled by the
-   shared th:nth-child(1)/td:nth-child(1) text-align: center rule above. */
+   borders, and row height). The checkbox + accessible label live in a child
+   <label> (.mmm2-report-select-all-label) that fills the cell and is safe to
+   flex/center, since it doesn't affect the <th>'s own table-cell display. */
 .mmm-2 .mmm2-report-select-all {
   vertical-align: middle;
+  padding: 0;
+}
+
+.mmm-2 .mmm2-report-select-all-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mmm-2 .mmm2-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .mmm-2 .mmm2-report-sortable {
