@@ -7,6 +7,7 @@ export {
   Group,
   Matrix4,
   Mesh,
+  OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
   Quaternion,
