@@ -156,8 +156,16 @@ export function createContent(iframeUrl) {
   return content;
 }
 
+export function getIframeUrl(el) {
+  const href = el?.getAttribute('href');
+  if (href && !href.startsWith('#')) return el.href;
+  // MAS keeps href="#" on AUP checkout links and stores the real checkout URL in checkoutUrl.
+  const checkoutUrl = el?.checkoutUrl;
+  return checkoutUrl && !checkoutUrl.startsWith('#') ? checkoutUrl : undefined;
+}
+
 export default async function openThreeInOneModal(el) {
-  const iframeUrl = el?.href;
+  const iframeUrl = getIframeUrl(el);
   const modalType = el?.getAttribute('data-modal');
   const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;

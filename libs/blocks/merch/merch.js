@@ -916,6 +916,38 @@ const closeModalWithoutEvent = (modalId) => {
 export const modalState = { isOpen: false };
 let activeAupModalHash;
 
+export const AUP_SDK_READY_EVENT = 'milo:aupsdk:ready';
+const AUP_SDK_READY_TIMEOUT = 10000;
+
+const isAupSdkReady = () => typeof window.aupsdk?.getOrchestratorContext === 'function';
+
+export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT) {
+  if (isAupSdkReady()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let timeoutId;
+    const done = () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener(AUP_SDK_READY_EVENT, done);
+      resolve(isAupSdkReady());
+    };
+    timeoutId = setTimeout(done, timeout);
+    window.addEventListener(AUP_SDK_READY_EVENT, done);
+  });
+}
+
+/*
+ * A deep-linked CTA can settle before Gnav loads the AUP SDK. Clicking it then makes MAS
+ * fall back to the legacy 3-in-1 modal, so wait for the SDK before restoring the modal.
+ */
+async function openModalFromHash(cta, hash) {
+  if (isAupEnabled() && !isAupSdkReady()) {
+    await waitForAupSdk();
+    if (window.location.hash !== hash || modalState.isOpen) return;
+  }
+  cta.click();
+  modalState.isOpen = true;
+}
+
 function restoreAupModalHash(modalHashState) {
   if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
     window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
@@ -989,8 +1021,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
     const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
     if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
       ctaToClick.dataset.clickDisabled = 'true';
-      ctaToClick.click();
-      modalState.isOpen = true;
+      await openModalFromHash(ctaToClick, hash);
       setTimeout(() => {
         delete ctaToClick.dataset.clickDisabled;
       }, 1000);
@@ -999,8 +1030,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
-    cta.click();
-    modalState.isOpen = true;
+    await openModalFromHash(cta, hash);
     return modalState.isOpen;
   }
 
@@ -1040,6 +1070,7 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
     window.addEventListener('message', handle3in1IFrameEvents);
     if (!document.querySelector('.dialog-modal.three-in-one')) {
       modal = await openThreeInOneModal(el);
+      if (!modal) modalState.isOpen = false;
     }
     return;
   }

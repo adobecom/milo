@@ -567,12 +567,20 @@ describe('global navigation', () => {
       const instance = { updateConfig: sinon.stub().resolves() };
       window.aupsdk = undefined;
       window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
+      const onReady = sinon.spy(() => {
+        expect(window.aupsdk).to.equal(instance);
+        expect(instance.updateConfig.calledOnce).to.be.true;
+      });
+      window.addEventListener('milo:aupsdk:ready', onReady);
       try {
         await gnav.constructor.preloadAupSdk();
         expect(instance.updateConfig.calledOnceWithExactly(
           { miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } },
         )).to.be.true;
+        expect(onReady.calledOnce).to.be.true;
+        expect(onReady.threw()).to.be.false;
       } finally {
+        window.removeEventListener('milo:aupsdk:ready', onReady);
         script.remove();
         window.aupsdk = previousSdk;
         window.AUPSDK = previousSdkFactory;

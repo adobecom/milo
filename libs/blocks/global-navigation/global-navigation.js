@@ -68,6 +68,7 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 
 const { replaceKey, replaceKeyArray } = placeholders;
 const {
+  AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
   getMiloLocaleSettings,
   isMasGeoDetectionEnabled,
@@ -1256,6 +1257,7 @@ class Gnav {
     const features = ['useToasts'];
     if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
+    window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
     return window.aupsdk;
   };
 

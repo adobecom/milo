@@ -39,6 +39,8 @@ import merch, {
   isMasErrorEnv,
   createFragmentErrorEl,
   getAupModalHashCleanup,
+  AUP_SDK_READY_EVENT,
+  waitForAupSdk,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1203,6 +1205,39 @@ describe('Merch Block', () => {
       window.location.hash = prevHash;
       modalState.isOpen = false;
     });
+
+    it('opens the 3-in-1 modal with the checkout URL of an AUP checkout link', async () => {
+      const prevHash = window.location.hash;
+      modalState.isOpen = false;
+      const checkoutUrl = 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if&co=BR&lang=pt&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=ccsn_direct_individual';
+      const checkoutLink = createTag('a', {
+        is: 'checkout-link',
+        href: '#',
+        'data-modal': 'twp',
+        'data-modal-id': 'mini-plans-web-cta-creative-cloud-card',
+      });
+      checkoutLink.isOpen3in1Modal = true;
+      checkoutLink.checkoutUrl = checkoutUrl;
+
+      await openModal(new CustomEvent('test'), undefined, 'TRIAL', 'mini-plans-web-cta-creative-cloud-card', undefined, checkoutLink);
+
+      const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
+      expect(threeInOneModal.querySelector('iframe').src).to.equal(checkoutUrl);
+      threeInOneModal.remove();
+      window.location.hash = prevHash;
+      modalState.isOpen = false;
+    });
+
+    it('resets the modal state when the 3-in-1 modal has no checkout URL', async () => {
+      modalState.isOpen = false;
+      const checkoutLink = createTag('a', { href: '#', 'data-modal': 'twp' });
+      checkoutLink.isOpen3in1Modal = true;
+
+      await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink);
+
+      expect(document.querySelector('.dialog-modal.three-in-one')).to.be.null;
+      expect(modalState.isOpen).to.be.false;
+    });
   });
 
   describe('Modal flow', () => {
@@ -1802,6 +1837,161 @@ describe('Merch Block', () => {
       document.body.appendChild(modal);
       const isModalOpen = await updateModalState();
       expect(isModalOpen).to.be.false;
+    });
+
+    describe('with AUP Select', () => {
+      const modalId = 'aup-deep-link-card';
+      let meta;
+      let previousSdk;
+      let previousUrl;
+
+      const createCta = () => {
+        const cta = createTag('a', { is: 'checkout-link', href: '#', 'data-modal-id': modalId });
+        cta.addEventListener('click', (e) => e.preventDefault());
+        sinon.spy(cta, 'click');
+        return cta;
+      };
+
+      const setSdkReady = () => {
+        window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+        window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+      };
+
+      beforeEach(() => {
+        previousSdk = window.aupsdk;
+        previousUrl = window.location.href;
+        window.aupsdk = undefined;
+        meta = createTag('meta', { name: 'aup-select', content: 'on' });
+        document.head.append(meta);
+        window.history.replaceState(null, '', `#${modalId}`);
+      });
+
+      afterEach(() => {
+        meta.remove();
+        window.aupsdk = previousSdk;
+        window.history.replaceState(null, '', previousUrl);
+        sinon.restore();
+      });
+
+      it('waits for the AUP SDK before reopening a deep-linked modal', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        await delay(0);
+        expect(cta.click.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+
+        setSdkReady();
+
+        expect(await state).to.be.true;
+        expect(cta.click.calledOnce).to.be.true;
+      });
+
+      it('reopens the modal once when several CTAs share the hash', async () => {
+        const ctas = [createCta(), createCta()];
+        const states = ctas.map((cta) => updateModalState({ cta }));
+
+        setSdkReady();
+        await Promise.all(states);
+
+        expect(ctas.filter((cta) => cta.click.called)).to.have.lengthOf(1);
+      });
+
+      it('waits for the AUP SDK on hash navigation', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        try {
+          const state = updateModalState();
+          await delay(0);
+          expect(cta.click.called).to.be.false;
+
+          setSdkReady();
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          cta.remove();
+        }
+      });
+
+      it('does not reopen the modal if the hash changed while waiting', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        window.history.replaceState(null, '', '#another-modal');
+
+        setSdkReady();
+
+        expect(await state).to.be.false;
+        expect(cta.click.called).to.be.false;
+      });
+
+      it('falls back to the legacy modal when the AUP SDK does not load', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+
+          await clock.tickAsync(9999);
+          expect(cta.click.called).to.be.false;
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('reopens the modal immediately when the AUP SDK is ready', async () => {
+        window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+        const cta = createCta();
+
+        const state = updateModalState({ cta });
+
+        expect(cta.click.calledOnce).to.be.true;
+        expect(await state).to.be.true;
+      });
+
+      it('reopens the modal immediately when AUP Select is off', async () => {
+        meta.content = 'off';
+        const cta = createCta();
+
+        const state = updateModalState({ cta });
+
+        expect(cta.click.calledOnce).to.be.true;
+        expect(await state).to.be.true;
+      });
+    });
+  });
+
+  describe('waitForAupSdk', () => {
+    let previousSdk;
+
+    beforeEach(() => {
+      previousSdk = window.aupsdk;
+      window.aupsdk = undefined;
+    });
+
+    afterEach(() => {
+      window.aupsdk = previousSdk;
+      sinon.restore();
+    });
+
+    it('resolves when the AUP SDK becomes ready', async () => {
+      const ready = waitForAupSdk();
+      window.aupsdk = { getOrchestratorContext: () => {} };
+      window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+      expect(await ready).to.be.true;
+    });
+
+    it('resolves false on timeout', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const ready = waitForAupSdk(100);
+        await clock.tickAsync(100);
+        expect(await ready).to.be.false;
+      } finally {
+        clock.restore();
+      }
     });
   });
 

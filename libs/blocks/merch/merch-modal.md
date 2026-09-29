@@ -34,6 +34,8 @@ Handles user clicks and browser back-forward navigation scenarios.
 
 Reopens the modal on page load if the URL contains the hash. The function waits for each CTA to be ready and tries to reopen the modal by clicking the first CTA with a matching `data-modal-id` attribute.
 
+When AUP Select is enabled (`aup-select=on`), the CTA can settle before Gnav has loaded the AUP SDK. Clicking it at that point would make MAS fall back to the legacy 3-in-1 modal, so the click is delayed until Gnav dispatches `milo:aupsdk:ready` (or up to 10 seconds, after which the legacy modal opens). The same applies when the hash is restored by back/forward navigation.
+
 ### Modal Closed by User
 
 Updates the modal state to reflect when a modal has been closed by the user.
