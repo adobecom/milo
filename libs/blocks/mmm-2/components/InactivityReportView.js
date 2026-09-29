@@ -226,6 +226,7 @@ function InactivityReportView() {
           options=${reportLastSeenOptions}
           value=${filters.lastSeenManifest}
           onChange=${(v) => setFilter('lastSeenManifest', v)}
+          includeShowAll=${false}
         />
         ${geosConfig ? html`<${DropdownFilter}
           id="mmm2-report-filter-geos"
