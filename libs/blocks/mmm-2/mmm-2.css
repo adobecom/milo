@@ -407,16 +407,24 @@
 
 /* Resizable table (matches the original mmm.js's plain HTML table look: bordered
    cells, gray header). table-layout: fixed makes the <colgroup> widths authoritative
-   - content wraps within the cell instead of stretching the column. */
+   - content wraps within the cell instead of stretching the column.
+   border-collapse: separate (not collapse) is required for border-radius to
+   actually apply to cell borders - browsers ignore border-radius on collapsed
+   table borders (only the background gets clipped), which left a hard square
+   notch cutting through the rounded corners. Borders are drawn manually below
+   (right + bottom on every cell, plus top-row/first-column) to reproduce the
+   same single-line grid a collapsed table would have, without doubling up. */
 .mmm-2 .mmm2-report-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
 }
 
 .mmm-2 .mmm2-report-table th,
 .mmm-2 .mmm2-report-table td {
-  border: 1px solid var(--color-gray-200);
+  border-right: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-200);
   padding: 10px var(--spacing-xxs);
   text-align: left;
   vertical-align: middle;
@@ -432,6 +440,10 @@
   text-align: center;
 }
 
+.mmm-2 .mmm2-report-table thead th {
+  border-top: 1px solid var(--color-gray-200);
+}
+
 .mmm-2 .mmm2-report-table th:nth-child(1),
 .mmm-2 .mmm2-report-table td:nth-child(1) {
   width: 36px;
@@ -445,9 +457,14 @@
   text-align: center;
 }
 
-/* border-collapse: collapse can bleed hard-edged cell backgrounds past the
-   wrapper's rounded corners despite overflow: hidden - round the actual
-   corner cells to match so the shadow/mask reads as fully rounded. */
+.mmm-2 .mmm2-report-table tr th:first-child,
+.mmm-2 .mmm2-report-table tr td:first-child {
+  border-left: 1px solid var(--color-gray-200);
+}
+
+/* Now that the table uses border-collapse: separate, border-radius on the
+   actual corner cells is honored (including their borders, not just their
+   background), so the rounded corners read as a single clean curve. */
 .mmm-2 .mmm2-report-table thead tr:first-child th:first-child {
   border-top-left-radius: 1rem;
 }
