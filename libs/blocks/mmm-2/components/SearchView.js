@@ -121,6 +121,7 @@ function SearchView() {
           <li>Click Preview</li>
         </ol>
         <p class="mmm2-howto-note">* Keeping "None" selected does not add the manifest to your preview URL and will not force the manifest to load. But if the manifest is still attached to the page, it will load anyways. If you want to force the default experience, choose "Default" from the dropdown menu.</p>
+        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mmm/documentation" target="_blank" rel="noopener">Learn more</a>
       <//>
       <div class="mmm2-filters">
         ${authoredConfig.pages ? html`<${DropdownFilter}

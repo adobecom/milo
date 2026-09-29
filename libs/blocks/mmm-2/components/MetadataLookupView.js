@@ -147,6 +147,7 @@ function MetadataLookupView() {
           <li>Preview and publish the spreadsheet</li>
           <li>Reload this page to confirm the page settings are updated and update MMM.</li>
         </ol>
+        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/" target="_blank" rel="noopener">MEP Documentation</a>
       <//>
       <div class="mmm2-filters">
         <div class="mmm2-form-field">

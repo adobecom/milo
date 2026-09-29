@@ -215,13 +215,8 @@ function InactivityReportView() {
           <li>Click "Open Slack"</li>
           <li>Paste your request in Slack.</li>
         </ol>
+        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/target-integration" target="_blank" rel="noopener">Learn more</a>
       <//>
-      <div class="mmm2-report-actions">
-        <p class="mmm2-action-area ${copyState === 'error' ? 'has-error' : ''} ${copyState === 'success' ? 'has-success' : ''}">
-          <a class="con-button blue button-l" onClick=${copySelected}>Copy Selected</a>
-          <a class="con-button button-l" href="https://adobe.enterprise.slack.com/archives/C08SA7JUW3F" target="_blank" rel="noopener">Open Slack</a>
-        </p>
-      </div>
       <div class="mmm2-filters">
         <${DropdownFilter}
           id="mmm2-report-filter-lastseen"
@@ -244,6 +239,12 @@ function InactivityReportView() {
           value=${filters.filterText}
           onChange=${(v) => setFilter('filterText', v)}
         />
+      </div>
+      <div class="mmm2-report-actions">
+        <p class="mmm2-action-area ${copyState === 'error' ? 'has-error' : ''} ${copyState === 'success' ? 'has-success' : ''}">
+          <a class="con-button blue button-l" onClick=${copySelected}>Copy Selected</a>
+          <a class="con-button button-l" href="https://adobe.enterprise.slack.com/archives/C08SA7JUW3F" target="_blank" rel="noopener">Open Slack</a>
+        </p>
       </div>
       <div class="mmm2-report">
         <table class="mmm2-report-table">

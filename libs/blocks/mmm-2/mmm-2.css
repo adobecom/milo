@@ -104,6 +104,11 @@
   color: var(--color-gray-600);
 }
 
+.mmm-2 .mmm2-howto-link {
+  display: inline-block;
+  margin-top: var(--spacing-xs);
+}
+
 /* Shared: filter panel */
 
 .mmm-2 .mmm2-filters {
