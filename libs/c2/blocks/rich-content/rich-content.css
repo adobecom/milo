@@ -12,6 +12,13 @@
     height: 640px;
   }
 
+  &:has(+ .split-aside-grid) .foreground .content .eyebrow,
+  &:has(+ .split-aside-grid) .foreground .content .eyebrow:has(picture),
+  &.jump-link:has(+ .split-aside-grid) .foreground .content .eyebrow,
+  &.jump-link:has(+ .split-aside-grid) .foreground .content .eyebrow:has(picture, img) {
+    color: var(--s2a-color-content-default);
+  }
+
   &.dark {
     background-color: unset;
   }
