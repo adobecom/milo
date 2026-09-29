@@ -360,11 +360,23 @@
   font-size: var(--type-body-s-size);
   font-weight: 700;
   color: var(--color-gray-700);
+  text-align: center;
+}
+
+.mmm-2 .mmm2-report-table td:nth-child(1) {
+  text-align: center;
+}
+
+.mmm-2 .mmm2-report-table td:nth-child(3),
+.mmm-2 .mmm2-report-table td:nth-child(4),
+.mmm-2 .mmm2-report-table td:nth-child(5) {
+  text-align: center;
 }
 
 .mmm-2 .mmm2-report-select-all {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xxs);
 }
 
@@ -378,6 +390,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xxs);
   user-select: none;
 }
