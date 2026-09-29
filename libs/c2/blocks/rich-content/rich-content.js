@@ -1,5 +1,6 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 
@@ -73,33 +74,72 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+const SPACING_CLASS_RE = /^spacing-[a-z0-9]+(-static)?(-top|-bottom)?$/;
+
+function applyMediaSpacing(root) {
+  const spacingClasses = [...root.classList].filter((cls) => SPACING_CLASS_RE.test(cls));
+  if (!spacingClasses.length) return;
+
+  const authorsTop = spacingClasses.some((cls) => !cls.endsWith('-bottom'));
+  const authorsBottom = spacingClasses.some((cls) => !cls.endsWith('-top'));
+
+  const probe = createTag('div', { class: spacingClasses.join(' '), style: 'position:absolute;visibility:hidden' });
+  root.append(probe);
+  const { paddingTop, paddingBottom } = getComputedStyle(probe);
+  probe.remove();
+
+  if (authorsTop) root.style.setProperty('--rc-media-spacing-top', paddingTop);
+  if (authorsBottom) root.style.setProperty('--rc-media-spacing-bottom', paddingBottom);
+}
+
+const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
+
+function isMediaCell(cell) {
+  if (!cell) return false;
+  if (cell.querySelector(MEDIA_SELECTOR)) return true;
+  return !!cell.querySelector('img')
+    && !cell.querySelector('.action-area, a.con-button, .con-button');
+}
+
+function hasCellContent(cell) {
+  return !!(cell?.textContent?.trim() || cell?.children.length);
+}
+
 function decorateMediaVariant(container) {
-  const row = container.children[0];
-  if (!row) return;
+  const rows = [...container.children];
+  if (!rows.length) return;
 
-  const [ctaCell, mediaCell] = [...row.children];
-  if (!ctaCell && !mediaCell) return;
+  const cells = rows.flatMap((row) => [...row.children]);
+  let mediaCell = cells.find(isMediaCell);
+  let ctaCell = cells.find((cell) => cell !== mediaCell && hasCellContent(cell)) || null;
 
-  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
+  if (!mediaCell) {
+    const [firstCell, secondCell] = [...(rows[0]?.children ?? [])];
+    ctaCell = firstCell ?? null;
+    mediaCell = secondCell ?? null;
+  }
+
+  if (hasCellContent(mediaCell)) {
     mediaCell.classList.add('media-cell');
     container.append(mediaCell);
   } else {
     mediaCell?.remove();
   }
 
-  if (ctaCell) {
+  if (ctaCell && ctaCell !== mediaCell && hasCellContent(ctaCell)) {
     decorateBlockText(ctaCell);
     ctaCell.classList.add('cta-area');
     container.append(ctaCell);
   }
 
-  row.remove();
+  rows.forEach((row) => row.remove());
   container.querySelector('.action-area')?.classList.add('dark');
   container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
 
 function decorate(block, root = block) {
   if (root.classList.contains('media')) {
+    applyMediaSpacing(root);
     decorateMediaVariant(block);
     return;
   }
@@ -138,6 +178,11 @@ function applyHeroOverlay(el) {
 
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
+
+  if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
+    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+  }
+
   applyHeroOverlay(el);
   if (viewports.hasViewportVariations) {
     const observer = new MutationObserver(() => applyHeroOverlay(el));

@@ -11,12 +11,11 @@ function decorateMasField(cardContent) {
     const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
     if (classes) masField.classList.add(...classes);
   });
-  const priceParent = cardContent.querySelector(':has(> .mas-price)');
+  const priceParent = cardContent.querySelector('.mas-price')?.parentElement;
   const commitmentEl = priceParent?.nextElementSibling;
-  if (commitmentEl?.matches('p') && commitmentEl.children.length === 0 && commitmentEl.textContent.trim()) {
-    priceParent.append(commitmentEl);
-    commitmentEl.classList.add('mas-price-commitment');
-  }
+  if (!commitmentEl?.matches('p') || commitmentEl.children.length || !commitmentEl.textContent.trim()) return;
+  priceParent.append(commitmentEl);
+  commitmentEl.classList.add('mas-price-commitment');
 }
 
 function parseLeftColumn(col) {
@@ -24,12 +23,11 @@ function parseLeftColumn(col) {
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
-  heading?.classList.add('heading-super');
 
-  const allTextEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+  const bodyEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
     .filter((el) => el !== heading && el.textContent.trim());
 
-  return { iconEl, heading, bodyEls: allTextEls };
+  return { iconEl, heading, bodyEls };
 }
 
 function buildChicletRow(iconEl, heading) {
@@ -65,20 +63,40 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
-function decorate(block) {
+function toSubtext(el) {
+  const level = el.tagName.match(/^H([1-6])$/)?.[1];
+  if (!level) {
+    el.classList.add('pm-subtext');
+    return el;
+  }
+  const p = createTag('p', null, el.innerHTML);
+  [...el.attributes].forEach(({ name, value }) => p.setAttribute(name, value));
+  p.classList.add('pm-subtext', `heading-${level}`);
+  return p;
+}
+
+function decorate(block, blockEl = block) {
   const row = block.children[0];
   const col = row?.children[0];
   if (!col) return;
 
   const { iconEl, heading, bodyEls } = parseLeftColumn(col);
-  bodyEls.forEach((el) => el.classList.add('pm-subtext'));
+  const subtextEls = bodyEls.map(toSubtext);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
-  foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
+  foreground.append(buildChicletRow(iconEl, heading), ...subtextEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
-  if (col2?.children.length) promoArea.append(buildMerchCard(col2));
+  if (col2?.children.length) {
+    const merchCard = buildMerchCard(col2);
+    // special-promo inverts the card vs the hero: light hero -> dark card,
+    // dark hero -> light card. The mode class flips its content via tokens.
+    if (blockEl.classList.contains('special-promo')) {
+      merchCard.classList.add(blockEl.classList.contains('dark') ? 'light' : 'dark');
+    }
+    promoArea.append(merchCard);
+  }
 
   const content = createTag('div', { class: 'pm-content container' });
   content.append(foreground, promoArea);
