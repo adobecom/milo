@@ -531,6 +531,9 @@ function getAupSelectPreload() {
 export function getCommercePreloadUrl() {
   // Match the commerce env the checkout/modal URLs are built for (commerce.env override included).
   const commerceEnv = document.head.querySelector('mas-commerce-service')?.settings?.env;
+  if (!commerceEnv) {
+    log?.warn('Commerce env unavailable for preload.js, falling back to production');
+  }
   if (commerceEnv === 'STAGE') {
     return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
   }
