@@ -2337,8 +2337,8 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
-  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const blocks = sectionBlockEls.filter((el) => !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
@@ -2346,7 +2346,12 @@ export function preloadLcpCodeFiles(area = document) {
   // merch/mas blocks are excluded from the preload above: the merch-card component chain is
   // heavy and stays off the critical path. An inline MAS field needs only the pricing service,
   // so boot that and nothing else - the service resolves its own geo/market asynchronously.
-  if (autoNames.has('merch-card-autoblock')) {
+  // Covers every commerce entry point in the LCP section: authored merch/merch-card/mas-* blocks,
+  // the mas.adobe.com autoblocks, and legacy OST/miniplans links - all of which resolve through
+  // merch.js and need the commerce service before they can render a price or a checkout link.
+  const hasCommerceContent = sectionBlockEls.length !== blocks.length
+    || [...autoNames].some(isCommerceBlock);
+  if (hasCommerceContent) {
     import(`${base}/blocks/merch/merch.js`)
       .then((mod) => mod.initService().catch((e) => {
         // initService memoizes its promise and only clears it when called with `force`, so a
