@@ -357,7 +357,7 @@
 .mmm-2 .mmm2-report-table th {
   position: relative;
   background: var(--color-gray-100);
-  font-size: var(--type-detail-s-size);
+  font-size: var(--type-body-s-size);
   font-weight: 700;
   color: var(--color-gray-700);
   vertical-align: middle;
