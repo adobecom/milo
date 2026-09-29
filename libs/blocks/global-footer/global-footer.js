@@ -567,9 +567,9 @@ class Footer {
         jarvisLink.setAttribute('data-jarvis-config', JSON.stringify(jarvisMeta));
       });
 
-      const { initJarvisChat } = await import('../../features/jarvis-chat.js');
+      const { initAcomAssistantGnavLink } = await import('../../features/acom-assistant-gnav-link.js');
       const config = { ...getConfig(), jarvis: { ...getConfig().jarvis, onDemand: true } };
-      initJarvisChat(config, loadScript, loadStyle, getMetadata);
+      initAcomAssistantGnavLink(config, loadScript, loadStyle, getMetadata);
     }
   };
 }

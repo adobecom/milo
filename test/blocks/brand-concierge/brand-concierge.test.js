@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
@@ -631,3 +631,79 @@ describe('Brand Concierge back-navigation analytics', () => {
   });
 });
 /* eslint-enable no-underscore-dangle */
+
+describe('Brand Concierge - AcomAssistant flag', () => {
+  let sendUserMessageSpy;
+  let openMessagingWindowSpy;
+  let capturedInitConfig;
+
+  beforeEach(() => {
+    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
+      initialize: (cfg) => {
+        capturedInitConfig = cfg;
+        cfg.callbacks?.onReadyCallback?.();
+      },
+      reinitialize: () => {},
+      sendUserMessage: () => {},
+      openMessagingWindow: () => {},
+    };
+    sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
+    openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
+  });
+
+  afterEach(() => {
+    sendUserMessageSpy.restore();
+    openMessagingWindowSpy.restore();
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+  });
+
+  it('routes typed input through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Hello acom';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: 'Hello acom' }));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
+    expect(openMessagingWindowSpy.called).to.be.true;
+
+    // Uses the Assistant team's bc-bacom test appid, not a Jarvis-borrowed one, and
+    // getContextCallback reports that same identity by default (no Jarvis link clicked).
+    expect(capturedInitConfig.appid === 'bc-bacom').to.be.true;
+    const context = capturedInitConfig.callbacks.getContextCallback();
+    expect(context.appid === 'bc-bacom').to.be.true;
+  });
+
+  it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+    const block = document.querySelector('.brand-concierge.marquee');
+    await init(block);
+
+    const button = block.querySelector('.prompt-card-button');
+    const cardText = button.querySelector('.prompt-card-text').textContent.trim();
+    button.click();
+
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: cardText }));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: cardText })).to.be.true;
+  });
+});

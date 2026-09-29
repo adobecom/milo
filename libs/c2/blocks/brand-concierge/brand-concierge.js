@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getMetadata } from '../../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -22,6 +22,15 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
+let cardsEl;
+let useAcomAssistant = false;
+let acomAssistantModulePromise;
+
+async function routeAcomAssistantInput(text, cards) {
+  acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
+  const { default: acomAssistantRouteInput } = await acomAssistantModulePromise;
+  return acomAssistantRouteInput(text, cards);
+}
 
 function checkGlobal() {
   let global = false;
@@ -32,6 +41,10 @@ function checkGlobal() {
 }
 
 function routeInput(text) {
+  if (useAcomAssistant) {
+    routeAcomAssistantInput(text, cardsEl);
+    return;
+  }
   if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
@@ -65,27 +78,32 @@ function handleFloatingButton() {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   initAnalytics();
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
+  cardsEl = cards;
 
   setAuthoredContent(header, cards, input);
 

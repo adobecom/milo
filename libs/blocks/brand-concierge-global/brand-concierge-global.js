@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -18,6 +18,8 @@ import {
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
+let useAcomAssistant = false;
+let acomAssistantModulePromise;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -67,7 +69,31 @@ function promptUp() {
   stayActive = false;
 }
 
+function decorateAcomGnav(cards, topNav) {
+  const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
+  if (!bcWrapper) return;
+
+  // Per the wiki, the client discovers this mount point and builds its own GNav
+  // icon/expanded-input/minimized states into it -- Milo doesn't build any GNav UI
+  // itself on this path.
+  const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
+  bcWrapper.appendChild(mount);
+  acomAssistantModulePromise ||= import('../brand-concierge/acom-assistant-bootstrap.js');
+  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards));
+
+  if (window?.milo) {
+    window.milo.brandConcierge = { brandConciergeGlobal: true };
+  } else {
+    window.milo = { brandConcierge: { brandConciergeGlobal: true } };
+  }
+}
+
 function decorateGnav(cards, input, topNav, el) {
+  if (useAcomAssistant) {
+    decorateAcomGnav(cards, topNav);
+    return;
+  }
+
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
   const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
@@ -133,40 +159,57 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
+function decorateWhenNavIsReady(cards, input, el) {
+  const selector = 'header.global-navigation nav.feds-topnav';
+  const topNav = document.querySelector(selector);
+  if (topNav) {
+    decorateGnav(cards, input, topNav, el);
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    const addedTopNav = document.querySelector(selector);
+    if (!addedTopNav) return;
+    observer.disconnect();
+    decorateGnav(cards, input, addedTopNav, el);
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 export default function init(el) {
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
-  const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
-    if (topNav) {
-      clearInterval(navCheck);
-      decorateGnav(cards, input, topNav, el);
-    }
-  }, 100);
+  decorateWhenNavIsReady(cards, input, el);
 
   rows.forEach((row) => {
     el.removeChild(row);
   });
 
+  if (useAcomAssistant) return;
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');

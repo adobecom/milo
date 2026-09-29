@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -25,19 +25,29 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
+let cardsEl;
+let useAcomAssistant = false;
+let acomAssistantModulePromise;
+
+async function routeAcomAssistantInput(text, cards) {
+  acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
+  const { acomAssistantRouteInput } = await acomAssistantModulePromise;
+  return acomAssistantRouteInput(text, cards);
+}
 
 function checkGlobal() {
   const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
     return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  if (params.get('side-overlay') === 'true') {
-    return true;
-  }
-  return false;
+  return params.get('side-overlay') === 'true';
 }
 
 function routeInput(text) {
+  if (useAcomAssistant) {
+    routeAcomAssistantInput(text, cardsEl);
+    return;
+  }
   if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
@@ -74,22 +84,26 @@ function handleFloatingButton() {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   sideOverlayTop();
   initAnalytics('BC-Inline-shown');
@@ -108,6 +122,7 @@ export default async function init(el) {
     }
   }
   const [background, header, cards, input, legal] = rows;
+  cardsEl = cards;
 
   setAuthoredContent(header, cards, input);
 
@@ -210,6 +225,8 @@ export default async function init(el) {
   if (gradientRow) el.removeChild(gradientRow);
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
+  if (useAcomAssistant) return;
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {

@@ -1,7 +1,14 @@
+/*
+ * GNav "#open-jarvis-chat" entry point, built on the shared Acom Assistant Client
+ * loader (./acom-assistant.js). Replaces jarvis-chat.js -- same href/metadata
+ * contract for already-authored content, so no authoring changes are needed.
+ *
+ * https://wiki.corp.adobe.com/spaces/Infinity/pages/3998335900/WIP+Acom+Assistant+Client
+ */
+
+import { loadAcomAssistant, openAcomAssistantChat, getAcomAssistantClient, setAcomAssistantIdentity } from './acom-assistant.js';
+
 let chatInitialized = false;
-let loadScript;
-let loadStyle;
-let getMetadata;
 let jarvisSecMeta = null;
 
 const isSilentEvent = (data) => (data['event.workflow'] === 'init' && data['event.type'] === 'request')
@@ -182,115 +189,71 @@ const sendPrimaryEvent = (data) => {
 
 const redirectToSupport = () => window.location.assign('https://helpx.adobe.com');
 
-const isChatOpen = () => {
-  const instance = window.AdobeMessagingExperienceClient;
-  return instance?.isAdobeMessagingClientInitialized()
-    && instance?.getMessagingExperienceState()?.windowState !== 'hidden';
+const analyticsCallback = (eventData) => {
+  if (!window.alloy_all || !window.digitalData) return;
+  const data = eventData?.events?.[0]?.data;
+  if (!data || isSilentEvent(data)) return;
+  if (data['event.subcategory']?.toLowerCase() === 'launch'
+    && data['event.workflow']?.toLowerCase() === 'init') {
+    if (data['event.type']?.toLowerCase() === 'render') {
+      sendChatIconRenderEvent(data);
+      return;
+    }
+    if (data['event.type']?.toLowerCase() === 'click') {
+      sendChatIconClickEvent(data);
+      return;
+    }
+  }
+  if (data['content.name']?.toLowerCase() === 'auth-subproduct') {
+    sendProductEvent(data);
+    return;
+  }
+  if (data['content.name']?.toLowerCase() === '5-star-survey') {
+    sendSurveyFeedbackEvent(data);
+    return;
+  }
+  if (data['event.error_code'] && data['event.error_type']) {
+    sendChatErrorEvent(data);
+    return;
+  }
+  sendPrimaryEvent(data);
 };
 
-const openChat = (event) => {
-  if (!chatInitialized) redirectToSupport();
-  const open = window.AdobeMessagingExperienceClient?.openMessagingWindow;
-  if (typeof open !== 'function' || isChatOpen()) return;
+function isChatOpen() {
+  const client = getAcomAssistantClient();
+  return !!client?.isAdobeMessagingClientInitialized?.()
+    && client?.getMessagingExperienceState?.()?.windowState !== 'hidden';
+}
+
+async function openChat(event) {
+  if (!chatInitialized) { redirectToSupport(); return; }
+  if (isChatOpen()) return;
   if (event) {
     const sourceType = event.target.tagName?.toLowerCase();
     const sourceText = (sourceType === 'img') ? event.target.alt?.trim() : event.target.innerText?.trim();
-    open({
-      sourceType,
-      sourceText,
-    });
+    await openAcomAssistantChat({ sourceType, sourceText });
   } else {
-    open({});
+    await openAcomAssistantChat({});
   }
-};
+}
 
-const startInitialization = async (config, event, onDemand) => {
-  const asset = `https://${config.env.name !== 'prod' ? 'dev-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
-  await Promise.all([
-    loadStyle(`${asset}.css`),
-    loadScript(`${asset}.js`),
-  ]);
-  let language;
-  let region;
-  if (config.locale.ietf.includes('-')) {
-    [language, region] = config.locale.ietf.split('-');
-  } else {
-    [region, language] = config.locale.prefix.replace('/', '').split('_');
-    if (region === 'africa') region = 'ZA';
-  }
-
-  window.AdobeMessagingExperienceClient.initialize({
-    appid: getMetadata('jarvis-surface-id') || config.jarvis.id || jarvisSecMeta?.['jarvis-surface-id'],
-    appver: getMetadata('jarvis-surface-version') || config.jarvis.version || jarvisSecMeta?.['jarvis-surface-version'],
-    env: config.env.name !== 'prod' ? 'stage' : 'prod',
-    clientId: window.adobeid?.client_id,
-    accessToken: window.adobeIMS?.isSignedInUser()
-      ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
-    lazyLoad: true,
-    loadedVia: 'milo',
-    language: language || 'en',
-    region,
-    cookiesEnabled: window.adobePrivacy?.activeCookieGroups()?.length > 1,
-    cookies: {
-      mcid: window.alloy ? await window.alloy('getIdentity')
-        .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined,
-    },
+async function ensureAcomAssistant(config, getMetadata, event, onDemand, deps) {
+  await loadAcomAssistant({
+    appid: getMetadata('jarvis-surface-id') || config.jarvis?.id || jarvisSecMeta?.['jarvis-surface-id'],
+    appver: getMetadata('jarvis-surface-version') || config.jarvis?.version || jarvisSecMeta?.['jarvis-surface-version'],
+    signInContext: config.signInContext,
     callbacks: {
       initCallback: (data) => {
         chatInitialized = !!data?.releaseControl?.showAdobeMessaging;
       },
       onReadyCallback: () => {
-        if (onDemand) {
-          openChat(event);
-        }
-      },
-      initErrorCallback: () => {},
-      chatStateCallback: () => {},
-      getContextCallback: () => {
-        let appId; let appVer;
-        if (jarvisSecMeta) {
-          appId = jarvisSecMeta['jarvis-surface-id'];
-          appVer = jarvisSecMeta['jarvis-surface-version'];
-          jarvisSecMeta = null;
-        }
-        return {
-          appid: appId || getMetadata('jarvis-surface-id') || config.jarvis.id,
-          appver: appVer || getMetadata('jarvis-surface-version') || config.jarvis.version,
-        };
+        if (onDemand) openChat(event);
       },
       signInProvider: () => window.adobeIMS?.signIn(config.signInContext),
-      analyticsCallback: (eventData) => {
-        if (!window.alloy_all || !window.digitalData) return;
-        const data = eventData?.events?.[0]?.data;
-        if (!data || isSilentEvent(data)) return;
-        if (data['event.subcategory']?.toLowerCase() === 'launch'
-          && data['event.workflow']?.toLowerCase() === 'init') {
-          if (data['event.type']?.toLowerCase() === 'render') {
-            sendChatIconRenderEvent(data);
-            return;
-          }
-          if (data['event.type']?.toLowerCase() === 'click') {
-            sendChatIconClickEvent(data);
-            return;
-          }
-        }
-        if (data['content.name']?.toLowerCase() === 'auth-subproduct') {
-          sendProductEvent(data);
-          return;
-        }
-        if (data['content.name']?.toLowerCase() === '5-star-survey') {
-          sendSurveyFeedbackEvent(data);
-          return;
-        }
-        if (data['event.error_code'] && data['event.error_type']) {
-          sendChatErrorEvent(data);
-          return;
-        }
-        sendPrimaryEvent(data);
-      },
+      analyticsCallback,
     },
-  });
-};
+  }, deps);
+}
 
 let eventListenerAdded = false;
 const addEventListeners = () => {
@@ -306,7 +269,7 @@ const addEventListeners = () => {
   eventListenerAdded = true;
 };
 
-const initJarvisChat = async (
+const initAcomAssistantGnavLink = async (
   config,
   loadScriptFunction,
   loadStyleFunction,
@@ -314,10 +277,8 @@ const initJarvisChat = async (
 ) => {
   if (!config?.jarvis) return;
 
-  loadScript = loadScriptFunction;
-  loadStyle = loadStyleFunction;
-  getMetadata = getMetadataFunction;
-
+  const getMetadata = getMetadataFunction;
+  const deps = { loadScript: loadScriptFunction, loadStyle: loadStyleFunction };
   const onDemandMeta = getMetadata('jarvis-on-demand')?.toLowerCase();
   const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
 
@@ -333,20 +294,26 @@ const initJarvisChat = async (
       }
     }
     event.preventDefault();
+    // Other surfaces (e.g. Brand Concierge) share this same client -- report the Jarvis
+    // identity for this specific open, without disturbing whichever appid initialize() used.
+    setAcomAssistantIdentity({
+      appid: jarvisSecMeta?.['jarvis-surface-id'] || getMetadata('jarvis-surface-id') || config.jarvis?.id,
+      appver: jarvisSecMeta?.['jarvis-surface-version'] || getMetadata('jarvis-surface-version') || config.jarvis?.version,
+    });
     if (onDemand && !chatInitialized) {
-      await startInitialization(config, event, onDemand);
+      await ensureAcomAssistant(config, getMetadata, event, onDemand, deps);
       addEventListeners();
     } else {
       openChat(event);
     }
   });
   if (!onDemand) {
-    await startInitialization(config);
+    await ensureAcomAssistant(config, getMetadata, null, onDemand, deps);
     addEventListeners();
   }
 };
 
 export {
-  initJarvisChat,
+  initAcomAssistantGnavLink,
   openChat,
 };

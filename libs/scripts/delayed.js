@@ -20,8 +20,8 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   if (jarvis === 'mobile' && desktopViewport) return;
   if (jarvis === 'desktop' && !desktopViewport) return;
 
-  const { initJarvisChat } = await import('../features/jarvis-chat.js');
-  initJarvisChat(config, loadScript, loadStyle, getMetadata);
+  const { initAcomAssistantGnavLink } = await import('../features/acom-assistant-gnav-link.js');
+  initAcomAssistantGnavLink(config, loadScript, loadStyle, getMetadata);
 };
 
 export const loadBlockNotifications = async (getConfig, loadStyle) => {
