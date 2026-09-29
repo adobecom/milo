@@ -99,6 +99,37 @@ describe('foreground timeout', () => {
       expect(first.called).to.be.false;
       expect(second.calledOnce).to.be.true;
     });
+
+    it('shares a single visibilitychange listener across concurrent timers', () => {
+      const addSpy = sinon.spy(document, 'addEventListener');
+      const removeSpy = sinon.spy(document, 'removeEventListener');
+      const spies = [sinon.spy(), sinon.spy(), sinon.spy()];
+      spies.forEach((spy, i) => setForegroundTimeout(spy, 1000 * (i + 1)));
+      const adds = addSpy.getCalls().filter((c) => c.args[0] === 'visibilitychange');
+      expect(adds.length).to.equal(1);
+      setVisibility('hidden');
+      clock.tick(60000);
+      setVisibility('visible');
+      clock.tick(2000);
+      expect(removeSpy.calledWith('visibilitychange')).to.be.false;
+      clock.tick(1000);
+      spies.forEach((spy) => expect(spy.calledOnce).to.be.true);
+      const removes = removeSpy.getCalls().filter((c) => c.args[0] === 'visibilitychange');
+      expect(removes.length).to.equal(1);
+      addSpy.restore();
+      removeSpy.restore();
+    });
+
+    it('ignores duplicate visible events without re-arming', () => {
+      const spy = sinon.spy();
+      setForegroundTimeout(spy, 1000);
+      clock.tick(500);
+      setVisibility('visible');
+      clock.tick(500);
+      expect(spy.calledOnce).to.be.true;
+      clock.tick(1000);
+      expect(spy.calledOnce).to.be.true;
+    });
   });
 
   describe('clearForegroundTimeout', () => {

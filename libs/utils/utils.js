@@ -3220,41 +3220,51 @@ export const reloadPage = () => window.location.reload();
 const foregroundTimers = new Map();
 let foregroundTimerId = 0;
 
+// Single shared listener for all pending foreground timers, attached only while any are pending.
+function onForegroundVisibilityChange() {
+  const hidden = document.visibilityState === 'hidden';
+  foregroundTimers.forEach((timer) => (hidden ? timer.pause() : timer.resume()));
+}
+
 export function clearForegroundTimeout(id) {
-  const dispose = foregroundTimers.get(id);
-  if (!dispose) return;
-  dispose();
+  const timer = foregroundTimers.get(id);
+  if (!timer) return;
+  timer.pause();
   foregroundTimers.delete(id);
+  if (!foregroundTimers.size) {
+    document.removeEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
 }
 
 export function setForegroundTimeout(callback, ms) {
   foregroundTimerId += 1;
   const id = foregroundTimerId;
   let remaining = ms;
-  let startedAt = performance.now();
-  let timer;
+  let startedAt;
+  let handle = null;
   const fire = () => {
+    handle = null;
     clearForegroundTimeout(id);
     callback();
   };
-  const start = () => {
-    startedAt = performance.now();
-    timer = setTimeout(fire, remaining);
-  };
-  const onVisibilityChange = () => {
-    if (document.visibilityState === 'hidden') {
-      clearTimeout(timer);
+  const timer = {
+    pause() {
+      if (handle === null) return;
+      clearTimeout(handle);
+      handle = null;
       remaining -= performance.now() - startedAt;
-    } else {
-      start();
-    }
+    },
+    resume() {
+      if (handle !== null) return;
+      startedAt = performance.now();
+      handle = setTimeout(fire, Math.max(remaining, 0));
+    },
   };
-  foregroundTimers.set(id, () => {
-    clearTimeout(timer);
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-  });
-  document.addEventListener('visibilitychange', onVisibilityChange);
-  if (document.visibilityState !== 'hidden') start();
+  if (!foregroundTimers.size) {
+    document.addEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
+  foregroundTimers.set(id, timer);
+  if (document.visibilityState !== 'hidden') timer.resume();
   return id;
 }
 
