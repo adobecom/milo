@@ -139,9 +139,6 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
-// Reads the real, currently-rendered nav height (accounts for localnav/promo banner)
-// instead of relying on the static --feds-height-nav/--hub-hero-nav-h CSS fallbacks,
-// matching the pattern used in comparison-table-c2.js's setupCollapsingHeader.
 const initNavHeight = (hubHero) => {
   const header = document.querySelector('header');
   if (!header) return;
@@ -189,6 +186,32 @@ const initHeaderPin = (hubHero, header) => {
     if (!document.contains(hubHero)) {
       pinController.abort();
       headerResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
+const initCarouselContainerExpand = (hubHero) => {
+  if (!window.matchMedia('(width < 768px)').matches) return;
+  const container = hubHero.querySelector('.hub-hero-carousel-container');
+  if (!container) return;
+
+  const controller = new AbortController();
+  let ticking = false;
+  const update = () => {
+    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }, { signal: controller.signal, passive: true });
+  requestAnimationFrame(update);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -427,6 +450,32 @@ const setCarouselSlideOffsets = (grid, carousel) => {
     const correction = contentHeight - gridHeight;
     hubHero.style.setProperty(`--carousel-slide-${nthChild}-correction`, `${correction}px`);
   });
+  const col3 = cols[2];
+  const col3LastChild = col3?.children[col3.children.length - 1];
+  if (col3LastChild) {
+    const gridBottom = grid.getBoundingClientRect().bottom;
+    const col3LastChildBottom = col3LastChild.getBoundingClientRect().bottom;
+    hubHero.style.setProperty('--grid-col-three-bottom-gap', `${gridBottom - col3LastChildBottom}px`);
+  }
+};
+
+const setElasticFirstSlideOffset = (hubHero) => {
+  if (!window.matchMedia('(width < 768px)').matches) return;
+  const media = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-media');
+  if (!media) return;
+  const gridImgWidthMin = parseFloat(getComputedStyle(media).getPropertyValue('--grid-img-width-min'));
+  const mediaHeight = media.getBoundingClientRect().height;
+  if (!gridImgWidthMin || !mediaHeight) return;
+  const probe = createTag('div', { style: 'position: absolute; visibility: hidden; height: 0; width: var(--start-gap);' });
+  hubHero.append(probe);
+  const startGap = probe.getBoundingClientRect().width;
+  probe.remove();
+  const gridColThreeBottomGap = parseFloat(
+    getComputedStyle(hubHero).getPropertyValue('--grid-col-three-bottom-gap'),
+  ) || 0;
+  const gapPx = (mediaHeight / 2) - ((gridImgWidthMin * 1.25) / 2)
+    - startGap + gridColThreeBottomGap;
+  hubHero.style.setProperty('--elastic-mobile-first-slide-offset', `${-gapPx}px`);
 };
 
 const handleGridImages = (imageContainers, slides, isThreeSlides) => {
@@ -530,9 +579,10 @@ const handleSlidesThreeVideos = (hubHero) => {
   });
 };
 
-const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
+const handleCarouselItemsOffsets = ({ grid, elasticCarousel, el }) => {
   requestAnimationFrame(() => {
     setCarouselSlideOffsets(grid, elasticCarousel);
+    setElasticFirstSlideOffset(el);
   });
 };
 
@@ -563,8 +613,9 @@ export default async function init(el) {
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
-  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+  if (isThreeSlides) handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
   initNavHeight(el);
   initHeaderPin(el, heroHeader);
+  initCarouselContainerExpand(el);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
