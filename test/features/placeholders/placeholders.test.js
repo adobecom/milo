@@ -6,6 +6,7 @@ import {
   replaceKey,
   replaceKeyArray,
   decoratePlaceholderArea,
+  decorateMetadataGeoIp,
   getGeoIpPlaceholders,
 } from '../../../libs/features/placeholders.js';
 
@@ -256,6 +257,102 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
       const overrides = await getGeoIpPlaceholders(cfg, defaultSheet);
       expect(overrides.has('unlisted-thing-geo-ip')).to.be.false;
     });
+  });
+});
+
+describe('decorateMetadataGeoIp', () => {
+  let paramsGetStub;
+  let langfirstMeta;
+  let originalTitle;
+  const addedMetas = [];
+  const contentRoot = '/test/features/placeholders';
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
+  function addMeta(attr, name, content) {
+    const meta = document.createElement('meta');
+    meta.setAttribute(attr, name);
+    meta.setAttribute('content', content);
+    document.head.appendChild(meta);
+    addedMetas.push(meta);
+    return meta;
+  }
+
+  function baseConfig() {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+    const cfg = getConfig();
+    cfg.locale.contentRoot = contentRoot;
+    return cfg;
+  }
+
+  function enableGeo(country) {
+    langfirstMeta = document.createElement('meta');
+    langfirstMeta.name = 'langfirst';
+    langfirstMeta.content = 'on';
+    document.head.appendChild(langfirstMeta);
+    sessionStorage.setItem('akamai', country);
+    return baseConfig();
+  }
+
+  beforeEach(() => {
+    originalTitle = document.title;
+  });
+
+  afterEach(() => {
+    document.title = originalTitle;
+    addedMetas.splice(0).forEach((meta) => meta.remove());
+    if (langfirstMeta?.parentNode) langfirstMeta.remove();
+    langfirstMeta = undefined;
+    sessionStorage.removeItem('akamai');
+  });
+
+  it('resolves a -geo-ip token in the document title', async () => {
+    const cfg = enableGeo('us');
+    document.title = 'Adobe {{hello-geo-ip}} for everyone';
+    await decorateMetadataGeoIp(cfg);
+    expect(document.title).to.equal('Adobe hello US for everyone');
+  });
+
+  it('resolves tokens in the og, twitter and description metas', async () => {
+    const cfg = enableGeo('us');
+    const ogTitle = addMeta('property', 'og:title', 'Adobe {{hello-geo-ip}}');
+    const twitterTitle = addMeta('name', 'twitter:title', 'Adobe {{hello-geo-ip}}');
+    const description = addMeta('name', 'description', 'Call {{phone-number-geo-ip}}');
+    await decorateMetadataGeoIp(cfg);
+    expect(ogTitle.getAttribute('content')).to.equal('Adobe hello US');
+    expect(twitterTitle.getAttribute('content')).to.equal('Adobe hello US');
+    expect(description.getAttribute('content')).to.equal('Call +1 800 111 1111');
+  });
+
+  it('resolves the URL-encoded token form', async () => {
+    const cfg = enableGeo('us');
+    document.title = 'Adobe %7B%7Bhello-geo-ip%7D%7D';
+    await decorateMetadataGeoIp(cfg);
+    expect(document.title).to.equal('Adobe hello US');
+  });
+
+  it('leaves non geo-ip placeholder tokens untouched', async () => {
+    // metadata resolution is geo-ip only; regular placeholders must survive for their own pass
+    const cfg = enableGeo('us');
+    document.title = '{{recommended-for-you}} and {{hello-geo-ip}}';
+    await decorateMetadataGeoIp(cfg);
+    expect(document.title).to.equal('{{recommended-for-you}} and hello US');
+  });
+
+  it('leaves metadata unchanged when langfirst is off', async () => {
+    const cfg = baseConfig();
+    const ogTitle = addMeta('property', 'og:title', 'Adobe {{hello-geo-ip}}');
+    document.title = 'Adobe {{hello-geo-ip}}';
+    await decorateMetadataGeoIp(cfg);
+    expect(document.title).to.equal('Adobe {{hello-geo-ip}}');
+    expect(ogTitle.getAttribute('content')).to.equal('Adobe {{hello-geo-ip}}');
   });
 });
 

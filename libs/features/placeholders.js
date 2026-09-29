@@ -5,6 +5,7 @@ import {
   getGeoIpWarmSheet,
   getMetadata,
   lingoActive,
+  META_GEO_IP_SELECTORS,
   normCountryCode,
   resolveDetectedMarketCountry,
 } from '../utils/utils.js';
@@ -144,6 +145,27 @@ export async function getGeoIpPlaceholders(config = getConfig(), source = undefi
     if (isGeoIpKey(key) && typeof value === 'string') overrides.set(key, value);
   });
   return overrides.size ? overrides : null;
+}
+
+const replaceGeoIpTokens = (text, overrides) => {
+  if (typeof text !== 'string' || !text.includes('-geo-ip')) return text;
+  return text.replace(new RegExp(PLACEHOLDER_REGEX), (match, k1, k2) => {
+    const key = k1 || k2;
+    return isGeoIpKey(key) && overrides.has(key) ? overrides.get(key) : match;
+  });
+};
+
+// <head> metadata is never walked by decoratePlaceholders, so `-geo-ip` tokens authored into
+// the page title / social / description tags leak raw; resolve them against the page root.
+export async function decorateMetadataGeoIp(config = getConfig()) {
+  const overrides = await getGeoIpPlaceholders(config);
+  if (!overrides) return;
+  document.title = replaceGeoIpTokens(document.title, overrides);
+  META_GEO_IP_SELECTORS.forEach((sel) => {
+    const el = document.head.querySelector(sel);
+    if (!el) return;
+    el.setAttribute('content', replaceGeoIpTokens(el.getAttribute('content') ?? '', overrides));
+  });
 }
 
 async function getPlaceholder(key, config, sheet) {

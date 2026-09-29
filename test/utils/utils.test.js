@@ -295,10 +295,78 @@ describe('Utils', () => {
       expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no geo-ip warm without lingo').to.be.undefined;
     });
 
+    it('warms the geo-ip sheet when only the head carries a -geo-ip token', () => {
+      // head-only pages have no token in the LCP section; without this they cold-fetch late
+      utils.setConfig({ ...config, contentRoot: '/geoip-head' });
+      document.head.innerHTML = '<meta name="langfirst" content="on"><meta property="og:title" content="Adobe {{hello-geo-ip}}">';
+      document.body.innerHTML = '<main><div>no token in the LCP</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'geo-ip sheet warmed from head').to.exist;
+    });
+
+    it('does not warm the geo-ip sheet for a token in a meta that is never rewritten', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-unrewritten' });
+      document.head.innerHTML = '<meta name="langfirst" content="on"><meta name="keywords" content="{{hello-geo-ip}}">';
+      document.body.innerHTML = '<main><div>no token in the LCP</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no warm for an unrewritten meta').to.be.undefined;
+    });
+
     it('does nothing when there is no first section', () => {
       document.body.innerHTML = '<header></header>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+  });
+
+  describe('hasGeoIpMetadataToken', () => {
+    let originalHead;
+    let originalTitle;
+
+    beforeEach(() => {
+      originalHead = document.head.innerHTML;
+      originalTitle = document.title;
+      document.head.innerHTML = '';
+    });
+
+    afterEach(() => {
+      document.head.innerHTML = originalHead;
+      document.title = originalTitle;
+    });
+
+    it('detects a token in the document title', () => {
+      document.title = 'Adobe {{hello-geo-ip}} for everyone';
+      expect(utils.hasGeoIpMetadataToken()).to.be.true;
+    });
+
+    it('detects the URL-encoded token form', () => {
+      document.title = 'Adobe %7B%7Bhello-geo-ip%7D%7D';
+      expect(utils.hasGeoIpMetadataToken()).to.be.true;
+    });
+
+    it('detects a token in og:title', () => {
+      document.title = 'no token here';
+      document.head.innerHTML = '<meta property="og:title" content="Adobe {{hello-geo-ip}}">';
+      expect(utils.hasGeoIpMetadataToken()).to.be.true;
+    });
+
+    it('ignores a -geo-ip token in a meta that is never rewritten', () => {
+      // the gate must match the rewrite set, or we fetch a sheet we never use
+      document.title = 'no token here';
+      document.head.innerHTML = '<meta name="keywords" content="Adobe {{hello-geo-ip}}">';
+      expect(utils.hasGeoIpMetadataToken()).to.be.false;
+    });
+
+    it('ignores a bare -geo-ip string outside placeholder braces', () => {
+      document.title = 'no token here';
+      document.head.innerHTML = '<meta name="description" content="see the -geo-ip docs">';
+      expect(utils.hasGeoIpMetadataToken()).to.be.false;
+    });
+
+    it('is false when no metadata carries a token', () => {
+      document.title = 'no token here';
+      document.head.innerHTML = '<meta name="description" content="plain copy">';
+      expect(utils.hasGeoIpMetadataToken()).to.be.false;
     });
   });
 

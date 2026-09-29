@@ -2318,12 +2318,30 @@ const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => bloc
 
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 
+export const META_GEO_IP_SELECTORS = [
+  'meta[name="description"]',
+  'meta[property="og:title"]',
+  'meta[property="og:description"]',
+  'meta[name="twitter:title"]',
+  'meta[name="twitter:description"]',
+];
+
+const GEO_IP_TOKEN_REGEX = /-geo-ip(}}|%7D%7D)/;
+
+// Warming and rewriting must agree; a token in a meta we never rewrite should not trigger a fetch.
+export function hasGeoIpMetadataToken() {
+  if (GEO_IP_TOKEN_REGEX.test(document.title)) return true;
+  return META_GEO_IP_SELECTORS
+    .some((sel) => GEO_IP_TOKEN_REGEX.test(document.head.querySelector(sel)?.content ?? ''));
+}
+
 const geoIpWarm = {};
 export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
 const warmGeoIpSheet = (config, section, isDoc = true) => {
   if (!lingoActive()) return;
-  const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
-  if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
+  const tokenInLcp = GEO_IP_TOKEN_REGEX.test(section?.innerHTML ?? '');
+  const tokenInHead = isDoc && hasGeoIpMetadataToken();
+  if (!tokenInLcp && !tokenInHead && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
   const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
   geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
     .then((r) => (r?.ok ? r.json() : null))
@@ -2501,6 +2519,13 @@ async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
 
   await decoratePlaceholders(document.body.querySelector('header'), config);
+  if (hasGeoIpMetadataToken()) {
+    import('../features/placeholders.js')
+      .then(({ decorateMetadataGeoIp }) => decorateMetadataGeoIp(config))
+      .catch((e) => {
+        window.lana?.log(`Failed to resolve geo-ip metadata: ${e}`, { tags: 'placeholders', severity: 'error' });
+      });
+  }
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
   if (config.mep?.targetEnabled === 'postlcp') {
