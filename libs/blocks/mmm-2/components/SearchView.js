@@ -4,6 +4,7 @@ import { API_URLS } from '../../../features/personalization/preview.js';
 import DropdownFilter from './DropdownFilter.js';
 import CheckboxFilterGroup from './CheckboxFilterGroup.js';
 import SearchTextarea from './SearchTextarea.js';
+import TextFilter from './TextFilter.js';
 import PageListItem from './PageListItem.js';
 import Pagination from './Pagination.js';
 import {
@@ -41,6 +42,8 @@ const DEFAULT_FILTERS = {
   subdomain: 'www',
   targetSetting: 'on, off, postLCP',
   manifestSrc: 'pzn, promo, target, ajo, placeholders',
+  manifestConsentType: '',
+  manifestCountryRestriction: '',
   pages: '',
   geos: '',
   filterText: '',
@@ -88,6 +91,8 @@ function SearchView() {
       subdomain: filters.subdomain,
       targetSetting: filters.targetSetting,
       manifestSrc: filters.manifestSrc,
+      manifestConsentType: filters.manifestConsentType,
+      manifestCountryRestriction: filters.manifestCountryRestriction,
       pages: filters.pages,
       geos: filters.geos,
       filter: toFilterParam(filters.filterText),
@@ -148,6 +153,20 @@ function SearchView() {
           options=${Object.values(MANIFESTSRC_OPTIONS)}
           value=${filters.manifestSrc}
           onChange=${(v) => setFilter('manifestSrc', v)}
+        />
+        <${TextFilter}
+          id="mmm2-filter-manifestconsenttype"
+          label="Manifest Consent Type"
+          placeholder="e.g. strict, implicit"
+          value=${filters.manifestConsentType}
+          onChange=${(v) => setFilter('manifestConsentType', v)}
+        />
+        <${TextFilter}
+          id="mmm2-filter-manifestcountryrestriction"
+          label="Manifest Country Restriction"
+          placeholder="e.g. US, CA"
+          value=${filters.manifestCountryRestriction}
+          onChange=${(v) => setFilter('manifestCountryRestriction', v)}
         />
         <${SearchTextarea}
           id="mmm2-filter-search"
