@@ -244,8 +244,7 @@ function InactivityReportView() {
           <thead>
             <tr>
               <th class="mmm2-report-select-all">
-                <input type="checkbox" id="mmm2-report-select-all" checked=${allSelected} onChange=${toggleAll} />
-                <label for="mmm2-report-select-all">Select All</label>
+                <input type="checkbox" id="mmm2-report-select-all" aria-label="Select All" checked=${allSelected} onChange=${toggleAll} />
               </th>
               ${HEADERS.map((header) => html`
                 <th key=${header.colKey}>

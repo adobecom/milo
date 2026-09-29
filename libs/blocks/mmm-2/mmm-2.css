@@ -377,18 +377,13 @@
   text-align: center;
 }
 
+/* Note: .mmm2-report-select-all is applied directly to the <th> (it's a table
+   cell, not a wrapper div) - it must NOT set display: flex here, since that
+   would take the cell out of table layout entirely (breaks column width,
+   borders, and row height). Centering the lone checkbox is handled by the
+   shared th:nth-child(1)/td:nth-child(1) text-align: center rule above. */
 .mmm-2 .mmm2-report-select-all {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: var(--spacing-xxs);
-}
-
-.mmm-2 .mmm2-report-select-all label {
-  font-size: 0;
-  width: 0;
-  overflow: hidden;
+  vertical-align: middle;
 }
 
 .mmm-2 .mmm2-report-sortable {
