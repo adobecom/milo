@@ -134,6 +134,11 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
 
+    > .con-button {
+      flex: 1 1 0;
+      justify-content: center;
+    }
+
 mas-field .icon-button {
       display: inline;
       background: none;
