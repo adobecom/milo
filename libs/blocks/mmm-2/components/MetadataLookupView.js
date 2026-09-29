@@ -147,7 +147,11 @@ function MetadataLookupView() {
           <li>Preview and publish the spreadsheet</li>
           <li>Reload this page to confirm the page settings are updated and update MMM.</li>
         </ol>
-        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/" target="_blank" rel="noopener">MEP Documentation</a>
+        <div class="mmm2-howto-links">
+          <a class="con-button blue button-s mmm2-howto-link" href="/docs/authoring/features/mmm/" target="_blank" rel="noopener">MMM Report</a>
+          <a class="con-button button-s mmm2-howto-link" href="https://adobe-my.sharepoint.com/:v:/p/vgoodric/Eay-ZA2d7_FPv16C2UtTZwgBd-oMelWPvhLS7Fhr9aGUOw?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=1tsxDG" target="_blank" rel="noopener">Tutorial</a>
+          <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/" target="_blank" rel="noopener">MEP Documentation</a>
+        </div>
       <//>
       <div class="mmm2-filters">
         <div class="mmm2-form-field">

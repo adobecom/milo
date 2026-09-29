@@ -121,7 +121,11 @@ function SearchView() {
           <li>Click Preview</li>
         </ol>
         <p class="mmm2-howto-note">* Keeping "None" selected does not add the manifest to your preview URL and will not force the manifest to load. But if the manifest is still attached to the page, it will load anyways. If you want to force the default experience, choose "Default" from the dropdown menu.</p>
-        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mmm/documentation" target="_blank" rel="noopener">Learn more</a>
+        <div class="mmm2-howto-links">
+          <a class="con-button blue button-s mmm2-howto-link" href="/docs/authoring/features/mmm/mep-target-inactivity" target="_blank" rel="noopener">Inactivity Report</a>
+          <a class="con-button button-s mmm2-howto-link" href="https://adobe-my.sharepoint.com/:v:/p/vgoodric/EVIj9-ysJstIsizeZL6eFa4BFLw8esvfcnF-ont3BsHr_g?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=9s4B9H" target="_blank" rel="noopener">Tutorial</a>
+          <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mmm/documentation" target="_blank" rel="noopener">Learn more</a>
+        </div>
       <//>
       <div class="mmm2-filters">
         ${authoredConfig.pages ? html`<${DropdownFilter}

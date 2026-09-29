@@ -215,7 +215,10 @@ function InactivityReportView() {
           <li>Click "Open Slack"</li>
           <li>Paste your request in Slack.</li>
         </ol>
-        <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/target-integration" target="_blank" rel="noopener">Learn more</a>
+        <div class="mmm2-howto-links">
+          <a class="con-button blue button-s mmm2-howto-link" href="/docs/authoring/features/mmm/" target="_blank" rel="noopener">MMM Report</a>
+          <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/target-integration" target="_blank" rel="noopener">Learn more</a>
+        </div>
       <//>
       <div class="mmm2-filters">
         <${DropdownFilter}

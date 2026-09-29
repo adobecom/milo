@@ -104,9 +104,11 @@
   color: var(--color-gray-600);
 }
 
-.mmm-2 .mmm2-howto-link {
-  display: inline-block;
-  margin-top: var(--spacing-xs);
+.mmm-2 .mmm2-howto-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-s);
 }
 
 /* Shared: filter panel */
