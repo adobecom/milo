@@ -620,7 +620,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
 
   createIntersectionObserver({
     el: videoEl,
-    options: { rootMargin: '1000px' },
+    options: { rootMargin: '200px' },
     callback: () => {
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));

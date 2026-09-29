@@ -70,6 +70,25 @@ describe('video uploaded using franklin bot', () => {
     expect(video).to.exist;
   });
 
+  it('loads the video source only when within 200px of the viewport', async () => {
+    const NativeIO = window.IntersectionObserver;
+    const margins = [];
+    window.IntersectionObserver = class extends NativeIO {
+      constructor(cb, options = {}) {
+        super(cb, options);
+        margins.push(options.rootMargin);
+      }
+    };
+    const a = document.querySelector('.video.normal a');
+    a.textContent = a.href;
+    init(a);
+    await waitForElement('.video.normal video');
+    window.IntersectionObserver = NativeIO;
+
+    expect(margins).to.include('200px');
+    expect(margins).to.not.include('1000px');
+  });
+
   it('decorates video with autoplay', async () => {
     const block = document.querySelector('.video.autoplay');
     const a = block.querySelector('a');
