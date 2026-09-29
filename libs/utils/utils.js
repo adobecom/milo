@@ -2343,7 +2343,7 @@ export function preloadLcpCodeFiles(area = document) {
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = sectionBlockEls.length !== blocks.length
+  const hasCommerceContent = sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
     || [...autoNames].some(isCommerceBlock);
   if (hasCommerceContent) {
     import(`${base}/blocks/merch/merch.js`)
