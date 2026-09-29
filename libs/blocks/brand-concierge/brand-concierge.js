@@ -94,7 +94,19 @@ export default async function init(el) {
   sideOverlayTop();
   initAnalytics('BC-Inline-shown');
 
-  const rows = el.querySelectorAll(':scope > div');
+  const rows = [...el.querySelectorAll(':scope > div')];
+  let customGradient = null;
+  let gradientRow = null;
+  if (el.classList.contains('marquee')
+    && rows[0]
+    && !rows[0].querySelector('picture')
+    && rows[1]?.querySelector('picture')) {
+    const rowText = rows[0].textContent.trim();
+    if (!rowText || /^linear-gradient\(/.test(rowText)) {
+      gradientRow = rows.shift();
+      customGradient = rowText || null;
+    }
+  }
   const [background, header, cards, input, legal] = rows;
 
   setAuthoredContent(header, cards, input);
@@ -171,7 +183,7 @@ export default async function init(el) {
   }
 
   if (variants.isMarquee) {
-    decorateMarqueeBackground(el, background);
+    decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
     decorateInput(el, input, { handle: handleInput });
     decorateCards(el, cards, { handle: handleSuggestedPrompt }, false);
@@ -195,6 +207,7 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+  if (gradientRow) el.removeChild(gradientRow);
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
