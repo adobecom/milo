@@ -148,7 +148,6 @@ function MetadataLookupView() {
           <li>Reload this page to confirm the page settings are updated and update MMM.</li>
         </ol>
         <div class="mmm2-howto-links">
-          <a class="con-button blue button-s mmm2-howto-link" href="/docs/authoring/features/mmm/" target="_blank" rel="noopener">MMM Report</a>
           <a class="con-button button-s mmm2-howto-link" href="https://adobe-my.sharepoint.com/:v:/p/vgoodric/Eay-ZA2d7_FPv16C2UtTZwgBd-oMelWPvhLS7Fhr9aGUOw?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=1tsxDG" target="_blank" rel="noopener">Tutorial</a>
           <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/" target="_blank" rel="noopener">MEP Documentation</a>
         </div>
@@ -166,7 +165,10 @@ function MetadataLookupView() {
             `)}
           </select>
         </div>
-        <p><a href=${source} target="_blank" rel="noopener" class="con-button">Open ${name} Spreadsheet</a></p>
+        <div class="mmm2-form-field">
+          <label class="mmm2-form-field-spacer" aria-hidden="true">&nbsp;</label>
+          <p><a href=${source} target="_blank" rel="noopener" class="con-button">Open ${name} Spreadsheet</a></p>
+        </div>
         <${SearchTextarea}
           id="mmm2-metadata-filter"
           label="URL list (full URLs):"

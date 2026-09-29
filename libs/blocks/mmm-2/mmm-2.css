@@ -137,6 +137,14 @@
   color: var(--color-gray-700);
 }
 
+.mmm-2 .mmm2-form-field-spacer {
+  visibility: hidden;
+}
+
+.mmm-2 .mmm2-form-field p {
+  margin: 0;
+}
+
 .mmm-2 .mmm2-form-field select,
 .mmm-2 .mmm2-search-input,
 .mmm-2 .mmm2-text-input {
