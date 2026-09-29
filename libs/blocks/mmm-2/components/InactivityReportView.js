@@ -65,7 +65,20 @@ const DEFAULT_COL_WIDTHS = {
   pageLastSeen: 160,
 };
 
-const SORT_ARROW = html`<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="currentColor"/></svg>`;
+const CHEVRON_UP = html`<svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 0L8 5H0L4 0Z" fill="currentColor"/></svg>`;
+const CHEVRON_DOWN = html`<svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5L0 0H8L4 5Z" fill="currentColor"/></svg>`;
+
+// Always-visible up/down chevron pair for a sortable header - the chevron matching
+// the column's active sort direction is darkened, both stay a light neutral gray on
+// non-active/unsorted columns.
+function SortChevrons({ order }) {
+  return html`
+    <span class="mmm2-sort-chevrons">
+      <span class="mmm2-sort-chevron ${order === 'asc' ? 'is-active' : ''}">${CHEVRON_UP}</span>
+      <span class="mmm2-sort-chevron ${order === 'desc' ? 'is-active' : ''}">${CHEVRON_DOWN}</span>
+    </span>
+  `;
+}
 
 /**
  * Drag handle on a column's right edge. Plain document-level pointermove/pointerup
@@ -244,7 +257,7 @@ function InactivityReportView() {
                 <th key=${header.colKey}>
                   <div class="mmm2-report-sortable" onClick=${() => sortBy(header.orderBy)}>
                     ${header.label}
-                    ${filters.orderBy === header.orderBy ? html`<span class="mmm2-sort-arrow mmm2-sort-${filters.order}">${SORT_ARROW}</span>` : null}
+                    <${SortChevrons} order=${filters.orderBy === header.orderBy ? filters.order : null} />
                   </div>
                   <${ColumnResizer}
                     colKey=${header.colKey}

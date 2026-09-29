@@ -348,7 +348,7 @@
 .mmm-2 .mmm2-report-table th,
 .mmm-2 .mmm2-report-table td {
   border: 1px solid var(--color-gray-200);
-  padding: var(--spacing-s);
+  padding: 10px var(--spacing-xxs);
   text-align: left;
   vertical-align: top;
   overflow-wrap: anywhere;
@@ -383,17 +383,19 @@
   user-select: none;
 }
 
-.mmm-2 .mmm2-sort-arrow {
+.mmm-2 .mmm2-sort-chevrons {
   display: inline-flex;
-  transition: transform .15s ease;
+  flex-direction: column;
+  gap: 1px;
 }
 
-.mmm-2 .mmm2-sort-arrow.mmm2-sort-desc {
-  transform: rotate(90deg);
+.mmm-2 .mmm2-sort-chevron {
+  display: flex;
+  color: var(--color-gray-400);
 }
 
-.mmm-2 .mmm2-sort-arrow.mmm2-sort-asc {
-  transform: rotate(-90deg);
+.mmm-2 .mmm2-sort-chevron.is-active {
+  color: var(--color-gray-800);
 }
 
 .mmm-2 .mmm2-report-row {
