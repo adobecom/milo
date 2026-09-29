@@ -192,6 +192,7 @@ function SearchView() {
         pageNum=${filters.pageNum}
         perPage=${filters.perPage}
         totalRecords=${result.totalRecords}
+        loading=${loading}
         onPageChange=${(p) => setFilters((prev) => ({ ...prev, pageNum: p }))}
         onPerPageChange=${(p) => setFilters((prev) => ({ ...prev, perPage: p }))}
       />

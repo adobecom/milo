@@ -105,6 +105,30 @@ export function getAbsUrl(manifestUrl, pageUrl) {
 }
 
 /**
+ * Extracts a bare pathname (e.g. `/products/photoshop`) from user-entered input that
+ * may be a full URL (with or without protocol) or already a bare path - the metadata
+ * spreadsheet backing the Metadata Lookup tab only ever stores bare paths, so this is
+ * how entered URLs get normalized to match against it. Previously this used
+ * `url.split(/\.com|\.html/g)[1]`, which returned `undefined` (rendering as a blank
+ * line) for any entry that wasn't a full `.com`/`.html` URL - most commonly a bare
+ * path pasted directly, which is the spreadsheet's own format.
+ */
+export function getUrlPath(rawUrl) {
+  const url = (rawUrl ?? '').trim();
+  if (!url) return '';
+  if (url.startsWith('/')) return url;
+  try {
+    return new URL(url).pathname;
+  } catch {
+    try {
+      return new URL(`https://${url}`).pathname;
+    } catch {
+      return url;
+    }
+  }
+}
+
+/**
  * Parses a block's authored table content (row 1 = "Menu: <key>" / <group label>,
  * subsequent rows = <option value> / <option label>) into a lookup keyed by group.
  * Ported as-is from the original mmm.js - works against both a live decorated block

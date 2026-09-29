@@ -7,6 +7,7 @@ import {
   METADATA_URLS_CATEGORIES,
   LOCAL_STORAGE_KEYS,
   getDate,
+  getUrlPath,
 } from '../utils.js';
 
 const DEFAULT_STATE = { selectedRepo: 'cc', urlListText: '' };
@@ -26,9 +27,9 @@ function categorize(urlListText, metadataRows) {
     [METADATA_URLS_CATEGORIES.on.key]: [],
     [METADATA_URLS_CATEGORIES.postLCP.key]: [],
   };
-  const urls = (urlListText ?? '').split(/,|\n/).filter((item) => item.trim().length > 0);
+  const urls = (urlListText ?? '').split(/,|\n/).map((item) => item.trim()).filter(Boolean);
   urls.forEach((url) => {
-    const path = url.split(/\.com|\.html/g)[1];
+    const path = getUrlPath(url);
     const match = metadataRows.find((item) => item.URL === path);
     if (!match) {
       if (url) categories.notFound.push(url);
@@ -66,7 +67,7 @@ function UrlPod({ title, list, onCopy }) {
       <h3>${title}</h3>
       ${list.map((item) => html`
         <div class="mmm2-metadata-pod-item" key=${item.URL ?? item}>
-          <span>${item.URL || item.split(/\.com|\.html/g)[1]}</span>
+          <span>${item.URL || getUrlPath(item)}</span>
         </div>
       `)}
       <button type="button" class="con-button" onClick=${onCopy}>Copy</button>
@@ -115,7 +116,7 @@ function MetadataLookupView() {
   }, [state.urlListText, metadataRows]);
 
   const copyCategory = (list) => {
-    const text = list.map((item) => item.URL || item.split(/\.com|\.html/g)[1]).join('\n');
+    const text = list.map((item) => item.URL || getUrlPath(item)).join('\n');
     navigator.clipboard.writeText(text);
   };
 

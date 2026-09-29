@@ -9,7 +9,11 @@ const ARROW_ICONS = {
   last: html`<svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.795044 1.41L5.38504 6L0.795044 10.59L2.20504 12L8.20504 6L2.20504 0L0.795044 1.41ZM11.205 0H13.205V12H11.205V0Z" fill="currentColor"/></svg>`,
 };
 
-function Pagination({ pageNum, perPage, totalRecords, onPageChange, onPerPageChange }) {
+function Pagination({
+  pageNum, perPage, totalRecords, loading, onPageChange, onPerPageChange,
+}) {
+  if (loading) return null;
+
   if (!totalRecords) {
     return html`<div class="mmm2-pagination"><h5 class="mmm2-pagination-no-results">No results</h5></div>`;
   }
