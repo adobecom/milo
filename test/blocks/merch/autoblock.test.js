@@ -243,24 +243,42 @@ describe('autoblock', () => {
       expect(() => overrideCardHeadingLevel(card, 2)).to.not.throw();
     });
 
-    it('leaves headings that wrap a customized built-in (inline-price) untouched', () => {
+    it('preserves the original tag styling inline after swapping', () => {
+      const style = document.createElement('style');
+      style.textContent = 'merch-card h4 { font-weight: 400; font-size: 14px; }';
+      document.head.appendChild(style);
+      const card = makeCard(['h3', 'h4']);
+      document.body.appendChild(card);
+      overrideCardHeadingLevel(card, 2);
+      const heading = card.querySelector('h3');
+      expect(heading.style.fontWeight).to.equal('400');
+      expect(heading.style.fontSize).to.equal('14px');
+      style.remove();
+      card.remove();
+    });
+
+    it('swaps the tag of a heading wrapping a customized built-in (inline-price), preserving content', () => {
       const card = makeCard(['h3']);
       const priceHeading = document.createElement('h3');
       priceHeading.innerHTML = '<span is="inline-price">$9.99</span>';
       card.appendChild(priceHeading);
       overrideCardHeadingLevel(card, 2);
-      expect(card.querySelectorAll('h2').length).to.equal(1);
-      expect(priceHeading.tagName).to.equal('H3');
-      expect(priceHeading.querySelector('[is="inline-price"]')).to.not.equal(null);
+      const swapped = card.querySelectorAll('h2');
+      expect(swapped.length).to.equal(2);
+      const price = card.querySelector('[is="inline-price"]');
+      expect(price).to.not.equal(null);
+      expect(price.closest('h2')).to.not.equal(null);
     });
 
-    it('leaves headings that wrap a custom element untouched', () => {
+    it('swaps the tag of a heading wrapping a custom element, preserving content', () => {
       const card = makeCard(['h3']);
       const heading = document.createElement('h4');
       heading.innerHTML = '<mas-mnemonic></mas-mnemonic>';
       card.appendChild(heading);
       overrideCardHeadingLevel(card, 2);
-      expect(heading.tagName).to.equal('H4');
+      const custom = card.querySelector('mas-mnemonic');
+      expect(custom).to.not.equal(null);
+      expect(custom.closest('h3')).to.not.equal(null);
     });
   });
 });

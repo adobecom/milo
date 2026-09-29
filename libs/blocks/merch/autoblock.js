@@ -131,11 +131,17 @@ export async function decorateContentLinks(el) {
   el.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
 
-const wrapsLiveComponent = (heading) => [...heading.querySelectorAll('*')]
-  .some((el) => el.hasAttribute('is') || el.tagName.includes('-'));
+// mas merch-card CSS targets bare tag selectors (e.g. `[slot="whats-included"] h4`) for
+// typography, so swapping the tag drops that styling. Snapshot it before the swap and
+// reapply inline so the visual look is unaffected by the tag-level a11y fix.
+const PRESERVED_STYLE_PROPS = [
+  'fontFamily', 'fontWeight', 'fontSize', 'lineHeight', 'letterSpacing', 'color',
+  'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'display', 'alignItems', 'gap',
+];
 
 export function overrideCardHeadingLevel(card, targetLevel) {
-  const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].filter((h) => !wrapsLiveComponent(h));
+  const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
   if (!headings.length) return;
   const origLevels = headings.map((h) => {
     const level = Number(h.dataset.masOrigLevel) || Number(h.tagName[1]);
@@ -147,8 +153,11 @@ export function overrideCardHeadingLevel(card, targetLevel) {
   headings.forEach((heading, i) => {
     const newLevel = Math.min(6, Math.max(1, origLevels[i] + delta));
     if (newLevel === Number(heading.tagName[1])) return;
+    const computed = getComputedStyle(heading);
+    const preservedStyles = PRESERVED_STYLE_PROPS.map((prop) => [prop, computed[prop]]);
     const next = createTag(`h${newLevel}`);
     [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
+    preservedStyles.forEach(([prop, value]) => { next.style[prop] = value; });
     next.append(...heading.childNodes);
     heading.replaceWith(next);
   });
