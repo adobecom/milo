@@ -737,8 +737,10 @@ export async function getUpgradeAction(options, imsSignedInPromise, offers, el) 
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
-  // never cache a miss: the upgrade offer may be added to the DOM later on.
-  getUpgradeAction.offer ??= document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  // Refresh the cache when the offer was removed during fragment replacement.
+  if (!getUpgradeAction.offer?.isConnected) {
+    getUpgradeAction.offer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  }
   const upgradeOffer = getUpgradeAction.offer;
   if (!upgradeOffer) {
     // Authoring error: the CTA asks for an upgrade but the page has no upgrade offer,

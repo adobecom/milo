@@ -1166,6 +1166,46 @@ describe('Merch Block', () => {
       }
     });
 
+    it('getUpgradeAction: refreshes a detached cached offer after fragment replacement', async () => {
+      mockIms('US');
+      getUpgradeAction.offer = undefined;
+      getUpgradeAction.missReported = false;
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+
+      const oldOffer = document.createElement('a');
+      oldOffer.setAttribute('data-wcs-osi', 'OLD_OSI');
+      const oldContainer = document.createElement('div');
+      oldContainer.classList.add('merch-offers', 'upgrade');
+      oldContainer.appendChild(oldOffer);
+      document.body.appendChild(oldContainer);
+      getUpgradeAction.offer = oldOffer;
+      oldContainer.remove();
+
+      const newOffer = document.createElement('a');
+      newOffer.setAttribute('data-wcs-osi', 'NEW_OSI');
+      const newContainer = document.createElement('div');
+      newContainer.classList.add('merch-offers', 'upgrade');
+      newContainer.appendChild(newOffer);
+      document.body.appendChild(newContainer);
+      try {
+        await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+          null,
+        );
+        expect(getUpgradeAction.offer).to.equal(newOffer);
+      } finally {
+        newContainer.remove();
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+      }
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
