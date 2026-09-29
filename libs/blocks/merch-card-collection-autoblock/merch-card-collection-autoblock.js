@@ -131,7 +131,6 @@ function generateCheckboxGroups(checkboxGroups) {
 // SWC sidenav. Both write the active filters to the URL hash; the collection
 // re-filters via its own hashchange listener.
 const SLIDERS_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6M12 4h2M2 8h2M8 8h6M2 12h6M12 12h2" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/><circle cx="6" cy="8" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/></svg>';
-const CHEVRON_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
 const CLOSE_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg>';
 const SEARCH_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.5"/></svg>';
 
@@ -152,11 +151,11 @@ function writeHash(params) {
 }
 
 // Every selected pill counts, including the default category, so Featured +
-// Individuals reads "All Filters (2)". 'all' means unfiltered.
+// Individuals reads "All Filters (2)". Each group holds at most one value, so
+// that is one per group. 'all' means unfiltered.
 export function countApplied(params, groups = []) {
-  return groups.reduce((total, { deeplink, multi }) => {
+  return groups.reduce((total, { deeplink }) => {
     const raw = params.get(deeplink) || '';
-    if (multi) return total + raw.split(',').filter(Boolean).length;
     return total + (raw && raw !== 'all' ? 1 : 0);
   }, 0);
 }
@@ -169,8 +168,8 @@ export function productPricingFilterGroups(data) {
     groups.push({
       title: placeholders.filtersCategory,
       deeplink: 'filter',
-      multi: false,
-      // Seeds the default filter and collapses to its active pill in the bar.
+      // Seeds the default filter, collapses to its active pill in the bar, and
+      // scrolls inside its own drawer section.
       category: true,
       options: hierarchy.map((node) => ({
         value: node.queryLabel || node.label.toLowerCase(),
@@ -183,39 +182,35 @@ export function productPricingFilterGroups(data) {
     .forEach((group) => groups.push({
       title: group.title || group.label || group.deeplink,
       deeplink: group.deeplink,
-      // types combines (multi); other tag groups (e.g. pricing) are exclusive.
-      multi: group.deeplink === 'types',
+      // MWPW-205571: types is one option or none, and seeds no default. Every
+      // other group always holds exactly one value.
+      optional: group.deeplink === 'types',
       options: group.checkboxes.map((cb) => ({ value: cb.name, label: cb.label })),
     }));
   return groups;
 }
 
-// The input carries the selection, so exclusivity, arrow-key roving, and Reset
+// The input carries the selection, so arrow-key roving, exclusivity and Reset
 // come from the platform. `scope` keeps the bar and drawer copies of a group in
-// separate radio groups.
+// separate radio groups. An optional group needs checkboxes, since a radio
+// cannot be clicked back off; its exclusivity comes from the hash instead.
 function buildPill({ value, label }, group, scope) {
   const input = createTag('input', {
-    type: group.multi ? 'checkbox' : 'radio',
+    type: group.optional ? 'checkbox' : 'radio',
     name: `${scope}-${group.deeplink}`,
     value,
     'data-deeplink': group.deeplink,
-    'data-multi': String(group.multi),
+    'data-optional': String(!!group.optional),
   });
   return createTag('label', { class: 'product-pricing-pill' }, [input, label]);
 }
 
-export function toggleFilterHash(deeplink, value, multi) {
+export function toggleFilterHash(deeplink, value, optional) {
   const params = hashParams();
-  if (multi) {
-    const values = (params.get(deeplink) || '').split(',').filter(Boolean);
-    const idx = values.indexOf(value);
-    if (idx >= 0) values.splice(idx, 1);
-    else values.push(value);
-    if (values.length) params.set(deeplink, values.join(','));
-    else params.delete(deeplink);
-  } else {
-    params.set(deeplink, value);
-  }
+  // Re-picking the active value empties an optional group; elsewhere the
+  // already-checked radio cannot fire a change in the first place.
+  if (optional && params.get(deeplink) === value) params.delete(deeplink);
+  else params.set(deeplink, value);
   writeHash(params);
 }
 
@@ -255,43 +250,40 @@ export function filterBarLabels(params, groups, placeholders, resultCount) {
   };
 }
 
-// Types is deselectable to zero and seeds nothing, which `multi` encodes today.
 export function defaultParams(groups) {
   return groups
-    .filter((group) => !group.multi && group.options.length)
+    .filter((group) => !group.optional && group.options.length)
     .map((group) => [group.deeplink, group.options[0].value]);
 }
 
+// MWPW-205571: search is independent of the filter groups, so Reset leaves it.
 export function resetParams(params, groups) {
   const reset = new URLSearchParams(params);
   groups.forEach(({ deeplink }) => reset.delete(deeplink));
-  reset.delete('search');
   defaultParams(groups).forEach(([key, value]) => reset.set(key, value));
   return reset;
 }
 
 export function syncPills(params, root) {
   root.querySelectorAll('.product-pricing-pill input').forEach((input) => {
-    const raw = params.get(input.dataset.deeplink) || '';
-    input.checked = input.dataset.multi === 'true'
-      ? raw.split(',').includes(input.value)
-      : raw === input.value;
+    input.checked = params.get(input.dataset.deeplink) === input.value;
   });
 }
 
-// Multi groups stay drawer-only: a horizontal row gives no room for several
-// checked pills per group.
+// MWPW-205571: the bar exposes Category and Pricing, Type only in the drawer.
 export function barGroups(groups) {
-  return groups.filter((group) => !group.multi);
+  return groups.filter((group) => !group.optional);
 }
 
-// <details> gives the collapse for free. Multi groups get role=group because
-// their pills are checkboxes, not radios.
+// MWPW-205571: the sections do not collapse, so a heading and a list of pills
+// rather than <details>. An optional group gets role=group because its pills
+// are checkboxes, not radios.
 function buildGroupCard(group) {
-  const summary = createTag('summary', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), svgIcon(CHEVRON_ICON)]);
-  const bodyAttrs = { class: 'product-pricing-group-pills', role: group.multi ? 'group' : 'radiogroup', 'aria-label': group.title };
+  const header = createTag('h3', { class: 'product-pricing-group-header' }, group.title);
+  const bodyAttrs = { class: 'product-pricing-group-pills', role: group.optional ? 'group' : 'radiogroup', 'aria-label': group.title };
   const body = createTag('div', bodyAttrs, group.options.map((opt) => buildPill(opt, group, 'drawer')));
-  return createTag('details', { class: 'product-pricing-group', open: '' }, [summary, body]);
+  const scroll = group.category ? ' product-pricing-group-scroll' : '';
+  return createTag('div', { class: `product-pricing-group${scroll}` }, [header, body]);
 }
 
 function buildProductPricingDrawer(collection, groups) {
@@ -389,7 +381,7 @@ export function mountProductPricingFilter(collection, container) {
   surfaces.forEach((root) => root.addEventListener('change', (e) => {
     const input = e.target.closest('.product-pricing-pill input');
     if (!input) return;
-    toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.multi === 'true');
+    toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.optional === 'true');
   }));
   drawer.reset.addEventListener('click', () => {
     writeHash(resetParams(hashParams(), groups));
