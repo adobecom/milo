@@ -438,10 +438,15 @@
   font-weight: 700;
   color: var(--color-gray-700);
   text-align: center;
+  transition: background-color .15s ease;
 }
 
 .mmm-2 .mmm2-report-table thead th {
   border-top: 1px solid var(--color-gray-200);
+}
+
+.mmm-2 .mmm2-report-table th:hover {
+  background: var(--color-gray-200);
 }
 
 .mmm-2 .mmm2-report-table th:nth-child(1),
@@ -531,6 +536,11 @@
 .mmm-2 .mmm2-sort-chevron {
   display: flex;
   color: var(--color-gray-400);
+  transition: color .15s ease;
+}
+
+.mmm-2 .mmm2-report-table th:hover .mmm2-sort-chevron:not(.is-active) {
+  color: var(--color-gray-600);
 }
 
 .mmm-2 .mmm2-sort-chevron.is-active {
