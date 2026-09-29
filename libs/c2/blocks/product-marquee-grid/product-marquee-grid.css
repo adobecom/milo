@@ -130,12 +130,11 @@
     }
   }
 
-  &.body-md .pm-merch-content :is(.mas-description, .mas-short-description),
-  &.legal .pm-merch-content :is(.mas-description, .mas-short-description) {
+  &.merch-md .pm-merch-content :is(.mas-description, .mas-short-description) {
     font-size: var(--s2a-typography-font-size-body-md);
   }
 
-  &.body-sm .pm-merch-content :is(.mas-description, .mas-short-description),
+  &.merch-sm .pm-merch-content :is(.mas-description, .mas-short-description),
   &.legal .pm-merch-content :is(.mas-description, .mas-short-description) {
     font-size: var(--s2a-typography-font-size-body-sm);
   }
