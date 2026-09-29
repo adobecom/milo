@@ -127,25 +127,9 @@ const SIGNIN_CONTEXT = getConfig()?.signInContext;
 const AUP_DIALOG_CLOSE_SOURCES = ['buttonClose', 'escapeClose', 'curtainClose'];
 
 // Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
-export function sendAupDialogCloseAnalytics(modalHash, source) {
-  const name = `${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`;
-  // eslint-disable-next-line no-underscore-dangle
-  const track = () => window._satellite?.track('event', {
-    xdm: {},
-    data: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          name,
-          linkClicks: { value: 1 },
-          type: 'other',
-        },
-      },
-    },
-  });
-  // eslint-disable-next-line no-underscore-dangle
-  if (window._satellite?.track) track();
-  else window.addEventListener('alloy_sendEvent', track, { once: true });
+export async function sendAupDialogCloseAnalytics(modalHash, source) {
+  const { sendAnalytics } = await import('../../martech/helpers.js');
+  sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
 }
 
 function getHelpChildren() {

@@ -13,6 +13,7 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale, getConfig as getMiloConfig } from '../../../libs/utils/utils.js';
+import { delay, waitFor } from '../../helpers/waitfor.js';
 import {
   isDesktop,
   isTangentToViewport,
@@ -997,12 +998,15 @@ describe('global navigation', () => {
           }
           expect(document.getElementById('aup-workflow-dialog')).to.be.null;
           if (expectedName) {
+            await waitFor(() => window._satellite.track.called, 1000, 10);
             expect(window._satellite.track.calledOnce).to.be.true;
             const [type, payload] = window._satellite.track.firstCall.args;
             expect(type).to.equal('event');
-            expect(payload.data.web.webInteraction.name).to.equal(expectedName);
-            expect(payload.data.web.webInteraction.linkClicks).to.deep.equal({ value: 1 });
+            expect(payload.xdm.eventType).to.equal('web.webinteraction.linkClicks');
+            expect(payload.xdm.web.webInteraction.name).to.equal(expectedName);
+            expect(payload.xdm.web.webInteraction.linkClicks).to.deep.equal({ value: 1 });
           } else {
+            await delay(100);
             expect(window._satellite.track.called).to.be.false;
           }
           action.aupHandler({ type: 'close', element: cta });
@@ -1023,12 +1027,12 @@ describe('global navigation', () => {
       const previousSatellite = window._satellite;
       try {
         window._satellite = undefined;
-        sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
+        await sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
         window._satellite = { track: sinon.spy() };
         window.dispatchEvent(new Event('alloy_sendEvent'));
         window.dispatchEvent(new Event('alloy_sendEvent'));
         const names = window._satellite.track.args
-          .map(([, payload]) => payload?.data?.web?.webInteraction?.name);
+          .map(([, payload]) => payload?.xdm?.web?.webInteraction?.name);
         expect(names.filter((name) => name === 'buy-now:modalClose:buttonClose'))
           .to.have.lengthOf(1);
       } finally {
