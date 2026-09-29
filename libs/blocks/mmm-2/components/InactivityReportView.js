@@ -270,7 +270,7 @@ function InactivityReportView() {
                 <td><input type="checkbox" checked=${selected.has(item.url)} onChange=${() => toggleRow(item.url)} /></td>
                 <td><a class="mmm2-primary-link" href="${item.url}?mep" target="_blank" rel="noopener">${item.url}</a></td>
                 <td>${item.target}</td>
-                <td>${getDate(item.aLastSeen)}<br/><a class="mmm2-small" target="_blank" rel="noopener" href=${getAbsUrl(item.manifestUrl, item.url)}>${item.targetActivityName}</a></td>
+                <td>${getDate(item.aLastSeen)}<br/><a class="mmm2-medium mmm2-link-flat" target="_blank" rel="noopener" href=${getAbsUrl(item.manifestUrl, item.url)}>${item.targetActivityName}</a></td>
                 <td>${getDate(item.pLastSeen)}</td>
               </tr>
             `)}

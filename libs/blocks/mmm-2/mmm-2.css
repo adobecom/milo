@@ -363,7 +363,11 @@
   text-align: center;
 }
 
+.mmm-2 .mmm2-report-table th:nth-child(1),
 .mmm-2 .mmm2-report-table td:nth-child(1) {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
   text-align: center;
 }
 
@@ -377,6 +381,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   gap: var(--spacing-xxs);
 }
 
@@ -442,6 +447,11 @@
   font-size: var(--type-detail-s-size);
 }
 
+.mmm-2 .mmm2-medium {
+  font-size: var(--type-detail-m-size);
+  line-height: var(--type-detail-m-lh);
+}
+
 /* Metadata lookup view */
 
 .mmm-2 .mmm2-metadata-results {
@@ -478,6 +488,10 @@
 
 .mmm-2 .mmm2-pagination {
   margin-top: var(--spacing-l);
+}
+
+.mmm-2 .mmm2-link-flat {
+  text-decoration: none;
 }
 
 .mmm-2 .mmm2-pagination-no-results {
