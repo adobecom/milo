@@ -4,6 +4,9 @@ import { decorateViewportContent, decorateButtons } from '../../../utils/decorat
 const MAS_FIELD_CLASSES = {
   description: ['mas-description'],
   prices: ['mas-price', 'heading-5'],
+  shortDescription: ['mas-short-description'],
+  subtitle: ['mas-subtitle'],
+  badge: ['mas-badge'],
 };
 
 function decorateMasField(cardContent) {
