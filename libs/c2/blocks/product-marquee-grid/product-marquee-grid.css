@@ -195,6 +195,17 @@ mas-field .icon-button {
       text-align: center;
     }
   }
+
+  &.cta-stack {
+    .pm-merch-ctas {
+      flex-direction: column;
+
+      > .con-button {
+        flex: none;
+        inline-size: 100%;
+      }
+    }
+  }
 }
 
 body:has(header.has-breadcrumbs) .product-marquee-grid {
