@@ -71,6 +71,7 @@ export const API_URLS = {
   get pageDataByURL() { return `${getApiDomain()}/get-page?url=`; },
   get save() { return `${getApiDomain()}/save-mep-call`; },
   get report() { return `${getApiDomain()}/get-report`; },
+  get history() { return `${getApiDomain()}/get-target-history`; },
 };
 
 const CAAS_BADGE_CLASS = 'mep-caas-edit-badge';

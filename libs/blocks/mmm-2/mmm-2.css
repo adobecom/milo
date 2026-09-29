@@ -111,6 +111,34 @@
   margin-top: var(--spacing-s);
 }
 
+/* Inactivity report: history chart */
+
+.mmm-2 .mmm2-history-chart {
+  padding: var(--spacing-l);
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-gray-100);
+  border-radius: 16px;
+  border: 1px solid #ddd;
+}
+
+.mmm-2 .mmm2-history-chart-title {
+  margin: 0 0 var(--spacing-s) 0;
+  font-size: var(--type-body-m-size);
+  font-weight: 700;
+  color: var(--color-gray-700);
+}
+
+.mmm-2 .mmm2-history-chart-canvas {
+  width: 100%;
+  height: 220px;
+}
+
+.mmm-2 .mmm2-history-chart-empty {
+  margin: 0;
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-600);
+}
+
 /* Shared: filter panel */
 
 .mmm-2 .mmm2-filters {

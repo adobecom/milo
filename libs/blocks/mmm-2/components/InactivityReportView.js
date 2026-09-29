@@ -5,6 +5,7 @@ import DropdownFilter from './DropdownFilter.js';
 import SearchTextarea from './SearchTextarea.js';
 import Pagination from './Pagination.js';
 import HowToAccordion from './HowToAccordion.js';
+import TargetActivityChart from './TargetActivityChart.js';
 import {
   LAST_SEEN_OPTIONS,
   LOCAL_STORAGE_KEYS,
@@ -219,6 +220,7 @@ function InactivityReportView() {
           <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/target-integration" target="_blank" rel="noopener">Learn more</a>
         </div>
       <//>
+      <${TargetActivityChart} />
       <div class="mmm2-filters">
         <${DropdownFilter}
           id="mmm2-report-filter-lastseen"
