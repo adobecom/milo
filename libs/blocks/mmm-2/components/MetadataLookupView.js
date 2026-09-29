@@ -2,6 +2,7 @@ import { html, useState, useEffect } from '../../../deps/htm-preact.js';
 import useLocalStorageState from '../../../hooks/useLocalStorageState.js';
 import { API_URLS } from '../../../features/personalization/preview.js';
 import SearchTextarea from './SearchTextarea.js';
+import HowToAccordion from './HowToAccordion.js';
 import {
   TARGET_METADATA_OPTIONS,
   METADATA_URLS_CATEGORIES,
@@ -135,6 +136,18 @@ function MetadataLookupView() {
 
   return html`
     <div class="mmm2-metadata-view">
+      <${HowToAccordion} title="Instructions">
+        <p>A report to categorize URLs by their Target metadata.</p>
+        <ol>
+          <li>Choose the appropriate repo from the dropdown (you can only check one repo at a time)</li>
+          <li>Click the "Open ${name} Spreadsheet" button below to open the corresponding spreadsheet</li>
+          <li>Enter production URL(s) below</li>
+          <li>Click the "Copy Report" button and paste that report into Jira to preserve a record of the page settings before you update</li>
+          <li>Use the categorized paths to know what updates are needed in the spreadsheet. You can copy each path list if needed.</li>
+          <li>Preview and publish the spreadsheet</li>
+          <li>Reload this page to confirm the page settings are updated and update MMM.</li>
+        </ol>
+      <//>
       <div class="mmm2-filters">
         <div class="mmm2-form-field">
           <label for="mmm2-metadata-repo">Choose Repo:</label>

@@ -4,6 +4,7 @@ import { API_URLS } from '../../../features/personalization/preview.js';
 import DropdownFilter from './DropdownFilter.js';
 import SearchTextarea from './SearchTextarea.js';
 import Pagination from './Pagination.js';
+import HowToAccordion from './HowToAccordion.js';
 import {
   LAST_SEEN_OPTIONS,
   LOCAL_STORAGE_KEYS,
@@ -206,6 +207,15 @@ function InactivityReportView() {
 
   return html`
     <div class="mmm2-inactivity-view">
+      <${HowToAccordion}>
+        <ol>
+          <li>Search for your pages and adjust filters if desired</li>
+          <li>Select pages where you would like to disable Target</li>
+          <li>Click "Copy Selected"</li>
+          <li>Click "Open Slack"</li>
+          <li>Paste your request in Slack.</li>
+        </ol>
+      <//>
       <div class="mmm2-report-actions">
         <p class="mmm2-action-area ${copyState === 'error' ? 'has-error' : ''} ${copyState === 'success' ? 'has-success' : ''}">
           <a class="con-button blue button-l" onClick=${copySelected}>Copy Selected</a>

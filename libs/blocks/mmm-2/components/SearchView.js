@@ -7,6 +7,7 @@ import SearchTextarea from './SearchTextarea.js';
 import TextFilter from './TextFilter.js';
 import PageListItem from './PageListItem.js';
 import Pagination from './Pagination.js';
+import HowToAccordion from './HowToAccordion.js';
 import {
   LAST_SEEN_OPTIONS,
   SUBDOMAIN_OPTIONS,
@@ -111,6 +112,16 @@ function SearchView() {
 
   return html`
     <div class="mmm2-search-view">
+      <${HowToAccordion}>
+        <ol>
+          <li>Search for your pages and adjust filters if desired</li>
+          <li>Click on a page to open more details</li>
+          <li>Look through the list of manifests and select an experience you would like to see.*</li>
+          <li>Select any options you would like to include</li>
+          <li>Click Preview</li>
+        </ol>
+        <p class="mmm2-howto-note">* Keeping "None" selected does not add the manifest to your preview URL and will not force the manifest to load. But if the manifest is still attached to the page, it will load anyways. If you want to force the default experience, choose "Default" from the dropdown menu.</p>
+      <//>
       <div class="mmm2-filters">
         ${authoredConfig.pages ? html`<${DropdownFilter}
           id="mmm2-filter-pages"

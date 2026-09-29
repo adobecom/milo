@@ -51,6 +51,59 @@
   border-bottom-color: var(--color-accent);
 }
 
+/* Shared: "How to use this report" accordion */
+
+.mmm-2 .mmm2-howto {
+  margin-bottom: var(--spacing-l);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: var(--spacing-xs) var(--spacing-m);
+  background: var(--color-gray-100);
+}
+
+.mmm-2 .mmm2-howto-summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-800);
+  list-style: none;
+}
+
+.mmm-2 .mmm2-howto-summary::-webkit-details-marker {
+  display: none;
+}
+
+.mmm-2 .mmm2-howto-summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: var(--spacing-xxs);
+  transition: transform .15s ease;
+}
+
+.mmm-2 .mmm2-howto[open] .mmm2-howto-summary::before {
+  transform: rotate(90deg);
+}
+
+.mmm-2 .mmm2-howto-body {
+  margin-top: var(--spacing-xs);
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-700);
+}
+
+.mmm-2 .mmm2-howto-body ol {
+  margin: 0;
+  padding-left: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-howto-body li {
+  margin-bottom: var(--spacing-xxs);
+}
+
+.mmm-2 .mmm2-howto-note {
+  font-size: var(--type-detail-m-size);
+  color: var(--color-gray-600);
+}
+
 /* Shared: filter panel */
 
 .mmm-2 .mmm2-filters {
