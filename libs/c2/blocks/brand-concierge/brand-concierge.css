@@ -153,7 +153,7 @@
   margin-bottom: 40px;
   padding: 0 8px;
   position: relative;
-  gap: 12px;
+  gap: 8px;
   z-index: 3;
 }
 
@@ -264,7 +264,7 @@
   overflow-wrap: break-word;
   min-height: var(--bc-input-height);
   max-height: 35vh;
-  padding: 12px 0;
+  padding: 8px 0;
   box-sizing: border-box;
   grid-area: 1 / 1 / 2 / 2;
 }
