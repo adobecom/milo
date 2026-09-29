@@ -122,6 +122,12 @@
   background: var(--color-gray-100);
   border-radius: 16px;
   border: 1px solid #ddd;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mmm-2 .mmm2-filters:has(+ .mmm2-report-actions) {
+  margin-bottom: var(--spacing-l);
 }
 
 .mmm-2 .mmm2-form-field {
