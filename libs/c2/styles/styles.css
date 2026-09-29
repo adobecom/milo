@@ -1,7 +1,10 @@
 @font-face {
   font-family: 'Arial Bold Adjusted';
   font-weight: 900;
-  size-adjust: 92%;
+  size-adjust: 93%;
+  ascent-override: 91%;
+  descent-override: 25%;
+  line-gap-override: 0%;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 

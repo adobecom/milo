@@ -25,6 +25,8 @@ export default {
       widgetsInMessageContentTypes: [
         'cta-actions',
         'firefly-community-gallery',
+        'price-card',
+        'disclaimer',
       ],
     },
     privacyNotice: {
@@ -133,7 +135,7 @@ export default {
   },
   env: 'prod',
   text: {
-    'welcome.heading': 'Find the right app to bring your ideas to life.',
+    'welcome.heading': 'Ask a question',
     'input.placeholder': 'Ask a question',
     'input.messageInput.aria': 'Message input',
     'input.send.aria': 'Send message',

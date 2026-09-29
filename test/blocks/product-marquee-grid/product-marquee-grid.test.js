@@ -72,6 +72,16 @@ describe('Product Marquee Grid', () => {
       expect(subtitle.classList.contains('mas-description')).to.be.false;
     });
 
+    it('keeps the shortDescription tooltip icon inside its mas-field wrapper', () => {
+      // Tooltip CSS only matches `mas-field .icon-button`, so the icon must stay inside it.
+      const merchContent = content.querySelector('.pm-merch-content');
+      const shortDesc = merchContent.querySelector('mas-field[field="shortDescription"]');
+      expect(shortDesc).to.exist;
+      const icon = shortDesc.querySelector('.icon-button[data-tooltip]');
+      expect(icon).to.exist;
+      expect(icon.closest('mas-field')).to.equal(shortDesc);
+    });
+
     it('folds the trailing commitment paragraph into the price parent', () => {
       const merchContent = content.querySelector('.pm-merch-content');
       const priceParent = merchContent.querySelector(':has(> .mas-price)');

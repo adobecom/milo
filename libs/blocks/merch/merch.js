@@ -1,9 +1,9 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
@@ -157,6 +157,7 @@ export const GeoMap = {
   id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
+  ara: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
   cn: 'CN_zh',
@@ -253,6 +254,12 @@ export function isMasGeoDetectionEnabled() {
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
   return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export function getMerchCardHeadingLevel() {
+  const raw = getMetadata('mas-heading-level');
+  const match = raw && String(raw).trim().match(/^h?([1-6])$/i);
+  return match ? Number(match[1]) : null;
 }
 
 /**
@@ -496,6 +503,31 @@ export async function loadMasComponent(componentName) {
   return loadPromise;
 }
 
+const aupSelectPreloads = new WeakMap();
+
+async function preloadAupSelect(sdk) {
+  try {
+    await Promise.all([
+      sdk.getOrchestratorContext(),
+      // The orchestrator mounts this registered component when Select launches.
+      sdk.loadUIComponent('commerce-select'),
+    ]);
+  } catch (error) {
+    log?.warn('AUP Select preload failed', error);
+  }
+}
+
+function getAupSelectPreload() {
+  const sdk = window.aupsdk;
+  if (!sdk) return undefined;
+  let preload = aupSelectPreloads.get(sdk);
+  if (!preload) {
+    preload = preloadAupSelect(sdk);
+    aupSelectPreloads.set(sdk, preload);
+  }
+  return preload;
+}
+
 function getCommercePreloadUrl() {
   const { env } = getConfig();
   if (env.name === 'prod') {
@@ -721,6 +753,7 @@ export async function getUpgradeAction(
     );
   }
 
+  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
@@ -881,6 +914,53 @@ const closeModalWithoutEvent = (modalId) => {
 
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
+let activeAupModalHash;
+
+function restoreAupModalHash(modalHashState) {
+  if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
+    window.history.pushState(window.history.state, '', modalHashState.restoreUrl);
+  }
+}
+
+function clearAupModalHash(modalHashState) {
+  if (!modalHashState) return;
+  if (activeAupModalHash === modalHashState) {
+    activeAupModalHash = undefined;
+    modalState.isOpen = false;
+  }
+  restoreAupModalHash(modalHashState);
+}
+
+export function getAupModalHashCleanup() {
+  const modalHashState = activeAupModalHash;
+  if (!modalHashState) return undefined;
+  let cleaned = false;
+  return () => {
+    if (cleaned) return;
+    cleaned = true;
+    clearAupModalHash(modalHashState);
+  };
+}
+
+function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+  const id = element?.dataset.modalId || fallbackModalId;
+  const hash = id ? `#${id}` : '';
+  if (!hash) return;
+
+  if (type === 'open') {
+    clearAupModalHash(activeAupModalHash);
+    const restoreUrl = window.location.hash === hash
+      ? `${window.location.pathname}${window.location.search}`
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState(window.history.state, '', hash);
+    }
+    activeAupModalHash = { hash, restoreUrl };
+    modalState.isOpen = true;
+  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
+    clearAupModalHash(activeAupModalHash);
+  }
+}
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
@@ -1011,12 +1091,17 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
-    const baseUrl = getCommercePreloadUrl();
-    // The script can preload more, based on clientId, but for the ones in use
-    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
-    const client = 'creative';
     window.milo.deferredPromise.then(() => {
-      setTimeout(() => {
+      setTimeout(async () => {
+        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
+        if (aupSelectPreload) {
+          await aupSelectPreload;
+          return;
+        }
+        const baseUrl = getCommercePreloadUrl();
+        // The script can preload more, based on clientId, but for the ones in use
+        // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+        const client = 'creative';
         loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
       }, 1000);
     });
@@ -1066,6 +1151,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    aupHandler: (event) => handleAupModalHash(hash, event),
   };
 }
 
@@ -1691,6 +1777,15 @@ const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
 const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
 const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
 
+// A description with a link (e.g. "save 40%. Terms apply") isn't a button (MWPW-207084).
+function isCtaFieldContent(content) {
+  if (!content || content.querySelector(BLOCK_CONTENT_SELECTOR)) return false;
+  const anchors = [...content.querySelectorAll('a')];
+  if (!anchors.length) return false;
+  const strip = (text) => text.replace(/\s+/g, '');
+  return strip(content.textContent) === strip(anchors.map((a) => a.textContent).join(''));
+}
+
 /**
  * Upgrades plain commerce elements (missing `is` attribute) to their proper
  * customized built-in equivalents so the commerce service resolves them.
@@ -1762,7 +1857,6 @@ function unwrapInlineWrappers(masField) {
     parent = masField.parentElement;
   }
 }
-
 function normalizeBlockFieldWrappers(masField) {
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content?.querySelector(BLOCK_CONTENT_SELECTOR)) return;
@@ -1793,9 +1887,8 @@ function ensureInlinePriceStyle(content) {
   }
 }
 
-// A CTA field and its card's price field resolve independently. Hold the CTA's
-// container until the price mas-field is ready so the CTA can't paint above an
-// unresolved price (reveal anyway after FIELD_TIMEOUT).
+// Hold the CTA's container hidden until its card's price mas-field is ready, so the CTA
+// can't paint above an unresolved price (reveals anyway after FIELD_TIMEOUT).
 export function holdCtaUntilPrice(container) {
   if (!container?.style) return;
   let scope = container.parentElement;
@@ -1819,6 +1912,11 @@ export function holdCtaUntilPrice(container) {
 function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
   holdCtaUntilPrice(container);
+  // router-marquee styles CTAs itself via plain em/strong/a selectors and doesn't need
+  // mas-field to stay attached, so fully unwrap it there instead of keeping it in the DOM --
+  // otherwise a later, independent re-render from the external mas-field component injects a
+  // stray duplicate content span onto it.
+  const selfDecoratesCtas = !!container?.closest('.router-marquee');
 
   // The block this CTA belongs to (direct child of a section). Bounds the sibling
   // lookup so a foreign block's button can't dictate this CTA's size.
@@ -1856,8 +1954,6 @@ function decorateInlineCtas(masField, content) {
       size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
     }
   }
-  ensureInlinePriceStyle(content);
-
   if (masField.merchLink) {
     [...masField.merchLink.matchAll(/&_button-([a-zA-Z-]+)/g)].forEach((match) => {
       content.querySelectorAll('a').forEach((link) => {
@@ -1866,27 +1962,39 @@ function decorateInlineCtas(masField, content) {
     });
   }
 
-  // Keep mas-field as the CTA's ancestor (not unwrap) so its promo/id context survives by
-  // structure. Re-nest to wrap the em/strong so decorateButtons' 'em a'/'strong a' still match.
-  const hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
-  let outer = masField;
-  while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
-    && hasOnlyTargetContent(outer.parentElement, outer)) {
-    outer = outer.parentElement;
-  }
-  if (outer === masField) {
-    masField.replaceChildren(...content.childNodes);
-  } else {
+  let hoisted;
+  if (selfDecoratesCtas) {
+    upgradeCommerceLinks(content);
+    ensureInlinePriceStyle(content);
+    hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
     masField.replaceWith(...content.childNodes);
-    outer.replaceWith(masField);
-    masField.append(outer);
-    // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
-    content.remove();
+  } else {
+    // Keep mas-field as the CTA's ancestor so decorateButtons' 'em a'/'strong a' still match
+    // once re-nested, and its promo/id context survives by structure. Move content while it's
+    // still a plain <a>; upgrading to is="checkout-link" is deferred until it settles into its
+    // final position so the custom element only connects once.
+    const innerWrapper = masField.parentElement;
+    let outer = masField;
+    while (outer.parentElement?.matches?.(INLINE_WRAPPER_SELECTOR)
+      && hasOnlyTargetContent(outer.parentElement, outer)) {
+      outer = outer.parentElement;
+    }
+    if (outer === masField) {
+      masField.replaceChildren(...content.childNodes);
+    } else {
+      outer.replaceWith(masField);
+      innerWrapper.append(...content.childNodes);
+      masField.append(outer);
+      // Drop the emptied content span so a re-render can't reuse it ahead of the decorated CTA.
+      content.remove();
+    }
+    masField.querySelector('aem-fragment')?.remove();
+    upgradeCommerceLinks(masField);
+    ensureInlinePriceStyle(masField);
+    hoisted = masField.querySelector('a, button');
   }
 
-  // router-marquee styles its own CTAs after resolution (primary = em>strong).
-  // decorateButtons would strip the <strong> and misclassify them as outline.
-  const selfDecoratesCtas = container?.closest('.router-marquee');
+  // decorateButtons would strip the <strong> and misclassify router-marquee's CTAs as outline.
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
   if (container && !pendingCTAs?.length && !selfDecoratesCtas) {
     decorateButtons(container, size);
@@ -1906,15 +2014,114 @@ function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
-    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
-    // Same gate createInline uses: an inline CTA anchor, not block-level content.
-    if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+    if (!content?.querySelector('a')) return;
+    if (isCtaFieldContent(content) && mf.closest('em, strong')) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
       decorateInlineCtas(mf, content);
+    } else {
+      // late re-rendered and relocalized
+      await decorateContentLinks(content);
+      upgradeCommerceLinks(content);
     }
+  });
+}
+
+/** True when a mas-field (or one of its descendants) resolved to a promotion variation. */
+function isPromoVariation(mf) {
+  return mf.matches('[data-promotion-project]') || mf.querySelector('[data-promotion-project]');
+}
+
+/**
+ * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
+ * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
+ * `data-promotion-project`), the container is revealed; otherwise it stays hidden.
+ */
+let promoPlaceholdersWatched = false;
+function watchPromoPlaceholders() {
+  if (promoPlaceholdersWatched) return;
+  promoPlaceholdersWatched = true;
+  document.addEventListener('mas:ready', ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const container = mf.closest('.promo-placeholder');
+    if (!container || container.classList.contains('promo-resolved')) return;
+    if (isPromoVariation(mf)) {
+      container.classList.add('promo-resolved');
+    }
+  });
+}
+
+/**
+ * A promo `mas-field` may resolve to a link labelled "modal" whose href is a fragment path
+ * (no hash — authors give none). The field may contain other content and links; only the
+ * sentinel is consumed. Non-promo variations resolve empty, so no link exists and nothing opens.
+ */
+let promoModalsWatched = false;
+const promoModalsLoading = new Set();
+function watchPromoModals() {
+  if (promoModalsWatched) return;
+  promoModalsWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    if (!isPromoVariation(mf)) return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'modal');
+    if (!anchor) return;
+    let path;
+    try {
+      ({ pathname: path } = new URL(anchor.href, window.location.href));
+    } catch (e) {
+      return;
+    }
+    const id = path.split('/').filter(Boolean).pop();
+    if (!id) return;
+    anchor.remove(); // consume: the link only carried the modal path, never render it
+    if (promoModalsLoading.has(id) || document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    promoModalsLoading.add(id);
+    try {
+      const { miloLibs, codeRoot } = getConfig();
+      const { getModal } = await import('../modal/modal.js');
+      loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
+      await getModal({ id, path });
+    } catch (e) {
+      log?.error('Failed to open promo modal', e);
+    } finally {
+      promoModalsLoading.delete(id);
+    }
+  });
+}
+
+/**
+ * A countdown-timer field may contain a sentinel link (text "countdown-timer") alongside its
+ * regular content. As with the backend (see adobecom/mas#1279), the sentinel link itself is
+ * what drives the countdown: no separate block variant/class is required. Only the sentinel is
+ * consumed; the rest of the field content is preserved. Page metadata-based CDT behavior is
+ * unaffected elsewhere.
+ */
+let masCountdownTimersWatched = false;
+function watchMasCountdownTimers() {
+  if (masCountdownTimersWatched) return;
+  masCountdownTimersWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'countdown-timer');
+    if (!anchor) return;
+    const { cdtStart, cdtEnd } = mf.querySelector('aem-fragment')?.rawData ?? {};
+    if (!cdtStart || !cdtEnd) return;
+
+    anchor.remove(); // consume: the link only carries the sentinel, never render it
+    const target = mf.parentElement ?? mf;
+    // loadCDT claims the block scope synchronously, so a block that also renders its own
+    // countdown (e.g. a `countdown-timer` marquee) never ends up with two timers.
+    await loadCDT(target, getCdtScope(target).classList, `${cdtStart},${cdtEnd}`);
+    const timer = target.querySelector(':scope > .countdown-timer');
+    // `normalizeBlockFieldWrappers` can replace the authored wrapper we started from while the
+    // timer was loading; re-home the timer next to the field so it stays on the page.
+    if (timer && !timer.isConnected) (mf.parentElement ?? mf).append(timer);
   });
 }
 
@@ -1937,21 +2144,23 @@ async function createInlineField(el, options) {
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return masField;
 
-  // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
-  // them. Applies to both CTA (<a>) and price (<span>) fields.
-  upgradeCommerceLinks(content);
-
   await decorateContentLinks(content);
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
-  if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+  if (isCtaFieldContent(content)) {
     return decorateInlineCtas(masField, content) ?? masField;
   }
+
+  // Non-CTA (block) fields never move after this point, so upgrading now is safe.
+  upgradeCommerceLinks(content);
   return masField;
 }
 
 export async function initMasField(el) {
   watchMasFieldCtas();
+  watchPromoPlaceholders();
+  watchPromoModals();
+  watchMasCountdownTimers();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return el;

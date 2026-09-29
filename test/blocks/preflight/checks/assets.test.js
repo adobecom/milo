@@ -197,4 +197,37 @@ describe('Preflight Asset Checks', () => {
       expect(window.mockImport).to.be.true;
     });
   });
+
+  describe('Mismatch status branches', () => {
+    beforeEach(() => {
+      // No width/height attrs -> natural 1000 / offset 800 -> factor 1.25 < ideal 2 -> mismatch.
+      mockImage.getAttribute.withArgs('width').returns(null);
+      mockImage.getAttribute.withArgs('height').returns(null);
+      mockImage.getAttribute.withArgs('src').returns('test.jpg');
+    });
+
+    it('reports a critical failure for an above-the-fold mismatch', async () => {
+      const result = await checkImageDimensions('test-critical', mockDocument);
+      expect(result.status).to.equal(STATUS.FAIL);
+      expect(result.severity).to.equal('critical');
+      expect(result.details.criticalAssetFailures).to.have.lengthOf(1);
+    });
+
+    it('reports a warning (pass) for a below-the-fold mismatch', async () => {
+      mockMain.querySelectorAll.withArgs(':scope > div.section')
+        .returns([{ contains: () => false }, { contains: () => false }]);
+      const result = await checkImageDimensions('test-warning', mockDocument);
+      expect(result.status).to.equal(STATUS.PASS);
+      expect(result.severity).to.equal('warning');
+      expect(result.details.warningAssetFailures).to.have.lengthOf(1);
+    });
+
+    it('clears the mismatch when the image is not constrained by its container', async () => {
+      mockPicture.offsetWidth = 800;
+      mockPicture.parentElement = { offsetWidth: 1000, parentElement: null };
+      const result = await checkImageDimensions('test-unconstrained', mockDocument);
+      expect(result.status).to.equal(STATUS.PASS);
+      expect(result.details.assetsWithMismatch).to.have.lengthOf(0);
+    });
+  });
 });

@@ -18,6 +18,7 @@ import merch, {
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
+  getUpgradeAction,
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getOptions,
@@ -37,6 +38,7 @@ import merch, {
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
+  getAupModalHashCleanup,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1037,6 +1039,25 @@ describe('Merch Block', () => {
       updateSearch({});
     });
 
+    it('getUpgradeAction: returns undefined when no upgrade offer is on the page', async () => {
+      mockIms('US');
+      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+        (el) => [el, el.parentNode, el.nextSibling],
+      );
+      detached.forEach(([el]) => el.remove());
+      try {
+        const action = await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          null,
+        );
+        expect(action).to.be.undefined;
+      } finally {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+      }
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
@@ -1263,6 +1284,90 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
     });
 
+    [
+      { content: 'on', calls: 2, aup: true },
+      { content: 'off', query: 'on', aup: true },
+      { content: 'on', query: 'off', legacy: true },
+      { content: 'off', legacy: true },
+      { content: 'off', commercePreload: 'off' },
+      { content: 'on', commercePreload: 'off' },
+      { content: 'off', lateContent: 'on', aup: true },
+      { content: 'on', lateContent: 'off', legacy: true },
+      { content: 'on', missingSdk: true, legacy: true },
+      { content: 'on', failure: 'getOrchestratorContext', aup: true },
+      { content: 'on', failure: 'loadUIComponent', aup: true },
+      { content: 'on', modal: false },
+    ].forEach(({
+      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
+      modal = true, aup = false, legacy = false,
+    }) => {
+      it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
+        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+      })}`, async () => {
+        const previousUrl = window.location.href;
+        const previousDeferred = window.milo.deferredPromise;
+        const previousSdk = window.aupsdk;
+        const sdk = {
+          getOrchestratorContext: sinon.stub().resolves(),
+          loadUIComponent: sinon.stub().resolves(),
+        };
+        if (failure) sdk[failure].rejects(new Error('Preload failed'));
+        window.aupsdk = missingSdk ? undefined : sdk;
+        let resolveDeferred;
+        window.milo.deferredPromise = new Promise((resolve) => { resolveDeferred = resolve; });
+        const meta = createTag('meta', { name: 'aup-select', content });
+        document.head.append(meta);
+        const url = new URL(previousUrl);
+        if (query) url.searchParams.set('aup-select', query);
+        if (commercePreload) url.searchParams.set('commerce.preload', commercePreload);
+        window.history.replaceState(null, '', url);
+        const scripts = [];
+        const { append } = document.head;
+        const appendStub = sinon.stub(document.head, 'append').callsFake((node) => {
+          if (node.id === 'ucv3-preload-script') {
+            scripts.push(node);
+            node.dataset.loaded = 'true';
+          } else {
+            append.call(document.head, node);
+          }
+        });
+        let clock;
+        try {
+          const el = document.createElement('a');
+          el.isOpen3in1Modal = modal;
+          const actions = await Promise.all(Array.from({ length: calls }, () => getModalAction(
+            [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }],
+            { modal: true },
+            el,
+          )));
+          actions.forEach((action) => expect(action.handler).to.be.a('function'));
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          resolveDeferred();
+          await Promise.resolve();
+          if (lateContent) meta.content = lateContent;
+          await clock.tickAsync(999);
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          await clock.tickAsync(1);
+          expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
+          expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
+          expect(scripts.length).to.equal(legacy ? 1 : 0);
+          if (legacy) expect(scripts[0].src).to.include('/store/iframe/preload.js?cli=creative');
+        } finally {
+          clock?.restore();
+          appendStub.restore();
+          meta.remove();
+          window.history.replaceState(null, '', previousUrl);
+          window.milo.deferredPromise = previousDeferred;
+          window.aupsdk = previousSdk;
+        }
+      });
+    });
+
     it('getModalAction: returns undefined if modal path is cancelled', async () => {
       setConfig({
         ...config,
@@ -1426,6 +1531,125 @@ describe('Merch Block', () => {
 
     it('setCtaHash: does nothing with invalid params', async () => {
       expect(setCtaHash()).to.be.undefined;
+    });
+
+    it('getModalAction: manages AUP hash lifecycle from the M@S callback', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+      const hashchange = sinon.spy();
+      window.addEventListener('hashchange', hashchange);
+
+      try {
+        expect(action.aupHandler).to.be.a('function');
+        expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
+
+        action.aupHandler({ type: 'open', element: el });
+
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.true;
+
+        action.aupHandler({ type: 'close', element: el });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.removeEventListener('hashchange', hashchange);
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: provides hash cleanup for the host AUP dialog', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+
+      try {
+        action.aupHandler({ type: 'open', element: el });
+        const cleanup = getAupModalHashCleanup();
+
+        expect(cleanup).to.be.a('function');
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(modalState.isOpen).to.be.true;
+
+        cleanup();
+        cleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+        action.aupHandler({ type: 'close', element: el });
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: ignores a stale AUP close after a replacement opens', async () => {
+      const previousUrl = window.location.href;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const createAction = async (productFamily) => {
+        const el = document.createElement('a');
+        el.dataset.modal = 'crm';
+        el.isOpen3in1Modal = false;
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily },
+        }], { modal: true }, el);
+        return { action, el };
+      };
+      const first = await createAction('ILLUSTRATOR');
+      const second = await createAction('AUDITION');
+
+      try {
+        first.action.aupHandler({
+          type: 'open',
+          element: first.el,
+        });
+        const firstCleanup = getAupModalHashCleanup();
+        second.action.aupHandler({
+          type: 'open',
+          element: second.el,
+        });
+        const secondCleanup = getAupModalHashCleanup();
+        firstCleanup();
+        first.action.aupHandler({
+          type: 'close',
+          element: first.el,
+        });
+
+        expect(window.location.hash).to.equal('#crm-buy-audition');
+        expect(modalState.isOpen).to.be.true;
+
+        secondCleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        second.action.aupHandler({
+          type: 'close',
+          element: second.el,
+        });
+        window.history.replaceState(null, '', previousUrl);
+      }
     });
 
     it('applyDexterPromo: applies promo to external modal', () => {

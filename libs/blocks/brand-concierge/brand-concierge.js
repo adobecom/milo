@@ -21,6 +21,7 @@ import {
   sideOverlayTop,
   setAuthoredContent,
   mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 
 const variants = {};
@@ -105,9 +106,21 @@ export default async function init(el) {
   }
 
   sideOverlayTop();
-  initAnalytics();
+  initAnalytics('BC-Inline-shown');
 
-  const rows = el.querySelectorAll(':scope > div');
+  const rows = [...el.querySelectorAll(':scope > div')];
+  let customGradient = null;
+  let gradientRow = null;
+  if (el.classList.contains('marquee')
+    && rows[0]
+    && !rows[0].querySelector('picture')
+    && rows[1]?.querySelector('picture')) {
+    const rowText = rows[0].textContent.trim();
+    if (!rowText || /^linear-gradient\(/.test(rowText)) {
+      gradientRow = rows.shift();
+      customGradient = rowText || null;
+    }
+  }
   const [background, header, cards, input, legal] = rows;
   cardsEl = cards;
 
@@ -185,7 +198,7 @@ export default async function init(el) {
   }
 
   if (variants.isMarquee) {
-    decorateMarqueeBackground(el, background);
+    decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
     decorateInput(el, input, { handle: handleInput });
     decorateCards(el, cards, { handle: handleSuggestedPrompt }, false);
@@ -209,11 +222,15 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+  if (gradientRow) el.removeChild(gradientRow);
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
   if (useAcomAssistant) return;
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

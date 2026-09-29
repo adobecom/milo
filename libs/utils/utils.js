@@ -286,6 +286,7 @@ function hydrateLocale(locales, key) {
       }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
+    if (!Object.keys(hydratedChildren).length) return hydratedBase;
     return { ...hydratedBase, regions: hydratedChildren };
   }
 
@@ -297,6 +298,10 @@ function hydrateLocale(locales, key) {
   }
 
   return { ...locale };
+}
+
+function hasLingoRegions(locale) {
+  return !!Object.keys(locale?.regions ?? {}).length;
 }
 
 export function getLocale(locales, pathname = window.location.pathname) {
@@ -373,6 +378,12 @@ export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
+}
+
+export function isAupEnabled(useUniversalNav = false) {
+  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
+    || (new URLSearchParams(window.location.search).get('aup-select')
+      ?? getMetadata('aup-select')) === 'on';
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
@@ -608,6 +619,15 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
+const KR_CTA_ALLOWLIST = ['무료 앱 다운로드'];
+const KR_CTA_BLOCKLIST = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free'];
+
+const matchesKrTrialCopy = (link) => {
+  const text = link.textContent?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
+  if (KR_CTA_ALLOWLIST.some((pattern) => text.includes(pattern.toLowerCase()))) return false;
+  return KR_CTA_BLOCKLIST.some((pattern) => text.includes(pattern.toLowerCase()));
+};
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -622,8 +642,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
     || shouldAllowKrTrial(link, localePrefix)
     || localePrefix !== '/kr'
     || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+      && !matchesKrTrialCopy(link))) {
     return false;
   }
 
@@ -719,7 +738,16 @@ function processQueryIndexMap(link, domain, fetchOptions = {}) {
   };
 
   result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        window.lana?.log(`Query index not available (${response.status}): ${link}`, {
+          tags: 'utils',
+          severity: response.status === 404 ? 'info' : 'error',
+        });
+        return { data: [] };
+      }
+      return response.json();
+    })
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
       window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
@@ -944,7 +972,7 @@ function localizeLinkCore(
       return relative ? urlPath : `${url.origin}${urlPath}`;
     };
 
-    const isLingoPage = locale.base !== undefined || !!locale.regions;
+    const isLingoPage = locale.base !== undefined || hasLingoRegions(locale);
     const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
     const siteId = uniqueSiteId ?? '';
     const qiResolved = queryIndexes[siteId]?.requestResolved;
@@ -952,7 +980,7 @@ function localizeLinkCore(
         && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
     const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
       && lingoActive() && isLingoPage
-      && (!isFragment || (isMepLingoFragment && !!locale.regions));
+      && (!isFragment || (isMepLingoFragment && hasLingoRegions(locale)));
 
     if (enterAsync) {
       return (async () => {
@@ -977,7 +1005,7 @@ function localizeLinkCore(
 
         const domainInSiteMap = !lingoSiteMappingLoaded
           || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
-        const isBasePage = !!locale.regions;
+        const isBasePage = hasLingoRegions(locale);
 
         let resolvedPrefix = basePrefix;
         if (lingoModule) {
@@ -1087,7 +1115,7 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   const { locale } = config || {};
   const { regions } = locale || {};
 
-  if (!regions || !Object.keys(regions).length) return null;
+  if (!hasLingoRegions(locale)) return null;
 
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
@@ -1181,7 +1209,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoBlockSwap;
 
   const { locale } = getConfig() || {};
-  const isBasePage = !!locale?.regions;
+  const isBasePage = hasLingoRegions(locale);
   const needsOverride = lingoActive()
     && (isMepLingoLink || isBasePage || locale?.base !== undefined);
 
@@ -1375,6 +1403,8 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
+  const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1406,7 +1436,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -2208,6 +2238,17 @@ export function loadMepAddons() {
   return promises;
 }
 
+// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
+function isMepNextOverlay() {
+  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
+}
+
+function initMepOverlay() {
+  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+    .then(({ default: init }) => init());
+}
+
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
 
@@ -2294,7 +2335,7 @@ export function preloadLcpCodeFiles(area = document) {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
-  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
@@ -2310,8 +2351,12 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
+  [].concat(externalLibs ?? []).forEach((lib) => {
+    if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
+  });
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+    .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
@@ -2350,10 +2395,10 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
+  const nonPznOffer = getMepEnablement('mep-non-personalized-offer-test');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
   const { base } = getConfig();
   loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
@@ -2408,7 +2453,7 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
-    mepMarketingDecrease,
+    nonPznOffer,
     akamaiCode,
   });
 }
@@ -2442,6 +2487,14 @@ function initModalEventListener() {
     const details = await findDetails(e.detail.hash);
     if (details) getModal(details);
   });
+}
+
+let fontsPromise;
+function importFonts(locale = getConfig().locale) {
+  fontsPromise ??= import('./fonts.js')
+    .then(({ default: loadFonts }) => loadFonts(locale))
+    .catch((e) => window.lana?.log(`Failed to load fonts: ${e}`, { tags: 'fonts', severity: 'error' }));
+  return fontsPromise;
 }
 
 async function loadPostLCP(config) {
@@ -2487,8 +2540,7 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  importFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
@@ -2555,7 +2607,8 @@ export async function scrollToHashedElement(hash) {
   if (!targetElement) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  if (getMetadata('foundation') === 'c2') {
+  const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
+  if (isC2Gnav) {
     const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
     bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
   }
@@ -2596,11 +2649,9 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
-    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+    if (isMepNextOverlay()) {
+      // The overlay itself is initialized once via initMepOverlay() in loadArea.
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
         .then(({ default: init }) => init());
     } else {
       import('../features/personalization/preview.js')
@@ -3004,6 +3055,11 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function warmTypekit() {
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3022,9 +3078,14 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    if (getMetadata('foundation') === 'c2') {
+      warmTypekit();
+      importFonts();
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
     const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();

@@ -63,7 +63,7 @@ const TAB_CATEGORY = {
 
 // structure/seo/performance return one check per item, so failing checks map 1:1
 // to the cards the panel shows.
-function countChecks(checks = []) {
+export function countChecks(checks = []) {
   return checks.reduce((acc, check) => {
     if (check?.status === 'fail') {
       if (check.severity === SEVERITY.WARNING) acc.warnings += 1;
@@ -77,7 +77,7 @@ function countChecks(checks = []) {
 
 // accessibility/merch/assets return a single aggregate check whose granular counts
 // live in `details`, so the badge matches the items the panel actually lists.
-function countCategory(title, runChecks) {
+export function countCategory(title, runChecks) {
   const checks = runChecks[TAB_CATEGORY[title]] || [];
   const [first] = checks;
   if (title === 'Accessibility') {

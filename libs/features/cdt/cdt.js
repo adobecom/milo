@@ -90,26 +90,28 @@ function isMobile() {
   return window.matchMedia('(max-width: 767px)').matches;
 }
 
-function getCDTTimeRange() {
-  const promoEnabled = getMepEnablement('manifestnames', 'promo');
-  const PAGE_URL = new URL(window.location.href);
-  const persManifests = getPromoManifests(promoEnabled, PAGE_URL.searchParams);
-  let cdtMetadata = null;
-  persManifests?.forEach((manifest) => {
-    if (manifest.disabled) return;
-    if (!manifest.event.cdtStart || !manifest.event.cdtEnd) return;
+function getCDTTimeRange(cdtMetadata) {
+  let metadata = cdtMetadata;
+  if (!metadata) {
+    const promoEnabled = getMepEnablement('manifestnames', 'promo');
+    const PAGE_URL = new URL(window.location.href);
+    const persManifests = getPromoManifests(promoEnabled, PAGE_URL.searchParams);
+    persManifests?.forEach((manifest) => {
+      if (manifest.disabled) return;
+      if (!manifest.event.cdtStart || !manifest.event.cdtEnd) return;
 
-    cdtMetadata = `${manifest.event.cdtStart},${manifest.event.cdtEnd}`;
-  });
+      metadata = `${manifest.event.cdtStart},${manifest.event.cdtEnd}`;
+    });
+  }
 
-  if (!cdtMetadata) {
-    cdtMetadata = getMetadata('countdown-timer');
-    if (cdtMetadata === null) {
+  if (!metadata) {
+    metadata = getMetadata('countdown-timer');
+    if (metadata === null) {
       throw new Error('Metadata for countdown-timer is not available');
     }
   }
 
-  const cdtRange = cdtMetadata.split(',');
+  const cdtRange = metadata.split(',');
   if (cdtRange.length % 2 !== 0) {
     throw new Error('Invalid countdown timer range');
   }
@@ -126,17 +128,18 @@ function getCDTTimeRange() {
   return timeRangesEpoch;
 }
 
-export default async function initCDT(el, classList) {
+export default async function initCDT(el, classList, cdtMetadata) {
   const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
   const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
     placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
   );
 
-  const timeRangesEpoch = getCDTTimeRange();
+  const timeRangesEpoch = getCDTTimeRange(cdtMetadata);
   const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
   cdtDiv.classList.add(isMobile() ? 'vertical' : 'horizontal');
   if (classList.contains('dark')) cdtDiv.classList.add('dark');
   if (classList.contains('center')) cdtDiv.classList.add('center');
 
   loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
+  return cdtDiv;
 }

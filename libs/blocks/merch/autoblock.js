@@ -1,5 +1,5 @@
-import { decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
-import { addAriaLabelToCta } from './merch.js';
+import { createTag, decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
+import { addAriaLabelToCta, getMerchCardHeadingLevel } from './merch.js';
 
 let iconsLoaded;
 function loadBadgeIcons(cards) {
@@ -59,7 +59,7 @@ export function decorateCardCtasWithA11y(card) {
         addAriaLabelToCta(link);
       });
     } else {
-      const productName = card.querySelector('h3')?.textContent || '';
+      const productName = card.querySelector('h1,h2,h3,h4,h5,h6')?.textContent || '';
       if (productName === link.textContent) return;
       link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
     }
@@ -131,12 +131,37 @@ export async function decorateContentLinks(el) {
   el.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
 
+const wrapsLiveComponent = (heading) => [...heading.querySelectorAll('*')]
+  .some((el) => el.hasAttribute('is') || el.tagName.includes('-'));
+
+export function overrideCardHeadingLevel(card, targetLevel) {
+  const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].filter((h) => !wrapsLiveComponent(h));
+  if (!headings.length) return;
+  const origLevels = headings.map((h) => {
+    const level = Number(h.dataset.masOrigLevel) || Number(h.tagName[1]);
+    h.dataset.masOrigLevel = level;
+    return level;
+  });
+  const base = Math.min(...origLevels);
+  const delta = targetLevel - base;
+  headings.forEach((heading, i) => {
+    const newLevel = Math.min(6, Math.max(1, origLevels[i] + delta));
+    if (newLevel === Number(heading.tagName[1])) return;
+    const next = createTag(`h${newLevel}`);
+    [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
+    next.append(...heading.childNodes);
+    heading.replaceWith(next);
+  });
+}
+
 async function postProcessCard(card) {
   await decorateContentLinks(card);
   await localizePreviewLinks(card);
   await localizeMerchIcons(card);
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
+  const headingLevel = getMerchCardHeadingLevel();
+  if (headingLevel) overrideCardHeadingLevel(card, headingLevel);
 }
 
 export async function postProcessAutoblock(autoblockEl, isCard = false) {

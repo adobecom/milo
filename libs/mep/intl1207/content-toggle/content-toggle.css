@@ -29,6 +29,14 @@ main .content-toggle-wrapper.fixed .content-toggle-heading {
     display: none;
 }
 
+main .section[data-toggle]:not(.content-toggle-active) {
+    display: none;
+}
+
+main .section:not(.content-toggle-active) [class*="marquee"].hide-toggle-marquee {
+    display: none;
+}
+
 main .section[data-toggle]:not([data-toggle-untagged]):not(.xxxl-spacing-static, .xxl-spacing-static, .xl-spacing-static, .xxxl-spacing, .xxl-spacing, .xl-spacing,
     .l-spacing, .m-spacing, .s-spacing, .xs-spacing, .xxs-spacing) {
     padding-top: 60px;
@@ -42,6 +50,22 @@ main .section[data-toggle]:not([data-toggle-untagged]):not(.xxxl-spacing-static,
 main .section[data-toggle]:not([data-toggle-untagged]):not(.xxxl-spacing-static, .xxl-spacing-static, .xl-spacing-static, .xxxl-spacing, .xxl-spacing, .xl-spacing,
     .l-spacing, .m-spacing, .s-spacing, .xs-spacing, .xxs-spacing):has(.toggle-marquee) {
     padding-top: 18px;
+}
+
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xxs-spacing-top) { padding-top: var(--spacing-xxs); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xs-spacing-top) { padding-top: var(--spacing-xs); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.s-spacing-top) { padding-top: var(--spacing-s); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.m-spacing-top) { padding-top: var(--spacing-m); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.l-spacing-top) { padding-top: var(--spacing-l); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xl-spacing-top) { padding-top: var(--spacing-xl); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xxl-spacing-top) { padding-top: var(--spacing-xxl); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xxxl-spacing-top) { padding-top: var(--spacing-xxxl); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xl-spacing-top-static) { padding-top: var(--spacing-xl-static); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xxl-spacing-top-static) { padding-top: var(--spacing-xxl-static); }
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.xxxl-spacing-top-static) { padding-top: var(--spacing-xxxl-static); }
+
+main .section[data-toggle]:not([data-toggle-untagged]):has(.toggle-marquee.con-block[class*="spacing-top"]) {
+    padding-top: 0;
 }
 
 main .section[data-toggle].no-spacing {
