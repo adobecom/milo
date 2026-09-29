@@ -350,7 +350,7 @@
   border: 1px solid var(--color-gray-200);
   padding: 10px var(--spacing-xxs);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
   overflow-wrap: anywhere;
 }
 
@@ -360,7 +360,6 @@
   font-size: var(--type-body-s-size);
   font-weight: 700;
   color: var(--color-gray-700);
-  vertical-align: middle;
 }
 
 .mmm-2 .mmm2-report-select-all {

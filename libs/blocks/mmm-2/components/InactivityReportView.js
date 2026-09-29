@@ -57,8 +57,9 @@ const HEADERS = [
 
 const MIN_COL_WIDTH = 20;
 
+const SELECT_COL_WIDTH = 36;
+
 const DEFAULT_COL_WIDTHS = {
-  select: 48,
   url: 420,
   target: 90,
   lastSeen: 220,
@@ -237,7 +238,7 @@ function InactivityReportView() {
       <div class="mmm2-report">
         <table class="mmm2-report-table">
           <colgroup>
-            <col style=${{ width: `${colWidths.select}px` }} />
+            <col style=${{ width: `${SELECT_COL_WIDTH}px` }} />
             ${HEADERS.map((header) => html`<col key=${header.colKey} style=${{ width: `${colWidths[header.colKey]}px` }} />`)}
           </colgroup>
           <thead>
@@ -245,13 +246,6 @@ function InactivityReportView() {
               <th class="mmm2-report-select-all">
                 <input type="checkbox" id="mmm2-report-select-all" checked=${allSelected} onChange=${toggleAll} />
                 <label for="mmm2-report-select-all">Select All</label>
-                <${ColumnResizer}
-                  colKey="select"
-                  width=${colWidths.select}
-                  onResize=${resizeCol}
-                  resizing=${resizingCol}
-                  setResizing=${setResizingCol}
-                />
               </th>
               ${HEADERS.map((header) => html`
                 <th key=${header.colKey}>
