@@ -121,9 +121,11 @@ const C2_BLOCKS = [
   'email-collection-c2',
   'explore-card',
   'faq',
+  'firefly-globe',
   'floating-cta',
   'global-footer',
   'global-navigation',
+  'globe-gallery',
   'hover-list',
   'hub-hero',
   'iframe',
@@ -134,12 +136,14 @@ const C2_BLOCKS = [
   'news',
   'offer-hero',
   'pdf-space',
+  'pill-group',
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
   'quote',
   'region-nav',
   'rich-content',
+  'roller-carousel',
   'router-marquee',
   'section-metadata',
   'side-by-side',
@@ -286,6 +290,7 @@ function hydrateLocale(locales, key) {
       }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
+    if (!Object.keys(hydratedChildren).length) return hydratedBase;
     return { ...hydratedBase, regions: hydratedChildren };
   }
 
@@ -297,6 +302,10 @@ function hydrateLocale(locales, key) {
   }
 
   return { ...locale };
+}
+
+function hasLingoRegions(locale) {
+  return !!Object.keys(locale?.regions ?? {}).length;
 }
 
 export function getLocale(locales, pathname = window.location.pathname) {
@@ -733,7 +742,16 @@ function processQueryIndexMap(link, domain, fetchOptions = {}) {
   };
 
   result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        window.lana?.log(`Query index not available (${response.status}): ${link}`, {
+          tags: 'utils',
+          severity: response.status === 404 ? 'info' : 'error',
+        });
+        return { data: [] };
+      }
+      return response.json();
+    })
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
       window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
@@ -958,7 +976,7 @@ function localizeLinkCore(
       return relative ? urlPath : `${url.origin}${urlPath}`;
     };
 
-    const isLingoPage = locale.base !== undefined || !!locale.regions;
+    const isLingoPage = locale.base !== undefined || hasLingoRegions(locale);
     const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
     const siteId = uniqueSiteId ?? '';
     const qiResolved = queryIndexes[siteId]?.requestResolved;
@@ -966,7 +984,7 @@ function localizeLinkCore(
         && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
     const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
       && lingoActive() && isLingoPage
-      && (!isFragment || (isMepLingoFragment && !!locale.regions));
+      && (!isFragment || (isMepLingoFragment && hasLingoRegions(locale)));
 
     if (enterAsync) {
       return (async () => {
@@ -991,7 +1009,7 @@ function localizeLinkCore(
 
         const domainInSiteMap = !lingoSiteMappingLoaded
           || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
-        const isBasePage = !!locale.regions;
+        const isBasePage = hasLingoRegions(locale);
 
         let resolvedPrefix = basePrefix;
         if (lingoModule) {
@@ -1101,7 +1119,7 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   const { locale } = config || {};
   const { regions } = locale || {};
 
-  if (!regions || !Object.keys(regions).length) return null;
+  if (!hasLingoRegions(locale)) return null;
 
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
@@ -1195,7 +1213,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoBlockSwap;
 
   const { locale } = getConfig() || {};
-  const isBasePage = !!locale?.regions;
+  const isBasePage = hasLingoRegions(locale);
   const needsOverride = lingoActive()
     && (isMepLingoLink || isBasePage || locale?.base !== undefined);
 
@@ -2321,7 +2339,7 @@ export function preloadLcpCodeFiles(area = document) {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
-  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
@@ -2337,8 +2355,12 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
+  [].concat(externalLibs ?? []).forEach((lib) => {
+    if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
+  });
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+    .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });

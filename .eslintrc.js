@@ -64,6 +64,8 @@ module.exports = {
     '/libs/navigation/dist/*',
     '/libs/mep/ace1209/globe-gallery/three.module.min.js',
     '/libs/mep/ace1209/globe-gallery/src/three-src.js',
+    '/libs/c2/blocks/globe-gallery/three.module.min.js',
+    '/libs/c2/blocks/globe-gallery/src/three-src.js',
   ],
   plugins: [
     'chai-friendly',
