@@ -172,7 +172,8 @@ const initHeaderPin = (hubHero, header) => {
   let ticking = false;
   const checkPin = () => {
     const heroRect = hubHero.getBoundingClientRect();
-    header.classList.toggle('pinned', heroRect.top <= 0 && heroRect.bottom > 0);
+    const carouselAssembled = getHubHeroProgress(hubHero) >= 0.5;
+    header.classList.toggle('pinned', !carouselAssembled && heroRect.top <= 0 && heroRect.bottom > 0);
     ticking = false;
   };
   window.addEventListener('scroll', () => {
