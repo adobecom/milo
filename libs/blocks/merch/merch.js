@@ -2,7 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
@@ -1493,13 +1493,22 @@ export async function getPriceContext(el, params) {
   };
 }
 
+async function getGeoProductLabel(productCode) {
+  try {
+    return (await getGeoIpPlaceholders())?.get(`${productCode}-geo-ip`);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function addAriaLabelToCta(cta) {
   const productCode = cta.value[0]?.productArrangement?.productCode;
   const { marketSegment, customerSegment } = cta;
   const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
   let ariaLabel = cta.textContent;
+  const geoProduct = productCode && await getGeoProductLabel(productCode);
   ariaLabel = productCode
-    ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+    ? `${ariaLabel} - ${geoProduct || await replaceKey(productCode, getConfig())}`
     : ariaLabel;
   ariaLabel = segment
     ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
