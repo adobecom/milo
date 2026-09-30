@@ -71,6 +71,7 @@ const { replaceKey, replaceKeyArray } = placeholders;
 const {
   AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
+  getAupModalTitle,
   getMiloLocaleSettings,
   isMasGeoDetectionEnabled,
 } = merch;
@@ -1172,6 +1173,7 @@ class Gnav {
           ? availableAupCleanup : undefined;
         if (cleanupAupModalHash) claimedAupModalHashes.add(cleanupAupModalHash);
         const modalHash = cleanupAupModalHash && window.location.hash;
+        const modalTitle = cleanupAupModalHash && getAupModalTitle();
         const isIframe = element.tagName === 'IFRAME';
         let dialog;
         let finishLoading;
@@ -1258,26 +1260,11 @@ class Gnav {
           dialog = document.createElement('dialog');
           dialog.id = 'aup-workflow-dialog';
           dialog.classList.add('dialog-modal', 'aup-modal');
-          dialog.setAttribute('aria-modal', 'true');
-          const modalTrigger = modalHash
-            ? document.querySelector(`[data-modal-id="${CSS.escape(modalHash.slice(1))}"]`)
-            : null;
-          const labelledBy = element.getAttribute('aria-labelledby')?.trim();
-          const labelledByText = labelledBy?.split(/\s+/)
-            .map((id) => element.querySelector(`#${CSS.escape(id)}`)?.textContent
-              || document.getElementById(id)?.textContent).join(' ');
-          const title = [
-            options?.title,
-            element.getAttribute('aria-label'),
-            labelledByText,
-            modalTrigger?.getAttribute('aria-label'),
-            element.querySelector('h1, h2, h3, h4, h5, h6')?.textContent,
-            modalTrigger?.textContent,
-            element.getAttribute('title'),
-            document.title,
-            'Adobe',
-          ].find((value) => typeof value === 'string' && value.trim());
-          dialog.setAttribute('aria-label', title.trim());
+          const labelledBy = element.getAttribute('aria-labelledby');
+          const title = options?.title || element.getAttribute('aria-label')
+            || modalTitle || element.getAttribute('title');
+          if (labelledBy) dialog.setAttribute('aria-labelledby', labelledBy);
+          else if (title) dialog.setAttribute('aria-label', title);
           if (isIframe) {
             const spinner = toFragment`
               <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">

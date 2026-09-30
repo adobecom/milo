@@ -243,22 +243,57 @@ describe('AUP', () => {
     [
       { name: 'explicit SDK title', options: { title: 'Account settings' }, expected: 'Account settings' },
       { name: 'workflow aria-label', label: 'Manage account', expected: 'Manage account' },
-      { name: 'workflow heading', html: '<h2>Choose a subscription</h2>', expected: 'Choose a subscription' },
-      { name: 'referenced heading', html: '<h2 id="workflow-title">Your account</h2>', labelledBy: 'workflow-title', expected: 'Your account' },
       { name: 'iframe title', tag: 'iframe', title: 'Subscription checkout', expected: 'Subscription checkout' },
-      { name: 'page-context fallback', expected: undefined },
     ].forEach(({
-      name, tag, options = {}, html, label, labelledBy, title, expected,
+      name, tag, options = {}, label, title, expected,
     }) => {
       it(`accessible name: ${name}`, async () => {
         const element = createElement(tag);
-        if (html) element.innerHTML = html;
         if (label) element.setAttribute('aria-label', label);
-        if (labelledBy) element.setAttribute('aria-labelledby', labelledBy);
         if (title) element.setAttribute('title', title);
         await host.showDialog(element, options, sinon.spy());
-        expect(dialog().getAttribute('aria-label')).to.equal(expected ?? (document.title || 'Adobe'));
+        expect(dialog().getAttribute('aria-label')).to.equal(expected);
       });
+    });
+
+    it('preserves workflow label references instead of copying their text', async () => {
+      const element = createElement();
+      element.setAttribute('aria-labelledby', 'workflow-title');
+      element.innerHTML = '<h2 id="workflow-title">Your account</h2>';
+
+      await host.showDialog(element, {}, sinon.spy());
+
+      expect(dialog().getAttribute('aria-labelledby')).to.equal('workflow-title');
+      expect(dialog().getAttribute('aria-label')).to.be.null;
+    });
+
+    it('uses the actual checkout trigger rather than the first matching CTA', async () => {
+      const { element: cta, action } = await createAction();
+      const decoy = document.createElement('a');
+      decoy.dataset.modalId = cta.dataset.modalId;
+      decoy.setAttribute('aria-label', 'A different CTA');
+      document.body.append(decoy, cta);
+      try {
+        action.aupHandler({ type: 'open', element: cta });
+        const workflow = createElement('iframe');
+        workflow.title = 'Workflow iframe';
+        await host.showDialog(workflow, {}, sinon.spy());
+
+        expect(dialog().getAttribute('aria-label')).to.equal(cta.getAttribute('aria-label'));
+      } finally {
+        decoy.remove();
+        cta.remove();
+      }
+    });
+
+    it('does not invent a name from unrelated headings or the page title', async () => {
+      const element = createElement();
+      element.innerHTML = '<h2>Undeclared workflow heading</h2>';
+
+      await host.showDialog(element, {}, sinon.spy());
+
+      expect(dialog().getAttribute('aria-label')).to.be.null;
+      expect(dialog().getAttribute('aria-labelledby')).to.be.null;
     });
 
     it('defers app prompts until the native dialog closes', async () => {

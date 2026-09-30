@@ -1016,6 +1016,10 @@ export function getAupModalHashCleanup() {
   return cleanup;
 }
 
+export function getAupModalTitle() {
+  return activeAupModalHash?.title;
+}
+
 function handleAupModalHash(fallbackModalId, event, modalHashState) {
   const { type, element } = event ?? {};
   const id = element?.dataset.modalId || fallbackModalId;
@@ -1031,7 +1035,8 @@ function handleAupModalHash(fallbackModalId, event, modalHashState) {
     if (window.location.hash !== hash) {
       window.history.pushState(window.history.state, '', hash);
     }
-    activeAupModalHash = { hash, restoreUrl };
+    const title = element?.getAttribute('aria-label') || element?.textContent?.trim();
+    activeAupModalHash = { hash, restoreUrl, title };
     modalState.isOpen = true;
     return activeAupModalHash;
   }

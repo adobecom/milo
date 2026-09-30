@@ -56,7 +56,7 @@ Replacing an AUP workflow cancels and closes the old workflow and settles its SD
 
 Scroll locks and Lenis suspension are owned jointly by the native host and the C1/C2 Milo hosts through `utils/modal-lifecycle.js`. Closing one dialog does not release another dialog's lock or resume Lenis; a pre-existing non-modal lock or paused Lenis remains untouched.
 
-Native dialog names use explicit SDK titles, workflow labels, checkout CTA labels, headings, or iframe titles, with page context as a fallback. Native focus trapping, inert background handling, and focus restoration remain browser-managed.
+Native dialog names use explicit SDK titles, workflow ARIA labels or references, the initiating checkout CTA's label, or iframe titles. Label references are preserved, not converted to text; headings and page titles are not inferred as dialog names. Workflows outside checkout must provide their own naming metadata. Native focus trapping, inert background handling, and focus restoration remain browser-managed.
 
 ### Modal Creation Failure
 
