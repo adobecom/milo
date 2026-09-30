@@ -1368,6 +1368,11 @@
     margin: 0;
   }
 
+  .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-header,
+  .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-footer {
+    transform: none;
+  }
+
   .hub-hero-carousel-header {
     height: auto;
   }
@@ -2104,6 +2109,7 @@
       bottom: unset;
       opacity: 1;
       animation: none;
+      transform: none;
     }
 
     .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-container {
