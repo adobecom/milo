@@ -479,6 +479,23 @@ describe('media-hidden-<device> video poster', () => {
     expect(video.getAttribute('poster')).to.equal(`${GIF}#desktop`);
   });
 
+  it('keeps the background row poster but defers the hidden foreground one', () => {
+    setWidth(375);
+    const link = (name) => `<a href="https://adobe.com/${name}.mp4#autoplay" data-video-poster="${POSTER.replace(/"/g, '&quot;')}">${name}</a>`;
+    container.innerHTML = `<div class="hero-marquee media-hidden-mobile"><div><div>${link('bg')}</div></div><div><div>text</div><div>${link('fg')}</div></div></div>`;
+    [...container.querySelectorAll('a')].forEach((anchorTag) => {
+      decorateAnchorVideo({ src: anchorTag.href, anchorTag });
+    });
+    const [bg, fg] = container.querySelectorAll('video');
+    expect(bg.getAttribute('poster')).to.equal(`${GIF}#mobile`);
+    expect(fg.getAttribute('poster')).to.be.null;
+  });
+
+  it('defers the poster when a single-row block has no background row', () => {
+    setWidth(375);
+    expect(decorate('hero-marquee media-hidden-mobile').getAttribute('poster')).to.be.null;
+  });
+
   it('keeps getImgSrc output unchanged for tablet widths', () => {
     setWidth(900);
     expect(getImgSrc(POSTER)).to.equal(`poster='${GIF}#desktop'`);

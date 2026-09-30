@@ -611,7 +611,11 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   // A display:none <video> still downloads its poster; blocks opt out via media-hidden-<device>.
-  const deferPoster = !!anchorTag.closest(`.media-hidden-${defineDeviceByScreenSize()}`);
+  // The first row of a multi-row block is the background and stays visible.
+  const hiddenBlock = anchorTag.closest(`.media-hidden-${defineDeviceByScreenSize()}`);
+  const inBgRow = hiddenBlock?.firstElementChild?.contains(anchorTag)
+    && hiddenBlock.children.length > 1;
+  const deferPoster = !!hiddenBlock && !inBgRow;
   const attrs = getVideoAttrs(anchorTag.hash, dataset, deferPoster);
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
