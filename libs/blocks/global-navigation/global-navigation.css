@@ -110,10 +110,12 @@ header.global-navigation {
 /* Product Entry CTA */
 .feds-product-entry-cta{
   align-items: center;
+  flex-shrink: 0;
 }
 
-/* Pinned CTA — toolbar clone of the trailing nav CTA, shown next to the
-   hamburger at mobile/compact widths (mirrors the C2 nav pinned CTA). */
+/* Pinned CTA — toolbar clone of the trailing nav CTA. It and the product-entry
+   CTA both stay visible next to the hamburger at mobile/compact widths (mirrors
+   the C2 nav), instead of collapsing into the drawer. */
 .feds-pinned-cta {
   display: flex;
   align-items: center;
@@ -122,27 +124,54 @@ header.global-navigation {
   margin-inline-end: 12px;
 }
 
-/* .feds-bc-wrapper already owns the auto margin that right-aligns the trailing
-   group; a second auto margin here would split the free space between both. */
+/* .feds-bc-wrapper / the pinned clone own the auto margin that right-aligns the
+   trailing group; siblings after them just need a gap (a second auto margin
+   would split the free space and misalign the group). */
 .feds-bc-wrapper + .feds-pinned-cta {
   margin-inline-start: 12px;
 }
 
-/* Drawer open shows its own CTA copy; JS overflow class hides on collision. */
-header.global-navigation:has(.feds-nav-wrapper--expanded) .feds-pinned-cta,
-header.global-navigation.feds-pinned-cta-overflow .feds-pinned-cta {
+/* Drawer open shows the original CTA inside it, so hide the pinned clone. */
+header.global-navigation:has(.feds-nav-wrapper--expanded) .feds-pinned-cta {
   display: none;
 }
 
+/* JS overflow class hides both toolbar CTAs when they'd collide with the row. */
+header.global-navigation.feds-cta-overflow :is(.feds-pinned-cta, .feds-product-entry-cta) {
+  display: none;
+}
+
+/* Toolbar right-alignment + condensed pill sizing at mobile/compact widths. */
 @media (max-width: 899px) {
-  .feds-pinned-cta .feds-cta {
+  .feds-product-entry-cta {
+    margin-inline-start: auto;
+    margin-inline-end: 12px;
+  }
+
+  .feds-bc-wrapper + .feds-product-entry-cta,
+  .feds-pinned-cta + .feds-product-entry-cta {
+    margin-inline-start: 12px;
+  }
+
+  .feds-pinned-cta .feds-cta,
+  .feds-product-entry-cta .feds-cta {
     height: 30px;
     padding: 0 10px;
     font-size: 14px;
   }
 }
 
-header.global-navigation.is-compact .feds-pinned-cta .feds-cta {
+header.global-navigation.is-compact .feds-product-entry-cta {
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
+}
+
+header.global-navigation.is-compact .feds-bc-wrapper + .feds-product-entry-cta,
+header.global-navigation.is-compact .feds-pinned-cta + .feds-product-entry-cta {
+  margin-inline-start: 12px;
+}
+
+header.global-navigation.is-compact :is(.feds-pinned-cta, .feds-product-entry-cta) .feds-cta {
   height: 30px;
   padding: 0 10px;
   font-size: 14px;
@@ -613,12 +642,6 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 
 .unav-no-scroll {
   touch-action: none;
-}
-
-@media (max-width: 900px) {
-  .feds-product-entry-cta {
-    display: none;
-  }
 }
 
 header.global-navigation.is-compact .feds-brand-container {
