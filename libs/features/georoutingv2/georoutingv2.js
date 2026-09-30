@@ -383,9 +383,7 @@ async function getDetails(
 
   if (window.location.hash) {
     window.addEventListener('milo:modal:closed', ({ detail }) => {
-      const modal = detail?.id === 'aup-workflow-dialog'
-        ? document.getElementById(detail.id)
-        : document.querySelector('.dialog-modal:not(#locale-modal-v2)');
+      const modal = document.querySelector('.dialog-modal:not(#locale-modal-v2)');
       if (!modal) return;
       const hash = detail?.hash ?? window.location.hash;
       if (!hash) return;

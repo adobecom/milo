@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, viewports } from './test-utilities.js';
+import { waitForRemoval } from '../../helpers/waitfor.js';
 import { getConfig, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import {
   AUP_SDK_READY_EVENT, fetchCheckoutLinkConfigs, getAupModalHashCleanup,
@@ -21,6 +22,7 @@ describe('AUP', () => {
   let instance;
   let preload;
   let meta;
+  let foundation;
   let workflows;
   let listeners;
   let configurations;
@@ -111,10 +113,13 @@ describe('AUP', () => {
   afterEach(async () => {
     listeners.forEach(([type, handler]) => window.removeEventListener(type, handler));
     workflows.forEach((element) => element.dispatchEvent(new Event('close')));
+    if (dialog()) await waitForRemoval('#aup-workflow-dialog');
     for (const modal of document.querySelectorAll('.dialog-modal')) await closeModal(modal);
     getAupModalHashCleanup()?.();
     modalState.isOpen = false;
     meta?.remove();
+    foundation?.remove();
+    foundation = undefined;
     meta = undefined;
     window.history.replaceState(null, '', originalUrl);
     fetchCheckoutLinkConfigs.promise = previousConfigs;
@@ -222,18 +227,20 @@ describe('AUP', () => {
 
     it('publishes a recognized, named dialog and one close notification before removal', async () => {
       const events = [];
-      listen('milo:modal:loaded', ({ detail }) => events.push({ type: 'loaded', detail, open: dialog()?.open }));
+      listen('milo:modal:loaded', ({ detail }) => events.push({ type: 'loaded', detail, mounted: dialog()?.isConnected }));
       listen('milo:modal:closed', ({ detail }) => events.push({ type: 'closed', detail, present: !!dialog() }));
       const element = createElement();
       const callback = sinon.spy();
       await host.showDialog(element, { title: 'Manage subscription' }, callback);
       expect(document.querySelector('.dialog-modal') === dialog()).to.be.true;
+      expect(dialog().tagName).to.equal('DIV');
       expect(dialog().getAttribute('aria-label')).to.equal('Manage subscription');
       expect(events).to.have.lengthOf(1);
-      expect(events[0]).to.include({ type: 'loaded', open: true });
+      expect(events[0]).to.include({ type: 'loaded', mounted: true });
       expect(events[0].detail.id).to.equal('aup-workflow-dialog');
       element.dispatchEvent(new Event('close'));
       element.dispatchEvent(new Event('close'));
+      await waitForRemoval('#aup-workflow-dialog');
       expect(events.map(({ type }) => type)).to.deep.equal(['loaded', 'closed']);
       expect(events[1].present).to.be.true;
       expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
@@ -286,17 +293,17 @@ describe('AUP', () => {
       }
     });
 
-    it('does not invent a name from unrelated headings or the page title', async () => {
+    it('uses Milo heading-based naming without adding a separate AUP fallback', async () => {
       const element = createElement();
       element.innerHTML = '<h2>Undeclared workflow heading</h2>';
 
       await host.showDialog(element, {}, sinon.spy());
 
-      expect(dialog().getAttribute('aria-label')).to.be.null;
+      expect(dialog().getAttribute('aria-label')).to.equal('Undeclared workflow heading');
       expect(dialog().getAttribute('aria-labelledby')).to.be.null;
     });
 
-    it('defers app prompts until the native dialog closes', async () => {
+    it('defers app prompts until the Milo modal closes', async () => {
       const { AppPrompt } = await import('../../../libs/features/webapp-prompt/webapp-prompt.js');
       await host.showDialog(createElement(), { title: 'Workflow' }, sinon.spy());
       const prompt = new AppPrompt({ promptPath: '/prompt.html' });
@@ -317,13 +324,14 @@ describe('AUP', () => {
             element.addEventListener('success', () => resolve('success'), { once: true });
           });
           await host.showDialog(element, { title: 'Workflow' }, callback);
-          if (method === 'escape') dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
-          else if (method === 'backdrop') dialog().click();
+          if (method === 'escape') await sendKeys({ press: 'Escape' });
+          else if (method === 'backdrop') document.querySelector('#aup-workflow-dialog + .modal-curtain').click();
           else {
             element.dispatchEvent(new Event(method.replace('workflow-', '')));
             element.dispatchEvent(new Event('close'));
           }
           expect(await outcome).to.equal(method === 'workflow-success' ? 'success' : 'cancel');
+          await waitForRemoval('#aup-workflow-dialog');
           expect(cancel.callCount).to.equal(method === 'workflow-success' ? 0 : 1);
           expect(closed.calledOnce).to.be.true;
           expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
@@ -349,7 +357,7 @@ describe('AUP', () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
       expect(firstCallback.calledOnce).to.be.true;
       expect(secondCallback.called).to.be.false;
-      expect(dialog()).to.equal(active);
+      expect(dialog() === active).to.be.true;
       expect(active.contains(second)).to.be.true;
     });
 
@@ -386,7 +394,8 @@ describe('AUP', () => {
       const callback = sinon.spy();
       element.addEventListener('close', closed);
       await host.showDialog(element, { title: 'Workflow' }, callback);
-      dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
+      dialog().querySelector('.dialog-close').click();
+      await waitForRemoval('#aup-workflow-dialog');
       expect(closed.calledOnce).to.be.true;
       expect(callback.calledOnce).to.be.true;
     });
@@ -394,14 +403,6 @@ describe('AUP', () => {
     [
       { name: 'C1 close API', close: closeModal },
       { name: 'C2 close API', close: closeC2Modal },
-      {
-        name: 'native close API',
-        close: async (modal) => {
-          const closed = new Promise((resolve) => { modal.addEventListener('close', resolve, { once: true }); });
-          modal.close();
-          await closed;
-        },
-      },
     ].forEach(({ name, close }) => {
       it(`settles and cleans up through ${name}`, async () => {
         const callback = sinon.spy();
@@ -421,6 +422,7 @@ describe('AUP', () => {
       const removeElement = sinon.spy(element, 'removeEventListener');
       await host.showDialog(element, { title: 'Workflow' }, sinon.spy());
       element.dispatchEvent(new Event('close'));
+      await waitForRemoval('#aup-workflow-dialog');
       for (const event of ['popstate', 'hashchange']) {
         const handler = add.withArgs(event).firstCall.args[1];
         expect(remove.calledWith(event, handler)).to.be.true;
@@ -428,41 +430,22 @@ describe('AUP', () => {
       expect(removeElement.calledWith('load', addElement.withArgs('load').firstCall.args[1])).to.be.true;
     });
 
-    [
-      {
-        name: 'cancel before mounting',
-        run: async (element, callback) => {
-          const pending = host.showDialog(element, { title: 'Workflow' }, callback);
-          element.dispatchEvent(new Event('close'));
-          await pending;
-        },
-        callbacks: 1,
-        tag: 'iframe',
-      },
-      {
-        name: 'browser rejects mounting',
-        run: async (element, callback) => {
-          const error = new Error('Could not show dialog');
-          sinon.stub(Object.getPrototypeOf(document.createElement('dialog')), 'showModal').throws(error);
-          const rejection = await host.showDialog(element, {}, callback).catch((caught) => caught);
-          expect(rejection).to.equal(error);
-        },
-        callbacks: 0,
-      },
-    ].forEach(({ name, run, callbacks, tag }) => {
-      it(`does not publish false lifecycle events: ${name}`, async () => {
-        const loaded = sinon.spy();
-        const closed = sinon.spy();
-        listen('milo:modal:loaded', loaded);
-        listen('milo:modal:closed', closed);
-        const callback = sinon.spy();
-        await run(createElement(tag), callback);
-        expect(callback.callCount).to.equal(callbacks);
-        expect(loaded.called).to.be.false;
-        expect(closed.called).to.be.false;
-        expect(dialog() === null).to.be.true;
-        expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
-      });
+    it('cancels a pending iframe without publishing a false lifecycle event', async () => {
+      const loaded = sinon.spy();
+      const closed = sinon.spy();
+      listen('milo:modal:loaded', loaded);
+      listen('milo:modal:closed', closed);
+      const callback = sinon.spy();
+      const element = createElement('iframe');
+      const pending = host.showDialog(element, { title: 'Workflow' }, callback);
+      element.dispatchEvent(new Event('close'));
+      await pending;
+
+      expect(callback.calledOnce).to.be.true;
+      expect(loaded.called).to.be.false;
+      expect(closed.called).to.be.false;
+      expect(dialog() === null).to.be.true;
+      expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
     });
 
     it('retains the original error when iframe dependencies cannot load', async () => {
@@ -486,23 +469,32 @@ describe('AUP', () => {
     ].forEach(({ name, get, close, root }) => {
       ['aup-first', 'region-first'].forEach((order) => {
         it(`${name} retains scroll ownership when closing ${order}`, async () => {
+          foundation = document.createElement('meta');
+          foundation.name = 'foundation';
+          foundation.content = name === 'C2' ? 'c2' : 'milo';
+          document.head.append(foundation);
           const { showDialog } = await initializeHost();
           window.lenis = { stop: sinon.spy(), start: sinon.spy() };
           const region = await get(null, { id: 'locale-modal-v2', content: createElement(), title: 'Choose region' });
           const element = createElement();
           await showDialog(element, { title: 'Checkout' }, sinon.spy());
+          expect(dialog().tagName).to.equal('DIV');
+          expect(dialog().getAttribute('role')).to.equal('dialog');
+          expect(root().classList.contains('disable-scroll')).to.be.true;
           if (order === 'aup-first') {
             element.dispatchEvent(new Event('close'));
+            await waitForRemoval('#aup-workflow-dialog');
             expect(root().classList.contains('disable-scroll')).to.be.true;
             expect(region.isConnected).to.be.true;
             expect(window.lenis.start.called).to.be.false;
             await close(region);
           } else {
             await close(region);
-            expect(dialog().open).to.be.true;
-            expect(document.documentElement.classList.contains('disable-scroll')).to.be.true;
+            expect(dialog().isConnected).to.be.true;
+            expect(root().classList.contains('disable-scroll')).to.be.true;
             expect(window.lenis.start.called).to.be.false;
             element.dispatchEvent(new Event('close'));
+            await waitForRemoval('#aup-workflow-dialog');
           }
           expect(document.body.classList.contains('disable-scroll')).to.be.false;
           expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
@@ -511,11 +503,16 @@ describe('AUP', () => {
       });
 
       it(`${name} keeps its region prompt when Escape dismisses the top AUP dialog`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
         const { showDialog } = await initializeHost();
         const region = await get(null, { id: 'locale-modal-v2', content: createElement(), title: 'Choose region' });
         const callback = sinon.spy();
         await showDialog(createElement(), { title: 'Checkout' }, callback);
         await sendKeys({ press: 'Escape' });
+        await waitForRemoval('#aup-workflow-dialog');
         expect(callback.calledOnce).to.be.true;
         expect(dialog() === null).to.be.true;
         expect(region.isConnected).to.be.true;
@@ -527,6 +524,137 @@ describe('AUP', () => {
         });
         await get(null, { id: 'immediately-closed', content: createElement(), title: 'Workflow' });
         expect(document.getElementById('immediately-closed') === null).to.be.true;
+        expect(document.querySelector('.modal-curtain') === null).to.be.true;
+        expect(root().classList.contains('disable-scroll')).to.be.false;
+      });
+
+      it(`${name} aborts pending modal creation before mounting`, async () => {
+        const controller = new AbortController();
+        const loaded = sinon.spy();
+        listen('milo:modal:loaded', loaded);
+        const pending = get(null, {
+          id: 'canceled-before-mount',
+          content: createElement(),
+          signal: controller.signal,
+        });
+        controller.abort();
+
+        expect(await pending).to.be.null;
+        expect(document.getElementById('canceled-before-mount') === null).to.be.true;
+        expect(loaded.called).to.be.false;
+        expect(root().classList.contains('disable-scroll')).to.be.false;
+      });
+
+      [
+        { event: 'workflow close', dismiss: (element) => element.dispatchEvent(new Event('close')) },
+        {
+          event: 'navigation',
+          dismiss: () => {
+            window.history.replaceState(null, '', originalUrl);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          },
+        },
+      ].forEach(({ event, dismiss }) => {
+        it(`${name} cleans up when ${event} occurs during mounting`, async () => {
+          foundation = document.createElement('meta');
+          foundation.name = 'foundation';
+          foundation.content = name === 'C2' ? 'c2' : 'milo';
+          document.head.append(foundation);
+          const { showDialog } = await initializeHost();
+          const { element: cta, action } = await createAction();
+          action.aupHandler({ type: 'open', element: cta });
+          const element = createElement();
+          const callback = sinon.spy();
+          const closed = sinon.spy();
+          listen('milo:modal:closed', closed);
+          listen('milo:modal:loaded', () => dismiss(element), { once: true });
+
+          try {
+            await showDialog(element, { title: 'Checkout' }, callback);
+
+            expect(dialog() === null).to.be.true;
+            expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+            expect(closed.calledOnce).to.be.true;
+            expect(document.querySelector('.modal-curtain') === null).to.be.true;
+            expect(root().classList.contains('disable-scroll')).to.be.false;
+            expect(window.location.href).to.equal(originalUrl);
+          } finally {
+            if (dialog()) await close(dialog());
+          }
+        });
+      });
+
+      it(`${name} restores focus to the checkout trigger on close`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
+        const { showDialog } = await initializeHost();
+        const { element: cta, action } = await createAction();
+        cta.href = '#buy-test';
+        document.body.append(cta);
+        cta.focus();
+        action.aupHandler({ type: 'open', element: cta });
+
+        try {
+          await showDialog(createElement(), { title: 'Checkout' }, sinon.spy());
+          expect(dialog().contains(document.activeElement)).to.be.true;
+
+          await close(dialog());
+
+          expect(document.activeElement === cta).to.be.true;
+        } finally {
+          if (dialog()) await close(dialog());
+          cta.remove();
+        }
+      });
+
+      it(`${name} preserves the SDK title over workflow headings`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
+        const { showDialog } = await initializeHost();
+        const element = createElement();
+        element.innerHTML = '<h2>Workflow heading</h2>';
+
+        await showDialog(element, { title: 'Manage subscription' }, sinon.spy());
+
+        expect(dialog().getAttribute('aria-label')).to.equal('Manage subscription');
+      });
+
+      it(`${name} settles repeated close requests once`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
+        const { showDialog } = await initializeHost();
+        const callback = sinon.spy();
+        const closed = sinon.spy();
+        listen('milo:modal:closed', closed);
+        await showDialog(createElement(), { title: 'Workflow' }, callback);
+        const modal = dialog();
+
+        await Promise.all([close(modal), close(modal)]);
+
+        expect(callback.calledOnce).to.be.true;
+        expect(closed.calledOnce).to.be.true;
+        expect(dialog() === null).to.be.true;
+      });
+
+      it(`${name} removes its modal even when the SDK close callback throws`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
+        const { showDialog } = await initializeHost();
+        const error = new Error('SDK callback failed');
+        await showDialog(createElement(), { title: 'Workflow' }, () => { throw error; });
+
+        const rejection = await close(dialog()).catch((caught) => caught);
+
+        expect(rejection).to.equal(error);
+        expect(dialog() === null).to.be.true;
         expect(document.querySelector('.modal-curtain') === null).to.be.true;
         expect(root().classList.contains('disable-scroll')).to.be.false;
       });
@@ -551,6 +679,7 @@ describe('AUP', () => {
         if (previousHash === '#other-section') window.location.hash = previousHash;
         else window.history.back();
         await navigated;
+        await waitForRemoval('#aup-workflow-dialog');
         expect(window.location.href).to.equal(url.href);
         expect(dialog() === null).to.be.true;
         expect(cancel.calledOnce).to.be.true;
@@ -582,12 +711,13 @@ describe('AUP', () => {
           window.history[direction]();
           await navigated;
           if (direction === 'back') {
+            await waitForRemoval('#aup-workflow-dialog');
             expect(window.location.href).to.equal(url.href);
             expect(dialog() === null).to.be.true;
           } else {
             await shown;
             expect(window.location.hash).to.equal('#buy-test');
-            expect(document.querySelectorAll('dialog.aup-modal[open]').length).to.equal(1);
+            expect(document.querySelectorAll('.dialog-modal.aup-modal').length).to.equal(1);
             await clock.tickAsync(1000);
           }
         }

@@ -50,13 +50,13 @@ The geo-routing prompt can remain open behind an AUP checkout dialog. AUP partic
 
 ### Shared AUP and Milo Lifecycle
 
-AUP uses a native `<dialog>` with the shared `.dialog-modal` classification. Both hosts emit `milo:modal:loaded` after mounting and acquiring their scroll lock, and emit `milo:modal:closed` before removing the dialog. Events carry `detail.id` and `detail.hash`; native AUP close events retain the original checkout hash even when history navigation has already changed the URL. Existing consumers such as app prompts recognize AUP as an active modal.
+AUP uses the existing Milo modal host: `blocks/modal/modal.js` on C1 pages or `c2/blocks/modal/modal.js` when `foundation=c2`. Milo owns rendering, close controls, focus, lifecycle events, and scroll locking. Events carry `detail.id` and `detail.hash`; AUP supplies its original checkout hash so close notifications remain accurate after navigation. Existing consumers such as app prompts recognize AUP as an active modal.
 
-Replacing an AUP workflow cancels and closes the old workflow and settles its SDK callback exactly once. A request superseded or canceled while iframe dependencies are loading does not mount a dialog or emit a loaded event. Standard `closeModal` requests and native programmatic closure also settle through the SDK rather than removing its DOM directly. Escape dismisses the top native dialog without also closing a region prompt underneath.
+A thin AUP bridge cancels replaced workflows, settles the SDK callback exactly once, and restores checkout hashes. Requests canceled or superseded while loading do not mount a modal or emit a loaded event. Milo close buttons, backdrops, Escape, workflow completion, and history navigation all use the same close path. Escape dismisses only the top modal, leaving a region prompt underneath open.
 
-Scroll locks and Lenis suspension are owned jointly by the native host and the C1/C2 Milo hosts through `utils/modal-lifecycle.js`. Closing one dialog does not release another dialog's lock or resume Lenis; a pre-existing non-modal lock or paused Lenis remains untouched.
+The C1/C2 hosts use their existing scroll and Lenis handling. They release the scroll lock and resume Lenis after the last modal curtain closes.
 
-Native dialog names use explicit SDK titles, workflow ARIA labels or references, the initiating checkout CTA's label, or iframe titles. Label references are preserved, not converted to text; headings and page titles are not inferred as dialog names. Workflows outside checkout must provide their own naming metadata. Native focus trapping, inert background handling, and focus restoration remain browser-managed.
+The AUP bridge preserves explicit SDK/workflow labels, `aria-labelledby` references, or the initiating CTA's label. Milo supplies its existing heading-based fallback and focus behavior.
 
 ### Modal Creation Failure
 

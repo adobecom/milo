@@ -1930,7 +1930,7 @@ describe('Merch Block', () => {
         'data-modal-id': 'aup-deep-link-card',
       });
       const click = sinon.spy(cta, 'click');
-      const aupDialog = document.createElement('dialog');
+      const aupDialog = document.createElement('div');
       aupDialog.id = 'aup-workflow-dialog';
       const geoDialog = createTag('div', { id: 'locale-modal-v2', class: 'dialog-modal' });
       document.body.append(cta, geoDialog, aupDialog);
@@ -2095,11 +2095,10 @@ describe('Merch Block', () => {
       it('cancels a pending restore when a non-checkout SDK workflow opens', async () => {
         const cta = createCta();
         const state = updateModalState({ cta });
-        const dialog = document.createElement('dialog');
+        const dialog = document.createElement('div');
         dialog.id = 'aup-workflow-dialog';
         dialog.className = 'dialog-modal aup-modal';
         document.body.append(dialog);
-        dialog.showModal();
         try {
           window.dispatchEvent(new CustomEvent(
             'milo:modal:loaded',
@@ -2109,10 +2108,9 @@ describe('Merch Block', () => {
           await state;
 
           expect(cta.click.called).to.be.false;
-          expect(dialog.open).to.be.true;
+          expect(dialog.isConnected).to.be.true;
           expect(document.getElementById('aup-workflow-dialog')).to.equal(dialog);
         } finally {
-          dialog.close();
           dialog.remove();
           setSdkReady();
           await state;

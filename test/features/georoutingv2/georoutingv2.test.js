@@ -717,8 +717,9 @@ describe('GeoRouting', () => {
       stubHeadRequestToReturnVal('/ch_de', true);
       stubHeadRequestToReturnVal('/ch_it', true);
       stubHeadRequestToReturnVal('/ch_fr', true);
-      const aupDialog = document.createElement('dialog');
+      const aupDialog = document.createElement('div');
       aupDialog.id = 'aup-workflow-dialog';
+      aupDialog.className = 'dialog-modal aup-modal';
       try {
         await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
         const geoModal = document.querySelector('#locale-modal-v2');
@@ -752,8 +753,9 @@ describe('GeoRouting', () => {
     stubHeadRequestToReturnVal('/ch_de', true);
     stubHeadRequestToReturnVal('/ch_it', true);
     stubHeadRequestToReturnVal('/ch_fr', true);
-    const aupDialog = document.createElement('dialog');
+    const aupDialog = document.createElement('div');
     aupDialog.id = 'aup-workflow-dialog';
+    aupDialog.className = 'dialog-modal aup-modal';
     try {
       await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
       const geoModal = document.querySelector('#locale-modal-v2');

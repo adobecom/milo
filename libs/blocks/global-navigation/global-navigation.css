@@ -1712,10 +1712,6 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
 
 /* AUP Workflow Dialog */
 #aup-workflow-dialog {
-  padding: 0;
-  border: none;
-  border-radius: 6px;
-  margin: auto;
   width: 100%;
   max-width: min(1200px, calc((100% - 6px) - 2em));
   max-height: none;
@@ -1723,15 +1719,16 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   overflow: auto;
 }
 
-#aup-workflow-dialog::backdrop {
-  background: rgb(50 50 50 / 0.8);
+#aup-workflow-dialog .aup-workflow-content {
+  height: 100%;
+  position: relative;
 }
 
-#aup-workflow-dialog.loading > iframe {
+#aup-workflow-dialog .aup-workflow-content.loading > iframe {
   visibility: hidden;
 }
 
-#aup-workflow-dialog > .aup-loading-indicator {
+#aup-workflow-dialog .aup-loading-indicator {
   position: absolute;
   inset: 0;
   display: flex;

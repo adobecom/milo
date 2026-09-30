@@ -17,7 +17,6 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
-import { lockModalScroll, unlockModalScroll } from '../../utils/modal-lifecycle.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -1175,134 +1174,120 @@ class Gnav {
         const modalHash = cleanupAupModalHash && window.location.hash;
         const modalTitle = cleanupAupModalHash && getAupModalTitle();
         const isIframe = element.tagName === 'IFRAME';
+        const controller = new AbortController();
         let dialog;
+        let closeMiloModal;
         let finishLoading;
-        let closeDialog;
-        let onDialogCancel;
-        let onDialogClick;
         let onNavigation;
-        let onNativeClose;
-        let onDialogKeydown;
-        let cancel;
-        let isTornDown = false;
-        let didOpen = false;
-        const teardown = () => {
-          if (isTornDown) return;
-          isTornDown = true;
+        let onWorkflowClose;
+        let requestClose;
+        let closing;
+        let settled = false;
+        let workflowClosed = false;
+        const cleanup = () => {
+          controller.abort();
           finishLoading?.();
-          element.removeEventListener('close', closeDialog);
-          dialog?.removeEventListener('cancel', onDialogCancel);
-          dialog?.removeEventListener('click', onDialogClick);
-          dialog?.removeEventListener('keydown', onDialogKeydown);
-          dialog?.removeEventListener('close', onNativeClose);
-          dialog?.removeEventListener('closeModal', cancel);
-          dialog?.removeEventListener('iframe:modal:closed', cancel);
+          element.removeEventListener('close', onWorkflowClose);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
-          if (didOpen) {
-            window.dispatchEvent(new CustomEvent(
-              'milo:modal:closed',
-              { detail: { id: dialog.id, hash: modalHash } },
-            ));
-          }
-          if (dialog?.open) dialog.close();
-          dialog?.remove();
-          unlockModalScroll(dialog);
-          if (cancelActiveDialog === cancel) cancelActiveDialog = undefined;
+          if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
           cleanupAupModalHash?.();
         };
-        closeDialog = () => {
-          if (isTornDown) return;
-          teardown();
+        const finishWorkflow = () => {
+          if (settled) return;
+          settled = true;
+          if (!workflowClosed) {
+            element.dispatchEvent(new Event('cancel'));
+            if (!workflowClosed) element.dispatchEvent(new Event('close'));
+          }
+          cleanup();
           closeCallback({ type: 'close' });
         };
-        cancel = () => {
-          if (isTornDown) return;
-          // The orchestrator settles on cancel; close releases its event listeners.
-          element.dispatchEvent(new Event('cancel'));
-          if (!isTornDown) element.dispatchEvent(new Event('close'));
+        requestClose = () => {
+          if (closing) return closing;
+          if (settled) return undefined;
+          if (dialog) closing = closeMiloModal(dialog);
+          else finishWorkflow();
+          return closing;
+        };
+        onWorkflowClose = () => {
+          workflowClosed = true;
+          requestClose();
         };
         onNavigation = () => {
-          if (modalHash && window.location.hash !== modalHash) cancel();
+          if (modalHash && window.location.hash !== modalHash) requestClose();
         };
-        onDialogCancel = (e) => {
-          if (e.target !== dialog) return;
-          e.preventDefault();
-          cancel();
-        };
-        onDialogClick = (e) => {
-          if (e.target === dialog) cancel();
-        };
-        onNativeClose = (e) => {
-          if (e.target === dialog) cancel();
-        };
-        onDialogKeydown = (e) => {
-          if (e.key === 'Escape') e.stopPropagation();
-        };
-        element.addEventListener('close', closeDialog, { once: true });
+        element.addEventListener('close', onWorkflowClose);
         try {
-          if (isIframe) {
-            await Promise.all([
+          const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
+          const [{ getModal, closeModal }] = await Promise.all([
+            import(isC2 ? '../../c2/blocks/modal/modal.js' : '../modal/modal.js'),
+            ...(isIframe ? [
               import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
               import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-            ]);
-          }
-          if (isTornDown) return;
+            ] : []),
+          ]);
+          closeMiloModal = closeModal;
+          if (settled) return;
           if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
-            cancel();
+            await requestClose();
             return;
           }
-          cancelActiveDialog?.();
+          await cancelActiveDialog?.();
           if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
-            cancel();
+            await requestClose();
             return;
           }
-          dialog = document.createElement('dialog');
-          dialog.id = 'aup-workflow-dialog';
-          dialog.classList.add('dialog-modal', 'aup-modal');
-          const labelledBy = element.getAttribute('aria-labelledby');
+          const content = document.createElement('div');
+          content.className = 'aup-workflow-content';
           const title = options?.title || element.getAttribute('aria-label')
             || modalTitle || element.getAttribute('title');
-          if (labelledBy) dialog.setAttribute('aria-labelledby', labelledBy);
-          else if (title) dialog.setAttribute('aria-label', title);
+          const labelledBy = element.getAttribute('aria-labelledby');
           if (isIframe) {
             const spinner = toFragment`
               <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
                 <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
               </sp-theme>`;
-            dialog.classList.add('loading');
-            dialog.appendChild(spinner);
+            content.classList.add('loading');
+            content.appendChild(spinner);
             finishLoading = () => {
               element.removeEventListener('load', finishLoading);
-              dialog.classList.remove('loading');
+              content.classList.remove('loading');
               spinner.remove();
               finishLoading = undefined;
             };
             element.addEventListener('load', finishLoading, { once: true });
           }
-          dialog.appendChild(element);
-          document.body.appendChild(dialog);
-          dialog.addEventListener('cancel', onDialogCancel);
-          dialog.addEventListener('click', onDialogClick);
-          dialog.addEventListener('keydown', onDialogKeydown);
-          dialog.addEventListener('close', onNativeClose);
-          dialog.addEventListener('closeModal', cancel);
-          dialog.addEventListener('iframe:modal:closed', cancel);
+          content.appendChild(element);
           window.addEventListener('popstate', onNavigation);
           window.addEventListener('hashchange', onNavigation);
-          dialog.showModal();
-          didOpen = true;
-          cancelActiveDialog = cancel;
-          lockModalScroll(dialog);
-          onNavigation();
-          if (!isTornDown) {
-            window.dispatchEvent(new CustomEvent(
-              'milo:modal:loaded',
-              { detail: { id: dialog.id, hash: modalHash } },
-            ));
+          dialog = await getModal(null, {
+            id: 'aup-workflow-dialog',
+            class: 'aup-modal',
+            content,
+            title,
+            hash: modalHash,
+            signal: controller.signal,
+            closeEvent: 'closeModal',
+            closeCallback: finishWorkflow,
+          });
+          if (settled) {
+            if (dialog?.isConnected) await closeMiloModal(dialog);
+            return;
           }
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          if (labelledBy) {
+            dialog.setAttribute('aria-labelledby', labelledBy);
+            dialog.removeAttribute('aria-label');
+          } else if (title) {
+            dialog.setAttribute('aria-label', title);
+          }
+          cancelActiveDialog = requestClose;
         } catch (e) {
-          teardown();
+          cleanup();
           throw e;
         }
       },

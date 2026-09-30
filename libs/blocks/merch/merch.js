@@ -5,7 +5,6 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
-import { unlockModalScroll } from '../../utils/modal-lifecycle.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -901,7 +900,6 @@ const closeModalWithoutEvent = (modalId) => {
         modalCurtain.remove();
       }
       mod.remove();
-      unlockModalScroll(mod);
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
@@ -1053,11 +1051,11 @@ export async function updateModalState({ cta, closedByUser } = {}) {
 
   if (closedByUser) {
     cancelModalRestores();
-    // The AUP host owns its state and hash cleanup while the native dialog exists.
+    // The AUP bridge owns its state and hash cleanup while its modal exists.
     if (!document.getElementById('aup-workflow-dialog')) modalState.isOpen = false;
     return modalState.isOpen;
   }
-  if (document.querySelector('dialog.aup-modal[open]')) return modalState.isOpen;
+  if (document.querySelector('.dialog-modal.aup-modal')) return modalState.isOpen;
 
   if (hash?.includes('=')) {
     const modal = document.querySelector('.dialog-modal');
@@ -2390,7 +2388,7 @@ window.addEventListener('popstate', updateModalState);
 window.addEventListener('milo:modal:loaded', ({ detail }) => {
   const dialog = detail?.id
     ? document.getElementById(detail.id)
-    : document.querySelector('dialog.aup-modal[open], .dialog-modal');
+    : document.querySelector('.dialog-modal');
   if (dialog && !isLocaleModal(dialog)) cancelModalRestores();
 });
 
