@@ -496,6 +496,11 @@ describe('media-hidden-<device> video poster', () => {
     expect(decorate('hero-marquee media-hidden-mobile').getAttribute('poster')).to.be.null;
   });
 
+  it('defers a tablet-only hidden poster at exactly 600px, where both media queries match', () => {
+    setWidth(600);
+    expect(decorate('hero-marquee media-hidden-tablet').getAttribute('poster')).to.be.null;
+  });
+
   it('keeps getImgSrc output unchanged for tablet widths', () => {
     setWidth(900);
     expect(getImgSrc(POSTER)).to.equal(`poster='${GIF}#desktop'`);

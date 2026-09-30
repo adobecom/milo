@@ -612,7 +612,11 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   const { dataset, parentElement } = anchorTag;
   // A display:none <video> still downloads its poster; blocks opt out via media-hidden-<device>.
   // The first row of a multi-row block is the background and stays visible.
-  const hiddenBlock = anchorTag.closest(`.media-hidden-${defineDeviceByScreenSize()}`);
+  // At exactly 600px both the mobile and tablet media queries match.
+  const hiddenSelector = window.innerWidth === 600
+    ? '.media-hidden-mobile, .media-hidden-tablet'
+    : `.media-hidden-${defineDeviceByScreenSize()}`;
+  const hiddenBlock = anchorTag.closest(hiddenSelector);
   const inBgRow = hiddenBlock?.firstElementChild?.contains(anchorTag)
     && hiddenBlock.children.length > 1;
   const deferPoster = !!hiddenBlock && !inBgRow;
