@@ -1,13 +1,17 @@
 .product-marquee-grid {
+  --pmg-base-height: 350px;
+  --pmg-content-block-start: var(--s2a-spacing-3xl);
+
   background: var(--s2a-color-background-default);
   display: flex;
-  min-block-size: calc(494px + var(--global-height-nav, 64px));
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px));
+  position: relative;
 
   .pm-content {
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-lg);
+    padding-block: var(--pmg-content-block-start) var(--s2a-spacing-lg);
   }
 
   .pm-foreground {
@@ -15,6 +19,7 @@
     flex: 1;
     flex-direction: column;
     justify-content: space-between;
+    padding-top: var(--s2a-spacing-3xl);
 
     .pm-subtext {
       max-inline-size: 400px;
@@ -34,11 +39,11 @@
     }
   }
 
-  .pm-promo-area {
-    margin-block-start: var(--s2a-spacing-lg);
-  }
-
   .pm-merch-card {
+    --pm-content: var(--s2a-color-content-default);
+    --pm-content-subtle: var(--s2a-color-content-subtle);
+
+    color: var(--pm-content);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -49,9 +54,20 @@
       border-color: transparent;
       vertical-align: -0.2em;
       height: 18px;
-      path {
-        fill: var(--s2a-color-content-subtle);
+
+      svg {
+        block-size: 100%;
+        inline-size: 100%;
       }
+
+      path {
+        fill: var(--pm-content-subtle);
+      }
+    }
+
+    .con-button.outline {
+      border-color: var(--pm-content);
+      color: var(--pm-content);
     }
   }
 
@@ -62,8 +78,31 @@
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
 
-    /* Reset c2's global .icon-button box so the mas-field tooltip glyph stays an inline icon. */
-    mas-field .icon-button {
+    .mas-description,
+    .mas-price-commitment {
+      color: var(--pm-content);
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      line-height: var(--s2a-typography-line-height-body-sm);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+    }
+
+    .mas-price-commitment {
+      color: var(--pm-content-subtle);
+    }
+
+    .mas-price {
+      color: var(--pm-content);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+  }
+
+  .pm-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+mas-field .icon-button {
       display: inline;
       background: none;
       border: none;
@@ -84,54 +123,180 @@
         }
       }
     }
-
-    .mas-description,
-    .mas-price-commitment {
-      color: var(--s2a-color-content-default);
-      font-family: var(--body-font-family);
-      font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: var(--s2a-font-weight-adobe-clean-regular);
-      line-height: var(--s2a-typography-line-height-body-sm);
-      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
-    }
-
-    .mas-price-commitment {
-      color: var(--s2a-color-content-subtle);
-    }
-
-    .mas-price {
-      color: var(--s2a-color-content-default);
-      letter-spacing: var(--s2a-font-letter-spacing-4xl);
-    }
-  }
-
-  .pm-merch-ctas {
-    display: flex;
-    gap: var(--s2a-spacing-xs);
-
-    .con-button {
-      flex: 1;
-      justify-content: center;
-      text-align: center;
-    }
   }
 
   .price.price-strikethrough {
     color: var(--s2a-color-button-background-primary-solid-on-light-hover);
   }
+
+  .firefly & {
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+  }
+
+  &.cta-pill {
+    .pm-content {
+      justify-content: space-between;
+    }
+
+    .pm-foreground {
+      flex: none;
+      gap: var(--s2a-spacing-lg);
+      justify-content: flex-start;
+    }
+
+    .pm-promo-area {
+      inline-size: auto;
+    }
+
+    .pm-merch-card {
+      gap: var(--s2a-section-spacing-3xs);
+    }
+
+    .pm-merch-content {
+      align-items: center;
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      text-align: center;
+    }
+  }
 }
 
 body:has(header.has-breadcrumbs) .product-marquee-grid {
-  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+  --pmg-content-block-start: calc(var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 }
 
 body:has(header.local-nav) .product-marquee-grid {
-  min-block-size: calc(494px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
+  min-block-size: calc(var(--pmg-base-height) + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
 }
 
-@media (width < 768px) {
+.dark.product-marquee-grid {
+  background-color: var(--s2a-color-gray-1000);
+}
+
+.transparent-bg.product-marquee-grid {
+  backdrop-filter: blur(var(--s2a-blur-128));
+  background-color: var(--s2a-color-transparent-white-72);
+}
+
+.transparent-bg.dark.product-marquee-grid {
+  background-color: var(--s2a-color-transparent-black-72);
+}
+
+.product-marquee-grid .pm-merch-card.dark {
+  --pm-content: var(--s2a-color-gray-1000);
+  --pm-content-subtle: var(--s2a-color-transparent-black-64);
+
+  background-color: transparent;
+
+  .con-button.outline {
+    background-color: transparent;
+    border-color: var(--pm-content);
+    color: var(--pm-content);
+  }
+}
+
+@media (width >= 768px) {
+  .transparent-bg.product-marquee-grid {
+    backdrop-filter: blur(var(--s2a-blur-64));
+  }
+
+  .product-marquee-grid {
+    .pm-content {
+      --grid-margin-width: var(--s2a-spacing-3xl);
+
+      padding-block: var(--pmg-content-block-start) var(--s2a-spacing-3xl);
+    }
+
+    .pm-chiclet-row {
+      gap: var(--s2a-spacing-lg);
+
+      img.icon {
+        block-size: 64px;
+        inline-size: 64px;
+      }
+    }
+
+    .pm-foreground .pm-subtext {
+      max-inline-size: min(467px, 80%);
+    }
+
+    .pm-merch-card {
+      background: var(--s2a-color-background-subtle);
+      border-radius: var(--s2a-border-radius-12);
+      padding: var(--s2a-spacing-lg);
+    }
+
+    .pm-merch-content .mas-description,
+    .pm-merch-content .mas-price-commitment {
+      font-size: var(--s2a-typography-font-size-body-md);
+      line-height: var(--s2a-typography-line-height-body-md);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+    }
+  }
+
+  .product-marquee-grid.cta-pill {
+    .pm-content {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+    }
+
+    .pm-foreground {
+      flex: 1;
+      gap: normal;
+      justify-content: space-between;
+    }
+
+    .pm-promo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block-start: var(--s2a-spacing-4xl);
+    }
+
+    .pm-merch-card {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2a-section-spacing-2xs);
+      padding-block: var(--s2a-spacing-lg);
+      padding-inline: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
+      border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+      border-radius: var(--s2a-border-radius-round);
+    }
+
+    .pm-merch-content {
+      align-items: flex-start;
+      align-self: center;
+      text-align: start;
+    }
+  }
+
+  .dark.product-marquee-grid .pm-merch-card,
+  .product-marquee-grid .pm-merch-card.dark {
+    --pm-content: var(--s2a-color-gray-25);
+    --pm-content-subtle: var(--s2a-color-transparent-white-64);
+
+    background: var(--s2a-color-gray-900);
+  }
+
+  .transparent-bg.dark.product-marquee-grid .pm-merch-card {
+    background: var(--s2a-color-transparent-black-32);
+  }
+
+  .product-marquee-grid .pm-merch-card.light,
+  .product-marquee-grid.dark .pm-merch-card.light {
+    --pm-content: var(--s2a-color-gray-1000);
+    --pm-content-subtle: var(--s2a-color-transparent-black-64);
+
+    background: var(--s2a-color-gray-50);
+  }
+}
+
+@media (width < 900px) {
   .product-marquee-grid .pm-content {
     justify-content: space-between;
+    gap: var(--s2a-spacing-xl);
   }
 
   .product-marquee-grid .pm-foreground {
@@ -145,62 +310,18 @@ body:has(header.local-nav) .product-marquee-grid {
   }
 }
 
-@media (width >= 768px) {
+@media (width >= 900px) {
   .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 64px));
-
     .pm-content {
-      --grid-margin-width: var(--s2a-spacing-3xl);
-
       flex-direction: row;
       gap: var(--s2a-spacing-xs);
-      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
-    }
-
-    .pm-chiclet-row {
-      gap: var(--s2a-spacing-lg);
-
-      img.icon {
-        block-size: 80px;
-        inline-size: 80px;
-      }
-    }
-
-    .pm-foreground {
-      .pm-subtext {
-        max-inline-size: min(467px, 80%);
-      }
     }
 
     .pm-promo-area {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding-block-start: var(--s2a-spacing-4xl);
       inline-size: min(370px, 45%);
     }
-
-    .pm-merch-card {
-      background: var(--s2a-color-background-subtle);
-      border-radius: var(--s2a-border-radius-12);
-      padding: var(--s2a-spacing-lg);
-    }
-
-    .pm-merch-content {
-      .mas-description,
-      .mas-price-commitment {
-        font-size: var(--s2a-typography-font-size-body-md);
-        line-height: var(--s2a-typography-line-height-body-md);
-        letter-spacing: var(--s2a-typography-letter-spacing-body-md);
-      }
-    }
-  }
-
-  body:has(header.has-breadcrumbs) .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
-  }
-
-  body:has(header.local-nav) .product-marquee-grid {
-    min-block-size: calc(500px + var(--global-height-nav, 64px) + var(--feds-localnav-height, 40px));
   }
 }

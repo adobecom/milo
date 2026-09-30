@@ -121,9 +121,11 @@ const C2_BLOCKS = [
   'email-collection-c2',
   'explore-card',
   'faq',
+  'firefly-globe',
   'floating-cta',
   'global-footer',
   'global-navigation',
+  'globe-gallery',
   'hover-list',
   'hub-hero',
   'iframe',
@@ -134,12 +136,14 @@ const C2_BLOCKS = [
   'news',
   'offer-hero',
   'pdf-space',
+  'pill-group',
   'plans-hero',
   'product-marquee-grid',
   'quick-actions',
   'quote',
   'region-nav',
   'rich-content',
+  'roller-carousel',
   'router-marquee',
   'section-metadata',
   'side-by-side',
@@ -286,6 +290,7 @@ function hydrateLocale(locales, key) {
       }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
+    if (!Object.keys(hydratedChildren).length) return hydratedBase;
     return { ...hydratedBase, regions: hydratedChildren };
   }
 
@@ -297,6 +302,10 @@ function hydrateLocale(locales, key) {
   }
 
   return { ...locale };
+}
+
+function hasLingoRegions(locale) {
+  return !!Object.keys(locale?.regions ?? {}).length;
 }
 
 export function getLocale(locales, pathname = window.location.pathname) {
@@ -313,6 +322,8 @@ export function getLocale(locales, pathname = window.location.pathname) {
   } else if (localeString in locales) {
     matchedKey = localeString;
   }
+
+  if (!(matchedKey in locales)) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
 
   const locale = hydrateLocale(locales, matchedKey);
   if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
@@ -733,7 +744,16 @@ function processQueryIndexMap(link, domain, fetchOptions = {}) {
   };
 
   result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        window.lana?.log(`Query index not available (${response.status}): ${link}`, {
+          tags: 'utils',
+          severity: response.status === 404 ? 'info' : 'error',
+        });
+        return { data: [] };
+      }
+      return response.json();
+    })
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
       window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
@@ -958,7 +978,7 @@ function localizeLinkCore(
       return relative ? urlPath : `${url.origin}${urlPath}`;
     };
 
-    const isLingoPage = locale.base !== undefined || !!locale.regions;
+    const isLingoPage = locale.base !== undefined || hasLingoRegions(locale);
     const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
     const siteId = uniqueSiteId ?? '';
     const qiResolved = queryIndexes[siteId]?.requestResolved;
@@ -966,7 +986,7 @@ function localizeLinkCore(
         && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
     const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
       && lingoActive() && isLingoPage
-      && (!isFragment || (isMepLingoFragment && !!locale.regions));
+      && (!isFragment || (isMepLingoFragment && hasLingoRegions(locale)));
 
     if (enterAsync) {
       return (async () => {
@@ -991,7 +1011,7 @@ function localizeLinkCore(
 
         const domainInSiteMap = !lingoSiteMappingLoaded
           || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
-        const isBasePage = !!locale.regions;
+        const isBasePage = hasLingoRegions(locale);
 
         let resolvedPrefix = basePrefix;
         if (lingoModule) {
@@ -1101,7 +1121,7 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   const { locale } = config || {};
   const { regions } = locale || {};
 
-  if (!regions || !Object.keys(regions).length) return null;
+  if (!hasLingoRegions(locale)) return null;
 
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
@@ -1195,7 +1215,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoBlockSwap;
 
   const { locale } = getConfig() || {};
-  const isBasePage = !!locale?.regions;
+  const isBasePage = hasLingoRegions(locale);
   const needsOverride = lingoActive()
     && (isMepLingoLink || isBasePage || locale?.base !== undefined);
 
@@ -1389,8 +1409,10 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  // Standalone block used outside foundation c2 pages, but still needs to be loaded from c2 folder
   const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
   const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
+  const isC2OverrideBlock = isC2GnavOverride || isC2FooterOverride || name === 'email-collection-c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1422,7 +1444,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2OverrideBlock) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -2321,7 +2343,7 @@ export function preloadLcpCodeFiles(area = document) {
   const [firstSection] = area.querySelectorAll('body > main > div');
   if (!firstSection) return;
   const config = getConfig();
-  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS } = config;
+  const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
   firstSection.querySelectorAll('a[href]').forEach((a) => {
@@ -2337,8 +2359,12 @@ export function preloadLcpCodeFiles(area = document) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
+  const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
+  [].concat(externalLibs ?? []).forEach((lib) => {
+    if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
+  });
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
-    .filter((el) => !isCommerceBlock(el.classList[0]));
+    .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
@@ -2471,17 +2497,6 @@ function initModalEventListener() {
   });
 }
 
-function shouldSkipLenis() {
-  if (navigator.connection?.saveData
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
-  const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
-  const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
-  return isWindows
-    ? deviceMemory <= 4 || cores <= 4
-    : deviceMemory <= 4 && cores <= 4;
-}
-
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
   fontsPromise ??= import('./fonts.js')
@@ -2540,64 +2555,37 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    if (!shouldSkipLenis()) {
-      await Promise.all([
-        new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-        loadScript(`${config.base}/deps/lenis.min.js`),
-      ]);
-      const lerp = 0.06;
-      const fsThreshold = 110;
-      const fsFactor = 0.11;
-      const fsDelay = 700;
-      const lenisPreventSelectors = [
-        '.dialog-modal',
-        '.ot-sdk-container',
-        'div[data-testid="main-content-area"]',
-      ];
-      // Drive rAF manually so it pauses when idle and saves CPU
-      window.lenis = new window.Lenis({
-        autoRaf: false,
-        lerp,
-        wheelMultiplier: 0.7,
-        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-      });
-      let lenisRaf = null;
-      const runLenisFrame = (time) => {
-        window.lenis.raf(time);
-        lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
-      };
-      const startLenisRaf = () => {
-        if (lenisRaf === null) lenisRaf = requestAnimationFrame(runLenisFrame);
-      };
-
-      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
-      const onScrollKey = (e) => {
-        if (!scrollKeys.includes(e.key)) return;
-        if (document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) return;
-        startLenisRaf();
-      };
-      window.addEventListener('keydown', onScrollKey, { passive: true });
-
-      ['wheel', 'touchstart', 'touchmove', 'scroll'].forEach((evt) => {
-        window.addEventListener(evt, startLenisRaf, { passive: true });
-      });
-
-      const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
-      window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
-
-      if (document.querySelector('.modal-curtain.is-open')) {
-        window.lenis.stop();
-      }
-      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-      let fsScrollTimer;
-      window.addEventListener('wheel', (e) => {
-        if (Math.abs(e.deltaY) > fsThreshold) {
-          window.lenis.options.lerp = fsFactor;
-          clearTimeout(fsScrollTimer);
-          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
-        }
-      }, { passive: true });
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = 0.06;
+    const fsThreshold = 110;
+    const fsFactor = 0.11;
+    const fsDelay = 700;
+    const lenisPreventSelectors = [
+      '.dialog-modal',
+      '.ot-sdk-container',
+      'div[data-testid="main-content-area"]',
+    ];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      wheelMultiplier: 0.7,
+      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+    });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
     }
+    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+    let fsScrollTimer;
+    window.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > fsThreshold) {
+        window.lenis.options.lerp = fsFactor;
+        clearTimeout(fsScrollTimer);
+        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+      }
+    }, { passive: true });
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

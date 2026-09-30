@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 import icons from '../../../c2/assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
@@ -138,6 +139,27 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
+// Reads the real, currently-rendered nav height (accounts for localnav/promo banner)
+// instead of relying on the static --feds-height-nav/--hub-hero-nav-h CSS fallbacks,
+// matching the pattern used in comparison-table-c2.js's setupCollapsingHeader.
+const initNavHeight = (hubHero) => {
+  const header = document.querySelector('header');
+  if (!header) return;
+
+  const syncNavHeight = () => hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
+  syncNavHeight();
+
+  const navResizeObserver = new ResizeObserver(syncNavHeight);
+  navResizeObserver.observe(header);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      navResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const initHeaderPin = (hubHero, header) => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
@@ -248,7 +270,7 @@ const onHover = (event) => {
 };
 
 const buildSlide = ({ slide, idx, slidesTotal }) => {
-  if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
+  if (!slide?.children) return createTag('a', { class: ['hub-hero-carousel-item', slide?.class].filter(Boolean).join(' ') });
   const children = [...slide.children];
   const left = children[0];
   const right = children[1] ?? children[0];
@@ -304,6 +326,8 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
+    'aria-setsize': slidesTotal,
+    'aria-posinset': index + 1,
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
@@ -311,13 +335,22 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   if (link?.dataset?.modalHash) slideEl.dataset.modalHash = link.dataset.modalHash;
   if (link?.dataset?.modalPath) slideEl.dataset.modalPath = link.dataset.modalPath;
 
-  slideEl.addEventListener('click', (e) => {
-    if (!slideEl.href) return;
-    e.preventDefault();
-    const oldURL = window.location.href;
-    window.history.pushState(null, '', new URL(slideEl.href).hash);
-    window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
-  });
+  if (isModal) {
+    slideEl.addEventListener('click', (e) => {
+      if (!slideEl.href) return;
+      e.preventDefault();
+      const oldURL = window.location.href;
+      window.history.pushState(null, '', new URL(slideEl.href).hash);
+      window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
+    });
+
+    slideEl.addEventListener('keydown', (e) => {
+      if (e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();
+      if (e.repeat) return;
+      slideEl.click();
+    });
+  }
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
@@ -336,10 +369,9 @@ const decorateCarousel = (slides) => {
   const carouselScroll = createTag('div', { class: 'hub-hero-carousel-scroll' }, carouselContainer);
   carousel.replaceChildren();
   carousel.append(carouselScroll);
-  carousel.dataset.role = 'group';
-  carousel.dataset.ariaRoledescription = 'carousel';
-  carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
-  carousel.dataset.ariaRole = 'group';
+  carousel.setAttribute('role', 'group');
+  carousel.setAttribute('aria-roledescription', 'carousel');
+  carousel.setAttribute('aria-label', getCarouselName(slides[0]?.querySelector('a')));
   return carousel;
 };
 
@@ -358,7 +390,7 @@ const upgradeVideoPreload = (carousel) => {
 
 const handleCarousel = (hubHero, slds, isThreeSlides) => {
   // add middle "invisible" slide when carousel has 4 slides
-  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
+  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
@@ -449,18 +481,25 @@ const prepareVideo = (video) => {
   video.load();
 };
 
+const MAX_AUTOPLAY_DURATION = 5.1;
+const canAutoplay = (video) => !(video.duration > MAX_AUTOPLAY_DURATION);
+
 const playVideo = (video) => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const attemptPlay = () => { if (canAutoplay(video)) video.play().catch(() => { }); };
   if (video.readyState >= 3) {
-    video.play().catch(() => { });
+    attemptPlay();
     return;
   }
   prepareVideo(video);
-  video.addEventListener('canplay', () => video.play().catch(() => { }), { once: true });
+  if (video.readyState < 1) {
+    video.addEventListener('loadedmetadata', () => {
+      video.addEventListener('canplay', attemptPlay, { once: true });
+    }, { once: true });
+  } else {
+    video.addEventListener('canplay', attemptPlay, { once: true });
+  }
 };
-
-const MAX_AUTOPLAY_DURATION = 5.1;
-const canAutoplay = (video) => !(video.duration > MAX_AUTOPLAY_DURATION);
 
 const handleSlidesThreeVideos = (hubHero) => {
   // Grid videos: play when 50% in viewport, pause when scrolled out
@@ -468,8 +507,8 @@ const handleSlidesThreeVideos = (hubHero) => {
     const container = video.closest('.video-holder') || video;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && canAutoplay(video)) playVideo(video);
-        else if (!entry.isIntersecting) video.pause();
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
       },
       { threshold: 0.5 },
     );
@@ -482,8 +521,8 @@ const handleSlidesThreeVideos = (hubHero) => {
     const slide = video.closest('.hub-hero-carousel-item');
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && canAutoplay(video)) playVideo(video);
-        else if (!entry.isIntersecting) video.pause();
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
       },
       { threshold: 0.5 },
     );
@@ -525,6 +564,7 @@ export default async function init(el) {
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
   handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+  initNavHeight(el);
   initHeaderPin(el, heroHeader);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
