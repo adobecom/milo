@@ -188,10 +188,10 @@ mas-field .icon-button {
 
   /* Prevent a second, overlapping line: the WCS wrapper already draws the
      strikethrough, so the nested price span must not draw its own. */
-  /* mas-field span.placeholder-resolved[data-template='strikethrough'] span.price.price-strikethrough,
+  mas-field span.placeholder-resolved[data-template='strikethrough'] span.price.price-strikethrough,
   mas-field span.placeholder-resolved[data-template='priceStrikethrough'] span.price.price-strikethrough {
     text-decoration: none;
-  } */
+  }
 
   .firefly & {
     border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
