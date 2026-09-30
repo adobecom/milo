@@ -122,10 +122,28 @@
 }
 
 .mmm-2 .mmm2-history-chart-title {
-  margin: 0 0 var(--spacing-s) 0;
+  margin: 0;
   font-size: var(--type-body-m-size);
   font-weight: 700;
   color: var(--color-gray-700);
+}
+
+.mmm-2 .mmm2-history-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
+}
+
+.mmm-2 .mmm2-history-chart-year {
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-s-size);
+  color: var(--text-color);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  padding: var(--spacing-xxs) var(--spacing-xs);
 }
 
 .mmm-2 .mmm2-history-chart-canvas {
