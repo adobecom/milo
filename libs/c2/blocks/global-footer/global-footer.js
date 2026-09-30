@@ -833,7 +833,7 @@ class Footer {
     }
     const authoredLogo = this.decorateAuthoredLogo();
     const logoSrc = authoredLogo?.src || FOOTER_LOGO_FULL_SRC;
-    const logoAlt = authoredLogo?.alt || 'Footer logo';
+    const logoAlt = authoredLogo?.alt || 'Adobe';
     const footerLogo = toFragment`<div class="feds-footer-logo">
         <img src="${logoSrc}" alt="${logoAlt}" />
       </div>`;
