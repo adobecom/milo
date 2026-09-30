@@ -1,0 +1,906 @@
+/* mmm-2: reskinned MMM SPA. Built entirely from Milo's shared design tokens
+   (see libs/styles/styles.css) rather than hardcoded colors/sizes, for an
+   adobe.com-consistent look instead of the original mmm.css's dense internal-tool feel. */
+
+/* Custom select chevron: native <select> arrows in Chromium ignore padding-right (it
+   only insets the text; the OS-drawn arrow box is fixed) - confirmed directly via
+   devtools (forcing padding-right: 86px moved nothing). appearance: none + this
+   background-image is the only reliable way to control the arrow's position. */
+.mmm-2 {
+  --mmm2-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath fill='%23686868' d='M4,7.01a1,1,0,0,1,1.7055-.7055l3.289,3.286,3.289-3.286a1,1,0,0,1,1.437,1.3865l-.0245.0245L9.7,11.7075a1,1,0,0,1-1.4125,0L4.293,7.716A.9945.9945,0,0,1,4,7.01Z'/%3E%3C/svg%3E");
+}
+
+.mmm-2 .mmm2-app {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: var(--spacing-l) var(--grid-margins-width) var(--spacing-xxxl);
+  font-family: var(--body-font-family);
+  color: var(--text-color);
+}
+
+/* Tab nav */
+
+.mmm-2 .mmm2-tab-nav {
+  display: flex;
+  gap: var(--spacing-l);
+  border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: var(--spacing-xl);
+}
+
+.mmm-2 .mmm2-tab-button {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  padding: var(--spacing-s) var(--spacing-xs);
+  font-family: var(--body-font-family);
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-base-lh);
+  font-weight: var(--type-heading-all-weight);
+  color: var(--color-gray-600);
+  transition: color .13s ease, border-color .13s ease;
+}
+
+.mmm-2 .mmm2-tab-button:hover {
+  color: var(--text-color);
+}
+
+.mmm-2 .mmm2-tab-button.is-active {
+  color: var(--text-color);
+  border-bottom-color: var(--color-accent);
+}
+
+/* Shared: "How to use this report" accordion */
+
+.mmm-2 .mmm2-howto {
+  margin-bottom: var(--spacing-l);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: var(--spacing-xs) var(--spacing-m);
+  background: var(--color-gray-100);
+}
+
+.mmm-2 .mmm2-howto-summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-800);
+  list-style: none;
+}
+
+.mmm-2 .mmm2-howto-summary::-webkit-details-marker {
+  display: none;
+}
+
+.mmm-2 .mmm2-howto-summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: var(--spacing-xxs);
+  transition: transform .15s ease;
+}
+
+.mmm-2 .mmm2-howto[open] .mmm2-howto-summary::before {
+  transform: rotate(90deg);
+}
+
+.mmm-2 .mmm2-howto-body {
+  margin-top: var(--spacing-xs);
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-700);
+}
+
+.mmm-2 .mmm2-howto-body ol {
+  margin: 0;
+  padding-left: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-howto-body li {
+  margin-bottom: var(--spacing-xxs);
+}
+
+.mmm-2 .mmm2-howto-note {
+  font-size: var(--type-detail-m-size);
+  color: var(--color-gray-600);
+}
+
+.mmm-2 .mmm2-howto-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-s);
+}
+
+/* Inactivity report: history chart */
+
+.mmm-2 .mmm2-history-chart {
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-gray-100);
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.mmm-2 .mmm2-history-chart-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  background: var(--color-gray-200);
+  padding: var(--spacing-xs) var(--spacing-s);
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle {
+  display: flex;
+  align-items: center;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: calc(-1 * var(--spacing-xxs)) calc(-1 * var(--spacing-xs));
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: 8px;
+  font-family: var(--body-font-family);
+  text-align: left;
+  outline: none;
+  transition: color .13s ease;
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.mmm-2 .mmm2-history-chart-summary-chevron {
+  display: inline-block;
+  margin-right: var(--spacing-xs);
+  transition: transform .15s ease;
+}
+
+.mmm-2 .mmm2-history-chart-summary-chevron::before {
+  content: '▸';
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle[aria-expanded="true"] .mmm2-history-chart-summary-chevron {
+  transform: rotate(90deg);
+}
+
+.mmm-2 .mmm2-history-chart-summary-title {
+  font-size: var(--type-body-m-size);
+  font-weight: 700;
+  color: var(--color-gray-800);
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle:hover .mmm2-history-chart-summary-title,
+.mmm-2 .mmm2-history-chart-summary-toggle:hover .mmm2-history-chart-summary-chevron {
+  color: var(--color-accent);
+}
+
+.mmm-2 .mmm2-history-chart-body {
+  padding: var(--spacing-xs);
+}
+
+.mmm-2 .mmm2-history-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.mmm-2 .mmm2-history-chart-canvas {
+  width: 100%;
+  height: 380px;
+}
+
+.mmm-2 .mmm2-history-chart-empty {
+  margin: 0;
+  font-size: var(--type-body-s-size);
+  color: var(--color-gray-600);
+}
+
+/* Shared: filter panel */
+
+.mmm-2 .mmm2-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-l) var(--spacing-xl);
+  padding: var(--spacing-l);
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-gray-100);
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mmm-2 .mmm2-filters:has(+ .mmm2-report-actions) {
+  margin-bottom: var(--spacing-l);
+}
+
+.mmm-2 .mmm2-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  min-width: 200px;
+}
+
+.mmm-2 .mmm2-form-field label {
+  font-size: var(--type-detail-m-size);
+  line-height: var(--type-detail-s-lh);
+  font-weight: 700;
+  color: var(--color-gray-700);
+}
+
+.mmm-2 .mmm2-form-field-spacer {
+  visibility: hidden;
+}
+
+.mmm-2 .mmm2-form-field p {
+  margin: 0;
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field label {
+  white-space: nowrap;
+}
+
+.mmm-2 .mmm2-form-field select,
+.mmm-2 .mmm2-search-input,
+.mmm-2 .mmm2-text-input {
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  color: var(--text-color);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+}
+
+.mmm-2 .mmm2-form-field select {
+  appearance: none;
+  background-image: var(--mmm2-chevron);
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-xs) center;
+  background-size: 18px;
+  padding-right: var(--spacing-xxl);
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field select {
+  min-width: 140px;
+}
+
+.mmm-2 .mmm2-search-input {
+  min-height: 44px;
+  resize: vertical;
+}
+
+.mmm-2 .mmm2-form-field select:focus,
+.mmm-2 .mmm2-search-input:focus,
+.mmm-2 .mmm2-text-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.mmm-2 .mmm2-search-field {
+  flex: 1 1 100%;
+}
+
+.mmm-2 .mmm2-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  border: none;
+  padding: 0;
+  margin: 0;
+  transition: outline-color .2s ease;
+}
+
+.mmm-2 .mmm2-checkbox-group legend {
+  font-size: var(--type-detail-m-size);
+  line-height: var(--type-detail-s-lh);
+  font-weight: 700;
+  color: var(--color-gray-700);
+  padding: 0;
+}
+
+.mmm-2 .mmm2-checkbox-group.has-error {
+  outline: 2px solid var(--color-info-accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.mmm-2 .mmm2-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  font-size: var(--type-body-s-size);
+}
+
+/* Search view: page list */
+
+.mmm-2 .mmm2-page-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.mmm-2 .mmm2-page-item {
+  border-bottom: 1px solid var(--color-gray-200);
+  border-left: 3px solid transparent;
+  transition: border-color .15s ease;
+}
+
+.mmm-2 .mmm2-page-item:not(.is-expanded):hover {
+  background: var(--color-gray-100);
+}
+
+.mmm-2 .mmm2-page-item.is-expanded {
+  border-left-color: var(--color-accent);
+}
+
+.mmm-2 .mmm2-page-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  width: 100%;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  text-align: left;
+}
+
+.mmm-2 .mmm2-page-icon {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--color-gray-600);
+  border-bottom: 2px solid var(--color-gray-600);
+  transform: rotate(-45deg);
+  transition: transform .15s ease;
+}
+
+.mmm-2 .mmm2-page-icon.is-expanded {
+  transform: rotate(45deg);
+}
+
+.mmm-2 .mmm2-page-heading {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  font-weight: 500;
+  min-width: 0;
+}
+
+/* Primary content link (page/report URL) - dark + bold rather than blue link-color,
+   matching the original mmm.js look. Shared with .mmm2-report-row's URL link below;
+   secondary links (target activity name, etc.) keep the normal link-color treatment. */
+.mmm-2 .mmm2-primary-link {
+  color: currentcolor;
+  overflow-wrap: anywhere;
+  font-weight: bolder;
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-s-size);
+}
+
+.mmm-2 .mmm2-page-subtext {
+  flex: 0 0 auto;
+  font-size: var(--type-detail-s-size);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+/* Nesting depth: page row (white) > detail panel (gray-100) > manifest card (white,
+   inside the gray panel) > the currently-expanded manifest's own detail (gray-100
+   again) - each level alternates white/gray-100 so the "you are here" depth reads at
+   a glance without relying on indentation alone. */
+.mmm-2 .mmm2-page-detail {
+  margin: 0 0 var(--spacing-s) var(--spacing-l);
+  padding: var(--spacing-m);
+  background: var(--color-gray-100);
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+/* Scoped to .mmm-2 (unlike every other rule here, this was briefly left unscoped and
+   would otherwise leak onto any other .mep-popup on the same page - e.g. the legacy
+   in-page MEP preview button, if one were ever rendered alongside mmm-2). */
+.mmm-2 .mep-popup .mep-section {
+  max-width: 100% !important;
+
+  .mep-experience-dropdown {
+    max-width: 60%;
+  }
+}
+
+.mmm-2 .mmm2-page-detail .mmm2-page-detail-container {
+  box-shadow: 0 0 3px 0 #ddd;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.mmm-2 .mmm2-page-detail .mep-popup-tabs {
+  background: var(--color-white);
+  border-left: none;
+  border-bottom: 1px solid var(--color-gray-200);
+  border-radius: 8px 8px 0 0;
+  padding: 0 var(--spacing-m);
+  gap: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-page-detail .mep-popup-tabs .mep-tab {
+  height: 44px;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  border-bottom-color: var(--color-accent);
+}
+
+.mmm-2 .mmm2-page-detail .mep-popup-tabs .mep-tab[active] {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.mmm-2 .mmm2-page-detail .mep-popup-body {
+  background: var(--color-white);
+  border-radius: 0 0 8px 8px;
+  padding: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-page-detail .mep-divider {
+  border-bottom-color: var(--color-gray-200);
+}
+
+/* The single manifest currently expanded (mep-manifest-info[active]) gets the same
+   gray-100 tint as the outer detail panel, so it visually "drops back" a level
+   relative to the white manifest-list card around it. */
+.mmm-2 .mmm2-page-detail .mep-manifest-info[active] {
+  background: var(--color-gray-100);
+  border-radius: 8px;
+  padding: var(--spacing-s);
+  margin-top: calc(var(--spacing-xxs) * -1);
+}
+
+.mmm-2 .mmm2-page-detail .mep-experience-dropdown select {
+  border: 1px solid var(--color-gray-300);
+  appearance: none;
+  background-image: var(--mmm2-chevron);
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-xs) center;
+  background-size: 18px;
+  padding-right: var(--spacing-xxl);
+}
+
+/* Report view */
+
+.mmm-2 .mmm2-report-actions {
+  margin-bottom: var(--spacing-l);
+}
+
+.mmm-2 .mmm2-action-area {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+  margin: 0;
+}
+
+.mmm-2 .mmm2-action-area.has-error {
+  outline: 2px solid var(--color-info-accent);
+  outline-offset: 6px;
+  border-radius: 20px;
+}
+
+.mmm-2 .mmm2-action-area.has-success::after {
+  content: 'Copied!';
+  font-size: var(--type-detail-s-size);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Same soft-shadow card treatment as the Search tab's manifest-detail card
+   (.mmm2-page-detail__container), for a consistent look across all three tabs. */
+.mmm-2 .mmm2-report {
+  box-shadow: 0 0 3px 0 #ddd;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Resizable table (matches the original mmm.js's plain HTML table look: bordered
+   cells, gray header). table-layout: fixed makes the <colgroup> widths authoritative
+   - content wraps within the cell instead of stretching the column.
+   border-collapse: separate (not collapse) is required for border-radius to
+   actually apply to cell borders - browsers ignore border-radius on collapsed
+   table borders (only the background gets clipped), which left a hard square
+   notch cutting through the rounded corners. Borders are drawn manually below
+   (right + bottom on every cell, plus top-row/first-column) to reproduce the
+   same single-line grid a collapsed table would have, without doubling up. */
+.mmm-2 .mmm2-report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.mmm-2 .mmm2-report-table th,
+.mmm-2 .mmm2-report-table td {
+  border-right: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: 10px var(--spacing-xxs);
+  text-align: left;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.mmm-2 .mmm2-report-table th {
+  position: relative;
+  background: var(--color-gray-100);
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  color: var(--color-gray-700);
+  text-align: center;
+  transition: background-color .15s ease;
+}
+
+.mmm-2 .mmm2-report-table thead th {
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.mmm-2 .mmm2-report-table th:hover {
+  background: var(--color-gray-200);
+}
+
+.mmm-2 .mmm2-report-table th:nth-child(1),
+.mmm-2 .mmm2-report-table td:nth-child(1) {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  text-align: center;
+}
+
+.mmm-2 .mmm2-report-table td:nth-child(3),
+.mmm-2 .mmm2-report-table td:nth-child(5) {
+  text-align: center;
+}
+
+.mmm-2 .mmm2-report-table tr th:first-child,
+.mmm-2 .mmm2-report-table tr td:first-child {
+  border-left: 1px solid var(--color-gray-200);
+}
+
+/* Now that the table uses border-collapse: separate, border-radius on the
+   actual corner cells is honored (including their borders, not just their
+   background), so the rounded corners read as a single clean curve. */
+.mmm-2 .mmm2-report-table thead tr:first-child th:first-child {
+  border-top-left-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table thead tr:first-child th:last-child {
+  border-top-right-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 1rem;
+}
+
+.mmm-2 .mmm2-report-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 1rem;
+}
+
+/* Note: .mmm2-report-select-all is applied directly to the <th> (it's a table
+   cell, not a wrapper div) - it must NOT set display: flex here, since that
+   would take the cell out of table layout entirely (breaks column width,
+   borders, and row height). The checkbox + accessible label live in a child
+   <label> (.mmm2-report-select-all-label) that fills the cell and is safe to
+   flex/center, since it doesn't affect the <th>'s own table-cell display. */
+.mmm-2 .mmm2-report-select-all {
+  vertical-align: middle;
+  padding: 0;
+}
+
+.mmm-2 .mmm2-report-select-all-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mmm-2 .mmm2-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mmm-2 .mmm2-report-sortable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xxs);
+  user-select: none;
+}
+
+.mmm-2 .mmm2-sort-chevrons {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mmm-2 .mmm2-sort-chevron {
+  display: flex;
+  color: var(--color-gray-400);
+  transition: color .15s ease;
+}
+
+.mmm-2 .mmm2-report-table th:hover .mmm2-sort-chevron:not(.is-active) {
+  color: var(--color-gray-600);
+}
+
+.mmm-2 .mmm2-sort-chevron.is-active {
+  color: var(--color-gray-800);
+}
+
+.mmm-2 .mmm2-report-row {
+  font-size: var(--type-body-s-size);
+}
+
+.mmm-2 .mmm2-report-row a:not(.mmm2-primary-link) {
+  color: var(--link-color);
+  overflow-wrap: anywhere;
+}
+
+/* Drag-to-resize handle: a thin strip straddling the column border. Listens via
+   pointer events (unifies mouse/touch/pen) added in ColumnResizer's onPointerDown. */
+.mmm-2 .mmm2-col-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 1;
+}
+
+.mmm-2 .mmm2-col-resizer:hover,
+.mmm-2 .mmm2-col-resizer.is-resizing {
+  background: var(--color-accent);
+  opacity: .5;
+}
+
+.mmm-2 .mmm2-small {
+  font-size: var(--type-detail-s-size);
+}
+
+.mmm-2 .mmm2-medium {
+  font-size: var(--type-detail-m-size);
+  line-height: var(--type-detail-m-lh);
+}
+
+/* Metadata lookup view */
+
+.mmm-2 .mmm2-metadata-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-l);
+  margin: var(--spacing-l) 0;
+}
+
+.mmm-2 .mmm2-metadata-pod {
+  flex: 1 1 220px;
+  box-shadow: 0 0 3px 0 #ddd;
+  border-radius: 1rem;
+  padding: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-metadata-pod h3 {
+  font-size: var(--type-heading-xxs-size);
+  margin: 0 0 var(--spacing-s);
+}
+
+.mmm-2 .mmm2-metadata-pod-item {
+  font-size: var(--type-body-s-size);
+  padding: var(--spacing-xxs) 0;
+  border-bottom: 1px solid var(--color-gray-100);
+  overflow-wrap: anywhere;
+}
+
+.mmm-2 .mmm2-metadata-pod .con-button {
+  margin-top: var(--spacing-s);
+}
+
+/* Pagination */
+
+.mmm-2 .mmm2-pagination {
+  margin-top: var(--spacing-l);
+}
+
+.mmm-2 .mmm2-link-flat {
+  text-decoration: none;
+}
+
+.mmm-2 .mmm2-pagination-no-results {
+  text-align: center;
+  color: var(--color-gray-600);
+}
+
+.mmm-2 .mmm2-pagination-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-m);
+}
+
+.mmm-2 .mmm2-pagination-select {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  font-size: var(--type-detail-s-size);
+}
+
+.mmm-2 .mmm2-pagination-dropdown {
+  font-family: var(--body-font-family);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  appearance: none;
+  background-image: var(--mmm2-chevron);
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-xxs) center;
+  background-size: 16px;
+  padding-right: var(--spacing-xl);
+}
+
+.mmm-2 .mmm2-pagination-arrows {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.mmm-2 .mmm2-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.mmm-2 .mmm2-arrow:hover {
+  background: var(--color-gray-100);
+}
+
+.mmm-2 .mmm2-arrow.is-disabled {
+  pointer-events: none;
+  opacity: .35;
+}
+
+.mmm-2 .mmm2-pagination-summary {
+  font-size: var(--type-detail-s-size);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+/* Shared states */
+
+/* Skeleton loading placeholders - shapes mirror each view's real content (page rows,
+   report grid rows, manifest card, metadata pods) so nothing jumps once data arrives. */
+@keyframes mmm2-skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.mmm-2 .mmm2-skeleton {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-100) 37%, var(--color-gray-200) 63%);
+  background-size: 400px 100%;
+  animation: mmm2-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mmm-2 .mmm2-skeleton {
+    animation: none;
+  }
+}
+
+.mmm-2 .mmm2-skeleton-text {
+  height: 14px;
+}
+
+.mmm-2 .mmm2-skeleton-circle {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mmm-2 .mmm2-skeleton-block {
+  height: 36px;
+  border-radius: 8px;
+}
+
+/* Search view: page-row skeletons reuse the real row's own layout classes so the
+   shape matches exactly once the shimmer swaps for live content. */
+.mmm-2 .mmm2-page-item .mmm2-page-trigger {
+  cursor: pointer;
+}
+
+.mmm-2 .mmm2-skeleton-heading {
+  height: 18px;
+  max-width: 340px;
+}
+
+/* Manifest-card skeleton (PageListItem's own detail-loading state) - sits inside the
+   same gray-100 panel as the real content, so only the inner card needs styling. */
+.mmm-2 .mmm2-skeleton-card {
+  background: var(--color-white);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mmm-2 .mmm2-skeleton-tabs {
+  display: flex;
+  gap: var(--spacing-m);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.mmm-2 .mmm2-skeleton-body {
+  padding: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-l);
+}
+
+.mmm-2 .mmm2-skeleton-manifest {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Metadata lookup: pod-shaped skeletons */
+.mmm-2 .mmm2-skeleton-pod {
+  flex: 1 1 220px;
+  box-shadow: 0 0 3px 0 #ddd;
+  border-radius: 1rem;
+  padding: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+@media (width <= 600px) {
+  /* Drop the 2 narrowest-value columns (Last Seen from Target, Page Last Seen) at
+     mobile widths. visibility: collapse on the <col> is the standard way to actually
+     remove a table column's width (display: none on the col alone leaves a gap, since
+     table-layout: fixed still reserves its width) - hiding th/td too for good measure. */
+  .mmm-2 .mmm2-report-table col:nth-child(4),
+  .mmm-2 .mmm2-report-table col:nth-child(5) {
+    visibility: collapse;
+  }
+
+  .mmm-2 .mmm2-report-table th:nth-child(4),
+  .mmm-2 .mmm2-report-table th:nth-child(5),
+  .mmm-2 .mmm2-report-table td:nth-child(4),
+  .mmm-2 .mmm2-report-table td:nth-child(5) {
+    display: none;
+  }
+}

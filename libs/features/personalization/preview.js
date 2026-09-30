@@ -54,14 +54,24 @@ function safeUrl(url) {
   }
 }
 
-const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+const PROD_API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+// `serverless dev --stage local` tunnels this Function URL's invocations straight to
+// whatever backend code is running locally - no deploy needed to pick up local changes.
+const LOCAL_API_DOMAIN = 'https://bckbr4dhh2sngv5skvo4k7l27i0fvhdk.lambda-url.us-west-2.on.aws';
+
+// Resolved per-access (not at import time) since config may not be set yet when
+// this module is first imported.
+function getApiDomain() {
+  return getConfig()?.env?.name === 'local' ? LOCAL_API_DOMAIN : PROD_API_DOMAIN;
+}
 
 export const API_URLS = {
-  pageList: `${API_DOMAIN}/get-pages`,
-  pageDetails: `${API_DOMAIN}/get-page`,
-  pageDataByURL: `${API_DOMAIN}/get-page?url=`,
-  save: `${API_DOMAIN}/save-mep-call`,
-  report: `${API_DOMAIN}/get-report`,
+  get pageList() { return `${getApiDomain()}/get-pages`; },
+  get pageDetails() { return `${getApiDomain()}/get-page`; },
+  get pageDataByURL() { return `${getApiDomain()}/get-page?url=`; },
+  get save() { return `${getApiDomain()}/save-mep-call`; },
+  get report() { return `${getApiDomain()}/get-report`; },
+  get history() { return `${getApiDomain()}/get-target-history`; },
 };
 
 const CAAS_BADGE_CLASS = 'mep-caas-edit-badge';
