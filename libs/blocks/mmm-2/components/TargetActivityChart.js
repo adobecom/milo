@@ -305,7 +305,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
           aria-expanded=${expanded}
           onClick=${() => setExpanded((prev) => !prev)}>
           <span class="mmm2-history-chart-summary-chevron"></span>
-          <span class="mmm2-history-chart-summary-title">Historical Data${titleSuffix}</span>
+          <span class="mmm2-history-chart-summary-title">Target Activity Historical Data${titleSuffix}</span>
         </button>
         ${expanded ? html`
           <div class="mmm2-history-chart-controls">
