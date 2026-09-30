@@ -148,6 +148,8 @@ function applyPreservedStyles(heading) {
   if (!origLevel || !heading.isConnected) return;
   const probe = createTag(`h${origLevel}`);
   [...heading.attributes].forEach(({ name, value }) => probe.setAttribute(name, value));
+  // Content-dependent selectors such as h4:has(> svg) control icon alignment.
+  probe.append(...[...heading.childNodes].map((node) => node.cloneNode(true)));
   probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
   heading.after(probe);
   const computed = getComputedStyle(probe);
