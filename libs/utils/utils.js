@@ -323,6 +323,8 @@ export function getLocale(locales, pathname = window.location.pathname) {
     matchedKey = localeString;
   }
 
+  if (!(matchedKey in locales)) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
   const locale = hydrateLocale(locales, matchedKey);
   if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
@@ -1407,8 +1409,10 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  // Standalone block used outside foundation c2 pages, but still needs to be loaded from c2 folder
   const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
   const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
+  const isC2OverrideBlock = isC2GnavOverride || isC2FooterOverride || name === 'email-collection-c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
@@ -1440,7 +1444,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2OverrideBlock) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
