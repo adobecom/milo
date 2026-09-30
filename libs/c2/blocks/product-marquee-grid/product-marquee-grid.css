@@ -181,7 +181,7 @@ mas-field .icon-button {
   mas-field span.price.price-strikethrough, mas-field span.price.price-promo-strikethrough
  {
     color: var(--s2a-color-content-subtle);
-    text-decoration-color: var(--s2a-color-content-subtle);
+    text-decoration-color: var(--s2a-color-content-subtle) !important;
 }
 
   .firefly & {
