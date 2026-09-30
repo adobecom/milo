@@ -114,26 +114,61 @@
 /* Inactivity report: history chart */
 
 .mmm-2 .mmm2-history-chart {
-  padding: var(--spacing-l);
   margin-bottom: var(--spacing-xl);
   background: var(--color-gray-100);
   border-radius: 16px;
   border: 1px solid #ddd;
+  overflow: hidden;
 }
 
-.mmm-2 .mmm2-history-chart-title {
-  margin: 0;
+.mmm-2 .mmm2-history-chart-summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  appearance: none;
+  background: var(--color-gray-300);
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-s) var(--spacing-l);
+  font-family: var(--body-font-family);
+  text-align: left;
+  transition: background-color .13s ease;
+}
+
+.mmm-2 .mmm2-history-chart-summary:hover {
+  background: var(--color-gray-400);
+}
+
+.mmm-2 .mmm2-history-chart-summary-chevron {
+  display: inline-block;
+  margin-right: var(--spacing-xs);
+  transition: transform .15s ease;
+}
+
+.mmm-2 .mmm2-history-chart-summary-chevron::before {
+  content: '▸';
+}
+
+.mmm-2 .mmm2-history-chart-summary[aria-expanded="true"] .mmm2-history-chart-summary-chevron {
+  transform: rotate(90deg);
+}
+
+.mmm-2 .mmm2-history-chart-summary-title {
   font-size: var(--type-body-m-size);
   font-weight: 700;
-  color: var(--color-gray-700);
+  color: var(--color-gray-800);
+}
+
+.mmm-2 .mmm2-history-chart-body {
+  padding: var(--spacing-s) var(--spacing-l) var(--spacing-l);
 }
 
 .mmm-2 .mmm2-history-chart-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--spacing-s);
-  margin-bottom: var(--spacing-s);
+  margin-bottom: var(--spacing-xs);
 }
 
 .mmm-2 .mmm2-history-chart-controls {
@@ -144,7 +179,7 @@
 
 .mmm-2 .mmm2-history-chart-canvas {
   width: 100%;
-  height: 220px;
+  height: 380px;
 }
 
 .mmm-2 .mmm2-history-chart-empty {

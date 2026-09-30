@@ -104,6 +104,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
   const [failed, setFailed] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null);
   const [breakdownMode, setBreakdownMode] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const showBreakdownToggle = !selectedGeos && geoGroups.length > 0;
   const activeBreakdown = showBreakdownToggle && breakdownMode;
@@ -201,8 +202,8 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
         grid: {
           left: 8,
           right: 16,
-          top: isSingleLine ? 20 : 36,
-          bottom: isSingleLine ? 28 : 48,
+          top: 20,
+          bottom: 28,
           containLabel: true,
         },
         tooltip: {
@@ -213,7 +214,6 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
           padding: [6, 8],
           extraCssText: 'max-height: 320px; overflow-y: auto; line-height: 1.4;',
         },
-        legend: isSingleLine ? undefined : { bottom: 0, type: 'scroll' },
         xAxis: {
           type: 'category',
           boundaryGap: false,
@@ -254,6 +254,14 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
     };
   }, [months, plottedSeries]);
 
+  // The chart's container is never unmounted while collapsed (just hidden via CSS), so
+  // echarts keeps its instance - but it was laid out at zero size while hidden, so it
+  // needs an explicit resize once it becomes visible again to fill the space correctly.
+  useEffect(() => {
+    if (!expanded) return;
+    requestAnimationFrame(() => chartRef.current?.resize());
+  }, [expanded]);
+
   if (failed) return null;
 
   const isEmpty = series?.every((s) => s.rows.length === 0);
@@ -261,37 +269,46 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
 
   return html`
     <div class="mmm2-history-chart">
-      <div class="mmm2-history-chart-header">
-        <h3 class="mmm2-history-chart-title">Pages with Target on${titleSuffix}</h3>
-        <div class="mmm2-history-chart-controls">
-          ${showBreakdownToggle ? html`
-            <div class="mmm2-form-field">
-              <label for="mmm2-history-chart-breakdown">View:</label>
-              <select
-                id="mmm2-history-chart-breakdown"
-                value=${breakdownMode ? 'geo' : 'all'}
-                onChange=${(e) => setBreakdownMode(e.target.value === 'geo')}>
-                <option value="all">All pages</option>
-                <option value="geo">By geo group</option>
-              </select>
-            </div>
-          ` : null}
-          ${years.length > 1 ? html`
-            <div class="mmm2-form-field">
-              <label for="mmm2-history-chart-year">Year:</label>
-              <select
-                id="mmm2-history-chart-year"
-                value=${selectedYear ?? ''}
-                onChange=${(e) => setSelectedYear(Number(e.target.value))}>
-                ${years.slice().reverse().map((year) => html`<option value=${year}>${year}</option>`)}
-              </select>
-            </div>
-          ` : null}
+      <button
+        type="button"
+        class="mmm2-history-chart-summary"
+        aria-expanded=${expanded}
+        onClick=${() => setExpanded((prev) => !prev)}>
+        <span class="mmm2-history-chart-summary-chevron"></span>
+        <span class="mmm2-history-chart-summary-title">Pages with Target on${titleSuffix}</span>
+      </button>
+      <div class="mmm2-history-chart-body" style=${expanded ? '' : 'display: none;'}>
+        <div class="mmm2-history-chart-header">
+          <div class="mmm2-history-chart-controls">
+            ${showBreakdownToggle ? html`
+              <div class="mmm2-form-field">
+                <label for="mmm2-history-chart-breakdown">View:</label>
+                <select
+                  id="mmm2-history-chart-breakdown"
+                  value=${breakdownMode ? 'geo' : 'all'}
+                  onChange=${(e) => setBreakdownMode(e.target.value === 'geo')}>
+                  <option value="all">All pages</option>
+                  <option value="geo">By geo group</option>
+                </select>
+              </div>
+            ` : null}
+            ${years.length > 1 ? html`
+              <div class="mmm2-form-field">
+                <label for="mmm2-history-chart-year">Year:</label>
+                <select
+                  id="mmm2-history-chart-year"
+                  value=${selectedYear ?? ''}
+                  onChange=${(e) => setSelectedYear(Number(e.target.value))}>
+                  ${years.slice().reverse().map((year) => html`<option value=${year}>${year}</option>`)}
+                </select>
+              </div>
+            ` : null}
+          </div>
         </div>
-      </div>
-      ${isEmpty
+        ${isEmpty
     ? html`<p class="mmm2-history-chart-empty">No history yet - this graph fills in one day at a time.</p>`
     : html`<div class="mmm2-history-chart-canvas" ref=${containerRef}></div>`}
+      </div>
     </div>
   `;
 }
