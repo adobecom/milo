@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
-import { createFullGlobalNavigation, viewports } from './test-utilities.js';
+import { createFullGlobalNavigation, loadStyles, viewports } from './test-utilities.js';
 import { waitForRemoval } from '../../helpers/waitfor.js';
 import { getConfig, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import {
@@ -729,17 +729,21 @@ describe('AUP', () => {
   });
 
   it('hides the workflow behind a loading indicator until its load signal', async () => {
+    await loadStyles('/libs/blocks/modal/modal.css');
     const { showDialog } = await initializeHost();
     const iframe = createElement('iframe');
     await showDialog(iframe, { title: 'Workflow' }, sinon.spy());
     const active = dialog();
+    const close = active.querySelector('.dialog-close');
     expect(!!active.querySelector('sp-progress-circle')).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('hidden');
+    expect(getComputedStyle(close).display).not.to.equal('none');
 
     iframe.dispatchEvent(new Event('load'));
 
     expect(active.querySelector('sp-progress-circle') === null).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('visible');
+    expect(getComputedStyle(close).display).to.equal('none');
   });
 
   [

@@ -1253,6 +1253,7 @@ class Gnav {
             finishLoading = () => {
               element.removeEventListener('load', finishLoading);
               content.classList.remove('loading');
+              dialog?.classList.add('hide-close-button');
               spinner.remove();
               finishLoading = undefined;
             };
@@ -1279,7 +1280,7 @@ class Gnav {
             await requestClose();
             return;
           }
-          dialog.classList.add('hide-close-button');
+          if (!finishLoading) dialog.classList.add('hide-close-button');
           if (labelledBy) {
             dialog.setAttribute('aria-labelledby', labelledBy);
             dialog.removeAttribute('aria-label');
