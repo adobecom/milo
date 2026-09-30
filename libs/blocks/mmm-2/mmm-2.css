@@ -136,7 +136,14 @@
   margin-bottom: var(--spacing-s);
 }
 
-.mmm-2 .mmm2-history-chart-year {
+.mmm-2 .mmm2-history-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.mmm-2 .mmm2-history-chart-year,
+.mmm-2 .mmm2-history-chart-breakdown {
   font-family: var(--body-font-family);
   font-size: var(--type-body-s-size);
   color: var(--text-color);

@@ -220,7 +220,10 @@ function InactivityReportView() {
           <a class="con-button button-s mmm2-howto-link" href="/docs/authoring/features/mep/target-integration" target="_blank" rel="noopener">Learn more</a>
         </div>
       <//>
-      <${TargetActivityChart} />
+      <${TargetActivityChart}
+        selectedGeos=${filters.geos}
+        geoGroups=${geosConfig ? Object.entries(geosConfig.options).map(([value, label]) => ({ value, label })) : []}
+      />
       <div class="mmm2-filters">
         <${DropdownFilter}
           id="mmm2-report-filter-lastseen"
