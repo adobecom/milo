@@ -696,13 +696,20 @@ describe('merch-card-collection autoblock', () => {
       expect(params.get('search')).to.equal('acrobat');
     });
 
-    it('renders the drawer sections uncollapsible, with Category scrollable', () => {
+    it('renders the drawer sections with a mobile-only toggle, Category scrollable', () => {
       const { container } = mount();
-      // MWPW-205571: no <details>, so there is nothing to collapse.
       expect(container.querySelectorAll('.product-pricing-drawer details')).to.have.length(0);
       const sections = [...container.querySelectorAll('.product-pricing-group')];
-      expect(sections.map((s) => s.querySelector('.product-pricing-group-header').textContent))
+      expect(sections.map((s) => s.querySelector('.product-pricing-group-label').textContent))
         .to.deep.equal(['Category', 'Pricing', 'Types']);
+      // CSS shows the toggle below 768px only; it flips aria-expanded, which
+      // the mobile rules read to hide the pills.
+      const toggle = sections[0].querySelector('.product-pricing-group-toggle');
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('false');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
       // Only Category scrolls inside its section.
       expect(sections.filter((s) => s.classList.contains('product-pricing-group-scroll')))
         .to.have.length(1);

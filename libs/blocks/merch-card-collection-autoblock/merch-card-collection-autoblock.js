@@ -131,6 +131,7 @@ function generateCheckboxGroups(checkboxGroups) {
 // SWC sidenav. Both write the active filters to the URL hash; the collection
 // re-filters via its own hashchange listener.
 const SLIDERS_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6M12 4h2M2 8h2M8 8h6M2 12h6M12 12h2" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/><circle cx="6" cy="8" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/></svg>';
+const CHEVRON_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
 const CLOSE_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg>';
 const SEARCH_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.5"/></svg>';
 
@@ -275,11 +276,18 @@ export function barGroups(groups) {
   return groups.filter((group) => !group.optional);
 }
 
-// MWPW-205571: the sections do not collapse, so a heading and a list of pills
-// rather than <details>. An optional group gets role=group because its pills
-// are checkboxes, not radios.
+// Sections collapse on mobile only (Figma SM panel); desktop has no chevrons.
+// The heading holds a plain label and a disclosure button, and CSS shows one per
+// breakpoint, so desktop has nothing to focus that does nothing. Not <details>:
+// it cannot be made static at one width. An optional group gets role=group
+// because its pills are checkboxes, not radios.
 function buildGroupCard(group) {
-  const header = createTag('h3', { class: 'product-pricing-group-header' }, group.title);
+  const label = createTag('span', { class: 'product-pricing-group-label' }, group.title);
+  const toggle = createTag('button', { class: 'product-pricing-group-toggle', type: 'button', 'aria-expanded': 'true' }, [group.title, svgIcon(CHEVRON_ICON)]);
+  toggle.addEventListener('click', () => {
+    toggle.setAttribute('aria-expanded', String(toggle.getAttribute('aria-expanded') !== 'true'));
+  });
+  const header = createTag('h3', { class: 'product-pricing-group-header' }, [label, toggle]);
   const bodyAttrs = { class: 'product-pricing-group-pills', role: group.optional ? 'group' : 'radiogroup', 'aria-label': group.title };
   const body = createTag('div', bodyAttrs, group.options.map((opt) => buildPill(opt, group, 'drawer')));
   const scroll = group.category ? ' product-pricing-group-scroll' : '';

@@ -187,6 +187,38 @@
   gap: 4px;
 }
 
+/* Desktop shows the plain label, mobile the disclosure button. */
+.product-pricing-group-toggle { display: none; }
+
+@media (width < 768px) {
+  .product-pricing-group-label { display: none; }
+
+  .product-pricing-group-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+  }
+
+  .product-pricing-group-toggle:focus-visible {
+    outline: 2px solid var(--link-color, #1473e6);
+    outline-offset: 2px;
+  }
+
+  .product-pricing-group-header:has([aria-expanded='false']) { margin-bottom: 0; }
+
+  .product-pricing-group-header:has([aria-expanded='false']) + .product-pricing-group-pills { display: none; }
+
+  .product-pricing-group-toggle[aria-expanded='false'] .product-pricing-icon svg { transform: rotate(-90deg); }
+}
+
 /* MWPW-205571: Category scrolls inside its own section rather than growing the
    drawer. 5 pills at 40px + 4px gaps, so a sixth reads as cut off. */
 .product-pricing-group-scroll .product-pricing-group-pills {
