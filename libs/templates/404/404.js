@@ -65,9 +65,27 @@ async function getLegacy404() {
 export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
-  if (style === 'feds') await get404();
-  if (style === 'local') await get404(`${root}/fragments/404`);
-  if (!style) await getLegacy404();
+  const version = getMetadata('404-version');
+
+  let handled = false;
+  if (version) {
+    const versionedPath = `${base}${locale.prefix}/fragments/${version}/404`;
+    try {
+      const resp = await fetch(`${versionedPath}.plain.html`);
+      if (resp?.ok) {
+        await get404(`${versionedPath}#_dnt`);
+        handled = true;
+      }
+    } catch {
+      // geo-specific fragment unavailable, fall back to default flow below
+    }
+  }
+
+  if (!handled) {
+    if (style === 'feds') await get404();
+    else if (style === 'local') await get404(`${root}/fragments/404`);
+    else await getLegacy404();
+  }
   sampleRUM('404', { source: document.referrer });
 }
 
