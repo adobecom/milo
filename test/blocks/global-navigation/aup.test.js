@@ -427,7 +427,8 @@ describe('AUP', () => {
         const handler = add.withArgs(event).firstCall.args[1];
         expect(remove.calledWith(event, handler)).to.be.true;
       }
-      expect(removeElement.calledWith('load', addElement.withArgs('load').firstCall.args[1])).to.be.true;
+      const handler = addElement.withArgs('app_loaded').firstCall.args[1];
+      expect(removeElement.calledWith('app_loaded', handler)).to.be.true;
     });
 
     it('cancels a pending iframe without publishing a false lifecycle event', async () => {
@@ -623,6 +624,23 @@ describe('AUP', () => {
         expect(dialog().getAttribute('aria-label')).to.equal('Manage subscription');
       });
 
+      it(`${name} handles SDK content readiness during mounting`, async () => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = name === 'C2' ? 'c2' : 'milo';
+        document.head.append(foundation);
+        const { showDialog } = await initializeHost();
+        const iframe = createElement('iframe');
+        listen('milo:modal:loaded', ({ detail }) => {
+          if (detail.id === 'aup-workflow-dialog') iframe.dispatchEvent(new Event('app_loaded'));
+        });
+
+        await showDialog(iframe, { title: 'Workflow' }, sinon.spy());
+
+        expect(dialog().classList.contains('hide-close-button')).to.be.true;
+        expect(dialog().querySelector('sp-progress-circle')).to.be.null;
+      });
+
       it(`${name} settles repeated close requests once`, async () => {
         foundation = document.createElement('meta');
         foundation.name = 'foundation';
@@ -728,7 +746,7 @@ describe('AUP', () => {
     });
   });
 
-  it('hides the workflow behind a loading indicator until its load signal', async () => {
+  it('keeps the loader and close button until the SDK reports its content is ready', async () => {
     await loadStyles('/libs/blocks/modal/modal.css');
     const { showDialog } = await initializeHost();
     const iframe = createElement('iframe');
@@ -740,6 +758,12 @@ describe('AUP', () => {
     expect(getComputedStyle(close).display).not.to.equal('none');
 
     iframe.dispatchEvent(new Event('load'));
+
+    expect(!!active.querySelector('sp-progress-circle')).to.be.true;
+    expect(getComputedStyle(iframe).visibility).to.equal('hidden');
+    expect(getComputedStyle(close).display).not.to.equal('none');
+
+    iframe.dispatchEvent(new Event('app_loaded'));
 
     expect(active.querySelector('sp-progress-circle') === null).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('visible');

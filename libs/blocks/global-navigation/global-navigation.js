@@ -1251,13 +1251,13 @@ class Gnav {
             content.classList.add('loading');
             content.appendChild(spinner);
             finishLoading = () => {
-              element.removeEventListener('load', finishLoading);
+              element.removeEventListener('app_loaded', finishLoading);
               content.classList.remove('loading');
               dialog?.classList.add('hide-close-button');
               spinner.remove();
               finishLoading = undefined;
             };
-            element.addEventListener('load', finishLoading, { once: true });
+            element.addEventListener('app_loaded', finishLoading, { once: true });
           }
           content.appendChild(element);
           window.addEventListener('popstate', onNavigation);
