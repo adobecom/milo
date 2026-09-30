@@ -122,6 +122,13 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
     return [{ key: '', label: 'All pages' }];
   }, [selectedGeos, activeBreakdown, geoGroups]);
 
+  // geoGroups (and therefore seriesKeys) can get a new array identity from the parent
+  // without its actual content changing (e.g. once the geo config finishes loading
+  // async, even while this chart is still showing the single "All pages" series) -
+  // depending on this content signature instead of the seriesKeys array reference
+  // avoids an identical, needless refetch + chart re-init/re-animate on that update.
+  const seriesKeysSignature = seriesKeys.map((s) => `${s.key}|${s.label}`).join(',');
+
   useEffect(() => {
     let cancelled = false;
     const useMock = new URLSearchParams(window.location.search).get('mmm2MockHistory');
@@ -137,7 +144,10 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
       .then((resolved) => { if (!cancelled) setSeries(resolved); })
       .catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
-  }, [seriesKeys]);
+    // seriesKeys' content is fully captured by seriesKeysSignature (see above) - the
+    // array reference itself can churn without meaningful change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seriesKeysSignature]);
 
   const bucketedSeries = useMemo(
     () => (series ?? []).map((s) => ({ ...s, byMonth: bucketByMonth(s.rows) })),
