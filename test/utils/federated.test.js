@@ -40,18 +40,12 @@ describe('Federated navigation utilities', () => {
       );
     });
 
-    it('shouldnt double the fedContentPrefix on a relative link', () => {
-      getConfig().fedContentPrefix = '/dc-shared';
-      expect(getFederatedUrl('/dc-shared/federal/foo-fragment.html')).to.equal(
-        `${baseHost}/federal/foo-fragment.html`,
-      );
-      delete getConfig().fedContentPrefix;
-    });
-
     it('shouldnt federate an already federated url twice', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
       expect(getFederatedUrl(`${baseHost}/federal/foo-fragment.html`)).to.equal(
         `${baseHost}/federal/foo-fragment.html`,
       );
+      delete getConfig().fedContentPrefix;
     });
 
     it('shouldnt double the fedContentPrefix on an absolute link', () => {

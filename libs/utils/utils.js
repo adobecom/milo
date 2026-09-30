@@ -497,17 +497,16 @@ export const getFederatedContentRoot = () => {
 
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  const federatedRoot = getFederatedContentRoot();
-  const { fedContentPrefix } = getConfig();
-  // Already federated: prepending the root again would repeat fedContentPrefix.
-  if (fedContentPrefix && url.startsWith(`${federatedRoot}/`)) return url;
-  // A path authored under another origin can still carry the prefix the root already has.
-  const dedupe = (path) => (fedContentPrefix
-    ? path.replace(`${fedContentPrefix}/federal/`, '/federal/') : path);
-  if (url.startsWith('/')) return `${federatedRoot}${dedupe(url)}`;
+  const { fedContentPrefix, locale } = getConfig();
+  // getFederatedContentRoot already carries fedContentPrefix, so never federate twice.
+  if (fedContentPrefix && url.startsWith(`${getFederatedContentRoot()}/`)) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
     const { pathname, search, hash } = new URL(url);
-    return `${federatedRoot}${dedupe(pathname)}${search}${hash}`;
+    const hasPrefix = fedContentPrefix && (pathname.startsWith(fedContentPrefix)
+      || pathname.startsWith(`${locale.prefix}${fedContentPrefix}`));
+    return `${getFederatedContentRoot()}${hasPrefix
+      ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',

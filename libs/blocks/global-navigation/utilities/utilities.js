@@ -232,17 +232,18 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
     ? '[src], [srcset]'
     : `[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`;
   const { fedContentPrefix } = getConfig();
+  const federatedRoot = getFederatedContentRoot();
   section?.querySelectorAll(selector)
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
-      const path = getPath(source.getAttribute(type));
+      const value = source.getAttribute(type);
+      // federatedRoot already carries fedContentPrefix, so never federate twice.
+      if (fedContentPrefix && value?.startsWith(`${federatedRoot}/`)) return;
+      const path = getPath(value);
       const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
       if (forceFederate || [localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) {
         const federalPrefix = path.includes('/federal/') ? '' : '/federal';
-        // getFederatedUrl drops the prefix that getFederatedContentRoot already carries.
-        source.setAttribute(type, fedContentPrefix
-          ? getFederatedUrl(`${federalPrefix}${path}`)
-          : `${getFederatedContentRoot()}${federalPrefix}${path}`);
+        source.setAttribute(type, `${federatedRoot}${federalPrefix}${path}`);
       }
     });
 };

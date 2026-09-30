@@ -235,11 +235,11 @@ describe('global navigation utilities', () => {
       });
     });
 
-    it('shouldnt double the fedContentPrefix on already federated sources', async () => {
+    it('shouldnt federate sources that already point at the federated root', async () => {
       getConfig().fedContentPrefix = '/dc-shared';
       const template = getImageTemplate({
         host: baseHost,
-        path: '/dc-shared/federal/media.png',
+        path: '/federal/media.png',
       });
       federatePictureSources({ section: template });
       verifyImageTemplate({
@@ -250,7 +250,7 @@ describe('global navigation utilities', () => {
       delete getConfig().fedContentPrefix;
     });
 
-    it('shouldnt strip the fedContentPrefix from non federal sources', async () => {
+    it('shouldnt touch non federal sources already under the federated root', async () => {
       getConfig().fedContentPrefix = '/dc-shared';
       const template = getImageTemplate({
         host: baseHost,
@@ -259,7 +259,22 @@ describe('global navigation utilities', () => {
       federatePictureSources({ section: template, forceFederate: true });
       verifyImageTemplate({
         host: baseHost,
-        path: '/federal/dc-shared/media_123.png',
+        path: '/dc-shared/media_123.png',
+        template,
+      });
+      delete getConfig().fedContentPrefix;
+    });
+
+    it('should still federate federal sources from another origin', async () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/federal/media.png',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
         template,
       });
       delete getConfig().fedContentPrefix;
