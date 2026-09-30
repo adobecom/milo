@@ -1,6 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { setBackgroundFocus, decorateBlockText, getButtonType, decoratePictures, decorateViewportContent } from '../../libs/utils/decorate.js';
+import sinon from 'sinon';
+import { setConfig } from '../../libs/utils/utils.js';
+import {
+  setBackgroundFocus,
+  decorateBlockText,
+  getButtonType,
+  decoratePictures,
+  decorateViewportContent,
+  decorateAnchorVideo,
+  getImgSrc,
+} from '../../libs/utils/decorate.js';
 
 describe('setBackgroundFocus', () => {
   let container;
@@ -388,5 +398,92 @@ describe('decorateViewportContent — resolveInheritance extra-row handling', ()
 
     expect(textRow.children[0].textContent.trim()).to.equal('tablet text A');
     expect(textRow.children[1].textContent.trim()).to.equal('tablet text B');
+  });
+});
+
+describe('media-hidden-<device> video poster', () => {
+  const GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const POSTER = `<picture><source type="image/webp" srcset="${GIF}#mobile"><source type="image/webp" srcset="${GIF}#desktop" media="(min-width: 600px)"><img src="${GIF}"></picture>`;
+  let container;
+  let widthStub;
+
+  const setWidth = (width) => { widthStub = sinon.stub(window, 'innerWidth').value(width); };
+
+  const decorate = (classes, { hidden = false } = {}) => {
+    container.innerHTML = `<div class="${classes}"${hidden ? ' style="display:none"' : ''}><div><div><a href="https://adobe.com/video.mp4#autoplay" data-video-poster="${POSTER.replace(/"/g, '&quot;')}">video</a></div></div></div>`;
+    decorateAnchorVideo({ src: 'https://adobe.com/video.mp4', anchorTag: container.querySelector('a') });
+    return container.querySelector('video');
+  };
+
+  const nextFrames = () => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 50)));
+  });
+
+  beforeEach(() => {
+    setConfig({ locale: { prefix: '' } });
+    container = document.createElement('div');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    widthStub?.restore();
+    widthStub = null;
+    container.remove();
+  });
+
+  it('sets the poster immediately when no media-hidden class matches the device', () => {
+    setWidth(375);
+    expect(decorate('hero-marquee').getAttribute('poster')).to.equal(`${GIF}#mobile`);
+    expect(decorate('hero-marquee media-hidden-tablet').getAttribute('poster')).to.equal(`${GIF}#mobile`);
+  });
+
+  it('keeps desktop posters untouched, since no desktop hide class exists', () => {
+    setWidth(1440);
+    expect(decorate('hero-marquee media-hidden-mobile media-hidden-tablet').getAttribute('poster')).to.equal(`${GIF}#desktop`);
+  });
+
+  it('never requests the poster while media hidden on mobile stays hidden', async () => {
+    setWidth(375);
+    const video = decorate('hero-marquee media-hidden-mobile', { hidden: true });
+    expect(video.getAttribute('poster')).to.be.null;
+    await nextFrames();
+    expect(video.getAttribute('poster')).to.be.null;
+  });
+
+  it('never requests the poster while media hidden on tablet stays hidden', async () => {
+    setWidth(900);
+    const video = decorate('hero-marquee media-hidden-tablet', { hidden: true });
+    await nextFrames();
+    expect(video.getAttribute('poster')).to.be.null;
+  });
+
+  it('attaches the deferred poster once the video is actually shown', async () => {
+    setWidth(375);
+    const video = decorate('hero-marquee media-hidden-mobile', { hidden: true });
+    await nextFrames();
+    expect(video.getAttribute('poster')).to.be.null;
+
+    container.firstElementChild.style.display = '';
+    await nextFrames();
+    expect(video.getAttribute('poster')).to.equal(`${GIF}#mobile`);
+  });
+
+  it('resolves the deferred poster for the device at reveal time', async () => {
+    setWidth(375);
+    const video = decorate('hero-marquee media-hidden-mobile', { hidden: true });
+    await nextFrames();
+    widthStub.restore();
+    setWidth(1440);
+    container.firstElementChild.style.display = '';
+    await nextFrames();
+    expect(video.getAttribute('poster')).to.equal(`${GIF}#desktop`);
+  });
+
+  it('keeps getImgSrc output unchanged for tablet widths', () => {
+    setWidth(900);
+    expect(getImgSrc(POSTER)).to.equal(`poster='${GIF}#desktop'`);
+    widthStub.restore();
+    setWidth(600);
+    expect(getImgSrc(POSTER)).to.equal(`poster='${GIF}#mobile'`);
   });
 });

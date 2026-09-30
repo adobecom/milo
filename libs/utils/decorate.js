@@ -280,24 +280,33 @@ function defineDeviceByScreenSize() {
   if (screenWidth <= 600) {
     return 'mobile';
   }
+  if (screenWidth < 1200) {
+    return 'tablet';
+  }
   return 'desktop';
 }
 
-export function getImgSrc(pic) {
-  let source = '';
+function getPosterSrc(pic) {
+  if (!pic) return '';
   const parser = new DOMParser();
   const doc = parser.parseFromString(pic, 'text/html');
-  if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
-  else source = doc.querySelector('source[type="image/webp"][media]');
-  return source?.srcset ? `poster='${source.srcset}'` : '';
+  const source = defineDeviceByScreenSize() === 'mobile'
+    ? doc.querySelector('source[type="image/webp"]:not([media])')
+    : doc.querySelector('source[type="image/webp"][media]');
+  return source?.srcset || '';
 }
 
-export function getVideoAttrs(hash, dataset) {
+export function getImgSrc(pic) {
+  const src = getPosterSrc(pic);
+  return src ? `poster='${src}'` : '';
+}
+
+export function getVideoAttrs(hash, dataset, skipPoster = false) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
-  const poster = getImgSrc(dataset.videoPoster);
+  const poster = skipPoster ? '' : getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = playInViewport ? 'muted' : 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
@@ -601,7 +610,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  // A display:none <video> still downloads its poster; blocks opt out via media-hidden-<device>.
+  const deferPoster = !!anchorTag.closest(`.media-hidden-${defineDeviceByScreenSize()}`);
+  const attrs = getVideoAttrs(anchorTag.hash, dataset, deferPoster);
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -622,6 +633,11 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
+      // Never fires while hidden, so a deferred poster only loads once the video is shown.
+      if (deferPoster) {
+        const posterSrc = getPosterSrc(dataset.videoPoster);
+        if (posterSrc) videoEl.poster = posterSrc;
+      }
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
