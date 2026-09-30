@@ -171,10 +171,18 @@ mas-field .icon-button {
     }
   }
 
-  .price.price-strikethrough {
+  /* .price.price-strikethrough,
+  .price.price-strikethrough * {
+    text-decoration-color: var(--pm-content-subtle) !important;
+  } */
+
+  mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
+  mas-field span.placeholder-resolved[data-template='strikethrough'], 
+  mas-field span.price.price-strikethrough, mas-field span.price.price-promo-strikethrough
+ {
     color: var(--s2a-color-content-subtle);
     text-decoration-color: var(--s2a-color-content-subtle);
-  }
+}
 
   .firefly & {
     border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
