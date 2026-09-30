@@ -3271,7 +3271,8 @@ export function setForegroundTimeout(callback, ms) {
 /**
  * Races `promise` against a foreground-time budget, resolving `timeoutValue` if the budget
  * elapses first. The timer and its listener are always released once the race settles, so
- * nothing stays armed for the rest of the budget.
+ * nothing stays armed for the rest of the budget. Only the timeout branch resolves: if
+ * `promise` rejects first, the returned promise rejects too, so callers must keep a `.catch`.
  */
 export function raceForegroundTimeout(promise, ms, timeoutValue = 'timeout') {
   let id;

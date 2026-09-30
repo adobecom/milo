@@ -351,6 +351,25 @@ describe('Three-in-One Modal', () => {
       expect(modal.querySelector('iframe').src).to.equal('https://commerce-stg.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=ilst_direct_individual&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
     });
 
+    it('clears the retry timeout when the modal closes', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        window.dispatchEvent(new Event('milo:modal:closed'));
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;

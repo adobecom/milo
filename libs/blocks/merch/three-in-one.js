@@ -21,6 +21,9 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
+// Pending checkout-load timer (initial load or retry), cleared when the modal closes.
+let loadTimeoutId;
+
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
   msgWrapper.remove();
@@ -32,7 +35,8 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   theme.style.display = 'block';
   // Foreground-time budget: a frozen webview must not burn the deadline while suspended
   // and show the checkout error UI the moment it resumes.
-  setForegroundTimeout(handleTimeoutError, 15000);
+  clearForegroundTimeout(loadTimeoutId);
+  loadTimeoutId = setForegroundTimeout(handleTimeoutError, 15000);
 };
 
 export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
@@ -165,9 +169,10 @@ export default async function openThreeInOneModal(el) {
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
   const content = createContent(iframeUrl);
-  const timeoutId = setForegroundTimeout(handleTimeoutError, 15000);
+  clearForegroundTimeout(loadTimeoutId);
+  loadTimeoutId = setForegroundTimeout(handleTimeoutError, 15000);
   const clearTimeoutOnClose = () => {
-    clearForegroundTimeout(timeoutId);
+    clearForegroundTimeout(loadTimeoutId);
     window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
   };
   window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
