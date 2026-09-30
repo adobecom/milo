@@ -1238,6 +1238,54 @@ describe('Merch Block', () => {
       expect(document.querySelector('.dialog-modal.three-in-one')).to.be.null;
       expect(modalState.isOpen).to.be.false;
     });
+
+    it('cleans up a rejected 3-in-1 open and allows the same link to retry', async () => {
+      const error = new Error('Checkout URL unavailable');
+      const checkoutLink = createTag('a', {
+        href: '#',
+        'data-modal': 'twp',
+        'data-modal-id': 'retry-three-in-one',
+      });
+      checkoutLink.isOpen3in1Modal = true;
+      Object.defineProperty(checkoutLink, 'checkoutUrl', {
+        configurable: true,
+        get: () => { throw error; },
+      });
+      const removeListener = sinon.spy(window, 'removeEventListener');
+      const { handle3in1IFrameEvents } = await import('../../../libs/blocks/merch/three-in-one.js');
+      modalState.isOpen = false;
+      try {
+        const rejection = await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink).catch((caught) => caught);
+
+        expect(rejection).to.equal(error);
+        expect(modalState.isOpen).to.be.false;
+        expect(removeListener.calledWith('message', handle3in1IFrameEvents)).to.be.true;
+
+        Object.defineProperty(checkoutLink, 'checkoutUrl', { value: 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if' });
+        await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink);
+
+        expect(document.querySelector('.dialog-modal.three-in-one')).to.exist;
+        expect(modalState.isOpen).to.be.true;
+      } finally {
+        document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
+        window.removeEventListener('message', handle3in1IFrameEvents);
+        removeListener.restore();
+        modalState.isOpen = false;
+      }
+    });
+
+    it('resets the modal state and preserves an invalid external checkout error', async () => {
+      const checkoutLink = createTag('a', { 'data-modal': 'crm' });
+      modalState.isOpen = false;
+      try {
+        const rejection = await openModal(new CustomEvent('test'), 'invalid-url', 'BASE', undefined, undefined, checkoutLink).catch((error) => error);
+
+        expect(rejection).to.be.instanceOf(TypeError);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        modalState.isOpen = false;
+      }
+    });
   });
 
   describe('Modal flow', () => {
@@ -1621,6 +1669,7 @@ describe('Merch Block', () => {
         const cleanup = getAupModalHashCleanup();
 
         expect(cleanup).to.be.a('function');
+        expect(getAupModalHashCleanup()).to.equal(cleanup);
         expect(window.location.hash).to.equal('#crm-buy-illustrator');
         expect(modalState.isOpen).to.be.true;
 
@@ -1683,6 +1732,41 @@ describe('Merch Block', () => {
           type: 'close',
           element: second.el,
         });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: ignores stale cleanup and callbacks after the same modal hash is reused', async () => {
+      const previousUrl = window.location.href;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const createAction = async () => {
+        const element = createTag('a', { 'data-modal': 'crm' });
+        element.isOpen3in1Modal = false;
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily: 'ILLUSTRATOR' },
+        }], { modal: true }, element);
+        return { element, action };
+      };
+      const first = await createAction();
+      const second = await createAction();
+      try {
+        first.action.aupHandler({ type: 'open', element: first.element });
+        const firstCleanup = getAupModalHashCleanup();
+        second.action.aupHandler({ type: 'open', element: second.element });
+        firstCleanup();
+        first.action.aupHandler({ type: 'close', element: first.element });
+
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(modalState.isOpen).to.be.true;
+
+        second.action.aupHandler({ type: 'close', element: second.element });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        second.action.aupHandler({ type: 'close', element: second.element });
         window.history.replaceState(null, '', previousUrl);
       }
     });
@@ -1839,11 +1923,45 @@ describe('Merch Block', () => {
       expect(isModalOpen).to.be.false;
     });
 
+    it('leaves AUP hash cleanup to the host when a shared close event fires', async () => {
+      const cta = createTag('a', {
+        is: 'checkout-link',
+        href: '#',
+        'data-modal-id': 'aup-deep-link-card',
+      });
+      const click = sinon.spy(cta, 'click');
+      const aupDialog = document.createElement('dialog');
+      aupDialog.id = 'aup-workflow-dialog';
+      const geoDialog = createTag('div', { id: 'locale-modal-v2', class: 'dialog-modal' });
+      document.body.append(cta, geoDialog, aupDialog);
+      window.history.replaceState(null, '', '#aup-deep-link-card');
+      modalState.isOpen = true;
+      try {
+        window.dispatchEvent(new CustomEvent(
+          'milo:modal:closed',
+          { detail: { id: aupDialog.id, hash: window.location.hash } },
+        ));
+        await delay(0);
+
+        expect(click.called).to.be.false;
+        expect(modalState.isOpen).to.be.true;
+        expect(document.getElementById('locale-modal-v2')).to.equal(geoDialog);
+        expect(document.getElementById('aup-workflow-dialog')).to.equal(aupDialog);
+      } finally {
+        click.restore();
+        cta.remove();
+        geoDialog.remove();
+        aupDialog.remove();
+      }
+    });
+
     describe('with AUP Select', () => {
       const modalId = 'aup-deep-link-card';
+      const timeoutMessage = 'AUP SDK readiness timed out after 10000ms; falling back to legacy checkout';
       let meta;
       let previousSdk;
       let previousUrl;
+      let lanaLog;
 
       const createCta = () => {
         const cta = createTag('a', { is: 'checkout-link', href: '#', 'data-modal-id': modalId });
@@ -1864,6 +1982,7 @@ describe('Merch Block', () => {
         meta = createTag('meta', { name: 'aup-select', content: 'on' });
         document.head.append(meta);
         window.history.replaceState(null, '', `#${modalId}`);
+        lanaLog = sinon.spy(window.lana, 'log');
       });
 
       afterEach(() => {
@@ -1884,6 +2003,7 @@ describe('Merch Block', () => {
 
         expect(await state).to.be.true;
         expect(cta.click.calledOnce).to.be.true;
+        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       it('reopens the modal once when several CTAs share the hash', async () => {
@@ -1924,20 +2044,138 @@ describe('Merch Block', () => {
         expect(cta.click.called).to.be.false;
       });
 
-      it('falls back to the legacy modal when the AUP SDK does not load', async () => {
-        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      it('cancels a pending restore when another AUP modal opens and restores its hash on close', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const otherCta = createTag('a', { 'data-modal': 'crm' });
+        otherCta.isOpen3in1Modal = false;
+        fetchCheckoutLinkConfigs.promise = Promise.resolve(CHECKOUT_LINK_CONFIGS);
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily: 'ILLUSTRATOR' },
+        }], { modal: true }, otherCta);
         try {
-          const cta = createCta();
-          const state = updateModalState({ cta });
+          action.aupHandler({ type: 'open', element: otherCta });
+          expect(window.location.hash).to.equal('#crm-buy-illustrator');
+          action.aupHandler({ type: 'close', element: otherCta });
+          expect(window.location.hash).to.equal(`#${modalId}`);
 
-          await clock.tickAsync(9999);
+          setSdkReady();
+
+          expect(await state).to.be.false;
           expect(cta.click.called).to.be.false;
-          await clock.tickAsync(1);
+          expect(modalState.isOpen).to.be.false;
+          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        } finally {
+          action.aupHandler({ type: 'close', element: otherCta });
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('does not restore a modal from a shared user-close notification', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        const state = updateModalState();
+        try {
+          window.dispatchEvent(new Event('milo:modal:closed'));
+          setSdkReady();
+
+          expect(await state).to.be.false;
+          expect(cta.click.called).to.be.false;
+          expect(modalState.isOpen).to.be.false;
+          expect(cta.dataset.clickDisabled).to.be.undefined;
+        } finally {
+          cta.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('cancels a pending restore when a non-checkout SDK workflow opens', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const dialog = document.createElement('dialog');
+        dialog.id = 'aup-workflow-dialog';
+        dialog.className = 'dialog-modal aup-modal';
+        document.body.append(dialog);
+        dialog.showModal();
+        try {
+          window.dispatchEvent(new CustomEvent(
+            'milo:modal:loaded',
+            { detail: { id: dialog.id, hash: window.location.hash } },
+          ));
+          setSdkReady();
+          await state;
+
+          expect(cta.click.called).to.be.false;
+          expect(dialog.open).to.be.true;
+          expect(document.getElementById('aup-workflow-dialog')).to.equal(dialog);
+        } finally {
+          dialog.close();
+          dialog.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('does not cancel the deep link when a locale prompt opens while waiting', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const dialog = createTag('div', { id: 'locale-modal-v2', class: 'dialog-modal' });
+        document.body.append(dialog);
+        try {
+          window.dispatchEvent(new CustomEvent(
+            'milo:modal:loaded',
+            { detail: { id: dialog.id, hash: window.location.hash } },
+          ));
+          setSdkReady();
 
           expect(await state).to.be.true;
           expect(cta.click.calledOnce).to.be.true;
+          expect(dialog.isConnected).to.be.true;
         } finally {
-          clock.restore();
+          dialog.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('cancels a pending restore when a legacy checkout attempt fails and restores the hash', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const otherCta = createTag('a', { href: '#', 'data-modal': 'twp' });
+        otherCta.isOpen3in1Modal = true;
+        await openModal(new CustomEvent('test'), undefined, 'TRIAL', 'other-checkout', undefined, otherCta);
+        expect(modalState.isOpen).to.be.false;
+        window.history.pushState(null, '', `#${modalId}`);
+
+        setSdkReady();
+
+        await state;
+        expect(cta.click.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+      });
+
+      it('allows a fresh navigation restore after canceling the previous SDK wait', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        const state = updateModalState();
+        try {
+          window.history.replaceState(null, '', '#another-modal');
+          await updateModalState();
+          window.history.replaceState(null, '', `#${modalId}`);
+          const newState = updateModalState();
+
+          setSdkReady();
+
+          expect(await newState).to.be.true;
+          await state;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          cta.remove();
+          setSdkReady();
+          await state;
         }
       });
 
@@ -1949,6 +2187,7 @@ describe('Merch Block', () => {
 
         expect(cta.click.calledOnce).to.be.true;
         expect(await state).to.be.true;
+        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       it('reopens the modal immediately when AUP Select is off', async () => {
@@ -1959,6 +2198,110 @@ describe('Merch Block', () => {
 
         expect(cta.click.calledOnce).to.be.true;
         expect(await state).to.be.true;
+        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      ['canceled', 'hash changed', 'another modal open'].forEach((reason) => {
+        it(`does not log an SDK timeout when the restore is ${reason}`, async () => {
+          const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          try {
+            const cta = createCta();
+            const state = updateModalState({ cta });
+            if (reason === 'canceled') await updateModalState({ closedByUser: true });
+            if (reason === 'hash changed') window.history.replaceState(null, '', '#another-modal');
+            if (reason === 'another modal open') modalState.isOpen = true;
+
+            await clock.tickAsync(10000);
+            await state;
+
+            expect(cta.click.called).to.be.false;
+            expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+          } finally {
+            clock.restore();
+          }
+        });
+      });
+
+      it('ignores a readiness event until the SDK is actually available', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+
+        await delay(0);
+        expect(cta.click.called).to.be.false;
+        setSdkReady();
+        expect(await state).to.be.true;
+        expect(cta.click.calledOnce).to.be.true;
+        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      it('does not log a timeout if the SDK is available at the deadline without a ready event', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+          await clock.tickAsync(9999);
+          window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('still falls back when Lana is not available', async () => {
+        const previousLana = window.lana;
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        window.lana = undefined;
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+          await clock.tickAsync(10000);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          window.lana = previousLana;
+          clock.restore();
+        }
+      });
+
+      it('logs the 10-second legacy fallback once per page with sampled info options', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+
+          await clock.tickAsync(9999);
+          expect(cta.click.called).to.be.false;
+          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(lanaLog.calledOnceWithExactly(timeoutMessage, {
+            clientId: 'merch-at-scale',
+            errorType: 'i',
+            sampleRate: 1,
+            implicitSampleRate: 1,
+            tags: 'merch,aup-sdk',
+            severity: 'info',
+          })).to.be.true;
+
+          await updateModalState({ closedByUser: true });
+          const ctas = [createCta(), createCta()];
+          const states = ctas.map((nextCta) => updateModalState({ cta: nextCta }));
+          await clock.tickAsync(10000);
+          await Promise.all(states);
+
+          expect(ctas.filter((nextCta) => nextCta.click.called)).to.have.lengthOf(1);
+          expect(lanaLog.calledOnce).to.be.true;
+        } finally {
+          clock.restore();
+        }
       });
     });
   });
@@ -1977,21 +2320,58 @@ describe('Merch Block', () => {
     });
 
     it('resolves when the AUP SDK becomes ready', async () => {
-      const ready = waitForAupSdk();
+      const onTimeout = sinon.spy();
+      const ready = waitForAupSdk(10000, { onTimeout });
       window.aupsdk = { getOrchestratorContext: () => {} };
       window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
       expect(await ready).to.be.true;
+      expect(onTimeout.called).to.be.false;
     });
 
     it('resolves false on timeout', async () => {
       const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        const ready = waitForAupSdk(100);
-        await clock.tickAsync(100);
+        const onTimeout = sinon.spy();
+        const ready = waitForAupSdk(100, { onTimeout });
+        await clock.tickAsync(99);
+        expect(onTimeout.called).to.be.false;
+        await clock.tickAsync(1);
         expect(await ready).to.be.false;
+        expect(onTimeout.calledOnce).to.be.true;
       } finally {
         clock.restore();
       }
+    });
+
+    it('cancels the SDK wait and releases its listener and timeout', async () => {
+      const controller = new AbortController();
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const addListener = sinon.spy(window, 'addEventListener');
+      const removeListener = sinon.spy(window, 'removeEventListener');
+      try {
+        const initialTimers = clock.countTimers();
+        const onTimeout = sinon.spy();
+        const ready = waitForAupSdk(10000, { signal: controller.signal, onTimeout });
+        const listener = addListener.withArgs(AUP_SDK_READY_EVENT).firstCall.args[1];
+        controller.abort();
+        const result = await Promise.race([ready, Promise.resolve('pending')]);
+
+        expect(result).to.be.false;
+        expect(clock.countTimers()).to.equal(initialTimers);
+        expect(removeListener.calledWith(AUP_SDK_READY_EVENT, listener)).to.be.true;
+        await clock.tickAsync(10000);
+        expect(onTimeout.called).to.be.false;
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('does not wait or report ready when the request is already aborted', async () => {
+      const controller = new AbortController();
+      controller.abort();
+      window.aupsdk = { getOrchestratorContext: () => {} };
+
+      expect(await waitForAupSdk(10000, { signal: controller.signal })).to.be.false;
     });
   });
 

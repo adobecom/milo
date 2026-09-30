@@ -177,11 +177,16 @@ export default async function openThreeInOneModal(el) {
     window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
   };
   window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
-  return getModal(null, {
-    id,
-    content,
-    closeEvent: 'closeModal',
-    class: 'three-in-one',
-    title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
-  });
+  try {
+    return await getModal(null, {
+      id,
+      content,
+      closeEvent: 'closeModal',
+      class: 'three-in-one',
+      title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
+    });
+  } catch (error) {
+    clearTimeoutOnClose();
+    throw error;
+  }
 }

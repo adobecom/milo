@@ -2,6 +2,7 @@
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
+import { lockModalScroll, unlockModalScroll } from '../../utils/modal-lifecycle.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video, .faas), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
@@ -89,9 +90,16 @@ function focusTriggerElement(modalId, shouldFocus) {
 }
 
 export async function closeModal(modal, shouldFocusTriggerEl = true) {
+  if (modal.matches('dialog.aup-modal')) {
+    modal.dispatchEvent(new Event('closeModal'));
+    return;
+  }
   if (typeof modal.closeCallback === 'function') await modal.closeCallback(modal);
   const { id } = modal;
-  const closeEvent = new Event('milo:modal:closed');
+  const closeEvent = new CustomEvent(
+    'milo:modal:closed',
+    { detail: { id, hash: window.location.hash } },
+  );
   window.dispatchEvent(closeEvent);
 
   const iframe = modal.querySelector('iframe');
@@ -121,12 +129,7 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
     focusTriggerElement(mod.id, shouldFocusTriggerEl);
   });
 
-  if (!document.querySelectorAll('.modal-curtain').length) {
-    document.body.classList.remove('disable-scroll');
-    /** Restore lenis behaviour on modal close */
-    /* TODO: merch needs to load C2 modals */
-    window.lenis?.start();
-  }
+  unlockModalScroll(modal);
 
   [...document.querySelectorAll('header, main, footer')]
     .forEach((element) => element.removeAttribute('aria-disabled'));
@@ -216,7 +219,10 @@ export async function getModal(details, custom) {
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
-  const loadedEvent = new Event('milo:modal:loaded');
+  const loadedEvent = new CustomEvent(
+    'milo:modal:loaded',
+    { detail: { id, hash: window.location.hash } },
+  );
 
   if (custom && !custom?.title) {
     custom.title = (await findDetails(window.location.hash, null))?.title;
@@ -273,7 +279,7 @@ export async function getModal(details, custom) {
   });
 
   const documentKeydownListener = (event) => {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !document.querySelector('dialog.aup-modal[open]')) {
       close.setAttribute('daa-ll', `${analyticsEventName}:modalClose:escapeClose`);
       close.click();
     }
@@ -287,13 +293,8 @@ export async function getModal(details, custom) {
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
   firstFocusable?.focus({ preventScroll: true, focusVisible: openedViaKeyboard });
-  window.dispatchEvent(loadedEvent);
-
   if (!dialog.classList.contains('curtain-off')) {
-    document.body.classList.add('disable-scroll');
-    /** Stop lenis behaviour on modal open */
-    /* TODO: merch needs to load C2 modals */
-    window.lenis?.stop();
+    lockModalScroll(dialog, document.body);
     const curtain = createTag('div', {
       class: 'modal-curtain is-open',
       'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
@@ -305,6 +306,8 @@ export async function getModal(details, custom) {
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
+  window.dispatchEvent(loadedEvent);
+  if (!dialog.isConnected) return dialog;
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {

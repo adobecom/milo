@@ -36,9 +36,31 @@ Reopens the modal on page load if the URL contains the hash. The function waits 
 
 When AUP Select is enabled (`aup-select=on`), the CTA can settle before Gnav has loaded the AUP SDK. Clicking it at that point would make MAS fall back to the legacy 3-in-1 modal, so the click is delayed until Gnav dispatches `milo:aupsdk:ready` (or up to 10 seconds, after which the legacy modal opens). The same applies when the hash is restored by back/forward navigation.
 
+Readiness notifications are ignored until the SDK exposes `getOrchestratorContext`; an event alone cannot trigger an early legacy fallback.
+
+Pending SDK waits belong to the current modal intent. Opening another checkout, closing a modal, or observing a different hash aborts those waits and removes their listeners and timers. Restoring the previous hash with `pushState` does not revive an aborted request; a subsequent navigation can start a fresh request.
+
+If a still-current restore reaches the 10-second deadline without an available SDK, the legacy fallback emits an info-level Lana diagnostic with 1% sampling, at most once per page. Canceled or superseded restores do not log. The diagnostic contains no page URL, modal ID, or customer data and does not repeat Gnav's preload-failure details.
+
 ### Modal Closed by User
 
 Updates the modal state to reflect when a modal has been closed by the user.
+
+The geo-routing prompt can remain open behind an AUP checkout dialog. AUP participates in the shared `milo:modal:closed` lifecycle before its dialog is removed and its hash is restored. The event identifies the closing dialog and its original hash so geo-routing can remove stale deep links from its region links. `updateModalState` leaves cleanup to the AUP host while that dialog exists, rather than treating a shared close notification as a request to reopen checkout.
+
+### Shared AUP and Milo Lifecycle
+
+AUP uses a native `<dialog>` with the shared `.dialog-modal` classification. Both hosts emit `milo:modal:loaded` after mounting and acquiring their scroll lock, and emit `milo:modal:closed` before removing the dialog. Events carry `detail.id` and `detail.hash`; native AUP close events retain the original checkout hash even when history navigation has already changed the URL. Existing consumers such as app prompts recognize AUP as an active modal.
+
+Replacing an AUP workflow cancels and closes the old workflow and settles its SDK callback exactly once. A request superseded or canceled while iframe dependencies are loading does not mount a dialog or emit a loaded event. Standard `closeModal` requests and native programmatic closure also settle through the SDK rather than removing its DOM directly. Escape dismisses the top native dialog without also closing a region prompt underneath.
+
+Scroll locks and Lenis suspension are owned jointly by the native host and the C1/C2 Milo hosts through `utils/modal-lifecycle.js`. Closing one dialog does not release another dialog's lock or resume Lenis; a pre-existing non-modal lock or paused Lenis remains untouched.
+
+Native dialog names use explicit SDK titles, workflow labels, checkout CTA labels, headings, or iframe titles, with page context as a fallback. Native focus trapping, inert background handling, and focus restoration remain browser-managed.
+
+### Modal Creation Failure
+
+A rejected checkout open resets `modalState.isOpen`, removes its 3-in-1 message listener, and reports and rethrows the original error so later checkout attempts are not blocked. The 3-in-1 host also removes its loading timeout and modal-close listener when creation fails.
 
 ### Hash Removed from URL
 

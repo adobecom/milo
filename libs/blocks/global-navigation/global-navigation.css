@@ -1718,6 +1718,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   margin: auto;
   width: 100%;
   max-width: min(1200px, calc((100% - 6px) - 2em));
+  max-height: none;
   height: min(900px, calc((100svh - 6px) - 2em));
   overflow: auto;
 }

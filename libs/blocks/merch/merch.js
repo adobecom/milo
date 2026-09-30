@@ -5,6 +5,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
+import { unlockModalScroll } from '../../utils/modal-lifecycle.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -900,6 +901,7 @@ const closeModalWithoutEvent = (modalId) => {
         modalCurtain.remove();
       }
       mod.remove();
+      unlockModalScroll(mod);
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
@@ -915,24 +917,44 @@ const closeModalWithoutEvent = (modalId) => {
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 let activeAupModalHash;
+const aupModalHashCleanups = new WeakMap();
+let modalRestoreController = new AbortController();
+let modalRestoreHash = window.location.hash;
+let aupSdkTimeoutLogged = false;
 
 export const AUP_SDK_READY_EVENT = 'milo:aupsdk:ready';
 const AUP_SDK_READY_TIMEOUT = 10000;
 
 const isAupSdkReady = () => typeof window.aupsdk?.getOrchestratorContext === 'function';
 
-export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT) {
+export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT, { signal, onTimeout } = {}) {
+  if (signal?.aborted) return Promise.resolve(false);
   if (isAupSdkReady()) return Promise.resolve(true);
   return new Promise((resolve) => {
     let timeoutId;
+    let onReady;
     const done = () => {
       clearTimeout(timeoutId);
-      window.removeEventListener(AUP_SDK_READY_EVENT, done);
-      resolve(isAupSdkReady());
+      window.removeEventListener(AUP_SDK_READY_EVENT, onReady);
+      signal?.removeEventListener('abort', done);
+      resolve(!signal?.aborted && isAupSdkReady());
     };
-    timeoutId = setTimeout(done, timeout);
-    window.addEventListener(AUP_SDK_READY_EVENT, done);
+    onReady = () => {
+      if (isAupSdkReady()) done();
+    };
+    timeoutId = setTimeout(() => {
+      done();
+      onTimeout?.();
+    }, timeout);
+    window.addEventListener(AUP_SDK_READY_EVENT, onReady);
+    signal?.addEventListener('abort', done, { once: true });
   });
+}
+
+function cancelModalRestores() {
+  modalRestoreController.abort();
+  modalRestoreController = new AbortController();
+  modalRestoreHash = window.location.hash;
 }
 
 /*
@@ -940,12 +962,30 @@ export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT) {
  * fall back to the legacy 3-in-1 modal, so wait for the SDK before restoring the modal.
  */
 async function openModalFromHash(cta, hash) {
+  const { signal } = modalRestoreController;
+  let timedOut = false;
   if (isAupEnabled() && !isAupSdkReady()) {
-    await waitForAupSdk();
-    if (window.location.hash !== hash || modalState.isOpen) return;
+    await waitForAupSdk(AUP_SDK_READY_TIMEOUT, {
+      signal,
+      onTimeout: () => { timedOut = true; },
+    });
   }
+  if (signal.aborted || window.location.hash !== hash || modalState.isOpen) return false;
+  const logTimeout = timedOut && !isAupSdkReady() && !aupSdkTimeoutLogged && window.lana?.log;
   cta.click();
   modalState.isOpen = true;
+  if (logTimeout) {
+    aupSdkTimeoutLogged = true;
+    window.lana.log('AUP SDK readiness timed out after 10000ms; falling back to legacy checkout', {
+      clientId: 'merch-at-scale',
+      errorType: 'i',
+      sampleRate: 1,
+      implicitSampleRate: 1,
+      tags: 'merch,aup-sdk',
+      severity: 'info',
+    });
+  }
+  return true;
 }
 
 function restoreAupModalHash(modalHashState) {
@@ -955,31 +995,35 @@ function restoreAupModalHash(modalHashState) {
 }
 
 function clearAupModalHash(modalHashState) {
-  if (!modalHashState) return;
-  if (activeAupModalHash === modalHashState) {
-    activeAupModalHash = undefined;
-    modalState.isOpen = false;
-  }
+  if (!modalHashState || activeAupModalHash !== modalHashState) return;
+  cancelModalRestores();
+  activeAupModalHash = undefined;
+  modalState.isOpen = false;
   restoreAupModalHash(modalHashState);
 }
 
 export function getAupModalHashCleanup() {
   const modalHashState = activeAupModalHash;
   if (!modalHashState) return undefined;
+  if (aupModalHashCleanups.has(modalHashState)) return aupModalHashCleanups.get(modalHashState);
   let cleaned = false;
-  return () => {
+  const cleanup = () => {
     if (cleaned) return;
     cleaned = true;
     clearAupModalHash(modalHashState);
   };
+  aupModalHashCleanups.set(modalHashState, cleanup);
+  return cleanup;
 }
 
-function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+function handleAupModalHash(fallbackModalId, event, modalHashState) {
+  const { type, element } = event ?? {};
   const id = element?.dataset.modalId || fallbackModalId;
   const hash = id ? `#${id}` : '';
-  if (!hash) return;
+  if (!hash) return undefined;
 
   if (type === 'open') {
+    cancelModalRestores();
     clearAupModalHash(activeAupModalHash);
     const restoreUrl = window.location.hash === hash
       ? `${window.location.pathname}${window.location.search}`
@@ -989,13 +1033,26 @@ function handleAupModalHash(fallbackModalId, { type, element } = {}) {
     }
     activeAupModalHash = { hash, restoreUrl };
     modalState.isOpen = true;
-  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
-    clearAupModalHash(activeAupModalHash);
+    return activeAupModalHash;
   }
+  if (type === 'close') clearAupModalHash(modalHashState);
+  return undefined;
 }
+
+const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
+  || dialog?.id?.includes('region-modal');
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
+  if (hash !== modalRestoreHash) cancelModalRestores();
+
+  if (closedByUser) {
+    cancelModalRestores();
+    // The AUP host owns its state and hash cleanup while the native dialog exists.
+    if (!document.getElementById('aup-workflow-dialog')) modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+  if (document.querySelector('dialog.aup-modal[open]')) return modalState.isOpen;
 
   if (hash?.includes('=')) {
     const modal = document.querySelector('.dialog-modal');
@@ -1006,8 +1063,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
-  const modal = isLocaleModal ? null : openedDialog;
+  const modal = isLocaleModal(openedDialog) ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
     const dialog = document.querySelector('.dialog-modal');
@@ -1020,27 +1076,19 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   if (hash && !cta && !modalState.isOpen && !modal) {
     const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
     if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
-      ctaToClick.dataset.clickDisabled = 'true';
-      await openModalFromHash(ctaToClick, hash);
-      setTimeout(() => {
-        delete ctaToClick.dataset.clickDisabled;
-      }, 1000);
+      const opened = await openModalFromHash(ctaToClick, hash);
+      if (opened) {
+        ctaToClick.dataset.clickDisabled = 'true';
+        setTimeout(() => {
+          delete ctaToClick.dataset.clickDisabled;
+        }, 1000);
+      }
     }
     return modalState.isOpen;
   }
 
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
     await openModalFromHash(cta, hash);
-    return modalState.isOpen;
-  }
-
-  if (closedByUser && document.querySelector('#checkout-link-modal')) {
-    modalState.isOpen = false;
-    return modalState.isOpen;
-  }
-
-  if (closedByUser && modal) {
-    modalState.isOpen = false;
     return modalState.isOpen;
   }
 
@@ -1057,41 +1105,54 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
+  cancelModalRestores();
   modalState.isOpen = true;
-  const { getModal } = await import('../modal/modal.js');
-  await import('../modal/modal.merch.js');
-  const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
-  let modal;
+  let removeThreeInOneListener;
+  try {
+    const { getModal } = await import('../modal/modal.js');
+    await import('../modal/modal.merch.js');
+    const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
+    let modal;
 
-  if (hash) window.location.hash = hash;
+    if (hash) window.location.hash = hash;
 
-  if (el?.isOpen3in1Modal) {
-    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
-    window.addEventListener('message', handle3in1IFrameEvents);
-    if (!document.querySelector('.dialog-modal.three-in-one')) {
-      modal = await openThreeInOneModal(el);
-      if (!modal) modalState.isOpen = false;
+    if (el?.isOpen3in1Modal) {
+      const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+      window.addEventListener('message', handle3in1IFrameEvents);
+      removeThreeInOneListener = () => window.removeEventListener('message', handle3in1IFrameEvents);
+      if (!document.querySelector('.dialog-modal.three-in-one')) {
+        modal = await openThreeInOneModal(el);
+        if (!modal) {
+          modalState.isOpen = false;
+          removeThreeInOneListener();
+        }
+      }
+      return;
     }
-    return;
-  }
 
-  let url = urlParam;
-  if (el?.dataset.modal === 'crm') {
-    const card = el.closest('merch-card');
-    const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
-    const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
-    const urlObj = new URL(url);
-    if (stock) urlObj.searchParams.set('stock', 'on');
-    if (quantity) urlObj.searchParams.set('qs', quantity);
-    if (stock || quantity) url = urlObj.toString();
+    let url = urlParam;
+    if (el?.dataset.modal === 'crm') {
+      const card = el.closest('merch-card');
+      const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
+      const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
+      const urlObj = new URL(url);
+      if (stock) urlObj.searchParams.set('stock', 'on');
+      if (quantity) urlObj.searchParams.set('qs', quantity);
+      if (stock || quantity) url = urlObj.toString();
+    }
+    if (isInternalModal(url)) {
+      const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+      modal = await openFragmentModal(fragmentPath, getModal);
+    } else {
+      modal = await openExternalModal(url, getModal, extraOptions, el);
+    }
+    modal.classList.add(offerTypeClass);
+  } catch (error) {
+    modalState.isOpen = false;
+    removeThreeInOneListener?.();
+    log?.error('Failed to open checkout modal', error);
+    throw error;
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else {
-    modal = await openExternalModal(url, getModal, extraOptions, el);
-  }
-  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -1179,10 +1240,14 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
       : localized;
   }
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
+  let aupModalHashState;
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
-    aupHandler: (event) => handleAupModalHash(hash, event),
+    aupHandler: (event) => {
+      if (event?.type === 'open') aupModalHashState = handleAupModalHash(hash, event);
+      else handleAupModalHash(hash, event, aupModalHashState);
+    },
   };
 }
 
@@ -2316,6 +2381,13 @@ export default async function init(el) {
 window.addEventListener('hashchange', updateModalState);
 
 window.addEventListener('popstate', updateModalState);
+
+window.addEventListener('milo:modal:loaded', ({ detail }) => {
+  const dialog = detail?.id
+    ? document.getElementById(detail.id)
+    : document.querySelector('dialog.aup-modal[open], .dialog-modal');
+  if (dialog && !isLocaleModal(dialog)) cancelModalRestores();
+});
 
 window.addEventListener('milo:modal:closed', () => {
   updateModalState({ closedByUser: true });

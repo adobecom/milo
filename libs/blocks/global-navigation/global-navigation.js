@@ -17,6 +17,7 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
+import { lockModalScroll, unlockModalScroll } from '../../utils/modal-lifecycle.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -1146,7 +1147,9 @@ class Gnav {
       { mode: 'async' },
     );
 
-    let teardownActiveDialog;
+    let cancelActiveDialog;
+    let dialogRequest = 0;
+    const claimedAupModalHashes = new WeakSet();
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1160,29 +1163,27 @@ class Gnav {
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
-      showDialog: async (element, _, closeCallback) => {
-        const cleanupAupModalHash = getAupModalHashCleanup();
+      showDialog: async (element, options, closeCallback) => {
+        dialogRequest += 1;
+        const request = dialogRequest;
+        const availableAupCleanup = getAupModalHashCleanup();
+        const canClaimHash = availableAupCleanup && !claimedAupModalHashes.has(availableAupCleanup);
+        const cleanupAupModalHash = canClaimHash
+          ? availableAupCleanup : undefined;
+        if (cleanupAupModalHash) claimedAupModalHashes.add(cleanupAupModalHash);
         const modalHash = cleanupAupModalHash && window.location.hash;
         const isIframe = element.tagName === 'IFRAME';
-        try {
-          if (isIframe) {
-            await Promise.all([
-              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-            ]);
-          }
-        } catch (e) {
-          cleanupAupModalHash?.();
-          throw e;
-        }
-        teardownActiveDialog?.();
         let dialog;
         let finishLoading;
         let closeDialog;
         let onDialogCancel;
         let onDialogClick;
         let onNavigation;
+        let onNativeClose;
+        let onDialogKeydown;
+        let cancel;
         let isTornDown = false;
+        let didOpen = false;
         const teardown = () => {
           if (isTornDown) return;
           isTornDown = true;
@@ -1190,22 +1191,34 @@ class Gnav {
           element.removeEventListener('close', closeDialog);
           dialog?.removeEventListener('cancel', onDialogCancel);
           dialog?.removeEventListener('click', onDialogClick);
+          dialog?.removeEventListener('keydown', onDialogKeydown);
+          dialog?.removeEventListener('close', onNativeClose);
+          dialog?.removeEventListener('closeModal', cancel);
+          dialog?.removeEventListener('iframe:modal:closed', cancel);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
+          if (didOpen) {
+            window.dispatchEvent(new CustomEvent(
+              'milo:modal:closed',
+              { detail: { id: dialog.id, hash: modalHash } },
+            ));
+          }
           if (dialog?.open) dialog.close();
           dialog?.remove();
-          document.documentElement.classList.remove('disable-scroll');
-          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          unlockModalScroll(dialog);
+          if (cancelActiveDialog === cancel) cancelActiveDialog = undefined;
           cleanupAupModalHash?.();
         };
         closeDialog = () => {
+          if (isTornDown) return;
           teardown();
           closeCallback({ type: 'close' });
         };
-        const cancel = () => {
+        cancel = () => {
+          if (isTornDown) return;
           // The orchestrator settles on cancel; close releases its event listeners.
           element.dispatchEvent(new Event('cancel'));
-          element.dispatchEvent(new Event('close'));
+          if (!isTornDown) element.dispatchEvent(new Event('close'));
         };
         onNavigation = () => {
           if (modalHash && window.location.hash !== modalHash) cancel();
@@ -1218,9 +1231,53 @@ class Gnav {
         onDialogClick = (e) => {
           if (e.target === dialog) cancel();
         };
+        onNativeClose = (e) => {
+          if (e.target === dialog) cancel();
+        };
+        onDialogKeydown = (e) => {
+          if (e.key === 'Escape') e.stopPropagation();
+        };
+        element.addEventListener('close', closeDialog, { once: true });
         try {
+          if (isIframe) {
+            await Promise.all([
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ]);
+          }
+          if (isTornDown) return;
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            cancel();
+            return;
+          }
+          cancelActiveDialog?.();
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            cancel();
+            return;
+          }
           dialog = document.createElement('dialog');
           dialog.id = 'aup-workflow-dialog';
+          dialog.classList.add('dialog-modal', 'aup-modal');
+          dialog.setAttribute('aria-modal', 'true');
+          const modalTrigger = modalHash
+            ? document.querySelector(`[data-modal-id="${CSS.escape(modalHash.slice(1))}"]`)
+            : null;
+          const labelledBy = element.getAttribute('aria-labelledby')?.trim();
+          const labelledByText = labelledBy?.split(/\s+/)
+            .map((id) => element.querySelector(`#${CSS.escape(id)}`)?.textContent
+              || document.getElementById(id)?.textContent).join(' ');
+          const title = [
+            options?.title,
+            element.getAttribute('aria-label'),
+            labelledByText,
+            modalTrigger?.getAttribute('aria-label'),
+            element.querySelector('h1, h2, h3, h4, h5, h6')?.textContent,
+            modalTrigger?.textContent,
+            element.getAttribute('title'),
+            document.title,
+            'Adobe',
+          ].find((value) => typeof value === 'string' && value.trim());
+          dialog.setAttribute('aria-label', title.trim());
           if (isIframe) {
             const spinner = toFragment`
               <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
@@ -1238,15 +1295,25 @@ class Gnav {
           }
           dialog.appendChild(element);
           document.body.appendChild(dialog);
-          element.addEventListener('close', closeDialog, { once: true });
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
+          dialog.addEventListener('keydown', onDialogKeydown);
+          dialog.addEventListener('close', onNativeClose);
+          dialog.addEventListener('closeModal', cancel);
+          dialog.addEventListener('iframe:modal:closed', cancel);
           window.addEventListener('popstate', onNavigation);
           window.addEventListener('hashchange', onNavigation);
-          teardownActiveDialog = teardown;
-          document.documentElement.classList.add('disable-scroll');
           dialog.showModal();
+          didOpen = true;
+          cancelActiveDialog = cancel;
+          lockModalScroll(dialog);
           onNavigation();
+          if (!isTornDown) {
+            window.dispatchEvent(new CustomEvent(
+              'milo:modal:loaded',
+              { detail: { id: dialog.id, hash: modalHash } },
+            ));
+          }
         } catch (e) {
           teardown();
           throw e;

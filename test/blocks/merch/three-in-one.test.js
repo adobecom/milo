@@ -331,6 +331,35 @@ describe('Three-in-One Modal', () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
     });
+
+    it('cleans up its timeout and close listener when modal creation throws', async () => {
+      const link = createTag('a', {
+        href: 'https://commerce-stg.adobe.com/store/segmentation?ctx=if',
+        'data-modal': 'twp',
+        'data-modal-id': 'failed-three-in-one',
+      });
+      const error = new Error('Modal title unavailable');
+      const getAttribute = link.getAttribute.bind(link);
+      sinon.stub(link, 'getAttribute').callsFake((name) => {
+        if (name === 'aria-label') throw error;
+        return getAttribute(name);
+      });
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const addListener = sinon.spy(window, 'addEventListener');
+      const removeListener = sinon.spy(window, 'removeEventListener');
+      try {
+        const initialTimers = clock.countTimers();
+        const rejection = await openThreeInOneModal(link).catch((caught) => caught);
+        const listener = addListener.withArgs('milo:modal:closed').firstCall.args[1];
+
+        expect(rejection).to.equal(error);
+        expect(clock.countTimers()).to.equal(initialTimers);
+        expect(removeListener.calledWith('milo:modal:closed', listener)).to.be.true;
+      } finally {
+        sinon.restore();
+        clock.restore();
+      }
+    });
   });
 
   describe('getIframeUrl', () => {
