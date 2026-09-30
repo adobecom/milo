@@ -269,16 +269,16 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
 
   return html`
     <div class="mmm2-history-chart">
-      <button
-        type="button"
-        class="mmm2-history-chart-summary"
-        aria-expanded=${expanded}
-        onClick=${() => setExpanded((prev) => !prev)}>
-        <span class="mmm2-history-chart-summary-chevron"></span>
-        <span class="mmm2-history-chart-summary-title">Pages with Target on${titleSuffix}</span>
-      </button>
-      <div class="mmm2-history-chart-body" style=${expanded ? '' : 'display: none;'}>
-        <div class="mmm2-history-chart-header">
+      <div class="mmm2-history-chart-summary">
+        <button
+          type="button"
+          class="mmm2-history-chart-summary-toggle"
+          aria-expanded=${expanded}
+          onClick=${() => setExpanded((prev) => !prev)}>
+          <span class="mmm2-history-chart-summary-chevron"></span>
+          <span class="mmm2-history-chart-summary-title">Pages with Target on${titleSuffix}</span>
+        </button>
+        ${expanded ? html`
           <div class="mmm2-history-chart-controls">
             ${showBreakdownToggle ? html`
               <div class="mmm2-form-field">
@@ -304,7 +304,9 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
               </div>
             ` : null}
           </div>
-        </div>
+        ` : null}
+      </div>
+      <div class="mmm2-history-chart-body" style=${expanded ? '' : 'display: none;'}>
         ${isEmpty
     ? html`<p class="mmm2-history-chart-empty">No history yet - this graph fills in one day at a time.</p>`
     : html`<div class="mmm2-history-chart-canvas" ref=${containerRef}></div>`}

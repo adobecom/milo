@@ -124,18 +124,28 @@
 .mmm-2 .mmm2-history-chart-summary {
   display: flex;
   align-items: center;
-  width: 100%;
-  appearance: none;
+  justify-content: space-between;
+  gap: var(--spacing-s);
   background: var(--color-gray-300);
+  padding: var(--spacing-xs);
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle {
+  display: flex;
+  align-items: center;
+  appearance: none;
+  background: none;
   border: none;
   cursor: pointer;
-  padding: var(--spacing-s) var(--spacing-l);
+  margin: calc(-1 * var(--spacing-xxs)) calc(-1 * var(--spacing-xs));
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: 8px;
   font-family: var(--body-font-family);
   text-align: left;
   transition: background-color .13s ease;
 }
 
-.mmm-2 .mmm2-history-chart-summary:hover {
+.mmm-2 .mmm2-history-chart-summary-toggle:hover {
   background: var(--color-gray-400);
 }
 
@@ -149,7 +159,7 @@
   content: '▸';
 }
 
-.mmm-2 .mmm2-history-chart-summary[aria-expanded="true"] .mmm2-history-chart-summary-chevron {
+.mmm-2 .mmm2-history-chart-summary-toggle[aria-expanded="true"] .mmm2-history-chart-summary-chevron {
   transform: rotate(90deg);
 }
 
@@ -160,20 +170,12 @@
 }
 
 .mmm-2 .mmm2-history-chart-body {
-  padding: var(--spacing-s) var(--spacing-l) var(--spacing-l);
-}
-
-.mmm-2 .mmm2-history-chart-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-s);
-  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs);
 }
 
 .mmm-2 .mmm2-history-chart-controls {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--spacing-s);
 }
 
