@@ -215,6 +215,16 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
     });
 
+    it('does not preload breadcrumbs, which is not a known block (gnav loads it, not blocks/)', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="breadcrumbs"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/breadcrumbs/"]')).to.not.exist;
+    });
+
     it('only warms the video autoblock for media_*.mp4 anchors', () => {
       document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
       utils.preloadLcpCodeFiles();
@@ -243,10 +253,19 @@ describe('Utils', () => {
       expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
     });
 
-    it('does not treat a block whose name merely contains "merch" as commerce', () => {
+    it('does not prewarm an authored div whose class is not a known block (defensive allowlist)', () => {
+      // aftermerch is not in C1_BLOCKS/C2_BLOCKS; the allowlist skips it rather than 404ing.
       document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
       utils.preloadLcpCodeFiles();
-      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.not.exist;
+    });
+
+    it('prewarms an external-lib block that is not in C1/C2_BLOCKS', () => {
+      utils.setConfig({ ...config, externalLibs: [{ base: 'https://x.example/libs', blocks: ['ext-hero'] }] });
+      document.body.innerHTML = '<main><div><div class="ext-hero"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/blocks/ext-hero/ext-hero.js"]')).to.exist;
+      utils.setConfig(config);
     });
 
     describe('eager MAS initService', () => {
@@ -2146,6 +2165,65 @@ describe('Utils', () => {
       a.remove();
     });
 
+    it('logs a missing (404) query index below error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 404 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 404 query index should still be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, '404 must not log at error severity').to.equal('info');
+      });
+      // functional behaviour unchanged: still falls back to the base prefix
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
+    it('logs an unexpected (5xx) query index status at error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 500 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 5xx query index should be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, 'unexpected status must stay at error severity').to.equal('error');
+      });
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
     it('should revert to regional prefix for domains not configured in lingo site mapping', async () => {
       lingoUtils.setConfig({
         ...defaultTestConfig,
@@ -3052,6 +3130,167 @@ describe('Utils', () => {
       expect(updatedUrl.search).to.equal('?trackingid=123');
       expect(updatedUrl.hash).to.equal('#section');
       a.remove();
+    });
+  });
+
+  describe('Lingo query index gating on non-Lingo locales', () => {
+    let originalFetch;
+    let originalLana;
+    let fetchStub;
+    let lingoUtils;
+    let testAnchors;
+
+    const QUERY_INDEX_PATH = 'assets/lingo/query-index';
+    const CLEAR_COUNTRY = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+
+    // Monotonic, so two sub-millisecond beforeEach calls can't share a cached module.
+    let moduleId = 0;
+    const nextModuleId = () => { moduleId += 1; return `lingo-gating-${moduleId}`; };
+
+    const addAnchor = (href) => {
+      const a = document.createElement('a');
+      a.href = href;
+      document.body.appendChild(a);
+      testAnchors.push(a);
+      return a;
+    };
+
+    // No locale declares `base`, so no locale is part of a base/regional pair. This is the
+    // shape of every legacy locale-based site, e.g. da-bacom-blog.
+    const nonLingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        uk: { ietf: 'en-GB', tk: 'hah7vzn.css' },
+        jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+      },
+      prodDomains: ['business.adobe.com'],
+      pathname: '/uk/blog/',
+      contentRoot: '/blog',
+      codeRoot: '/libs',
+    };
+
+    // `sg` declares `base: ''`, so `''` is a real Lingo base locale with one region.
+    const lingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        sg: { ietf: 'en-SG', tk: 'hah7vzn.css', base: '' },
+      },
+      prodDomains: ['www.adobe.com'],
+      pathname: '/',
+      uniqueSiteId: 'cc',
+      contentRoot: '/cc-shared',
+      codeRoot: '/libs',
+    };
+
+    const fetchedUrls = (needle) => fetchStub.getCalls()
+      .map((call) => `${call.args[0]}`)
+      .filter((url) => url.includes(needle));
+
+    beforeEach(async () => {
+      originalFetch = window.fetch;
+      fetchStub = sinon.stub();
+      fetchStub.callsFake((url) => {
+        const href = `${url}`;
+        if (href.includes('lingo-site-mapping')) {
+          return mockRes({
+            payload: {
+              'site-locales': { data: [{ uniqueSiteId: 'cc', baseSite: '/', regionalSites: '/sg' }] },
+              'site-query-index-map': {
+                data: [{
+                  uniqueSiteId: 'cc',
+                  queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+                }],
+              },
+            },
+          });
+        }
+        if (href.includes(QUERY_INDEX_PATH) && href.includes('/sg/')) {
+          return mockRes({ payload: { data: [{ path: '/sg/products/photoshop' }] } });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+      window.fetch = fetchStub;
+      originalLana = window.lana;
+      testAnchors = [];
+      // `akamai` feeds the lowest-priority slot in computeDetectedMarketCountry, so a
+      // leaked `country` cookie from an earlier test would win and break region lookup.
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.setItem('akamai', 'sg');
+      lingoUtils = await import(`../../libs/utils/utils.js?t=${nextModuleId()}`);
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+    });
+
+    afterEach(() => {
+      window.fetch = originalFetch;
+      if (originalLana) window.lana = originalLana; else delete window.lana;
+      testAnchors.forEach((a) => a.remove());
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('does not attach regions to a locale with no regional children', () => {
+      const locale = lingoUtils.getLocale(nonLingoConfig.locales, '/uk/blog/');
+      expect(locale.prefix).to.equal('/uk');
+      expect(locale.base).to.be.undefined;
+      expect('regions' in locale).to.be.false;
+    });
+
+    it('attaches regions to a base locale that does have regional children', () => {
+      const locale = lingoUtils.getLocale(lingoConfig.locales, '/');
+      expect(locale.prefix).to.equal('');
+      expect(Object.keys(locale.regions)).to.deep.equal(['sg']);
+    });
+
+    it('does not fetch a lingo query index on a regional locale when no locale declares a base', async () => {
+      lingoUtils.setConfig(nonLingoConfig);
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      // Ordinary locale prefixing must still happen.
+      expect(localized).to.equal('/uk/blog/basics/marketing-personalization');
+    });
+
+    it('does not fetch a lingo query index on the root locale of a non-Lingo site', async () => {
+      // The reported case: business.adobe.com/blog, where matchedKey is '' - the same key
+      // that would carry `regions` on a real Lingo site.
+      lingoUtils.setConfig({ ...nonLingoConfig, pathname: '/blog/' });
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      expect(localized).to.equal('/blog/basics/marketing-personalization');
+    });
+
+    it('still fetches the lingo query index and localizes on a real Lingo base locale', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      lingoUtils.setConfig(lingoConfig);
+      const href = 'https://www.adobe.com/products/photoshop';
+      const a = addAnchor(href);
+
+      a.href = await lingoUtils.localizeLinkAsync(href, 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH).length).to.be.greaterThan(0);
+      expect(new URL(a.href).pathname).to.equal('/sg/products/photoshop');
     });
   });
 
