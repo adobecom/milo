@@ -225,6 +225,22 @@ export default async function loadBlock(configs, customLib) {
     });
     return;
   }
+  // In the bundled standalone gnav/footer, the code above sets config on the
+  // *bundled* utils.js. Blocks loaded later (e.g. the c2 event footer's
+  // email-collection modal) are imported from the CDN as source and pull a
+  // separate utils.js instance whose config closure stays empty, so getConfig()
+  // returns {} there (base/env undefined). Copy the already-processed config to
+  // that instance (updateConfig assigns as-is, avoiding re-derivation of paths).
+  try {
+    const cdnUtils = await import(`${getConfig().miloLibs}/utils/utils.js`);
+    if (cdnUtils.getConfig() !== getConfig()) cdnUtils.updateConfig(getConfig());
+  } catch (e) {
+    window.lana?.log(`${e.message} | standalone-gnav failed to sync source config | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    });
+  }
   // Standalone consumers don't run Milo's loadArea bootstrap, which is what
   // normally loads the Typekit stylesheet that defines Adobe Clean / Adobe
   // Clean Display Black. Without it, gnav/footer headings fall back to a
