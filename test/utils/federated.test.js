@@ -48,6 +48,12 @@ describe('Federated navigation utilities', () => {
       delete getConfig().fedContentPrefix;
     });
 
+    it('shouldnt federate an already federated url twice', () => {
+      expect(getFederatedUrl(`${baseHost}/federal/foo-fragment.html`)).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+    });
+
     it('shouldnt double the fedContentPrefix on an absolute link', () => {
       getConfig().fedContentPrefix = '/dc-shared';
       expect(getFederatedUrl('https://adobe.com/dc-shared/federal/foo-fragment.html')).to.equal(
