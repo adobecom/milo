@@ -1058,15 +1058,26 @@ describe('Merch Block', () => {
       updateSearch({});
     });
 
-    it('getUpgradeAction: returns undefined when no upgrade offer is on the page', async () => {
-      mockIms('US');
-      getUpgradeAction.offer = undefined;
-      getUpgradeAction.missReported = false;
-      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
-        (el) => [el, el.parentNode, el.nextSibling],
-      );
-      detached.forEach(([el]) => el.remove());
-      try {
+    describe('getUpgradeAction without page upgrade offer', () => {
+      let detached;
+
+      beforeEach(() => {
+        mockIms('US');
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+        detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+          (el) => [el, el.parentNode, el.nextSibling],
+        );
+        detached.forEach(([el]) => el.remove());
+      });
+
+      afterEach(() => {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+      });
+
+      it('returns undefined when no upgrade offer is on the page', async () => {
         const action = await getUpgradeAction(
           { upgrade: true },
           Promise.resolve(true),
@@ -1074,136 +1085,101 @@ describe('Merch Block', () => {
           null,
         );
         expect(action).to.be.undefined;
-      } finally {
-        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
-        getUpgradeAction.offer = undefined;
-        getUpgradeAction.missReported = false;
-      }
-    });
+      });
 
-    it('getUpgradeAction: reports a missing upgrade offer to lana once, with the CTA osi', async () => {
-      mockIms('US');
-      getUpgradeAction.offer = undefined;
-      getUpgradeAction.missReported = false;
-      // bind merch.js' Log module without mutating the shared fixtures
-      const probe = createTag('a', { class: 'merch', href: '/tools/ost?osi=abc&type=price' });
-      document.body.appendChild(probe);
-      (await merch(probe))?.remove();
+      it('reports a missing upgrade offer to lana once, with the CTA osi', async () => {
+        // bind merch.js' Log module without mutating the shared fixtures
+        const probe = createTag('a', { class: 'merch', href: '/tools/ost?osi=abc&type=price' });
+        document.body.appendChild(probe);
+        (await merch(probe))?.remove();
 
-      const lanaLogs = [];
-      const originalLana = window.lana;
-      window.lana = { log: (msg) => lanaLogs.push(msg) };
-      Log.reset();
-      Log.use(Log.Plugins.lanaAppender);
-
-      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
-        (el) => [el, el.parentNode, el.nextSibling],
-      );
-      detached.forEach(([el]) => el.remove());
-      const cta = createTag('a', { 'data-wcs-osi': 'BROKEN_OSI' });
-      try {
-        await getUpgradeAction(
-          { upgrade: true },
-          Promise.resolve(true),
-          [{ productArrangement: { productFamily: 'ACROBAT' } }],
-          cta,
-        );
-        await getUpgradeAction(
-          { upgrade: true },
-          Promise.resolve(true),
-          [{ productArrangement: { productFamily: 'ACROBAT' } }],
-          cta,
-        );
-      } finally {
-        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
-        window.lana = originalLana;
+        const lanaLogs = [];
+        const originalLana = window.lana;
+        window.lana = { log: (msg) => lanaLogs.push(msg) };
         Log.reset();
-        Log.use(Log.Plugins.quietFilter);
-        getUpgradeAction.offer = undefined;
-        getUpgradeAction.missReported = false;
-      }
-      const reported = lanaLogs.filter((msg) => msg.includes('merch-offers.upgrade'));
-      expect(reported.length, 'must be reported exactly once per page').to.equal(1);
-      expect(reported[0]).to.include('BROKEN_OSI');
-    });
+        Log.use(Log.Plugins.lanaAppender);
 
-    it('getUpgradeAction: does not cache a miss, so a later upgrade offer is still resolved', async () => {
-      mockIms('US');
-      getUpgradeAction.offer = undefined;
-      getUpgradeAction.missReported = false;
-      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
-        (el) => [el, el.parentNode, el.nextSibling],
-      );
-      detached.forEach(([el]) => el.remove());
-      const missAction = await getUpgradeAction(
-        { upgrade: true },
-        Promise.resolve(true),
-        [{ productArrangement: { productFamily: 'ACROBAT' } }],
-        null,
-      );
-      expect(missAction).to.be.undefined;
-      expect(getUpgradeAction.offer, 'a miss must not be cached').to.not.be.ok;
+        const cta = createTag('a', { 'data-wcs-osi': 'BROKEN_OSI' });
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'ACROBAT' } }],
+            cta,
+          );
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'ACROBAT' } }],
+            cta,
+          );
+        } finally {
+          window.lana = originalLana;
+          Log.reset();
+          Log.use(Log.Plugins.quietFilter);
+        }
+        const reported = lanaLogs.filter((msg) => msg.includes('merch-offers.upgrade'));
+        expect(reported.length, 'must be reported exactly once per page').to.equal(1);
+        expect(reported[0]).to.include('BROKEN_OSI');
+      });
 
-      const offerEl = document.createElement('a');
-      offerEl.setAttribute('data-wcs-osi', 'TEST_OSI');
-      const container = document.createElement('div');
-      container.classList.add('merch-offers', 'upgrade');
-      container.appendChild(offerEl);
-      document.body.appendChild(container);
-      try {
-        await getUpgradeAction(
+      it('does not cache a miss, so a later upgrade offer is still resolved', async () => {
+        const missAction = await getUpgradeAction(
           { upgrade: true },
           Promise.resolve(true),
-          [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
           null,
         );
-        expect(getUpgradeAction.offer).to.equal(offerEl);
-      } finally {
-        container.remove();
-        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
-        getUpgradeAction.offer = undefined;
-        getUpgradeAction.missReported = false;
-      }
-    });
+        expect(missAction).to.be.undefined;
+        expect(getUpgradeAction.offer, 'a miss must not be cached').to.not.be.ok;
 
-    it('getUpgradeAction: refreshes a detached cached offer after fragment replacement', async () => {
-      mockIms('US');
-      getUpgradeAction.offer = undefined;
-      getUpgradeAction.missReported = false;
-      const detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
-        (el) => [el, el.parentNode, el.nextSibling],
-      );
-      detached.forEach(([el]) => el.remove());
+        const offerEl = document.createElement('a');
+        offerEl.setAttribute('data-wcs-osi', 'TEST_OSI');
+        const container = document.createElement('div');
+        container.classList.add('merch-offers', 'upgrade');
+        container.appendChild(offerEl);
+        document.body.appendChild(container);
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+            null,
+          );
+          expect(getUpgradeAction.offer).to.equal(offerEl);
+        } finally {
+          container.remove();
+        }
+      });
 
-      const oldOffer = document.createElement('a');
-      oldOffer.setAttribute('data-wcs-osi', 'OLD_OSI');
-      const oldContainer = document.createElement('div');
-      oldContainer.classList.add('merch-offers', 'upgrade');
-      oldContainer.appendChild(oldOffer);
-      document.body.appendChild(oldContainer);
-      getUpgradeAction.offer = oldOffer;
-      oldContainer.remove();
+      it('refreshes a detached cached offer after fragment replacement', async () => {
+        const oldOffer = document.createElement('a');
+        oldOffer.setAttribute('data-wcs-osi', 'OLD_OSI');
+        const oldContainer = document.createElement('div');
+        oldContainer.classList.add('merch-offers', 'upgrade');
+        oldContainer.appendChild(oldOffer);
+        document.body.appendChild(oldContainer);
+        getUpgradeAction.offer = oldOffer;
+        oldContainer.remove();
 
-      const newOffer = document.createElement('a');
-      newOffer.setAttribute('data-wcs-osi', 'NEW_OSI');
-      const newContainer = document.createElement('div');
-      newContainer.classList.add('merch-offers', 'upgrade');
-      newContainer.appendChild(newOffer);
-      document.body.appendChild(newContainer);
-      try {
-        await getUpgradeAction(
-          { upgrade: true },
-          Promise.resolve(true),
-          [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
-          null,
-        );
-        expect(getUpgradeAction.offer).to.equal(newOffer);
-      } finally {
-        newContainer.remove();
-        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
-        getUpgradeAction.offer = undefined;
-        getUpgradeAction.missReported = false;
-      }
+        const newOffer = document.createElement('a');
+        newOffer.setAttribute('data-wcs-osi', 'NEW_OSI');
+        const newContainer = document.createElement('div');
+        newContainer.classList.add('merch-offers', 'upgrade');
+        newContainer.appendChild(newOffer);
+        document.body.appendChild(newContainer);
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+            null,
+          );
+          expect(getUpgradeAction.offer).to.equal(newOffer);
+        } finally {
+          newContainer.remove();
+        }
+      });
     });
 
     it('updates CTA text to Upgrade Now', async () => {
