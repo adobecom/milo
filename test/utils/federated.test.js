@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { getFederatedUrl, getFederatedContentRoot } from '../../libs/utils/utils.js';
+import { getFederatedUrl, getFederatedContentRoot, stripFedContentPrefix, getConfig } from '../../libs/utils/utils.js';
 
 const baseHost = 'https://main--federal--adobecom.aem.page';
 
@@ -40,6 +40,22 @@ describe('Federated navigation utilities', () => {
       );
     });
 
+    it('shouldnt double the fedContentPrefix on a relative link', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(getFederatedUrl('/dc-shared/federal/foo-fragment.html')).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+      delete getConfig().fedContentPrefix;
+    });
+
+    it('shouldnt double the fedContentPrefix on an absolute link', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(getFederatedUrl('https://adobe.com/dc-shared/federal/foo-fragment.html')).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+      delete getConfig().fedContentPrefix;
+    });
+
     it('should return the federated url for a relative link including hashes and search params', () => {
       expect(
         getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
@@ -50,6 +66,36 @@ describe('Federated navigation utilities', () => {
       expect(getFederatedUrl('en-US/federal/')).to.equal('en-US/federal/');
       expect(getFederatedUrl(null)).to.equal(null);
       expect(getFederatedUrl(123121)).to.equal(123121);
+    });
+  });
+
+  describe('stripFedContentPrefix', () => {
+    afterEach(() => {
+      const config = getConfig();
+      delete config.fedContentPrefix;
+      delete config.locale;
+    });
+
+    it('should not change the path when fedContentPrefix is not configured', () => {
+      expect(stripFedContentPrefix('/dc-shared/federal/gnav/media.png')).to.equal('/dc-shared/federal/gnav/media.png');
+      expect(stripFedContentPrefix('/federal/gnav/media.png')).to.equal('/federal/gnav/media.png');
+    });
+
+    it('should strip a configured fedContentPrefix', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(stripFedContentPrefix('/dc-shared/federal/gnav/media.png')).to.equal('/federal/gnav/media.png');
+    });
+
+    it('should leave paths without the prefix untouched', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(stripFedContentPrefix('/federal/gnav/media.png')).to.equal('/federal/gnav/media.png');
+    });
+
+    it('should strip a locale prefixed fedContentPrefix', () => {
+      const config = getConfig();
+      config.fedContentPrefix = '/dc-shared';
+      config.locale = { prefix: '/ch_de' };
+      expect(stripFedContentPrefix('/ch_de/dc-shared/federal/gnav/media.png')).to.equal('/ch_de/federal/gnav/media.png');
     });
   });
 });

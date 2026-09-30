@@ -9,6 +9,7 @@ import {
   localizeLinkAsync,
   getFederatedContentRoot,
   getFederatedUrl,
+  stripFedContentPrefix,
   getFedsPlaceholderConfig,
   createTag,
   loadBlock,
@@ -234,7 +235,7 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
   section?.querySelectorAll(selector)
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
-      const path = getPath(source.getAttribute(type));
+      const path = stripFedContentPrefix(getPath(source.getAttribute(type)));
       const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
       if (forceFederate || [localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) {
         const federalPrefix = path.includes('/federal/') ? '' : '/federal';

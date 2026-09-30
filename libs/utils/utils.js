@@ -495,16 +495,21 @@ export const getFederatedContentRoot = () => {
   return federatedContentRoot;
 };
 
+// getFederatedContentRoot already carries fedContentPrefix, so drop it from the path.
+export const stripFedContentPrefix = (pathname = '') => {
+  const { fedContentPrefix, locale } = getConfig();
+  if (!fedContentPrefix) return pathname;
+  const hasPrefix = pathname.startsWith(fedContentPrefix)
+    || pathname.startsWith(`${locale?.prefix ?? ''}${fedContentPrefix}`);
+  return hasPrefix ? pathname.replace(fedContentPrefix, '') : pathname;
+};
+
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${stripFedContentPrefix(url)}`;
   try {
-    const { fedContentPrefix, locale } = getConfig();
     const { pathname, search, hash } = new URL(url);
-    const hasPrefix = fedContentPrefix && (pathname.startsWith(fedContentPrefix)
-      || pathname.startsWith(`${locale.prefix}${fedContentPrefix}`));
-    return `${getFederatedContentRoot()}${hasPrefix
-      ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
+    return `${getFederatedContentRoot()}${stripFedContentPrefix(pathname)}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
