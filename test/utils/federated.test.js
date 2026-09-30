@@ -91,6 +91,11 @@ describe('Federated navigation utilities', () => {
       expect(stripFedContentPrefix('/federal/gnav/media.png')).to.equal('/federal/gnav/media.png');
     });
 
+    it('should leave non federal paths untouched', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(stripFedContentPrefix('/dc-shared/media_123.png')).to.equal('/dc-shared/media_123.png');
+    });
+
     it('should strip a locale prefixed fedContentPrefix', () => {
       const config = getConfig();
       config.fedContentPrefix = '/dc-shared';

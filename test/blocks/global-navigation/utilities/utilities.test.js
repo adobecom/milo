@@ -249,6 +249,21 @@ describe('global navigation utilities', () => {
       });
       delete getConfig().fedContentPrefix;
     });
+
+    it('shouldnt strip the fedContentPrefix from non federal sources', async () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      const template = getImageTemplate({
+        host: baseHost,
+        path: '/dc-shared/media_123.png',
+      });
+      federatePictureSources({ section: template, forceFederate: true });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/dc-shared/media_123.png',
+        template,
+      });
+      delete getConfig().fedContentPrefix;
+    });
   });
 
   // No tests for using the the live url and .aem. urls

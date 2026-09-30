@@ -495,13 +495,10 @@ export const getFederatedContentRoot = () => {
   return federatedContentRoot;
 };
 
-// getFederatedContentRoot already carries fedContentPrefix, so drop it from the path.
+// getFederatedContentRoot already carries fedContentPrefix, so drop it from federal paths.
 export const stripFedContentPrefix = (pathname = '') => {
-  const { fedContentPrefix, locale } = getConfig();
-  if (!fedContentPrefix) return pathname;
-  const hasPrefix = pathname.startsWith(fedContentPrefix)
-    || pathname.startsWith(`${locale?.prefix ?? ''}${fedContentPrefix}`);
-  return hasPrefix ? pathname.replace(fedContentPrefix, '') : pathname;
+  const { fedContentPrefix } = getConfig();
+  return fedContentPrefix ? pathname.replace(`${fedContentPrefix}/federal/`, '/federal/') : pathname;
 };
 
 export const getFederatedUrl = (url = '') => {
