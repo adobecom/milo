@@ -13,6 +13,16 @@ const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 // --color-accent instead (handled separately below).
 const BREAKDOWN_PALETTE = ['#4046CA', '#E8702A', '#1DA57A', '#B3312C', '#8558D3', '#2D9CDB', '#D6A72C', '#6A6F77'];
 
+// Geo breakdowns can have many more lines than the curated palette above (e.g. a config
+// with both broad regions and individual countries). Beyond the palette, generate extra
+// colors spaced around the hue wheel so no two lines ever collide - a repeated color on
+// two crossing lines is visually indistinguishable from an actual overlap.
+function seriesColor(i) {
+  if (i < BREAKDOWN_PALETTE.length) return BREAKDOWN_PALETTE[i];
+  const hue = ((i - BREAKDOWN_PALETTE.length) * 137.508) % 360; // golden-angle hue spacing
+  return `hsl(${hue.toFixed(0)}, 65%, 45%)`;
+}
+
 // Purely a local dev/design aid: append ?mmm2MockHistory=1 to the page URL to preview
 // the chart (year switching, month-start truncation, K-suffixed axis, geo breakdown)
 // without waiting on real multi-year/multi-geo data to accumulate. Never fetched/used
@@ -195,7 +205,14 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
           bottom: isSingleLine ? 28 : 48,
           containLabel: true,
         },
-        tooltip: { trigger: 'axis' },
+        tooltip: {
+          trigger: 'axis',
+          confine: true,
+          order: 'valueDesc',
+          textStyle: { fontSize: 11 },
+          padding: [6, 8],
+          extraCssText: 'max-height: 320px; overflow-y: auto; line-height: 1.4;',
+        },
         legend: isSingleLine ? undefined : { bottom: 0, type: 'scroll' },
         xAxis: {
           type: 'category',
@@ -210,7 +227,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
         series: plottedSeries.map((s, i) => {
           const color = isSingleLine
             ? accentColor
-            : BREAKDOWN_PALETTE[i % BREAKDOWN_PALETTE.length];
+            : seriesColor(i);
           return {
             name: s.label,
             type: 'line',
