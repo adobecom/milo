@@ -47,8 +47,11 @@ function addAlloyTracking(lobObject) {
   };
 
   window.alloy_all = window.alloy_all || {};
-  // window.alloy_all.get = window.alloy_all.get || get;
-  // window.alloy_all.set = window.alloy_all.set || set;
+  if (window.location.href.contains('addmethods')) {
+    console.log('lob: setting get/set methods to window.alloy_all');
+    window.alloy_all.get = window.alloy_all.get || get;
+    window.alloy_all.set = window.alloy_all.set || set;
+  }
 
   const dataObjString = 'data._adobe_corpnew.event.custom';
   const customEvents = get(window.alloy_all, dataObjString) || [];
