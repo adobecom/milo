@@ -172,7 +172,8 @@ mas-field .icon-button {
   }
 
   .price.price-strikethrough {
-    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
+    color: var(--s2a-color-content-subtle);
+    text-decoration-color: var(--s2a-color-content-subtle);
   }
 
   .firefly & {
