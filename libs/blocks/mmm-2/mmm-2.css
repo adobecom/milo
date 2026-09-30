@@ -143,11 +143,7 @@
   font-family: var(--body-font-family);
   text-align: left;
   outline: none;
-  transition: background-color .13s ease;
-}
-
-.mmm-2 .mmm2-history-chart-summary-toggle:hover {
-  background: var(--color-gray-400);
+  transition: color .13s ease;
 }
 
 .mmm-2 .mmm2-history-chart-summary-toggle:focus-visible {
@@ -173,6 +169,11 @@
   font-size: var(--type-body-m-size);
   font-weight: 700;
   color: var(--color-gray-800);
+}
+
+.mmm-2 .mmm2-history-chart-summary-toggle:hover .mmm2-history-chart-summary-title,
+.mmm-2 .mmm2-history-chart-summary-toggle:hover .mmm2-history-chart-summary-chevron {
+  color: var(--color-accent);
 }
 
 .mmm-2 .mmm2-history-chart-body {
@@ -238,7 +239,14 @@
 }
 
 .mmm-2 .mmm2-history-chart-controls .mmm2-form-field {
-  min-width: 140px;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field label {
+  white-space: nowrap;
 }
 
 .mmm-2 .mmm2-form-field select,
@@ -261,6 +269,10 @@
   background-position: right var(--spacing-xs) center;
   background-size: 18px;
   padding-right: var(--spacing-xxl);
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field select {
+  min-width: 140px;
 }
 
 .mmm-2 .mmm2-search-input {

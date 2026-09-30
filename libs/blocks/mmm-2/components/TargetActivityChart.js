@@ -7,6 +7,10 @@ import { API_URLS } from '../../../features/personalization/preview.js';
 const FETCH_DAYS = 400;
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const FULL_MONTH_LABELS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 // Distinct per-line colors for the geo-group breakdown view (cycled if there are more
 // groups than colors). The single-line "All pages"/one-geo view always uses the theme's
@@ -213,6 +217,20 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
           textStyle: { fontSize: 11 },
           padding: [6, 8],
           extraCssText: 'max-height: 320px; overflow-y: auto; line-height: 1.4;',
+          formatter: (params) => {
+            if (!params.length) return '';
+            const monthIdx = MONTH_LABELS.indexOf(params[0].axisValueLabel ?? params[0].axisValue);
+            const title = monthIdx >= 0 ? `${FULL_MONTH_LABELS[monthIdx]}, ${selectedYear}` : params[0].axisValueLabel;
+            const rows = params
+              .slice()
+              .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+              .map((p) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <span>${p.marker}${p.seriesName}</span>
+                <strong>${(p.value ?? 0).toLocaleString()}</strong>
+              </div>`)
+              .join('');
+            return `<div style="font-weight:600;margin-bottom:4px;">${title}</div>${rows}`;
+          },
         },
         xAxis: {
           type: 'category',
@@ -252,7 +270,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
       chartRef.current?.dispose();
       chartRef.current = null;
     };
-  }, [months, plottedSeries]);
+  }, [months, plottedSeries, selectedYear]);
 
   // The chart's container is never unmounted while collapsed (just hidden via CSS), so
   // echarts keeps its instance - but it was laid out at zero size while hidden, so it
@@ -265,7 +283,8 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
   if (failed) return null;
 
   const isEmpty = series?.every((s) => s.rows.length === 0);
-  const titleSuffix = selectedYear ? ` - ${selectedYear}` : '';
+  const currentYear = new Date().getUTCFullYear();
+  const titleSuffix = selectedYear && selectedYear !== currentYear ? ` - ${selectedYear}` : '';
 
   return html`
     <div class="mmm2-history-chart">
@@ -276,7 +295,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
           aria-expanded=${expanded}
           onClick=${() => setExpanded((prev) => !prev)}>
           <span class="mmm2-history-chart-summary-chevron"></span>
-          <span class="mmm2-history-chart-summary-title">Pages with Target on${titleSuffix}</span>
+          <span class="mmm2-history-chart-summary-title">Historical Data${titleSuffix}</span>
         </button>
         ${expanded ? html`
           <div class="mmm2-history-chart-controls">
@@ -288,7 +307,7 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
                   value=${breakdownMode ? 'geo' : 'all'}
                   onChange=${(e) => setBreakdownMode(e.target.value === 'geo')}>
                   <option value="all">All pages</option>
-                  <option value="geo">By geo group</option>
+                  <option value="geo">By geo</option>
                 </select>
               </div>
             ` : null}
