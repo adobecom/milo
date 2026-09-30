@@ -435,12 +435,6 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   color: var(--mep-emphasis);
 }
 
-.mep-drawer .mep-manifest-label {
-  color: var(--mep-white-60);
-  font: normal 400 12px / 16px "Adobe Clean", sans-serif;
-  text-transform: uppercase;
-}
-
 .mep-drawer .mep-manifest-summary {
   display: flex;
   flex-direction: column;

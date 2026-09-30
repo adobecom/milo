@@ -255,7 +255,6 @@ function buildManifestCard(manifest) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('div', { class: 'mep-manifest-label' }, 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
