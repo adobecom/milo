@@ -80,6 +80,8 @@
     gap: var(--s2a-spacing-xs);
     position: relative;
 
+    --merch-color-inline-price-strikethrough: var(--pm-content-subtle);
+
     /* Badge is the inverse of the card surface: dark on a light card, light on a
        dark card. Its background follows the card's own content color (--pm-content)
        and the text takes the opposite (--pm-badge-color). These are set inline on
