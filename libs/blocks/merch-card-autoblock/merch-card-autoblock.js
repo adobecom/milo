@@ -1,4 +1,4 @@
-import { createTag, getConfig, raceForegroundTimeout } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
@@ -11,6 +11,7 @@ import {
   COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
+  raceForegroundTimeout,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;

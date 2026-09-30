@@ -1,5 +1,6 @@
 /* eslint-disable import/no-relative-packages */
-import { createTag, getConfig, setForegroundTimeout, clearForegroundTimeout } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { setForegroundTimeout, clearForegroundTimeout } from './merch.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
@@ -21,8 +22,21 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
-// Pending checkout-load timer (initial load or retry), cleared when the modal closes.
-let loadTimeoutId;
+// Pending checkout-load timer per iframe (initial load or retry), cleared on load or close.
+const loadTimeouts = new WeakMap();
+
+const clearLoadTimeout = (iframe) => {
+  if (!iframe) return;
+  clearForegroundTimeout(loadTimeouts.get(iframe));
+  loadTimeouts.delete(iframe);
+};
+
+// Foreground-time budget: a frozen webview must not burn the deadline while suspended
+// and show the checkout error UI the moment it resumes.
+const startLoadTimeout = (iframe, handleTimeoutError) => {
+  clearLoadTimeout(iframe);
+  loadTimeouts.set(iframe, setForegroundTimeout(handleTimeoutError, 15000));
+};
 
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
@@ -33,10 +47,7 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   iframe.src = iframe.src;
   iframe.classList.add('loading');
   theme.style.display = 'block';
-  // Foreground-time budget: a frozen webview must not burn the deadline while suspended
-  // and show the checkout error UI the moment it resumes.
-  clearForegroundTimeout(loadTimeoutId);
-  loadTimeoutId = setForegroundTimeout(handleTimeoutError, 15000);
+  startLoadTimeout(iframe, handleTimeoutError);
 };
 
 export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
@@ -87,6 +98,7 @@ export const handle3in1IFrameEvents = ({ data: msgData, origin }) => {
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
       iframe?.setAttribute('data-pageloaded', 'true');
+      clearLoadTimeout(iframe);
       iframe?.classList.remove('loading');
       threeInOne.querySelector('sp-theme')?.remove();
       if (closeBtn) {
@@ -169,17 +181,13 @@ export default async function openThreeInOneModal(el) {
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
   const content = createContent(iframeUrl);
-  clearForegroundTimeout(loadTimeoutId);
-  loadTimeoutId = setForegroundTimeout(handleTimeoutError, 15000);
-  const clearTimeoutOnClose = () => {
-    clearForegroundTimeout(loadTimeoutId);
-    window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
-  };
-  window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
+  const iframe = content.querySelector('iframe');
+  startLoadTimeout(iframe, handleTimeoutError);
   return getModal(null, {
     id,
     content,
     closeEvent: 'closeModal',
+    closeCallback: () => clearLoadTimeout(iframe),
     class: 'three-in-one',
     title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
   });

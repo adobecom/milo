@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled, raceForegroundTimeout,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
@@ -1808,6 +1808,72 @@ function withTimeout(promise) {
     promise,
     new Promise((resolve) => { setTimeout(() => resolve('timeout'), FIELD_TIMEOUT); }),
   ]);
+}
+
+const foregroundTimers = new Map();
+let foregroundTimerId = 0;
+
+// Single shared listener for all pending foreground timers, attached only while any are pending.
+function onForegroundVisibilityChange() {
+  const hidden = document.visibilityState === 'hidden';
+  foregroundTimers.forEach((timer) => (hidden ? timer.pause() : timer.resume()));
+}
+
+export function clearForegroundTimeout(id) {
+  const timer = foregroundTimers.get(id);
+  if (!timer) return;
+  timer.pause();
+  foregroundTimers.delete(id);
+  if (!foregroundTimers.size) {
+    document.removeEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
+}
+
+export function setForegroundTimeout(callback, ms) {
+  foregroundTimerId += 1;
+  const id = foregroundTimerId;
+  let remaining = ms;
+  let startedAt;
+  let handle = null;
+  const fire = () => {
+    handle = null;
+    clearForegroundTimeout(id);
+    callback();
+  };
+  const timer = {
+    pause() {
+      if (handle === null) return;
+      clearTimeout(handle);
+      handle = null;
+      remaining -= performance.now() - startedAt;
+    },
+    resume() {
+      if (handle !== null) return;
+      startedAt = performance.now();
+      handle = setTimeout(fire, Math.max(remaining, 0));
+    },
+  };
+  if (!foregroundTimers.size) {
+    document.addEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
+  foregroundTimers.set(id, timer);
+  if (document.visibilityState !== 'hidden') timer.resume();
+  return id;
+}
+
+/**
+ * Races `promise` against a foreground-time budget, resolving `timeoutValue` if the budget
+ * elapses first. The timer and its listener are always released once the race settles, so
+ * nothing stays armed for the rest of the budget. Only the timeout branch resolves: if
+ * `promise` rejects first, the returned promise rejects too, so callers must keep a `.catch`.
+ */
+export function raceForegroundTimeout(promise, ms, timeoutValue = 'timeout') {
+  let id;
+  const timeoutPromise = new Promise((resolve) => {
+    id = setForegroundTimeout(() => resolve(timeoutValue), ms);
+  });
+  return Promise.race([promise, timeoutPromise])
+    .finally(() => clearForegroundTimeout(id));
 }
 
 // Foreground-time budget: a frozen webview must not burn the deadline while suspended

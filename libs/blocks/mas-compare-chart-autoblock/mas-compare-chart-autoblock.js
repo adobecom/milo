@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadStyle, raceForegroundTimeout } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import {
   getOptions,
   initService,
@@ -6,6 +6,7 @@ import {
   loadMasComponent,
   MAS_MERCH_CARD,
   overrideOptions,
+  raceForegroundTimeout,
 } from '../merch/merch.js';
 
 loadMasComponent(MAS_MERCH_CARD);

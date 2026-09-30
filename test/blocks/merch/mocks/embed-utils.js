@@ -78,15 +78,6 @@ export const shouldBlockFreeTrialLinks = () => false;
 export const isAupEnabled = () => false;
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
-export const setForegroundTimeout = (callback, ms) => setTimeout(callback, ms);
-export const clearForegroundTimeout = (id) => clearTimeout(id);
-export const raceForegroundTimeout = (promise, ms, timeoutValue = 'timeout') => {
-  let timeoutId;
-  const timeoutPromise = new Promise((resolve) => {
-    timeoutId = setForegroundTimeout(() => resolve(timeoutValue), ms);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => clearForegroundTimeout(timeoutId));
-};
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;

@@ -361,7 +361,31 @@ describe('Three-in-One Modal', () => {
         const handleTimeoutErrorSpy = sinon.spy();
 
         reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
-        window.dispatchEvent(new Event('milo:modal:closed'));
+        await modal.closeCallback(modal);
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('clears the load timeout once the checkout app has loaded', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        // Earlier tests leave other .three-in-one modals behind; the handler targets the first one.
+        document.body.prepend(modal);
+        handle3in1IFrameEvents({
+          origin: 'https://commerce.adobe.com',
+          data: JSON.stringify({ app: 'ucv3', subType: MSG_SUBTYPE.AppLoaded }),
+        });
         clock.tick(15000);
         expect(handleTimeoutErrorSpy.called).to.be.false;
         modal.remove();
