@@ -114,7 +114,6 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'base-card',
   'brand-concierge',
-  'brand-concierge-global',
   'card-metadata',
   'carousel-c2',
   'comparison-table-c2',

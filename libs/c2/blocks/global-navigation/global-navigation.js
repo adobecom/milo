@@ -50,6 +50,39 @@ export function getFederalDomain(config) {
   return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
+export function decorateAcomAssistantGnav(el) {
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  if ((acomAssistantParam || getMetadata('acom-assistant')) !== 'on') return null;
+
+  const nav = el.querySelector('nav');
+  if (!nav) return null;
+
+  let bcWrapper = nav.querySelector('.feds-bc-wrapper');
+  if (!bcWrapper) {
+    bcWrapper = document.createElement('div');
+    bcWrapper.className = 'feds-bc-wrapper';
+    const nextUtility = nav.querySelector(
+      '.feds-product-entry-cta, .feds-notifications-wrapper, .feds-utilities, .feds-breadcrumbs, .trap-focus-gnav',
+    );
+    if (nextUtility) nextUtility.before(bcWrapper);
+    else nav.append(bcWrapper);
+  }
+
+  let mount = bcWrapper.querySelector('#acomAssistant-gnav-mount');
+  if (!mount) {
+    mount = document.createElement('div');
+    mount.id = 'acomAssistant-gnav-mount';
+    bcWrapper.append(mount);
+  }
+  return mount;
+}
+
+async function initAcomAssistantGnav(el) {
+  if (!decorateAcomAssistantGnav(el)) return;
+  const { ensureAcomAssistant } = await import('../brand-concierge/acom-assistant-bootstrap.js');
+  await ensureAcomAssistant();
+}
+
 async function decorateAppPrompt(el) {
   const state = getMetadata('app-prompt')?.toLowerCase();
   const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
@@ -187,6 +220,15 @@ export default async function init(el) {
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
+  }).then((gnav) => {
+    initAcomAssistantGnav(el).catch((error) => {
+      window.lana?.log?.('Failed to initialize Acom Assistant in C2 global navigation', {
+        error,
+        tags: 'global-navigation',
+        errorType: 'e',
+      });
+    });
+    return gnav;
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,

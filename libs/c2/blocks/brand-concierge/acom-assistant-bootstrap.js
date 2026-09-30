@@ -16,7 +16,7 @@ function extractCardPrompts(cards) {
   return prompts.length ? prompts : undefined;
 }
 
-async function ensureAcomAssistant(cards) {
+export async function ensureAcomAssistant(cards) {
   // appid/appver are provisioned per-surface by the Assistant team (onboarding form) --
   // read from metadata so a real value can be authored once provisioning is complete.
   const appid = getMetadata('acom-assistant-id') || BC_APP_ID_FALLBACK;
