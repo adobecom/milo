@@ -138,19 +138,8 @@
 
 .mmm-2 .mmm2-history-chart-controls {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.mmm-2 .mmm2-history-chart-year,
-.mmm-2 .mmm2-history-chart-breakdown {
-  font-family: var(--body-font-family);
-  font-size: var(--type-body-s-size);
-  color: var(--text-color);
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-300);
-  border-radius: 8px;
-  padding: var(--spacing-xxs) var(--spacing-xs);
+  align-items: flex-end;
+  gap: var(--spacing-s);
 }
 
 .mmm-2 .mmm2-history-chart-canvas {
@@ -203,6 +192,10 @@
 
 .mmm-2 .mmm2-form-field p {
   margin: 0;
+}
+
+.mmm-2 .mmm2-history-chart-controls .mmm2-form-field {
+  min-width: 140px;
 }
 
 .mmm-2 .mmm2-form-field select,

@@ -265,23 +265,27 @@ function TargetActivityChart({ selectedGeos = '', geoGroups = [] } = {}) {
         <h3 class="mmm2-history-chart-title">Pages with Target on${titleSuffix}</h3>
         <div class="mmm2-history-chart-controls">
           ${showBreakdownToggle ? html`
-            <select
-              class="mmm2-history-chart-breakdown"
-              aria-label="View"
-              value=${breakdownMode ? 'geo' : 'all'}
-              onChange=${(e) => setBreakdownMode(e.target.value === 'geo')}>
-              <option value="all">All pages</option>
-              <option value="geo">By geo group</option>
-            </select>
+            <div class="mmm2-form-field">
+              <label for="mmm2-history-chart-breakdown">View:</label>
+              <select
+                id="mmm2-history-chart-breakdown"
+                value=${breakdownMode ? 'geo' : 'all'}
+                onChange=${(e) => setBreakdownMode(e.target.value === 'geo')}>
+                <option value="all">All pages</option>
+                <option value="geo">By geo group</option>
+              </select>
+            </div>
           ` : null}
           ${years.length > 1 ? html`
-            <select
-              class="mmm2-history-chart-year"
-              aria-label="Select year"
-              value=${selectedYear ?? ''}
-              onChange=${(e) => setSelectedYear(Number(e.target.value))}>
-              ${years.slice().reverse().map((year) => html`<option value=${year}>${year}</option>`)}
-            </select>
+            <div class="mmm2-form-field">
+              <label for="mmm2-history-chart-year">Year:</label>
+              <select
+                id="mmm2-history-chart-year"
+                value=${selectedYear ?? ''}
+                onChange=${(e) => setSelectedYear(Number(e.target.value))}>
+                ${years.slice().reverse().map((year) => html`<option value=${year}>${year}</option>`)}
+              </select>
+            </div>
           ` : null}
         </div>
       </div>
