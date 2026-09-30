@@ -179,16 +179,19 @@ mas-field .icon-button {
   } */
 
   mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
-  mas-field span.placeholder-resolved[data-template='strikethrough'], 
-  mas-field span.price.price-strikethrough, mas-field span.price.price-promo-strikethrough
- {
+  mas-field span.placeholder-resolved[data-template='strikethrough'],
+  mas-field span.price.price-strikethrough,
+  mas-field span.price.price-promo-strikethrough {
     color: var(--s2a-color-content-subtle);
     text-decoration-color: var(--s2a-color-content-subtle) !important;
-}
+  }
 
-mas-field span.placeholder-resolved[data-template='strikethrough'] {
-    text-decoration-color: red !important;
-}
+  /* Prevent a second, overlapping line: the WCS wrapper already draws the
+     strikethrough, so the nested price span must not draw its own. */
+  /* mas-field span.placeholder-resolved[data-template='strikethrough'] span.price.price-strikethrough,
+  mas-field span.placeholder-resolved[data-template='priceStrikethrough'] span.price.price-strikethrough {
+    text-decoration: none;
+  } */
 
   .firefly & {
     border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
