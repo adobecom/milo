@@ -629,6 +629,7 @@ class Gnav {
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
+      this.initPinnedCtaOverflow,
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.isLocalNav());
@@ -677,6 +678,14 @@ class Gnav {
     return cta;
   };
 
+  // Clone the trailing CTA-typed nav item into a toolbar slot so it stays
+  // visible beside the hamburger at mobile/compact widths, not only in the drawer.
+  decoratePinnedCta = () => {
+    const ctaWrapper = [...this.elements.mainNav.querySelectorAll(':scope > * > .feds-cta-wrapper')].pop();
+    if (!ctaWrapper) return '';
+    return toFragment`<div class="feds-pinned-cta">${ctaWrapper.cloneNode(true)}</div>`;
+  };
+
   decorateTopNav = () => {
     const {
       searchEnabled,
@@ -696,6 +705,7 @@ class Gnav {
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
         ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${this.decoratePinnedCta()}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -953,6 +963,43 @@ class Gnav {
     // topnav mutations + font load so reload comes up compact without a resize.
     new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
     isDesktop.addEventListener('change', schedule);
+    document.fonts?.ready?.then(schedule);
+    schedule();
+  };
+
+  // Hide the pinned CTA if it (plus the brand/hamburger and trailing widgets)
+  // would collide at mobile/compact widths; it stays reachable in the drawer.
+  initPinnedCtaOverflow = () => {
+    const header = this.block;
+    const { topnav, navWrapper } = this.elements;
+    if (!(topnav instanceof HTMLElement) || !topnav.querySelector('.feds-pinned-cta')) return;
+    const PINNED_CTA_GAP = 16;
+    let rafId = null;
+
+    const measure = () => {
+      rafId = null;
+      // Drawer open already hides the pinned copy via CSS; skip re-measuring.
+      if (navWrapper?.classList.contains('feds-nav-wrapper--expanded')) return;
+      if (!this.isEffectivelyMobile()) {
+        header.classList.remove('feds-pinned-cta-overflow');
+        return;
+      }
+      // Clear our own class first so the CTA's true width is counted; leaving
+      // it collapsed to 0 would flip the fit result and cause a toggle loop.
+      header.classList.remove('feds-pinned-cta-overflow');
+      const needed = [...topnav.children].reduce(
+        (sum, el) => (el === navWrapper ? sum : sum + el.offsetWidth),
+        0,
+      ) + PINNED_CTA_GAP;
+      header.classList.toggle('feds-pinned-cta-overflow', needed > topnav.clientWidth);
+    };
+
+    const schedule = () => { if (rafId === null) rafId = requestAnimationFrame(measure); };
+
+    new ResizeObserver(schedule).observe(topnav);
+    new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
+    isDesktop.addEventListener('change', schedule);
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', schedule);
     document.fonts?.ready?.then(schedule);
     schedule();
   };

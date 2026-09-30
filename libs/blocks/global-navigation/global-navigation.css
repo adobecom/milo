@@ -112,6 +112,42 @@ header.global-navigation {
   align-items: center;
 }
 
+/* Pinned CTA — toolbar clone of the trailing nav CTA, shown next to the
+   hamburger at mobile/compact widths (mirrors the C2 nav pinned CTA). */
+.feds-pinned-cta {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
+}
+
+/* .feds-bc-wrapper already owns the auto margin that right-aligns the trailing
+   group; a second auto margin here would split the free space between both. */
+.feds-bc-wrapper + .feds-pinned-cta {
+  margin-inline-start: 12px;
+}
+
+/* Drawer open shows its own CTA copy; JS overflow class hides on collision. */
+header.global-navigation:has(.feds-nav-wrapper--expanded) .feds-pinned-cta,
+header.global-navigation.feds-pinned-cta-overflow .feds-pinned-cta {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .feds-pinned-cta .feds-cta {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+}
+
+header.global-navigation.is-compact .feds-pinned-cta .feds-cta {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
 /* Hamburger toggle */
 .feds-toggle {
   width: 60px;
@@ -659,6 +695,10 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
   }
 
   :where(header.global-navigation:not(.is-compact)) .feds-toggle {
+    display: none;
+  }
+
+  :where(header.global-navigation:not(.is-compact)) .feds-pinned-cta {
     display: none;
   }
 
