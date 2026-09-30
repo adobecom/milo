@@ -2343,8 +2343,6 @@ export function preloadLcpCodeFiles(area = document) {
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  // The OST tool force-reinitialises the service with its own attributes; an eager init racing it
-  // would win and drop them.
   const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
     && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...autoNames].some(isCommerceBlock));
