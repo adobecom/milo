@@ -1961,7 +1961,7 @@ describe('Merch Block', () => {
       let meta;
       let previousSdk;
       let previousUrl;
-      let lanaLog;
+      let merchLog;
 
       const createCta = () => {
         const cta = createTag('a', { is: 'checkout-link', href: '#', 'data-modal-id': modalId });
@@ -1982,7 +1982,13 @@ describe('Merch Block', () => {
         meta = createTag('meta', { name: 'aup-select', content: 'on' });
         document.head.append(meta);
         window.history.replaceState(null, '', `#${modalId}`);
-        lanaLog = sinon.spy(window.lana, 'log');
+        merchLog = sinon.spy();
+        Log.reset();
+        Log.use({
+          append: ({ message, level, namespace }) => {
+            if (namespace === 'mas/commerce/merch') merchLog(message, level);
+          },
+        });
       });
 
       afterEach(() => {
@@ -2003,7 +2009,7 @@ describe('Merch Block', () => {
 
         expect(await state).to.be.true;
         expect(cta.click.calledOnce).to.be.true;
-        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       it('reopens the modal once when several CTAs share the hash', async () => {
@@ -2065,7 +2071,7 @@ describe('Merch Block', () => {
           expect(await state).to.be.false;
           expect(cta.click.called).to.be.false;
           expect(modalState.isOpen).to.be.false;
-          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
         } finally {
           action.aupHandler({ type: 'close', element: otherCta });
           setSdkReady();
@@ -2185,7 +2191,7 @@ describe('Merch Block', () => {
 
         expect(cta.click.calledOnce).to.be.true;
         expect(await state).to.be.true;
-        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       it('reopens the modal immediately when AUP Select is off', async () => {
@@ -2196,7 +2202,7 @@ describe('Merch Block', () => {
 
         expect(cta.click.calledOnce).to.be.true;
         expect(await state).to.be.true;
-        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       ['canceled', 'hash changed', 'another modal open'].forEach((reason) => {
@@ -2213,7 +2219,7 @@ describe('Merch Block', () => {
             await state;
 
             expect(cta.click.called).to.be.false;
-            expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+            expect(merchLog.calledWith(timeoutMessage)).to.be.false;
           } finally {
             clock.restore();
           }
@@ -2230,7 +2236,7 @@ describe('Merch Block', () => {
         setSdkReady();
         expect(await state).to.be.true;
         expect(cta.click.calledOnce).to.be.true;
-        expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
       });
 
       it('does not log a timeout if the SDK is available at the deadline without a ready event', async () => {
@@ -2244,7 +2250,35 @@ describe('Merch Block', () => {
 
           expect(await state).to.be.true;
           expect(cta.click.calledOnce).to.be.true;
-          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('logs the 10-second legacy fallback once per page through the merch logger', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+
+          await clock.tickAsync(9999);
+          expect(cta.click.called).to.be.false;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(merchLog.withArgs(timeoutMessage).calledOnceWithExactly(timeoutMessage, 'info')).to.be.true;
+
+          await updateModalState({ closedByUser: true });
+          const ctas = [createCta(), createCta()];
+          const states = ctas.map((nextCta) => updateModalState({ cta: nextCta }));
+          await clock.tickAsync(10000);
+          await Promise.all(states);
+
+          expect(ctas.filter((nextCta) => nextCta.click.called)).to.have.lengthOf(1);
+          expect(merchLog.withArgs(timeoutMessage).calledOnce).to.be.true;
         } finally {
           clock.restore();
         }
@@ -2263,41 +2297,6 @@ describe('Merch Block', () => {
           expect(cta.click.calledOnce).to.be.true;
         } finally {
           window.lana = previousLana;
-          clock.restore();
-        }
-      });
-
-      it('logs the 10-second legacy fallback once per page with sampled info options', async () => {
-        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-        try {
-          const cta = createCta();
-          const state = updateModalState({ cta });
-
-          await clock.tickAsync(9999);
-          expect(cta.click.called).to.be.false;
-          expect(lanaLog.calledWith(timeoutMessage)).to.be.false;
-          await clock.tickAsync(1);
-
-          expect(await state).to.be.true;
-          expect(cta.click.calledOnce).to.be.true;
-          expect(lanaLog.calledOnceWithExactly(timeoutMessage, {
-            clientId: 'merch-at-scale',
-            errorType: 'i',
-            sampleRate: 1,
-            implicitSampleRate: 1,
-            tags: 'merch,aup-sdk',
-            severity: 'info',
-          })).to.be.true;
-
-          await updateModalState({ closedByUser: true });
-          const ctas = [createCta(), createCta()];
-          const states = ctas.map((nextCta) => updateModalState({ cta: nextCta }));
-          await clock.tickAsync(10000);
-          await Promise.all(states);
-
-          expect(ctas.filter((nextCta) => nextCta.click.called)).to.have.lengthOf(1);
-          expect(lanaLog.calledOnce).to.be.true;
-        } finally {
           clock.restore();
         }
       });

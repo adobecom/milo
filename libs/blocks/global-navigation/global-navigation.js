@@ -1279,6 +1279,7 @@ class Gnav {
             await requestClose();
             return;
           }
+          dialog.classList.add('hide-close-button');
           if (labelledBy) {
             dialog.setAttribute('aria-labelledby', labelledBy);
             dialog.removeAttribute('aria-label');

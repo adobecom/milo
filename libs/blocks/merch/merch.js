@@ -969,19 +969,12 @@ async function openModalFromHash(cta, hash) {
     });
   }
   if (signal.aborted || window.location.hash !== hash || modalState.isOpen) return false;
-  const logTimeout = timedOut && !isAupSdkReady() && !aupSdkTimeoutLogged && window.lana?.log;
+  const logTimeout = timedOut && !isAupSdkReady() && !aupSdkTimeoutLogged && log;
   cta.click();
   modalState.isOpen = true;
   if (logTimeout) {
     aupSdkTimeoutLogged = true;
-    window.lana.log('AUP SDK readiness timed out after 10000ms; falling back to legacy checkout', {
-      clientId: 'merch-at-scale',
-      errorType: 'i',
-      sampleRate: 1,
-      implicitSampleRate: 1,
-      tags: 'merch,aup-sdk',
-      severity: 'info',
-    });
+    log.info('AUP SDK readiness timed out after 10000ms; falling back to legacy checkout');
   }
   return true;
 }
