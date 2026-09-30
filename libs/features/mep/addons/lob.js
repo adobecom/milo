@@ -47,7 +47,7 @@ function addAlloyTracking(lobObject) {
   };
 
   window.alloy_all = window.alloy_all || {};
-  if (window.location.href.contains('addmethods')) {
+  if (window.location.href.includes('addmethods')) {
     console.log('lob: setting get/set methods to window.alloy_all');
     window.alloy_all.get = window.alloy_all.get || get;
     window.alloy_all.set = window.alloy_all.set || set;
