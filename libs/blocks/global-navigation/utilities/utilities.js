@@ -9,7 +9,6 @@ import {
   localizeLinkAsync,
   getFederatedContentRoot,
   getFederatedUrl,
-  stripFedContentPrefix,
   getFedsPlaceholderConfig,
   createTag,
   loadBlock,
@@ -232,14 +231,18 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
   const selector = forceFederate
     ? '[src], [srcset]'
     : `[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`;
+  const { fedContentPrefix } = getConfig();
   section?.querySelectorAll(selector)
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
-      const path = stripFedContentPrefix(getPath(source.getAttribute(type)));
+      const path = getPath(source.getAttribute(type));
       const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
       if (forceFederate || [localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) {
         const federalPrefix = path.includes('/federal/') ? '' : '/federal';
-        source.setAttribute(type, `${getFederatedContentRoot()}${federalPrefix}${path}`);
+        // getFederatedUrl drops the prefix that getFederatedContentRoot already carries.
+        source.setAttribute(type, fedContentPrefix
+          ? getFederatedUrl(`${federalPrefix}${path}`)
+          : `${getFederatedContentRoot()}${federalPrefix}${path}`);
       }
     });
 };

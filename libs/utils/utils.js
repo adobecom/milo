@@ -495,18 +495,16 @@ export const getFederatedContentRoot = () => {
   return federatedContentRoot;
 };
 
-// getFederatedContentRoot already carries fedContentPrefix, so drop it from federal paths.
-export const stripFedContentPrefix = (pathname = '') => {
-  const { fedContentPrefix } = getConfig();
-  return fedContentPrefix ? pathname.replace(`${fedContentPrefix}/federal/`, '/federal/') : pathname;
-};
-
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  if (url.startsWith('/')) return `${getFederatedContentRoot()}${stripFedContentPrefix(url)}`;
+  const { fedContentPrefix } = getConfig();
+  // getFederatedContentRoot already carries fedContentPrefix, so drop it from the path.
+  const dedupe = (path) => (fedContentPrefix
+    ? path.replace(`${fedContentPrefix}/federal/`, '/federal/') : path);
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${dedupe(url)}`;
   try {
     const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${stripFedContentPrefix(pathname)}${search}${hash}`;
+    return `${getFederatedContentRoot()}${dedupe(pathname)}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
