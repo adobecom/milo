@@ -2,9 +2,9 @@ import { getMetadata, loadScript, loadStyle } from '../../../utils/utils.js';
 import { loadAcomAssistant, sendAcomAssistantUserMessage, openAcomAssistantChat, setAcomAssistantIdentity } from '../../../features/acom-assistant.js';
 import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 
-// bc-bacom is the Assistant team's test appid for the BC experience while Brand Concierge's
+// bc-adobedotcom2 is the Assistant team's test appid for the BC experience while Brand Concierge's
 // own surface is still being provisioned (onboarding form, see acom-assistant.js reference).
-const BC_APP_ID_FALLBACK = 'bc-bacom';
+const BC_APP_ID_FALLBACK = 'bc-adobedotcom2';
 const chatLabelText = 'Ask';
 let initialized = false;
 

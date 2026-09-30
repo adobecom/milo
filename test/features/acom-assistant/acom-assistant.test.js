@@ -209,8 +209,8 @@ describe('AcomAssistant shared client per-click identity via getContextCallback'
     context = capturedGetContext();
     expect(context.appid === 'jarvis-x' && context.appver === '9.9').to.be.true;
 
-    freshSetIdentity({ appid: 'bc-bacom', appver: '1.0' });
+    freshSetIdentity({ appid: 'bc-adobedotcom2', appver: '1.0' });
     context = capturedGetContext();
-    expect(context.appid === 'bc-bacom' && context.appver === '1.0').to.be.true;
+    expect(context.appid === 'bc-adobedotcom2' && context.appver === '1.0').to.be.true;
   });
 });
