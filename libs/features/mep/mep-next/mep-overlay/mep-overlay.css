@@ -435,6 +435,99 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   color: var(--mep-emphasis);
 }
 
+.mep-drawer .mep-manifest-label {
+  color: var(--mep-white-60);
+  font: normal 400 12px / 16px "Adobe Clean", sans-serif;
+  text-transform: uppercase;
+}
+
+.mep-drawer .mep-manifest-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: normal 400 14px / 20px "Adobe Clean", sans-serif;
+  letter-spacing: 0;
+}
+
+.mep-drawer .mep-manifest-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mep-drawer .mep-body .mep-manifest-status-row a {
+  margin-left: auto;
+  text-decoration: underline;
+}
+
+.mep-drawer .mep-manifest-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mep-drawer .mep-manifest-state::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--mep-white-12);
+}
+
+.mep-drawer .mep-manifest-state.active::before {
+  background: var(--mep-emphasis);
+}
+
+.mep-drawer .mep-manifest-state.complete::before {
+  background: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-manifest-timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  color: var(--mep-white-60);
+}
+
+.mep-drawer .mep-manifest-timeline::before,
+.mep-drawer .mep-manifest-timeline::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  border-radius: 4px;
+  width: 100%;
+  background: var(--mep-white-38);
+}
+
+.mep-drawer .mep-manifest-timeline::after {
+  width: var(--mep-manifest-progress, 0%);
+  background: var(--mep-white-60);
+}
+
+.mep-drawer .mep-manifest-timeline.active::after {
+  background: var(--mep-emphasis);
+}
+
+.mep-drawer .mep-manifest-timeline.complete::after {
+  background: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-manifest-endpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-wrap: anywhere;
+}
+
+.mep-drawer .mep-manifest-endpoint:last-child {
+  text-align: right;
+}
+
 
 .mep-drawer .mep-body input:not([type="radio"]),
 .mep-drawer .mep-body select {

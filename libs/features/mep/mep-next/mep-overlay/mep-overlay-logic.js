@@ -265,6 +265,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     eventStart: eventStart ? formatDate(eventStart) : null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
     eventEnd: eventEnd ? formatDate(eventEnd) : null,
+    eventEndIso: eventEnd ? formatDate(eventEnd, 'iso') : null,
     lastSeen: manifest.lastSeen ? formatDate(new Date(manifest.lastSeen)) : null,
     pageId,
     options,

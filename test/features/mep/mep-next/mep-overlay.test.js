@@ -291,6 +291,7 @@ describe('init: DOM structure — stage env first call', () => {
 describe('init: buildManifestCard — all branches via experiment config', () => {
   let bodyEl;
   let headerEl;
+  let nowStub;
 
   const configWithExps = {
     ...BASE_CONFIG,
@@ -323,6 +324,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
   };
 
   before(async () => {
+    nowStub = sinon.stub(Date, 'now').returns(Date.parse('2025-06-01T00:00:00Z'));
     setConfig(configWithExps);
     bodyEl = makeBody();
     headerEl = makeHeader();
@@ -332,6 +334,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
   });
 
   after(() => {
+    nowStub.restore();
     cleanup(bodyEl, headerEl);
   });
 
@@ -347,19 +350,36 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     expect(bodyEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
   });
 
-  it('On/Off event rows appear when both eventStart and eventEnd present', () => {
+  it('renders start/end dates and times inside the expandable body', () => {
     const card = bodyEl.querySelector('.mep-manifest-card');
-    expect(card.textContent).to.include('On');
-    expect(card.textContent).to.include('Off');
+    const summary = card.querySelector('.mep-manifest-summary');
+    expect(summary.parentElement).to.equal(card.querySelector('.mep-card-body'));
+    expect(card.classList.contains('expanded')).to.be.false;
+    expect(summary.querySelectorAll('.mep-manifest-date').length).to.equal(2);
+    expect(summary.querySelectorAll('.mep-manifest-time').length).to.equal(2);
+    expect(summary.querySelector('.mep-manifest-date').textContent).to.not.be.empty;
+    expect(summary.querySelector('.mep-manifest-time').textContent).to.not.be.empty;
+    const labels = [...card.querySelectorAll('.mep-card-body h2')].map((heading) => heading.textContent);
+    expect(labels).to.not.include('On');
+    expect(labels).to.not.include('Off');
+    expect(labels).to.not.include('Active?');
   });
 
-  it('Instant link is present in the On row', () => {
-    expect(bodyEl.querySelector('.mep-manifest-card a[href*="instant"]')).to.exist;
+  it('places Instant beside Active and preserves the start date URL', () => {
+    const row = bodyEl.querySelector('.mep-manifest-status-row');
+    expect(row.querySelector('.mep-manifest-state.active').textContent).to.equal('Active');
+    const link = row.querySelector('a');
+    expect(new URL(link.href).searchParams.get('instant')).to.equal('2025-01-01T00:00:00.000Z');
+    expect(link.target).to.equal('_blank');
+    expect(link.rel).to.equal('noopener');
   });
 
-  it('disabled experiment shows "inactive" in Active? row', () => {
+  it('renders Inactive without an active dot or timeline for an unscheduled disabled manifest', () => {
     const cards = bodyEl.querySelectorAll('.mep-manifest-card');
-    expect(cards[1].textContent).to.include('inactive');
+    const state = cards[1].querySelector('.mep-manifest-state');
+    expect(state.textContent).to.equal('Inactive');
+    expect(state.classList.contains('active')).to.be.false;
+    expect(cards[1].querySelector('.mep-manifest-timeline')).to.be.null;
   });
 
   it('selectedVariantName not in variantNames → "default (control)" experience', () => {
@@ -407,6 +427,76 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
   it('manifest index starts at 1', () => {
     const card = bodyEl.querySelector('.mep-manifest-card');
     expect(card.textContent).to.include('1.');
+  });
+});
+
+describe('init: manifest schedule progress and states', () => {
+  let bodyEl;
+  let headerEl;
+  let nowStub;
+  let originalUrl;
+
+  beforeEach(() => {
+    originalUrl = window.location.href;
+    nowStub = sinon.stub(Date, 'now');
+  });
+
+  afterEach(() => {
+    nowStub.restore();
+    window.history.replaceState({}, '', originalUrl);
+    cleanup(bodyEl, headerEl);
+    setConfig(BASE_CONFIG);
+  });
+
+  const cases = [
+    { name: 'before start', now: '2025-12-31', state: 'inactive', progress: 0 },
+    { name: 'at start', now: '2026-01-01', state: 'active', progress: 0 },
+    { name: 'halfway through', now: '2026-01-02', state: 'active', progress: 50 },
+    { name: 'at end', now: '2026-01-03', state: 'complete', progress: 100, disabled: true },
+    { name: 'after end', now: '2026-01-04', state: 'complete', progress: 100 },
+    { name: 'disabled during range', now: '2026-01-02', state: 'inactive', progress: 50, disabled: true },
+    {
+      name: 'reversed range', now: '2026-01-02', state: 'inactive', progress: 0, disabled: true, end: '2025-12-31T00:00:00Z',
+    },
+    {
+      name: 'zero-length range', now: '2026-01-02', state: 'inactive', progress: 0, disabled: true, end: '2026-01-01T00:00:00Z',
+    },
+    { name: 'instant preview', now: '2026-01-04', instant: '2026-01-02T00:00:00Z', state: 'active', progress: 50 },
+    { name: 'invalid instant fallback', now: '2026-01-02', instant: 'invalid', state: 'active', progress: 50 },
+  ];
+
+  cases.forEach((testCase) => {
+    it(`renders ${testCase.name} as ${testCase.state} with ${testCase.progress}% progress`, async () => {
+      nowStub.returns(Date.parse(`${testCase.now}T00:00:00Z`));
+      const url = new URL(originalUrl);
+      url.searchParams.delete('instant');
+      if (testCase.instant) url.searchParams.set('instant', testCase.instant);
+      window.history.replaceState({}, '', url);
+      setConfig({
+        ...BASE_CONFIG,
+        mep: {
+          ...BASE_CONFIG.mep,
+          experiments: [{
+            manifest: '/frags/mep/schedule.json',
+            variantNames: [],
+            disabled: testCase.disabled ?? false,
+            event: { start: '2026-01-01T00:00:00Z', end: testCase.end ?? '2026-01-03T00:00:00Z' },
+          }],
+        },
+      });
+      bodyEl = makeBody();
+      headerEl = makeHeader();
+      await init();
+      await wait(150);
+      const card = bodyEl.querySelector('.mep-manifest-card');
+      const state = card.querySelector('.mep-manifest-state');
+      const timeline = card.querySelector('.mep-manifest-timeline');
+      expect(state.classList.contains(testCase.state)).to.be.true;
+      expect(state.textContent.toLowerCase()).to.equal(testCase.state);
+      expect(timeline.classList.contains(testCase.state)).to.be.true;
+      expect(timeline.style.getPropertyValue('--mep-manifest-progress')).to.equal(`${testCase.progress}%`);
+      expect(card.querySelector('.mep-manifest-summary').parentElement).to.equal(card.querySelector('.mep-card-body'));
+    });
   });
 });
 
