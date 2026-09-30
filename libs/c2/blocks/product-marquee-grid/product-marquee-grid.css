@@ -107,7 +107,8 @@
       color: var(--pm-content-subtle);
     }
 
-    .mas-price {
+    .mas-price,
+     .mas-card-title {
       color: var(--pm-content);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
     }

@@ -7,6 +7,7 @@ const MAS_FIELD_CLASSES = {
   shortDescription: ['mas-short-description'],
   subtitle: ['mas-subtitle'],
   badge: ['mas-badge'],
+  cardTitle: ['mas-card-title', 'heading-5'],
 };
 
 function decorateMasField(cardContent) {
