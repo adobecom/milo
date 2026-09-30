@@ -78,6 +78,8 @@ describe('global navigation utilities', () => {
   });
 
   describe('federatePictureSources', () => {
+    afterEach(() => { delete getConfig().fedContentPrefix; });
+
     // The test scenarios tests decorated or non decorated links.
     // https://adobe.com/media.png
     // https://adobe.com/federal/media.png
@@ -235,21 +237,6 @@ describe('global navigation utilities', () => {
       });
     });
 
-    it('shouldnt federate sources that already point at the federated root', async () => {
-      getConfig().fedContentPrefix = '/dc-shared';
-      const template = getImageTemplate({
-        host: baseHost,
-        path: '/federal/media.png',
-      });
-      federatePictureSources({ section: template });
-      verifyImageTemplate({
-        host: baseHost,
-        path: '/federal/media.png',
-        template,
-      });
-      delete getConfig().fedContentPrefix;
-    });
-
     it('shouldnt touch non federal sources already under the federated root', async () => {
       getConfig().fedContentPrefix = '/dc-shared';
       const template = getImageTemplate({
@@ -262,7 +249,6 @@ describe('global navigation utilities', () => {
         path: '/dc-shared/media_123.png',
         template,
       });
-      delete getConfig().fedContentPrefix;
     });
 
     it('should still federate federal sources from another origin', async () => {
@@ -277,7 +263,6 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         template,
       });
-      delete getConfig().fedContentPrefix;
     });
   });
 

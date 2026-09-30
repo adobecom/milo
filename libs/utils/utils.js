@@ -497,11 +497,9 @@ export const getFederatedContentRoot = () => {
 
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  const { fedContentPrefix, locale } = getConfig();
-  // getFederatedContentRoot already carries fedContentPrefix, so never federate twice.
-  if (fedContentPrefix && url.startsWith(`${getFederatedContentRoot()}/`)) return url;
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
+    const { fedContentPrefix, locale } = getConfig();
     const { pathname, search, hash } = new URL(url);
     const hasPrefix = fedContentPrefix && (pathname.startsWith(fedContentPrefix)
       || pathname.startsWith(`${locale.prefix}${fedContentPrefix}`));

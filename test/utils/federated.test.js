@@ -17,6 +17,8 @@ describe('Federated navigation utilities', () => {
   });
 
   describe('getFederatedUrl', () => {
+    afterEach(() => { delete getConfig().fedContentPrefix; });
+
     it('should return the url if its not federated', () => {
       expect(getFederatedUrl('https://adobe.com/foo-fragment.html')).to.equal('https://adobe.com/foo-fragment.html');
 
@@ -45,7 +47,6 @@ describe('Federated navigation utilities', () => {
       expect(getFederatedUrl(`${baseHost}/federal/foo-fragment.html`)).to.equal(
         `${baseHost}/federal/foo-fragment.html`,
       );
-      delete getConfig().fedContentPrefix;
     });
 
     it('shouldnt double the fedContentPrefix on an absolute link', () => {
@@ -53,7 +54,6 @@ describe('Federated navigation utilities', () => {
       expect(getFederatedUrl('https://adobe.com/dc-shared/federal/foo-fragment.html')).to.equal(
         `${baseHost}/federal/foo-fragment.html`,
       );
-      delete getConfig().fedContentPrefix;
     });
 
     it('should return the federated url for a relative link including hashes and search params', () => {
