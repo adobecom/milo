@@ -62,7 +62,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--rcc-top-gap) var(--s2a-spacing-lg) 0;
+    padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) 0;
     box-sizing: border-box;
   }
 
