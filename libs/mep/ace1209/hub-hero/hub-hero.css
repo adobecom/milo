@@ -10,6 +10,7 @@
   --hub-hero-carousel-container-height: min(60vh, 548px);
   --grid-img-width: min(20vw, 302px);
   --grid-img-width-min: 164px;
+  --grid-img-clip-ratio: 1.25;
   --slide-width: 292px;
   --hub-hero-carousel-item-max-width: min(var(--slide-width), calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
   --hub-hero-carousel-item-min-width: min(256px, var(--slide-max-width), calc(var(--hub-hero-carousel-container-width) * 0.5 / (var(--slides) - 1) - var(--end-gap)));
@@ -19,7 +20,8 @@
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
   --slide-from-card-slide-range: contain 0% contain 30%;
-  --elastic-mobile-first-slide-offset: -290px;
+  /* --elastic-mobile-first-slide-offset is set in js dynamicaly */
+  --elastic-mobile-first-slide-offset: 0px;
   --start-gap: 6rem;
   --end-gap: .5rem;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
@@ -406,7 +408,6 @@
 
 .hub-hero.slides-3 {
   --slides: 3;
-  --elastic-mobile-first-slide-offset: 0px;
 
   .hub-hero-carousel-item-media {
     position: relative;
@@ -658,18 +659,6 @@
     text-align: center;
   }
 
-  .hub-hero:not(.slides-3) .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
-    visibility: hidden;
-    animation: hubHeroGridCarouselSlideHover ease both;
-    animation-timeline: --hub-hero;
-    animation-range: entry 100% exit 100%;
-  }
-
-  .hub-hero:not(.slides-3) .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) img {
-    width: 100%;
-    object-fit: none;
-  }
-
   .hub-hero-image-grid-container-col:nth-child(1) {
     transform: translate(0, var(--grid-col-one-offset));
     gap: var(--start-gap);
@@ -751,6 +740,7 @@
     --expand-progress: 0;
     --expand-start: 0.18;
     --expand-end: 0.42;
+    --expand-fade-range: 0.05;
 
     margin-top: var(--elastic-mobile-first-slide-offset);
     height: 100%;
@@ -801,14 +791,14 @@
     top: 0;
     animation: none;
     transform: translateY(calc(var(--slide-header-h) * -1));
-    opacity: max(0, min(1, (var(--expand-progress) - var(--expand-end)) / 0.05));
+    opacity: max(0, min(1, (var(--expand-progress) - var(--expand-end)) / var(--expand-fade-range)));
   }
 
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-footer {
     bottom: 0;
     animation: none;
     transform: translateY(var(--slide-footer-h));
-    opacity: max(0, min(1, (var(--expand-progress) - var(--expand-end)) / 0.05));
+    opacity: max(0, min(1, (var(--expand-progress) - var(--expand-end)) / var(--expand-fade-range)));
   }
 
   .hub-hero-carousel-item:nth-child(2) {
@@ -883,7 +873,7 @@
     --reveal-shrink: calc(1 - max(0, min(1, (var(--expand-progress) - var(--expand-start)) / (var(--expand-end) - var(--expand-start)))));
 
     clip-path: inset(
-      calc((50% - (var(--grid-img-width-min) * 1.25 / 2)) * var(--reveal-shrink))
+      calc((50% - (var(--grid-img-width-min) * var(--grid-img-clip-ratio) / 2)) * var(--reveal-shrink))
       calc((50% - (var(--grid-img-width-min) / 2)) * var(--reveal-shrink))
       round var(--s2a-border-radius-sm)
     );
@@ -2108,12 +2098,19 @@
       z-index: 1;
     }
 
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
-    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+    .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-header,
+    .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-footer {
       top: unset;
       bottom: unset;
       opacity: 1;
       animation: none;
+    }
+
+    .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-container {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      transform: none;
     }
 
     .hub-hero-carousel {

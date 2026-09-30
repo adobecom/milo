@@ -172,7 +172,8 @@ const initHeaderPin = (hubHero, header) => {
   let ticking = false;
   const checkPin = () => {
     const heroRect = hubHero.getBoundingClientRect();
-    header.classList.toggle('pinned', heroRect.top <= 0 && heroRect.bottom > 0);
+    const carouselAssembled = getHubHeroProgress(hubHero) >= 0.5;
+    header.classList.toggle('pinned', !carouselAssembled && heroRect.top <= 0 && heroRect.bottom > 0);
     ticking = false;
   };
   window.addEventListener('scroll', () => {
@@ -192,21 +193,28 @@ const initHeaderPin = (hubHero, header) => {
 };
 
 const initCarouselContainerExpand = (hubHero) => {
-  if (!window.matchMedia('(width < 768px)').matches) return;
   const container = hubHero.querySelector('.hub-hero-carousel-container');
   if (!container) return;
 
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    container.style.setProperty('--expand-progress', 1);
+    return;
+  }
+
+  const mobileQuery = window.matchMedia('(width < 768px)');
   const controller = new AbortController();
   let ticking = false;
   const update = () => {
-    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
     ticking = false;
+    if (!mobileQuery.matches) return;
+    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
   };
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(update);
   }, { signal: controller.signal, passive: true });
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(update), { signal: controller.signal });
   requestAnimationFrame(update);
 
   new MutationObserver((_, observer) => {
@@ -463,7 +471,9 @@ const setElasticFirstSlideOffset = (hubHero) => {
   if (!window.matchMedia('(width < 768px)').matches) return;
   const media = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-media');
   if (!media) return;
-  const gridImgWidthMin = parseFloat(getComputedStyle(media).getPropertyValue('--grid-img-width-min'));
+  const mediaStyle = getComputedStyle(media);
+  const gridImgWidthMin = parseFloat(mediaStyle.getPropertyValue('--grid-img-width-min'));
+  const gridImgClipRatio = parseFloat(mediaStyle.getPropertyValue('--grid-img-clip-ratio')) || 1;
   const mediaHeight = media.getBoundingClientRect().height;
   if (!gridImgWidthMin || !mediaHeight) return;
   const probe = createTag('div', { style: 'position: absolute; visibility: hidden; height: 0; width: var(--start-gap);' });
@@ -473,7 +483,7 @@ const setElasticFirstSlideOffset = (hubHero) => {
   const gridColThreeBottomGap = parseFloat(
     getComputedStyle(hubHero).getPropertyValue('--grid-col-three-bottom-gap'),
   ) || 0;
-  const gapPx = (mediaHeight / 2) - ((gridImgWidthMin * 1.25) / 2)
+  const gapPx = (mediaHeight / 2) - ((gridImgWidthMin * gridImgClipRatio) / 2)
     - startGap + gridColThreeBottomGap;
   hubHero.style.setProperty('--elastic-mobile-first-slide-offset', `${-gapPx}px`);
 };
@@ -579,11 +589,24 @@ const handleSlidesThreeVideos = (hubHero) => {
   });
 };
 
-const handleCarouselItemsOffsets = ({ grid, elasticCarousel, el }) => {
-  requestAnimationFrame(() => {
+const initElasticFirstSlideOffset = (hubHero, grid, elasticCarousel) => {
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+
+  const recompute = () => {
     setCarouselSlideOffsets(grid, elasticCarousel);
-    setElasticFirstSlideOffset(el);
-  });
+    if (mobileQuery.matches) setElasticFirstSlideOffset(hubHero);
+  };
+
+  requestAnimationFrame(recompute);
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(recompute), { signal: controller.signal });
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 };
 
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
@@ -613,7 +636,9 @@ export default async function init(el) {
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
-  if (isThreeSlides) handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+
+  initElasticFirstSlideOffset(el, grid, elasticCarousel);
+
   initNavHeight(el);
   initHeaderPin(el, heroHeader);
   initCarouselContainerExpand(el);
