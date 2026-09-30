@@ -186,6 +186,10 @@ mas-field .icon-button {
     text-decoration-color: var(--s2a-color-content-subtle) !important;
 }
 
+mas-field span.placeholder-resolved[data-template='strikethrough'] {
+    text-decoration-color: red !important;
+}
+
   .firefly & {
     border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
