@@ -338,6 +338,7 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   box-shadow: var(--mep-elevation-4);
   color: var(--mep-white-100);
   font: var(--mep-body-font);
+  text-transform: none;
   letter-spacing: var(--mep-body-letter-spacing);
   white-space: nowrap;
 }
