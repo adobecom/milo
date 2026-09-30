@@ -125,7 +125,10 @@ export async function loadDecorateMenu() {
 const [setEventVersion, getEventVersion] = (() => {
   let eventVersion = false;
   return [
-    (url) => { eventVersion = url.includes('#event'); },
+    (url) => {
+      const { isEvent } = getConfig();
+      eventVersion = typeof isEvent === 'boolean' ? isEvent : url.includes('#event');
+    },
     () => eventVersion,
   ];
 })();
@@ -701,11 +704,12 @@ class Footer {
     if (!link) return;
 
     let url;
+    const rawHref = link.getAttribute('href') || '';
 
     try {
-      url = new URL(link.href);
+      url = new URL(rawHref, locale.contentRoot || window.location.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for Footer modal link; href : ${link.href}`, tags: 'global-footer', errorType: 'e' });
+      lanaLog({ message: `Could not create URL for Footer modal link; href : ${rawHref}`, tags: 'global-footer', errorType: 'e' });
       return;
     }
     if (!url.hash || url.hash.includes('#_inline')) return;
@@ -716,6 +720,7 @@ class Footer {
     link.href = url.hash;
     decorateAutoBlock(link);
 
+    loadStyle(`${base}/c2/blocks/modal/modal.css`);
     const { default: initModal } = await import('../modal/modal.js');
     await initModal(link);
   };
