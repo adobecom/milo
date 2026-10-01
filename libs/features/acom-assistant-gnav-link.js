@@ -228,12 +228,16 @@ function isChatOpen() {
 async function openChat(event) {
   if (!chatInitialized) { redirectToSupport(); return; }
   if (isChatOpen()) return;
-  if (event) {
-    const sourceType = event.target.tagName?.toLowerCase();
-    const sourceText = (sourceType === 'img') ? event.target.alt?.trim() : event.target.innerText?.trim();
-    await openAcomAssistantChat({ sourceType, sourceText });
-  } else {
-    await openAcomAssistantChat({});
+  try {
+    if (event) {
+      const sourceType = event.target.tagName?.toLowerCase();
+      const sourceText = (sourceType === 'img') ? event.target.alt?.trim() : event.target.innerText?.trim();
+      await openAcomAssistantChat({ sourceType, sourceText });
+    } else {
+      await openAcomAssistantChat({});
+    }
+  } catch (error) {
+    window.lana?.log?.(`AcomAssistant: failed to open Jarvis (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
   }
 }
 
@@ -301,8 +305,12 @@ const initAcomAssistantGnavLink = async (
       appver: jarvisSecMeta?.['jarvis-surface-version'] || getMetadata('jarvis-surface-version') || config.jarvis?.version,
     });
     if (onDemand && !chatInitialized) {
-      await ensureAcomAssistant(config, getMetadata, event, onDemand, deps);
-      addEventListeners();
+      try {
+        await ensureAcomAssistant(config, getMetadata, event, onDemand, deps);
+        addEventListeners();
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to initialize Jarvis (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      }
     } else {
       openChat(event);
     }

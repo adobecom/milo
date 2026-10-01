@@ -6,7 +6,7 @@ import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 // own surface is still being provisioned (onboarding form, see acom-assistant.js reference).
 const BC_APP_ID_FALLBACK = 'bc-adobedotcom2';
 const chatLabelText = 'Ask';
-let initialized = false;
+let initializationPromise;
 
 function extractCardPrompts(cards) {
   if (!cards) return undefined;
@@ -30,15 +30,17 @@ export async function ensureAcomAssistant(cards) {
   // for a click in between, and Brand Concierge's own clicks need to report theirs back.
   setAcomAssistantIdentity({ appid, appver });
 
-  if (initialized) return;
-  initialized = true;
-  await loadAcomAssistant({
+  initializationPromise ||= loadAcomAssistant({
     appid,
     appver,
     componentid: 'brand-concierge',
     context: { prompts: extractCardPrompts(cards) },
     callbacks: { analyticsCallback: acomAssistantAnalyticsAdapter },
-  }, { loadScript, loadStyle });
+  }, { loadScript, loadStyle }).catch((error) => {
+    initializationPromise = null;
+    throw error;
+  });
+  return initializationPromise;
 }
 
 /** Replaces bc-bootstrap.js's bcBootstrap/openModal/openSideModal for the acom-assistant

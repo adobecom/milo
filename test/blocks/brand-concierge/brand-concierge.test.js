@@ -636,9 +636,17 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   let sendUserMessageSpy;
   let openMessagingWindowSpy;
   let capturedInitConfig;
+  let originalClient;
+  let clientScript;
 
-  beforeEach(() => {
-    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
+  before(() => {
+    originalClient = window.AdobeMessagingExperienceClient;
+    clientScript = document.createElement('script');
+    clientScript.type = 'javascript/blocked';
+    clientScript.src = 'https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    clientScript.dataset.loaded = 'true';
+    document.head.append(clientScript);
+    window.AdobeMessagingExperienceClient = {
       initialize: (cfg) => {
         capturedInitConfig = cfg;
         cfg.callbacks?.onReadyCallback?.();
@@ -647,6 +655,14 @@ describe('Brand Concierge - AcomAssistant flag', () => {
       sendUserMessage: () => {},
       openMessagingWindow: () => {},
     };
+  });
+
+  after(() => {
+    clientScript.remove();
+    window.AdobeMessagingExperienceClient = originalClient;
+  });
+
+  beforeEach(() => {
     sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
     openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
   });

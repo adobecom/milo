@@ -45,7 +45,9 @@ function checkGlobal() {
 
 function routeInput(text) {
   if (useAcomAssistant) {
-    routeAcomAssistantInput(text, cardsEl);
+    routeAcomAssistantInput(text, cardsEl).catch((error) => {
+      window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+    });
     return;
   }
   if (checkGlobal()) {

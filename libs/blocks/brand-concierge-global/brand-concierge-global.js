@@ -79,7 +79,10 @@ function decorateAcomGnav(cards, topNav) {
   const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
   bcWrapper.appendChild(mount);
   acomAssistantModulePromise ||= import('../brand-concierge/acom-assistant-bootstrap.js');
-  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards));
+  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards))
+    .catch((error) => {
+      window.lana?.log?.(`AcomAssistant: failed to initialize GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+    });
 
   if (window?.milo) {
     window.milo.brandConcierge = { brandConciergeGlobal: true };
