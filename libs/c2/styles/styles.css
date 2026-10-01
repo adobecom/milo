@@ -20,6 +20,14 @@
   initial-value: 1920px;
 }
 
+/* Registered so atan2() resolves to an angle before tan(); Safari 26 otherwise
+  feeds degrees into tan() as radians and produces a huge negative scale */
+@property --grid-scale-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 45deg;
+}
+
 :root {
   /* tokens.primitives */
   --s2a-color-gray-25: #fff;
@@ -1266,10 +1274,11 @@ span.hang-opening-quote {
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
     --parallax-scale-grid-margin: var(--grid-margin-width);
-    --grid-scale-multiplier: tan(atan2(
+    --grid-scale-angle: atan2(
       min(var(--grid-max-width-fluid), 100vw),
       min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
-    ));
+    );
+    --grid-scale-multiplier: tan(var(--grid-scale-angle));
 
     animation-name: enable-grid-parallax;
     transform-origin: top center;
