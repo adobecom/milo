@@ -476,7 +476,7 @@
   }
 }
 
-@media (width > 768px) {
+@media (width >= 768px) {
   .rich-content.jump-link.hero {
     padding-block: var(--s2a-layout-sm) var(--s2a-spacing-4xl);
   }
