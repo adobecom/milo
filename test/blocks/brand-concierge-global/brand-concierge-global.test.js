@@ -7,7 +7,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge-global/brand-concierge-global.js');
-const { setCssGnavHeight } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { sideOverlayTop } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge Global', () => {
   let block;
@@ -65,10 +65,10 @@ describe('Brand Concierge Global', () => {
     expect(block.children.length).to.equal(0);
   });
 
-  it('sets the --bc-gnav-height CSS variable when the gnav is present', () => {
-    document.documentElement.style.removeProperty('--bc-gnav-height');
-    setCssGnavHeight();
-    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
+  it('sets the --bc-side-overlay-top CSS variable when the gnav is present', () => {
+    document.documentElement.style.removeProperty('--bc-side-overlay-top');
+    sideOverlayTop();
+    expect(document.documentElement.style.getPropertyValue('--bc-side-overlay-top')).to.match(/px$/);
   });
 
   it('adds the no-gnav-mobile modifier to the button section', async () => {
