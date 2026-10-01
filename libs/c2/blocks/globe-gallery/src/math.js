@@ -1,6 +1,7 @@
 // Pure stateless helpers: easings + arc-phase geometry. The runtime owns the per-frame arcCtx.
 
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
+export function easeOutQuart(t) { return 1 - (1 - t) ** 4; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
 export function easeInOutQuint(t) { return t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2; }
 export function easeOutExpo(t) { return t >= 1 ? 1 : 1 - 2 ** (-10 * t); }
