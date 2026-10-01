@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -56,6 +57,30 @@ describe('Three-in-One Modal', () => {
       expect(theme.style.display).to.equal('block');
       clock.tick(15000);
       expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+    });
+
+    it('does not fire the reload timeout while the page is hidden (MWPW-207104)', () => {
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const msgWrapper = document.querySelector('.error-wrapper');
+      const handleTimeoutErrorSpy = sinon.spy();
+      const visibility = stubVisibility();
+      try {
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+
+        // Frozen webview: the checkout error UI must not appear on resume.
+        visibility.hide();
+        clock.tick(60000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+
+        visibility.show();
+        clock.tick(14999);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        clock.tick(1);
+        expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+      } finally {
+        visibility.restore();
+      }
     });
 
     it('should create error message with retry button', async () => {
@@ -327,12 +352,55 @@ describe('Three-in-One Modal', () => {
       expect(modal.querySelector('iframe').src).to.equal('https://commerce-stg.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=ilst_direct_individual&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
     });
 
+    it('clears the retry timeout when the modal closes', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        await modal.closeCallback(modal);
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('clears the load timeout once the checkout app has loaded', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        // Earlier tests leave other .three-in-one modals behind; the handler targets the first one.
+        document.body.prepend(modal);
+        handle3in1IFrameEvents({
+          origin: 'https://commerce.adobe.com',
+          data: JSON.stringify({ app: 'ucv3', subType: MSG_SUBTYPE.AppLoaded }),
+        });
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
     });
 
-    it('cleans up its timeout and close listener when modal creation throws', async () => {
+    it('cleans up its foreground timeout when modal creation throws', async () => {
       const link = createTag('a', {
         href: 'https://commerce-stg.adobe.com/store/segmentation?ctx=if',
         'data-modal': 'twp',
@@ -345,16 +413,12 @@ describe('Three-in-One Modal', () => {
         return getAttribute(name);
       });
       const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      const addListener = sinon.spy(window, 'addEventListener');
-      const removeListener = sinon.spy(window, 'removeEventListener');
       try {
         const initialTimers = clock.countTimers();
         const rejection = await openThreeInOneModal(link).catch((caught) => caught);
-        const listener = addListener.withArgs('milo:modal:closed').firstCall.args[1];
 
         expect(rejection).to.equal(error);
         expect(clock.countTimers()).to.equal(initialTimers);
-        expect(removeListener.calledWith('milo:modal:closed', listener)).to.be.true;
       } finally {
         sinon.restore();
         clock.restore();
