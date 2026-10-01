@@ -865,8 +865,10 @@ export default function init(el) {
       // viewports created later on resize don't affect LCP, so start them right away.
       controller = startAutoplay(slides, cards, container, el, controllersByVp.size === 0);
       controllersByVp.set(activeVp, controller);
+      // Warm the remaining slides only on desktop (>= 1280px), where cards are hovered
+      // and an unloaded slide would flash white; smaller viewports load slides on demand.
       controller.heroReady.then(() => {
-        if (getActiveViewport() !== activeVp) return;
+        if (activeVp !== 'desktop' || getActiveViewport() !== activeVp) return;
         pendingPreload?.cancel();
         pendingPreload = preloadRemainingSlides(slides);
       });
