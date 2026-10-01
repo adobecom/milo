@@ -174,8 +174,16 @@ export function createContent(iframeUrl) {
   return content;
 }
 
+export function getIframeUrl(el) {
+  const href = el?.getAttribute('href');
+  if (href && !href.startsWith('#')) return el.href;
+  // MAS keeps href="#" on AUP checkout links and stores the real checkout URL in checkoutUrl.
+  const checkoutUrl = el?.checkoutUrl;
+  return checkoutUrl && !checkoutUrl.startsWith('#') ? checkoutUrl : undefined;
+}
+
 export default async function openThreeInOneModal(el) {
-  const iframeUrl = el?.href;
+  const iframeUrl = getIframeUrl(el);
   const modalType = el?.getAttribute('data-modal');
   const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;
@@ -183,12 +191,17 @@ export default async function openThreeInOneModal(el) {
   const content = createContent(iframeUrl);
   const iframe = content.querySelector('iframe');
   startLoadTimeout(iframe, handleTimeoutError);
-  return getModal(null, {
-    id,
-    content,
-    closeEvent: 'closeModal',
-    closeCallback: () => clearLoadTimeout(iframe),
-    class: 'three-in-one',
-    title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
-  });
+  try {
+    return await getModal(null, {
+      id,
+      content,
+      closeEvent: 'closeModal',
+      closeCallback: () => clearLoadTimeout(iframe),
+      class: 'three-in-one',
+      title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
+    });
+  } catch (error) {
+    clearLoadTimeout(iframe);
+    throw error;
+  }
 }
