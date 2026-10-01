@@ -287,7 +287,7 @@ function buildManifestCard(manifest) {
   const progress = hasRange ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
   let state = manifest.isActive === 'active' ? 'active' : 'inactive';
   if (hasRange && now < start) state = 'inactive';
-  if (hasRange && now >= end) state = 'complete';
+  if (hasRange && now > end) state = 'complete';
   if (manifest.showActive) {
     const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete' }[state];
     statusRow.append(createTag('span', { class: `mep-manifest-state ${state}` }, label));
@@ -298,22 +298,27 @@ function buildManifestCard(manifest) {
       target: '_blank',
       rel: 'noopener',
     }, 'Instant'));
-    const endpoints = [manifest.eventStart, manifest.eventEnd].map((value, index) => {
-      const [, date = value, time = ''] = value.match(/^(.*?)\s+(\d{1,2}:\d{2}(?:\s*[AP]M)?)$/i) ?? [];
-      const endpoint = createTag('div', {
-        class: 'mep-manifest-endpoint',
-        'aria-label': `${index === 0 ? 'Start' : 'End'}: ${value}`,
-      });
-      const dateEl = createTag('span', { class: 'mep-manifest-date' });
-      dateEl.textContent = date;
-      const timeEl = createTag('span', { class: 'mep-manifest-time' });
-      timeEl.textContent = time;
-      endpoint.append(dateEl, timeEl);
+    const endpoints = [
+      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime, value: manifest.eventStart },
+      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime, value: manifest.eventEnd },
+    ].map(({ label, date, time, value }) => {
+      const endpoint = createTag('div', { class: 'mep-manifest-endpoint' });
+      const srLabel = createTag('span', { class: 'mep-visually-hidden' }, `${label}: ${value}`);
+      const dateEl = createTag('span', { class: 'mep-manifest-date', 'aria-hidden': 'true' });
+      dateEl.textContent = date ?? '';
+      const timeEl = createTag('span', { class: 'mep-manifest-time', 'aria-hidden': 'true' });
+      timeEl.textContent = time ?? '';
+      endpoint.append(srLabel, dateEl, timeEl);
       return endpoint;
     });
     summary.append(createTag('div', {
       class: `mep-manifest-timeline ${state}`,
       style: `--mep-manifest-progress: ${progress}%`,
+      role: 'progressbar',
+      'aria-valuenow': `${Math.round(progress)}`,
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-label': `${manifest.eventStart ?? ''} to ${manifest.eventEnd ?? ''}`,
     }, endpoints));
   }
   if (statusRow.childElementCount) summary.prepend(statusRow);

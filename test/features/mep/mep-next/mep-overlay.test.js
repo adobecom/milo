@@ -452,7 +452,7 @@ describe('init: manifest schedule progress and states', () => {
     { name: 'before start', now: '2025-12-31', state: 'inactive', progress: 0 },
     { name: 'at start', now: '2026-01-01', state: 'active', progress: 0 },
     { name: 'halfway through', now: '2026-01-02', state: 'active', progress: 50 },
-    { name: 'at end', now: '2026-01-03', state: 'complete', progress: 100, disabled: true },
+    { name: 'at end', now: '2026-01-03', state: 'active', progress: 100 },
     { name: 'after end', now: '2026-01-04', state: 'complete', progress: 100 },
     { name: 'disabled during range', now: '2026-01-02', state: 'inactive', progress: 50, disabled: true },
     {
@@ -497,6 +497,92 @@ describe('init: manifest schedule progress and states', () => {
       expect(timeline.style.getPropertyValue('--mep-manifest-progress')).to.equal(`${testCase.progress}%`);
       expect(card.querySelector('.mep-manifest-summary').parentElement).to.equal(card.querySelector('.mep-card-body'));
     });
+  });
+
+  it('renders without throwing when end is an invalid date (regression for formatDate RangeError)', async () => {
+    nowStub.returns(Date.parse('2026-01-02T00:00:00Z'));
+    setConfig({
+      ...BASE_CONFIG,
+      mep: {
+        ...BASE_CONFIG.mep,
+        experiments: [{
+          manifest: '/frags/mep/schedule.json',
+          variantNames: [],
+          disabled: false,
+          event: { start: '2026-01-01T00:00:00Z', end: 'not-a-real-date' },
+        }],
+      },
+    });
+    bodyEl = makeBody();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    const cards = bodyEl.querySelectorAll('.mep-manifest-card');
+    expect(cards.length).to.equal(1);
+    expect(cards[0].textContent).to.not.include('Invalid Date');
+  });
+
+  it('splits date and time via separate locale calls instead of regex (regression for locale-dependent split)', async () => {
+    const dateStub = sinon.stub(Date.prototype, 'toLocaleDateString').returns('1 Jan 2026');
+    const timeStub = sinon.stub(Date.prototype, 'toLocaleTimeString').returns('7:00 a.m.');
+    nowStub.returns(Date.parse('2026-01-02T00:00:00Z'));
+    try {
+      setConfig({
+        ...BASE_CONFIG,
+        mep: {
+          ...BASE_CONFIG.mep,
+          experiments: [{
+            manifest: '/frags/mep/schedule.json',
+            variantNames: [],
+            disabled: false,
+            event: { start: '2026-01-01T00:00:00Z', end: '2026-01-03T00:00:00Z' },
+          }],
+        },
+      });
+      bodyEl = makeBody();
+      headerEl = makeHeader();
+      await init();
+      await wait(150);
+      const card = bodyEl.querySelector('.mep-manifest-card');
+      const dateEls = card.querySelectorAll('.mep-manifest-date');
+      const timeEls = card.querySelectorAll('.mep-manifest-time');
+      expect(dateEls[0].textContent).to.equal('1 Jan 2026');
+      expect(timeEls[0].textContent).to.equal('7:00 a.m.');
+    } finally {
+      dateStub.restore();
+      timeStub.restore();
+    }
+  });
+
+  it('exposes accessible start/end labels and a labelled progressbar timeline', async () => {
+    nowStub.returns(Date.parse('2026-01-02T00:00:00Z'));
+    setConfig({
+      ...BASE_CONFIG,
+      mep: {
+        ...BASE_CONFIG.mep,
+        experiments: [{
+          manifest: '/frags/mep/schedule.json',
+          variantNames: [],
+          disabled: false,
+          event: { start: '2026-01-01T00:00:00Z', end: '2026-01-03T00:00:00Z' },
+        }],
+      },
+    });
+    bodyEl = makeBody();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    const card = bodyEl.querySelector('.mep-manifest-card');
+    const timeline = card.querySelector('.mep-manifest-timeline');
+    expect(timeline.getAttribute('role')).to.equal('progressbar');
+    expect(timeline.getAttribute('aria-valuenow')).to.equal('50');
+    expect(timeline.getAttribute('aria-valuemin')).to.equal('0');
+    expect(timeline.getAttribute('aria-valuemax')).to.equal('100');
+    expect(timeline.getAttribute('aria-label')).to.be.a('string').and.not.empty;
+    const hiddenLabels = [...timeline.querySelectorAll('.mep-visually-hidden')].map((el) => el.textContent);
+    expect(hiddenLabels.some((text) => text.startsWith('Start:'))).to.be.true;
+    expect(hiddenLabels.some((text) => text.startsWith('End:'))).to.be.true;
+    expect(timeline.querySelector('.mep-manifest-endpoint').hasAttribute('aria-label')).to.be.false;
   });
 });
 
