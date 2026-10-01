@@ -64,30 +64,26 @@ async function getLegacy404() {
 
 async function getVersioned404(version) {
   const versionedPath = `${base}${locale.prefix}/fragments/${version}/404`;
-  try {
-    const resp = await fetch(`${versionedPath}.plain.html`);
-    if (resp?.ok) {
-      await get404(`${versionedPath}#_dnt`);
-      return true;
-    }
-  } catch {
-    // geo-specific fragment unavailable, fall back to default flow below
-  }
-  return false;
+  const resp = await fetch(`${versionedPath}.plain.html`).catch(() => null);
+  if (!resp?.ok) return false;
+  await get404(`${versionedPath}#_dnt`);
+  return true;
 }
 
 export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
-  const version = getMetadata('404-version');
 
-  const handled = version && await getVersioned404(version);
-
-  if (!handled) {
-    if (style === 'feds') await get404();
-    else if (style === 'local') await get404(`${root}/fragments/404`);
-    else await getLegacy404();
+  if (style === 'feds') {
+    const version = getMetadata('404-version');
+    const handled = version === 'v2' && await getVersioned404(version);
+    if (!handled) await get404();
+  } else if (style === 'local') {
+    await get404(`${root}/fragments/404`);
+  } else {
+    await getLegacy404();
   }
+
   sampleRUM('404', { source: document.referrer });
 }
 

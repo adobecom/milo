@@ -90,6 +90,28 @@ describe('Versioned 404 - fragment exists', () => {
   });
 });
 
+describe('Versioned 404 - invalid metadata value does not attempt fetch', () => {
+  let fetchStub;
+
+  before(async () => {
+    const { fetch: originalFetch } = window;
+    fetchStub = sinon.stub(window, 'fetch').callsFake((resource, options) => originalFetch(resource, options));
+    document.head.innerHTML = await readFile({ path: './mocks/head-versioned-invalid.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init();
+  });
+
+  after(() => fetchStub.restore());
+
+  it('Treats a non-version value (e.g. "false") as disabled and falls back to style', () => {
+    const versionedFetchCalls = fetchStub.getCalls()
+      .filter((call) => call.args[0]?.toString().includes('/fragments/false/404'));
+    expect(versionedFetchCalls.length).to.equal(0);
+    const { href } = document.querySelector('a');
+    expect(href.includes('/libs/')).to.be.true;
+  });
+});
+
 describe('Versioned 404 - fragment missing falls back to style', () => {
   let fetchStub;
 
