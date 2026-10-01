@@ -753,11 +753,8 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
 }
 
-/* JS-detected desktop page-zoom (bento-stack.js): the animated stack assumes real
-   mobile-device viewport proportions, which desktop zoom violates (shrinks both
-   dimensions while --card-height stays fixed). Fall back to the same static layout
-   used when animation-timeline isn't supported. 4 classes here outrank the animated
-   rule's :where(.bento-stack-ready) (0 specificity), so this reliably overrides it. */
+/* Desktop zoom (detected by isZoomed() in bento-stack.js): use the static fallback layout.
+   4-class selectors outrank the animated rule's zero-specificity :where(.bento-stack-ready). */
 @media (width < 768px) {
   .section.bento.stack-mobile.bento-stack-zoomed {
     display: flex;
