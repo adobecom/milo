@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 const config = {
@@ -63,5 +64,53 @@ describe('Legacy 404 Fallback', () => {
 
   it('Fallback to contentRoot legacy 404', () => {
     expect([...document.body.classList].includes('legacy-404')).to.be.true;
+  });
+});
+
+describe('Versioned 404 - fragment exists', () => {
+  let fetchStub;
+
+  before(async () => {
+    const { fetch: originalFetch } = window;
+    fetchStub = sinon.stub(window, 'fetch').callsFake((resource, options) => {
+      if (resource.toString().includes('/fragments/v2/404.plain.html')) {
+        return Promise.resolve(new Response('<div>versioned fragment</div>', { status: 200 }));
+      }
+      return originalFetch(resource, options);
+    });
+    document.head.innerHTML = await readFile({ path: './mocks/head-versioned.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init();
+  });
+
+  after(() => fetchStub.restore());
+
+  it('Loads the geo-specific versioned fragment content', () => {
+    expect(document.querySelector('main').textContent.includes('versioned fragment')).to.be.true;
+  });
+});
+
+describe('Versioned 404 - fragment missing falls back to style', () => {
+  let fetchStub;
+
+  before(async () => {
+    const { fetch: originalFetch } = window;
+    fetchStub = sinon.stub(window, 'fetch').callsFake((resource, options) => {
+      if (resource.toString().includes('/fragments/v2/404.plain.html')) {
+        return Promise.resolve(new Response('', { status: 404 }));
+      }
+      return originalFetch(resource, options);
+    });
+    document.head.innerHTML = await readFile({ path: './mocks/head-versioned.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init();
+  });
+
+  after(() => fetchStub.restore());
+
+  it('Falls back to the feds 404 fragment link', () => {
+    const { href } = document.querySelector('a');
+    expect(href.includes('/fragments/v2/404')).to.be.false;
+    expect(href.includes('/libs/')).to.be.true;
   });
 });
