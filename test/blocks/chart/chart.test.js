@@ -141,7 +141,7 @@ describe('chart', () => {
       'localhost', '127.0.0.1', '[::1]'].forEach((hostname) => {
       const el = document.createElement('div');
       showPaletteWarning(el, hostname);
-      expect(el.title).to.equal('Invalid color-palette; using the original colors.');
+      expect(el.hasAttribute('title')).to.equal(false);
       expect(el.classList.contains('palette-warning')).to.equal(true);
     });
     ['main--milo--adobecom.aem.live', 'main--milo--adobecom.hlx.live',
@@ -1108,7 +1108,8 @@ describe('chart', () => {
       const row = '<div><div>color-palette</div><div>#112233, invalid</div></div>';
       const el = await renderChart('column', row, json, 'indigo');
       expect(chart.getOption().color).to.eql(getColors('indigo'));
-      expect(el.title).to.equal('Invalid color-palette; using the original colors.');
+      expect(el.classList.contains('palette-warning')).to.equal(true);
+      expect(el.hasAttribute('title')).to.equal(false);
     });
 
     it('keeps the custom palette ahead of spreadsheet colors', async () => {
@@ -1140,7 +1141,8 @@ describe('chart', () => {
         const row = '<div><div>color-palette</div><div>#112233, invalid</div></div>';
         const el = await renderChart(type, row, data, 'indigo');
         expect(chart.getOption().color).to.eql([colorPalette.indigo, colorPalette.purple]);
-        expect(el.title).to.equal('Invalid color-palette; using the original colors.');
+        expect(el.classList.contains('palette-warning')).to.equal(true);
+        expect(el.hasAttribute('title')).to.equal(false);
       });
     });
 
@@ -1208,7 +1210,8 @@ describe('chart', () => {
       const row = '<div><div>color-palette</div><div>invalid, #12,</div></div>';
       const el = await renderChart('list', row, data, 'indigo');
       expect(el.querySelector('.list-wrapper .title').style.backgroundColor).to.equal('rgb(64, 70, 202)');
-      expect(el.title).to.equal('Invalid color-palette; using the original colors.');
+      expect(el.classList.contains('palette-warning')).to.equal(true);
+      expect(el.hasAttribute('title')).to.equal(false);
     });
 
     it('preserves the named list color without a configuration row', async () => {

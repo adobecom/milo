@@ -568,7 +568,6 @@ export const showPaletteWarning = (el, hostname = window.location.hostname) => {
   if (hostname.endsWith('.aem.page') || hostname.endsWith('.hlx.page')
     || ['localhost', '127.0.0.1', '[::1]'].includes(hostname)) {
     el.classList.add('palette-warning');
-    el.title = 'Invalid color-palette; using the original colors.';
   }
 };
 
