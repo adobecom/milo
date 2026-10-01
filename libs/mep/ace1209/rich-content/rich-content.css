@@ -24,7 +24,12 @@
     position: relative;
     z-index: 2;
 
+    [class*="heading-"] {
+      text-wrap: balance;
+    }
+
     [class*="body-"]:not(.action-area) {
+      text-wrap: pretty;
       max-width: 680px;
     }
 
