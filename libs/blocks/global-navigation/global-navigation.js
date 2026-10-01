@@ -124,6 +124,14 @@ export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
+const AUP_DIALOG_CLOSE_SOURCES = ['buttonClose', 'escapeClose', 'curtainClose'];
+
+// Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
+export async function sendAupDialogCloseAnalytics(modalHash, source) {
+  const { sendAnalytics } = await import('../../martech/helpers.js');
+  sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
+}
+
 function getHelpChildren() {
   const { unav } = getConfig();
   return unav?.unavHelpChildren || [
@@ -1181,12 +1189,15 @@ class Gnav {
         let onDialogCancel;
         let onDialogClick;
         let onNavigation;
+        let onWorkflowSuccess;
+        let closeSource;
         let isTornDown = false;
         const teardown = () => {
           if (isTornDown) return;
           isTornDown = true;
           finishLoading?.();
           element.removeEventListener('close', closeDialog);
+          element.removeEventListener('success', onWorkflowSuccess);
           dialog?.removeEventListener('cancel', onDialogCancel);
           dialog?.removeEventListener('click', onDialogClick);
           window.removeEventListener('popstate', onNavigation);
@@ -1199,23 +1210,32 @@ class Gnav {
         };
         closeDialog = () => {
           teardown();
+          // A workflow-initiated close without success is the user dismissing it from within.
+          const source = closeSource || 'buttonClose';
+          if (AUP_DIALOG_CLOSE_SOURCES.includes(source)) {
+            sendAupDialogCloseAnalytics(modalHash, source);
+          }
           closeCallback({ type: 'close' });
         };
-        const cancel = () => {
+        onWorkflowSuccess = () => {
+          closeSource = closeSource || 'success';
+        };
+        const cancel = (source) => {
+          closeSource = closeSource || source;
           // The orchestrator settles on cancel; close releases its event listeners.
           element.dispatchEvent(new Event('cancel'));
           element.dispatchEvent(new Event('close'));
         };
         onNavigation = () => {
-          if (modalHash && window.location.hash !== modalHash) cancel();
+          if (modalHash && window.location.hash !== modalHash) cancel('navigation');
         };
         onDialogCancel = (e) => {
           if (e.target !== dialog) return;
           e.preventDefault();
-          cancel();
+          cancel('escapeClose');
         };
         onDialogClick = (e) => {
-          if (e.target === dialog) cancel();
+          if (e.target === dialog) cancel('curtainClose');
         };
         try {
           dialog = document.createElement('dialog');
@@ -1238,6 +1258,7 @@ class Gnav {
           dialog.appendChild(element);
           document.body.appendChild(dialog);
           element.addEventListener('close', closeDialog, { once: true });
+          element.addEventListener('success', onWorkflowSuccess);
           dialog.addEventListener('cancel', onDialogCancel);
           dialog.addEventListener('click', onDialogClick);
           window.addEventListener('popstate', onNavigation);
