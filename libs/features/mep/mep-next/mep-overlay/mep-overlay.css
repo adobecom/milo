@@ -486,11 +486,10 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   color: var(--mep-white-60);
 }
 
-.mep-drawer .mep-manifest-timeline::before,
-.mep-drawer .mep-manifest-timeline::after {
-  content: '';
+.mep-drawer .mep-manifest-track {
   position: absolute;
   top: 50%;
+  left: 0;
   transform: translateY(-50%);
   height: 4px;
   border-radius: 4px;
@@ -498,16 +497,20 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   background: var(--mep-white-38);
 }
 
-.mep-drawer .mep-manifest-timeline::after {
+.mep-drawer .mep-manifest-track::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 4px;
   width: var(--mep-manifest-progress, 0%);
   background: var(--mep-white-60);
 }
 
-.mep-drawer .mep-manifest-timeline.active::after {
+.mep-drawer .mep-manifest-timeline.active .mep-manifest-track::after {
   background: var(--mep-emphasis);
 }
 
-.mep-drawer .mep-manifest-timeline.complete::after {
+.mep-drawer .mep-manifest-timeline.complete .mep-manifest-track::after {
   background: var(--mep-primary-100);
 }
 

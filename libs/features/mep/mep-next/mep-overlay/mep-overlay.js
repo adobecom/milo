@@ -293,33 +293,43 @@ function buildManifestCard(manifest) {
     statusRow.append(createTag('span', { class: `mep-manifest-state ${state}` }, label));
   }
   if (manifest.eventStart && manifest.eventEnd) {
-    statusRow.append(createTag('a', {
+    const instantLink = createTag('a', {
       href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`,
       target: '_blank',
       rel: 'noopener',
-    }, 'Instant'));
+    });
+    instantLink.append(
+      'Instant',
+      createTag('span', { class: 'mep-visually-hidden' }, ' preview at start date (opens in a new tab)'),
+    );
+    statusRow.append(instantLink);
     const endpoints = [
-      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime, value: manifest.eventStart },
-      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime, value: manifest.eventEnd },
-    ].map(({ label, date, time, value }) => {
+      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime },
+      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime },
+    ].map(({ label, date, time }) => {
       const endpoint = createTag('div', { class: 'mep-manifest-endpoint' });
-      const srLabel = createTag('span', { class: 'mep-visually-hidden' }, `${label}: ${value}`);
-      const dateEl = createTag('span', { class: 'mep-manifest-date', 'aria-hidden': 'true' });
+      const srLabel = createTag('span', { class: 'mep-visually-hidden' }, `${label}:`);
+      const dateEl = createTag('span', { class: 'mep-manifest-date' });
       dateEl.textContent = date ?? '';
-      const timeEl = createTag('span', { class: 'mep-manifest-time', 'aria-hidden': 'true' });
+      const timeEl = createTag('span', { class: 'mep-manifest-time' });
       timeEl.textContent = time ?? '';
       endpoint.append(srLabel, dateEl, timeEl);
       return endpoint;
     });
+    const roundedProgress = Math.round(progress);
+    const track = createTag('div', {
+      class: 'mep-manifest-track',
+      role: 'progressbar',
+      'aria-label': 'Schedule progress',
+      'aria-valuenow': `${roundedProgress}`,
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuetext': `${roundedProgress}% elapsed`,
+    });
     summary.append(createTag('div', {
       class: `mep-manifest-timeline ${state}`,
       style: `--mep-manifest-progress: ${progress}%`,
-      role: 'progressbar',
-      'aria-valuenow': `${Math.round(progress)}`,
-      'aria-valuemin': '0',
-      'aria-valuemax': '100',
-      'aria-label': `${manifest.eventStart ?? ''} to ${manifest.eventEnd ?? ''}`,
-    }, endpoints));
+    }, [track, ...endpoints]));
   }
   if (statusRow.childElementCount) summary.prepend(statusRow);
 

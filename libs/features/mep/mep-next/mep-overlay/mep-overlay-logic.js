@@ -179,7 +179,6 @@ function formatDate(dateTime, format = 'local') {
   return `${date} ${time}`;
 }
 
-// Returns date/time as separate locale strings so callers never have to parse formatted output back apart.
 function formatDateParts(dateTime) {
   if (!dateTime) return null;
   const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
