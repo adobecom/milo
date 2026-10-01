@@ -815,8 +815,10 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
       resolveHeroReady();
     };
     heroVideo.requestVideoFrameCallback(kick);
+    // Capture phase so a failing <source> child (its error doesn't bubble) also kicks
+    // autoplay immediately instead of waiting for the fallback.
     ['error', 'loadeddata'].forEach((ev) => {
-      heroVideo.addEventListener(ev, kick, { once: true });
+      heroVideo.addEventListener(ev, kick, { once: true, capture: true });
     });
     fallbackTimer = setTimeout(kick, FIRST_FRAME_FALLBACK_MS);
   } else {
