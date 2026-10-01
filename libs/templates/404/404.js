@@ -62,24 +62,26 @@ async function getLegacy404() {
   main.append(...doc.querySelectorAll('body > *'));
 }
 
+async function getVersioned404(version) {
+  const versionedPath = `${base}${locale.prefix}/fragments/${version}/404`;
+  try {
+    const resp = await fetch(`${versionedPath}.plain.html`);
+    if (resp?.ok) {
+      await get404(`${versionedPath}#_dnt`);
+      return true;
+    }
+  } catch {
+    // geo-specific fragment unavailable, fall back to default flow below
+  }
+  return false;
+}
+
 export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
   const version = getMetadata('404-version');
 
-  let handled = false;
-  if (version) {
-    const versionedPath = `${base}${locale.prefix}/fragments/${version}/404`;
-    try {
-      const resp = await fetch(`${versionedPath}.plain.html`);
-      if (resp?.ok) {
-        await get404(`${versionedPath}#_dnt`);
-        handled = true;
-      }
-    } catch {
-      // geo-specific fragment unavailable, fall back to default flow below
-    }
-  }
+  const handled = version && await getVersioned404(version);
 
   if (!handled) {
     if (style === 'feds') await get404();
