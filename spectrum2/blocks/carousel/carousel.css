@@ -1,0 +1,340 @@
+.carousel.spectrum2 {
+  --_n: 1;
+  --_gap: 0px;
+  --_w: calc(100% / var(--_n) - round(up, (var(--_n) - 1) / var(--_n) * var(--_gap), 1px));
+  --_lead: 0px;
+  --_dot: var(--spectrum2-spacing-100);
+  --_dot-gap: var(--spectrum2-spacing-100);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-block-end: var(--spectrum2-spacing-400);
+}
+.carousel.spectrum2.dark { color-scheme: dark; }
+.carousel.spectrum2.light { color-scheme: light; }
+
+.carousel.spectrum2.container {
+  inline-size: 83.4%;
+  margin-inline: auto;
+}
+
+.carousel.spectrum2 .carousel-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.carousel.spectrum2 .carousel-viewport {
+  position: relative;
+  margin-block-end: var(--spectrum2-spacing-300);
+  overflow: clip;
+  touch-action: pan-y;
+}
+
+.carousel.spectrum2 .carousel-track {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--_gap);
+  transform: translateX(calc(var(--_lead) - var(--_w) - var(--_gap)));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel.spectrum2 .carousel-track {
+    transition: transform var(--spectrum2-transition-500) var(--spectrum2-transition-ease-in-out);
+  }
+}
+
+.carousel.spectrum2 .carousel-track.carousel-track-from-next {
+  transform: translateX(var(--_lead));
+  transition: none;
+}
+
+.carousel.spectrum2 .carousel-track.carousel-track-from-prev {
+  transform: translateX(calc(var(--_lead) - 2 * (var(--_w) + var(--_gap))));
+  transition: none;
+}
+
+.carousel.spectrum2 .carousel-track.carousel-track-still { transition: none; }
+.carousel.spectrum2[data-carousel-mode="static"] .carousel-track { transform: none; }
+
+.carousel.spectrum2 .carousel-pane {
+  flex: 0 0 var(--_w);
+  box-sizing: border-box;
+  min-inline-size: 0;
+}
+
+.carousel.spectrum2 .carousel-pane > .section-metadata { display: none; }
+.carousel.spectrum2 .carousel-pane.has-background { position: relative; }
+
+.carousel.spectrum2 :where(.carousel-pane > div[class]:not([data-block-status], .section-metadata)) {
+  color: var(--spectrum2-body-color);
+  background-color: var(--spectrum2-background-base-color);
+}
+
+.carousel.spectrum2 :where(.carousel-pane > div[class]:not([data-block-status], .section-metadata) a[href]) {
+  color: var(--spectrum2-accent-content-color-default);
+  text-decoration-line: underline;
+}
+
+.carousel.spectrum2 :where(.carousel-pane > div[class]:not([data-block-status], .section-metadata) a[href]:hover) { color: var(--spectrum2-accent-content-color-hover); }
+.carousel.spectrum2 :where(.carousel-pane > div[class]:not([data-block-status], .section-metadata) a[href]:active) { color: var(--spectrum2-accent-content-color-down); }
+
+.carousel.spectrum2 :where(.carousel-pane > div[class]:not([data-block-status], .section-metadata) a[href]:focus-visible) {
+  color: var(--spectrum2-accent-content-color-key-focus);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+.carousel.spectrum2 .carousel-pane.carousel-pane-wrapped { visibility: hidden; }
+
+.carousel.spectrum2.container.align-height .carousel-track,
+.carousel.spectrum2.container.disable-buttons .carousel-track { align-items: stretch; }
+
+html[dir="rtl"] .carousel.spectrum2 .carousel-track { direction: ltr; }
+html[dir="rtl"] .carousel.spectrum2 .carousel-pane { direction: rtl; }
+.carousel.spectrum2.fade .carousel-pane:not(.carousel-pane-current) { opacity: 0.3; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel.spectrum2.fade .carousel-pane {
+    transition: opacity var(--spectrum2-transition-500) var(--spectrum2-transition-ease-in-out);
+  }
+}
+.carousel.spectrum2[class*="rounded-corners"] .carousel-pane { overflow: hidden; }
+.carousel.spectrum2:is(.rounded-corners, .m-rounded-corners) .carousel-pane { border-radius: var(--spectrum2-corner-radius-medium-default); }
+.carousel.spectrum2.s-rounded-corners .carousel-pane { border-radius: var(--spectrum2-corner-radius-small-default); }
+.carousel.spectrum2.l-rounded-corners .carousel-pane { border-radius: var(--spectrum2-corner-radius-large-default); }
+.carousel.spectrum2.full-rounded-corners .carousel-pane { border-radius: 50%; }
+
+.carousel.spectrum2.video-fill .carousel-pane video,
+.carousel.spectrum2 .carousel-pane.video-fill video {
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.carousel.spectrum2 .carousel-bar {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: var(--spectrum2-spacing-100);
+  padding: var(--spectrum2-spacing-75);
+  border-radius: calc(var(--spectrum2-component-height-300) * var(--spectrum2-corner-radius-full));
+  background-color: var(--spectrum2-neutral-background-color-default);
+}
+
+.carousel.spectrum2[data-carousel-mode="static"] .carousel-bar,
+.carousel.spectrum2[data-carousel-mode="empty"] .carousel-bar { display: none; }
+
+.carousel.spectrum2 .carousel-arrow {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--spectrum2-component-height-200);
+  block-size: var(--spectrum2-component-height-200);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  color: var(--spectrum2-neutral-content-color-default);
+  background-color: var(--spectrum2-gray-100);
+  cursor: pointer;
+  appearance: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel.spectrum2 .carousel-arrow {
+    transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+      color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+  }
+}
+
+.carousel.spectrum2 .carousel-arrow svg {
+  display: block;
+  inline-size: var(--spectrum2-workflow-icon-large);
+  block-size: var(--spectrum2-workflow-icon-large);
+  fill: currentcolor;
+  pointer-events: none;
+}
+
+html[dir="rtl"] .carousel.spectrum2 .carousel-arrow svg { transform: scaleX(-1); }
+
+.carousel.spectrum2 .carousel-arrow:hover {
+  color: var(--spectrum2-neutral-content-color-hover);
+  background-color: var(--spectrum2-gray-200);
+}
+
+.carousel.spectrum2 .carousel-arrow:active {
+  color: var(--spectrum2-neutral-content-color-down);
+  background-color: var(--spectrum2-gray-300);
+  transform: perspective(var(--spectrum2-component-height-200)) translate3d(0, 0, var(--spectrum2-component-size-difference-down));
+}
+
+.carousel.spectrum2 .carousel-arrow:focus:not(:focus-visible) { outline: none; }
+
+.carousel.spectrum2 .carousel-arrow:focus-visible {
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  background-color: var(--spectrum2-gray-200);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.carousel.spectrum2 .carousel-arrow[aria-disabled="true"],
+.carousel.spectrum2 .carousel-arrow[aria-disabled="true"]:is(:hover, :active, :focus-visible) {
+  color: var(--spectrum2-disabled-content-color);
+  background-color: var(--spectrum2-disabled-background-color);
+  cursor: default;
+  transform: none;
+}
+
+.carousel.spectrum2.no-buttons .carousel-arrow { display: none; }
+.carousel.spectrum2.no-buttons .carousel-bar { padding-inline: var(--spectrum2-spacing-100); }
+
+.carousel.spectrum2 .carousel-dot-clip {
+  overflow: hidden;
+  max-inline-size: calc(var(--_dot) * 6 + var(--_dot-gap) * 5);
+}
+
+.carousel.spectrum2 .carousel-dots {
+  --_dot-shift: 0;
+
+  display: flex;
+  align-items: center;
+  gap: var(--_dot-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: translateX(calc((var(--_dot) + var(--_dot-gap)) * var(--_dot-shift) * -1));
+}
+
+html[dir="rtl"] .carousel.spectrum2 .carousel-dots {
+  transform: translateX(calc((var(--_dot) + var(--_dot-gap)) * var(--_dot-shift)));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel.spectrum2 .carousel-dots {
+    transition: transform var(--spectrum2-transition-300) var(--spectrum2-transition-ease-in-out);
+  }
+}
+
+.carousel.spectrum2 .carousel-dot {
+  display: flex;
+  flex: 0 0 var(--_dot);
+  align-items: center;
+  justify-content: center;
+  block-size: var(--_dot);
+  margin: 0;
+  padding: 0;
+}
+
+.carousel.spectrum2 .carousel-dot::after {
+  content: '';
+  inline-size: calc(var(--_dot) * 0.75);
+  block-size: calc(var(--_dot) * 0.75);
+  border-radius: 50%;
+  background-color: var(--spectrum2-neutral-visual-color);
+}
+
+.carousel.spectrum2 .carousel-dot.carousel-dot-current::after {
+  inline-size: var(--_dot);
+  block-size: var(--_dot);
+  background-color: var(--spectrum2-background-base-color);
+}
+.carousel.spectrum2.container .carousel-pane.section:is(.xs-spacing, .s-spacing, .m-spacing, .l-spacing, .xl-spacing, .xxl-spacing, .xxxl-spacing) { padding: 0; }
+
+.carousel.spectrum2.container .carousel-pane.xs-spacing,
+.carousel.spectrum2.container .carousel-pane .xs-spacing { --_pane-pad: var(--spectrum2-spacing-300); }
+
+.carousel.spectrum2.container .carousel-pane.s-spacing,
+.carousel.spectrum2.container .carousel-pane .s-spacing { --_pane-pad: var(--spectrum2-spacing-400); }
+
+.carousel.spectrum2.container .carousel-pane.m-spacing,
+.carousel.spectrum2.container .carousel-pane .m-spacing { --_pane-pad: var(--spectrum2-spacing-500); }
+
+.carousel.spectrum2.container .carousel-pane.l-spacing,
+.carousel.spectrum2.container .carousel-pane .l-spacing { --_pane-pad: var(--spectrum2-spacing-600); }
+
+.carousel.spectrum2.container .carousel-pane.xl-spacing,
+.carousel.spectrum2.container .carousel-pane .xl-spacing { --_pane-pad: var(--spectrum2-spacing-700); }
+
+.carousel.spectrum2.container .carousel-pane.xxl-spacing,
+.carousel.spectrum2.container .carousel-pane .xxl-spacing { --_pane-pad: calc(var(--spectrum2-spacing-700) + var(--spectrum2-spacing-100)); }
+
+.carousel.spectrum2.container .carousel-pane.xxxl-spacing,
+.carousel.spectrum2.container .carousel-pane .xxxl-spacing { --_pane-pad: var(--spectrum2-spacing-900); }
+
+.carousel.spectrum2.container .carousel-pane:is(.xs-spacing, .s-spacing, .m-spacing, .l-spacing, .xl-spacing, .xxl-spacing, .xxxl-spacing) > div,
+.carousel.spectrum2.container .carousel-pane :is(.xs-spacing, .s-spacing, .m-spacing, .l-spacing, .xl-spacing, .xxl-spacing, .xxxl-spacing) { padding: var(--_pane-pad); }
+
+.carousel.spectrum2.container.align-height .carousel-pane:is(.xs-spacing, .s-spacing, .m-spacing, .l-spacing, .xl-spacing, .xxl-spacing, .xxxl-spacing) > div,
+.carousel.spectrum2.container.align-height .carousel-pane :is(.xs-spacing, .s-spacing, .m-spacing, .l-spacing, .xl-spacing, .xxl-spacing, .xxxl-spacing) { block-size: calc(100% - 2 * var(--_pane-pad)); }
+.carousel.spectrum2[class*="show-"] .carousel-pane .foreground { inline-size: auto; }
+
+.carousel.spectrum2.container .carousel-pane .foreground:not(.icon-block .foreground) {
+  max-inline-size: unset;
+  margin: unset;
+}
+
+.carousel.spectrum2.container .carousel-pane .container { inline-size: unset; }
+.carousel.spectrum2.container.align-height .carousel-pane div:not(.editorial-card) .foreground:not(.icon-block .foreground) { block-size: 100%; }
+
+.carousel.spectrum2.container.align-height .carousel-pane > div:not(.media) .foreground > div {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.carousel.spectrum2.container.align-height .carousel-pane .foreground > div:not(.brick-text) > :not(.cta-container) { margin-block-start: 0; }
+.carousel.spectrum2.container.align-height .carousel-pane .cta-container { margin-block-start: auto; }
+@media (width < 1024px) {
+  .carousel.spectrum2.container:is(.hinting-mobile, .hinting-center-mobile) { inline-size: 100%; }
+  .carousel.spectrum2:is(.hinting-mobile, .hinting-center-mobile) { --_gap: var(--spectrum2-spacing-300); }
+
+  .carousel.spectrum2.hinting-center-mobile {
+    --_w: 75%;
+    --_lead: calc((100% - var(--_w)) / 2);
+  }
+
+  .carousel.spectrum2.hinting-mobile {
+    --_w: 80%;
+    --_lead: var(--spectrum2-spacing-300);
+  }
+
+  .carousel.spectrum2.disable-buttons .carousel-track { align-items: center; }
+}
+@media (width >= 1024px) {
+  .carousel.spectrum2 .carousel-track { align-items: center; }
+  .carousel.spectrum2.show-2 { --_n: 2; }
+  .carousel.spectrum2.show-3 { --_n: 3; }
+  .carousel.spectrum2.show-4 { --_n: 4; }
+  .carousel.spectrum2.show-5 { --_n: 5; }
+  .carousel.spectrum2.show-6 { --_n: 6; }
+  .carousel.spectrum2.m-gap { --_gap: var(--spectrum2-spacing-500); }
+  .carousel.spectrum2[class*="show-"] .carousel-dot-clip { display: none; }
+  .carousel.spectrum2[class*="show-"] .carousel-bar { gap: var(--spectrum2-spacing-500); }
+  .carousel.spectrum2.fade[class*="show-"] .carousel-pane:not(.carousel-pane-current) { opacity: 1; }
+
+  .carousel.spectrum2.ups-desktop[data-carousel-mode="static"] .carousel-track {
+    flex-wrap: wrap;
+    align-items: stretch;
+    row-gap: var(--_gap);
+  }
+}
+
+@media (width >= 1280px) {
+  .carousel.spectrum2.container .carousel-pane.xl-spacing,
+  .carousel.spectrum2.container .carousel-pane .xl-spacing { --_pane-pad: calc(var(--spectrum2-spacing-700) + var(--spectrum2-spacing-100)); }
+
+  .carousel.spectrum2.container .carousel-pane.xxl-spacing,
+  .carousel.spectrum2.container .carousel-pane .xxl-spacing { --_pane-pad: var(--spectrum2-spacing-900); }
+
+  .carousel.spectrum2.container .carousel-pane.xxxl-spacing,
+  .carousel.spectrum2.container .carousel-pane .xxxl-spacing { --_pane-pad: calc(var(--spectrum2-spacing-1000) + var(--spectrum2-spacing-100)); }
+}
+
+@media (width >= 1440px) {
+  .carousel.spectrum2.container { inline-size: 1200px; }
+}

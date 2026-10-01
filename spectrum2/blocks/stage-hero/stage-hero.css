@@ -1,0 +1,566 @@
+.stage-hero.spectrum2 {
+  --_authored-bg: var(--spectrum2-transparent-black-900);
+  --_object-position: 50% 50%;
+  --_stage-text: var(--spectrum2-static-white-text-color);
+  --_stage-muted: var(--spectrum2-transparent-white-800);
+  --_measure: 46rem;
+  --_panel: 32rem;
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  inline-size: 100%;
+  overflow: hidden;
+  background: var(--_authored-bg);
+  color: var(--_stage-text);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-body-size-m);
+  line-height: var(--spectrum2-body-line-height);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.stage-hero.spectrum2 > .stage-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.stage-hero.spectrum2 > .stage-hero-media > div {
+  position: absolute;
+  inset: 0;
+  background: var(--_authored-bg);
+}
+
+.stage-hero.spectrum2 > .stage-hero-media picture {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.stage-hero.spectrum2 > .stage-hero-media img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: var(--_object-position);
+}
+
+.stage-hero.spectrum2.stage-hero-has-photo > .stage-hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, var(--spectrum2-transparent-black-400) 0%, transparent 60%),
+    linear-gradient(180deg, var(--spectrum2-transparent-black-700) 0%, var(--spectrum2-transparent-black-500) 45%, var(--spectrum2-transparent-black-800) 100%);
+}
+
+.stage-hero.spectrum2 > .stage-hero-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spectrum2-spacing-600);
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding-block: var(--spectrum2-spacing-800) var(--spectrum2-spacing-700);
+  padding-inline: var(--spectrum2-spacing-400);
+}
+
+.stage-hero.spectrum2 .stage-hero-body :is(p, ul, ol, li, h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+}
+
+.stage-hero.spectrum2 .stage-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-300);
+  max-inline-size: var(--_measure);
+}
+
+.stage-hero.spectrum2 .stage-hero-eyebrow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-100);
+}
+
+.stage-hero.spectrum2 .stage-hero-eyebrow > * {
+  color: var(--_stage-text);
+  font-family: var(--spectrum2-acom-eyebrow-font-family);
+  font-size: var(--spectrum2-detail-size-l);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-detail-sans-serif-strong-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-transform: uppercase;
+}
+
+.stage-hero.spectrum2 .stage-hero-heading {
+  color: var(--_stage-text);
+  font-family: var(--spectrum2-acom-super-font-family);
+  font-size: var(--spectrum2-acom-super-font-size);
+  line-height: var(--spectrum2-acom-super-line-height);
+  font-weight: var(--spectrum2-acom-super-font-weight);
+  letter-spacing: var(--spectrum2-acom-super-letter-spacing);
+  max-inline-size: 7.5em;
+  text-wrap: balance;
+}
+
+.stage-hero.spectrum2 .stage-hero-heading strong {
+  font-weight: var(--spectrum2-acom-super-font-weight);
+}
+
+.stage-hero.spectrum2 .stage-hero-lede {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-300);
+  color: var(--_stage-muted);
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.stage-hero.spectrum2 .stage-hero-lede a,
+.stage-hero.spectrum2 .stage-hero-panel-note a {
+  color: var(--_stage-text);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.stage-hero.spectrum2 :is(.stage-hero-lede, .stage-hero-panel-note, .stage-hero-actions) a:not(.s2-button):focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-static-white-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2 .stage-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+  margin-block-start: var(--spectrum2-spacing-200);
+}
+
+.stage-hero.spectrum2 .stage-hero-actions > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+}
+
+.stage-hero.spectrum2 .stage-hero-actions a:not(.s2-button) {
+  color: var(--_stage-text);
+  font-weight: var(--spectrum2-bold-font-weight);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.stage-hero.spectrum2 .s2-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spectrum2-spacing-100);
+  box-sizing: border-box;
+  min-block-size: var(--spectrum2-component-height-300);
+  padding-block: 0;
+  padding-inline: var(--spectrum2-spacing-500);
+  border: var(--spectrum2-border-width-200) solid transparent;
+  border-radius: calc(var(--spectrum2-component-height-300) * var(--spectrum2-corner-radius-full));
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-font-size-200);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-decoration: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    border-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.stage-hero.spectrum2 .s2-button:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-static-white-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2 .s2-button.s2-button-accent {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-default);
+}
+
+.stage-hero.spectrum2 .s2-button.s2-button-accent:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.stage-hero.spectrum2 .s2-button.s2-button-accent:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.stage-hero.spectrum2 .s2-button.s2-button-outline {
+  color: var(--_stage-text);
+  background-color: transparent;
+  border-color: var(--spectrum2-white);
+}
+
+.stage-hero.spectrum2 .s2-button.s2-button-outline:is(:hover, :active, :focus-visible) {
+  background-color: var(--spectrum2-transparent-white-200);
+}
+
+.stage-hero.spectrum2 .s2-button.fill {
+  color: var(--spectrum2-black);
+  background-color: var(--spectrum2-white);
+}
+
+.stage-hero.spectrum2 .s2-button.fill:is(:hover, :active, :focus-visible) {
+  background-color: var(--spectrum2-transparent-white-800);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-300);
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding-block: var(--spectrum2-spacing-500);
+  padding-inline: var(--spectrum2-spacing-500);
+  border-radius: var(--spectrum2-corner-radius-extra-large-default);
+  background-color: var(--spectrum2-transparent-black-600);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+  color: var(--_stage-text);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-200);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-intro > * {
+  color: var(--_stage-text);
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-title-size-xl);
+  line-height: var(--spectrum2-line-height-font-size-400);
+  font-weight: var(--spectrum2-title-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links,
+.stage-hero.spectrum2 .stage-hero-panel-links > :is(ul, ol) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-200);
+  padding: 0;
+  list-style: none;
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links :is(li, p) > a {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-block-size: var(--spectrum2-component-height-200);
+  padding-block: var(--spectrum2-spacing-100);
+  padding-inline: var(--spectrum2-spacing-300);
+  border: var(--spectrum2-border-width-100) solid var(--spectrum2-transparent-white-500);
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  color: var(--_stage-text);
+  font-size: var(--spectrum2-body-size-m);
+  line-height: var(--spectrum2-body-line-height);
+  text-decoration-line: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    border-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links :is(li, p) > a:hover {
+  background-color: var(--spectrum2-transparent-white-200);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links :is(li, p) > a:is(:hover, :active) {
+  border-color: var(--spectrum2-white);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links :is(li, p) > a:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-static-white-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-links :is(em, strong) {
+  font-style: normal;
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+}
+
+.stage-hero.spectrum2 .stage-hero-panel-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-100);
+  color: var(--_stage-muted);
+  font-size: var(--spectrum2-body-size-xs);
+  line-height: var(--spectrum2-body-line-height);
+}
+@media (width < 768px) {
+  .stage-hero.spectrum2 > .stage-hero-media :is(.s2-tablet-only, .s2-desktop-only):not(.s2-mobile-only) { display: none; }
+
+  .stage-hero.spectrum2 .stage-hero-lede {
+    font-size: var(--spectrum2-body-size-m);
+    line-height: var(--spectrum2-body-line-height);
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .stage-hero.spectrum2 > .stage-hero-media :is(.s2-mobile-only, .s2-desktop-only):not(.s2-tablet-only) { display: none; }
+}
+
+@media (width >= 768px) {
+  .stage-hero.spectrum2 {
+    min-block-size: 40rem;
+  }
+
+  .stage-hero.spectrum2 > .stage-hero-body {
+    padding-inline: var(--spectrum2-spacing-800);
+  }
+
+  .stage-hero.spectrum2 .stage-hero-panel {
+    max-inline-size: var(--_panel);
+  }
+}
+@media (width >= 1024px) {
+  .stage-hero.spectrum2 {
+    justify-content: center;
+  }
+
+  .stage-hero.spectrum2.stage-hero-has-panel > .stage-hero-body {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--spectrum2-spacing-800);
+  }
+
+  .stage-hero.spectrum2 .stage-hero-panel {
+    justify-self: end;
+    padding-block: var(--spectrum2-spacing-600);
+    padding-inline: var(--spectrum2-spacing-600);
+  }
+}
+
+@media (width >= 1280px) {
+  .stage-hero.spectrum2 > .stage-hero-media :is(.s2-mobile-only, .s2-tablet-only):not(.s2-desktop-only) { display: none; }
+
+  .stage-hero.spectrum2 {
+    min-block-size: 50rem;
+  }
+
+  .stage-hero.spectrum2 > .stage-hero-body {
+    padding-block: var(--spectrum2-spacing-800);
+  }
+}
+@media (width >= 1024px) {
+  .stage-hero.spectrum2.panel-start.stage-hero-has-panel > .stage-hero-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+  }
+
+  .stage-hero.spectrum2.panel-start.stage-hero-has-panel .stage-hero-panel {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .stage-hero.spectrum2.panel-start.stage-hero-has-panel .stage-hero-copy {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .stage-hero.spectrum2.panel-start.stage-hero-has-photo > .stage-hero-media::before {
+    background:
+      linear-gradient(270deg, var(--spectrum2-transparent-black-400) 0%, transparent 60%),
+      linear-gradient(180deg, var(--spectrum2-transparent-black-700) 0%, var(--spectrum2-transparent-black-500) 45%, var(--spectrum2-transparent-black-800) 100%);
+  }
+}
+
+.stage-hero.spectrum2.daylight {
+  --_authored-bg: var(--spectrum2-background-base-color);
+  --_stage-text: var(--spectrum2-heading-color);
+  --_stage-muted: var(--spectrum2-body-color);
+
+  justify-content: flex-start;
+}
+
+.stage-hero.spectrum2.daylight.stage-hero-has-photo > .stage-hero-media::before {
+  background: linear-gradient(180deg, var(--spectrum2-background-base-color) 0%, var(--spectrum2-background-base-color) 40%, transparent 80%);
+}
+
+.stage-hero.spectrum2.daylight.stage-hero-has-photo > .stage-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(160deg, var(--spectrum2-blue-200) 0%, transparent 55%);
+  opacity: var(--spectrum2-opacity-800);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-heading {
+  font-weight: var(--spectrum2-medium-font-weight);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-heading strong {
+  font-weight: var(--spectrum2-bold-font-weight);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-panel {
+  background-color: var(--spectrum2-background-elevated-color);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-eyebrow > * {
+  color: var(--spectrum2-blue-1000);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-panel-note {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+
+.stage-hero.spectrum2.daylight :is(.stage-hero-lede, .stage-hero-panel-note, .stage-hero-actions) a:not(.s2-button) {
+  color: var(--spectrum2-blue-1000);
+}
+
+.stage-hero.spectrum2.daylight :is(.stage-hero-lede, .stage-hero-panel-note, .stage-hero-actions) a:not(.s2-button):focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-panel-links :is(li, p) > a {
+  border-color: transparent;
+  background-color: var(--spectrum2-gray-100);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-panel-links :is(li, p) > a:is(:hover, :active) {
+  border-color: transparent;
+  background-color: var(--spectrum2-gray-200);
+}
+
+.stage-hero.spectrum2.daylight .stage-hero-panel-links :is(li, p) > a:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2.daylight .s2-button:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.stage-hero.spectrum2.daylight .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-default);
+  border-color: var(--spectrum2-gray-800);
+}
+
+.stage-hero.spectrum2.daylight .s2-button.s2-button-outline:is(:hover, :active, :focus-visible) {
+  background-color: var(--spectrum2-gray-100);
+}
+
+.stage-hero.spectrum2.daylight .s2-button.fill {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-default);
+}
+
+.stage-hero.spectrum2.daylight .s2-button.fill:is(:hover, :focus-visible) {
+  background-color: var(--spectrum2-neutral-background-color-hover);
+}
+
+.stage-hero.spectrum2.daylight .s2-button.fill:active {
+  background-color: var(--spectrum2-neutral-background-color-down);
+}
+@media (width >= 1024px) {
+  .stage-hero.spectrum2.daylight {
+    justify-content: center;
+  }
+
+  .stage-hero.spectrum2.daylight.stage-hero-has-photo > .stage-hero-media::before {
+    background: linear-gradient(90deg, var(--spectrum2-background-base-color) 0%, var(--spectrum2-background-base-color) 34%, transparent 70%);
+  }
+
+  .stage-hero.spectrum2.daylight.panel-start.stage-hero-has-photo > .stage-hero-media::before {
+    background: linear-gradient(270deg, var(--spectrum2-background-base-color) 0%, var(--spectrum2-background-base-color) 34%, transparent 70%);
+  }
+}
+@media (width >= 1024px) {
+  .stage-hero.spectrum2.panel-dock.stage-hero-has-panel > .stage-hero-body {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--spectrum2-spacing-700);
+  }
+
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--spectrum2-spacing-700);
+    row-gap: var(--spectrum2-spacing-300);
+    justify-self: stretch;
+    max-inline-size: none;
+    padding-block: var(--spectrum2-spacing-500);
+    padding-inline: var(--spectrum2-spacing-600);
+  }
+
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel-links {
+    grid-column: 2;
+  }
+
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel-intro + .stage-hero-panel-links {
+    grid-row: 1;
+  }
+
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel-links,
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel-links > :is(ul, ol) {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .stage-hero.spectrum2.panel-dock .stage-hero-panel-note {
+    grid-column: 1 / -1;
+  }
+}
+@media (width >= 1024px) {
+  .stage-hero.spectrum2.panel-below.stage-hero-has-panel > .stage-hero-body {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    row-gap: var(--spectrum2-spacing-600);
+  }
+
+  .stage-hero.spectrum2.panel-below .stage-hero-copy {
+    align-items: center;
+    text-align: center;
+  }
+
+  .stage-hero.spectrum2.panel-below .stage-hero-heading {
+    max-inline-size: 11em;
+  }
+
+  .stage-hero.spectrum2.panel-below .stage-hero-panel {
+    align-items: center;
+    justify-self: center;
+    max-inline-size: 48rem;
+    padding-block: var(--spectrum2-spacing-500);
+    padding-inline: var(--spectrum2-spacing-600);
+    text-align: center;
+  }
+
+  .stage-hero.spectrum2.panel-below .stage-hero-panel-links,
+  .stage-hero.spectrum2.panel-below .stage-hero-panel-links > :is(ul, ol) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stage-hero.spectrum2.panel-below.stage-hero-has-photo > .stage-hero-media::before {
+    background: linear-gradient(180deg, var(--spectrum2-transparent-black-700) 0%, var(--spectrum2-transparent-black-600) 50%, var(--spectrum2-transparent-black-800) 100%);
+  }
+
+  .stage-hero.spectrum2.daylight.panel-below.stage-hero-has-photo > .stage-hero-media::before {
+    background: linear-gradient(180deg, var(--spectrum2-background-base-color) 0%, var(--spectrum2-background-base-color) 55%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-hero.spectrum2 .s2-button,
+  .stage-hero.spectrum2 .stage-hero-panel-links :is(li, p) > a {
+    transition: none;
+  }
+}

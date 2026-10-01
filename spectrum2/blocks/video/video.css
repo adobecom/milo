@@ -1,0 +1,96 @@
+.video.spectrum2 {
+  display: block;
+  inline-size: 100%;
+}
+
+.video.spectrum2 .s2-video,
+.video.spectrum2.s2-video {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+}
+
+.video.spectrum2 .s2-video video,
+.video.spectrum2.s2-video video {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+}
+
+.video.spectrum2 .s2-video[tabindex]:focus:not(:focus-visible),
+.video.spectrum2.s2-video[tabindex]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.video.spectrum2 .s2-video[tabindex]:focus-visible,
+.video.spectrum2.s2-video[tabindex]:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.video.spectrum2 .s2-video-control {
+  position: absolute;
+  inset-block-end: var(--spectrum2-spacing-200);
+  inset-inline-end: var(--spectrum2-spacing-200);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--spectrum2-component-height-100);
+  block-size: var(--spectrum2-component-height-100);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--spectrum2-corner-radius-medium-default);
+  background-color: var(--spectrum2-transparent-black-700);
+  color: var(--spectrum2-static-white-text-color);
+  cursor: pointer;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.video.spectrum2 .s2-video-control:hover {
+  background-color: var(--spectrum2-transparent-black-800);
+}
+
+.video.spectrum2 .s2-video-control:active {
+  background-color: var(--spectrum2-transparent-black-900);
+}
+
+.video.spectrum2 .s2-video-control:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.video.spectrum2 .s2-video-control:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.video.spectrum2 .s2-video-control svg {
+  display: block;
+  inline-size: var(--spectrum2-acom-icon-size-xxs);
+  block-size: var(--spectrum2-acom-icon-size-xxs);
+  flex: none;
+  fill: currentcolor;
+}
+
+.video.spectrum2 .s2-video-control .s2-video-icon-play {
+  display: none;
+}
+
+.video.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-play,
+.video.spectrum2.s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-play {
+  display: block;
+}
+
+.video.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-pause,
+.video.spectrum2.s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-pause {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .video.spectrum2 .s2-video-control {
+    transition: none;
+  }
+}

@@ -1,0 +1,105 @@
+.section-skin main > .section.xxs-spacing { padding-block: var(--spectrum2-spacing-100); }
+.section-skin main > .section.xs-spacing { padding-block: var(--spectrum2-spacing-300); }
+.section-skin main > .section.s-spacing { padding-block: var(--spectrum2-spacing-400); }
+.section-skin main > .section.m-spacing { padding-block: var(--spectrum2-spacing-500); }
+.section-skin main > .section.l-spacing { padding-block: var(--spectrum2-spacing-600); }
+.section-skin main > .section.xl-spacing { padding-block: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xxl-spacing { padding-block: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxxl-spacing { padding-block: var(--spectrum2-spacing-900); }
+.section-skin main > .section.xxs-spacing-top { padding-block-start: var(--spectrum2-spacing-100); }
+.section-skin main > .section.xs-spacing-top { padding-block-start: var(--spectrum2-spacing-300); }
+.section-skin main > .section.s-spacing-top { padding-block-start: var(--spectrum2-spacing-400); }
+.section-skin main > .section.m-spacing-top { padding-block-start: var(--spectrum2-spacing-500); }
+.section-skin main > .section.l-spacing-top { padding-block-start: var(--spectrum2-spacing-600); }
+.section-skin main > .section.xl-spacing-top { padding-block-start: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xxl-spacing-top { padding-block-start: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxxl-spacing-top { padding-block-start: var(--spectrum2-spacing-900); }
+.section-skin main > .section.xxs-spacing-bottom { padding-block-end: var(--spectrum2-spacing-100); }
+.section-skin main > .section.xs-spacing-bottom { padding-block-end: var(--spectrum2-spacing-300); }
+.section-skin main > .section.s-spacing-bottom { padding-block-end: var(--spectrum2-spacing-400); }
+.section-skin main > .section.m-spacing-bottom { padding-block-end: var(--spectrum2-spacing-500); }
+.section-skin main > .section.l-spacing-bottom { padding-block-end: var(--spectrum2-spacing-600); }
+.section-skin main > .section.xl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xxl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxxl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-900); }
+.section-skin main > .section.l-spacing-static { padding-block: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xl-spacing-static { padding-block: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxl-spacing-static { padding-block: var(--spectrum2-spacing-900); }
+.section-skin main > .section.xxxl-spacing-static { padding-block: var(--spectrum2-spacing-1000); }
+.section-skin main > .section.l-spacing-static-top { padding-block-start: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xl-spacing-static-top { padding-block-start: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxl-spacing-static-top { padding-block-start: var(--spectrum2-spacing-900); }
+.section-skin main > .section.xxxl-spacing-static-top { padding-block-start: var(--spectrum2-spacing-1000); }
+.section-skin main > .section.l-spacing-static-bottom { padding-block-end: var(--spectrum2-spacing-700); }
+.section-skin main > .section.xl-spacing-static-bottom { padding-block-end: var(--spectrum2-spacing-800); }
+.section-skin main > .section.xxl-spacing-static-bottom { padding-block-end: var(--spectrum2-spacing-900); }
+.section-skin main > .section.xxxl-spacing-static-bottom { padding-block-end: var(--spectrum2-spacing-1000); }
+.section-skin main > .section:is(.two-up, .three-up, .four-up, .five-up) { gap: var(--spectrum2-spacing-500); }
+
+.section-skin main > .section:is(.two-up, .three-up, .four-up, .five-up):not([class*="grid-width-"]) {
+  padding-inline: var(--spectrum2-acom-grid-margin);
+}
+
+.section-skin main > .section[class*="-up"].no-gap { gap: 0; }
+.section-skin main > .section[class*="-up"].xxs-gap { gap: var(--spectrum2-spacing-100); }
+.section-skin main > .section[class*="-up"].xs-gap { gap: var(--spectrum2-spacing-300); }
+.section-skin main > .section[class*="-up"].s-gap { gap: var(--spectrum2-spacing-400); }
+.section-skin main > .section[class*="-up"].l-gap { gap: var(--spectrum2-spacing-600); }
+.section-skin main > .section[class*="-up"].xl-gap { gap: var(--spectrum2-spacing-700); }
+.section-skin main > .section[class*="-up"].xxl-gap { gap: var(--spectrum2-spacing-800); }
+.section-skin main > .section[class*="-up"].xxxl-gap { gap: var(--spectrum2-spacing-900); }
+.section-skin main > .section[class*="grid-width-"] { gap: var(--spectrum2-spacing-500); }
+
+@media (width < 768px) {
+  .section-skin main > .section[class*="grid-width-"] { padding-inline: var(--spectrum2-acom-grid-margin); }
+}
+
+.section-skin main > .section.masonry-layout {
+  gap: var(--spectrum2-spacing-400);
+  padding-inline: var(--spectrum2-acom-grid-margin);
+}
+
+.section-skin main > .section:is(.dark, .light) {
+  background-color: var(--spectrum2-background-base-color);
+  color: var(--spectrum2-body-color);
+}
+.section-skin main > .section.dark:not([style*="background"]) a:not([class*="button"]):not(.static):not(:where(.stage-hero) a) { color: var(--spectrum2-accent-content-color-default); }
+.section-skin main > .section.dark:not([style*="background"]) a:not([class*="button"]):not(.static):not(:where(.stage-hero) a):hover { color: var(--spectrum2-accent-content-color-hover); }
+.section-skin main > .section.static-links.dark a:not([class*="button"]) { color: inherit; }
+
+.section-skin main > .section.divider {
+  border-block-end: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+}
+
+.section-skin main > .section:is(.rounded-corners, .rounded-corners-top, .rounded-corners-bottom) {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+}
+.section-skin main > .section.rounded-corners { border-radius: var(--spectrum2-corner-radius-extra-large-default); }
+
+.section-skin main > .section.rounded-corners-top {
+  border-start-start-radius: var(--spectrum2-corner-radius-extra-large-default);
+  border-start-end-radius: var(--spectrum2-corner-radius-extra-large-default);
+}
+
+.section-skin main > .section.rounded-corners-bottom {
+  border-end-start-radius: var(--spectrum2-corner-radius-extra-large-default);
+  border-end-end-radius: var(--spectrum2-corner-radius-extra-large-default);
+}
+
+.section-skin main > .section.dark:not([class*="-spacing"]) + .section:is(.rounded-corners, .rounded-corners-top) {
+  margin-block-start: calc(-1 * var(--spectrum2-spacing-500));
+}
+
+.section-skin main > .section.dark:not([class*="-spacing"]):has(+ .section:is(.rounded-corners, .rounded-corners-top)) {
+  padding-block-end: var(--spectrum2-spacing-500);
+}
+
+.section-skin main > .section:is(.rounded-corners, .rounded-corners-bottom):has(+ .section.dark:not([class*="-spacing"])) {
+  margin-block-end: calc(-1 * var(--spectrum2-spacing-500));
+}
+
+.section-skin main > .section:is(.rounded-corners, .rounded-corners-bottom) + .section.dark:not([class*="-spacing"]) {
+  padding-block-start: var(--spectrum2-spacing-500);
+}

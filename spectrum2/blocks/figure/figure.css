@@ -1,0 +1,147 @@
+.figure.spectrum2 {
+  display: block;
+  box-sizing: border-box;
+  padding-block: var(--spectrum2-spacing-600);
+  padding-inline: 0;
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+.figure.spectrum2 + .figure.spectrum2 { padding-block-start: 0; }
+
+.figure.spectrum2 figure {
+  margin: 0;
+  text-align: center;
+}
+
+.figure.spectrum2 img {
+  max-inline-size: 100%;
+  max-block-size: 600px;
+  inline-size: auto;
+  block-size: auto;
+  vertical-align: top;
+}
+.figure.spectrum2.full-height img { max-block-size: none; }
+
+.figure.spectrum2 figcaption {
+  margin-block: var(--spectrum2-spacing-100) 0;
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.figure.spectrum2 figcaption strong { font-weight: var(--spectrum2-body-sans-serif-strong-font-weight); }
+
+.figure.spectrum2 figure > a {
+  display: inline-block;
+  max-inline-size: 100%;
+  color: var(--spectrum2-accent-color-1000);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.figure.spectrum2 a:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.figure.spectrum2 figcaption a {
+  color: var(--spectrum2-accent-color-1000);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.figure.spectrum2.figure-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.figure.spectrum2.figure-list figure {
+  box-sizing: border-box;
+  display: inline-block;
+  margin-block: var(--spectrum2-spacing-300);
+  margin-inline: 0;
+}
+
+.figure.spectrum2.figure-list figure img {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.figure.spectrum2 .s2-video {
+  position: relative;
+  display: block;
+}
+
+.figure.spectrum2 .s2-video video {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.figure.spectrum2 .s2-video video:focus-visible,
+.figure.spectrum2 .s2-video[tabindex]:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.figure.spectrum2 .s2-video-control {
+  position: absolute;
+  inset-block-end: var(--spectrum2-spacing-200);
+  inset-inline-end: var(--spectrum2-spacing-200);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--spectrum2-component-height-100);
+  block-size: var(--spectrum2-component-height-100);
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--spectrum2-component-height-100) * var(--spectrum2-corner-radius-full));
+  color: var(--spectrum2-static-white-text-color);
+  background-color: var(--spectrum2-transparent-black-800);
+  cursor: pointer;
+}
+
+.figure.spectrum2 .s2-video-control svg {
+  inline-size: var(--spectrum2-workflow-icon-medium);
+  block-size: var(--spectrum2-workflow-icon-medium);
+}
+
+.figure.spectrum2 .s2-video-control:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.figure.spectrum2 .s2-video-control .s2-video-icon-play { display: none; }
+.figure.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-play { display: block; }
+.figure.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-pause { display: none; }
+@media (width >= 768px) {
+  .figure.spectrum2 figure {
+    max-inline-size: 800px;
+    margin-inline: auto;
+  }
+
+  .figure.spectrum2.figure-list {
+    flex-direction: row;
+    gap: var(--spectrum2-spacing-500);
+    max-inline-size: 800px;
+    margin-inline: auto;
+    padding-block: 0;
+  }
+
+  .figure.spectrum2.figure-list figure {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    margin: 0;
+  }
+  .figure.spectrum2.figure-list + .figure.spectrum2:not(.figure-list) { padding-block-start: var(--spectrum2-spacing-600); }
+}

@@ -1,0 +1,138 @@
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card {
+  background-color: var(--spectrum2-background-elevated-color);
+  border-color: var(--spectrum2-gray-200);
+  border-radius: var(--spectrum2-corner-radius-large-default);
+  color: var(--spectrum2-body-color);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card .consonant-Card-header {
+  border-start-start-radius: var(--spectrum2-corner-radius-large-default);
+  border-start-end-radius: var(--spectrum2-corner-radius-large-default);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card.icon-card {
+  background-color: var(--spectrum2-background-layer-1-color);
+  border-color: var(--spectrum2-background-layer-1-color);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card-title {
+  color: var(--spectrum2-title-color);
+  font-family: var(--spectrum2-acom-sans-serif-font-family-stack);
+  font-size: var(--spectrum2-title-size-l);
+  line-height: var(--spectrum2-line-height-font-size-300);
+  font-weight: var(--spectrum2-title-sans-serif-font-weight);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card-text,
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card-label {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit {
+  block-size: var(--spectrum2-component-height-100);
+  padding-inline: var(--spectrum2-spacing-300);
+  border: var(--spectrum2-border-width-200) solid var(--spectrum2-neutral-subdued-background-color-default);
+  border-radius: calc(var(--spectrum2-component-height-100) * var(--spectrum2-corner-radius-full));
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit span {
+  color: var(--spectrum2-neutral-content-color-default);
+  font-family: var(--spectrum2-acom-label-font-family);
+  font-size: var(--spectrum2-acom-label-font-size);
+  line-height: var(--spectrum2-acom-label-line-height);
+  font-weight: var(--spectrum2-acom-label-font-weight);
+  letter-spacing: var(--spectrum2-acom-label-letter-spacing);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit:hover {
+  background-color: var(--spectrum2-neutral-subdued-background-color-hover);
+  border-color: var(--spectrum2-neutral-subdued-background-color-hover);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit:hover span { color: var(--spectrum2-white); }
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit.consonant-BtnInfobit--cta {
+  background-color: var(--spectrum2-accent-background-color-default);
+  border-color: var(--spectrum2-accent-background-color-default);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit.consonant-BtnInfobit--cta span { color: var(--spectrum2-white); }
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-BtnInfobit.consonant-BtnInfobit--cta:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+  border-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.caas-skin .caas-preview .consonant-FiltersInfo-results,
+.caas-skin .caas-preview .consonant-Pagination-summary,
+.caas-skin .caas-preview .consonant-LeftFilter-itemsItemName {
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.caas-skin .caas-preview .consonant-LeftFilters-deskTitle,
+.caas-skin .caas-preview .consonant-LeftFilter-link {
+  color: var(--spectrum2-title-color);
+  font-family: var(--spectrum2-acom-label-font-family);
+  font-size: var(--spectrum2-acom-label-font-size);
+  line-height: var(--spectrum2-acom-label-line-height);
+  font-weight: var(--spectrum2-acom-label-font-weight);
+  letter-spacing: var(--spectrum2-acom-label-letter-spacing);
+}
+
+.caas-skin .caas-preview .consonant-LeftFilters {
+  background-color: var(--spectrum2-background-base-color);
+  border-radius: var(--spectrum2-corner-radius-large-default);
+}
+
+.caas-skin .caas-preview .consonant-Search .consonant-Search-input,
+.caas-skin .caas-preview .consonant-Select .consonant-Select-btn {
+  background-color: var(--spectrum2-background-base-color);
+  color: var(--spectrum2-neutral-content-color-default);
+  border: var(--spectrum2-border-width-200) solid var(--spectrum2-gray-300);
+  border-radius: var(--spectrum2-corner-radius-medium-default);
+}
+
+.caas-skin .caas-preview .consonant-Pagination .consonant-Pagination-itemBtn,
+.caas-skin .caas-preview .consonant-Pagination .consonant-Pagination-btn {
+  color: var(--spectrum2-neutral-content-color-default);
+}
+
+.caas-skin .caas-preview .consonant-Pagination .consonant-Pagination-item.is-active .consonant-Pagination-itemBtn {
+  background-color: var(--spectrum2-gray-200);
+}
+.caas-skin .caas-preview :is(a, button, input):focus:not(:focus-visible) { outline: none; }
+
+.caas-skin .caas-preview :is(a, button, input):focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.caas-skin .caas-preview .consonant-CardsGrid .consonant-Card:has(> .consonant-LinkBlocker:focus-visible) {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.caas-skin .caas-preview .consonant-LeftFilters-clearLink,
+.caas-skin .caas-preview .consonant-Search-inputTitle,
+.caas-skin .caas-preview .consonant-Select label {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+@media (prefers-reduced-motion: reduce) {
+  .caas-skin .caas-preview,
+  .caas-skin .caas-preview *,
+  .caas-skin .caas-preview *::before,
+  .caas-skin .caas-preview *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

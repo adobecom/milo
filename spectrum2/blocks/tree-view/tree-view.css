@@ -1,0 +1,143 @@
+.tree-view.spectrum2 {
+  --_row-pad: var(--spectrum2-spacing-200);
+  --_inset: var(--spectrum2-spacing-300);
+
+  display: block;
+  box-sizing: border-box;
+  padding-block: var(--spectrum2-spacing-500) var(--spectrum2-spacing-300);
+  padding-inline: var(--spectrum2-spacing-500);
+  background-color: var(--spectrum2-background-layer-1-color);
+  color: var(--spectrum2-neutral-content-color-default);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-body-size-s);
+  line-height: var(--spectrum2-body-line-height);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.tree-view.spectrum2 .tree-view-nav { display: block; }
+
+.tree-view.spectrum2 .tree-view-title {
+  margin: 0;
+  padding-block: 0 var(--spectrum2-spacing-300);
+  border-block-end: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-eyebrow-font-family);
+  font-size: var(--spectrum2-acom-eyebrow-font-size);
+  line-height: var(--spectrum2-acom-eyebrow-line-height);
+  font-weight: var(--spectrum2-acom-eyebrow-font-weight);
+  letter-spacing: var(--spectrum2-acom-eyebrow-letter-spacing);
+  text-transform: uppercase;
+}
+
+.tree-view.spectrum2 .tree-view-title strong { font-weight: var(--spectrum2-acom-eyebrow-font-weight); }
+
+.tree-view.spectrum2 .tree-view-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-view.spectrum2 .tree-view-nav ul.tree-view-list { padding-block-start: var(--_row-pad); }
+
+.tree-view.spectrum2 .tree-view-nav li { margin: 0; }
+
+.tree-view.spectrum2 .tree-view-nav ul.tree-view-sublist {
+  margin-block: 0 var(--_row-pad);
+  margin-inline-start: var(--_inset);
+}
+
+.tree-view.spectrum2 .tree-view-nav ul.tree-view-sublist[hidden] { display: none; }
+.tree-view.spectrum2 .tree-view-nav li:last-child > ul.tree-view-sublist { margin-block-end: 0; }
+
+.tree-view.spectrum2 .tree-view-nav li a,
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle {
+  display: block;
+  box-sizing: border-box;
+  margin-block: 0;
+  margin-inline: calc(-1 * var(--_inset));
+  padding-block: var(--_row-pad);
+  padding-inline: var(--_inset);
+  border-radius: var(--spectrum2-corner-radius-small-default);
+  color: var(--spectrum2-neutral-content-color-default);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-body-size-s);
+  line-height: var(--spectrum2-body-line-height);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-decoration: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.tree-view.spectrum2 .tree-view-nav li ul.tree-view-sublist a {
+  margin-inline-start: calc(-2 * var(--_inset));
+  padding-inline-start: calc(2 * var(--_inset));
+}
+
+.tree-view.spectrum2 .tree-view-nav li a:hover,
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle:hover {
+  background-color: var(--spectrum2-gray-100);
+  color: var(--spectrum2-neutral-content-color-hover);
+}
+
+.tree-view.spectrum2 .tree-view-nav li a:active,
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle:active { color: var(--spectrum2-neutral-content-color-down); }
+
+.tree-view.spectrum2 .tree-view-nav li a:focus-visible,
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle:focus-visible {
+  background-color: var(--spectrum2-gray-100);
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.tree-view.spectrum2 .tree-view-nav li a:focus:not(:focus-visible),
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle:focus:not(:focus-visible) { outline: none; }
+
+.tree-view.spectrum2 .tree-view-nav li a.tree-view-current {
+  background-color: var(--spectrum2-gray-200);
+  color: var(--spectrum2-neutral-content-color-hover);
+  font-weight: var(--spectrum2-body-sans-serif-strong-font-weight);
+}
+
+.tree-view.spectrum2 .tree-view-nav li .tree-view-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spectrum2-spacing-200);
+  inline-size: calc(100% + 2 * var(--_inset));
+  border: 0;
+  background-color: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+
+.tree-view.spectrum2 .tree-view-nav li.tree-view-group > .tree-view-toggle { margin-block-end: 0; }
+
+.tree-view.spectrum2 .tree-view-nav li.tree-view-group:last-child > .tree-view-toggle,
+.tree-view.spectrum2 .tree-view-nav li.tree-view-open > .tree-view-toggle { margin-block-end: var(--_row-pad); }
+
+.tree-view.spectrum2 .tree-view-toggle svg {
+  flex: none;
+  inline-size: var(--spectrum2-workflow-icon-2x-small);
+  block-size: var(--spectrum2-workflow-icon-2x-small);
+  fill: currentcolor;
+  transform: rotate(90deg);
+  transition: transform var(--spectrum2-transition-200) var(--spectrum2-transition-standard);
+}
+
+.tree-view.spectrum2 .tree-view-toggle[aria-expanded="true"] svg { transform: rotate(-90deg); }
+
+:lang(ja) .tree-view.spectrum2 .tree-view-nav li :is(a, .tree-view-toggle),
+:lang(zh) .tree-view.spectrum2 .tree-view-nav li :is(a, .tree-view-toggle),
+:lang(ko) .tree-view.spectrum2 .tree-view-nav li :is(a, .tree-view-toggle) {
+  line-height: var(--spectrum2-cjk-line-height-200);
+  letter-spacing: var(--spectrum2-cjk-letter-spacing);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-view.spectrum2 .tree-view-nav li a,
+  .tree-view.spectrum2 .tree-view-nav li .tree-view-toggle,
+  .tree-view.spectrum2 .tree-view-toggle svg { transition: none; }
+}

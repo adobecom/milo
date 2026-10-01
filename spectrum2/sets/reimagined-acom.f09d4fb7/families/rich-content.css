@@ -1,0 +1,40 @@
+@media (width >= 1024px) {
+.rich-content.spectrum2.reimagined-acom :is(h1, h2, h3, h4, h5, h6, [class*="s2-heading-"]) {
+  font-weight: var(--spectrum2-black-font-weight);
+  text-wrap: balance;
+  margin-block-end: var(--spectrum2-spacing-500);
+}
+
+.rich-content.spectrum2.reimagined-acom.center {
+  text-align: start;
+}
+
+.rich-content.spectrum2.reimagined-acom.center .s2-action-area {
+  justify-content: flex-start;
+}
+
+.rich-content.spectrum2.reimagined-acom .rich-content-foreground > div > p {
+  margin-block-start: var(--spectrum2-spacing-400);
+}
+
+.rich-content.spectrum2.reimagined-acom .s2-button {
+  padding-inline: var(--spectrum2-spacing-500);
+  font-weight: var(--spectrum2-black-font-weight);
+}
+
+.rich-content.spectrum2.reimagined-acom .s2-button:is(.s2-button-outline, .fill, .s2-button-fill, .s2-button-accent) {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-default);
+  border-color: transparent;
+}
+
+.rich-content.spectrum2.reimagined-acom .s2-button:is(.s2-button-outline, .fill, .s2-button-fill, .s2-button-accent):is(:hover, :active) {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-hover);
+  border-color: transparent;
+}
+
+.rich-content.spectrum2.reimagined-acom.rich-content :is(img, video, picture, .rich-content-media) {
+  border-radius: var(--spectrum2-corner-radius-800);
+}
+}

@@ -1,0 +1,33 @@
+.modal-skin .dialog-modal {
+  background-color: var(--spectrum2-background-elevated-color);
+  border-radius: var(--spectrum2-corner-radius-extra-large-default);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+  color: var(--spectrum2-body-color);
+}
+
+.modal-skin .modal-curtain.is-open {
+  background-color: var(--spectrum2-overlay-color);
+  opacity: var(--spectrum2-overlay-opacity);
+}
+
+.modal-skin .dialog-modal button.dialog-close {
+  inline-size: var(--spectrum2-component-height-100);
+  block-size: var(--spectrum2-component-height-100);
+  inset-block-start: var(--spectrum2-spacing-100);
+  inset-inline-end: var(--spectrum2-spacing-100);
+  border-color: transparent;
+}
+
+.modal-skin .dialog-modal .dialog-close svg { inline-size: 100%; block-size: 100%; }
+.modal-skin .dialog-modal .dialog-close circle { fill: var(--spectrum2-neutral-subdued-background-color-default); }
+.modal-skin .dialog-modal .dialog-close line { stroke: var(--spectrum2-white); }
+.modal-skin .dialog-modal .dialog-close:hover circle { fill: var(--spectrum2-neutral-subdued-background-color-hover); }
+
+.modal-skin .dialog-modal .dialog-close:focus:not(:focus-visible) { outline: none; }
+
+.modal-skin .dialog-modal .dialog-close:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.modal-skin .dialog-modal .dialog-close:focus-visible circle { fill: var(--spectrum2-neutral-subdued-background-color-key-focus); }

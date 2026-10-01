@@ -1,0 +1,416 @@
+.chart.spectrum2 {
+  --_surface: var(--spectrum2-background-base-color);
+
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  inline-size: 100%;
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.chart.spectrum2.border {
+  --_surface: var(--spectrum2-background-elevated-color);
+
+  border-radius: var(--spectrum2-corner-radius-large-default);
+  background-color: var(--spectrum2-background-elevated-color);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+  padding: var(--spectrum2-spacing-500) var(--spectrum2-spacing-500) var(--spectrum2-spacing-600);
+}
+
+.chart.spectrum2 :where(p) { margin: 0; }
+
+.chart.spectrum2 .chart-title,
+.chart.spectrum2 .chart-title :is(h1, h2, h3, h4, h5, h6, p) {
+  margin: 0;
+  color: var(--spectrum2-heading-color);
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+}
+
+.chart.spectrum2 .chart-title:not(:empty) { margin-block-end: var(--spectrum2-spacing-300); }
+
+.chart.spectrum2 :is(.chart-subtitle, .chart-subheading),
+.chart.spectrum2 .chart-subtitle :is(h1, h2, h3, h4, h5, h6, p) {
+  margin: 0;
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-lg-font-family);
+  font-size: var(--spectrum2-acom-body-lg-font-size);
+  line-height: var(--spectrum2-acom-body-lg-line-height);
+  font-weight: var(--spectrum2-acom-body-lg-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-lg-letter-spacing);
+}
+
+.chart.spectrum2 .chart-plot {
+  inline-size: 100%;
+  margin-block-start: var(--spectrum2-spacing-600);
+}
+
+.chart.spectrum2 .chart-canvas { inline-size: 100%; }
+
+.chart.spectrum2 .chart-footnote {
+  margin-block-start: var(--spectrum2-spacing-400);
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  text-align: end;
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.chart.spectrum2 .chart-footnote:empty,
+.chart.spectrum2 .chart-footnote:has(> div:empty:only-child) { margin-block-start: 0; }
+
+.chart.spectrum2 a {
+  color: var(--spectrum2-accent-color-1000);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.chart.spectrum2 a:hover,
+.chart.spectrum2 a:active { color: var(--spectrum2-accent-color-1100); }
+
+.chart.spectrum2 :is(a, button):focus:not(:focus-visible) { outline: none; }
+
+.chart.spectrum2 :is(a, button):focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+.chart.spectrum2 .chart-c-seafoam { --_c: var(--spectrum2-seafoam-visual-color); --_track: var(--spectrum2-seafoam-subtle-background-color-default); --_fill: var(--spectrum2-seafoam-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-indigo { --_c: var(--spectrum2-indigo-visual-color); --_track: var(--spectrum2-indigo-subtle-background-color-default); --_fill: var(--spectrum2-indigo-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-orange { --_c: var(--spectrum2-orange-visual-color); --_track: var(--spectrum2-orange-subtle-background-color-default); --_fill: var(--spectrum2-orange-background-color-default); --_on-fill: var(--spectrum2-static-black-text-color); }
+.chart.spectrum2 .chart-c-magenta { --_c: var(--spectrum2-magenta-visual-color); --_track: var(--spectrum2-magenta-subtle-background-color-default); --_fill: var(--spectrum2-magenta-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-lavender { --_c: var(--spectrum2-fuchsia-visual-color); --_track: var(--spectrum2-fuchsia-subtle-background-color-default); --_fill: var(--spectrum2-fuchsia-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-lime { --_c: var(--spectrum2-celery-visual-color); --_track: var(--spectrum2-celery-subtle-background-color-default); --_fill: var(--spectrum2-celery-background-color-default); --_on-fill: var(--spectrum2-static-black-text-color); }
+.chart.spectrum2 .chart-c-blue { --_c: var(--spectrum2-blue-visual-color); --_track: var(--spectrum2-blue-subtle-background-color-default); --_fill: var(--spectrum2-blue-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-purple { --_c: var(--spectrum2-purple-visual-color); --_track: var(--spectrum2-purple-subtle-background-color-default); --_fill: var(--spectrum2-purple-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-yellow { --_c: var(--spectrum2-yellow-visual-color); --_track: var(--spectrum2-yellow-subtle-background-color-default); --_fill: var(--spectrum2-yellow-background-color-default); --_on-fill: var(--spectrum2-static-black-text-color); }
+.chart.spectrum2 .chart-c-copper { --_c: var(--spectrum2-cinnamon-visual-color); --_track: var(--spectrum2-cinnamon-subtle-background-color-default); --_fill: var(--spectrum2-cinnamon-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-green { --_c: var(--spectrum2-green-visual-color); --_track: var(--spectrum2-green-subtle-background-color-default); --_fill: var(--spectrum2-green-background-color-default); --_on-fill: var(--spectrum2-static-white-text-color); }
+.chart.spectrum2 .chart-c-chartreuse { --_c: var(--spectrum2-chartreuse-visual-color); --_track: var(--spectrum2-chartreuse-subtle-background-color-default); --_fill: var(--spectrum2-chartreuse-background-color-default); --_on-fill: var(--spectrum2-static-black-text-color); }
+.chart.spectrum2 .chart-figure { position: relative; inline-size: 100%; }
+
+.chart.spectrum2 .chart-plot-area { inline-size: 100%; }
+
+.chart.spectrum2 .chart-svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+
+.chart.spectrum2 .chart-svg :is(.chart-tick-label, .chart-value-label) {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  fill: currentcolor;
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.chart.spectrum2 .chart-svg .chart-value-label {
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-label-font-family);
+  font-size: var(--spectrum2-acom-label-font-size);
+  line-height: var(--spectrum2-acom-label-line-height);
+  font-weight: var(--spectrum2-acom-label-font-weight);
+  letter-spacing: var(--spectrum2-acom-label-letter-spacing);
+}
+
+.chart.spectrum2 .chart-svg .chart-gridline {
+  stroke: var(--spectrum2-gray-200);
+  stroke-width: var(--spectrum2-border-width-100);
+  shape-rendering: crispedges;
+}
+
+.chart.spectrum2 .chart-svg .chart-baseline {
+  stroke: var(--spectrum2-gray-400);
+  stroke-width: var(--spectrum2-border-width-100);
+  shape-rendering: crispedges;
+}
+
+.chart.spectrum2 .chart-svg .chart-tick {
+  stroke: var(--spectrum2-neutral-subdued-content-color-default);
+  stroke-width: var(--spectrum2-border-width-100);
+}
+
+.chart.spectrum2 .chart-svg .chart-bar {
+  fill: var(--_c);
+  rx: var(--spectrum2-corner-radius-75);
+}
+
+.chart.spectrum2 .chart-svg .chart-track {
+  fill: var(--_track);
+  rx: var(--spectrum2-corner-radius-75);
+}
+
+.chart.spectrum2 .chart-svg .chart-line {
+  fill: none;
+  stroke: var(--_c);
+  stroke-width: var(--spectrum2-border-width-200);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart.spectrum2 .chart-svg .chart-area { fill: var(--_c); stroke: none; }
+
+.chart.spectrum2 .chart-svg .chart-hit { fill: transparent; pointer-events: all; }
+
+.chart.spectrum2 .chart-svg .chart-mark-line {
+  stroke: var(--spectrum2-neutral-subdued-content-color-default);
+  stroke-width: var(--spectrum2-border-width-100);
+  stroke-dasharray: 4 4;
+}
+
+.chart.spectrum2 .chart-svg .chart-mark-area { fill: var(--spectrum2-gray-100); }
+
+.chart.spectrum2 .chart-svg .chart-slice {
+  fill: var(--_c);
+  stroke: var(--_surface);
+  stroke-width: var(--spectrum2-border-width-200);
+}
+
+.chart.spectrum2 .chart-svg .chart-pie-leader {
+  fill: none;
+  stroke: var(--spectrum2-neutral-subdued-content-color-default);
+  stroke-width: var(--spectrum2-border-width-100);
+}
+
+.chart.spectrum2 .chart-svg .chart-donut-center {
+  color: var(--spectrum2-heading-color);
+  fill: currentcolor;
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-acom-heading-1-font-size);
+  line-height: var(--spectrum2-acom-heading-1-line-height);
+  font-weight: var(--spectrum2-acom-heading-1-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-1-letter-spacing);
+}
+
+.chart.spectrum2 .chart-svg .chart-donut-title {
+  font-family: var(--spectrum2-acom-body-lg-font-family);
+  font-size: var(--spectrum2-acom-body-lg-font-size);
+  line-height: var(--spectrum2-acom-body-lg-line-height);
+  font-weight: var(--spectrum2-acom-body-lg-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-lg-letter-spacing);
+}
+
+.chart.spectrum2 .chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spectrum2-spacing-100) var(--spectrum2-spacing-400);
+  margin: var(--spectrum2-spacing-300) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart.spectrum2 .chart-legend li { margin: 0; padding: 0; }
+
+.chart.spectrum2 .chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spectrum2-spacing-100);
+  margin: 0;
+  padding: var(--spectrum2-spacing-75) 0;
+  border: 0;
+  background: transparent;
+  color: var(--spectrum2-body-color);
+  cursor: pointer;
+  font-family: var(--spectrum2-acom-label-font-family);
+  font-size: var(--spectrum2-acom-label-font-size);
+  line-height: var(--spectrum2-acom-label-line-height);
+  font-weight: var(--spectrum2-acom-label-font-weight);
+  letter-spacing: var(--spectrum2-acom-label-letter-spacing);
+  text-align: start;
+}
+
+.chart.spectrum2 .chart-swatch {
+  flex: none;
+  inline-size: var(--spectrum2-spacing-300);
+  block-size: var(--spectrum2-spacing-300);
+  border-radius: var(--spectrum2-corner-radius-75);
+  background-color: var(--_c);
+}
+.chart.spectrum2 .chart-legend-item.chart-legend-static { cursor: default; }
+.chart.spectrum2 .chart-legend-item[aria-pressed="false"] { color: var(--spectrum2-neutral-subdued-content-color-default); }
+.chart.spectrum2 .chart-legend-item[aria-pressed="false"] .chart-swatch { background-color: var(--_track); }
+
+.chart.spectrum2 .chart-data {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chart.spectrum2 .chart-disc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spectrum2-spacing-100);
+  box-sizing: border-box;
+  inline-size: min(100%, 430px);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  padding: var(--spectrum2-spacing-500);
+  border-radius: 50%;
+  background-color: var(--_fill);
+  color: var(--_on-fill);
+  text-align: center;
+}
+
+.chart.spectrum2 .chart-disc .chart-number {
+  color: inherit;
+  font-family: var(--spectrum2-acom-super-font-family);
+  font-size: var(--spectrum2-acom-super-font-size);
+  line-height: var(--spectrum2-acom-super-line-height);
+  font-weight: var(--spectrum2-acom-super-font-weight);
+  letter-spacing: var(--spectrum2-acom-super-letter-spacing);
+  overflow-wrap: anywhere;
+}
+
+.chart.spectrum2 .chart-disc .chart-number-label {
+  color: inherit;
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.chart.spectrum2 .chart-list-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-block-end: var(--spectrum2-spacing-500);
+  padding: var(--spectrum2-spacing-200) var(--spectrum2-spacing-700);
+  background-color: var(--_fill);
+  color: var(--_on-fill);
+  text-align: center;
+  font-family: var(--spectrum2-acom-sans-serif-font-family-stack);
+  font-size: var(--spectrum2-title-size-xl);
+  line-height: var(--spectrum2-line-height-font-size-400);
+  font-weight: var(--spectrum2-title-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.chart.spectrum2 .chart-list-title :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: var(--spectrum2-title-sans-serif-font-weight);
+  letter-spacing: inherit;
+}
+
+.chart.spectrum2 .chart-list :is(ol, ul) {
+  margin: 0;
+  padding-inline: var(--spectrum2-spacing-500) var(--spectrum2-spacing-300);
+}
+
+.chart.spectrum2 .chart-list ul.chart-list-icons { padding-inline-start: 0; list-style: none; }
+
+.chart.spectrum2 .chart-list li {
+  padding-block-end: var(--spectrum2-spacing-400);
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-lg-font-family);
+  font-size: var(--spectrum2-acom-body-lg-font-size);
+  line-height: var(--spectrum2-acom-body-lg-line-height);
+  font-weight: var(--spectrum2-acom-body-lg-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-lg-letter-spacing);
+}
+
+.chart.spectrum2 .chart-list li:last-of-type { padding-block-end: 0; }
+
+.chart.spectrum2 .chart-list-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spectrum2-spacing-300);
+}
+
+.chart.spectrum2 .chart-list-name { display: flex; align-items: flex-start; gap: var(--spectrum2-spacing-300); }
+
+.chart.spectrum2 .chart-list-name img {
+  flex: none;
+  inline-size: var(--spectrum2-spacing-500);
+  block-size: var(--spectrum2-spacing-500);
+  object-fit: contain;
+}
+
+.chart.spectrum2 .chart-list-extra { text-align: end; }
+.chart.spectrum2 .chart-carousel { position: relative; }
+
+.chart.spectrum2 .chart-carousel-item { display: none; }
+
+.chart.spectrum2 .chart-carousel-item.is-active { display: block; }
+
+.chart.spectrum2 .chart-carousel-live {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chart.spectrum2 .chart-carousel-button {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--spectrum2-spacing-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--spectrum2-component-height-100);
+  block-size: var(--spectrum2-component-height-100);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--spectrum2-corner-radius-small-default);
+  background: transparent;
+  color: var(--spectrum2-static-white-text-color);
+  cursor: pointer;
+}
+
+.chart.spectrum2 .chart-carousel-previous { inset-inline-start: var(--spectrum2-spacing-100); }
+
+.chart.spectrum2 .chart-carousel-next { inset-inline-end: var(--spectrum2-spacing-100); }
+
+.chart.spectrum2 .chart-carousel-button::before {
+  content: "";
+  display: block;
+  inline-size: var(--spectrum2-spacing-200);
+  block-size: var(--spectrum2-spacing-200);
+  border-block-start: var(--spectrum2-border-width-400) solid currentcolor;
+  border-inline-end: var(--spectrum2-border-width-400) solid currentcolor;
+}
+
+.chart.spectrum2 .chart-carousel-previous::before { margin-inline-start: var(--spectrum2-spacing-75); transform: rotate(225deg); }
+.chart.spectrum2 .chart-carousel-next::before { margin-inline-end: var(--spectrum2-spacing-75); transform: rotate(45deg); }
+[dir="rtl"] .chart.spectrum2 .chart-carousel-previous::before { transform: rotate(45deg); }
+[dir="rtl"] .chart.spectrum2 .chart-carousel-next::before { transform: rotate(225deg); }
+
+.chart.spectrum2 .chart-carousel-button:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-static-white-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.chart.spectrum2 .chart-carousel:has(.chart-list-title:is(.chart-c-yellow, .chart-c-chartreuse, .chart-c-lime, .chart-c-orange)) .chart-carousel-button {
+  color: var(--spectrum2-static-black-text-color);
+}
+
+.chart.spectrum2 .chart-carousel:has(.chart-list-title:is(.chart-c-yellow, .chart-c-chartreuse, .chart-c-lime, .chart-c-orange)) .chart-carousel-button:focus-visible {
+  outline-color: var(--spectrum2-static-black-focus-indicator-color);
+}

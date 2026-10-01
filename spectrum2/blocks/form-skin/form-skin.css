@@ -1,0 +1,157 @@
+.form-skin .marketo .marketo-form-wrapper {
+  background-color: var(--spectrum2-background-layer-1-color);
+  border-radius: var(--spectrum2-corner-radius-large-default);
+  padding: var(--spectrum2-spacing-600) var(--spectrum2-spacing-400);
+  color: var(--spectrum2-body-color);
+}
+
+@media (width >= 768px) {
+  .form-skin .marketo .marketo-form-wrapper { padding: var(--spectrum2-spacing-700) var(--spectrum2-spacing-600); }
+}
+
+.form-skin .marketo .marketo-title {
+  color: var(--spectrum2-heading-color);
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.form-skin .marketo .marketo-description {
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoLabel {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  font-family: var(--spectrum2-acom-label-font-family);
+  font-size: var(--spectrum2-acom-label-font-size);
+  line-height: var(--spectrum2-acom-label-line-height);
+  font-weight: var(--spectrum2-acom-label-font-weight);
+  letter-spacing: var(--spectrum2-acom-label-letter-spacing);
+  padding-block-end: var(--spectrum2-spacing-75);
+}
+
+.form-skin .marketo .mktoForm .mktoField:not([type="checkbox"], [type="radio"]) {
+  block-size: var(--spectrum2-component-height-200);
+  background-color: var(--spectrum2-background-base-color);
+  color: var(--spectrum2-neutral-content-color-default);
+  border: var(--spectrum2-border-width-200) solid var(--spectrum2-gray-300);
+  border-radius: var(--spectrum2-corner-radius-medium-default);
+  padding-inline: var(--spectrum2-spacing-300);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoField:not([type="checkbox"], [type="radio"]):hover {
+  border-color: var(--spectrum2-gray-400);
+}
+
+.form-skin .marketo .mktoForm .mktoField:not([type="checkbox"], [type="radio"])::placeholder {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+.form-skin .marketo .mktoForm select.mktoField { padding-inline-end: var(--spectrum2-spacing-600); }
+
+.form-skin .marketo .mktoForm .mktoField:focus:not(:focus-visible) { outline: none; }
+
+.form-skin .marketo .mktoForm .mktoField:focus-visible,
+.form-skin .marketo .mktoForm .mktoCheckboxList input:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.form-skin .marketo .mktoForm.show-warnings .mktoInvalid:not([type="checkbox"], [type="radio"]) {
+  border-color: var(--spectrum2-negative-border-color-default);
+}
+
+.form-skin .marketo .mktoForm .msg-error .mktoHtmlText {
+  color: var(--spectrum2-negative-content-color-default);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoCheckboxList input::before {
+  border-color: var(--spectrum2-gray-600);
+  border-radius: var(--spectrum2-corner-radius-small-default);
+}
+
+.form-skin .marketo .mktoForm .mktoCheckboxList input:checked::before {
+  background-color: var(--spectrum2-accent-background-color-default);
+  border-color: var(--spectrum2-accent-background-color-default);
+}
+
+.form-skin .marketo .mktoForm .mktoCheckboxList label {
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoHtmlText:not(.msg-error .mktoHtmlText) {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  font-family: var(--spectrum2-acom-body-sm-font-family);
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+  font-weight: var(--spectrum2-acom-body-sm-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-sm-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoHtmlText a { color: var(--spectrum2-accent-content-color-default); }
+.form-skin .marketo .mktoForm .mktoHtmlText a:hover { color: var(--spectrum2-accent-content-color-hover); }
+
+.form-skin .marketo .mktoForm .mktoButtonWrap .mktoButton {
+  block-size: var(--spectrum2-component-height-200);
+  padding-inline: var(--spectrum2-spacing-500);
+  background-color: var(--spectrum2-accent-background-color-default);
+  border: 0;
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  color: var(--spectrum2-white);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-md-letter-spacing);
+}
+
+.form-skin .marketo .mktoForm .mktoButtonWrap .mktoButton:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.form-skin .marketo .mktoForm .mktoButtonWrap .mktoButton:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.form-skin .marketo .mktoForm .mktoButtonWrap .mktoButton:focus:not(:focus-visible) { outline: none; }
+
+.form-skin .marketo .mktoForm .mktoButtonWrap .mktoButton:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+@media (prefers-reduced-motion: reduce) {
+  .form-skin .marketo,
+  .form-skin .marketo *,
+  .form-skin .marketo *::before,
+  .form-skin .marketo *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+.form-skin .dark .marketo,
+.form-skin .marketo.dark { color-scheme: dark; }
+
+.form-skin .light .marketo,
+.form-skin .marketo.light { color-scheme: light; }

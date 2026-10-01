@@ -1,0 +1,345 @@
+.how-to.spectrum2 {
+  --_content: min(100% - 2 * var(--spectrum2-acom-grid-margin), var(--spectrum2-acom-grid-max-width));
+  --_cols: 12;
+
+  display: block;
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-sans-serif-font-family-stack);
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.how-to.spectrum2.container {
+  max-inline-size: var(--_content);
+  margin-inline: auto;
+}
+
+.how-to.spectrum2.container .how-to-foreground { --_content: 100%; }
+.how-to.spectrum2.xxs-spacing { padding-block: var(--spectrum2-spacing-100); }
+.how-to.spectrum2.xs-spacing { padding-block: var(--spectrum2-spacing-300); }
+.how-to.spectrum2.s-spacing { padding-block: var(--spectrum2-spacing-400); }
+.how-to.spectrum2.m-spacing { padding-block: var(--spectrum2-spacing-500); }
+.how-to.spectrum2.l-spacing { padding-block: var(--spectrum2-spacing-600); }
+.how-to.spectrum2.xl-spacing { padding-block: var(--spectrum2-spacing-700); }
+.how-to.spectrum2.xxl-spacing { padding-block: var(--spectrum2-spacing-800); }
+.how-to.spectrum2.xxxl-spacing { padding-block: var(--spectrum2-spacing-900); }
+.how-to.spectrum2.no-spacing { padding-block: 0; }
+.how-to.spectrum2.xxs-spacing-top { padding-block-start: var(--spectrum2-spacing-100); }
+.how-to.spectrum2.xs-spacing-top { padding-block-start: var(--spectrum2-spacing-300); }
+.how-to.spectrum2.s-spacing-top { padding-block-start: var(--spectrum2-spacing-400); }
+.how-to.spectrum2.m-spacing-top { padding-block-start: var(--spectrum2-spacing-500); }
+.how-to.spectrum2.l-spacing-top { padding-block-start: var(--spectrum2-spacing-600); }
+.how-to.spectrum2.xl-spacing-top { padding-block-start: var(--spectrum2-spacing-700); }
+.how-to.spectrum2.xxl-spacing-top { padding-block-start: var(--spectrum2-spacing-800); }
+.how-to.spectrum2.xxxl-spacing-top { padding-block-start: var(--spectrum2-spacing-900); }
+.how-to.spectrum2.no-spacing-top { padding-block-start: 0; }
+.how-to.spectrum2.xxs-spacing-bottom { padding-block-end: var(--spectrum2-spacing-100); }
+.how-to.spectrum2.xs-spacing-bottom { padding-block-end: var(--spectrum2-spacing-300); }
+.how-to.spectrum2.s-spacing-bottom { padding-block-end: var(--spectrum2-spacing-400); }
+.how-to.spectrum2.m-spacing-bottom { padding-block-end: var(--spectrum2-spacing-500); }
+.how-to.spectrum2.l-spacing-bottom { padding-block-end: var(--spectrum2-spacing-600); }
+.how-to.spectrum2.xl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-700); }
+.how-to.spectrum2.xxl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-800); }
+.how-to.spectrum2.xxxl-spacing-bottom { padding-block-end: var(--spectrum2-spacing-900); }
+.how-to.spectrum2.no-spacing-bottom { padding-block-end: 0; }
+
+.how-to.spectrum2 .how-to-foreground {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "heading" "mini" "list" "media";
+  align-items: start;
+  row-gap: var(--spectrum2-spacing-500);
+  column-gap: var(--spectrum2-spacing-600);
+  max-inline-size: calc(var(--_content) * var(--_cols) / 12);
+  margin-block: 0;
+  margin-inline: auto;
+  padding-block: var(--spectrum2-spacing-800);
+  padding-inline: 0;
+}
+.how-to.spectrum2 .how-to-foreground.how-to-media-large { grid-template-areas: "heading" "media" "list"; }
+
+.how-to.spectrum2:is(.media-first, .media-first-mobile) .how-to-foreground { grid-template-areas: "heading" "media" "list"; }
+.how-to.spectrum2:is(.media-first, .media-first-mobile) .how-to-foreground.how-to-media-mini { grid-template-areas: "heading" "mini" "list"; }
+.how-to.spectrum2.media-last-mobile .how-to-foreground { grid-template-areas: "heading" "list" "media"; }
+.how-to.spectrum2.media-last-mobile .how-to-foreground.how-to-media-mini { grid-template-areas: "heading" "list" "mini"; }
+.how-to.spectrum2:is(.section[class*="grid-width-"] *) .how-to-foreground { --_content: 100%; }
+
+.how-to.spectrum2 .how-to-heading {
+  grid-area: heading;
+  display: grid;
+  row-gap: var(--spectrum2-spacing-300);
+}
+
+.how-to.spectrum2 .how-to-heading > * { margin: 0; }
+
+.how-to.spectrum2 :is(.s2-heading-xs, .s2-heading-s, .s2-heading-m, .s2-heading-l, .s2-heading-xl, .s2-heading-xxl, .s2-heading-xxxl) {
+  color: var(--spectrum2-heading-color);
+}
+
+.how-to.spectrum2 .s2-heading-xxxl {
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-acom-heading-1-font-size);
+  line-height: var(--spectrum2-acom-heading-1-line-height);
+  font-weight: var(--spectrum2-acom-heading-1-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-1-letter-spacing);
+}
+
+.how-to.spectrum2 .s2-heading-xxl {
+  font-family: var(--spectrum2-acom-heading-2-font-family);
+  font-size: var(--spectrum2-acom-heading-2-font-size);
+  line-height: var(--spectrum2-acom-heading-2-line-height);
+  font-weight: var(--spectrum2-acom-heading-2-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-2-letter-spacing);
+}
+
+.how-to.spectrum2 .s2-heading-xl {
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-3-letter-spacing);
+}
+
+.how-to.spectrum2 .s2-heading-l {
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.how-to.spectrum2 .s2-heading-m {
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+}
+
+.how-to.spectrum2 .s2-heading-s,
+.how-to.spectrum2 .s2-heading-xs {
+  font-family: var(--spectrum2-acom-heading-6-font-family);
+  font-size: var(--spectrum2-acom-heading-6-font-size);
+  line-height: var(--spectrum2-acom-heading-6-line-height);
+  font-weight: var(--spectrum2-acom-heading-6-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-6-letter-spacing);
+}
+
+.how-to.spectrum2 :is(h1, h2, h3, h4, h5, h6) strong { font-weight: var(--spectrum2-heading-sans-serif-font-weight); }
+
+.how-to.spectrum2 :is(p, li) strong { font-weight: var(--spectrum2-body-sans-serif-strong-font-weight); }
+
+.how-to.spectrum2 .how-to-media {
+  justify-self: center;
+  align-self: center;
+  inline-size: 100%;
+}
+
+.how-to.spectrum2 .how-to-media.how-to-media-mini { grid-area: mini; }
+.how-to.spectrum2 .how-to-media.how-to-media-large { grid-area: media; }
+
+.how-to.spectrum2 .how-to-media :is(img, video) {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: contain;
+}
+
+.how-to.spectrum2 .how-to-media.how-to-media-mini img { block-size: 100%; max-inline-size: 100%; }
+
+.how-to.spectrum2 .how-to-steps {
+  grid-area: list;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  counter-reset: how-to-step;
+}
+
+.how-to.spectrum2 .how-to-steps > li {
+  counter-increment: how-to-step;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding-block: var(--spectrum2-spacing-400);
+  padding-inline: 0;
+  border-block-end: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.how-to.spectrum2 .how-to-steps > li:first-of-type {
+  border-block-start: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+}
+
+.how-to.spectrum2 .how-to-steps > li::before {
+  content: counter(how-to-step);
+  flex: none;
+  margin-block: 0;
+  margin-inline: var(--spectrum2-spacing-300);
+  color: var(--spectrum2-heading-color);
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-3-letter-spacing);
+}
+
+.how-to.spectrum2 .how-to-steps > li > picture {
+  flex: none;
+  max-inline-size: 25%;
+  margin-block: 0;
+  margin-inline: var(--spectrum2-spacing-300);
+}
+
+.how-to.spectrum2 .how-to-steps > li > picture img { display: block; max-inline-size: 100%; block-size: auto; }
+
+.how-to.spectrum2 .how-to-steps > li :is(h1, h2, h3, h4, h5, h6) { margin: 0; }
+
+.how-to.spectrum2 .how-to-steps > li :is(ul, ol) {
+  margin-block: var(--spectrum2-spacing-100) 0;
+  padding-inline-start: var(--spectrum2-spacing-500);
+}
+
+.how-to.spectrum2 a:not(.s2-image-link) {
+  color: var(--spectrum2-accent-color-1000);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+  transition: color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.how-to.spectrum2 a:not(.s2-image-link):hover { color: var(--spectrum2-accent-color-1100); }
+.how-to.spectrum2 a:not(.s2-image-link):active { color: var(--spectrum2-accent-color-1100); }
+
+.how-to.spectrum2 a:focus:not(:focus-visible) { outline: none; }
+
+.how-to.spectrum2 a:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.how-to.spectrum2 a:not(.s2-image-link):focus-visible { color: var(--spectrum2-accent-color-1100); }
+
+.how-to.spectrum2:is(.static-links, .static-links *) a:not(.s2-image-link),
+.how-to.spectrum2:is(.static-links, .static-links *) a:not(.s2-image-link):is(:hover, :active, :focus-visible) {
+  color: inherit;
+}
+
+.how-to.spectrum2 .s2-video {
+  position: relative;
+  display: block;
+}
+
+.how-to.spectrum2 .s2-video video {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.how-to.spectrum2 .s2-video-control {
+  position: absolute;
+  inset-block-end: var(--spectrum2-spacing-200);
+  inset-inline-end: var(--spectrum2-spacing-200);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--spectrum2-component-height-100);
+  block-size: var(--spectrum2-component-height-100);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--spectrum2-corner-radius-medium-default);
+  background-color: var(--spectrum2-transparent-black-700);
+  color: var(--spectrum2-static-white-text-color);
+  cursor: pointer;
+}
+
+.how-to.spectrum2 .s2-video-control:hover { background-color: var(--spectrum2-transparent-black-800); }
+
+.how-to.spectrum2 .s2-video-control:focus:not(:focus-visible) { outline: none; }
+
+.how-to.spectrum2 .s2-video-control:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.how-to.spectrum2 .s2-video-control svg {
+  display: block;
+  inline-size: var(--spectrum2-acom-icon-size-xxs);
+  block-size: var(--spectrum2-acom-icon-size-xxs);
+  fill: currentcolor;
+}
+
+.how-to.spectrum2 .s2-video-control .s2-video-icon-play { display: none; }
+.how-to.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-play { display: block; }
+.how-to.spectrum2 .s2-video:not(.s2-video-playing) .s2-video-control .s2-video-icon-pause { display: none; }
+@media (width >= 768px) {
+  .how-to.spectrum2 .how-to-foreground {
+    grid-template-rows: 1fr;
+    grid-template-areas: "heading heading" "list list";
+  }
+
+  .how-to.spectrum2 .how-to-foreground.how-to-media-mini {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "heading mini" "list list";
+  }
+
+  .how-to.spectrum2 .how-to-foreground.how-to-media-large {
+    grid-template-columns: 1fr 300px;
+    grid-template-areas: "heading heading" "list media";
+  }
+
+  .how-to.spectrum2 .how-to-media.how-to-media-mini {
+    align-self: center;
+    justify-self: center;
+    block-size: 0;
+    min-block-size: 100%;
+    max-inline-size: 300px;
+  }
+
+  .how-to.spectrum2.media-first-tablet .how-to-foreground { grid-template-areas: "heading" "media" "list"; }
+  .how-to.spectrum2.media-last-tablet .how-to-foreground { grid-template-areas: "heading" "list" "media"; }
+}
+@media (width >= 1024px) {
+  .how-to.spectrum2 .how-to-steps { min-inline-size: 380px; }
+
+  .how-to.spectrum2:is(.large-image, .large-media) .how-to-foreground {
+    grid-template-columns: 1fr minmax(360px, 500px);
+    grid-template-areas: "heading heading" "list media";
+  }
+
+  .how-to.spectrum2.media-first .how-to-foreground { grid-template-areas: "heading heading" "media list"; }
+
+  .how-to.spectrum2:is(.large-image, .large-media).media-first .how-to-foreground {
+    grid-template-columns: minmax(360px, 500px) 1fr;
+  }
+}
+@media (width >= 1280px) {
+  .how-to.spectrum2 .how-to-foreground { padding-block: var(--spectrum2-spacing-900); }
+
+  .how-to.spectrum2 .how-to-steps { min-inline-size: 0; }
+
+  .how-to.spectrum2:is(.large-image, .large-media) .how-to-foreground { grid-template-columns: minmax(0, 1fr) 500px; }
+  .how-to.spectrum2:is(.large-image, .large-media).media-first .how-to-foreground { grid-template-columns: 500px minmax(0, 1fr); }
+  .how-to.spectrum2.max-width-6-desktop { --_cols: 6; }
+  .how-to.spectrum2.max-width-8-desktop { --_cols: 8; }
+  .how-to.spectrum2.max-width-10-desktop { --_cols: 10; }
+  .how-to.spectrum2.max-width-12-desktop { --_cols: 12; }
+
+  .how-to.spectrum2:is(.section[class*="grid-width-"] *):is(.large-image, .large-media) .how-to-foreground {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.how-to.spectrum2.max-width-6 { --_cols: 6; }
+.how-to.spectrum2.max-width-8 { --_cols: 8; }
+.how-to.spectrum2.max-width-10 { --_cols: 10; }
+.how-to.spectrum2.max-width-12 { --_cols: 12; }
+@media (prefers-reduced-motion: reduce) {
+  .how-to.spectrum2 a:not(.s2-image-link) {
+    transition: none;
+  }
+}

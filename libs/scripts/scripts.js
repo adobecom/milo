@@ -14,6 +14,7 @@ import {
   loadArea,
   loadLana,
   setConfig,
+  getConfig,
   getMetadata,
 } from '../utils/utils.js';
 import locales from '../utils/locales.js';
@@ -100,6 +101,13 @@ function loadStyles() {
   if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
+  // Opt-in spectrum2 preview blocks: page metadata `spectrum2: on`, or ?spectrum2=on.
+  const s2 = new URLSearchParams(window.location.search).get('spectrum2');
+  if (s2 === 'on' || (s2 !== 'off' && getMetadata('spectrum2')?.toLowerCase() === 'on')) {
+    await import('../../spectrum2/loader.js')
+      .then(({ default: spectrum2 }) => spectrum2(getConfig()))
+      .catch((e) => console.error('spectrum2 loader failed', e)); // eslint-disable-line no-console
+  }
   loadLana({ clientId: 'milo' });
   await loadArea();
 }());

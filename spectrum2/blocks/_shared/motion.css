@@ -1,0 +1,41 @@
+.spectrum2.motion-calm,
+.section.motion-calm {
+  --spectrum2-motion-entrance: rise;
+  --spectrum2-motion-duration: var(--spectrum2-transition-500);
+  --spectrum2-motion-distance: var(--spectrum2-spacing-200);
+  --spectrum2-motion-stagger: var(--spectrum2-transition-200);
+  --spectrum2-motion-ease: var(--spectrum2-transition-ease-in-out);
+}
+
+.spectrum2.motion-lively,
+.section.motion-lively {
+  --spectrum2-motion-entrance: rise;
+  --spectrum2-motion-duration: var(--spectrum2-transition-300);
+  --spectrum2-motion-distance: var(--spectrum2-spacing-400);
+  --spectrum2-motion-stagger: var(--spectrum2-transition-100);
+  --spectrum2-motion-ease: var(--spectrum2-enter-ease-out);
+}
+
+.spectrum2.motion-dramatic,
+.section.motion-dramatic {
+  --spectrum2-motion-entrance: rise;
+  --spectrum2-motion-duration: var(--spectrum2-transition-1000);
+  --spectrum2-motion-distance: var(--spectrum2-spacing-700);
+  --spectrum2-motion-stagger: var(--spectrum2-transition-300);
+  --spectrum2-motion-ease: var(--spectrum2-transition-standard);
+}
+
+.spectrum2.motion-fade,
+.section.motion-fade {
+  --spectrum2-motion-entrance: fade;
+}
+
+.spectrum2.motion-rise,
+.section.motion-rise {
+  --spectrum2-motion-entrance: rise;
+}
+
+.spectrum2.motion-scale,
+.section.motion-scale {
+  --spectrum2-motion-entrance: scale;
+}

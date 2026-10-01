@@ -1,0 +1,605 @@
+.bento-tiles.spectrum2 {
+  --_max: 75rem;
+  --_gap: var(--spectrum2-spacing-400);
+  --_inset: var(--spectrum2-spacing-400);
+  --_band-bg: var(--spectrum2-background-base-color);
+  --_tile-bg: var(--spectrum2-background-layer-2-color);
+  --_media-bg: var(--spectrum2-gray-100);
+  --_heading: var(--spectrum2-heading-color);
+  --_badge-bg: var(--spectrum2-informative-color-200);
+  --_badge-text: var(--spectrum2-informative-color-1100);
+  --_muted: var(--spectrum2-neutral-subdued-content-color-default);
+  --_link: var(--spectrum2-accent-content-color-default);
+  --_link-hover: var(--spectrum2-accent-content-color-hover);
+
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-600);
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding-block: var(--spectrum2-spacing-700);
+  padding-inline: max(var(--spectrum2-spacing-400), calc((100% - var(--_max)) / 2));
+  background-color: var(--_band-bg);
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  text-align: start;
+}
+
+.bento-tiles.spectrum2 :is(.bento-tiles-head, .bento-tiles-body) :is(p, h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+  max-inline-size: 48rem;
+  margin-inline: auto;
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+  text-align: center;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-title {
+  color: var(--_heading);
+  font-family: var(--spectrum2-acom-heading-2-font-family);
+  font-size: var(--spectrum2-heading-size-l);
+  line-height: var(--spectrum2-line-height-font-size-700);
+  font-weight: var(--spectrum2-heading-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--_gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-tile {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  border-radius: var(--spectrum2-corner-radius-extra-large-default);
+  background-color: var(--_tile-bg);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+  overflow: clip;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-media {
+  position: relative;
+  flex: 0 0 auto;
+  aspect-ratio: 16 / 9;
+  background-color: var(--_media-bg);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-media :is(picture, img, video) {
+  display: block;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-media :is(img, video) {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-body {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-200);
+  padding: var(--_inset);
+  color: var(--_muted);
+  font-size: var(--spectrum2-body-size-m);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-badge {
+  align-self: flex-start;
+  margin-block-end: var(--spectrum2-spacing-100);
+  padding-block: var(--spectrum2-spacing-75);
+  padding-inline: var(--spectrum2-spacing-200);
+  border-radius: calc(var(--spectrum2-component-height-75) * var(--spectrum2-corner-radius-full));
+  background-color: var(--_badge-bg);
+  color: var(--_badge-text);
+  font-size: var(--spectrum2-detail-size-s);
+  line-height: var(--spectrum2-line-height-font-size-75);
+  font-weight: var(--spectrum2-detail-sans-serif-strong-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-transform: uppercase;
+}
+
+.bento-tiles.spectrum2 .bento-tiles-heading {
+  color: var(--_heading);
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-heading-size-s);
+  line-height: var(--spectrum2-line-height-font-size-400);
+  font-weight: var(--spectrum2-heading-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+  margin-block-start: auto;
+  padding-block-start: var(--spectrum2-spacing-200);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-lead .bento-tiles-heading {
+  font-size: var(--spectrum2-heading-size-m);
+  line-height: var(--spectrum2-line-height-font-size-500);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-actions a:not(.s2-button) {
+  color: var(--_link);
+  font-weight: var(--spectrum2-bold-font-weight);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-actions a:not(.s2-button):hover {
+  color: var(--_link-hover);
+}
+
+.bento-tiles.spectrum2 .s2-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-block-size: var(--spectrum2-component-height-200);
+  padding-block: 0;
+  padding-inline: var(--spectrum2-base-padding-horizontal-large);
+  border: var(--spectrum2-border-width-200) solid transparent;
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-font-size-200);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-decoration: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    border-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.bento-tiles.spectrum2 :is(.s2-button, .bento-tiles-actions a):focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-accent {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-default);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-accent:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-accent:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-default);
+  background-color: transparent;
+  border-color: var(--spectrum2-gray-800);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-outline:hover {
+  color: var(--spectrum2-neutral-content-color-hover);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-outline:active {
+  color: var(--spectrum2-neutral-content-color-down);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.bento-tiles.spectrum2 .s2-button.s2-button-outline:focus-visible {
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline {
+  gap: var(--spectrum2-spacing-75);
+  min-block-size: var(--spectrum2-component-height-75);
+  padding-inline: 0;
+  border-color: transparent;
+  border-radius: var(--spectrum2-corner-radius-small-default);
+  background-color: transparent;
+  color: var(--_link);
+}
+
+.bento-tiles.spectrum2 .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline::after {
+  content: '\2192' / '';
+}
+
+.bento-tiles.spectrum2 .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline:is(:hover, :active) {
+  background-color: transparent;
+  color: var(--_link-hover);
+  text-decoration-line: underline;
+}
+
+.bento-tiles.spectrum2.night {
+  --_band-bg: var(--spectrum2-black);
+  --_tile-bg: var(--spectrum2-transparent-white-100);
+  --_media-bg: var(--spectrum2-transparent-white-100);
+  --_heading: var(--spectrum2-static-white-text-color);
+  --_badge-bg: var(--spectrum2-static-red-900);
+  --_badge-text: var(--spectrum2-static-white-text-color);
+  --_muted: var(--spectrum2-transparent-white-800);
+  --_link: var(--spectrum2-static-indigo-600);
+  --_link-hover: var(--spectrum2-static-indigo-400);
+
+  color: var(--_muted);
+}
+
+.bento-tiles.spectrum2.night .bento-tiles-tile {
+  box-shadow: none;
+}
+
+.bento-tiles.spectrum2.night .s2-button.s2-button-outline {
+  color: var(--spectrum2-static-white-text-color);
+  border-color: var(--spectrum2-transparent-white-800);
+}
+
+.bento-tiles.spectrum2.night .s2-button.s2-button-outline:is(:hover, :active, :focus-visible) {
+  color: var(--spectrum2-static-white-text-color);
+  background-color: var(--spectrum2-transparent-white-200);
+  border-color: var(--spectrum2-transparent-white-1000);
+}
+
+.bento-tiles.spectrum2.night .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline {
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--_link);
+}
+
+.bento-tiles.spectrum2.night .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline:is(:hover, :active) {
+  color: var(--_link-hover);
+}
+@media (width >= 768px) {
+  .bento-tiles.spectrum2 {
+    --_inset: var(--spectrum2-spacing-500);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-tablet-full {
+    grid-column: 1 / -1;
+  }
+}
+@media (width >= 1024px) {
+  .bento-tiles.spectrum2 .bento-tiles-title {
+    font-size: var(--spectrum2-heading-size-xl);
+    line-height: var(--spectrum2-line-height-font-size-900);
+  }
+
+  .bento-tiles.spectrum2.night .bento-tiles-title {
+    font-size: var(--spectrum2-heading-size-xxl);
+    line-height: var(--spectrum2-line-height-font-size-1100);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-tablet-full {
+    grid-column: auto;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-2 {
+    grid-column: span 2;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-3 {
+    grid-column: span 3;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-4 {
+    grid-column: span 4;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6 {
+    grid-column: 1 / -1;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-lead {
+    grid-row: span 2;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-lead .bento-tiles-media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-lead .bento-tiles-body {
+    font-size: var(--spectrum2-body-size-l);
+    line-height: var(--spectrum2-body-line-height);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-lead .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-xl);
+    line-height: var(--spectrum2-line-height-font-size-900);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-lead .bento-tiles-body {
+    gap: var(--spectrum2-spacing-300);
+    padding: var(--spectrum2-spacing-500);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6.bento-tiles-has-media {
+    flex-direction: row;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6 .bento-tiles-media {
+    flex: 0 0 50%;
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6 .bento-tiles-body {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: var(--spectrum2-spacing-500);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6 .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-l);
+    line-height: var(--spectrum2-line-height-font-size-700);
+  }
+
+  .bento-tiles.spectrum2 .bento-tiles-span-6 .bento-tiles-actions {
+    margin-block-start: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-tiles.spectrum2 .s2-button {
+    transition: none;
+  }
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel, .aurora) .bento-tiles-head {
+  align-items: flex-start;
+  max-inline-size: none;
+  margin-inline: 0;
+  text-align: start;
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel, .aurora) .bento-tiles-tile {
+  box-shadow: none;
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel, .aurora) .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline {
+  gap: 0;
+  min-block-size: var(--spectrum2-component-height-200);
+  padding-inline: var(--spectrum2-base-padding-horizontal-large);
+  border-color: var(--_pill-edge);
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  background-color: var(--_pill-bg);
+  color: var(--_pill-text);
+  text-decoration-line: none;
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel, .aurora) .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline::after {
+  content: none;
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel, .aurora) .bento-tiles-tile .s2-button.s2-button-outline:is(:hover, :active, :focus-visible) {
+  border-color: var(--_pill-edge-hover);
+  background-color: var(--_pill-bg-hover);
+  color: var(--_pill-text);
+  text-decoration-line: none;
+}
+
+.bento-tiles.spectrum2.billboard {
+  --_band-bg: var(--spectrum2-white);
+  --_tile-bg: color-mix(in srgb, var(--spectrum2-white) 97%, var(--spectrum2-black));
+  --_media-bg: var(--_tile-bg);
+  --_heading: var(--spectrum2-static-black-text-color);
+  --_badge-bg: var(--spectrum2-white);
+  --_badge-text: var(--spectrum2-static-red-1000);
+  --_muted: var(--spectrum2-transparent-black-800);
+  --_pill-edge: var(--spectrum2-transparent-black-300);
+  --_pill-edge-hover: var(--spectrum2-transparent-black-800);
+  --_pill-bg: var(--spectrum2-white);
+  --_pill-bg-hover: var(--spectrum2-white);
+  --_pill-text: var(--spectrum2-static-black-text-color);
+
+  color: var(--_muted);
+}
+
+.bento-tiles.spectrum2:is(.billboard, .newsreel) .bento-tiles-badge {
+  border: var(--spectrum2-border-width-100) solid var(--spectrum2-transparent-black-200);
+}
+
+.bento-tiles.spectrum2:is(.billboard, .aurora) :focus-visible {
+  outline-color: var(--spectrum2-static-black-focus-indicator-color);
+}
+
+.bento-tiles.spectrum2.newsreel {
+  --_band-bg: var(--spectrum2-transparent-black-900);
+  --_tile-bg: var(--spectrum2-transparent-white-100);
+  --_media-bg: var(--spectrum2-transparent-white-100);
+  --_heading: var(--spectrum2-static-white-text-color);
+  --_badge-bg: var(--spectrum2-white);
+  --_badge-text: var(--spectrum2-static-red-1000);
+  --_muted: var(--spectrum2-transparent-white-800);
+  --_pill-edge: var(--spectrum2-transparent-white-600);
+  --_pill-edge-hover: var(--spectrum2-transparent-white-1000);
+  --_pill-bg: transparent;
+  --_pill-bg-hover: var(--spectrum2-transparent-white-200);
+  --_pill-text: var(--spectrum2-static-white-text-color);
+
+  color: var(--_muted);
+}
+
+.bento-tiles.spectrum2.newsreel :focus-visible {
+  outline-color: var(--spectrum2-static-white-focus-indicator-color);
+}
+
+.bento-tiles.spectrum2.aurora {
+  --_band-bg: color-mix(in srgb, var(--spectrum2-static-chartreuse-400) 45%, var(--spectrum2-white));
+  --_tile-bg: var(--spectrum2-transparent-white-700);
+  --_media-bg: var(--spectrum2-transparent-white-500);
+  --_heading: var(--spectrum2-static-black-text-color);
+  --_badge-bg: transparent;
+  --_badge-text: var(--spectrum2-static-blue-1000);
+  --_muted: var(--spectrum2-transparent-black-800);
+  --_pill-edge: transparent;
+  --_pill-edge-hover: transparent;
+  --_pill-bg: var(--spectrum2-static-blue-1000);
+  --_pill-bg-hover: var(--spectrum2-static-blue-1000);
+  --_pill-text: var(--spectrum2-white);
+
+  background-image: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--spectrum2-static-cyan-400) 70%, var(--spectrum2-white)),
+    color-mix(in srgb, var(--spectrum2-static-chartreuse-400) 45%, var(--spectrum2-white)) 55%,
+    var(--spectrum2-static-purple-400)
+  );
+  color: var(--_muted);
+}
+
+.bento-tiles.spectrum2.aurora :is(.bento-tiles-title, .bento-tiles-heading) {
+  font-weight: var(--spectrum2-regular-font-weight);
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-title {
+  max-inline-size: 20ch;
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-tile {
+  padding: var(--spectrum2-spacing-300);
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-media {
+  border-radius: var(--spectrum2-corner-radius-large-default);
+  overflow: clip;
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-body {
+  padding-inline: var(--spectrum2-spacing-200);
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-badge {
+  margin-block-end: 0;
+  padding: 0;
+  border-radius: 0;
+  letter-spacing: var(--spectrum2-acom-eyebrow-letter-spacing);
+}
+
+.bento-tiles.spectrum2.aurora .bento-tiles-tile:not(.bento-tiles-span-6) .s2-button.s2-button-outline {
+  border-radius: var(--spectrum2-corner-radius-small-default);
+}
+@media (width >= 768px) {
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-grid > .bento-tiles-tile {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-tile.bento-tiles-has-media {
+    flex-direction: row;
+  }
+
+  .bento-tiles.spectrum2.newsreel .bento-tiles-tile .bento-tiles-media {
+    flex: 0 0 36%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .bento-tiles.spectrum2.aurora .bento-tiles-tile .bento-tiles-media {
+    flex: 0 0 48%;
+    aspect-ratio: 16 / 9;
+    align-self: center;
+  }
+
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-tile .bento-tiles-body {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: var(--spectrum2-spacing-500);
+    font-size: var(--spectrum2-body-size-m);
+    line-height: var(--spectrum2-body-line-height);
+  }
+
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-tile .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-m);
+    line-height: var(--spectrum2-line-height-font-size-500);
+  }
+
+  .bento-tiles.spectrum2.aurora .bento-tiles-tile .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-l);
+    line-height: var(--spectrum2-line-height-font-size-700);
+  }
+
+  .bento-tiles.spectrum2:is(.newsreel, .aurora) .bento-tiles-tile .bento-tiles-actions {
+    margin-block-start: 0;
+  }
+}
+
+@media (width >= 1024px) {
+  .bento-tiles.spectrum2:is(.billboard, .newsreel) .bento-tiles-title {
+    font-size: var(--spectrum2-heading-size-xxl);
+    line-height: var(--spectrum2-line-height-font-size-1100);
+  }
+
+  .bento-tiles.spectrum2.aurora .bento-tiles-title {
+    font-size: var(--spectrum2-heading-size-xxl);
+    line-height: var(--spectrum2-line-height-font-size-1100);
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-grid > .bento-tiles-lead {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-grid > .bento-tiles-tile:not(.bento-tiles-lead, .bento-tiles-span-6) {
+    grid-column: span 3;
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-lead.bento-tiles-has-media {
+    flex-direction: row;
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-lead .bento-tiles-media {
+    flex: 0 0 56%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-lead .bento-tiles-body {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: var(--spectrum2-spacing-600);
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-lead .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-l);
+    line-height: var(--spectrum2-line-height-font-size-700);
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-lead .bento-tiles-actions {
+    margin-block-start: 0;
+  }
+
+  .bento-tiles.spectrum2.billboard .bento-tiles-tile:not(.bento-tiles-lead) .bento-tiles-heading {
+    font-size: var(--spectrum2-heading-size-m);
+    line-height: var(--spectrum2-line-height-font-size-500);
+  }
+}

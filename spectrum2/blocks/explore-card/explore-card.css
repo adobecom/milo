@@ -1,0 +1,1507 @@
+.explore-card.spectrum2 {
+  --_authored-bg: transparent;
+  --_object-position: center;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  border-radius: var(--spectrum2-corner-radius-large-default);
+  background-color: var(--spectrum2-background-layer-1-color);
+}
+
+.explore-card.explore-card.explore-card.spectrum2 {
+  z-index: auto;
+  border-radius: var(--spectrum2-corner-radius-large-default);
+}
+
+.explore-card.spectrum2:has(.explore-card-tile-link:focus-visible) {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.explore-card.spectrum2 .explore-card-tile {
+  position: relative;
+  display: flex;
+  block-size: 100%;
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2 .explore-card-tile-link {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  color: inherit;
+  text-decoration-line: none;
+}
+
+.explore-card.spectrum2 .explore-card-body {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(10 * var(--spectrum2-component-height-75));
+  padding: var(--spectrum2-spacing-400);
+}
+
+.explore-card.spectrum2 .explore-card-body > :not(.explore-card-media) {
+  position: relative;
+  z-index: 1;
+}
+
+.explore-card.spectrum2.center .explore-card-body {
+  align-items: center;
+  text-align: center;
+}
+
+.explore-card.spectrum2 .explore-card-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2 .explore-card-backdrop > :is(p, div) {
+  block-size: 100%;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+.explore-card.spectrum2 .explore-card-backdrop .s2-expand-background {
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2 .explore-card-backdrop picture {
+  display: block;
+  block-size: 100%;
+}
+
+.explore-card.spectrum2 .explore-card-backdrop :is(img, video) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: var(--_object-position);
+  opacity: 0;
+  transition: opacity var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .explore-card-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to bottom, transparent 35%, var(--spectrum2-transparent-black-800) 100%);
+  opacity: 0;
+  transition: opacity var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .explore-card-media {
+  position: absolute;
+  inset: 0;
+}
+
+.explore-card.spectrum2 .explore-card-media picture {
+  display: block;
+  block-size: 100%;
+}
+
+.explore-card.spectrum2 .explore-card-media :is(img, video) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.explore-card.spectrum2 .explore-card-icon {
+  flex-shrink: 0;
+  margin-block: 0 var(--spectrum2-spacing-600);
+  margin-inline: 0;
+}
+
+.explore-card.spectrum2 .explore-card-icon picture {
+  display: block;
+}
+
+.explore-card.spectrum2 .explore-card-icon img {
+  display: block;
+  inline-size: var(--spectrum2-acom-icon-size-s);
+  block-size: var(--spectrum2-acom-icon-size-s);
+  object-fit: contain;
+}
+
+.explore-card.spectrum2 .explore-card-body :is(h1, h2, h3, h4, h5, h6) {
+  margin-block: auto var(--spectrum2-spacing-100);
+  margin-inline: 0;
+  color: var(--spectrum2-heading-color);
+  transition: color var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .s2-super {
+  font-family: var(--spectrum2-acom-super-font-family);
+  font-size: var(--spectrum2-acom-super-font-size);
+  line-height: var(--spectrum2-acom-super-line-height);
+  font-weight: var(--spectrum2-acom-super-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-1 {
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-acom-heading-1-font-size);
+  line-height: var(--spectrum2-acom-heading-1-line-height);
+  font-weight: var(--spectrum2-acom-heading-1-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-2 {
+  font-family: var(--spectrum2-acom-heading-2-font-family);
+  font-size: var(--spectrum2-acom-heading-2-font-size);
+  line-height: var(--spectrum2-acom-heading-2-line-height);
+  font-weight: var(--spectrum2-acom-heading-2-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-3 {
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-4 {
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-5 {
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-heading-6 {
+  font-family: var(--spectrum2-acom-heading-6-font-family);
+  font-size: var(--spectrum2-acom-heading-6-font-size);
+  line-height: var(--spectrum2-acom-heading-6-line-height);
+  font-weight: var(--spectrum2-acom-heading-6-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2 .s2-eyebrow {
+  margin-block: 0 var(--spectrum2-spacing-100);
+  margin-inline: 0;
+  font-family: var(--spectrum2-acom-eyebrow-font-family);
+  font-size: var(--spectrum2-acom-eyebrow-font-size);
+  line-height: var(--spectrum2-acom-eyebrow-line-height);
+  font-weight: var(--spectrum2-acom-eyebrow-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  transition: color var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .explore-card-body :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs) {
+  margin-block: 0;
+  margin-inline: 0;
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  transition: color var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .s2-body-lg {
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.explore-card.spectrum2 .s2-body-md {
+  font-size: var(--spectrum2-body-size-m);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.explore-card.spectrum2 .s2-body-sm {
+  font-size: var(--spectrum2-body-size-s);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.explore-card.spectrum2 .s2-body-xs {
+  font-size: var(--spectrum2-body-size-xs);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.explore-card.spectrum2 .explore-card-standalone-link {
+  display: inline-block;
+  margin-block-start: var(--spectrum2-spacing-300);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-font-size-100);
+  line-height: var(--spectrum2-line-height-font-size-100);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  color: var(--spectrum2-neutral-content-color-default);
+  text-decoration-line: none;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+  transition: color var(--spectrum2-transition-500) var(--spectrum2-transition-standard);
+}
+
+.explore-card.spectrum2 .explore-card-body a[href] {
+  color: var(--spectrum2-accent-content-color-default);
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.explore-card.spectrum2 .explore-card-body a[href]:hover {
+  color: var(--spectrum2-accent-content-color-hover);
+}
+
+.explore-card.spectrum2 .explore-card-body a[href]:active {
+  color: var(--spectrum2-accent-content-color-down);
+}
+
+.explore-card.spectrum2 .explore-card-body a[href]:focus-visible {
+  color: var(--spectrum2-accent-content-color-key-focus);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.explore-card.spectrum2 .explore-card-tile:has(.explore-card-tile-link):hover :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .s2-eyebrow) {
+  color: var(--spectrum2-neutral-subdued-content-color-hover);
+}
+
+.explore-card.spectrum2 .explore-card-tile:has(.explore-card-tile-link:focus-visible) :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .s2-eyebrow) {
+  color: var(--spectrum2-neutral-subdued-content-color-key-focus);
+}
+
+.explore-card.spectrum2 .explore-card-tile:hover .explore-card-standalone-link {
+  color: var(--spectrum2-neutral-content-color-hover);
+  text-decoration-line: underline;
+}
+
+.explore-card.spectrum2 .explore-card-tile:has(.explore-card-tile-link:focus-visible) .explore-card-standalone-link {
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  text-decoration-line: underline;
+}
+
+.explore-card.spectrum2:not(:is(.bento *)) .explore-card-has-media:is(:hover, :has(.explore-card-tile-link:focus-visible)) .explore-card-backdrop :is(img, video),
+.explore-card.spectrum2:not(:is(.bento *)) .explore-card-has-media:is(:hover, :has(.explore-card-tile-link:focus-visible)) .explore-card-backdrop::after {
+  opacity: 1;
+}
+
+.explore-card.spectrum2:not(:is(.bento *)) .explore-card-has-media:is(:hover, :has(.explore-card-tile-link:focus-visible)) :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link) {
+  color: var(--spectrum2-static-white-text-color);
+}
+
+.dark .explore-card.spectrum2 .explore-card-tile.explore-card-tone-light :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link),
+.explore-card.spectrum2.dark .explore-card-tile.explore-card-tone-light :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link),
+.explore-card.spectrum2:is([data-theme="dark"] *) .explore-card-tile.explore-card-tone-light :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link) {
+  color: var(--spectrum2-static-black-text-color);
+}
+
+.explore-card.spectrum2 .explore-card-tile.explore-card-tone-dark :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link) {
+  color: var(--spectrum2-static-white-text-color);
+}
+
+.explore-card.spectrum2:is(.bento *),
+.explore-card.spectrum2:is(.masonry *),
+.explore-card.spectrum2:is(.masonry-layout *) {
+  block-size: 100%;
+}
+
+.explore-card.spectrum2:is(.bento *) {
+  --_object-position: top;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-body {
+  padding-block: 0 var(--spectrum2-spacing-400);
+  padding-inline: 0;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-body::before {
+  content: '';
+  display: block;
+  order: -1;
+  flex-shrink: 0;
+  inline-size: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-body > :not(.explore-card-media) {
+  box-sizing: content-box;
+  max-inline-size: 50ch;
+  padding-inline: var(--spectrum2-spacing-400);
+}
+
+.explore-card.spectrum2.center:is(.bento *) .explore-card-body > :not(.explore-card-media) {
+  max-inline-size: 42ch;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-body :is(h1, h2, h3, h4, h5, h6) {
+  margin-block-end: var(--spectrum2-spacing-75);
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-backdrop :is(img, video) {
+  opacity: 1;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-media {
+  inset-block: 0 auto;
+  inset-inline: 0;
+  block-size: auto;
+  aspect-ratio: 1 / 1.2;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-media :is(img, video) {
+  object-fit: cover;
+  object-position: top;
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-backdrop,
+.explore-card.spectrum2:is(.bento *) .explore-card-media {
+  transition: transform var(--spectrum2-transition-300) var(--spectrum2-transition-ease-in-out);
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-tile:has(.explore-card-tile-link):is(:hover, :has(.explore-card-tile-link:focus-visible)) :is(.explore-card-backdrop, .explore-card-media) {
+  transform: scale(1.015);
+}
+
+.explore-card.spectrum2:is(.bento *) .explore-card-tile.explore-card-has-media :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link) {
+  color: var(--spectrum2-static-black-text-color);
+}
+
+.explore-card.spectrum2.dark:is(.bento *) .explore-card-tile.explore-card-has-media :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs, .explore-card-standalone-link) {
+  color: var(--spectrum2-static-white-text-color);
+}
+
+.explore-card.spectrum2.scrim:is(.bento *) .explore-card-backdrop::after {
+  background-image: linear-gradient(to bottom, transparent 55%, var(--spectrum2-transparent-white-800) 100%);
+  opacity: 1;
+}
+
+.explore-card.spectrum2.scrim.dark:is(.bento *) .explore-card-backdrop::after {
+  background-image: linear-gradient(to bottom, transparent 55%, var(--spectrum2-transparent-black-800) 100%);
+}
+
+.explore-card.spectrum2.grid-full-width:is(.bento *) .explore-card-body {
+  align-items: stretch;
+  text-align: start;
+}
+
+.explore-card.spectrum2.grid-full-width:is(.bento *) .explore-card-body::before {
+  aspect-ratio: 1.02 / 1;
+}
+
+.explore-card.spectrum2:lang(ja) .explore-card-body :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .explore-card-standalone-link),
+.explore-card.spectrum2:lang(ko) .explore-card-body :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .explore-card-standalone-link),
+.explore-card.spectrum2:lang(zh) .explore-card-body :is(h1, h2, h3, h4, h5, h6, .s2-eyebrow, .explore-card-standalone-link) {
+  line-height: var(--spectrum2-cjk-line-height-100);
+  letter-spacing: var(--spectrum2-cjk-letter-spacing);
+}
+
+.explore-card.spectrum2:lang(ja) .explore-card-body :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs),
+.explore-card.spectrum2:lang(ko) .explore-card-body :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs),
+.explore-card.spectrum2:lang(zh) .explore-card-body :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs) {
+  line-height: var(--spectrum2-cjk-line-height-200);
+  letter-spacing: var(--spectrum2-cjk-letter-spacing);
+}
+@media (width < 768px) {
+  .explore-card.spectrum2 .explore-card-backdrop :is(.s2-tablet-only, .s2-desktop-only) {
+    display: none;
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .explore-card.spectrum2 .explore-card-backdrop :is(.s2-mobile-only, .s2-desktop-only:not(.s2-tablet-only)) {
+    display: none;
+  }
+}
+
+@media (width >= 768px) {
+  .explore-card.spectrum2:is(.bento *) .explore-card-body::before {
+    aspect-ratio: 1 / 0.88;
+  }
+
+  .explore-card.spectrum2:is(.bento *) .explore-card-body :is(h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 0;
+  }
+
+  .explore-card.spectrum2.grid-full-width:is(.bento *) .explore-card-body::before {
+    aspect-ratio: 4 / 1.65;
+  }
+
+  .explore-card.spectrum2.grid-full-width:is(.bento *) .explore-card-body :is(h1, h2, h3, h4, h5, h6) {
+    margin-block-start: auto;
+  }
+}
+
+@media (width >= 1280px) {
+  .explore-card.spectrum2 .explore-card-backdrop :is(.s2-mobile-only, .s2-tablet-only:not(.s2-desktop-only)) {
+    display: none;
+  }
+}
+
+@media (width >= 1440px) {
+  .explore-card.spectrum2 .explore-card-body {
+    min-block-size: calc(12.5 * var(--spectrum2-component-height-75));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .explore-card.spectrum2 .explore-card-backdrop :is(img, video),
+  .explore-card.spectrum2 .explore-card-backdrop::after,
+  .explore-card.spectrum2 .explore-card-body :is(h1, h2, h3, h4, h5, h6),
+  .explore-card.spectrum2 .s2-eyebrow,
+  .explore-card.spectrum2 .explore-card-body :is(.s2-body-lg, .s2-body-md, .s2-body-sm, .s2-body-xs),
+  .explore-card.spectrum2 .explore-card-standalone-link,
+  .explore-card.spectrum2:is(.bento *) .explore-card-backdrop,
+  .explore-card.spectrum2:is(.bento *) .explore-card-media {
+    transition: none;
+  }
+
+  .explore-card.spectrum2:is(.bento *) .explore-card-tile:has(.explore-card-tile-link):is(:hover, :has(.explore-card-tile-link:focus-visible)) :is(.explore-card-backdrop, .explore-card-media) {
+    transform: none;
+  }
+}
+
+.explore-card.spectrum2.brick {
+  --_object-position: bottom;
+  --_object-fit: contain;
+  --_cta-height: var(--spectrum2-component-height-200);
+
+  display: flex;
+  box-sizing: border-box;
+  min-block-size: calc(12.5 * var(--spectrum2-component-height-75));
+  background-color: var(--spectrum2-background-base-color);
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+  font-weight: var(--spectrum2-acom-body-md-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2.brick.explore-card-brick-colour {
+  background: var(--_authored-bg);
+}
+
+.explore-card.explore-card.explore-card.spectrum2.brick:not(.rounded-corners, .s-rounded-corners, .m-rounded-corners, .l-rounded-corners) {
+  border-radius: var(--spectrum2-corner-radius-0);
+}
+
+.explore-card.spectrum2.brick.border {
+  border: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+}
+
+.explore-card.spectrum2.brick > .explore-card-brick-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(div, p, picture) {
+  block-size: 100%;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
+}
+
+.explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(p, picture) {
+  display: block;
+}
+
+.explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(img, video) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: var(--_object-fit);
+  object-position: var(--_object-position);
+}
+
+.explore-card.spectrum2.brick > .explore-card-brick-backdrop .s2-expand-background {
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: var(--spectrum2-spacing-500);
+  color: inherit;
+  text-decoration-line: none;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-media {
+  display: none;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text > * {
+  margin-block: var(--spectrum2-spacing-300) 0;
+  margin-inline: 0;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text > .s2-action-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spectrum2-spacing-400);
+  margin-block-start: var(--spectrum2-spacing-400);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text > :first-child,
+.explore-card.spectrum2.brick .explore-card-brick-text > .explore-card-brick-icon-area + * {
+  margin-block-start: 0;
+}
+
+.explore-card.spectrum2.brick:is(.center, .horizontal-center) .explore-card-brick-fg,
+.explore-card.spectrum2.brick:is(.center, .horizontal-center) .explore-card-brick-text > .s2-action-area {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.explore-card.spectrum2.brick.horizontal-center .explore-card-brick-fg {
+  align-items: flex-start;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--spectrum2-heading-color);
+}
+
+.explore-card.spectrum2.brick .s2-heading-xxxl {
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-acom-heading-1-font-size);
+  line-height: var(--spectrum2-acom-heading-1-line-height);
+  font-weight: var(--spectrum2-acom-heading-1-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-1-letter-spacing);
+}
+
+.explore-card.spectrum2.brick .s2-heading-xxl {
+  font-family: var(--spectrum2-acom-heading-2-font-family);
+  font-size: var(--spectrum2-acom-heading-2-font-size);
+  line-height: var(--spectrum2-acom-heading-2-line-height);
+  font-weight: var(--spectrum2-acom-heading-2-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-2-letter-spacing);
+}
+
+.explore-card.spectrum2.brick .s2-heading-xl {
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-3-letter-spacing);
+}
+
+.explore-card.spectrum2.brick .s2-heading-l {
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.explore-card.spectrum2.brick .s2-heading-m {
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+}
+
+.explore-card.spectrum2.brick :is(.s2-heading-s, .s2-heading-xs) {
+  font-family: var(--spectrum2-acom-heading-6-font-family);
+  font-size: var(--spectrum2-acom-heading-6-font-size);
+  line-height: var(--spectrum2-acom-heading-6-line-height);
+  font-weight: var(--spectrum2-acom-heading-6-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-6-letter-spacing);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg :is(.s2-detail-xs, .s2-detail-s, .s2-detail-m, .s2-detail-l, .s2-detail-xl) {
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-eyebrow-font-family);
+  font-weight: var(--spectrum2-detail-sans-serif-strong-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2.brick :is(.s2-detail-xs, .s2-detail-s) {
+  font-size: var(--spectrum2-detail-size-s);
+  line-height: var(--spectrum2-line-height-font-size-75);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick .s2-detail-m {
+  font-size: var(--spectrum2-detail-size-m);
+  line-height: var(--spectrum2-line-height-font-size-100);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick .s2-detail-l {
+  font-size: var(--spectrum2-acom-eyebrow-font-size);
+  line-height: var(--spectrum2-acom-eyebrow-line-height);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick .s2-detail-xl {
+  font-size: var(--spectrum2-detail-size-xl);
+  line-height: var(--spectrum2-line-height-font-size-300);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg :is(p, ul, ol) {
+  color: var(--spectrum2-body-color);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg :is(.s2-body-xxl, .s2-body-xl, .s2-body-l, .s2-body-m, .s2-body-s, .s2-body-xs, .s2-body-xxs) {
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-weight: var(--spectrum2-body-sans-serif-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+}
+
+.explore-card.spectrum2.brick :is(.s2-body-xxl, .s2-body-xl, .s2-body-l) {
+  font-size: var(--spectrum2-acom-body-lg-font-size);
+  line-height: var(--spectrum2-acom-body-lg-line-height);
+}
+
+.explore-card.spectrum2.brick .s2-body-m {
+  font-size: var(--spectrum2-acom-body-md-font-size);
+  line-height: var(--spectrum2-acom-body-md-line-height);
+}
+
+.explore-card.spectrum2.brick .s2-body-s {
+  font-size: var(--spectrum2-acom-body-sm-font-size);
+  line-height: var(--spectrum2-acom-body-sm-line-height);
+}
+
+.explore-card.spectrum2.brick :is(.s2-body-xs, .s2-body-xxs) {
+  font-size: var(--spectrum2-acom-body-xs-font-size);
+  line-height: var(--spectrum2-acom-body-xs-line-height);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg :is(p, li, span) strong {
+  font-weight: var(--spectrum2-body-sans-serif-strong-font-weight);
+}
+
+.explore-card.spectrum2.brick.dark.explore-card-brick-over-media .explore-card-brick-fg :is(h1, h2, h3, h4, h5, h6, p, ul, ol) {
+  color: var(--spectrum2-static-white-text-color);
+}
+
+.explore-card.spectrum2.brick.light.explore-card-brick-over-media .explore-card-brick-fg :is(h1, h2, h3, h4, h5, h6, p, ul, ol) {
+  color: var(--spectrum2-static-black-text-color);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text > .explore-card-brick-icon-area {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+  margin-block-end: var(--spectrum2-spacing-400);
+  font-family: var(--spectrum2-acom-sans-serif-font-family-stack);
+  font-size: var(--spectrum2-title-size-m);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-title-sans-serif-font-weight);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-text > .explore-card-brick-icon-area.explore-card-brick-icon-gap-s {
+  gap: var(--spectrum2-spacing-400);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-icon-area picture {
+  display: flex;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-icon-area img {
+  inline-size: auto;
+  block-size: var(--spectrum2-acom-icon-size-l);
+}
+
+.explore-card.spectrum2.brick .s2-icon-stack-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-300);
+  inline-size: 100%;
+  padding-block: 0;
+  padding-inline: 0;
+  list-style-type: none;
+}
+
+.explore-card.spectrum2.brick.center .s2-icon-stack-area {
+  display: inline-flex;
+  inline-size: auto;
+}
+
+.explore-card.spectrum2.brick .s2-icon-stack-area li {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+  margin-block: 0;
+  margin-inline: 0;
+  text-align: start;
+}
+
+.explore-card.spectrum2.brick .s2-icon-stack-area li > a {
+  display: flex;
+  align-items: center;
+  gap: var(--spectrum2-spacing-300);
+}
+
+.explore-card.spectrum2.brick .s2-icon-stack-area li picture {
+  display: flex;
+  flex-shrink: 0;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+.explore-card.spectrum2.brick .s2-icon-stack-area li img {
+  inline-size: var(--spectrum2-acom-icon-size-s);
+  block-size: auto;
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg a:not(.s2-button) {
+  color: var(--spectrum2-accent-content-color-default);
+  font-weight: var(--spectrum2-bold-font-weight);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+  transition: color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg a:not(.s2-button):hover {
+  color: var(--spectrum2-accent-content-color-hover);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg a:not(.s2-button):active {
+  color: var(--spectrum2-accent-content-color-down);
+}
+
+.explore-card.spectrum2.brick .explore-card-brick-fg a:not(.s2-button):focus-visible {
+  color: var(--spectrum2-accent-content-color-key-focus);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.explore-card.spectrum2.brick:is(.static-links, .static-links *) .explore-card-brick-fg a:not(.s2-button),
+.explore-card.spectrum2.brick:is(.static-links, .static-links *) .explore-card-brick-fg a:not(.s2-button):is(:hover, :active, :focus-visible) {
+  color: inherit;
+}
+
+.explore-card.spectrum2.brick .s2-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-block-size: var(--_cta-height);
+  padding-block: 0;
+  padding-inline: var(--spectrum2-base-padding-horizontal-large);
+  border: var(--spectrum2-border-width-200) solid transparent;
+  border-radius: calc(var(--spectrum2-component-height-200) * var(--spectrum2-corner-radius-full));
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-font-size-200);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-align: center;
+  text-decoration: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    border-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.explore-card.spectrum2.brick .s2-button:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-accent {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-default);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-accent:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-accent:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-accent:focus-visible {
+  background-color: var(--spectrum2-accent-background-color-key-focus);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-default);
+  background-color: transparent;
+  border-color: var(--spectrum2-gray-800);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-outline:hover,
+.explore-card.spectrum2.brick .explore-card-tile-link:hover .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-hover);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-outline:active {
+  color: var(--spectrum2-neutral-content-color-down);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.explore-card.spectrum2.brick .s2-button.s2-button-outline:focus-visible,
+.explore-card.spectrum2.brick .explore-card-tile-link:focus-visible .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.explore-card.spectrum2.brick .s2-button.fill {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-default);
+  border-color: transparent;
+}
+
+.explore-card.spectrum2.brick .s2-button.fill:hover,
+.explore-card.spectrum2.brick .explore-card-tile-link:hover .s2-button.fill {
+  background-color: var(--spectrum2-neutral-background-color-hover);
+}
+
+.explore-card.spectrum2.brick .s2-button.fill:active {
+  background-color: var(--spectrum2-neutral-background-color-down);
+}
+
+.explore-card.spectrum2.brick .s2-button.fill:focus-visible,
+.explore-card.spectrum2.brick .explore-card-tile-link:focus-visible .s2-button.fill {
+  background-color: var(--spectrum2-neutral-background-color-key-focus);
+}
+@media (width < 768px) {
+  .explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(.s2-tablet-only, .s2-desktop-only) {
+    display: none;
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(.s2-mobile-only, .s2-desktop-only:not(.s2-tablet-only)) {
+    display: none;
+  }
+}
+
+@media (width >= 768px) {
+  .explore-card.spectrum2.brick {
+    min-block-size: calc(16 * var(--spectrum2-component-height-75));
+  }
+
+  .explore-card.spectrum2.brick .explore-card-brick-fg {
+    padding: var(--spectrum2-spacing-600);
+  }
+}
+@media (width >= 1280px) {
+  .explore-card.spectrum2.brick > .explore-card-brick-backdrop :is(.s2-mobile-only, .s2-tablet-only:not(.s2-desktop-only)) {
+    display: none;
+  }
+
+  .explore-card.spectrum2.brick .explore-card-brick-media {
+    display: block;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-split .explore-card-brick-fg {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    padding-block: 0;
+    padding-inline: 0;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-split .explore-card-brick-text {
+    grid-column: span 6;
+    margin-block: var(--spectrum2-spacing-600);
+    margin-inline: var(--spectrum2-spacing-600);
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-row.explore-card-brick-media-left .explore-card-brick-text {
+    grid-column: 7 / span 6;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-row.explore-card-brick-media-left .explore-card-brick-media {
+    grid-row: 1;
+    grid-column: 1 / span 6;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-row.explore-card-brick-media-right .explore-card-brick-media {
+    grid-column: 7 / span 6;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-row .explore-card-brick-media {
+    position: relative;
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-row .explore-card-brick-media :is(img, video) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .explore-card.spectrum2.brick.media-contain.explore-card-brick-row .explore-card-brick-media :is(img, video) {
+    object-fit: contain;
+  }
+
+  .explore-card.spectrum2.brick.grid-full-width.explore-card-brick-row.explore-card-brick-media-right .explore-card-brick-text {
+    grid-column: span 5;
+    margin-inline: var(--spectrum2-spacing-600) 0;
+  }
+
+  .explore-card.spectrum2.brick.grid-full-width.explore-card-brick-row.explore-card-brick-media-left .explore-card-brick-text {
+    grid-column: 8 / span 5;
+    margin-inline: 0 var(--spectrum2-spacing-600);
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-split.center .explore-card-brick-fg,
+  .explore-card.spectrum2.brick.explore-card-brick-split.horizontal-center .explore-card-brick-fg {
+    padding: var(--spectrum2-spacing-600);
+  }
+
+  .explore-card.spectrum2.brick.explore-card-brick-split:is(.center, .horizontal-center) .explore-card-brick-text {
+    grid-column: 4 / span 6;
+    margin-block: 0;
+    margin-inline: 0;
+  }
+
+  .explore-card.spectrum2.brick.stack .explore-card-brick-fg {
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--spectrum2-spacing-500);
+    padding-block: var(--spectrum2-spacing-600) 0;
+    padding-inline: var(--spectrum2-spacing-600);
+  }
+
+  .explore-card.spectrum2.brick.stack.explore-card-brick-media-left .explore-card-brick-fg {
+    padding-block: 0 var(--spectrum2-spacing-600);
+  }
+
+  .explore-card.spectrum2.brick.stack .explore-card-brick-media :is(picture, img, video) {
+    display: flex;
+    inline-size: 100%;
+    block-size: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore-card.spectrum2.brick .explore-card-brick-fg a:not(.s2-button),
+  .explore-card.spectrum2.brick .s2-button {
+    transition: none;
+  }
+}
+
+.explore-card.spectrum2.brick.showcase {
+  --_showcase-rule: var(--spectrum2-accent-visual-color);
+  --_showcase-accent: var(--spectrum2-accent-content-color-down);
+  --_showcase-accent-hover: var(--spectrum2-accent-content-color-hover);
+  --_showcase-accent-down: var(--spectrum2-accent-content-color-down);
+  --_showcase-accent-focus: var(--spectrum2-accent-content-color-key-focus);
+}
+
+.explore-card.spectrum2.brick.showcase.dark {
+  --_showcase-accent: var(--spectrum2-heading-color);
+  --_showcase-accent-hover: var(--spectrum2-heading-color);
+  --_showcase-accent-down: var(--spectrum2-heading-color);
+  --_showcase-accent-focus: var(--spectrum2-heading-color);
+}
+
+.explore-card.explore-card.explore-card.spectrum2.brick.showcase.button-fill {
+  border-radius: var(--spectrum2-corner-radius-0);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill {
+  border-block-start: var(--spectrum2-border-width-200) solid var(--_showcase-rule);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-fg {
+  padding-block: var(--spectrum2-spacing-400) var(--spectrum2-spacing-500);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text {
+  max-inline-size: calc(18 * var(--spectrum2-spacing-500));
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text > :is(.s2-detail-xs, .s2-detail-s, .s2-detail-m, .s2-detail-l, .s2-detail-xl) {
+  color: var(--_showcase-accent);
+  font-family: var(--spectrum2-acom-eyebrow-font-family);
+  font-size: var(--spectrum2-detail-size-m);
+  line-height: var(--spectrum2-line-height-font-size-100);
+  font-weight: var(--spectrum2-acom-eyebrow-font-weight);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+  margin-block-start: var(--spectrum2-spacing-300);
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-3-letter-spacing);
+}
+
+.explore-card.spectrum2.brick.showcase.light.button-fill .explore-card-brick-text > p:not(.s2-action-area, [class*="s2-detail-"]) {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+
+.explore-card.spectrum2.brick.showcase.light.button-fill.explore-card-brick-over-media .explore-card-brick-text > p,
+.explore-card.spectrum2.brick.showcase.light.explore-card-brick-split.explore-card-brick-over-media .explore-card-brick-text > p {
+  color: var(--spectrum2-black);
+}
+
+.explore-card.spectrum2.brick.showcase.dark.button-fill.explore-card-brick-over-media .explore-card-brick-text > p,
+.explore-card.spectrum2.brick.showcase.dark.explore-card-brick-split.explore-card-brick-over-media .explore-card-brick-text > p {
+  color: var(--spectrum2-white);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text > .s2-action-area {
+  margin-block-start: var(--spectrum2-spacing-300);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button {
+  min-block-size: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  border-width: 0;
+  border-radius: var(--spectrum2-corner-radius-0);
+  background-color: transparent;
+  color: var(--_showcase-accent);
+  text-decoration-line: none;
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button:hover {
+  background-color: transparent;
+  color: var(--_showcase-accent-hover);
+  text-decoration-line: underline;
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button:active {
+  background-color: transparent;
+  color: var(--_showcase-accent-down);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button:focus-visible {
+  background-color: transparent;
+  color: var(--_showcase-accent-focus);
+  text-decoration-line: underline;
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button::after {
+  content: '\2192' / '';
+  display: inline-block;
+  margin-inline-start: var(--spectrum2-spacing-75);
+}
+
+.explore-card.spectrum2.brick.showcase.button-fill .explore-card-brick-text .s2-button:dir(rtl)::after {
+  transform: scaleX(-1);
+}
+
+.explore-card.spectrum2.brick.showcase.light.explore-card-brick-split {
+  border-width: 0;
+  background-color: transparent;
+}
+
+.explore-card.spectrum2.brick.showcase.explore-card-brick-split .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+  font-family: var(--spectrum2-acom-heading-2-font-family);
+  font-size: var(--spectrum2-heading-size-xl);
+  line-height: var(--spectrum2-line-height-font-size-900);
+  font-weight: var(--spectrum2-acom-heading-2-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.explore-card.spectrum2.brick.showcase.explore-card-brick-split.explore-card-brick-row .explore-card-brick-media :is(img, video) {
+  object-fit: contain;
+  object-position: center;
+}
+
+.explore-card.spectrum2.brick.showcase.explore-card-brick-split .explore-card-brick-text > p {
+  font-size: var(--spectrum2-font-size-300);
+  line-height: var(--spectrum2-line-height-font-size-300);
+}
+
+.explore-card.spectrum2.brick.showcase.light.explore-card-brick-split .explore-card-brick-text > p {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+
+.explore-card.spectrum2.brick.showcase.light.static-links {
+  border-width: 0;
+  background-color: transparent;
+}
+
+.explore-card.spectrum2.brick.showcase.light.explore-card-brick-split.button-fill {
+  border-block-start: var(--spectrum2-border-width-200) solid var(--_showcase-rule);
+}
+
+.explore-card.spectrum2.brick.showcase.light.explore-card-brick-split.explore-card-brick-colour,
+.explore-card.spectrum2.brick.showcase.light.static-links.explore-card-brick-colour {
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .explore-card-brick-fg {
+  padding-inline: 0;
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .explore-card-brick-text {
+  flex: 1 1 auto;
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-heading-size-l);
+  line-height: var(--spectrum2-line-height-font-size-700);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+  overflow-wrap: break-word;
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area {
+  gap: 0;
+  margin-block-start: var(--spectrum2-spacing-300);
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li {
+  min-block-size: var(--spectrum2-component-height-300);
+  padding-block: var(--spectrum2-spacing-300);
+  padding-inline: 0 var(--spectrum2-spacing-100);
+  border-block-end: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+  font-size: var(--spectrum2-font-size-300);
+  line-height: var(--spectrum2-line-height-font-size-300);
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li::after {
+  content: '\2192' / '';
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: var(--_showcase-accent);
+  font-weight: var(--spectrum2-bold-font-weight);
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li:dir(rtl)::after {
+  transform: scaleX(-1);
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li a {
+  text-decoration-line: none;
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+}
+
+.explore-card.spectrum2.brick.showcase.static-links .s2-icon-stack-area li strong {
+  display: inline-block;
+  margin-inline-start: var(--spectrum2-spacing-100);
+  color: var(--_showcase-accent);
+  font-size: var(--spectrum2-font-size-75);
+  line-height: var(--spectrum2-line-height-font-size-75);
+  font-weight: var(--spectrum2-bold-font-weight);
+  white-space: nowrap;
+}
+
+.explore-card.explore-card.explore-card.spectrum2.brick.showcase.tiles.button-fill {
+  border-radius: var(--spectrum2-corner-radius-large-default);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.button-fill {
+  border: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.button-fill .explore-card-brick-fg {
+  padding: var(--spectrum2-spacing-500);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.button-fill .explore-card-brick-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  max-inline-size: none;
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.button-fill .explore-card-brick-text > .s2-action-area {
+  margin-block-start: auto;
+  padding-block-start: var(--spectrum2-spacing-500);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.light.button-fill .explore-card-brick-text > :is(.s2-detail-xs, .s2-detail-s, .s2-detail-m, .s2-detail-l, .s2-detail-xl) {
+  color: var(--spectrum2-body-color);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.button-fill .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+  margin-block-start: var(--spectrum2-spacing-400);
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.explore-card.spectrum2.brick.showcase.tiles.light.button-fill .explore-card-brick-text > p:not(.s2-action-area, [class*="s2-detail-"]) {
+  color: var(--spectrum2-body-color);
+}
+
+@media (width >= 768px) {
+  .explore-card.spectrum2.brick.showcase.tiles.button-fill .explore-card-brick-fg {
+    padding: var(--spectrum2-spacing-600);
+  }
+}
+
+.explore-card.spectrum2.brick.numbered.button-fill {
+  counter-increment: explore-card-numbered;
+}
+
+.explore-card.spectrum2.brick.numbered.button-fill .explore-card-brick-text::before {
+  content: counter(explore-card-numbered, decimal-leading-zero) / '';
+  display: block;
+  margin-block-end: var(--spectrum2-spacing-200);
+  color: var(--_showcase-accent, var(--spectrum2-heading-color));
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > :is(.s2-detail-xs, .s2-detail-s, .s2-detail-m, .s2-detail-l, .s2-detail-xl) {
+  display: inline-block;
+  padding-block: var(--spectrum2-spacing-75);
+  padding-inline: var(--spectrum2-spacing-300);
+  border: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-300);
+  border-radius: calc(var(--spectrum2-component-height-100) * var(--spectrum2-corner-radius-full));
+  font-size: var(--spectrum2-detail-size-s);
+  line-height: var(--spectrum2-line-height-font-size-75);
+  text-transform: uppercase;
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+  margin-block-start: var(--spectrum2-spacing-300);
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-acom-heading-1-font-size);
+  line-height: var(--spectrum2-acom-heading-1-line-height);
+  font-weight: var(--spectrum2-acom-heading-1-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-1-letter-spacing);
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+.explore-card.spectrum2.brick.poster.button-fill {
+  --_poster-ground: var(--spectrum2-background-layer-1-color);
+  --_poster-ground-foot: var(--spectrum2-spacing-800);
+
+  border-image: linear-gradient(var(--_poster-ground), var(--_poster-ground)) 0 fill / 0 / var(--spectrum2-spacing-400) var(--spectrum2-spacing-400) var(--_poster-ground-foot);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-fg {
+  background-color: var(--spectrum2-background-base-color);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-colour .explore-card-brick-fg {
+  background: var(--_authored-bg);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-over-media {
+  flex-direction: column;
+}
+
+.explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-over-media .explore-card-brick-fg {
+  padding-block-end: var(--spectrum2-spacing-400);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-over-media > .explore-card-brick-backdrop {
+  position: relative;
+  inset: auto;
+  order: 1;
+  flex: none;
+  aspect-ratio: 7 / 2;
+  border-radius: var(--spectrum2-corner-radius-0);
+}
+@media (768px <= width < 1024px) {
+  .explore-card.spectrum2.brick.poster.button-fill:nth-last-child(1 of .explore-card):nth-child(odd of .explore-card) {
+    grid-column: 1 / -1;
+  }
+}
+
+.explore-card.spectrum2.brick.poster.light.button-fill .explore-card-brick-text > p:not(.s2-action-area, [class*="s2-detail-"]) {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > p:not(.s2-action-area, [class*="s2-detail-"]) {
+  margin-block-start: var(--spectrum2-spacing-300);
+  font-size: var(--spectrum2-font-size-300);
+  line-height: var(--spectrum2-line-height-font-size-300);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > .s2-action-area {
+  margin-block-start: var(--spectrum2-spacing-500);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text {
+  max-inline-size: calc(18 * var(--spectrum2-spacing-500));
+}
+
+.explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split .explore-card-brick-text {
+  align-self: center;
+}
+
+@media (width >= 1280px) {
+  .explore-card.spectrum2.brick.poster.button-fill {
+    --_poster-ground-foot: var(--spectrum2-spacing-900);
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split {
+    min-block-size: calc(18 * var(--spectrum2-component-height-75));
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split .explore-card-brick-text {
+    max-inline-size: none;
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split .explore-card-brick-media {
+    overflow: hidden;
+    margin-block: var(--spectrum2-spacing-400);
+    margin-inline: 0 var(--spectrum2-spacing-400);
+    border-radius: var(--spectrum2-corner-radius-large-default);
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split.explore-card-brick-media-left .explore-card-brick-media {
+    margin-inline: var(--spectrum2-spacing-400) 0;
+  }
+
+}
+
+.explore-card.spectrum2.brick.button-fill:is(.poster, .showcase) {
+  container-type: inline-size;
+}
+@container (width < 720px) {
+  .explore-card.explore-card.explore-card.spectrum2.brick.button-fill:is(.poster, .showcase) .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+    font-size: var(--spectrum2-heading-size-l);
+    line-height: var(--spectrum2-line-height-font-size-700);
+    letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+    overflow-wrap: break-word;
+  }
+
+  .explore-card.explore-card.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+    font-size: var(--spectrum2-heading-size-xl);
+    line-height: var(--spectrum2-line-height-font-size-900);
+    letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+  }
+}
+
+@container (width < 480px) {
+  .explore-card.explore-card.explore-card.spectrum2.brick.button-fill:is(.poster, .showcase) .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+    font-size: var(--spectrum2-heading-size-m);
+    line-height: var(--spectrum2-line-height-font-size-500);
+    letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+  }
+
+  .explore-card.explore-card.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > :is(h2, h3, h4, h5, h6) {
+    font-size: var(--spectrum2-heading-size-l);
+    line-height: var(--spectrum2-line-height-font-size-700);
+    letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+  }
+}
+
+@container (width < 720px) {
+  .explore-card.spectrum2.brick.button-fill:is(.poster, .tiles).explore-card-brick-split .explore-card-brick-fg {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .explore-card.spectrum2.brick.button-fill:is(.poster, .tiles).explore-card-brick-split .explore-card-brick-media {
+    order: 1;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--spectrum2-corner-radius-large-default);
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split .explore-card-brick-text {
+    align-self: stretch;
+    margin-block: var(--spectrum2-spacing-500) 0;
+    margin-inline: var(--spectrum2-spacing-500);
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill.explore-card-brick-split .explore-card-brick-media {
+    margin-block: var(--spectrum2-spacing-500) var(--spectrum2-spacing-400);
+    margin-inline: var(--spectrum2-spacing-400);
+  }
+
+  .explore-card.spectrum2.brick.showcase.tiles.button-fill.explore-card-brick-split .explore-card-brick-text {
+    align-self: stretch;
+    margin-block: 0;
+    margin-inline: 0;
+  }
+
+  .explore-card.spectrum2.brick.showcase.tiles.button-fill.explore-card-brick-split .explore-card-brick-media {
+    margin-block: var(--spectrum2-spacing-400) 0;
+    margin-inline: 0;
+  }
+
+  .explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text > p:not(.s2-action-area, [class*="s2-detail-"]) {
+    font-size: var(--spectrum2-font-size-200);
+    line-height: var(--spectrum2-line-height-font-size-200);
+  }
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text .s2-button {
+  border-color: transparent;
+  background-color: var(--spectrum2-accent-background-color-default);
+  color: var(--spectrum2-white);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text .s2-button:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text .s2-button:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.explore-card.spectrum2.brick.poster.button-fill .explore-card-brick-text .s2-button:focus-visible {
+  background-color: var(--spectrum2-accent-background-color-key-focus);
+}
+
+.explore-card.spectrum2.brick.poster.static-links .s2-icon-stack-area {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spectrum2-spacing-200);
+}
+
+.explore-card.spectrum2.brick.poster.static-links .s2-icon-stack-area li {
+  padding-block: var(--spectrum2-spacing-200);
+  padding-inline: var(--spectrum2-spacing-300) var(--spectrum2-spacing-400);
+  border-radius: calc(var(--spectrum2-component-height-300) * var(--spectrum2-corner-radius-full));
+  background-color: var(--spectrum2-background-base-color);
+  box-shadow: var(--spectrum2-drop-shadow-elevated);
+  font-weight: var(--spectrum2-bold-font-weight);
+}
+
+.explore-card.spectrum2.brick.poster.static-links .s2-icon-stack-area li a {
+  text-decoration-line: none;
+}
+
+.explore-card.spectrum2.brick.poster.static-links .s2-icon-stack-area li a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+}

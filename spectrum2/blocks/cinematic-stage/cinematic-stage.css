@@ -1,0 +1,386 @@
+.cinematic-stage.spectrum2 {
+  --_authored-bg: var(--spectrum2-background-base-color);
+  --_object-position: 50% 50%;
+  --_stage-min: min(100svh, 32rem);
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--_stage-min);
+  padding-block: var(--spectrum2-spacing-700);
+  padding-inline: var(--spectrum2-spacing-400);
+  overflow: clip;
+  background: var(--_authored-bg);
+  color: var(--spectrum2-body-color);
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  text-align: center;
+}
+
+.cinematic-stage.spectrum2:not(.cinematic-stage-has-picture) {
+  --_stage-min: min(80svh, 26rem);
+
+  background: radial-gradient(90% 100% at 50% 0%, var(--spectrum2-transparent-white-100), transparent), var(--_authored-bg);
+}
+
+.cinematic-stage.spectrum2:not(.cinematic-stage-has-picture) .cinematic-stage-headline {
+  max-inline-size: 16em;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-media :is(picture, img) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-media img {
+  object-fit: cover;
+  object-position: var(--_object-position);
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 80% at 50% 45%, var(--spectrum2-transparent-black-800), var(--spectrum2-transparent-black-900));
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spectrum2-spacing-500);
+  max-inline-size: 100%;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-body :is(p, h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-eyebrow {
+  color: var(--spectrum2-neutral-subdued-content-color-default);
+  font-size: var(--spectrum2-detail-size-m);
+  line-height: var(--spectrum2-line-height-font-size-100);
+  font-weight: var(--spectrum2-detail-sans-serif-strong-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-transform: uppercase;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-headline {
+  max-inline-size: 11em;
+  color: var(--spectrum2-heading-color);
+  font-family: var(--spectrum2-acom-heading-1-font-family);
+  font-size: var(--spectrum2-heading-size-xxl);
+  line-height: var(--spectrum2-line-height-font-size-1100);
+  font-weight: var(--spectrum2-heading-sans-serif-strong-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-wrap: balance;
+}
+
+.cinematic-stage.spectrum2.cinematic-stage-has-picture:not(.image-left) .cinematic-stage-headline {
+  max-inline-size: 10.5em;
+  color: var(--spectrum2-static-white-text-color);
+  text-wrap: wrap;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-word {
+  --_word: 0;
+
+  display: inline-block;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-lede {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spectrum2-spacing-200);
+  max-inline-size: 40rem;
+  color: var(--spectrum2-body-color);
+  font-size: var(--spectrum2-body-size-l);
+  line-height: var(--spectrum2-body-line-height);
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spectrum2-spacing-300);
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-actions p {
+  display: contents;
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-actions a:not(.s2-button) {
+  color: var(--spectrum2-accent-content-color-default);
+  font-weight: var(--spectrum2-bold-font-weight);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--spectrum2-text-underline-thickness);
+  text-underline-offset: var(--spectrum2-text-gap-medium);
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-actions a:not(.s2-button):hover {
+  color: var(--spectrum2-accent-content-color-hover);
+}
+
+.cinematic-stage.spectrum2 .cinematic-stage-actions a:not(.s2-button):focus-visible {
+  color: var(--spectrum2-accent-content-color-key-focus);
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.cinematic-stage.spectrum2 .s2-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-block-size: var(--spectrum2-component-height-400);
+  padding-block: 0;
+  padding-inline: var(--spectrum2-spacing-400);
+  border: var(--spectrum2-border-width-200) solid transparent;
+  border-radius: calc(var(--spectrum2-component-height-400) * var(--spectrum2-corner-radius-full));
+  font-family: var(--spectrum2-acom-body-md-font-family);
+  font-size: var(--spectrum2-font-size-200);
+  line-height: var(--spectrum2-line-height-font-size-200);
+  font-weight: var(--spectrum2-bold-font-weight);
+  letter-spacing: var(--spectrum2-letter-spacing);
+  text-decoration: none;
+  transition: background-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    border-color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out),
+    color var(--spectrum2-transition-100) var(--spectrum2-transition-ease-in-out);
+}
+
+.cinematic-stage.spectrum2 .s2-button:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-accent {
+  color: var(--spectrum2-white);
+  background-color: var(--spectrum2-accent-background-color-default);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-accent:hover {
+  background-color: var(--spectrum2-accent-background-color-hover);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-accent:active {
+  background-color: var(--spectrum2-accent-background-color-down);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-accent:focus-visible {
+  background-color: var(--spectrum2-accent-background-color-key-focus);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-outline {
+  color: var(--spectrum2-neutral-content-color-default);
+  background-color: transparent;
+  border-color: var(--spectrum2-gray-800);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-outline:hover {
+  color: var(--spectrum2-neutral-content-color-hover);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-outline:active {
+  color: var(--spectrum2-neutral-content-color-down);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.cinematic-stage.spectrum2 .s2-button.s2-button-outline:focus-visible {
+  color: var(--spectrum2-neutral-content-color-key-focus);
+  background-color: var(--spectrum2-gray-100);
+  border-color: var(--spectrum2-gray-900);
+}
+
+.cinematic-stage.spectrum2 .s2-button.fill {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-default);
+  border-color: transparent;
+}
+
+.cinematic-stage.spectrum2 .s2-button.fill:hover {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-hover);
+  border-color: transparent;
+}
+
+.cinematic-stage.spectrum2 .s2-button.fill:active {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-down);
+  border-color: transparent;
+}
+
+.cinematic-stage.spectrum2 .s2-button.fill:focus-visible {
+  color: var(--spectrum2-gray-25);
+  background-color: var(--spectrum2-neutral-background-color-key-focus);
+  border-color: transparent;
+}
+
+.cinematic-stage.spectrum2.cinematic-stage-has-picture .s2-button.fill {
+  color: var(--spectrum2-static-black-text-color);
+  background-color: var(--spectrum2-white);
+}
+
+.cinematic-stage.spectrum2.cinematic-stage-has-picture .s2-button.fill:is(:hover, :active, :focus-visible) {
+  color: var(--spectrum2-static-black-text-color);
+  background-color: var(--spectrum2-transparent-white-800);
+}
+
+.cinematic-stage.spectrum2.image-left.cinematic-stage-has-picture {
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center stretch;
+  gap: var(--spectrum2-spacing-500);
+  text-align: start;
+}
+
+.cinematic-stage.spectrum2.image-left .cinematic-stage-media {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  overflow: clip;
+  border-radius: var(--spectrum2-corner-radius-extra-large-default);
+}
+
+.cinematic-stage.spectrum2.image-left .cinematic-stage-media::after {
+  content: none;
+}
+
+.cinematic-stage.spectrum2.image-left .cinematic-stage-media :is(picture, img) {
+  block-size: auto;
+}
+
+.cinematic-stage.spectrum2.image-left .cinematic-stage-body {
+  align-items: flex-start;
+}
+
+.cinematic-stage.spectrum2.image-left .cinematic-stage-actions {
+  justify-content: flex-start;
+}
+
+@media (width >= 1024px) {
+  .cinematic-stage.spectrum2.image-left.cinematic-stage-has-picture {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--spectrum2-spacing-800);
+  }
+}
+
+@media (width >= 768px) {
+  .cinematic-stage.spectrum2 {
+    --_stage-min: min(100svh, 38rem);
+
+    padding-block: var(--spectrum2-spacing-800);
+    padding-inline: var(--spectrum2-spacing-800);
+  }
+
+  .cinematic-stage.spectrum2 .cinematic-stage-headline {
+    font-size: var(--spectrum2-heading-size-xxxl);
+    line-height: var(--spectrum2-line-height-font-size-1300);
+  }
+}
+
+@media (width >= 1280px) {
+  .cinematic-stage.spectrum2 {
+    --_stage-min: min(100svh, 43rem);
+  }
+
+  .cinematic-stage.spectrum2 .cinematic-stage-headline {
+    font-size: var(--spectrum2-heading-size-xxxxl);
+    line-height: var(--spectrum2-line-height-font-size-1500);
+  }
+
+  .cinematic-stage.spectrum2.image-left.cinematic-stage-has-picture .cinematic-stage-headline {
+    font-size: var(--spectrum2-heading-size-xxxl);
+    line-height: var(--spectrum2-line-height-font-size-1300);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cinematic-stage.spectrum2 {
+      view-timeline: --_stage block;
+    }
+
+    .cinematic-stage.spectrum2 .cinematic-stage-media {
+      animation: cinematic-stage-open var(--spectrum2-enter-ease-out) both;
+      animation-timeline: --_stage;
+      animation-range: entry 0% entry 80%;
+    }
+
+    .cinematic-stage.spectrum2 .cinematic-stage-media img {
+      animation: cinematic-stage-settle var(--spectrum2-enter-standard) both;
+      animation-timeline: --_stage;
+      animation-range: entry 0% entry 90%;
+    }
+
+    .cinematic-stage.spectrum2.image-left .cinematic-stage-media {
+      animation-name: cinematic-stage-wipe;
+    }
+
+    .cinematic-stage.spectrum2 .cinematic-stage-word {
+      animation: cinematic-stage-rise var(--spectrum2-enter-ease-out) both;
+      animation-timeline: --_stage;
+      animation-range: entry calc(20% + var(--_word) * 3.5%) entry calc(55% + var(--_word) * 3%);
+    }
+
+    .cinematic-stage.spectrum2 .cinematic-stage-headline:not(.cinematic-stage-split) {
+      animation: cinematic-stage-rise var(--spectrum2-enter-ease-out) both;
+      animation-timeline: --_stage;
+      animation-range: entry 20% entry 75%;
+    }
+
+    .cinematic-stage.spectrum2 :is(.cinematic-stage-eyebrow, .cinematic-stage-lede, .cinematic-stage-actions) {
+      animation: cinematic-stage-arrive var(--spectrum2-enter-ease-out) both;
+      animation-timeline: --_stage;
+      animation-range: entry 60% entry 90%;
+    }
+
+    .cinematic-stage.spectrum2:focus-within :is(.cinematic-stage-media, .cinematic-stage-media img, .cinematic-stage-word, .cinematic-stage-headline, .cinematic-stage-eyebrow, .cinematic-stage-lede, .cinematic-stage-actions) {
+      animation: none;
+    }
+  }
+}
+
+@keyframes cinematic-stage-open {
+  from { clip-path: inset(12% 8%); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes cinematic-stage-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes cinematic-stage-settle {
+  from { scale: 1.2; }
+  to { scale: 1; }
+}
+@keyframes cinematic-stage-rise {
+  from { translate: 0 100%; clip-path: inset(-0.25em 100% 100% -0.1em); }
+  to { translate: 0 0; clip-path: inset(-0.25em -0.1em -0.25em -0.1em); }
+}
+
+@keyframes cinematic-stage-arrive {
+  from { opacity: 0; translate: 0 100%; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-stage.spectrum2 :is(.cinematic-stage-media, .cinematic-stage-media img, .cinematic-stage-word, .cinematic-stage-headline, .cinematic-stage-eyebrow, .cinematic-stage-lede, .cinematic-stage-actions) {
+    animation: none;
+  }
+
+  .cinematic-stage.spectrum2 .s2-button {
+    transition: none;
+  }
+}

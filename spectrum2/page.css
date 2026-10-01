@@ -1,0 +1,53 @@
+/* spectrum2 preview: section rhythm on a spectrum2 page.
+
+   Loaded by loader.js at the end of <body>, only on a spectrum2 page. Every selector starts with `.section-skin`,
+   the gate loader.js puts on <body>, so it matches nothing anywhere else.
+
+   - Every `main > .section` is padded by token NAME, spacing-600 under 768px and spacing-800 from 768px, through
+     `--spectrum2-section-padding-block` whose fallback is the rung itself, so the token sheet sets the values.
+     Specificity 0,2,1, so section-skin's authored spacing classes (0,3,1) still win.
+   - A band section has no padding: section-metadata style `no spacing` becomes the class `no-spacing`
+     (milo's handleStyle splits on ', ' and turns spaces into '-').
+   - The hero section has no padding: the hero is milo's own brand-concierge block, with brand-concierge-skin.
+   - The prologue heading spans its section's grid (loader.js 1b merges it back into the section it heads). */
+
+.section-skin main > .section {
+  padding-block: var(--spectrum2-section-padding-block, var(--spectrum2-spacing-600));
+}
+
+@media (width >= 768px) {
+  .section-skin main > .section {
+    padding-block: var(--spectrum2-section-padding-block, var(--spectrum2-spacing-800));
+  }
+}
+
+/* An EMPTY section has no padding: a doc may put the page `metadata` block in a section of its own at the end, and
+   the pipeline lifts the block into <head>, leaving `<div></div>`. Padded, it is a blank band above the footer. */
+.section-skin main > .section:not(:has(> *)) {
+  padding-block: 0;
+}
+
+.section-skin main > .section.no-spacing,
+.section-skin main > .section:has(> .brand-concierge) {
+  padding-block: 0;
+}
+
+.section-skin main > .section > [data-spectrum2-prologue] {
+  grid-column: 1 / -1;
+}
+
+/* A tab panel: tabs.js moves each panel's section into the tabs block, out of main's own children, where the
+   `main > .section` rules no longer reach it. The panel gets the masonry gap and the page margin and no block
+   padding (an authored panel style such as `l spacing top` is not applied). milo would pad it 40/32 and use its own
+   gap and a calc(50% - 600px) margin, which goes negative (so 0) under 1200px. */
+.section-skin main .section .section.masonry-layout {
+  box-sizing: border-box;
+  gap: var(--spectrum2-spacing-400);
+  padding-block: 0;
+  padding-inline: var(--spectrum2-acom-grid-margin);
+}
+
+/* Milo's author-only block notifications, hidden unless `?notifications=on` (loader.js). */
+html:not(.spectrum2-notifications) [data-block-notification] { border: 0; }
+html:not(.spectrum2-notifications) .block-label-container,
+html:not(.spectrum2-notifications) .notification-controls-container { display: none; }

@@ -1,0 +1,87 @@
+.prose-skin main > .section > .content {
+  color: var(--spectrum2-body-color);
+}
+
+.prose-skin main > .section > .content > :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--spectrum2-heading-color);
+  margin-block: var(--spectrum2-spacing-600) var(--spectrum2-spacing-300);
+}
+
+.prose-skin main > .section > .content > h1 {
+  font-family: var(--spectrum2-acom-heading-3-font-family);
+  font-size: var(--spectrum2-acom-heading-3-font-size);
+  line-height: var(--spectrum2-acom-heading-3-line-height);
+  font-weight: var(--spectrum2-acom-heading-3-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-3-letter-spacing);
+}
+
+.prose-skin main > .section > .content > h2 {
+  font-family: var(--spectrum2-acom-heading-4-font-family);
+  font-size: var(--spectrum2-acom-heading-4-font-size);
+  line-height: var(--spectrum2-acom-heading-4-line-height);
+  font-weight: var(--spectrum2-acom-heading-4-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-4-letter-spacing);
+}
+
+.prose-skin main > .section > .content > h3 {
+  font-family: var(--spectrum2-acom-heading-5-font-family);
+  font-size: var(--spectrum2-acom-heading-5-font-size);
+  line-height: var(--spectrum2-acom-heading-5-line-height);
+  font-weight: var(--spectrum2-acom-heading-5-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-5-letter-spacing);
+}
+
+.prose-skin main > .section > .content > :is(h4, h5, h6) {
+  font-family: var(--spectrum2-acom-heading-6-font-family);
+  font-size: var(--spectrum2-acom-heading-6-font-size);
+  line-height: var(--spectrum2-acom-heading-6-line-height);
+  font-weight: var(--spectrum2-acom-heading-6-font-weight);
+  letter-spacing: var(--spectrum2-acom-heading-6-letter-spacing);
+}
+.prose-skin main > .section > .content > h1 strong { font-weight: var(--spectrum2-acom-heading-3-font-weight); }
+.prose-skin main > .section > .content > h2 strong { font-weight: var(--spectrum2-acom-heading-4-font-weight); }
+.prose-skin main > .section > .content > h3 strong { font-weight: var(--spectrum2-acom-heading-5-font-weight); }
+.prose-skin main > .section > .content > :is(h4, h5, h6) strong { font-weight: var(--spectrum2-acom-heading-6-font-weight); }
+
+.prose-skin main > .section > .content > :is(p, ul, ol, blockquote) {
+  font-family: var(--spectrum2-acom-body-lg-font-family);
+  font-size: var(--spectrum2-acom-body-lg-font-size);
+  line-height: var(--spectrum2-acom-body-lg-line-height);
+  font-weight: var(--spectrum2-acom-body-lg-font-weight);
+  letter-spacing: var(--spectrum2-acom-body-lg-letter-spacing);
+  margin-block: 0 var(--spectrum2-spacing-400);
+}
+
+.prose-skin main > .section > .content > :is(ul, ol) { padding-inline-start: var(--spectrum2-spacing-600); }
+.prose-skin main > .section > .content > :is(ul, ol) > li { margin-block-end: var(--spectrum2-spacing-100); }
+.prose-skin main > .section > .content > :is(ul, ol) > li::marker { color: var(--spectrum2-body-color); }
+.prose-skin main > .section > .content > :is(p, ul, ol, blockquote) strong { font-weight: var(--spectrum2-bold-font-weight); }
+
+.prose-skin main > .section > .content > hr {
+  border: 0;
+  border-block-start: var(--spectrum2-border-width-100) solid var(--spectrum2-gray-200);
+  margin-block: var(--spectrum2-spacing-600);
+}
+
+.prose-skin main > .section > .content > :is(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6) a:not(.fragment, [class*="button"]) {
+  color: var(--spectrum2-accent-content-color-default);
+  text-decoration: underline;
+  text-underline-offset: var(--spectrum2-spacing-50);
+}
+
+.prose-skin main > .section > .content > :is(p, ul, ol, blockquote) a:not(.fragment, [class*="button"]):hover {
+  color: var(--spectrum2-accent-content-color-hover);
+}
+.prose-skin main > .section > .content > :is(h1, h2, h3, h4, h5, h6) a:not(.fragment, [class*="button"]) { color: currentcolor; }
+
+.prose-skin main > .section > .content a:focus:not(:focus-visible) { outline: none; }
+
+.prose-skin main > .section > .content a:focus-visible {
+  outline: var(--spectrum2-focus-indicator-thickness) solid var(--spectrum2-focus-indicator-color);
+  outline-offset: var(--spectrum2-focus-ring-gap);
+}
+
+.prose-skin main > .section > .content > p > picture > img {
+  border-radius: var(--spectrum2-corner-radius-large-default);
+}
+.prose-skin main > .section.center > .content > :is(h1, h2, h3, h4, h5, h6, p) { text-align: center; }
