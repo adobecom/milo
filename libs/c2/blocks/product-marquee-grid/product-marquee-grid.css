@@ -91,15 +91,12 @@
     .mas-description,
     .mas-price-commitment,
     .mas-subtitle {
+      color: var(--pm-content);
       font-family: var(--body-font-family);
       font-size: var(--s2a-typography-font-size-body-sm);
       font-weight: var(--s2a-font-weight-adobe-clean-regular);
       line-height: var(--s2a-typography-line-height-body-sm);
       letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
-    }
-
-    .mas-description {
-      color: var(--pm-content);
     }
 
     .mas-price-commitment {
