@@ -88,7 +88,6 @@
       --merch-badge-color: var(--pm-badge-color) !important;
     }
 
-    .mas-description,
     .mas-price-commitment,
     .mas-subtitle {
       color: var(--pm-content);
