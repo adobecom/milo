@@ -68,7 +68,7 @@ describe('Brand Concierge Global', () => {
   it('sets the --bc-side-overlay-top CSS variable when the gnav is present', () => {
     document.documentElement.style.removeProperty('--bc-side-overlay-top');
     sideOverlayTop();
-    expect(document.documentElement.style.getPropertyValue('--bc-side-overlay-top')).to.match(/px$/);
+    expect(document.body.style.getPropertyValue('--bc-side-overlay-top')).to.match(/px$/);
   });
 
   it('adds the no-gnav-mobile modifier to the button section', async () => {
