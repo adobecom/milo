@@ -3,9 +3,16 @@ import { sampleRUM } from '../../utils/samplerum.js';
 
 const { base, contentRoot, locale } = getConfig();
 
-async function get404(path) {
+async function get404(path, version) {
   const { prefix } = locale;
-  const href = path || `${base}${prefix}/fragments/404#_dnt`;
+  let href = path || `${base}${prefix}/fragments/404#_dnt`;
+
+  if (version === 'v2') {
+    const versionedPath = `${base}${prefix}/fragments/${version}/404`;
+    const resp = await fetch(`${versionedPath}.plain.html`).catch(() => null);
+    if (resp?.ok) href = `${versionedPath}#_dnt`;
+  }
+
   const para = createTag('p', {}, createTag('a', { href }, href));
   const section = createTag('div', null, para);
 
@@ -62,28 +69,12 @@ async function getLegacy404() {
   main.append(...doc.querySelectorAll('body > *'));
 }
 
-async function getVersioned404(version) {
-  const versionedPath = `${base}${locale.prefix}/fragments/${version}/404`;
-  const resp = await fetch(`${versionedPath}.plain.html`).catch(() => null);
-  if (!resp?.ok) return false;
-  await get404(`${versionedPath}#_dnt`);
-  return true;
-}
-
 export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
-
-  if (style === 'feds') {
-    const version = getMetadata('404-version');
-    const handled = version === 'v2' && await getVersioned404(version);
-    if (!handled) await get404();
-  } else if (style === 'local') {
-    await get404(`${root}/fragments/404`);
-  } else {
-    await getLegacy404();
-  }
-
+  if (style === 'feds') await get404(undefined, getMetadata('404-version'));
+  if (style === 'local') await get404(`${root}/fragments/404`);
+  if (!style) await getLegacy404();
   sampleRUM('404', { source: document.referrer });
 }
 
