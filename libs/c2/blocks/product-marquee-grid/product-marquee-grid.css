@@ -55,6 +55,9 @@
       border-color: transparent;
       vertical-align: -0.2em;
       height: 18px;
+      margin-inline-start: 3px;
+      block-size: auto;
+      inline-size: auto;
 
       svg {
         block-size: 100%;
@@ -135,28 +138,6 @@
     > .con-button {
       flex: 1 1 0;
       justify-content: center;
-    }
-
-mas-field .icon-button {
-      display: inline;
-      background: none;
-      border: none;
-      border-radius: 0;
-      block-size: auto;
-      inline-size: auto;
-      margin-inline-start: 3px;
-
-      svg {
-        block-size: 18px;
-        inline-size: auto;
-        position: relative;
-        top: 4px;
-        color: #292929;
-
-        path {
-          fill: currentcolor;
-        }
-      }
     }
   }
 
