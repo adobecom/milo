@@ -52,7 +52,10 @@ function cellParas(cell) {
 
 function parsePullQuote(row) {
   const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent).filter(Boolean);
+  const paras = [...row.querySelectorAll('p')]
+    .filter((p) => !quoteEl?.contains(p))
+    .map((p) => p.textContent)
+    .filter(Boolean);
   return {
     quote: quoteEl ? quoteEl.textContent : paras.shift() || '',
     name: paras[0] || '',
