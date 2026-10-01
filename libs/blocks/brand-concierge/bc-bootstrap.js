@@ -442,7 +442,7 @@ export async function openSideModal(initialMessage, bootstrap) {
 
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
-    class: 'opening',
+    class: !(localStorage.getItem('bc-side-overlay') === 'open') ? 'opening' : '',
     id: 'brand-concierge-side',
     content: innerModal,
     closeCallback: async () => {
