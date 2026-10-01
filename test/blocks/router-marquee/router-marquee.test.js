@@ -597,6 +597,11 @@ describe('Router Marquee — autoplay first-frame gating', () => {
   });
 
   const setup = async () => {
+    // Let IntersectionObserver entries queued by earlier tests' blocks deliver before this
+    // init replaces the module-level SLIDE_ANALYTICS they index into.
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
     document.body.innerHTML = await readFile({ path: './mocks/video.html' });
     const block = document.querySelector('.router-marquee');
     init(block);

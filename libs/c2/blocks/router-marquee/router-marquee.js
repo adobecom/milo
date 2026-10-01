@@ -42,9 +42,7 @@ const setSlideObserver = (slides) => {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const viewport = getViewport(entry.target);
-        const slideData = SLIDE_ANALYTICS[viewport]?.[index];
-        if (!slideData) return;
-        slideData.visible = entry.isIntersecting;
+        SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
         if (entry.isIntersecting && slide.classList.contains('is-active')) {
           const card = slide.closest('.rm-viewport').querySelector('.rm-card.is-active');
           fireAnalytic(card, index);
