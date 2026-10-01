@@ -93,6 +93,19 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(client.sendUserMessage.lastCall.args[0]).to.deep.equal({ label: 'live' });
   });
 
+  it('does not reinitialize BC for a callback-only registration', async () => {
+    await assistant.loadAcomAssistant({
+      appid: 'bc-adobedotcom2',
+      componentid: 'brand-concierge',
+    }, deps);
+    ready();
+    const onReadyCallback = sinon.spy();
+    await assistant.loadAcomAssistant({ callbacks: { onReadyCallback } }, deps);
+    expect(client.reinitialize.called).to.be.false;
+    ready();
+    expect(onReadyCallback.calledOnce).to.be.true;
+  });
+
   it('does not send empty messages', async () => {
     await start();
     ready();
@@ -285,13 +298,63 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(client.openMessagingWindow.called).to.be.false;
   });
 
-  it('preserves the existing per-click identity contract', async () => {
-    await start();
-    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
-    assistant.setAcomAssistantIdentity({ appid: 'jarvis-x', appver: '9.9' });
-    expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'jarvis-x', appver: '9.9' });
-    assistant.setAcomAssistantIdentity({ appid: 'bc-adobedotcom2', appver: '1.0' });
+  it('reports the initialized BC surface identity', async () => {
+    await assistant.loadAcomAssistant({
+      appid: 'bc-adobedotcom2',
+      appver: '1.0',
+      componentid: 'brand-concierge',
+    }, deps);
     expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-adobedotcom2', appver: '1.0' });
+  });
+
+  it('supplies a one-use Jarvis context without reinitializing BC', async () => {
+    await assistant.loadAcomAssistant({ appid: 'bc-adobedotcom2', appver: '1.0' }, deps);
+    ready();
+    let openContext;
+    client.openMessagingWindow = sinon.spy(() => {
+      openContext = callbacks.getContextCallback();
+    });
+    await assistant.openAcomAssistantChat(
+      { sourceType: 'a', sourceText: 'Contact us' },
+      { appid: 'footer-jarvis', appver: '2.0' },
+    );
+    expect(openContext).to.deep.equal({ appid: 'footer-jarvis', appver: '2.0' });
+    expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-adobedotcom2', appver: '1.0' });
+    expect(client.initialize.calledOnce).to.be.true;
+    expect(client.reinitialize.called).to.be.false;
+  });
+
+  it('retains the entry context until the SDK makes its delayed callback', async () => {
+    await start();
+    ready();
+    let openContext;
+    client.openMessagingWindow = () => {
+      setTimeout(() => { openContext = callbacks.getContextCallback(); }, 500);
+    };
+    await assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' });
+    expect(openContext).to.be.undefined;
+    await clock.tickAsync(500);
+    expect(openContext.appid).to.equal('footer-jarvis');
+    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
+  });
+
+  it('clears an unused Jarvis context before a BC open', async () => {
+    await start();
+    ready();
+    await assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' });
+    await assistant.openAcomAssistantChat({});
+    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
+  });
+
+  it('clears the entry context if opening fails', async () => {
+    await start();
+    ready();
+    client.openMessagingWindow = sinon.stub().rejects(new Error('open failed'));
+    await expectError(
+      assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' }),
+      'open failed',
+    );
+    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
   });
 
   it('waits for callbacks after a synchronous reinitialize acknowledgement', async () => {

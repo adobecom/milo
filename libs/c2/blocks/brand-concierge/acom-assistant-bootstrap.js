@@ -1,5 +1,5 @@
 import { getMetadata, loadScript, loadStyle } from '../../../utils/utils.js';
-import { loadAcomAssistant, sendAcomAssistantUserMessage, openAcomAssistantChat, setAcomAssistantIdentity } from '../../../features/acom-assistant.js';
+import { loadAcomAssistant, sendAcomAssistantUserMessage, openAcomAssistantChat } from '../../../features/acom-assistant.js';
 import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 
 // bc-adobedotcom2 is the Assistant team's test appid for the BC experience while Brand Concierge's
@@ -21,11 +21,6 @@ export async function ensureAcomAssistant(cards) {
   // read from metadata so a real value can be authored once provisioning is complete.
   const appid = getMetadata('acom-assistant-id') || BC_APP_ID_FALLBACK;
   const appver = getMetadata('acom-assistant-version') || '1.0';
-
-  // Re-affirm Brand Concierge's identity on every call (not just the first) -- another
-  // surface (e.g. the Jarvis GNav link) sharing this client may have set its own identity
-  // for a click in between, and Brand Concierge's own clicks need to report theirs back.
-  setAcomAssistantIdentity({ appid, appver });
 
   initializationPromise ||= loadAcomAssistant({
     appid,

@@ -5,8 +5,8 @@
  * initialize() call is allowed per the client's own docs (a second call returns
  * { status: 'error', type: 'init_already_done' }). This module is the one place
  * that loads the script/CSS and calls initialize(), so every integrating surface
- * (GNav link, Brand Concierge blocks) shares one client instead of racing to init
- * it themselves. Later callers fold their config in via reinitialize().
+ * (GNav input, Brand Concierge blocks, chat links) shares the BC client instead
+ * of racing to init it themselves. Later configuration updates use reinitialize().
  * Initialization/readiness must be confirmed by SDK callbacks within 30 seconds;
  * a timeout is a failure, not permission to open. Only pre-initialization script
  * failures are retried, avoiding duplicate initialize() calls on the same SDK.
@@ -21,7 +21,7 @@ let resolvedClient = null;
 let mergedConfig = {};
 let isReady = false;
 let readyPromise = null;
-let pendingIdentity = null;
+let nextOpenContext = null;
 let pendingReinitializeConfig = {};
 let reinitializePromise = null;
 let lifecycleError = null;
@@ -70,6 +70,7 @@ function checkClientResult(result, operation) {
 
 function startReadinessWait() {
   isReady = false;
+  nextOpenContext = null;
   readyGate = createReadinessGate('client readiness timed out');
   readyPromise = readyGate.promise;
 }
@@ -79,18 +80,9 @@ function failInitialization(error) {
   if (!lifecycleError) logError(failure);
   lifecycleError ||= failure;
   isReady = false;
+  nextOpenContext = null;
   pendingMessages.length = 0;
   readyGate.reject(failure);
-}
-
-/**
- * Sets which surface's identity getContextCallback should report on the next CTA/host-link
- * click. Surfaces sharing this one client (GNav Jarvis link, Brand Concierge) call this right
- * before triggering their own open, so a single session can serve a different appid/appver
- * per entry point instead of being locked to whichever surface won the initialize() race.
- */
-export function setAcomAssistantIdentity(identity) {
-  pendingIdentity = identity;
 }
 
 function mergeCallbacks(target = {}, source = {}) {
@@ -270,9 +262,15 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
-        getContextCallback: (...args) => pendingIdentity
-          || mergedConfig.callbacks?.getContextCallback?.(...args)
-          || { appid: mergedConfig.appid, appver: mergedConfig.appver },
+        getContextCallback: (...args) => {
+          const context = nextOpenContext;
+          nextOpenContext = null;
+          return {
+            ...(mergedConfig.callbacks?.getContextCallback?.(...args)
+              || { appid: mergedConfig.appid, appver: mergedConfig.appver }),
+            ...context,
+          };
+        },
       },
     };
     try {
@@ -312,11 +310,19 @@ export async function getAcomAssistantPrompts() {
   return client ? client.getPrompts() : null;
 }
 
-export async function openAcomAssistantChat(sourceInfo) {
+/** Supplies an optional entry-point context for the next SDK context callback,
+ * without changing the initialized BC configuration or reinitializing. */
+export async function openAcomAssistantChat(sourceInfo, context = null) {
   const client = await clientPromise;
   if (!client) return;
   await readyPromise;
   await reinitializePromise;
   if (lifecycleError) throw lifecycleError;
-  await client.openMessagingWindow(sourceInfo);
+  nextOpenContext = context;
+  try {
+    await client.openMessagingWindow(sourceInfo);
+  } catch (error) {
+    if (nextOpenContext === context) nextOpenContext = null;
+    throw error;
+  }
 }
