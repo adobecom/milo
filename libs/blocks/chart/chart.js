@@ -259,7 +259,7 @@ export const barSeriesOptions = (chartType, hasOverride, dimensions, colors, siz
     colorBy: hasOverride ? 'data' : 'series',
     showBackground: isBar,
     backgroundStyle: {
-      color: colors[index],
+      color: colors[index % colors.length],
       borderRadius: 3,
       opacity: 0.35,
     },
@@ -403,8 +403,9 @@ export const getChartOptions = ({
   size,
   colors,
   labelDeg = 0,
+  colorByData,
 }) => {
-  const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
+  const hasOverride = colorByData ?? (headers ? hasPropertyCI(headers, 'color') : false);
   const source = dataset?.source;
   const dimensions = source?.[0]?.slice() || [];
   const isBar = chartType === 'bar';
@@ -563,8 +564,27 @@ const handleIntersect = (options) => (entries, observer) => {
   });
 };
 
-export const getColors = (authoredColor) => {
+export const showPaletteWarning = (el, hostname = window.location.hostname) => {
+  if (hostname.endsWith('.aem.page') || hostname.endsWith('.hlx.page')
+    || ['localhost', '127.0.0.1', '[::1]'].includes(hostname)) {
+    el.classList.add('palette-warning');
+    el.title = 'Invalid color-palette; using the original colors.';
+  }
+};
+
+export const parseColorPalette = (value = '', firstValidOnly = false) => {
+  const colors = value.split(COMMA_SEPARATOR).map((color) => color.trim());
+  const validColors = colors.filter((color) => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(color));
+  if (firstValidOnly && validColors.length) return validColors.slice(0, 1);
+  if (validColors.length === colors.length) return colors;
+
+  return undefined;
+};
+
+export const getColors = (authoredColor, customPalette) => {
   const colorList = Object.values(colorPalette);
+
+  if (customPalette?.length) return customPalette.slice();
 
   if (!authoredColor || !Object.hasOwnProperty.call(colorPalette, authoredColor)) return colorList;
 
@@ -605,7 +625,7 @@ export const getLabelDegree = (chartStyles, isDesktop) => {
 };
 
 /* c8 ignore next 31 */
-const handleResize = (el, authoredSize, chartType, data, series, colors) => {
+const handleResize = (el, authoredSize, chartType, data, series, colors, colorByData) => {
   const currentSize = getResponsiveSize(authoredSize);
   const previousSize = el.getAttribute('data-responsive-size');
   const chartWrapper = el.querySelector('.chart-wrapper');
@@ -631,7 +651,7 @@ const handleResize = (el, authoredSize, chartType, data, series, colors) => {
     el.setAttribute('data-device', currentDevice);
     chartInstance?.dispose();
     initChart({
-      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg,
+      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg, colorByData,
     });
   } else {
     chartInstance?.resize();
@@ -660,6 +680,19 @@ export const getOversizedNumberSize = (charLength) => {
 };
 
 const init = (el) => {
+  const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
+  let authoredPalette;
+  let invalidPalette = false;
+  Array.from(el.children).forEach((row) => {
+    if (row.children.length !== 2
+      || row.children[0].textContent.trim().toLowerCase() !== 'color-palette') return;
+
+    authoredPalette = parseColorPalette(row.children[1].textContent, chartType === 'list');
+    invalidPalette = !authoredPalette;
+    row.remove();
+  });
+  if (invalidPalette) showPaletteWarning(el);
+
   const children = el.querySelectorAll(':scope > div');
   const chartContainer = children[2];
   const chartWrapper = chartContainer?.querySelector(':scope > div');
@@ -684,13 +717,14 @@ const init = (el) => {
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
-  const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
   const dataLink = chartWrapper?.querySelector('a[href$="json"]');
 
   dataLink?.remove();
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
+  const customPalette = ['column', 'line', 'bar', 'list'].includes(chartType)
+    ? authoredPalette : undefined;
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
   const labelDeg = getLabelDegree(chartStyles, isDesktop);
@@ -699,7 +733,7 @@ const init = (el) => {
     // Must use chained promise. Await will cause loading issues
     Promise.all([fetchData(dataLink), import('./list.js')])
       .then(([json, { default: initList }]) => {
-        initList(chartWrapper, json, colorPalette[authoredColor]);
+        initList(chartWrapper, json, customPalette?.[0] || colorPalette[authoredColor]);
       })
       // eslint-disable-next-line no-console
       .catch((error) => console.log('Error loading script:', error));
@@ -743,11 +777,13 @@ const init = (el) => {
       const { data, series } = rawData;
       const processedData = processDataset(data);
       const hasOverride = hasPropertyCI(processedData.headers, 'color');
-      const colors = hasOverride
-        ? getOverrideColors(authoredColor, data)
-        : getColors(authoredColor);
+      const colorByData = customPalette
+        ? ['bar', 'column'].includes(chartType) && processedData.dataset.source[0].length === 2
+        : undefined;
+      let colors = colorByData ? customPalette : getColors(authoredColor, customPalette);
+      if (hasOverride && !customPalette) colors = getOverrideColors(authoredColor, data);
       const options = {
-        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg,
+        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg, colorByData,
       };
       const text = propertyValueCI(processedData.headers, 'subheading');
 
@@ -776,7 +812,7 @@ const init = (el) => {
       /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
         1000,
-        () => handleResize(el, authoredSize, chartType, processedData, series, colors),
+        () => handleResize(el, authoredSize, chartType, processedData, series, colors, colorByData),
       ));
     })
     // eslint-disable-next-line no-console
