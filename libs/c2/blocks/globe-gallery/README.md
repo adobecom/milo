@@ -65,7 +65,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (one texture per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. Card and modal photos load through `imageToTexture`: `createImageBitmap` resizes off the main thread, and because ImageBitmap uploads ignore the GL flipY unpack, the flip is baked into the bitmap (`imageOrientation:'flipY'`) with `texture.flipY = false`. A cross-origin-tainted or undecodable image rejects there and falls back to a solid-color texture. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
-| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `easeOutExpo`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` (60) + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
+| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeOutQuart`, `easeInOutCubic`, `easeInOutQuint`, `easeOutExpo`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` (60) + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — `none` while the custom cursor is up, then native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
 | `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
@@ -2050,14 +2050,14 @@ crosshair pseudo-elements, which span the whole figure and would otherwise block
 Crossing back the other way calls **`dropQuoteSelection`**, which collapses a selection whose anchor
 is inside the figure (and only then — a selection elsewhere on the page is left alone). It has to:
 `layoutQuote` adds `-lines` to the quote element itself, and that rule beats `-quote` at equal
-specificity, so a split quote is pinned at `opacity: 1` and the roll-up is the *only* thing hiding
-it. The glyphs translate out under each line's `overflow: hidden`, but the highlight painted on the
+specificity, so the split quote itself stays at `opacity: 1` while its line inners own the fade and
+roll-up. The glyphs translate out under each line's `overflow: hidden`, but the highlight painted on the
 line blocks does neither, so a leftover selection rides into the globe phase as full-width strips.
 The inline `pointer-events` value is the transition's only state. Everything after the cue is time:
 
 | Phase | Clock | What |
 | --- | --- | --- |
-| reveal | `0 → 1` over `PQ_REVEAL_IN_MS` (700ms) | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines roll up out of their masks and name → role rise 14px and fade |
+| reveal | `0 → 1` over `PQ_REVEAL_IN_MS` (800ms) | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines rise and fade in a shallow wave and name → role rise 14px and fade |
 | held | the rest of the pinned band | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
 
 The **hold** (the tail between the reveal and the pin's bottom edge) pins the rail — see **The hold, and why its length
@@ -2070,7 +2070,7 @@ needs more hold. Two consequences:
 - **The pre-reveal blank is real and unfilled** — up to ~47vh md / ~18vh sm of tail where the shell has
   emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also shrinks
   the hold, so the two trade directly. This is the open tuning question, not a crosshair bug.
-- **Nothing moves once the reveal has played.** It finishes 700ms after the cue however the reader got
+- **Nothing moves once the reveal has played.** It finishes 800ms after the cue however the reader got
   there, so the rest of the pinned band is always still.
 
 **The reveal is a tween, not a scrub.** `advanceReveal` is the whole clock: past the cue it steps forward
@@ -2088,11 +2088,20 @@ travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every fram
 #### The quote rolls in line by line
 
 Each **rendered line** sits in its own `overflow: hidden` mask and starts one line-height *below* it, so
-it rolls up into place and the reader never sees a line at half opacity — only a line arriving. Name and
-role keep the plain 14px rise; three rolling blocks in a row would be noise. `easeOutExpo` puts most of a
-line's travel in the first tenth of *its own share* of the sweep, which is why the shares are staggered
-across the window rather than overlapped — a line snaps, then the next one does, for as long as the rules
-are still drawing.
+it rolls up into place. Name and role keep the plain 14px rise; three rolling blocks in a row would be
+noise.
+
+Lines are staggered by `PQ_COPY_LINE_STAGGER` of the sweep, capped at `PQ_COPY_LINE_LAG_MAX` for the
+last line, so every line is in flight at once rather than arriving in turn.
+
+Each line carries two vars: `--gg-pq-line-v` for position and `--gg-pq-line-o` for opacity. Position
+uses `easeOutQuart`; opacity is linear over `lag → 1`, the same window the name and role use. The mask
+clips the line for the first part of that window, so an ease-out would be spent before the line clears
+and read as no fade at all. CSS maps the progress onto `--gg-pq-line-fade-from → 1`, so a line enters
+partly visible rather than from nothing.
+
+The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
+`PQ_COPY_PARTS` and the `--gg-pq-copy-rise` lift apply to the name and role only.
 
 **Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a probe
 span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block per line.
@@ -2136,11 +2145,14 @@ Details that are load-bearing:
   line, hanging the opening mark *and the first letter*. So the first line's inner carries the same
   distance as `margin-inline-start`, which does not inherit and applies exactly once.
 
-**The stagger** is a share of the sweep, not a per-line delay. Each line owns `PQ_COPY_LINE_SPAN` (0.55)
-of the sweep and the lags divide what is left, so the last line starts around where the first finishes
-and the set spans the whole reveal — for two lines or for six, which is why the name/role lags never need
-re-tuning against the line count. JS writes one already-eased `--gg-pq-line-v` per line; the `1`
-fallbacks are the rest state, which is also the no-JS and reduced-motion render.
+**The wave is distance, not timing.** Every line's inner span uses the same `--gg-pq-line-start`, and
+a line is wholly hidden while its offset exceeds its own height, so each starts revealing as soon as
+its own clock does. The line mask itself is offset by `rank × --gg-pq-line-wave`, where rank is the
+line's index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--gg-pq-line-rank` on each split. The
+mask carries its clip rect with it, so the spacing widens down the stack mid-flight and closes to the
+authored line-height on landing, without delaying lower lines or changing how much of each line is
+visible. `--gg-pq-line-wave` at 0 is a flat lift. JS writes `--gg-pq-line-v`, `--gg-pq-line-o`, and
+`--gg-pq-line-rank`; their fallbacks are the no-JS and reduced-motion rest state.
 
 #### Frame mechanics
 
@@ -2167,19 +2179,18 @@ fallbacks are the rest state, which is also the no-JS and reduced-motion render.
 - **The container has no opacity or transform of its own.** The frame is masked to zero-length intervals
   and the copy vars sit at 0, so there is nothing for a container fade to hide, and a growing box would
   stretch the rules while they draw. Don't add one.
-- **Each line is one 0..1 var** (`--gg-pq-copy-q` / `-n` / `-r`), already eased and staggered in JS. The
-  CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. The `1` fallbacks are the
-  rest state, so no-JS and reduced motion need no override — `updatePullQuote` returns early under
-  reduced motion and the vars stay unset.
+- **Name and role each use one 0..1 var** (`--gg-pq-copy-n` / `-r`), already eased and staggered in JS.
+  The CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. Quote lines instead
+  use separate position and opacity vars so their fade stays visible after each line clears its mask.
 
 Reduced-motion constraints:
 
 - The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as a
   containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame over the
   whole runway.
-- Reduced motion kills the draw with `mask-image: none` (a full reveal) and `transition: none` on the
-  three copy lines. The `transition: none` is not redundant with the var reset: the
-  `globe-gallery-reduced` class can land after first paint, and the flip would otherwise play.
+- Reduced motion kills the draw with `mask-image: none` (a full reveal) and forces both the line masks
+  and line inners to their fully visible, untransformed state. This also covers reduced motion being
+  toggled after progress vars were already written.
 - The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the `::before`
   `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one property
   (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding without the
@@ -3015,10 +3026,47 @@ bare names — are:
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
 | `progressAtFormT` | — | maps a `sphereFormT` back to progress; used to derive `ARC_COPY_OUT_START` / `_END`. Nothing here exists only for docs — Milo ships these files unbundled, so a doc-only export is pure payload (the `zoomT` inverse lives in the derivation snippet instead) |
 
+## Tests
+
+Browser unit suites, run with `npm run test:file -- <path>` (`@web/test-runner` + chai + sinon;
+Playwright is only the browser launcher, never a test API).
+
+`test/c2/blocks/globe-gallery/globe-gallery.test.js` covers the authoring helpers,
+`parseAuthoredContent` (row order, the fragment cell, the pull quote, N=0 and N=1),
+`fetchFragmentCards`, `buildGlobeDom`, `math.js` (easing endpoints, the arc/CSS↔WebGL bridge,
+`clamp01`'s NaN→0 contract), `timeline.js` clock endpoints, `controls.js`, and the `a11y.js`
+keyboard gallery.
+
+`test/c2/blocks/globe-gallery/globe-gallery-interactive.test.js` covers `interaction.js`
+(click-vs-drag, the touch axis lock, `onDrag` once per gesture, cursor ownership through
+`applyCursor`), `cursor.js` (state transitions, retirement fade, `isActive` gating), `materials.js`
+(card texture load and fallback, `loadModalTexture` adoption/error/stale disposal, hint texture
+orientation and canvas release), `modal.js` DOM behavior, and the quote-layout and fragment edge
+cases.
+
+`mocks/authored.html` and `mocks/fragment.html` are the authoring contract as fixtures, loaded with
+`readFile` from `@web/test-runner-commands`. The fragment mock mirrors the DA card shape: metadata
+before the image, badges as `<li>` with an SVG link plus a product link, image in `<p><picture>`.
+
+Constraints when adding cases:
+
+- **The modal suites run without a WebGL context.** `modal.js` only constructs a renderer when the
+  modal canvas exists, so the tests make that lookup return `null` and drive
+  open/close/navigate/populate/destroy as plain DOM. `close()` defers cleanup by `modalAnimMs`, so
+  those cases need `sinon.useFakeTimers()`, and `close(viaPointer)` is a no-op within 200ms of open.
+- **`libs/deps/three.js` does not export `MeshBasicMaterial`.** Build test meshes with the block's
+  own `createCardMaterial({ texture, aspect })`, which proxies `opacity`/`map`/`needsUpdate` onto the
+  shader uniforms.
+- **Assigning `scrollTop` does not stick on an unlaid-out element.** The overflow-fade cases define
+  it with `Object.defineProperties` alongside faked `scrollHeight`/`clientHeight`.
+
+Not covered: per-frame transform and easing values, which are left unasserted so tuning passes don't
+break the suite; `entryLiftPx`, `entryRelease` and `updatePullQuoteCopy`, which are closures inside
+`createGlobeGalleryRuntime` and unreachable from a test; and the WebGL path, which has no Nala/E2E.
+
 ## Open items / backlog
 
 Known follow-ups, not blocking this integration branch:
 
-- **No automated tests.** The block ships without unit or Nala E2E coverage. The initial pass leans
-  on the planned VQA; a test suite (at least the authoring/parse paths, the N=0/N=1 edge cases, and
-  a modal open/nav/close smoke) should land before it graduates from the experimental wave.
+- **No E2E coverage.** Unit coverage landed (see **Tests**), but there is still no Nala/E2E pass over
+  the WebGL path, and the per-frame scroll choreography is only verified by VQA.

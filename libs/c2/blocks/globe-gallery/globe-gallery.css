@@ -366,6 +366,8 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   --gg-pq-pad-block: var(--gg-copy-pad);
   --gg-pq-copy-rise: 14px;
   --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
+  --gg-pq-line-wave: 20%;
+  --gg-pq-line-fade-from: 0.6;
   --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
 
@@ -442,23 +444,17 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   mask-size: 51% 100%;
 }
 
-/* Each line's arrival is one 0..1 var written per frame, already eased and staggered in JS; the 1
-   fallbacks are the rest state. Opening mark is outdented by authoring.js; `hanging-punctuation`
-   deliberately unused. See README. */
+/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
+   README. */
 .globe-gallery-pullquote-quote {
-  opacity: var(--gg-pq-copy-q, 1);
-  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-q, 1))));
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
-/* Written by the split; an unsplit quote keeps the plain flow and the fade/rise below. Flex so the
-   lines' negative bleed margins meet without collapsing. */
+/* Written by the split. Flex so the lines' negative bleed margins meet without collapsing. */
 .globe-gallery-pullquote-lines {
   display: flex;
   flex-direction: column;
-  opacity: 1;
-  transform: none;
 }
 
 /* One mask per rendered line, so each rolls up into place from under it. JS writes
@@ -466,6 +462,9 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-pullquote-line {
   display: block;
   overflow: hidden;
+  transform: translate3d(0, calc(
+    (1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-rank, 0) * var(--gg-pq-line-wave)
+  ), 0);
 
   /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
   padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
@@ -474,6 +473,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 .globe-gallery-pullquote-line-inner {
   display: inline-block;
+  opacity: calc(
+    var(--gg-pq-line-fade-from)
+    + (1 - var(--gg-pq-line-fade-from)) * var(--gg-pq-line-o, 1)
+  );
   transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
 }
 
@@ -1004,14 +1007,10 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   mask-image: none;
 }
 
-.globe-gallery-reduced .globe-gallery-pullquote-quote,
-.globe-gallery-reduced .globe-gallery-pullquote-name,
-.globe-gallery-reduced .globe-gallery-pullquote-role {
-  transition: none;
-}
-
 /* RM can be toggled after the lines already carry a written progress var. */
+.globe-gallery-reduced .globe-gallery-pullquote-line,
 .globe-gallery-reduced .globe-gallery-pullquote-line-inner {
+  opacity: 1;
   transform: none;
 }
 
