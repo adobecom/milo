@@ -182,24 +182,22 @@
   line-height: 24px;
   letter-spacing: -0.48px;
   color: #000;
-  list-style: none;
-  cursor: pointer;
-}
-
-.product-pricing-group-header::-webkit-details-marker { display: none; }
-
-.product-pricing-group:not([open]) .product-pricing-group-header { margin-bottom: 0; }
-
-.product-pricing-group-header .product-pricing-icon svg { transition: transform 0.2s ease; }
-
-.product-pricing-group:not([open]) .product-pricing-group-header .product-pricing-icon svg {
-  transform: rotate(-90deg);
 }
 
 .product-pricing-group-pills {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* Category scrolls inside its card (MWPW-205571). The cut-off pill signals
+   more. Padding keeps the focus ring inside the clip. */
+.product-pricing-group-pills-scroll {
+  max-height: 240px;
+  padding: 4px;
+  margin: -4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* The input holds the state, the label paints it. */
