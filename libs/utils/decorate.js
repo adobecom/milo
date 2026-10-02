@@ -280,9 +280,6 @@ function defineDeviceByScreenSize() {
   if (screenWidth <= 600) {
     return 'mobile';
   }
-  if (screenWidth < 1200) {
-    return 'tablet';
-  }
   return 'desktop';
 }
 
@@ -294,6 +291,30 @@ function getPosterSrc(pic) {
     ? doc.querySelector('source[type="image/webp"]:not([media])')
     : doc.querySelector('source[type="image/webp"][media]');
   return source?.srcset || '';
+}
+
+export const DEFERRED_POSTER_ATTR = 'data-deferred-poster';
+const deferredPosters = new WeakMap();
+
+function attachDeferredPoster(video) {
+  if (!deferredPosters.has(video)) return;
+  const posterSrc = getPosterSrc(deferredPosters.get(video));
+  deferredPosters.delete(video);
+  video.removeAttribute(DEFERRED_POSTER_ATTR);
+  if (posterSrc) video.poster = posterSrc;
+}
+
+function isHiddenWithin(el, root) {
+  for (let node = el; node && node !== root.parentElement; node = node.parentElement) {
+    if (getComputedStyle(node).display === 'none') return true;
+  }
+  return false;
+}
+
+export function attachDeferredPosters(block) {
+  block.querySelectorAll(`video[${DEFERRED_POSTER_ATTR}]`).forEach((video) => {
+    if (!isHiddenWithin(video, block)) attachDeferredPoster(video);
+  });
 }
 
 export function getImgSrc(pic) {
@@ -610,16 +631,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  // A display:none <video> still downloads its poster; blocks opt out via media-hidden-<device>.
-  // The first row of a multi-row block is the background and stays visible.
-  // At exactly 600px both the mobile and tablet media queries match.
-  const hiddenSelector = window.innerWidth === 600
-    ? '.media-hidden-mobile, .media-hidden-tablet'
-    : `.media-hidden-${defineDeviceByScreenSize()}`;
-  const hiddenBlock = anchorTag.closest(hiddenSelector);
-  const inBgRow = hiddenBlock?.firstElementChild?.contains(anchorTag)
-    && hiddenBlock.children.length > 1;
-  const deferPoster = !!hiddenBlock && !inBgRow;
+  // A display:none <video> still downloads its poster. Until the enclosing block has loaded we
+  // can't know whether its CSS hides the video, so loadBlock attaches the poster afterwards.
+  const block = anchorTag.closest('.section > div[class]:not(.content)');
+  const deferPoster = !!block && !block.dataset.blockStatus && !!dataset.videoPoster;
   const attrs = getVideoAttrs(anchorTag.hash, dataset, deferPoster);
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
@@ -636,16 +651,17 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (indexOfVideo === 1) {
     firstVideo = videoEl;
   }
+  if (deferPoster) {
+    deferredPosters.set(videoEl, dataset.videoPoster);
+    videoEl.setAttribute(DEFERRED_POSTER_ATTR, '');
+  }
 
   createIntersectionObserver({
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
-      // Never fires while hidden, so a deferred poster only loads once the video is shown.
-      if (deferPoster) {
-        const posterSrc = getPosterSrc(dataset.videoPoster);
-        if (posterSrc) videoEl.poster = posterSrc;
-      }
+      // Never fires while hidden, so a still-deferred poster only loads once the video is shown.
+      attachDeferredPoster(videoEl);
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },

@@ -1487,6 +1487,10 @@ export async function loadBlock(block) {
   });
 
   await Promise.all([styleLoaded, scriptLoaded]);
+  if (block.querySelector?.('video[data-deferred-poster]')) {
+    const { attachDeferredPosters } = await import('./decorate.js');
+    attachDeferredPosters(block);
+  }
   return block;
 }
 

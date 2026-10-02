@@ -867,6 +867,27 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+
+    it('attaches deferred video posters once the enclosing block has loaded', async () => {
+      const { decorateAnchorVideo, DEFERRED_POSTER_ATTR } = await import('../../libs/utils/decorate.js');
+      const gif = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      const poster = `<picture><source type="image/webp" srcset="${gif}"><source type="image/webp" srcset="${gif}" media="(min-width: 600px)"><img src="${gif}"></picture>`.replace(/"/g, '&quot;');
+      const link = (name) => `<a href="https://adobe.com/${name}.mp4#autoplay" data-video-poster="${poster}">${name}</a>`;
+      document.body.innerHTML = `<main><div class="section"><div class="text"><div><div>${link('shown')}</div></div><div class="poster-hidden" style="display: none"><div>${link('hidden')}</div></div></div></div></main>`;
+      const block = document.querySelector('.text');
+      block.querySelectorAll('a').forEach((anchorTag) => decorateAnchorVideo({ src: anchorTag.href, anchorTag }));
+      const [shown, hidden] = block.querySelectorAll('video');
+      expect(shown.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.true;
+      expect(shown.getAttribute('poster')).to.be.null;
+
+      await utils.loadBlock(block);
+
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(shown.getAttribute('poster')).to.equal(gif);
+      expect(shown.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.false;
+      expect(hidden.getAttribute('poster')).to.be.null;
+      expect(hidden.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.true;
+    });
   });
 
   describe('stageDomainsMap', () => {
