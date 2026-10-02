@@ -4,6 +4,7 @@ import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 
 // bc-adobedotcom2 is the Assistant team's test appid for the BC experience while Brand Concierge's
 // own surface is still being provisioned (onboarding form, see acom-assistant.js reference).
+// TODO: Remove this when we have the correct app id from Jarvis team.
 const BC_APP_ID_FALLBACK = 'bc-adobedotcom2';
 const chatLabelText = 'Ask';
 let initializationPromise;
