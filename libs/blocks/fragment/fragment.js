@@ -1,7 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix, isTrustedUrl,
-  getMediaUrl, registerMediaUrl,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -100,18 +99,62 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-export function replaceDotMedia(path, doc) {
-  const docBase = new URL(path, window.location);
-  const resetAttributeBase = (tag, attr) => {
-    doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
-      const authored = el.getAttribute(attr);
-      const url = getMediaUrl(authored, docBase) || new URL(authored, docBase).href;
-      registerMediaUrl(url);
-      el[attr] = url;
-    });
+// EDS resolves ./media_<hash> per document, so the same image used by the page and a fragment
+// gets two URLs. Keyed by origin + file + query so only byte-identical requests are matched.
+const getMediaKey = (ref, base) => {
+  if (typeof ref !== 'string' || /[\s,]/.test(ref.trim())) return null;
+  try {
+    const { origin, pathname, search } = new URL(ref, base);
+    const idx = pathname.lastIndexOf('/media_');
+    return idx === -1 ? null : `${origin}${pathname.slice(idx)}${search}`;
+  } catch {
+    return null;
+  }
+};
+
+// Media the page references or already downloaded. MEP passes the media of the element it
+// replaced, which can still be downloading and so is not yet in Resource Timing.
+const getPageMedia = (neededKeys, replacedMedia) => {
+  const media = new Map();
+  const failed = new Set();
+  const loaded = [];
+  performance.getEntriesByType('resource').forEach(({ name, responseStatus }) => {
+    if (responseStatus >= 400) failed.add(getMediaKey(name, window.location.href));
+    else loaded.push(name);
+  });
+  const add = (ref) => {
+    const key = getMediaKey(ref, window.location.href);
+    if (key && !failed.has(key) && !media.has(key)) {
+      media.set(key, new URL(ref, window.location.href).href);
+    }
   };
-  resetAttributeBase('img', 'src');
-  resetAttributeBase('source', 'srcset');
+  const hasAll = () => [...neededKeys].every((key) => media.has(key));
+  try {
+    [].concat(JSON.parse(replacedMedia || '[]')).forEach(add);
+  } catch { /* ignore malformed handoff */ }
+  if (hasAll()) return media;
+  document.querySelectorAll('img[src*="media_"], source[srcset*="media_"]').forEach((el) => {
+    if (el.tagName === 'IMG' && el.complete && !el.naturalWidth) return;
+    add(el.getAttribute(el.tagName === 'IMG' ? 'src' : 'srcset'));
+  });
+  loaded.forEach(add);
+  return media;
+};
+
+export function replaceDotMedia(path, doc, replacedMedia) {
+  const els = [...doc.querySelectorAll('img[src^="./media_"], source[srcset^="./media_"]')];
+  if (!els.length) return;
+  const docBase = new URL(path, window.location);
+  const refs = els.map((el) => {
+    const attr = el.tagName === 'IMG' ? 'src' : 'srcset';
+    const authored = el.getAttribute(attr);
+    return { el, attr, authored, key: getMediaKey(authored, docBase) };
+  });
+  const neededKeys = new Set(refs.map(({ key }) => key).filter(Boolean));
+  const pageMedia = getPageMedia(neededKeys, replacedMedia);
+  refs.forEach(({ el, attr, authored, key }) => {
+    el[attr] = pageMedia.get(key) || new URL(authored, docBase).href;
+  });
 }
 
 export const removeMepLingoRow = (container) => {
@@ -375,7 +418,7 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  replaceDotMedia(a.href, doc);
+  replaceDotMedia(a.href, doc, a.dataset.mepMedia);
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');
