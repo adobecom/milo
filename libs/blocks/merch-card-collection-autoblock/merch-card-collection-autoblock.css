@@ -7,6 +7,9 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 24px;
+
+  /* The xl search keys on the bar's width. */
+  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
 }
 
 .product-pricing-filter-row {
@@ -392,7 +395,10 @@
   }
 }
 
-@media (width >= 2560px) {
+/* xl: Figma's 2560 frame gives the bar 1920px. Keyed on the bar, not the
+   viewport, so a capped container keeps room for the pills. */
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container (width >= 1920px) {
   .product-pricing-filter-search { flex-basis: 474px; }
 }
 
