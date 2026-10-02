@@ -31,6 +31,8 @@ export function escapeHtml(str) {
   return el.innerHTML;
 }
 
+// fake comment again
+
 // escapeHtml only encodes & < > — safe for element TEXT. Values placed inside
 // quoted HTML attributes also need " and ' encoded so they can't close the attribute.
 export function escapeAttr(str) {
