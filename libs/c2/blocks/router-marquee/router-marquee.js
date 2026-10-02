@@ -847,8 +847,25 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
     if (autoplayStarted && !paused) beginAutoplay();
   };
 
+  // Load the active slide's media and play its video unless autoplay is paused - used when a
+  // viewport becomes visible on a breakpoint change, after it has been synced to the carried slide.
+  const playActive = () => {
+    const slide = slides[active];
+    loadSlideMedia(slide);
+    if (!paused && !prefersReducedMotion()) slide?.querySelector('video')?.play().catch(() => {});
+  };
+
+  const isUserPaused = () => userPaused;
+
   return {
-    pause, resume, heroReady, getActive, syncTo, activateResolvedFirstPromo,
+    pause,
+    resume,
+    heroReady,
+    getActive,
+    syncTo,
+    activateResolvedFirstPromo,
+    playActive,
+    isUserPaused,
   };
 };
 
@@ -947,7 +964,11 @@ export default function init(el) {
       });
     }
     if (carryIndex != null) controller.syncTo(carryIndex);
+    // Carry an explicit user pause/play across breakpoints so each viewport doesn't keep its own.
+    if (outgoing?.isUserPaused()) controller.pause(true);
+    else if (outgoing && controller.isUserPaused()) controller.resume(true);
     controller.resume();
+    controller.playActive();
   };
 
   loadViewportVideos(el);
@@ -965,13 +986,11 @@ export default function init(el) {
   }
 
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
-  // syncViewportAutoplay/loadViewportVideos stay un-debounced: getActiveViewport() is a
-  // cheap matchMedia check, and delaying the outgoing viewport's pause until resize settles
-  // would let its hidden video/timer keep running for the whole drag - the leak this fixes.
-  window.addEventListener('resize', () => {
-    loadViewportVideos(el);
-    syncViewportAutoplay();
-  });
+  // syncViewportAutoplay stays un-debounced: getActiveViewport() is a cheap matchMedia check,
+  // and delaying the outgoing viewport's pause until resize settles would let its hidden
+  // video/timer keep running for the whole drag. It no-ops within a breakpoint, so resizes
+  // (e.g. the mobile address bar showing/hiding) never restart a paused video.
+  window.addEventListener('resize', syncViewportAutoplay);
   window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
