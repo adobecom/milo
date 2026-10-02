@@ -775,5 +775,12 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     animation: none;
   }
 
+  .section.bento.stack-mobile.bento-stack-zoomed > .rich-content {
+    position: static;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
   .section.bento.stack-mobile.bento-stack-zoomed > .explore-card .explore-card-content::after { content: none; }
 }
