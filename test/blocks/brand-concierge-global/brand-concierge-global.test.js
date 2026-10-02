@@ -65,6 +65,17 @@ describe('Brand Concierge Global', () => {
     expect(block.children.length).to.equal(0);
   });
 
+  it('decorates when the navigation is added after block initialization', async () => {
+    const header = document.querySelector('header.global-navigation');
+    header.remove();
+
+    init(block);
+    document.body.prepend(header);
+
+    const bcGnav = await waitForElement('.bc-gnav');
+    expect(header.querySelector('.feds-bc-wrapper .bc-gnav')).to.equal(bcGnav);
+  });
+
   it('sets the --bc-gnav-height CSS variable when the gnav is present', () => {
     document.documentElement.style.removeProperty('--bc-gnav-height');
     setCssGnavHeight();

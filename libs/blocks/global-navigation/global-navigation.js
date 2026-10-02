@@ -584,6 +584,9 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
+    // TODO: only switch to using metadata
+    const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+    this.useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
@@ -626,6 +629,7 @@ class Gnav {
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.revealGnav,
+      this.decorateAcomAssistantGnav,
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
@@ -695,7 +699,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${this.useAcomAssistant || getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -1664,9 +1668,17 @@ class Gnav {
   });
 
   decorateBrandConciergeGlobal = async () => {
+    if (this.useAcomAssistant) return;
     const rawBlock = this.content.querySelector('.brand-concierge-global');
     if (!rawBlock) return;
     await loadBlock(rawBlock);
+  };
+
+  decorateAcomAssistantGnav = async () => {
+    if (!this.useAcomAssistant) return;
+    const { decorateNavWithAssistant } = await import('../brand-concierge-global/brand-concierge-global.js');
+    const cards = this.content.querySelector('.brand-concierge-global > div');
+    decorateNavWithAssistant(cards, this.elements.topnav);
   };
 
   decorateMainNav = async () => {
