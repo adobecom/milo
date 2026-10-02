@@ -103,7 +103,7 @@ describe('mep-drawer idle flicker check', () => {
 
     try { drawer.hidePopover(); } catch { /* jsdom/older engines */ }
     headerEl.remove();
-    document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
+    document.querySelectorAll('#mep-drawer, .mep-fab, .mep-export-sidebar').forEach((el) => el.remove());
   }).timeout(6000);
 
   it('does not rebuild the M@S summary DOM when a re-rendering merch-card leaves the count unchanged', async () => {
@@ -157,7 +157,7 @@ describe('mep-drawer idle flicker check', () => {
     expect(childMutations, 'M@S summary DOM rebuilt even though the data never changed').to.equal(1);
 
     headerEl.remove();
-    document.querySelectorAll('#mep-drawer, .mep-fab, merch-card').forEach((el) => el.remove());
+    document.querySelectorAll('#mep-drawer, .mep-fab, .mep-export-sidebar, merch-card').forEach((el) => el.remove());
   }).timeout(8000);
 
   it('does not restyle #mep-drawer on repeated scroll events when the gnav offset is unchanged', async () => {
@@ -195,6 +195,6 @@ describe('mep-drawer idle flicker check', () => {
 
     try { drawer.hidePopover(); } catch { /* jsdom/older engines */ }
     headerEl.remove();
-    document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
+    document.querySelectorAll('#mep-drawer, .mep-fab, .mep-export-sidebar').forEach((el) => el.remove());
   }).timeout(8000);
 });

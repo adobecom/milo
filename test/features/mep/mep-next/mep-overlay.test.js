@@ -74,7 +74,7 @@ function makeHeader(bottom = 50) {
 function cleanup(bodyEl, headerEl, ...extras) {
   headerEl?.remove();
   extras.forEach((el) => el?.remove());
-  document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
+  document.querySelectorAll('#mep-drawer, .mep-fab, .mep-export-sidebar').forEach((el) => el.remove());
   localStorage.removeItem(CARD_STORAGE_KEY);
 }
 
@@ -1047,6 +1047,7 @@ describe('setEventListeners: scroll and resize → updateGnavOffset', () => {
     await wait(50);
     const top = parseFloat(bodyEl.querySelector('.mep-fab').style.top);
     expect(top).to.equal(16); // 0 (no header) + 16
+    expect(parseFloat(bodyEl.querySelector('.mep-export-sidebar').style.top)).to.equal(72);
     document.body.prepend(headerEl);
   });
 });

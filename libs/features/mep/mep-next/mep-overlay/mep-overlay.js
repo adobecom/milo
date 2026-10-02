@@ -33,6 +33,7 @@ import {
   refreshPageUpdateCounts,
 } from './mep-overlay-highlight.js';
 import svgs from './mep-overlay-svg.js';
+import buildExportSidebar, { getManifestRows } from '../mep-export/mep-export.js';
 
 let authenticated = false;
 let authStateRendered = false;
@@ -116,6 +117,7 @@ function getGnavOffset() {
   });
 }
 
+let exportSidebar;
 let lastGnavOffset;
 function updateGnavOffset() {
   const offset = calcGnavOffset();
@@ -123,6 +125,7 @@ function updateGnavOffset() {
   lastGnavOffset = offset;
 
   document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
+  exportSidebar?.setOffset(offset);
   const drawer = document.querySelector('#mep-drawer');
   if (drawer) {
     drawer.style.top = `${offset}px`;
@@ -286,24 +289,13 @@ function buildManifestCard(manifest) {
     return card;
   }
 
-  const rows = [];
-  if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
-  rows.push(buildRow('Source', manifest.source));
-  rows.push(buildRow('Consent Req', manifest.consentType));
-  if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
-  rows.push(buildRow('Type', manifest.manifestType || 'none'));
-  rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
-  rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
-  if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
-  if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
-
-  if (manifest.eventStart && manifest.eventEnd) {
-    const onRow = buildRow('On', manifest.eventStart);
-    onRow.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`, target: '_blank', rel: 'noopener' }, 'Instant'));
-    rows.push(onRow, buildRow('Off', manifest.eventEnd));
-  }
-
-  rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
+  const rows = getManifestRows(manifest).map(([label, value]) => {
+    const row = buildRow(label, value);
+    if (label === 'On') {
+      row.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`, target: '_blank', rel: 'noopener' }, 'Instant'));
+    }
+    return row;
+  });
   const select = buildVariantSelect(manifest.options);
 
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
@@ -616,6 +608,7 @@ function buildDrawer(gnavOffset, pageId) {
   }, children);
 }
 
+let additionalManifests = [];
 async function buildAdditionalManifests() {
   const data = await getAdditionalManifests();
   const manifests = data?.activities ?? [];
@@ -627,6 +620,7 @@ async function buildAdditionalManifests() {
   const lastManifestEl = manifestEls[manifestEls.length - 1];
   if (!lastManifestEl) return;
 
+  additionalManifests = manifests;
   let insertionPoint = lastManifestEl;
   for (const manifest of manifests) {
     const manifestEl = buildManifestCard(manifest);
@@ -783,13 +777,24 @@ function setSummaryObserver() {
   });
 }
 
+function getExportSource() {
+  return {
+    summary: CARD_DATA.summary,
+    authenticated,
+    additionalManifests,
+    getManifestStatus,
+  };
+}
+
 async function buildOverlay() {
   const gnavOffset = await getGnavOffset();
   lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
+  exportSidebar = buildExportSidebar(gnavOffset, getExportSource);
   document.body.append(
     buildFAB(gnavOffset),
+    exportSidebar.element,
     buildDrawer(gnavOffset, pageId),
   );
   checkAuthAndBuild(pageId);
