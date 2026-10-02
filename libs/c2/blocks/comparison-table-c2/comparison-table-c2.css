@@ -9,8 +9,8 @@
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-900);
   background-color: transparent;
-  padding: var(--s2a-spacing-2xl) 0;
   position: relative;
+
   @supports (animation-timeline: view()) {
     view-timeline-name: --ct-table;
     view-timeline-axis: block;
@@ -704,7 +704,6 @@
     column-gap: var(--s2a-spacing-md);
     width: var(--s2a-grid-container-width);
     margin-inline: auto;
-    padding: var(--s2a-layout-sm) 0;
 
     .header-content-wrapper {
       padding-inline: 0;
