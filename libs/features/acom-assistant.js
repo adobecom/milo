@@ -5,8 +5,11 @@
  * initialize() call is allowed per the client's own docs (a second call returns
  * { status: 'error', type: 'init_already_done' }). This module is the one place
  * that loads the script/CSS and calls initialize(), so every integrating surface
- * (GNav link, Brand Concierge blocks) shares one client instead of racing to init
- * it themselves. Later callers fold their config in via reinitialize().
+ * (GNav input, Brand Concierge blocks, chat links) shares the BC client instead
+ * of racing to init it themselves. Later configuration updates use reinitialize().
+ * Initialization/readiness must be confirmed by SDK callbacks within 30 seconds;
+ * a timeout is a failure, not permission to open. Only pre-initialization script
+ * failures are retried, avoiding duplicate initialize() calls on the same SDK.
  *
  * Reference: https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260006/Client+API+Reference
  */
@@ -17,21 +20,66 @@ let clientPromise = null;
 let resolvedClient = null;
 let mergedConfig = {};
 let isReady = false;
-let initSettledPromise = null;
 let readyPromise = null;
-let pendingIdentity = null;
 let pendingReinitializeConfig = {};
 let reinitializePromise = null;
+let lifecycleError = null;
+let readyGate;
 const pendingMessages = [];
+const CLIENT_TIMEOUT = 5000;
+const READINESS_TIMEOUT = 30000;
 
-/**
- * Sets which surface's identity getContextCallback should report on the next CTA/host-link
- * click. Surfaces sharing this one client (GNav Jarvis link, Brand Concierge) call this right
- * before triggering their own open, so a single session can serve a different appid/appver
- * per entry point instead of being locked to whichever surface won the initialize() race.
- */
-export function setAcomAssistantIdentity(identity) {
-  pendingIdentity = identity;
+function logError(error) {
+  window.lana?.log?.(`AcomAssistant: ${error.message}`, {
+    tags: 'acom-assistant',
+    severity: 'error',
+  });
+}
+
+function withTimeout(promise, message, timeoutMs = CLIENT_TIMEOUT) {
+  let timer;
+  const timeout = new Promise((resolve, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+function createReadinessGate(message) {
+  let resolve;
+  let reject;
+  const promise = withTimeout(new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  }), message, READINESS_TIMEOUT);
+  // Startup can happen before any interaction awaits this gate.
+  promise.catch((error) => {
+    if (!lifecycleError) logError(error);
+    lifecycleError ||= error;
+    isReady = false;
+    pendingMessages.length = 0;
+  });
+  return { promise, resolve, reject };
+}
+
+function checkClientResult(result, operation) {
+  if (result?.status === 'error' || result?.status === 'blocked') {
+    throw new Error(`${operation} failed (${result.type || result.status})`);
+  }
+}
+
+function startReadinessWait() {
+  isReady = false;
+  readyGate = createReadinessGate('client readiness timed out');
+  readyPromise = readyGate.promise;
+}
+
+function failInitialization(error) {
+  const failure = error instanceof Error ? error : new Error(String(error));
+  if (!lifecycleError) logError(failure);
+  lifecycleError ||= failure;
+  isReady = false;
+  pendingMessages.length = 0;
+  readyGate.reject(failure);
 }
 
 function mergeCallbacks(target = {}, source = {}) {
@@ -99,7 +147,8 @@ async function getAutoDefaults() {
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
-    cookiesEnabled: window.adobePrivacy?.activeCookieGroups()?.length > 1,
+    // Match BC's own consent gate (bc-utils handleConsent): functional cookies (C0002).
+    cookiesEnabled: !!window.adobePrivacy?.activeCookieGroups()?.includes('C0002'),
     cookies: { mcid: await getEcid() },
     loadedVia: 'milo',
   };
@@ -112,27 +161,48 @@ function assistantBase(env) {
 }
 
 function flushPendingMessages(client) {
+  if (lifecycleError) return;
   isReady = true;
   pendingMessages.splice(0).forEach((payload) => client.sendUserMessage(payload));
 }
 
 function scheduleReinitialize(client, config) {
   pendingReinitializeConfig = mergeAcomConfig(pendingReinitializeConfig, config);
-  if (reinitializePromise) return;
+  if (reinitializePromise) return reinitializePromise;
 
-  reinitializePromise = initSettledPromise.then(() => {
-    const reinitializeConfig = pendingReinitializeConfig;
+  reinitializePromise = (async () => {
+    await readyPromise;
+    if (lifecycleError) throw lifecycleError;
+    while (Object.keys(pendingReinitializeConfig).length) {
+      const reinitializeConfig = pendingReinitializeConfig;
+      pendingReinitializeConfig = {};
+      startReadinessWait();
+      const result = await withTimeout(
+        Promise.resolve(client.reinitialize(reinitializeConfig)),
+        'client reinitialization timed out',
+        READINESS_TIMEOUT,
+      );
+      checkClientResult(result, 'reinitialize');
+      // The SDK's "init_started" return is an acknowledgement, not completion.
+      await readyPromise;
+    }
+    flushPendingMessages(client);
+  })().catch((error) => {
     pendingReinitializeConfig = {};
+    failInitialization(error);
+    throw error;
+  }).finally(() => {
     reinitializePromise = null;
-    return client.reinitialize(reinitializeConfig);
   });
+  return reinitializePromise;
 }
 
 /**
  * Idempotently loads and initializes the AcomAssistant Client, merging in
  * partialConfig (appid/context/callbacks, etc). The first caller wins the race
  * to actually call initialize(); later callers fold their config in via
- * reinitialize() once the client is available.
+ * reinitialize() once the client is ready and await that update's callbacks.
+ * The first call returns after starting initialize(); opening waits for readiness.
  *
  * loadScript/loadStyle are injected (not imported directly) so tests can mock
  * the network load, same convention as the rest of libs/features.
@@ -145,8 +215,9 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
     if (client && (partialConfig.context || partialConfig.appid || partialConfig.accessToken)) {
       // Deferred: calling reinitialize() while the first initialize() is still mid-flight
       // is blocked/dropped server-side ({ status: 'blocked', type: 'init_in_progress' }).
-      scheduleReinitialize(client, partialConfig);
+      await scheduleReinitialize(client, partialConfig);
     }
+    if (lifecycleError) throw lifecycleError;
     return client;
   }
 
@@ -154,55 +225,71 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
     const autoDefaults = await getAutoDefaults();
     mergedConfig = mergeAcomConfig(autoDefaults, mergedConfig);
 
-    // Fire-and-forget the load (matching bc-bootstrap.js's loadWebclient) -- don't block
-    // the init chain on the script tag's own load promise, which can hang or reject
-    // independently of whether window.AdobeMessagingExperienceClient ever shows up.
     loadStyle(`${assistantBase(mergedConfig.env)}.css`);
-    Promise.resolve(loadScript(`${assistantBase(mergedConfig.env)}.js`)).catch(() => {});
-
-    const clientReady = await waitForCondition(() => !!window.AdobeMessagingExperienceClient);
-    if (!clientReady) {
-      window.lana?.log('AcomAssistant: client script did not expose window.AdobeMessagingExperienceClient', { tags: 'acom-assistant', severity: 'error' });
+    try {
+      await withTimeout(
+        Promise.resolve(loadScript(`${assistantBase(mergedConfig.env)}.js`)),
+        'client script load timed out',
+      );
+      const clientReady = await waitForCondition(() => !!window.AdobeMessagingExperienceClient);
+      if (!clientReady) {
+        throw new Error('client script did not expose window.AdobeMessagingExperienceClient');
+      }
+    } catch (error) {
       clientPromise = null;
-      return null;
+      logError(error);
+      throw error;
     }
 
     const client = window.AdobeMessagingExperienceClient;
-    let resolveInitSettled;
-    let resolveReady;
-    initSettledPromise = new Promise((resolve) => { resolveInitSettled = resolve; });
-    readyPromise = new Promise((resolve) => { resolveReady = resolve; });
-    setTimeout(resolveInitSettled, 5000);
-    setTimeout(resolveReady, 5000);
+    startReadinessWait();
 
-    client.initialize({
+    const initializeConfig = {
       ...mergedConfig,
       callbacks: {
         ...mergedConfig.callbacks,
         initCallback: (...args) => {
-          resolveInitSettled();
           mergedConfig.callbacks?.initCallback?.(...args);
         },
         onReadyCallback: (...args) => {
-          flushPendingMessages(client);
-          resolveReady();
+          readyGate.resolve();
+          if (!reinitializePromise) flushPendingMessages(client);
           mergedConfig.callbacks?.onReadyCallback?.(...args);
         },
         initErrorCallback: (...args) => {
-          resolveInitSettled();
-          window.lana?.log(`AcomAssistant: init failed (${args[0]})`, { tags: 'acom-assistant', severity: 'error' });
+          failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
-        getContextCallback: (...args) => pendingIdentity
-          || mergedConfig.callbacks?.getContextCallback?.(...args)
+        getContextCallback: (...args) => mergedConfig.callbacks?.getContextCallback?.(...args)
           || { appid: mergedConfig.appid, appver: mergedConfig.appver },
       },
-    });
+    };
+    try {
+      Promise.resolve(client.initialize(initializeConfig))
+        .then((result) => checkClientResult(result, 'initialize'))
+        .catch(failInitialization);
+    } catch (error) {
+      failInitialization(error);
+      throw error;
+    }
     resolvedClient = client;
     return client;
   })();
 
   return clientPromise;
+}
+
+let bootstrapPromise = null;
+
+/** Initializes the client once per page for every BC entry point (C1 and C2 bootstraps).
+ *  Later callers reuse the first config instead of triggering reinitialize(), which the
+ *  SDK rejects once its UI has loaded. */
+export function initAcomAssistantOnce(config, deps) {
+  bootstrapPromise ||= loadAcomAssistant(config, deps).catch((error) => {
+    bootstrapPromise = null;
+    throw error;
+  });
+  return bootstrapPromise;
 }
 
 /** Synchronous access to the client once resolved -- null before then. Useful for
@@ -215,6 +302,9 @@ export async function sendAcomAssistantUserMessage(payload) {
   if (!payload?.label) return;
   const client = await clientPromise;
   if (!client) return;
+  if (lifecycleError) throw lifecycleError;
+  await reinitializePromise;
+  if (lifecycleError) throw lifecycleError;
   if (isReady) client.sendUserMessage(payload);
   else pendingMessages.push(payload);
 }
@@ -224,9 +314,12 @@ export async function getAcomAssistantPrompts() {
   return client ? client.getPrompts() : null;
 }
 
+/** Opens the initialized BC experience. Every entry point uses the same BC identity. */
 export async function openAcomAssistantChat(sourceInfo) {
   const client = await clientPromise;
   if (!client) return;
   await readyPromise;
-  client.openMessagingWindow(sourceInfo);
+  await reinitializePromise;
+  if (lifecycleError) throw lifecycleError;
+  await client.openMessagingWindow(sourceInfo);
 }

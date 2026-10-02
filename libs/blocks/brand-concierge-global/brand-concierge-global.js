@@ -74,12 +74,15 @@ function decorateAcomGnav(cards, topNav) {
   if (!bcWrapper) return;
 
   // Per the wiki, the client discovers this mount point and builds its own GNav
-  // icon/expanded-input/minimized states into it -- Milo doesn't build any GNav UI
-  // itself on this path.
+  // icon/expanded-input/minimized states into it
+  // https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration
   const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
   bcWrapper.appendChild(mount);
   acomAssistantModulePromise ||= import('../brand-concierge/acom-assistant-bootstrap.js');
-  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards));
+  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards))
+    .catch((error) => {
+      window.lana?.log?.(`AcomAssistant: failed to initialize GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+    });
 
   if (window?.milo) {
     window.milo.brandConcierge = { brandConciergeGlobal: true };

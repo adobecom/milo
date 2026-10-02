@@ -1,216 +1,366 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
-import {
-  loadAcomAssistant,
-  sendAcomAssistantUserMessage,
-  getAcomAssistantPrompts,
-  openAcomAssistantChat,
-  getAcomAssistantClient,
-} from '../../../libs/features/acom-assistant.js';
 
-describe('AcomAssistant shared client', () => {
-  let loadScript;
-  let loadStyle;
-  let onReadyCallback;
+describe('AcomAssistant shared client lifecycle', () => {
+  let assistant;
+  let client;
+  let callbacks;
+  let deps;
+  let clock;
+  let originalClient;
+  let originalLana;
 
-  before(() => {
+  beforeEach(async () => {
+    assistant = await import(`../../../libs/features/acom-assistant.js?test=${crypto.randomUUID()}`);
+    clock = sinon.useFakeTimers();
     setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
-    window.AdobeMessagingExperienceClient = {
-      initialize: sinon.spy((cfg) => {
-        onReadyCallback = cfg.callbacks.onReadyCallback;
-        cfg.callbacks.initCallback?.({ releaseControl: { showAdobeMessaging: true } });
+    originalClient = window.AdobeMessagingExperienceClient;
+    originalLana = window.lana;
+    window.lana = { log: sinon.spy() };
+    client = {
+      initialize: sinon.spy((config) => { callbacks = config.callbacks; }),
+      reinitialize: sinon.stub().callsFake(() => {
+        callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
+        callbacks.onReadyCallback();
+        return { status: 'success', type: 'init_started' };
       }),
-      reinitialize: sinon.spy(),
       sendUserMessage: sinon.spy(),
-      getPrompts: sinon.stub().returns({ prompts: [] }),
       openMessagingWindow: sinon.spy(),
+      getPrompts: sinon.stub().returns({ prompts: [] }),
     };
-    loadScript = sinon.stub().resolves();
-    loadStyle = sinon.stub();
+    window.AdobeMessagingExperienceClient = client;
+    deps = { loadScript: sinon.stub().resolves(), loadStyle: sinon.stub() };
   });
 
-  it('loads the script/CSS and calls initialize() exactly once across multiple callers', async () => {
-    const first = loadAcomAssistant({ appid: 'surface-one' }, { loadScript, loadStyle });
-    const second = loadAcomAssistant({ appid: 'surface-two' }, { loadScript, loadStyle });
-
-    await Promise.all([first, second]);
-
-    expect(loadScript.calledOnce).to.be.true;
-    expect(window.AdobeMessagingExperienceClient.initialize.calledOnce).to.be.true;
-    // second caller folds its config in via reinitialize() instead of a second initialize()
-    expect(window.AdobeMessagingExperienceClient.reinitialize.calledOnce).to.be.true;
+  afterEach(() => {
+    clock.restore();
+    window.AdobeMessagingExperienceClient = originalClient;
+    window.lana = originalLana;
+    sinon.restore();
   });
 
-  it('returns the resolved client synchronously via getAcomAssistantClient once loaded', () => {
-    expect(getAcomAssistantClient()).to.equal(window.AdobeMessagingExperienceClient);
-  });
+  async function start() {
+    await assistant.loadAcomAssistant({ appid: 'surface-one' }, deps);
+  }
 
-  it('queues sendAcomAssistantUserMessage calls until onReadyCallback fires, then flushes in order', async () => {
-    await sendAcomAssistantUserMessage({ label: 'queued while not ready' });
-    expect(window.AdobeMessagingExperienceClient.sendUserMessage.called).to.be.false;
+  function ready() {
+    callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
+    callbacks.onReadyCallback();
+  }
 
-    onReadyCallback();
+  async function expectError(promise, message) {
+    let error;
+    try {
+      await promise;
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).to.be.instanceOf(Error);
+    expect(error.message).to.include(message);
+  }
 
-    expect(window.AdobeMessagingExperienceClient.sendUserMessage.calledOnceWith(
-      { label: 'queued while not ready' },
-    )).to.be.true;
-  });
-
-  it('sends immediately once ready', async () => {
-    await sendAcomAssistantUserMessage({ label: 'sent live' });
-    expect(window.AdobeMessagingExperienceClient.sendUserMessage.calledWith({ label: 'sent live' })).to.be.true;
-  });
-
-  it('is a no-op for an empty/missing label', async () => {
-    const callsBefore = window.AdobeMessagingExperienceClient.sendUserMessage.callCount;
-    await sendAcomAssistantUserMessage({});
-    await sendAcomAssistantUserMessage();
-    expect(window.AdobeMessagingExperienceClient.sendUserMessage.callCount).to.equal(callsBefore);
-  });
-
-  it('delegates getAcomAssistantPrompts/openAcomAssistantChat to the client', async () => {
-    const prompts = await getAcomAssistantPrompts();
-    expect(prompts).to.deep.equal({ prompts: [] });
-
-    await openAcomAssistantChat({ sourceType: 'button' });
-    expect(window.AdobeMessagingExperienceClient.openMessagingWindow.calledWith({ sourceType: 'button' })).to.be.true;
-  });
-});
-
-describe('AcomAssistant shared client retry after a failed load', () => {
-  it('retries on the next call instead of caching a failed load forever', async function retryTest() {
-    this.timeout(8000);
-    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
-    delete window.AdobeMessagingExperienceClient;
-
-    const { loadAcomAssistant: freshLoad } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
-
-    const loadScript = sinon.stub().resolves();
-    const loadStyle = sinon.stub();
-
-    // First attempt: the script loads but never exposes the global (e.g. dropped connection),
-    // so waitForCondition times out and the load fails.
-    const firstResult = await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
-    expect(firstResult).to.equal(null);
-    expect(loadScript.calledOnce).to.be.true;
-
-    // The client becomes available before the next caller tries again.
-    window.AdobeMessagingExperienceClient = {
-      initialize: sinon.spy(),
-      reinitialize: sinon.spy(),
-    };
-
-    const secondResult = await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
-
-    expect(secondResult === window.AdobeMessagingExperienceClient).to.be.true;
-    expect(loadScript.calledTwice).to.be.true;
-    expect(window.AdobeMessagingExperienceClient.initialize.calledOnce).to.be.true;
-  });
-});
-
-describe('AcomAssistant shared client defers reinitialize until init settles', () => {
-  it('does not call reinitialize() while the first initialize() is still in flight', async () => {
-    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
-    let capturedInitCallback;
-    window.AdobeMessagingExperienceClient = {
-      initialize: sinon.spy((cfg) => { capturedInitCallback = cfg.callbacks.initCallback; }),
-      reinitialize: sinon.spy(),
-    };
-
-    const { loadAcomAssistant: freshLoad } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
-
-    const loadScript = sinon.stub().resolves();
-    const loadStyle = sinon.stub();
-
-    const first = freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
-    const second = freshLoad({ appid: 'surface-two' }, { loadScript, loadStyle });
-    const third = freshLoad({
+  it('initializes once and coalesces concurrent configuration updates', async () => {
+    const first = assistant.loadAcomAssistant({ appid: 'surface-one' }, deps);
+    const second = assistant.loadAcomAssistant({ appid: 'surface-two' }, deps);
+    const third = assistant.loadAcomAssistant({
       appid: 'surface-three',
       context: { userData: { source: 'footer' } },
-    }, { loadScript, loadStyle });
-    await Promise.all([first, second, third]);
+    }, deps);
+    await first;
+    expect(client.initialize.calledOnce).to.be.true;
+    expect(client.reinitialize.called).to.be.false;
 
-    // initCallback hasn't fired yet -- init is still "in progress" per the client's own
-    // docs, and reinitialize() during that window is blocked/dropped server-side.
-    expect(window.AdobeMessagingExperienceClient.initialize.calledOnce).to.be.true;
-    expect(window.AdobeMessagingExperienceClient.reinitialize.called).to.be.false;
+    ready();
+    await Promise.all([second, third]);
 
-    capturedInitCallback({ releaseControl: { showAdobeMessaging: true } });
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
-
-    expect(window.AdobeMessagingExperienceClient.reinitialize.calledOnce).to.be.true;
-    const reinitArgs = window.AdobeMessagingExperienceClient.reinitialize.getCall(0).args[0];
-    expect(reinitArgs.appid === 'surface-three').to.be.true;
-    expect(reinitArgs.context.userData.source === 'footer').to.be.true;
+    expect(deps.loadScript.calledOnce).to.be.true;
+    expect(client.reinitialize.calledOnce).to.be.true;
+    expect(client.reinitialize.firstCall.args[0].appid).to.equal('surface-three');
+    expect(client.reinitialize.firstCall.args[0].context.userData.source).to.equal('footer');
+    expect(assistant.getAcomAssistantClient()).to.equal(client);
   });
-});
 
-describe('AcomAssistant shared client defers openMessagingWindow until ready', () => {
-  it('does not open the messaging window before onReadyCallback fires', async () => {
-    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
-    let capturedOnReady;
-    window.AdobeMessagingExperienceClient = {
-      initialize: sinon.spy((cfg) => { capturedOnReady = cfg.callbacks.onReadyCallback; }),
-      openMessagingWindow: sinon.spy(),
-    };
+  it('queues messages until the real readiness callback and flushes in order', async () => {
+    await start();
+    await assistant.sendAcomAssistantUserMessage({ label: 'first' });
+    await assistant.sendAcomAssistantUserMessage({ label: 'second' });
+    expect(client.sendUserMessage.called).to.be.false;
 
-    const {
-      loadAcomAssistant: freshLoad,
-      openAcomAssistantChat: freshOpen,
-    } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
-
-    const loadScript = sinon.stub().resolves();
-    const loadStyle = sinon.stub();
-
-    await freshLoad({ appid: 'surface-one' }, { loadScript, loadStyle });
-
-    let openResolved = false;
-    const openPromise = freshOpen({ sourceType: 'button' }).then(() => { openResolved = true; });
-
-    // Give pending microtasks a chance to run -- openMessagingWindow must not fire yet,
-    // since onReadyCallback hasn't been invoked.
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(window.AdobeMessagingExperienceClient.openMessagingWindow.called).to.be.false;
-    expect(openResolved).to.be.false;
-
-    capturedOnReady();
-    await openPromise;
-
-    expect(window.AdobeMessagingExperienceClient.openMessagingWindow.calledOnce).to.be.true;
-    const openArgs = window.AdobeMessagingExperienceClient.openMessagingWindow.getCall(0).args[0];
-    expect(openArgs.sourceType === 'button').to.be.true;
+    ready();
+    expect(client.sendUserMessage.args).to.deep.equal([[{ label: 'first' }], [{ label: 'second' }]]);
+    await assistant.sendAcomAssistantUserMessage({ label: 'live' });
+    expect(client.sendUserMessage.lastCall.args[0]).to.deep.equal({ label: 'live' });
   });
-});
 
-describe('AcomAssistant shared client per-click identity via getContextCallback', () => {
-  it('falls back to the initialize()-time appid, then reflects whichever identity was set most recently', async () => {
-    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' } });
-    let capturedGetContext;
-    const onInit = (cfg) => { capturedGetContext = cfg.callbacks.getContextCallback; };
-    window.AdobeMessagingExperienceClient = { initialize: sinon.spy(onInit) };
+  it('does not reinitialize BC for a callback-only registration', async () => {
+    await assistant.loadAcomAssistant({
+      appid: 'bc-adobedotcom2',
+      componentid: 'brand-concierge',
+    }, deps);
+    ready();
+    const onReadyCallback = sinon.spy();
+    await assistant.loadAcomAssistant({ callbacks: { onReadyCallback } }, deps);
+    expect(client.reinitialize.called).to.be.false;
+    ready();
+    expect(onReadyCallback.calledOnce).to.be.true;
+  });
 
-    const {
-      loadAcomAssistant: freshLoad,
-      setAcomAssistantIdentity: freshSetIdentity,
-    } = await import(`../../../libs/features/acom-assistant.js?t=${Date.now()}`);
+  it('does not send empty messages', async () => {
+    await start();
+    ready();
+    await assistant.sendAcomAssistantUserMessage({});
+    await assistant.sendAcomAssistantUserMessage();
+    expect(client.sendUserMessage.called).to.be.false;
+  });
 
-    const loadScript = sinon.stub().resolves();
-    const loadStyle = sinon.stub();
+  it('opens only after the real readiness callback', async () => {
+    await start();
+    const opening = assistant.openAcomAssistantChat({ sourceType: 'button' });
+    await clock.tickAsync(29999);
+    expect(client.openMessagingWindow.called).to.be.false;
 
-    await freshLoad({ appid: 'surface-a', appver: '2.0' }, { loadScript, loadStyle });
+    ready();
+    await opening;
+    expect(client.openMessagingWindow.calledOnceWith({ sourceType: 'button' })).to.be.true;
+    expect(await assistant.getAcomAssistantPrompts()).to.deep.equal({ prompts: [] });
+    expect(clock.countTimers()).to.equal(0);
+  });
 
-    // No surface has set an identity yet -- falls back to the appid initialize() used.
-    let context = capturedGetContext();
-    expect(context.appid === 'surface-a' && context.appver === '2.0').to.be.true;
+  it('rejects readiness timeout instead of opening an unready iframe', async () => {
+    await start();
+    callbacks.initCallback({});
+    const failure = expectError(assistant.openAcomAssistantChat({}), 'readiness timed out');
+    await clock.tickAsync(30000);
+    await failure;
+    expect(client.openMessagingWindow.called).to.be.false;
+    expect(window.lana.log.called).to.be.true;
 
-    freshSetIdentity({ appid: 'jarvis-x', appver: '9.9' });
-    context = capturedGetContext();
-    expect(context.appid === 'jarvis-x' && context.appver === '9.9').to.be.true;
+    callbacks.onReadyCallback();
+    await expectError(assistant.openAcomAssistantChat({}), 'readiness timed out');
+    expect(client.openMessagingWindow.called).to.be.false;
+  });
 
-    freshSetIdentity({ appid: 'bc-bacom', appver: '1.0' });
-    context = capturedGetContext();
-    expect(context.appid === 'bc-bacom' && context.appver === '1.0').to.be.true;
+  it('never reinitializes after an initialization timeout', async () => {
+    await start();
+    const failure = expectError(
+      assistant.loadAcomAssistant({ appid: 'surface-two' }, deps),
+      'readiness timed out',
+    );
+    await clock.tickAsync(30000);
+    await failure;
+    expect(client.reinitialize.called).to.be.false;
+    expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('rejects initialization errors and discards queued messages', async () => {
+    await start();
+    await assistant.sendAcomAssistantUserMessage({ label: 'queued' });
+    const failure = expectError(assistant.openAcomAssistantChat({}), 'init failed');
+    callbacks.initErrorCallback('invalid_appid');
+    await failure;
+    callbacks.onReadyCallback();
+    expect(client.sendUserMessage.called).to.be.false;
+    expect(client.openMessagingWindow.called).to.be.false;
+    expect(window.lana.log.called).to.be.true;
+  });
+
+  it('handles a rejected SDK initialize promise without false readiness', async () => {
+    client.initialize = sinon.stub().rejects(new Error('SDK initialization failed'));
+    await start();
+    await expectError(assistant.openAcomAssistantChat({}), 'SDK initialization failed');
+    expect(client.openMessagingWindow.called).to.be.false;
+  });
+
+  it('logs synchronous SDK initialization failures', async () => {
+    client.initialize = sinon.stub().throws(new Error('invalid configuration'));
+    await expectError(assistant.loadAcomAssistant({ appid: 'surface-one' }, deps), 'invalid configuration');
+    expect(window.lana.log.called).to.be.true;
+    expect(client.openMessagingWindow.called).to.be.false;
+    await clock.tickAsync(0);
+    expect(clock.countTimers()).to.equal(0);
+  });
+
+  it('rejects blocked SDK initialization results', async () => {
+    client.initialize = sinon.stub().returns({ status: 'blocked', type: 'init_in_progress' });
+    await start();
+    await expectError(assistant.openAcomAssistantChat({}), 'init_in_progress');
+    expect(client.openMessagingWindow.called).to.be.false;
+  });
+
+  it('logs script-load errors and permits a subsequent load retry', async () => {
+    deps.loadScript.rejects(new Error('script failed'));
+    await expectError(assistant.loadAcomAssistant({ appid: 'surface-one' }, deps), 'script failed');
+    expect(window.lana.log.called).to.be.true;
+    expect(client.initialize.called).to.be.false;
+
+    deps.loadScript.resolves();
+    await start();
+    expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('times out a hanging script load without initializing the client', async () => {
+    deps.loadScript.returns(new Promise(() => {}));
+    const failure = expectError(
+      assistant.loadAcomAssistant({ appid: 'surface-one' }, deps),
+      'script load timed out',
+    );
+    await clock.tickAsync(5000);
+    await failure;
+    expect(client.initialize.called).to.be.false;
+  });
+
+  it('rejects a loaded script with a missing client global and permits retry', async () => {
+    delete window.AdobeMessagingExperienceClient;
+    const failure = expectError(
+      assistant.loadAcomAssistant({ appid: 'surface-one' }, deps),
+      'did not expose',
+    );
+    await clock.tickAsync(5000);
+    await failure;
+    window.AdobeMessagingExperienceClient = client;
+    await start();
+    expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('waits for pending reinitialization before opening or sending', async () => {
+    await start();
+    ready();
+    let finish;
+    client.reinitialize.returns(new Promise((resolve) => {
+      finish = () => { ready(); resolve(); };
+    }));
+    const updating = assistant.loadAcomAssistant({ appid: 'surface-two' }, deps);
+    await clock.tickAsync(0);
+    const opening = assistant.openAcomAssistantChat({});
+    const sending = assistant.sendAcomAssistantUserMessage({ label: 'after update' });
+    await clock.tickAsync(0);
+    expect(client.openMessagingWindow.called).to.be.false;
+    expect(client.sendUserMessage.called).to.be.false;
+
+    finish();
+    await Promise.all([updating, opening, sending]);
+    expect(client.openMessagingWindow.calledOnce).to.be.true;
+    expect(client.sendUserMessage.calledOnce).to.be.true;
+  });
+
+  it('serializes updates arriving while reinitialization is in progress', async () => {
+    await start();
+    ready();
+    let finish;
+    client.reinitialize.onFirstCall().returns(new Promise((resolve) => {
+      finish = () => { ready(); resolve(); };
+    }));
+    const first = assistant.loadAcomAssistant({ appid: 'surface-two' }, deps);
+    await clock.tickAsync(0);
+    const second = assistant.loadAcomAssistant({ appid: 'surface-three' }, deps);
+    await clock.tickAsync(0);
+    expect(client.reinitialize.calledOnce).to.be.true;
+    finish();
+    await Promise.all([first, second]);
+    expect(client.reinitialize.calledTwice).to.be.true;
+    expect(client.reinitialize.secondCall.args[0].appid).to.equal('surface-three');
+  });
+
+  it('blocks opening after a rejected configuration update', async () => {
+    await start();
+    ready();
+    client.reinitialize.resolves({ status: 'blocked', type: 'init_in_progress' });
+    await expectError(
+      assistant.loadAcomAssistant({ appid: 'surface-two' }, deps),
+      'init_in_progress',
+    );
+    await expectError(assistant.openAcomAssistantChat({}), 'init_in_progress');
+    expect(client.openMessagingWindow.called).to.be.false;
+  });
+
+  it('blocks opening when the SDK configuration update rejects', async () => {
+    await start();
+    ready();
+    client.reinitialize.rejects(new Error('update failed'));
+    await expectError(assistant.loadAcomAssistant({ appid: 'surface-two' }, deps), 'update failed');
+    await expectError(assistant.openAcomAssistantChat({}), 'update failed');
+    expect(client.openMessagingWindow.called).to.be.false;
+    expect(window.lana.log.called).to.be.true;
+  });
+
+  it('times out a hanging configuration update', async () => {
+    await start();
+    ready();
+    client.reinitialize.returns(new Promise(() => {}));
+    const failure = expectError(
+      assistant.loadAcomAssistant({ appid: 'surface-two' }, deps),
+      'reinitialization timed out',
+    );
+    await clock.tickAsync(30000);
+    await failure;
+    await expectError(assistant.openAcomAssistantChat({}), 'timed out');
+    expect(client.openMessagingWindow.called).to.be.false;
+  });
+
+  it('enables cookies only when functional cookies (C0002) are active', async () => {
+    const originalPrivacy = window.adobePrivacy;
+    window.adobePrivacy = { activeCookieGroups: () => ['C0001', 'C0003'] };
+    try {
+      await start();
+      expect(client.initialize.firstCall.args[0].cookiesEnabled).to.be.false;
+    } finally {
+      window.adobePrivacy = originalPrivacy;
+    }
+  });
+
+  it('enables cookies when C0002 is active', async () => {
+    const originalPrivacy = window.adobePrivacy;
+    window.adobePrivacy = { activeCookieGroups: () => ['C0001', 'C0002'] };
+    try {
+      await start();
+      expect(client.initialize.firstCall.args[0].cookiesEnabled).to.be.true;
+    } finally {
+      window.adobePrivacy = originalPrivacy;
+    }
+  });
+
+  it('reports the initialized BC surface identity', async () => {
+    await assistant.loadAcomAssistant({
+      appid: 'bc-adobedotcom2',
+      appver: '1.0',
+      componentid: 'brand-concierge',
+    }, deps);
+    expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-adobedotcom2', appver: '1.0' });
+  });
+
+  it('initializes once for multiple BC bootstraps without reinitializing', async () => {
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps);
+    ready();
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c1' }, deps);
+    expect(client.initialize.calledOnce).to.be.true;
+    expect(client.initialize.firstCall.args[0].appid).to.equal('bc-c2');
+    expect(client.reinitialize.called).to.be.false;
+  });
+
+  it('lets a BC bootstrap retry after the client script fails to load', async () => {
+    deps.loadScript.onFirstCall().rejects(new Error('script failed'));
+    await expectError(assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps), 'script failed');
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps);
+    expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('waits for callbacks after a synchronous reinitialize acknowledgement', async () => {
+    await start();
+    ready();
+    client.reinitialize.returns({ status: 'success', type: 'init_started' });
+    const updating = assistant.loadAcomAssistant({ appid: 'surface-two' }, deps);
+    await clock.tickAsync(0);
+    const opening = assistant.openAcomAssistantChat({});
+    await clock.tickAsync(0);
+    expect(client.openMessagingWindow.called).to.be.false;
+
+    callbacks.initCallback({});
+    await clock.tickAsync(0);
+    expect(client.openMessagingWindow.called).to.be.false;
+
+    callbacks.onReadyCallback();
+    await Promise.all([updating, opening]);
+    expect(client.openMessagingWindow.calledOnce).to.be.true;
   });
 });

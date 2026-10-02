@@ -636,9 +636,17 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   let sendUserMessageSpy;
   let openMessagingWindowSpy;
   let capturedInitConfig;
+  let originalClient;
+  let clientScript;
 
-  beforeEach(() => {
-    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
+  before(() => {
+    originalClient = window.AdobeMessagingExperienceClient;
+    clientScript = document.createElement('script');
+    clientScript.type = 'javascript/blocked';
+    clientScript.src = 'https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    clientScript.dataset.loaded = 'true';
+    document.head.append(clientScript);
+    window.AdobeMessagingExperienceClient = {
       initialize: (cfg) => {
         capturedInitConfig = cfg;
         cfg.callbacks?.onReadyCallback?.();
@@ -647,6 +655,14 @@ describe('Brand Concierge - AcomAssistant flag', () => {
       sendUserMessage: () => {},
       openMessagingWindow: () => {},
     };
+  });
+
+  after(() => {
+    clientScript.remove();
+    window.AdobeMessagingExperienceClient = originalClient;
+  });
+
+  beforeEach(() => {
     sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
     openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
   });
@@ -669,7 +685,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     const block = document.querySelector('.brand-concierge');
     await init(block);
 
-    const input = block.querySelector('#bc-input-field');
+    const input = block.querySelector('.bc-input-field textarea');
     input.value = 'Hello acom';
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -680,11 +696,11 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
     expect(openMessagingWindowSpy.called).to.be.true;
 
-    // Uses the Assistant team's bc-bacom test appid, not a Jarvis-borrowed one, and
+    // Uses the Assistant team's bc-adobedotcom2 test appid, not a Jarvis-borrowed one, and
     // getContextCallback reports that same identity by default (no Jarvis link clicked).
-    expect(capturedInitConfig.appid === 'bc-bacom').to.be.true;
+    expect(capturedInitConfig.appid === 'bc-adobedotcom2').to.be.true;
     const context = capturedInitConfig.callbacks.getContextCallback();
-    expect(context.appid === 'bc-bacom').to.be.true;
+    expect(context.appid === 'bc-adobedotcom2').to.be.true;
   });
 
   it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
