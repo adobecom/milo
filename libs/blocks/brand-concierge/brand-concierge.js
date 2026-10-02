@@ -25,7 +25,6 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
-let cardsEl;
 let useAcomAssistant = false;
 let acomAssistantModulePromise;
 
@@ -43,9 +42,9 @@ function checkGlobal() {
   return params.get('side-overlay') === 'true';
 }
 
-function routeInput(text) {
+function routeInput(text, cards) {
   if (useAcomAssistant) {
-    routeAcomAssistantInput(text, cardsEl).catch((error) => {
+    routeAcomAssistantInput(text, cards).catch((error) => {
       window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
     });
     return;
@@ -62,7 +61,7 @@ function routeInput(text) {
   }
 }
 
-function handleInput(text, input) {
+function handleInput(text, input, cards) {
   const textWrapper = input.querySelector('.bc-textarea-grow-wrap');
   const textArea = input.querySelector('textarea');
   const submitButton = input.querySelector('.input-field-button');
@@ -71,16 +70,16 @@ function handleInput(text, input) {
   submitButton.disabled = true;
   textArea.blur();
 
-  routeInput(text);
+  routeInput(text, cards);
 }
 
-function handleSuggestedPrompt(text, cards, event) {
+function handleSuggestedPrompt(text, event, cards) {
   event.target.blur();
-  routeInput(text);
+  routeInput(text, cards);
 }
 
-function handleFloatingButton() {
-  routeInput(null);
+function handleFloatingButton(cards) {
+  routeInput(null, cards);
 }
 
 export default async function init(el) {
@@ -124,7 +123,10 @@ export default async function init(el) {
     }
   }
   const [background, header, cards, input, legal] = rows;
-  cardsEl = cards;
+  // Bind handlers to this block's cards so multiple BC blocks don't share prompts.
+  const onInput = (text, inputEl) => handleInput(text, inputEl, cards);
+  const onPrompt = (text, cardSection, event) => handleSuggestedPrompt(text, event, cards);
+  const onFloatingButton = () => handleFloatingButton(cards);
 
   setAuthoredContent(header, cards, input);
 
@@ -175,18 +177,18 @@ export default async function init(el) {
   }
 
   if (variants.isFloatingButton || variants.isFloatingButtonOnly) {
-    decorateFloatingButton(el, input, handleFloatingButton, variants);
+    decorateFloatingButton(el, input, onFloatingButton, variants);
   }
 
   if (variants.isDefault) {
     decorateBackground(el, background);
     decorateHeader(el, header);
     if (variants.inputFirst) {
-      decorateInput(el, input, { handle: handleInput });
-      decorateCards(el, cards, { handle: handleSuggestedPrompt });
+      decorateInput(el, input, { handle: onInput });
+      decorateCards(el, cards, { handle: onPrompt });
     } else {
-      decorateCards(el, cards, { handle: handleSuggestedPrompt });
-      decorateInput(el, input, { handle: handleInput });
+      decorateCards(el, cards, { handle: onPrompt });
+      decorateInput(el, input, { handle: onInput });
     }
     decorateLegal(el, legal);
   }
@@ -194,16 +196,16 @@ export default async function init(el) {
   if (variants.isHero) {
     decorateBackground(el, background);
     decorateHeader(el, header);
-    decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateInput(el, input, { handle: onInput });
+    decorateCards(el, cards, { handle: onPrompt });
     decorateLegal(el, legal);
   }
 
   if (variants.isMarquee) {
     decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
-    decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateInput(el, input, { handle: onInput });
+    decorateCards(el, cards, { handle: onPrompt });
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
@@ -217,7 +219,7 @@ export default async function init(el) {
   }
 
   if (variants.isFloatingInput || variants.isFloatingInputOnly) {
-    const floatingInputEvents = { inputHandle: handleInput, cardHandle: handleSuggestedPrompt };
+    const floatingInputEvents = { inputHandle: onInput, cardHandle: onPrompt };
     decorateFloatingInput(el, cards, input, floatingInputEvents, variants);
   }
 
