@@ -638,8 +638,16 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   let capturedInitConfig;
   let originalClient;
   let clientScript;
+  let pageMetadata;
 
   before(() => {
+    pageMetadata = document.createElement('div');
+    pageMetadata.innerHTML = `
+      <meta property="og:title" content="Explore Adobe apps">
+      <meta property="og:description" content="Find the right creative tools for you.">
+    `;
+    pageMetadata = [...pageMetadata.children];
+    document.head.append(...pageMetadata);
     originalClient = window.AdobeMessagingExperienceClient;
     clientScript = document.createElement('script');
     clientScript.type = 'javascript/blocked';
@@ -658,6 +666,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   });
 
   after(() => {
+    pageMetadata.forEach((meta) => meta.remove());
     clientScript.remove();
     window.AdobeMessagingExperienceClient = originalClient;
   });
@@ -699,6 +708,8 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     // Uses the Assistant team's bc-adobedotcom2 test appid, not a Jarvis-borrowed one, and
     // getContextCallback reports that same identity by default (no Jarvis link clicked).
     expect(capturedInitConfig.appid === 'bc-adobedotcom2').to.be.true;
+    expect(capturedInitConfig.pageTitle).to.equal('Explore Adobe apps');
+    expect(capturedInitConfig.pageDescription).to.equal('Find the right creative tools for you.');
     const context = capturedInitConfig.callbacks.getContextCallback();
     expect(context.appid === 'bc-adobedotcom2').to.be.true;
   });
