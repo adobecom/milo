@@ -33,7 +33,7 @@ import {
   refreshPageUpdateCounts,
 } from './mep-overlay-highlight.js';
 import svgs from './mep-overlay-svg.js';
-import buildExportSidebar, { getManifestRows } from '../mep-export/mep-export.js';
+import buildExportButton, { getManifestRows } from '../mep-export/mep-export.js';
 
 let authenticated = false;
 let authStateRendered = false;
@@ -117,7 +117,6 @@ function getGnavOffset() {
   });
 }
 
-let exportSidebar;
 let lastGnavOffset;
 function updateGnavOffset() {
   const offset = calcGnavOffset();
@@ -125,7 +124,6 @@ function updateGnavOffset() {
   lastGnavOffset = offset;
 
   document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
-  exportSidebar?.setOffset(offset);
   const drawer = document.querySelector('#mep-drawer');
   if (drawer) {
     drawer.style.top = `${offset}px`;
@@ -578,21 +576,29 @@ function checkAuthAndBuild(pageId) {
 }
 
 function buildAlignToggle() {
-  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', title: 'Move to other side', 'aria-label': 'Move to other side' });
+  const btn = createTag('button', { class: 'mep-align-toggle', type: 'button', 'aria-label': 'Orient Overlay' });
   btn.appendChild(svgIcon('icon-swap-horiz'));
   return btn;
 }
 
-function buildDrawer(gnavOffset, pageId) {
+function buildDrawer(gnavOffset, pageId, getSource) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
   const alignToggleBtn = buildAlignToggle();
 
-  const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
+  const closeBtn = createTag('button', {
+    class: 'icon-close',
+    popovertarget: 'mep-drawer',
+    popovertargetaction: 'hide',
+  });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [alignToggleBtn, closeBtn]);
+  const actionsEl = createTag('div', { class: 'mep-nav-actions' }, [
+    buildExportButton(getSource),
+    alignToggleBtn,
+    closeBtn,
+  ]);
   const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, actionsEl]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
@@ -791,11 +797,9 @@ async function buildOverlay() {
   lastGnavOffset = gnavOffset;
 
   const pageId = getPageId();
-  exportSidebar = buildExportSidebar(gnavOffset, getExportSource);
   document.body.append(
     buildFAB(gnavOffset),
-    exportSidebar.element,
-    buildDrawer(gnavOffset, pageId),
+    buildDrawer(gnavOffset, pageId, getExportSource),
   );
   checkAuthAndBuild(pageId);
 }

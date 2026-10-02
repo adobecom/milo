@@ -4,7 +4,6 @@ import sinon from 'sinon';
 const { setConfig } = await import('../../../../libs/utils/utils.js');
 const { crc32, zip, escapeXml } = await import('../../../../libs/features/mep/mep-next/mep-export/mep-export-ooxml.js');
 const { default: buildXlsx } = await import('../../../../libs/features/mep/mep-next/mep-export/mep-export-xlsx.js');
-const { default: buildDocx } = await import('../../../../libs/features/mep/mep-next/mep-export/mep-export-docx.js');
 
 const decoder = new TextDecoder();
 
@@ -117,19 +116,16 @@ describe('mep-export-xlsx', () => {
     expectWellFormed(files);
   });
 
-  it('puts Summary first, then one sheet per manifest', () => {
+  it('puts Summary first, then a single Manifests sheet', () => {
     const doc = new DOMParser().parseFromString(files['xl/workbook.xml'], 'application/xml');
     const names = [...doc.getElementsByTagName('sheet')].map((s) => s.getAttribute('name'));
-    expect(names[0]).to.equal('Summary');
-    expect(names).to.have.length(1 + DATA.manifests.length);
-    expect(names[1]).to.equal('1. a & b.json');
+    expect(names).to.deep.equal(['Summary', 'Manifests']);
   });
 
-  it('keeps sheet names unique and within 31 characters', () => {
-    const doc = new DOMParser().parseFromString(files['xl/workbook.xml'], 'application/xml');
-    const names = [...doc.getElementsByTagName('sheet')].map((s) => s.getAttribute('name'));
-    expect(new Set(names.map((n) => n.toLowerCase())).size).to.equal(names.length);
-    names.forEach((name) => expect(name.length).to.be.at.most(31));
+  it('omits the Manifests sheet when there are no manifests', async () => {
+    const empty = await readZip(buildXlsx({ ...DATA, manifests: [] }));
+    expectWellFormed(empty);
+    expect(Object.keys(empty).filter((name) => name.startsWith('xl/worksheets/'))).to.have.length(1);
   });
 
   it('writes the summary breakdown into the first sheet', () => {
@@ -139,59 +135,32 @@ describe('mep-export-xlsx', () => {
     });
   });
 
-  it('writes manifest rows, status and variants into the manifest sheet', () => {
+  it('lays manifests out as columns beneath sticky labels', () => {
     const sheet = files['xl/worksheets/sheet2.xml'];
-    ['Camp &lt;1&gt;', 'Ineligible', 'User country is restricted.', 'Variants', 'Selected'].forEach((text) => {
+    const doc = new DOMParser().parseFromString(sheet, 'application/xml');
+    const pane = doc.querySelector('pane');
+    expect(pane.getAttribute('xSplit')).to.equal('1');
+    expect(pane.getAttribute('ySplit')).to.equal('1');
+    expect(pane.getAttribute('state')).to.equal('frozen');
+    const firstRow = [...doc.querySelectorAll('row')[0].querySelectorAll('c')];
+    expect(firstRow).to.have.length(1 + DATA.manifests.length);
+    expect(firstRow[0].getAttribute('s')).to.equal('3');
+    ['URL', 'Status', 'Campaign', 'Source', 'Variant List'].forEach((label) => {
+      expect(sheet).to.include(`>${label}</t>`);
+    });
+    ['https://www.adobe.com/a.json', 'https://www.adobe.com/long.json', 'Camp &lt;1&gt;', 'User country is restricted.', 'v1'].forEach((text) => {
       expect(sheet).to.include(text);
     });
   });
 
   it('registers every sheet in content types and workbook relationships', () => {
-    const count = DATA.manifests.length + 1;
+    const count = 2;
     expect(files['[Content_Types].xml'].match(/worksheets\/sheet\d+\.xml/g)).to.have.length(count);
     expect(files['xl/_rels/workbook.xml.rels'].match(/worksheets\/sheet\d+\.xml/g)).to.have.length(count);
   });
 });
 
-describe('mep-export-docx', () => {
-  let files;
-
-  before(async () => {
-    const blob = buildDocx(DATA);
-    expect(blob.type).to.equal('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    files = await readZip(blob);
-  });
-
-  it('contains only well-formed XML parts', () => {
-    expectWellFormed(files);
-  });
-
-  it('uses heading styles to build a hierarchy', () => {
-    const doc = files['word/document.xml'];
-    expect(doc).to.include('<w:pStyle w:val="Title"/>');
-    expect((doc.match(/w:val="Heading1"/g) ?? []).length).to.equal(2);
-    expect((doc.match(/w:val="Heading2"/g) ?? []).length).to.equal(DATA.summary.length + DATA.manifests.length);
-    expect(doc).to.include('w:val="Heading3"');
-    ['Heading1', 'Heading2', 'Heading3'].forEach((id) => {
-      expect(files['word/styles.xml']).to.include(`w:styleId="${id}"`);
-    });
-  });
-
-  it('writes summary, manifest and status content', () => {
-    const doc = files['word/document.xml'];
-    ['Manifest Sources', 'Camp &lt;1&gt;', 'Warning: Ineligible', 'Error: Error', 'Default (control)'].forEach((text) => {
-      expect(doc).to.include(text);
-    });
-  });
-
-  it('handles an empty export', async () => {
-    const empty = await readZip(buildDocx({ ...DATA, summary: [], manifests: [] }));
-    expectWellFormed(empty);
-    expect(empty['word/document.xml']).to.include('No manifests found.');
-  });
-});
-
-describe('mep-export sidebar', () => {
+describe('mep-export header action', () => {
   const config = {
     miloLibs: 'https://main--milo--adobecom.aem.live/libs',
     codeRoot: 'https://main--homepage--adobecom.aem.live/homepage',
@@ -229,7 +198,7 @@ describe('mep-export sidebar', () => {
     URL.revokeObjectURL.restore();
     clickStub.restore();
     headerEl.remove();
-    document.querySelectorAll('#mep-drawer, .mep-fab, .mep-export-sidebar').forEach((el) => el.remove());
+    document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
   });
 
   async function clickAndWait(fab) {
@@ -243,38 +212,29 @@ describe('mep-export sidebar', () => {
     return blobs[blobs.length - 1];
   }
 
-  it('groups xlsx and docx exports in a sidebar beneath the separate MEP FAB', () => {
-    const sidebar = document.querySelector('.mep-export-sidebar');
-    const [xlsx, docx] = sidebar.querySelectorAll('.mep-export-fab');
-    expect(sidebar.getAttribute('role')).to.equal('group');
-    expect(sidebar.contains(document.querySelector('.mep-fab'))).to.be.false;
-    expect(xlsx.getAttribute('aria-label')).to.equal('Export to Excel');
-    expect(docx.getAttribute('aria-label')).to.equal('Export to Word');
-    expect(parseFloat(sidebar.style.top)).to.equal(50 + 24 + 48);
+  it('adds export and dock icon buttons to the drawer header actions', () => {
+    const buttons = [...document.querySelectorAll('.mep-header .mep-nav-actions button')];
+    expect(buttons.map((b) => b.className)).to.deep.equal([
+      'mep-export',
+      'mep-align-toggle',
+      'icon-close',
+    ]);
+    const [exportBtn, alignBtn] = buttons;
+    expect(exportBtn.getAttribute('aria-label')).to.equal('Export Page Data');
+    expect(exportBtn.hasAttribute('title')).to.be.false;
+    expect(alignBtn.getAttribute('aria-label')).to.equal('Orient Overlay');
+    expect(alignBtn.hasAttribute('title')).to.be.false;
+    expect(exportBtn.textContent).to.equal('');
+    expect(exportBtn.querySelector('svg')).to.exist;
+    expect(document.querySelector('.mep-export-sidebar')).to.be.null;
   });
 
-  it('each export has an SVG icon and its own associated tooltip', () => {
-    document.querySelectorAll('.mep-export-fab').forEach((fab) => {
-      const tooltip = document.getElementById(fab.getAttribute('aria-describedby'));
-      expect(fab.querySelector('svg')).to.exist;
-      expect(tooltip.getAttribute('role')).to.equal('tooltip');
-      expect(tooltip.textContent).to.equal(fab.getAttribute('aria-label'));
-    });
-  });
-
-  it('xlsx FAB downloads a workbook starting with the Summary sheet', async () => {
-    const [xlsxFab] = document.querySelectorAll('.mep-export-fab');
-    const blob = await clickAndWait(xlsxFab);
+  it('export button downloads a workbook starting with the Summary sheet', async () => {
+    const button = document.querySelector('.mep-export');
+    const blob = await clickAndWait(button);
     const files = await readZip(blob);
     expect(files['xl/workbook.xml']).to.include('name="Summary"');
-    expect(xlsxFab.hasAttribute('aria-busy')).to.be.false;
-  });
-
-  it('docx FAB downloads a document', async () => {
-    const docxFab = document.querySelectorAll('.mep-export-fab')[1];
-    const blob = await clickAndWait(docxFab);
-    const files = await readZip(blob);
-    expect(files['word/document.xml']).to.include('MEP Overlay Export');
+    expect(button.hasAttribute('aria-busy')).to.be.false;
     expect(clickStub.called).to.be.true;
   });
 });

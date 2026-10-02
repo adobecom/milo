@@ -1,34 +1,27 @@
-import { createTag, loadStyle } from '../../../../utils/utils.js';
+import { createTag } from '../../../../utils/utils.js';
 import { getManifestList } from '../mep-overlay/mep-overlay-logic.js';
-
-const FAB_OFFSET = 24;
-const FAB_STEP = 48;
 
 const domParser = new DOMParser();
 
-const ICONS = {
-  xlsx: "<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M3 3h18v18H3V3zM5 5v4h6V5H5zM13 5v4h6V5h-6zM5 11v3h6v-3H5zM13 11v3h6v-3h-6zM5 16v3h6v-3H5zM13 16v3h6v-3h-6z' /></svg>",
-  docx: "<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z' /></svg>",
-};
+const DOWNLOAD_ICON = "<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z' /></svg>";
 
-const EXPORTS = {
-  xlsx: {
-    title: 'Export to Excel',
-    build: async (data) => (await import('./mep-export-xlsx.js')).default(data),
-  },
-  docx: {
-    title: 'Export to Word',
-    build: async (data) => (await import('./mep-export-docx.js')).default(data),
-  },
-};
+const EXPORT_LABEL = 'Export Page Data';
 
 const toText = (value) => (value == null ? '' : String(value));
+
+function toFullUrl(url) {
+  try {
+    return new URL(toText(url), window.location.origin).href;
+  } catch {
+    return toText(url);
+  }
+}
 
 export function getManifestRows(manifest) {
   const rows = [];
   if (manifest.targetActivityName) rows.push(['Campaign', manifest.targetActivityName]);
   rows.push(['Source', manifest.source]);
-  rows.push(['Consent Req', manifest.consentType]);
+  rows.push(['Consent Type', manifest.consentType]);
   if (manifest.countryRestriction) rows.push(['Allowed User Countries', manifest.countryRestriction]);
   rows.push(['Type', manifest.manifestType || 'none']);
   rows.push(['Override Name', manifest.manifestOverrideName || 'none']);
@@ -55,15 +48,17 @@ function toExportManifest(manifest, getManifestStatus) {
   return {
     index: manifest.index,
     name: toText(manifest.fileName),
-    url: toText(manifest.editUrl),
+    url: toFullUrl(manifest.editUrl),
     status: getManifestStatus(manifest),
     rows: manifest.malformed
       ? []
       : getManifestRows(manifest).map(([label, value]) => [label, toText(value)]),
-    variants: (manifest.options ?? []).map(({ label, selected }) => ({
-      label: toText(label),
-      selected: !!selected,
-    })),
+    variants: (manifest.options ?? [])
+      .filter(({ value }) => value && value !== 'default')
+      .map(({ label, selected }) => ({
+        label: toText(label),
+        selected: !!selected,
+      })),
   };
 }
 
@@ -96,15 +91,16 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function runExport(type, button, getSource) {
+async function runExport(button, getSource) {
   if (button.disabled) return;
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   try {
-    const blob = await EXPORTS[type].build(await collectExportData(await getSource()));
+    const { default: buildXlsx } = await import('./mep-export-xlsx.js');
+    const blob = buildXlsx(await collectExportData(await getSource()));
     const host = window.location.hostname.replace(/[^a-z0-9.-]/gi, '-');
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    downloadBlob(blob, `mep-export-${host}-${stamp}.${type}`);
+    downloadBlob(blob, `mep-export-${host}-${stamp}.xlsx`);
   } catch (e) {
     window.lana?.log(`MEP export failed: ${e.message}`, { tags: 'mep-export', errorType: 'e' });
   } finally {
@@ -113,37 +109,13 @@ async function runExport(type, button, getSource) {
   }
 }
 
-function buildExportButton(type, getSource) {
-  const { title } = EXPORTS[type];
+export default function buildExportButton(getSource) {
   const button = createTag('button', {
-    class: 'mep-export-fab',
+    class: 'mep-export',
     type: 'button',
-    'aria-label': title,
-    'aria-describedby': `mep-export-tooltip-${type}`,
+    'aria-label': EXPORT_LABEL,
   });
-  button.append(domParser.parseFromString(ICONS[type], 'image/svg+xml').documentElement, createTag('span', {
-    id: `mep-export-tooltip-${type}`,
-    class: 'mep-export-tooltip',
-    role: 'tooltip',
-  }, title));
-  button.addEventListener('click', () => runExport(type, button, getSource));
+  button.append(domParser.parseFromString(DOWNLOAD_ICON, 'image/svg+xml').documentElement);
+  button.addEventListener('click', () => runExport(button, getSource));
   return button;
-}
-
-// Sits one FAB slot below the overlay's MEP FAB, which is placed at gnavOffset + FAB_OFFSET.
-const getTop = (gnavOffset) => gnavOffset + FAB_OFFSET + FAB_STEP;
-
-export default function buildExportSidebar(gnavOffset, getSource) {
-  loadStyle(new URL('./mep-export.css', import.meta.url));
-  const element = createTag('div', {
-    class: 'mep-export-sidebar',
-    role: 'group',
-    'aria-label': 'Export page data',
-    style: `top: ${getTop(gnavOffset)}px`,
-  }, [buildExportButton('xlsx', getSource), buildExportButton('docx', getSource)]);
-
-  return {
-    element,
-    setOffset: (offset) => element.style.setProperty('top', `${getTop(offset)}px`),
-  };
 }

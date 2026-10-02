@@ -4,8 +4,7 @@ const MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 const NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 const REL_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const PKG_REL_NS = 'http://schemas.openxmlformats.org/package/2006/relationships';
-const MAX_SHEETS = 255;
-const MAX_SHEET_NAME = 31;
+const MAX_MANIFEST_COLUMNS = 16383;
 const MAX_CELL_CHARS = 32767;
 
 const STYLE = {
@@ -77,10 +76,14 @@ function buildCell(content, rowIdx, colIdx) {
   return `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(text)}</t></is></c>`;
 }
 
-function buildSheet({ rows, widths, freezeRows = 0 }) {
-  const pane = freezeRows
-    ? `<pane ySplit="${freezeRows}" topLeftCell="A${freezeRows + 1}" activePane="bottomLeft" state="frozen"/>`
-    : '';
+function buildSheet({ rows, widths, freezeRows = 0, freezeCols = 0 }) {
+  let pane = '';
+  if (freezeRows || freezeCols) {
+    let activePane = 'topRight';
+    if (freezeRows) activePane = freezeCols ? 'bottomRight' : 'bottomLeft';
+    const splits = `${freezeCols ? ` xSplit="${freezeCols}"` : ''}${freezeRows ? ` ySplit="${freezeRows}"` : ''}`;
+    pane = `<pane${splits} topLeftCell="${columnName(freezeCols)}${freezeRows + 1}" activePane="${activePane}" state="frozen"/>`;
+  }
   const cols = widths.map((width, i) => `<col min="${i + 1}" max="${i + 1}" width="${width}" customWidth="1"/>`).join('');
   const data = rows
     .map((row, r) => `<row r="${r + 1}">${row.map((content, c) => buildCell(content, r, c)).join('')}</row>`)
@@ -88,19 +91,6 @@ function buildSheet({ rows, widths, freezeRows = 0 }) {
   return `${XML_HEADER}<worksheet xmlns="${NS}">`
     + `<sheetViews><sheetView workbookViewId="0">${pane}</sheetView></sheetViews>`
     + `<cols>${cols}</cols><sheetData>${data}</sheetData></worksheet>`;
-}
-
-function toSheetName(raw, used) {
-  const base = String(raw).replace(/[[\]:*?/\\]/g, '_').replace(/^'+|'+$/g, '').trim() || 'Sheet';
-  let name = base.slice(0, MAX_SHEET_NAME);
-  let counter = 1;
-  while (used.has(name.toLowerCase())) {
-    counter += 1;
-    const suffix = ` (${counter})`;
-    name = `${base.slice(0, MAX_SHEET_NAME - suffix.length)}${suffix}`;
-  }
-  used.add(name.toLowerCase());
-  return name;
 }
 
 const cell = (v, s) => ({ v, s });
@@ -129,36 +119,41 @@ function buildSummarySheet(data) {
   return buildSheet({ rows, widths: [34, 90] });
 }
 
-function buildManifestSheet(manifest) {
+const toRowLabel = (label) => (label === 'Experience' ? 'Selected Variant' : label);
+
+function toStatusCell({ status }) {
+  if (!status) return cell('', STYLE.VALUE);
+  const text = status.messages.length ? status.messages.join('\n') : status.label;
+  return cell(text, status.level === 'error' ? STYLE.ERROR : STYLE.WARNING);
+}
+
+function buildManifestsSheet(manifests) {
+  const labels = [];
+  const values = manifests.map(({ rows }) => new Map(rows.map(([label, value]) => {
+    const key = toRowLabel(label);
+    if (!labels.includes(key)) labels.push(key);
+    return [key, value];
+  })));
   const rows = [
-    [cell(`${manifest.index}. ${manifest.name}`, STYLE.TITLE)],
-    sectionRow('Manifest'),
-    [cell('URL', STYLE.LABEL), manifest.url],
+    [cell('URL', STYLE.LABEL), ...manifests.map(({ url }) => url)],
+    [cell('Status', STYLE.LABEL), ...manifests.map(toStatusCell)],
+    ...labels.map((label) => [
+      cell(label, STYLE.LABEL),
+      ...values.map((map) => map.get(label) ?? ''),
+    ]),
+    [
+      cell('Variant List', STYLE.LABEL),
+      ...manifests.map(({ variants }) => variants.map(({ label }) => label).join('\n')),
+    ],
   ];
-  if (manifest.status) {
-    const statusStyle = manifest.status.level === 'error' ? STYLE.ERROR : STYLE.WARNING;
-    rows.push([cell('Status', STYLE.LABEL), cell(manifest.status.label, statusStyle)]);
-    manifest.status.messages.forEach((message) => rows.push([cell('', STYLE.LABEL), cell(message, statusStyle)]));
-  }
-  manifest.rows.forEach(([label, value]) => rows.push([cell(label, STYLE.LABEL), value]));
-  if (manifest.variants.length) {
-    rows.push([], sectionRow('Variants'));
-    manifest.variants.forEach(({ label, selected }) => {
-      rows.push([cell(label, STYLE.LABEL), selected ? 'Selected' : '']);
-    });
-  }
-  return buildSheet({ rows, widths: [34, 90], freezeRows: 2 });
+  const widths = [34, ...manifests.map(() => 40)];
+  return buildSheet({ rows, widths, freezeRows: 1, freezeCols: 1 });
 }
 
 export default function buildXlsx(data) {
-  const used = new Set();
-  const sheets = [
-    { name: toSheetName('Summary', used), xml: buildSummarySheet(data) },
-    ...data.manifests.slice(0, MAX_SHEETS - 1).map((manifest) => ({
-      name: toSheetName(`${manifest.index}. ${manifest.name}`, used),
-      xml: buildManifestSheet(manifest),
-    })),
-  ];
+  const manifests = data.manifests.slice(0, MAX_MANIFEST_COLUMNS);
+  const sheets = [{ name: 'Summary', xml: buildSummarySheet(data) }];
+  if (manifests.length) sheets.push({ name: 'Manifests', xml: buildManifestsSheet(manifests) });
 
   const sheetOverrides = sheets
     .map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`)

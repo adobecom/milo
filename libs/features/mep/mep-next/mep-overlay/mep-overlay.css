@@ -174,11 +174,17 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
 }
 
 .mep-drawer .mep-header .mep-navigation .icon-close,
-.mep-drawer .mep-header .mep-navigation .mep-align-toggle {
+.mep-drawer .mep-header .mep-navigation .mep-align-toggle,
+.mep-drawer .mep-header .mep-navigation .mep-export {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
+}
+
+.mep-drawer .mep-header .mep-navigation .mep-export:disabled {
+  cursor: progress;
+  opacity: 0.5;
 }
 
 .mep-drawer .mep-header .mep-tabs {

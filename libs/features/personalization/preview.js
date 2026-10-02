@@ -1023,7 +1023,7 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
                   <span>${escapeHtml(source)}</span>
-                  <span>Consent req</span>
+                  <span>Consent Type</span>
                   <span>${escapeHtml(consentType)}</span>
                 ${countryRestriction ? `
                   <span>Allowed User Countries</span>
