@@ -2593,7 +2593,11 @@ async function loadPostLCP(config) {
         lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
       };
       const startLenisRaf = () => {
-        if (lenisRaf === null) lenisRaf = requestAnimationFrame(runLenisFrame);
+        if (lenisRaf !== null) return;
+        // Lenis keeps the last frame's timestamp, so after idling the first delta would span the
+        // whole idle gap and finish the animation in one frame. Rebase its clock (delta = 0).
+        window.lenis.time = 0;
+        lenisRaf = requestAnimationFrame(runLenisFrame);
       };
 
       const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
