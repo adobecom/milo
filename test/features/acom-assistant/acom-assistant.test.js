@@ -307,54 +307,20 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-adobedotcom2', appver: '1.0' });
   });
 
-  it('supplies a one-use Jarvis context without reinitializing BC', async () => {
-    await assistant.loadAcomAssistant({ appid: 'bc-adobedotcom2', appver: '1.0' }, deps);
+  it('initializes once for multiple BC bootstraps without reinitializing', async () => {
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps);
     ready();
-    let openContext;
-    client.openMessagingWindow = sinon.spy(() => {
-      openContext = callbacks.getContextCallback();
-    });
-    await assistant.openAcomAssistantChat(
-      { sourceType: 'a', sourceText: 'Contact us' },
-      { appid: 'footer-jarvis', appver: '2.0' },
-    );
-    expect(openContext).to.deep.equal({ appid: 'footer-jarvis', appver: '2.0' });
-    expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-adobedotcom2', appver: '1.0' });
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c1' }, deps);
     expect(client.initialize.calledOnce).to.be.true;
+    expect(client.initialize.firstCall.args[0].appid).to.equal('bc-c2');
     expect(client.reinitialize.called).to.be.false;
   });
 
-  it('retains the entry context until the SDK makes its delayed callback', async () => {
-    await start();
-    ready();
-    let openContext;
-    client.openMessagingWindow = () => {
-      setTimeout(() => { openContext = callbacks.getContextCallback(); }, 500);
-    };
-    await assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' });
-    expect(openContext).to.be.undefined;
-    await clock.tickAsync(500);
-    expect(openContext.appid).to.equal('footer-jarvis');
-    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
-  });
-
-  it('clears an unused Jarvis context before a BC open', async () => {
-    await start();
-    ready();
-    await assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' });
-    await assistant.openAcomAssistantChat({});
-    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
-  });
-
-  it('clears the entry context if opening fails', async () => {
-    await start();
-    ready();
-    client.openMessagingWindow = sinon.stub().rejects(new Error('open failed'));
-    await expectError(
-      assistant.openAcomAssistantChat({}, { appid: 'footer-jarvis' }),
-      'open failed',
-    );
-    expect(callbacks.getContextCallback().appid).to.equal('surface-one');
+  it('lets a BC bootstrap retry after the client script fails to load', async () => {
+    deps.loadScript.onFirstCall().rejects(new Error('script failed'));
+    await expectError(assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps), 'script failed');
+    await assistant.initAcomAssistantOnce({ appid: 'bc-c2' }, deps);
+    expect(client.initialize.calledOnce).to.be.true;
   });
 
   it('waits for callbacks after a synchronous reinitialize acknowledgement', async () => {

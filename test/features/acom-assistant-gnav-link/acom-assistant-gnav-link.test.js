@@ -16,6 +16,7 @@ describe('Chat link startup selection', () => {
   let loadStyle;
   let getMetadata;
   let openContexts;
+  const BC_IDENTITY = { appid: 'bc-adobedotcom2', appver: '1.0' };
 
   before(() => {
     originalClient = window.AdobeMessagingExperienceClient;
@@ -118,11 +119,10 @@ describe('Chat link startup selection', () => {
     expect(initializedConfig.appver).to.equal('1.0');
     expect(initializedConfig.componentid).to.equal('brand-concierge');
     expect(client.openMessagingWindow.calledOnceWith({ sourceType: 'a', sourceText: 'Contact us' })).to.be.true;
-    expect(openContexts).to.deep.equal([{ appid: 'footer-jarvis', appver: '9.0' }]);
-    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
+    expect(openContexts).to.deep.equal([BC_IDENTITY]);
   });
 
-  it('supplies footer Jarvis context without replacing the initialized C2 BC identity', async () => {
+  it('opens BC from a footer Jarvis link, ignoring its Jarvis surface config', async () => {
     getMetadata.withArgs('acom-assistant').returns('on');
     getMetadata.withArgs('foundation').returns('c2');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
@@ -130,8 +130,7 @@ describe('Chat link startup selection', () => {
     await waitFor(() => client.openMessagingWindow.called);
     expect(client.initialize.called).to.be.false;
     expect(client.reinitialize.called).to.be.false;
-    expect(openContexts).to.deep.equal([{ appid: 'footer-jarvis', appver: '9.0' }]);
-    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
+    expect(openContexts).to.deep.equal([BC_IDENTITY]);
     expect(document.querySelector('a').getAttribute('href')).to.equal('#open-jarvis-chat');
   });
 
@@ -140,74 +139,20 @@ describe('Chat link startup selection', () => {
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     document.querySelector('a').click();
     await waitFor(() => client.openMessagingWindow.called);
-    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
     expect(client.openMessagingWindow.calledOnce).to.be.true;
-    expect(openContexts).to.deep.equal([{ appid: 'footer-jarvis', appver: '9.0' }]);
+    expect(openContexts).to.deep.equal([BC_IDENTITY]);
   });
 
-  it('uses page Jarvis metadata when the link has no footer configuration', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
-    getMetadata.withArgs('foundation').returns('c2');
-    getMetadata.withArgs('jarvis-surface-id').returns('page-jarvis');
-    getMetadata.withArgs('jarvis-surface-version').returns('3.0');
-    document.querySelector('a').removeAttribute('data-jarvis-config');
-    await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
-    document.querySelector('a').click();
-    await waitFor(() => client.openMessagingWindow.called);
-    expect(openContexts).to.deep.equal([{ appid: 'page-jarvis', appver: '3.0' }]);
-    expect(client.reinitialize.called).to.be.false;
-  });
-
-  it('does not reuse footer configuration for a subsequent GNav link', async () => {
+  it('opens BC from links without any Jarvis configuration', async () => {
     getMetadata.withArgs('acom-assistant').returns('on');
     getMetadata.withArgs('foundation').returns('c2');
     document.body.insertAdjacentHTML('beforeend', '<nav><a href="#open-jarvis-chat">Message us</a></nav>');
-    await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
-    document.querySelector('.global-footer a').click();
-    await waitFor(() => client.openMessagingWindow.calledOnce);
-    document.querySelector('nav a').click();
-    await waitFor(() => client.openMessagingWindow.calledTwice);
-    expect(openContexts).to.deep.equal([
-      { appid: 'footer-jarvis', appver: '9.0' },
-      { appid: 'homepage_loggedout_default', appver: '2.0' },
-    ]);
-    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
-    expect(client.reinitialize.called).to.be.false;
-  });
-
-  it('uses BC context again on a subsequent BC open', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
-    getMetadata.withArgs('foundation').returns('c2');
-    await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
-    document.querySelector('a').click();
-    await waitFor(() => client.openMessagingWindow.called);
-    const { openAcomAssistantChat } = await import('../../../libs/features/acom-assistant.js');
-    await openAcomAssistantChat({ sourceType: 'button', sourceText: 'Ask' });
-    expect(openContexts).to.deep.equal([
-      { appid: 'footer-jarvis', appver: '9.0' },
-      { appid: 'bc-adobedotcom2', appver: '1.0' },
-    ]);
-    expect(client.initialize.called).to.be.false;
-    expect(client.reinitialize.called).to.be.false;
-  });
-
-  it('logs invalid footer configuration instead of opening BC', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
-    document.querySelector('a').setAttribute('data-jarvis-config', 'invalid JSON');
-    await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
-    document.querySelector('a').click();
-    await waitFor(() => window.lana.log.called);
-    expect(client.openMessagingWindow.called).to.be.false;
-  });
-
-  it('logs a missing Jarvis identity instead of opening BC', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
-    document.querySelector('a').removeAttribute('data-jarvis-config');
     await initChatLinks({}, loadScript, loadStyle, getMetadata);
-    document.querySelector('a').click();
-    await waitFor(() => window.lana.log.called);
-    expect(window.lana.log.firstCall.args[0]).to.include('requires a surface ID and version');
-    expect(client.openMessagingWindow.called).to.be.false;
+    document.querySelector('nav a').click();
+    await waitFor(() => client.openMessagingWindow.called);
+    expect(client.openMessagingWindow.calledOnceWith({ sourceType: 'a', sourceText: 'Message us' })).to.be.true;
+    expect(openContexts).to.deep.equal([BC_IDENTITY]);
+    expect(window.lana.log.called).to.be.false;
   });
 
   it('logs Assistant link failures without falling back to another client', async () => {
@@ -219,5 +164,15 @@ describe('Chat link startup selection', () => {
     expect(window.lana.log.firstCall.args[0]).to.include('open failed');
     expect(loadScript.called).to.be.false;
     expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
+  });
+
+  it('shares one initialization between C1 and C2 BC bootstraps', async () => {
+    const [c1, c2] = await Promise.all([
+      import('../../../libs/blocks/brand-concierge/acom-assistant-bootstrap.js'),
+      import('../../../libs/c2/blocks/brand-concierge/acom-assistant-bootstrap.js'),
+    ]);
+    await c2.ensureAcomAssistant();
+    await c1.ensureAcomAssistant();
+    expect(client.reinitialize.called).to.be.false;
   });
 });

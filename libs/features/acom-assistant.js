@@ -21,7 +21,6 @@ let resolvedClient = null;
 let mergedConfig = {};
 let isReady = false;
 let readyPromise = null;
-let nextOpenContext = null;
 let pendingReinitializeConfig = {};
 let reinitializePromise = null;
 let lifecycleError = null;
@@ -70,7 +69,6 @@ function checkClientResult(result, operation) {
 
 function startReadinessWait() {
   isReady = false;
-  nextOpenContext = null;
   readyGate = createReadinessGate('client readiness timed out');
   readyPromise = readyGate.promise;
 }
@@ -80,7 +78,6 @@ function failInitialization(error) {
   if (!lifecycleError) logError(failure);
   lifecycleError ||= failure;
   isReady = false;
-  nextOpenContext = null;
   pendingMessages.length = 0;
   readyGate.reject(failure);
 }
@@ -262,15 +259,8 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
-        getContextCallback: (...args) => {
-          const context = nextOpenContext;
-          nextOpenContext = null;
-          return {
-            ...(mergedConfig.callbacks?.getContextCallback?.(...args)
-              || { appid: mergedConfig.appid, appver: mergedConfig.appver }),
-            ...context,
-          };
-        },
+        getContextCallback: (...args) => mergedConfig.callbacks?.getContextCallback?.(...args)
+          || { appid: mergedConfig.appid, appver: mergedConfig.appver },
       },
     };
     try {
@@ -286,6 +276,19 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
   })();
 
   return clientPromise;
+}
+
+let bootstrapPromise = null;
+
+/** Initializes the client once per page for every BC entry point (C1 and C2 bootstraps).
+ *  Later callers reuse the first config instead of triggering reinitialize(), which the
+ *  SDK rejects once its UI has loaded. */
+export function initAcomAssistantOnce(config, deps) {
+  bootstrapPromise ||= loadAcomAssistant(config, deps).catch((error) => {
+    bootstrapPromise = null;
+    throw error;
+  });
+  return bootstrapPromise;
 }
 
 /** Synchronous access to the client once resolved -- null before then. Useful for
@@ -310,19 +313,12 @@ export async function getAcomAssistantPrompts() {
   return client ? client.getPrompts() : null;
 }
 
-/** Supplies an optional entry-point context for the next SDK context callback,
- * without changing the initialized BC configuration or reinitializing. */
-export async function openAcomAssistantChat(sourceInfo, context = null) {
+/** Opens the initialized BC experience. Every entry point uses the same BC identity. */
+export async function openAcomAssistantChat(sourceInfo) {
   const client = await clientPromise;
   if (!client) return;
   await readyPromise;
   await reinitializePromise;
   if (lifecycleError) throw lifecycleError;
-  nextOpenContext = context;
-  try {
-    await client.openMessagingWindow(sourceInfo);
-  } catch (error) {
-    if (nextOpenContext === context) nextOpenContext = null;
-    throw error;
-  }
+  await client.openMessagingWindow(sourceInfo);
 }
