@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import {
-  getLocale, loadArea, setConfig, updateConfig, getConfig, localizeLinkAsync, registerMediaUrl,
+  getLocale, loadArea, setConfig, updateConfig, getConfig, localizeLinkAsync, createTag,
 } from '../../../libs/utils/utils.js';
 import {
   getLocaleCodeFromPrefix,
@@ -196,57 +196,138 @@ describe('Fragments', () => {
     expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
   });
 
-  it('Reuses a registered page media URL instead of rebasing to the fragment path', () => {
+  describe('Fragment media dedupe', () => {
     const query = '?width=750&format=webply&optimize=medium';
-    const pageHref = `${window.location.origin}/products/media_15abc.png${query}`;
-    registerMediaUrl(pageHref);
-    const fragDoc = new DOMParser().parseFromString(`<picture><source srcset="./media_15abc.png${query}"><img src="./media_15abc.png${query}"></picture>`, 'text/html');
-    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
-    expect(fragDoc.querySelector('source').getAttribute('srcset')).to.equal(pageHref);
-    expect(fragDoc.querySelector('img').getAttribute('src')).to.equal(pageHref);
-  });
+    const fragPath = '/cc-shared/fragments/some/frag';
+    const fragMedia = (name) => `${window.location.origin}/cc-shared/fragments/some/${name}`;
+    const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
+    let pageEl;
+    let timing;
 
-  it('Does not reuse a registered media URL with a different query', () => {
-    registerMediaUrl('/products/media_16query.png?width=2000&format=webply&optimize=medium');
-    const fragDoc = new DOMParser().parseFromString('<img src="./media_16query.png?width=750&format=webply&optimize=medium">', 'text/html');
-    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
-    const { src } = fragDoc.querySelector('img');
-    expect(src).to.include('/cc-shared/fragments/some/media_16query.png');
-    expect(src).to.include('width=750');
-  });
+    beforeEach(() => {
+      timing = stub(performance, 'getEntriesByType').returns([]);
+    });
 
-  it('Rebases media to the fragment path when nothing is registered', () => {
-    const fragDoc = new DOMParser().parseFromString('<img src="./media_9nomatch.png?width=750">', 'text/html');
-    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
-    expect(fragDoc.querySelector('img').getAttribute('src')).to.equal(`${window.location.origin}/cc-shared/fragments/some/media_9nomatch.png?width=750`);
-  });
+    afterEach(() => {
+      timing.restore();
+      pageEl?.remove();
+      pageEl = null;
+    });
 
-  it('Reuses media from an earlier fragment in a later fragment', () => {
-    const ref = './media_17shared.png?width=750';
-    const firstDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
-    replaceDotMedia('/cc-shared/fragments/first/frag', firstDoc);
-    const secondDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
-    replaceDotMedia('/cc-shared/fragments/second/frag', secondDoc);
-    expect(secondDoc.querySelector('img').getAttribute('src')).to.equal(firstDoc.querySelector('img').getAttribute('src'));
-    expect(secondDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/first/');
-  });
+    it('reuses media the page references instead of rebasing to the fragment path', () => {
+      pageEl = createTag('div', {}, `<picture><source srcset="/products/media_15abc.png${query}"><img src="/products/media_15abc.png${query}" loading="lazy"></picture>`);
+      document.body.append(pageEl);
+      const doc = parse(`<picture><source srcset="./media_15abc.png${query}"><img src="./media_15abc.png${query}"></picture>`);
+      replaceDotMedia(fragPath, doc);
+      const pageHref = `${window.location.origin}/products/media_15abc.png${query}`;
+      expect(doc.querySelector('source').getAttribute('srcset')).to.equal(pageHref);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
+    });
 
-  it('Does not reuse registered media from a different origin', () => {
-    const ref = './media_8foreign.png?width=750';
-    registerMediaUrl(`https://other.example.com/x/${ref.slice(2)}`);
-    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
-    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
-    const { src } = fragDoc.querySelector('img');
-    expect(new URL(src).origin).to.equal(window.location.origin);
-    expect(src).to.include('/cc-shared/fragments/some/media_8foreign.png');
-  });
+    it('reuses media from Resource Timing when the page element is gone', () => {
+      const pageHref = `${window.location.origin}/products/media_16rt.png${query}`;
+      timing.returns([{ name: pageHref, responseStatus: 200 }]);
+      const doc = parse(`<img src="./media_16rt.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
+    });
 
-  it('Ignores malformed and multi-candidate media URLs', () => {
-    expect(() => registerMediaUrl('https://%/media_bad.png')).to.not.throw();
-    expect(() => registerMediaUrl('./media_18a.png 1x, ./media_18b.png 2x')).to.not.throw();
-    const fragDoc = new DOMParser().parseFromString('<img src="./media_18a.png">', 'text/html');
-    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
-    expect(fragDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/some/media_18a.png');
+    it('reuses Resource Timing entries without a responseStatus', () => {
+      const pageHref = `${window.location.origin}/products/media_16nostatus.png${query}`;
+      timing.returns([{ name: pageHref }]);
+      const doc = parse(`<img src="./media_16nostatus.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
+    });
+
+    it('reuses media MEP handed off from the replaced element', () => {
+      const doc = parse(`<img src="./media_16mep.png${query}">`);
+      replaceDotMedia(fragPath, doc, JSON.stringify([`./media_16mep.png${query}`]));
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(new URL(`./media_16mep.png${query}`, window.location).href);
+    });
+
+    it('ignores a malformed MEP handoff', () => {
+      const doc = parse(`<img src="./media_16badmep.png${query}">`);
+      expect(() => replaceDotMedia(fragPath, doc, '{not json')).to.not.throw();
+      expect(() => replaceDotMedia(fragPath, parse('<img src="./media_16badmep.png">'), '[1, null, {}]')).to.not.throw();
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_16badmep.png${query}`));
+    });
+
+    it('passes the MEP handoff from the fragment link through init', async () => {
+      const pageHref = new URL('/products/media_15.png?width=750&format=png&optimize=medium', window.location).href;
+      const a = createTag('a', { href: '/test/blocks/fragment/mocks/fragments/media', 'data-mep-media': JSON.stringify([pageHref]) });
+      pageEl = createTag('div', {}, a);
+      document.body.append(pageEl);
+      await getFragment(a);
+      expect(pageEl.querySelector(`img[src="${pageHref}"]`)).to.exist;
+    });
+
+    it('does not reuse failed downloads', () => {
+      timing.returns([{ name: `${window.location.origin}/products/media_17fail.png${query}`, responseStatus: 404 }]);
+      const doc = parse(`<img src="./media_17fail.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_17fail.png${query}`));
+    });
+
+    it('does not reuse a page source whose download failed', () => {
+      const pageHref = `${window.location.origin}/products/media_17srcfail.png${query}`;
+      pageEl = createTag('picture', {}, `<source srcset="${pageHref}">`);
+      document.body.append(pageEl);
+      timing.returns([{ name: pageHref, responseStatus: 404 }]);
+      const doc = parse(`<img src="./media_17srcfail.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_17srcfail.png${query}`));
+    });
+
+    it('skips the page scan when the MEP handoff covers every fragment media', () => {
+      const qsa = stub(document, 'querySelectorAll').callThrough();
+      const doc = parse(`<img src="./media_16cover.png${query}">`);
+      replaceDotMedia(fragPath, doc, JSON.stringify([`/products/media_16cover.png${query}`]));
+      expect(qsa.called).to.be.false;
+      qsa.restore();
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(`${window.location.origin}/products/media_16cover.png${query}`);
+    });
+
+    it('does not reuse a broken page image', async () => {
+      pageEl = createTag('img', { src: '/does-not-exist/media_17broken.png' });
+      await new Promise((resolve) => {
+        pageEl.addEventListener('error', resolve, { once: true });
+        document.body.append(pageEl);
+      });
+      const doc = parse('<img src="./media_17broken.png">');
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia('media_17broken.png'));
+    });
+
+    it('does not reuse media with a different query', () => {
+      timing.returns([{ name: `${window.location.origin}/products/media_18q.png?width=2000&format=webply&optimize=medium`, responseStatus: 200 }]);
+      const doc = parse(`<img src="./media_18q.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_18q.png${query}`));
+    });
+
+    it('does not reuse media from a different origin', () => {
+      timing.returns([{ name: `https://other.example.com/x/media_19foreign.png${query}`, responseStatus: 200 }]);
+      const doc = parse(`<img src="./media_19foreign.png${query}">`);
+      replaceDotMedia(fragPath, doc);
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_19foreign.png${query}`));
+    });
+
+    it('ignores malformed and multi-candidate URLs without throwing', () => {
+      timing.returns([{ name: 'https://%/media_20bad.png', responseStatus: 200 }]);
+      pageEl = createTag('picture', {}, '<source srcset="/products/media_20a.png 1x, /products/media_20b.png 2x">');
+      document.body.append(pageEl);
+      const doc = parse('<img src="./media_20a.png"><img src="./media_20bad.png"><source srcset="./media_20a.png 1x, ./media_20b.png 2x">');
+      expect(() => replaceDotMedia(fragPath, doc)).to.not.throw();
+      const [a, bad] = doc.querySelectorAll('img');
+      expect(a.getAttribute('src')).to.equal(fragMedia('media_20a.png'));
+      expect(bad.getAttribute('src')).to.equal(fragMedia('media_20bad.png'));
+    });
+
+    it('does not scan the page when the fragment has no media', () => {
+      replaceDotMedia(fragPath, parse('<p>no media</p>'));
+      expect(timing.called).to.be.false;
+    });
   });
 
   it('"decorated" class added by decorateArea()', async () => {

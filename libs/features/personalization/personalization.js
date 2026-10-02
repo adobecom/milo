@@ -226,6 +226,14 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
+  if (action === 'replace') {
+    // The replaced media may still be downloading; let the fragment reuse those URLs.
+    const mediaSel = 'img[src*="media_"], source[srcset*="media_"]';
+    const media = [el, ...el.querySelectorAll(mediaSel)]
+      .filter((m) => m.matches(mediaSel))
+      .map((m) => m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset'));
+    if (media.length) a.dataset.mepMedia = JSON.stringify(media);
+  }
   let containerType = 'other';
   const parent = el.parentElement;
   const grandParent = el.parentElement?.parentElement;

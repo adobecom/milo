@@ -719,6 +719,39 @@ describe('matchGlob function', () => {
     wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
     expect(anchor.closest('.hide-block')).to.not.be.null;
   });
+  it('hands the replaced element\'s media to the fragment link', async () => {
+    const parent = document.createElement('div');
+    const el = document.createElement('div');
+    el.innerHTML = '<picture><source srcset="./media_1a.png?width=750"><source srcset="./media_1a.png?width=2000 1x"><img src="./media_1a.png?width=750"></picture><img src="/other.png">';
+    parent.appendChild(el);
+    const wrapper = await createContent(el, {
+      content: '/fragments/marquee',
+      manifestId: 'manifest',
+      targetManifestId: '',
+      action: 'replace',
+      modifiers: [],
+    });
+    const a = wrapper.querySelector('a') || wrapper;
+    expect(JSON.parse(a.dataset.mepMedia)).to.deep.equal([
+      './media_1a.png?width=750',
+      './media_1a.png?width=2000 1x',
+      './media_1a.png?width=750',
+    ]);
+  });
+
+  it('does not add a media handoff for non-replace actions or elements without media', async () => {
+    const parent = document.createElement('div');
+    const el = document.createElement('div');
+    el.innerHTML = '<img src="./media_1b.png">';
+    parent.appendChild(el);
+    const insert = await createContent(el, { content: '/fragments/a', manifestId: 'm', targetManifestId: '', action: 'insertafter', modifiers: [] });
+    expect((insert.querySelector('a') || insert).dataset.mepMedia).to.be.undefined;
+    const noMediaParent = document.createElement('div');
+    const noMedia = document.createElement('div');
+    noMediaParent.appendChild(noMedia);
+    const replace = await createContent(noMedia, { content: '/fragments/b', manifestId: 'm', targetManifestId: '', action: 'replace', modifiers: [] });
+    expect((replace.querySelector('a') || replace).dataset.mepMedia).to.be.undefined;
+  });
 });
 
 describe('MEP Utils', () => {
