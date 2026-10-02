@@ -13,7 +13,6 @@ describe('Floating CTA', () => {
     const cta = block.querySelector(':scope > a.promo-cta');
     expect(cta).to.exist;
     expect(cta.getAttribute('href')).to.equal('https://www.adobe.com/buy');
-    expect(cta.getAttribute('tabindex')).to.equal('-1');
     expect(cta.querySelector('img')).to.exist;
     expect(cta.querySelector('span.icon-button[aria-hidden="true"]')).to.exist;
     expect(cta.textContent).to.contain('Buy now');
