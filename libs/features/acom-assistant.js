@@ -147,7 +147,8 @@ async function getAutoDefaults() {
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
-    cookiesEnabled: window.adobePrivacy?.activeCookieGroups()?.length > 1,
+    // Match BC's own consent gate (bc-utils handleConsent): functional cookies (C0002).
+    cookiesEnabled: !!window.adobePrivacy?.activeCookieGroups()?.includes('C0002'),
     cookies: { mcid: await getEcid() },
     loadedVia: 'milo',
   };

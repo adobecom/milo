@@ -298,6 +298,28 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(client.openMessagingWindow.called).to.be.false;
   });
 
+  it('enables cookies only when functional cookies (C0002) are active', async () => {
+    const originalPrivacy = window.adobePrivacy;
+    window.adobePrivacy = { activeCookieGroups: () => ['C0001', 'C0003'] };
+    try {
+      await start();
+      expect(client.initialize.firstCall.args[0].cookiesEnabled).to.be.false;
+    } finally {
+      window.adobePrivacy = originalPrivacy;
+    }
+  });
+
+  it('enables cookies when C0002 is active', async () => {
+    const originalPrivacy = window.adobePrivacy;
+    window.adobePrivacy = { activeCookieGroups: () => ['C0001', 'C0002'] };
+    try {
+      await start();
+      expect(client.initialize.firstCall.args[0].cookiesEnabled).to.be.true;
+    } finally {
+      window.adobePrivacy = originalPrivacy;
+    }
+  });
+
   it('reports the initialized BC surface identity', async () => {
     await assistant.loadAcomAssistant({
       appid: 'bc-adobedotcom2',
