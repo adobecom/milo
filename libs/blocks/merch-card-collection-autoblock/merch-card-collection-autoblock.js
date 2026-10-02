@@ -131,6 +131,7 @@ function generateCheckboxGroups(checkboxGroups) {
 // SWC sidenav. Both write the active filters to the URL hash; the collection
 // re-filters via its own hashchange listener.
 const SLIDERS_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6M12 4h2M2 8h2M8 8h6M2 12h6M12 12h2" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/><circle cx="6" cy="8" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/></svg>';
+const CHEVRON_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
 const CLOSE_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg>';
 const SEARCH_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.5"/></svg>';
 
@@ -273,10 +274,20 @@ export function barGroups(groups) {
   return groups.filter((group) => !group.optional);
 }
 
-// Sections do not collapse (MWPW-205571). Optional groups get role=group
-// because their pills are checkboxes, not radios.
+// Sections collapse on mobile only. The toggle is display:none above it, so
+// desktop gets a plain heading. Optional groups get role=group because their
+// pills are checkboxes, not radios.
 function buildGroupCard(group) {
-  const header = createTag('h3', { class: 'product-pricing-group-header' }, group.title);
+  const toggle = createTag('button', {
+    class: 'product-pricing-group-toggle',
+    type: 'button',
+    'aria-expanded': 'true',
+    'aria-label': group.title,
+  }, svgIcon(CHEVRON_ICON));
+  toggle.addEventListener('click', () => {
+    toggle.setAttribute('aria-expanded', String(toggle.getAttribute('aria-expanded') !== 'true'));
+  });
+  const header = createTag('h3', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), toggle]);
   const bodyAttrs = {
     class: `product-pricing-group-pills${group.category ? ' product-pricing-group-pills-scroll' : ''}`,
     role: group.optional ? 'group' : 'radiogroup',
@@ -308,6 +319,13 @@ function buildProductPricingDrawer(collection, groups) {
   return { root, closeBtn, reset, applied, results };
 }
 
+// One page = the row minus both fades, so the pill under the far fade lands
+// just past the near one and nothing is skipped. Floor of half the row keeps
+// a narrow row moving.
+export function pageStep(rowWidth, fadeWidth) {
+  return Math.max(rowWidth - 2 * fadeWidth, rowWidth / 2);
+}
+
 function buildProductPricingBar(collection, groups) {
   const { placeholders = {} } = collection.data;
 
@@ -328,7 +346,24 @@ function buildProductPricingBar(collection, groups) {
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
-  const row = createTag('div', { class: 'product-pricing-filter-row' }, [pills]);
+  // Mobile-only, over the edge fades, so a tap there pages the row instead of
+  // hitting the half-hidden pill under it. Pointer-only: keyboard focus
+  // already scrolls each pill into view.
+  // ponytail: LTR only, flip the sign and chevrons if an RTL locale ships this.
+  const scrollButton = (dir) => {
+    const button = createTag('button', {
+      class: `product-pricing-filter-scroll product-pricing-filter-scroll-${dir}`,
+      type: 'button',
+      tabindex: '-1',
+      'aria-hidden': 'true',
+    });
+    button.addEventListener('click', () => {
+      const step = pageStep(pills.clientWidth, button.offsetWidth);
+      pills.scrollBy({ left: dir === 'next' ? step : -step });
+    });
+    return button;
+  };
+  const row = createTag('div', { class: 'product-pricing-filter-row' }, [scrollButton('prev'), pills, scrollButton('next')]);
 
   const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText });
   const search = createTag('div', { class: 'product-pricing-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);

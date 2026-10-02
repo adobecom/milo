@@ -11,6 +11,7 @@ import init, {
   emptyResultsMarkup,
   filterBarLabels,
   resetParams,
+  pageStep,
   defaultParams,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
@@ -578,6 +579,13 @@ describe('merch-card-collection autoblock', () => {
     });
   });
 
+  describe('pageStep', () => {
+    it('scrolls the row minus both fades, at least half the row', () => {
+      expect(pageStep(375, 80)).to.equal(215);
+      expect(pageStep(200, 80)).to.equal(100);
+    });
+  });
+
   describe('mountProductPricingFilter', () => {
     const data = {
       placeholders: {
@@ -654,6 +662,27 @@ describe('merch-card-collection autoblock', () => {
       expect(container.querySelector('.product-pricing-drawer details, .product-pricing-drawer summary')).to.equal(null);
       const scrollers = [...container.querySelectorAll('.product-pricing-group-pills-scroll')];
       expect(scrollers.map((el) => el.getAttribute('aria-label'))).to.deep.equal(['Category']);
+    });
+
+    it('collapses and expands a drawer section from its toggle', () => {
+      const { container } = mount();
+      const toggle = container.querySelector('.product-pricing-group-toggle');
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('false');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('pages the pill row from the edge buttons', () => {
+      const { container } = mount();
+      const pills = container.querySelector('.product-pricing-filter-pills');
+      const scrollBy = sinon.stub(pills, 'scrollBy');
+      container.querySelector('.product-pricing-filter-scroll-next').click();
+      container.querySelector('.product-pricing-filter-scroll-prev').click();
+      const [next, prev] = scrollBy.args.map(([opts]) => opts.left);
+      expect(next).to.equal(-prev);
+      expect(scrollBy.calledTwice).to.be.true;
     });
 
     it('mounts once per collection', () => {

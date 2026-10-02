@@ -11,14 +11,14 @@
 
 .product-pricing-filter-row {
   display: flex;
-  position: relative; /* anchors the scroll-affordance pseudos */
+  position: relative; /* anchors the edge scroll buttons */
   align-items: center;
   gap: 8px;
   flex: 1;
   min-width: 0;
   height: 40px;
 
-  /* Lets the row's pseudos read the scroller's progress (it is a descendant). */
+  /* Lets the edge buttons read the scroller progress (they are siblings). */
   timeline-scope: --pp-pills;
 }
 
@@ -53,8 +53,12 @@
   flex: 1;
   min-width: 0;
   overflow-x: auto;
+  scroll-behavior: smooth;
   scroll-timeline: --pp-pills inline;
 }
+
+.product-pricing-filter-scroll,
+.product-pricing-group-toggle { display: none; }
 
 .product-pricing-filter-group {
   display: flex;
@@ -290,29 +294,32 @@
 @media (width < 600px) {
   .product-pricing-drawer { width: 100%; }
 
-  /* Fade + chevron mark the pill row as scrollable. Decoration only: swipe and
-     arrow keys already scroll it. Nothing to tab to. */
-  .product-pricing-filter-row::before,
-  .product-pricing-filter-row::after {
-    content: '';
+  /* Fade + chevron mark the pill row as scrollable, and a tap on either edge
+     pages the row. Swipe still works. Hidden edges must not catch taps, so the
+     fade toggles visibility along with opacity. */
+  .product-pricing-filter-scroll {
+    display: block;
     position: absolute;
     z-index: 1; /* the pills are position:relative, so they'd paint over these */
     top: 0;
     width: 80px;
     height: 40px;
-    pointer-events: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
   }
 
   /* Sections on a non-white background override --pp-fade-color. */
-  .product-pricing-filter-row::before {
+  .product-pricing-filter-scroll-prev {
     left: 0;
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat left 24px center / 20px 20px,
       linear-gradient(to left, transparent, var(--pp-fade-color, #fff) 70%);
     opacity: 0; /* nothing scrolled past yet */
+    visibility: hidden;
   }
 
-  .product-pricing-filter-row::after {
+  .product-pricing-filter-scroll-next {
     right: 0;
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
@@ -324,15 +331,14 @@
      would run on a time timeline; the unanimated state above is the static
      right-only fade. */
   @supports (animation-timeline: scroll()) {
-    .product-pricing-filter-row::before,
-    .product-pricing-filter-row::after {
+    .product-pricing-filter-scroll {
       animation: pp-edge-fade both linear;
       animation-timeline: --pp-pills;
     }
 
-    .product-pricing-filter-row::before { animation-range: 0 40px; }
+    .product-pricing-filter-scroll-prev { animation-range: 0 40px; }
 
-    .product-pricing-filter-row::after {
+    .product-pricing-filter-scroll-next {
       animation-direction: reverse;
       animation-range: calc(100% - 40px) 100%;
     }
@@ -344,14 +350,46 @@
     letter-spacing: -0.48px;
   }
 
+  /* Sections collapse on mobile only. The toggle covers the whole header so
+     the tap target is the full row. */
+  .product-pricing-group-header { position: relative; }
+
+  .product-pricing-group-toggle {
+    display: block;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    line-height: 0;
+    cursor: pointer;
+  }
+
+  .product-pricing-group-toggle::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .product-pricing-group-toggle .product-pricing-icon svg { transition: transform 0.2s ease; }
+  .product-pricing-group-toggle[aria-expanded='false'] .product-pricing-icon svg { transform: rotate(-90deg); }
+  .product-pricing-group:has([aria-expanded='false']) .product-pricing-group-header { margin-bottom: 0; }
+  .product-pricing-group:has([aria-expanded='false']) .product-pricing-group-pills { display: none; }
+
   .product-pricing-drawer-header { padding: 8px 24px 24px; }
   .product-pricing-drawer-subrow { padding: 0 24px 24px; }
 }
 
 /* 0 → 1 across the range; the right edge reverses it. */
 @keyframes pp-edge-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 @media (width >= 2560px) {
@@ -360,6 +398,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .product-pricing-drawer[open] { animation: none; }
+  .product-pricing-filter-pills { scroll-behavior: auto; }
 }
 
 /* The EDU card is a `pro` card inside a product-pricing collection. MAS already
