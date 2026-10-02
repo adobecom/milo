@@ -82,6 +82,29 @@ describe('C1 global navigation Assistant opt-in', () => {
     expect(document.querySelector('header.local-nav #acomAssistant-gnav-mount')).to.exist;
   });
 
+  ['desktop', 'mobile'].forEach((viewport) => {
+    it(`centers the Assistant mount without authored block styles on ${viewport}`, async () => {
+      await createFullGlobalNavigation({
+        viewport,
+        globalNavigation: localNavigationMock,
+        imsInitialized: true,
+      });
+      const mount = document.querySelector('#acomAssistant-gnav-mount');
+      const wrapper = mount.closest('.feds-bc-wrapper');
+      const topNav = mount.closest('nav');
+      const mountRect = mount.getBoundingClientRect();
+      const navRect = topNav.getBoundingClientRect();
+
+      expect(getComputedStyle(wrapper).display).to.equal('flex');
+      expect(getComputedStyle(wrapper).alignItems).to.equal('center');
+      expect(getComputedStyle(wrapper).paddingInlineStart).to.equal('8px');
+      expect(mountRect.height).to.equal(40);
+      expect(Math.abs((mountRect.top + mountRect.height / 2)
+        - (navRect.top + navRect.height / 2))).to.be.lessThan(1);
+      expect(document.querySelector('link[href*="brand-concierge-global.css"]')).to.be.null;
+    });
+  });
+
   it('enables Assistant through metadata alone', async () => {
     window.history.replaceState(null, '', window.location.pathname);
     document.head.insertAdjacentHTML('beforeend', '<meta name="acom-assistant" content="on">');
