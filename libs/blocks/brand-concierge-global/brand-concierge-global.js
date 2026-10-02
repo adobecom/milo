@@ -69,9 +69,9 @@ function promptUp() {
   stayActive = false;
 }
 
-function decorateAcomGnav(cards, topNav) {
+export function decorateNavWithAssistant(cards, topNav) {
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  if (!bcWrapper) return;
+  if (!bcWrapper || bcWrapper.querySelector('#acomAssistant-gnav-mount')) return;
 
   // Per the wiki, the client discovers this mount point and builds its own GNav
   // icon/expanded-input/minimized states into it
@@ -93,7 +93,7 @@ function decorateAcomGnav(cards, topNav) {
 
 function decorateGnav(cards, input, topNav, el) {
   if (useAcomAssistant) {
-    decorateAcomGnav(cards, topNav);
+    decorateNavWithAssistant(cards, topNav);
     return;
   }
 

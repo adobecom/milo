@@ -26,6 +26,8 @@ export async function ensureAcomAssistant(cards) {
     appid,
     appver,
     componentid: 'brand-concierge',
+    pageTitle: getMetadata('og:title') || undefined,
+    pageDescription: getMetadata('og:description') || undefined,
     context: { prompts: extractCardPrompts(cards) },
     callbacks: { analyticsCallback: acomAssistantAnalyticsAdapter },
   }, { loadScript, loadStyle });
