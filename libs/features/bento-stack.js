@@ -1,3 +1,5 @@
+import { isZoomed } from '../utils/zoom-detect.js';
+
 const MOBILE = '(width < 768px)';
 
 export function getCards(section) {
@@ -32,12 +34,15 @@ function measure(section, cards) {
   const gnav = document.querySelector('header.global-navigation nav');
   const bottom = gnav?.getBoundingClientRect().bottom;
   if (bottom > 0) section.style.setProperty('--gnav-offset', `${Math.round(bottom)}px`);
+
+  section.classList.toggle('bento-stack-zoomed', isZoomed());
 }
 
 function clearMeasurements(section) {
   section.style.removeProperty('--card-height');
   section.style.removeProperty('--title-height');
   section.style.removeProperty('--gnav-offset');
+  section.classList.remove('bento-stack-zoomed');
 }
 
 export function contentReady(cards) {
@@ -77,6 +82,7 @@ export default function initBentoStack(section) {
       if (!section.isConnected) {
         ro?.disconnect();
         mq.removeEventListener('change', update);
+        window.removeEventListener('resize', update);
         return;
       }
       // (clearing/setting --card-height resizes the observed content).
@@ -97,5 +103,7 @@ export default function initBentoStack(section) {
     const title = section.querySelector(':scope > .rich-content');
     if (title) ro.observe(title);
     mq.addEventListener('change', update);
+    // Zoom can resize without crossing the MOBILE breakpoint, so re-check isZoomed() on resize.
+    window.addEventListener('resize', update);
   });
 }

@@ -752,3 +752,35 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
   .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
 }
+
+/* Desktop zoom (detected by isZoomed() in bento-stack.js): use the static fallback layout.
+   4-class selectors outrank the animated rule's zero-specificity :where(.bento-stack-ready). */
+@media (width < 768px) {
+  .section.bento.stack-mobile.bento-stack-zoomed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--title-card-gap, 24px);
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .rich-content {
+    position: static;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile.bento-stack-zoomed > .explore-card .explore-card-content::after { content: none; }
+}
