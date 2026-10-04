@@ -20,9 +20,6 @@
   flex: 1;
   min-width: 0;
   height: 40px;
-
-  /* Lets the edge buttons read the scroller progress (they are siblings). */
-  timeline-scope: --pp-pills;
 }
 
 .product-pricing-filter-trigger {
@@ -57,7 +54,6 @@
   min-width: 0;
   overflow-x: auto;
   scroll-behavior: smooth;
-  scroll-timeline: --pp-pills inline;
 }
 
 .product-pricing-filter-group {
@@ -287,8 +283,9 @@
 }
 
 /* Fade + chevron mark the pill row as scrollable at any width, and a tap on
-   either edge pages the row. Swipe still works. Hidden edges must not catch
-   taps, so the fade toggles visibility along with opacity. */
+   either edge pages the row. Swipe still works. JS sets data-active while
+   there is content past that edge. Hidden edges must not catch taps, so the
+   fade toggles visibility along with opacity. */
 .product-pricing-filter-scroll {
   position: absolute;
   z-index: 1; /* the pills are position:relative, so they'd paint over these */
@@ -300,6 +297,12 @@
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s;
+}
+
+.product-pricing-filter-scroll[data-active] {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Sections on a non-white background override --pp-fade-color. */
@@ -315,26 +318,6 @@
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
     linear-gradient(to right, transparent, var(--pp-fade-color, #fff) 70%);
-}
-
-/* Each edge shows only while there is content past it: left once scrolled,
-   right until the end. A row that fits has no scroll range, so its timeline
-   is inactive and both edges keep the hidden base style. Guarded because
-   without scroll-timeline support these would run on a time timeline.
-   ponytail: no arrows where scroll-timeline is missing (Firefox today); the
-   row still scrolls natively. A ResizeObserver flag covers it if needed. */
-@supports (animation-timeline: scroll()) {
-  .product-pricing-filter-scroll {
-    animation: pp-edge-fade both linear;
-    animation-timeline: --pp-pills;
-  }
-
-  .product-pricing-filter-scroll-prev { animation-range: 0 40px; }
-
-  .product-pricing-filter-scroll-next {
-    animation-direction: reverse;
-    animation-range: calc(100% - 40px) 100%;
-  }
 }
 
 /* Tablet up centres both rows. */
@@ -381,19 +364,6 @@
   .product-pricing-drawer-subrow { padding: 0 24px 24px; }
 }
 
-/* 0 → 1 across the range; the right edge reverses it. */
-@keyframes pp-edge-fade {
-  from {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  to {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
 /* xl: Figma's 2560 frame gives the bar 1920px. Keyed on the bar, not the
    viewport, so a capped container keeps room for the pills. */
 /* stylelint-disable-next-line at-rule-no-unknown */
@@ -404,6 +374,7 @@
 @media (prefers-reduced-motion: reduce) {
   .product-pricing-drawer[open] { animation: none; }
   .product-pricing-filter-pills { scroll-behavior: auto; }
+  .product-pricing-filter-scroll { transition: none; }
 }
 
 /* The EDU card is a `pro` card inside a product-pricing collection. MAS already

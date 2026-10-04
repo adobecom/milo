@@ -326,6 +326,12 @@ export function pageStep(rowWidth, fadeWidth) {
   return Math.max(rowWidth - 2 * fadeWidth, rowWidth / 2);
 }
 
+// Which edges have content past them. 1px slack absorbs subpixel widths, so a
+// row that fits never shows an arrow.
+export function scrollEdges({ scrollLeft, scrollWidth, clientWidth }) {
+  return { prev: scrollLeft > 1, next: scrollLeft + clientWidth < scrollWidth - 1 };
+}
+
 function buildProductPricingBar(collection, groups) {
   const { placeholders = {} } = collection.data;
 
@@ -346,8 +352,8 @@ function buildProductPricingBar(collection, groups) {
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
-  // Over the edge fades, shown only while the row overflows, so a tap there
-  // pages the row instead of hitting the half-hidden pill under it.
+  // Over the edge fades, shown only while there is content past that edge, so
+  // a tap there pages the row instead of hitting the half-hidden pill under it.
   // Pointer-only: keyboard focus already scrolls each pill into view.
   // ponytail: LTR only, flip the sign and chevrons if an RTL locale ships this.
   const scrollButton = (dir) => {
@@ -363,7 +369,19 @@ function buildProductPricingBar(collection, groups) {
     });
     return button;
   };
-  const row = createTag('div', { class: 'product-pricing-filter-row' }, [scrollButton('prev'), pills, scrollButton('next')]);
+  const prev = scrollButton('prev');
+  const next = scrollButton('next');
+  const updateEdges = () => {
+    const edges = scrollEdges(pills);
+    prev.toggleAttribute('data-active', edges.prev);
+    next.toggleAttribute('data-active', edges.next);
+  };
+  pills.addEventListener('scroll', updateEdges, { passive: true });
+  // The row resizes with the viewport; the groups resize when the active
+  // category pill changes. Either can start or end the overflow.
+  const resize = new ResizeObserver(updateEdges);
+  [pills, ...pills.children].forEach((el) => resize.observe(el));
+  const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
 
   const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText });
   const search = createTag('div', { class: 'product-pricing-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);

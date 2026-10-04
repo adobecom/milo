@@ -12,6 +12,7 @@ import init, {
   filterBarLabels,
   resetParams,
   pageStep,
+  scrollEdges,
   defaultParams,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
@@ -586,6 +587,23 @@ describe('merch-card-collection autoblock', () => {
     });
   });
 
+  describe('scrollEdges', () => {
+    const edges = (scrollLeft, scrollWidth, clientWidth) => scrollEdges(
+      { scrollLeft, scrollWidth, clientWidth },
+    );
+    it('shows only the edges with content past them', () => {
+      expect(edges(0, 800, 300)).to.deep.equal({ prev: false, next: true });
+      expect(edges(200, 800, 300)).to.deep.equal({ prev: true, next: true });
+      expect(edges(500, 800, 300)).to.deep.equal({ prev: true, next: false });
+    });
+
+    it('shows neither edge when the row fits, even after a scroll left it offset', () => {
+      expect(edges(0, 799, 799)).to.deep.equal({ prev: false, next: false });
+      // Subpixel widths can leave a 1px gap.
+      expect(edges(0, 800.5, 799.6)).to.deep.equal({ prev: false, next: false });
+    });
+  });
+
   describe('mountProductPricingFilter', () => {
     const data = {
       placeholders: {
@@ -671,6 +689,22 @@ describe('merch-card-collection autoblock', () => {
       expect(toggle.getAttribute('aria-expanded')).to.equal('false');
       toggle.click();
       expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('flags the edge buttons from the row overflow', async () => {
+      const { container } = mount();
+      const pills = container.querySelector('.product-pricing-filter-pills');
+      const [prev, next] = ['prev', 'next'].map((d) => container.querySelector(`.product-pricing-filter-scroll-${d}`));
+      pills.style.cssText = 'display:flex;overflow-x:auto;width:100px;scroll-behavior:auto';
+      await delay(50);
+      expect([prev.hasAttribute('data-active'), next.hasAttribute('data-active')]).to.deep.equal([false, true]);
+      pills.scrollLeft = 40;
+      await delay(50);
+      expect(prev.hasAttribute('data-active')).to.be.true;
+      // Widening until it fits clears both, which the CSS timeline could not.
+      pills.style.width = '2000px';
+      await delay(50);
+      expect([prev.hasAttribute('data-active'), next.hasAttribute('data-active')]).to.deep.equal([false, false]);
     });
 
     it('pages the pill row from the edge buttons', () => {
