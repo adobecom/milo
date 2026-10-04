@@ -347,8 +347,8 @@ function buildProductPricingBar(collection, groups) {
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
   // Over the edge fades, shown only while the row overflows, so a tap there
-  // pages the row instead of hitting the half-hidden pill under it. Pointer-only: keyboard focus
-  // already scrolls each pill into view.
+  // pages the row instead of hitting the half-hidden pill under it.
+  // Pointer-only: keyboard focus already scrolls each pill into view.
   // ponytail: LTR only, flip the sign and chevrons if an RTL locale ships this.
   const scrollButton = (dir) => {
     const button = createTag('button', {
