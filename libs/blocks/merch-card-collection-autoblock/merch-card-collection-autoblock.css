@@ -208,6 +208,7 @@
   position: relative; /* contains the absolute input, or it escapes the scroller */
   align-items: center;
   align-self: flex-start;
+  flex: none; /* a capped-height column would squash it instead of scrolling */
   height: 40px;
   padding: 0 24px;
   border-radius: 75px;
