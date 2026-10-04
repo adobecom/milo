@@ -60,7 +60,6 @@
   scroll-timeline: --pp-pills inline;
 }
 
-.product-pricing-filter-scroll,
 .product-pricing-group-toggle { display: none; }
 
 .product-pricing-filter-group {
@@ -282,8 +281,60 @@
     flex: none;
     width: 327px;
     max-width: 100%;
-    margin-left: 0;
+    margin-inline: auto;
     justify-content: space-between;
+  }
+}
+
+/* Fade + chevron mark the pill row as scrollable at any width, and a tap on
+   either edge pages the row. Swipe still works. Hidden edges must not catch
+   taps, so the fade toggles visibility along with opacity. */
+.product-pricing-filter-scroll {
+  display: block;
+  position: absolute;
+  z-index: 1; /* the pills are position:relative, so they'd paint over these */
+  top: 0;
+  width: 80px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Sections on a non-white background override --pp-fade-color. */
+.product-pricing-filter-scroll-prev {
+  left: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat left 24px center / 20px 20px,
+    linear-gradient(to left, transparent, var(--pp-fade-color, #fff) 70%);
+}
+
+.product-pricing-filter-scroll-next {
+  right: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
+    linear-gradient(to right, transparent, var(--pp-fade-color, #fff) 70%);
+}
+
+/* Each edge shows only while there is content past it: left once scrolled,
+   right until the end. A row that fits has no scroll range, so its timeline
+   is inactive and both edges keep the hidden base style. Guarded because
+   without scroll-timeline support these would run on a time timeline.
+   ponytail: no arrows where scroll-timeline is missing (Firefox today); the
+   row still scrolls natively. A ResizeObserver flag covers it if needed. */
+@supports (animation-timeline: scroll()) {
+  .product-pricing-filter-scroll {
+    animation: pp-edge-fade both linear;
+    animation-timeline: --pp-pills;
+  }
+
+  .product-pricing-filter-scroll-prev { animation-range: 0 40px; }
+
+  .product-pricing-filter-scroll-next {
+    animation-direction: reverse;
+    animation-range: calc(100% - 40px) 100%;
   }
 }
 
@@ -291,61 +342,10 @@
 @media (width >= 600px) and (width < 1280px) {
   .product-pricing-filter-row { justify-content: center; }
   .product-pricing-filter-pills { flex: 0 1 auto; }
-  .product-pricing-filter-search { margin-inline: auto; }
 }
 
 @media (width < 600px) {
   .product-pricing-drawer { width: 100%; }
-
-  /* Fade + chevron mark the pill row as scrollable, and a tap on either edge
-     pages the row. Swipe still works. Hidden edges must not catch taps, so the
-     fade toggles visibility along with opacity. */
-  .product-pricing-filter-scroll {
-    display: block;
-    position: absolute;
-    z-index: 1; /* the pills are position:relative, so they'd paint over these */
-    top: 0;
-    width: 80px;
-    height: 40px;
-    padding: 0;
-    border: none;
-    cursor: pointer;
-  }
-
-  /* Sections on a non-white background override --pp-fade-color. */
-  .product-pricing-filter-scroll-prev {
-    left: 0;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat left 24px center / 20px 20px,
-      linear-gradient(to left, transparent, var(--pp-fade-color, #fff) 70%);
-    opacity: 0; /* nothing scrolled past yet */
-    visibility: hidden;
-  }
-
-  .product-pricing-filter-scroll-next {
-    right: 0;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
-      linear-gradient(to right, transparent, var(--pp-fade-color, #fff) 70%);
-  }
-
-  /* Each edge shows only while there is content past it: left once scrolled,
-     right until the end. Guarded because without scroll-timeline support these
-     would run on a time timeline; the unanimated state above is the static
-     right-only fade. */
-  @supports (animation-timeline: scroll()) {
-    .product-pricing-filter-scroll {
-      animation: pp-edge-fade both linear;
-      animation-timeline: --pp-pills;
-    }
-
-    .product-pricing-filter-scroll-prev { animation-range: 0 40px; }
-
-    .product-pricing-filter-scroll-next {
-      animation-direction: reverse;
-      animation-range: calc(100% - 40px) 100%;
-    }
-  }
 
   .product-pricing-drawer-title {
     font-size: 24px;
