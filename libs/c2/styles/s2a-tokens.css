@@ -1,13 +1,3 @@
-@font-face {
-  font-family: 'Arial Bold Adjusted';
-  font-weight: 900;
-  size-adjust: 93%;
-  ascent-override: 91%;
-  descent-override: 25%;
-  line-gap-override: 0%;
-  src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
-}
-
 :root {
   /* tokens.primitives */
   --s2a-color-gray-25: #fff;
@@ -420,11 +410,6 @@
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-label: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
-
-  /* Font family tokens */
-  --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
-  --body-font-family: var(--body-font-family-base);
-  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 }
 
 .dark {
