@@ -226,6 +226,12 @@
     color: var(--pt-good);
   }
 
+  & .pt-stat-note {
+    color: var(--pt-ink-soft);
+    font-size: 12px;
+    margin: 8px 0 0;
+  }
+
   & .pt-stat-preflight .pt-stat-pct {
     color: var(--pt-preflight);
   }
@@ -278,7 +284,8 @@
     color: var(--pt-warn-fg);
   }
 
-  & .pt-pf-fail {
+  & .pt-pf-fail,
+  & .pt-badge-unsupported {
     background: var(--pt-fail-bg);
     color: var(--pt-fail-fg);
   }
@@ -380,9 +387,33 @@
     white-space: nowrap;
   }
 
-  & .pt-badge-draft {
+  & .pt-badge-no-history {
     background: #eee;
     color: #555;
+  }
+
+  & .pt-badge-btn {
+    border: 1px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    min-height: 28px;
+    padding: 2px 12px;
+  }
+
+  & .pt-badge-btn:hover,
+  & .pt-badge-btn[aria-pressed="true"] {
+    border-color: currentcolor;
+  }
+
+  & .pt-badge-btn[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 1px currentcolor;
+  }
+
+  & .pt-badge-btn:focus-visible {
+    outline: 2px solid var(--pt-accent);
+    outline-offset: 2px;
   }
 
   & .pt-pager {

@@ -1,6 +1,6 @@
 import { deriveStatus } from './rollup.js';
 
-const STATUS_RANK = { Draft: 0, Previewed: 1, Live: 2 };
+const STATUS_RANK = { Unsupported: -1, 'No history found': 0, Previewed: 1, Live: 2 };
 const ts = (v) => (v ? (new Date(v).getTime() || 0) : 0);
 
 export default function applyView(rows = [], { filter = 'all', search = '', sort = 'url' } = {}) {

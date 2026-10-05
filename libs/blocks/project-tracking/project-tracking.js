@@ -1,6 +1,9 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { resolveContext, createClient, signIn, onToken } from './api.js';
-import { computeRollup, deriveStatus, computeStatusCounts, computePreflightRollup, preflightTier } from './rollup.js';
+import {
+  computeRollup, deriveStatus, computeStatusCounts,
+  computePreflightRollup, preflightTier, PREFLIGHT_PASS,
+} from './rollup.js';
 import applyView from './view.js';
 
 const PLACEHOLDER = [
@@ -23,18 +26,26 @@ const HOST_REPO = {
   'business.adobe.com': 'da-bacom',
   'business.stage.adobe.com': 'da-bacom',
 };
+const BLOG_PATH_RE = /^(\/[a-z]{2}(_[a-z]{2})?)?\/blog(\/|$)/i;
 
 export function normalizeUrl(input) {
   let u;
   try { u = new URL(input); } catch { return input; }
   const host = u.hostname.toLowerCase();
   if (EDS_HOST_RE.test(host)) return input;
-  const repo = HOST_REPO[host];
+  let repo = HOST_REPO[host];
   if (!repo) return input;
+  if (BLOG_PATH_RE.test(u.pathname)) repo = 'da-bacom-blog';
   let path = u.pathname.replace(/\.html$/i, '');
   if (path.length > 1) path = path.replace(/\/$/, '');
   return `https://main--${repo}--adobecom.aem.page${path}`;
 }
+
+const textTag = (tag, attrs, text) => {
+  const el = createTag(tag, attrs);
+  el.textContent = text;
+  return el;
+};
 
 const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '#');
 
@@ -50,7 +61,12 @@ function createStatusCell(when) {
   return cell;
 }
 
-const STATUS_CLASS = { Draft: 'pt-badge-draft', Previewed: 'pt-badge-previewed', Live: 'pt-badge-live' };
+const STATUS_CLASS = {
+  'No history found': 'pt-badge-no-history',
+  Previewed: 'pt-badge-previewed',
+  Live: 'pt-badge-live',
+  Unsupported: 'pt-badge-unsupported',
+};
 
 function createBadgeCell(status) {
   const cell = createTag('td', { class: 'pt-cell' });
@@ -63,7 +79,7 @@ function createBadgeCell(status) {
 function createCommentsCell(annotations) {
   const { threads = 0, open = 0 } = annotations || {};
   if (!threads) return createTag('td', { class: 'pt-cell pt-empty' }, '—');
-  return createTag('td', { class: 'pt-cell' }, `💬 ${open ? `${threads} · ${open} open` : threads}`);
+  return textTag('td', { class: 'pt-cell' }, `💬 ${open ? `${threads} · ${open} open` : threads}`);
 }
 
 function createPreflightCell(preflight) {
@@ -77,7 +93,7 @@ function createPreflightCell(preflight) {
   if (preflight.a11yIssues) parts.push(`${preflight.a11yIssues} a11y issue${preflight.a11yIssues === 1 ? '' : 's'}`);
   if (preflight.lastRun) parts.push(`run ${new Date(preflight.lastRun).toLocaleDateString()}`);
   const cell = createTag('td', { class: 'pt-cell' });
-  cell.append(createTag('span', { class: `pt-pf pt-pf-${preflightTier(score)}`, title: parts.join(' · ') }, String(score)));
+  cell.append(textTag('span', { class: `pt-pf pt-pf-${preflightTier(score)}`, title: parts.join(' · ') }, String(score)));
   return cell;
 }
 
@@ -108,12 +124,9 @@ function renderPager(view, pages, total, start, shown, onChange) {
   return pager;
 }
 
-function renderResults(mount, rows, since, view = {}) {
-  mount.replaceChildren();
-  if (rows.length === 0) {
-    mount.append(createTag('p', { class: 'pt-muted' }, 'No URLs to check.'));
-    return;
-  }
+function renderResults(mount, rows, since, view, toolbar) {
+  [...mount.children].forEach((el) => { if (el !== toolbar) el.remove(); });
+  if (!mount.contains(toolbar)) mount.append(toolbar);
   const rollup = computeRollup(rows, { since: since || undefined });
   const counts = computeStatusCounts(rows);
   const preflight = computePreflightRollup(rows);
@@ -124,15 +137,24 @@ function renderResults(mount, rows, since, view = {}) {
     createStatCard('Published', rollup.publishedPct, rollup.published, rollup.total, 'published'),
   );
   if (preflight.checked) {
-    stats.append(createStatCard('Preflight OK', preflight.passingPct, preflight.passing, preflight.checked, 'preflight'));
+    const card = createStatCard('Preflight OK', preflight.passingPct, preflight.passing, preflight.checked, 'preflight');
+    card.append(textTag('p', { class: 'pt-stat-note' }, `Score ${PREFLIGHT_PASS}+ · ${preflight.checked} of ${rollup.total} pages have a preflight run`));
+    stats.append(card);
   }
 
-  const countStrip = createTag('div', { class: 'pt-status-counts' });
-  countStrip.append(
-    createTag('span', { class: 'pt-badge pt-badge-draft' }, `Draft ${counts.draft}`),
-    createTag('span', { class: 'pt-badge pt-badge-previewed' }, `Previewed ${counts.previewed}`),
-    createTag('span', { class: 'pt-badge pt-badge-live' }, `Live ${counts.live}`),
-  );
+  const countStrip = createTag('div', { class: 'pt-status-counts', role: 'group', 'aria-label': 'Filter by status' });
+  Object.entries(STATUS_CLASS).forEach(([status, className]) => {
+    const n = status === 'No history found' ? counts.noHistory : counts[status.toLowerCase()];
+    if (status === 'Unsupported' && !n) return;
+    const active = view.filter === status;
+    countStrip.append(textTag('button', {
+      type: 'button',
+      class: `pt-badge pt-badge-btn ${className}`,
+      'data-status': status,
+      'aria-pressed': String(active),
+      title: active ? 'Show all statuses' : `Show only ${status} pages`,
+    }, `${status} ${n}`));
+  });
 
   const visible = applyView(rows, view);
   const total = visible.length;
@@ -175,11 +197,12 @@ function renderResults(mount, rows, since, view = {}) {
   });
   table.append(tbody);
 
-  mount.append(stats, countStrip, createTag('div', { class: 'pt-table-wrap' }, table));
+  mount.prepend(stats, countStrip);
+  mount.append(createTag('div', { class: 'pt-table-wrap' }, table));
   if (total === 0) {
     mount.append(createTag('p', { class: 'pt-muted' }, 'No pages match the current filter or search.'));
   } else if (pages > 1) {
-    const onPage = () => renderResults(mount, rows, since, view);
+    const onPage = () => renderResults(mount, rows, since, view, toolbar);
     mount.append(renderPager(view, pages, total, start, pageRows.length, onPage));
   }
 }
@@ -187,14 +210,13 @@ function renderResults(mount, rows, since, view = {}) {
 function renderError(mount, status, message) {
   mount.replaceChildren();
   if (status === 401) {
-    const m = 'Not signed in to Adobe. Sign in, then check again.';
-    mount.append(createTag('p', { class: 'pt-error' }, m));
+    mount.append(createTag('p', { class: 'pt-error' }, 'Not signed in to Adobe. Sign in, then check again.'));
     const btn = createTag('button', { type: 'button', class: 'pt-check-btn pt-signin' }, 'Sign in to Adobe');
     btn.addEventListener('click', () => signIn());
     mount.append(btn);
     return;
   }
-  mount.append(createTag('p', { class: 'pt-error' }, message));
+  mount.append(textTag('p', { class: 'pt-error' }, message));
 }
 
 export default async function init(block) {
@@ -225,7 +247,7 @@ export default async function init(block) {
   const view = { filter: 'all', sort: 'url', search: '', page: 1 };
   const toolbar = createTag('div', { class: 'pt-toolbar' });
   const filterSel = createTag('select', { class: 'pt-filter', 'aria-label': 'Filter by status' });
-  fillSelect(filterSel, [['all', 'All statuses'], ['Draft', 'Draft'], ['Previewed', 'Previewed'], ['Live', 'Live']]);
+  fillSelect(filterSel, [['all', 'All statuses'], ...Object.keys(STATUS_CLASS).map((s) => [s, s])]);
   const sortSel = createTag('select', { class: 'pt-sort', 'aria-label': 'Sort by' });
   fillSelect(sortSel, [['url', 'Sort: URL'], ['status', 'Sort: Status'], ['lastPublish', 'Sort: Last published'], ['lastPreview', 'Sort: Last previewed']]);
   const searchInput = createTag('input', { type: 'search', class: 'pt-search', placeholder: 'Search URL…', 'aria-label': 'Search URL' });
@@ -243,7 +265,6 @@ export default async function init(block) {
     textarea,
     count,
     sinceLabel,
-    toolbar,
     results,
   );
 
@@ -255,10 +276,18 @@ export default async function init(block) {
   };
 
   const rerender = () => {
-    if (rows) renderResults(results, rows, since.value, view);
+    if (rows) renderResults(results, rows, since.value, view, toolbar);
   };
 
-  const updateView = (patch = {}) => { Object.assign(view, patch, { page: 1 }); rerender(); };
+  const updateView = (patch = {}) => {
+    Object.assign(view, patch, { page: 1 });
+    filterSel.value = view.filter;
+    rerender();
+  };
+  results.addEventListener('click', (e) => {
+    const badge = e.target.closest('.pt-badge-btn');
+    if (badge) updateView({ filter: view.filter === badge.dataset.status ? 'all' : badge.dataset.status });
+  });
 
   const check = async () => {
     const inputs = parseUrls(textarea.value);
@@ -279,8 +308,7 @@ export default async function init(block) {
       }
       const byApi = new Map(uniqueApis.map((api, i) => [api, data[i]]));
       rows = pairs.map(({ original, api }) => ({ ...(byApi.get(api) ?? {}), url: original }));
-      view.page = 1;
-      renderResults(results, rows, since.value, view);
+      updateView();
     } catch (e) {
       rows = null;
       renderError(results, e.status, `Could not reach project-status (${e.message}).`);
@@ -326,9 +354,6 @@ export default async function init(block) {
   });
 
   textarea.addEventListener('input', updateCount);
-  textarea.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
-  });
   checkBtn.addEventListener('click', check);
   onToken(() => check());
   since.addEventListener('change', () => updateView());

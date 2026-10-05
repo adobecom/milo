@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 
-const { computeRollup, preflightTier, computePreflightRollup } = await import('../../../libs/blocks/project-tracking/rollup.js');
+const { computeRollup, preflightTier, computePreflightRollup, deriveStatus, computeStatusCounts } = await import('../../../libs/blocks/project-tracking/rollup.js');
 
 const row = (lastPreview, lastPublish) => ({ lastPreview, lastPublish });
 const pfRow = (score) => ({ preflight: score == null ? null : { score } });
@@ -77,5 +77,20 @@ describe('project-tracking preflight', () => {
     expect(r.checked).to.equal(0);
     expect(r.passing).to.equal(0);
     expect(r.passingPct).to.equal(0);
+  });
+});
+
+describe('project-tracking status', () => {
+  it('distinguishes unsupported URLs from pages with no history', () => {
+    expect(deriveStatus({ site: null, status: 'Draft' })).to.equal('Unsupported');
+    expect(deriveStatus({ site: 'da-bacom', status: 'Draft' })).to.equal('No history found');
+    expect(deriveStatus({ site: 'da-bacom', lastPreview: null, lastPublish: null })).to.equal('No history found');
+    expect(deriveStatus({ lastPreview: '2026-01-01' })).to.equal('Previewed');
+    expect(deriveStatus({ lastPublish: '2026-01-01' })).to.equal('Live');
+  });
+
+  it('counts Unsupported separately from pages with no history', () => {
+    const c = computeStatusCounts([{ site: null }, { site: 'da-bacom' }, { site: 'da-bacom', status: 'Live' }]);
+    expect(c).to.deep.equal({ total: 3, noHistory: 1, previewed: 0, live: 1, unsupported: 1 });
   });
 });

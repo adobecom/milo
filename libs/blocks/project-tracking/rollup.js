@@ -29,12 +29,13 @@ export function computeRollup(rows = [], { since } = {}) {
 }
 
 export function deriveStatus(row = {}) {
-  if (row.status) return row.status;
+  if (row.site === null) return 'Unsupported';
+  if (row.status) return row.status === 'Draft' ? 'No history found' : row.status;
   const published = row.published ?? (row.lastPublish != null);
   const previewed = row.previewed ?? (row.lastPreview != null);
   if (published) return 'Live';
   if (previewed) return 'Previewed';
-  return 'Draft';
+  return 'No history found';
 }
 
 export const PREFLIGHT_PASS = 90;
@@ -60,14 +61,16 @@ export function computePreflightRollup(rows = []) {
 }
 
 export function computeStatusCounts(rows = []) {
-  let draft = 0;
+  let noHistory = 0;
   let previewed = 0;
   let live = 0;
+  let unsupported = 0;
   rows.forEach((r) => {
     const s = deriveStatus(r);
     if (s === 'Live') live += 1;
     else if (s === 'Previewed') previewed += 1;
-    else draft += 1;
+    else if (s === 'Unsupported') unsupported += 1;
+    else noHistory += 1;
   });
-  return { total: rows.length, draft, previewed, live };
+  return { total: rows.length, noHistory, previewed, live, unsupported };
 }
