@@ -276,7 +276,7 @@
   overflow-wrap: normal;
   min-height: var(--bc-input-height);
   max-height: var(--bc-input-height);
-  padding: 8px 0;
+  padding: 9px 0;
   box-sizing: border-box;
   grid-area: 1 / 1 / 2 / 2;
   white-space: nowrap;
