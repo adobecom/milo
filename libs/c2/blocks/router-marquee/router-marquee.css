@@ -398,41 +398,43 @@
     padding: calc(var(--s2a-spacing-64) + var(--s2a-spacing-24))  var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
   }
 
-  /* Slides with a foreground image: copy anchors to the bottom and the
-     foreground sits directly above it, filling the space up to the top of the
-     first screen. As the copy grows, the block grows upward from the bottom. */
+  /* Slides with a foreground image: the media is full-bleed at the top of the
+     first screen and the copy anchors to the bottom. As the copy grows it
+     extends upward into the gap; the viewport min-height (set in JS) grows so
+     both stay visible instead of overlapping. */
   .rm-content-wrapper:has(.rm-foreground) {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     height: 100%;
     padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
   }
 
-  /* In-flow block stacked above .rm-content. position/z-index lift it above the
+  .rm-content-wrapper:has(.rm-foreground) .rm-content {
+    margin-top: auto;
+  }
+
+  /* Full-bleed media block above .rm-content. position/z-index lift it above the
      absolutely-positioned .rm-background (z-index 0) and .rm-overlay (z-index 1).
-     A concrete height keeps it from collapsing when the copy is tall; the
-     viewport min-height (set in JS) grows to keep copy + foreground visible. */
+     Negative margins cancel the wrapper padding so it reaches the viewport edges
+     and top; height is driven by the image's own aspect ratio. */
   .rm-foreground {
+    display: block;
     position: relative;
     z-index: 2;
-    flex: 0 0 auto;
-    height: 40svh;
+    margin-top: calc(-1 * (var(--s2a-spacing-64) + var(--s2a-spacing-24)));
+    margin-inline: calc(-1 * var(--s2a-spacing-24));
     overflow: hidden;
-    margin-bottom: var(--s2a-spacing-24);
   }
 
   .rm-foreground picture {
     display: block;
-    width: 100%;
-    height: 100%;
   }
 
   .rm-foreground img {
+    display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
   }
 
   .rm-title {
