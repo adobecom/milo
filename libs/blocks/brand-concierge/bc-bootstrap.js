@@ -469,6 +469,7 @@ export async function openSideModal(initialMessage, bootstrap) {
 
   setTimeout(() => {
     modal.classList.remove('opening');
+    window?.lenis?.start();
   }, animationMs);
 
   if (susiListener !== 'signIn:decorateNav') {

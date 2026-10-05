@@ -690,6 +690,10 @@
     display: block;
   }
 
+  html.disable-scroll:has(.bc-side-open):not(body:has(.bc-susi-modal)) {
+    overflow: auto;
+  }
+
   body.disable-scroll.bc-side-open:not(body:has(.bc-susi-modal)) {
     overflow: auto;
   }
