@@ -44,22 +44,10 @@
   height: 100%;
 }
 
-/* Present when a slide authors two media images: the first is lifted into the
-   content wrapper in front of the copy, the second stays the overall background. */
+/* Shown on mobile only: when a slide authors two media images, the first is
+   lifted into the content wrapper in front of the copy (see media query below). */
 .rm-foreground {
-  display: flex;
-  margin-bottom: var(--s2a-spacing-24);
-}
-
-.rm-foreground picture {
-  display: flex;
-  max-width: 100%;
-}
-
-.rm-foreground img {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
+  display: none;
 }
 
 .rm-background img,
@@ -423,21 +411,27 @@
   }
 
   .rm-foreground {
+    display: flex;
     flex: 1 1 auto;
     min-height: 0;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    margin-bottom: var(--s2a-spacing-24);
   }
 
   .rm-foreground picture {
+    display: flex;
     justify-content: center;
+    max-width: 100%;
     max-height: 100%;
     min-height: 0;
   }
 
   .rm-foreground img {
+    max-width: 100%;
     max-height: 100%;
+    object-fit: contain;
   }
 
   .rm-title {
