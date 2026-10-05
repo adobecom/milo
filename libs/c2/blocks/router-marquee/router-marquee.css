@@ -296,6 +296,10 @@
     display: none;
   }
 
+  .rm-ctas .con-button {
+    flex: 1;
+  }
+
   .rm-controls {
     flex-direction: column;
     align-items: flex-start;
