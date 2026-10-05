@@ -399,30 +399,22 @@
   }
 
   /* Slides with a foreground image: the media is full-bleed at the top of the
-     first screen and the copy anchors to the bottom. As the copy grows it
-     extends upward into the gap; the viewport min-height (set in JS) grows so
-     both stay visible instead of overlapping. */
+     viewport (behind the gnav) and the copy flows below it. The viewport
+     min-height (set in JS) grows to fit the foreground + copy + controls so
+     nothing is clipped. */
   .rm-content-wrapper:has(.rm-foreground) {
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    padding-top: 0;
     padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
   }
 
-  .rm-content-wrapper:has(.rm-foreground) .rm-content {
-    margin-top: auto;
-  }
-
   /* Full-bleed media block above .rm-content. position/z-index lift it above the
-     absolutely-positioned .rm-background (z-index 0) and .rm-overlay (z-index 1).
-     Negative margins cancel the wrapper padding so it reaches the viewport edges
-     and top; height is driven by the image's own aspect ratio. */
+     absolutely-positioned .rm-background (z-index 0) and .rm-overlay (z-index 1);
+     the negative inline margin cancels the wrapper's side padding. */
   .rm-foreground {
     display: block;
     position: relative;
     z-index: 2;
-    margin-top: calc(-1 * (var(--s2a-spacing-64) + var(--s2a-spacing-24)));
     margin-inline: calc(-1 * var(--s2a-spacing-24));
     margin-bottom: var(--s2a-spacing-lg);
     overflow: hidden;
