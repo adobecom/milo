@@ -335,6 +335,18 @@ const loadViewportVideos = (el) => {
   playActiveVideo(video);
 };
 
+// The media column may author each image/video inside its own empty <p>
+// (Word/AEM authoring). The background styles size the picture against
+// .rm-background via height:100%, which only works when the media is a direct
+// child, so flatten those wrappers before decorating.
+const unwrapMedia = (container) => {
+  container?.querySelectorAll(':scope > p').forEach((p) => {
+    if (p.textContent.trim()) return;
+    if (!p.querySelector(':scope > picture, :scope > video, :scope > img')) return;
+    p.replaceWith(...p.childNodes);
+  });
+};
+
 // A slide may author two images in the media column: the first becomes a
 // full-bleed foreground layer above the background (mobile comps), the rest
 // stays as the slide background.
@@ -342,11 +354,7 @@ const splitForegroundMedia = (imageCol) => {
   const pictures = [...(imageCol?.querySelectorAll('picture') ?? [])];
   if (pictures.length < 2) return null;
   const [first] = pictures;
-  const parent = first.parentElement;
   const foreground = createTag('div', { class: 'rm-foreground' }, first);
-  if (parent?.tagName === 'P' && !parent.textContent.trim() && !parent.children.length) {
-    parent.remove();
-  }
   return foreground;
 };
 
@@ -354,6 +362,7 @@ const decorateSlide = (slide, isLight) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
+  unwrapMedia(imageCol);
   textCol.classList.add('rm-content');
   const contentWrapper = createTag('div', { class: 'rm-content-wrapper' });
   slide.insertBefore(contentWrapper, textCol);
