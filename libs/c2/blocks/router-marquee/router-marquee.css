@@ -292,7 +292,7 @@
     gap: var(--s2a-spacing-8);
   }
 
-  .rm-ctas .con-button:not(.rm-cta-primary) {
+  .router-marquee:not(.show-cta) .rm-ctas .con-button:not(.rm-cta-primary) {
     display: none;
   }
 
