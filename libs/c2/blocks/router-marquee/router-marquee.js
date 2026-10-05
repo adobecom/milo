@@ -502,19 +502,22 @@ const updateContentSpacing = (el) => {
   // layout and force the subsequent getBoundingClientRect reads to reflow again.
   const wrapperPadTop = getCssPx(wrapper, 'padding-top');
   const contentH = content.offsetHeight;
+  const foreground = activeSlide.querySelector('.rm-foreground');
+  const foregroundH = foreground
+    ? foreground.offsetHeight + getCssPx(foreground, 'margin-top') + getCssPx(foreground, 'margin-bottom')
+    : 0;
   const controlsH = controls.offsetHeight;
   const controlsTop = controls.getBoundingClientRect().top - 24;
   const contentBottom = content.getBoundingClientRect().bottom;
 
-  // Expose controls height so bottom-anchored layouts (foreground mobile) can pad
-  // the copy zone above the absolutely-positioned controls.
+  // Expose controls height so the foreground mobile layout can reserve space for
+  // the absolutely-positioned controls below the copy.
   vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
 
-  // Set min-height so the viewport never shrinks below what the copy needs. The
-  // foreground is intentionally excluded: this section is sticky/parallax and must
-  // stay ~one screen, so the foreground + copy share the viewport rather than
-  // growing it (which would push the controls into the next section's reveal).
-  const needed = wrapperPadTop + contentH + 24 + controlsH;
+  // Set min-height so the viewport never shrinks below what the content needs.
+  // Include the foreground so the marquee grows downward to fit media + copy +
+  // controls; the controls then sit below the copy instead of overlapping it.
+  const needed = wrapperPadTop + foregroundH + contentH + 24 + controlsH;
   const minHeight = `${Math.max(window.innerHeight, needed)}px`;
   if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
