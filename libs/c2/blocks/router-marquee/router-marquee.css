@@ -292,12 +292,12 @@
     gap: var(--s2a-spacing-8);
   }
 
-  .router-marquee:not(.show-cta) .rm-ctas .con-button:not(.rm-cta-primary) {
-    display: none;
-  }
-
   .rm-ctas .con-button {
     flex: 1;
+  }
+
+  .router-marquee:not(.show-cta) .rm-ctas .con-button:not(.rm-cta-primary) {
+    display: none;
   }
 
   .rm-controls {
