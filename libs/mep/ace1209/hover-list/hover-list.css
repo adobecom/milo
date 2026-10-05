@@ -74,6 +74,10 @@
   overflow: hidden;
 }
 
+.hover-list.no-animation .hover-list-media {
+  display: none;
+}
+
 .hover-list-media picture,
 .hover-list-media img {
   block-size: 100%;
@@ -96,6 +100,10 @@
 
   .hover-list-desc {
     padding-block: var(--s2a-spacing-sm);
+  }
+
+  .hover-list.compact-headline .hover-list-desc {
+    max-inline-size: 35vw;
   }
 
   .hover-list-col {
@@ -165,6 +173,16 @@
     @media (hover: hover) {
       &:hover {
         background: var(--s2a-color-transparent-white-08);
+      }
+    }
+  }
+
+  .hover-list.no-animation .hover-list-item {
+    cursor: default;
+
+    @media (hover: hover) {
+      &:hover {
+        background: transparent;
       }
     }
   }

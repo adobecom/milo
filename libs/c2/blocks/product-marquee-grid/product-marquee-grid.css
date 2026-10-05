@@ -42,7 +42,6 @@
   .pm-merch-card {
     --pm-content: var(--s2a-color-content-default);
     --pm-content-subtle: var(--s2a-color-content-subtle);
-    --pm-badge-color: var(--s2a-color-content-inverse);
 
     color: var(--pm-content);
     display: flex;
@@ -78,20 +77,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
-    position: relative;
-
-    --merch-color-inline-price-strikethrough: var(--pm-content-subtle);
-
-    /* Badge is the inverse of the card surface: dark on a light card, light on a
-       dark card. Its background follows the card's own content color (--pm-content)
-       and the text takes the opposite (--pm-badge-color). These are set inline on
-       <merch-badge> by the web component, so the overrides need !important to win. */
-    merch-badge {
-      --merch-badge-background-color: var(--pm-content) !important;
-      --merch-badge-border: 1px solid var(--pm-content) !important;
-      --merch-badge-border-radius: var(--s2a-border-radius-2xs) !important;
-      --merch-badge-color: var(--pm-badge-color) !important;
-    }
 
     .mas-description,
     .mas-price-commitment {
@@ -107,49 +92,15 @@
       color: var(--pm-content-subtle);
     }
 
-    .mas-price,
-     .mas-card-title {
+    .mas-price {
       color: var(--pm-content);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
     }
-
-    mas-field[field="subtitle"] {
-      font-family: var(--body-font-family);
-      font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: var(--s2a-font-weight-adobe-clean-regular);
-      line-height: var(--s2a-typography-line-height-body-sm);
-      letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
-    }
-
-    > p:first-of-type {
-      padding-inline-end: var(--s2a-spacing-3xl);
-    }
-
-    p:has(> mas-field[field="badge"]) {
-      inset-block-start: 0;
-      inset-inline-end: 0;
-      margin: 0;
-      position: absolute;
-    }
-  }
-
-  &.merch-md .pm-merch-content :is(.mas-description, .mas-short-description) {
-    font-size: var(--s2a-typography-font-size-body-md);
-  }
-
-  &.merch-sm .pm-merch-content :is(.mas-description, .mas-short-description),
-  &.legal .pm-merch-content :is(.mas-description, .mas-short-description) {
-    font-size: var(--s2a-typography-font-size-body-sm);
   }
 
   .pm-merch-ctas {
     display: flex;
     gap: var(--s2a-spacing-xs);
-
-    > .con-button {
-      flex: 1 1 0;
-      justify-content: center;
-    }
 
 mas-field .icon-button {
       display: inline;
@@ -174,24 +125,8 @@ mas-field .icon-button {
     }
   }
 
-  /* .price.price-strikethrough,
-  .price.price-strikethrough * {
-    text-decoration-color: var(--pm-content-subtle) !important;
-  } */
-
-  mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
-  mas-field span.placeholder-resolved[data-template='strikethrough'],
-  mas-field span.price.price-strikethrough,
-  mas-field span.price.price-promo-strikethrough {
-    color: var(--s2a-color-content-subtle);
-    text-decoration-color: var(--s2a-color-content-subtle) !important;
-  }
-
-  /* Prevent a second, overlapping line: the WCS wrapper already draws the
-     strikethrough, so the nested price span must not draw its own. */
-  mas-field span.placeholder-resolved[data-template='strikethrough'] span.price.price-strikethrough,
-  mas-field span.placeholder-resolved[data-template='priceStrikethrough'] span.price.price-strikethrough {
-    text-decoration: none;
+  .price.price-strikethrough {
+    color: var(--s2a-color-button-background-primary-solid-on-light-hover);
   }
 
   .firefly & {
@@ -223,17 +158,6 @@ mas-field .icon-button {
       text-align: center;
     }
   }
-
-  &.cta-stack {
-    .pm-merch-ctas {
-      flex-direction: column;
-
-      > .con-button {
-        flex: none;
-        inline-size: 100%;
-      }
-    }
-  }
 }
 
 body:has(header.has-breadcrumbs) .product-marquee-grid {
@@ -262,7 +186,6 @@ body:has(header.local-nav) .product-marquee-grid {
 .product-marquee-grid .pm-merch-card.dark {
   --pm-content: var(--s2a-color-gray-1000);
   --pm-content-subtle: var(--s2a-color-transparent-black-64);
-  --pm-badge-color: var(--s2a-color-gray-25);
 
   background-color: transparent;
 
@@ -304,8 +227,11 @@ body:has(header.local-nav) .product-marquee-grid {
       padding: var(--s2a-spacing-lg);
     }
 
-    &.legal .pm-merch-content :is(.mas-description, .mas-short-description) {
+    .pm-merch-content .mas-description,
+    .pm-merch-content .mas-price-commitment {
       font-size: var(--s2a-typography-font-size-body-md);
+      line-height: var(--s2a-typography-line-height-body-md);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     }
   }
 
@@ -350,7 +276,6 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid .pm-merch-card.dark {
     --pm-content: var(--s2a-color-gray-25);
     --pm-content-subtle: var(--s2a-color-transparent-white-64);
-    --pm-badge-color: var(--s2a-color-gray-1000);
 
     background: var(--s2a-color-gray-900);
   }
@@ -363,7 +288,6 @@ body:has(header.local-nav) .product-marquee-grid {
   .product-marquee-grid.dark .pm-merch-card.light {
     --pm-content: var(--s2a-color-gray-1000);
     --pm-content-subtle: var(--s2a-color-transparent-black-64);
-    --pm-badge-color: var(--s2a-color-gray-25);
 
     background: var(--s2a-color-gray-50);
   }

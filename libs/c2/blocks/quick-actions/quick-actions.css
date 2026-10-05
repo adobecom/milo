@@ -1,24 +1,9 @@
 .quick-actions {
   position: relative;
+  background: transparent;
 
   &.blur-background {
-    isolation: isolate;
-    background: transparent;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
-      backdrop-filter: blur(47px);
-      mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
-    }
-
-    .section:has(+ .section[class*="rounded-corners-top"]) &::before {
-      inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0;
-    }
+    background: var(--s2a-color-background-knockout);
   }
 }
 
@@ -121,12 +106,12 @@ img.quick-actions-media {
 }
 
 .quick-actions-tile-label {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
   min-inline-size: 0;
   color: var(--s2a-color-content-default);
+}
+
+.quick-actions-tile .content-aux {
+  display: none;
 }
 
 [dir="rtl"] .quick-actions-chevron {
@@ -138,8 +123,46 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
+  .quick-actions.center-mobile .quick-actions-header {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
   .quick-actions-grid[class*="up"] {
     grid-template-columns: repeat(2, 1fr);
+    align-items: stretch;
+  }
+
+  .quick-actions-tile-label {
+    min-inline-size: auto;
+    max-inline-size: 100%;
+  }
+
+  .quick-actions-tile:has(.content-aux) {
+    display: flex;
+    flex-direction: column;
+
+    .quick-actions-media {
+      position: absolute;
+      inset: 0;
+      min-block-size: 0;
+    }
+
+    & img {
+      object-position: top;
+    }
+
+    .quick-actions-tile-footer {
+      align-self: stretch;
+    }
+
+    .content-aux {
+      display: block;
+      flex: 1 0 auto;
+      inline-size: 100%;
+      aspect-ratio: 1 / 1;
+    }
   }
 
   @supports (animation-timeline: view()) {
@@ -148,6 +171,30 @@ img.quick-actions-media {
 
       > :not([class*="section-"]) {
         animation-name: enable-parallax-stagger;
+      }
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .quick-actions {
+    &.blur-background {
+      isolation: isolate;
+      background: transparent;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
+        backdrop-filter: blur(47px);
+        mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
+      }
+
+      .section:has(+ .section[class*="rounded-corners-top"]) &::before {
+        inset: 0 0 calc(-1 * var(--s2a-border-radius-xl)) 0;
       }
     }
   }

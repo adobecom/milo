@@ -190,6 +190,62 @@ describe('Router Marquee', () => {
     expect(body.textContent.match(/A\$9\.99\/mo/g).length).to.equal(1);
   });
 
+  it('resets to the first slide via the reset button, and is a no-op once there', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.router-marquee');
+    // Force a true desktop context: nav-card hover is only wired on the active
+    // viewport, and on a narrow-but-hoverable window handleDesktopSmallVp swaps the
+    // reset button out for the next arrow, so the reset path would never be reachable.
+    const realMatchMedia = window.matchMedia.bind(window);
+    const forced = {
+      '(width >= 1280px)': true,
+      '(min-width: 1280px)': true,
+      '(hover: none)': false,
+      '(prefers-reduced-motion: reduce)': false,
+    };
+    window.matchMedia = (q) => {
+      if (!(q in forced)) return realMatchMedia(q);
+      return { matches: forced[q], addEventListener() {}, removeEventListener() {} };
+    };
+
+    try {
+      init(block);
+
+      const vp = block.querySelector('.rm-viewport[data-viewport="desktop"]');
+      const slides = vp.querySelectorAll('.rm-slide');
+      const cards = vp.querySelectorAll('.rm-card');
+      const resetBtn = vp.querySelector('.rm-card-reset');
+      expect(resetBtn).to.exist;
+
+      // hovering the second card is how nav-card navigation moves the active slide
+      cards[1].dispatchEvent(new Event('mouseenter'));
+      expect(slides[1].classList.contains('is-active')).to.be.true;
+
+      resetBtn.click();
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+
+      // clicking reset while already on the first slide is a no-op (early return)
+      resetBtn.click();
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('re-runs dynamic layout updates when merch.js signals a promo slide resolved', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/promo.html' });
+    const block = document.querySelector('.router-marquee');
+    const rafSpy = sinon.spy(window, 'requestAnimationFrame');
+    init(block);
+    const callsAfterInit = rafSpy.callCount;
+
+    block.dispatchEvent(new CustomEvent('mas:ready'));
+    expect(rafSpy.callCount).to.equal(callsAfterInit + 1);
+
+    rafSpy.restore();
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');
@@ -199,6 +255,292 @@ describe('Router Marquee', () => {
     // starting-marquee=2 promotes the second authored slide to the front
     expect(slides[0].querySelector('.rm-title').textContent.trim()).to.equal('Slide two title');
     expect(slides[1].querySelector('.rm-title').textContent.trim()).to.equal('Slide one title');
+  });
+});
+
+const slideHtml = (title) => `
+  <div>
+    <div>
+      <h1>${title}</h1>
+      <p><a class="merch" href="https://mas.adobe.com/studio.html#field=promo">promo</a></p>
+      <p><em><strong><a href="/cta">CTA</a></strong></em></p>
+    </div>
+    <div><p>background</p></div>
+  </div>`;
+
+const buildBlock = (rows, variant = '') => {
+  const section = document.createElement('div');
+  section.className = 'section';
+  section.setAttribute('daa-lh', 'section');
+  section.innerHTML = `<div class="router-marquee ${variant}">
+    <div><div>mobile</div></div>
+    ${rows}
+  </div>`;
+  document.body.append(section);
+  return section.querySelector('.router-marquee');
+};
+
+/** Stands in for merch.js upgrading the authored `a.merch` into a resolved mas-field. */
+const resolveField = (slide, { promo }) => {
+  const link = slide.querySelector('a.merch');
+  const masField = document.createElement('mas-field');
+  const content = document.createElement('div');
+  content.setAttribute('data-role', 'mas-field-content');
+  if (promo) content.setAttribute('data-promotion-project', 'black-friday');
+  masField.append(content);
+  link.replaceWith(masField);
+  masField.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+};
+
+const viewports = (block) => [...block.querySelectorAll('.rm-viewport')];
+const pendingSlide = (vp) => vp.querySelector('.rm-slide.promo-placeholder:not(.promo-resolved)');
+const nextFrame = () => new Promise((resolve) => { requestAnimationFrame(resolve); });
+const initializedViewport = (block) => viewports(block).find((vp) => vp.querySelector('.rm-slide[daa-lh]'));
+const fillRunning = (vp, index) => vp.querySelectorAll('.rm-card-progress-bar')[index]
+  .style.transition.includes(`${AUTOPLAY_MS}ms`);
+
+/** Same as slideHtml, but with a background video poster. */
+const slideWithVideo = (title) => `
+  <div>
+    <div>
+      <h1>${title}</h1>
+      <p><a class="merch" href="https://mas.adobe.com/studio.html#field=promo">promo</a></p>
+      <p><em><strong><a href="/cta">CTA</a></strong></em></p>
+    </div>
+    <div><video poster="/media/${title}.png"></video></div>
+  </div>`;
+
+describe('router-marquee promo placeholder slide', () => {
+  let block;
+
+  before(async () => {
+    const { setConfig } = await import('../../../libs/utils/utils.js');
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    // registers the shared watchPromoPlaceholders listener that performs the reveal
+    const { initMasField } = await import('../../../libs/blocks/merch/merch.js');
+    const probe = document.createElement('a');
+    probe.href = 'https://mas.adobe.com/studio.html#';
+    await initMasField(probe);
+  });
+
+  afterEach(() => {
+    block?.closest('.section')?.remove();
+    block = null;
+  });
+
+  it('marks the variant-designated slide and its nav card as one placeholder group', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slides.length).to.equal(2);
+      expect(cards.length).to.equal(2);
+      expect(slides[1].classList.contains('promo-placeholder')).to.be.true;
+      expect(cards[1].classList.contains('promo-placeholder')).to.be.true;
+      expect(cards[1].dataset.promoGroup).to.equal(slides[1].dataset.promoGroup);
+      // the first visible slide is the active one
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('is-active')).to.be.true;
+    });
+  });
+
+  it('lets merch.js reveal the slide and its card on a resolved promotion', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slide = pendingSlide(vp);
+      resolveField(slide, { promo: true });
+
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slide.classList.contains('promo-resolved')).to.be.true;
+      expect(cards[1].classList.contains('promo-resolved')).to.be.true;
+      // revealing must not steal the active slide
+      expect(slide.classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('is-active')).to.be.true;
+    });
+  });
+
+  it('activates the first slide when its promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    const cards = [...activeVp.querySelectorAll('.rm-card')];
+    expect(slides[1].classList.contains('is-active')).to.be.true;
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(slides[0].classList.contains('promo-resolved')).to.be.true;
+    expect(slides[0].classList.contains('is-active')).to.be.true;
+    expect(slides[1].classList.contains('is-active')).to.be.false;
+    expect(cards[0].classList.contains('is-active')).to.be.true;
+    expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+  });
+
+  it('starts on the first promo slide when it resolved before initialization', () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    const authoredPromoSlide = block.querySelectorAll(':scope > div')[1];
+    resolveField(authoredPromoSlide, { promo: true });
+
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      const cards = [...vp.querySelectorAll('.rm-card')];
+      expect(slides[0].classList.contains('promo-resolved')).to.be.true;
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.false;
+      expect(cards[0].classList.contains('promo-resolved')).to.be.true;
+      expect(cards[0].getAttribute('aria-selected')).to.equal('true');
+    });
+  });
+
+  it('restarts autoplay from the first slide after its promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    await nextFrame();
+    expect(fillRunning(activeVp, 1)).to.be.true;
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(fillRunning(activeVp, 0)).to.be.true;
+    expect(fillRunning(activeVp, 1)).to.be.false;
+  });
+
+  it('keeps autoplay paused when the first promotion resolves', async () => {
+    block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    const activeVp = initializedViewport(block);
+    const slides = [...activeVp.querySelectorAll('.rm-slide')];
+    await nextFrame();
+    activeVp.querySelector('.rm-pause-play').click();
+
+    resolveField(slides[0], { promo: true });
+    await nextFrame();
+
+    expect(slides[0].classList.contains('is-active')).to.be.true;
+    expect(fillRunning(activeVp, 0)).to.be.false;
+    expect(activeVp.querySelector('.rm-pause-play').getAttribute('aria-label')).to.equal('Play');
+  });
+
+  it('does not start autoplay under reduced motion when the first promotion resolves', async () => {
+    const realMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query) => {
+      if (query === '(prefers-reduced-motion: reduce)') {
+        return { matches: true, addEventListener() {}, removeEventListener() {} };
+      }
+      return realMatchMedia(query);
+    };
+
+    try {
+      block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+      init(block);
+
+      const activeVp = initializedViewport(block);
+      const slides = [...activeVp.querySelectorAll('.rm-slide')];
+      await nextFrame();
+      resolveField(slides[0], { promo: true });
+      await nextFrame();
+
+      expect(slides[0].classList.contains('is-active')).to.be.true;
+      expect(fillRunning(activeVp, 0)).to.be.false;
+      expect(activeVp.querySelector('.rm-pause-play').getAttribute('aria-label')).to.equal('Play');
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('carries the resolved first promo slide across breakpoints', async () => {
+    const realMatchMedia = window.matchMedia.bind(window);
+    let viewport = 'mobile';
+    const media = (matches) => ({ matches, addEventListener() {}, removeEventListener() {} });
+    window.matchMedia = (query) => {
+      if (query === '(width >= 1280px)' || query === '(min-width: 1280px)') {
+        return media(viewport === 'desktop');
+      }
+      if (query === '(width > 767px)') return media(viewport !== 'mobile');
+      return realMatchMedia(query);
+    };
+
+    try {
+      block = buildBlock(`${slideHtml('Promo')}${slideHtml('Two')}`, 'promo-placeholder-slide-1');
+      init(block);
+
+      viewports(block).forEach((vp) => resolveField(pendingSlide(vp), { promo: true }));
+      await nextFrame();
+      const mobile = block.querySelector('.rm-viewport[data-viewport="mobile"]');
+      expect(mobile.querySelectorAll('.rm-slide')[0].classList.contains('is-active')).to.be.true;
+
+      viewport = 'desktop';
+      window.dispatchEvent(new Event('resize'));
+      await nextFrame();
+
+      const desktop = block.querySelector('.rm-viewport[data-viewport="desktop"]');
+      expect(desktop.querySelectorAll('.rm-slide')[0].classList.contains('is-active')).to.be.true;
+      expect(desktop.querySelectorAll('.rm-card')[0].getAttribute('aria-selected')).to.equal('true');
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('keeps the slide hidden when the field resolves without a promotion', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      resolveField(pendingSlide(vp), { promo: false });
+      expect(vp.querySelectorAll('.promo-resolved').length).to.equal(0);
+      expect(pendingSlide(vp)).to.exist;
+    });
+  });
+
+  it('leaves a block without the variant untouched', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Two')}`);
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      expect(vp.querySelectorAll('.promo-placeholder').length).to.equal(0);
+      expect(vp.querySelectorAll('.rm-slide').length).to.equal(2);
+    });
+  });
+
+  it('keeps the video poster on the first visible slide when the promo slide is first', () => {
+    block = buildBlock(`${slideWithVideo('One')}${slideWithVideo('Two')}`, 'promo-placeholder-slide-1');
+    init(block);
+
+    viewports(block).forEach((vp) => {
+      const slides = [...vp.querySelectorAll('.rm-slide')];
+      expect(slides[0].classList.contains('promo-placeholder')).to.be.true;
+      expect(slides[1].classList.contains('is-active')).to.be.true;
+      // a display:none promo slide must not hold the only poster
+      expect(slides[0].querySelector('video').hasAttribute('poster')).to.be.false;
+      expect(slides[1].querySelector('video').hasAttribute('poster')).to.be.true;
+    });
+  });
+
+  it('keeps analytics slide indexes stable before and after the reveal', () => {
+    block = buildBlock(`${slideHtml('One')}${slideHtml('Promo')}${slideHtml('Three')}`, 'promo-placeholder-slide-2');
+    init(block);
+
+    // only the viewport matching the current breakpoint is analytics-initialized
+    const initialized = viewports(block).find((vp) => vp.querySelector('.rm-slide[daa-lh]'));
+    const labels = [...initialized.querySelectorAll('.rm-slide')].map((s) => s.getAttribute('daa-lh'));
+    expect(labels).to.deep.equal(['b1|rm-slide', 'b2|rm-slide', 'b3|rm-slide']);
+
+    resolveField(pendingSlide(initialized), { promo: true });
+    const after = [...initialized.querySelectorAll('.rm-slide')].map((s) => s.getAttribute('daa-lh'));
+    expect(after).to.deep.equal(labels);
   });
 });
 
@@ -219,7 +561,7 @@ describe('Router Marquee — autoplay first-frame gating', () => {
   const bars = (block) => [...activeVp(block).querySelectorAll('.rm-card-progress-bar')];
   // startFill sets a `transform <AUTOPLAY_MS>ms linear` transition; use that as the signal
   // that autoplay actually began for a given slide index.
-  const fillRunning = (block, i) => (bars(block)[i]?.style.transition || '').includes(`${AUTOPLAY_MS}ms`);
+  const isFillRunning = (block, i) => (bars(block)[i]?.style.transition || '').includes(`${AUTOPLAY_MS}ms`);
   const activeIndex = (block) => [...activeVp(block).querySelectorAll('.rm-slide')]
     .findIndex((s) => s.classList.contains('is-active'));
 
@@ -255,6 +597,11 @@ describe('Router Marquee — autoplay first-frame gating', () => {
   });
 
   const setup = async () => {
+    // Let IntersectionObserver entries queued by earlier tests' blocks deliver before this
+    // init replaces the module-level SLIDE_ANALYTICS they index into.
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
     document.body.innerHTML = await readFile({ path: './mocks/video.html' });
     const block = document.querySelector('.router-marquee');
     init(block);
@@ -266,15 +613,15 @@ describe('Router Marquee — autoplay first-frame gating', () => {
     expect(capturedFrameCb).to.be.a('function');
     // Past a full autoplay cycle but under the fallback: with the frame withheld, nothing runs.
     clock.tick(AUTOPLAY_MS + 100);
-    expect(fillRunning(block, 0)).to.be.false;
+    expect(isFillRunning(block, 0)).to.be.false;
     expect(activeIndex(block)).to.equal(0);
   });
 
   it('starts the fill and advance timer once the first frame fires', async () => {
     const block = await setup();
-    expect(fillRunning(block, 0)).to.be.false;
+    expect(isFillRunning(block, 0)).to.be.false;
     capturedFrameCb();
-    expect(fillRunning(block, 0)).to.be.true;
+    expect(isFillRunning(block, 0)).to.be.true;
     clock.tick(AUTOPLAY_MS);
     expect(activeIndex(block)).to.equal(1);
   });
@@ -282,9 +629,9 @@ describe('Router Marquee — autoplay first-frame gating', () => {
   it('falls back to starting autoplay after the timeout when no frame fires', async () => {
     const block = await setup();
     clock.tick(FIRST_FRAME_FALLBACK_MS - 1);
-    expect(fillRunning(block, 0)).to.be.false;
+    expect(isFillRunning(block, 0)).to.be.false;
     clock.tick(1);
-    expect(fillRunning(block, 0)).to.be.true;
+    expect(isFillRunning(block, 0)).to.be.true;
   });
 
   it('lets the first frame govern advance timing when resumed during the gate', async () => {
