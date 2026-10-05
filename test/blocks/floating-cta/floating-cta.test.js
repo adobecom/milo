@@ -60,6 +60,28 @@ describe('Floating CTA', () => {
     expect(cta.textContent).to.contain('Just text');
   });
 
+  it('places the section before the top-level merch section when cards are nested in tabs', async () => {
+    document.body.innerHTML = `
+      <main>
+        <div class="section"></div>
+        <div class="section tabs-section">
+          <div class="tabpanel"><div class="section"><merch-card></merch-card></div></div>
+        </div>
+        <div class="section">
+          <div class="floating-cta"><div><div>
+            <p><img src="/federal/icons/cta.svg" alt="cta icon" /></p>
+            <p><a href="https://www.adobe.com/buy">Buy now</a></p>
+          </div></div></div>
+        </div>
+      </main>`;
+    const block = document.querySelector('.floating-cta');
+    await init(block);
+
+    const ctaSection = block.closest('.section');
+    expect(ctaSection.parentElement.tagName).to.equal('MAIN');
+    expect(ctaSection.nextElementSibling.classList.contains('tabs-section')).to.be.true;
+  });
+
   it('does nothing when the link paragraph is missing', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/invalid.html' });
     const block = document.querySelector('.floating-cta');
