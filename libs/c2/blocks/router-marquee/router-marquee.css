@@ -45,7 +45,8 @@
 }
 
 /* Shown on mobile only: when a slide authors two media images, the first is
-   lifted into the content wrapper in front of the copy (see media query below). */
+   lifted into the content wrapper as a full-bleed layer above the background
+   (see media query below). */
 .rm-foreground {
   display: none;
 }
@@ -410,28 +411,24 @@
     padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
   }
 
+  /* Full-bleed layer like .rm-background, stacked above it (and the scrim),
+     below the copy (z-index 2). */
   .rm-foreground {
-    display: flex;
-    flex: 1 1 auto;
-    min-height: 0;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    margin-bottom: var(--s2a-spacing-24);
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
   }
 
   .rm-foreground picture {
-    display: flex;
-    justify-content: center;
-    max-width: 100%;
-    max-height: 100%;
-    min-height: 0;
+    display: block;
+    height: 100%;
   }
 
   .rm-foreground img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .rm-title {
