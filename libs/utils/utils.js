@@ -323,6 +323,8 @@ export function getLocale(locales, pathname = window.location.pathname) {
     matchedKey = localeString;
   }
 
+  if (!(matchedKey in locales)) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
   const locale = hydrateLocale(locales, matchedKey);
   if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
@@ -1407,13 +1409,15 @@ function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
   const isC2Page = getMetadata('foundation') === 'c2';
+  // Standalone block used outside foundation c2 pages, but still needs to be loaded from c2 folder
   const isC2GnavOverride = name === 'global-navigation' && getMetadata('gnav-foundation') === 'c2';
   const isC2FooterOverride = name === 'global-footer' && getMetadata('footer-foundation') === 'c2';
+  const isC2OverrideBlock = isC2GnavOverride || isC2FooterOverride || name === 'email-collection-c2';
   const isC1Block = C1_BLOCKS.includes(name);
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
 
-  const PAGE_AGNOSTIC_BLOCKS = ['preflight'];
+  const PAGE_AGNOSTIC_BLOCKS = ['preflight', 'merch-offers'];
   const isPageAgnostic = PAGE_AGNOSTIC_BLOCKS.includes(name);
   if (isC2Page && isC1Block && !isC2Block && !isAutoBlock && !isPageAgnostic) {
     return { name, isInvalid: true };
@@ -1440,7 +1444,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
-  if ((isC2Page || isC2GnavOverride || isC2FooterOverride) && isC2Block) base = `${miloLibs ?? base}/c2`;
+  if ((isC2Page || isC2OverrideBlock) && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -2493,6 +2497,17 @@ function initModalEventListener() {
   });
 }
 
+function shouldSkipLenis() {
+  if (navigator.connection?.saveData
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
+  const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
+  const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
+  return isWindows
+    ? deviceMemory <= 4 || cores <= 4
+    : deviceMemory <= 4 && cores <= 4;
+}
+
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
   fontsPromise ??= import('./fonts.js')
@@ -2551,37 +2566,68 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    await Promise.all([
-      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-      loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
-    const lerp = 0.06;
-    const fsThreshold = 110;
-    const fsFactor = 0.11;
-    const fsDelay = 700;
-    const lenisPreventSelectors = [
-      '.dialog-modal',
-      '.ot-sdk-container',
-      'div[data-testid="main-content-area"]',
-    ];
-    window.lenis = new window.Lenis({
-      autoRaf: true,
-      lerp,
-      wheelMultiplier: 0.7,
-      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-    });
-    if (document.querySelector('.modal-curtain.is-open')) {
-      window.lenis.stop();
-    }
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
-    window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+    if (!shouldSkipLenis()) {
+      await Promise.all([
+        new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+        loadScript(`${config.base}/deps/lenis.min.js`),
+      ]);
+      const lerp = 0.06;
+      const fsThreshold = 110;
+      const fsFactor = 0.11;
+      const fsDelay = 700;
+      const lenisPreventSelectors = [
+        '.dialog-modal',
+        '.ot-sdk-container',
+        'div[data-testid="main-content-area"]',
+      ];
+      // Drive rAF manually so it pauses when idle and saves CPU
+      window.lenis = new window.Lenis({
+        autoRaf: false,
+        lerp,
+        wheelMultiplier: 0.7,
+        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+      });
+      let lenisRaf = null;
+      const runLenisFrame = (time) => {
+        window.lenis.raf(time);
+        lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
+      };
+      const startLenisRaf = () => {
+        if (lenisRaf !== null) return;
+        // Lenis keeps the last frame's timestamp, so after idling the first delta would span the
+        // whole idle gap and finish the animation in one frame. Rebase its clock (delta = 0).
+        window.lenis.time = 0;
+        lenisRaf = requestAnimationFrame(runLenisFrame);
+      };
+
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+      const onScrollKey = (e) => {
+        if (!scrollKeys.includes(e.key)) return;
+        if (document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) return;
+        startLenisRaf();
+      };
+      window.addEventListener('keydown', onScrollKey, { passive: true });
+
+      ['wheel', 'touchstart', 'touchmove', 'scroll'].forEach((evt) => {
+        window.addEventListener(evt, startLenisRaf, { passive: true });
+      });
+
+      const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
+      window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
+
+      if (document.querySelector('.modal-curtain.is-open')) {
+        window.lenis.stop();
       }
-    }, { passive: true });
+      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+      let fsScrollTimer;
+      window.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > fsThreshold) {
+          window.lenis.options.lerp = fsFactor;
+          clearTimeout(fsScrollTimer);
+          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        }
+      }, { passive: true });
+    }
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

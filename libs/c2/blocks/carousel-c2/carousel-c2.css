@@ -31,10 +31,10 @@
     gap: var(--carousel-slides-gap);
     transition: translate var(--transition-duration) var(--animation-curve);
     cursor: grab;
-    will-change: translate;
 
     &.grabbing {
       cursor: grabbing;
+      will-change: translate;
     }
 
     .carousel-slide {
