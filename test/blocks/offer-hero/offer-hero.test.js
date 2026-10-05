@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 import init from '../../../libs/c2/blocks/offer-hero/offer-hero.js';
 
@@ -158,6 +159,26 @@ describe('offer-hero', () => {
       expect(block.querySelector('.hero')).to.be.null;
       expect(block.querySelector('.what-included')).to.be.null;
       expect(block.children.length).to.equal(0);
+    });
+  });
+
+  describe('deferred video poster', () => {
+    const GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+    afterEach(() => sinon.restore());
+
+    it('swaps a video with a deferred poster for an img when animation is disabled', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.offer-hero');
+      const video = document.createElement('video');
+      video.setAttribute('data-deferred-poster', `<picture><source type="image/webp" srcset="${GIF}"><source type="image/webp" srcset="${GIF}" media="(min-width: 600px)"></picture>`);
+      block.querySelector('picture').replaceWith(video);
+      sinon.stub(CSS, 'supports').returns(false);
+      init(block);
+
+      const media = block.querySelector('.hero-card-media');
+      expect(media.querySelector('video')).to.be.null;
+      expect(media.querySelector('img').getAttribute('src')).to.equal(GIF);
     });
   });
 });

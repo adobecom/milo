@@ -101,4 +101,18 @@ describe('Split Aside Grid', () => {
     expect(medias[0].getAttribute('aria-hidden')).to.equal('false');
     expect(medias[1].getAttribute('aria-hidden')).to.equal('true');
   });
+
+  it('resolves a deferred poster on the first media video for the aspect ratio', async () => {
+    const GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const el = document.querySelector('.split-aside-grid');
+    const video = document.createElement('video');
+    video.setAttribute('data-deferred-poster', `<picture><source type="image/webp" srcset="${GIF}"><source type="image/webp" srcset="${GIF}" media="(min-width: 600px)"></picture>`);
+    el.querySelector('picture').replaceWith(video);
+    init(el);
+
+    const stackVideo = el.querySelector('.split-aside-grid-stack .media video');
+    expect(stackVideo.getAttribute('poster')).to.equal(GIF);
+    expect(stackVideo.hasAttribute('data-deferred-poster')).to.be.false;
+  });
 });

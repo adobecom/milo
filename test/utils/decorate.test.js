@@ -10,6 +10,7 @@ import {
   decorateViewportContent,
   decorateAnchorVideo,
   getImgSrc,
+  getVideoPoster,
   attachDeferredPosters,
   DEFERRED_POSTER_ATTR,
 } from '../../libs/utils/decorate.js';
@@ -507,6 +508,23 @@ describe('deferred video poster', () => {
     expect(original.getAttribute('poster')).to.equal(`${GIF}#mobile`);
     expect(cloned.getAttribute('poster')).to.equal(`${GIF}#mobile`);
     expect(cloned.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.false;
+  });
+
+  it('getVideoPoster resolves a deferred poster before loadBlock attaches it', () => {
+    container.innerHTML = `<div class="any-block"><div>${link('a')}</div></div>`;
+    decorateAll();
+    const video = container.querySelector('video');
+    expect(getVideoPoster(video)).to.equal(`${GIF}#mobile`);
+    expect(video.getAttribute('poster')).to.equal(`${GIF}#mobile`);
+    expect(video.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.false;
+  });
+
+  it('getVideoPoster returns an existing poster, or an empty string', () => {
+    container.innerHTML = `<div class="content"><div>${link('a')}</div></div>`;
+    decorateAll();
+    expect(getVideoPoster(container.querySelector('video'))).to.equal(`${GIF}#mobile`);
+    expect(getVideoPoster(document.createElement('video'))).to.equal('');
+    expect(getVideoPoster(null)).to.equal('');
   });
 
   it('keeps getImgSrc output unchanged', () => {

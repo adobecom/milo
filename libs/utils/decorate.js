@@ -303,6 +303,13 @@ function attachDeferredPoster(video) {
   if (posterSrc) video.poster = posterSrc;
 }
 
+// For blocks that read the poster in their own init, before loadBlock attaches deferred posters.
+export function getVideoPoster(video) {
+  if (!video) return '';
+  attachDeferredPoster(video);
+  return video.getAttribute('poster') || '';
+}
+
 function isHiddenWithin(el, root) {
   for (let node = el; node && node !== root.parentElement; node = node.parentElement) {
     if (getComputedStyle(node).display === 'none') return true;

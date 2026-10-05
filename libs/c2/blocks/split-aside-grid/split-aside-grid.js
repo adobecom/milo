@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, getVideoPoster, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const SWIPE_THRESHOLD = 20;
@@ -595,7 +595,7 @@ function setupBlock(el, isDesktop) {
 
     if (!isVideo) return;
 
-    const poster = asset.getAttribute('poster');
+    const poster = getVideoPoster(asset);
     if (!poster) return;
 
     const posterImg = new Image();

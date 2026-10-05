@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, getVideoPoster } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 // Each STACK_REF_DESKTOP / STACK_REF_MOBILE entry positions one card in the pile:
@@ -38,7 +38,7 @@ function setupVideo(media) {
   const videoEl = media.querySelector('video');
   if (!videoEl) return;
   if (isAnimationDisabled()) {
-    const poster = videoEl.getAttribute('poster');
+    const poster = getVideoPoster(videoEl);
     if (!poster) { videoEl.remove(); return; }
     videoEl.replaceWith(createTag('img', { src: poster, alt: '' }));
     return;
