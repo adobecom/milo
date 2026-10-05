@@ -291,18 +291,18 @@
       }
 
       &.center > .tabs-wrapper {
-        justify-content: center;
+        justify-content: safe center;
       }
     }
   }
 
   @media (width >= 768px) {
     &.center .tabs-wrapper {
-      justify-content: center;
+      justify-content: safe center;
     }
 
     &.right .tabs-wrapper {
-      justify-content: flex-end;
+      justify-content: safe flex-end;
     }
   }
 }
