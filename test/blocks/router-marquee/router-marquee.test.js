@@ -144,4 +144,20 @@ describe('Router Marquee', () => {
     expect(slides[0].querySelector('.rm-title').textContent.trim()).to.equal('Slide two title');
     expect(slides[1].querySelector('.rm-title').textContent.trim()).to.equal('Slide one title');
   });
+
+  it('drops deferred posters from non-active slides in every viewport, including clones', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.router-marquee');
+    block.querySelectorAll('picture').forEach((pic) => {
+      pic.insertAdjacentHTML('afterend', '<video data-deferred-poster="<picture></picture>"></video>');
+    });
+    init(block);
+
+    block.querySelectorAll(':scope > .rm-viewport').forEach((vp) => {
+      const videos = [...vp.querySelectorAll('.rm-slide video')];
+      expect(videos.length).to.equal(2);
+      expect(videos[0].hasAttribute('data-deferred-poster')).to.be.true;
+      expect(videos[1].hasAttribute('data-deferred-poster')).to.be.false;
+    });
+  });
 });

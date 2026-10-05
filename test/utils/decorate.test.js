@@ -496,6 +496,19 @@ describe('deferred video poster', () => {
     expect(video.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.false;
   });
 
+  it('attaches the poster to a cloned deferred video', () => {
+    container.innerHTML = `<div class="any-block"><div>${link('a')}</div></div>`;
+    decorateAll();
+    const block = container.querySelector('.any-block');
+    const clone = block.firstElementChild.cloneNode(true);
+    block.append(clone);
+    attachDeferredPosters(block);
+    const [original, cloned] = block.querySelectorAll('video');
+    expect(original.getAttribute('poster')).to.equal(`${GIF}#mobile`);
+    expect(cloned.getAttribute('poster')).to.equal(`${GIF}#mobile`);
+    expect(cloned.hasAttribute(DEFERRED_POSTER_ATTR)).to.be.false;
+  });
+
   it('keeps getImgSrc output unchanged', () => {
     expect(getImgSrc(POSTER)).to.equal(`poster='${GIF}#mobile'`);
     widthStub.restore();

@@ -651,7 +651,11 @@ const buildViewport = (viewport, slides) => {
     decorateSlide(slide);
     slide.setAttribute('role', 'tabpanel');
     slide.setAttribute('aria-roledescription', 'slide');
-    if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
+    if (i > 0) {
+      const video = slide.querySelector('video');
+      video?.removeAttribute('poster');
+      video?.removeAttribute('data-deferred-poster');
+    }
   });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);

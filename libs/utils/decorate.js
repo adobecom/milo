@@ -293,13 +293,12 @@ function getPosterSrc(pic) {
   return source?.srcset || '';
 }
 
+// Holds the poster <picture> markup on the video itself so blocks that clone it keep the poster.
 export const DEFERRED_POSTER_ATTR = 'data-deferred-poster';
-const deferredPosters = new WeakMap();
 
 function attachDeferredPoster(video) {
-  if (!deferredPosters.has(video)) return;
-  const posterSrc = getPosterSrc(deferredPosters.get(video));
-  deferredPosters.delete(video);
+  if (!video.hasAttribute(DEFERRED_POSTER_ATTR)) return;
+  const posterSrc = getPosterSrc(video.getAttribute(DEFERRED_POSTER_ATTR));
   video.removeAttribute(DEFERRED_POSTER_ATTR);
   if (posterSrc) video.poster = posterSrc;
 }
@@ -651,10 +650,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (indexOfVideo === 1) {
     firstVideo = videoEl;
   }
-  if (deferPoster) {
-    deferredPosters.set(videoEl, dataset.videoPoster);
-    videoEl.setAttribute(DEFERRED_POSTER_ATTR, '');
-  }
+  if (deferPoster) videoEl.setAttribute(DEFERRED_POSTER_ATTR, dataset.videoPoster);
 
   createIntersectionObserver({
     el: videoEl,
