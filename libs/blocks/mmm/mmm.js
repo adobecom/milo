@@ -125,6 +125,8 @@ function textTag(tag, attributes, text) {
   return el;
 }
 
+const hrefAttr = (url) => (url ? { href: url } : {});
+
 async function toggleDrawer(target, dd, pageId) {
   const el = target.closest('button');
   const expanded = el.getAttribute('aria-expanded') === 'true';
@@ -154,7 +156,7 @@ function createButtonDetailsPair(mmmEl, page) {
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const anchor = textTag('a', { href: safeUrl(url) }, url);
+  const anchor = textTag('a', hrefAttr(safeUrl(url)), url);
   const hTag = createTag('h5', false, anchor);
   const activitiesNum = textTag(
     'span',
@@ -455,7 +457,8 @@ async function createFiltersForm(el) {
 }
 
 function createPaginationEl({ data, el }) {
-  const { pageNum, perPage, totalRecords } = data;
+  const { pageNum, perPage } = data;
+  const totalRecords = Number(data.totalRecords) || 0;
   const arrowIcons = {
     first: '<svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.205 10.59L8.61504 6L13.205 1.41L11.795 0L5.79504 6L11.795 12L13.205 10.59ZM0.795044 0H2.79504V12H0.795044V0Z" fill="black"/></svg>',
     prev: '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.70504 1.41L6.29504 0L0.295044 6L6.29504 12L7.70504 10.59L3.12504 6L7.70504 1.41Z" fill="black"/></svg>',
@@ -512,7 +515,7 @@ function createPaginationEl({ data, el }) {
     const paginationSummary = createTag(
       'div',
       { class: 'mmm-pagination-summary' },
-      `<div><span>${range} of ${totalRecords.toLocaleString()}</span><div>`,
+      createTag('div', false, textTag('span', false, `${range} of ${totalRecords.toLocaleString()}`)),
     );
     paginationWrapper.append(
       createTag('div', { id: 'pagination-select' }, [paginationLabel, paginationDropdown]),
@@ -586,7 +589,10 @@ function createReportButton() {
       setTimeout(() => e.target.closest('p').classList.remove('minError'), 3000);
       return;
     }
-    selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href.split('?')[0]));
+    selectedCheckboxes.forEach((checkedBox) => {
+      const link = checkedBox.closest('.mmm-report-row').querySelector('a');
+      if (link?.hasAttribute('href')) reportData.push(link.href.split('?')[0]);
+    });
     navigator.clipboard.writeText(`Please turn off Target integration from the following ${reportData.length > 1 ? `${reportData.length} pages:` : 'page:'}\n${reportData.join('\n')}`);
     e.target.closest('p').classList.remove('minError');
     e.target.closest('p').classList.add('copySuccess');
@@ -606,11 +612,11 @@ function createReportRow(item, index) {
     class: 'mmm-report-add',
   });
   const pageUrl = safeUrl(item.url);
-  const pageLink = textTag('a', { href: pageUrl && `${pageUrl}?mep`, target: '_blank' }, item.url);
+  const pageLink = textTag('a', { ...hrefAttr(pageUrl && `${pageUrl}?mep`), target: '_blank' }, item.url);
   const manifestLink = textTag('a', {
     class: 'small',
     target: '_blank',
-    href: safeUrl(getAbsUrl(item.manifestUrl, item.url)),
+    ...hrefAttr(safeUrl(getAbsUrl(item.manifestUrl, item.url))),
   }, item.targetActivityName);
   const activityCell = textTag('div', false, getDate(item.aLastSeen));
   activityCell.append(createTag('br'), manifestLink);

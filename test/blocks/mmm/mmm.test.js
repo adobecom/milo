@@ -45,6 +45,7 @@ describe('MMM - Target Cleanup Report', () => {
     expect(document.querySelector('#mmm-pagination')).to.exist;
     expect(document.querySelector('#mmm-search-filter')).to.exist;
     expect(document.querySelector('#mmm-lastSeenManifest')).to.exist;
+    expect(document.querySelector('.mmm-pagination-summary span').textContent).to.equal('1 - 25 of 356');
   });
 });
 
@@ -246,11 +247,25 @@ describe('MMM - stored data is rendered as text', () => {
     expect(first.children[2].textContent).to.equal(PAYLOAD);
     const manifestLink = first.querySelector('a.small');
     expect(manifestLink.textContent).to.equal(PAYLOAD);
-    expect(manifestLink.getAttribute('href')).to.equal('');
-    expect(second.querySelector('a').getAttribute('href')).to.equal('');
+    expect(manifestLink.hasAttribute('href')).to.be.false;
+    expect(second.querySelector('a').hasAttribute('href')).to.be.false;
     report.querySelectorAll('.mmm-report-header .sortable').forEach((header) => {
       expect(header.dataset.order).to.be.oneOf(['asc', 'desc']);
     });
+  });
+
+  it('copies only rows with a safe page URL', async () => {
+    await initMmm('./mocks/bodyReport.html', './mocks/get-report-xss.json');
+    await delay(50);
+    const writeText = stub(navigator.clipboard, 'writeText').resolves();
+    try {
+      document.querySelectorAll('.mmm-report-add').forEach((checkbox) => { checkbox.checked = true; });
+      document.querySelector('.mmm-report-copy').click();
+      expect(writeText.calledOnce).to.be.true;
+      expect(writeText.firstCall.args[0]).to.equal('Please turn off Target integration from the following page:\nhttps://www.adobe.com/products/photoshop.html');
+    } finally {
+      writeText.restore();
+    }
   });
 
   it('escapes the page list', async () => {
@@ -260,9 +275,12 @@ describe('MMM - stored data is rendered as text', () => {
     expect(dt.querySelectorAll('.xss').length).to.equal(0);
     expect(window.mmmXss).to.be.undefined;
     const anchor = dt.querySelector('h5 a');
-    expect(anchor.getAttribute('href')).to.equal('');
+    expect(anchor.hasAttribute('href')).to.be.false;
     expect(anchor.textContent).to.include(PAYLOAD);
     expect(dt.querySelector('.mmm-page_item-subtext').textContent).to.equal(`${PAYLOAD} Manifest(s) found`);
+    const pagination = document.querySelector('#mmm-pagination');
+    expect(pagination.querySelectorAll('.xss').length).to.equal(0);
+    expect(pagination.querySelector('#mmm-pagination-no-results')).to.exist;
   });
 
   it('escapes metadata lookup results', async () => {
