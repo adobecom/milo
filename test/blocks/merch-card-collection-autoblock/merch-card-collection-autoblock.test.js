@@ -675,12 +675,6 @@ describe('merch-card-collection autoblock', () => {
       expect(collection.limit).to.equal(12);
     });
 
-    it('scrolls the Category section on its own', () => {
-      const { container } = mount();
-      const scrollers = [...container.querySelectorAll('.product-pricing-group-pills-scroll')];
-      expect(scrollers.map((el) => el.getAttribute('aria-label'))).to.deep.equal(['Category']);
-    });
-
     it('collapses and expands a drawer section from its toggle', () => {
       const { container } = mount();
       const toggle = container.querySelector('.product-pricing-group-toggle');

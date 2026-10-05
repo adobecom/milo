@@ -192,23 +192,12 @@
   gap: 4px;
 }
 
-/* Category scrolls inside its card (MWPW-205571). The cut-off pill signals
-   more. Padding keeps the focus ring inside the clip. */
-.product-pricing-group-pills-scroll {
-  max-height: 240px;
-  padding: 4px;
-  margin: -4px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 /* The input holds the state, the label paints it. */
 .product-pricing-pill {
   display: inline-flex;
-  position: relative; /* contains the absolute input, or it escapes the scroller */
+  position: relative; /* contains the absolute input */
   align-items: center;
   align-self: flex-start;
-  flex: none; /* a capped-height column would squash it instead of scrolling */
   height: 40px;
   padding: 0 24px;
   border-radius: 75px;

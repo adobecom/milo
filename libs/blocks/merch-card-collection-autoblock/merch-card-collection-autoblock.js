@@ -289,7 +289,7 @@ function buildGroupCard(group) {
   });
   const header = createTag('h3', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), toggle]);
   const bodyAttrs = {
-    class: `product-pricing-group-pills${group.category ? ' product-pricing-group-pills-scroll' : ''}`,
+    class: 'product-pricing-group-pills',
     role: group.optional ? 'group' : 'radiogroup',
     'aria-label': group.title,
   };
