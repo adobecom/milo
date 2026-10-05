@@ -404,7 +404,6 @@ const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
-let upgradeOffer = null;
 
 /**
  * Parses the maslibs URL parameter and returns a validated base URL.
@@ -689,18 +688,15 @@ function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
   return family[codeSubscr]?.includes(codeCta) || codeSubscr === codeCta;
 }
 
-export async function getDownloadAction(
-  options,
-  imsSignedInPromise,
-  [
+export async function getDownloadAction(options, imsSignedInPromise, offers) {
+  if (options.entitlement !== true) return undefined;
+  const [
     {
       offerType,
       productArrangementCode,
       productArrangement: { productCode, productFamily: offerFamily } = {},
-    },
-  ],
-) {
-  if (options.entitlement !== true) return undefined;
+    } = {},
+  ] = offers ?? [];
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -737,27 +733,31 @@ export async function getDownloadAction(
   return { text, className: `download ${type}`, url };
 }
 
-export async function getUpgradeAction(
-  options,
-  imsSignedInPromise,
-  [{ productArrangement: { productFamily: offerFamily } = {} }],
-  el,
-) {
+export async function getUpgradeAction(options, imsSignedInPromise, offers, el) {
   if (!options.upgrade) return undefined;
+  const [{ productArrangement: { productFamily: offerFamily } = {} } = {}] = offers ?? [];
   let SOURCE_PF;
   let TARGET_PF;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
-  if (upgradeOffer === null) {
-    upgradeOffer = undefined;
-    // will enter only once
-    upgradeOffer = await document.querySelector(
-      '.merch-offers.upgrade [data-wcs-osi]',
-    );
+  // Refresh the cache when the offer was removed during fragment replacement.
+  if (!getUpgradeAction.offer?.isConnected) {
+    getUpgradeAction.offer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  }
+  const upgradeOffer = getUpgradeAction.offer;
+  if (!upgradeOffer) {
+    // Authoring error: the CTA asks for an upgrade but the page has no upgrade offer,
+    // so it silently stays a regular CTA. Reported once, as every upgrade CTA on the
+    // page hits the same condition and would otherwise flood the logs.
+    if (!getUpgradeAction.missReported) {
+      getUpgradeAction.missReported = true;
+      const osi = el?.getAttribute?.('data-wcs-osi') ?? el?.href ?? 'unknown';
+      log?.error(`Upgrade CTA (osi: ${osi}) cannot be resolved: page has no '.merch-offers.upgrade [data-wcs-osi]' element`);
+    }
+    return undefined;
   }
 
-  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
@@ -765,8 +765,8 @@ export async function getUpgradeAction(
     SOURCE_PF = CC_SINGLE_APPS_ALL;
     TARGET_PF = CC_ALL_APPS;
   }
-  await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && offerFamily) {
+  await upgradeOffer.onceSettled?.();
+  if (entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
       offerFamily,
@@ -1265,7 +1265,7 @@ export async function getCheckoutAction(
     return downloadAction || upgradeAction || modalAction;
   } catch (e) {
     log?.error('Failed to resolve checkout action', e);
-    return [];
+    return undefined;
   }
 }
 
