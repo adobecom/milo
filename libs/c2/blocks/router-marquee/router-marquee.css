@@ -399,13 +399,19 @@
   }
 
   /* Slides with a foreground image: the media is full-bleed at the top of the
-     viewport (behind the gnav) and the copy flows below it. The viewport
-     min-height (set in JS) grows to fit the foreground + copy + controls so
-     nothing is clipped. */
+     screen and the copy anchors to the bottom, both sharing the one-screen
+     viewport (this section is sticky/parallax and must not grow taller). */
   .rm-content-wrapper:has(.rm-foreground) {
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     padding-top: 0;
     padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
+  }
+
+  .rm-content-wrapper:has(.rm-foreground) .rm-content {
+    margin-top: auto;
   }
 
   /* Full-bleed media block above .rm-content. position/z-index lift it above the
@@ -415,6 +421,7 @@
     display: block;
     position: relative;
     z-index: 2;
+    flex: 0 0 auto;
     margin-inline: calc(-1 * var(--s2a-spacing-24));
     margin-bottom: var(--s2a-spacing-lg);
     overflow: hidden;
