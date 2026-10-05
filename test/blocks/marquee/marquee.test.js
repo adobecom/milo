@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
@@ -183,6 +183,56 @@ describe('marquee', () => {
       const mnemonic = product.querySelector('picture');
       expect(title).to.exist;
       expect(mnemonic).to.exist;
+    });
+  });
+
+  describe('split marquee layout', () => {
+    let marquee;
+    let originalDir;
+    let originalViewport;
+
+    beforeEach(() => {
+      originalDir = document.documentElement.getAttribute('dir');
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    });
+
+    afterEach(async () => {
+      marquee?.remove();
+      if (originalDir === null) document.documentElement.removeAttribute('dir');
+      else document.documentElement.setAttribute('dir', originalDir);
+      await setViewport(originalViewport);
+    });
+
+    [
+      { width: 600, imageFirst: false },
+      { width: 600, imageFirst: true },
+      { width: 1200, imageFirst: false },
+      { width: 1200, imageFirst: true },
+    ].forEach(({ width, imageFirst }) => {
+      it(`keeps RTL ${imageFirst ? 'image-first' : 'text-first'} content separate at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        document.documentElement.setAttribute('dir', 'rtl');
+        marquee = document.createElement('div');
+        marquee.className = 'marquee split dark';
+        const text = '<div><h2>Split marquee heading</h2><p>Supporting copy for the split marquee.</p></div>';
+        const image = '<div><picture><img alt="Test image" width="640" height="360" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'640\' height=\'360\'/%3E"></picture></div>';
+        marquee.innerHTML = `<div>${imageFirst ? image + text : text + image}</div>`;
+        document.body.append(marquee);
+        await init(marquee);
+
+        expect(marquee.classList.contains('row-reversed')).to.equal(imageFirst);
+        const textRect = marquee.querySelector('.text').getBoundingClientRect();
+        const imageRect = marquee.querySelector('.asset').getBoundingClientRect();
+        expect(textRect.width).to.be.above(0);
+        expect(imageRect.width).to.be.above(0);
+        expect(imageRect.height).to.be.above(0);
+
+        if (imageFirst) {
+          expect(textRect.right).to.be.at.most(imageRect.left + 1);
+        } else {
+          expect(imageRect.right).to.be.at.most(textRect.left + 1);
+        }
+      });
     });
   });
 
