@@ -807,7 +807,7 @@
   }
 
   .rich-content.media {
-    gap: var(--s2a-spacing-3xl);
+    gap: var(--s2a-spacing-2xl);
   }
 
   .rich-content.media img {
