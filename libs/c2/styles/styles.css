@@ -1504,6 +1504,87 @@ span.hang-opening-quote {
     }
   }
 
+  /* Content drift: the text group scrolls slightly slower than the page,
+     so the asset below closes the distance to the CTA. */
+  .section.parallax-garage-door-reveal {
+    --gd-content-drift: 32px;
+
+    @media (width < 768px) {
+      --gd-content-drift: 24px;
+    }
+
+    .foreground .content {
+      animation: garage-door-content-drift linear both;
+      animation-timeline: --gd-text-vt;
+      animation-range: cover 0% cover 100%;
+    }
+  }
+
+  .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    --gd-content-drift: 0px;
+  }
+
+  /* Merch-moment on mobile mirrors the design prototype's merch-copy: the
+     background asset moves with its section (no separate parallax), the text
+     group lags the page at 15% of scroll speed, pivoting on the viewport
+     centre, and items rise (20px steps) and fade in on a viewport-height
+     timeline. */
+  @media (width < 768px) {
+    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+      --gd-content-rate: 0.15;
+
+      .foreground .content {
+        will-change: transform;
+        animation-name: garage-door-content-parallax;
+      }
+
+      .foreground .content > * {
+        animation: garage-door-merch-fade linear both, garage-door-merch-rise linear both;
+        animation-timeline: --gd-text-vt, --gd-text-vt;
+        animation-range:
+          cover calc(5.75vh + var(--gd-item-order, 0) * 6.75vh) cover 49.25vh,
+          cover -22vh cover 53vh;
+      }
+
+      /* The text enters lifted by half its parallax travel, so pull the
+         asset up by most of the same viewport share (85%) to keep the entry
+         gap tight without the asset ending too high. */
+      &.has-background .section-background {
+        margin-block-start: calc(-50vh * var(--gd-content-rate, 0.15) * 0.85);
+      }
+
+      &.has-background .section-background img {
+        margin-block-end: 0;
+        transform: none;
+        animation: none;
+      }
+    }
+  }
+
+  /* (100vh + 100%) is the full cover distance, since .content fills
+     .foreground (the timeline subject). */
+  @keyframes garage-door-content-parallax {
+    from { transform: translateY(calc((100vh + 100%) * var(--gd-content-rate, 0) / -2)); }
+    to { transform: translateY(calc((100vh + 100%) * var(--gd-content-rate, 0) / 2)); }
+  }
+
+  @keyframes garage-door-merch-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes garage-door-merch-rise {
+    from { translate: 0 calc(var(--gd-item-order, 0) * 20px); }
+    to { translate: 0 0; }
+  }
+
+  /* Centered on the layout position, so spacing matches the design when the
+     text is mid-viewport. */
+  @keyframes garage-door-content-drift {
+    from { transform: translateY(calc(var(--gd-content-drift, 0px) / -2)); }
+    to { transform: translateY(calc(var(--gd-content-drift, 0px) / 2)); }
+  }
+
   @keyframes garage-door-text-reveal {
     from {
       opacity: 0;
