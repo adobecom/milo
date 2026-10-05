@@ -424,6 +424,7 @@
     z-index: 2;
     margin-top: calc(-1 * (var(--s2a-spacing-64) + var(--s2a-spacing-24)));
     margin-inline: calc(-1 * var(--s2a-spacing-24));
+    margin-bottom: var(--s2a-spacing-lg);
     overflow: hidden;
   }
 
@@ -434,7 +435,8 @@
   .rm-foreground img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 362px;
+    object-fit: cover;
   }
 
   .rm-title {
