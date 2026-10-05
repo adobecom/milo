@@ -80,7 +80,7 @@
     align-self: stretch;
     display: flex;
     flex-direction: column;
-    gap: var(--s2a-spacing-xs);
+    gap: var(--s2a-spacing-md);
     position: relative;
 
 
@@ -89,6 +89,8 @@
       --merch-badge-border: 1px solid var(--pm-content) !important;
       --merch-badge-border-radius: var(--s2a-border-radius-2xs) !important;
       --merch-badge-color: var(--pm-badge-color) !important;
+      --merch-badge-padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs) !important;
+      line-height: var(--s2a-typography-line-height-body-xs);
     }
 
     .mas-price-commitment,
@@ -116,7 +118,7 @@
     }
 
     p:has(> .mas-badge) {
-      inset-block-start: 0;
+      inset-block-start: calc(-1 * var(--s2a-spacing-2xs));
       inset-inline-end: 0;
       margin: 0;
       position: absolute;
