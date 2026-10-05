@@ -189,10 +189,11 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-const decorateCtas = (textCol) => {
+const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
-  cta.classList.add('rm-ctas', 'dark', 'action-area');
+  cta.classList.add('rm-ctas', 'action-area');
+  if (!isLight) cta.classList.add('dark');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
@@ -333,7 +334,7 @@ const loadViewportVideos = (el) => {
   playActiveVideo(video);
 };
 
-const decorateSlide = (slide) => {
+const decorateSlide = (slide, isLight) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
@@ -347,7 +348,7 @@ const decorateSlide = (slide) => {
 
   if (!textCol) return;
   decorateText(textCol);
-  decorateCtas(textCol);
+  decorateCtas(textCol, isLight);
 };
 
 const buildCard = (slide) => {
@@ -869,13 +870,13 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   };
 };
 
-const buildViewport = (viewport, slides, isActiveViewport) => {
+const buildViewport = (viewport, slides, isActiveViewport, isLight) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   // A pending promo slide is display:none and commonly stays that way for the whole visit
   // (no promotion for this user), so the first *visible* slide - not index 0 - starts active.
   const firstIdx = Math.max(slides.findIndex((s) => !isPromoPending(s)), 0);
   slides.forEach((slide, i) => {
-    decorateSlide(slide);
+    decorateSlide(slide, isLight);
     slide.setAttribute('role', 'tabpanel');
     slide.setAttribute('aria-roledescription', 'slide');
     // Keep only the active viewport's first visible slide image eager; every other slide
@@ -922,8 +923,9 @@ export default function init(el) {
   markPromoSlides(el, viewports);
   reorderSlidesMaybe(el, viewports);
   const initialVp = getActiveViewport();
+  const isLight = el.classList.contains('light');
   const containers = Object.entries(viewports)
-    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
+    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp, isLight));
   el.replaceChildren(...containers);
   const controllersByVp = new Map();
   let activeVpName = null;

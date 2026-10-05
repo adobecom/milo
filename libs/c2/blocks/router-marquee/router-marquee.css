@@ -80,6 +80,15 @@
   margin-inline-start: auto;
 }
 
+/* Light variant: black copy on a light background, no dark scrim. */
+.router-marquee.light .rm-overlay {
+  background: none;
+}
+
+.router-marquee.light .rm-content {
+  color: var(--s2a-color-gray-1000);
+}
+
 .rm-eyebrow {
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   font-size: var(--s2a-font-size-16);
