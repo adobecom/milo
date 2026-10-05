@@ -336,8 +336,8 @@ const loadViewportVideos = (el) => {
 };
 
 // A slide may author two images in the media column: the first becomes a
-// foreground visual layered above the copy zone (mobile comps), the rest stays
-// as the slide background.
+// full-bleed foreground layer above the background (mobile comps), the rest
+// stays as the slide background.
 const splitForegroundMedia = (imageCol) => {
   const pictures = [...(imageCol?.querySelectorAll('picture') ?? [])];
   if (pictures.length < 2) return null;
