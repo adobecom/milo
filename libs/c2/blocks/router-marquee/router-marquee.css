@@ -411,31 +411,28 @@
   }
 
   /* In-flow block stacked above .rm-content. position/z-index lift it above the
-     absolutely-positioned .rm-background (z-index 0) and .rm-overlay (z-index 1). */
+     absolutely-positioned .rm-background (z-index 0) and .rm-overlay (z-index 1).
+     A concrete height keeps it from collapsing when the copy is tall; the
+     viewport min-height (set in JS) grows to keep copy + foreground visible. */
   .rm-foreground {
     position: relative;
     z-index: 2;
-    display: flex;
-    flex: 1 1 auto;
-    min-height: 0;
-    align-items: flex-end;
-    justify-content: center;
+    flex: 0 0 auto;
+    height: 40svh;
     overflow: hidden;
     margin-bottom: var(--s2a-spacing-24);
   }
 
   .rm-foreground picture {
-    display: flex;
-    justify-content: center;
-    max-width: 100%;
-    max-height: 100%;
-    min-height: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .rm-foreground img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .rm-title {
