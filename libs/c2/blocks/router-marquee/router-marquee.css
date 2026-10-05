@@ -44,6 +44,11 @@
   height: 100%;
 }
 
+/* Shown on mobile when a slide authors a second, foreground image (see below). */
+.rm-foreground {
+  display: none;
+}
+
 .rm-background img,
 .rm-background video {
   width: 100%;
@@ -391,6 +396,40 @@
   .rm-content-wrapper {
     /* top padding is the height of the gnav + space between gnav and marquee content*/
     padding: calc(var(--s2a-spacing-64) + var(--s2a-spacing-24))  var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
+  }
+
+  /* Slides with a foreground image: media fills the top of the first screen and
+     copy anchors to the bottom, growing upward as it gets longer. */
+  .rm-content-wrapper:has(.rm-foreground) {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
+  }
+
+  .rm-foreground {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .rm-foreground picture {
+    display: flex;
+    justify-content: center;
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 0;
+  }
+
+  .rm-foreground img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
   }
 
   .rm-title {

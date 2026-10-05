@@ -254,33 +254,34 @@ const loadVideo = (video) => {
 // Slides are stacked at inset:0, so loading="lazy" never defers the off-screen
 // ones. Stash the picture sources and restore them only when the slide is needed.
 const stashSlideImage = (slide) => {
-  const pic = slide?.querySelector('.rm-background picture');
-  if (!pic) return;
-  pic.querySelectorAll('source[srcset]').forEach((s) => {
-    s.dataset.lazySrcset = s.getAttribute('srcset');
-    s.removeAttribute('srcset');
+  slide?.querySelectorAll('.rm-background picture, .rm-foreground picture').forEach((pic) => {
+    pic.querySelectorAll('source[srcset]').forEach((s) => {
+      s.dataset.lazySrcset = s.getAttribute('srcset');
+      s.removeAttribute('srcset');
+    });
+    const img = pic.querySelector('img');
+    if (img?.getAttribute('src')) {
+      img.dataset.lazySrc = img.getAttribute('src');
+      img.removeAttribute('src');
+    }
   });
-  const img = pic.querySelector('img');
-  if (img?.getAttribute('src')) {
-    img.dataset.lazySrc = img.getAttribute('src');
-    img.removeAttribute('src');
-  }
 };
 
 const loadSlideImage = (slide, lowPriority = false) => {
-  const pic = slide?.querySelector('.rm-background picture');
-  if (!pic || pic.dataset.loaded) return;
-  pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
-    s.setAttribute('srcset', s.dataset.lazySrcset);
-    delete s.dataset.lazySrcset;
+  slide?.querySelectorAll('.rm-background picture, .rm-foreground picture').forEach((pic) => {
+    if (pic.dataset.loaded) return;
+    pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
+      s.setAttribute('srcset', s.dataset.lazySrcset);
+      delete s.dataset.lazySrcset;
+    });
+    const img = pic.querySelector('img');
+    if (img?.dataset.lazySrc) {
+      if (lowPriority) img.setAttribute('fetchpriority', 'low');
+      img.setAttribute('src', img.dataset.lazySrc);
+      delete img.dataset.lazySrc;
+    }
+    pic.dataset.loaded = 'true';
   });
-  const img = pic.querySelector('img');
-  if (img?.dataset.lazySrc) {
-    if (lowPriority) img.setAttribute('fetchpriority', 'low');
-    img.setAttribute('src', img.dataset.lazySrc);
-    delete img.dataset.lazySrc;
-  }
-  pic.dataset.loaded = 'true';
 };
 
 // Load a slide's picture and video together (slide change / preload).
@@ -334,6 +335,21 @@ const loadViewportVideos = (el) => {
   playActiveVideo(video);
 };
 
+// A slide may author two images in the media column: the first becomes a
+// foreground visual layered above the copy zone (mobile comps), the rest stays
+// as the slide background.
+const splitForegroundMedia = (imageCol) => {
+  const pictures = [...(imageCol?.querySelectorAll('picture') ?? [])];
+  if (pictures.length < 2) return null;
+  const [first] = pictures;
+  const parent = first.parentElement;
+  const foreground = createTag('div', { class: 'rm-foreground' }, first);
+  if (parent?.tagName === 'P' && !parent.textContent.trim() && !parent.children.length) {
+    parent.remove();
+  }
+  return foreground;
+};
+
 const decorateSlide = (slide, isLight) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
@@ -341,6 +357,8 @@ const decorateSlide = (slide, isLight) => {
   textCol.classList.add('rm-content');
   const contentWrapper = createTag('div', { class: 'rm-content-wrapper' });
   slide.insertBefore(contentWrapper, textCol);
+  const foreground = splitForegroundMedia(imageCol);
+  if (foreground) contentWrapper.append(foreground);
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
@@ -487,6 +505,10 @@ const updateContentSpacing = (el) => {
   const controlsH = controls.offsetHeight;
   const controlsTop = controls.getBoundingClientRect().top - 24;
   const contentBottom = content.getBoundingClientRect().bottom;
+
+  // Expose controls height so bottom-anchored layouts (light mobile) can pad the
+  // copy zone above the absolutely-positioned controls.
+  vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
 
   // Set min-height so the viewport never shrinks below what the content needs
   const needed = wrapperPadTop + contentH + 24 + controlsH;
