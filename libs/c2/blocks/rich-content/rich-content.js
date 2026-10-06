@@ -1,8 +1,20 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
+const NAV_HEIGHT_PROP = '--rc-nav-height';
+
+// Lets focused links clear the sticky header when tabbing back into the section.
+function initNavHeight(el) {
+  const section = el.closest('.section');
+  const header = document.querySelector('header');
+  if (!section || !header) return;
+  const sync = () => section.style.setProperty(NAV_HEIGHT_PROP, `${getGnavHeight()}px`);
+  sync();
+  new ResizeObserver(sync).observe(header);
+}
 
 function hangOpeningQuote(header) {
   if (!header) return;
@@ -184,6 +196,7 @@ export default function init(el) {
   }
 
   applyHeroOverlay(el);
+  if (el.classList.contains('merch-moment')) initNavHeight(el);
   if (viewports.hasViewportVariations) {
     const observer = new MutationObserver(() => applyHeroOverlay(el));
     observer.observe(el, { childList: true });

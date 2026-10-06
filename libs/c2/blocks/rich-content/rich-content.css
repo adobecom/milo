@@ -253,6 +253,10 @@
   }
 
   &:has(.rich-content.merch-moment) {
+    .foreground :is(a, button) {
+      scroll-margin-top: calc(var(--rc-nav-height, 0px) + var(--s2a-spacing-lg));
+    }
+
     .foreground p.body-lg a {
       scroll-margin-bottom: calc(100vh - 200px);
     }
