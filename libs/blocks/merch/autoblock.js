@@ -1,5 +1,4 @@
 import { createTag, decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
-import { debounce } from '../../utils/action.js';
 import { addAriaLabelToCta, getMerchCardHeadingLevel } from './merch.js';
 
 let iconsLoaded;
@@ -161,10 +160,13 @@ let responsiveSyncAdded = false;
 function ensureResponsiveHeadingSync() {
   if (responsiveSyncAdded) return;
   responsiveSyncAdded = true;
-  const sync = debounce(() => {
-    document.querySelectorAll('[data-mas-orig-level]').forEach(applyPreservedStyles);
-  }, 150);
-  window.addEventListener('resize', sync);
+  let timer;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      document.querySelectorAll('[data-mas-orig-level]').forEach(applyPreservedStyles);
+    }, 150);
+  });
 }
 
 export function overrideCardHeadingLevel(card, targetLevel) {
