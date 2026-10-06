@@ -1089,6 +1089,61 @@ describe('getCountryAndLang', () => {
   });
 });
 
+describe('getCountryAndLang with a BACOM /ara base-site (autodetect lingo)', () => {
+  // Mirrors the real-world scenario: BACOM onboards '/ara' as a base site in
+  // lingo-site-mapping.json (same convention as '/fr'), and a BACOM author
+  // publishes a page at /ara/... with "Auto detect country & lang" enabled
+  // (autoCountryLang) on a langFirst-active site. The resolved country must
+  // be 'xx' (base-site convention) and the resolved language must be the
+  // 'ar' CaaS language tag id — NOT the raw 3-letter 'ara' path segment,
+  // which has no corresponding caas:language tag in the taxonomy.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '' },
+      ],
+    },
+  };
+  let metaLangFirst;
+  let ogFetch;
+
+  beforeEach(() => {
+    metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    if (metaLangFirst?.parentNode) document.head.removeChild(metaLangFirst);
+    if (ogFetch) window.fetch = ogFetch;
+  });
+
+  it('resolves to country: xx, language: ar (not the raw "ara" path segment)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      // Short-circuits the GEO IP fallback with a non-regional country so the
+      // test doesn't attempt a real network/Akamai lookup via getCountry().
+      mep: { countryIP: 'us' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
+  });
+});
+
 describe('getFloodgateCaasConfig', () => {
   const caasFgState = defaultState;
   caasFgState.fetchCardsFromFloodgateTree = true;

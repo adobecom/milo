@@ -22,6 +22,7 @@ export const LANGS = {
   'fr-ca': 'fr-ca',
   ja: 'ja',
   ar: 'ar',
+  ara: 'ar',
   arabic: 'ar',
   bg: 'bg',
   cs: 'cs',
@@ -658,6 +659,16 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
   return foundInMapping && !isEnglishRegional;
 }
 
+// Some lingo-site-mapping base-site path segments don't match an existing
+// caas:language tag id (e.g. the '/ara' base-site resolves to the 3-letter
+// path segment 'ara', but the CaaS language taxonomy only has 'ar'). This maps
+// those base-site segments to the tag id they should resolve to everywhere
+// a base-site segment is compared against, or returned as, a language value.
+const BASE_SITE_LANG_TAG_ALIASES = { ara: 'ar' };
+const normalizeBaseSiteLang = (lang) => (
+  Object.hasOwn(BASE_SITE_LANG_TAG_ALIASES, lang) ? BASE_SITE_LANG_TAG_ALIASES[lang] : lang
+);
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
@@ -675,20 +686,24 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
     }
     isKnownLingoSiteLocale = siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => {
       if (uniqueSiteId !== siteId) return false;
-      const baseLocale = baseSite?.split('/')[1];
-      const matchesBase = country === baseLocale;
-      const langMatchesBase = language === baseLocale;
+      // Compare country against the raw (un-normalized) base-site segment, not its
+      // language-tag alias, so a normalized alias (e.g. 'ara' -> 'ar') can never
+      // collide with an unrelated country code (e.g. 'ar' = Argentina).
+      const rawBaseSegment = baseSite?.split('/')[1];
+      const normalizedBaseLang = normalizeBaseSiteLang(rawBaseSegment);
+      const matchesBase = country === rawBaseSegment;
+      const langMatchesBase = normalizeBaseSiteLang(language) === normalizedBaseLang;
       const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
-      const baseSiteLocale = language === 'en' ? '' : language;
+      const baseSiteLocale = language === 'en' ? '' : normalizeBaseSiteLang(language);
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
-          if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
+          if (baseSiteLocale === baseSite || baseSiteLocale === normalizeBaseSiteLang(baseSite.split('/')[1])) {
             if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
               isPermittedLingoSiteLocale = true;
             }
@@ -774,7 +789,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
         if (baseLocale && localeStr === baseLocale) {
           lingoSiteMapping = {
             country: 'xx',
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
           return;
         }
@@ -788,7 +803,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
           }
           lingoSiteMapping = {
             country: localeStr,
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
         }
       });
