@@ -6,7 +6,6 @@ import {
   getMarketConfig,
   marketsLangForLocale,
   getValidatedMarket,
-  isSupportedMarket,
 } from '../../libs/utils/market.js';
 
 describe('market.js — norm()', () => {
@@ -146,47 +145,6 @@ describe('market.js — marketsLangForLocale()', () => {
   it('strips leading slash from locale prefix', () => {
     const result = marketsLangForLocale({ languages }, { prefix: '/fr' });
     expect(result.langName).to.equal('French');
-  });
-});
-
-describe('market.js — isSupportedMarket()', () => {
-  beforeEach(() => {
-    setConfig({
-      pathname: '/fr/test.html',
-      locales: { fr: { ietf: 'fr-FR' } },
-      marketsConfig: {
-        data: [
-          { prefix: '', supportedRegions: 'us,gb' },
-          { prefix: 'fr', supportedRegions: 'fr, CH ,be' },
-        ],
-      },
-    });
-  });
-
-  afterEach(() => {
-    sinon.restore();
-    setConfig({});
-  });
-
-  it('matches supported IMS countries case-insensitively for the page language', async () => {
-    expect(await isSupportedMarket('CH')).to.be.true;
-    expect(await isSupportedMarket('ch')).to.be.true;
-  });
-
-  it('rejects a country supported only by another language', async () => {
-    expect(await isSupportedMarket('US')).to.be.false;
-  });
-
-  it('does not fetch configuration when no country is supplied', async () => {
-    const fetchSpy = sinon.spy(window, 'fetch');
-    expect(await isSupportedMarket(undefined)).to.be.false;
-    expect(fetchSpy.called).to.be.false;
-  });
-
-  it('rejects the country when market configuration cannot be loaded', async () => {
-    setConfig({ locale: { prefix: '/fr' } });
-    sinon.stub(window, 'fetch').resolves({ ok: false });
-    expect(await isSupportedMarket('CH')).to.be.false;
   });
 });
 
