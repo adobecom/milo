@@ -193,7 +193,7 @@ const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
   cta.classList.add('rm-ctas', 'action-area');
-  if (!isLight) cta.classList.add('dark');
+  cta.classList.toggle('dark', !isLight);
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
@@ -341,8 +341,7 @@ const loadViewportVideos = (el) => {
 // child, so flatten those wrappers before decorating.
 const unwrapMedia = (container) => {
   container?.querySelectorAll(':scope > p').forEach((p) => {
-    if (p.textContent.trim()) return;
-    if (!p.querySelector(':scope > picture, :scope > video, :scope > img')) return;
+    if (p.textContent.trim() || !p.querySelector(':scope > picture, :scope > video, :scope > img')) return;
     p.replaceWith(...p.childNodes);
   });
 };
