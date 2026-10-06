@@ -51,8 +51,7 @@ export function getFederalDomain(config) {
 }
 
 export function decorateAcomAssistantGnav(el) {
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  if ((acomAssistantParam || getMetadata('acom-assistant')) !== 'on') return null;
+  if (getMetadata('acom-assistant') !== 'on') return null;
 
   const nav = el.querySelector('nav');
   if (!nav) return null;

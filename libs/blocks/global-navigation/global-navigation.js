@@ -584,9 +584,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
-    // TODO: only switch to using metadata
-    const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-    this.useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+    this.useAcomAssistant = getMetadata('acom-assistant') === 'on';
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
