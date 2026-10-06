@@ -61,8 +61,8 @@
   top: calc(100% + 8px);
 }
 
-/* c1 bacom nav on a c2 page */
-.global-navigation.new-nav .bc-gnav.is-c2 .bc-prompt-cards {
+/* c1 nav on a c2 page */
+.global-navigation.ready .bc-gnav.is-c2 .bc-prompt-cards {
   top: calc(100% - 2px);
 }
 
