@@ -11,31 +11,40 @@ import {
   decorateFloatingInput,
   updateReplicatedValue,
   handleConsent,
+  hasChatCookie,
 } from './bc-utils.js';
 import {
   loadWebclient,
   bcBootstrap,
-  openSideModal,
   openModal,
+  openSideModal,
+  sideOverlayTop,
   setAuthoredContent,
   mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 
 const variants = {};
 
 function checkGlobal() {
-  let global = false;
+  const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    global = window.milo.brandConcierge.brandConciergeGlobal;
+    return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  return global;
+  if (params.get('side-overlay') === 'true') {
+    return true;
+  }
+  return false;
 }
 
 function routeInput(text) {
   if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
-    else openSideModal(text, bcBootstrap);
+    else {
+      sideOverlayTop();
+      openSideModal(text, bcBootstrap);
+    }
   } else {
     openModal(text, bcBootstrap);
   }
@@ -82,9 +91,22 @@ export default async function init(el) {
     }
   });
 
-  initAnalytics();
+  sideOverlayTop();
+  initAnalytics('BC-Inline-shown');
 
-  const rows = el.querySelectorAll(':scope > div');
+  const rows = [...el.querySelectorAll(':scope > div')];
+  let customGradient = null;
+  let gradientRow = null;
+  if (el.classList.contains('marquee')
+    && rows[0]
+    && !rows[0].querySelector('picture')
+    && rows[1]?.querySelector('picture')) {
+    const rowText = rows[0].textContent.trim();
+    if (!rowText || /^linear-gradient\(/.test(rowText)) {
+      gradientRow = rows.shift();
+      customGradient = rowText || null;
+    }
+  }
   const [background, header, cards, input, legal] = rows;
 
   setAuthoredContent(header, cards, input);
@@ -161,10 +183,10 @@ export default async function init(el) {
   }
 
   if (variants.isMarquee) {
-    decorateMarqueeBackground(el, background);
+    decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
     decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt }, false);
+    decorateCards(el, cards, { handle: handleSuggestedPrompt });
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
@@ -185,4 +207,13 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+  if (gradientRow) el.removeChild(gradientRow);
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
+  if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
+    openSideModal(null, bcBootstrap);
+  }
 }
