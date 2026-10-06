@@ -9,6 +9,24 @@
     ''
   ).replace(/\/$/, '');
   const ME = { email: '', name: 'You', profileId: '', imsEmail: '', parentOrigin: '' };
+  const previewImageSources = new WeakMap();
+
+  function previewImageSource(imgEl, fallback = '') {
+    if (previewImageSources.has(imgEl)) return previewImageSources.get(imgEl);
+    for (const src of [imgEl.currentSrc, imgEl.getAttribute('src'), fallback]) {
+      if (!src) continue;
+      try {
+        const url = new URL(src, document.baseURI);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') continue;
+        previewImageSources.set(imgEl, url.href);
+        return url.href;
+      } catch {
+        console.warn('[collab] invalid preview image source');
+      }
+    }
+    console.error('[collab] cannot replace image without its original preview URL');
+    return '';
+  }
 
   if (!SERVICE || !COLLAB_ID) {
     console.warn('[collab] missing collab-service-ep meta or peregrine-collab-id param — collab tool disabled');
@@ -23,6 +41,7 @@
     window.addEventListener('message', (e) => {
       // Only accept messages from the direct parent frame.
       if (e.source !== window.parent) return;
+      if (ME.parentOrigin && e.origin !== ME.parentOrigin) return;
       if (e.data?.type === 'collab:set-user') {
         // Receive user profile from parent — no token ever leaves the parent frame.
         if (e.data.name)      ME.name      = e.data.name;
@@ -44,9 +63,15 @@
         positionWandBar();
       }
       if (e.data?.type === 'collab:image-upload') {
+        if (!ME.parentOrigin) return;
         const { elementPath, src } = e.data;
+        if (typeof elementPath !== 'string' || typeof src !== 'string' || !/^(https?:\/\/|data:image\/)/.test(src)) {
+          console.error('[collab] invalid image replacement');
+          return;
+        }
         const imgEl = resolveElement(elementPath);
         if (imgEl instanceof HTMLImageElement && src) {
+          previewImageSource(imgEl);
           imgEl.src = src;
           if (imgEl.closest('picture')) {
             imgEl.closest('picture').querySelectorAll('source').forEach(s => s.remove());
@@ -55,6 +80,7 @@
         }
       }
       if (e.data?.type === 'collab:apply-edits') {
+        if (!ME.parentOrigin) return;
         const { editRecord } = e.data;
         if (!Array.isArray(editRecord)) return;
         function applyEditRecord(record) {
@@ -68,6 +94,7 @@
             } else if (edit.editType === 'image') {
               if (!(el instanceof HTMLImageElement)) return;
               if (!/^(https?:\/\/|data:image\/)/.test(to)) return;
+              previewImageSource(el, typeof edit.from === 'string' ? edit.from : '');
               el.src = to.replace(/[<>"]/g, '');
               if (el.closest('picture')) {
                 el.closest('picture').querySelectorAll('source').forEach((s) => s.remove());
@@ -1112,14 +1139,16 @@
     wandBtn.addEventListener('mousedown', e => e.preventDefault());
     wandBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (!imageHoverTarget || window.parent === window) return;
+      if (!imageHoverTarget || window.parent === window || !ME.parentOrigin) return;
       const imgEl = imageHoverTarget.tagName === 'IMG' ? imageHoverTarget : imageHoverTarget.querySelector('img');
       if (!imgEl) return;
+      const currentSrc = previewImageSource(imgEl);
+      if (!currentSrc) return;
       window.parent.postMessage({
         type: 'collab:ai-image-request',
         elementPath: buildElementPath(imgEl),
-        currentSrc: imgEl.getAttribute('src') || '',
-      }, ME.parentOrigin || '*');
+        currentSrc,
+      }, ME.parentOrigin);
     });
     imageWandEl.appendChild(wandBtn);
     document.body.appendChild(imageWandEl);
@@ -1278,11 +1307,14 @@
         if (imgTarget) {
           e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
           const imgEl = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
-          if (imgEl && window.parent !== window) {
+          if (imgEl && window.parent !== window && ME.parentOrigin) {
+            const currentSrc = previewImageSource(imgEl);
+            if (!currentSrc) return;
             window.parent.postMessage({
               type: 'collab:image-upload-request',
               elementPath: buildElementPath(imgEl),
-            }, ME.parentOrigin || '*');
+              currentSrc,
+            }, ME.parentOrigin);
           }
         }
         return;
