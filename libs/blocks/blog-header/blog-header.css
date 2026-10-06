@@ -32,8 +32,6 @@
 .blog-header-title h1 {
   margin: 0;
   font-weight: 800;
-
-  /* Figma marquee heading is 64px desktop; scoped override of Milo heading tokens */
   font-size: 36px;
   line-height: 1.25;
   color: var(--text-color);
@@ -46,13 +44,13 @@
 }
 
 .blog-header-summary p {
-  margin: 0 0 32px;
+  margin: 0 0 24px;
 }
 
 .blog-header-byline {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--spacing-s);
 }
 
@@ -113,11 +111,8 @@ a.blog-header-author-name:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xxs);
-  margin-inline-start: auto;
-  padding: 8px 12px;
-
-  /* Figma share pill stroke #757575 has no matching Milo token */
-  border: 2px solid #757575;
+  padding: 5px 18px;
+  border: 2px solid #2C2C2C;
   border-radius: 90px;
   background: transparent;
   color: var(--text-color);
@@ -129,8 +124,8 @@ a.blog-header-author-name:hover {
 }
 
 .blog-header-share svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .blog-header-share:hover {
@@ -159,6 +154,11 @@ a.blog-header-author-name:hover {
     font-size: var(--type-body-xl-size);
   }
 
+  .blog-header-byline {
+    flex-direction: row;
+    align-items: center;
+  }
+
   .blog-header-authors {
     flex-direction: row;
     gap: var(--spacing-m);
@@ -171,11 +171,14 @@ a.blog-header-author-name:hover {
 
   .blog-header-share {
     font-size: var(--type-body-m-size);
+    margin-inline-start: auto;
+    padding: 8px 12px;
+    gap: 12px;
   }
 
   .blog-header-share svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 }
 
