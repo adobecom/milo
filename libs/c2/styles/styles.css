@@ -1437,66 +1437,205 @@ span.hang-opening-quote {
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
-    --gd-grow-from: -50vh;
-    --gd-reveal-from: 20vh;
-
-    transform-origin: top center;
-    animation: garage-door-grow ease-out both;
+    --gd-bg-shift: calc((100vh + 100vh) * 0.06);
+    --gd-section-shift: clamp(-100px, -16vh, -60px);
+    animation: garage-door-section-parallax var(--parallax-easing) both;
     animation-timeline: view();
-    animation-range: entry 0% cover 36%;
+    animation-range: entry 0% cover 64%;
 
-    @media (width >= 1280px) {
-      --gd-grow-from: -90vh;
-      --gd-reveal-from: 30vh;
-      animation-range: entry 0% cover 48%;
-    }
-
-    @media (width >= 1920px) {
-      --gd-grow-from: -70vh;
-      animation-range: entry 0% cover 36%;
+    /* Mobile/tablet: shallower cap, same viewport-relative curve */
+    @media (width < 1280px) {
+      --gd-section-shift: clamp(-60px, -16vh, -40px);
     }
 
     .section-background {
       overflow: hidden;
 
       img {
-        animation: garage-door-bg-scale ease-out both;
+        height: calc(100% + var(--gd-bg-shift));
+        margin-block-end: calc(-1 * var(--gd-bg-shift));
+        animation: garage-door-bg-parallax linear both;
         animation-timeline: view();
-        animation-range: entry 0% cover 70%;
+        animation-range: cover 0% cover 50%;
       }
     }
 
     .foreground {
       z-index: 1;
       position: relative;
-      animation: garage-door-reveal ease-out both;
-      animation-timeline: view();
-      animation-range: cover -10% cover 70%;
+      view-timeline-name: --gd-text-vt;
+      view-timeline-axis: block;
 
-      * {
-        animation: garage-door-line-height ease-out both;
-        animation-timeline: view();
-        animation-range: entry 30% cover 60%;
+      .content > *,
+      & > :not(.content) {
+        --gd-item-order: calc(sibling-index() - 1);
+
+        opacity: 0;
+        will-change: opacity, translate;
+        animation: garage-door-text-reveal linear both;
+        animation-timeline: --gd-text-vt;
+        animation-range: cover calc(7.35% + (var(--gd-item-order, 0) * 4.41%)) cover 49%;
       }
     }
   }
 
-  @keyframes garage-door-grow {
-    from { transform: translateY(var(--gd-grow-from)); }
-    to { transform: translateY(0); }
+  /* Stacked layout variant (content above background instead of overlaid
+     on top of it) used by the CPRO merch-moment hero. */
+  .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    display: grid;
+    grid-template-rows: auto auto;
+    z-index: 1;
+
+    &.has-background {
+      height: auto;
+    }
+
+    & > :not(.section-background):not(.section-metadata) {
+      grid-row: 1;
+      height: auto;
+    }
+
+    &.has-background .section-background {
+      overflow-x: clip;
+      overflow-y: unset;
+      z-index: auto;
+      width: 100%;
+      clip-path: inset(-100% 0 0);
+
+      &,
+      & > * {
+        position: relative;
+        inset: unset;
+        width: 100%;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+
+        /* Mobile/tablet: the whole image fits in the viewport, so ending the
+           parallax mid-cover reads as a visible stop. Run it across the full
+           cover-length window, shifted earlier so it starts before the image
+           enters and settles sooner. */
+        @media (width < 1280px) {
+          animation-range: cover -40% cover 60%;
+        }
+      }
+    }
   }
 
-  @keyframes garage-door-reveal {
-    from { transform: translateY(var(--gd-reveal-from)); }
+  /* Content drift: the text group scrolls slightly slower than the page,
+     so the asset below closes the distance to the CTA. */
+  .section.parallax-garage-door-reveal {
+    --gd-content-drift: 32px;
+
+    @media (width < 768px) {
+      --gd-content-drift: 24px;
+    }
+
+    .foreground .content {
+      animation: garage-door-content-drift linear both;
+      animation-timeline: --gd-text-vt;
+      animation-range: cover 0% cover 100%;
+    }
   }
 
-  @keyframes garage-door-bg-scale {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
+  .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    --gd-content-drift: 0px;
   }
 
-  @keyframes garage-door-line-height {
-    from { line-height: 60%; }
+  /* Merch-moment on mobile mirrors the design prototype's merch-copy: the
+     background asset moves with its section (no separate parallax), the text
+     group lags the page at 15% of scroll speed, pivoting on the viewport
+     centre, and items rise (20px steps) and fade in on a viewport-height
+     timeline. */
+  @media (width < 768px) {
+    .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+      --gd-content-rate: 0.15;
+
+      .foreground .content {
+        will-change: transform;
+        animation-name: garage-door-content-parallax;
+      }
+
+      .foreground .content > * {
+        animation: garage-door-merch-fade linear both, garage-door-merch-rise linear both;
+        animation-timeline: --gd-text-vt, --gd-text-vt;
+        animation-range:
+          cover calc(5.75vh + var(--gd-item-order, 0) * 6.75vh) cover 49.25vh,
+          cover -22vh cover 53vh;
+      }
+
+      /* The text enters lifted by half its parallax travel, so pull the
+         asset up by most of the same viewport share (85%) to keep the entry
+         gap tight without the asset ending too high. */
+      &.has-background .section-background {
+        margin-block-start: calc(-50vh * var(--gd-content-rate, 0.15) * 0.85);
+      }
+
+      &.has-background .section-background img {
+        margin-block-end: 0;
+        transform: none;
+        animation: none;
+      }
+    }
+  }
+
+  /* (100vh + 100%) is the full cover distance, since .content fills
+     .foreground (the timeline subject). */
+  @keyframes garage-door-content-parallax {
+    from { transform: translateY(calc((100vh + 100%) * var(--gd-content-rate, 0) / -2)); }
+    to { transform: translateY(calc((100vh + 100%) * var(--gd-content-rate, 0) / 2)); }
+  }
+
+  @keyframes garage-door-merch-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes garage-door-merch-rise {
+    from { translate: 0 calc(var(--gd-item-order, 0) * 20px); }
+    to { translate: 0 0; }
+  }
+
+  /* Centered on the layout position, so spacing matches the design when the
+     text is mid-viewport. */
+  @keyframes garage-door-content-drift {
+    from { transform: translateY(calc(var(--gd-content-drift, 0px) / -2)); }
+    to { transform: translateY(calc(var(--gd-content-drift, 0px) / 2)); }
+  }
+
+  @keyframes garage-door-text-reveal {
+    from {
+      opacity: 0;
+      translate: 0 calc(var(--gd-item-order, 0) * 10px);
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  @keyframes garage-door-bg-parallax {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-1 * var(--gd-bg-shift, 0px))); }
+  }
+
+  /* margin-block-end animates in sync with the translateY so the
+     section's own bottom edge doesn't lag behind and expose a gap
+     before the transform settles to 0. */
+  @keyframes garage-door-section-parallax {
+    from {
+      transform: translateY(var(--gd-section-shift));
+      margin-block-end: var(--gd-section-shift);
+    }
+
+    to {
+      transform: translateY(0);
+      margin-block-end: 0;
+    }
   }
 
   /* Section 1 to section 2 parallax declarations */

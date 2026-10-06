@@ -252,24 +252,9 @@
     }
   }
 
-  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    .foreground {
-      animation-range: cover -10% cover 90%;
-
-      p.body-lg a {
-        scroll-margin-bottom: calc(100vh - 200px);
-      }
-    }
-  }
-
   &:has(.rich-content.merch-moment) {
-    display: grid;
-    grid-template-rows: auto auto;
-    box-sizing: border-box;
-    height: auto;
-
-    .rich-content.merch-moment {
-      grid-row: 1;
+    .foreground p.body-lg a {
+      scroll-margin-bottom: calc(100vh - 200px);
     }
 
     p:has(span[is="inline-price"]) {
@@ -277,20 +262,16 @@
     }
 
     &.has-background .section-background {
+      --merch-bg-img-h: calc(100vw * 434 / 375);
+      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.08);
 
-      &,
-      & > * {
-        position: relative;
-        inset: unset;
+      @media (width >= 1280px) {
+        --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
       }
 
       img {
-        width: 100%;
-        height: auto;
         aspect-ratio: 375 / 434;
-        object-fit: cover;
         object-position: center top;
-        animation: unset;
       }
     }
   }
@@ -336,10 +317,14 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-img-h: calc(min(100vw, 1612px) * 1361 / 1612);
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
-    aspect-ratio: unset;
+    aspect-ratio: 1612 / 1361;
     display: block;
   }
 
