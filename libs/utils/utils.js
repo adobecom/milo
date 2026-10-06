@@ -3111,6 +3111,35 @@ function warmTypekit() {
     .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
 }
 
+const mediaUrls = new Map();
+
+function getMediaKey(ref, base = window.location) {
+  if (!ref || ref.includes(',') || ref.trim().includes(' ')) return null;
+  try {
+    const { origin, pathname, search } = new URL(ref, base);
+    const seg = pathname.lastIndexOf('/media_');
+    return seg === -1 ? null : `${origin}${pathname.slice(seg)}${search}`;
+  } catch {
+    return null;
+  }
+}
+
+export function registerMediaUrl(ref) {
+  const key = getMediaKey(ref);
+  if (key && !mediaUrls.has(key)) mediaUrls.set(key, new URL(ref, window.location).href);
+}
+
+export function getMediaUrl(ref, base) {
+  const key = getMediaKey(ref, base);
+  return key ? mediaUrls.get(key) : undefined;
+}
+
+function registerPageMedia() {
+  document.querySelectorAll('main img[src*="media_"], main source[srcset*="media_"]').forEach((el) => {
+    registerMediaUrl(el.getAttribute(el.tagName === 'SOURCE' ? 'srcset' : 'src'));
+  });
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3135,6 +3164,7 @@ export async function loadArea(area = document) {
     }
     setCountry();
     preloadMarketsConfig();
+    registerPageMedia();
     await checkForPageMods();
     initMepOverlay();
     appendHtmlToCanonicalUrl();

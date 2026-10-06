@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import {
-  getLocale, loadArea, setConfig, updateConfig, getConfig, localizeLinkAsync,
+  getLocale, loadArea, setConfig, updateConfig, getConfig, localizeLinkAsync, registerMediaUrl,
 } from '../../../libs/utils/utils.js';
 import {
   getLocaleCodeFromPrefix,
@@ -48,7 +48,7 @@ const config = {
 setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: getFragment, removeMepLingoRow } = await import('../../../libs/blocks/fragment/fragment.js');
+const { default: getFragment, removeMepLingoRow, replaceDotMedia } = await import('../../../libs/blocks/fragment/fragment.js');
 
 // Store original fetch for passthrough
 const originalFetch = window.fetch;
@@ -194,6 +194,59 @@ describe('Fragments', () => {
     await loadArea(section);
     expect(section.querySelector('source[srcset^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
     expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+  });
+
+  it('Reuses a registered page media URL instead of rebasing to the fragment path', () => {
+    const query = '?width=750&format=webply&optimize=medium';
+    const pageHref = `${window.location.origin}/products/media_15abc.png${query}`;
+    registerMediaUrl(pageHref);
+    const fragDoc = new DOMParser().parseFromString(`<picture><source srcset="./media_15abc.png${query}"><img src="./media_15abc.png${query}"></picture>`, 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    expect(fragDoc.querySelector('source').getAttribute('srcset')).to.equal(pageHref);
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.equal(pageHref);
+  });
+
+  it('Does not reuse a registered media URL with a different query', () => {
+    registerMediaUrl('/products/media_16query.png?width=2000&format=webply&optimize=medium');
+    const fragDoc = new DOMParser().parseFromString('<img src="./media_16query.png?width=750&format=webply&optimize=medium">', 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    const { src } = fragDoc.querySelector('img');
+    expect(src).to.include('/cc-shared/fragments/some/media_16query.png');
+    expect(src).to.include('width=750');
+  });
+
+  it('Rebases media to the fragment path when nothing is registered', () => {
+    const fragDoc = new DOMParser().parseFromString('<img src="./media_9nomatch.png?width=750">', 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.equal(`${window.location.origin}/cc-shared/fragments/some/media_9nomatch.png?width=750`);
+  });
+
+  it('Reuses media from an earlier fragment in a later fragment', () => {
+    const ref = './media_17shared.png?width=750';
+    const firstDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    replaceDotMedia('/cc-shared/fragments/first/frag', firstDoc);
+    const secondDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    replaceDotMedia('/cc-shared/fragments/second/frag', secondDoc);
+    expect(secondDoc.querySelector('img').getAttribute('src')).to.equal(firstDoc.querySelector('img').getAttribute('src'));
+    expect(secondDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/first/');
+  });
+
+  it('Does not reuse registered media from a different origin', () => {
+    const ref = './media_8foreign.png?width=750';
+    registerMediaUrl(`https://other.example.com/x/${ref.slice(2)}`);
+    const fragDoc = new DOMParser().parseFromString(`<img src="${ref}">`, 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    const { src } = fragDoc.querySelector('img');
+    expect(new URL(src).origin).to.equal(window.location.origin);
+    expect(src).to.include('/cc-shared/fragments/some/media_8foreign.png');
+  });
+
+  it('Ignores malformed and multi-candidate media URLs', () => {
+    expect(() => registerMediaUrl('https://%/media_bad.png')).to.not.throw();
+    expect(() => registerMediaUrl('./media_18a.png 1x, ./media_18b.png 2x')).to.not.throw();
+    const fragDoc = new DOMParser().parseFromString('<img src="./media_18a.png">', 'text/html');
+    replaceDotMedia('/cc-shared/fragments/some/frag', fragDoc);
+    expect(fragDoc.querySelector('img').getAttribute('src')).to.include('/cc-shared/fragments/some/media_18a.png');
   });
 
   it('"decorated" class added by decorateArea()', async () => {

@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix, isTrustedUrl,
+  getMediaUrl, registerMediaUrl,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -99,10 +100,14 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-function replaceDotMedia(path, doc) {
+export function replaceDotMedia(path, doc) {
+  const docBase = new URL(path, window.location);
   const resetAttributeBase = (tag, attr) => {
     doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
-      el[attr] = new URL(el.getAttribute(attr), new URL(path, window.location)).href;
+      const authored = el.getAttribute(attr);
+      const url = getMediaUrl(authored, docBase) || new URL(authored, docBase).href;
+      registerMediaUrl(url);
+      el[attr] = url;
     });
   };
   resetAttributeBase('img', 'src');
