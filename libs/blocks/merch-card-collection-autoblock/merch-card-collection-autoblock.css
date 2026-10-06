@@ -2,14 +2,22 @@
 
 /* Horizontal margins come from the collection container, so the bar lines up
    with the cards. */
+.product-pricing-filter-bar,
+.product-pricing-drawer {
+  --pp-start: left;
+  --pp-end: right;
+  --pp-flip: 1;
+}
+
+/* On one line (1280+) the search is one MAS card wide: 3 columns (4 from 1440), 261px to 474px. */
 .product-pricing-filter-bar {
+  --pp-cols: 3;
+  --pp-card: clamp(261px, calc((100% - (var(--pp-cols) - 1) * 8px) / var(--pp-cols)), 474px);
+
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 24px;
-
-  /* The xl search keys on the bar's width. */
-  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
 }
 
 .product-pricing-filter-row {
@@ -24,6 +32,7 @@
 
 .product-pricing-filter-trigger {
   display: inline-flex;
+  font-family: inherit; /* buttons default to the system font */
   align-items: center;
   flex: none; /* a flex item in the scroller: keep its width, don't squash */
   gap: 8px;
@@ -40,12 +49,12 @@
   white-space: nowrap;
 }
 
+.product-pricing-icon { display: inline-flex; } /* no inline line box, so the icon centres */
+
 .product-pricing-icon svg {
   width: 16px;
   height: 16px;
 }
-
-.product-pricing-filter-trigger .product-pricing-icon svg { fill: #fff; }
 
 .product-pricing-filter-pills {
   display: flex;
@@ -54,6 +63,10 @@
   min-width: 0;
   overflow-x: auto;
   scroll-behavior: smooth;
+
+  /* overflow clips at the padding box. 4px holds the focus ring (2px outline + 2px offset). */
+  padding: 4px;
+  margin: -4px;
 }
 
 .product-pricing-filter-group {
@@ -67,22 +80,55 @@
   align-items: center;
   box-sizing: border-box;
   gap: 8px;
-  flex: 0 1 261px;
+  flex: none;
+  width: var(--pp-card);
   height: 40px;
-  padding: 0 16px;
-  margin-left: auto;
+  padding: 0 15px; /* the 1px border makes it 16px from the edge */
+  margin-inline-start: auto;
+  border: 1px solid #dadada;
   border-radius: 75px;
   background: #f8f8f8;
 }
 
+/* Active: focused or holding a term. */
+.product-pricing-filter-search:is(:focus-within, :has(input:not(:placeholder-shown))) {
+  border-color: #000;
+}
+
+.product-pricing-filter-search .product-pricing-icon {
+  color: #292929;
+}
+
 .product-pricing-filter-search-input {
   flex: 1;
+  font-family: inherit;
   min-width: 0;
   border: none;
   background: transparent;
   font-size: 14px;
   line-height: 18px;
   outline: none;
+}
+
+.product-pricing-filter-search-input::placeholder {
+  color: rgb(0 0 0 / 64%);
+  opacity: 1;
+}
+
+/* Typing swaps the magnifier for the clear button, as in the design. */
+.product-pricing-filter-search:has(input:not(:placeholder-shown)) .product-pricing-icon {
+  display: none;
+}
+
+/* The native clear button, redrawn as the drawer's close icon. */
+.product-pricing-filter-search-input::-webkit-search-cancel-button {
+  appearance: none;
+  opacity: 1; /* the UA shows it only on hover or focus */
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"%3E%3Cpath d="M3 3l10 10M13 3L3 13" stroke="%23000" stroke-width="1.5"/%3E%3C/svg%3E') center / contain no-repeat;
+  cursor: pointer;
 }
 
 .product-pricing-drawer {
@@ -101,7 +147,7 @@
 .product-pricing-drawer[open] { animation: product-pricing-drawer-in 0.3s ease; }
 
 @keyframes product-pricing-drawer-in {
-  from { transform: translateX(-100%); }
+  from { transform: translateX(calc(-100% * var(--pp-flip))); }
 }
 
 .product-pricing-drawer-inner {
@@ -129,6 +175,7 @@
 
 .product-pricing-drawer-close {
   padding: 0;
+  font-family: inherit;
   border: none;
   background: none;
   line-height: 0;
@@ -223,9 +270,31 @@
   color: #fff;
 }
 
+.product-pricing-pill:has(input:disabled) {
+  color: rgb(0 0 0 / 32%);
+  cursor: not-allowed;
+}
+
+/* Selected but off (Category while a category-off-for tag is selected). */
+.product-pricing-pill:has(input:checked:disabled) {
+  background: rgb(0 0 0 / 64%);
+  color: #fff;
+}
+
+/* One ring for every control. */
+.product-pricing-filter-trigger:focus-visible,
+.product-pricing-drawer-close:focus-visible,
+.product-pricing-drawer-reset:focus-visible,
+.product-pricing-group-toggle:focus-visible,
 .product-pricing-pill:has(input:focus-visible) {
   outline: 2px solid var(--link-color, #1473e6);
   outline-offset: 2px;
+}
+
+/* The bar hides unusable pills and any group left empty. The drawer greys them. */
+.product-pricing-filter-bar .product-pricing-pill:has(input:disabled:not(:checked)),
+.product-pricing-filter-bar .product-pricing-filter-group:not(:has(input:is(:enabled, :checked))) {
+  display: none;
 }
 
 /* Category collapses to its selected pill; the drawer holds the rest. */
@@ -254,22 +323,20 @@
   font-weight: inherit;
 }
 
-/* Below desktop: search stacks above the filter row. */
-@media (width < 1280px) {
-  .product-pricing-filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
+/* Stacked (set by JS): search above the filter row. */
+.product-pricing-filter-bar[data-stacked] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
 
-  .product-pricing-filter-search {
-    order: -1;
-    flex: none;
-    width: 327px;
-    max-width: 100%;
-    margin-inline: auto;
-    justify-content: space-between;
-  }
+.product-pricing-filter-bar[data-stacked] .product-pricing-filter-search {
+  order: -1;
+  flex: none;
+  width: 327px;
+  max-width: 100%;
+  margin-inline: auto;
+  justify-content: space-between;
 }
 
 /* Fade + chevron mark the pill row as scrollable at any width, and a tap on
@@ -295,25 +362,40 @@
   visibility: visible;
 }
 
-/* Sections on a non-white background override --pp-fade-color. */
+/* Prev is at the start edge, next at the end. One chevron, mirrored by --pp-flip.
+   Sections on a non-white background override --pp-fade-color. */
+.product-pricing-filter-scroll::after {
+  content: '';
+  position: absolute;
+  inset-block: 10px;
+  width: 20px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat center / 20px 20px;
+}
+
 .product-pricing-filter-scroll-prev {
-  left: 0;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3l-5 5 5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat left 24px center / 20px 20px,
-    linear-gradient(to left, transparent, var(--pp-fade-color, #fff) 70%);
+  inset-inline-start: 0;
+  background: linear-gradient(to var(--pp-start), transparent, var(--pp-fade-color, #fff) 70%);
+}
+
+.product-pricing-filter-scroll-prev::after {
+  inset-inline-start: 24px;
+  transform: scaleX(var(--pp-flip));
 }
 
 .product-pricing-filter-scroll-next {
-  right: 0;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3l5 5-5 5' stroke='%23292929' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 24px center / 20px 20px,
-    linear-gradient(to right, transparent, var(--pp-fade-color, #fff) 70%);
+  inset-inline-end: 0;
+  background: linear-gradient(to var(--pp-end), transparent, var(--pp-fade-color, #fff) 70%);
 }
 
-/* Tablet up centres both rows. */
-@media (width >= 600px) and (width < 1280px) {
-  .product-pricing-filter-row { justify-content: center; }
-  .product-pricing-filter-pills { flex: 0 1 auto; }
+.product-pricing-filter-scroll-next::after {
+  inset-inline-end: 24px;
+  transform: scaleX(calc(-1 * var(--pp-flip)));
+}
+
+/* Stacked tablet and up centres both rows. */
+@media (width >= 600px) {
+  .product-pricing-filter-bar[data-stacked] .product-pricing-filter-row { justify-content: center; }
+  .product-pricing-filter-bar[data-stacked] .product-pricing-filter-pills { flex: 0 1 auto; }
 }
 
 @media (width < 600px) {
@@ -354,11 +436,8 @@
   .product-pricing-drawer-subrow { padding: 0 24px 24px; }
 }
 
-/* xl: Figma's 2560 frame gives the bar 1920px. Keyed on the bar, not the
-   viewport, so a capped container keeps room for the pills. */
-/* stylelint-disable-next-line at-rule-no-unknown */
-@container (width >= 1920px) {
-  .product-pricing-filter-search { flex-basis: 474px; }
+@media (width >= 1440px) {
+  .product-pricing-filter-bar { --pp-cols: 4; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -367,13 +446,60 @@
   .product-pricing-filter-scroll { transition: none; }
 }
 
-/* The EDU card is a `pro` card inside a product-pricing collection. MAS already
-   sizes it (pro.css.js: max-width 1068px, "wider than the default grid track"),
-   but max-width cannot widen a grid item and the tracks here are 261-474px, so
-   it renders one track wide and 2.4x too tall. Span every track instead.
-   Scoped to the card, not the container, so the narrow cards keep their columns
-   when a query returns both. */
+/* The EDU card spans whole grid columns, mirroring MAS's column counts. Dense
+   flow lets later cards fill the gap. */
+merch-card-collection.product-pricing {
+  --pp-edu-span: 1;
+
+  grid-auto-flow: row dense;
+}
+
+@media (width >= 768px) {
+  merch-card-collection.product-pricing { --pp-edu-span: 2; }
+}
+
+@media (width >= 1440px) {
+  merch-card-collection.product-pricing { --pp-edu-span: 3; }
+}
+
 merch-card-collection.product-pricing merch-card[variant='pro'][size='edu'] {
+  grid-column: span var(--pp-edu-span);
+  justify-self: stretch;
+  max-width: none; /* overrides MAS's 1068px cap */
+}
+
+/* product-pricing has no sizes. A stray size="wide" makes MAS span two tracks
+   but cap the card at 474px, leaving a gap. */
+merch-card-collection.product-pricing merch-card[variant='product-pricing'][size] {
+  grid-column: auto;
+}
+
+/* Alone in the results (JS sets data-edu-only), the EDU card is 1068px, centred. */
+merch-card-collection.product-pricing[data-edu-only] merch-card[variant='pro'][size='edu'] {
   grid-column: 1 / -1;
   justify-self: center;
+  width: 100%;
+  max-width: 1068px;
+}
+
+/* RTL swaps the start and end sides (arrows, fades, drawer slide-in). */
+[dir='rtl'] .product-pricing-filter-bar,
+[dir='rtl'] .product-pricing-drawer {
+  --pp-start: right;
+  --pp-end: left;
+  --pp-flip: -1;
+}
+
+/* High Contrast strips backgrounds, so state needs borders and system colors. */
+@media (forced-colors: active) {
+  .product-pricing-filter-trigger,
+  .product-pricing-pill { border: 1px solid ButtonText; }
+
+  .product-pricing-pill:has(input:checked) {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+
+  .product-pricing-filter-search:focus-within { outline: 2px solid Highlight; }
 }

@@ -5,6 +5,7 @@ import { delay } from '../../helpers/waitfor.js';
 import init, {
   productPricingFilterGroups,
   toggleFilterHash,
+  toggleParams,
   syncPills,
   countApplied,
   barGroups,
@@ -13,7 +14,22 @@ import init, {
   resetParams,
   pageStep,
   scrollEdges,
+  scrollOffset,
+  categoryOffTags,
+  isCategoryOff,
+  isStacked,
+  searchWidth,
+  fixProductPricingVariant,
+  scopeToSearch,
+  leaveSearch,
+  seedParams,
+  searchTransition,
+  eduOnly,
+  groupSelections,
+  unavailablePills,
   defaultParams,
+  derivedSelections,
+  selectCategory,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -428,6 +444,65 @@ describe('merch-card-collection autoblock', () => {
     it('returns no groups for empty data', () => {
       expect(productPricingFilterGroups({})).to.have.length(0);
     });
+
+    describe('default-<group> metadata', () => {
+      const data = {
+        hierarchy: [{ label: 'All', queryLabel: 'all' }, { label: 'Featured', queryLabel: 'featured' }],
+        sidenavSettings: {
+          tagFilters: [
+            { deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }] },
+            { deeplink: 'types', checkboxes: [{ name: 'web', label: 'Web' }] },
+          ],
+        },
+      };
+      const meta = (obj) => Object.fromEntries(
+        Object.entries(obj).map(([key, text]) => [key, { text }]),
+      );
+      const defaults = (obj) => defaultParams(productPricingFilterGroups(data, meta(obj)));
+
+      it('opens on the first category, and on no pricing, without metadata', () => {
+        expect(defaults({})).to.deep.equal([['filter', 'all']]);
+      });
+
+      it('opens on the option a default-<group> row names', () => {
+        expect(defaults({ 'default-filter': 'featured', 'default-pricing': 'business' }))
+          .to.deep.equal([['filter', 'featured'], ['pricing', 'business']]);
+      });
+
+      it('falls back to the first category for an unknown name', () => {
+        expect(defaults({ 'default-filter': 'nope', 'default-pricing': 'nope' }))
+          .to.deep.equal([['filter', 'all']]);
+      });
+
+      it('lets an optional group open on a named option, and empty otherwise', () => {
+        expect(defaults({ 'default-types': 'web' })).to.deep.include(['types', 'web']);
+        expect(defaults({}).map(([key]) => key)).to.not.include('types');
+      });
+    });
+  });
+
+  describe('category-off-for', () => {
+    const tags = categoryOffTags({ 'category-off-for': { text: 'pricing:business, pricing:students-and-teachers' } });
+
+    it('lists the group:tag pairs', () => {
+      expect(tags).to.deep.equal(['pricing:business', 'pricing:students-and-teachers']);
+      expect(categoryOffTags({})).to.deep.equal([]);
+    });
+
+    it('is on only while a listed tag is the selection of its group', () => {
+      expect(isCategoryOff(new URLSearchParams('filter=featured&pricing=business'), tags)).to.be.true;
+      expect(isCategoryOff(new URLSearchParams('filter=featured&pricing=individuals'), tags)).to.be.false;
+      expect(isCategoryOff(new URLSearchParams('filter=featured&types=business'), tags)).to.be.false;
+      expect(isCategoryOff(new URLSearchParams('filter=featured'), [])).to.be.false;
+    });
+
+    it('leaves the category out of the applied count while off', () => {
+      const groups = [{ deeplink: 'filter', category: true }, { deeplink: 'pricing' }];
+      const params = new URLSearchParams('filter=featured&pricing=business');
+      const labels = (off) => filterBarLabels(params, groups, { allFilters: 'F', filtersApplied: 'A' }, undefined, off);
+      expect(labels(false).trigger).to.equal('F (2)');
+      expect(labels(true).trigger).to.equal('F (1)');
+    });
   });
 
   describe('filter hash wiring', () => {
@@ -438,6 +513,27 @@ describe('merch-card-collection autoblock', () => {
       expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('photo');
       toggleFilterHash('filter', 'video', false);
       expect(new URLSearchParams(window.location.hash.slice(1)).get('filter')).to.equal('video');
+    });
+
+    it('drops the page from every filter change, not from load-time params', () => {
+      const groups = [{ deeplink: 'filter', category: true, options: [{ value: 'a' }] },
+        { deeplink: 'pricing', optional: false, options: [{ value: 'x' }] }];
+      const params = new URLSearchParams('filter=all&page=2&pricing=x');
+      const page = (p) => p.has('page');
+      expect(page(toggleParams(params, 'pricing', 'y', false))).to.be.false;
+      expect(page(selectCategory(params, groups, 'a'))).to.be.false;
+      expect(page(resetParams(params, groups))).to.be.false;
+      expect(page(searchTransition(params, 'ps', undefined, groups).params)).to.be.false;
+      expect(page(searchTransition(new URLSearchParams('search=ps&page=2'), '', undefined, groups).params)).to.be.false;
+      expect(page(searchTransition(params, '', undefined, groups).params ?? params)).to.be.true;
+    });
+
+    it('drops the page when a pill changes, so results start at the first page', () => {
+      window.location.hash = 'filter=all&page=2&pricing=individual';
+      toggleFilterHash('pricing', 'team', false);
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      expect(params.get('pricing')).to.equal('team');
+      expect(params.has('page')).to.be.false;
     });
 
     it('treats a non-types single-select group as a radio group', () => {
@@ -534,6 +630,7 @@ describe('merch-card-collection autoblock', () => {
         applied: '1 Applied',
         trigger: 'All Filters (1)',
         results: '',
+        announce: '',
         empty: '',
       });
       const some = labels(7);
@@ -544,39 +641,51 @@ describe('merch-card-collection autoblock', () => {
         .to.equal('<p>none for <span data-placeholder="filter">Featured</span></p>');
     });
 
-    it('defaults every single-select group to its first option, and types to none', () => {
+    it('defaults the category to its first option, and the other groups to none', () => {
       const groups = [
-        { deeplink: 'filter', optional: false, options: [{ value: 'featured' }, { value: 'photo' }] },
+        { deeplink: 'filter', category: true, optional: false, options: [{ value: 'featured' }, { value: 'photo' }] },
         { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'business' }] },
         { deeplink: 'types', optional: true, options: [{ value: 'desktop' }] },
       ];
-      expect(defaultParams(groups)).to.deep.equal([
-        ['filter', 'featured'],
-        ['pricing', 'individuals'],
-      ]);
+      expect(defaultParams(groups)).to.deep.equal([['filter', 'featured']]);
       // An authored group with no options contributes nothing.
-      expect(defaultParams([{ deeplink: 'filter', optional: false, options: [] }])).to.deep.equal([]);
+      expect(defaultParams([{ deeplink: 'filter', category: true, optional: false, options: [] }])).to.deep.equal([]);
       expect(defaultParams([])).to.deep.equal([]);
     });
 
-    it('resets every authored group, restores the defaults, and keeps search', () => {
+    it('resets every authored group, restores the defaults, and clears search', () => {
       const groups = [
-        { deeplink: 'filter', optional: false, options: [{ value: 'featured' }] },
+        { deeplink: 'filter', category: true, optional: false, options: [{ value: 'featured' }] },
         { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }] },
         { deeplink: 'types', optional: true, options: [{ value: 'desktop' }] },
       ];
       const active = new URLSearchParams('filter=photo&pricing=business&types=desktop&search=acrobat&keep=me');
       const params = resetParams(active, groups);
-      // Category and Pricing come back at their defaults, Types clears.
+      // The category comes back at its default. Pricing and Types clear.
       expect(params.get('filter')).to.equal('featured');
-      expect(params.get('pricing')).to.equal('individuals');
+      expect(params.get('pricing')).to.equal(null);
       expect(params.get('types')).to.equal(null);
-      // Search is independent of Reset (MWPW-205571).
-      expect(params.get('search')).to.equal('acrobat');
+      // Reset clears the search too.
+      expect(params.has('search')).to.be.false;
       // Params the block does not own are left alone.
       expect(params.get('keep')).to.equal('me');
       // The given filter set is not mutated.
       expect(active.get('types')).to.equal('desktop');
+    });
+  });
+
+  describe('filterBarLabels announce', () => {
+    const labels = (resultCount) => filterBarLabels(
+      new URLSearchParams(),
+      [],
+      { allFilters: 'F', filtersApplied: 'A', filtersResults: 'Results' },
+      resultCount,
+    ).announce;
+
+    it('is the count text when there are results', () => expect(labels(3)).to.equal('3 Results'));
+    it('is empty before the first render and for zero results', () => {
+      expect(labels(undefined)).to.equal('');
+      expect(labels(0)).to.equal('');
     });
   });
 
@@ -597,10 +706,209 @@ describe('merch-card-collection autoblock', () => {
       expect(edges(500, 800, 300)).to.deep.equal({ prev: true, next: false });
     });
 
+    it('measures from the start edge in RTL, where scrollLeft is negative', () => {
+      expect(edges(0, 800, 300)).to.deep.equal({ prev: false, next: true });
+      expect(edges(-200, 800, 300)).to.deep.equal({ prev: true, next: true });
+      expect(edges(-500, 800, 300)).to.deep.equal({ prev: true, next: false });
+    });
+
     it('shows neither edge when the row fits, even after a scroll left it offset', () => {
       expect(edges(0, 799, 799)).to.deep.equal({ prev: false, next: false });
       // Subpixel widths can leave a 1px gap.
       expect(edges(0, 800.5, 799.6)).to.deep.equal({ prev: false, next: false });
+    });
+  });
+
+  describe('isStacked', () => {
+    // 3 pills: 100 + 8 + 100 + 8 + 100 = 316, plus 8 + 261 for the search.
+    const pillWidths = [100, 100, 100];
+    const stacked = (viewport, barWidth) => isStacked({ viewport, barWidth, pillWidths });
+    it('stacks below desktop whatever the width', () => {
+      expect(stacked(1279, 5000)).to.be.true;
+    });
+
+    it('stacks on desktop only when pills and search no longer fit one line', () => {
+      expect(stacked(1280, 585)).to.be.false;
+      expect(stacked(1280, 584)).to.be.true;
+    });
+
+    it('sizes the search as one card: 3 columns, 4 from 1440, 261px to 474px', () => {
+      expect(searchWidth(1280, 1066)).to.equal(350);
+      expect(searchWidth(1440, 1200)).to.equal(294);
+      expect(searchWidth(1920, 2560)).to.equal(474);
+      expect(searchWidth(1280, 585)).to.equal(261);
+    });
+  });
+
+  describe('fixProductPricingVariant', () => {
+    const collectionOf = (variant, ...cardVariants) => {
+      const collection = document.createElement('div');
+      collection.variant = variant;
+      collection.className = `merch-card-collection ${variant} four-merch-cards`;
+      cardVariants.forEach((v) => {
+        const card = document.createElement('merch-card');
+        card.variant = v;
+        collection.append(card);
+      });
+      return collection;
+    };
+
+    it('restores product-pricing when a pro card came first', () => {
+      const collection = collectionOf('plans', 'pro', 'product-pricing', 'product-pricing');
+      fixProductPricingVariant(collection);
+      expect(collection.variant).to.equal('product-pricing');
+      expect(collection.className).to.equal('merch-card-collection product-pricing');
+    });
+
+    it('leaves other collections alone', () => {
+      const plans = collectionOf('plans', 'pro', 'plans');
+      fixProductPricingVariant(plans);
+      expect(plans.variant).to.equal('plans');
+      expect(plans.classList.contains('four-merch-cards')).to.be.true;
+    });
+  });
+
+  describe('search scope', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, optional: false, options: [{ value: 'featured' }, { value: 'all' }] },
+      { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }] },
+      { deeplink: 'types', optional: true, options: [{ value: 'web' }] },
+    ];
+    const hash = (query) => new URLSearchParams(query);
+
+    it('searches All with no segment or type, keeping the search', () => {
+      const scoped = scopeToSearch(hash('filter=featured&pricing=individuals&types=web&search=x'), groups);
+      expect(scoped.toString()).to.equal('search=x&filter=all');
+    });
+
+    it('restores the selections from before the search when it is cleared', () => {
+      const before = groupSelections(hash('filter=featured&pricing=individuals'), groups);
+      expect(before).to.deep.equal([['filter', 'featured'], ['pricing', 'individuals']]);
+      const left = leaveSearch(hash('filter=all&search=x'), groups, before);
+      expect(left.toString()).to.equal('filter=featured&pricing=individuals');
+    });
+
+    it('seeds the defaults, or All for a deep-linked search', () => {
+      expect(seedParams(hash(''), groups)).to.deep.equal([['filter', 'featured']]);
+      expect(seedParams(hash('pricing=individuals'), groups)).to.deep.equal([['filter', 'featured']]);
+      expect(seedParams(hash('search=x'), groups)).to.deep.equal([['filter', 'all']]);
+      expect(seedParams(hash('filter=all&search=x'), groups)).to.deep.equal([]);
+    });
+
+    describe('searchTransition', () => {
+      const run = (query, term, saved) => searchTransition(hash(query), term, saved, groups);
+      const str = (r) => r.params?.toString();
+
+      it('scopes on the first keystroke and remembers the selections', () => {
+        const next = run('filter=featured&pricing=individuals', 'ac');
+        expect(str(next)).to.equal('filter=all&search=ac');
+        expect(next.saved).to.deep.equal([['filter', 'featured'], ['pricing', 'individuals']]);
+      });
+
+      it('only changes the term afterwards, keeping picked pills and the saved selections', () => {
+        const saved = [['filter', 'featured']];
+        const next = run('filter=all&pricing=individuals&search=ac', 'acr', saved);
+        expect(str(next)).to.equal('filter=all&pricing=individuals&search=acr');
+        expect(next.saved).to.equal(saved);
+      });
+
+      it('restores the saved selections when cleared', () => {
+        const next = run('filter=all&search=ac', '', [['filter', 'featured']]);
+        expect(str(next)).to.equal('filter=featured');
+        expect(next.saved).to.equal(undefined);
+      });
+
+      it('does nothing when cleared without a search', () => {
+        expect(run('filter=featured', '').params).to.equal(undefined);
+      });
+    });
+
+    it('falls back to the defaults when the search was deep-linked', () => {
+      const left = leaveSearch(hash('filter=all&search=x'), groups);
+      expect(left.toString()).to.equal('filter=featured');
+    });
+  });
+
+  describe('eduOnly', () => {
+    const card = (edu, visible) => ({ edu, visible });
+    it('is true only when every visible card is the EDU card', () => {
+      expect(eduOnly([card(true, true), card(false, false)])).to.be.true;
+      expect(eduOnly([card(true, true), card(false, true)])).to.be.false;
+      expect(eduOnly([card(true, false)])).to.be.false;
+      expect(eduOnly([])).to.be.false;
+    });
+  });
+
+  describe('unavailablePills', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, options: [{ value: 'all' }, { value: 'marketing' }] },
+      { deeplink: 'pricing', options: [{ value: 'individuals' }, { value: 'teams' }] },
+    ];
+    const cards = [
+      { filters: { all: {}, marketing: {} }, tags: ['pricing:individuals'] },
+      { filters: { all: {} }, tags: ['pricing:teams'] },
+    ];
+    const unavailable = (query, list = cards) => [
+      ...unavailablePills(list, groups, new URLSearchParams(query)),
+    ];
+
+    it('greys out a pill no card matches under the other selections', () => {
+      expect(unavailable('filter=marketing&pricing=individuals')).to.deep.equal(['pricing:teams']);
+      expect(unavailable('filter=all&pricing=individuals')).to.deep.equal([]);
+    });
+
+    it('never greys out a category', () => {
+      expect(unavailable('filter=all&pricing=teams')).to.deep.equal([]);
+    });
+
+    it('greys nothing out before any card has loaded', () => {
+      expect(unavailable('filter=all', [])).to.deep.equal([]);
+    });
+  });
+
+  describe('category-driven pricing', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, optional: false, options: [{ value: 'all' }, { value: 'data' }] },
+      { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'business' }] },
+      { deeplink: 'types', optional: true, options: [{ value: 'web' }] },
+    ];
+    const cards = [
+      { filters: { all: {} }, tags: ['pricing:business'] },
+      { filters: { all: {} }, tags: ['pricing:individuals'] },
+      { filters: { data: {} }, tags: [''] },
+    ];
+    const derive = (query, list = cards) => derivedSelections(
+      list,
+      groups,
+      new URLSearchParams(query),
+    );
+
+    it('selects the first pricing option, in authored order, that the category has', () => {
+      expect(derive('filter=all')).to.deep.equal([['pricing', 'individuals']]);
+    });
+
+    it('selects nothing when no card of the category has a pricing tag', () => {
+      expect(derive('filter=data')).to.deep.equal([]);
+    });
+
+    it('keeps a pricing already in the URL, and skips a search or no category', () => {
+      expect(derive('filter=all&pricing=business')).to.deep.equal([]);
+      expect(derive('filter=all&search=x')).to.deep.equal([]);
+      expect(derive('')).to.deep.equal([]);
+    });
+
+    it('resets pricing on a category click and keeps the other params', () => {
+      const next = selectCategory(new URLSearchParams('filter=all&pricing=business&types=web'), groups, 'data');
+      expect(next.toString()).to.equal('filter=data&types=web');
+    });
+  });
+
+  describe('scrollOffset', () => {
+    it('pages toward the end for next, and flips the sign in RTL', () => {
+      expect(scrollOffset('next', 100, false)).to.equal(100);
+      expect(scrollOffset('prev', 100, false)).to.equal(-100);
+      expect(scrollOffset('next', 100, true)).to.equal(-100);
+      expect(scrollOffset('prev', 100, true)).to.equal(100);
     });
   });
 
@@ -624,6 +932,13 @@ describe('merch-card-collection autoblock', () => {
       },
     };
 
+    const createCard = (filters, tags) => {
+      const card = document.createElement('merch-card');
+      card.filters = filters;
+      card.setAttribute('filter-tags', tags);
+      return card;
+    };
+
     const mount = () => {
       const collection = document.createElement('div');
       collection.data = data;
@@ -640,16 +955,16 @@ describe('merch-card-collection autoblock', () => {
 
     it('seeds the defaults and renders both surfaces', () => {
       const { container } = mount();
-      // Nothing deep-linked, so Category and Pricing take their first option.
+      // Nothing deep-linked, so Category takes its first option.
       const params = new URLSearchParams(window.location.hash.slice(1));
       expect(params.get('filter')).to.equal('featured');
-      expect(params.get('pricing')).to.equal('individuals');
-      // Types is deselectable to zero, so it seeds nothing.
+      // Pricing follows the category's cards, and none have loaded. Types seeds nothing.
+      expect(params.get('pricing')).to.equal(null);
       expect(params.get('types')).to.equal(null);
       expect(container.querySelector('.product-pricing-filter-bar')).to.exist;
       expect(container.querySelector('.product-pricing-drawer')).to.exist;
       // Both seeded pills count toward the applied total.
-      expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (2)');
+      expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (1)');
       // Optional groups are drawer-only.
       const barGroupLabels = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-filter-group')]
         .map((g) => g.getAttribute('aria-label'));
@@ -658,16 +973,15 @@ describe('merch-card-collection autoblock', () => {
       expect(container.querySelector('.product-pricing-filter-pills > .product-pricing-filter-trigger')).to.exist;
     });
 
-    it('keeps a deep-linked value and still seeds the groups that have none', () => {
+    it('keeps a deep-linked value and seeds the category if missing', () => {
       window.location.hash = 'filter=photo';
       const { container } = mount();
       const params = new URLSearchParams(window.location.hash.slice(1));
       expect(params.get('filter')).to.equal('photo');
-      // Pricing was not deep-linked, so it still gets its default.
-      expect(params.get('pricing')).to.equal('individuals');
+      expect(params.get('pricing')).to.equal(null);
       const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
         .map((i) => i.value).sort();
-      expect(checked).to.deep.equal(['individuals', 'photo']);
+      expect(checked).to.deep.equal(['photo']);
     });
 
     it('pages the collection 12 cards at a time', () => {
@@ -712,6 +1026,139 @@ describe('merch-card-collection autoblock', () => {
       expect(scrollBy.calledTwice).to.be.true;
     });
 
+    it('stacks the bar on desktop only when the pills and search overflow one line', async () => {
+      const { container } = mount();
+      const bar = container.querySelector('.product-pricing-filter-bar');
+      const innerWidth = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+      Object.defineProperty(window, 'innerWidth', { value: 1600, configurable: true });
+      try {
+        container.style.width = '2000px';
+        bar.style.width = '2000px';
+        await delay(50);
+        expect(bar.hasAttribute('data-stacked')).to.be.false;
+        bar.style.width = '300px';
+        await delay(50);
+        expect(bar.hasAttribute('data-stacked')).to.be.true;
+      } finally {
+        Object.defineProperty(window, 'innerWidth', innerWidth);
+      }
+    });
+
+    it('greys out pricing with no products, keeps the selected one and every category live', async () => {
+      const { collection, container } = mount();
+      const card = createCard({ featured: {} }, 'types:desktop');
+      collection.append(card);
+      window.location.hash = 'filter=featured&pricing=individuals';
+      collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 1 } }));
+      await delay(50);
+      const disabled = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:disabled')]
+        .map((i) => i.value);
+      expect(disabled).to.deep.equal([]);
+    });
+
+    it('selects the first pricing the category has, and resets it on a category click', () => {
+      const { collection, container } = mount();
+      collection.append(
+        createCard({ featured: {} }, 'pricing:individuals'),
+        createCard({ photo: {} }, ''),
+      );
+      collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 1 } }));
+      const params = () => new URLSearchParams(window.location.hash.slice(1));
+      expect(params().get('pricing')).to.equal('individuals');
+      container.querySelector('.product-pricing-filter-bar input[value="photo"]').click();
+      expect([params().get('filter'), params().get('pricing')]).to.deep.equal(['photo', null]);
+    });
+
+    it('searches All, then returns to the prior filters when the search is cleared', async () => {
+      const { container } = mount();
+      const search = container.querySelector('.product-pricing-filter-search-input');
+      const type = (value) => {
+        search.focus();
+        search.value = value;
+        search.dispatchEvent(new Event('input', { bubbles: true }));
+        return delay(400);
+      };
+      const params = () => new URLSearchParams(window.location.hash.slice(1));
+      window.location.hash = 'filter=photo&pricing=individuals&types=desktop';
+      await delay(50);
+      await type('acro');
+      expect([params().get('filter'), params().get('pricing'), params().get('types')])
+        .to.deep.equal(['all', null, null]);
+      // A pill picked mid-search survives the next keystroke.
+      window.location.hash = `${params().toString()}&pricing=individuals`;
+      await delay(50);
+      await type('acrob');
+      expect(params().get('pricing')).to.equal('individuals');
+      await type('');
+      expect(params().has('search')).to.be.false;
+      expect([params().get('filter'), params().get('pricing'), params().get('types')])
+        .to.deep.equal(['photo', 'individuals', 'desktop']);
+    });
+
+    it('flags the collection when the EDU card is the only one showing', () => {
+      const { collection } = mount();
+      const edu = createCard({ featured: {} }, 'pricing:students-and-teachers');
+      edu.setAttribute('size', 'edu');
+      const other = createCard({ featured: {} }, 'pricing:individuals');
+      collection.append(edu, other);
+      const emit = () => collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 1 } }));
+      other.style.display = 'none';
+      emit();
+      expect(collection.hasAttribute('data-edu-only')).to.be.true;
+      other.style.removeProperty('display');
+      emit();
+      expect(collection.hasAttribute('data-edu-only')).to.be.false;
+    });
+
+    describe('section-metadata', () => {
+      const withMeta = (rows) => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        const meta = document.createElement('div');
+        meta.className = 'section-metadata';
+        rows.forEach(([key, value]) => {
+          const row = document.createElement('div');
+          row.innerHTML = `<div>${key}</div><div>${value}</div>`;
+          meta.append(row);
+        });
+        const container = document.createElement('div');
+        section.append(container, meta);
+        document.body.append(section);
+        const collection = document.createElement('div');
+        collection.data = {
+          ...data,
+          hierarchy: [{ label: 'All', queryLabel: 'all' }, { label: 'Featured', queryLabel: 'featured' }],
+          sidenavSettings: {
+            tagFilters: [
+              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }] },
+            ],
+          },
+        };
+        mountProductPricingFilter(collection, container);
+        return container;
+      };
+      const params = () => new URLSearchParams(window.location.hash.slice(1));
+
+      it('opens on the defaults the section names', () => {
+        withMeta([['default-filter', 'featured'], ['default-pricing', 'business']]);
+        expect([params().get('filter'), params().get('pricing')]).to.deep.equal(['featured', 'business']);
+      });
+
+      it('turns Category off while a category-off-for tag is selected', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['category-off-for', 'pricing:business']]);
+        const categoryInputs = () => [...container.querySelectorAll('.product-pricing-filter-bar input[data-deeplink="filter"]')];
+        const label = () => container.querySelector('.product-pricing-trigger-label').textContent;
+        expect(categoryInputs().some((input) => input.disabled)).to.be.false;
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        expect(label()).to.equal('All Filters (2)');
+        window.location.hash = 'filter=featured&pricing=business';
+        await delay(50);
+        expect(categoryInputs().every((input) => input.disabled)).to.be.true;
+        expect(label()).to.equal('All Filters (1)');
+      });
+    });
+
     it('mounts once per collection', () => {
       const { collection, container } = mount();
       mountProductPricingFilter(collection, container);
@@ -752,15 +1199,15 @@ describe('merch-card-collection autoblock', () => {
       expect(drawer.open).to.be.false;
     });
 
-    it('restores the default filters on Reset and keeps search', () => {
+    it('restores the default filters on Reset and clears the search', () => {
       const { container } = mount();
       window.location.hash = 'filter=photo&pricing=business&types=desktop&search=acrobat';
       container.querySelector('.product-pricing-drawer-reset').click();
       const params = new URLSearchParams(window.location.hash.slice(1));
       expect(params.get('filter')).to.equal('featured');
-      expect(params.get('pricing')).to.equal('individuals');
+      expect(params.get('pricing')).to.equal(null);
       expect(params.get('types')).to.equal(null);
-      expect(params.get('search')).to.equal('acrobat');
+      expect(params.has('search')).to.be.false;
     });
 
     it('updates counts and the empty state from the collection result count', () => {
@@ -776,6 +1223,39 @@ describe('merch-card-collection autoblock', () => {
       expect(emptyEl.innerHTML).to.equal('');
       emit(0);
       expect(emptyEl.innerHTML).to.equal('<p>none</p>');
+    });
+
+    describe('accessibility', () => {
+      it('names the search and marks it as a search landmark', () => {
+        const { container } = mount();
+        const input = container.querySelector('.product-pricing-filter-search-input');
+        expect(input.getAttribute('aria-label')).to.equal('Search');
+        expect(input.closest('[role="search"]')).to.exist;
+      });
+
+      it('announces the count, once per change, and leaves zero to the empty state', () => {
+        const { collection, container } = mount();
+        const status = container.querySelector('.sr-only[role="status"]');
+        const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
+          'merch-card-collection:literals-changed',
+          { detail: { resultCount } },
+        ));
+        expect(status.textContent).to.equal('');
+        emit(5);
+        expect(status.textContent).to.equal('5 Results');
+        emit(0);
+        expect(status.textContent).to.equal('');
+      });
+
+      it('points each group toggle at its pill list', () => {
+        const { container } = mount();
+        const toggles = [...container.querySelectorAll('.product-pricing-group-toggle')];
+        expect(toggles).to.have.length(3);
+        toggles.forEach((toggle) => {
+          const target = container.querySelector(`#${toggle.getAttribute('aria-controls')}`);
+          expect(target.classList.contains('product-pricing-group-pills')).to.be.true;
+        });
+      });
     });
 
     it('mirrors the hash onto both surfaces on hashchange', async () => {
