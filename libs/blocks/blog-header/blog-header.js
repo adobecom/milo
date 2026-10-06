@@ -147,6 +147,19 @@ function setAuthorMeta(info, details) {
   meta.textContent = text;
 }
 
+/* An interactive link is only rendered once a usable accessible name exists. */
+function createNameEl(name, href) {
+  return (href && name)
+    ? createTag('a', { class: 'blog-header-author-name', href }, name)
+    : createTag('span', { class: 'blog-header-author-name' }, name);
+}
+
+function hideIcon(svg) {
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  return svg;
+}
+
 async function loadAuthorProfile(profileUrl, data, avatar, info) {
   const profile = await fetchAuthorProfile(profileUrl);
   if (!profile) return;
@@ -158,7 +171,7 @@ async function loadAuthorProfile(profileUrl, data, avatar, info) {
     avatar.replaceChildren(clone);
   }
   if (data.needsName && profile.name) {
-    info.querySelector('.blog-header-author-name').textContent = profile.name;
+    info.querySelector('.blog-header-author-name').replaceWith(createNameEl(profile.name, data.href));
   }
   setAuthorMeta(info, [
     data.details[0] || profile.title,
@@ -199,10 +212,7 @@ function decorateAuthor(row, authorLinkEnabled, base) {
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
   const info = createTag('div', { class: 'blog-header-author-info' });
 
-  const nameEl = (href && authorLinkEnabled)
-    ? createTag('a', { class: 'blog-header-author-name', href }, name)
-    : createTag('span', { class: 'blog-header-author-name' }, name);
-  info.append(nameEl);
+  info.append(createNameEl(name, authorLinkEnabled ? href : null));
 
   setAuthorMeta(info, details);
 
@@ -320,25 +330,35 @@ function buildCopyButton(svg, labels, data) {
     class: 'blog-share-action blog-share-copy',
     'aria-label': labels.copy,
   }, svg);
-  const feedback = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'blog-share-feedback' });
+  // The badge is decorative; the persistent sr-only region owns the announcement.
+  const feedback = createTag('span', { class: 'blog-share-feedback', 'aria-hidden': 'true' });
+  const status = createTag('span', {
+    class: 'blog-share-status sr-only',
+    role: 'status',
+    'aria-live': 'polite',
+  });
   let timeout;
-  const resetFeedback = () => {
+  const clearFeedback = () => {
     clearTimeout(timeout);
     button.classList.remove('blog-share-copied');
     feedback.textContent = '';
   };
   button.addEventListener('click', async () => {
-    resetFeedback();
+    clearFeedback();
+    status.textContent = '';
+    let message;
     try {
       await navigator.clipboard.writeText(data.url);
       button.classList.add('blog-share-copied');
-      feedback.textContent = labels.copied;
+      message = labels.copied;
     } catch (e) {
-      feedback.textContent = labels.copyError;
+      message = labels.copyError;
     }
-    timeout = setTimeout(resetFeedback, 3000);
+    feedback.textContent = message;
+    status.textContent = message;
+    timeout = setTimeout(clearFeedback, 3000);
   });
-  return createTag('li', null, [button, feedback]);
+  return createTag('li', null, [button, feedback, status]);
 }
 
 async function buildShareActions(platforms, data, base, labels) {
@@ -350,6 +370,7 @@ async function buildShareActions(platforms, data, base, labels) {
   available.forEach((platform, index) => {
     const svg = svgs?.[index]?.svg;
     if (!svg) return;
+    hideIcon(svg);
     if (platform === 'copy') {
       list.append(buildCopyButton(svg, labels, data));
       return;
@@ -419,7 +440,7 @@ async function buildShareButton(config, base) {
   }, label);
   const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
   const svg = svgs?.[0]?.svg;
-  if (svg) button.append(svg);
+  if (svg) button.append(hideIcon(svg));
   button.addEventListener('click', () => {
     openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
   });

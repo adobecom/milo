@@ -204,6 +204,8 @@ describe('blog-header decoration', () => {
     expect(share.getAttribute('aria-haspopup')).to.equal('dialog');
     expect(share.textContent).to.contain('Share');
     expect(share.querySelector('svg')).to.exist;
+    expect(share.querySelector('svg').getAttribute('aria-hidden')).to.equal('true');
+    expect(share.querySelector('svg').getAttribute('focusable')).to.equal('false');
     expect(block.querySelectorAll('.blog-header-author').length).to.equal(1);
     expect(window.sessionStorage.getItem('blog-reading-time')).to.equal('2');
   });
@@ -316,8 +318,23 @@ describe('blog-header decoration', () => {
     link.textContent = '';
     cell.replaceChildren(link);
     await init(block);
+    expect(block.querySelector('a.blog-header-author-name')).to.equal(null);
     await waitFor(() => block.querySelector('.blog-header-author-name').textContent === 'Profile Name');
+    expect(block.querySelector('a.blog-header-author-name')).to.exist;
     expect(block.querySelector('.blog-header-author-avatar picture')).to.exist;
+  });
+
+  it('never exposes an unnamed author link when the profile is unavailable', async () => {
+    fetchStub = mockFetch({ profileStatus: 404 });
+    const { block } = buildBlock({ metadata: false });
+    const cell = block.children[2].firstElementChild;
+    const link = cell.querySelector('a');
+    link.textContent = '';
+    cell.replaceChildren(link);
+    await init(block);
+    await waitFor(() => window.lana.log.called);
+    expect(block.querySelector('a.blog-header-author-name')).to.equal(null);
+    expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('');
   });
 
   it('fills the profile name when the authored link label is its URL', async () => {
@@ -584,14 +601,37 @@ describe('blog-header share modal', () => {
     clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const button = dialog.querySelector('.blog-share-copy');
     const feedback = dialog.querySelector('.blog-share-feedback');
+    const status = dialog.querySelector('.blog-share-status');
     button.click();
     await clock.tickAsync(0);
     expect(writeText.calledOnceWithExactly(getShareUrl())).to.equal(true);
     expect(feedback.textContent).to.equal('Link copied');
+    expect(status.textContent).to.equal('Link copied');
     expect(button.classList.contains('blog-share-copied')).to.equal(true);
     await clock.tickAsync(3000);
     expect(feedback.textContent).to.equal('');
     expect(button.classList.contains('blog-share-copied')).to.equal(false);
+    expect(status.textContent).to.equal('Link copied');
+  });
+
+  it('keeps a persistent status region separate from the decorative badge', async () => {
+    const dialog = await openShareModal();
+    const feedback = dialog.querySelector('.blog-share-feedback');
+    const status = dialog.querySelector('.blog-share-status');
+    expect(feedback.getAttribute('aria-hidden')).to.equal('true');
+    expect(feedback.hasAttribute('role')).to.equal(false);
+    expect(status.getAttribute('role')).to.equal('status');
+    expect(status.getAttribute('aria-live')).to.equal('polite');
+    expect(status.classList.contains('sr-only')).to.equal(true);
+    expect(getComputedStyle(status).display).not.to.equal('none');
+  });
+
+  it('marks decorative share icons as hidden from assistive technology', async () => {
+    const dialog = await openShareModal();
+    const icons = dialog.querySelectorAll('.blog-share-action svg');
+    expect(icons.length).to.equal(4);
+    expect([...icons].every((svg) => svg.getAttribute('aria-hidden') === 'true'
+      && svg.getAttribute('focusable') === 'false')).to.equal(true);
   });
 
   it('clears previous copy feedback and announces a clipboard failure', async () => {
@@ -599,13 +639,16 @@ describe('blog-header share modal', () => {
     clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const button = dialog.querySelector('.blog-share-copy');
     const feedback = dialog.querySelector('.blog-share-feedback');
+    const status = dialog.querySelector('.blog-share-status');
     button.click();
     await clock.tickAsync(0);
     writeText.rejects(new Error('permission denied'));
     button.click();
     expect(feedback.textContent).to.equal('');
+    expect(status.textContent).to.equal('');
     await clock.tickAsync(0);
     expect(feedback.textContent).to.equal('Copy failed');
+    expect(status.textContent).to.equal('Copy failed');
     expect(button.classList.contains('blog-share-copied')).to.equal(false);
     await clock.tickAsync(3000);
     expect(feedback.textContent).to.equal('');
