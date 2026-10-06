@@ -25,15 +25,19 @@ describe('collaboration preview image source', () => {
     }));
   }
 
-  async function imageRequest() {
+  async function imageRequest(moveToWand = false) {
     const result = receive('collab:ai-image-request');
     const img = frame.contentDocument.querySelector('img#preview-image');
     img.dispatchEvent(new frame.contentWindow.MouseEvent('mousemove', { bubbles: true }));
-    frame.contentDocument.querySelector('.collab-image-wand-btn').click();
+    const wand = frame.contentDocument.querySelector('.collab-image-wand-btn');
+    if (moveToWand) {
+      wand.querySelector('svg').dispatchEvent(new frame.contentWindow.MouseEvent('mousemove', { bubbles: true }));
+    }
+    wand.click();
     return result;
   }
 
-  beforeEach(async () => {
+  async function loadFrame(withUser = true) {
     frame = document.createElement('iframe');
     frame.src = '/test/deps/mocks/collab.html?peregrine-collab-id=test&peregrine-service-ep=/api';
     const ready = receive('collab:ready-for-edits');
@@ -42,11 +46,52 @@ describe('collaboration preview image source', () => {
     });
     document.body.append(frame);
     await Promise.all([ready, loaded]);
-    send({ type: 'collab:set-user', email: 'test@adobe.com' });
+    if (withUser) send({ type: 'collab:set-user', email: 'test@adobe.com' });
     send({ type: 'collab:set-annotation-mode', mode: 'assets' });
-  });
+  }
+
+  async function uploadRequest() {
+    const result = receive('collab:image-upload-request');
+    const frameRect = frame.getBoundingClientRect();
+    const imgRect = frame.contentDocument.querySelector('#preview-image').getBoundingClientRect();
+    await sendMouse({
+      type: 'click',
+      position: [
+        Math.round(frameRect.left + frame.clientLeft + imgRect.left + imgRect.width / 2),
+        Math.round(frameRect.top + frame.clientTop + imgRect.top + imgRect.height / 2),
+      ],
+    });
+    return result;
+  }
+
+  beforeEach(() => loadFrame());
 
   afterEach(() => frame.remove());
+
+  it('requests image upload and AI dialogs before the user profile arrives', async () => {
+    frame.remove();
+    await loadFrame(false);
+    const original = new URL('/libs/img/favicons/favicon.ico', window.location.href).href;
+    expect((await uploadRequest()).currentSrc).to.equal(original);
+    expect((await imageRequest()).currentSrc).to.equal(original);
+  });
+
+  it('keeps the image target when the pointer moves onto the AI icon', async () => {
+    expect((await imageRequest(true)).elementPath).to.equal(JSON.stringify({ selector: 'img#preview-image' }));
+    expect(frame.contentDocument.querySelector('#collab-image-wand').classList.contains('open')).to.be.true;
+  });
+
+  it('pins the parent origin before the user profile arrives', async () => {
+    frame.remove();
+    await loadFrame(false);
+    const data = { type: 'collab:image-upload', elementPath: '#preview-image', src: replacement };
+    send({ type: 'collab:set-user' }, { origin: 'https://example.com' });
+    send(data, { origin: 'https://example.com' });
+    send(data, { source: frame.contentWindow });
+    expect(frame.contentDocument.querySelector('#preview-image').src).not.to.equal(replacement);
+    send(data);
+    expect(frame.contentDocument.querySelector('#preview-image').src).to.equal(replacement);
+  });
 
   it('keeps the preview URL after repeated unsaved replacements', async () => {
     const original = (await imageRequest()).currentSrc;
@@ -68,17 +113,7 @@ describe('collaboration preview image source', () => {
 
   it('includes the original preview URL in upload requests after replacement', async () => {
     send({ type: 'collab:image-upload', elementPath: '#preview-image', src: replacement });
-    const result = receive('collab:image-upload-request');
-    const frameRect = frame.getBoundingClientRect();
-    const imgRect = frame.contentDocument.querySelector('#preview-image').getBoundingClientRect();
-    await sendMouse({
-      type: 'click',
-      position: [
-        Math.round(frameRect.left + frame.clientLeft + imgRect.left + imgRect.width / 2),
-        Math.round(frameRect.top + frame.clientTop + imgRect.top + imgRect.height / 2),
-      ],
-    });
-    expect((await result).currentSrc).to.equal(new URL('/libs/img/favicons/favicon.ico', window.location.href).href);
+    expect((await uploadRequest()).currentSrc).to.equal(new URL('/libs/img/favicons/favicon.ico', window.location.href).href);
   });
 
   it('rejects image replacements from an unverified origin or source', () => {

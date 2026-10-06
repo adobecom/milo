@@ -42,6 +42,9 @@
       // Only accept messages from the direct parent frame.
       if (e.source !== window.parent) return;
       if (ME.parentOrigin && e.origin !== ME.parentOrigin) return;
+      if (typeof e.data?.type !== 'string' || !e.data.type.startsWith('collab:')) return;
+      // Parent controls can arrive before the user profile.
+      if (!ME.parentOrigin) ME.parentOrigin = e.origin;
       if (e.data?.type === 'collab:set-user') {
         // Receive user profile from parent — no token ever leaves the parent frame.
         if (e.data.name)      ME.name      = e.data.name;
@@ -1262,6 +1265,7 @@
     document.addEventListener('mousemove', e => {
       if (newCommentPopup.classList.contains('open')) return;
       if (currentAnnotationMode === 'assets') {
+        if (imageWandEl.contains(e.target)) return;
         const imgTarget = findImageElement(e.target);
         if (imgTarget !== imageHoverTarget) {
           closeImageHover();
