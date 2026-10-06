@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled, isMasGeoDetectionEnabled,
 } from '../../utils/utils.js';
 import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
@@ -250,12 +250,7 @@ export async function getGeoLocaleSettings(miloLocale) {
   return settings;
 }
 
-export function isMasGeoDetectionEnabled() {
-  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
-  const metaValue = getMetadata('mas-geo-detection');
-  const geoDetection = queryParam ?? metaValue;
-  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
-}
+export { isMasGeoDetectionEnabled };
 
 export function getMerchCardHeadingLevel() {
   const raw = getMetadata('mas-heading-level');
