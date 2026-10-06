@@ -2,7 +2,7 @@ import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-
 
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { delay } from '../../helpers/waitfor.js';
+import { delay, waitFor } from '../../helpers/waitfor.js';
 
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import merch, {
@@ -26,6 +26,7 @@ import merch, {
   appendDexterParameters,
   getLocaleSettings,
   getMiloLocaleSettings,
+  resolveCheckoutCountry,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
@@ -964,6 +965,82 @@ describe('Merch Block', () => {
       const params = new URLSearchParams({ osi: '123' });
       const result = await buildCta(el, params);
       expect(result.dataset.imsCountry).to.be.undefined;
+    });
+
+    describe('market validation', () => {
+      let geoDetectionMeta;
+
+      beforeEach(() => {
+        geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+        document.head.append(geoDetectionMeta);
+        sessionStorage.setItem('akamai', 'US');
+        getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,ch' }] };
+      });
+
+      afterEach(() => {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+      });
+
+      it('falls back to the configured market when the detected country is unsupported', async () => {
+        sessionStorage.setItem('akamai', 'ZZ');
+        const service = await initService(true);
+        expect(service.settings.country).to.equal('US');
+        expect(service.settings.locale).to.equal('en_US');
+      });
+
+      it('keeps a supported signed-in IMS country on checkout links', async () => {
+        await initService(true);
+        const el = createTag('a', { href: '/tools/ost?osi=29&type=checkoutUrl' });
+        const result = await buildCta(el, new URLSearchParams({ osi: '123' }));
+        expect(result.dataset.imsCountry).to.equal('CH');
+      });
+
+      it('falls back to the validated country for an unsupported IMS country', async () => {
+        const service = await initService(true);
+        expect(await resolveCheckoutCountry({
+          settings: service.settings,
+          imsCountryPromise: Promise.resolve('ZZ'),
+        })).to.equal('US');
+      });
+
+      it('corrects an unsupported IMS-country restamp after rendering', async () => {
+        const service = await initService(true);
+        const cta = createTag('a', { is: 'checkout-link' });
+        document.body.append(cta);
+        try {
+          cta.dataset.imsCountry = 'ZZ';
+          await waitFor(() => cta.dataset.imsCountry === service.settings.country);
+          expect(cta.dataset.imsCountry).to.equal('US');
+          cta.dataset.imsCountry = 'CH';
+          await delay(20);
+          expect(cta.dataset.imsCountry).to.equal('CH');
+        } finally {
+          cta.remove();
+        }
+      });
+
+      it('does not fetch market or geo data when the query flag overrides metadata to off', async () => {
+        const originalUrl = window.location.href;
+        const url = new URL(originalUrl);
+        url.searchParams.set('mas-geo-detection', 'off');
+        window.history.replaceState({}, '', url);
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+        window.fetch.resetHistory();
+        try {
+          const service = await initService(true);
+          expect(service.settings.country).to.equal('US');
+          expect(service.settings.locale).to.equal('en_US');
+          const marketRequests = window.fetch.getCalls().filter(({ args: [resource] }) => (
+            /supported-markets|geo2\.adobe\.com/.test(String(resource))
+          ));
+          expect(marketRequests).to.be.empty;
+        } finally {
+          window.history.replaceState({}, '', originalUrl);
+        }
+      });
     });
   });
 
