@@ -1578,6 +1578,8 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
+const isMasFieldAutoblock = (key, url) => key === 'merch-card-autoblock' && url.hash.includes('field=');
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   let url;
@@ -1654,7 +1656,7 @@ export function decorateAutoBlock(a) {
     // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
     // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
     // dependencies out of the critical path when only a field is authored (e.g. in marquee).
-    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+    if (isMasFieldAutoblock(key, url)) {
       a.className = 'merch link-block';
       return true;
     }
@@ -2288,15 +2290,33 @@ function getMasDepUrl(component) {
   return `${baseUrl}/web-components/dist/${component}`;
 }
 
+export function isMasGeoDetectionEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const geoDetection = queryParam ?? getMetadata('mas-geo-detection');
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+const preloadModule = (href) => loadLink(href, { rel: 'modulepreload', crossorigin: 'anonymous' });
+const preloadClassicScript = (href) => loadLink(href, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+
+const getBlockDir = (blockPath) => blockPath.slice(0, blockPath.lastIndexOf('/'));
+const isMasFieldBlock = (block) => !!block?.hash?.includes('field=');
+const forMasField = (getUrl) => (blockPath, block) => (isMasFieldBlock(block) ? getUrl() : null);
+
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
-    getMasDepUrl('lit-all.min.js'),
-    getMasDepUrl('merch-card.js'),
-    getMasDepUrl('merch-quantity-select.js'),
+    () => getMasDepUrl('lit-all.min.js'),
+    () => getMasDepUrl('merch-card.js'),
+    () => getMasDepUrl('merch-quantity-select.js'),
   ],
   merch: [
-    getMasDepUrl('commerce.js'),
-    (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+    () => getMasDepUrl('commerce.js'),
+    (blockPath) => `${getBlockDir(blockPath)}/autoblock.js`,
+    () => `${getConfig().base}/utils/action.js`,
+    () => `${getConfig().base}/utils/decorate.js`,
+    () => `${getConfig().base}/features/placeholders.js`,
+    forMasField(() => getMasDepUrl('mas-field.js')),
+    forMasField(() => (isMasGeoDetectionEnabled() ? `${getConfig().base}/utils/market.js` : null)),
   ],
 };
 
@@ -2306,20 +2326,24 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
+const preloadBlockDep = (dep, blockPath, block) => {
+  const { url, module = true } = typeof dep === 'object' && dep !== null ? dep : { url: dep };
+  const href = typeof url === 'function' ? url(blockPath, block) : url;
+  if (typeof href !== 'string') return;
+  (module ? preloadModule : preloadClassicScript)(href);
+};
+
 const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    preloadModule(`${base}/utils/decorate.js`);
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  (blockDeps.get(name) ?? []).forEach((dep) => {
-    const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  });
+  preloadModule(`${blockPath}.js`);
+  (blockDeps.get(name) ?? []).forEach((dep) => preloadBlockDep(dep, blockPath, block));
   if (!hasStyles) return null;
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
   return new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
@@ -2347,6 +2371,7 @@ export function preloadLcpCodeFiles(area = document) {
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
+  let masFieldHref;
   firstSection.querySelectorAll('a[href]').forEach((a) => {
     let url;
     try { url = new URL(a.href); } catch { return; }
@@ -2354,6 +2379,10 @@ export function preloadLcpCodeFiles(area = document) {
     if (!match) return;
     const name = Object.keys(match)[0];
     if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    if (isMasFieldAutoblock(name, url)) {
+      masFieldHref ??= a.href;
+      return;
+    }
     autoNames.add(name);
   });
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
@@ -2367,11 +2396,12 @@ export function preloadLcpCodeFiles(area = document) {
   const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
-  const allBlocks = [...blocks, ...autoBlockEls];
+  const masFieldEls = masFieldHref ? [createTag('a', { class: 'merch', href: masFieldHref })] : [];
+  const allBlocks = [...blocks, ...autoBlockEls, ...masFieldEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
-    loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    preloadModule(`${base}/features/placeholders.js`);
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
@@ -2381,7 +2411,7 @@ export function preloadLcpCodeFiles(area = document) {
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
-    loadLink(`${base}/features/icons/icons.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    preloadModule(`${base}/features/icons/icons.js`);
     loadLink(`${base}/features/icons/icons.css`, { rel: 'preload', as: 'style' });
   }
 }
@@ -2410,10 +2440,10 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
   const { base } = getConfig();
-  loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-  loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-  if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  preloadModule(`${base}/martech/helpers.js`);
+  preloadModule(`${base}/features/personalization/personalization.js`);
+  preloadModule(`${base}/utils/sanitizeHtml.js`);
+  if (promo) preloadModule(`${base}/features/personalization/promo-utils.js`);
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
@@ -2927,9 +2957,7 @@ export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
-  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
-  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled()) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
@@ -3158,7 +3186,7 @@ export async function loadArea(area = document) {
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
   if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
-    loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    preloadModule(`${config.base}/blocks/fragment/fragment.js`);
   }
 
   if (isLingoActive) loadLingoIndexes(area);

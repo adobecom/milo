@@ -302,6 +302,237 @@ describe('Utils', () => {
     });
   });
 
+  describe('modulepreload hints', () => {
+    const fieldLink = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc&field=prices';
+    const cardLink = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc';
+    const masDist = (file) => `https://main--mas--adobecom.aem.live/web-components/dist/${file}`;
+    const moduleHrefs = () => [...document.head.querySelectorAll('link[rel="modulepreload"]')]
+      .map((link) => link.getAttribute('href'));
+    const fieldSection = (link = fieldLink) => {
+      document.body.innerHTML = `<main><div><div class="marquee"></div><p><a href="${link}">price</a></p></div></main>`;
+    };
+    const libs = (path) => `${utils.getConfig().base}${path}`;
+    let originalUrl;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      utils.setConfig(config);
+    });
+
+    afterEach(() => {
+      window.history.replaceState(null, '', originalUrl);
+      utils.registerBlockDeps('marquee');
+    });
+
+    it('warms block code and its shared decorate dependency with modulepreload, not script preload', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.include.members([
+        libs('/blocks/marquee/marquee.js'),
+        libs('/utils/decorate.js'),
+      ]);
+      expect(document.head.querySelectorAll('link[rel="preload"][as="script"]').length).to.equal(0);
+      document.head.querySelectorAll('link[rel="modulepreload"]').forEach((link) => {
+        expect(link.getAttribute('crossorigin'), link.href).to.equal('anonymous');
+      });
+    });
+
+    it('keeps styles on ordinary preloads', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      [libs('/blocks/marquee/marquee.css'), libs('/styles/iconography.css'), libs('/styles/breakpoint-theme.css')].forEach((href) => {
+        expect(document.head.querySelector(`link[rel="preload"][as="style"][href="${href}"]`), href).to.exist;
+      });
+      expect(moduleHrefs().some((href) => href.endsWith('.css'))).to.be.false;
+    });
+
+    it('warms the headless field code path early, including dependencies of the dynamic imports', () => {
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.include.members([
+        libs('/blocks/merch/merch.js'),
+        libs('/blocks/merch/autoblock.js'),
+        libs('/utils/action.js'),
+        libs('/utils/decorate.js'),
+        libs('/features/placeholders.js'),
+        masDist('commerce.js'),
+        masDist('mas-field.js'),
+      ]);
+      expect(document.head.querySelector(`link[rel="preload"][as="style"][href="${libs('/blocks/merch/merch.css')}"]`)).to.exist;
+      expect(document.head.querySelector('link[rel="stylesheet"][href*="/blocks/merch/"]')).to.not.exist;
+    });
+
+    it('does not warm card components, analytics or the geo market code for a field-only hero', () => {
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      const hrefs = moduleHrefs();
+      [
+        masDist('merch-card.js'),
+        masDist('lit-all.min.js'),
+        masDist('merch-quantity-select.js'),
+        libs('/blocks/merch-card-autoblock/merch-card-autoblock.js'),
+        libs('/martech/attributes.js'),
+        libs('/utils/market.js'),
+      ].forEach((href) => expect(hrefs, href).to.not.include(href));
+    });
+
+    it('warms market.js for a headless field only when geo detection is enabled', () => {
+      document.head.innerHTML = '<meta name="mas-geo-detection" content="on">';
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.include(libs('/utils/market.js'));
+
+      document.head.innerHTML = '<meta name="mas-geo-detection" content="off">';
+      window.history.replaceState(null, '', `${window.location.pathname}?mas-geo-detection=true`);
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.include(libs('/utils/market.js'));
+    });
+
+    it('keeps merch cards and plain commerce links out of the early pass', () => {
+      [cardLink, 'https://www.adobe.com/tools/ost?osi=abc'].forEach((link) => {
+        document.head.innerHTML = '';
+        fieldSection(link);
+        utils.preloadLcpCodeFiles();
+        const hrefs = moduleHrefs();
+        expect(hrefs, link).to.not.include(libs('/blocks/merch/merch.js'));
+        expect(hrefs, link).to.not.include(libs('/blocks/merch-card-autoblock/merch-card-autoblock.js'));
+        expect(hrefs, link).to.not.include(masDist('commerce.js'));
+        expect(hrefs, link).to.not.include(masDist('mas-field.js'));
+      });
+    });
+
+    it('only warms the field code for links in the first section', () => {
+      document.body.innerHTML = `<main><div><div class="marquee"></div></div>
+        <div><a href="${fieldLink}">price</a></div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.not.include(libs('/blocks/merch/merch.js'));
+    });
+
+    it('honors the disable-mep-perf-optimization kill switch for field links', () => {
+      document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll('link[rel="modulepreload"], link[rel="preload"]').length).to.equal(0);
+    });
+
+    it('does not download shared files twice across hint passes', () => {
+      document.head.innerHTML = '<meta name="mas-geo-detection" content="on">';
+      document.body.innerHTML = `<main><div><div class="marquee"></div>
+        <a href="${fieldLink}">one</a><a href="${fieldLink}&amp;pzn=x">two</a>
+        <span class="icon icon-play"></span>{{buy-now}}</div></main>`;
+      utils.preloadLcpCodeFiles();
+      utils.preloadLcpCodeFiles();
+      const hrefs = moduleHrefs();
+      expect(hrefs.length).to.be.greaterThan(8);
+      expect(new Set(hrefs).size).to.equal(hrefs.length);
+      expect(document.head.querySelectorAll(`link[href="${libs('/blocks/merch/merch.js')}"]`).length).to.equal(1);
+    });
+
+    it('resolves hints to the same URLs the merch block imports', async () => {
+      const { getMasComponentUrl, getMasLibs } = await import('../../libs/blocks/merch/merch.js');
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      const hrefs = moduleHrefs();
+      ['commerce', 'mas-field'].forEach((name) => {
+        expect(hrefs).to.include(getMasComponentUrl(name, getMasLibs(), window.location.hostname));
+      });
+    });
+
+    it('follows the maslibs override for M@S dependencies', async () => {
+      const { getMasComponentUrl, getMasLibs } = await import('../../libs/blocks/merch/merch.js');
+      window.history.replaceState(null, '', `${window.location.pathname}?maslibs=my-branch`);
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      const hrefs = moduleHrefs();
+      ['commerce', 'mas-field'].forEach((name) => {
+        const expected = getMasComponentUrl(name, getMasLibs(), window.location.hostname);
+        expect(expected).to.equal(`https://my-branch--mas--adobecom.aem.live/web-components/dist/${name}.js`);
+        expect(hrefs).to.include(expected);
+        expect(hrefs).to.not.include(masDist(`${name}.js`));
+      });
+    });
+
+    it('uses the milolibs base for block code and core dependencies', () => {
+      utils.setConfig({ ...config, miloLibs: 'https://milo-branch--milo--adobecom.aem.live/libs' });
+      fieldSection();
+      utils.preloadLcpCodeFiles();
+      const base = 'https://milo-branch--milo--adobecom.aem.live/libs';
+      expect(moduleHrefs()).to.include.members([
+        `${base}/blocks/merch/merch.js`,
+        `${base}/blocks/merch/autoblock.js`,
+        `${base}/utils/action.js`,
+        `${base}/features/placeholders.js`,
+      ]);
+      utils.setConfig(config);
+    });
+
+    describe('registerBlockDeps', () => {
+      it('hints module dependencies by default and resolves them against the block', () => {
+        const seen = [];
+        utils.registerBlockDeps(
+          'marquee',
+          '/libs/dep/static.js',
+          (blockPath, block) => { seen.push([blockPath, block.classList[0]]); return '/libs/dep/resolved.js'; },
+          () => null,
+          { url: '/libs/dep/object.js' },
+        );
+        document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        expect(moduleHrefs()).to.include.members([
+          '/libs/dep/static.js',
+          '/libs/dep/resolved.js',
+          '/libs/dep/object.js',
+        ]);
+        expect(seen).to.deep.equal([[libs('/blocks/marquee/marquee'), 'marquee']]);
+      });
+
+      it('keeps classic scripts on an ordinary script preload', () => {
+        utils.registerBlockDeps('marquee', { url: '/libs/deps/classic.js', module: false });
+        document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        const link = document.head.querySelector('link[href="/libs/deps/classic.js"]');
+        expect(link.getAttribute('rel')).to.equal('preload');
+        expect(link.getAttribute('as')).to.equal('script');
+        expect(link.getAttribute('crossorigin')).to.equal('anonymous');
+      });
+    });
+  });
+
+  describe('isMasGeoDetectionEnabled', () => {
+    let originalUrl;
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      document.head.innerHTML = '';
+    });
+    afterEach(() => {
+      window.history.replaceState(null, '', originalUrl);
+      document.head.innerHTML = '';
+    });
+
+    it('is off by default and for unknown values', () => {
+      expect(utils.isMasGeoDetectionEnabled()).to.be.false;
+      document.head.innerHTML = '<meta name="mas-geo-detection" content="maybe">';
+      expect(utils.isMasGeoDetectionEnabled()).to.be.false;
+    });
+
+    it('accepts on/true from metadata, case-insensitively', () => {
+      ['on', 'TRUE', 'On'].forEach((value) => {
+        document.head.innerHTML = `<meta name="mas-geo-detection" content="${value}">`;
+        expect(utils.isMasGeoDetectionEnabled(), value).to.be.true;
+      });
+    });
+
+    it('lets the query param override the metadata', () => {
+      document.head.innerHTML = '<meta name="mas-geo-detection" content="on">';
+      window.history.replaceState(null, '', `${window.location.pathname}?mas-geo-detection=off`);
+      expect(utils.isMasGeoDetectionEnabled()).to.be.false;
+      window.history.replaceState(null, '', `${window.location.pathname}?mas-geo-detection=true`);
+      expect(utils.isMasGeoDetectionEnabled()).to.be.true;
+    });
+  });
+
   it('renders global navigation when header tag is present', async () => {
     const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
     document.head.innerHTML = head;
