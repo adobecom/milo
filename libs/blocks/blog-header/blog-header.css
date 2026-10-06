@@ -19,8 +19,9 @@
   line-height: 1.25;
 }
 
+/* Departs from Figma #909090 (3.19:1) to meet WCAG AA 4.5:1 — #686868 is 5.57:1. */
 .blog-header-eyebrow-end {
-  color: var(--color-gray-500);
+  color: var(--color-gray-600);
 }
 
 .blog-header-eyebrow-start + .blog-header-eyebrow-end::before {
@@ -52,18 +53,21 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--spacing-s);
+  min-width: 0;
 }
 
 .blog-header-authors {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  min-width: 0;
 }
 
 .blog-header-author {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
+  min-width: 0;
 }
 
 .blog-header-author-avatar {
@@ -86,6 +90,7 @@
 .blog-header-author-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .blog-header-author-name {
@@ -94,6 +99,7 @@
   line-height: 1.5;
   color: var(--text-color);
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 a.blog-header-author-name:hover {
@@ -105,6 +111,7 @@ a.blog-header-author-name:hover {
   font-size: var(--type-body-s-size);
   line-height: 1.5;
   color: var(--text-color);
+  overflow-wrap: anywhere;
 }
 
 .blog-header-share {
@@ -170,6 +177,7 @@ a.blog-header-author-name:hover {
   }
 
   .blog-header-share {
+    flex: none;
     font-size: var(--type-body-m-size);
     margin-inline-start: auto;
     padding: 8px 12px;
