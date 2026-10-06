@@ -4,9 +4,27 @@ import { getSVGsfromFile } from '../share/share.js';
 import { getModal } from '../modal/modal.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
-const DEFAULT_PLATFORMS = ['x', 'email', 'linkedin', 'copy'];
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
 const ICON_PATH = 'blocks/blog-header/blog-header.svg';
+
+const SHARE_PLATFORMS = {
+  x: {
+    icon: 'x',
+    href: (url, title) => `https://x.com/share?&url=${url}&text=${title}`,
+    popup: true,
+  },
+  email: {
+    icon: 'email',
+    href: (url, title) => `mailto:?subject=${title}&body=${url}`,
+  },
+  linkedin: {
+    icon: 'linkedin',
+    href: (url) => `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    popup: true,
+  },
+  copy: { icon: 'link' },
+};
+const DEFAULT_PLATFORMS = Object.keys(SHARE_PLATFORMS);
 
 const SHARE_LABEL_KEYS = {
   heading: 'blog-share-post',
@@ -18,6 +36,10 @@ const SHARE_LABEL_KEYS = {
   copied: 'blog-share-link-copied',
   copyError: 'blog-share-copy-error',
 };
+
+function logError(message) {
+  window.lana?.log(`Blog header: ${message}`, { tags: 'blog-header', errorType: 'e' });
+}
 
 export function getReadingTime(main) {
   const content = main.cloneNode(true);
@@ -35,7 +57,7 @@ export function getReadingTime(main) {
   return Math.ceil(wordCount / 200);
 }
 
-/* Author profile picture resolution */
+/* Author profile resolution */
 
 const profileCache = new Map();
 
@@ -55,7 +77,7 @@ function resolveSrcset(srcset, base) {
 }
 
 function resolveMediaUrls(picture, base) {
-  picture.querySelectorAll?.('source[srcset]').forEach((source) => {
+  picture.querySelectorAll('source[srcset]').forEach((source) => {
     source.setAttribute('srcset', resolveSrcset(source.getAttribute('srcset'), base));
   });
   const img = picture.tagName === 'IMG' ? picture : picture.querySelector('img');
@@ -63,22 +85,43 @@ function resolveMediaUrls(picture, base) {
   if (img?.getAttribute('srcset')) img.setAttribute('srcset', resolveSrcset(img.getAttribute('srcset'), base));
 }
 
-function fetchProfilePicture(profileUrl) {
+function getProfileData(doc) {
+  const author = doc.querySelector('.blog-author');
+  if (!author) return null;
+  const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
+    !row.querySelector('picture, img')
+    && !/^#[0-9a-fA-F]{3,6}(?:\s*,\s*#[0-9a-fA-F]{3,6})?$/.test(row.textContent.trim())
+  ));
+  const socialIndex = rows.findIndex((row) => [...row.querySelectorAll('a')].some((link) => (
+    /(?:linkedin|twitter|x|facebook|instagram)\.com/.test(link.getAttribute('href'))
+  )));
+  const [nameRow, titleRow] = socialIndex < 0 ? rows : rows.slice(0, socialIndex);
+  const companyRow = socialIndex < 0
+    ? rows[5] || rows[4]
+    : rows.slice(socialIndex + 1).at(-1);
+  return {
+    picture: author.querySelector('picture') || author.querySelector('img'),
+    name: nameRow?.textContent.trim() || '',
+    title: titleRow?.textContent.trim() || '',
+    company: companyRow?.textContent.trim() || '',
+  };
+}
+
+function fetchAuthorProfile(profileUrl) {
   if (!profileCache.has(profileUrl)) {
     profileCache.set(profileUrl, (async () => {
-      let resp;
       try {
-        resp = await fetch(`${profileUrl}.plain.html`);
+        const resp = await fetch(`${profileUrl}.plain.html`);
+        if (!resp.ok) {
+          logError(`author profile responded ${resp.status} for ${profileUrl}`);
+          return null;
+        }
+        const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
+        return getProfileData(doc);
       } catch (e) {
-        window.lana?.log(`Blog header: author profile request failed for ${profileUrl}: ${e.message}`, { tags: 'blog-header', errorType: 'e' });
+        logError(`author profile request failed for ${profileUrl}: ${e.message}`);
         return null;
       }
-      if (!resp.ok) {
-        window.lana?.log(`Blog header: author profile responded ${resp.status} for ${profileUrl}`, { tags: 'blog-header', errorType: 'e' });
-        return null;
-      }
-      const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-      return doc.querySelector('.blog-author picture') || doc.querySelector('.blog-author img') || null;
     })());
   }
   return profileCache.get(profileUrl);
@@ -93,52 +136,88 @@ function defaultAvatar(base) {
   });
 }
 
-async function loadProfilePicture(profileUrl, avatar) {
-  const picture = await fetchProfilePicture(profileUrl);
-  if (!picture) return;
-  const clone = picture.cloneNode(true);
-  resolveMediaUrls(clone, profileUrl);
-  const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
-  img?.classList.add('blog-header-avatar');
-  avatar.replaceChildren(clone);
+function setAuthorMeta(info, details) {
+  const text = details.filter(Boolean).join(' | ');
+  if (!text) return;
+  let meta = info.querySelector('.blog-header-author-meta');
+  if (!meta) {
+    meta = createTag('span', { class: 'blog-header-author-meta' });
+    info.append(meta);
+  }
+  meta.textContent = text;
+}
+
+async function loadAuthorProfile(profileUrl, data, avatar, info) {
+  const profile = await fetchAuthorProfile(profileUrl);
+  if (!profile) return;
+  if (!data.picture && profile.picture) {
+    const clone = profile.picture.cloneNode(true);
+    resolveMediaUrls(clone, profileUrl);
+    const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
+    img?.classList.add('blog-header-avatar');
+    avatar.replaceChildren(clone);
+  }
+  if (data.needsName && profile.name) {
+    info.querySelector('.blog-header-author-name').textContent = profile.name;
+  }
+  setAuthorMeta(info, [
+    data.details[0] || profile.title,
+    data.details[1] || profile.company,
+    ...data.details.slice(2),
+  ]);
+}
+
+function getAuthorData(row) {
+  const inner = row.querySelector(':scope > div') || row;
+  const paragraphs = [...inner.querySelectorAll('p')]
+    .filter((p) => !p.querySelector('picture'));
+  const directLink = inner.querySelector(':scope > a');
+  const nameIndex = directLink ? -1 : paragraphs.findIndex((p) => (
+    p.querySelector('a') || p.textContent.trim()
+  ));
+  const nameP = paragraphs[nameIndex];
+  const link = directLink || nameP?.querySelector('a');
+  const name = (link || nameP)?.textContent.trim() || '';
+  const href = link?.getAttribute('href');
+  const details = directLink ? paragraphs : paragraphs.slice(nameIndex + 1);
+  const needsName = !!href
+    && (!name || name === href || name === resolveUrl(href, window.location.href));
+
+  return {
+    picture: inner.querySelector('picture'),
+    name,
+    href,
+    needsName,
+    details: details.map((p) => p.textContent.trim()),
+  };
 }
 
 function decorateAuthor(row, authorLinkEnabled, base) {
-  const inner = row.querySelector(':scope > div') || row;
+  const data = getAuthorData(row);
+  const { picture, name, href, details, needsName } = data;
   const author = createTag('div', { class: 'blog-header-author' });
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
   const info = createTag('div', { class: 'blog-header-author-info' });
 
-  const authoredPicture = inner.querySelector('picture');
-  const paragraphs = [...inner.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('picture') && p.textContent.trim());
-  const nameP = paragraphs[0];
-  const link = nameP?.querySelector('a');
-  const name = (link || nameP)?.textContent.trim() || '';
-
-  const nameEl = (link && authorLinkEnabled)
-    ? createTag('a', { class: 'blog-header-author-name', href: link.getAttribute('href') }, name)
+  const nameEl = (href && authorLinkEnabled)
+    ? createTag('a', { class: 'blog-header-author-name', href }, name)
     : createTag('span', { class: 'blog-header-author-name' }, name);
   info.append(nameEl);
 
-  const meta = paragraphs.slice(1).map((p) => p.textContent.trim()).filter(Boolean).join(' | ');
-  if (meta) info.append(createTag('span', { class: 'blog-header-author-meta' }, meta));
+  setAuthorMeta(info, details);
 
-  if (authoredPicture) {
-    avatar.append(authoredPicture);
+  if (picture) {
+    avatar.append(picture);
   } else {
     avatar.append(defaultAvatar(base));
-    const href = link?.getAttribute('href');
-    if (authorLinkEnabled && href) {
-      loadProfilePicture(resolveUrl(href, window.location.href), avatar);
-    }
+  }
+  if (authorLinkEnabled && href && (!picture || !details[0] || !details[1] || needsName)) {
+    loadAuthorProfile(resolveUrl(href, window.location.href), data, avatar, info);
   }
 
   author.append(avatar, info);
   return author;
 }
-
-/* Eyebrow */
 
 function formatDate(value, config) {
   if (!value) return '';
@@ -194,7 +273,7 @@ function getPlatforms() {
   const authored = getMetadata('blog-share-platforms');
   if (!authored) return DEFAULT_PLATFORMS;
   const requested = authored.split(',').map((p) => p.trim().toLowerCase()).filter(Boolean);
-  const platforms = requested.filter((p) => DEFAULT_PLATFORMS.includes(p));
+  const platforms = [...new Set(requested.filter((p) => DEFAULT_PLATFORMS.includes(p)))];
   return platforms.length ? platforms : DEFAULT_PLATFORMS;
 }
 
@@ -218,34 +297,20 @@ function buildShareCard(data) {
   return card;
 }
 
-function openPopup(href) {
-  window.open(href, '_blank', 'popup,noopener,noreferrer,width=600,height=500');
-}
-
 function buildActionLink(platform, svg, label, data) {
-  const url = encodeURIComponent(data.url);
-  const title = encodeURIComponent(data.title);
-  if (platform === 'email') {
-    return createTag('a', {
-      class: 'blog-share-action',
-      'aria-label': label,
-      href: `mailto:?subject=${title}&body=${url}`,
-    }, svg);
-  }
-  const hrefs = {
-    x: `https://x.com/share?&url=${url}&text=${title}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-  };
+  const { href, popup } = SHARE_PLATFORMS[platform];
   const link = createTag('a', {
     class: 'blog-share-action',
     'aria-label': label,
-    href: hrefs[platform],
-    rel: 'noopener noreferrer',
+    href: href(encodeURIComponent(data.url), encodeURIComponent(data.title)),
+    ...(popup ? { rel: 'noopener noreferrer' } : {}),
   }, svg);
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    openPopup(link.href);
-  });
+  if (popup) {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.open(link.href, '_blank', 'popup,noopener,noreferrer,width=600,height=500');
+    });
+  }
   return link;
 }
 
@@ -257,35 +322,35 @@ function buildCopyButton(svg, labels, data) {
   }, svg);
   const feedback = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'blog-share-feedback' });
   let timeout;
-  button.addEventListener('click', async () => {
+  const resetFeedback = () => {
     clearTimeout(timeout);
+    button.classList.remove('blog-share-copied');
+    feedback.textContent = '';
+  };
+  button.addEventListener('click', async () => {
+    resetFeedback();
     try {
       await navigator.clipboard.writeText(data.url);
-      button.classList.remove('blog-share-copy-error');
       button.classList.add('blog-share-copied');
       feedback.textContent = labels.copied;
     } catch (e) {
-      button.classList.remove('blog-share-copied');
-      button.classList.add('blog-share-copy-error');
       feedback.textContent = labels.copyError;
     }
-    timeout = setTimeout(() => {
-      button.classList.remove('blog-share-copied');
-      feedback.textContent = '';
-    }, 3000);
+    timeout = setTimeout(resetFeedback, 3000);
   });
   return createTag('li', null, [button, feedback]);
 }
 
 async function buildShareActions(platforms, data, base, labels) {
-  const iconNames = platforms.map((p) => (p === 'copy' ? 'link' : p));
-  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, iconNames);
+  const available = platforms.filter((p) => p !== 'copy' || navigator.clipboard);
   const list = createTag('ul', { class: 'blog-share-actions' });
-  platforms.forEach((platform, index) => {
+  if (!available.length) return list;
+  const iconNames = available.map((p) => SHARE_PLATFORMS[p].icon);
+  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, iconNames);
+  available.forEach((platform, index) => {
     const svg = svgs?.[index]?.svg;
     if (!svg) return;
     if (platform === 'copy') {
-      if (!navigator.clipboard) return;
       list.append(buildCopyButton(svg, labels, data));
       return;
     }
@@ -296,15 +361,16 @@ async function buildShareActions(platforms, data, base, labels) {
 }
 
 async function getShareLabels(config) {
-  const entries = await Promise.all(
-    Object.entries(SHARE_LABEL_KEYS).map(
-      async ([name, key]) => [name, await replaceKey(key, config)],
-    ),
+  const labels = {};
+  await Promise.all(
+    Object.entries(SHARE_LABEL_KEYS).map(async ([name, key]) => {
+      labels[name] = await replaceKey(key, config);
+    }),
   );
-  return Object.fromEntries(entries);
+  return labels;
 }
 
-export async function openShareModal(trigger) {
+async function createShareModal(trigger) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const labels = await getShareLabels(config);
@@ -315,6 +381,10 @@ export async function openShareModal(trigger) {
   content.append(buildShareCard(data));
   content.append(await buildShareActions(getPlatforms(), data, base, labels));
 
+  if (trigger) {
+    trigger.dataset.modalHash = `#${SHARE_MODAL_ID}`;
+    trigger.dataset.isModalTrigger = 'true';
+  }
   const dialog = await getModal(null, {
     id: SHARE_MODAL_ID,
     class: 'blog-share-modal',
@@ -323,10 +393,20 @@ export async function openShareModal(trigger) {
   });
   if (!dialog) return null;
   dialog.querySelector('.dialog-close')?.setAttribute('aria-label', labels.close);
-  if (trigger) {
-    window.addEventListener('milo:modal:closed', () => trigger.focus(), { once: true });
-  }
   return dialog;
+}
+
+let shareModalRequest;
+
+export async function openShareModal(trigger) {
+  const existing = document.getElementById(SHARE_MODAL_ID);
+  if (existing) return existing;
+  if (!shareModalRequest) {
+    shareModalRequest = createShareModal(trigger).finally(() => {
+      shareModalRequest = null;
+    });
+  }
+  return shareModalRequest;
 }
 
 async function buildShareButton(config, base) {
@@ -335,12 +415,33 @@ async function buildShareButton(config, base) {
     type: 'button',
     class: 'blog-header-share',
     'aria-haspopup': 'dialog',
+    'data-modal-hash': `#${SHARE_MODAL_ID}`,
   }, label);
   const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
   const svg = svgs?.[0]?.svg;
   if (svg) button.append(svg);
-  button.addEventListener('click', () => openShareModal(button));
+  button.addEventListener('click', () => {
+    openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
+  });
   return button;
+}
+
+function decorateSummary(row) {
+  const cell = row?.querySelector(':scope > div');
+  if (!cell) return;
+  if (cell.querySelector(':scope > p')) {
+    cell.replaceWith(...cell.childNodes);
+  } else {
+    cell.replaceWith(createTag('p', null, [...cell.childNodes]));
+  }
+}
+
+async function buildByline(authorRows, config, base) {
+  const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
+  const authors = createTag('div', { class: 'blog-header-authors' });
+  authorRows.forEach((row) => authors.append(decorateAuthor(row, authorLinkEnabled, base)));
+  const shareButton = await buildShareButton(config, base);
+  return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
 export default async function init(el) {
@@ -351,28 +452,15 @@ export default async function init(el) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
 
-  const rows = [...el.children];
-  rows[0]?.classList.add('blog-header-title');
-  rows[1]?.classList.add('blog-header-summary');
+  const [titleRow, summaryRow, ...authorRows] = el.children;
+  titleRow?.classList.add('blog-header-title');
+  summaryRow?.classList.add('blog-header-summary');
+  decorateSummary(summaryRow);
 
-  const summaryRow = rows[1].querySelector('div');
-
-  if (summaryRow) {
-    const pSummary = createTag('p', {}, summaryRow.textContent);
-    summaryRow.replaceWith(pSummary);
-  }
-
-  const authorRows = rows.slice(2);
-  const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
-  const authors = createTag('div', { class: 'blog-header-authors' });
-  authorRows.forEach((row) => authors.append(decorateAuthor(row, authorLinkEnabled, base)));
-
-  const [eyebrow, shareButton] = await Promise.all([
+  const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
-    buildShareButton(config, base),
+    buildByline(authorRows, config, base),
   ]);
-
-  const byline = createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
