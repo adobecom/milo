@@ -230,4 +230,13 @@ merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="foo
   merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list .footer-row-cell-checkmark {
     gap: var(--consonant-merch-spacing-xxs, 8px) !important;
   }
+
+  /* prevent overwrite from au-merch.css for AU annual price */
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="heading-m-price"] [is="inline-price"] .price-annual-prefix,
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="heading-m-price"] [is="inline-price"] .price-annual,
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="heading-m-price"] [is="inline-price"] .price-annual-suffix {
+    font-size: 20px !important;
+    line-height: 35px !important;
+    font-weight: 800 !important;
+  }
 }
