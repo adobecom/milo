@@ -666,7 +666,9 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
 // a base-site segment is compared against, or returned as, a language value.
 const BASE_SITE_LANG_TAG_ALIASES = { ara: 'ar' };
 const normalizeBaseSiteLang = (lang) => (
-  Object.hasOwn(BASE_SITE_LANG_TAG_ALIASES, lang) ? BASE_SITE_LANG_TAG_ALIASES[lang] : lang
+  Object.prototype.hasOwnProperty.call(BASE_SITE_LANG_TAG_ALIASES, lang)
+    ? BASE_SITE_LANG_TAG_ALIASES[lang]
+    : lang
 );
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
