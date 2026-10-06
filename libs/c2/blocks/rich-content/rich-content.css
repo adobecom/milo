@@ -253,6 +253,16 @@
   }
 
   &:has(.rich-content.merch-moment) {
+    display: grid;
+    grid-template-rows: auto auto;
+    box-sizing: border-box;
+    height: auto;
+
+    & > :not(.section-background):not(.section-metadata) {
+      grid-row: 1;
+      height: auto;
+    }
+
     .foreground :is(a, button) {
       scroll-margin-top: calc(var(--rc-nav-height, 0px) + var(--s2a-spacing-lg));
     }
@@ -273,8 +283,18 @@
         --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
       }
 
+      &,
+      & > * {
+        position: relative;
+        inset: unset;
+        width: 100%;
+      }
+
       img {
+        width: 100%;
+        height: auto;
         aspect-ratio: 375 / 434;
+        object-fit: cover;
         object-position: center top;
       }
     }

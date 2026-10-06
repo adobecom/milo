@@ -11,9 +11,18 @@ function initNavHeight(el) {
   const section = el.closest('.section');
   const header = document.querySelector('header');
   if (!section || !header) return;
-  const sync = () => section.style.setProperty(NAV_HEIGHT_PROP, `${getGnavHeight()}px`);
-  sync();
-  new ResizeObserver(sync).observe(header);
+  const observer = new ResizeObserver(() => {
+    if (!section.isConnected) {
+      observer.disconnect();
+      return;
+    }
+    try {
+      section.style.setProperty(NAV_HEIGHT_PROP, `${getGnavHeight()}px`);
+    } catch {
+      // Local nav not in the DOM yet; the header resize will retry.
+    }
+  });
+  observer.observe(header);
 }
 
 function hangOpeningQuote(header) {

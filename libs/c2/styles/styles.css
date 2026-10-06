@@ -1439,6 +1439,11 @@ span.hang-opening-quote {
   .section.parallax-garage-door-reveal {
     --gd-bg-shift: calc((100vh + 100vh) * 0.06);
     --gd-section-shift: clamp(-100px, -16vh, -60px);
+
+    /* Content drift: the text group scrolls slightly slower than the page,
+       so the asset below closes the distance to the CTA. */
+    --gd-content-drift: 32px;
+
     animation: garage-door-section-parallax var(--parallax-easing) both;
     animation-timeline: view();
     animation-range: entry 0% cover 64%;
@@ -1446,6 +1451,10 @@ span.hang-opening-quote {
     /* Mobile/tablet: shallower cap, same viewport-relative curve */
     @media (width < 1280px) {
       --gd-section-shift: clamp(-60px, -16vh, -40px);
+    }
+
+    @media (width < 768px) {
+      --gd-content-drift: 24px;
     }
 
     .section-background {
@@ -1466,11 +1475,18 @@ span.hang-opening-quote {
       view-timeline-name: --gd-text-vt;
       view-timeline-axis: block;
 
+      .content {
+        animation: garage-door-content-drift linear both;
+        animation-timeline: --gd-text-vt;
+        animation-range: cover 0% cover 100%;
+      }
+
+      /* No base opacity: 0. The keyframes' backwards fill hides items before
+         the reveal, and with reduced motion (animation: none) they stay visible. */
       .content > *,
       & > :not(.content) {
         --gd-item-order: calc(sibling-index() - 1);
 
-        opacity: 0;
         will-change: opacity, translate;
         animation: garage-door-text-reveal linear both;
         animation-timeline: --gd-text-vt;
@@ -1480,40 +1496,20 @@ span.hang-opening-quote {
   }
 
   /* Stacked layout variant (content above background instead of overlaid
-     on top of it) used by the CPRO merch-moment hero. */
+     on top of it) used by the CPRO merch-moment hero. The layout itself lives
+     in rich-content.css so it also applies without scroll-driven animations. */
   .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    display: grid;
-    grid-template-rows: auto auto;
+    --gd-content-drift: 0px;
+
     z-index: 1;
-
-    &.has-background {
-      height: auto;
-    }
-
-    & > :not(.section-background):not(.section-metadata) {
-      grid-row: 1;
-      height: auto;
-    }
 
     &.has-background .section-background {
       overflow-x: clip;
       overflow-y: unset;
       z-index: auto;
-      width: 100%;
       clip-path: inset(-100% 0 0);
 
-      &,
-      & > * {
-        position: relative;
-        inset: unset;
-        width: 100%;
-      }
-
       img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-
         /* Mobile/tablet: the whole image fits in the viewport, so ending the
            parallax mid-cover reads as a visible stop. Run it across the full
            cover-length window, shifted earlier so it starts before the image
@@ -1523,26 +1519,6 @@ span.hang-opening-quote {
         }
       }
     }
-  }
-
-  /* Content drift: the text group scrolls slightly slower than the page,
-     so the asset below closes the distance to the CTA. */
-  .section.parallax-garage-door-reveal {
-    --gd-content-drift: 32px;
-
-    @media (width < 768px) {
-      --gd-content-drift: 24px;
-    }
-
-    .foreground .content {
-      animation: garage-door-content-drift linear both;
-      animation-timeline: --gd-text-vt;
-      animation-range: cover 0% cover 100%;
-    }
-  }
-
-  .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    --gd-content-drift: 0px;
   }
 
   /* Merch-moment on mobile mirrors the design prototype's merch-copy: the
