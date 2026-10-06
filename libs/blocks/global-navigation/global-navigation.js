@@ -697,7 +697,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${this.useAcomAssistant || getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -1673,7 +1673,7 @@ class Gnav {
   };
 
   decorateAcomAssistantGnav = async () => {
-    if (!this.useAcomAssistant) return;
+    if (!this.useAcomAssistant || !this.elements.topnav.querySelector('.feds-bc-wrapper')) return;
     const { decorateNavWithAssistant } = await import('../brand-concierge-global/brand-concierge-global.js');
     const cards = this.content.querySelector('.brand-concierge-global > div');
     decorateNavWithAssistant(cards, this.elements.topnav);
