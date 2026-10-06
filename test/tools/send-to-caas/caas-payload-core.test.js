@@ -4,7 +4,9 @@ import getUuid from '../../../libs/utils/getUuid.js';
 
 const {
   buildCaasXdmPayload,
+  getBulkPublishLangAttr,
   getProdUrl,
+  initBulkPublisherLingoMapping,
 } = await import('../../../tools/send-to-caas/caas-payload-core.js');
 
 const buildDom = (metadataRows) => {
@@ -109,5 +111,45 @@ describe('caas-payload-core: buildCaasXdmPayload card identity', () => {
 
     expect(errors).to.deep.equal([]);
     expect(caasMetadata.primarytag).to.deep.equal({});
+  });
+});
+
+describe('caas-payload-core: getBulkPublishLangAttr with a BACOM /ara base-site (autodetect lingo)', () => {
+  // Mirrors the real-world bulk-publish scenario: BACOM onboards '/ara' as a
+  // base site in lingo-site-mapping.json, and the bulk publisher resolves a
+  // page at /ara/... with auto-detect lingo enabled. The resolved language
+  // must be the 'ar' CaaS language tag id — NOT the raw 3-letter 'ara' path
+  // segment, which has no corresponding caas:language tag in the taxonomy.
+  // This exercises caas-payload-core.js's own copy of the lang-first helpers
+  // (kept in sync with libs/blocks/caas/utils.js, which has its own test
+  // covering the same scenario in test/blocks/caas/utils.test.js).
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/ca, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '' },
+      ],
+    },
+  };
+  let fetchStub;
+
+  beforeEach(() => {
+    fetchStub = stub(window, 'fetch').resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+  });
+
+  it('resolves to lang: ar, country: xx (not the raw "ara" path segment)', async () => {
+    const result = await getBulkPublishLangAttr({
+      prodUrl: 'https://main--bacom--adobecom.aem.live/ara/products/brand-concierge.html',
+      repo: 'bacom',
+      autoDetectLingo: true,
+    });
+
+    expect(result).to.equal('ar-xx');
   });
 });
