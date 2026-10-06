@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, overrideCardHeadingLevel } from '../../../libs/blocks/merch/autoblock.js';
 import { getMerchCardHeadingLevel } from '../../../libs/blocks/merch/merch.js';
@@ -243,24 +244,115 @@ describe('autoblock', () => {
       expect(() => overrideCardHeadingLevel(card, 2)).to.not.throw();
     });
 
-    it('leaves headings that wrap a customized built-in (inline-price) untouched', () => {
+    it('preserves the original tag styling inline after swapping', () => {
+      const style = document.createElement('style');
+      style.textContent = 'merch-card h4 { font-weight: 400; font-size: 14px; }';
+      document.head.appendChild(style);
+      const card = makeCard(['h3', 'h4']);
+      document.body.appendChild(card);
+      overrideCardHeadingLevel(card, 2);
+      const heading = card.querySelector('h3');
+      expect(heading.style.fontWeight).to.equal('400');
+      expect(heading.style.fontSize).to.equal('14px');
+      style.remove();
+      card.remove();
+    });
+
+    it('preserves icon-dependent heading layout and original content', () => {
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card[variant="pro"] [slot="whats-included"] h4:has(> svg, > .sp-icon, > merch-icon) {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      `;
+      const card = makeCard(['h3']);
+      card.setAttribute('variant', 'pro');
+      const included = document.createElement('div');
+      included.setAttribute('slot', 'whats-included');
+      included.innerHTML = '<h4><svg></svg>Apps</h4><h4><span class="sp-icon"></span>Creative AI</h4><h4>Extras</h4>';
+      const icons = [...included.querySelectorAll('svg, .sp-icon')];
+      card.appendChild(included);
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      try {
+        overrideCardHeadingLevel(card, 2);
+        const headings = [...included.querySelectorAll('h3')];
+        headings.slice(0, 2).forEach((heading, index) => {
+          expect(heading.style.display).to.equal('flex');
+          expect(heading.style.alignItems).to.equal('center');
+          expect(heading.style.gap).to.equal('4px');
+          expect(heading.firstElementChild).to.equal(icons[index]);
+        });
+        expect(headings[2].style.display).to.equal('block');
+        expect(included.children.length).to.equal(3);
+      } finally {
+        style.remove();
+        card.remove();
+      }
+    });
+
+    it('preserves icon layout while resizing heading typography in both directions', async () => {
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 24px; }
+        merch-card h3:has(> svg) { display: flex; align-items: center; gap: 4px; }
+        @media (max-width: 767px) {
+          merch-card h3 { font-size: 18px; }
+        }
+      `;
+      const card = makeCard(['h3']);
+      card.firstElementChild.innerHTML = '<svg></svg>Creative Cloud Pro';
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        await setViewport({ width: 1200, height: 800 });
+        overrideCardHeadingLevel(card, 2);
+        const heading = card.querySelector('h2');
+        expect(heading.style.fontSize).to.equal('24px');
+        for (const width of [600, 1200]) {
+          await setViewport({ width, height: 800 });
+          window.dispatchEvent(new Event('resize'));
+          clock.tick(150);
+          expect(heading.style.fontSize).to.equal(width === 600 ? '18px' : '24px');
+          expect(heading.style.display).to.equal('flex');
+          expect(heading.style.alignItems).to.equal('center');
+          expect(heading.style.gap).to.equal('4px');
+          expect(card.querySelectorAll('svg').length).to.equal(1);
+        }
+      } finally {
+        clock.restore();
+        style.remove();
+        card.remove();
+        await setViewport(viewport);
+      }
+    });
+
+    it('swaps the tag of a heading wrapping a customized built-in (inline-price), preserving content', () => {
       const card = makeCard(['h3']);
       const priceHeading = document.createElement('h3');
       priceHeading.innerHTML = '<span is="inline-price">$9.99</span>';
       card.appendChild(priceHeading);
       overrideCardHeadingLevel(card, 2);
-      expect(card.querySelectorAll('h2').length).to.equal(1);
-      expect(priceHeading.tagName).to.equal('H3');
-      expect(priceHeading.querySelector('[is="inline-price"]')).to.not.equal(null);
+      const swapped = card.querySelectorAll('h2');
+      expect(swapped.length).to.equal(2);
+      const price = card.querySelector('[is="inline-price"]');
+      expect(price).to.not.equal(null);
+      expect(price.closest('h2')).to.not.equal(null);
     });
 
-    it('leaves headings that wrap a custom element untouched', () => {
+    it('swaps the tag of a heading wrapping a custom element, preserving content', () => {
       const card = makeCard(['h3']);
       const heading = document.createElement('h4');
       heading.innerHTML = '<mas-mnemonic></mas-mnemonic>';
       card.appendChild(heading);
       overrideCardHeadingLevel(card, 2);
-      expect(heading.tagName).to.equal('H4');
+      const custom = card.querySelector('mas-mnemonic');
+      expect(custom).to.not.equal(null);
+      expect(custom.closest('h3')).to.not.equal(null);
     });
   });
 });

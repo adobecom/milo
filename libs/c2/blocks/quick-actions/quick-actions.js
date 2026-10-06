@@ -34,7 +34,7 @@ function buildTile(tileRow) {
     const footer = createTag('div', { class: 'quick-actions-tile-footer' });
     const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG);
     footer.append(createTag('span', { class: 'quick-actions-tile-label heading-6' }, labelLink.textContent.trim()), chevron);
-    tile.append(footer);
+    tile.append(...[mediaImg && createTag('div', { class: 'content-aux' }), footer].filter(Boolean));
   }
 
   return tile;
