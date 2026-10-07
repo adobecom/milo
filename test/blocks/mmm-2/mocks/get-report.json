@@ -1,0 +1,182 @@
+{
+    "result": [
+        {
+            "aLastSeen": "2025-01-23T17:46:13.000Z",
+            "pageId": 5193,
+            "pLastSeen": "2025-02-14T20:26:08.000Z",
+            "url": "https:\/\/business.adobe.com\/products\/advertising\/adobe-advertising-cloud.html",
+            "target": "postLCP"
+        },
+        {
+            "aLastSeen": "2025-03-27T16:56:27.000Z",
+            "pageId": 6895,
+            "pLastSeen": "2025-04-09T15:31:48.000Z",
+            "url": "https:\/\/business.adobe.com\/products\/experience-manager\/assets.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-05T16:46:48.000Z",
+            "pageId": 4036,
+            "pLastSeen": "2025-04-02T15:16:31.000Z",
+            "url": "https:\/\/business.adobe.com\/request-consultation\/experience-cloud.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-17T21:40:11.000Z",
+            "pageId": 351,
+            "pLastSeen": "2025-04-09T17:14:39.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/business.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-18T02:30:51.000Z",
+            "pageId": 4041,
+            "pLastSeen": "2025-04-09T16:23:07.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/business\/acrobat-pro.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-17T21:41:08.000Z",
+            "pageId": 4202,
+            "pLastSeen": "2025-04-09T16:13:45.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/business\/pricing-plans.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-04-01T19:14:39.000Z",
+            "pageId": 259,
+            "pLastSeen": "2025-04-09T16:21:36.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/business\/sign.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-06T15:57:09.000Z",
+            "pageId": 1564,
+            "pLastSeen": "2025-04-09T05:04:31.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:46.000Z",
+            "pageId": 2145,
+            "pLastSeen": "2025-04-03T22:55:34.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features\/create-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:47.000Z",
+            "pageId": 1589,
+            "pLastSeen": "2025-04-08T19:31:11.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features\/modify-pdfs.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-18T22:25:37.000Z",
+            "pageId": 2746,
+            "pLastSeen": "2025-04-08T19:31:12.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features\/organize-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:47.000Z",
+            "pageId": 2747,
+            "pLastSeen": "2025-04-03T22:30:06.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features\/share-and-review-pdfs.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-18T22:25:41.000Z",
+            "pageId": 2745,
+            "pLastSeen": "2025-04-03T22:29:59.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/features\/sign-fillable-pdf-forms.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:45.000Z",
+            "pageId": 997,
+            "pLastSeen": "2025-04-09T17:08:38.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/annotate-pdf-online.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T21:16:55.000Z",
+            "pageId": 3268,
+            "pLastSeen": "2025-04-03T20:07:54.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/create-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:46.000Z",
+            "pageId": 3285,
+            "pLastSeen": "2025-04-03T20:07:56.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/delete-pages-from-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:46.000Z",
+            "pageId": 3274,
+            "pLastSeen": "2025-04-03T20:07:57.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/merge-combine-pdf-files-online.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-21T01:27:31.000Z",
+            "pageId": 64,
+            "pLastSeen": "2025-04-09T17:22:17.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/pdf-editor-pdf-files.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:47.000Z",
+            "pageId": 3277,
+            "pLastSeen": "2025-04-03T20:07:57.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/rearrange-pdf-pages.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:47.000Z",
+            "pageId": 3276,
+            "pLastSeen": "2025-04-03T20:08:02.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/rotate-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-20T06:43:45.000Z",
+            "pageId": 50,
+            "pLastSeen": "2025-04-09T17:34:11.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/how-to\/share-pdf-online.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-21T02:18:16.000Z",
+            "pageId": 4093,
+            "pLastSeen": "2025-02-07T08:23:06.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/online\/convert-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-01-29T23:29:07.000Z",
+            "pageId": 5080,
+            "pLastSeen": "2025-03-20T05:35:56.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/online\/merge-pdf.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-02-01T22:52:21.000Z",
+            "pageId": 4091,
+            "pLastSeen": "2025-03-21T16:38:59.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/online\/pdf-to-ppt.html",
+            "target": "on"
+        },
+        {
+            "aLastSeen": "2025-03-10T19:38:08.000Z",
+            "pageId": 4044,
+            "pLastSeen": "2025-03-10T19:38:08.000Z",
+            "url": "https:\/\/www.adobe.com\/acrobat\/online\/pdf-to-word.html",
+            "target": "on"
+        }
+    ],
+    "totalRecords": 356,
+    "perPage": 25,
+    "pageNum": 1
+}

@@ -176,10 +176,29 @@
   text-transform: initial;
 }
 
+.mep-popup .mep-section-data .mep-manifest-value {
+  overflow-wrap: anywhere;
+  text-transform: none;
+}
+
 /* Sub-rows under "Surfaces Detected" — indented and de-emphasized. */
 .mep-popup .mep-section-data .mep-mas-subitem {
   padding-left: 12px;
   opacity: 0.7;
+}
+
+.mep-popup .mep-manifest-name {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  color: var(--text-color, #2c2c2c);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mep-popup .mep-manifest-index {
+  flex-shrink: 0;
 }
 
 .mep-popup a.mep-edit-manifest {
