@@ -355,6 +355,16 @@ body:has(header.local-nav) .roller-carousel {
       height: 32px;
     }
   }
+
+  .rounded-corners + .section > .roller-carousel,
+  .rounded-corners-bottom + .section > .roller-carousel {
+    margin-top: calc(-1 * var(--s2a-border-radius-xl));
+  }
+
+  .section:has(+ .rounded-corners) > .roller-carousel,
+  .section:has(+ .rounded-corners-top) > .roller-carousel {
+    margin-bottom: calc(-1 * var(--s2a-border-radius-xl));
+  }
 }
 
 @media (width >= 1440px) {
@@ -386,16 +396,4 @@ body:has(header.local-nav) .roller-carousel {
 .section:has(+ .rounded-corners) > .roller-carousel,
 .section:has(+ .rounded-corners-top) > .roller-carousel {
   margin-bottom: calc(-1 * var(--s2a-border-radius-22));
-}
-
-@media (width >= 1280px) {
-  .rounded-corners + .section > .roller-carousel,
-  .rounded-corners-bottom + .section > .roller-carousel {
-    margin-top: calc(-1 * var(--s2a-border-radius-xl));
-  }
-
-  .section:has(+ .rounded-corners) > .roller-carousel,
-  .section:has(+ .rounded-corners-top) > .roller-carousel {
-    margin-bottom: calc(-1 * var(--s2a-border-radius-xl));
-  }
 }
