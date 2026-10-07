@@ -1241,13 +1241,17 @@ function createGlobeGalleryRuntime(
     pq.splitW = w;
     pq.quoteEl.style.removeProperty('font-size');
     pq.quoteEl.style.removeProperty('letter-spacing');
+    pq.quoteEl.style.removeProperty('line-height');
     splitQuote();
     pq.copyStr = '';
     if (!reducedMotion) {
       const bandH = H - navH;
       if (bandH > 0 && pqEl.scrollHeight > bandH) {
-        const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+        const { fontSize, lineHeight } = getComputedStyle(pq.quoteEl);
+        const origFs = parseFloat(fontSize);
         pq.quoteEl.style.letterSpacing = 'normal';
+        // Keep the type ramp's line-height ratio so the shrunk quote doesn't keep the fixed lh.
+        if (parseFloat(lineHeight)) pq.quoteEl.style.lineHeight = `${parseFloat(lineHeight) / origFs}`;
         for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
           const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
           const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
