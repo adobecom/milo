@@ -1,6 +1,7 @@
 .roller-carousel {
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
+  overflow-y: clip;
   --rcc-top-gap: 40px;
   --rcc-sticky-top: var(--global-height-nav, 64px);
 
