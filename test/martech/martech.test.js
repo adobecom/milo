@@ -1,8 +1,9 @@
+/* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { getConfig, setConfig } from '../../libs/utils/utils.js';
 
-const { setupEntitlementCallback } = await import('../../libs/martech/martech.js');
+const { default: init, setupEntitlementCallback } = await import('../../libs/martech/martech.js');
 
 const SEGMENT_ID = 'segment-1';
 const ENTITLEMENT = 'cc-all-apps';
@@ -69,5 +70,39 @@ describe('setupEntitlementCallback', () => {
     setupEntitlementCallback();
     await clock.tickAsync(3000);
     expect(await getConfig().entitlements()).to.deep.equal([]);
+  });
+});
+
+describe('martech init without Server-Timing sign-in hint', () => {
+  const blockedScripts = [
+    '/libs/deps/imslib.min.js',
+    'https://www.adobe.com/marketingtech/main.standard.qa.min.js',
+  ];
+
+  before(() => {
+    setConfig({ locales: { '': { ietf: 'en-US' } }, miloLibs: '/libs', imsClientId: 'test-client-id' });
+    const config = getConfig();
+    config.mep = { entitlementMap: { [SEGMENT_ID]: ENTITLEMENT } };
+    config.entitlements = createResolver();
+    blockedScripts.forEach((src) => {
+      document.head.insertAdjacentHTML('beforeend', `<script src="${src}" type="javascript/blocked" data-loaded="true"></script>`);
+    });
+    window.adobeIMS = { isSignedInUser: () => true };
+    window._satellite = { track: sinon.stub() };
+  });
+
+  after(() => {
+    blockedScripts.forEach((src) => document.head.querySelector(`script[src="${src}"]`)?.remove());
+    delete window.adobeid;
+    delete window.adobeIMS;
+    delete window._satellite;
+    delete window.marketingtech;
+  });
+
+  it('resolves entitlements via IMS for a signed-in user', async () => {
+    await init();
+    window.adobeid.onReady();
+    sendEntitlementEvent();
+    expect(await getConfig().entitlements()).to.deep.equal([ENTITLEMENT]);
   });
 });
