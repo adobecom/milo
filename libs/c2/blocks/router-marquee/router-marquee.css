@@ -260,11 +260,11 @@
 }
 
 .rm-pause-play:focus-visible {
-  outline: 2px solid var(--s2a-color-gray-25);
-  outline-offset: 2px;
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
+  outline-offset: var(--s2a-border-width-2);
+  box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
   border-radius: 50%;
 }
-
 .rm-pause-play img {
   width: var(--s2a-spacing-20);
   height: var(--s2a-spacing-20);
@@ -580,4 +580,3 @@
 .router-marquee mas-field > [data-role="mas-field-content"] p {
   display: inline;
 }
-
