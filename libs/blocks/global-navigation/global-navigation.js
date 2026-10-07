@@ -68,7 +68,9 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 
 const { replaceKey, replaceKeyArray } = placeholders;
 const {
+  AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
+  getAupModalTitle,
   getMiloLocaleSettings,
   isMasGeoDetectionEnabled,
 } = merch;
@@ -1147,7 +1149,9 @@ class Gnav {
       { mode: 'async' },
     );
 
-    let teardownActiveDialog;
+    let cancelActiveDialog;
+    let dialogRequest = 0;
+    const claimedAupModalHashes = new WeakSet();
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1161,95 +1165,133 @@ class Gnav {
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
-      showDialog: async (element, _, closeCallback) => {
-        const cleanupAupModalHash = getAupModalHashCleanup();
+      showDialog: async (element, options, closeCallback) => {
+        dialogRequest += 1;
+        const request = dialogRequest;
+        const availableAupCleanup = getAupModalHashCleanup();
+        const canClaimHash = availableAupCleanup && !claimedAupModalHashes.has(availableAupCleanup);
+        const cleanupAupModalHash = canClaimHash
+          ? availableAupCleanup : undefined;
+        if (cleanupAupModalHash) claimedAupModalHashes.add(cleanupAupModalHash);
         const modalHash = cleanupAupModalHash && window.location.hash;
+        const modalTitle = cleanupAupModalHash && getAupModalTitle();
         const isIframe = element.tagName === 'IFRAME';
-        try {
-          if (isIframe) {
-            await Promise.all([
-              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-            ]);
-          }
-        } catch (e) {
-          cleanupAupModalHash?.();
-          throw e;
-        }
-        teardownActiveDialog?.();
+        const controller = new AbortController();
         let dialog;
+        let closeMiloModal;
         let finishLoading;
-        let closeDialog;
-        let onDialogCancel;
-        let onDialogClick;
         let onNavigation;
-        let isTornDown = false;
-        const teardown = () => {
-          if (isTornDown) return;
-          isTornDown = true;
+        let onWorkflowClose;
+        let requestClose;
+        let closing;
+        let settled = false;
+        let workflowClosed = false;
+        const cleanup = () => {
+          controller.abort();
           finishLoading?.();
-          element.removeEventListener('close', closeDialog);
-          dialog?.removeEventListener('cancel', onDialogCancel);
-          dialog?.removeEventListener('click', onDialogClick);
+          element.removeEventListener('close', onWorkflowClose);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
-          if (dialog?.open) dialog.close();
-          dialog?.remove();
-          document.documentElement.classList.remove('disable-scroll');
-          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
           cleanupAupModalHash?.();
         };
-        closeDialog = () => {
-          teardown();
+        const finishWorkflow = () => {
+          if (settled) return;
+          settled = true;
+          if (!workflowClosed) {
+            element.dispatchEvent(new Event('cancel'));
+            if (!workflowClosed) element.dispatchEvent(new Event('close'));
+          }
+          cleanup();
           closeCallback({ type: 'close' });
         };
-        const cancel = () => {
-          // The orchestrator settles on cancel; close releases its event listeners.
-          element.dispatchEvent(new Event('cancel'));
-          element.dispatchEvent(new Event('close'));
+        requestClose = () => {
+          if (closing) return closing;
+          if (settled) return undefined;
+          if (dialog) closing = closeMiloModal(dialog);
+          else finishWorkflow();
+          return closing;
+        };
+        onWorkflowClose = () => {
+          workflowClosed = true;
+          requestClose();
         };
         onNavigation = () => {
-          if (modalHash && window.location.hash !== modalHash) cancel();
+          if (modalHash && window.location.hash !== modalHash) requestClose();
         };
-        onDialogCancel = (e) => {
-          if (e.target !== dialog) return;
-          e.preventDefault();
-          cancel();
-        };
-        onDialogClick = (e) => {
-          if (e.target === dialog) cancel();
-        };
+        element.addEventListener('close', onWorkflowClose);
         try {
-          dialog = document.createElement('dialog');
-          dialog.id = 'aup-workflow-dialog';
+          const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
+          const [{ getModal, closeModal }] = await Promise.all([
+            import(isC2 ? '../../c2/blocks/modal/modal.js' : '../modal/modal.js'),
+            ...(isIframe ? [
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ] : []),
+          ]);
+          closeMiloModal = closeModal;
+          if (settled) return;
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          await cancelActiveDialog?.();
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          const content = document.createElement('div');
+          content.className = 'aup-workflow-content';
+          const title = options?.title || element.getAttribute('aria-label')
+            || modalTitle || element.getAttribute('title');
+          const labelledBy = element.getAttribute('aria-labelledby');
           if (isIframe) {
             const spinner = toFragment`
               <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
                 <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
               </sp-theme>`;
-            dialog.classList.add('loading');
-            dialog.appendChild(spinner);
+            content.classList.add('loading');
+            content.appendChild(spinner);
             finishLoading = () => {
-              element.removeEventListener('load', finishLoading);
-              dialog.classList.remove('loading');
+              element.removeEventListener('app_loaded', finishLoading);
+              content.classList.remove('loading');
+              dialog?.classList.add('hide-close-button');
               spinner.remove();
               finishLoading = undefined;
             };
-            element.addEventListener('load', finishLoading, { once: true });
+            element.addEventListener('app_loaded', finishLoading, { once: true });
           }
-          dialog.appendChild(element);
-          document.body.appendChild(dialog);
-          element.addEventListener('close', closeDialog, { once: true });
-          dialog.addEventListener('cancel', onDialogCancel);
-          dialog.addEventListener('click', onDialogClick);
+          content.appendChild(element);
           window.addEventListener('popstate', onNavigation);
           window.addEventListener('hashchange', onNavigation);
-          teardownActiveDialog = teardown;
-          document.documentElement.classList.add('disable-scroll');
-          dialog.showModal();
-          onNavigation();
+          dialog = await getModal(null, {
+            id: 'aup-workflow-dialog',
+            class: 'aup-modal',
+            content,
+            title,
+            hash: modalHash,
+            signal: controller.signal,
+            closeEvent: 'closeModal',
+            closeCallback: finishWorkflow,
+          });
+          if (settled) {
+            if (dialog?.isConnected) await closeMiloModal(dialog);
+            return;
+          }
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          if (!finishLoading) dialog.classList.add('hide-close-button');
+          if (labelledBy) {
+            dialog.setAttribute('aria-labelledby', labelledBy);
+            dialog.removeAttribute('aria-label');
+          } else if (title) {
+            dialog.setAttribute('aria-label', title);
+          }
+          cancelActiveDialog = requestClose;
         } catch (e) {
-          teardown();
+          cleanup();
           throw e;
         }
       },
@@ -1258,6 +1300,7 @@ class Gnav {
     const features = ['useToasts'];
     if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
+    window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
     return window.aupsdk;
   };
 

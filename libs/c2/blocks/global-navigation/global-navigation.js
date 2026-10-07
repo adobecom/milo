@@ -4,6 +4,7 @@ import {
   getMetadata,
   localizeLink,
   localizeLinkAsync,
+  appendHtmlToLink,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
@@ -203,6 +204,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },

@@ -1,4 +1,5 @@
 import { createTag, decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
 import { addAriaLabelToCta, getMerchCardHeadingLevel } from './merch.js';
 
 let iconsLoaded;
@@ -131,11 +132,43 @@ export async function decorateContentLinks(el) {
   el.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
 
-const wrapsLiveComponent = (heading) => [...heading.querySelectorAll('*')]
-  .some((el) => el.hasAttribute('is') || el.tagName.includes('-'));
+// mas merch-card CSS targets bare tag selectors (e.g. `[slot="whats-included"] h4`) for
+// typography, so swapping the tag drops that styling. Re-measure it via a hidden probe using
+// the original tag and reapply inline so the visual look is unaffected by the tag-level a11y
+// fix. The probe is re-measured on resize so media-query-driven values (e.g. mobile font-size)
+// stay in sync with the viewport instead of being frozen at decoration time.
+const PRESERVED_STYLE_PROPS = [
+  'fontFamily', 'fontWeight', 'fontSize', 'lineHeight', 'letterSpacing', 'color',
+  'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'display', 'alignItems', 'gap',
+];
+
+function applyPreservedStyles(heading) {
+  const origLevel = Number(heading.dataset.masOrigLevel);
+  if (!origLevel || !heading.isConnected) return;
+  const probe = createTag(`h${origLevel}`);
+  [...heading.attributes].forEach(({ name, value }) => probe.setAttribute(name, value));
+  // Content-dependent selectors such as h4:has(> svg) control icon alignment.
+  probe.append(...[...heading.childNodes].map((node) => node.cloneNode(true)));
+  probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
+  heading.after(probe);
+  const computed = getComputedStyle(probe);
+  PRESERVED_STYLE_PROPS.forEach((prop) => { heading.style[prop] = computed[prop]; });
+  probe.remove();
+}
+
+let responsiveSyncAdded = false;
+function ensureResponsiveHeadingSync() {
+  if (responsiveSyncAdded) return;
+  responsiveSyncAdded = true;
+  const sync = debounce(() => {
+    document.querySelectorAll('[data-mas-orig-level]').forEach(applyPreservedStyles);
+  }, 150);
+  window.addEventListener('resize', sync);
+}
 
 export function overrideCardHeadingLevel(card, targetLevel) {
-  const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].filter((h) => !wrapsLiveComponent(h));
+  const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
   if (!headings.length) return;
   const origLevels = headings.map((h) => {
     const level = Number(h.dataset.masOrigLevel) || Number(h.tagName[1]);
@@ -151,7 +184,9 @@ export function overrideCardHeadingLevel(card, targetLevel) {
     [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
     next.append(...heading.childNodes);
     heading.replaceWith(next);
+    applyPreservedStyles(next);
   });
+  ensureResponsiveHeadingSync();
 }
 
 async function postProcessCard(card) {

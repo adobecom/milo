@@ -86,7 +86,6 @@
       display: flex;
       flex-direction: column;
       padding-inline: 0;
-      padding-block-start: var(--s2a-spacing-4xl);
     }
 
     .foreground {
@@ -477,6 +476,12 @@
   }
 }
 
+@media (width >= 768px) {
+  .rich-content.jump-link.hero {
+    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-4xl);
+  }
+}
+
 @media (width >= 1280px) {
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
@@ -485,6 +490,7 @@
 
   .rich-content.jump-link.hero {
     padding-block-start: var(--s2a-layout-xl);
+    padding-block-end: var(--s2a-layout-sm);
   }
 }
 
