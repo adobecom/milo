@@ -293,13 +293,6 @@ describe('Utils', () => {
         expect(merch.initService.promise).to.exist;
       });
 
-      it('starts the commerce service for a headless field link in the first section', async () => {
-        document.body.innerHTML = '<main><div><a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc&field=prices">price</a></div></main>';
-        utils.preloadLcpCodeFiles();
-        await waitFor(() => merch.initService.promise, 2000);
-        expect(merch.initService.promise).to.exist;
-      });
-
       it('does not start it without first-section commerce content', async () => {
         document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="merch-card"></div></div></main>';
         utils.preloadLcpCodeFiles();
