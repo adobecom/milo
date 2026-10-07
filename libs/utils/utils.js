@@ -2315,7 +2315,6 @@ const STATIC_BLOCK_DEPS = {
     () => `${getConfig().base}/utils/action.js`,
     () => `${getConfig().base}/utils/decorate.js`,
     () => `${getConfig().base}/features/placeholders.js`,
-    forMasField(() => getMasDepUrl('mas-field.js')),
     forMasField(() => (isMasGeoDetectionEnabled() ? `${getConfig().base}/utils/market.js` : null)),
   ],
 };

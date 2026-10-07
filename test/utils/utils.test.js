@@ -406,7 +406,6 @@ describe('Utils', () => {
         libs('/utils/decorate.js'),
         libs('/features/placeholders.js'),
         masDist('commerce.js'),
-        masDist('mas-field.js'),
       ]);
       expect(document.head.querySelector(`link[rel="preload"][as="style"][href="${libs('/blocks/merch/merch.css')}"]`)).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/blocks/merch/"]')).to.not.exist;
@@ -420,6 +419,7 @@ describe('Utils', () => {
         masDist('merch-card.js'),
         masDist('lit-all.min.js'),
         masDist('merch-quantity-select.js'),
+        masDist('mas-field.js'),
         libs('/blocks/merch-card-autoblock/merch-card-autoblock.js'),
         libs('/martech/attributes.js'),
         libs('/utils/market.js'),
@@ -483,9 +483,7 @@ describe('Utils', () => {
       fieldSection();
       utils.preloadLcpCodeFiles();
       const hrefs = moduleHrefs();
-      ['commerce', 'mas-field'].forEach((name) => {
-        expect(hrefs).to.include(getMasComponentUrl(name, getMasLibs(), window.location.hostname));
-      });
+      expect(hrefs).to.include(getMasComponentUrl('commerce', getMasLibs(), window.location.hostname));
     });
 
     it('follows the maslibs override for M@S dependencies', async () => {
@@ -494,12 +492,10 @@ describe('Utils', () => {
       fieldSection();
       utils.preloadLcpCodeFiles();
       const hrefs = moduleHrefs();
-      ['commerce', 'mas-field'].forEach((name) => {
-        const expected = getMasComponentUrl(name, getMasLibs(), window.location.hostname);
-        expect(expected).to.equal(`https://my-branch--mas--adobecom.aem.live/web-components/dist/${name}.js`);
-        expect(hrefs).to.include(expected);
-        expect(hrefs).to.not.include(masDist(`${name}.js`));
-      });
+      const expected = getMasComponentUrl('commerce', getMasLibs(), window.location.hostname);
+      expect(expected).to.equal('https://my-branch--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(hrefs).to.include(expected);
+      expect(hrefs).to.not.include(masDist('commerce.js'));
     });
 
     it('uses the milolibs base for block code and core dependencies', () => {
