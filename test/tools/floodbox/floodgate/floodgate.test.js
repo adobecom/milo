@@ -619,6 +619,41 @@ describe('MiloFloodgate', () => {
       expect(report.top).to.be.greaterThan(start.bottom);
     });
 
+    [900, 700, 500, 360, 280].forEach((width) => {
+      it(`keeps pills and actions within a ${width}px component without overlap`, () => {
+        el.style.width = `${width}px`;
+        el.style.maxWidth = 'none';
+        el.style.fontSize = '18px';
+        el.style.setProperty('--spacing-200', '12px');
+        el.style.setProperty('--spacing-300', '18px');
+        el.style.setProperty('--spacing-400', '24px');
+        const root = el.shadowRoot;
+        const container = root.querySelector('.find-cards');
+        const bounds = container.getBoundingClientRect();
+        const cards = [...container.children];
+        cards.forEach((card, index) => {
+          const rect = card.getBoundingClientRect();
+          expect(rect.left).to.be.at.least(bounds.left - 1);
+          expect(rect.right).to.be.at.most(bounds.right + 1);
+          expect(card.scrollWidth).to.be.at.most(card.clientWidth + 1);
+          cards.slice(index + 1).forEach((other) => {
+            const otherRect = other.getBoundingClientRect();
+            const overlaps = rect.left < otherRect.right && rect.right > otherRect.left
+              && rect.top < otherRect.bottom && rect.bottom > otherRect.top;
+            expect(overlaps).to.be.false;
+          });
+        });
+        const report = root.querySelector('.promote-report-btn').getBoundingClientRect();
+        expect(report.right).to.be.closeTo(bounds.right, 1);
+        const header = root.querySelector('.find-header').getBoundingClientRect();
+        root.querySelectorAll('.find-header-actions button').forEach((button) => {
+          const rect = button.getBoundingClientRect();
+          expect(rect.left).to.be.at.least(header.left - 1);
+          expect(rect.right).to.be.at.most(header.right + 1);
+        });
+      });
+    });
+
     it('disables the report button when there are no files', async () => {
       el._filesToProcess = [];
       el.requestUpdate();

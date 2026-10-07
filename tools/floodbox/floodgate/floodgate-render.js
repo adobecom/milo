@@ -106,7 +106,7 @@ export function renderFindStep(cmp) {
       ` : nothing}
       ${cmp._actionReady ? html`
         <p>Review the file list below. Remove any files you don't want to process.</p>
-        <div class="detail-cards find-cards ${cmp._selectedOption === 'fgPromote' ? 'find-promote-cards' : ''}">
+        <div class="detail-cards find-cards">
           ${floodbox.renderBadge('Pages', cmp._filesToProcess.length - fragmentCount)}
           ${cmp._selectedOption !== 'fgDelete' ? floodbox.renderBadge('Fragments & Assets', fragmentCount) : nothing}
           ${floodbox.renderBadge('Total', cmp._filesToProcess.length)}
