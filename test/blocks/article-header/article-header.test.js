@@ -215,23 +215,27 @@ describe('article author spacing', () => {
       }
     });
 
-    it(`keeps an 8px gap between social icons in ${direction} on tablet and desktop`, async () => {
-      document.body.innerHTML = `
-        <div class="article-header" dir="${direction}">
-          <div class="article-byline">
-            <div class="article-byline-sharing">
-              ${['Twitter', 'LinkedIn', 'Facebook', 'Link'].map((name) => `
-                <span><a aria-label="${name}"><svg></svg></a></span>`).join('')}
-            </div>
-          </div>
-        </div>`;
+    it(`keeps an 8px visible gap between social icons in ${direction} on tablet and desktop`, async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body-without-category.html' });
+      const block = document.querySelector('.article-header');
+      block.dir = direction;
+      await init(block);
+
+      const visibleBounds = (icon) => {
+        const box = icon.getBBox();
+        const matrix = icon.getScreenCTM();
+        return {
+          left: matrix.a * box.x + matrix.e,
+          right: matrix.a * (box.x + box.width) + matrix.e,
+        };
+      };
 
       for (const width of [600, 1200]) {
         await setViewport({ width, height: 800 });
         const icons = [...document.querySelectorAll('.article-byline-sharing svg')];
         icons.slice(1).forEach((icon, index) => {
-          const previous = icons[index].getBoundingClientRect();
-          const current = icon.getBoundingClientRect();
+          const previous = visibleBounds(icons[index]);
+          const current = visibleBounds(icon);
           const gap = direction === 'rtl' ? previous.left - current.right : current.left - previous.right;
 
           expect(gap).to.be.closeTo(8, 0.1);
