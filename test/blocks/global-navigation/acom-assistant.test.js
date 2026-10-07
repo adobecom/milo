@@ -70,6 +70,8 @@ describe('C1 global navigation authored Assistant entry point', () => {
   });
 
   it('uses Assistant for an authored entry point and retains authored prompts', async () => {
+    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=on`);
+    document.querySelector('meta[name="acom-assistant"]').content = 'off';
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({ globalNavigation: authoredNav, imsInitialized: true });
     await ensureAcomAssistant();
@@ -88,5 +90,14 @@ describe('C1 global navigation authored Assistant entry point', () => {
 
     expect(document.querySelector('.feds-bc-wrapper #acomAssistant-gnav-mount')).to.exist;
     expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('lets query off override metadata on without removing the authored wrapper', async () => {
+    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=off`);
+    document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
+    await createFullGlobalNavigation({ imsInitialized: true });
+
+    expect(document.querySelector('.feds-bc-wrapper')).to.exist;
+    expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
   });
 });

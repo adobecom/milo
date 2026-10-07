@@ -88,7 +88,8 @@ function handleFloatingButton(cards) {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
-  useAcomAssistant = getMetadata('acom-assistant') === 'on';
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
