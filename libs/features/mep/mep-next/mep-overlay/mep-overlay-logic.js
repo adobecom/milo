@@ -179,10 +179,21 @@ function parseMepConfig() {
 function formatDate(dateTime, format = 'local') {
   if (!dateTime) return '';
   const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+  if (Number.isNaN(dateObj.getTime())) return null;
   if (format === 'iso') return dateObj.toISOString();
   const date = dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   const time = dateObj.toLocaleTimeString(undefined, { timeStyle: 'short' });
   return `${date} ${time}`;
+}
+
+function formatDateParts(dateTime) {
+  if (!dateTime) return null;
+  const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+  if (Number.isNaN(dateObj.getTime())) return null;
+  return {
+    date: dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+    time: dateObj.toLocaleTimeString(undefined, { timeStyle: 'short' }),
+  };
 }
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
@@ -248,6 +259,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     });
   });
 
+  const eventStartParts = eventStart ? formatDateParts(eventStart) : null;
+  const eventEndParts = eventEnd ? formatDateParts(eventEnd) : null;
+
   return {
     index: mIdx + 1,
     editUrl: url,
@@ -265,13 +279,18 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     manifestType,
     manifestOverrideName,
     executionOrder: getExecutionOrderLabel(executionOrder),
-    showActive: !!(eventStart && eventEnd) || !!disabled,
+    showActive: !!(eventStartParts && eventEndParts) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
     withinDateRange: !disabled,
     disabledPromo: !!disabledPromo,
-    eventStart: eventStart ? formatDate(eventStart) : null,
+    eventStart: eventStartParts ? `${eventStartParts.date} ${eventStartParts.time}` : null,
+    eventStartDate: eventStartParts?.date ?? null,
+    eventStartTime: eventStartParts?.time ?? null,
     eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
-    eventEnd: eventEnd ? formatDate(eventEnd) : null,
+    eventEnd: eventEndParts ? `${eventEndParts.date} ${eventEndParts.time}` : null,
+    eventEndDate: eventEndParts?.date ?? null,
+    eventEndTime: eventEndParts?.time ?? null,
+    eventEndIso: eventEnd ? formatDate(eventEnd, 'iso') : null,
     lastSeen: manifest.lastSeen ? formatDate(new Date(manifest.lastSeen)) : null,
     pageId,
     options,

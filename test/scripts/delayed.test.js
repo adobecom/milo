@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters } from '../../libs/scripts/delayed.js';
+import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -102,5 +102,63 @@ describe('addRUMCampaignTrackingParameters', () => {
     const sampleRUM = sinon.stub();
     addRUMCampaignTrackingParameters({ sampleRUM });
     expect(sampleRUM.notCalled).to.be.true;
+  });
+});
+
+describe('loadPreflightResults', () => {
+  let fetchStub;
+
+  beforeEach(() => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+      text: async () => '',
+    });
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+    document.querySelector('main')?.remove();
+    document.querySelector('.milo-preflight-overlay')?.remove();
+  });
+
+  it('is exported as a function', () => {
+    expect(loadPreflightResults).to.be.a('function');
+  });
+
+  it('resolves without throwing on the test host', async () => {
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    await loadPreflightResults();
+    expect(true).to.be.true;
+  });
+
+  it('does not render the publish notification on local hosts', async () => {
+    // web-test-runner serves on localhost, so the isLocal branch is exercised
+    // and the sidekick quality-check notification must be skipped.
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    await loadPreflightResults();
+    expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
+  });
+
+  it('waits for auto-highlight to finish before resolving', async () => {
+    let resolveFetch;
+    const pendingFetch = new Promise((resolve) => { resolveFetch = resolve; });
+    fetchStub.resetBehavior();
+    fetchStub.returns(pendingFetch);
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+
+    let settled = false;
+    const loading = loadPreflightResults().then(() => { settled = true; });
+    for (let i = 0; i < 20 && !fetchStub.called; i += 1) {
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+    }
+    expect(fetchStub.called).to.equal(true);
+    await Promise.resolve();
+    const settledBeforeFetch = settled;
+    resolveFetch({ ok: false, status: 500 });
+    await loading;
+    expect(settledBeforeFetch).to.equal(false);
+    expect(settled).to.equal(true);
   });
 });

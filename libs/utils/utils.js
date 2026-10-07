@@ -114,6 +114,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'base-card',
   'brand-concierge',
+  'brand-concierge-global',
   'card-metadata',
   'carousel-c2',
   'comparison-table-c2',
@@ -2363,11 +2364,27 @@ export function preloadLcpCodeFiles(area = document) {
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
+
+  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
+    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...autoNames].some(isCommerceBlock));
+  if (hasCommerceContent) {
+    import(`${base}/blocks/merch/merch.js`)
+      .then((mod) => mod.initService().catch((e) => {
+        mod.initService.promise = undefined;
+        window.lana?.log(
+          `MAS: eager initService failed, falling back to lazy init - ${e}`,
+          { severity: 'info', tags: 'mas-lcp' },
+        );
+      }))
+      .catch(() => {});
+  }
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
