@@ -11,6 +11,7 @@ const C1_BLOCKS = [
   'action-item',
   'action-scroller',
   'adobetv',
+  'ai-summary',
   'article-feed',
   'article-header',
   'aside',
