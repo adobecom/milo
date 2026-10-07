@@ -74,6 +74,7 @@ const C1_BLOCKS = [
   'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
+  'mmm-2',
   'mnemonic-list',
   'mobile-app-banner',
   'modal',
@@ -2161,10 +2162,19 @@ export function inheritViewportContent(section) {
   });
 }
 
+function nestMmm2Config(section) {
+  // MMM-2 tab tables are owned configuration, not independently loaded blocks.
+  section.querySelectorAll(':scope > .mmm-2').forEach((block) => {
+    section.querySelectorAll(':scope > :is(.manifest-manager, .inactivity-report, .metadata-lookup):not(.mmm-2)')
+      .forEach((content) => block.append(content));
+  });
+}
+
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
   inheritViewportContent(section);
+  nestMmm2Config(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -2505,6 +2515,7 @@ export function preloadLcpCodeFiles(area = document) {
   if (!sections.length) return;
   const queryAll = (selector) => sections
     .flatMap((section) => [...section.querySelectorAll(selector)]);
+  sections.forEach(nestMmm2Config);
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
