@@ -166,31 +166,40 @@ export async function executeCopy(cmp) {
 
 // --- Promote ---
 
-export function readPromoteIgnorePaths(cmp) {
-  cmp._promoteIgnorePaths = [...(cmp._floodgateConfig.getPromoteIgnorePaths?.() || [])];
+export function getPromoteIgnorePaths(cmp) {
+  const ignorePaths = [...(cmp._floodgateConfig.getPromoteIgnorePaths?.() || [])];
 
   if (cmp._promoteIgnore) {
     const textarea = cmp.shadowRoot.querySelector('textarea[name="promote-ignore-paths"]');
     if (textarea) {
       const userPaths = textarea.value.split('\n')
         .map((p) => p.trim()).filter((p) => p.length > 0);
-      cmp._promoteIgnorePaths.push(...userPaths);
+      ignorePaths.push(...userPaths);
     }
   }
 
-  cmp._promoteIgnorePaths = cmp._promoteIgnorePaths.map((path) => {
+  return ignorePaths.map((path) => {
     if (path.endsWith('/') || path.includes('.')) return path;
     return `${path}.html`;
+  });
+}
+
+export function readPromoteIgnorePaths(cmp) {
+  cmp._promoteIgnorePaths = getPromoteIgnorePaths(cmp);
+}
+
+export function isPromoteIgnored(file, ignorePaths) {
+  const fullPath = getFileExtension(file) ? file : `${file}.html`;
+  return ignorePaths.some((path) => {
+    if (path.endsWith('/')) return file.includes(path);
+    return fullPath.endsWith(path);
   });
 }
 
 export function applyPromoteIgnore(cmp) {
   const ignored = [];
   const filtered = cmp._filesToProcess.filter((file) => {
-    const isIgnored = cmp._promoteIgnorePaths.some((ip) => {
-      if (ip.endsWith('/')) return file.includes(ip);
-      return file.endsWith(ip);
-    });
+    const isIgnored = isPromoteIgnored(file, cmp._promoteIgnorePaths);
     if (isIgnored) ignored.push({ href: file, status: 'Ignored' });
     return !isIgnored;
   });

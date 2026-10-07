@@ -249,6 +249,15 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.detail-cards.find-promote-cards {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.promote-report-btn {
+  justify-self: end;
+  align-self: start;
+}
+
 /* Find step header with action buttons */
 
 .find-header {
@@ -281,7 +290,7 @@ body {
 
 /* Match primary (accent) buttons; outline = white fill */
 
-.find-header-actions .find-action-btn {
+.find-action-btn {
   padding: 8px 20px;
   min-height: 36px;
   border-radius: 20px;
@@ -293,17 +302,17 @@ body {
   cursor: pointer;
 }
 
-.find-header-actions .find-action-btn-outline {
+.find-action-btn-outline {
   background: #fff !important;
   color: var(--s2-blue-800) !important;
   border: 2px solid var(--s2-blue-800) !important;
 }
 
-.find-header-actions .find-action-btn-outline:hover {
+.find-action-btn-outline:hover {
   background: var(--s2-gray-50) !important;
 }
 
-.find-header-actions .find-action-btn-outline:active {
+.find-action-btn-outline:active {
   background: var(--s2-gray-100) !important;
 }
 
