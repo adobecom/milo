@@ -4,8 +4,10 @@ header.global-navigation.c2-gnav-c1-host {
   background-color: var(--feds-background-nav, #fff);
 }
 
-.global-navigation .feds-bc-wrapper {
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
   display: flex;
+  align-items: center;
   margin-inline-start: auto;
   padding: 0 8px;
 }
@@ -18,7 +20,8 @@ header.global-navigation.c2-gnav-c1-host {
   max-width: 340px;
 }
 
-.global-navigation .feds-bc-wrapper ~ .feds-utilities {
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) ~ .feds-utilities {
   margin-left: 0;
 }
 

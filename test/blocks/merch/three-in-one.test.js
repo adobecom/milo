@@ -15,6 +15,7 @@ const {
   handle3in1IFrameEvents,
   handleTimeoutError,
   createContent,
+  getIframeUrl,
   default: openThreeInOneModal,
 } = await import('../../../libs/blocks/merch/three-in-one.js');
 
@@ -397,6 +398,56 @@ describe('Three-in-One Modal', () => {
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
+    });
+
+    it('cleans up its foreground timeout when modal creation throws', async () => {
+      const link = createTag('a', {
+        href: 'https://commerce-stg.adobe.com/store/segmentation?ctx=if',
+        'data-modal': 'twp',
+        'data-modal-id': 'failed-three-in-one',
+      });
+      const error = new Error('Modal title unavailable');
+      const getAttribute = link.getAttribute.bind(link);
+      sinon.stub(link, 'getAttribute').callsFake((name) => {
+        if (name === 'aria-label') throw error;
+        return getAttribute(name);
+      });
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const initialTimers = clock.countTimers();
+        const rejection = await openThreeInOneModal(link).catch((caught) => caught);
+
+        expect(rejection).to.equal(error);
+        expect(clock.countTimers()).to.equal(initialTimers);
+      } finally {
+        sinon.restore();
+        clock.restore();
+      }
+    });
+  });
+
+  describe('getIframeUrl', () => {
+    const checkoutUrl = 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if';
+
+    it('uses the link href', () => {
+      const link = createTag('a', { href: checkoutUrl });
+      link.checkoutUrl = 'https://commerce-stg.adobe.com/store/other';
+      expect(getIframeUrl(link)).to.equal(checkoutUrl);
+    });
+
+    it('uses the checkout URL when the href is a hash', () => {
+      const link = createTag('a', { href: '#' });
+      link.checkoutUrl = checkoutUrl;
+      expect(getIframeUrl(link)).to.equal(checkoutUrl);
+    });
+
+    it('never returns a hash URL', () => {
+      const link = createTag('a', { href: '#' });
+      expect(getIframeUrl(link)).to.be.undefined;
+      link.checkoutUrl = '#';
+      expect(getIframeUrl(link)).to.be.undefined;
+      expect(getIframeUrl(createTag('a'))).to.be.undefined;
+      expect(getIframeUrl()).to.be.undefined;
     });
   });
 

@@ -4,6 +4,7 @@ import {
   getMetadata,
   localizeLink,
   localizeLinkAsync,
+  appendHtmlToLink,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
@@ -51,23 +52,9 @@ export function getFederalDomain(config) {
 }
 
 export function decorateAcomAssistantGnav(el) {
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  if ((acomAssistantParam || getMetadata('acom-assistant')) !== 'on') return null;
-
-  const nav = el.querySelector('nav');
-  if (!nav) return null;
-
-  let bcWrapper = nav.querySelector('.feds-bc-wrapper');
-  if (!bcWrapper) {
-    bcWrapper = document.createElement('div');
-    bcWrapper.className = 'feds-bc-wrapper';
-    const nextUtility = nav.querySelector(
-      '.feds-product-entry-cta, .feds-notifications-wrapper, .feds-utilities, .feds-breadcrumbs, .trap-focus-gnav',
-    );
-    if (nextUtility) nextUtility.before(bcWrapper);
-    else nav.append(bcWrapper);
-  }
-
+  if (getMetadata('acom-assistant') !== 'on') return null;
+  const bcWrapper = el.querySelector('nav .feds-bc-wrapper');
+  if (!bcWrapper) return null;
   let mount = bcWrapper.querySelector('#acomAssistant-gnav-mount');
   if (!mount) {
     mount = document.createElement('div');
@@ -217,6 +204,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },

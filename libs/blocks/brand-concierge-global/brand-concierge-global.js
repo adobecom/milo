@@ -6,6 +6,8 @@ import {
   updateReplicatedValue,
   handleConsent,
   hasChatCookie,
+  isC2,
+  isC2Nav,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -98,7 +100,7 @@ function decorateGnav(cards, input, topNav, el) {
   }
 
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}${isC2() ? 'is-c2' : ''}${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
   const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
@@ -162,26 +164,8 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
-function decorateWhenNavIsReady(cards, input, el) {
-  const selector = 'header.global-navigation nav.feds-topnav';
-  const topNav = document.querySelector(selector);
-  if (topNav) {
-    decorateGnav(cards, input, topNav, el);
-    return;
-  }
-
-  const observer = new MutationObserver(() => {
-    const addedTopNav = document.querySelector(selector);
-    if (!addedTopNav) return;
-    observer.disconnect();
-    decorateGnav(cards, input, addedTopNav, el);
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-}
-
 export default function init(el) {
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
@@ -206,7 +190,13 @@ export default function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
-  decorateWhenNavIsReady(cards, input, el);
+  const navCheck = setInterval(() => {
+    const topNav = document.querySelector('header.global-navigation nav');
+    if (topNav) {
+      clearInterval(navCheck);
+      decorateGnav(cards, input, topNav, el);
+    }
+  }, 100);
 
   rows.forEach((row) => {
     el.removeChild(row);

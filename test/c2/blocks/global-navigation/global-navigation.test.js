@@ -18,6 +18,53 @@ describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
     getStub?.restore();
   });
 
+  describe('C2 Assistant in authored navigation wrappers', () => {
+    let meta;
+
+    beforeEach(() => {
+      meta = document.createElement('meta');
+      meta.name = 'acom-assistant';
+      meta.content = 'on';
+      document.head.append(meta);
+    });
+
+    afterEach(() => {
+      meta.remove();
+      document.body.innerHTML = '';
+    });
+
+    it('does not create a wrapper when authoring has not provided one', () => {
+      document.body.innerHTML = '<header><nav><div class="feds-utilities"></div></nav></header>';
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('.feds-bc-wrapper')).to.be.null;
+    });
+
+    it('mounts once in the existing wrapper without changing its placement', () => {
+      document.body.innerHTML = `
+        <header><nav>
+          <div class="feds-utilities"></div>
+          <div class="feds-bc-wrapper"></div>
+        </nav></header>`;
+      const header = document.querySelector('header');
+      const wrapper = header.querySelector('.feds-bc-wrapper');
+      const previous = wrapper.previousElementSibling;
+      const mount = decorateAcomAssistantGnav(header);
+
+      expect(mount.parentElement).to.equal(wrapper);
+      expect(decorateAcomAssistantGnav(header)).to.equal(mount);
+      expect(wrapper.previousElementSibling).to.equal(previous);
+      expect(header.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+    });
+
+    it('does not mount when Assistant is disabled', () => {
+      meta.content = 'off';
+      document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
+  });
+
   it('accepts a valid branch name', () => {
     setFedsbranch('my-branch');
     expect(getFederalDomain({})).to.equal('https://my-branch--federal--adobecom.aem.page/federal');
@@ -98,61 +145,5 @@ describe('c2 global-navigation getFederalDomain real decode pipeline', () => {
   it('accepts a plain branch through the real decode path', () => {
     setSearch('?fedsbranch=my-branch');
     expect(getFederalDomain({})).to.equal('https://my-branch--federal--adobecom.aem.page/federal');
-  });
-});
-
-describe('c2 global-navigation Acom Assistant', () => {
-  let originalSearch;
-
-  beforeEach(() => {
-    originalSearch = window.location.search;
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=on`);
-  });
-
-  afterEach(() => {
-    window.history.replaceState(null, '', window.location.pathname + originalSearch);
-    document.body.innerHTML = '';
-  });
-
-  it('adds the Assistant mount before the C2 navigation utilities', () => {
-    document.body.innerHTML = `
-      <header class="global-navigation">
-        <nav>
-          <div class="feds-product-entry-cta"></div>
-          <div class="feds-notifications-wrapper"></div>
-          <div class="feds-utilities"></div>
-          <a class="trap-focus-gnav" href="#">.</a>
-        </nav>
-      </header>
-    `;
-    const header = document.querySelector('header');
-
-    decorateAcomAssistantGnav(header);
-
-    const wrapper = header.querySelector('.feds-bc-wrapper');
-    expect(wrapper).to.exist;
-    expect(wrapper.querySelector('#acomAssistant-gnav-mount')).to.exist;
-    expect(wrapper.nextElementSibling.classList.contains('feds-product-entry-cta')).to.be.true;
-  });
-
-  it('does not add a mount before the federated C2 navigation renders', () => {
-    document.body.innerHTML = '<header class="global-navigation"></header>';
-
-    decorateAcomAssistantGnav(document.querySelector('header'));
-
-    expect(document.querySelector('.feds-bc-wrapper')).to.be.null;
-  });
-
-  it('does not add a mount when the Assistant flag is off', () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=off`);
-    document.body.innerHTML = `
-      <header class="global-navigation">
-        <nav><div class="feds-utilities"></div></nav>
-      </header>
-    `;
-
-    decorateAcomAssistantGnav(document.querySelector('header'));
-
-    expect(document.querySelector('.feds-bc-wrapper')).to.be.null;
   });
 });

@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { getAnalyticsLabel } from './bc-analytics.js';
 
 export const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.6219 5.97354L8.41951 2.77588C8.18435 2.54072 7.80467 2.54229 7.57107 2.77588L4.37341 5.97354C4.13904 6.20791 4.13904 6.5876 4.37341 6.82198C4.4906 6.93916 4.64373 6.99776 4.79763 6.99776C4.95153 6.99776 5.10466 6.93917 5.22185 6.82198L7.40075 4.64307V12.6001C7.40075 12.9314 7.6695 13.2001 8.00075 13.2001C8.332 13.2001 8.60075 12.9314 8.60075 12.6001V4.65302L10.7734 6.82197C11.0086 7.05713 11.3882 7.05556 11.6218 6.82197C11.8562 6.58759 11.8562 6.20714 11.6219 5.97354Z"/></svg>';
@@ -44,18 +44,12 @@ export function getChatSessionId() {
   return match ? decodeURIComponent(match.slice(BC_SESSION_COOKIE.length + 1)) : '';
 }
 
-export function setCssGnavHeight() {
-  const gnav = document.querySelector('header.global-navigation');
-  const localGnav = document.querySelector('div.feds-localnav');
-  const localNavStyle = localGnav ? getComputedStyle(localGnav) : null;
-  const localNavOn = localGnav && localNavStyle ? localNavStyle.display !== 'none' : false;
+export function isC2() {
+  return getMetadata('foundation') === 'c2';
+}
 
-  if (!gnav) return;
-  const rootStyles = getComputedStyle(document.documentElement);
-  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
-  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
-  const newHeight = gnavHeight + (localGnav && localNavOn ? localNavHeight : 0);
-  document.documentElement.style.setProperty('--bc-gnav-height', `${newHeight}px`);
+export function isC2Nav() {
+  return getMetadata('gnav-foundation') === 'c2';
 }
 
 export function handleConsent(el) {
