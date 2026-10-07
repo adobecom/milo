@@ -69,10 +69,10 @@
 
   outline: var(--s2a-border-width-2) solid var(--quick-tile-foucs-color);
   outline-offset: var(--s2a-border-width-2);
-}
 
-.dark .quick-actions-tile:focus-visible {
-  --quick-tile-foucs-color: var(--s2a-color-gray-25);
+  .dark & {
+    --quick-tile-foucs-color: var(--s2a-color-gray-25);
+  }
 }
 
 .quick-actions-media {
