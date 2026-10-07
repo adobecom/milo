@@ -4,6 +4,7 @@
   overflow-y: clip;
   --rcc-top-gap: 40px;
   --rcc-sticky-top: var(--global-height-nav, 64px);
+  --rcc-rounded-corners-gap: 22px;
 
   .rcc-scroll-wrapper {
     position: relative;
@@ -307,6 +308,8 @@ body:has(header.local-nav) .roller-carousel {
   }
 
   .roller-carousel {
+    --rcc-rounded-corners-gap: 32px;
+
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
@@ -355,17 +358,6 @@ body:has(header.local-nav) .roller-carousel {
       height: 32px;
     }
   }
-
-  .rounded-corners + .section > .roller-carousel,
-  .rounded-corners-bottom + .section > .roller-carousel {
-    margin-top: calc(-1 * var(--s2a-border-radius-xl));
-  }
-
-  .section:has(+ .rounded-corners) > .roller-carousel,
-  .section:has(+ .rounded-corners-top) > .roller-carousel {
-    margin-bottom: calc(-1 * var(--s2a-border-radius-xl));
-    padding-bottom: var(--s2a-border-radius-xl);
-  }
 }
 
 @media (width >= 1440px) {
@@ -391,12 +383,12 @@ body:has(header.local-nav) .roller-carousel {
    section; pull the block over them so it spans the full section height */
 .rounded-corners + .section > .roller-carousel,
 .rounded-corners-bottom + .section > .roller-carousel {
-  margin-top: calc(-1 * var(--s2a-border-radius-22));
+  margin-top: calc(-1 * var(--rcc-rounded-corners-gap));
 }
 
 .section:has(+ .rounded-corners) > .roller-carousel,
 .section:has(+ .rounded-corners-top) > .roller-carousel {
-  margin-bottom: calc(-1 * var(--s2a-border-radius-22));
-  padding-bottom: var(--s2a-border-radius-22);
+  margin-bottom: calc(-1 * var(--rcc-rounded-corners-gap));
+  padding-bottom: var(--rcc-rounded-corners-gap);
 }
 
