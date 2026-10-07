@@ -40,6 +40,7 @@ import merch, {
   isMasErrorEnv,
   createFragmentErrorEl,
   getAupModalHashCleanup,
+  addAriaLabelToCta,
   AUP_SDK_READY_EVENT,
   waitForAupSdk,
 } from '../../../libs/blocks/merch/merch.js';
@@ -549,6 +550,61 @@ describe('Merch Block', () => {
       expect(cards[1].querySelector('a').getAttribute('aria-label')).to.equal('CTA2 Buy Now - PHSP - INDIVIDUAL');
       expect(cards[2].querySelector('a').getAttribute('aria-label')).to.equal('CTA3 Buy Now - Product three');
       expect(cards[3].querySelector('a').getAttribute('aria-label')).to.equal('CTA4 Buy Now');
+    });
+
+    describe('geo-ip product label', () => {
+      let langfirstMeta;
+
+      const setup = ({ lingo, country }) => {
+        setConfig({
+          ...config,
+          placeholders: { CCSN: 'Creative Cloud Pro', EDU: 'Students and teachers' },
+        });
+        // mockFetch builds a URL from its argument, so the root must be absolute.
+        getConfig().locale.contentRoot = `${window.location.origin}/test/blocks/merch/mocks`;
+        if (lingo) {
+          langfirstMeta = createTag('meta', { name: 'langfirst', content: 'on' });
+          document.head.appendChild(langfirstMeta);
+        }
+        if (country) sessionStorage.setItem('akamai', country);
+      };
+
+      const getLabel = async (productCode) => {
+        const attrs = {};
+        await addAriaLabelToCta({
+          value: [{ productArrangement: { productCode } }],
+          marketSegment: 'EDU',
+          textContent: 'Buy now',
+          setAttribute: (name, value) => { attrs[name] = value; },
+        });
+        return attrs['aria-label'];
+      };
+
+      afterEach(() => {
+        langfirstMeta?.remove();
+        langfirstMeta = undefined;
+        sessionStorage.removeItem('akamai');
+      });
+
+      it('keeps the placeholders.json label when lingo is off', async () => {
+        setup({ lingo: false, country: 'KR' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud Pro - Students and teachers');
+      });
+
+      it('uses the geo-ip sheet label for KR when lingo is on', async () => {
+        setup({ lingo: true, country: 'KR' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud All Apps - Students and teachers');
+      });
+
+      it('falls back to the placeholders.json label when the sheet has no matching row', async () => {
+        setup({ lingo: true, country: 'KR' });
+        expect(await getLabel('PHSP')).to.equal('Buy now - PHSP - Students and teachers');
+      });
+
+      it('falls back to the placeholders.json label for a country other than KR', async () => {
+        setup({ lingo: true, country: 'US' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud Pro - Students and teachers');
+      });
     });
   });
 

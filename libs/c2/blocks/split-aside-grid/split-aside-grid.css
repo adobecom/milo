@@ -98,9 +98,10 @@
 }
 
 .split-aside-grid.mobile-carousel {
-  overflow-x: clip;
   @media (width < 768px) {
     --split-aside-grid-gap: var(--s2a-spacing-lg);
+
+    overflow-x: clip;
 
     .split-aside-grid-stack {
       height: 100%;
@@ -494,6 +495,10 @@
 }
 
 @media (width >= 1600px) {
+  .split-aside-grid {
+    overflow-x: visible;
+  }
+
   .split-aside-grid-stack {
     inset-inline-end: unset;
   }

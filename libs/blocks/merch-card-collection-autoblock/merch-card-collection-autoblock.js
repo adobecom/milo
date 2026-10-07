@@ -141,6 +141,9 @@ const svgIcon = (markup) => createTag('span', { class: 'product-pricing-icon' },
 // full filtered set size (before pagination).
 const COLLECTION_LITERALS_CHANGED = 'merch-card-collection:literals-changed';
 
+// "Show more" step. MAS defaults every collection to 27.
+const PAGE_SIZE = 12;
+
 const mountedCollections = new WeakSet();
 
 const hashParams = () => new URLSearchParams(window.location.hash.slice(1));
@@ -154,9 +157,8 @@ function writeHash(params) {
 // Every selected pill counts, including the default category, so Featured +
 // Individuals reads "All Filters (2)". 'all' means unfiltered.
 export function countApplied(params, groups = []) {
-  return groups.reduce((total, { deeplink, multi }) => {
-    const raw = params.get(deeplink) || '';
-    if (multi) return total + raw.split(',').filter(Boolean).length;
+  return groups.reduce((total, { deeplink }) => {
+    const raw = params.get(deeplink);
     return total + (raw && raw !== 'all' ? 1 : 0);
   }, 0);
 }
@@ -169,7 +171,7 @@ export function productPricingFilterGroups(data) {
     groups.push({
       title: placeholders.filtersCategory,
       deeplink: 'filter',
-      multi: false,
+      optional: false,
       // Seeds the default filter and collapses to its active pill in the bar.
       category: true,
       options: hierarchy.map((node) => ({
@@ -183,39 +185,32 @@ export function productPricingFilterGroups(data) {
     .forEach((group) => groups.push({
       title: group.title || group.label || group.deeplink,
       deeplink: group.deeplink,
-      // types combines (multi); other tag groups (e.g. pricing) are exclusive.
-      multi: group.deeplink === 'types',
+      // Every group is single-select. Only types can be cleared to none.
+      optional: group.deeplink === 'types',
       options: group.checkboxes.map((cb) => ({ value: cb.name, label: cb.label })),
     }));
   return groups;
 }
 
-// The input carries the selection, so exclusivity, arrow-key roving, and Reset
-// come from the platform. `scope` keeps the bar and drawer copies of a group in
-// separate radio groups.
+// Radios give exclusivity and arrow-key roving. Optional groups use checkboxes
+// so the active pill can be cleared; the hash keeps them exclusive. `scope`
+// keeps the bar and drawer copies of a group in separate radio groups.
 function buildPill({ value, label }, group, scope) {
   const input = createTag('input', {
-    type: group.multi ? 'checkbox' : 'radio',
+    type: group.optional ? 'checkbox' : 'radio',
     name: `${scope}-${group.deeplink}`,
     value,
     'data-deeplink': group.deeplink,
-    'data-multi': String(group.multi),
+    'data-optional': String(group.optional),
   });
   return createTag('label', { class: 'product-pricing-pill' }, [input, label]);
 }
 
-export function toggleFilterHash(deeplink, value, multi) {
+// Selecting the active pill of an optional group clears it.
+export function toggleFilterHash(deeplink, value, optional) {
   const params = hashParams();
-  if (multi) {
-    const values = (params.get(deeplink) || '').split(',').filter(Boolean);
-    const idx = values.indexOf(value);
-    if (idx >= 0) values.splice(idx, 1);
-    else values.push(value);
-    if (values.length) params.set(deeplink, values.join(','));
-    else params.delete(deeplink);
-  } else {
-    params.set(deeplink, value);
-  }
+  if (optional && params.get(deeplink) === value) params.delete(deeplink);
+  else params.set(deeplink, value);
   writeHash(params);
 }
 
@@ -255,43 +250,51 @@ export function filterBarLabels(params, groups, placeholders, resultCount) {
   };
 }
 
-// Types is deselectable to zero and seeds nothing, which `multi` encodes today.
 export function defaultParams(groups) {
   return groups
-    .filter((group) => !group.multi && group.options.length)
+    .filter((group) => !group.optional && group.options.length)
     .map((group) => [group.deeplink, group.options[0].value]);
 }
 
 export function resetParams(params, groups) {
   const reset = new URLSearchParams(params);
   groups.forEach(({ deeplink }) => reset.delete(deeplink));
-  reset.delete('search');
   defaultParams(groups).forEach(([key, value]) => reset.set(key, value));
   return reset;
 }
 
 export function syncPills(params, root) {
   root.querySelectorAll('.product-pricing-pill input').forEach((input) => {
-    const raw = params.get(input.dataset.deeplink) || '';
-    input.checked = input.dataset.multi === 'true'
-      ? raw.split(',').includes(input.value)
-      : raw === input.value;
+    input.checked = params.get(input.dataset.deeplink) === input.value;
   });
 }
 
-// Multi groups stay drawer-only: a horizontal row gives no room for several
-// checked pills per group.
+// Optional groups (types) are drawer-only.
 export function barGroups(groups) {
-  return groups.filter((group) => !group.multi);
+  return groups.filter((group) => !group.optional);
 }
 
-// <details> gives the collapse for free. Multi groups get role=group because
-// their pills are checkboxes, not radios.
+// Sections collapse on mobile only. The toggle is display:none above it, so
+// desktop gets a plain heading. Optional groups get role=group because their
+// pills are checkboxes, not radios.
 function buildGroupCard(group) {
-  const summary = createTag('summary', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), svgIcon(CHEVRON_ICON)]);
-  const bodyAttrs = { class: 'product-pricing-group-pills', role: group.multi ? 'group' : 'radiogroup', 'aria-label': group.title };
+  const toggle = createTag('button', {
+    class: 'product-pricing-group-toggle',
+    type: 'button',
+    'aria-expanded': 'true',
+    'aria-label': group.title,
+  }, svgIcon(CHEVRON_ICON));
+  toggle.addEventListener('click', () => {
+    toggle.setAttribute('aria-expanded', String(toggle.getAttribute('aria-expanded') !== 'true'));
+  });
+  const header = createTag('h3', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), toggle]);
+  const bodyAttrs = {
+    class: 'product-pricing-group-pills',
+    role: group.optional ? 'group' : 'radiogroup',
+    'aria-label': group.title,
+  };
   const body = createTag('div', bodyAttrs, group.options.map((opt) => buildPill(opt, group, 'drawer')));
-  return createTag('details', { class: 'product-pricing-group', open: '' }, [summary, body]);
+  return createTag('div', { class: 'product-pricing-group' }, [header, body]);
 }
 
 function buildProductPricingDrawer(collection, groups) {
@@ -316,6 +319,19 @@ function buildProductPricingDrawer(collection, groups) {
   return { root, closeBtn, reset, applied, results };
 }
 
+// One page = the row minus both fades, so the pill under the far fade lands
+// just past the near one and nothing is skipped. Floor of half the row keeps
+// a narrow row moving.
+export function pageStep(rowWidth, fadeWidth) {
+  return Math.max(rowWidth - 2 * fadeWidth, rowWidth / 2);
+}
+
+// Which edges have content past them. 1px slack absorbs subpixel widths, so a
+// row that fits never shows an arrow.
+export function scrollEdges({ scrollLeft, scrollWidth, clientWidth }) {
+  return { prev: scrollLeft > 1, next: scrollLeft + clientWidth < scrollWidth - 1 };
+}
+
 function buildProductPricingBar(collection, groups) {
   const { placeholders = {} } = collection.data;
 
@@ -336,7 +352,36 @@ function buildProductPricingBar(collection, groups) {
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
-  const row = createTag('div', { class: 'product-pricing-filter-row' }, [pills]);
+  // Over the edge fades, shown only while there is content past that edge, so
+  // a tap there pages the row instead of hitting the half-hidden pill under it.
+  // Pointer-only: keyboard focus already scrolls each pill into view.
+  // ponytail: LTR only, flip the sign and chevrons if an RTL locale ships this.
+  const scrollButton = (dir) => {
+    const button = createTag('button', {
+      class: `product-pricing-filter-scroll product-pricing-filter-scroll-${dir}`,
+      type: 'button',
+      tabindex: '-1',
+      'aria-hidden': 'true',
+    });
+    button.addEventListener('click', () => {
+      const step = pageStep(pills.clientWidth, button.offsetWidth);
+      pills.scrollBy({ left: dir === 'next' ? step : -step });
+    });
+    return button;
+  };
+  const prev = scrollButton('prev');
+  const next = scrollButton('next');
+  const updateEdges = () => {
+    const edges = scrollEdges(pills);
+    prev.toggleAttribute('data-active', edges.prev);
+    next.toggleAttribute('data-active', edges.next);
+  };
+  pills.addEventListener('scroll', updateEdges, { passive: true });
+  // The row resizes with the viewport; the groups resize when the active
+  // category pill changes. Either can start or end the overflow.
+  const resize = new ResizeObserver(updateEdges);
+  [pills, ...pills.children].forEach((el) => resize.observe(el));
+  const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
 
   const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText });
   const search = createTag('div', { class: 'product-pricing-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);
@@ -349,6 +394,7 @@ export function mountProductPricingFilter(collection, container) {
   // preview re-renders the collection; mount once per element.
   if (mountedCollections.has(collection)) return;
   mountedCollections.add(collection);
+  collection.limit = PAGE_SIZE;
   const { base } = getConfig();
   loadStyle(`${base}/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css`);
 
@@ -389,7 +435,7 @@ export function mountProductPricingFilter(collection, container) {
   surfaces.forEach((root) => root.addEventListener('change', (e) => {
     const input = e.target.closest('.product-pricing-pill input');
     if (!input) return;
-    toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.multi === 'true');
+    toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.optional === 'true');
   }));
   drawer.reset.addEventListener('click', () => {
     writeHash(resetParams(hashParams(), groups));
