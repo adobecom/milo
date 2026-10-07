@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 import icons from '../../assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
@@ -10,10 +11,12 @@ const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+const federateSvgSrc = (img) => { if (isSvgUrl(img?.src)) img.src = getFederatedUrl(img.src); };
+const unwrapParagraphs = (el) => el.querySelectorAll('p').forEach((p) => p.replaceWith(...p.childNodes));
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
 
-const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe Cards';
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
@@ -84,25 +87,148 @@ const handleMobileAutoplay = (carousel) => {
   return observers;
 };
 
+const getHubHeroScrollRange = (hubHero) => ({
+  totalScrollRange: hubHero.offsetHeight - window.innerHeight,
+  hubHeroAbsTop: window.scrollY + hubHero.getBoundingClientRect().top,
+});
+
 const scrollHubHeroTo = (el, progress) => {
-  // double-rAF: runs after VoiceOver's async focus-scroll settles,
-  // preventing it from cancelling our scroll on backward keyboard nav
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const hubHero = el.closest('.hub-hero');
       if (!hubHero) return;
-      const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+      const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
       if (totalScrollRange <= 0) return;
-      const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
       const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
       window.scrollTo({ top: targetScrollY, behavior: 'instant' });
     });
   });
 };
 
+const CAROUSEL_TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
+
+const getHubHeroProgress = (hubHero) => {
+  const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
+  if (totalScrollRange <= 0) return 1;
+  return Math.min(Math.max((window.scrollY - hubHeroAbsTop) / totalScrollRange, 0), 1);
+};
+
+const initTouchCarouselLock = (hubHero, carousel, signal) => {
+  if (!hubHero.classList.contains('touch-scroll')) return;
+  const scrollEl = carousel.querySelector('.hub-hero-carousel-scroll');
+  if (!scrollEl) return;
+
+  const lockController = new AbortController();
+  signal.addEventListener('abort', () => lockController.abort(), { once: true });
+
+  const checkLock = () => {
+    const lockProgress = hubHero.classList.contains('slides-3') ? 0.46 : 0.6;
+    if (getHubHeroProgress(hubHero) < lockProgress) return;
+    hubHero.classList.add('carousel-locked');
+    const offset = Math.max((scrollEl.scrollWidth - scrollEl.clientWidth) / 2, 0);
+    scrollEl.scrollLeft = isRtl() ? -offset : offset;
+    lockController.abort();
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { checkLock(); ticking = false; });
+  }, { signal: lockController.signal, passive: true });
+  requestAnimationFrame(checkLock);
+};
+
+const initNavHeight = (hubHero) => {
+  const header = document.querySelector('header');
+  if (!header) return;
+
+  const syncNavHeight = () => hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
+  syncNavHeight();
+
+  const navResizeObserver = new ResizeObserver(syncNavHeight);
+  navResizeObserver.observe(header);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      navResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
+const initHeaderPin = (hubHero, header) => {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
+  if (reducedMotion || !isMobile()) return;
+
+  const pinController = new AbortController();
+
+  const headerResizeObserver = new ResizeObserver(() => {
+    hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
+  });
+  headerResizeObserver.observe(header);
+
+  let ticking = false;
+  const checkPin = () => {
+    const heroRect = hubHero.getBoundingClientRect();
+    const carouselAssembled = getHubHeroProgress(hubHero) >= 0.5;
+    header.classList.toggle('pinned', !carouselAssembled && heroRect.top <= 0 && heroRect.bottom > 0);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(checkPin);
+  }, { signal: pinController.signal, passive: true });
+  requestAnimationFrame(checkPin);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      pinController.abort();
+      headerResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
+const initCarouselContainerExpand = (hubHero) => {
+  const container = hubHero.querySelector('.hub-hero-carousel-container');
+  if (!container) return;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    container.style.setProperty('--expand-progress', 1);
+    return;
+  }
+
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    if (!mobileQuery.matches) return;
+    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }, { signal: controller.signal, passive: true });
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(update), { signal: controller.signal });
+  requestAnimationFrame(update);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
+  if (event?.target?.closest('.hub-hero')?.classList.contains('slides-3')) return;
 
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.set(video, setTimeout(() => {
@@ -112,7 +238,7 @@ const onSlideLeave = (event) => {
 
 const removeHovered = (carousel) => {
   const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
-  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
+  [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
 const onCarouselLeave = (event) => {
@@ -127,7 +253,7 @@ const onCarouselLeave = (event) => {
 const onHover = (event) => {
   const isFocus = event.type === 'focus';
   const slideEl = event.target;
-  if (isFocus && isMobile()) scrollHubHeroTo(slideEl, 0.6);
+  if (isFocus && slideEl.matches(':focus-visible')) scrollHubHeroTo(slideEl, 0.6);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -136,7 +262,8 @@ const onHover = (event) => {
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.delete(video);
 
-  if (video) {
+  const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
+  if (video && !isThreeSlides) {
     stopRewind(video);
     video.play().catch(() => { });
   }
@@ -146,11 +273,22 @@ const onHover = (event) => {
   if (!container) return;
 
   removeHovered(slideEl.closest('.hub-hero-carousel'));
-  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
-  container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
-  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === 5);
+  const hubHero = slideEl.closest('.hub-hero');
+  const isThree = hubHero?.classList.contains('slides-3');
+  const styles = getComputedStyle(hubHero);
+  const slideCount = parseInt(styles.getPropertyValue('--slides'), 10) || 0;
+  const maxIndex = isThree ? 3 : slideCount;
+  const slideWidth = parseFloat(styles.getPropertyValue('--slide-width')) || 0;
+  const endGap = parseFloat(styles.getPropertyValue('--end-gap')) || 0;
+  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const unhoveredTotal = slideWidth * slideCount + (endGap * rootFontSize) * (slideCount - 1);
+  const needsStick = unhoveredTotal > window.innerWidth;
+
+  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
+  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
+  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
 
   if (hoverTracked) return;
 
@@ -162,15 +300,19 @@ const onHover = (event) => {
   sendAnalytics(`user-hover|${sectionName}|${blockName}`);
 };
 
-const buildSlide = ({ slide, index }) => {
-  if (!slide?.children) return createTag('a', { class: `${slide.class} hub-hero-carousel-item` });
+const buildSlide = ({ slide, idx, slidesTotal }) => {
+  if (!slide?.children) return createTag('a', { class: ['hub-hero-carousel-item', slide?.class].filter(Boolean).join(' ') });
   const children = [...slide.children];
   const left = children[0];
-  const right = children[1];
+  const right = children[1] ?? children[0];
+  unwrapParagraphs(right);
 
   const [eyebrow, heading] = left.children;
   const asset = right.children[0];
+  const icon = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
+  // handling of middle "invisible" slide when we animate 4 slides
+  const index = idx >= 2 && slidesTotal === 5 ? idx - 1 : idx;
 
   if (asset?.dataset.videoSource) {
     asset.setAttribute('preload', 'none');
@@ -180,7 +322,8 @@ const buildSlide = ({ slide, index }) => {
     asset.removeAttribute('controls');
   }
 
-  if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
+  federateSvgSrc(asset);
+  federateSvgSrc(icon?.querySelector('img'));
 
   decorateBlockText(left);
 
@@ -190,12 +333,13 @@ const buildSlide = ({ slide, index }) => {
   if (heading) heading.id = descId;
 
   const content = `
-    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-card-${index + 1}'>
+    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
       <div class='hub-hero-carousel-item-header'>
         ${eyebrow?.outerHTML}
       </div>
       <div class='hub-hero-carousel-item-media'>
         ${asset?.outerHTML}
+        ${icon?.outerHTML ?? ''}
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
@@ -205,6 +349,7 @@ const buildSlide = ({ slide, index }) => {
   `;
 
   const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
+  const labelledBy = [eyebrow && titleId, heading && descId].filter(Boolean).join(' ');
 
   const slideEl = createTag('a', {
     class: 'hub-hero-carousel-item',
@@ -212,12 +357,31 @@ const buildSlide = ({ slide, index }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
-    'aria-labelledby': [eyebrow && titleId, heading && descId].filter(Boolean).join(' '),
+    'aria-setsize': slidesTotal,
+    'aria-posinset': index + 1,
+    ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
   if (link?.dataset?.modalHash) slideEl.dataset.modalHash = link.dataset.modalHash;
   if (link?.dataset?.modalPath) slideEl.dataset.modalPath = link.dataset.modalPath;
+
+  if (isModal) {
+    slideEl.addEventListener('click', (e) => {
+      if (!slideEl.href) return;
+      e.preventDefault();
+      const oldURL = window.location.href;
+      window.history.pushState(null, '', new URL(slideEl.href).hash);
+      window.dispatchEvent(new HashChangeEvent('hashchange', { oldURL, newURL: window.location.href }));
+    });
+
+    slideEl.addEventListener('keydown', (e) => {
+      if (e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();
+      if (e.repeat) return;
+      slideEl.click();
+    });
+  }
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
@@ -229,18 +393,16 @@ const decorateCarousel = (slides) => {
   const carousel = createTag('div', { class: 'hub-hero-carousel' }, slides);
   if (isRtl()) slides.reverse();
   const decoratedSlides = slides.map((slide, index) => buildSlide(
-    {
-      slide,
-      index: index > 2 ? index - 1 : index,
-      slidesTotal: slides.length - 1,
-    }, // adjusting for a placeholder slide
+    { slide, idx: index, slidesTotal: slides.length },
   ));
   const carouselContainer = createTag('div', { class: 'hub-hero-carousel-container' });
   carouselContainer.append(...decoratedSlides);
+  const carouselScroll = createTag('div', { class: 'hub-hero-carousel-scroll' }, carouselContainer);
   carousel.replaceChildren();
-  carousel.append(carouselContainer);
-  carousel.dataset.ariaRoledescription = 'carousel';
-  carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
+  carousel.append(carouselScroll);
+  carousel.setAttribute('role', 'group');
+  carousel.setAttribute('aria-roledescription', 'carousel');
+  carousel.setAttribute('aria-label', getCarouselName(slides[0]?.querySelector('a')));
   return carousel;
 };
 
@@ -257,14 +419,16 @@ const upgradeVideoPreload = (carousel) => {
   });
 };
 
-const handleCarousel = (slds) => {
-  const slides = [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
+const handleCarousel = (hubHero, slds, isThreeSlides) => {
+  // add middle "invisible" slide when carousel has 4 slides
+  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
   window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
+  initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
@@ -294,22 +458,59 @@ const setCarouselSlideOffsets = (grid, carousel) => {
     const correction = contentHeight - gridHeight;
     hubHero.style.setProperty(`--carousel-slide-${nthChild}-correction`, `${correction}px`);
   });
+  const col3 = cols[2];
+  const col3LastChild = col3?.children[col3.children.length - 1];
+  if (col3LastChild) {
+    const gridBottom = grid.getBoundingClientRect().bottom;
+    const col3LastChildBottom = col3LastChild.getBoundingClientRect().bottom;
+    hubHero.style.setProperty('--grid-col-three-bottom-gap', `${gridBottom - col3LastChildBottom}px`);
+  }
 };
 
-const handleGridImages = (imageContainers, slides) => {
+const setElasticFirstSlideOffset = (hubHero) => {
+  if (!window.matchMedia('(width < 768px)').matches) return;
+  const media = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-media');
+  if (!media) return;
+  const mediaStyle = getComputedStyle(media);
+  const gridImgWidthMin = parseFloat(mediaStyle.getPropertyValue('--grid-img-width-min'));
+  const gridImgClipRatio = parseFloat(mediaStyle.getPropertyValue('--grid-img-clip-ratio')) || 1;
+  const mediaHeight = media.getBoundingClientRect().height;
+  if (!gridImgWidthMin || !mediaHeight) return;
+  const probe = createTag('div', { style: 'position: absolute; visibility: hidden; height: 0; width: var(--start-gap);' });
+  hubHero.append(probe);
+  const startGap = probe.getBoundingClientRect().width;
+  probe.remove();
+  const gridColThreeBottomGap = parseFloat(
+    getComputedStyle(hubHero).getPropertyValue('--grid-col-three-bottom-gap'),
+  ) || 0;
+  const gapPx = (mediaHeight / 2) - ((gridImgWidthMin * gridImgClipRatio) / 2)
+    - startGap + gridColThreeBottomGap;
+  hubHero.style.setProperty('--elastic-mobile-first-slide-offset', `${-gapPx}px`);
+};
+
+const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
-  [...imageContainers[0].children]?.forEach((img) => {
-    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, img));
-  });
-  [...imageContainers[1].children]?.forEach((img, index) => {
-    container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
+  [...imageContainers[0].children]?.forEach((cntr) => {
+    unwrapParagraphs(cntr);
+    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, cntr));
   });
 
-  const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
-  const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
+  [1, 2].forEach((i) => {
+    [...(imageContainers[i]?.children ?? [])].forEach((img, index) => {
+      if (img.children?.length) container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1})`)?.appendChild(img);
+    });
+  });
 
-  col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
-  col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
+  const gridColumns = [...container.querySelectorAll('.hub-hero-image-grid-container-col')];
+
+  const leftSlideIndex = 1;
+  const rightSlideIndex = isThreeSlides ? 2 : 3;
+
+  const leftClone = slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  if (leftClone) gridColumns[1]?.append(leftClone);
+  if (rightClone) gridColumns[3]?.append(rightClone);
+  container.querySelectorAll('img').forEach(federateSvgSrc);
 
   return container;
 };
@@ -332,17 +533,90 @@ const decorateHubHeroCTA = (heroHeader) => {
   linkEl.parentElement.replaceChildren(cta);
 };
 
-const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
-  requestAnimationFrame(() => {
-    setCarouselSlideOffsets(grid, elasticCarousel);
+const prepareVideo = (video) => {
+  const src = video.querySelector('source')?.getAttribute('src') || video.dataset.videoSource;
+  if (src && !video.currentSrc) video.src = src;
+  video.preload = 'auto';
+  video.load();
+};
+
+const MAX_AUTOPLAY_DURATION = 5.1;
+const canAutoplay = (video) => !(video.duration > MAX_AUTOPLAY_DURATION);
+
+const playVideo = (video) => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const attemptPlay = () => { if (canAutoplay(video)) video.play().catch(() => { }); };
+  if (video.readyState >= 3) {
+    attemptPlay();
+    return;
+  }
+  prepareVideo(video);
+  if (video.readyState < 1) {
+    video.addEventListener('loadedmetadata', () => {
+      video.addEventListener('canplay', attemptPlay, { once: true });
+    }, { once: true });
+  } else {
+    video.addEventListener('canplay', attemptPlay, { once: true });
+  }
+};
+
+const handleSlidesThreeVideos = (hubHero) => {
+  // Grid videos: play when 50% in viewport, pause when scrolled out
+  hubHero.querySelectorAll('.hub-hero-image-grid-container video').forEach((video) => {
+    const container = video.closest('.video-holder') || video;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(container);
   });
+
+  // Carousel slide videos: preload now, play when slide is in viewport, pause when out
+  hubHero.querySelectorAll('.hub-hero-carousel-item video').forEach((video) => {
+    prepareVideo(video);
+    const slide = video.closest('.hub-hero-carousel-item');
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) playVideo(video);
+        else video.pause();
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(slide);
+  });
+};
+
+const initElasticFirstSlideOffset = (hubHero, grid, elasticCarousel) => {
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+
+  const recompute = () => {
+    setCarouselSlideOffsets(grid, elasticCarousel);
+    if (mobileQuery.matches) setElasticFirstSlideOffset(hubHero);
+  };
+
+  requestAnimationFrame(recompute);
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(recompute), { signal: controller.signal });
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 };
 
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
 
 export default async function init(el) {
+  el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
+
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
+  const isThreeSlides = classes.includes('slides-3');
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
@@ -354,12 +628,19 @@ export default async function init(el) {
   decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
   carouselHeader.classList.add('hub-hero-carousel-header');
-  const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
-  const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
-  const grid = handleGridImages(gridImages, carouselImages);
-  const elasticCarousel = handleCarousel(carouselImages);
+  const gridImages = [...el.querySelectorAll(`.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)${isThreeSlides ? ', .hub-hero > div:nth-child(4)' : ''}`)];
+  const carouselImages = [...el.querySelectorAll(`.hub-hero > div:nth-last-of-type(-n+${isThreeSlides ? 3 : 4})`)];
+
+  const grid = handleGridImages(gridImages, carouselImages, isThreeSlides);
+  const elasticCarousel = handleCarousel(el, carouselImages, isThreeSlides);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
-  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+
+  initElasticFirstSlideOffset(el, grid, elasticCarousel);
+
+  initNavHeight(el);
+  initHeaderPin(el, heroHeader);
+  initCarouselContainerExpand(el);
+  if (isThreeSlides) handleSlidesThreeVideos(el);
 }

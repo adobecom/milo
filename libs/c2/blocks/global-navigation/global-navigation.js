@@ -4,6 +4,7 @@ import {
   getMetadata,
   localizeLink,
   localizeLinkAsync,
+  appendHtmlToLink,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
@@ -94,7 +95,17 @@ export default async function init(el) {
   // isSignedInUser() check times out (uncaught) after 5s, leaving the unav
   // slot empty. Skip if adobeIMS is already initialized (e.g. a host that
   // bootstraps IMS itself outside of milo's loadIms) to avoid clobbering it.
-  if (!window.adobeIMS?.initialized) loadIms().catch(() => {});
+  const imsReady = window.adobeIMS?.initialized ? Promise.resolve() : loadIms();
+  // Handle early rejection while Federal is still fetching/rendering. Keep the
+  // original promise so UNAV can wait for readiness and recover from a timeout.
+  imsReady.catch((error) => {
+    if (error?.message === 'IMS timeout') return;
+    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
+      error,
+      tags: 'global-navigation',
+      errorType: 'i',
+    });
+  });
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
@@ -146,8 +157,7 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
-
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
@@ -170,6 +180,7 @@ export default async function init(el) {
     isLocalNav: false,
     mountpoint: el,
     unavEnabled,
+    imsReady,
     placeholders: placeholdersPromise,
     miloConfig: config,
     countryCode: countryCodePromise,
@@ -184,6 +195,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },

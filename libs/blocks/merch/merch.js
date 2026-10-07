@@ -2,8 +2,8 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
-import { replaceKey } from '../../features/placeholders.js';
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
+import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
 // MAS Component Names
@@ -404,7 +404,6 @@ const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
-let upgradeOffer = null;
 
 /**
  * Parses the maslibs URL parameter and returns a validated base URL.
@@ -528,12 +527,16 @@ function getAupSelectPreload() {
   return preload;
 }
 
-function getCommercePreloadUrl() {
-  const { env } = getConfig();
-  if (env.name === 'prod') {
-    return 'https://commerce.adobe.com/store/iframe/preload.js';
+export function getCommercePreloadUrl() {
+  // Match the commerce env the checkout/modal URLs are built for (commerce.env override included).
+  const commerceEnv = document.head.querySelector('mas-commerce-service')?.settings?.env;
+  if (!commerceEnv) {
+    log?.warn('Commerce env unavailable for preload.js, falling back to production');
   }
-  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+  if (commerceEnv === 'STAGE') {
+    return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce.adobe.com/store/iframe/preload.js';
 }
 
 export async function polyfills() {
@@ -685,18 +688,15 @@ function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
   return family[codeSubscr]?.includes(codeCta) || codeSubscr === codeCta;
 }
 
-export async function getDownloadAction(
-  options,
-  imsSignedInPromise,
-  [
+export async function getDownloadAction(options, imsSignedInPromise, offers) {
+  if (options.entitlement !== true) return undefined;
+  const [
     {
       offerType,
       productArrangementCode,
       productArrangement: { productCode, productFamily: offerFamily } = {},
-    },
-  ],
-) {
-  if (options.entitlement !== true) return undefined;
+    } = {},
+  ] = offers ?? [];
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -733,27 +733,31 @@ export async function getDownloadAction(
   return { text, className: `download ${type}`, url };
 }
 
-export async function getUpgradeAction(
-  options,
-  imsSignedInPromise,
-  [{ productArrangement: { productFamily: offerFamily } = {} }],
-  el,
-) {
+export async function getUpgradeAction(options, imsSignedInPromise, offers, el) {
   if (!options.upgrade) return undefined;
+  const [{ productArrangement: { productFamily: offerFamily } = {} } = {}] = offers ?? [];
   let SOURCE_PF;
   let TARGET_PF;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
-  if (upgradeOffer === null) {
-    upgradeOffer = undefined;
-    // will enter only once
-    upgradeOffer = await document.querySelector(
-      '.merch-offers.upgrade [data-wcs-osi]',
-    );
+  // Refresh the cache when the offer was removed during fragment replacement.
+  if (!getUpgradeAction.offer?.isConnected) {
+    getUpgradeAction.offer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  }
+  const upgradeOffer = getUpgradeAction.offer;
+  if (!upgradeOffer) {
+    // Authoring error: the CTA asks for an upgrade but the page has no upgrade offer,
+    // so it silently stays a regular CTA. Reported once, as every upgrade CTA on the
+    // page hits the same condition and would otherwise flood the logs.
+    if (!getUpgradeAction.missReported) {
+      getUpgradeAction.missReported = true;
+      const osi = el?.getAttribute?.('data-wcs-osi') ?? el?.href ?? 'unknown';
+      log?.error(`Upgrade CTA (osi: ${osi}) cannot be resolved: page has no '.merch-offers.upgrade [data-wcs-osi]' element`);
+    }
+    return undefined;
   }
 
-  if (!upgradeOffer) return undefined;
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
     SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
     TARGET_PF = ['ACROBAT'];
@@ -761,8 +765,8 @@ export async function getUpgradeAction(
     SOURCE_PF = CC_SINGLE_APPS_ALL;
     TARGET_PF = CC_ALL_APPS;
   }
-  await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && offerFamily) {
+  await upgradeOffer.onceSettled?.();
+  if (entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
       offerFamily,
@@ -915,6 +919,69 @@ const closeModalWithoutEvent = (modalId) => {
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 let activeAupModalHash;
+const aupModalHashCleanups = new WeakMap();
+let modalRestoreController = new AbortController();
+let modalRestoreHash = window.location.hash;
+let aupSdkTimeoutLogged = false;
+
+export const AUP_SDK_READY_EVENT = 'milo:aupsdk:ready';
+const AUP_SDK_READY_TIMEOUT = 10000;
+
+const isAupSdkReady = () => typeof window.aupsdk?.getOrchestratorContext === 'function';
+
+export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT, { signal, onTimeout } = {}) {
+  if (signal?.aborted) return Promise.resolve(false);
+  if (isAupSdkReady()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let timeoutId;
+    let onReady;
+    const done = () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener(AUP_SDK_READY_EVENT, onReady);
+      signal?.removeEventListener('abort', done);
+      resolve(!signal?.aborted && isAupSdkReady());
+    };
+    onReady = () => {
+      if (isAupSdkReady()) done();
+    };
+    timeoutId = setTimeout(() => {
+      done();
+      onTimeout?.();
+    }, timeout);
+    window.addEventListener(AUP_SDK_READY_EVENT, onReady);
+    signal?.addEventListener('abort', done, { once: true });
+  });
+}
+
+function cancelModalRestores() {
+  modalRestoreController.abort();
+  modalRestoreController = new AbortController();
+  modalRestoreHash = window.location.hash;
+}
+
+/*
+ * A deep-linked CTA can settle before Gnav loads the AUP SDK. Clicking it then makes MAS
+ * fall back to the legacy 3-in-1 modal, so wait for the SDK before restoring the modal.
+ */
+async function openModalFromHash(cta, hash) {
+  const { signal } = modalRestoreController;
+  let timedOut = false;
+  if (isAupEnabled() && !isAupSdkReady()) {
+    await waitForAupSdk(AUP_SDK_READY_TIMEOUT, {
+      signal,
+      onTimeout: () => { timedOut = true; },
+    });
+  }
+  if (signal.aborted || window.location.hash !== hash || modalState.isOpen) return false;
+  const logTimeout = timedOut && !isAupSdkReady() && !aupSdkTimeoutLogged && log;
+  cta.click();
+  modalState.isOpen = true;
+  if (logTimeout) {
+    aupSdkTimeoutLogged = true;
+    log.info('AUP SDK readiness timed out after 10000ms; falling back to legacy checkout');
+  }
+  return true;
+}
 
 function restoreAupModalHash(modalHashState) {
   if (modalHashState?.restoreUrl && window.location.hash === modalHashState.hash) {
@@ -923,31 +990,39 @@ function restoreAupModalHash(modalHashState) {
 }
 
 function clearAupModalHash(modalHashState) {
-  if (!modalHashState) return;
-  if (activeAupModalHash === modalHashState) {
-    activeAupModalHash = undefined;
-    modalState.isOpen = false;
-  }
+  if (!modalHashState || activeAupModalHash !== modalHashState) return;
+  cancelModalRestores();
+  activeAupModalHash = undefined;
+  modalState.isOpen = false;
   restoreAupModalHash(modalHashState);
 }
 
 export function getAupModalHashCleanup() {
   const modalHashState = activeAupModalHash;
   if (!modalHashState) return undefined;
+  if (aupModalHashCleanups.has(modalHashState)) return aupModalHashCleanups.get(modalHashState);
   let cleaned = false;
-  return () => {
+  const cleanup = () => {
     if (cleaned) return;
     cleaned = true;
     clearAupModalHash(modalHashState);
   };
+  aupModalHashCleanups.set(modalHashState, cleanup);
+  return cleanup;
 }
 
-function handleAupModalHash(fallbackModalId, { type, element } = {}) {
+export function getAupModalTitle() {
+  return activeAupModalHash?.title;
+}
+
+function handleAupModalHash(fallbackModalId, event, modalHashState) {
+  const { type, element } = event ?? {};
   const id = element?.dataset.modalId || fallbackModalId;
   const hash = id ? `#${id}` : '';
-  if (!hash) return;
+  if (!hash) return undefined;
 
   if (type === 'open') {
+    cancelModalRestores();
     clearAupModalHash(activeAupModalHash);
     const restoreUrl = window.location.hash === hash
       ? `${window.location.pathname}${window.location.search}`
@@ -955,15 +1030,29 @@ function handleAupModalHash(fallbackModalId, { type, element } = {}) {
     if (window.location.hash !== hash) {
       window.history.pushState(window.history.state, '', hash);
     }
-    activeAupModalHash = { hash, restoreUrl };
+    const title = element?.getAttribute('aria-label') || element?.textContent?.trim();
+    activeAupModalHash = { hash, restoreUrl, title };
     modalState.isOpen = true;
-  } else if (type === 'close' && activeAupModalHash?.hash === hash) {
-    clearAupModalHash(activeAupModalHash);
+    return activeAupModalHash;
   }
+  if (type === 'close') clearAupModalHash(modalHashState);
+  return undefined;
 }
+
+const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
+  || dialog?.id?.includes('region-modal');
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
+  if (hash !== modalRestoreHash) cancelModalRestores();
+
+  if (closedByUser) {
+    cancelModalRestores();
+    // The AUP bridge owns its state and hash cleanup while its modal exists.
+    if (!document.getElementById('aup-workflow-dialog')) modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+  if (document.querySelector('.dialog-modal.aup-modal')) return modalState.isOpen;
 
   if (hash?.includes('=')) {
     const modal = document.querySelector('.dialog-modal');
@@ -974,8 +1063,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
-  const modal = isLocaleModal ? null : openedDialog;
+  const modal = isLocaleModal(openedDialog) ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
     const dialog = document.querySelector('.dialog-modal');
@@ -988,29 +1076,19 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   if (hash && !cta && !modalState.isOpen && !modal) {
     const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
     if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
-      ctaToClick.dataset.clickDisabled = 'true';
-      ctaToClick.click();
-      modalState.isOpen = true;
-      setTimeout(() => {
-        delete ctaToClick.dataset.clickDisabled;
-      }, 1000);
+      const opened = await openModalFromHash(ctaToClick, hash);
+      if (opened) {
+        ctaToClick.dataset.clickDisabled = 'true';
+        setTimeout(() => {
+          delete ctaToClick.dataset.clickDisabled;
+        }, 1000);
+      }
     }
     return modalState.isOpen;
   }
 
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
-    cta.click();
-    modalState.isOpen = true;
-    return modalState.isOpen;
-  }
-
-  if (closedByUser && document.querySelector('#checkout-link-modal')) {
-    modalState.isOpen = false;
-    return modalState.isOpen;
-  }
-
-  if (closedByUser && modal) {
-    modalState.isOpen = false;
+    await openModalFromHash(cta, hash);
     return modalState.isOpen;
   }
 
@@ -1027,40 +1105,54 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
+  cancelModalRestores();
   modalState.isOpen = true;
-  const { getModal } = await import('../modal/modal.js');
-  await import('../modal/modal.merch.js');
-  const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
-  let modal;
+  let removeThreeInOneListener;
+  try {
+    const { getModal } = await import('../modal/modal.js');
+    await import('../modal/modal.merch.js');
+    const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
+    let modal;
 
-  if (hash) window.location.hash = hash;
+    if (hash) window.location.hash = hash;
 
-  if (el?.isOpen3in1Modal) {
-    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
-    window.addEventListener('message', handle3in1IFrameEvents);
-    if (!document.querySelector('.dialog-modal.three-in-one')) {
-      modal = await openThreeInOneModal(el);
+    if (el?.isOpen3in1Modal) {
+      const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+      window.addEventListener('message', handle3in1IFrameEvents);
+      removeThreeInOneListener = () => window.removeEventListener('message', handle3in1IFrameEvents);
+      if (!document.querySelector('.dialog-modal.three-in-one')) {
+        modal = await openThreeInOneModal(el);
+        if (!modal) {
+          modalState.isOpen = false;
+          removeThreeInOneListener();
+        }
+      }
+      return;
     }
-    return;
-  }
 
-  let url = urlParam;
-  if (el?.dataset.modal === 'crm') {
-    const card = el.closest('merch-card');
-    const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
-    const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
-    const urlObj = new URL(url);
-    if (stock) urlObj.searchParams.set('stock', 'on');
-    if (quantity) urlObj.searchParams.set('qs', quantity);
-    if (stock || quantity) url = urlObj.toString();
+    let url = urlParam;
+    if (el?.dataset.modal === 'crm') {
+      const card = el.closest('merch-card');
+      const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
+      const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
+      const urlObj = new URL(url);
+      if (stock) urlObj.searchParams.set('stock', 'on');
+      if (quantity) urlObj.searchParams.set('qs', quantity);
+      if (stock || quantity) url = urlObj.toString();
+    }
+    if (isInternalModal(url)) {
+      const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+      modal = await openFragmentModal(fragmentPath, getModal);
+    } else {
+      modal = await openExternalModal(url, getModal, extraOptions, el);
+    }
+    modal.classList.add(offerTypeClass);
+  } catch (error) {
+    modalState.isOpen = false;
+    removeThreeInOneListener?.();
+    log?.error('Failed to open checkout modal', error);
+    throw error;
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else {
-    modal = await openExternalModal(url, getModal, extraOptions, el);
-  }
-  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -1092,12 +1184,10 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
-      setTimeout(async () => {
-        const aupSelectPreload = isAupEnabled() && getAupSelectPreload();
-        if (aupSelectPreload) {
-          await aupSelectPreload;
-          return;
-        }
+      setTimeout(() => {
+        if (isAupEnabled()) getAupSelectPreload();
+        // AUP Select still renders the commerce.adobe.com segmentation iframe,
+        // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
         // The script can preload more, based on clientId, but for the ones in use
         // ('mini-plans', 'creative') there is no difference, so we can just use either one.
@@ -1148,10 +1238,14 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
       : localized;
   }
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
+  let aupModalHashState;
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
-    aupHandler: (event) => handleAupModalHash(hash, event),
+    aupHandler: (event) => {
+      if (event?.type === 'open') aupModalHashState = handleAupModalHash(hash, event);
+      else handleAupModalHash(hash, event, aupModalHashState);
+    },
   };
 }
 
@@ -1171,7 +1265,7 @@ export async function getCheckoutAction(
     return downloadAction || upgradeAction || modalAction;
   } catch (e) {
     log?.error('Failed to resolve checkout action', e);
-    return [];
+    return undefined;
   }
 }
 
@@ -1493,13 +1587,22 @@ export async function getPriceContext(el, params) {
   };
 }
 
+async function getGeoProductLabel(productCode) {
+  try {
+    return (await getGeoIpPlaceholders())?.get(`${productCode}-geo-ip`);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function addAriaLabelToCta(cta) {
   const productCode = cta.value[0]?.productArrangement?.productCode;
   const { marketSegment, customerSegment } = cta;
   const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
   let ariaLabel = cta.textContent;
+  const geoProduct = productCode && await getGeoProductLabel(productCode);
   ariaLabel = productCode
-    ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+    ? `${ariaLabel} - ${geoProduct || await replaceKey(productCode, getConfig())}`
     : ariaLabel;
   ariaLabel = segment
     ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
@@ -1810,6 +1913,78 @@ function withTimeout(promise) {
   ]);
 }
 
+const foregroundTimers = new Map();
+let foregroundTimerId = 0;
+
+// Single shared listener for all pending foreground timers, attached only while any are pending.
+function onForegroundVisibilityChange() {
+  const hidden = document.visibilityState === 'hidden';
+  foregroundTimers.forEach((timer) => (hidden ? timer.pause() : timer.resume()));
+}
+
+export function clearForegroundTimeout(id) {
+  const timer = foregroundTimers.get(id);
+  if (!timer) return;
+  timer.pause();
+  foregroundTimers.delete(id);
+  if (!foregroundTimers.size) {
+    document.removeEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
+}
+
+export function setForegroundTimeout(callback, ms) {
+  foregroundTimerId += 1;
+  const id = foregroundTimerId;
+  let remaining = ms;
+  let startedAt;
+  let handle = null;
+  const fire = () => {
+    handle = null;
+    clearForegroundTimeout(id);
+    callback();
+  };
+  const timer = {
+    pause() {
+      if (handle === null) return;
+      clearTimeout(handle);
+      handle = null;
+      remaining -= performance.now() - startedAt;
+    },
+    resume() {
+      if (handle !== null) return;
+      startedAt = performance.now();
+      handle = setTimeout(fire, Math.max(remaining, 0));
+    },
+  };
+  if (!foregroundTimers.size) {
+    document.addEventListener('visibilitychange', onForegroundVisibilityChange);
+  }
+  foregroundTimers.set(id, timer);
+  if (document.visibilityState !== 'hidden') timer.resume();
+  return id;
+}
+
+/**
+ * Races `promise` against a foreground-time budget, resolving `timeoutValue` if the budget
+ * elapses first. The timer and its listener are always released once the race settles, so
+ * nothing stays armed for the rest of the budget. Only the timeout branch resolves: if
+ * `promise` rejects first, the returned promise rejects too, so callers must keep a `.catch`.
+ */
+export function raceForegroundTimeout(promise, ms, timeoutValue = 'timeout') {
+  let id;
+  const timeoutPromise = new Promise((resolve) => {
+    id = setForegroundTimeout(() => resolve(timeoutValue), ms);
+  });
+  return Promise.race([promise, timeoutPromise])
+    .finally(() => clearForegroundTimeout(id));
+}
+
+// Foreground-time budget: a frozen webview must not burn the deadline while suspended
+// and report a timeout the moment it resumes.
+function withForegroundTimeout(promise) {
+  return raceForegroundTimeout(promise, FIELD_TIMEOUT);
+}
+
 async function loadFieldDependencies() {
   const servicePromise = initService();
   const success = await withTimeout(servicePromise);
@@ -1833,7 +2008,7 @@ async function checkFieldReady(masField, fragment) {
     }
   }
 
-  const success = await withTimeout(masField.checkReady());
+  const success = await withForegroundTimeout(masField.checkReady());
   if (success === 'timeout') {
     fieldLog.error(`${masField.tagName} did not initialize within given timeout`);
   } else if (!success) {
@@ -1901,7 +2076,7 @@ export function holdCtaUntilPrice(container) {
   if (!price?.checkReady) return;
   container.style.visibility = 'hidden';
   const reveal = () => { container.style.visibility = ''; };
-  withTimeout(price.checkReady().catch(() => false)).then(reveal);
+  withForegroundTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
 /**
@@ -2014,13 +2189,18 @@ function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
-    if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
+    if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
-    if (isCtaFieldContent(content)) {
+    if (!content?.querySelector('a')) return;
+    if (isCtaFieldContent(content) && mf.closest('em, strong')) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       await decorateContentLinks(content);
       decorateInlineCtas(mf, content);
+    } else {
+      // late re-rendered and relocalized
+      await decorateContentLinks(content);
+      upgradeCommerceLinks(content);
     }
   });
 }
@@ -2034,6 +2214,10 @@ function isPromoVariation(mf) {
  * A `.promo-placeholder` container (authored) is hidden by default and acts as a placeholder
  * for a promotion. When a mas-field inside it resolves to a promotion variation (marked by
  * `data-promotion-project`), the container is revealed; otherwise it stays hidden.
+ *
+ * A container can name a group via `data-promo-group` to reveal companion placeholders that
+ * cannot hold the field themselves - e.g. a carousel reveals a promo slide and, elsewhere in
+ * the DOM, that slide's navigation item.
  */
 let promoPlaceholdersWatched = false;
 function watchPromoPlaceholders() {
@@ -2043,27 +2227,31 @@ function watchPromoPlaceholders() {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const container = mf.closest('.promo-placeholder');
     if (!container || container.classList.contains('promo-resolved')) return;
-    if (isPromoVariation(mf)) {
-      container.classList.add('promo-resolved');
-    }
+    if (!isPromoVariation(mf)) return;
+    const { promoGroup } = container.dataset;
+    const group = promoGroup
+      ? document.querySelectorAll(`.promo-placeholder[data-promo-group="${CSS.escape(promoGroup)}"]`)
+      : [container];
+    group.forEach((el) => el.classList.add('promo-resolved'));
   });
 }
 
 /**
- * A promo `mas-field` may resolve to a single sentinel link labelled "modal" whose href is a
- * fragment path (no hash — authors give none). Under a promotion project we open that fragment
- * as a modal and remove the link so it never renders. Non-promo variations resolve empty, so
- * no link exists and nothing opens.
+ * A promo `mas-field` may resolve to a link labelled "modal" whose href is a fragment path
+ * (no hash — authors give none). The field may contain other content and links; only the
+ * sentinel is consumed. Non-promo variations resolve empty, so no link exists and nothing opens.
  */
 let promoModalsWatched = false;
+const promoModalsLoading = new Set();
 function watchPromoModals() {
   if (promoModalsWatched) return;
   promoModalsWatched = true;
   document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD') return;
     if (!isPromoVariation(mf)) return;
-    const anchor = mf.querySelector('a[href]');
-    if (!anchor || anchor.textContent.trim().toLowerCase() !== 'modal') return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'modal');
+    if (!anchor) return;
     let path;
     try {
       ({ pathname: path } = new URL(anchor.href, window.location.href));
@@ -2073,15 +2261,49 @@ function watchPromoModals() {
     const id = path.split('/').filter(Boolean).pop();
     if (!id) return;
     anchor.remove(); // consume: the link only carried the modal path, never render it
-    if (document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    if (promoModalsLoading.has(id) || document.querySelector(`.dialog-modal[id="${id}"]`)) return;
+    promoModalsLoading.add(id);
     try {
       const { miloLibs, codeRoot } = getConfig();
       const { getModal } = await import('../modal/modal.js');
       loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
-      getModal({ id, path });
+      await getModal({ id, path });
     } catch (e) {
       log?.error('Failed to open promo modal', e);
+    } finally {
+      promoModalsLoading.delete(id);
     }
+  });
+}
+
+/**
+ * A countdown-timer field may contain a sentinel link (text "countdown-timer") alongside its
+ * regular content. As with the backend (see adobecom/mas#1279), the sentinel link itself is
+ * what drives the countdown: no separate block variant/class is required. Only the sentinel is
+ * consumed; the rest of the field content is preserved. Page metadata-based CDT behavior is
+ * unaffected elsewhere.
+ */
+let masCountdownTimersWatched = false;
+function watchMasCountdownTimers() {
+  if (masCountdownTimersWatched) return;
+  masCountdownTimersWatched = true;
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
+    if (mf?.tagName !== 'MAS-FIELD') return;
+    const anchor = [...mf.querySelectorAll('a[href]')]
+      .find((a) => a.textContent.trim().toLowerCase() === 'countdown-timer');
+    if (!anchor) return;
+    const { cdtStart, cdtEnd } = mf.querySelector('aem-fragment')?.rawData ?? {};
+    if (!cdtStart || !cdtEnd) return;
+
+    anchor.remove(); // consume: the link only carries the sentinel, never render it
+    const target = mf.parentElement ?? mf;
+    // loadCDT claims the block scope synchronously, so a block that also renders its own
+    // countdown (e.g. a `countdown-timer` marquee) never ends up with two timers.
+    await loadCDT(target, getCdtScope(target).classList, `${cdtStart},${cdtEnd}`);
+    const timer = target.querySelector(':scope > .countdown-timer');
+    // `normalizeBlockFieldWrappers` can replace the authored wrapper we started from while the
+    // timer was loading; re-home the timer next to the field so it stays on the page.
+    if (timer && !timer.isConnected) (mf.parentElement ?? mf).append(timer);
   });
 }
 
@@ -2120,6 +2342,7 @@ export async function initMasField(el) {
   watchMasFieldCtas();
   watchPromoPlaceholders();
   watchPromoModals();
+  watchMasCountdownTimers();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return el;
@@ -2244,6 +2467,13 @@ export default async function init(el) {
 window.addEventListener('hashchange', updateModalState);
 
 window.addEventListener('popstate', updateModalState);
+
+window.addEventListener('milo:modal:loaded', ({ detail }) => {
+  const dialog = detail?.id
+    ? document.getElementById(detail.id)
+    : document.querySelector('.dialog-modal');
+  if (dialog && !isLocaleModal(dialog)) cancelModalRestores();
+});
 
 window.addEventListener('milo:modal:closed', () => {
   updateModalState({ closedByUser: true });

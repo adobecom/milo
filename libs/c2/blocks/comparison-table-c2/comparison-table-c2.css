@@ -175,6 +175,10 @@
 
     &.primary {
       border: var(--s2a-border-width-lg) solid var(--s2a-color-border-knockout);
+
+      .sub-header-item-container > p:not(:has(strong, em, a, picture)) {
+        color: var(--s2a-color-gray-1000);
+      }
     }
 
     > .header-item-collapsible {

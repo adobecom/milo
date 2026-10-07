@@ -247,6 +247,24 @@ function applyManifestStatus(card, manifest) {
   card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
 }
 
+function buildVariantSelect(options) {
+  const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
+  options.forEach((option) => {
+    const attrs = {
+      name: option.name,
+      value: option.value,
+      title: option.title,
+      ...(option.id && { id: option.id }),
+      ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
+    };
+    const optEl = createTag('option', attrs);
+    optEl.textContent = option.label ?? '';
+    if (option.selected) optEl.selected = true;
+    select.append(optEl);
+  });
+  return select;
+}
+
 function buildManifestCard(manifest) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
@@ -262,7 +280,8 @@ function buildManifestCard(manifest) {
   markExpanded(card, manifest.editUrl, false);
 
   if (manifest.malformed) {
-    card.append(header);
+    const body = createTag('div', { class: 'mep-card-body' }, [buildRow('Source', manifest.source)]);
+    card.append(header, body, buildVariantSelect(manifest.options ?? []));
     applyManifestStatus(card, manifest);
     return card;
   }
@@ -275,32 +294,71 @@ function buildManifestCard(manifest) {
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
   rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
   rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
-  if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
-  if (manifest.eventStart && manifest.eventEnd) {
-    const onRow = buildRow('On', manifest.eventStart);
-    onRow.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`, target: '_blank', rel: 'noopener' }, 'Instant'));
-    rows.push(onRow, buildRow('Off', manifest.eventEnd));
+  const summary = createTag('div', { class: 'mep-manifest-summary' });
+  const statusRow = createTag('div', { class: 'mep-manifest-status-row' });
+  const start = Date.parse(manifest.eventStartIso);
+  const end = Date.parse(manifest.eventEndIso);
+  const instant = Date.parse(new URLSearchParams(window.location.search).get('instant'));
+  const now = Number.isFinite(instant) ? instant : Date.now();
+  const hasRange = Number.isFinite(start) && Number.isFinite(end) && end > start;
+  const progress = hasRange ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
+  let state = manifest.isActive === 'active' ? 'active' : 'inactive';
+  if (hasRange && now < start) state = 'inactive';
+  if (hasRange && now > end) state = 'complete';
+  if (manifest.showActive) {
+    const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete' }[state];
+    statusRow.append(createTag('span', { class: `mep-manifest-state ${state}` }, label));
   }
+  if (manifest.eventStart && manifest.eventEnd) {
+    const instantLink = createTag('a', {
+      href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`,
+      target: '_blank',
+      rel: 'noopener',
+    });
+    instantLink.append(
+      'Instant',
+      createTag('span', { class: 'mep-visually-hidden' }, ' preview at start date (opens in a new tab)'),
+    );
+    statusRow.append(instantLink);
+    const endpoints = [
+      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime },
+      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime },
+    ].map(({ label, date, time }) => {
+      const endpoint = createTag('div', { class: 'mep-manifest-endpoint' });
+      const srLabel = createTag('span', { class: 'mep-visually-hidden' }, `${label}:`);
+      const dateEl = createTag('span', { class: 'mep-manifest-date' });
+      dateEl.textContent = date ?? '';
+      const timeEl = createTag('span', { class: 'mep-manifest-time' });
+      timeEl.textContent = time ?? '';
+      endpoint.append(srLabel, dateEl, timeEl);
+      return endpoint;
+    });
+    const roundedProgress = Math.round(progress);
+    const track = createTag('div', {
+      class: 'mep-manifest-track',
+      role: 'progressbar',
+      'aria-label': 'Schedule progress',
+      'aria-valuenow': `${roundedProgress}`,
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuetext': `${roundedProgress}% elapsed`,
+    });
+    summary.append(createTag('div', {
+      class: `mep-manifest-timeline ${state}`,
+      style: `--mep-manifest-progress: ${progress}%`,
+    }, [track, ...endpoints]));
+  }
+  if (statusRow.childElementCount) summary.prepend(statusRow);
 
   rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
-  const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
-  manifest.options.forEach((option) => {
-    const attrs = {
-      name: option.name,
-      value: option.value,
-      title: option.title,
-      ...(option.id && { id: option.id }),
-      ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
-    };
-    const optEl = createTag('option', attrs);
-    optEl.textContent = option.label ?? '';
-    if (option.selected) optEl.selected = true;
-    select.append(optEl);
-  });
+  const select = buildVariantSelect(manifest.options);
 
-  card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
+  card.append(header);
+  const body = createTag('div', { class: 'mep-card-body' }, rows);
+  if (summary.childElementCount) body.prepend(summary);
+  card.append(body, select);
 
   applyManifestStatus(card, manifest);
 

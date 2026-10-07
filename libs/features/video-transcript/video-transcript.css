@@ -81,18 +81,14 @@
       padding-bottom: var(--s2a-spacing-64);
     }
 
-    .content p {
-      @media (width < 1280px) {
-        width: min(330px, calc(100% - 2 * var(--s2a-spacing-40)));
-        margin-inline: auto;
-      }
-    }
-
     .content :is(h1, h2, h3, h4, h5, h6) ~ p {
       max-width: 330px;
       margin-inline: auto;
+    }
 
-      @media (width < 1280px) {
+    @media (width < 1280px) {
+      .content p,
+      .content :is(h1, h2, h3, h4, h5, h6) ~ p {
         width: min(330px, calc(100% - 2 * var(--s2a-spacing-40)));
         margin-inline: auto;
       }
