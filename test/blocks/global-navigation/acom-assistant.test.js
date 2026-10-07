@@ -20,10 +20,10 @@ describe('C1 global navigation authored Assistant entry point', () => {
     };
     window.AdobeMessagingExperienceClient = client;
     document.head.insertAdjacentHTML('beforeend', `
-      <script src="https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient.js"
+      <script src="https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js"
         type="javascript/blocked" data-loaded="true"></script>
       <link rel="stylesheet"
-        href="https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient.css">
+        href="https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css">
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js"
         type="javascript/blocked" data-loaded="true"></script>
     `);
