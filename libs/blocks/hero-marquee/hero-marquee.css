@@ -293,7 +293,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   height: auto;
 }
 
-/* mobile ONLY */
+/* mobile ONLY (breakpoint mirrored in MEDIA_HIDDEN_QUERIES, libs/utils/decorate.js) */
 @media (max-width: 600px) {
   .hero-marquee .con-button {
     display: block;
@@ -371,7 +371,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 }
 
-/* Tablet ONLY */
+/* Tablet ONLY (breakpoint mirrored in MEDIA_HIDDEN_QUERIES, libs/utils/decorate.js) */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
   .hero-marquee.media-cover:not(.bg-bottom-mobile) {
     padding-bottom: 0;

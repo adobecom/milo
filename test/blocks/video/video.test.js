@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect, assert } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
@@ -343,5 +343,77 @@ describe('video uploaded using franklin bot', () => {
     init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
+  });
+});
+
+describe('poster deferral for media-hidden blocks', () => {
+  const decorate = (selector) => {
+    const a = document.querySelector(selector);
+    const parent = a.parentElement;
+    decorateAnchorVideo({ src: a.href, anchorTag: a });
+    return parent.querySelector('video');
+  };
+
+  beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/media-hidden.html' });
+  });
+
+  after(async () => {
+    await setViewport({ width: 800, height: 600 });
+  });
+
+  it('defers the poster when the block hides media at the current viewport', async () => {
+    await setViewport({ width: 375, height: 812 });
+    const video = decorate('.hidden-mobile');
+    expect(video.hasAttribute('poster')).to.be.false;
+    expect(video.dataset.hiddenPoster).to.include('media_hidden.png');
+  });
+
+  it('keeps the poster on blocks without media-hidden classes', async () => {
+    await setViewport({ width: 375, height: 812 });
+    const video = decorate('.always-visible');
+    expect(video.getAttribute('poster')).to.include('media_visible.png');
+    expect(video.dataset.hiddenPoster).to.be.undefined;
+  });
+
+  it('keeps the poster on background-row videos and defers the foreground', async () => {
+    await setViewport({ width: 375, height: 812 });
+    const bg = decorate('.background-video');
+    const fg = decorate('.foreground-video');
+    expect(bg.getAttribute('poster')).to.include('media_bg.png');
+    expect(bg.dataset.hiddenPoster).to.be.undefined;
+    expect(fg.hasAttribute('poster')).to.be.false;
+    expect(fg.dataset.hiddenPoster).to.include('media_fg.png');
+  });
+
+  it('keeps the background-row poster after block init', async () => {
+    await setViewport({ width: 375, height: 812 });
+    const block = document.querySelector('.background-video').closest('.hero-marquee');
+    block.classList.add('con-block');
+    block.firstElementChild.classList.add('background');
+    block.append(document.createElement('div'));
+    const bg = decorate('.background-video');
+    expect(bg.getAttribute('poster')).to.include('media_bg.png');
+    const noBg = document.querySelector('.hidden-mobile').closest('.hero-marquee');
+    noBg.classList.add('con-block');
+    noBg.append(document.createElement('div'));
+    expect(decorate('.hidden-mobile').dataset.hiddenPoster).to.include('media_hidden.png');
+  });
+
+  it('keeps the poster when the hidden viewport does not match', async () => {
+    await setViewport({ width: 1440, height: 900 });
+    const video = decorate('.hidden-mobile');
+    expect(video.getAttribute('poster')).to.include('media_hidden.png');
+    expect(video.dataset.hiddenPoster).to.be.undefined;
+  });
+
+  it('restores the deferred poster once the video becomes visible', async () => {
+    await setViewport({ width: 375, height: 812 });
+    const video = decorate('.hidden-mobile');
+    expect(video.hasAttribute('poster')).to.be.false;
+    document.querySelector('.media-hidden-mobile').classList.remove('hide-video');
+    await waitFor(() => video.hasAttribute('poster'));
+    expect(video.getAttribute('poster')).to.include('media_hidden.png');
+    expect(video.dataset.hiddenPoster).to.be.undefined;
   });
 });
