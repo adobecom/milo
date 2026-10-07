@@ -227,11 +227,8 @@
 
   .article-byline .article-byline-sharing {
     flex: 0 1 auto;
+    gap: 8px;
     margin-top: 0;
-  }
-
-  .article-byline .article-byline-sharing span:not(:last-child) {
-    margin-right: 8px;
   }
 
   .article-feature-video .milo-video,

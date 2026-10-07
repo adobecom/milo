@@ -214,5 +214,29 @@ describe('article author spacing', () => {
         expect(info.bottom).to.be.greaterThan(image.top);
       }
     });
+
+    it(`keeps an 8px gap between social icons in ${direction} on tablet and desktop`, async () => {
+      document.body.innerHTML = `
+        <div class="article-header" dir="${direction}">
+          <div class="article-byline">
+            <div class="article-byline-sharing">
+              ${['Twitter', 'LinkedIn', 'Facebook', 'Link'].map((name) => `
+                <span><a aria-label="${name}"><svg></svg></a></span>`).join('')}
+            </div>
+          </div>
+        </div>`;
+
+      for (const width of [600, 1200]) {
+        await setViewport({ width, height: 800 });
+        const icons = [...document.querySelectorAll('.article-byline-sharing svg')];
+        icons.slice(1).forEach((icon, index) => {
+          const previous = icons[index].getBoundingClientRect();
+          const current = icon.getBoundingClientRect();
+          const gap = direction === 'rtl' ? previous.left - current.right : current.left - previous.right;
+
+          expect(gap).to.be.closeTo(8, 0.1);
+        });
+      }
+    });
   });
 });
