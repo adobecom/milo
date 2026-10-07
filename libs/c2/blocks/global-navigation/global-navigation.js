@@ -157,8 +157,7 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
-
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
