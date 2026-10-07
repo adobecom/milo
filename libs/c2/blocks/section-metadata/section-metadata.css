@@ -479,10 +479,28 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
 /* mobile only */
 @media (width < 768px) {
-  .section.bento.stack-mobile:where(.bento-stack-ready) {
+  .section.bento.stack-mobile {
     display: flex;
     flex-direction: column;
-    gap: var(--title-card-gap);
+    gap: var(--title-card-gap, 24px);
+  }
+
+  .section.bento.stack-mobile > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
+
+  .section.bento.stack-mobile:where(.bento-stack-ready) {
     padding-bottom: calc(var(--offset-adjuster) + var(--phone-vh) * 12);
     scroll-margin-top: var(--stack-pin-top);
 
@@ -490,9 +508,6 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
     view-timeline-name: --section-vt, --stack-title-vt;
     view-timeline-axis: block;
-    animation: stack-section-exit linear both;
-    animation-timeline: --section-vt;
-    animation-range: exit;
 
     &:not(:has(> .rich-content)) {
       --card-front-y: var(--stack-pin-top);
@@ -509,22 +524,15 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       --stack-depth-mask-opacity: calc(var(--depth) * 0.15);
 
       overflow: visible;
-      position: sticky;
       top: var(--card-front-y);
       width: 100%;
       max-width: 100%;
-      height: var(--card-height, auto);
       z-index: calc(var(--card-idx) + 1);
-      animation: bento-mobile-stack-slides var(--parallax-easing) both;
-      animation-timeline: view();
-      animation-range: entry exit;
     }
 
     > .explore-card:nth-last-child(1 of .explore-card) {
       --stack-scale: 1;
       --stack-depth-mask-opacity: 0;
-
-      animation-name: bento-mobile-stack-slides-front;
     }
 
     > .explore-card .explore-card-container {
@@ -532,11 +540,6 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       height: 100%;
       border-radius: inherit;
       overflow: clip;
-      animation:
-        bento-items-shrink var(--parallax-easing) both,
-        bento-depth-mask-drive var(--parallax-easing) both;
-      animation-timeline: view(), view();
-      animation-range: entry exit, entry exit;
     }
 
     > .explore-card:not(.dark):not(.scrim) .explore-card-background {
@@ -547,19 +550,51 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       );
     }
 
-    > .explore-card .explore-card-content::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      border-radius: inherit;
-      pointer-events: none;
-      background: var(--s2a-color-gray-1000);
-      opacity: calc(var(--stack-depth-mask-opacity) * var(--stack-depth-mask-t));
-    }
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        /* Share the static defaults unless the pinned cards fit. */
+        &:where(:not(.bento-stack-static)) {
+          gap: var(--title-card-gap);
+          animation: stack-section-exit linear both;
+          animation-timeline: --section-vt;
+          animation-range: exit;
 
-    > .explore-card:nth-last-child(1 of .explore-card) .explore-card-content::after {
-      content: none;
+          > .explore-card {
+            position: sticky;
+            height: var(--card-height, auto);
+            animation: bento-mobile-stack-slides var(--parallax-easing) both;
+            animation-timeline: view();
+            animation-range: entry exit;
+          }
+
+          > .explore-card:nth-last-child(1 of .explore-card) {
+            animation-name: bento-mobile-stack-slides-front;
+          }
+
+          > .explore-card .explore-card-container {
+            animation:
+              bento-items-shrink var(--parallax-easing) both,
+              bento-depth-mask-drive var(--parallax-easing) both;
+            animation-timeline: view(), view();
+            animation-range: entry exit, entry exit;
+          }
+
+          > .explore-card .explore-card-content::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            border-radius: inherit;
+            pointer-events: none;
+            background: var(--s2a-color-gray-1000);
+            opacity: calc(var(--stack-depth-mask-opacity) * var(--stack-depth-mask-t));
+          }
+
+          > .explore-card:nth-last-child(1 of .explore-card) .explore-card-content::after {
+            content: none;
+          }
+        }
+      }
     }
   }
 
@@ -703,84 +738,4 @@ body:has(header.local-nav) .section.bento.stack-mobile {
         inset-inline-end: var(--grid-padding);
     }
   }
-}
-
-@supports not (animation-timeline: view()) {
-  @media (width < 768px) {
-    .section.bento.stack-mobile {
-      display: flex;
-      flex-direction: column;
-      gap: var(--title-card-gap, 24px);
-    }
-
-    .section.bento.stack-mobile > .explore-card {
-      position: static;
-      height: auto;
-      transform: none;
-      opacity: 1;
-      animation: none;
-    }
-
-    .section.bento.stack-mobile > .explore-card .explore-card-container {
-      transform: none;
-      animation: none;
-    }
-
-    .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) and (width < 768px) {
-  .section.bento.stack-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: var(--title-card-gap, 24px);
-  }
-
-  .section.bento.stack-mobile > .explore-card {
-    position: static;
-    height: auto;
-    transform: none;
-    opacity: 1;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile > .explore-card .explore-card-container {
-    transform: none;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
-}
-
-/* Cards too tall to fit when pinned (set in bento-stack.js): use the static fallback layout.
-   4-class selectors outrank the animated rule's zero-specificity :where(.bento-stack-ready). */
-@media (width < 768px) {
-  .section.bento.stack-mobile.bento-stack-static {
-    display: flex;
-    flex-direction: column;
-    gap: var(--title-card-gap, 24px);
-  }
-
-  .section.bento.stack-mobile.bento-stack-static > .explore-card {
-    position: static;
-    height: auto;
-    transform: none;
-    opacity: 1;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile.bento-stack-static > .explore-card .explore-card-container {
-    transform: none;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile.bento-stack-static > .rich-content {
-    position: static;
-    transform: none;
-    opacity: 1;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile.bento-stack-static > .explore-card .explore-card-content::after { content: none; }
 }
