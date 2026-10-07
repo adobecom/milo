@@ -11,6 +11,8 @@ import init, {
   emptyResultsMarkup,
   filterBarLabels,
   resetParams,
+  pageStep,
+  scrollEdges,
   defaultParams,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
@@ -396,7 +398,7 @@ describe('merch-card-collection autoblock', () => {
   });
 
   describe('productPricingFilterGroups', () => {
-    it('maps hierarchy to a single-select Category group and tagFilters to types groups', () => {
+    it('maps hierarchy to a Category group and tagFilters to an optional types group', () => {
       const groups = productPricingFilterGroups({
         placeholders: { filtersCategory: 'Category' },
         hierarchy: [{ label: 'Photo', queryLabel: 'photo' }, { label: 'Video' }],
@@ -411,14 +413,14 @@ describe('merch-card-collection autoblock', () => {
       expect(groups[0]).to.deep.equal({
         title: 'Category',
         deeplink: 'filter',
-        multi: false,
+        optional: false,
         category: true,
         options: [{ value: 'photo', label: 'Photo' }, { value: 'video', label: 'Video' }],
       });
       expect(groups[1]).to.deep.equal({
         title: 'Type',
         deeplink: 'types',
-        multi: true,
+        optional: true,
         options: [{ value: 'desktop', label: 'Desktop' }],
       });
     });
@@ -447,33 +449,32 @@ describe('merch-card-collection autoblock', () => {
       expect(new URLSearchParams(window.location.hash.slice(1)).get('pricing')).to.equal('team');
     });
 
-    it('adds and removes multi-select types', () => {
+    it('keeps types to one value and clears it when the active one is picked again', () => {
+      const types = () => new URLSearchParams(window.location.hash.slice(1)).get('types');
       toggleFilterHash('types', 'desktop', true);
       toggleFilterHash('types', 'mobile', true);
-      expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('desktop,mobile');
-      toggleFilterHash('types', 'desktop', true);
-      expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('mobile');
+      expect(types()).to.equal('mobile');
       toggleFilterHash('types', 'mobile', true);
-      expect(new URLSearchParams(window.location.hash.slice(1)).has('types')).to.equal(false);
+      expect(types()).to.equal(null);
     });
 
     it('reflects hash state onto pill inputs', () => {
       const root = document.createElement('div');
       root.innerHTML = `
-        <label class="product-pricing-pill"><input type="radio" name="a-filter" value="photo" data-deeplink="filter" data-multi="false"></label>
-        <label class="product-pricing-pill"><input type="radio" name="a-filter" value="video" data-deeplink="filter" data-multi="false"></label>
-        <label class="product-pricing-pill"><input type="checkbox" name="a-types" value="desktop" data-deeplink="types" data-multi="true"></label>
-        <label class="product-pricing-pill"><input type="checkbox" name="a-types" value="mobile" data-deeplink="types" data-multi="true"></label>`;
-      syncPills(new URLSearchParams('filter=photo&types=desktop,web'), root);
+        <label class="product-pricing-pill"><input type="radio" name="a-filter" value="photo" data-deeplink="filter" data-optional="false"></label>
+        <label class="product-pricing-pill"><input type="radio" name="a-filter" value="video" data-deeplink="filter" data-optional="false"></label>
+        <label class="product-pricing-pill"><input type="checkbox" name="a-types" value="desktop" data-deeplink="types" data-optional="true"></label>
+        <label class="product-pricing-pill"><input type="checkbox" name="a-types" value="mobile" data-deeplink="types" data-optional="true"></label>`;
+      syncPills(new URLSearchParams('filter=photo&types=desktop'), root);
       const checked = [...root.querySelectorAll('.product-pricing-pill input')].map((i) => i.checked);
       expect(checked).to.deep.equal([true, false, true, false]);
     });
 
     it('counts every selected pill, including the default category', () => {
       const groups = [
-        { deeplink: 'filter', multi: false },
-        { deeplink: 'types', multi: true },
-        { deeplink: 'pricing', multi: false },
+        { deeplink: 'filter', optional: false },
+        { deeplink: 'types', optional: true },
+        { deeplink: 'pricing', optional: false },
       ];
       const count = (hash) => countApplied(new URLSearchParams(hash), groups);
       expect(count('')).to.equal(0);
@@ -481,18 +482,18 @@ describe('merch-card-collection autoblock', () => {
       expect(count('filter=all')).to.equal(0);
       expect(count('filter=featured')).to.equal(1);
       expect(count('filter=featured&pricing=individuals')).to.equal(2);
-      expect(count('filter=photo&types=desktop,web&pricing=business')).to.equal(4);
+      expect(count('filter=photo&types=desktop&pricing=business')).to.equal(3);
     });
 
     it('counts a tag group the block has never heard of', () => {
       const params = new URLSearchParams('audience=teams');
-      expect(countApplied(params, [{ deeplink: 'audience', multi: false }])).to.equal(1);
+      expect(countApplied(params, [{ deeplink: 'audience', optional: false }])).to.equal(1);
     });
 
-    it('shows category and exclusive tag groups in the bar, not multi groups', () => {
-      const category = { deeplink: 'filter', multi: false, category: true };
-      const types = { deeplink: 'types', multi: true };
-      const pricing = { deeplink: 'pricing', multi: false };
+    it('shows category and required tag groups in the bar, not optional ones', () => {
+      const category = { deeplink: 'filter', optional: false, category: true };
+      const types = { deeplink: 'types', optional: true };
+      const pricing = { deeplink: 'pricing', optional: false };
       expect(barGroups([category, types, pricing])).to.deep.equal([category, pricing]);
       expect(barGroups([])).to.deep.equal([]);
     });
@@ -512,7 +513,7 @@ describe('merch-card-collection autoblock', () => {
     it('derives every displayed label from the filter set and result count', () => {
       const groups = [{
         deeplink: 'filter',
-        multi: false,
+        optional: false,
         category: true,
         options: [{ value: 'featured', label: 'Featured' }],
       }];
@@ -545,36 +546,61 @@ describe('merch-card-collection autoblock', () => {
 
     it('defaults every single-select group to its first option, and types to none', () => {
       const groups = [
-        { deeplink: 'filter', multi: false, options: [{ value: 'featured' }, { value: 'photo' }] },
-        { deeplink: 'pricing', multi: false, options: [{ value: 'individuals' }, { value: 'business' }] },
-        { deeplink: 'types', multi: true, options: [{ value: 'desktop' }] },
+        { deeplink: 'filter', optional: false, options: [{ value: 'featured' }, { value: 'photo' }] },
+        { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'business' }] },
+        { deeplink: 'types', optional: true, options: [{ value: 'desktop' }] },
       ];
       expect(defaultParams(groups)).to.deep.equal([
         ['filter', 'featured'],
         ['pricing', 'individuals'],
       ]);
       // An authored group with no options contributes nothing.
-      expect(defaultParams([{ deeplink: 'filter', multi: false, options: [] }])).to.deep.equal([]);
+      expect(defaultParams([{ deeplink: 'filter', optional: false, options: [] }])).to.deep.equal([]);
       expect(defaultParams([])).to.deep.equal([]);
     });
 
-    it('resets every authored group and restores the defaults', () => {
+    it('resets every authored group, restores the defaults, and keeps search', () => {
       const groups = [
-        { deeplink: 'filter', multi: false, options: [{ value: 'featured' }] },
-        { deeplink: 'pricing', multi: false, options: [{ value: 'individuals' }] },
-        { deeplink: 'types', multi: true, options: [{ value: 'desktop' }] },
+        { deeplink: 'filter', optional: false, options: [{ value: 'featured' }] },
+        { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }] },
+        { deeplink: 'types', optional: true, options: [{ value: 'desktop' }] },
       ];
-      const active = new URLSearchParams('filter=photo&pricing=business&types=desktop,web&search=acrobat&keep=me');
+      const active = new URLSearchParams('filter=photo&pricing=business&types=desktop&search=acrobat&keep=me');
       const params = resetParams(active, groups);
       // Category and Pricing come back at their defaults, Types clears.
       expect(params.get('filter')).to.equal('featured');
       expect(params.get('pricing')).to.equal('individuals');
       expect(params.get('types')).to.equal(null);
-      expect(params.get('search')).to.equal(null);
+      // Search is independent of Reset (MWPW-205571).
+      expect(params.get('search')).to.equal('acrobat');
       // Params the block does not own are left alone.
       expect(params.get('keep')).to.equal('me');
       // The given filter set is not mutated.
-      expect(active.get('types')).to.equal('desktop,web');
+      expect(active.get('types')).to.equal('desktop');
+    });
+  });
+
+  describe('pageStep', () => {
+    it('scrolls the row minus both fades, at least half the row', () => {
+      expect(pageStep(375, 80)).to.equal(215);
+      expect(pageStep(200, 80)).to.equal(100);
+    });
+  });
+
+  describe('scrollEdges', () => {
+    const edges = (scrollLeft, scrollWidth, clientWidth) => scrollEdges(
+      { scrollLeft, scrollWidth, clientWidth },
+    );
+    it('shows only the edges with content past them', () => {
+      expect(edges(0, 800, 300)).to.deep.equal({ prev: false, next: true });
+      expect(edges(200, 800, 300)).to.deep.equal({ prev: true, next: true });
+      expect(edges(500, 800, 300)).to.deep.equal({ prev: true, next: false });
+    });
+
+    it('shows neither edge when the row fits, even after a scroll left it offset', () => {
+      expect(edges(0, 799, 799)).to.deep.equal({ prev: false, next: false });
+      // Subpixel widths can leave a 1px gap.
+      expect(edges(0, 800.5, 799.6)).to.deep.equal({ prev: false, next: false });
     });
   });
 
@@ -624,7 +650,7 @@ describe('merch-card-collection autoblock', () => {
       expect(container.querySelector('.product-pricing-drawer')).to.exist;
       // Both seeded pills count toward the applied total.
       expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (2)');
-      // Multi groups are drawer-only.
+      // Optional groups are drawer-only.
       const barGroupLabels = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-filter-group')]
         .map((g) => g.getAttribute('aria-label'));
       expect(barGroupLabels).to.deep.equal(['Category', 'Pricing']);
@@ -642,6 +668,48 @@ describe('merch-card-collection autoblock', () => {
       const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
         .map((i) => i.value).sort();
       expect(checked).to.deep.equal(['individuals', 'photo']);
+    });
+
+    it('pages the collection 12 cards at a time', () => {
+      const { collection } = mount();
+      expect(collection.limit).to.equal(12);
+    });
+
+    it('collapses and expands a drawer section from its toggle', () => {
+      const { container } = mount();
+      const toggle = container.querySelector('.product-pricing-group-toggle');
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('false');
+      toggle.click();
+      expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('flags the edge buttons from the row overflow', async () => {
+      const { container } = mount();
+      const pills = container.querySelector('.product-pricing-filter-pills');
+      const [prev, next] = ['prev', 'next'].map((d) => container.querySelector(`.product-pricing-filter-scroll-${d}`));
+      pills.style.cssText = 'display:flex;overflow-x:auto;width:100px;scroll-behavior:auto';
+      await delay(50);
+      expect([prev.hasAttribute('data-active'), next.hasAttribute('data-active')]).to.deep.equal([false, true]);
+      pills.scrollLeft = 40;
+      await delay(50);
+      expect(prev.hasAttribute('data-active')).to.be.true;
+      // Widening until it fits clears both, which the CSS timeline could not.
+      pills.style.width = '2000px';
+      await delay(50);
+      expect([prev.hasAttribute('data-active'), next.hasAttribute('data-active')]).to.deep.equal([false, false]);
+    });
+
+    it('pages the pill row from the edge buttons', () => {
+      const { container } = mount();
+      const pills = container.querySelector('.product-pricing-filter-pills');
+      const scrollBy = sinon.stub(pills, 'scrollBy');
+      container.querySelector('.product-pricing-filter-scroll-next').click();
+      container.querySelector('.product-pricing-filter-scroll-prev').click();
+      const [next, prev] = scrollBy.args.map(([opts]) => opts.left);
+      expect(next).to.equal(-prev);
+      expect(scrollBy.calledTwice).to.be.true;
     });
 
     it('mounts once per collection', () => {
@@ -684,7 +752,7 @@ describe('merch-card-collection autoblock', () => {
       expect(drawer.open).to.be.false;
     });
 
-    it('clears filters and search on Reset', () => {
+    it('restores the default filters on Reset and keeps search', () => {
       const { container } = mount();
       window.location.hash = 'filter=photo&pricing=business&types=desktop&search=acrobat';
       container.querySelector('.product-pricing-drawer-reset').click();
@@ -692,7 +760,7 @@ describe('merch-card-collection autoblock', () => {
       expect(params.get('filter')).to.equal('featured');
       expect(params.get('pricing')).to.equal('individuals');
       expect(params.get('types')).to.equal(null);
-      expect(params.get('search')).to.equal(null);
+      expect(params.get('search')).to.equal('acrobat');
     });
 
     it('updates counts and the empty state from the collection result count', () => {
