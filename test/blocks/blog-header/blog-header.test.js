@@ -231,7 +231,7 @@ describe('blog-header decoration', () => {
     const paragraph = cell.firstElementChild;
     await init(block);
     expect(block.querySelector('.blog-header-summary p')).to.equal(paragraph);
-    expect(block.querySelector('.blog-header-summary p p')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-summary p p').length).to.equal(0);
   });
 
   it('handles a title-only block without a summary row', async () => {
@@ -239,7 +239,7 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock({ authors: 0, summary: false });
     await init(block);
     expect(block.querySelector('.blog-header-title h1')).to.exist;
-    expect(block.querySelector('.blog-header-summary')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-summary').length).to.equal(0);
     expect(block.querySelector('.blog-header-share')).to.exist;
   });
 
@@ -291,7 +291,7 @@ describe('blog-header decoration', () => {
     const authors = block.querySelectorAll('.blog-header-author');
     expect(authors[1].querySelector('.blog-header-author-name').textContent)
       .to.equal('Rachel Thornton');
-    expect(authors[1].querySelector('.blog-header-author-meta')).to.equal(null);
+    expect(authors[1].querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(authors[0].querySelector('.blog-header-author-meta').textContent)
       .to.equal('Author Title | Company');
     expect(fetchStub.getCalls().filter((c) => c.args[0].includes('.plain.html')).length).to.equal(1);
@@ -318,10 +318,38 @@ describe('blog-header decoration', () => {
     link.textContent = '';
     cell.replaceChildren(link);
     await init(block);
-    expect(block.querySelector('a.blog-header-author-name')).to.equal(null);
     await waitFor(() => block.querySelector('.blog-header-author-name').textContent === 'Profile Name');
     expect(block.querySelector('a.blog-header-author-name')).to.exist;
     expect(block.querySelector('.blog-header-author-avatar picture')).to.exist;
+  });
+
+  it('defers the interactive link until the profile name arrives', async () => {
+    let release;
+    const pending = new Promise((resolve) => { release = resolve; });
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('blog-header.svg')) {
+        return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
+      }
+      if (url.includes('.plain.html')) {
+        return pending.then(() => ({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(profileHtml),
+        }));
+      }
+      return Promise.resolve({ ok: false, status: 404, text: () => Promise.resolve('') });
+    });
+    const { block } = buildBlock({ metadata: false });
+    const cell = block.children[2].firstElementChild;
+    const link = cell.querySelector('a');
+    link.textContent = '';
+    cell.replaceChildren(link);
+    await init(block);
+    expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
+    expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('');
+    release();
+    await waitFor(() => !!block.querySelector('a.blog-header-author-name'));
+    expect(block.querySelector('.blog-header-author-name').textContent).to.equal('Profile Name');
   });
 
   it('never exposes an unnamed author link when the profile is unavailable', async () => {
@@ -333,7 +361,7 @@ describe('blog-header decoration', () => {
     cell.replaceChildren(link);
     await init(block);
     await waitFor(() => window.lana.log.called);
-    expect(block.querySelector('a.blog-header-author-name')).to.equal(null);
+    expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('');
   });
 
@@ -413,7 +441,7 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock({ metadata: false });
     await init(block);
     await waitFor(() => block.querySelector('.blog-header-author-avatar picture'));
-    expect(block.querySelector('.blog-header-author-meta')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(window.lana.log.called).to.equal(false);
   });
 
@@ -423,7 +451,7 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock({ picture: true, metadata: false });
     await init(block);
     expect(block.querySelector('.blog-header-author-name').tagName).to.equal('SPAN');
-    expect(block.querySelector('.blog-header-author-meta')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
   });
 
@@ -431,7 +459,7 @@ describe('blog-header decoration', () => {
     fetchStub = mockFetch();
     const { block } = buildBlock({ link: false, metadata: false });
     await init(block);
-    expect(block.querySelector('.blog-header-author-meta')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
   });
 
@@ -452,7 +480,7 @@ describe('blog-header decoration', () => {
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-author-name').textContent)
       .to.equal(new URL(profilePath, window.location.origin).href);
-    expect(block.querySelector('.blog-header-author-meta')).to.equal(null);
+    expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
       .to.contain('author-placeholder.png');
   });
@@ -505,7 +533,7 @@ describe('blog-header decoration', () => {
     fetchStub = mockFetch();
     const { block } = buildBlock();
     await init(block);
-    expect(block.querySelector('a.blog-header-author-name')).to.equal(null);
+    expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('Rachel Thornton');
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
   });
@@ -570,13 +598,13 @@ describe('blog-header share modal', () => {
     clipboardStub.value(undefined);
     const dialog = await openShareModal();
     expect(dialog.querySelectorAll('.blog-share-action').length).to.equal(3);
-    expect(dialog.querySelector('.blog-share-copy')).to.equal(null);
+    expect(dialog.querySelectorAll('.blog-share-copy').length).to.equal(0);
   });
 
   it('reuses the same dialog for concurrent and repeated opens', async () => {
     const [first, second] = await Promise.all([openShareModal(), openShareModal()]);
-    expect(first).to.equal(second);
-    expect(await openShareModal()).to.equal(first);
+    expect(first === second).to.equal(true);
+    expect(await openShareModal() === first).to.equal(true);
     expect(document.querySelectorAll('#blog-share-modal').length).to.equal(1);
   });
 
@@ -588,12 +616,12 @@ describe('blog-header share modal', () => {
     const dialog = await openShareModal(trigger);
     const focused = document.activeElement;
     window.dispatchEvent(new Event('milo:modal:closed'));
-    expect(document.activeElement).to.equal(focused);
+    expect(document.activeElement === focused).to.equal(true);
     await closeModal(dialog);
-    expect(document.activeElement).to.equal(trigger);
+    expect(document.activeElement === trigger).to.equal(true);
     expect(trigger.hasAttribute('data-is-modal-trigger')).to.equal(false);
     const reopened = await openShareModal(trigger);
-    expect(reopened).not.to.equal(dialog);
+    expect(reopened === dialog).to.equal(false);
   });
 
   it('copies the share URL and clears localized success feedback', async () => {
