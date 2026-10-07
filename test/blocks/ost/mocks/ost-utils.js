@@ -156,7 +156,6 @@ const getFederatedContentRoot = () => '';
 const getFedsPlaceholderConfig = () => ({});
 const shouldBlockFreeTrialLinks = () => false;
 const isAupEnabled = () => false;
-const isMasGeoDetectionEnabled = () => false;
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
 
@@ -212,7 +211,6 @@ export {
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
   isAupEnabled,
-  isMasGeoDetectionEnabled,
   decorateLinksAsync,
   loadBlock,
 };
