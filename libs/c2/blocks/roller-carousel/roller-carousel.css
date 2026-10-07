@@ -364,6 +364,7 @@ body:has(header.local-nav) .roller-carousel {
   .section:has(+ .rounded-corners) > .roller-carousel,
   .section:has(+ .rounded-corners-top) > .roller-carousel {
     margin-bottom: calc(-1 * var(--s2a-border-radius-xl));
+    padding-bottom: var(--s2a-border-radius-xl);
   }
 }
 
@@ -396,4 +397,6 @@ body:has(header.local-nav) .roller-carousel {
 .section:has(+ .rounded-corners) > .roller-carousel,
 .section:has(+ .rounded-corners-top) > .roller-carousel {
   margin-bottom: calc(-1 * var(--s2a-border-radius-22));
+  padding-bottom: var(--s2a-border-radius-22);
 }
+
