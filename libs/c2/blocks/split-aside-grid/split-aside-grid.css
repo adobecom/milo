@@ -426,7 +426,7 @@
 
   .split-aside-grid-toggle {
     display: inline-flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--grid-item-header-gap);
     flex-shrink: 0;
     background: transparent;
