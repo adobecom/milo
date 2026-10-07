@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, loadStyles, viewports } from './test-utilities.js';
-import { waitForRemoval } from '../../helpers/waitfor.js';
+import { delay, waitFor, waitForRemoval } from '../../helpers/waitfor.js';
 import { getConfig, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import {
   AUP_SDK_READY_EVENT, fetchCheckoutLinkConfigs, getAupModalHashCleanup,
@@ -461,6 +461,121 @@ describe('AUP', () => {
       expect(dialog() === null).to.be.true;
       expect(window.location.href).to.equal(originalUrl);
     });
+  });
+
+  describe('close analytics', () => {
+    /* eslint-disable no-underscore-dangle */
+    let host;
+    let previousSatellite;
+    const trackedNames = () => window._satellite.track.args
+      .map(([, payload]) => payload?.xdm?.web?.webInteraction?.name);
+    const open = async ({ tag, hash = true } = {}) => {
+      if (hash) {
+        const { element: cta, action } = await createAction();
+        action.aupHandler({ type: 'open', element: cta });
+      }
+      const element = createElement(tag);
+      await host.showDialog(element, { title: 'Workflow' }, sinon.spy());
+      return element;
+    };
+    const expectEvent = async (name) => {
+      await waitFor(() => window._satellite.track.called, 1000, 10);
+      expect(trackedNames()).to.deep.equal([name]);
+      const [type, payload] = window._satellite.track.firstCall.args;
+      expect(type).to.equal('event');
+      expect(payload.xdm.eventType).to.equal('web.webinteraction.linkClicks');
+      expect(payload.xdm.web.webInteraction.linkClicks).to.deep.equal({ value: 1 });
+    };
+    const expectNoEvent = async () => {
+      await delay(100);
+      expect(window._satellite.track.called).to.be.false;
+    };
+
+    beforeEach(async () => {
+      host = await initializeHost();
+      previousSatellite = window._satellite;
+      window._satellite = { track: sinon.spy() };
+      const url = new URL(originalUrl);
+      url.hash = '';
+      window.history.replaceState(null, '', url);
+    });
+
+    afterEach(() => {
+      window._satellite = previousSatellite;
+    });
+
+    ['div', 'iframe'].forEach((tag) => {
+      it(`${tag} reports buttonClose when the workflow dismisses itself`, async () => {
+        const element = await open({ tag });
+        element.dispatchEvent(new Event('close'));
+        await waitForRemoval('#aup-workflow-dialog');
+        await expectEvent('buy-test:modalClose:buttonClose');
+      });
+
+      it(`${tag} reports buttonClose when the workflow cancels before closing`, async () => {
+        const element = await open({ tag });
+        element.dispatchEvent(new Event('cancel'));
+        element.dispatchEvent(new Event('close'));
+        await waitForRemoval('#aup-workflow-dialog');
+        await expectEvent('buy-test:modalClose:buttonClose');
+      });
+    });
+
+    it('falls back to the aup-workflow name without a merch modal hash', async () => {
+      const element = await open({ hash: false });
+      element.dispatchEvent(new Event('close'));
+      await waitForRemoval('#aup-workflow-dialog');
+      await expectEvent('aup-workflow:modalClose:buttonClose');
+    });
+
+    it('does not report a close after the workflow succeeds', async () => {
+      const element = await open();
+      element.dispatchEvent(new Event('success'));
+      element.dispatchEvent(new Event('close'));
+      await waitForRemoval('#aup-workflow-dialog');
+      await expectNoEvent();
+    });
+
+    it('does not report a close caused by Back navigation', async () => {
+      await open();
+      const navigated = new Promise((resolve) => { listen('hashchange', resolve, { once: true }); });
+      window.history.back();
+      await navigated;
+      await waitForRemoval('#aup-workflow-dialog');
+      await expectNoEvent();
+    });
+
+    it('leaves Milo modal closes to their own daa-ll tracking', async () => {
+      await open();
+      const active = dialog();
+      expect(active.querySelector('.dialog-close').getAttribute('daa-ll'))
+        .to.equal('buy-test:modalClose:buttonClose');
+      expect(document.querySelector('#aup-workflow-dialog + .modal-curtain').getAttribute('daa-ll'))
+        .to.equal('buy-test:modalClose:curtainClose');
+      for (const close of [
+        () => sendKeys({ press: 'Escape' }),
+        () => document.querySelector('#aup-workflow-dialog + .modal-curtain').click(),
+        () => dialog().querySelector('.dialog-close').click(),
+      ]) {
+        await close();
+        await waitForRemoval('#aup-workflow-dialog');
+        await expectNoEvent();
+        await open();
+      }
+      await closeModal(dialog());
+    });
+
+    it('defers the close event until Launch is ready', async () => {
+      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
+      window._satellite = undefined;
+      await sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
+      window._satellite = { track: sinon.spy() };
+      window.dispatchEvent(new Event('alloy_sendEvent'));
+      window.dispatchEvent(new Event('alloy_sendEvent'));
+      expect(trackedNames().filter((name) => name === 'buy-now:modalClose:buttonClose'))
+        .to.have.lengthOf(1);
+    });
+    /* eslint-enable no-underscore-dangle */
   });
 
   describe('Milo modal interoperability', () => {
