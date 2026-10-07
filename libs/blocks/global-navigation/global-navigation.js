@@ -126,6 +126,12 @@ export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
+// Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
+export async function sendAupDialogCloseAnalytics(modalHash, source) {
+  const { sendAnalytics } = await import('../../martech/helpers.js');
+  sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
+}
+
 function getHelpChildren() {
   const { unav } = getConfig();
   return unav?.unavHelpChildren || [
@@ -1180,14 +1186,17 @@ class Gnav {
         let finishLoading;
         let onNavigation;
         let onWorkflowClose;
+        let onWorkflowSuccess;
         let requestClose;
         let closing;
         let settled = false;
         let workflowClosed = false;
+        let workflowSucceeded = false;
         const cleanup = () => {
           controller.abort();
           finishLoading?.();
           element.removeEventListener('close', onWorkflowClose);
+          element.removeEventListener('success', onWorkflowSuccess);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
           if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
@@ -1210,7 +1219,15 @@ class Gnav {
           else finishWorkflow();
           return closing;
         };
+        onWorkflowSuccess = () => {
+          workflowSucceeded = true;
+        };
         onWorkflowClose = () => {
+          // Closes started by the Milo modal (button, curtain, Escape) carry their own daa-ll
+          // and settle first; an unsettled close from the workflow is the user dismissing it.
+          if (dialog && !settled && !closing && !workflowSucceeded) {
+            sendAupDialogCloseAnalytics(modalHash, 'buttonClose');
+          }
           workflowClosed = true;
           requestClose();
         };
@@ -1218,6 +1235,7 @@ class Gnav {
           if (modalHash && window.location.hash !== modalHash) requestClose();
         };
         element.addEventListener('close', onWorkflowClose);
+        element.addEventListener('success', onWorkflowSuccess);
         try {
           const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
           const [{ getModal, closeModal }] = await Promise.all([

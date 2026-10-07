@@ -44,6 +44,10 @@
   height: 100%;
 }
 
+.rm-foreground {
+  display: none;
+}
+
 .rm-background img,
 .rm-background video {
   width: 100%;
@@ -78,6 +82,14 @@
 
 [dir="rtl"] .rm-content {
   margin-inline-start: auto;
+}
+
+.router-marquee.light .rm-overlay {
+  background: none;
+}
+
+.router-marquee.light .rm-content {
+  color: var(--s2a-color-gray-1000);
 }
 
 .rm-eyebrow {
@@ -278,7 +290,7 @@
     gap: var(--s2a-spacing-8);
   }
 
-  .rm-ctas .con-button:not(.rm-cta-primary) {
+  .router-marquee:not(.show-cta) .rm-ctas .con-button:not(.rm-cta-primary) {
     display: none;
   }
 
@@ -382,6 +394,38 @@
   .rm-content-wrapper {
     /* top padding is the height of the gnav + space between gnav and marquee content*/
     padding: calc(var(--s2a-spacing-64) + var(--s2a-spacing-24))  var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
+  }
+
+  .router-marquee.show-cta .rm-ctas .con-button {
+    flex: 1;
+  }
+
+  .rm-content-wrapper:has(.rm-foreground) {
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: calc(var(--rm-controls-h, 0px) + var(--s2a-spacing-24));
+  }
+
+  .rm-foreground {
+    display: block;
+    position: relative;
+    z-index: 2;
+    height: 362px;
+    margin-inline: calc(-1 * var(--s2a-spacing-24));
+    margin-bottom: var(--s2a-spacing-lg);
+    overflow: hidden;
+  }
+
+  .rm-foreground picture {
+    display: block;
+    height: 100%;
+  }
+
+  .rm-foreground img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .rm-title {
