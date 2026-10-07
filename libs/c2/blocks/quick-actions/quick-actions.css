@@ -65,7 +65,7 @@
 }
 
 .quick-actions-tile:focus-visible {
-  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-gray-25);
   outline-offset: var(--s2a-border-width-2);
 }
 
