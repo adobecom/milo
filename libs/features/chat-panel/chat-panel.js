@@ -1,6 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
-import { getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
+import { aiIcon, getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
 import { getAnalyticsLabel } from '../../blocks/brand-concierge/bc-analytics.js';
 
 let initialization = null;
@@ -28,12 +28,20 @@ function buildPanel() {
 }
 
 function buildToggle() {
+  const icon = createTag('span', {
+    class: 'chat-panel-toggle-icon',
+    'aria-hidden': 'true',
+  }, aiIcon('chat-panel-toggle-ai', 'chat-panel-ai-icon', null, 20));
+  const label = createTag('span', { class: 'chat-panel-toggle-label' }, 'Ask');
   return createTag('button', {
     id: 'chat-panel-toggle',
-    'aria-label': 'Open chat',
+    type: 'button',
+    class: 'no-track',
+    'aria-label': 'Ask Adobe',
     'aria-expanded': 'false',
     'aria-controls': 'chat-panel',
-  }, 'Chat');
+    'daa-ll': getAnalyticsLabel('floating-bc'),
+  }, [icon, label]);
 }
 
 export function isChatPanelOpen() {

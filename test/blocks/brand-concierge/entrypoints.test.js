@@ -172,14 +172,38 @@ describe('BC entrypoints share a persistent chat panel', () => {
     expect(bootstrap.calledOnce).to.be.true;
   });
 
-  it('opens from the panel toggle and closes on Escape without destroying the mount', async () => {
+  it('renders a floating Ask button with the shared BC logo', async () => {
     await initPanel();
-    document.getElementById('chat-panel-toggle').click();
+    const toggle = document.getElementById('chat-panel-toggle');
+    expect(toggle.textContent.trim()).to.equal('Ask');
+    expect(toggle.type).to.equal('button');
+    expect(toggle.getAttribute('aria-label')).to.equal('Ask Adobe');
+    expect(toggle.getAttribute('aria-controls')).to.equal('chat-panel');
+    expect(toggle.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#floating-bc');
+    expect(toggle.querySelector('.chat-panel-toggle-icon').getAttribute('aria-hidden'))
+      .to.equal('true');
+    const icon = toggle.querySelector('svg');
+    expect(icon.getAttribute('width')).to.equal('20');
+    expect(icon.getAttribute('height')).to.equal('20');
+    expect(icon.querySelector('radialGradient').id).to.equal('chat-panel-toggle-ai');
+    expect(icon.querySelector('path[fill="url(#chat-panel-toggle-ai)"]')).to.exist;
+    expect(getComputedStyle(toggle).position).to.equal('fixed');
+    expect(getComputedStyle(toggle).minHeight).to.equal('48px');
+  });
+
+  it('opens from the floating Ask button and closes on Escape without destroying the mount', async () => {
+    await initPanel();
+    const toggle = document.getElementById('chat-panel-toggle');
+    toggle.click();
     const panel = await expectOpen();
+    expect(toggle.getAttribute('aria-expanded')).to.equal('true');
+    expect(getComputedStyle(toggle).visibility).to.equal('hidden');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.body.classList.contains('chat-panel-open')).to.be.false;
     expect(localStorage.getItem('bc-side-overlay')).to.equal('closed');
-    document.getElementById('chat-panel-toggle').click();
+    expect(toggle.getAttribute('aria-expanded')).to.equal('false');
+    expect(getComputedStyle(toggle).visibility).to.equal('visible');
+    toggle.click();
     await expectOpen();
     expect(document.getElementById('chat-panel')).to.equal(panel);
     expect(bootstrap.calledOnce).to.be.true;
