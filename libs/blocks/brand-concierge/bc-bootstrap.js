@@ -303,10 +303,24 @@ export function loadWebclient() {
   loadScript(src);
 }
 
+function listenForSignIn() {
+  if (susiListener === 'signIn:decorateNav') return;
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS?.refreshToken();
+    (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+  });
+  susiListener = 'signIn:decorateNav';
+}
+
+function handleCtaAction({ detail }) {
+  if (detail?.action === 'sign-in') openSusiLightModal();
+}
+
 export async function bcBootstrap(initialMessage, mountIdentifier) {
   const mountEl = document.querySelector(`#${mountIdentifier}`);
   const { locale } = getConfig();
 
+  listenForSignIn();
   loadWebclient();
 
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
@@ -384,7 +398,7 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(),
-      selector: `#${mountId}`,
+      selector: `#${mountIdentifier}`,
       onBeforeEventSend,
       onEvent: (event) => {
         bcAnalytics(event);
@@ -394,11 +408,8 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
   }
 
-  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    if (detail?.action === 'sign-in') {
-      openSusiLightModal();
-    }
-  });
+  mountEl.removeEventListener('bc:cta-action', handleCtaAction);
+  mountEl.addEventListener('bc:cta-action', handleCtaAction);
 }
 
 export async function openModal(initialMessage, bootstrap) {
@@ -424,13 +435,7 @@ export async function openModal(initialMessage, bootstrap) {
     modal.classList.remove('opening');
   }, animationMs);
 
-  if (susiListener !== 'signIn:decorateNav') {
-    window.addEventListener('signIn:decorateNav', async () => {
-      await window.adobeIMS?.refreshToken();
-      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
-    });
-    susiListener = 'signIn:decorateNav';
-  }
+  listenForSignIn();
 
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
@@ -471,13 +476,7 @@ export async function destroySideModal() {
 }
 
 export async function openSideModal(initialMessage, bootstrap) {
-  if (susiListener !== 'signIn:decorateNav') {
-    window.addEventListener('signIn:decorateNav', async () => {
-      await window.adobeIMS?.refreshToken();
-      (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
-    });
-    susiListener = 'signIn:decorateNav';
-  }
+  listenForSignIn();
 
   document.body.classList.add('bc-side-open');
   localStorage.setItem('bc-side-overlay', 'open');

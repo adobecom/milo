@@ -15,14 +15,9 @@ import {
 } from './bc-utils.js';
 import {
   loadWebclient,
-  bcBootstrap,
-  openModal,
-  openSideModal,
   sideOverlayTop,
   setAuthoredContent,
-  mountId,
-  isMobile,
-} from './bc-bootstrap.js';
+} from '../../../blocks/brand-concierge/bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
   closeChatPanel,
@@ -31,20 +26,8 @@ import initChatPanel, {
 
 const variants = {};
 
-function checkGlobal() {
-  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    return window.milo.brandConcierge.brandConciergeGlobal;
-  }
-  return false;
-}
-
 function routeInput(text) {
-  if (checkGlobal()) {
-    if (isChatPanelOpen()) bcBootstrap(text, mountId);
-    else openChatPanel(text);
-  } else {
-    openModal(text, bcBootstrap);
-  }
+  openChatPanel(text);
 }
 
 function handleInput(text, input) {
@@ -88,10 +71,6 @@ export default async function init(el) {
   sideOverlayTop();
   initAnalytics('BC-Inline-shown');
 
-  // Build the chat-panel DOM once so gnav / floating-button / input triggers
-  // can open it. Idempotent — safe to call from multiple BC block instances.
-  initChatPanel();
-  
   const rows = [...el.querySelectorAll(':scope > div')];
   let customGradient = null;
   let gradientRow = null;
@@ -209,9 +188,9 @@ export default async function init(el) {
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
+  await initChatPanel();
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
-    sideOverlayTop();
-    openSideModal(null, bcBootstrap);
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+    openChatPanel();
   }
 }

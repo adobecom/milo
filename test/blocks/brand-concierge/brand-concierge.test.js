@@ -1,8 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
+import { waitForElement, waitFor } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import mockExternalScripts from '../../helpers/mock-script-loading.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
@@ -10,17 +11,22 @@ const { default: init } = await import('../../../libs/blocks/brand-concierge/bra
 const { updateReplicatedValue, getChatSessionId } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
 const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 const { bcAnalytics } = await import('../../../libs/blocks/brand-concierge/bc-analytics.js');
+const { closeChatPanel } = await import('../../../libs/features/chat-panel/chat-panel.js');
 
 describe('Brand Concierge', () => {
+  beforeEach(() => {
+    window.adobe = { concierge: { bootstrap: sinon.spy() } };
+    mockExternalScripts();
+  });
+
   afterEach(() => {
-    // The side overlay is a singleton with persistent state (localStorage +
-    // body class + a single #brand-concierge-modal element). Without cleanup
-    // it leaks across tests, so a second modal-open test collides with the
-    // overlay left open by the first. Reset it between tests.
-    document.getElementById('brand-concierge-modal')?.remove();
+    closeChatPanel();
+    document.getElementById('chat-panel')?.remove();
+    document.getElementById('chat-panel-toggle')?.remove();
     document.querySelector('.modal-curtain')?.remove();
-    document.body.classList.remove('bc-side-open');
+    document.body.classList.remove('bc-side-open', 'chat-panel-open');
     localStorage.removeItem('bc-side-overlay');
+    delete window.adobe;
     sinon.restore();
   });
 
@@ -77,7 +83,7 @@ describe('Brand Concierge', () => {
     expect(children[3].classList.contains('bc-legal')).to.be.true;
   });
 
-  it('enables send button on input and opens modal on Enter', async () => {
+  it('enables send button on input and opens the chat panel on Enter', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
@@ -94,22 +100,17 @@ describe('Brand Concierge', () => {
     // trigger submit via Enter
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    await waitFor(() => document.body.classList.contains('chat-panel-open'));
+    const modal = await waitForElement('#chat-panel');
     expect(modal).to.exist;
     expect(modal.querySelector('#brand-concierge-mount')).to.exist;
     expect(modal.querySelector('#brand-concierge-mount').dataset.initialMessage).to.equal('Hello world');
-
-    // analytics labels on modal controls
-    const close = modal.querySelector('.dialog-close');
-    const curtain = document.querySelector('.modal-curtain');
-    expect(close.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
-    expect(curtain.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
 
     // input cleared after opening
     expect(block.querySelector('.bc-input-field textarea').value).to.equal('');
   });
 
-  it('clicking a prompt card fills input and opens modal with card text', async () => {
+  it('clicking a prompt card opens the chat panel with card text', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
     await init(block);
@@ -117,7 +118,8 @@ describe('Brand Concierge', () => {
     const buttons = block.querySelectorAll('.prompt-card-button');
     buttons[1].click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    await waitFor(() => document.body.classList.contains('chat-panel-open'));
+    const modal = await waitForElement('#chat-panel');
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
@@ -219,7 +221,7 @@ describe('Brand Concierge', () => {
     expect(bgValue).to.not.contain('&height=300');
   });
 
-  it('decorates floating button with correct structure and opens modal on click', async () => {
+  it('decorates floating button with correct structure and opens the chat panel on click', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/floating-button.html' });
     const block = document.querySelector('.brand-concierge.floating-button');
     await init(block);
@@ -233,7 +235,8 @@ describe('Brand Concierge', () => {
 
     floatingButton.click();
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    await waitFor(() => document.body.classList.contains('chat-panel-open'));
+    const modal = await waitForElement('#chat-panel');
     expect(modal).to.exist;
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
@@ -255,7 +258,8 @@ describe('Brand Concierge', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#brand-concierge-modal');
+    await waitFor(() => document.body.classList.contains('chat-panel-open'));
+    const modal = await waitForElement('#chat-panel');
     expect(modal).to.exist;
 
     // Wait for bootstrap to be called (waitForCondition checks for API availability)

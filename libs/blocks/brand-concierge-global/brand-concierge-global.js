@@ -12,8 +12,6 @@ import {
 import {
   loadWebclient,
   setAuthoredContent,
-  sideOverlayTop,
-  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
@@ -45,7 +43,6 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openChatPanel(text);
 }
 
@@ -53,13 +50,11 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openChatPanel(text);
 }
 
 function handleGnavButton(event) {
-  if (isChatPanelOpen()) closeChatPanel();
-  else openChatPanel();
+  openChatPanel();
   event.target.blur();
 }
 
@@ -111,7 +106,6 @@ function decorateGnav(cards, input, topNav, el) {
     });
 
     gnavButton.addEventListener('click', (event) => {
-      // debounce the click to prevent double toggling
       gnavButton.classList.add('active');
       const cleanup = setTimeout(() => {
         gnavButton.classList.remove('active');
@@ -129,7 +123,7 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
-export default function init(el) {
+export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
@@ -160,7 +154,7 @@ export default function init(el) {
 
   // Build the chat-panel DOM once. Opening is driven by gnav button / input /
   // suggested-prompt click handlers above.
-  initChatPanel();
+  await initChatPanel();
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {

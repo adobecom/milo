@@ -1,9 +1,11 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
 import { getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
+import { getAnalyticsLabel } from '../../blocks/brand-concierge/bc-analytics.js';
 
-let initialized = false;
-let bootstrapped = false;
+let initialization = null;
+let bootstrapPromise = null;
+let panelEl = null;
 let toggleEl = null;
 
 function buildPanel() {
@@ -12,7 +14,11 @@ function buildPanel() {
   // Match the "Ask BETA" styling from the legacy #brand-concierge-side header:
   // an `h1.bc-modal-title` next to `getBetaLabel()` (the pill from bc-utils).
   const title = createTag('h1', { class: 'bc-modal-title' }, 'Ask');
-  const closeBtn = createTag('button', { class: 'chat-panel-close', 'aria-label': 'Close chat' }, '✕');
+  const closeBtn = createTag('button', {
+    class: 'chat-panel-close',
+    'aria-label': 'Close chat',
+    'daa-ll': getAnalyticsLabel('modal-close'),
+  }, '✕');
   const header = createTag('div', { class: 'chat-panel-header bc-modal-header' }, [title, getBetaLabel(), closeBtn]);
 
   const mountEl = createTag('div', { id: mountId });
@@ -35,47 +41,63 @@ export function isChatPanelOpen() {
 }
 
 export function closeChatPanel() {
-  if (!initialized) return;
+  if (!isChatPanelOpen()) return;
   document.body.classList.remove('chat-panel-open');
   toggleEl?.setAttribute('aria-expanded', 'false');
+  localStorage.setItem('bc-side-overlay', 'closed');
+  window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
 }
 
-export function openChatPanel(initialMessage) {
-  if (!initialized) return;
+/**
+ * Shared entrypoint for Milo and C2. Wait for the singleton panel before
+ * bootstrapping; reopening without a new message preserves the conversation.
+ */
+export async function openChatPanel(initialMessage) {
+  // eslint-disable-next-line no-use-before-define
+  await init();
+  const wasOpen = isChatPanelOpen();
   document.body.classList.add('chat-panel-open');
   toggleEl?.setAttribute('aria-expanded', 'true');
-  if (!bootstrapped) {
-    bootstrapped = true;
-    bcBootstrap(initialMessage || null, mountId);
+  localStorage.setItem('bc-side-overlay', 'open');
+  if (!wasOpen) window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
+  if (!bootstrapPromise) {
+    bootstrapPromise = bcBootstrap(initialMessage || null, mountId);
+    await bootstrapPromise;
   } else if (initialMessage) {
-    // Same pattern as the legacy routeInput's `if (isOpen) bcBootstrap(text)`:
-    // set dataset.initialMessage and re-invoke bootstrap so BC picks it up.
-    bcBootstrap(initialMessage, mountId);
+    await bootstrapPromise;
+    await bcBootstrap(initialMessage, mountId);
   }
+}
+
+function handleKeydown(event) {
+  if (event.key === 'Escape') closeChatPanel();
 }
 
 /**
  * Build the panel DOM + wire up close/toggle/Escape. Idempotent — calling
  * again is a no-op. Does NOT open the panel; callers must call openChatPanel().
  */
-export default async function init() {
-  if (initialized) return;
-  initialized = true;
+export default function init() {
+  if (initialization && (!panelEl || document.contains(panelEl))) return initialization;
+  panelEl = null;
+  bootstrapPromise = null;
+  initialization = (async () => {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot || '/libs';
+    await new Promise((resolve) => {
+      loadStyle(`${base}/features/chat-panel/chat-panel.css`, resolve);
+    });
 
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot || '/libs';
-  await new Promise((resolve) => {
-    loadStyle(`${base}/features/chat-panel/chat-panel.css`, resolve);
-  });
+    const { panel, closeBtn } = buildPanel();
+    const toggle = buildToggle();
+    panelEl = panel;
+    toggleEl = toggle;
+    document.body.append(panel, toggle);
 
-  const { panel, closeBtn } = buildPanel();
-  const toggle = buildToggle();
-  toggleEl = toggle;
-  document.body.append(panel, toggle);
-
-  toggle.addEventListener('click', () => openChatPanel());
-  closeBtn.addEventListener('click', closeChatPanel);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isChatPanelOpen()) closeChatPanel();
-  });
+    toggle.addEventListener('click', () => openChatPanel());
+    closeBtn.addEventListener('click', closeChatPanel);
+    document.removeEventListener('keydown', handleKeydown);
+    document.addEventListener('keydown', handleKeydown);
+  })();
+  return initialization;
 }

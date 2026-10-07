@@ -11,12 +11,13 @@ import {
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
-  bcBootstrap,
-  openSideModal,
   setAuthoredContent,
-  sideOverlayTop,
-  isMobile,
-} from '../brand-concierge/bc-bootstrap.js';
+} from '../../../blocks/brand-concierge/bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../../features/chat-panel/chat-panel.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
@@ -43,21 +44,18 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  openSideModal(text, bcBootstrap);
+  openChatPanel(text);
 }
 
 function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  openSideModal(text, bcBootstrap);
+  openChatPanel(text);
 }
 
 function handleGnavButton(event) {
-  const isOpen = document.body.classList.contains('bc-side-open');
-  const close = document.querySelector('#brand-concierge-side button.dialog-close');
-  if (!isOpen) openSideModal(null, bcBootstrap);
-  else close.click();
+  openChatPanel();
   event.target.blur();
 }
 
@@ -94,7 +92,7 @@ function decorateGnav(cards, input, topNav, el) {
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, false, 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'gnav');
     const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');
@@ -109,21 +107,12 @@ function decorateGnav(cards, input, topNav, el) {
     });
 
     gnavButton.addEventListener('click', (event) => {
-      // debounce the click to prevent double opening of the modal
       gnavButton.classList.add('active');
       const cleanup = setTimeout(() => {
         gnavButton.classList.remove('active');
         clearTimeout(cleanup);
       }, 500);
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        if (closeButton) {
-          closeButton.click();
-        } else {
-          document.body.classList.remove('bc-side-open');
-          handleGnavButton(event);
-        }
-      } else handleGnavButton(event);
+      handleGnavButton(event);
     });
     if (window?.milo) {
       window.milo.brandConcierge = brandConcierge;
@@ -135,7 +124,7 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
-export default function init(el) {
+export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
@@ -144,10 +133,7 @@ export default function init(el) {
       loadWebclient();
     }
     if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
-      }
+      if (isChatPanelOpen()) closeChatPanel();
       window.adobe.concierge.clearHistory();
     }
   });
@@ -171,9 +157,9 @@ export default function init(el) {
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
 
+  await initChatPanel();
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
-    sideOverlayTop();
-    openSideModal(null, bcBootstrap);
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+    openChatPanel();
   }
 }

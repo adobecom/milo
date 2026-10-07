@@ -15,13 +15,8 @@ import {
 } from './bc-utils.js';
 import {
   loadWebclient,
-  bcBootstrap,
-  openModal,
-  openSideModal,
   sideOverlayTop,
   setAuthoredContent,
-  mountId,
-  isMobile,
 } from './bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
@@ -31,27 +26,8 @@ import initChatPanel, {
 
 const variants = {};
 
-function checkGlobal() {
-  const params = new URLSearchParams(window.location.search);
-  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    return window.milo.brandConcierge.brandConciergeGlobal;
-  }
-  if (params.get('side-overlay') === 'true') {
-    return true;
-  }
-  return false;
-}
-
 function routeInput(text) {
-  if (checkGlobal()) {
-    if (isChatPanelOpen()) bcBootstrap(text, mountId);
-    else {
-      sideOverlayTop();
-      openChatPanel(text);
-    }
-  } else {
-    openModal(text, bcBootstrap);
-  }
+  openChatPanel(text);
 }
 
 function handleInput(text, input) {
@@ -214,7 +190,7 @@ export default async function init(el) {
 
   // Build the chat-panel DOM once so gnav / floating-button / input triggers
   // can open it. Idempotent — safe to call from multiple BC block instances.
-  initChatPanel();
+  await initChatPanel();
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
