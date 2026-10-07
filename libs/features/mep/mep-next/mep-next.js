@@ -7,6 +7,7 @@ import {
 import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import { mepMasSubCollections } from './mep-mas-subcollection.js';
+import { applyGeoSpoof } from './spoof-country-ip.js';
 import { US_GEO, getFileName, normalizePath } from '../../personalization/personalization.js';
 import {
   MAS_OSI_SELECTOR,
@@ -65,7 +66,7 @@ export const API_URLS = {
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+  disabled, analyticsTitle, source, countryRestriction, consentType,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -80,8 +81,8 @@ function toActivity({
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
-    geoRestriction,
-    mktgAction,
+    countryRestriction,
+    consentType,
   };
 }
 
@@ -212,32 +213,21 @@ function updatePreviewButton(popup, pageId) {
   }
   if (masMarketOn) {
     simulateHref.searchParams.set('mepMasMarket', 'true');
-    const masVal = mepMasMarketSelect?.value;
-    if (masVal) {
-      simulateHref.searchParams.set('akamaiLocale', masVal);
-    } else {
-      simulateHref.searchParams.delete('akamaiLocale');
-    }
+    applyGeoSpoof(simulateHref.searchParams, mepMasMarketSelect?.value);
   } else if (!mepMasMarketCheckbox && mepMasMarketSelect) {
     // Standalone shape (non-Lingo + M@S): dropdown is authoritative,
     // mepMasMarket=true persists the selection across reloads.
     const masVal = mepMasMarketSelect.value;
     if (masVal) {
       simulateHref.searchParams.set('mepMasMarket', 'true');
-      simulateHref.searchParams.set('akamaiLocale', masVal);
     } else {
       simulateHref.searchParams.delete('mepMasMarket');
-      simulateHref.searchParams.delete('akamaiLocale');
     }
+    applyGeoSpoof(simulateHref.searchParams, masVal);
   } else {
     simulateHref.searchParams.delete('mepMasMarket');
     if (mepLingoRegionSelect) {
-      const selectedRegion = mepLingoRegionSelect.value;
-      if (selectedRegion) {
-        simulateHref.searchParams.set('akamaiLocale', selectedRegion);
-      } else {
-        simulateHref.searchParams.delete('akamaiLocale');
-      }
+      applyGeoSpoof(simulateHref.searchParams, mepLingoRegionSelect.value);
     }
   }
 
@@ -361,8 +351,8 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
-      geoRestriction,
-      mktgAction,
+      countryRestriction,
+      consentType,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -413,11 +403,11 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
                   <span>${escapeHtml(source)}</span>
-                  <span>Mktg action</span>
-                  <span>${escapeHtml(mktgAction)}</span>
-                ${geoRestriction ? `
-                  <span>Geo</span>
-                  <span>${escapeHtml(geoRestriction.toUpperCase())}</span>` : ''}
+                  <span>Consent req</span>
+                  <span>${escapeHtml(consentType)}</span>
+                ${countryRestriction ? `
+                  <span>Allowed User Countries</span>
+                  <span>${escapeHtml(countryRestriction.toUpperCase())}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
                   <span>${disabled ? 'inactive' : 'active'}</span>` : ''}

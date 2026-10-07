@@ -16,8 +16,10 @@ import merch, {
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
+  getUpgradeAction,
   fetchEntitlements,
   getModalAction,
+  getCommercePreloadUrl,
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getOptions,
@@ -37,6 +39,10 @@ import merch, {
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
+  getAupModalHashCleanup,
+  addAriaLabelToCta,
+  AUP_SDK_READY_EVENT,
+  waitForAupSdk,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -545,6 +551,61 @@ describe('Merch Block', () => {
       expect(cards[2].querySelector('a').getAttribute('aria-label')).to.equal('CTA3 Buy Now - Product three');
       expect(cards[3].querySelector('a').getAttribute('aria-label')).to.equal('CTA4 Buy Now');
     });
+
+    describe('geo-ip product label', () => {
+      let langfirstMeta;
+
+      const setup = ({ lingo, country }) => {
+        setConfig({
+          ...config,
+          placeholders: { CCSN: 'Creative Cloud Pro', EDU: 'Students and teachers' },
+        });
+        // mockFetch builds a URL from its argument, so the root must be absolute.
+        getConfig().locale.contentRoot = `${window.location.origin}/test/blocks/merch/mocks`;
+        if (lingo) {
+          langfirstMeta = createTag('meta', { name: 'langfirst', content: 'on' });
+          document.head.appendChild(langfirstMeta);
+        }
+        if (country) sessionStorage.setItem('akamai', country);
+      };
+
+      const getLabel = async (productCode) => {
+        const attrs = {};
+        await addAriaLabelToCta({
+          value: [{ productArrangement: { productCode } }],
+          marketSegment: 'EDU',
+          textContent: 'Buy now',
+          setAttribute: (name, value) => { attrs[name] = value; },
+        });
+        return attrs['aria-label'];
+      };
+
+      afterEach(() => {
+        langfirstMeta?.remove();
+        langfirstMeta = undefined;
+        sessionStorage.removeItem('akamai');
+      });
+
+      it('keeps the placeholders.json label when lingo is off', async () => {
+        setup({ lingo: false, country: 'KR' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud Pro - Students and teachers');
+      });
+
+      it('uses the geo-ip sheet label for KR when lingo is on', async () => {
+        setup({ lingo: true, country: 'KR' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud All Apps - Students and teachers');
+      });
+
+      it('falls back to the placeholders.json label when the sheet has no matching row', async () => {
+        setup({ lingo: true, country: 'KR' });
+        expect(await getLabel('PHSP')).to.equal('Buy now - PHSP - Students and teachers');
+      });
+
+      it('falls back to the placeholders.json label for a country other than KR', async () => {
+        setup({ lingo: true, country: 'US' });
+        expect(await getLabel('CCSN')).to.equal('Buy now - Creative Cloud Pro - Students and teachers');
+      });
+    });
   });
 
   describe('CTAs', () => {
@@ -1028,13 +1089,156 @@ describe('Merch Block', () => {
         }, 1);
       });
       const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
-      expect(action).to.be.empty;
+      expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: returns undefined and does not throw on empty offers', async () => {
+      mockIms('US');
+      const options = { entitlement: true, upgrade: true };
+      const action = await getCheckoutAction([], options, Promise.resolve(true));
+      expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: returns undefined and does not throw when offers is undefined', async () => {
+      mockIms('US');
+      const options = { entitlement: true, upgrade: true };
+      const action = await getCheckoutAction(undefined, options, Promise.resolve(true));
+      expect(action).to.be.undefined;
+    });
+
+    it('getDownloadAction: returns undefined on empty offers', async () => {
+      const action = await getDownloadAction({ entitlement: true }, Promise.resolve(true), []);
+      expect(action).to.be.undefined;
     });
   });
 
   describe('Upgrade Flow', () => {
     beforeEach(() => {
       updateSearch({});
+    });
+
+    describe('getUpgradeAction without page upgrade offer', () => {
+      let detached;
+
+      beforeEach(() => {
+        mockIms('US');
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+        detached = [...document.querySelectorAll('.merch-offers.upgrade')].map(
+          (el) => [el, el.parentNode, el.nextSibling],
+        );
+        detached.forEach(([el]) => el.remove());
+      });
+
+      afterEach(() => {
+        detached.forEach(([el, parent, next]) => parent?.insertBefore(el, next));
+        getUpgradeAction.offer = undefined;
+        getUpgradeAction.missReported = false;
+      });
+
+      it('returns undefined when no upgrade offer is on the page', async () => {
+        const action = await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          null,
+        );
+        expect(action).to.be.undefined;
+      });
+
+      it('reports a missing upgrade offer to lana once, with the CTA osi', async () => {
+        // bind merch.js' Log module without mutating the shared fixtures
+        const probe = createTag('a', { class: 'merch', href: '/tools/ost?osi=abc&type=price' });
+        document.body.appendChild(probe);
+        (await merch(probe))?.remove();
+
+        const lanaLogs = [];
+        const originalLana = window.lana;
+        window.lana = { log: (msg) => lanaLogs.push(msg) };
+        Log.reset();
+        Log.use(Log.Plugins.lanaAppender);
+
+        const cta = createTag('a', { 'data-wcs-osi': 'BROKEN_OSI' });
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'ACROBAT' } }],
+            cta,
+          );
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'ACROBAT' } }],
+            cta,
+          );
+        } finally {
+          window.lana = originalLana;
+          Log.reset();
+          Log.use(Log.Plugins.quietFilter);
+        }
+        const reported = lanaLogs.filter((msg) => msg.includes('merch-offers.upgrade'));
+        expect(reported.length, 'must be reported exactly once per page').to.equal(1);
+        expect(reported[0]).to.include('BROKEN_OSI');
+      });
+
+      it('does not cache a miss, so a later upgrade offer is still resolved', async () => {
+        const missAction = await getUpgradeAction(
+          { upgrade: true },
+          Promise.resolve(true),
+          [{ productArrangement: { productFamily: 'ACROBAT' } }],
+          null,
+        );
+        expect(missAction).to.be.undefined;
+        expect(getUpgradeAction.offer, 'a miss must not be cached').to.not.be.ok;
+
+        const offerEl = document.createElement('a');
+        offerEl.setAttribute('data-wcs-osi', 'TEST_OSI');
+        const container = document.createElement('div');
+        container.classList.add('merch-offers', 'upgrade');
+        container.appendChild(offerEl);
+        document.body.appendChild(container);
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+            null,
+          );
+          expect(getUpgradeAction.offer).to.equal(offerEl);
+        } finally {
+          container.remove();
+        }
+      });
+
+      it('refreshes a detached cached offer after fragment replacement', async () => {
+        const oldOffer = document.createElement('a');
+        oldOffer.setAttribute('data-wcs-osi', 'OLD_OSI');
+        const oldContainer = document.createElement('div');
+        oldContainer.classList.add('merch-offers', 'upgrade');
+        oldContainer.appendChild(oldOffer);
+        document.body.appendChild(oldContainer);
+        getUpgradeAction.offer = oldOffer;
+        oldContainer.remove();
+
+        const newOffer = document.createElement('a');
+        newOffer.setAttribute('data-wcs-osi', 'NEW_OSI');
+        const newContainer = document.createElement('div');
+        newContainer.classList.add('merch-offers', 'upgrade');
+        newContainer.appendChild(newOffer);
+        document.body.appendChild(newContainer);
+        try {
+          await getUpgradeAction(
+            { upgrade: true },
+            Promise.resolve(true),
+            [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }],
+            null,
+          );
+          expect(getUpgradeAction.offer).to.equal(newOffer);
+        } finally {
+          newContainer.remove();
+        }
+      });
     });
 
     it('updates CTA text to Upgrade Now', async () => {
@@ -1182,6 +1386,87 @@ describe('Merch Block', () => {
       window.location.hash = prevHash;
       modalState.isOpen = false;
     });
+
+    it('opens the 3-in-1 modal with the checkout URL of an AUP checkout link', async () => {
+      const prevHash = window.location.hash;
+      modalState.isOpen = false;
+      const checkoutUrl = 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if&co=BR&lang=pt&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=ccsn_direct_individual';
+      const checkoutLink = createTag('a', {
+        is: 'checkout-link',
+        href: '#',
+        'data-modal': 'twp',
+        'data-modal-id': 'mini-plans-web-cta-creative-cloud-card',
+      });
+      checkoutLink.isOpen3in1Modal = true;
+      checkoutLink.checkoutUrl = checkoutUrl;
+
+      await openModal(new CustomEvent('test'), undefined, 'TRIAL', 'mini-plans-web-cta-creative-cloud-card', undefined, checkoutLink);
+
+      const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
+      expect(threeInOneModal.querySelector('iframe').src).to.equal(checkoutUrl);
+      threeInOneModal.remove();
+      window.location.hash = prevHash;
+      modalState.isOpen = false;
+    });
+
+    it('resets the modal state when the 3-in-1 modal has no checkout URL', async () => {
+      modalState.isOpen = false;
+      const checkoutLink = createTag('a', { href: '#', 'data-modal': 'twp' });
+      checkoutLink.isOpen3in1Modal = true;
+
+      await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink);
+
+      expect(document.querySelector('.dialog-modal.three-in-one')).to.be.null;
+      expect(modalState.isOpen).to.be.false;
+    });
+
+    it('cleans up a rejected 3-in-1 open and allows the same link to retry', async () => {
+      const error = new Error('Checkout URL unavailable');
+      const checkoutLink = createTag('a', {
+        href: '#',
+        'data-modal': 'twp',
+        'data-modal-id': 'retry-three-in-one',
+      });
+      checkoutLink.isOpen3in1Modal = true;
+      Object.defineProperty(checkoutLink, 'checkoutUrl', {
+        configurable: true,
+        get: () => { throw error; },
+      });
+      const removeListener = sinon.spy(window, 'removeEventListener');
+      const { handle3in1IFrameEvents } = await import('../../../libs/blocks/merch/three-in-one.js');
+      modalState.isOpen = false;
+      try {
+        const rejection = await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink).catch((caught) => caught);
+
+        expect(rejection).to.equal(error);
+        expect(modalState.isOpen).to.be.false;
+        expect(removeListener.calledWith('message', handle3in1IFrameEvents)).to.be.true;
+
+        Object.defineProperty(checkoutLink, 'checkoutUrl', { value: 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if' });
+        await openModal(new CustomEvent('test'), undefined, 'TRIAL', undefined, undefined, checkoutLink);
+
+        expect(document.querySelector('.dialog-modal.three-in-one')).to.exist;
+        expect(modalState.isOpen).to.be.true;
+      } finally {
+        document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
+        window.removeEventListener('message', handle3in1IFrameEvents);
+        removeListener.restore();
+        modalState.isOpen = false;
+      }
+    });
+
+    it('resets the modal state and preserves an invalid external checkout error', async () => {
+      const checkoutLink = createTag('a', { 'data-modal': 'crm' });
+      modalState.isOpen = false;
+      try {
+        const rejection = await openModal(new CustomEvent('test'), 'invalid-url', 'BASE', undefined, undefined, checkoutLink).catch((error) => error);
+
+        expect(rejection).to.be.instanceOf(TypeError);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        modalState.isOpen = false;
+      }
+    });
   });
 
   describe('Modal flow', () => {
@@ -1261,6 +1546,111 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
       checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+    });
+
+    [
+      { content: 'on', calls: 2, aup: true },
+      { content: 'off', query: 'on', aup: true },
+      { content: 'on', query: 'off', legacy: true },
+      { content: 'off', legacy: true },
+      { content: 'off', commercePreload: 'off' },
+      { content: 'on', commercePreload: 'off' },
+      { content: 'off', lateContent: 'on', aup: true },
+      { content: 'on', lateContent: 'off', legacy: true },
+      { content: 'on', missingSdk: true, legacy: true },
+      { content: 'on', failure: 'getOrchestratorContext', aup: true },
+      { content: 'on', failure: 'loadUIComponent', aup: true },
+      { content: 'on', modal: false },
+    ].forEach(({
+      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
+      modal = true, aup = false, legacy = false,
+    }) => {
+      it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
+        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+      })}`, async () => {
+        const previousUrl = window.location.href;
+        const previousDeferred = window.milo.deferredPromise;
+        const previousSdk = window.aupsdk;
+        const sdk = {
+          getOrchestratorContext: sinon.stub().resolves(),
+          loadUIComponent: sinon.stub().resolves(),
+        };
+        if (failure) sdk[failure].rejects(new Error('Preload failed'));
+        window.aupsdk = missingSdk ? undefined : sdk;
+        let resolveDeferred;
+        window.milo.deferredPromise = new Promise((resolve) => { resolveDeferred = resolve; });
+        const meta = createTag('meta', { name: 'aup-select', content });
+        document.head.append(meta);
+        const url = new URL(previousUrl);
+        if (query) url.searchParams.set('aup-select', query);
+        if (commercePreload) url.searchParams.set('commerce.preload', commercePreload);
+        window.history.replaceState(null, '', url);
+        const scripts = [];
+        const { append } = document.head;
+        const appendStub = sinon.stub(document.head, 'append').callsFake((node) => {
+          if (node.id === 'ucv3-preload-script') {
+            scripts.push(node);
+            node.dataset.loaded = 'true';
+          } else {
+            append.call(document.head, node);
+          }
+        });
+        let clock;
+        try {
+          const el = document.createElement('a');
+          el.isOpen3in1Modal = modal;
+          const actions = await Promise.all(Array.from({ length: calls }, () => getModalAction(
+            [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }],
+            { modal: true },
+            el,
+          )));
+          actions.forEach((action) => expect(action.handler).to.be.a('function'));
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          resolveDeferred();
+          await Promise.resolve();
+          if (lateContent) meta.content = lateContent;
+          await clock.tickAsync(999);
+          expect(sdk.getOrchestratorContext.called).to.be.false;
+          expect(sdk.loadUIComponent.called).to.be.false;
+          expect(scripts).to.be.empty;
+          await clock.tickAsync(1);
+          expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
+          expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
+          const commerce = aup || legacy;
+          expect(scripts.length > 0).to.equal(commerce);
+          scripts.forEach((script) => expect(script.src).to.include('/store/iframe/preload.js?cli=creative'));
+        } finally {
+          clock?.restore();
+          appendStub.restore();
+          meta.remove();
+          window.history.replaceState(null, '', previousUrl);
+          window.milo.deferredPromise = previousDeferred;
+          window.aupsdk = previousSdk;
+        }
+      });
+    });
+
+    [
+      { env: 'STAGE', host: 'https://commerce-stg.adobe.com' },
+      { env: 'PRODUCTION', host: 'https://commerce.adobe.com' },
+      { env: undefined, host: 'https://commerce.adobe.com' },
+      { noService: true, host: 'https://commerce.adobe.com' },
+    ].forEach(({ env, noService, host }) => {
+      it(`getCommercePreloadUrl follows the commerce env: ${JSON.stringify({ env, noService })}`, () => {
+        const { querySelector } = document.head;
+        const stub = sinon.stub(document.head, 'querySelector').callsFake((selector) => {
+          if (selector !== 'mas-commerce-service') return querySelector.call(document.head, selector);
+          return noService ? null : { settings: { env } };
+        });
+        try {
+          expect(getCommercePreloadUrl()).to.equal(`${host}/store/iframe/preload.js`);
+        } finally {
+          stub.restore();
+        }
+      });
     });
 
     it('getModalAction: returns undefined if modal path is cancelled', async () => {
@@ -1428,6 +1818,161 @@ describe('Merch Block', () => {
       expect(setCtaHash()).to.be.undefined;
     });
 
+    it('getModalAction: manages AUP hash lifecycle from the M@S callback', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+      const hashchange = sinon.spy();
+      window.addEventListener('hashchange', hashchange);
+
+      try {
+        expect(action.aupHandler).to.be.a('function');
+        expect(el.dataset.modalId).to.equal('crm-buy-illustrator');
+
+        action.aupHandler({ type: 'open', element: el });
+
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.true;
+
+        action.aupHandler({ type: 'close', element: el });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(hashchange.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.removeEventListener('hashchange', hashchange);
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: provides hash cleanup for the host AUP dialog', async () => {
+      const previousUrl = window.location.href;
+      const el = document.createElement('a');
+      el.dataset.modal = 'crm';
+      el.isOpen3in1Modal = false;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{
+        offerType: 'BASE',
+        productArrangement: { productFamily: 'ILLUSTRATOR' },
+      }], { modal: true }, el);
+
+      try {
+        action.aupHandler({ type: 'open', element: el });
+        const cleanup = getAupModalHashCleanup();
+
+        expect(cleanup).to.be.a('function');
+        expect(getAupModalHashCleanup()).to.equal(cleanup);
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(modalState.isOpen).to.be.true;
+
+        cleanup();
+        cleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+        action.aupHandler({ type: 'close', element: el });
+        expect(window.location.href).to.equal(previousUrl);
+      } finally {
+        action.aupHandler({ type: 'close', element: el });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: ignores a stale AUP close after a replacement opens', async () => {
+      const previousUrl = window.location.href;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const createAction = async (productFamily) => {
+        const el = document.createElement('a');
+        el.dataset.modal = 'crm';
+        el.isOpen3in1Modal = false;
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily },
+        }], { modal: true }, el);
+        return { action, el };
+      };
+      const first = await createAction('ILLUSTRATOR');
+      const second = await createAction('AUDITION');
+
+      try {
+        first.action.aupHandler({
+          type: 'open',
+          element: first.el,
+        });
+        const firstCleanup = getAupModalHashCleanup();
+        second.action.aupHandler({
+          type: 'open',
+          element: second.el,
+        });
+        const secondCleanup = getAupModalHashCleanup();
+        firstCleanup();
+        first.action.aupHandler({
+          type: 'close',
+          element: first.el,
+        });
+
+        expect(window.location.hash).to.equal('#crm-buy-audition');
+        expect(modalState.isOpen).to.be.true;
+
+        secondCleanup();
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        second.action.aupHandler({
+          type: 'close',
+          element: second.el,
+        });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
+    it('getModalAction: ignores stale cleanup and callbacks after the same modal hash is reused', async () => {
+      const previousUrl = window.location.href;
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const createAction = async () => {
+        const element = createTag('a', { 'data-modal': 'crm' });
+        element.isOpen3in1Modal = false;
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily: 'ILLUSTRATOR' },
+        }], { modal: true }, element);
+        return { element, action };
+      };
+      const first = await createAction();
+      const second = await createAction();
+      try {
+        first.action.aupHandler({ type: 'open', element: first.element });
+        const firstCleanup = getAupModalHashCleanup();
+        second.action.aupHandler({ type: 'open', element: second.element });
+        firstCleanup();
+        first.action.aupHandler({ type: 'close', element: first.element });
+
+        expect(window.location.hash).to.equal('#crm-buy-illustrator');
+        expect(modalState.isOpen).to.be.true;
+
+        second.action.aupHandler({ type: 'close', element: second.element });
+
+        expect(window.location.href).to.equal(previousUrl);
+        expect(modalState.isOpen).to.be.false;
+      } finally {
+        second.action.aupHandler({ type: 'close', element: second.element });
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+
     it('applyDexterPromo: applies promo to external modal', () => {
       const url = 'https://www.adobe.com/plans-fragments/modals/all-apps/master.modal.html';
       const promoUrl = 'https://www.adobe.com/plans-fragments/modals/all-apps/black-friday.modal.html';
@@ -1578,6 +2123,454 @@ describe('Merch Block', () => {
       document.body.appendChild(modal);
       const isModalOpen = await updateModalState();
       expect(isModalOpen).to.be.false;
+    });
+
+    it('leaves AUP hash cleanup to the host when a shared close event fires', async () => {
+      const cta = createTag('a', {
+        is: 'checkout-link',
+        href: '#',
+        'data-modal-id': 'aup-deep-link-card',
+      });
+      const click = sinon.spy(cta, 'click');
+      const aupDialog = document.createElement('div');
+      aupDialog.id = 'aup-workflow-dialog';
+      const geoDialog = createTag('div', { id: 'locale-modal-v2', class: 'dialog-modal' });
+      document.body.append(cta, geoDialog, aupDialog);
+      window.history.replaceState(null, '', '#aup-deep-link-card');
+      modalState.isOpen = true;
+      try {
+        window.dispatchEvent(new CustomEvent(
+          'milo:modal:closed',
+          { detail: { id: aupDialog.id, hash: window.location.hash } },
+        ));
+        await delay(0);
+
+        expect(click.called).to.be.false;
+        expect(modalState.isOpen).to.be.true;
+        expect(document.getElementById('locale-modal-v2')).to.equal(geoDialog);
+        expect(document.getElementById('aup-workflow-dialog')).to.equal(aupDialog);
+      } finally {
+        click.restore();
+        cta.remove();
+        geoDialog.remove();
+        aupDialog.remove();
+      }
+    });
+
+    describe('with AUP Select', () => {
+      const modalId = 'aup-deep-link-card';
+      const timeoutMessage = 'AUP SDK readiness timed out after 10000ms; falling back to legacy checkout';
+      let meta;
+      let previousSdk;
+      let previousUrl;
+      let merchLog;
+
+      const createCta = () => {
+        const cta = createTag('a', { is: 'checkout-link', href: '#', 'data-modal-id': modalId });
+        cta.addEventListener('click', (e) => e.preventDefault());
+        sinon.spy(cta, 'click');
+        return cta;
+      };
+
+      const setSdkReady = () => {
+        window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+        window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+      };
+
+      beforeEach(() => {
+        previousSdk = window.aupsdk;
+        previousUrl = window.location.href;
+        window.aupsdk = undefined;
+        meta = createTag('meta', { name: 'aup-select', content: 'on' });
+        document.head.append(meta);
+        window.history.replaceState(null, '', `#${modalId}`);
+        merchLog = sinon.spy();
+        Log.reset();
+        Log.use({
+          append: ({ message, level, namespace }) => {
+            if (namespace === 'mas/commerce/merch') merchLog(message, level);
+          },
+        });
+      });
+
+      afterEach(() => {
+        meta.remove();
+        window.aupsdk = previousSdk;
+        window.history.replaceState(null, '', previousUrl);
+        sinon.restore();
+      });
+
+      it('waits for the AUP SDK before reopening a deep-linked modal', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        await delay(0);
+        expect(cta.click.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+
+        setSdkReady();
+
+        expect(await state).to.be.true;
+        expect(cta.click.calledOnce).to.be.true;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      it('reopens the modal once when several CTAs share the hash', async () => {
+        const ctas = [createCta(), createCta()];
+        const states = ctas.map((cta) => updateModalState({ cta }));
+
+        setSdkReady();
+        await Promise.all(states);
+
+        expect(ctas.filter((cta) => cta.click.called)).to.have.lengthOf(1);
+      });
+
+      it('waits for the AUP SDK on hash navigation', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        try {
+          const state = updateModalState();
+          await delay(0);
+          expect(cta.click.called).to.be.false;
+
+          setSdkReady();
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          cta.remove();
+        }
+      });
+
+      it('does not reopen the modal if the hash changed while waiting', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        window.history.replaceState(null, '', '#another-modal');
+
+        setSdkReady();
+
+        expect(await state).to.be.false;
+        expect(cta.click.called).to.be.false;
+      });
+
+      it('cancels a pending restore when another AUP modal opens and restores its hash on close', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const otherCta = createTag('a', { 'data-modal': 'crm' });
+        otherCta.isOpen3in1Modal = false;
+        fetchCheckoutLinkConfigs.promise = Promise.resolve(CHECKOUT_LINK_CONFIGS);
+        const action = await getModalAction([{
+          offerType: 'BASE',
+          productArrangement: { productFamily: 'ILLUSTRATOR' },
+        }], { modal: true }, otherCta);
+        try {
+          action.aupHandler({ type: 'open', element: otherCta });
+          expect(window.location.hash).to.equal('#crm-buy-illustrator');
+          action.aupHandler({ type: 'close', element: otherCta });
+          expect(window.location.hash).to.equal(`#${modalId}`);
+
+          setSdkReady();
+
+          expect(await state).to.be.false;
+          expect(cta.click.called).to.be.false;
+          expect(modalState.isOpen).to.be.false;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+        } finally {
+          action.aupHandler({ type: 'close', element: otherCta });
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('does not restore a modal from a shared user-close notification', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        const state = updateModalState();
+        try {
+          window.dispatchEvent(new Event('milo:modal:closed'));
+          setSdkReady();
+
+          expect(await state).to.be.false;
+          expect(cta.click.called).to.be.false;
+          expect(modalState.isOpen).to.be.false;
+          expect(cta.dataset.clickDisabled).to.be.undefined;
+        } finally {
+          cta.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('cancels a pending restore when a non-checkout SDK workflow opens', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const dialog = document.createElement('div');
+        dialog.id = 'aup-workflow-dialog';
+        dialog.className = 'dialog-modal aup-modal';
+        document.body.append(dialog);
+        try {
+          window.dispatchEvent(new CustomEvent(
+            'milo:modal:loaded',
+            { detail: { id: dialog.id, hash: window.location.hash } },
+          ));
+          setSdkReady();
+          await state;
+
+          expect(cta.click.called).to.be.false;
+          expect(dialog.isConnected).to.be.true;
+          expect(document.getElementById('aup-workflow-dialog')).to.equal(dialog);
+        } finally {
+          dialog.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('does not cancel the deep link when a locale prompt opens while waiting', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const dialog = createTag('div', { id: 'locale-modal-v2', class: 'dialog-modal' });
+        document.body.append(dialog);
+        try {
+          window.dispatchEvent(new CustomEvent(
+            'milo:modal:loaded',
+            { detail: { id: dialog.id, hash: window.location.hash } },
+          ));
+          setSdkReady();
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(dialog.isConnected).to.be.true;
+        } finally {
+          dialog.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('cancels a pending restore when a legacy checkout attempt fails and restores the hash', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        const otherCta = createTag('a', { href: '#', 'data-modal': 'twp' });
+        otherCta.isOpen3in1Modal = true;
+        await openModal(new CustomEvent('test'), undefined, 'TRIAL', 'other-checkout', undefined, otherCta);
+        expect(modalState.isOpen).to.be.false;
+        window.history.pushState(null, '', `#${modalId}`);
+
+        setSdkReady();
+
+        await state;
+        expect(cta.click.called).to.be.false;
+        expect(modalState.isOpen).to.be.false;
+      });
+
+      it('allows a fresh navigation restore after canceling the previous SDK wait', async () => {
+        const cta = createCta();
+        document.body.append(cta);
+        const state = updateModalState();
+        try {
+          window.history.replaceState(null, '', '#another-modal');
+          await updateModalState();
+          window.history.replaceState(null, '', `#${modalId}`);
+          const newState = updateModalState();
+
+          setSdkReady();
+
+          expect(await newState).to.be.true;
+          await state;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          cta.remove();
+          setSdkReady();
+          await state;
+        }
+      });
+
+      it('reopens the modal immediately when the AUP SDK is ready', async () => {
+        window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+        const cta = createCta();
+
+        const state = updateModalState({ cta });
+
+        expect(cta.click.calledOnce).to.be.true;
+        expect(await state).to.be.true;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      it('reopens the modal immediately when AUP Select is off', async () => {
+        meta.content = 'off';
+        const cta = createCta();
+
+        const state = updateModalState({ cta });
+
+        expect(cta.click.calledOnce).to.be.true;
+        expect(await state).to.be.true;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      ['canceled', 'hash changed', 'another modal open'].forEach((reason) => {
+        it(`does not log an SDK timeout when the restore is ${reason}`, async () => {
+          const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+          try {
+            const cta = createCta();
+            const state = updateModalState({ cta });
+            if (reason === 'canceled') await updateModalState({ closedByUser: true });
+            if (reason === 'hash changed') window.history.replaceState(null, '', '#another-modal');
+            if (reason === 'another modal open') modalState.isOpen = true;
+
+            await clock.tickAsync(10000);
+            await state;
+
+            expect(cta.click.called).to.be.false;
+            expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+          } finally {
+            clock.restore();
+          }
+        });
+      });
+
+      it('ignores a readiness event until the SDK is actually available', async () => {
+        const cta = createCta();
+        const state = updateModalState({ cta });
+        window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+
+        await delay(0);
+        expect(cta.click.called).to.be.false;
+        setSdkReady();
+        expect(await state).to.be.true;
+        expect(cta.click.calledOnce).to.be.true;
+        expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+      });
+
+      it('does not log a timeout if the SDK is available at the deadline without a ready event', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+          await clock.tickAsync(9999);
+          window.aupsdk = { getOrchestratorContext: sinon.stub().resolves() };
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('logs the 10-second legacy fallback once per page through the merch logger', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+
+          await clock.tickAsync(9999);
+          expect(cta.click.called).to.be.false;
+          expect(merchLog.calledWith(timeoutMessage)).to.be.false;
+          await clock.tickAsync(1);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+          expect(merchLog.withArgs(timeoutMessage).calledOnceWithExactly(timeoutMessage, 'info')).to.be.true;
+
+          await updateModalState({ closedByUser: true });
+          const ctas = [createCta(), createCta()];
+          const states = ctas.map((nextCta) => updateModalState({ cta: nextCta }));
+          await clock.tickAsync(10000);
+          await Promise.all(states);
+
+          expect(ctas.filter((nextCta) => nextCta.click.called)).to.have.lengthOf(1);
+          expect(merchLog.withArgs(timeoutMessage).calledOnce).to.be.true;
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('still falls back when Lana is not available', async () => {
+        const previousLana = window.lana;
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        window.lana = undefined;
+        try {
+          const cta = createCta();
+          const state = updateModalState({ cta });
+          await clock.tickAsync(10000);
+
+          expect(await state).to.be.true;
+          expect(cta.click.calledOnce).to.be.true;
+        } finally {
+          window.lana = previousLana;
+          clock.restore();
+        }
+      });
+    });
+  });
+
+  describe('waitForAupSdk', () => {
+    let previousSdk;
+
+    beforeEach(() => {
+      previousSdk = window.aupsdk;
+      window.aupsdk = undefined;
+    });
+
+    afterEach(() => {
+      window.aupsdk = previousSdk;
+      sinon.restore();
+    });
+
+    it('resolves when the AUP SDK becomes ready', async () => {
+      const onTimeout = sinon.spy();
+      const ready = waitForAupSdk(10000, { onTimeout });
+      window.aupsdk = { getOrchestratorContext: () => {} };
+      window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
+      expect(await ready).to.be.true;
+      expect(onTimeout.called).to.be.false;
+    });
+
+    it('resolves false on timeout', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const onTimeout = sinon.spy();
+        const ready = waitForAupSdk(100, { onTimeout });
+        await clock.tickAsync(99);
+        expect(onTimeout.called).to.be.false;
+        await clock.tickAsync(1);
+        expect(await ready).to.be.false;
+        expect(onTimeout.calledOnce).to.be.true;
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('cancels the SDK wait and releases its listener and timeout', async () => {
+      const controller = new AbortController();
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const addListener = sinon.spy(window, 'addEventListener');
+      const removeListener = sinon.spy(window, 'removeEventListener');
+      try {
+        const initialTimers = clock.countTimers();
+        const onTimeout = sinon.spy();
+        const ready = waitForAupSdk(10000, { signal: controller.signal, onTimeout });
+        const listener = addListener.withArgs(AUP_SDK_READY_EVENT).firstCall.args[1];
+        controller.abort();
+        const result = await Promise.race([ready, Promise.resolve('pending')]);
+
+        expect(result).to.be.false;
+        expect(clock.countTimers()).to.equal(initialTimers);
+        expect(removeListener.calledWith(AUP_SDK_READY_EVENT, listener)).to.be.true;
+        await clock.tickAsync(10000);
+        expect(onTimeout.called).to.be.false;
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('does not wait or report ready when the request is already aborted', async () => {
+      const controller = new AbortController();
+      controller.abort();
+      window.aupsdk = { getOrchestratorContext: () => {} };
+
+      expect(await waitForAupSdk(10000, { signal: controller.signal })).to.be.false;
     });
   });
 

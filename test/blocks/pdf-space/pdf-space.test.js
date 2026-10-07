@@ -40,7 +40,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 fixtureSource = document.querySelector('.pdf-space');
 
 const { default: init, derivePhases } = await import(
-  '../../../libs/mep/ace1205/pdf-space/pdf-space.js'
+  '../../../libs/c2/blocks/pdf-space/pdf-space.js'
 );
 
 // ── Global stubs ─────────────────────────────────────────────────────────────

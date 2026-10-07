@@ -1,4 +1,4 @@
-import { createTag, SLD } from '../../utils/utils.js';
+import { createTag, getValidatedRepoOwnerOrigin } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
@@ -140,13 +140,32 @@ async function fetchLibrary(domain, suppliedLibrary) {
   }
 }
 
+/**
+ * Restricts `library` to the validated repo/owner origin so it can't point
+ * at an arbitrary third-party host (VULN-38270).
+ * @param {string} library raw `library` query parameter value
+ * @param {string} domain validated repo/owner origin
+ * @returns {string|null} the resolved library URL, or null if unsafe/absent
+ */
+export function getValidatedSuppliedLibrary(library, domain) {
+  if (!library) return null;
+  let url;
+  try {
+    url = new URL(library, domain);
+  } catch {
+    return null;
+  }
+  return url.origin === domain ? url.href : null;
+}
+
 async function getSuppliedLibrary() {
   const { searchParams } = new URL(window.location.href);
   const repo = searchParams.get('repo');
   const owner = searchParams.get('owner');
   const library = searchParams.get('library');
-  if (!repo || !owner) return null;
-  return fetchLibrary(`https://main--${repo}--${owner}.${SLD}.live`, library);
+  const domain = getValidatedRepoOwnerOrigin(repo, owner);
+  if (!domain) return null;
+  return fetchLibrary(domain, getValidatedSuppliedLibrary(library, domain));
 }
 
 async function fetchAssetsData(path) {

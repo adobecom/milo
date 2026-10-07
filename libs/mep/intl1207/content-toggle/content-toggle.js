@@ -3,6 +3,7 @@ import { createTag, loadBlock } from '../../../utils/utils.js';
 const DEFAULT_MOUNT_MARKER = '[content-toggle]';
 const IDLE_TIMEOUT_MS = 4000;
 const IDLE_FALLBACK_DELAY_MS = 2000;
+const GNAV_READY_TIMEOUT_MS = 3000;
 
 const revealPromises = new WeakMap();
 
@@ -80,6 +81,12 @@ function getButtonMatchValues($button) {
 function sectionMatchesButton($section, matchValues) {
   const value = $section.dataset.toggle?.toLowerCase();
   return value ? matchValues.has(value) : false;
+}
+
+function revealToggleMarquees($section) {
+  $section.querySelectorAll('[class*="marquee"].hide-toggle-marquee').forEach((marquee) => {
+    marquee.classList.remove('hide-toggle-marquee');
+  });
 }
 
 function getColourScheme(config, $block) {
@@ -173,15 +180,32 @@ function scheduleIdlePrefetch($sections, defaultIndex) {
   }
 }
 
+const HEADER_OFFSET_SELECTORS = [
+  'header.gnav', 'header.global-navigation', '.feds-localnav', '.feds-promo-aside-wrapper',
+];
+
 function getStickyHeaderOffset() {
-  const selectors = [
-    'header.gnav', 'header.global-navigation', '.feds-localnav', '.feds-promo-aside-wrapper',
-  ];
-  return selectors.reduce((max, selector) => {
+  return HEADER_OFFSET_SELECTORS.reduce((max, selector) => {
     const el = document.querySelector(selector);
     if (!el) return max;
     return Math.max(max, el.getBoundingClientRect().bottom);
   }, 0);
+}
+
+function watchHeaderOffsetChanges(onChange) {
+  const watched = new WeakSet();
+  const attach = (el) => {
+    if (!el || watched.has(el)) return;
+    watched.add(el);
+    new MutationObserver(onChange).observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
+    new ResizeObserver(onChange).observe(el);
+  };
+  HEADER_OFFSET_SELECTORS.forEach((selector) => attach(document.querySelector(selector)));
+
+  const lateArrivalObserver = new MutationObserver(() => {
+    HEADER_OFFSET_SELECTORS.forEach((selector) => attach(document.querySelector(selector)));
+  });
+  lateArrivalObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 function getUntaggedToggleValue(config) {
@@ -281,9 +305,10 @@ function initButton($block, $sections, index, opts) {
         await Promise.all([...$sections].map(async ($section) => {
           if (matchingSections.includes($section)) {
             await revealSection($section);
-            $section.style.display = 'block';
+            $section.classList.add('content-toggle-active');
+            revealToggleMarquees($section);
           } else {
-            $section.style.display = 'none';
+            $section.classList.remove('content-toggle-active');
           }
         }));
         mountToggle(matchingSections);
@@ -324,7 +349,7 @@ function isStickyPositioned($section) {
 function releaseUnreliableAncestor(trackedAncestor, $sections) {
   delete trackedAncestor.dataset.toggle;
   delete trackedAncestor.dataset.toggleUntagged;
-  trackedAncestor.style.display = '';
+  trackedAncestor.classList.remove('content-toggle-active');
   const idx = $sections.indexOf(trackedAncestor);
   if (idx !== -1) $sections.splice(idx, 1);
 }
@@ -374,8 +399,9 @@ function tagLateSection(
   }
   if (!$section.dataset.toggle) return;
   $sections.push($section);
-  if (!sectionMatchesButton($section, toggleState.activeLabel)) {
-    $section.style.display = 'none';
+  if (sectionMatchesButton($section, toggleState.activeLabel)) {
+    $section.classList.add('content-toggle-active');
+    revealToggleMarquees($section);
   }
 }
 
@@ -535,6 +561,22 @@ function waitForRenderedSize(el) {
   });
 }
 
+function waitForGnavReady() {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(resolve, GNAV_READY_TIMEOUT_MS);
+    function check() {
+      const gnav = document.querySelector('header.gnav, header.global-navigation');
+      if (!gnav || gnav.classList.contains('ready')) {
+        clearTimeout(timeout);
+        resolve();
+        return;
+      }
+      requestAnimationFrame(check);
+    }
+    check();
+  });
+}
+
 function setupAlwaysFixedBehaviour(toggleWrapper, ownTopLevelSection, $enclosingMain) {
   let ticking = false;
   const applyOffset = () => {
@@ -543,7 +585,7 @@ function setupAlwaysFixedBehaviour(toggleWrapper, ownTopLevelSection, $enclosing
     toggleWrapper.setAttribute('style', `top: ${getStickyHeaderOffset()}px; display: block;`);
   };
 
-  waitForRenderedSize(toggleWrapper).then(() => {
+  Promise.all([waitForRenderedSize(toggleWrapper), waitForGnavReady()]).then(() => {
     $enclosingMain.append(toggleWrapper);
     toggleWrapper.classList.add('fixed');
     ownTopLevelSection.style.display = 'none';
@@ -557,6 +599,7 @@ function setupAlwaysFixedBehaviour(toggleWrapper, ownTopLevelSection, $enclosing
   };
   window.addEventListener('scroll', requestUpdate, { passive: true });
   window.addEventListener('resize', requestUpdate);
+  watchHeaderOffsetChanges(requestUpdate);
 }
 function setupSnapBehaviour(
   toggleWrapper,
@@ -604,6 +647,7 @@ function setupSnapBehaviour(
   };
   window.addEventListener('scroll', requestUpdate, { passive: true });
   window.addEventListener('resize', requestUpdate);
+  watchHeaderOffsetChanges(requestUpdate);
 
   stickyState.forcePin = pinNow;
 }
@@ -661,6 +705,7 @@ function setupStickyBehaviour(toggleWrapper, mode, stickyState, marqueeSelector)
   };
   window.addEventListener('scroll', requestUpdate, { passive: true });
   window.addEventListener('resize', requestUpdate);
+  watchHeaderOffsetChanges(requestUpdate);
 }
 
 export default async function decorate(block) {
@@ -733,8 +778,9 @@ export default async function decorate(block) {
     $sections.forEach(($section) => {
       if (sectionMatchesButton($section, defaultMatchValues)) {
         defaultSections.push($section);
+        $section.classList.add('content-toggle-active');
+        revealToggleMarquees($section);
       } else {
-        $section.style.display = 'none';
         deferSectionBlocks($section);
       }
     });

@@ -1,4 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
+import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
   decorateMarqueeBackground,
@@ -10,13 +11,17 @@ import {
   decorateFloatingInput,
   updateReplicatedValue,
   handleConsent,
+  hasChatCookie,
 } from './bc-utils.js';
 import {
   loadWebclient,
   bcBootstrap,
   openModal,
+  openSideModal,
+  sideOverlayTop,
   setAuthoredContent,
   mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
@@ -27,11 +32,10 @@ import initChatPanel, {
 const variants = {};
 
 function checkGlobal() {
-  let global = false;
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    global = window.milo.brandConcierge.brandConciergeGlobal;
+    return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  return global;
+  return false;
 }
 
 function routeInput(text) {
@@ -81,11 +85,26 @@ export default async function init(el) {
     }
   });
 
+  sideOverlayTop();
+  initAnalytics('BC-Inline-shown');
+
   // Build the chat-panel DOM once so gnav / floating-button / input triggers
   // can open it. Idempotent — safe to call from multiple BC block instances.
   initChatPanel();
-
-  const rows = el.querySelectorAll(':scope > div');
+  
+  const rows = [...el.querySelectorAll(':scope > div')];
+  let customGradient = null;
+  let gradientRow = null;
+  if (el.classList.contains('marquee')
+    && rows[0]
+    && !rows[0].querySelector('picture')
+    && rows[1]?.querySelector('picture')) {
+    const rowText = rows[0].textContent.trim();
+    if (!rowText || /^linear-gradient\(/.test(rowText)) {
+      gradientRow = rows.shift();
+      customGradient = rowText || null;
+    }
+  }
   const [background, header, cards, input, legal] = rows;
 
   setAuthoredContent(header, cards, input);
@@ -162,10 +181,10 @@ export default async function init(el) {
   }
 
   if (variants.isMarquee) {
-    decorateMarqueeBackground(el, background);
+    decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
     decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt }, false);
+    decorateCards(el, cards, { handle: handleSuggestedPrompt });
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
@@ -186,4 +205,13 @@ export default async function init(el) {
   rows.forEach((row) => {
     el.removeChild(row);
   });
+  if (gradientRow) el.removeChild(gradientRow);
+
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
+  if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
+    openSideModal(null, bcBootstrap);
+  }
 }

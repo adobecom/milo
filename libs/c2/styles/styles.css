@@ -1,7 +1,10 @@
 @font-face {
   font-family: 'Arial Bold Adjusted';
   font-weight: 900;
-  size-adjust: 92%;
+  size-adjust: 93%;
+  ascent-override: 91%;
+  descent-override: 25%;
+  line-gap-override: 0%;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 
@@ -15,6 +18,14 @@
   syntax: '<length>';
   inherits: true;
   initial-value: 1920px;
+}
+
+/* Registered so atan2() resolves to an angle before tan(); Safari 26 otherwise
+  feeds degrees into tan() as radians and produces a huge negative scale */
+@property --grid-scale-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 45deg;
 }
 
 :root {
@@ -519,6 +530,9 @@
   --s2a-color-content-subheading: var(--s2a-color-content-knockout);
   --s2a-color-content-subtle: var(--s2a-color-transparent-white-64);
   --s2a-color-content-heading: var(--s2a-color-content-knockout);
+   --s2a-color-content-body-strong: var(--s2a-color-content-strong);
+  --s2a-color-content-body-subtle: var(--s2a-color-content-subtle);
+  --s2a-color-content-caption: var(--s2a-color-content-subtle);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
 
   /* Milo-specific declarations */
@@ -625,8 +639,13 @@ a {
   &.standalone-link {
     &::after {
       display: inline-block;
+      width: 5px;
+      height: 8px;
       margin-inline-start: var(--s2a-spacing-8);
-      content: url('../assets/img/arrow-right.svg');
+      content: '';
+      background-color: currentcolor;
+      mask: url('../assets/img/arrow-right.svg') no-repeat center;
+      mask-size: contain;
       transition: transform 0.5s var(--parallax-easing);
     }
 
@@ -1026,10 +1045,16 @@ p {
   inline-size: 32px;
   justify-content: center;
   transition: background-color 0.2s ease, border-color 0.2s ease;
-  will-change: background-color, border-color;
   path {
     transition: fill 0.2s ease;
-    will-change: fill;
+  }
+
+  .dark & {
+    background-color: var(--s2a-color-transparent-black-04);
+    border-color: var(--s2a-color-transparent-black-08);
+    path {
+      fill: var(--s2a-color-gray-1000);
+    }
   }
 }
 
@@ -1073,6 +1098,29 @@ p {
       border-color: var(--s2a-color-content-knockout);
       path {
         fill: var(--s2a-color-background-knockout);
+      }
+    }
+  }
+
+  .dark & {
+    background: var(--s2a-color-background-inverse);
+    color: var(--s2a-color-content-inverse);
+
+    &:hover,
+    &:focus {
+      .icon-button {
+        background-color: var(--s2a-color-transparent-black-08);
+        border-color: var(--s2a-color-transparent-black-16);
+      }
+    }
+
+    &:active {
+      .icon-button {
+        background-color: var(--s2a-color-gray-1000);
+        border-color: var(--s2a-color-transparent-white-24);
+        path {
+          fill: var(--s2a-color-content-default);
+        }
       }
     }
   }
@@ -1137,6 +1185,12 @@ span.hang-opening-quote {
 
 [dir="rtl"] span.hang-opening-quote {
   transform: translateX(100%);
+}
+
+/* Placeholder for a promotion: hidden until its mas-fields resolve with content
+   (see watchPromoPlaceholders in blocks/merch/merch.js). */
+.promo-placeholder:not(.promo-resolved) {
+  display: none;
 }
 
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
@@ -1225,21 +1279,30 @@ span.hang-opening-quote {
 
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
+    --parallax-scale-grid-margin: var(--grid-margin-width);
+    --grid-scale-angle: atan2(
+      min(var(--grid-max-width-fluid), 100vw),
+      min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
+    );
+    --grid-scale-multiplier: tan(var(--grid-scale-angle));
+
     animation-name: enable-grid-parallax;
-    will-change: padding-inline;
-    overflow: clip;
+    transform-origin: top center;
+    overflow-x: clip;
+    will-change: scale;
+
+    @media (width >= 768px) {
+      /* 8.333% grid margin as a length (a % can't resolve inside atan2)
+      Keep value in sync with --grid-margin-width-base */
+      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
+    }
+
+    :has(> &) { overflow-x: clip; }
   }
 
   @keyframes enable-grid-parallax {
-    from {
-      --grid-max-width: var(--grid-max-width-fluid);
-      --grid-margin-width: 0px;
-    }
-
-    to {
-      --grid-max-width: var(--grid-max-width-target);
-      --grid-margin-width: var(--grid-margin-width-target);
-    }
+    from { scale: var(--grid-scale-multiplier, 1); }
+    to   { scale: 1; }
   }
 
   /* Stagger parallax declarations */
@@ -1453,6 +1516,16 @@ span.hang-opening-quote {
     /* Shorter viewports in the common laptop width band need more travel */
     @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
       --parallax-move-up-to: calc(var(--feds-promo-bar-height, 0px) - 50vh);
+    }
+
+    /* Once the promo bar has scrolled out (feds-header-scrolled), it no longer
+       offsets this section, so drop the var and move by the flat vh amount. */
+    body:has(header.feds-header-scrolled) & {
+      --parallax-move-up-to: -35vh;
+
+      @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+        --parallax-move-up-to: -50vh;
+      }
     }
 
     &::after {

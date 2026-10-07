@@ -3,6 +3,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupEnabled,
   loadIms,
   loadStyle,
   loadLana,
@@ -66,7 +67,13 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const {
+  AUP_SDK_READY_EVENT,
+  getAupModalHashCleanup,
+  getAupModalTitle,
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} = merch;
 
 const {
   clearSignOutCookies,
@@ -368,6 +375,7 @@ export const osMap = {
 };
 
 export const LANGMAP = {
+  ar: ['ara'],
   cs: ['cz'],
   da: ['dk'],
   de: ['at'],
@@ -578,6 +586,8 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
+    // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
+    this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
 
   // eslint-disable-next-line no-return-assign
@@ -620,6 +630,7 @@ class Gnav {
       this.revealGnav,
       this.ims,
       this.addChangeEventListeners,
+      this.initCompactOverflow,
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.isLocalNav());
@@ -826,9 +837,10 @@ class Gnav {
   };
 
   addChangeEventListeners = () => {
-    // Ensure correct DOM order for elements between mobile and desktop
-    isDesktop.addEventListener('change', () => {
-      if (isDesktop.matches) {
+    // Ensure correct DOM order for elements between desktop and effectively-mobile
+    // (real mobile, or forced-compact at desktop width via dynamic reflow).
+    const syncElementOrder = () => {
+      if (!this.isEffectivelyMobile()) {
         // On desktop, search is after nav
         if (this.elements.mainNav instanceof HTMLElement
           && this.elements.search instanceof HTMLElement) {
@@ -841,23 +853,27 @@ class Gnav {
           this.elements.topnav.after(this.elements.breadcrumbsWrapper);
         }
       } else {
-        // On mobile, nav is after search
+        // On mobile (or forced-compact), nav is after search
         if (this.elements.mainNav instanceof HTMLElement
           && this.elements.search instanceof HTMLElement) {
           this.elements.mainNav.before(this.elements.search);
         }
 
-        // On mobile, breadcrumbs are before the search and nav
+        // On mobile (or forced-compact), breadcrumbs are before the search and nav,
         if (this.elements.navWrapper instanceof HTMLElement
           && this.elements.breadcrumbsWrapper instanceof HTMLElement) {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
-    });
+    };
+    isDesktop.addEventListener('change', syncElementOrder);
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', syncElementOrder);
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
     const toggleContraction = () => {
-      const isOverflowing = isTangentToViewport.matches
+      // Skip when effectively mobile — the row cosmetic would bleed into the drawer.
+      const isOverflowing = !this.isEffectivelyMobile()
+        && isTangentToViewport.matches
         && this.elements.topnav?.scrollWidth
         && this.elements.topnav.scrollWidth > document.body.clientWidth;
 
@@ -867,6 +883,80 @@ class Gnav {
 
     toggleContraction();
     isTangentToViewport.addEventListener('change', toggleContraction);
+  };
+
+  // Mobile behaviour source of truth: real mobile, or forced-compact at desktop width.
+  isEffectivelyMobile = () => !isDesktop.matches || this.block.classList.contains('is-compact');
+
+  // Collapse to is-compact (+ .new-nav) when the nav overflows at desktop widths
+  // (mirrors C2's initCompactOverflow); fires feds:compactchange for dropdowns.
+  initCompactOverflow = () => {
+    if (!this.dynamicReflowEnabled) return;
+    const header = this.block;
+    const { topnav } = this.elements;
+    if (!(header instanceof HTMLElement) || !(topnav instanceof HTMLElement)) return;
+    const overflowingClass = selectors.overflowingTopNav.slice(1);
+    let rafId = null;
+
+    const measure = () => {
+      rafId = null;
+      const wasCompact = header.classList.contains('is-compact');
+      // Below the breakpoint the native mobile path owns .new-nav and the rebuild;
+      // firing feds:compactchange here would race it and blank the popup.
+      if (!isDesktop.matches) {
+        if (wasCompact) header.classList.remove('is-compact');
+        return;
+      }
+      const { navWrapper } = this.elements;
+      if (this.newMobileNav && navWrapper instanceof HTMLElement) navWrapper.style.transition = 'none';
+      // Strip is-compact + new-nav to measure the true row width (new-nav translates
+      // items off-screen, under-reporting); drop the cosmetic overflow class too.
+      header.classList.remove('is-compact');
+      if (this.newMobileNav) header.classList.remove('new-nav');
+      const wasOverflowing = topnav.classList.contains(overflowingClass);
+      topnav.classList.remove(overflowingClass);
+      // topnav is clamped by its max-width, so compare against its own width.
+      const available = topnav.clientWidth;
+      // Reserve the brand-concierge / search widget at its full authored width for
+      // so the nav collapses before the box is squeezed
+      const flexible = [...topnav.querySelectorAll('.feds-bc-wrapper, .feds-client-search')];
+      const savedFlex = flexible.map((el) => [el.style.width, el.style.flexShrink]);
+      flexible.forEach((el) => { el.style.width = ''; el.style.flexShrink = '0'; });
+      const prevWidth = topnav.style.width;
+      const prevMaxWidth = topnav.style.maxWidth;
+      topnav.style.width = 'max-content';
+      topnav.style.maxWidth = 'none';
+      const contentWidth = topnav.scrollWidth;
+      topnav.style.width = prevWidth;
+      topnav.style.maxWidth = prevMaxWidth;
+      flexible.forEach((el, i) => {
+        [el.style.width, el.style.flexShrink] = savedFlex[i];
+      });
+      const EXPAND_BUFFER = 40;
+      const navMaxWidth = parseFloat(getComputedStyle(topnav).maxWidth) || Infinity;
+      const hasRoomToGrow = available < navMaxWidth - 1;
+      const threshold = wasCompact && hasRoomToGrow ? available - EXPAND_BUFFER : available;
+      const shouldCompact = contentWidth > threshold;
+      header.classList.toggle('is-compact', shouldCompact);
+      if (this.newMobileNav) header.classList.toggle('new-nav', shouldCompact);
+      // Desktop-row cosmetic only — keep off in compact so it can't bleed into the drawer.
+      if (wasOverflowing && !shouldCompact) topnav.classList.add(overflowingClass);
+      if (this.newMobileNav && navWrapper instanceof HTMLElement) {
+        navWrapper.getBoundingClientRect(); // reflow: commit translate with transitions off
+        requestAnimationFrame(() => navWrapper.style.removeProperty('transition'));
+      }
+      if (shouldCompact !== wasCompact) window.dispatchEvent(new CustomEvent('feds:compactchange'));
+    };
+
+    const schedule = () => { if (rafId === null) rafId = requestAnimationFrame(measure); };
+
+    new ResizeObserver(schedule).observe(header);
+    // ResizeObserver(header) misses late-streamed content at a fixed width; watch
+    // topnav mutations + font load so reload comes up compact without a resize.
+    new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
+    isDesktop.addEventListener('change', schedule);
+    document.fonts?.ready?.then(schedule);
+    schedule();
   };
 
   loadDelayed = async () => {
@@ -904,7 +994,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+    if (isAupEnabled(this.useUniversalNav)) {
       this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
@@ -1043,53 +1133,172 @@ class Gnav {
   static preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
-    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const commerceEnvironment = new URLSearchParams(window.location.search).get('commerce.env');
+    const allowOverride = config.env.name !== 'prod';
+    let environment = cdnEnvironment;
+    if (allowOverride && commerceEnvironment?.toLowerCase() === 'prod') environment = 'prod';
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
 
+    let cancelActiveDialog;
+    let dialogRequest = 0;
+    const claimedAupModalHashes = new WeakSet();
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      getProfile: async () => (
+        window.adobeIMS?.isSignedInUser() ? window.adobeIMS.getProfile() : undefined
+      ),
       environment,
-      cdnEnvironment: environment,
+      cdnEnvironment,
       locale,
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
-      showDialog: async (element, _, closeCallback) => {
-        document.getElementById('feds-manage-people-dialog')?.remove();
-        const dialog = document.createElement('dialog');
-        dialog.id = 'feds-manage-people-dialog';
-        dialog.appendChild(element);
-        document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
-          closeCallback({ type: 'close' });
-          dialog.close();
-          dialog.remove();
-          document.documentElement.classList.remove('disable-scroll');
-        });
-        dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
-            closeCallback({ type: 'close' });
-            dialog.close();
-            dialog.remove();
-            document.documentElement.classList.remove('disable-scroll');
+      showDialog: async (element, options, closeCallback) => {
+        dialogRequest += 1;
+        const request = dialogRequest;
+        const availableAupCleanup = getAupModalHashCleanup();
+        const canClaimHash = availableAupCleanup && !claimedAupModalHashes.has(availableAupCleanup);
+        const cleanupAupModalHash = canClaimHash
+          ? availableAupCleanup : undefined;
+        if (cleanupAupModalHash) claimedAupModalHashes.add(cleanupAupModalHash);
+        const modalHash = cleanupAupModalHash && window.location.hash;
+        const modalTitle = cleanupAupModalHash && getAupModalTitle();
+        const isIframe = element.tagName === 'IFRAME';
+        const controller = new AbortController();
+        let dialog;
+        let closeMiloModal;
+        let finishLoading;
+        let onNavigation;
+        let onWorkflowClose;
+        let requestClose;
+        let closing;
+        let settled = false;
+        let workflowClosed = false;
+        const cleanup = () => {
+          controller.abort();
+          finishLoading?.();
+          element.removeEventListener('close', onWorkflowClose);
+          window.removeEventListener('popstate', onNavigation);
+          window.removeEventListener('hashchange', onNavigation);
+          if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
+          cleanupAupModalHash?.();
+        };
+        const finishWorkflow = () => {
+          if (settled) return;
+          settled = true;
+          if (!workflowClosed) {
+            element.dispatchEvent(new Event('cancel'));
+            if (!workflowClosed) element.dispatchEvent(new Event('close'));
           }
-        });
-        document.documentElement.classList.add('disable-scroll');
-        dialog.showModal();
+          cleanup();
+          closeCallback({ type: 'close' });
+        };
+        requestClose = () => {
+          if (closing) return closing;
+          if (settled) return undefined;
+          if (dialog) closing = closeMiloModal(dialog);
+          else finishWorkflow();
+          return closing;
+        };
+        onWorkflowClose = () => {
+          workflowClosed = true;
+          requestClose();
+        };
+        onNavigation = () => {
+          if (modalHash && window.location.hash !== modalHash) requestClose();
+        };
+        element.addEventListener('close', onWorkflowClose);
+        try {
+          const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
+          const [{ getModal, closeModal }] = await Promise.all([
+            import(isC2 ? '../../c2/blocks/modal/modal.js' : '../modal/modal.js'),
+            ...(isIframe ? [
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ] : []),
+          ]);
+          closeMiloModal = closeModal;
+          if (settled) return;
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          await cancelActiveDialog?.();
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          const content = document.createElement('div');
+          content.className = 'aup-workflow-content';
+          const title = options?.title || element.getAttribute('aria-label')
+            || modalTitle || element.getAttribute('title');
+          const labelledBy = element.getAttribute('aria-labelledby');
+          if (isIframe) {
+            const spinner = toFragment`
+              <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
+                <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
+              </sp-theme>`;
+            content.classList.add('loading');
+            content.appendChild(spinner);
+            finishLoading = () => {
+              element.removeEventListener('app_loaded', finishLoading);
+              content.classList.remove('loading');
+              dialog?.classList.add('hide-close-button');
+              spinner.remove();
+              finishLoading = undefined;
+            };
+            element.addEventListener('app_loaded', finishLoading, { once: true });
+          }
+          content.appendChild(element);
+          window.addEventListener('popstate', onNavigation);
+          window.addEventListener('hashchange', onNavigation);
+          dialog = await getModal(null, {
+            id: 'aup-workflow-dialog',
+            class: 'aup-modal',
+            content,
+            title,
+            hash: modalHash,
+            signal: controller.signal,
+            closeEvent: 'closeModal',
+            closeCallback: finishWorkflow,
+          });
+          if (settled) {
+            if (dialog?.isConnected) await closeMiloModal(dialog);
+            return;
+          }
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          if (!finishLoading) dialog.classList.add('hide-close-button');
+          if (labelledBy) {
+            dialog.setAttribute('aria-labelledby', labelledBy);
+            dialog.removeAttribute('aria-label');
+          } else if (title) {
+            dialog.setAttribute('aria-label', title);
+          }
+          cancelActiveDialog = requestClose;
+        } catch (e) {
+          cleanup();
+          throw e;
+        }
       },
     });
 
-    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    const features = ['useToasts'];
+    if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
+    await window.aupsdk.updateConfig({ miniAppContext: { features } });
+    window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
     return window.aupsdk;
   };
 
@@ -1102,9 +1311,7 @@ class Gnav {
     }
     const config = getConfig();
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
-    const locale = lingoRegion?.ietf
-      ? lingoRegion.ietf.replace('-', '_')
-      : getUniversalNavLocale(config.locale);
+    const locale = getUniversalNavLocale(lingoRegion ?? config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
@@ -1342,7 +1549,7 @@ class Gnav {
       </button>`;
 
     const setHamburgerPadding = () => {
-      if (isDesktop.matches) {
+      if (!this.isEffectivelyMobile()) {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
@@ -1365,7 +1572,7 @@ class Gnav {
     toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'gnav', 'e'));
 
     const onDeviceChange = () => {
-      if (isDesktop.matches) {
+      if (!this.isEffectivelyMobile()) {
         toggle.setAttribute('aria-expanded', false);
         this.elements.navWrapper.classList.remove('feds-nav-wrapper--expanded');
         document.body.classList.remove('disable-scroll');
@@ -1376,6 +1583,8 @@ class Gnav {
     };
 
     isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'gnav', 'e'));
+    // Only when dynamic reflow is enabled does forced-compact fire this event.
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', () => logErrorFor(onDeviceChange, 'Toggle logic failed on compact change', 'gnav', 'e'));
 
     return toggle;
   };
@@ -1718,7 +1927,7 @@ class Gnav {
             const popup = template.querySelector('.feds-popup');
             desktopMegaMenuHTML = popup.innerHTML;
             if (!this.newMobileNav) return;
-            if (isDesktop.matches || !popup) return;
+            if (!this.isEffectivelyMobile() || !popup) return;
             mobileNavCleanup();
             mobileNavCleanup = await transformTemplateToMobile({
               popup,
@@ -1744,7 +1953,7 @@ class Gnav {
         })();
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
-          if (!isDesktop.matches && popup) {
+          if (this.isEffectivelyMobile() && popup) {
             mobileNavCleanup();
             mobileNavCleanup = await transformTemplateToMobile({
               popup,
@@ -1753,33 +1962,51 @@ class Gnav {
               toggleMenu: this.toggleMenuMobile,
             });
             popup.style.removeProperty('visibility');
-          } else if (isDesktop.matches) {
+          } else if (!this.isEffectivelyMobile()) {
             popup?.style.removeProperty('visibility');
           }
-          isDesktop.addEventListener('change', async () => {
-            const newPopup = template.querySelector('.feds-popup');
-            if (!newPopup) return;
-            enableMobileScroll();
-            if (isDesktop.matches) {
-              newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
-              if (newPopup.classList.contains('error')) {
-                const errorDiv = await createErrorPopup();
-                if (newPopup) newPopup.replaceWith(errorDiv);
+          // Rebuild the popup for the current mode. lastMode skips no-op flips
+          // (compact>900 and real<900 are both mobile; re-transforming mobile DOM
+          // blanks it); serialized so runs don't race the shared mobileNavCleanup.
+          let syncing = false;
+          let pendingSync = false;
+          let lastMode = this.isEffectivelyMobile() ? 'mobile' : 'desktop';
+          const syncPopupForViewport = async () => {
+            const mode = this.isEffectivelyMobile() ? 'mobile' : 'desktop';
+            if (mode === lastMode) return;
+            if (syncing) { pendingSync = true; return; }
+            syncing = true;
+            lastMode = mode;
+            try {
+              const newPopup = template.querySelector('.feds-popup');
+              if (!newPopup) return;
+              enableMobileScroll();
+              if (mode === 'desktop') {
+                newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
+                if (newPopup.classList.contains('error')) {
+                  const errorDiv = await createErrorPopup();
+                  if (newPopup) newPopup.replaceWith(errorDiv);
+                }
+                this.block.classList.remove('new-nav');
+                disableAriaHidden();
+                removeA11YMobileDropdowns();
+              } else {
+                mobileNavCleanup();
+                mobileNavCleanup = await transformTemplateToMobile({
+                  popup: newPopup,
+                  item,
+                  localnav: this.isLocalNav(),
+                  toggleMenu: this.toggleMenuMobile,
+                });
+                this.block.classList.add('new-nav');
               }
-              this.block.classList.remove('new-nav');
-              disableAriaHidden();
-              removeA11YMobileDropdowns();
-            } else {
-              mobileNavCleanup();
-              mobileNavCleanup = await transformTemplateToMobile({
-                popup: newPopup,
-                item,
-                localnav: this.isLocalNav(),
-                toggleMenu: this.toggleMenuMobile,
-              });
-              this.block.classList.add('new-nav');
+            } finally {
+              syncing = false;
+              if (pendingSync) { pendingSync = false; syncPopupForViewport(); }
             }
-          });
+          };
+          isDesktop.addEventListener('change', syncPopupForViewport);
+          if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', syncPopupForViewport);
         }
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
@@ -1825,7 +2052,7 @@ class Gnav {
 
           // Toggle trigger's dropdown on click
           dropdownTrigger.addEventListener('click', (e) => {
-            if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
+            if (this.isEffectivelyMobile() && this.newMobileNav && isSectionMenu) {
               const popup = dropdownTrigger.nextElementSibling;
               // document.body.style.top should always be set
               // at this point by calling disableMobileScroll
@@ -1833,7 +2060,7 @@ class Gnav {
                 this.updatePopupPosition(popup);
               }
               makeTabActive(popup);
-            } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
+            } else if (!this.isEffectivelyMobile() && this.newMobileNav && isSectionMenu) {
               const popup = dropdownTrigger.nextElementSibling;
               if (popup) popup.style.removeProperty('top');
             }

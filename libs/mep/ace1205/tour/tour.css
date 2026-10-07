@@ -48,7 +48,7 @@
   padding-block-start: var(--s2a-layout-sm);
   text-align: center;
   img {
-    max-height: 127px;
+    max-height: 200px;
     width: auto;
   }
 }
@@ -238,12 +238,6 @@
 @media (max-width: 696px) {
   .dialog-modal:has(.tour) {
     max-width: 100dvw;
-  }
-  .tour-row-image-center {
-    img {
-      max-height: 110px;
-      width: auto;
-    }
   }
 }
 

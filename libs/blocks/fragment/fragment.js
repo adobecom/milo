@@ -31,7 +31,8 @@ const updateFragMap = async (fragment, a, href) => {
 
   if (!fragLinksWithLocalizations.length) return;
 
-  if (document.body.contains(a) && !a.parentElement?.closest('.fragment')) {
+  const parentHref = a.closest('[data-path]')?.getAttribute('data-path');
+  if (document.body.contains(a) && !a.parentElement?.closest('.fragment') && !parentHref) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinksWithLocalizations.forEach((localizedHref) => {
@@ -55,8 +56,26 @@ const updateFragMap = async (fragment, a, href) => {
 
 const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
-  const fragChildren = [...sections[0].children];
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+  const rowOrCellInsertContainer = a.closest('[data-mep-replace-type]');
+  const rowOrCellInsertValue = rowOrCellInsertContainer?.getAttribute('data-mep-replace-type');
+  const section = sections[0];
+  const sectionBlockCandidates = [...section.children]
+    .filter((child) => child.matches('div[class]:not([class*="section"])'));
+  const fragmentBlock = sectionBlockCandidates[0];
+  let fragChildren;
+
+  if (rowOrCellInsertValue === 'row') {
+    fragChildren = fragmentBlock?.querySelectorAll(':scope > div') || [];
+  } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
+    fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
+  } else {
+    fragChildren = [...section.children];
+  }
+  if (!fragChildren.length) return;
+
+  if (rowOrCellInsertContainer && fragmentBlock) {
+    rowOrCellInsertContainer.replaceWith(...fragChildren);
+  } else if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
     a.replaceWith(...fragChildren);
@@ -64,8 +83,16 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
-    if (a.dataset.skipLoadArea !== 'true' && child.querySelector('a[href*="/fragments/"]')) {
+    const nestedFragments = child.querySelectorAll('a[href*="/fragments/"]');
+    if (a.dataset.skipLoadArea === 'true' || !nestedFragments.length) {
+      return;
+    }
+    if (rowOrCellInsertValue === 'row' || rowOrCellInsertValue === 'cell') {
+      nestedFragments.forEach((nestedFragment) => {
+        // eslint-disable-next-line no-use-before-define
+        promises.push(init(nestedFragment));
+      });
+    } else {
       promises.push(loadArea(child));
     }
   });

@@ -217,7 +217,7 @@ function positionCardActionStack(card, stack) {
   if (rect.width === 0 && rect.height === 0) { stack.style.display = 'none'; return; }
   stack.style.display = '';
   stack.style.top = `${rect.top + window.scrollY + 4}px`;
-  stack.style.left = `${rect.right + window.scrollX - stack.offsetWidth - 4}px`;
+  stack.style.right = `${document.documentElement.clientWidth - rect.right + 4}px`;
 }
 
 export function repositionCardActionStacks() {
@@ -306,7 +306,7 @@ function injectMasCardActionStack(card) {
   }
 
   stack.style.position = 'absolute';
-  stack.style.right = 'auto';
+  stack.style.left = 'auto';
   stack.style.zIndex = CARD_STACK_Z_INDEX;
   document.body.append(stack);
   cardActionStacks.set(card, stack);
@@ -451,7 +451,7 @@ let masResizeHandler;
 let masResizeRaf;
 // Exported for tests. Long enough for M@S hydration after a tab/accordion
 // switch, short enough to feel responsive.
-export const MAS_RESTAMP_DEBOUNCE_MS = 300;
+export const MAS_RESTAMP_DEBOUNCE_MS = 150;
 export function watchForMasContent() {
   if (masObserver) return;
 

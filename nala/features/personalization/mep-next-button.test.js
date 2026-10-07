@@ -34,7 +34,6 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // highlight options
   await mepButtonLoc.mepButton.click();
 
-  await mepButtonLoc.expandIcon2.click();
   await mepButtonLoc.card2toggle1.click();
   await mepButtonLoc.card2toggle2.click();
   await mepButtonLoc.card2toggle3.click();
@@ -124,9 +123,6 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // expand the Highlight card so its toggles are interactable
-  await mepButtonLoc.highlightExpandIcon.click();
-
   // the checkbox input is visually hidden, so click the switch track to flip it
   await mepButtonLoc.toggleMepTrack.click();
   await expect(page.locator('body')).toHaveAttribute('data-mep-highlight', 'true');
@@ -144,16 +140,16 @@ test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // the Highlight card starts collapsed
-  await expect(mepButtonLoc.highlightCard).not.toHaveClass(/expanded/);
-
-  // clicking the header expands it
-  await mepButtonLoc.highlightExpandIcon.click();
+  // the Highlight card starts expanded
   await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 
-  // clicking again collapses it
+  // clicking the header collapses it
   await mepButtonLoc.highlightExpandIcon.click();
   await expect(mepButtonLoc.highlightCard).not.toHaveClass(/expanded/);
+
+  // clicking again expands it
+  await mepButtonLoc.highlightExpandIcon.click();
+  await expect(mepButtonLoc.highlightCard).toHaveClass(/expanded/);
 });
 
 // Test 6: enabling MEP highlight should add the mepHighlight param to the Preview button
@@ -165,8 +161,6 @@ test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // enable the MEP highlight toggle
-  await mepButtonLoc.highlightExpandIcon.click();
   await mepButtonLoc.toggleMepTrack.click();
 
   // the Preview button href should carry the highlight param through
@@ -182,8 +176,6 @@ test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // enable the Preview Link toggle in the Toggle card
-  await mepButtonLoc.toggleCardExpandIcon.click();
   await mepButtonLoc.previewLinkTrack.click();
 
   // the Preview button href should disable the mep button on the previewed page
@@ -219,8 +211,7 @@ test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, 
   await mepButtonLoc.mepButton.click();
   await expect(mepButtonLoc.mepButtonExpanded).toBeVisible();
 
-  // expand the Load Manifest card and enter the manifest path
-  await mepButtonLoc.loadManifestExpandIcon.click();
+  // the Load Manifest card starts expanded, so the input is immediately available
   await mepButtonLoc.loadManifestInput.fill(features[9].data.pathToManifest);
 
   // previewing navigates to the page with the manifest applied

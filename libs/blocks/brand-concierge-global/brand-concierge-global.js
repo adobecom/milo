@@ -5,12 +5,15 @@ import {
   decorateCards,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
+  isC2,
+  isC2Nav,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
   setAuthoredContent,
+  sideOverlayTop,
+  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
@@ -70,18 +73,30 @@ function promptUp() {
 
 function decorateGnav(cards, input, topNav, el) {
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: 'bc-gnav' });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}${isC2() ? 'is-c2' : ''}${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
-  const gnavButtonSection = createTag('section', { class: `bc-gnav-button ${hasNoMobile ? ' no-gnav-mobile' : ''}` });
+  const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
 
   if (bcWrapper) {
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
 
+    window.addEventListener('bc:side-modal-open', () => {
+      if (!bcGnav.classList.contains('has-chat-history')) {
+        bcGnav.classList.add('has-chat-history');
+      }
+    });
+    // remove the has-chat-history class if the overlay is closed before chat history is written
+    window.addEventListener('bc:side-modal-close', () => {
+      if (!hasChatCookie()) {
+        bcGnav.classList.remove('has-chat-history');
+      }
+    });
+
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, false, 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'gnav');
     const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');
@@ -128,13 +143,11 @@ export default function init(el) {
     }
   });
 
-  setCssGnavHeight();
-
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
   const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
+    const topNav = document.querySelector('header.global-navigation nav');
     if (topNav) {
       clearInterval(navCheck);
       decorateGnav(cards, input, topNav, el);

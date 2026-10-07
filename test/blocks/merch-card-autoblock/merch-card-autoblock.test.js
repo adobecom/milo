@@ -2,11 +2,14 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import * as merch from '../../../libs/blocks/merch/merch.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 
-const { default: init } = await import('../../../libs/blocks/merch-card-autoblock/merch-card-autoblock.js');
+const { default: init, checkReady } = await import('../../../libs/blocks/merch-card-autoblock/merch-card-autoblock.js');
 
 const originalFetch = window.fetch;
 const { adobeIMS } = window;
+let jsonLd404Requested = false;
 async function mockIms(countryCode) {
   window.adobeIMS = {
     initialized: true,
@@ -26,6 +29,10 @@ describe('merch-card-autoblock autoblock', () => {
     before(async () => {
       await mockIms();
       sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('jsonld-404')) {
+          jsonLd404Requested = true;
+          return new Response('', { status: 404, statusText: 'Not Found' });
+        }
         let fileName = '';
         if (url.includes('/mas/io/fragment')) {
           fileName = 'fragment.json';
@@ -147,6 +154,82 @@ describe('merch-card-autoblock autoblock', () => {
       const frags = document.querySelectorAll('merch-card aem-fragment');
       expect(frags[0].getAttribute('loading')).to.not.exist;
       expect(frags[1].getAttribute('loading')).to.not.exist;
+    });
+
+    it('removes the jsonld source link even when the fragment 404s', async () => {
+      setConfig({ codeRoot: '/libs' });
+      jsonLd404Requested = false;
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=jsonld-404&jsonld=on');
+      document.body.append(a);
+      await init(a);
+      expect(jsonLd404Requested).to.be.true;
+      expect(a.isConnected).to.be.false;
+      expect(document.querySelector('merch-card[hidden] aem-fragment[fragment="jsonld-404"]')).to.be.null;
+    }).timeout(7000);
+
+    describe('checkReady foreground timeout (MWPW-207104)', () => {
+      const setupLogStub = async () => {
+        setConfig({ codeRoot: '/libs' });
+        const service = await merch.initService();
+        const logError = sinon.stub();
+        service.Log = { module: () => ({ error: logError }) };
+        const a = document.createElement('a');
+        a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&fragment=a657fd3d9f67');
+        a.textContent = 'merch-card: ACOM / Catalog / Test Card';
+        document.body.append(a);
+        // init() runs loadCoreDependencies, which binds the module-level log to the stub.
+        await init(a);
+        logError.resetHistory();
+        return logError;
+      };
+
+      const fakeCard = (checkReadyImpl) => ({
+        tagName: 'MERCH-CARD',
+        hasAttribute: () => false,
+        addEventListener: () => {},
+        querySelector: () => null,
+        checkReady: checkReadyImpl,
+      });
+
+      it('does not log a timeout when the page was hidden for longer than the budget', async () => {
+        const logError = await setupLogStub();
+        let resolveReady;
+        const card = fakeCard(() => new Promise((resolve) => { resolveReady = resolve; }));
+        const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+        const visibility = stubVisibility();
+
+        const ready = checkReady(card, 'a657fd3d9f67');
+        visibility.hide();
+        // Frozen webview: wall-clock time passes, the foreground budget must not.
+        await clock.tickAsync(60000);
+        expect(logError.called).to.be.false;
+
+        resolveReady(true);
+        visibility.show();
+        await clock.tickAsync(0);
+        await ready;
+        clock.restore();
+        visibility.restore();
+
+        expect(logError.called).to.be.false;
+      });
+
+      it('still logs a timeout when the page stays visible', async () => {
+        const logError = await setupLogStub();
+        const card = fakeCard(() => new Promise(() => {}));
+        const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+        const visibility = stubVisibility();
+
+        const ready = checkReady(card, 'a657fd3d9f67');
+        await clock.tickAsync(5001);
+        await ready;
+        clock.restore();
+        visibility.restore();
+
+        expect(logError.calledOnce).to.be.true;
+        expect(logError.firstCall.args[0]).to.equal('MERCH-CARD did not initialize within given timeout');
+      });
     });
   });
 

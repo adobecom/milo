@@ -1107,8 +1107,8 @@ describe('saveToMmm', () => {
     disabled: false,
     analyticsTitle: 'Test Activity',
     source: ['mep param', 'target'],
-    geoRestriction: 'us',
-    mktgAction: 'test-action',
+    countryRestriction: 'us',
+    consentType: 'test-action',
   };
 
   beforeEach(() => {
@@ -1219,7 +1219,7 @@ describe('getMepPopup', () => {
       analyticsTitle: 'Test',
       eventStart: null,
       eventEnd: null,
-      mktgAction: 'test',
+      consentType: 'test',
       ...overrides,
     };
   }
@@ -1250,7 +1250,7 @@ describe('getMepPopup', () => {
     window.history.replaceState({}, '', `${window.location.pathname}`);
   });
 
-  it('renders a manifest list entry with a mismatched selectedVariantName at pageId 0, and a matching variant with a geo restriction', async () => {
+  it('renders a manifest list entry with a mismatched selectedVariantName at pageId 0, and a matching variant with a country restriction', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     const popup = await renderPopup({
@@ -1258,7 +1258,7 @@ describe('getMepPopup', () => {
         url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
       },
       activities: [
-        buildActivity({ selectedVariantName: 'not-in-list', geoRestriction: 'us' }),
+        buildActivity({ selectedVariantName: 'not-in-list', countryRestriction: 'us' }),
         buildActivity({ selectedVariantName: 'variant-b' }),
         buildActivity({ disabled: true, eventStart: null, eventEnd: null }),
         buildActivity({ disabled: false, eventStart: '2024-01-01T00:00:00.000Z', eventEnd: null }),
@@ -1266,7 +1266,7 @@ describe('getMepPopup', () => {
     });
 
     const sections = popup.querySelectorAll('.mep-section-data');
-    expect([...sections].some((data) => data.textContent.includes('Geo')), 'geo restriction row rendered').to.be.true;
+    expect([...sections].some((data) => data.textContent.includes('Allowed User Countries')), 'country restriction row rendered').to.be.true;
     expect([...sections].some((data) => data.textContent.includes('inactive')), 'disabled activity shows inactive').to.be.true;
     const defaultSelectedOptions = popup.querySelectorAll('option[value="not-in-list"]');
     // selectedVariantName not in variantNames -> falls back to default
@@ -1314,12 +1314,12 @@ describe('getMepPopup', () => {
     expect(popup.querySelector('.mep-edit-manifest').getAttribute('href')).to.equal('');
   });
 
-  it('escapes malicious source, mktgAction, geoRestriction and targetActivityName', async () => {
+  it('escapes malicious source, consentType, countryRestriction and targetActivityName', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     const popup = await renderPopup({
       page: { ...basePage },
-      activities: [buildActivity({ source: '<b>x</b>', mktgAction: '<b>x</b>', geoRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
+      activities: [buildActivity({ source: '<b>x</b>', consentType: '<b>x</b>', countryRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
     });
     expect(popup.querySelector('.mep-section-data b'), 'section data values not parsed as markup').to.be.null;
     expect(popup.querySelector('.target-activity-name b'), 'target activity name not parsed as markup').to.be.null;

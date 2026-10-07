@@ -1,6 +1,6 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
-import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
+import { getBetaLabel, waitForCondition, expandIcon, isC2Nav } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -19,6 +19,96 @@ let susiListener;
 let sideModalEl = null;
 let sideCurtainEl = null;
 let lastImsState = null;
+let stopSideNavigationTracking = null;
+
+export function isMobile() {
+  return window.matchMedia('(max-width: 1199px)').matches;
+}
+
+export function sideOverlayTop() {
+  const gnav = document.querySelector('header.global-navigation');
+  const navElement = gnav?.querySelector('nav');
+  let navMargin = 0;
+
+  if (navElement) {
+    const navStyles = getComputedStyle(navElement);
+    navMargin = parseFloat(navStyles.marginBottom);
+  }
+
+  if (!gnav) return;
+  const gnavTop = gnav.getBoundingClientRect().top;
+  const hasLocalNav = gnav.classList.contains('local-nav');
+  const hasBreadcrumbs = gnav.classList.contains('has-breadcrumbs');
+  const isCompact = gnav.classList.contains('is-compact');
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const gnavHeight = gnav.offsetHeight;
+  const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
+  const breadcrumbHeight = Number(rootStyles.getPropertyValue('--global-height-breadcrumbs').trim().slice(0, -2));
+  const gnavMargin = isC2Nav() && window.scrollY > 20 ? navMargin : 0;
+
+  const gnavMeasure = ((
+    window.scrollY > gnavHeight && isCompact && hasLocalNav) ? 0 : gnavTop + gnavHeight - gnavMargin
+  );
+  const localNavMeasure = hasLocalNav && isCompact ? localNavHeight : 0;
+  const breadcrumbMeasure = hasBreadcrumbs && !isCompact ? breadcrumbHeight : 0;
+
+  const newTop = gnavMeasure + localNavMeasure + breadcrumbMeasure;
+  if (document.body.style.getPropertyValue('--bc-side-overlay-top') !== `${newTop}px`) {
+    document.body.style.setProperty('--bc-side-overlay-top', `${newTop}px`);
+  }
+}
+
+function handleLocalNav() {
+  const localGnav = document.querySelector('div.feds-localnav');
+  let lastDisplay = localGnav ? window.getComputedStyle(localGnav).display : null;
+  if (localGnav) {
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes') {
+          const currentDisplay = window.getComputedStyle(localGnav).display;
+
+          if (currentDisplay !== lastDisplay) {
+            lastDisplay = currentDisplay;
+            sideOverlayTop();
+          }
+        }
+      }
+    });
+    observer.observe(localGnav, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+    });
+    return observer;
+  }
+  return null;
+}
+
+function trackSideNavigation() {
+  stopSideNavigationTracking?.();
+  const gnav = document.querySelector('header.global-navigation');
+  const resizeObserver = new ResizeObserver(sideOverlayTop);
+  resizeObserver.observe(document.body);
+  if (gnav) resizeObserver.observe(gnav);
+  const localNavObserver = handleLocalNav();
+  let scrollFrame = null;
+  const scrollListener = () => {
+    if (scrollFrame !== null) return;
+    scrollFrame = window.requestAnimationFrame(() => {
+      scrollFrame = null;
+      sideOverlayTop();
+    });
+  };
+  window.addEventListener('scroll', scrollListener, { passive: true });
+  stopSideNavigationTracking = () => {
+    resizeObserver.disconnect();
+    localNavObserver?.disconnect();
+    window.removeEventListener('scroll', scrollListener);
+    if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame);
+    stopSideNavigationTracking = null;
+  };
+  sideOverlayTop();
+}
 
 /**
  * Creates the SUSI Light component for the sign-in modal.
@@ -350,6 +440,8 @@ export async function openModal(initialMessage, bootstrap) {
 
 async function hideSideModal() {
   if (!sideModalEl) return;
+  stopSideNavigationTracking?.();
+  window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
   localStorage.setItem('bc-side-overlay', 'closed');
   document.body.classList.remove('bc-side-open');
   sideModalEl.classList.add('closing');
@@ -393,6 +485,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   // Guard: if the element was removed from the DOM externally (e.g. by tests or
   // a hard reset), treat the reference as stale and fall through to a full rebuild.
   if (sideModalEl && !document.contains(sideModalEl)) {
+    stopSideNavigationTracking?.();
     sideModalEl = null;
     sideCurtainEl = null;
   }
@@ -409,7 +502,13 @@ export async function openSideModal(initialMessage, bootstrap) {
     window.lenis?.stop();
     [...document.querySelectorAll('header, main, footer')]
       .forEach((el) => el.setAttribute('aria-disabled', 'true'));
-    setTimeout(() => sideModalEl.classList.remove('opening'), animationMs);
+    trackSideNavigation();
+    window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
+    const modal = sideModalEl;
+    setTimeout(() => {
+      modal.classList.remove('opening');
+      window.lenis?.start();
+    }, animationMs);
     return;
   }
 
@@ -459,7 +558,12 @@ export async function openSideModal(initialMessage, bootstrap) {
     if (e.key === 'Escape' && !sideModalEl?.classList.contains('bc-side-hidden')) hideSideModal();
   });
 
-  setTimeout(() => modal.classList.remove('opening'), animationMs);
+  trackSideNavigation();
+  window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
+  setTimeout(() => {
+    modal.classList.remove('opening');
+    window.lenis?.start();
+  }, animationMs);
 
   expandButton.addEventListener('click', () => {
     const { classList } = modal;

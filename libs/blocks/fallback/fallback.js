@@ -5,14 +5,17 @@
  */
 const SYNTHETIC_BLOCKS = [
   'adobe-logo',
+  'brand',
   'breadcrumbs',
   'column-break',
+  'contact-support',
   'cross-cloud-menu',
   'gnav-brand',
   'gnav-promo',
   'large-menu',
   'library-metadata',
   'link-group',
+  'mailing-list',
   'profile',
   'region-selector',
   'search',

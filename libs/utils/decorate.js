@@ -321,10 +321,12 @@ export function syncPausePlayIcon(video, event) {
   if (!video || video.hasAttribute('data-hoverplay')) return;
   const holder = video.closest('.video-holder');
   if (!holder) return;
-  const offsetFiller = holder.querySelector('.offset-filler');
-  if (!offsetFiller) return;
-  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button') || holder.querySelector('a, button');
+  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button')
+    || holder.querySelector('a, button')
+    || (video.id && document.querySelector(`[aria-controls="${video.id}"]`));
   if (!playPauseBtn) return;
+  const offsetFiller = playPauseBtn.querySelector('.offset-filler');
+  if (!offsetFiller) return;
   if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
   offsetFiller.classList.toggle('is-playing');
   const isPlaying = offsetFiller.classList.contains('is-playing');
@@ -358,7 +360,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   `;
 
   const control = isC2
-    ? `<button class='play-pause-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
+    ? `<button class='play-pause-button video-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
     : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
 
   return `<div class='video-container video-holder'>${videoString}${control}</div>`;
@@ -374,7 +376,11 @@ export function handlePause(event) {
   }
   event.preventDefault();
   event.stopPropagation();
-  const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const holder = event.target.closest('.video-holder');
+  const video = holder
+    ? holder.parentElement.querySelector('video')
+    : document.getElementById(event.target.closest('.play-pause-button, .pause-play-wrapper')?.getAttribute('aria-controls'));
+  if (!video) return;
   const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
@@ -499,14 +505,41 @@ export function decorateMultiViewport(el) {
   return foreground;
 }
 
-export async function loadCDT(el, classList) {
+/**
+ * Resolves the block-level element a countdown timer belongs to: the highest ancestor of `el`
+ * that still sits inside the same section/main/body. Used to scope one timer per block.
+ */
+export function getCdtScope(el) {
+  let node = el;
+  let parent = node?.parentElement;
+  while (parent && !parent.matches?.('.section, main, body')) {
+    node = parent;
+    parent = node.parentElement;
+  }
+  return node ?? el;
+}
+
+// One countdown timer per block, whichever loader (block decoration or MAS field) claims it
+// first. The claim is taken synchronously so two loaders racing on the same block can't both
+// render, and it is released once the rendered timer leaves the block (e.g. a MAS re-render
+// replaced the field content) so the timer can be rebuilt.
+const PENDING = Symbol('cdt-pending');
+const cdtScopes = new WeakMap();
+
+export async function loadCDT(el, classList, cdtMetadata) {
+  const scope = getCdtScope(el);
+  const claim = cdtScopes.get(scope);
+  if (claim === PENDING || (claim && scope.contains(claim))) return;
+  cdtScopes.set(scope, PENDING);
   try {
-    await Promise.all([
+    const [, timer] = await Promise.all([
       loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
       import('../features/cdt/cdt.js')
-        .then(({ default: initCDT }) => initCDT(el, classList)),
+        .then(({ default: initCDT }) => initCDT(el, classList, cdtMetadata)),
     ]);
+    cdtScopes.set(scope, timer);
   } catch (error) {
+    cdtScopes.delete(scope);
     window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });
   }
 }
@@ -531,7 +564,10 @@ function updateFirstVideo() {
 
 function updateAriaLabel(videoEl, videoAttrs) {
   if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
-    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button') || videoEl.closest('.pause-play-wrapper, .play-pause-button');
+    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button')
+      || videoEl.closest('.pause-play-wrapper, .play-pause-button')
+      || (videoEl.id && document.querySelector(`[aria-controls="${videoEl.id}"]`));
+    if (!pausePlayWrapper) return;
     const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
@@ -565,7 +601,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  let attrs = getVideoAttrs(anchorTag.hash, dataset);
+  // Router Marquee poster deferred to a private attr
+  // until slide activates, avoiding eager fetch when hidden.
+  if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -608,6 +647,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
+  if (anchorTag.closest('div')?.querySelector('a.video-transcript-source')) {
+    import('../features/video-transcript/video-transcript.js')
+      .then(({ default: decorateVideoTranscript }) => decorateVideoTranscript(videoEl));
+  }
   anchorTag.remove();
 }
 
@@ -685,30 +728,24 @@ function warnDuplicateH1s(viewportData) {
   }
 }
 
+function inheritRowCells(row, prevRow) {
+  if (!row || !prevRow) return;
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
+      col.replaceChildren(...cloneChildren(prevCol));
+    }
+  });
+}
+
 function resolveInheritance(rows, previousContent) {
   if (!previousContent) return;
 
   const [contentRow, ...extraRows] = rows;
-  const prevChildren = [...previousContent.children];
-  const [prevContentRow, ...prevExtraRows] = prevChildren;
+  const [prevContentRow, ...prevExtraRows] = previousContent.children;
 
-  if (contentRow && prevContentRow) {
-    [...contentRow.children].forEach((col, i) => {
-      const prevCol = prevContentRow.children[i];
-      if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
-        col.replaceChildren(...cloneChildren(prevCol));
-      }
-    });
-  }
-
-  extraRows.forEach((row, i) => {
-    const prevRow = prevExtraRows[i];
-    const cell = row?.children[0];
-    const prevCell = prevRow?.children[0];
-    if (cell && isEmptyCell(cell) && prevCell && !isEmptyCell(prevCell)) {
-      cell.replaceChildren(...cloneChildren(prevCell));
-    }
-  });
+  inheritRowCells(contentRow, prevContentRow);
+  extraRows.forEach((row, i) => inheritRowCells(row, prevExtraRows[i]));
 }
 
 function parseViewportContent(el) {

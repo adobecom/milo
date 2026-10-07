@@ -11,6 +11,7 @@ import {
   COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
+  raceForegroundTimeout,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
@@ -32,7 +33,7 @@ async function loadCoreDependencies() {
     throw new Error('Failed to initialize mas commerce service');
   }
   const service = await servicePromise;
-  log = service.Log.module('merch-card');
+  log = service.Log.module('merch-card-autoblock');
 
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
@@ -52,10 +53,11 @@ export async function checkReady(masElement, fragment) {
     }
   }
 
-  const readyPromise = masElement.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
+  // Foreground-time budget: a frozen webview must not burn the deadline while suspended
+  // and report a timeout the moment it resumes.
+  const success = await raceForegroundTimeout(masElement.checkReady(), CARD_AUTOBLOCK_TIMEOUT);
   if (success === 'timeout') {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
+    log.error(`${masElement.tagName} did not initialize within given timeout`);
   } else if (!success) {
     log.error(`${masElement.tagName} failed to initialize`);
   }
@@ -65,18 +67,24 @@ async function createJsonLd(el, options) {
   const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
-  await checkReady(merchCard, options.fragment);
-  const fragmentEl = merchCard.querySelector('aem-fragment');
-  const fields = fragmentEl?.data?.fields;
-  const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
-    ?? merchCard.querySelector('[is="inline-price"]:not([data-template="strikethrough"]):not([data-template="legal"])');
-  const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
-  const offer = priceEl?.value?.[0];
-  const regularOffer = strikethroughEl?.value?.[0];
-  const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
-  injectJsonLd(fields, offer, regularOffer, document.location.href);
-  merchCard.remove();
-  el.remove();
+  // JSON-LD failures must not expose the authored Studio link.
+  try {
+    await checkReady(merchCard, options.fragment);
+    const fragmentEl = merchCard.querySelector('aem-fragment');
+    const fields = fragmentEl?.data?.fields;
+    const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
+      ?? merchCard.querySelector('[is="inline-price"]:not([data-template="strikethrough"]):not([data-template="legal"])');
+    const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
+    const offer = priceEl?.value?.[0];
+    const regularOffer = strikethroughEl?.value?.[0];
+    const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
+    injectJsonLd(fields, offer, regularOffer, document.location.href);
+  } catch (e) {
+    log.error('Failed to inject JSON-LD', e);
+  } finally {
+    merchCard.remove();
+    el.remove();
+  }
 }
 
 export async function createCard(el, options) {

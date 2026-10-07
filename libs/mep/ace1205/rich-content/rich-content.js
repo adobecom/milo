@@ -73,7 +73,7 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
-function decorateVideoVariant(container) {
+function decorateMediaVariant(container) {
   const row = container.children[0];
   if (!row) return;
 
@@ -81,7 +81,7 @@ function decorateVideoVariant(container) {
   if (!ctaCell && !mediaCell) return;
 
   if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
-    mediaCell.classList.add('media');
+    mediaCell.classList.add('media-cell');
     container.append(mediaCell);
   } else {
     mediaCell?.remove();
@@ -99,8 +99,8 @@ function decorateVideoVariant(container) {
 }
 
 function decorate(block, root = block) {
-  if (root.classList.contains('video')) {
-    decorateVideoVariant(block);
+  if (root.classList.contains('media')) {
+    decorateMediaVariant(block);
     return;
   }
 
