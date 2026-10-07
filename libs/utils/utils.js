@@ -2367,10 +2367,7 @@ export function preloadLcpCodeFiles(area = document) {
     if (!match) return;
     const name = Object.keys(match)[0];
     if (name === 'video' && !isMediaVideo(a.textContent)) return;
-    if (isMasFieldAutoblock(name, url)) {
-      hasMasField = true;
-      return;
-    }
+    if (isMasFieldAutoblock(name, url)) hasMasField = true;
     autoNames.add(name);
   });
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
