@@ -52,7 +52,8 @@ export function getFederalDomain(config) {
 }
 
 export function decorateAcomAssistantGnav(el) {
-  if (getMetadata('acom-assistant') !== 'on') return null;
+  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
+  if ((acomAssistantParam || getMetadata('acom-assistant')) !== 'on') return null;
   const bcWrapper = el.querySelector('nav .feds-bc-wrapper');
   if (!bcWrapper) return null;
   let mount = bcWrapper.querySelector('#acomAssistant-gnav-mount');
