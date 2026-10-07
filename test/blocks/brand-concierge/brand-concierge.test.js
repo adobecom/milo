@@ -651,7 +651,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     originalClient = window.AdobeMessagingExperienceClient;
     clientScript = document.createElement('script');
     clientScript.type = 'javascript/blocked';
-    clientScript.src = 'https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    clientScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
     clientScript.dataset.loaded = 'true';
     document.head.append(clientScript);
     window.AdobeMessagingExperienceClient = {
