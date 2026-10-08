@@ -275,6 +275,14 @@ function getBadgeEntry(el) {
   };
 }
 
+function isBadgeOccluded({ el, left, top }) {
+  const x = left + 4;
+  const y = top + 4;
+  if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
+  const target = document.elementFromPoint(x, y);
+  return !!target && !el.contains(target) && !target.contains(el);
+}
+
 function adjustBadgePositions() {
   const allBadges = [...document.querySelectorAll(BADGE_SELECTORS)];
 
@@ -282,7 +290,7 @@ function adjustBadgePositions() {
 
   // Batch reads then writes: measure every badge first, then apply the
   // zero-height offsets, so we don't force a layout recalc per element.
-  const measured = allBadges.map((el) => {
+  const measured = allBadges.filter((el) => el.getClientRects().length > 0).map((el) => {
     const section = el.closest('.section');
     const height = section ? section.offsetHeight : el.offsetHeight;
     return { el, badgeHeight: getBadgeHeight(el), height };
@@ -294,7 +302,7 @@ function adjustBadgePositions() {
   const positioned = allBadges
     .filter((el) => el.getClientRects().length > 0)
     .map(getBadgeEntry)
-    .filter(Boolean);
+    .filter((badge) => badge && !isBadgeOccluded(badge));
   positioned.sort((a, b) => a.top - b.top);
 
   const placed = [];
@@ -313,20 +321,27 @@ function adjustBadgePositions() {
   });
 }
 
+let badgeAdjustRaf;
+let badgeVisibilityObserver;
+
 function refreshBadges() {
+  document.querySelectorAll(BADGE_SELECTORS).forEach((el) => badgeVisibilityObserver.observe(el));
   adjustBadgeMaxWidths();
   adjustBadgePositions();
 }
 
-let badgeAdjustRaf;
-const highlightObserver = new MutationObserver(() => {
+function scheduleBadgeRefresh() {
   if (badgeAdjustRaf) return;
   badgeAdjustRaf = requestAnimationFrame(() => {
     badgeAdjustRaf = null;
     refreshPageUpdateCounts();
     refreshBadges();
   });
-});
+}
+
+const highlightObserver = new MutationObserver(scheduleBadgeRefresh);
+
+badgeVisibilityObserver = new IntersectionObserver(scheduleBadgeRefresh);
 
 function isAnyHighlightActive() {
   return Object.values(HIGHLIGHT_KEYS).some((key) => document.body.dataset[key] === 'true');
@@ -334,9 +349,15 @@ function isAnyHighlightActive() {
 
 function syncHighlightObserver() {
   if (isAnyHighlightActive()) {
-    highlightObserver.observe(document.body, { childList: true, subtree: true });
+    highlightObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden', 'aria-expanded', 'aria-hidden', 'open'],
+    });
   } else {
     highlightObserver.disconnect();
+    badgeVisibilityObserver.disconnect();
   }
 }
 
