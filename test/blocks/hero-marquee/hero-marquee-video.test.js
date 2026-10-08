@@ -101,17 +101,41 @@ describe('hero-marquee video posters match the CSS', () => {
     await setViewport({ width: 1280, height: 800 });
   });
 
-  ['media-hidden-mobile', 'media-hidden-tablet'].forEach((hiddenClass) => {
-    it(`sets a poster exactly when the CSS shows the video (${hiddenClass})`, async function test() {
+  const addTabletBg = (block) => {
+    const desktop = block.querySelector(':scope > div:first-child > div:last-child');
+    const tablet = desktop.cloneNode(true);
+    const a = tablet.querySelector('a');
+    a.href = a.href.replace('bg-desktop', 'bg-tablet');
+    a.textContent = 'media_bg-tablet.mp4';
+    a.dataset.videoPoster = a.dataset.videoPoster.replaceAll('#bg-desktop', '#bg-tablet');
+    desktop.before(tablet);
+  };
+
+  [
+    { hiddenClass: 'media-hidden-mobile' },
+    { hiddenClass: 'media-hidden-tablet' },
+    { hiddenClass: 'media-hidden-mobile', threeBg: true },
+    { hiddenClass: 'media-hidden-mobile', cover: true },
+    { hiddenClass: 'media-hidden-tablet', cover: true },
+    { hiddenClass: 'media-hidden-tablet-tablet' },
+    { hiddenClass: 'media-hidden-tablet-tablet', cover: true },
+  ].forEach(({ hiddenClass, threeBg, cover }) => {
+    const name = [hiddenClass, threeBg && '3 bg cells', cover && 'media-cover'].filter(Boolean).join(', ');
+    it(`sets a poster exactly when the CSS shows the video (${name})`, async function test() {
       this.timeout(20000);
       setConfig(config);
       /* eslint-disable no-restricted-syntax, no-await-in-loop */
       for (const width of widths) {
         document.body.innerHTML = fixture;
         const main = document.querySelector('main');
-        main.querySelector('.hero-marquee').classList.replace('media-hidden-mobile', hiddenClass);
+        const block = main.querySelector('.hero-marquee');
+        block.classList.replace('media-hidden-mobile', hiddenClass);
+        if (cover) block.classList.add('media-cover');
+        if (threeBg) addTabletBg(block);
         await setViewport({ width, height: 800 });
         await loadArea(main);
+        expect(main.querySelectorAll('video')).to.have.lengthOf(threeBg ? 4 : 3);
+        expect(!!main.querySelector('.foreground-media video')).to.equal(!!cover);
         main.querySelectorAll('video').forEach((el) => {
           const label = `${width}px: ${el.dataset.videoSource}`;
           expect(el.hasAttribute('poster'), label).to.equal(el.checkVisibility());
