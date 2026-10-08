@@ -17,9 +17,6 @@ async function getGeoPrefix() {
 }
 
 async function get404(path, version) {
-  // When no explicit path is given (e.g. after an upstream redirect strips the
-  // locale prefix), try to resolve the correct Lingo geo via Akamai geo info
-  // before falling back to the path-derived locale.
   const geoPrefix = !path ? await getGeoPrefix() : null;
   const prefix = geoPrefix ?? locale.prefix;
   let href = path || `${base}${prefix}/fragments/404#_dnt`;
