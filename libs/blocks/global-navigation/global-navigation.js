@@ -836,7 +836,7 @@ class Gnav {
       </div>
       `;
 
-  this.block.replaceChildren(
+    this.block.replaceChildren(
       this.elements.curtain,
       this.elements.topnavWrapper,
     );
