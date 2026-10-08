@@ -2,6 +2,7 @@ import { STATUS, PERFORMANCE_TITLES, PERFORMANCE_IDS, PERFORMANCE_SEVERITIES } f
 import { getMetadata } from '../../../utils/utils.js';
 
 const lcpCache = new Map();
+let likelyLcp;
 
 export function defaultObserveLcp(area) {
   if (area !== document) {
@@ -18,7 +19,17 @@ export function defaultObserveLcp(area) {
   });
 }
 
+export function setLikelyLcp(area = document) {
+  const isLoaded = (media) => (media.tagName === 'VIDEO' ? media.currentSrc : media.naturalWidth);
+  const size = (media) => media.clientWidth * media.clientHeight;
+  const [element] = [...area.querySelectorAll('main > div.section:first-of-type :is(img, video)')]
+    .filter(isLoaded)
+    .sort((a, b) => size(b) - size(a));
+  likelyLcp = Promise.resolve(element && { element, url: element.currentSrc || element.src });
+}
+
 export async function getLcpEntry(url, area, observeLcp = defaultObserveLcp) {
+  if (likelyLcp) return likelyLcp;
   if (lcpCache.has(url)) {
     return lcpCache.get(url);
   }

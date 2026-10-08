@@ -60,3 +60,61 @@
 .preflight-review-link:hover {
   color: rgb(90 127 255);
 } 
+
+.milo-preflight-overlay.draft-status {
+  --draft-status-color: rgb(41 41 41);
+
+  bottom: 24px;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 32px));
+  z-index: 100;
+}
+
+.draft-status[data-status='fail'] {
+  --draft-status-color: rgb(215 50 32);
+}
+
+.draft-status[data-status='warn'] {
+  --draft-status-color: rgb(232 106 0);
+}
+
+.draft-status[data-status='pass'] {
+  --draft-status-color: rgb(5 131 78);
+}
+
+.draft-status .preflight-notification {
+  padding: 8px 8px 8px 16px;
+  border-color: var(--draft-status-color);
+  background: var(--draft-status-color);
+  color: rgb(255 255 255);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  letter-spacing: normal;
+}
+
+.draft-status .notification-content {
+  align-items: center;
+  gap: 8px;
+}
+
+.draft-status .preflight-review-link {
+  color: inherit;
+  font-weight: 700;
+}
+
+.draft-status .notification-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.draft-status .notification-close:hover {
+  opacity: 1;
+}
+
+.draft-status button:focus-visible {
+  outline: 2px solid rgb(255 255 255);
+  outline-offset: 2px;
+}

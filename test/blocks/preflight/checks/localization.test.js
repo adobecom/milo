@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default-member */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import localization from '../../../../libs/blocks/preflight/checks/localization.js';
+import localization, { clearLocalizationCache } from '../../../../libs/blocks/preflight/checks/localization.js';
 
 // runChecks memoizes for the modal session, so the whole suite shares one run.
 describe('preflight checks localization', () => {
@@ -68,5 +68,23 @@ describe('preflight checks localization', () => {
 
   it('memoizes the run for the modal session', () => {
     expect(localization.runChecks({ area: container })).to.equal(runA);
+  });
+
+  it('ignores links inside the Preflight report', async () => {
+    clearLocalizationCache();
+    const report = document.createElement('div');
+    report.id = 'preflight';
+    report.innerHTML = '<a href="/preflight-loc-404">previously flagged</a>';
+    const [res] = await localization.runChecks({ area: report });
+    clearLocalizationCache();
+    expect(res.details.violations).to.have.lengthOf(0);
+  });
+
+  it('clearLocalizationCache starts a fresh run', async () => {
+    clearLocalizationCache();
+    const runB = localization.runChecks({ area: container });
+    expect(runB === runA).to.equal(false);
+    expect(localization.runChecks({ area: container }) === runB).to.equal(true);
+    await runB;
   });
 });

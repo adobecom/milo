@@ -2,6 +2,8 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../../libs/deps/htm-preact.js';
 import Assets from '../../../../libs/blocks/preflight/panels/assets.js';
+import { setLikelyLcp } from '../../../../libs/blocks/preflight/checks/performance.js';
+import { setConfig } from '../../../../libs/utils/utils.js';
 
 const waitFor = async (fn, tries = 100) => {
   for (let i = 0; i < tries; i += 1) {
@@ -107,5 +109,30 @@ describe('Preflight Assets Panel (render paths)', () => {
     await waitFor(() => container.querySelector('.assets-columns') && !container.textContent.includes('Please resize'));
     await waitFor(() => container.querySelectorAll('.grid-heading').length >= 3);
     expect(container.textContent).to.contain('No critical asset issues.');
+  });
+
+  it('drops removed images when the report re-renders after an edit', async function test() {
+    this.timeout(15000);
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' } });
+    sinon.stub(window, 'matchMedia').returns({ matches: true });
+    sinon.stub(window, 'fetch').resolves({ ok: true, json: () => Promise.resolve({ data: [] }) });
+    const canvas = Object.assign(document.createElement('canvas'), { width: 800, height: 400 });
+    const main = document.createElement('main');
+    main.innerHTML = `<picture><img src="${canvas.toDataURL()}" width="800" height="400"></picture>`;
+    document.body.prepend(main);
+    await main.querySelector('img').decode();
+    setLikelyLcp();
+    const listedImages = () => container.querySelectorAll('.assets-image-grid-item:not(.full-width)');
+    mount();
+    render(html`<${Assets} />`, container);
+    await new Promise((r) => { setTimeout(r, 50); });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => listedImages().length === 1, 600);
+
+    main.innerHTML = '';
+    render(null, container);
+    render(html`<${Assets} />`, container);
+    await waitFor(() => container.textContent.includes('No assets found in the main content.'), 600);
+    expect(listedImages().length).to.equal(0);
   });
 });

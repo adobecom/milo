@@ -109,8 +109,16 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 };
 
 export const loadPreflightResults = async () => {
-  const { hostname } = window.location;
+  const { hostname, search } = window.location;
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  const params = new URLSearchParams(search);
+  const isDaPreview = (isLocal || /\.(stage-)?preview\.da\.live$/.test(hostname))
+    && (params.get('dapreview') || params.get('quick-edit'));
+  if (isDaPreview) {
+    const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
+    showDraftStatus();
+    return;
+  }
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
