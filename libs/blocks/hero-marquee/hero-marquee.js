@@ -11,6 +11,17 @@ import {
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
+const TABLET = '(min-width: 600px) and (max-width: 1199px)';
+const BG_VIEWPORTS = {
+  'mobile-only': '(max-width: 599px)',
+  'tablet-only': TABLET,
+  'desktop-only': '(min-width: 1200px)',
+};
+const HIDDEN_FOREGROUND_MEDIA = [
+  { className: 'media-hidden-mobile', media: '(max-width: 600px)', selector: '.foreground .asset, .foreground-media' },
+  { className: 'media-hidden-tablet', media: TABLET, selector: '.foreground .asset, .foreground-media' },
+  { className: 'media-hidden-tablet-tablet', media: TABLET, selector: '.foreground-media' },
+];
 const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
@@ -242,6 +253,26 @@ function handleViewportOrder(content) {
   });
 }
 
+function isMediaHidden(el, node) {
+  const bgCell = node.closest('.background > div');
+  if (bgCell && el.contains(bgCell)) {
+    const viewports = Object.keys(BG_VIEWPORTS).filter((vp) => bgCell.classList.contains(vp));
+    return viewports.length > 0
+      && !viewports.some((vp) => window.matchMedia(BG_VIEWPORTS[vp]).matches);
+  }
+  return HIDDEN_FOREGROUND_MEDIA.some(({ className, media, selector }) => (
+    el.classList.contains(className) && !!node.closest(selector) && window.matchMedia(media).matches
+  ));
+}
+
+function loadPosters(el) {
+  el.querySelectorAll('video[data-hm-poster]').forEach((video) => {
+    if (isMediaHidden(el, video)) return;
+    video.setAttribute('poster', video.dataset.hmPoster);
+    delete video.dataset.hmPoster;
+  });
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -284,6 +315,7 @@ export default async function init(el) {
       }
     });
   }
+  loadPosters(el);
 
   const assetUnknown = (allRows.length === 2
     && allRows[1].classList.length === 0)
