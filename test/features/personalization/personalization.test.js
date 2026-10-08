@@ -6,7 +6,7 @@ import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '..
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  fetchData, DATA_TYPE, categorizeActions, replaceInner,
+  fetchData, DATA_TYPE, categorizeActions, replaceInner, deleteMarkedEls,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -719,74 +719,62 @@ describe('matchGlob function', () => {
     wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
     expect(anchor.closest('.hide-block')).to.not.be.null;
   });
-  it('hands the replaced element\'s media to the fragment link', async () => {
-    const parent = document.createElement('div');
-    const el = document.createElement('div');
-    el.innerHTML = '<picture><source srcset="./media_1a.png?width=750"><source srcset="./media_1a.png?width=2000 1x"><img src="./media_1a.png?width=750"></picture><img src="/other.png">';
-    parent.appendChild(el);
-    const wrapper = await createContent(el, {
-      content: '/fragments/marquee',
-      manifestId: 'manifest',
-      targetManifestId: '',
-      action: 'replace',
-      modifiers: [],
+  describe('removed media', () => {
+    let prevMep;
+    beforeEach(() => {
+      const config = getConfig();
+      prevMep = config.mep;
+      config.mep = {};
     });
-    const a = wrapper.querySelector('a') || wrapper;
-    expect(JSON.parse(a.dataset.mepMedia)).to.deep.equal([
-      './media_1a.png?width=750',
-      './media_1a.png?width=2000 1x',
-    ]);
-  });
+    afterEach(() => { getConfig().mep = prevMep; });
 
-  it('leaves images that failed to load out of the replace handoff', async () => {
-    const parent = document.createElement('div');
-    const el = document.createElement('div');
-    parent.appendChild(el);
-    document.body.append(parent);
-    try {
-      await new Promise((resolve) => {
-        el.innerHTML = '<img src="/does-not-exist/media_1broken.png"><picture><source srcset="/does-not-exist/media_1broken.png?w=2"><img src="/does-not-exist/media_1broken.png?w=1"></picture>';
-        const imgs = [...el.querySelectorAll('img')];
-        let pending = imgs.length;
-        imgs.forEach((img) => img.addEventListener('error', () => { pending -= 1; if (!pending) resolve(); }, { once: true }));
-      });
-      const wrapper = await createContent(el, { content: '/fragments/marquee', manifestId: 'm', targetManifestId: '', action: 'replace', modifiers: [] });
-      expect((wrapper.querySelector('a') || wrapper).dataset.mepMedia).to.be.undefined;
-    } finally {
-      parent.remove();
-    }
-  });
+    it('records media of elements MEP deletes', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><picture><source srcset="./media_1a.png?width=750"><source srcset="./media_1a.png?width=2000 1x"><img src="./media_1a.png?width=750"></picture><img src="/other.png"></div><img class="p13n-deleted" src="./media_1b.png">';
+      deleteMarkedEls(root);
+      expect(root.children.length).to.equal(0);
+      expect([...getConfig().mep.removedMedia]).to.deep.equal([
+        './media_1a.png?width=750',
+        './media_1a.png?width=2000 1x',
+        './media_1b.png',
+      ]);
+    });
 
-  it('hands the replaced page media to fragment links in replacePage content', async () => {
-    const main = document.createElement('div');
-    main.innerHTML = '<div><picture><img src="./media_1rp.png?width=750"></picture></div>';
-    setFetchResponse('<div><a href="/fragments/hero">frag</a><a href="/products/other">page</a></div>', 'text');
-    expect(await replaceInner('/products/replacement', main)).to.be.true;
-    expect(JSON.parse(main.querySelector('a[href="/fragments/hero"]').dataset.mepMedia))
-      .to.deep.equal(['./media_1rp.png?width=750']);
-    expect(main.querySelector('a[href="/products/other"]').dataset.mepMedia).to.be.undefined;
-  });
+    it('does not record images that failed to load', async () => {
+      const root = document.createElement('div');
+      document.body.append(root);
+      try {
+        await new Promise((resolve) => {
+          root.innerHTML = '<div class="p13n-deleted"><img src="/does-not-exist/media_1broken.png"><picture><source srcset="/does-not-exist/media_1broken.png?w=2"><img src="/does-not-exist/media_1broken.png?w=1"></picture></div>';
+          const imgs = [...root.querySelectorAll('img')];
+          let pending = imgs.length;
+          imgs.forEach((img) => img.addEventListener('error', () => { pending -= 1; if (!pending) resolve(); }, { once: true }));
+        });
+        deleteMarkedEls(root);
+        expect(getConfig().mep.removedMedia).to.be.undefined;
+      } finally {
+        root.remove();
+      }
+    });
 
-  it('does not add a replacePage handoff when the page has no media', async () => {
-    const main = document.createElement('div');
-    main.innerHTML = '<div><p>no media</p></div>';
-    setFetchResponse('<div><a href="/fragments/hero">frag</a></div>', 'text');
-    await replaceInner('/products/replacement', main);
-    expect(main.querySelector('a').dataset.mepMedia).to.be.undefined;
-  });
+    it('records the original page media on replacePage', async () => {
+      const main = document.createElement('div');
+      main.innerHTML = '<div><picture><img src="./media_1rp.png?width=750"></picture></div>';
+      setFetchResponse('<div><a href="/fragments/hero">frag</a></div>', 'text');
+      expect(await replaceInner('/products/replacement', main)).to.be.true;
+      expect([...getConfig().mep.removedMedia]).to.deep.equal(['./media_1rp.png?width=750']);
+    });
 
-  it('does not add a media handoff for non-replace actions or elements without media', async () => {
-    const parent = document.createElement('div');
-    const el = document.createElement('div');
-    el.innerHTML = '<img src="./media_1b.png">';
-    parent.appendChild(el);
-    const insert = await createContent(el, { content: '/fragments/a', manifestId: 'm', targetManifestId: '', action: 'insertafter', modifiers: [] });
-    expect((insert.querySelector('a') || insert).dataset.mepMedia).to.be.undefined;
-    const noMediaParent = document.createElement('div');
-    const noMedia = document.createElement('div');
-    noMediaParent.appendChild(noMedia);
-    const replace = await createContent(noMedia, { content: '/fragments/b', manifestId: 'm', targetManifestId: '', action: 'replace', modifiers: [] });
-    expect((replace.querySelector('a') || replace).dataset.mepMedia).to.be.undefined;
+    it('records nothing for deleted elements without media or when MEP is off', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><p>no media</p></div>';
+      deleteMarkedEls(root);
+      expect(getConfig().mep.removedMedia).to.be.undefined;
+      getConfig().mep = undefined;
+      root.innerHTML = '<img class="p13n-deleted" src="./media_1c.png">';
+      expect(() => deleteMarkedEls(root)).to.not.throw();
+      expect(root.children.length).to.equal(0);
+    });
   });
 });
 

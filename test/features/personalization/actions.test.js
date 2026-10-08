@@ -79,7 +79,7 @@ describe('replace action', () => {
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
   });
 
-  it('hands the replaced element\'s media to the fragment so it is not fetched again', async () => {
+  it('reuses the replaced element\'s media in the fragment so it is not fetched again', async () => {
     const pageSrc = '/products/media_15dedupe.png?width=750&format=png&optimize=medium';
     const fragPath = '/test/features/personalization/mocks/fragments/media-dedupe';
     const rootEl = document.createElement('div');
@@ -96,10 +96,35 @@ describe('replace action', () => {
       expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
     } finally {
       rootEl.remove();
+      delete getConfig().mep.removedMedia;
     }
   });
 
-  it('hands the original page media to fragments in replacePage content', async () => {
+  it('reuses media of an element MEP removed in a fragment inserted elsewhere', async () => {
+    const pageSrc = '/products/media_15rm.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rm';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-removed"><picture><img src="${pageSrc}"></picture></div><div class="dedupe-anchor"></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15rm.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([
+        { action: 'remove', selector: '.dedupe-removed', content: 'true' },
+        { action: 'insertafter', selector: '.dedupe-anchor', content: fragPath },
+      ], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-removed')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+      delete getConfig().mep.removedMedia;
+    }
+  });
+
+  it('reuses the original page media in fragments from replacePage content', async () => {
     const pageSrc = '/products/media_15rp.png?width=750&format=png&optimize=medium';
     const fragPath = '/test/features/personalization/mocks/fragments/media-rp';
     const main = document.createElement('div');
@@ -117,6 +142,7 @@ describe('replace action', () => {
       expect(main.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
     } finally {
       main.remove();
+      delete getConfig().mep.removedMedia;
     }
   });
 });

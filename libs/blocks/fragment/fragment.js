@@ -116,16 +116,14 @@ const isBrokenImage = (el) => {
   return !!img?.complete && !img.naturalWidth;
 };
 
-// MEP removes replaced elements before fragments load, so it hands their media via data-mep-media.
-const getPageMedia = (neededKeys, replacedMedia) => {
+// MEP removes elements before fragments load, so it records their media (deleteMarkedEls).
+const getPageMedia = (neededKeys, removedMedia) => {
   const media = new Map();
   const add = (ref) => {
     const key = getMediaKey(ref, window.location.href);
     if (key && !media.has(key)) media.set(key, new URL(ref, window.location.href).href);
   };
-  try {
-    [].concat(JSON.parse(replacedMedia || '[]')).forEach(add);
-  } catch { /* ignore malformed handoff */ }
+  removedMedia?.forEach(add);
   if ([...neededKeys].every((key) => media.has(key))) return media;
   document.querySelectorAll('img[src*="media_"], source[srcset*="media_"]').forEach((el) => {
     if (isBrokenImage(el)) return;
@@ -134,7 +132,7 @@ const getPageMedia = (neededKeys, replacedMedia) => {
   return media;
 };
 
-export function replaceDotMedia(path, doc, replacedMedia) {
+export function replaceDotMedia(path, doc, removedMedia) {
   const els = [...doc.querySelectorAll('img[src^="./media_"], source[srcset^="./media_"]')];
   if (!els.length) return;
   const docBase = new URL(path, window.location);
@@ -144,7 +142,7 @@ export function replaceDotMedia(path, doc, replacedMedia) {
     return { el, attr, authored, key: getMediaKey(authored, docBase) };
   });
   const neededKeys = new Set(refs.map(({ key }) => key).filter(Boolean));
-  const pageMedia = getPageMedia(neededKeys, replacedMedia);
+  const pageMedia = getPageMedia(neededKeys, removedMedia);
   refs.forEach(({ el, attr, authored, key }) => {
     el[attr] = pageMedia.get(key) || new URL(authored, docBase).href;
   });
@@ -411,7 +409,7 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  replaceDotMedia(a.href, doc, a.dataset.mepMedia);
+  replaceDotMedia(a.href, doc, mep?.removedMedia);
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');

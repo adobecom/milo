@@ -224,10 +224,17 @@ const isBrokenImage = (el) => {
   return !!img?.complete && !img.naturalWidth;
 };
 
-// MEP removes these elements before fragments load; fragment.js reuses the URLs (replaceDotMedia).
-const getMediaRefs = (el) => [...new Set([el, ...el.querySelectorAll(MEDIA_SEL)]
-  .filter((m) => m.matches(MEDIA_SEL) && !isBrokenImage(m))
-  .map((m) => m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset')))];
+// MEP removes elements before fragments load; fragment.js reuses their media (replaceDotMedia).
+const recordRemovedMedia = (el) => {
+  const { mep } = getConfig();
+  if (!mep) return;
+  [el, ...el.querySelectorAll(MEDIA_SEL)]
+    .filter((m) => m.matches(MEDIA_SEL) && !isBrokenImage(m))
+    .forEach((m) => {
+      mep.removedMedia ??= new Set();
+      mep.removedMedia.add(m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset'));
+    });
+};
 
 const createFrag = async (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
@@ -240,10 +247,6 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  if (action === 'replace') {
-    const media = getMediaRefs(el);
-    if (media.length) a.dataset.mepMedia = JSON.stringify(media);
-  }
   let containerType = 'other';
   const parent = el.parentElement;
   const grandParent = el.parentElement?.parentElement;
@@ -458,12 +461,8 @@ export async function replaceInner(path, element) {
   const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
-  const media = getMediaRefs(element);
+  recordRemovedMedia(element);
   element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
-  if (media.length) {
-    const mepMedia = JSON.stringify(media);
-    element.querySelectorAll('a[href*="/fragments/"]').forEach((a) => { a.dataset.mepMedia = mepMedia; });
-  }
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
   return true;
@@ -761,7 +760,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export const deleteMarkedEls = (rootEl = document) => {
   [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
+    .forEach((el) => {
+      recordRemovedMedia(el);
+      el.remove();
+    });
 };
 
 export function addSectionAnchors(rootEl = document) {

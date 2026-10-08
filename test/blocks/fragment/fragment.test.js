@@ -218,28 +218,32 @@ describe('Fragments', () => {
       expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
     });
 
-    it('reuses media MEP handed off from the replaced element', () => {
+    it('reuses media MEP recorded from removed elements', () => {
       const doc = parse(`<img src="./media_16mep.png${query}">`);
-      replaceDotMedia(fragPath, doc, JSON.stringify([`./media_16mep.png${query}`]));
+      replaceDotMedia(fragPath, doc, new Set([`./media_16mep.png${query}`]));
       expect(doc.querySelector('img').getAttribute('src')).to.equal(new URL(`./media_16mep.png${query}`, window.location).href);
     });
 
-    it('ignores a malformed MEP handoff', () => {
-      const doc = parse(`<img src="./media_16badmep.png${query}">`);
-      expect(() => replaceDotMedia(fragPath, doc, '{not json')).to.not.throw();
-      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_16badmep.png${query}`));
-      const doc2 = parse('<img src="./media_16badmep.png">');
-      expect(() => replaceDotMedia(fragPath, doc2, '[1, null, {}]')).to.not.throw();
-      expect(doc2.querySelector('img').getAttribute('src')).to.equal(fragMedia('media_16badmep.png'));
+    it('ignores non-string removed media entries', () => {
+      const doc = parse('<img src="./media_16badmep.png">');
+      expect(() => replaceDotMedia(fragPath, doc, new Set([1, null, {}]))).to.not.throw();
+      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia('media_16badmep.png'));
     });
 
-    it('passes the MEP handoff from the fragment link through init', async () => {
+    it('reads MEP removed media from config in init', async () => {
       const pageHref = new URL('/products/media_15.png?width=750&format=png&optimize=medium', window.location).href;
-      const a = createTag('a', { href: '/test/blocks/fragment/mocks/fragments/media', 'data-mep-media': JSON.stringify([pageHref]) });
+      const cfg = getConfig();
+      const prevMep = cfg.mep;
+      cfg.mep = { ...prevMep, removedMedia: new Set([pageHref]) };
+      const a = createTag('a', { href: '/test/blocks/fragment/mocks/fragments/media' });
       pageEl = createTag('div', {}, a);
       document.body.append(pageEl);
-      await getFragment(a);
-      expect(pageEl.querySelector(`img[src="${pageHref}"]`)).to.exist;
+      try {
+        await getFragment(a);
+        expect(pageEl.querySelector(`img[src="${pageHref}"]`)).to.exist;
+      } finally {
+        cfg.mep = prevMep;
+      }
     });
 
     it('does not reuse a page source whose picture failed to load', async () => {
@@ -254,10 +258,10 @@ describe('Fragments', () => {
       expect(doc.querySelector('source').getAttribute('srcset')).to.equal(fragMedia(`media_17srcfail.png${query}`));
     });
 
-    it('skips the page scan when the MEP handoff covers every fragment media', () => {
+    it('skips the page scan when MEP removed media covers every fragment media', () => {
       const qsa = stub(document, 'querySelectorAll').callThrough();
       const doc = parse(`<img src="./media_16cover.png${query}">`);
-      replaceDotMedia(fragPath, doc, JSON.stringify([`/products/media_16cover.png${query}`]));
+      replaceDotMedia(fragPath, doc, new Set([`/products/media_16cover.png${query}`]));
       expect(qsa.called).to.be.false;
       qsa.restore();
       expect(doc.querySelector('img').getAttribute('src')).to.equal(`${window.location.origin}/products/media_16cover.png${query}`);
@@ -276,13 +280,13 @@ describe('Fragments', () => {
 
     it('does not reuse media with a different query', () => {
       const doc = parse(`<img src="./media_18q.png${query}">`);
-      replaceDotMedia(fragPath, doc, JSON.stringify(['/products/media_18q.png?width=2000&format=webply&optimize=medium']));
+      replaceDotMedia(fragPath, doc, new Set(['/products/media_18q.png?width=2000&format=webply&optimize=medium']));
       expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_18q.png${query}`));
     });
 
     it('does not reuse media from a different origin', () => {
       const doc = parse(`<img src="./media_19foreign.png${query}">`);
-      replaceDotMedia(fragPath, doc, JSON.stringify([`https://other.example.com/x/media_19foreign.png${query}`]));
+      replaceDotMedia(fragPath, doc, new Set([`https://other.example.com/x/media_19foreign.png${query}`]));
       expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_19foreign.png${query}`));
     });
 
@@ -290,7 +294,7 @@ describe('Fragments', () => {
       pageEl = createTag('picture', {}, '<source srcset="/products/media_20a.png 1x, /products/media_20b.png 2x">');
       document.body.append(pageEl);
       const doc = parse('<img src="./media_20a.png"><img src="./media_20bad.png"><source srcset="./media_20a.png 1x, ./media_20b.png 2x">');
-      expect(() => replaceDotMedia(fragPath, doc, JSON.stringify(['https://%/media_20bad.png']))).to.not.throw();
+      expect(() => replaceDotMedia(fragPath, doc, new Set(['https://%/media_20bad.png']))).to.not.throw();
       const [a, bad] = doc.querySelectorAll('img');
       expect(a.getAttribute('src')).to.equal(fragMedia('media_20a.png'));
       expect(bad.getAttribute('src')).to.equal(fragMedia('media_20bad.png'));
