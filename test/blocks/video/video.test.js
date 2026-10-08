@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
-import { decorateAnchorVideo, handlePause, applyHoverPlay, decoratePausePlayWrapper } from '../../../libs/utils/decorate.js';
+import { decorateAnchorVideo, decorateBlockBg, handlePause, applyHoverPlay, decoratePausePlayWrapper } from '../../../libs/utils/decorate.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
@@ -346,74 +346,83 @@ describe('video uploaded using franklin bot', () => {
   });
 });
 
-describe('poster deferral for media-hidden blocks', () => {
-  const decorate = (selector) => {
-    const a = document.querySelector(selector);
+describe('poster deferral via --poster-hidden', () => {
+  const viewports = {
+    mobile: { width: 375, height: 812 },
+    tablet: { width: 834, height: 1112 },
+    desktop: { width: 1440, height: 900 },
+  };
+  const links = [];
+  const decorate = (a) => {
     const parent = a.parentElement;
     decorateAnchorVideo({ src: a.href, anchorTag: a });
     return parent.querySelector('video');
   };
+  const decorateAll = (selector) => [...document.querySelectorAll(selector)].map(decorate);
+
+  before(async () => {
+    await Promise.all(['styles/styles.css', 'blocks/hero-marquee/hero-marquee.css'].map((path) => new Promise((resolve) => {
+      const link = createTag('link', { rel: 'stylesheet', href: new URL(`../../../libs/${path}`, import.meta.url).href });
+      link.onload = resolve;
+      document.head.append(link);
+      links.push(link);
+    })));
+  });
 
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/media-hidden.html' });
   });
 
   after(async () => {
+    links.forEach((link) => link.remove());
     await setViewport({ width: 800, height: 600 });
   });
 
-  it('defers the poster when the block hides media at the current viewport', async () => {
-    await setViewport({ width: 375, height: 812 });
-    const video = decorate('.hidden-mobile');
+  it('defers the poster when media-hidden-* hides the media', async () => {
+    await setViewport(viewports.mobile);
+    const [video] = decorateAll('.fg-video');
     expect(video.hasAttribute('poster')).to.be.false;
-    expect(video.dataset.hiddenPoster).to.include('media_hidden.png');
-  });
-
-  it('keeps the poster on blocks without media-hidden classes', async () => {
-    await setViewport({ width: 375, height: 812 });
-    const video = decorate('.always-visible');
-    expect(video.getAttribute('poster')).to.include('media_visible.png');
-    expect(video.dataset.hiddenPoster).to.be.undefined;
-  });
-
-  it('keeps the poster on background-row videos and defers the foreground', async () => {
-    await setViewport({ width: 375, height: 812 });
-    const bg = decorate('.background-video');
-    const fg = decorate('.foreground-video');
-    expect(bg.getAttribute('poster')).to.include('media_bg.png');
-    expect(bg.dataset.hiddenPoster).to.be.undefined;
-    expect(fg.hasAttribute('poster')).to.be.false;
-    expect(fg.dataset.hiddenPoster).to.include('media_fg.png');
-  });
-
-  it('keeps the background-row poster after block init', async () => {
-    await setViewport({ width: 375, height: 812 });
-    const block = document.querySelector('.background-video').closest('.hero-marquee');
-    block.classList.add('con-block');
-    block.firstElementChild.classList.add('background');
-    block.append(document.createElement('div'));
-    const bg = decorate('.background-video');
-    expect(bg.getAttribute('poster')).to.include('media_bg.png');
-    const noBg = document.querySelector('.hidden-mobile').closest('.hero-marquee');
-    noBg.classList.add('con-block');
-    noBg.append(document.createElement('div'));
-    expect(decorate('.hidden-mobile').dataset.hiddenPoster).to.include('media_hidden.png');
+    expect(video.dataset.hiddenPoster).to.include('media_fg.png');
   });
 
   it('keeps the poster when the hidden viewport does not match', async () => {
-    await setViewport({ width: 1440, height: 900 });
-    const video = decorate('.hidden-mobile');
-    expect(video.getAttribute('poster')).to.include('media_hidden.png');
+    await setViewport(viewports.desktop);
+    const [video] = decorateAll('.fg-video');
+    expect(video.getAttribute('poster')).to.include('media_fg.png');
     expect(video.dataset.hiddenPoster).to.be.undefined;
   });
 
+  it('keeps the poster on the background row and on blocks without media-hidden-*', async () => {
+    await setViewport(viewports.mobile);
+    const [bg] = decorateAll('.bg-video');
+    const [plain] = decorateAll('.plain-video');
+    expect(bg.getAttribute('poster')).to.include('media_bg.png');
+    expect(plain.getAttribute('poster')).to.include('media_plain.png');
+  });
+
   it('restores the deferred poster once the video becomes visible', async () => {
-    await setViewport({ width: 375, height: 812 });
-    const video = decorate('.hidden-mobile');
+    await setViewport(viewports.mobile);
+    const [video] = decorateAll('.fg-video');
     expect(video.hasAttribute('poster')).to.be.false;
-    document.querySelector('.media-hidden-mobile').classList.remove('hide-video');
     await waitFor(() => video.hasAttribute('poster'));
-    expect(video.getAttribute('poster')).to.include('media_hidden.png');
+    expect(video.getAttribute('poster')).to.include('media_fg.png');
     expect(video.dataset.hiddenPoster).to.be.undefined;
+  });
+
+  Object.entries(viewports).forEach(([name, size]) => {
+    it(`defers exactly the background cells decorateBlockBg hides on ${name}`, async () => {
+      await setViewport(size);
+      ['.three-cells', '.two-cells'].forEach((selector) => {
+        const block = document.querySelector(selector);
+        const videos = decorateAll(`${selector} a`);
+        block.classList.add('con-block');
+        decorateBlockBg(block, block.firstElementChild);
+        videos.forEach((video) => {
+          const cell = video.closest('.background > div');
+          const hidden = getComputedStyle(cell).display === 'none';
+          expect(!!video.dataset.hiddenPoster, `${selector} ${cell.className}`).to.equal(hidden);
+        });
+      });
+    });
   });
 });

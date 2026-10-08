@@ -194,6 +194,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add(className);
+    // Cell order is mirrored by the --poster-hidden rules in hero-marquee.css.
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
@@ -595,26 +596,6 @@ export function decoratePausePlayWrapper(videoEl, videoAttrs) {
   }
 }
 
-// Keep in sync with media-hidden-* breakpoints in hero-marquee.css.
-const MEDIA_HIDDEN_QUERIES = {
-  'media-hidden-mobile': '(max-width: 600px)',
-  'media-hidden-tablet': '(min-width: 600px) and (max-width: 1199px)',
-};
-
-// Background row stays visible; mirrors hero-marquee init, which may not have run yet.
-const isBackgroundRow = (block, el) => {
-  const [first, ...rest] = block.querySelectorAll(':scope > div');
-  if (!first?.contains(el)) return false;
-  return block.classList.contains('con-block') ? first.classList.contains('background') : rest.length > 0;
-};
-
-const isMediaHidden = (el) => {
-  const block = el.closest('.media-hidden-mobile, .media-hidden-tablet');
-  if (!block || isBackgroundRow(block, el)) return false;
-  return Object.entries(MEDIA_HIDDEN_QUERIES)
-    .some(([cls, query]) => block.classList.contains(cls) && window.matchMedia(query).matches);
-};
-
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   const accessibilityEnabled = isVideoAccessible(anchorTag);
@@ -625,7 +606,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   // Router Marquee poster deferred to a private attr
   // until slide activates, avoiding eager fetch when hidden.
   if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
-  else if (isMediaHidden(anchorTag)) attrs = attrs.replace("poster='", "data-hidden-poster='");
+  // Blocks opt in by setting --poster-hidden where their CSS hides the media.
+  else if (dataset.videoPoster && getComputedStyle(anchorTag).getPropertyValue('--poster-hidden')) {
+    attrs = attrs.replace("poster='", "data-hidden-poster='");
+  }
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
