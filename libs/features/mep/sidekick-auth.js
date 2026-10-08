@@ -78,22 +78,24 @@ export async function isWithinFirewall() {
 
 /*
  * Ungated hosts fire true immediately. Gated hosts fire the initial verdict, then
- * again whenever auth flips (author signs in/out mid-session).
+ * again whenever auth flips (author signs in/out mid-session). Returns a cleanup
+ * function for consumers that can unmount; existing page-lifetime consumers can ignore it.
  */
-export async function onSidekickAuth(callback) {
+export function onSidekickAuth(callback) {
   if (!shouldGate()) {
     callback(true);
-    return;
+    return () => undefined;
   }
 
   let authed;
   let mountTimer;
   let firewallAuthorized = false;
-  let authObserver;
-  let authEventTarget;
-  let authEventHandlers;
+  let resolveTimer;
+  let disposed = false;
   // Transient search observers; the steady-state auth watcher is NOT tracked here.
   const observers = [];
+  const authObservers = [];
+  const removeListeners = [];
   const track = (observer) => { observers.push(observer); };
   const stop = (observer) => {
     observer.disconnect();
@@ -103,26 +105,23 @@ export async function onSidekickAuth(callback) {
 
   const set = (value) => {
     const access = firewallAuthorized || value;
-    if (access === authed) return;
+    if (disposed || access === authed) return;
     authed = access;
     callback(access);
   };
 
   const stopAuthChecks = () => {
+    clearTimeout(resolveTimer);
     clearTimeout(mountTimer);
     observers.slice().forEach(stop);
-    authObserver?.disconnect();
-    if (authEventTarget && authEventHandlers) {
-      Object.entries(authEventHandlers).forEach(([event, handler]) => {
-        authEventTarget.removeEventListener(event, handler);
-      });
-    }
+    authObservers.forEach((observer) => observer.disconnect());
+    removeListeners.forEach((remove) => remove());
   };
 
   // Do not delay Sidekick listeners on a network reachability probe. Firewall
   // access is an affirmative override if it resolves while auth is initializing.
   isWithinFirewall().then((withinFirewall) => {
-    if (!withinFirewall) return;
+    if (disposed || !withinFirewall) return;
     firewallAuthorized = true;
     stopAuthChecks();
     set(true);
@@ -132,13 +131,14 @@ export async function onSidekickAuth(callback) {
   // late render doesn't flash a prompt. Observer re-resolves on class toggle / re-render.
   const watchAuthState = (pluginBarShadow) => {
     if (isAuthedIn(pluginBarShadow)) set(true);
-    authObserver = new MutationObserver(() => {
+    if (disposed) return;
+    const observer = new MutationObserver(() => {
       if (isAuthedIn(pluginBarShadow)) set(true);
       else if (authed === true) set(false);
     });
-    authObserver.observe(pluginBarShadow, AUTH_MO);
-    // Steady state: left running for the page's life (never torn down) so logout is
-    // always caught. Transient observers have self-disconnected — stop the mount timer.
+    observer.observe(pluginBarShadow, AUTH_MO);
+    authObservers.push(observer);
+    // Keep watching logout until consumer teardown, beyond the transient search timeout.
     clearTimeout(mountTimer);
   };
 
@@ -158,14 +158,14 @@ export async function onSidekickAuth(callback) {
 
   // Live backup to the DOM signal for mid-session changes; status-fetched has the profile.
   const attachAuthEvents = (sk) => {
-    authEventTarget = sk;
-    authEventHandlers = {
+    const handlers = {
       'status-fetched': (e) => { if (e?.detail?.profile) set(true); },
       'logged-in': () => set(true),
       'logged-out': () => set(false),
     };
-    Object.entries(authEventHandlers).forEach(([event, handler]) => {
-      sk.addEventListener(event, handler);
+    Object.entries(handlers).forEach(([type, handler]) => {
+      sk.addEventListener(type, handler);
+      removeListeners.push(() => sk.removeEventListener(type, handler));
     });
   };
 
@@ -176,11 +176,11 @@ export async function onSidekickAuth(callback) {
     watchPluginActionBar(sk.shadowRoot);
     // Sidekick present: brief head start before defaulting to unauthed, so a late
     // status resolution doesn't flash a sign-in prompt.
-    setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
+    resolveTimer = setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
   } else {
     // No sidekick → unauthed now (delay 0): no flash to avoid, and nothing lingering
     // to fire after a consumer tears down. Still watch for a late mount.
-    setTimeout(() => { if (authed === undefined) set(false); }, 0);
+    resolveTimer = setTimeout(() => { if (authed === undefined) set(false); }, 0);
     const observer = new MutationObserver(() => {
       const el = getSidekick();
       if (!el?.shadowRoot) return;
@@ -192,5 +192,12 @@ export async function onSidekickAuth(callback) {
     track(observer);
   }
   // Tear down only the transient search observers, and only if none resolved.
-  mountTimer = setTimeout(() => { observers.slice().forEach(stop); }, WATCH_TIMEOUT_MS);
+  if (observers.length) {
+    mountTimer = setTimeout(() => { observers.slice().forEach(stop); }, WATCH_TIMEOUT_MS);
+  }
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    stopAuthChecks();
+  };
 }

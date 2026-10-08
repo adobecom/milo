@@ -520,6 +520,9 @@ describe('init: manifest schedule progress and states', () => {
     const cards = bodyEl.querySelectorAll('.mep-manifest-card');
     expect(cards.length).to.equal(1);
     expect(cards[0].textContent).to.not.include('Invalid Date');
+    expect(cards[0].querySelector('.mep-manifest-timeline')).to.be.null;
+    const instant = cards[0].querySelector('a[href*="instant"]');
+    expect(new URL(instant.href).searchParams.get('instant')).to.equal('2026-01-01T00:00:00.000Z');
   });
 
   it('splits date and time via separate locale calls instead of regex (regression for locale-dependent split)', async () => {
@@ -590,6 +593,61 @@ describe('init: manifest schedule progress and states', () => {
     const link = card.querySelector('.mep-manifest-status-row a');
     expect(link.textContent).to.equal('Instant preview at start date (opens in a new tab)');
     expect(link.querySelector('.mep-visually-hidden')).to.exist;
+  });
+});
+
+describe('init: open-ended manifest schedules', () => {
+  let bodyEl;
+  let headerEl;
+
+  before(async () => {
+    const experiment = {
+      name: 'Open-ended Promo',
+      manifest: '/promo.json',
+      variantNames: ['all'],
+      selectedVariantName: 'all',
+      source: 'promo',
+    };
+    setConfig({
+      ...BASE_CONFIG,
+      mep: {
+        ...BASE_CONFIG.mep,
+        experiments: [
+          { ...experiment, event: { start: '2026-09-01T00:00:00Z', end: '0000-00-00 00:00:00' } },
+          { ...experiment, event: { start: null, end: '2026-11-01T00:00:00Z' } },
+          { ...experiment, event: { start: 'invalid', end: null } },
+        ],
+      },
+    });
+    bodyEl = makeBody();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => cleanup(bodyEl, headerEl));
+
+  it('shows a start-only schedule with an Instant link and no fabricated end date', () => {
+    const card = bodyEl.querySelectorAll('.mep-manifest-card')[0];
+    expect(card.textContent).to.include('Not scheduled');
+    expect(card.textContent).to.not.include('Invalid Date');
+    expect(card.querySelector('a[href*="instant"]')).to.exist;
+  });
+
+  it('shows an end-only schedule without an Instant link', () => {
+    const card = bodyEl.querySelectorAll('.mep-manifest-card')[1];
+    expect(card.textContent).to.include('Not scheduled');
+    expect(card.textContent).to.include('2026');
+    expect(card.querySelector('a[href*="instant"]')).to.be.null;
+  });
+
+  it('reports invalid schedules without generating an invalid Instant URL', () => {
+    const card = bodyEl.querySelectorAll('.mep-manifest-card')[2];
+    expect(card.textContent).to.include('Invalid date');
+    expect(card.querySelector('.mep-manifest-state').textContent.toLowerCase()).to.equal('unknown');
+    expect(card.querySelector('a[href*="instant"]')).to.be.null;
+    expect(card.querySelector('.mep-manifest-timeline')).to.be.null;
   });
 });
 

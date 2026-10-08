@@ -1228,7 +1228,7 @@ describe('formatDate via getManifestList', () => {
     expect(manifests[0].eventEndIso).to.equal('2024-06-30T12:00:00.000Z');
   });
 
-  it('returns null end fields instead of throwing when end is an Invalid Date', () => {
+  it('reports an invalid end without throwing or generating ISO/date/time fields', () => {
     setConfig({
       ...config,
       mep: {
@@ -1248,11 +1248,11 @@ describe('formatDate via getManifestList', () => {
     expect(() => { result = getManifestList(); }).to.not.throw();
     const [manifest] = result.manifests;
     expect(manifest.eventStartIso).to.equal('2024-06-01T12:00:00.000Z');
-    expect(manifest.eventEnd).to.be.null;
+    expect(manifest.eventEnd).to.equal('Invalid date');
     expect(manifest.eventEndIso).to.be.null;
     expect(manifest.eventEndDate).to.be.null;
     expect(manifest.eventEndTime).to.be.null;
-    expect(manifest.showActive).to.be.false;
+    expect(manifest.showActive).to.be.true;
   });
 
   it('lastSeen in manifest descriptor is null (toActivity does not pass lastSeen through)', () => {

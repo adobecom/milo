@@ -1,9 +1,6 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-// TEMP: pinned to legacy preview.js for the ?mepnext fallback
-// (static import can't follow the param). Revert to mep-next.js + drop the
-// isMmm arg below once mep-next is validated.
-import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
+import { getMepPopup, API_URLS } from '../../features/mep/mep-next/mep-next.js';
 
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
@@ -141,7 +138,7 @@ async function toggleDrawer(target, dd, pageId) {
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
     const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     if (!pageData) return;
-    loading.replaceWith(await getMepPopup(pageData, true));
+    loading.replaceWith(await getMepPopup(pageData));
     dd.classList.add('placeholder-resolved');
   }
 }

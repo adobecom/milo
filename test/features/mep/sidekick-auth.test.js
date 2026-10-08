@@ -6,10 +6,16 @@ const {
   isSidekickAuthed,
   isUngatedHost,
   isWithinFirewall,
-  onSidekickAuth,
+  onSidekickAuth: subscribeSidekickAuth,
 } = await import('../../../libs/features/mep/sidekick-auth.js');
 
 const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
+const subscriptions = [];
+const onSidekickAuth = (callback) => {
+  const unsubscribe = subscribeSidekickAuth(callback);
+  subscriptions.push(unsubscribe);
+  return unsubscribe;
+};
 
 // The real <aem-sidekick> exposes no config/status to page JS. The page-world
 // signal is its nested open shadow DOM: login-button#user is ALWAYS rendered
@@ -43,6 +49,7 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   });
 
   afterEach(() => {
+    subscriptions.splice(0).forEach((unsubscribe) => unsubscribe());
     sinon.restore();
     document.querySelectorAll('aem-sidekick, helix-sidekick').forEach((el) => el.remove());
     setConfig({ env: { name: 'stage' } });
@@ -203,6 +210,98 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
     });
   });
 
+  describe('onSidekickAuth cleanup', () => {
+    it('returns harmless cleanup on ungated hosts', () => {
+      setConfig({ env: { name: 'stage' } });
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth(cb);
+      expect(unsubscribe).to.be.a('function');
+      unsubscribe();
+      expect(cb.calledOnceWith(true)).to.be.true;
+    });
+
+    it('cancels the initial verdict and pending Sidekick mount watcher', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const clock = sinon.useFakeTimers();
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth(cb);
+      unsubscribe();
+      const { sk } = mountSidekick({ authed: true });
+      sk.dispatchEvent(new CustomEvent('logged-in'));
+      await clock.tickAsync(5 * 60 * 1000 + 1200);
+      expect(cb.called).to.be.false;
+    });
+
+    it('cancels the delayed verdict and removes live observers and event listeners', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const clock = sinon.useFakeTimers();
+      const { sk, user } = mountSidekick();
+      const removeListener = sinon.spy(sk, 'removeEventListener');
+      const disconnect = sinon.spy(MutationObserver.prototype, 'disconnect');
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth(cb);
+      unsubscribe();
+      unsubscribe();
+      signIn(user);
+      sk.dispatchEvent(new CustomEvent('logged-in'));
+      sk.dispatchEvent(new CustomEvent('status-fetched', { detail: { profile: {} } }));
+      sk.dispatchEvent(new CustomEvent('logged-out'));
+      await clock.tickAsync(1400);
+      expect(cb.called).to.be.false;
+      expect(disconnect.calledOnce).to.be.true;
+      expect(removeListener.callCount).to.equal(3);
+      ['status-fetched', 'logged-in', 'logged-out'].forEach((type) => {
+        expect(removeListener.calledWith(type), type).to.be.true;
+      });
+    });
+
+    it('stops watching an action bar that has not rendered yet', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const clock = sinon.useFakeTimers();
+      const sk = document.createElement('aem-sidekick');
+      const shadow = sk.attachShadow({ mode: 'open' });
+      document.body.appendChild(sk);
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth(cb);
+      unsubscribe();
+      const bar = document.createElement('plugin-action-bar');
+      const user = document.createElement('login-button');
+      user.id = 'user';
+      bar.attachShadow({ mode: 'open' }).appendChild(user);
+      shadow.appendChild(bar);
+      await clock.tickAsync(1400);
+      expect(cb.called).to.be.false;
+    });
+
+    it('does not create a live observer when a late login callback unsubscribes', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const clock = sinon.useFakeTimers();
+      const observe = sinon.spy(MutationObserver.prototype, 'observe');
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth((authed) => {
+        cb(authed);
+        if (authed) unsubscribe();
+      });
+      mountSidekick({ authed: true });
+      await clock.tickAsync(1400);
+      expect(cb.calledOnceWith(true)).to.be.true;
+      expect(observe.calledOnce).to.be.true;
+    });
+
+    it('retains live logout detection beyond the five-minute mount timeout', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const clock = sinon.useFakeTimers();
+      const { user } = mountSidekick({ authed: true });
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await clock.tickAsync(5 * 60 * 1000 + 1);
+      signOut(user);
+      await clock.tickAsync(0);
+      expect(cb.firstCall.args).to.deep.equal([true]);
+      expect(cb.lastCall.args).to.deep.equal([false]);
+    });
+  });
+
   describe('onSidekickAuth — event backup', () => {
     it('resolves true on a logged-in event even before the DOM clears', async () => {
       setConfig({ env: { name: 'prod' } });
@@ -240,6 +339,18 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   });
 
   describe('onSidekickAuth — firewall bypass', () => {
+    it('ignores a successful firewall check that resolves after cleanup', async () => {
+      setConfig({ env: { name: 'prod' } });
+      let finishFirewallCheck;
+      window.fetch.returns(new Promise((resolve) => { finishFirewallCheck = resolve; }));
+      const cb = sinon.spy();
+      const unsubscribe = onSidekickAuth(cb);
+      unsubscribe();
+      finishFirewallCheck({});
+      await wait(50);
+      expect(cb.called).to.be.false;
+    });
+
     it('keeps access granted after a successful firewall check even if the sidekick logs out', async () => {
       setConfig({ env: { name: 'prod' } });
       window.fetch.resolves({});
