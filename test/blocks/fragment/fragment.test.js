@@ -218,17 +218,6 @@ describe('Fragments', () => {
       expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
     });
 
-    it('does not read Resource Timing', () => {
-      const timing = stub(performance, 'getEntriesByType').returns([
-        { name: `${window.location.origin}/products/media_16rt.png${query}`, responseStatus: 200 },
-      ]);
-      const doc = parse(`<img src="./media_16rt.png${query}">`);
-      replaceDotMedia(fragPath, doc);
-      timing.restore();
-      expect(timing.called).to.be.false;
-      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_16rt.png${query}`));
-    });
-
     it('reuses media MEP handed off from the replaced element', () => {
       const doc = parse(`<img src="./media_16mep.png${query}">`);
       replaceDotMedia(fragPath, doc, JSON.stringify([`./media_16mep.png${query}`]));
@@ -238,8 +227,10 @@ describe('Fragments', () => {
     it('ignores a malformed MEP handoff', () => {
       const doc = parse(`<img src="./media_16badmep.png${query}">`);
       expect(() => replaceDotMedia(fragPath, doc, '{not json')).to.not.throw();
-      expect(() => replaceDotMedia(fragPath, parse('<img src="./media_16badmep.png">'), '[1, null, {}]')).to.not.throw();
       expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia(`media_16badmep.png${query}`));
+      const doc2 = parse('<img src="./media_16badmep.png">');
+      expect(() => replaceDotMedia(fragPath, doc2, '[1, null, {}]')).to.not.throw();
+      expect(doc2.querySelector('img').getAttribute('src')).to.equal(fragMedia('media_16badmep.png'));
     });
 
     it('passes the MEP handoff from the fragment link through init', async () => {

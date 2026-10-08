@@ -78,6 +78,26 @@ describe('replace action', () => {
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
   });
+
+  it('hands the replaced element\'s media to the fragment so it is not fetched again', async () => {
+    const pageSrc = '/products/media_15dedupe.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-dedupe';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-hero"><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15dedupe.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([{ action: 'replace', selector: '.dedupe-hero', content: fragPath }], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-hero')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+    }
+  });
 });
 
 describe('updateAttribute action', async () => {
