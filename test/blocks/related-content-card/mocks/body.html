@@ -1,0 +1,66 @@
+<body>
+  <!-- A: data-only (no link) -> link element without href -->
+  <div class="related-content-card" id="card-data">
+    <div>
+      <div>
+        <picture><img src="/authored-data.png" alt="" width="130" height="130"></picture>
+      </div>
+      <div>
+        <p><strong>04-20-2026</strong></p>
+        <h2 id="introducing">Introducing Adobe Brand Intelligence.</h2>
+        <p>5 mins</p>
+        <p>news</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: link-only -> all data from linked article -->
+  <div class="related-content-card" id="card-link">
+    <div>
+      <div><a href="/mock/full-article">https://example.com/mock/full-article</a></div>
+    </div>
+  </div>
+
+  <!-- C: mix -> authored title + image override, rest from link -->
+  <div class="related-content-card" id="card-mix">
+    <div>
+      <div><a href="/mock/full-article">https://example.com/mock/full-article</a></div>
+    </div>
+    <div>
+      <div>
+        <picture><img src="/authored-mix.png" alt="" width="200" height="120"></picture>
+      </div>
+      <div>
+        <h2 id="different-title">A different title than what is in the card metadata.</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- D: partial override -> empty readtime slot falls back, authored category wins -->
+  <div class="related-content-card" id="card-partial">
+    <div>
+      <div><a href="/mock/full-article">https://example.com/mock/full-article</a></div>
+    </div>
+    <div>
+      <div>
+        <h2 id="authored-d">Authored heading D.</h2>
+        <p></p>
+        <p>My Custom Category</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- E: linked article missing optional fields (no date / no topic) -->
+  <div class="related-content-card" id="card-sparse">
+    <div>
+      <div><a href="/mock/sparse-article">https://example.com/mock/sparse-article</a></div>
+    </div>
+  </div>
+
+  <!-- F: fetch failure, no authored title -> original link stays visible -->
+  <div class="related-content-card" id="card-fail">
+    <div>
+      <div><a href="/mock/missing">https://example.com/mock/missing</a></div>
+    </div>
+  </div>
+</body>
