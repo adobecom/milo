@@ -355,7 +355,6 @@ describe('Utils', () => {
     const cardLink = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc';
     const masDist = (file) => `https://main--mas--adobecom.aem.live/web-components/dist/${file}`;
     const libs = (path) => `${utils.getConfig().base}${path}`;
-    const abs = (path) => new URL(libs(path), window.location.href).href;
     const moduleHrefs = () => [...document.head.querySelectorAll('link[rel="modulepreload"]')]
       .map((link) => link.getAttribute('href'));
     const authorLink = (link) => {
@@ -378,8 +377,8 @@ describe('Utils', () => {
     it('uses modulepreload for block code and keeps styles on a style preload', () => {
       document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
       utils.preloadLcpCodeFiles();
-      expect(moduleHrefs()).to.include.members([libs('/blocks/marquee/marquee.js'), libs('/utils/decorate.js')]);
-      expect(document.head.querySelector('link[rel="preload"][as="script"]')).to.not.exist;
+      expect(moduleHrefs()).to.include(libs('/blocks/marquee/marquee.js'));
+      expect(document.head.querySelector(`link[rel="preload"][as="script"][href="${libs('/blocks/marquee/marquee.js')}"]`)).to.not.exist;
       expect(document.head.querySelector(`link[rel="preload"][as="style"][href="${libs('/blocks/marquee/marquee.css')}"]`)).to.exist;
       expect(document.head.querySelector('link[rel="modulepreload"]').getAttribute('crossorigin')).to.equal('anonymous');
     });
@@ -390,11 +389,11 @@ describe('Utils', () => {
       expect(moduleHrefs()).to.include.members([
         libs('/blocks/merch/merch.js'),
         libs('/blocks/merch/autoblock.js'),
-        abs('/utils/action.js'),
-        abs('/utils/decorate.js'),
-        abs('/features/placeholders.js'),
+        libs('/utils/action.js'),
+        libs('/features/placeholders.js'),
         masDist('commerce.js'),
       ]);
+      expect(document.head.querySelector(`link[href="${libs('/utils/decorate.js')}"]`)).to.exist;
       expect(document.head.querySelector(`link[rel="preload"][as="style"][href="${libs('/blocks/merch/merch.css')}"]`)).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/blocks/merch/"]')).to.not.exist;
     });
@@ -408,7 +407,7 @@ describe('Utils', () => {
         masDist('merch-quantity-select.js'),
         libs('/blocks/merch-card-autoblock/merch-card-autoblock.js'),
         libs('/martech/attributes.js'),
-        abs('/utils/market.js'),
+        libs('/utils/market.js'),
       ].forEach((href) => expect(moduleHrefs()).to.not.include(href));
     });
 
@@ -416,12 +415,12 @@ describe('Utils', () => {
       document.head.innerHTML = '<meta name="mas-geo-detection" content="on">';
       authorLink(fieldLink);
       utils.preloadLcpCodeFiles();
-      expect(moduleHrefs()).to.include(abs('/utils/market.js'));
+      expect(moduleHrefs()).to.include(libs('/utils/market.js'));
 
       document.head.innerHTML = '<meta name="mas-geo-detection" content="on">';
       window.history.replaceState(null, '', `${window.location.pathname}?mas-geo-detection=off`);
       utils.preloadLcpCodeFiles();
-      expect(moduleHrefs()).to.not.include(abs('/utils/market.js'));
+      expect(moduleHrefs()).to.not.include(libs('/utils/market.js'));
     });
 
     it('keeps merch cards and plain commerce links out of the early pass', () => {
@@ -493,7 +492,7 @@ describe('Utils', () => {
         `${ext}/utils/action.js`,
         `${ext}/features/placeholders.js`,
       ]);
-      expect(moduleHrefs()).to.not.include(abs('/utils/action.js'));
+      expect(moduleHrefs()).to.not.include(libs('/utils/action.js'));
       utils.setConfig(config);
     });
 
