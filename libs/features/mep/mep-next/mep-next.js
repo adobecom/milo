@@ -8,21 +8,12 @@ import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js'
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import { mepMasSubCollections } from './mep-mas-subcollection.js';
 import { applyGeoSpoof } from './spoof-country-ip.js';
-import { US_GEO, getFileName, normalizePath } from '../../personalization/personalization.js';
+import { US_GEO, getFileName, normalizePath, NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../personalization/personalization.js';
 import {
   MAS_OSI_SELECTOR,
   hasMasSurfaces,
-  injectMasBadges,
-  removeMasBadges,
-  watchForMasContent,
-  unwatchForMasContent,
 } from './mep-mas.js';
-import {
-  injectCaasBadges,
-  removeCaasBadges,
-  watchForCaasBlocks,
-  unwatchForCaasBlocks,
-} from './mep-caas.js';
+import { setHighlight, HIGHLIGHT_KEYS } from './mep-overlay/mep-overlay-highlight.js';
 
 export function escapeHtml(str) {
   if (str == null || str === '') return str;
@@ -44,7 +35,7 @@ export function escapeAttr(str) {
 }
 
 // Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
-function safeUrl(url) {
+export function safeUrl(url) {
   if (typeof url !== 'string') return '';
   try {
     const { protocol } = new URL(url, window.location.origin);
@@ -54,19 +45,28 @@ function safeUrl(url) {
   }
 }
 
-const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+const PROD_API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+const LOCAL_API_DOMAIN = 'https://bckbr4dhh2sngv5skvo4k7l27i0fvhdk.lambda-url.us-west-2.on.aws';
+
+// Config may not be set when this module is first imported.
+function getApiDomain() {
+  return getConfig()?.env?.name === 'local' ? LOCAL_API_DOMAIN : PROD_API_DOMAIN;
+}
 
 export const API_URLS = {
-  pageList: `${API_DOMAIN}/get-pages`,
-  pageDetails: `${API_DOMAIN}/get-page`,
-  pageDataByURL: `${API_DOMAIN}/get-page?url=`,
-  save: `${API_DOMAIN}/save-mep-call`,
-  report: `${API_DOMAIN}/get-report`,
+  get pageList() { return `${getApiDomain()}/get-pages`; },
+  get pageDetails() { return `${getApiDomain()}/get-page`; },
+  get pageDataByURL() { return `${getApiDomain()}/get-page?url=`; },
+  get save() { return `${getApiDomain()}/save-mep-call`; },
+  get report() { return `${getApiDomain()}/get-report`; },
+  get history() { return `${getApiDomain()}/get-target-history`; },
 };
 
 function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
-  disabled, analyticsTitle, source, countryRestriction, consentType,
+  disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryEnabled,
+  consentType, consentNotSpecified, consentEnabled,
+  manifestType, manifestOverrideName, executionOrder,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -76,13 +76,20 @@ function toActivity({
     selectedVariantName,
     url: manifest,
     disabled,
+    disabledPromo,
     source,
     eventStart: event?.start,
     eventEnd: event?.end,
     pathname,
     analyticsTitle,
     countryRestriction,
+    countryEnabled,
     consentType,
+    consentNotSpecified,
+    consentEnabled,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
   };
 }
 
@@ -130,7 +137,7 @@ function updatePreviewButton(popup, pageId) {
     `input[type="checkbox"]#mepHighlightCheckbox${pageId}`,
   );
 
-  document.body.dataset.mepHighlight = mepHighlightCheckbox.checked;
+  setHighlight(HIGHLIGHT_KEYS.mep, mepHighlightCheckbox.checked);
   if (mepHighlightCheckbox.checked) {
     simulateHref.searchParams.set('mepHighlight', true);
   } else {
@@ -141,11 +148,12 @@ function updatePreviewButton(popup, pageId) {
     `input[type="checkbox"]#mepFragmentsCheckbox${pageId}`,
   );
 
-  document.body.dataset.mepFragments = mepFragmentsCheckbox.checked;
+  setHighlight(HIGHLIGHT_KEYS.other, mepFragmentsCheckbox.checked);
+  simulateHref.searchParams.delete('mepFragments');
   if (mepFragmentsCheckbox.checked) {
-    simulateHref.searchParams.set('mepFragments', true);
+    simulateHref.searchParams.set(HIGHLIGHT_KEYS.other, true);
   } else {
-    simulateHref.searchParams.delete('mepFragments');
+    simulateHref.searchParams.delete(HIGHLIGHT_KEYS.other);
   }
 
   const mepCaasHighlightCheckbox = popup.querySelector(
@@ -153,15 +161,11 @@ function updatePreviewButton(popup, pageId) {
   );
 
   if (mepCaasHighlightCheckbox) {
-    document.body.dataset.mepCaasHighlight = mepCaasHighlightCheckbox.checked;
+    setHighlight(HIGHLIGHT_KEYS.caas, mepCaasHighlightCheckbox.checked);
     if (mepCaasHighlightCheckbox.checked) {
       simulateHref.searchParams.set('mepCaasHighlight', true);
-      watchForCaasBlocks();
-      injectCaasBadges();
     } else {
       simulateHref.searchParams.delete('mepCaasHighlight');
-      unwatchForCaasBlocks();
-      removeCaasBadges();
     }
   }
 
@@ -169,15 +173,11 @@ function updatePreviewButton(popup, pageId) {
     `input[type="checkbox"]#mepMasHighlightCheckbox${pageId}`,
   );
   if (mepMasHighlightCheckbox) {
-    document.body.dataset.mepMasHighlight = mepMasHighlightCheckbox.checked;
+    setHighlight(HIGHLIGHT_KEYS.mas, mepMasHighlightCheckbox.checked);
     if (mepMasHighlightCheckbox.checked) {
       simulateHref.searchParams.set('mepMasHighlight', true);
-      watchForMasContent();
-      injectMasBadges();
     } else {
       simulateHref.searchParams.delete('mepMasHighlight');
-      unwatchForMasContent();
-      removeMasBadges();
     }
   }
 
@@ -259,12 +259,6 @@ function addDividers(node, selector) {
   });
 }
 
-// PRUNE — decide when the ?mepnext gate is removed (see preview.js header):
-// parsePageAndUrl, toActivity and parseMepConfig are duplicated in
-// mep-overlay-logic.js (a refactored variant). At prune time, choose the dedup —
-// e.g. extract them into a shared, UI-free config module that both this file and
-// mep-overlay-logic.js import. saveToMmm should stay here alongside getMepPopup
-// (the MMM read/write pair) and pull parseMepConfig from that shared module.
 export function parsePageAndUrl(config, windowLocation, prefix) {
   const { stageDomainsMap, env } = config;
   const { pathname, origin } = windowLocation;
@@ -298,7 +292,7 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
   domain = domain.replace('stage.adobe.com', 'adobe.com');
   return { page: path.replace(`/${prefix}/`, '/'), url: `${domain}${path}` };
 }
-function parseMepConfig() {
+export function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
   if (!mep || !locale) return null;
@@ -319,65 +313,282 @@ function parseMepConfig() {
     activities: experiments.map(toActivity),
   };
 }
-function formatDate(dateTime, format = 'local') {
-  // Every call site already guards with a truthy check before calling formatDate.
-  /* c8 ignore next */
-  if (!dateTime) return '';
-  let dateObj = dateTime;
-  if (typeof dateObj === 'string') dateObj = new Date(dateObj);
+export function formatDate(dateTime, format = 'local') {
+  if (!dateTime || (typeof dateTime === 'string' && dateTime.startsWith('0000-00-00'))) return '';
+  const dateObj = dateTime instanceof Date ? dateTime : new Date(dateTime);
+  if (Number.isNaN(dateObj.getTime())) return format === 'iso' ? '' : 'Invalid date';
   if (format === 'iso') return dateObj.toISOString();
-  const date = dateObj.toLocaleDateString(false, {
+  const date = dateObj.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
-  const time = dateObj.toLocaleTimeString(false, { timeStyle: 'short' });
+  const time = dateObj.toLocaleTimeString(undefined, { timeStyle: 'short' });
   return `${date} ${time}`;
 }
+
+const EXECUTION_ORDER_LABELS = ['First', 'Normal', 'Last'];
+
+function formatDateParts(isoDate) {
+  if (!isoDate) return null;
+  const dateObj = new Date(isoDate);
+  return {
+    date: dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+    time: dateObj.toLocaleTimeString(undefined, { timeStyle: 'short' }),
+  };
+}
+
+export function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
+  const {
+    url,
+    manifestPath = url,
+    manifestUrl,
+    variantNames,
+    selectedVariantName = 'default',
+    targetActivityName,
+    source,
+    analyticsTitle,
+    eventStart,
+    eventEnd,
+    disabled,
+    disabledPromo,
+    countryRestriction = manifest.manifestCountryRestriction,
+    countryEnabled,
+    consentType = manifest.manifestConsentType,
+    consentNotSpecified,
+    consentEnabled,
+    manifestType,
+    manifestOverrideName,
+    executionOrder,
+  } = manifest;
+  const formattedStart = formatDate(eventStart);
+  const formattedEnd = formatDate(eventEnd);
+  const eventStartIso = formatDate(eventStart, 'iso');
+  const eventEndIso = formatDate(eventEnd, 'iso');
+  const eventStartParts = formatDateParts(eventStartIso);
+  const eventEndParts = formatDateParts(eventEndIso);
+  const hasSchedule = !!(formattedStart || formattedEnd);
+  let isActive = disabled ? 'inactive' : 'active';
+  if (disabled == null && hasSchedule) {
+    if ((formattedStart && !eventStartIso) || (formattedEnd && !eventEndIso)) {
+      isActive = 'unknown';
+    } else if ((eventStartIso && Date.parse(eventStartIso) > Date.now())
+      || (eventEndIso && Date.parse(eventEndIso) <= Date.now())) {
+      isActive = 'inactive';
+    }
+  }
+  const editUrl = manifestUrl || manifestPath;
+  const editPath = normalizePath(editUrl);
+  const variants = typeof variantNames === 'string' ? variantNames.split('||') : (variantNames ?? []);
+  const isDefaultSelected = !variants.includes(selectedVariantName) && pageId === 0;
+  if (isDefaultSelected) manifestParameter.push(`${editUrl}--default`);
+
+  const options = [
+    { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
+    {
+      name: `${editPath}${pageId}`,
+      value: 'default',
+      id: `${editPath}${pageId}--default`,
+      dataManifest: editPath,
+      title: 'Default (control)',
+      label: 'Default (control)',
+      selected: isDefaultSelected,
+    },
+  ];
+  variants.forEach((variant) => {
+    const isSelected = variant === selectedVariantName;
+    if (isSelected) manifestParameter.push(`${manifestPath}--${variant}`);
+    options.push({
+      name: `${editPath}${pageId}`,
+      value: variant,
+      id: `${editPath}${pageId}--${variant}`,
+      dataManifest: editPath,
+      title: variant,
+      label: variant,
+      selected: isSelected,
+    });
+  });
+  const [orderIndex] = (executionOrder ?? '').split('-');
+  return {
+    index: mIdx + 1,
+    manifestId: manifest.manifestId ?? null,
+    editUrl,
+    pathname: manifest.pathname ?? normalizePath(manifestPath),
+    fileName: getFileName(manifestPath),
+    analyticsTitle,
+    variantNames: variants,
+    targetActivityName: targetActivityName ?? null,
+    isDefaultSelected,
+    selectedVariantName,
+    source: Array.isArray(source) ? source.join(', ') : source,
+    consentType,
+    consentNotSpecified,
+    consentEnabled,
+    countryRestriction: countryRestriction == null ? null : countryRestriction.toUpperCase(),
+    countryEnabled,
+    manifestType,
+    manifestOverrideName,
+    executionOrder: EXECUTION_ORDER_LABELS[orderIndex] ?? null,
+    showActive: hasSchedule || !!disabled,
+    isActive,
+    withinDateRange: isActive === 'active',
+    disabledPromo: !!disabledPromo,
+    eventStart: formattedStart || null,
+    eventStartDate: eventStartParts?.date ?? null,
+    eventStartTime: eventStartParts?.time ?? null,
+    eventStartIso: eventStartIso || null,
+    eventEnd: formattedEnd || null,
+    eventEndDate: eventEndParts?.date ?? null,
+    eventEndTime: eventEndParts?.time ?? null,
+    eventEndIso: eventEndIso || null,
+    lastSeen: formatDate(manifest.lastSeen) || null,
+    pageId,
+    options,
+  };
+}
+
+export function getManifestList(
+  mepConfig = parseMepConfig(),
+  manifestErrors = getConfig().mep?.manifestErrors ?? [],
+) {
+  const { activities, page } = mepConfig ?? {};
+  const { pageId = 0 } = page ?? {};
+  const manifestParameter = [];
+  const manifests = activities?.map(
+    (manifest, mIdx) => buildManifestEntry(manifest, mIdx, pageId, manifestParameter),
+  ) ?? [];
+  const malformedManifests = manifestErrors.map(({ name, manifestPath, error, source }, mIdx) => {
+    const editPath = normalizePath(manifestPath);
+    return {
+      index: manifests.length + mIdx + 1,
+      editUrl: manifestPath,
+      fileName: name,
+      malformed: true,
+      error,
+      source: Array.isArray(source) ? source.join(', ') : source,
+      options: [
+        { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
+        {
+          name: `${editPath}${pageId}`,
+          value: 'default',
+          id: `${editPath}${pageId}--default`,
+          dataManifest: editPath,
+          title: 'Default (control)',
+          label: 'Default (control)',
+          selected: true,
+        },
+      ],
+    };
+  });
+  return { manifests: [...manifests, ...malformedManifests], manifestParameter };
+}
+
+export function getManifestStatus(manifest) {
+  if (manifest.malformed) {
+    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
+  }
+  const statusChecks = [
+    {
+      reason: !manifest.countryEnabled,
+      msg: 'User country is restricted.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.disabledPromo === true,
+      msg: 'Outside of promo date range.',
+      level: 'Warning',
+      label: 'Disabled',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === NON_PERSONALIZED_OFFER_TEST,
+      msg: 'Target off due to user\'s consent.',
+      level: 'Warning',
+      label: 'MEP used instead of Target',
+    },
+    {
+      reason: !manifest.consentEnabled && manifest.consentType === PERSONALIZED_OFFER,
+      msg: 'Disabled due to user\'s consent.',
+      level: 'Warning',
+      label: 'Ineligible',
+    },
+    {
+      reason: manifest.consentNotSpecified,
+      msg: 'Consent type not specified.',
+      level: 'Error',
+      label: 'Urgent warning',
+    },
+  ];
+  const severity = { Warning: 0, Error: 1 };
+  const messages = [];
+  let finalLabel = null;
+  let finalLevel = null;
+  statusChecks.forEach(({ reason, msg, level, label }) => {
+    if (!reason) return;
+    messages.push(msg);
+    if (!finalLevel || severity[level] > severity[finalLevel]) {
+      finalLevel = level;
+      finalLabel = label || level;
+    }
+  });
+  if (!finalLabel) return null;
+  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
+}
+
+export function getMasSummary() {
+  const config = getConfig();
+  const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
+  const subCollectionCount = [...collectionContainers]
+    .reduce((sum, c) => sum + (mepMasSubCollections.get(c)?.length || 0), 0);
+  const standaloneOfferCount = [...document.querySelectorAll(MAS_OSI_SELECTOR)]
+    .filter((el) => !el.closest('merch-card')).length;
+  const counts = {
+    collection: collectionContainers.length,
+    subCollection: subCollectionCount,
+    card: document.querySelectorAll('merch-card').length,
+    inlineField: document.querySelectorAll('mas-field').length,
+    standaloneOffer: standaloneOfferCount,
+  };
+  const surfaces = counts.collection + counts.card + counts.inlineField + counts.standaloneOffer;
+  const geoOn = isMasGeoDetectionEnabled();
+  const geoParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const geoMeta = getMetadata('mas-geo-detection');
+  let geoSource = 'none';
+  if (geoOn) {
+    geoSource = geoParam ? 'URL param' : 'Metadata';
+  } else if (geoParam || geoMeta) {
+    geoSource = geoParam ? 'URL param (off)' : 'Metadata (off)';
+  }
+  const liveCountry = document.head.querySelector('mas-commerce-service')?.getAttribute('country');
+  const localeCountry = getMiloLocaleSettings(config.locale)?.country;
+  const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
+  return [
+    ['Mas Geo Detection', geoOn ? 'on' : 'off'],
+    ['Geo Source', geoSource],
+    ['Page Market', pageMarket],
+    ['Market Source', liveCountry ? 'mas-commerce-service' : 'page locale'],
+    ['Surfaces', [
+      ['Detected', surfaces],
+      ['Collections', counts.collection, true],
+      ['Sub-collections', counts.subCollection, true],
+      ['Cards', counts.card, true],
+      ['Inline Fields', counts.inlineField, true],
+      ['Standalone Offers', counts.standaloneOffer, true],
+    ]],
+  ];
+}
+
 function getManifestListDomAndParameter(mepConfig) {
   const { activities, page } = mepConfig;
   const { pageId = 0 } = page;
   let manifestList = '';
   const manifestParameter = [];
   activities?.forEach((manifest, mIdx) => {
-    const {
-      variantNames,
-      manifestPath = manifest.url,
-      selectedVariantName = manifest.selectedVariantName || 'default',
-      manifestUrl,
-      targetActivityName,
-      source,
-      analyticsTitle,
-      eventStart,
-      eventEnd,
-      disabled,
-      countryRestriction,
-      consentType,
-    } = manifest;
-    const editUrl = manifestUrl || manifestPath;
-    const editPath = normalizePath(editUrl);
-    let variantNamesArray = [];
-    if (Array.isArray(variantNames)) variantNamesArray = variantNames;
-    else if (typeof variantNames === 'string') variantNamesArray = variantNames.split('||');
-    let options = '';
-    let isSelected = '';
-    if (!variantNamesArray.includes(selectedVariantName) && pageId === 0) {
-      isSelected = 'selected';
-      manifestParameter.push(`${editUrl}--default`);
-    }
-    options += `<option name="${escapeAttr(editPath)}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
-    options += `<option name="${escapeAttr(editPath)}${pageId}" value="default"
-    id="${escapeAttr(editPath)}${pageId}--default" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="Default (control)">Default (control)</option>`;
-    isSelected = '';
-    variantNamesArray.forEach((variant) => {
-      isSelected = '';
-      if (variant === selectedVariantName) {
-        isSelected = 'selected';
-        manifestParameter.push(`${manifestPath}--${variant}`);
-      }
-      options += `<option name="${escapeAttr(editPath)}${pageId}" value="${escapeAttr(variant)}"
-      id="${escapeAttr(editPath)}${pageId}--${escapeAttr(variant)}" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="${escapeAttr(variant)}">${escapeHtml(variant)}</option>`;
-    });
+    const entry = buildManifestEntry(manifest, mIdx, pageId, manifestParameter);
+    const { editUrl, targetActivityName, analyticsTitle, selectedVariantName } = entry;
+    const options = entry.options.map((option) => `<option name="${escapeAttr(option.name)}" value="${escapeAttr(option.value)}"
+      ${option.id ? `id="${escapeAttr(option.id)}" data-manifest="${escapeAttr(option.dataManifest)}"` : ''}
+      ${option.selected ? 'selected' : ''} title="${escapeAttr(option.title)}">${escapeHtml(option.label)}</option>`).join('');
     const expandSVG = `
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -387,40 +598,53 @@ function getManifestListDomAndParameter(mepConfig) {
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
     manifestList += `
-    <div class="mep-section" title="Manifest location: ${escapeAttr(editUrl)}&#013;Analytics manifest name: ${escapeAttr(analyticsTitle || 'N/A for this manifest type')}">
+    <div class="mep-section" title="Manifest location: ${escapeAttr(editUrl)}&#013;Analytics manifest name: ${escapeAttr(analyticsTitle || 'Not specified')}">
       <div class="mep-manifest-title">
-        <a class="mep-edit-manifest" href="${escapeAttr(safeUrl(editUrl))}" target="_blank" title="Open manifest">
-          ${mIdx + 1}. ${escapeHtml(getFileName(manifestPath))}
-        </a>
+        <div class="mep-manifest-name">
+          <span class="mep-manifest-index">${entry.index}.</span>
+          <a class="mep-edit-manifest" href="${escapeAttr(safeUrl(editUrl))}" target="_blank" title="Open manifest">
+            ${escapeHtml(entry.fileName)}
+          </a>
+        </div>
         <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
       </div>
       <div class="mep-manifest-info">
             ${targetActivityName ? `<div class="target-activity-name">${escapeHtml(targetActivityName)}</div>` : ''}
               <div class="mep-section-data">
                   <span class="mep-active">Experience</span>
-                ${!variantNamesArray.includes(selectedVariantName) ? `
+                ${!entry.variantNames.includes(selectedVariantName) ? `
                   <span class="mep-active">default (control)</span>` : `
                   <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
-                  <span>${escapeHtml(source)}</span>
+                  <span>${escapeHtml(entry.source || 'Not specified')}</span>
                   <span>Consent req</span>
-                  <span>${escapeHtml(consentType)}</span>
-                ${countryRestriction ? `
+                  <span>${escapeHtml(entry.consentType || 'Not specified')}</span>
                   <span>Allowed User Countries</span>
-                  <span>${escapeHtml(countryRestriction.toUpperCase())}</span>` : ''}
-                ${(eventStart && eventEnd) || disabled ? `
+                  <span>${escapeHtml(entry.countryRestriction === '' ? 'No restriction' : (entry.countryRestriction ?? 'Not specified'))}</span>
+                ${entry.showActive ? `
                   <span>Active?</span>
-                  <span>${disabled ? 'inactive' : 'active'}</span>` : ''}
-                ${manifest.lastSeen ? `
+                  <span>${entry.isActive}</span>` : ''}
+                ${entry.lastSeen ? `
                   <span>Last Seen</span>
-                  <span>${formatDate(new Date(manifest.lastSeen))}</span>` : ''}  
-                ${eventStart && eventEnd ? `
+                  <span>${escapeHtml(entry.lastSeen)}</span>` : ''}
+                ${entry.eventStart || entry.eventEnd ? `
                   <span>On</span>
-                  <span>${formatDate(eventStart)} 
-                  <br><a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a>
+                  <span>${escapeHtml(entry.eventStart || 'Not scheduled')}
+                  ${entry.eventStartIso ? `<br><a target="_blank" rel="noopener" href="?instant=${encodeURIComponent(entry.eventStartIso)}">Instant</a>` : ''}
                   </span>
                   <span>Off</span>
-                  <span>${formatDate(eventEnd)}</span>` : ''}
+                  <span>${escapeHtml(entry.eventEnd || 'Not scheduled')}</span>` : ''}
+                  <span>Variants</span>
+                  <span class="mep-manifest-value">${escapeHtml(entry.variantNames.join(', ') || 'Not specified')}</span>
+                  <span>Analytics Title</span>
+                  <span class="mep-manifest-value">${escapeHtml(analyticsTitle || 'Not specified')}</span>
+                ${entry.manifestId != null ? `
+                  <span>Manifest ID</span>
+                  <span>${escapeHtml(entry.manifestId)}</span>` : ''}
+                  <span>Manifest URL</span>
+                  <span class="mep-manifest-value"><a href="${escapeAttr(safeUrl(editUrl))}" target="_blank" rel="noopener">${escapeHtml(editUrl)}</a></span>
+                  <span>Manifest Path</span>
+                  <span class="mep-manifest-value">${escapeHtml(entry.pathname)}</span>
               </div>
       </div>
       <div class="mep-experience-dropdown">
@@ -467,7 +691,7 @@ function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
   return target === 'postlcp' ? 'on post LCP' : target;
 }
-// getMepPopup now only serves MMM (libs/blocks/mmm/mmm.js) — the in-page preview
+// getMepPopup serves MMM and MMM-2 — the in-page preview
 // popup it used to render is replaced by mep-overlay/mep-overlay.js.
 export async function getMepPopup(mepConfig) {
   const { page } = mepConfig;
@@ -476,7 +700,7 @@ export async function getMepPopup(mepConfig) {
   // Check URL parameters for highlight and fragments
   const urlParams = new URLSearchParams(window.location.search);
   const highlightParam = urlParams.get('mepHighlight');
-  const fragmentsParam = urlParams.get('mepFragments');
+  const fragmentsParam = urlParams.get(HIGHLIGHT_KEYS.other) ?? urlParams.get('mepFragments');
   const caasHighlightParam = urlParams.get('mepCaasHighlight');
   const masHighlightParam = urlParams.get('mepMasHighlight');
   const masMarketParam = urlParams.get('mepMasMarket');
@@ -484,22 +708,18 @@ export async function getMepPopup(mepConfig) {
   let mepHighlightChecked = '';
   if (page?.highlight || highlightParam === 'true') {
     mepHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepHighlight = true;
   }
   let mepFragmentsChecked = '';
   if (page?.fragments || fragmentsParam === 'true') {
     mepFragmentsChecked = 'checked="checked"';
-    document.body.dataset.mepFragments = true;
   }
   let mepCaasHighlightChecked = '';
   if (caasHighlightParam === 'true') {
     mepCaasHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepCaasHighlight = true;
   }
   let mepMasHighlightChecked = '';
   if (masHighlightParam === 'true') {
     mepMasHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepMasHighlight = true;
   }
   const masMarketChecked = masMarketParam === 'true';
   const mepMasMarketCheckedAttr = masMarketChecked ? 'checked="checked"' : '';
@@ -763,64 +983,15 @@ export async function getMepPopup(mepConfig) {
   }
   buildSummaryLingo();
 
-  // M@S summary. Surfaces Detected = Collections + Cards + Inline Fields + Standalone Offers.
-  // Sub-collections are a sub-row (live inside the parent collection payload, not a separate
-  // DOM surface). Counts query real elements (merch-card, mas-field, MAS_OSI_SELECTOR) — the
-  // [data-mas-block] stamps only land while mep.preview is on. Standalone Offers excludes
-  // card-internal offers (~5x multiplier per card; per-card "View in OST" handles them).
   function buildSummaryMas() {
-    const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
-    let subCollectionCount = 0;
-    collectionContainers.forEach((c) => {
-      subCollectionCount += mepMasSubCollections.get(c)?.length || 0;
-    });
-    const standaloneOfferCount = [...document.querySelectorAll(MAS_OSI_SELECTOR)]
-      .filter((el) => !el.closest('merch-card')).length;
-    const masCounts = {
-      collection: collectionContainers.length,
-      subCollection: subCollectionCount,
-      card: document.querySelectorAll('merch-card').length,
-      inlineField: document.querySelectorAll('mas-field').length,
-      standaloneOffer: standaloneOfferCount,
-    };
-    const masSurfaces = masCounts.collection
-      + masCounts.card
-      + masCounts.inlineField
-      + masCounts.standaloneOffer;
-    const geoDetectionOn = isMasGeoDetectionEnabled();
-    const masGeoDetectionParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
-    const masGeoDetectionMeta = getMetadata('mas-geo-detection');
-    let geoDetectionSource = 'none';
-    if (geoDetectionOn) {
-      geoDetectionSource = masGeoDetectionParam ? 'URL param' : 'Metadata';
-    } else if (masGeoDetectionParam || masGeoDetectionMeta) {
-      geoDetectionSource = masGeoDetectionParam ? 'URL param (off)' : 'Metadata (off)';
-    }
-
-    const svc = document.head.querySelector('mas-commerce-service');
-    const liveCountry = svc?.getAttribute('country');
-    const localeCountry = getMiloLocaleSettings(config.locale)?.country;
-    // getMiloLocaleSettings always resolves a country (defaults to 'US'), so the
-    // empty-string and 'unknown' fallbacks below are defensive only.
-    /* c8 ignore next */
-    const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
-    const pageMarketSource = liveCountry ? 'mas-commerce-service' : 'page locale';
-
     const section = createTag('div', { class: 'mep-section' });
     section.append(createTag('h6', { class: 'mep-section-header' }, 'M@S'));
     const data = createTag('div', { class: 'mep-section-data' });
-    const rows = [
-      ['Mas Geo Detection', geoDetectionOn ? 'on' : 'off'],
-      ['Geo Source', geoDetectionSource],
-      ['Page Market', pageMarket],
-      ['Market Source', pageMarketSource],
-      ['Surfaces Detected', masSurfaces],
-      ['Collections', masCounts.collection, true],
-      ['Sub-collections', masCounts.subCollection, true],
-      ['Cards', masCounts.card, true],
-      ['Inline Fields', masCounts.inlineField, true],
-      ['Standalone Offers', masCounts.standaloneOffer, true],
-    ];
+    const rows = getMasSummary().flatMap(([label, value]) => (
+      Array.isArray(value)
+        ? value.map(([subLabel, count, sub]) => [sub ? subLabel : `${label} ${subLabel}`, count, sub])
+        : [[label, value]]
+    ));
     rows.forEach(([label, value, sub]) => {
       data.append(createTag('span', sub ? { class: 'mep-mas-subitem' } : null, label));
       const valueSpan = createTag('span');
@@ -878,6 +1049,11 @@ export async function saveToMmm() {
     activity.variantNames = activity.variantNames?.join('||') || '';
     activity.source = activity.source?.join(',') || '';
     delete activity.selectedVariantName;
+    // Eligibility and display fields are shared with preview, not part of the save contract.
+    [
+      'disabledPromo', 'countryEnabled', 'consentNotSpecified', 'consentEnabled',
+      'manifestType', 'manifestOverrideName', 'executionOrder',
+    ].forEach((key) => { delete activity[key]; });
     return activity;
   });
   if (data.page.prefix === US_GEO) data.page.prefix = '';

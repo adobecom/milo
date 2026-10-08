@@ -1,6 +1,6 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
-import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
+import { getManifestStatus, safeUrl } from '../mep-next.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -130,17 +130,6 @@ function updateGnavOffset() {
   }
 }
 
-// Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
-function safeUrl(url) {
-  if (typeof url !== 'string') return '';
-  try {
-    const { protocol } = new URL(url, window.location.origin);
-    return protocol === 'http:' || protocol === 'https:' ? url : '';
-  } catch (e) {
-    return '';
-  }
-}
-
 // Manifest-derived values are set as text, never as createTag's string content
 // arg (which routes through insertAdjacentHTML and would parse markup).
 function buildRow(label, value) {
@@ -177,60 +166,6 @@ function toggleExpandedCard(cardEl) {
   const expanded = getExpandedCards();
   expanded[key] = isExpanded;
   safeSetItem(CARD_STORAGE_KEY, JSON.stringify(expanded));
-}
-
-function getManifestStatus(manifest) {
-  if (manifest.malformed) {
-    return { level: 'error', label: 'Error', messages: [`${manifest.error} not found.`] };
-  }
-  const statusChecks = [
-    {
-      reason: !manifest.countryEnabled,
-      msg: 'User country is restricted.',
-      level: 'Warning',
-      label: 'Ineligible',
-    },
-    {
-      reason: manifest.disabledPromo === true,
-      msg: 'Outside of promo date range.',
-      level: 'Warning',
-      label: 'Disabled',
-    },
-    {
-      reason: !manifest.consentEnabled && manifest.consentType === NON_PERSONALIZED_OFFER_TEST,
-      msg: 'Target off due to user\'s consent.',
-      level: 'Warning',
-      label: 'MEP used instead of Target',
-    },
-    {
-      reason: !manifest.consentEnabled && manifest.consentType === PERSONALIZED_OFFER,
-      msg: 'Disabled due to user\'s consent.',
-      level: 'Warning',
-      label: 'Ineligible',
-    },
-    {
-      reason: manifest.consentNotSpecified,
-      msg: 'Consent type not specified.',
-      level: 'Error',
-      label: 'Urgent warning',
-    },
-  ];
-  const severity = { Warning: 0, Error: 1 };
-  const messages = [];
-  let finalLabel = null;
-  let finalLevel = null;
-
-  statusChecks.forEach(({ reason, msg, level, label }) => {
-    if (!reason) return;
-    messages.push(msg);
-    if (!finalLevel || severity[level] > severity[finalLevel]) {
-      finalLevel = level;
-      finalLabel = label || level;
-    }
-  });
-
-  if (!finalLabel) return null;
-  return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
 }
 
 function applyManifestStatus(card, manifest) {
@@ -304,14 +239,14 @@ function buildManifestCard(manifest) {
   const now = Number.isFinite(instant) ? instant : Date.now();
   const hasRange = Number.isFinite(start) && Number.isFinite(end) && end > start;
   const progress = hasRange ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
-  let state = manifest.isActive === 'active' ? 'active' : 'inactive';
+  let state = manifest.isActive;
   if (hasRange && now < start) state = 'inactive';
   if (hasRange && now > end) state = 'complete';
   if (manifest.showActive) {
-    const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete' }[state];
+    const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete', unknown: 'Unknown' }[state];
     statusRow.append(createTag('span', { class: `mep-manifest-state ${state}` }, label));
   }
-  if (manifest.eventStart && manifest.eventEnd) {
+  if (manifest.eventStartIso && manifest.eventEndIso) {
     const instantLink = createTag('a', {
       href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`,
       target: '_blank',
@@ -349,6 +284,12 @@ function buildManifestCard(manifest) {
       class: `mep-manifest-timeline ${state}`,
       style: `--mep-manifest-progress: ${progress}%`,
     }, [track, ...endpoints]));
+  } else if (manifest.eventStart || manifest.eventEnd) {
+    const onRow = buildRow('On', manifest.eventStart || 'Not scheduled');
+    if (manifest.eventStartIso) {
+      onRow.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso)}`, target: '_blank', rel: 'noopener' }, 'Instant'));
+    }
+    rows.push(onRow, buildRow('Off', manifest.eventEnd || 'Not scheduled'));
   }
   if (statusRow.childElementCount) summary.prepend(statusRow);
 

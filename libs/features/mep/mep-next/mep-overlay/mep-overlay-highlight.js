@@ -64,7 +64,7 @@ export function getParameters() {
     mepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
     mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
     mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
-    mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other),
+    mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other) ?? urlParams.get('mepFragments'),
   };
 }
 
@@ -340,15 +340,20 @@ function syncHighlightObserver() {
   }
 }
 
-export function toggleHighlight(event) {
-  const { checked, id } = event.target;
-  const handler = HIGHLIGHT_HANDLERS[id];
+export function setHighlight(dataKey, checked) {
+  const handler = Object.values(HIGHLIGHT_HANDLERS).find((entry) => entry.dataKey === dataKey);
   if (!handler) return;
   document.body.dataset[handler.dataKey] = checked;
   (checked ? handler.on : handler.off).forEach((fn) => fn());
   syncHighlightObserver();
   refreshPageUpdateCounts();
   refreshBadges();
+}
+
+export function toggleHighlight(event) {
+  const { checked, id } = event.target;
+  const handler = HIGHLIGHT_HANDLERS[id];
+  if (handler) setHighlight(handler.dataKey, checked);
 }
 
 let resizeRaf;

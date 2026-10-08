@@ -7,7 +7,11 @@ const {
   escapeHtml,
   escapeAttr,
   parsePageAndUrl,
+  parseMepConfig,
+  getManifestList,
+  getManifestStatus,
   getMepPopup,
+  formatDate,
   saveToMmm,
   API_URLS,
 } = await import('../../../../libs/features/mep/mep-next/mep-next.js');
@@ -83,6 +87,208 @@ const config = {
   env: { name: 'stage' },
 };
 setConfig(config);
+
+describe('API_URLS', () => {
+  let originalEnv;
+
+  beforeEach(() => {
+    originalEnv = getConfig().env;
+  });
+
+  afterEach(() => {
+    getConfig().env = originalEnv;
+  });
+
+  const paths = {
+    pageList: '/get-pages',
+    pageDetails: '/get-page',
+    pageDataByURL: '/get-page?url=',
+    save: '/save-mep-call',
+    report: '/get-report',
+    history: '/get-target-history',
+  };
+
+  it('uses production endpoints outside the local environment', () => {
+    getConfig().env = { name: 'stage' };
+    Object.entries(paths).forEach(([key, path]) => {
+      expect(API_URLS[key]).to.equal(`https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws${path}`);
+    });
+  });
+
+  it('resolves local endpoints after config changes', () => {
+    getConfig().env = { name: 'local' };
+    Object.entries(paths).forEach(([key, path]) => {
+      expect(API_URLS[key]).to.equal(`https://bckbr4dhh2sngv5skvo4k7l27i0fvhdk.lambda-url.us-west-2.on.aws${path}`);
+    });
+    getConfig().env = undefined;
+    expect(API_URLS.history).to.equal('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/get-target-history');
+  });
+});
+
+describe('shared manifest data', () => {
+  let originalExperiments;
+
+  beforeEach(() => { originalExperiments = config.mep.experiments; });
+  afterEach(() => { config.mep.experiments = originalExperiments; });
+
+  it('retains stage source and placeholder variants for malformed manifests', () => {
+    const { manifests } = getManifestList({ page: { pageId: 42 }, activities: [] }, [{
+      name: 'broken',
+      manifestPath: '/frags/broken.json',
+      error: 'Manifest',
+      source: ['helix', 'target'],
+    }]);
+    expect(manifests[0].source).to.equal('helix, target');
+    expect(manifests[0].options.map(({ value }) => value)).to.deep.equal(['', 'default']);
+    expect(manifests[0].options[1].selected).to.be.true;
+    expect(manifests[0].options[1].dataManifest).to.equal('/frags/broken.json');
+  });
+
+  it('retains overlay eligibility and display fields in the shared config', () => {
+    const fields = {
+      disabledPromo: true,
+      countryEnabled: false,
+      consentEnabled: false,
+      consentNotSpecified: true,
+      manifestType: 'promo',
+      manifestOverrideName: 'override',
+      executionOrder: '0-first',
+    };
+    config.mep.experiments = [{
+      name: 'Shared activity',
+      manifest: 'https://www.adobe.com/shared.json',
+      variantNames: ['variant-a'],
+      selectedVariantName: 'variant-a',
+      ...fields,
+    }];
+    expect(parseMepConfig().activities[0]).to.include(fields);
+    const { manifests, manifestParameter } = getManifestList();
+    expect(manifests[0]).to.include({ manifestType: 'promo', executionOrder: 'First' });
+    expect(manifestParameter).to.deep.equal(['https://www.adobe.com/shared.json--variant-a']);
+    expect(manifests[0].options.find((option) => option.value === 'variant-a').selected).to.be.true;
+  });
+
+  it('accepts MMM data without using the current page experiments', () => {
+    const { manifests } = getManifestList({
+      page: { pageId: 42 },
+      activities: [{
+        manifestPath: 'https://www.adobe.com/mmm.json',
+        manifestUrl: 'https://www.adobe.com/edit.json',
+        variantNames: 'variant-a||variant-b',
+        selectedVariantName: 'variant-b',
+        source: ['target', 'promo'],
+      }],
+    }, []);
+    expect(manifests[0]).to.include({
+      editUrl: 'https://www.adobe.com/edit.json',
+      fileName: 'mmm.json',
+      source: 'target, promo',
+      pageId: 42,
+    });
+    expect(manifests[0].options.find((option) => option.value === 'variant-b')).to.include({
+      selected: true,
+      dataManifest: '/edit.json',
+    });
+  });
+
+  it('prioritizes missing-consent errors over eligibility warnings', () => {
+    const status = getManifestStatus({
+      countryEnabled: false,
+      disabledPromo: true,
+      consentNotSpecified: true,
+    });
+    expect(status).to.deep.equal({
+      level: 'error',
+      label: 'Urgent warning',
+      messages: [
+        'User country is restricted.',
+        'Outside of promo date range.',
+        'Consent type not specified.',
+      ],
+    });
+    expect(getManifestStatus({ countryEnabled: true, consentEnabled: true })).to.be.null;
+  });
+
+  it('maps every historical activity field from the API into shared manifest data', () => {
+    const activity = {
+      manifestId: 1870,
+      url: '/homepage/manifests/separate-kr.json',
+      pathname: '/homepage/manifests/separate-kr.json',
+      variantNames: 'all||test',
+      source: 'promo',
+      analyticsTitle: 'Korean Promo',
+      targetActivityName: 'Promo Activity',
+      manifestConsentType: 'promo or no offer changes',
+      manifestCountryRestriction: 'kr',
+      eventStart: '2026-09-15T05:00:00.000Z',
+      eventEnd: '0000-00-00 00:00:00',
+      lastSeen: '2026-10-05T20:52:57.000Z',
+    };
+    const { manifests } = getManifestList({ page: { pageId: 5 }, activities: [activity] }, []);
+    expect(manifests[0]).to.include({
+      manifestId: activity.manifestId,
+      editUrl: activity.url,
+      pathname: activity.pathname,
+      analyticsTitle: activity.analyticsTitle,
+      targetActivityName: activity.targetActivityName,
+      consentType: activity.manifestConsentType,
+      countryRestriction: 'KR',
+      source: activity.source,
+      eventStart: formatDate(activity.eventStart),
+      eventStartDate: new Date(activity.eventStart).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+      eventStartTime: new Date(activity.eventStart).toLocaleTimeString(undefined, { timeStyle: 'short' }),
+      eventStartIso: activity.eventStart,
+      eventEnd: null,
+      eventEndDate: null,
+      eventEndTime: null,
+      eventEndIso: null,
+      lastSeen: formatDate(activity.lastSeen),
+    });
+    expect(manifests[0].variantNames).to.deep.equal(['all', 'test']);
+  });
+
+  it('derives historical activity status from open-ended schedules without changing live state', () => {
+    const clock = sinon.useFakeTimers({ now: Date.parse('2026-10-05T20:00:00Z'), toFake: ['Date'] });
+    try {
+      const activity = { url: '/promo.json', variantNames: 'all', eventEnd: '0000-00-00 00:00:00' };
+      const { manifests } = getManifestList({
+        page: { pageId: 5 },
+        activities: [
+          { ...activity, eventStart: '2026-09-01T00:00:00Z' },
+          { ...activity, eventStart: '2026-11-01T00:00:00Z' },
+          { ...activity, eventEnd: '2026-09-01T00:00:00Z' },
+          { ...activity, eventEnd: '2026-11-01T00:00:00Z' },
+          { ...activity, eventStart: 'invalid' },
+          { ...activity, eventEnd: '2026-09-01T00:00:00Z', disabled: false },
+          { ...activity, disabled: true },
+        ],
+      }, []);
+      expect(manifests.map((manifest) => manifest.isActive))
+        .to.deep.equal(['active', 'inactive', 'inactive', 'active', 'unknown', 'active', 'inactive']);
+      expect(manifests[4].eventStartIso).to.be.null;
+      expect(manifests[4].eventStartDate).to.be.null;
+      expect(manifests[4].eventStartTime).to.be.null;
+    } finally {
+      clock.restore();
+    }
+  });
+});
+
+describe('formatDate', () => {
+  it('treats absent and MySQL zero dates as unset boundaries', () => {
+    [null, undefined, '', '0000-00-00', '0000-00-00 00:00:00'].forEach((date) => {
+      expect(formatDate(date)).to.equal('');
+      expect(formatDate(date, 'iso')).to.equal('');
+    });
+  });
+
+  it('reports malformed dates without creating an invalid Instant URL or throwing', () => {
+    ['invalid', new Date(NaN)].forEach((date) => {
+      expect(formatDate(date)).to.equal('Invalid date');
+      expect(formatDate(date, 'iso')).to.equal('');
+    });
+  });
+});
 
 describe('escapeHtml', () => {
   it('returns null and undefined unchanged', () => {
@@ -496,7 +702,7 @@ describe('M@S badge market resolution', () => {
 
   describe('injectMasBadges market stamping for pseudo-badge surfaces (inline + ost)', () => {
     // The inline (mas-field) and ost surfaces render their badges via CSS
-    // ::before pseudo using attr(data-mas-market). preview.js stamps the
+    // ::before pseudo using attr(data-mas-market). mep-mas.js stamps the
     // data attribute on the host so the chip text can render purely in CSS.
     it('stamps data-mas-market on the inline host using its descendant checkout link country', () => {
       const host = document.createElement('span');
@@ -1109,6 +1315,13 @@ describe('saveToMmm', () => {
     source: ['mep param', 'target'],
     countryRestriction: 'us',
     consentType: 'test-action',
+    disabledPromo: true,
+    countryEnabled: false,
+    consentEnabled: true,
+    consentNotSpecified: false,
+    manifestType: 'promo',
+    manifestOverrideName: 'test override',
+    executionOrder: '0-first',
   };
 
   beforeEach(() => {
@@ -1181,6 +1394,10 @@ describe('saveToMmm', () => {
     expect(body.activities[0].variantNames).to.equal('default||target-smb');
     expect(body.activities[0].source).to.equal('target');
     expect(body.activities[0]).to.not.have.property('selectedVariantName');
+    [
+      'disabledPromo', 'countryEnabled', 'consentEnabled', 'consentNotSpecified',
+      'manifestType', 'manifestOverrideName', 'executionOrder',
+    ].forEach((key) => expect(body.activities[0]).to.not.have.property(key));
     expect(body.activities[1].url).to.equal('not-a-valid-url');
     expect(body.page).to.not.have.property('highlight');
     expect(result).to.deep.equal({ result: 'ok' });
@@ -1279,6 +1496,124 @@ describe('getMepPopup', () => {
   const basePage = {
     url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
   };
+
+  const activityValues = (popup) => {
+    const values = [...popup.querySelector('.mep-manifest-info .mep-section-data').children];
+    return Object.fromEntries(values.filter((_, index) => index % 2 === 0)
+      .map((label, index) => [label.textContent, values[index * 2 + 1].textContent.trim()]));
+  };
+
+  it('displays all API activity fields including consent, countries and an open-ended schedule', async () => {
+    const activity = {
+      manifestId: 1870,
+      url: '/homepage/manifests/separate-kr.json',
+      pathname: '/homepage/manifests/separate-kr.json',
+      variantNames: 'all||test',
+      source: 'promo',
+      analyticsTitle: 'Korean Promo',
+      targetActivityName: 'Promo Activity',
+      manifestConsentType: 'promo or no offer changes',
+      manifestCountryRestriction: 'kr',
+      eventStart: '2026-09-15T05:00:00.000Z',
+      eventEnd: '0000-00-00 00:00:00',
+      lastSeen: '2026-10-05T20:52:57.000Z',
+    };
+    const popup = await renderPopup({ page: { ...basePage, pageId: 5 }, activities: [activity] });
+    expect(activityValues(popup)).to.include({
+      Source: activity.source,
+      'Consent req': activity.manifestConsentType,
+      'Allowed User Countries': 'KR',
+      'Last Seen': formatDate(activity.lastSeen),
+      Off: 'Not scheduled',
+      Variants: 'all, test',
+      'Analytics Title': activity.analyticsTitle,
+      'Manifest ID': '1870',
+      'Manifest URL': activity.url,
+      'Manifest Path': activity.pathname,
+    });
+    expect(activityValues(popup).On).to.include(formatDate(activity.eventStart));
+    expect(popup.querySelector('.target-activity-name').textContent)
+      .to.equal(activity.targetActivityName);
+    const instant = popup.querySelector('a[href*="instant"]');
+    expect(new URL(instant.href).searchParams.get('instant')).to.equal(activity.eventStart);
+    expect(popup.textContent).to.not.include('Invalid Date');
+    expect(popup.textContent).to.not.include('undefined');
+  });
+
+  it('keeps manifest order numbers outside the filename links', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity(), buildActivity({ url: '/second.json' })],
+    });
+    expect([...popup.querySelectorAll('.mep-manifest-index')].map((number) => number.textContent))
+      .to.deep.equal(['1.', '2.']);
+    popup.querySelectorAll('.mep-manifest-index').forEach((number) => {
+      expect(number.closest('a')).to.be.null;
+    });
+    expect([...popup.querySelectorAll('.mep-edit-manifest')].map((link) => link.textContent.trim()))
+      .to.deep.equal(['a.json', 'second.json']);
+  });
+
+  it('distinguishes missing consent/countries from explicitly unrestricted countries', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ consentType: undefined, countryRestriction: undefined })],
+    });
+    expect(activityValues(popup)).to.include({
+      'Consent req': 'Not specified',
+      'Allowed User Countries': 'Not specified',
+    });
+    const unrestricted = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ manifestCountryRestriction: '' })],
+    });
+    expect(activityValues(unrestricted)['Allowed User Countries']).to.equal('No restriction');
+  });
+
+  it('shows end-only and invalid schedules without invalid Instant links', async () => {
+    const endOnly = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({
+        eventStart: '0000-00-00 00:00:00',
+        eventEnd: '2026-11-13T14:55:00.000Z',
+      })],
+    });
+    expect(activityValues(endOnly).On).to.equal('Not scheduled');
+    expect(activityValues(endOnly).Off).to.equal(formatDate('2026-11-13T14:55:00.000Z'));
+    expect(endOnly.querySelector('a[href*="instant"]')).to.be.null;
+    const invalid = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ eventStart: 'invalid', eventEnd: '0000-00-00 00:00:00' })],
+    });
+    expect(activityValues(invalid).On).to.equal('Invalid date');
+    expect(invalid.querySelector('a[href*="instant"]')).to.be.null;
+  });
+
+  it('escapes API metadata aliases and the newly visible activity fields', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [{
+        url: '/test.json',
+        manifestId: XSS,
+        pathname: XSS,
+        variantNames: XSS,
+        analyticsTitle: XSS,
+        manifestConsentType: XSS,
+        manifestCountryRestriction: XSS,
+      }],
+    });
+    expect(popup.querySelector('img')).to.be.null;
+    expect(activityValues(popup)).to.include({
+      'Consent req': XSS,
+      'Allowed User Countries': XSS.toUpperCase(),
+      'Manifest ID': XSS,
+      'Manifest Path': XSS,
+      'Analytics Title': XSS,
+      Variants: XSS,
+    });
+  });
 
   it('escapes a malicious variant name in both option text and attributes', async () => {
     config.marketsConfig = { languages: { data: [] } };
@@ -1428,7 +1763,8 @@ describe('getMepPopup', () => {
     });
 
     popup.querySelector('#mepFragmentsCheckbox-502').click();
-    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepFragments=true');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('otherHighlight=true');
+    expect(document.body.dataset.otherHighlight).to.equal('true');
 
     popup.querySelector('#mepCaasHighlightCheckbox-502').click();
     expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepCaasHighlight=true');
