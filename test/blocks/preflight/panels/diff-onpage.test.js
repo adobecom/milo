@@ -5,7 +5,6 @@ import {
   resolveOnPage,
   highlightOnPage,
   clearHighlights,
-  autoHighlightOnPage,
   areHighlightsDismissed,
   setHighlightsDismissed,
 } from '../../../../libs/blocks/preflight/panels/diff-onpage.js';
@@ -90,8 +89,7 @@ describe('preflight diff-onpage', () => {
     });
 
     it('does not climb for a leaf-kind change, even when it sits inside a decorated block', () => {
-      // Same fixture as above, but resolved as a 'leaf' change — must return the paragraph
-      // itself, not the containing block.
+      // A leaf change inside a block must resolve to the paragraph, not the block.
       const root = document.createElement('main');
       root.innerHTML = `
         <div class="section">
@@ -536,8 +534,9 @@ describe('preflight diff-onpage', () => {
     });
   });
 
-  describe('autoHighlightOnPage (preview-load auto-apply, FA #1)', () => {
+  describe('preview-load auto-apply (FA #1)', () => {
     let root;
+    const diff = { added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] };
     beforeEach(() => {
       setHighlightsDismissed(false);
       root = document.createElement('main');
@@ -551,22 +550,32 @@ describe('preflight diff-onpage', () => {
     });
 
     it('applies overlays with no author action when highlights are not dismissed', () => {
-      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
+      highlightOnPage(diff, root);
       expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
     });
 
     it('draws no overlays when dismissed, but still shows the control so it can be re-enabled', () => {
       setHighlightsDismissed(true);
-      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
+      highlightOnPage(diff, root);
       expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
       const toggle = document.querySelector('.preflight-diff-control-hide');
       expect(toggle).to.exist;
       expect(toggle.textContent).to.equal('Show');
     });
 
-    it('dismissing via the on-page control flips the shared session flag', () => {
-      autoHighlightOnPage({ added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] }, root);
-      document.querySelector('.preflight-diff-highlight-control .preflight-diff-control-hide')?.click();
+    it('forces highlights on despite a saved Hide preference without changing it', () => {
+      setHighlightsDismissed(true);
+
+      highlightOnPage(diff, root, true);
+
+      expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
+      expect(localStorage.getItem('preflight-diff-hidden')).to.equal('1');
+      const toggle = document.querySelector('.preflight-diff-control-hide');
+      toggle.click();
+      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
+      toggle.click();
+      expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
+      expect(localStorage.getItem('preflight-diff-hidden')).to.equal('1');
       expect(areHighlightsDismissed()).to.equal(true);
     });
   });

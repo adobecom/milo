@@ -109,16 +109,20 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 };
 
 export const loadPreflightResults = async () => {
-  const { hostname } = window.location;
+  const { hostname, search } = window.location;
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  const params = new URLSearchParams(search);
+  const isDaPreview = params.has('dapreview') || params.has('quick-edit');
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
+  const autoHighlight = params.get('autoHighlight');
 
   const run = async () => {
-    if (isLocal || isPreview) {
+    if (!isDaPreview
+      && ((isPreview && autoHighlight !== 'off') || (isLocal && autoHighlight === 'on'))) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
-      await autoHighlightUnpublished();
+      await autoHighlightUnpublished(autoHighlight === 'on');
     }
     if (!isLocal) {
       const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
