@@ -177,6 +177,45 @@ describe('toggleHighlight', () => {
   });
 });
 
+describe('badge offset inheritance', () => {
+  let link;
+  let host;
+
+  before(async () => {
+    link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/libs/features/mep/mep-next/mep-overlay/mep-overlay-highlight.css';
+    const loaded = new Promise((resolve) => { link.onload = resolve; });
+    document.head.append(link);
+    await loaded;
+  });
+
+  after(() => link.remove());
+
+  beforeEach(() => {
+    document.body.dataset.mepMasHighlight = 'true';
+    host = document.createElement('div');
+    host.dataset.masBlock = 'inline';
+    host.style.setProperty('--badge-top-offset', '31px');
+    host.innerHTML = '<span data-mas-block="offer">50%</span>';
+    document.body.append(host);
+  });
+
+  afterEach(() => {
+    host.remove();
+    delete document.body.dataset.mepMasHighlight;
+  });
+
+  it('applies the offset to the host that has it', () => {
+    expect(getComputedStyle(host, '::before').top).to.equal('31px');
+  });
+
+  it('does not pass the offset down to a nested badge host', () => {
+    const nested = host.querySelector('[data-mas-block="offer"]');
+    expect(getComputedStyle(nested, '::before').top).to.equal('0px');
+  });
+});
+
 describe('getPageUpdates', () => {
   afterEach(() => {
     document.querySelectorAll(
