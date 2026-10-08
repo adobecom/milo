@@ -481,6 +481,21 @@ describe('Utils', () => {
       utils.setConfig(config);
     });
 
+    it('resolves merch helpers next to the merch block when it loads from an external lib', () => {
+      const ext = 'https://ext.example/libs';
+      utils.setConfig({ ...config, externalLibs: [{ base: ext, blocks: ['merch'] }] });
+      authorLink(fieldLink);
+      utils.preloadLcpCodeFiles();
+      expect(moduleHrefs()).to.include.members([
+        `${ext}/blocks/merch/merch.js`,
+        `${ext}/blocks/merch/autoblock.js`,
+        `${ext}/utils/action.js`,
+        `${ext}/features/placeholders.js`,
+      ]);
+      expect(moduleHrefs()).to.not.include(libs('/utils/action.js'));
+      utils.setConfig(config);
+    });
+
     it('resolves registered block dependencies, skipping ones that resolve to nothing', () => {
       utils.registerBlockDeps('marquee', '/libs/dep/static.js', (blockPath) => `${blockPath}-dep.js`, () => false);
       document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
