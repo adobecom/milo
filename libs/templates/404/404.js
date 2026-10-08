@@ -1,10 +1,24 @@
-import { getConfig, createTag, loadArea, getMetadata } from '../../utils/utils.js';
+import {
+  getConfig, createTag, loadArea, getMetadata, lingoActive, getLingoRegion,
+} from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
 
 const { base, contentRoot, locale } = getConfig();
 
+async function getGeoPrefix() {
+  if (!lingoActive() || !Object.keys(locale.regions ?? {}).length) return null;
+  try {
+    const region = await getLingoRegion({ useGeoLocation: true });
+    return region?.prefix ?? null;
+  } catch (error) {
+    window.lana?.log(`Error resolving geo 404 locale: ${error}`, { severity: 'error' });
+    return null;
+  }
+}
+
 async function get404(path, version) {
-  const { prefix } = locale;
+  const geoPrefix = !path ? await getGeoPrefix() : null;
+  const prefix = geoPrefix ?? locale.prefix;
   let href = path || `${base}${prefix}/fragments/404#_dnt`;
 
   if (version === 'v2') {
