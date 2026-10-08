@@ -75,8 +75,8 @@ describe('AUP', () => {
     for (const url of [
       'https://auth.services.adobe.com/imslib/imslib.min.js',
       'https://stage.adobeccstatic.com/unav/1.6/UniversalNav.js',
-      'https://shared-components.stage.adobe.com/aup-sdk/1.0.756/main.js',
-      'https://shared-components.adobe.com/aup-sdk/1.0.756/main.js',
+      'https://shared-components.stage.adobe.com/aup-sdk/stable/main.js',
+      'https://shared-components.adobe.com/aup-sdk/stable/main.js',
     ]) {
       const script = document.createElement('script');
       script.type = 'javascript/blocked';
