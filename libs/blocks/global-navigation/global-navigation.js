@@ -126,6 +126,12 @@ export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
+// Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
+export async function sendAupDialogCloseAnalytics(modalHash, source) {
+  const { sendAnalytics } = await import('../../martech/helpers.js');
+  sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
+}
+
 function getHelpChildren() {
   const { unav } = getConfig();
   return unav?.unavHelpChildren || [
@@ -631,6 +637,7 @@ class Gnav {
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
+      this.initToolbarCtaOverflow,
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.isLocalNav());
@@ -679,6 +686,14 @@ class Gnav {
     return cta;
   };
 
+  // Clone the trailing CTA-typed nav item into a toolbar slot so it stays
+  // visible beside the hamburger at mobile/compact widths, not only in the drawer.
+  decoratePinnedCta = () => {
+    const ctaWrapper = [...this.elements.mainNav.querySelectorAll(':scope > * > .feds-cta-wrapper')].pop();
+    if (!ctaWrapper) return '';
+    return toFragment`<div class="feds-pinned-cta">${ctaWrapper.cloneNode(true)}</div>`;
+  };
+
   decorateTopNav = () => {
     const {
       searchEnabled,
@@ -698,6 +713,7 @@ class Gnav {
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
         ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${this.decoratePinnedCta()}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -959,6 +975,45 @@ class Gnav {
     schedule();
   };
 
+  // Hide the toolbar CTAs (pinned clone + product entry) if they'd collide with
+  // the brand/hamburger and trailing widgets at mobile/compact widths; they stay
+  // reachable in the drawer.
+  initToolbarCtaOverflow = () => {
+    const header = this.block;
+    const { topnav, navWrapper } = this.elements;
+    const ctaSelector = '.feds-pinned-cta, .feds-product-entry-cta, .feds-product-entry-cta-placeholder';
+    if (!(topnav instanceof HTMLElement) || !topnav.querySelector(ctaSelector)) return;
+    const CTA_OVERFLOW_GAP = 16;
+    let rafId = null;
+
+    const measure = () => {
+      rafId = null;
+      // Drawer open already hides the pinned copy via CSS; skip re-measuring.
+      if (navWrapper?.classList.contains('feds-nav-wrapper--expanded')) return;
+      if (!this.isEffectivelyMobile()) {
+        header.classList.remove('feds-cta-overflow');
+        return;
+      }
+      // Clear our own class first so the CTAs' true width is counted; leaving
+      // them collapsed to 0 would flip the fit result and cause a toggle loop.
+      header.classList.remove('feds-cta-overflow');
+      const needed = [...topnav.children].reduce(
+        (sum, el) => (el === navWrapper ? sum : sum + el.offsetWidth),
+        0,
+      ) + CTA_OVERFLOW_GAP;
+      header.classList.toggle('feds-cta-overflow', needed > topnav.clientWidth);
+    };
+
+    const schedule = () => { if (rafId === null) rafId = requestAnimationFrame(measure); };
+
+    new ResizeObserver(schedule).observe(topnav);
+    new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
+    isDesktop.addEventListener('change', schedule);
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', schedule);
+    document.fonts?.ready?.then(schedule);
+    schedule();
+  };
+
   loadDelayed = async () => {
     this.ready = this.ready || new Promise(async (resolve) => {
       try {
@@ -1180,14 +1235,17 @@ class Gnav {
         let finishLoading;
         let onNavigation;
         let onWorkflowClose;
+        let onWorkflowSuccess;
         let requestClose;
         let closing;
         let settled = false;
         let workflowClosed = false;
+        let workflowSucceeded = false;
         const cleanup = () => {
           controller.abort();
           finishLoading?.();
           element.removeEventListener('close', onWorkflowClose);
+          element.removeEventListener('success', onWorkflowSuccess);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
           if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
@@ -1210,7 +1268,15 @@ class Gnav {
           else finishWorkflow();
           return closing;
         };
+        onWorkflowSuccess = () => {
+          workflowSucceeded = true;
+        };
         onWorkflowClose = () => {
+          // Closes started by the Milo modal (button, curtain, Escape) carry their own daa-ll
+          // and settle first; an unsettled close from the workflow is the user dismissing it.
+          if (dialog && !settled && !closing && !workflowSucceeded) {
+            sendAupDialogCloseAnalytics(modalHash, 'buttonClose');
+          }
           workflowClosed = true;
           requestClose();
         };
@@ -1218,6 +1284,7 @@ class Gnav {
           if (modalHash && window.location.hash !== modalHash) requestClose();
         };
         element.addEventListener('close', onWorkflowClose);
+        element.addEventListener('success', onWorkflowSuccess);
         try {
           const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
           const [{ getModal, closeModal }] = await Promise.all([
