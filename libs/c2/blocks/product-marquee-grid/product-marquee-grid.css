@@ -37,6 +37,17 @@
       inline-size: 50px;
       object-fit: contain;
     }
+
+    &.has-wordmark {
+      align-items: baseline;
+    }
+
+    /* The heading-* class gives the icon the heading's font, so 1cap matches the title. */
+    img.icon.pm-wordmark {
+      /* stylelint-disable-next-line unit-no-unknown */
+      block-size: 1cap;
+      inline-size: auto;
+    }
   }
 
   .pm-merch-card {
@@ -214,6 +225,12 @@ body:has(header.local-nav) .product-marquee-grid {
       img.icon {
         block-size: 64px;
         inline-size: 64px;
+      }
+
+      img.icon.pm-wordmark {
+        /* stylelint-disable-next-line unit-no-unknown */
+        block-size: 1cap;
+        inline-size: auto;
       }
     }
 

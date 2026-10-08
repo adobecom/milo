@@ -30,11 +30,26 @@ function parseLeftColumn(col) {
   return { iconEl, heading, bodyEls };
 }
 
+// Wide icons (wordmarks) are sized to the heading's cap height instead of the square icon box.
+function sizeWordmark(iconEl, heading) {
+  if (!heading) return;
+  const apply = () => {
+    if (iconEl.naturalWidth <= iconEl.naturalHeight * 1.2) return;
+    const typoClass = [...heading.classList].find((c) => c.startsWith('heading-'))
+      || `heading-${heading.tagName.slice(1)}`;
+    iconEl.classList.add('pm-wordmark', typoClass);
+    iconEl.closest('.pm-chiclet-row')?.classList.add('has-wordmark');
+  };
+  if (iconEl.complete) apply();
+  else iconEl.addEventListener('load', apply, { once: true });
+}
+
 function buildChicletRow(iconEl, heading) {
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
   if (iconEl) {
     iconEl.classList.add('icon');
     chicletRow.append(iconEl);
+    sizeWordmark(iconEl, heading);
   }
   if (heading) chicletRow.append(heading);
   return chicletRow;
