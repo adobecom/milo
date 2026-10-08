@@ -544,7 +544,6 @@ async function getSidenav(collection) {
     const resourceItem = createTag('sp-sidenav-item', {
       href: localizedLink,
       target: '_blank',
-      'aria-label': placeholders?.catalogSpecialOffersAlt,
     });
 
     resourceItem.textContent = sidenavSettings.linkText || 'Link';
@@ -556,6 +555,13 @@ async function getSidenav(collection) {
         label: sidenavSettings.linkText || 'Link',
       });
       resourceItem.append(icon);
+    }
+
+    if (placeholders?.catalogSpecialOffersAlt) {
+      resourceItem.updateComplete.then(() => {
+        const link = resourceItem.shadowRoot.querySelector('a');
+        if (link) link.setAttribute('aria-label', placeholders.catalogSpecialOffersAlt);
+      });
     }
 
     resourcesSpSidenav.append(resourceItem);
