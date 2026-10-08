@@ -14,7 +14,7 @@ import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
 import {
-  easeOutCubic, easeInOutCubic, easeInOutQuint, easeOutExpo, lerpN, clamp01, coverFit,
+  easeOutCubic, easeOutQuart, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -105,15 +105,16 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_REVEAL_IN_MS = 700;
-const PQ_REVEAL_OUT_MS = 225;
+const PQ_REVEAL_IN_MS = 800;
+const PQ_REVEAL_OUT_MS = 250;
 
 // Shares of the reveal window; horizontals lead verticals.
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
-const PQ_COPY_LAG = [0, 0.18, 0.28]; // quote, name, role — as a share of the sweep
-const PQ_COPY_KEYS = ['q', 'n', 'r'];
-const PQ_COPY_LINE_SPAN = 0.55; // each line's own share; the lags divide what is left
+const PQ_COPY_PARTS = [['n', 0.18], ['r', 0.28]];
+const PQ_COPY_LINE_STAGGER = 0.05;
+const PQ_COPY_LINE_LAG_MAX = 0.2;
+const PQ_COPY_LINE_RANK_CAP = 4;
 
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
@@ -1309,28 +1310,27 @@ function createGlobeGalleryRuntime(
   }
 
   function updatePullQuoteCopy(reveal) {
-    const p = reveal;
-    const arrive = (lag) => easeOutCubic(clamp01((p - lag) / (1 - lag)));
+    const prog = (lag) => clamp01((reveal - lag) / (1 - lag));
+    const arrive = (lag) => easeOutCubic(prog(lag));
     const lines = pq.lineEls;
     const last = lines.length - 1;
     let str = '';
-    const vals = [];
-    for (let i = 0; i < 3; i += 1) {
-      vals.push(arrive(PQ_COPY_LAG[i]));
-      str += `${vals[i].toFixed(3)};`;
-    }
-    // Each line snaps inside its own share; the shares stagger across the sweep.
-    const lineVals = lines.map((_, i) => {
-      const lag = last > 0 ? ((1 - PQ_COPY_LINE_SPAN) * i) / last : 0;
-      return easeOutExpo(clamp01((p - lag) / PQ_COPY_LINE_SPAN));
-    });
-    lineVals.forEach((v) => { str += `${v.toFixed(3)};`; });
+    const vals = PQ_COPY_PARTS.map(([, lag]) => arrive(lag));
+    vals.forEach((v) => { str += `${v.toFixed(3)};`; });
+    const lagStep = last > 0 ? Math.min(PQ_COPY_LINE_STAGGER, PQ_COPY_LINE_LAG_MAX / last) : 0;
+    const span = 1 - lagStep * last;
+    const lineVals = lines.map((_, i) => easeOutQuart(clamp01((reveal - lagStep * i) / span)));
+    const lineFades = lines.map((_, i) => prog(lagStep * i));
+    lineVals.forEach((v, i) => { str += `${v.toFixed(3)},${lineFades[i].toFixed(3)};`; });
     if (str === pq.copyStr) return;
     pq.copyStr = str;
-    for (let i = 0; i < 3; i += 1) {
-      pqEl.style.setProperty(`--gg-pq-copy-${PQ_COPY_KEYS[i]}`, vals[i].toFixed(3));
-    }
-    lines.forEach((el, i) => el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3)));
+    PQ_COPY_PARTS.forEach(([key], i) => {
+      pqEl.style.setProperty(`--gg-pq-copy-${key}`, vals[i].toFixed(3));
+    });
+    lines.forEach((el, i) => {
+      el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3));
+      el.style.setProperty('--gg-pq-line-o', lineFades[i].toFixed(3));
+    });
   }
 
   function advanceReveal(zoomT) {
@@ -1347,6 +1347,13 @@ function createGlobeGalleryRuntime(
     updatePullQuoteCopy(reveal);
   }
 
+  function splitQuote() {
+    pq.lineEls = layoutQuote(pq.quoteEl);
+    pq.lineEls.forEach((el, i) => {
+      el.style.setProperty('--gg-pq-line-rank', Math.min(i, PQ_COPY_LINE_RANK_CAP));
+    });
+  }
+
   // Fresh line elements carry no progress var, so the cache is dropped and the frame rewritten.
   function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
@@ -1355,7 +1362,7 @@ function createGlobeGalleryRuntime(
     pq.splitW = w;
     pq.quoteEl.style.removeProperty('font-size');
     pq.quoteEl.style.removeProperty('letter-spacing');
-    pq.lineEls = layoutQuote(pq.quoteEl);
+    splitQuote();
     pq.copyStr = '';
     if (!reducedMotion) {
       const bandH = H - navH;
@@ -1367,7 +1374,7 @@ function createGlobeGalleryRuntime(
           const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
           if (Math.abs(next - fs) < 0.5) break;
           pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
-          pq.lineEls = layoutQuote(pq.quoteEl);
+          splitQuote();
         }
       }
       writePullQuoteFrame(pq.revealT);
