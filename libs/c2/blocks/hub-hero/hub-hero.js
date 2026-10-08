@@ -241,6 +241,25 @@ const removeHovered = (carousel) => {
   [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
+const updateCarouselAnchoring = (container) => {
+  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
+    || container.querySelector('.hub-hero-carousel-item:focus-visible');
+  if (!slideEl) {
+    container.classList.remove('stick-left', 'stick-right');
+    return;
+  }
+
+  const hubHero = slideEl.closest('.hub-hero');
+  const slideIndex = Number(slideEl.dataset.index);
+  const slideCount = parseInt(getComputedStyle(hubHero).getPropertyValue('--slides'), 10) || 0;
+  const maxIndex = hubHero.classList.contains('slides-3') ? 3 : slideCount;
+  const rtl = isRtl();
+  // Viewport height can shrink the rendered row below its authored width cap.
+  const needsStick = container.getBoundingClientRect().width > window.innerWidth;
+  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
+  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
+};
+
 const onCarouselLeave = (event) => {
   const carouselContainer = event.target;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -268,27 +287,13 @@ const onHover = (event) => {
     video.play().catch(() => { });
   }
 
-  const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
   if (!container) return;
 
   removeHovered(slideEl.closest('.hub-hero-carousel'));
 
-  const rtl = isRtl();
-  const hubHero = slideEl.closest('.hub-hero');
-  const isThree = hubHero?.classList.contains('slides-3');
-  const styles = getComputedStyle(hubHero);
-  const slideCount = parseInt(styles.getPropertyValue('--slides'), 10) || 0;
-  const maxIndex = isThree ? 3 : slideCount;
-  const slideWidth = parseFloat(styles.getPropertyValue('--slide-width')) || 0;
-  const endGap = parseFloat(styles.getPropertyValue('--end-gap')) || 0;
-  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const unhoveredTotal = slideWidth * slideCount + (endGap * rootFontSize) * (slideCount - 1);
-  const needsStick = unhoveredTotal > window.innerWidth;
-
   slideEl.classList.add(isFocus ? 'focused' : 'hovered');
-  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
-  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
+  updateCarouselAnchoring(container);
 
   if (hoverTracked) return;
 
@@ -427,12 +432,18 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
+  const carouselContainer = decoratedCarousel.querySelector('.hub-hero-carousel-container');
+  const updateAnchoring = () => updateCarouselAnchoring(carouselContainer);
+  const carouselResizeObserver = new ResizeObserver(updateAnchoring);
+  carouselResizeObserver.observe(carouselContainer);
+  window.addEventListener('resize', updateAnchoring, { signal: scrollController.signal });
   window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
       scrollController.abort();
+      carouselResizeObserver.disconnect();
       mobileObservers.forEach((o) => o.disconnect());
       observer.disconnect();
     }

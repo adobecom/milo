@@ -1,5 +1,6 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 import init from '../../../libs/c2/blocks/hub-hero/hub-hero.js';
 
@@ -134,6 +135,172 @@ describe('hub-hero block', () => {
       const pictureSlide = slides[0];
       expect(pictureSlide.querySelector('.hub-hero-carousel-item-media img[alt="s1"]')).to.exist;
       expect(pictureSlide.querySelector('.hub-hero-carousel-item-media video')).to.be.null;
+    });
+  });
+
+  describe('carousel edge anchoring', () => {
+    let block;
+    let container;
+    let slides;
+    let containerWidth;
+    let originalViewport;
+    let originalDirection;
+    let observeSpy;
+
+    const enterCard = (target) => target.dispatchEvent(new MouseEvent('mouseenter'));
+    const settleLayout = async () => {
+      for (let frame = 0; frame < 3; frame += 1) {
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      }
+    };
+
+    before(() => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    });
+
+    beforeEach(async () => {
+      await setViewport({ width: 1470, height: 800 });
+      originalDirection = document.documentElement.getAttribute('dir');
+      observeSpy = sinon.spy(ResizeObserver.prototype, 'observe');
+      block = await loadBlock('./mocks/default.html');
+      block.style.setProperty('--slide-width', '392px');
+      block.style.setProperty('--slides', '4');
+      block.style.setProperty('--end-gap', '.5rem');
+      container = block.querySelector('.hub-hero-carousel-container');
+      slides = [...container.querySelectorAll('.hub-hero-carousel-item[data-index]')];
+      containerWidth = 984;
+      sinon.stub(container, 'getBoundingClientRect')
+        .callsFake(() => new DOMRect(0, 0, containerWidth, 480));
+    });
+
+    afterEach(() => {
+      document.body.replaceChildren();
+      sinon.restore();
+      if (originalDirection === null) document.documentElement.removeAttribute('dir');
+      else document.documentElement.setAttribute('dir', originalDirection);
+    });
+
+    after(async () => {
+      await setViewport(originalViewport);
+    });
+
+    it('does not anchor fitting cards using the larger authored width cap', () => {
+      enterCard(slides[0]);
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+
+      enterCard(slides[3]);
+      expect(slides[3].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('updates both edge anchors when a shorter viewport narrows the active row', async () => {
+      container.getBoundingClientRect.restore();
+      container.style.width = '200vh';
+      await setViewport({ width: 1470, height: 900 });
+      enterCard(slides[0]);
+      await settleLayout();
+      expect(container.getBoundingClientRect().width).to.equal(1800);
+      expect(container.classList.contains('stick-left')).to.be.true;
+
+      await setViewport({ width: 1470, height: 600 });
+      await settleLayout();
+      expect(container.getBoundingClientRect().width).to.equal(1200);
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+
+      await setViewport({ width: 1470, height: 900 });
+      await settleLayout();
+      expect(container.classList.contains('stick-left')).to.be.true;
+      enterCard(slides[3]);
+      expect(container.classList.contains('stick-right')).to.be.true;
+
+      await setViewport({ width: 1470, height: 600 });
+      await settleLayout();
+      expect(slides[3].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('updates the viewport-width threshold even when the row does not resize', async () => {
+      containerWidth = 1500;
+      container.style.width = '1500px';
+      container.style.height = '480px';
+      enterCard(slides[0]);
+      await settleLayout();
+      expect(container.classList.contains('stick-left')).to.be.true;
+
+      await setViewport({ width: 1600, height: 800 });
+      await settleLayout();
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+
+      await setViewport({ width: 1400, height: 800 });
+      await settleLayout();
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.true;
+    });
+
+    it('disconnects row observation and the resize listener when the block is removed', async () => {
+      const rowObserver = observeSpy.getCalls()
+        .find((call) => call.args[0] === container).thisValue;
+      const disconnect = sinon.spy(rowObserver, 'disconnect');
+      enterCard(slides[0]);
+      block.remove();
+      await settleLayout();
+      expect(disconnect.calledOnce).to.be.true;
+
+      container.getBoundingClientRect.resetHistory();
+      window.dispatchEvent(new Event('resize'));
+      expect(container.getBoundingClientRect.called).to.be.false;
+    });
+
+    it('uses the same rendered-width check for keyboard focus', () => {
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('does not anchor a carousel that is exactly as wide as the viewport', () => {
+      containerWidth = 1470;
+      enterCard(slides[0]);
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+
+      enterCard(slides[3]);
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('anchors only the outside cards when the rendered carousel overflows', () => {
+      containerWidth = 1500;
+      enterCard(slides[0]);
+      expect(container.classList.contains('stick-left')).to.be.true;
+      expect(container.classList.contains('stick-right')).to.be.false;
+
+      enterCard(slides[3]);
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.true;
+
+      enterCard(slides[1]);
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('reverses outside-card anchoring in RTL', () => {
+      document.documentElement.setAttribute('dir', 'rtl');
+      containerWidth = 1500;
+      enterCard(slides[0]);
+      expect(container.classList.contains('stick-right')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+
+      enterCard(slides[3]);
+      expect(container.classList.contains('stick-left')).to.be.true;
+      expect(container.classList.contains('stick-right')).to.be.false;
     });
   });
 
