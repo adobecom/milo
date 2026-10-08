@@ -605,6 +605,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   // Router Marquee poster deferred to a private attr
   // until slide activates, avoiding eager fetch when hidden.
   if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
+  else if (anchorTag.closest('.hero-marquee') && !getConfig().mep?.blocks?.['hero-marquee']) {
+    attrs = attrs.replace("poster='", "data-hm-poster='");
+  }
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;

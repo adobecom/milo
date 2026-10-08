@@ -2022,14 +2022,6 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-const BLOCKS_OWNING_VIDEOS = ['hero-marquee'];
-const ownsVideoLinks = (block) => {
-  const name = block.classList[0];
-  if (!BLOCKS_OWNING_VIDEOS.includes(name)) return false;
-  const { miloLibs, codeRoot } = getConfig();
-  return getBlockData(block).blockPath === `${miloLibs || codeRoot}/blocks/${name}/${name}`;
-};
-
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
@@ -2054,18 +2046,13 @@ async function decorateSection(section, idx) {
           }
           blkLinks.inlineFrags.push(link);
         } else if (link.classList.contains('link-block')) {
-          const isOwnedVideo = link.classList.contains('video') && ownsVideoLinks(block);
-          blkLinks[isOwnedVideo ? 'blockOwned' : 'autoBlocks'].push(link);
+          blkLinks.autoBlocks.push(link);
         }
       });
     return blkLinks;
-  }, { inlineFrags: [], autoBlocks: [], blockOwned: [] });
+  }, { inlineFrags: [], autoBlocks: [] });
 
-  const embeddedLinks = [
-    ...blockLinks.inlineFrags,
-    ...blockLinks.autoBlocks,
-    ...blockLinks.blockOwned,
-  ];
+  const embeddedLinks = [...blockLinks.inlineFrags, ...blockLinks.autoBlocks];
   if (embeddedLinks.length) {
     links = links.filter((link) => !embeddedLinks.includes(link));
   }
@@ -2077,7 +2064,6 @@ async function decorateSection(section, idx) {
     el: section,
     idx,
     preloadLinks: filterDuplicatedLinkBlocks(blockLinks.autoBlocks),
-    blockOwnedLinks: blockLinks.blockOwned,
   };
 }
 
@@ -3090,7 +3076,6 @@ async function resolveHighPriorityFragments(section) {
     const redecorated = await decorateSection(section.el, section.idx);
     section.blocks = redecorated.blocks;
     section.preloadLinks = redecorated.preloadLinks;
-    section.blockOwnedLinks = redecorated.blockOwnedLinks;
   }
 }
 
@@ -3099,7 +3084,6 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
-  preloadBlockResources(section.blockOwnedLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),

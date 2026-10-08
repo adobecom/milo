@@ -8,7 +8,7 @@ import {
   loadCDT,
   setBackgroundFocus,
 } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const TABLET = '(min-width: 600px) and (max-width: 1199px)';
@@ -253,42 +253,43 @@ function handleViewportOrder(content) {
   });
 }
 
-function isMediaHidden(el, a) {
-  const bgCell = a.closest('.background > div');
+function isMediaHidden(el, node) {
+  const bgCell = node.closest('.background > div');
   if (bgCell && el.contains(bgCell)) {
     const viewports = Object.keys(BG_VIEWPORTS).filter((vp) => bgCell.classList.contains(vp));
     return viewports.length > 0
       && !viewports.some((vp) => window.matchMedia(BG_VIEWPORTS[vp]).matches);
   }
   return HIDDEN_FOREGROUND_MEDIA.some(({ className, media, selector }) => (
-    el.classList.contains(className) && !!a.closest(selector) && window.matchMedia(media).matches
+    el.classList.contains(className) && !!node.closest(selector) && window.matchMedia(media).matches
   ));
 }
 
-async function loadVideo(a) {
-  const bgCell = a.closest('.background > div');
-  await loadBlock(a);
-  bgCell?.querySelector('video')?.setAttribute('disablepictureinpicture', 'true');
+function setPoster(video) {
+  video.setAttribute('poster', video.dataset.hmPoster);
+  delete video.dataset.hmPoster;
 }
 
-function loadVideos(el) {
-  const links = [...el.querySelectorAll('a.video.link-block')];
-  let hidden = links.filter((a) => isMediaHidden(el, a));
-  if (hidden.length) {
-    const queries = [...new Set([
-      ...Object.values(BG_VIEWPORTS),
-      ...HIDDEN_FOREGROUND_MEDIA.map(({ media }) => media),
-    ])].map((media) => window.matchMedia(media));
-    const onChange = () => {
-      const shown = hidden.filter((a) => !isMediaHidden(el, a));
-      if (!shown.length) return;
-      hidden = hidden.filter((a) => !shown.includes(a));
-      shown.forEach(loadVideo);
-      if (!hidden.length) queries.forEach((mq) => mq.removeEventListener('change', onChange));
-    };
-    queries.forEach((mq) => mq.addEventListener('change', onChange));
-  }
-  return links.filter((a) => !hidden.includes(a)).map(loadVideo);
+function loadPosters(el) {
+  let hidden = [...el.querySelectorAll('video[data-hm-poster]')].filter((video) => {
+    if (isMediaHidden(el, video)) return true;
+    setPoster(video);
+    return false;
+  });
+  if (!hidden.length) return;
+  const queries = [...new Set([
+    ...Object.values(BG_VIEWPORTS),
+    ...HIDDEN_FOREGROUND_MEDIA.map(({ media }) => media),
+  ])].map((query) => window.matchMedia(query));
+  const onChange = () => {
+    hidden = hidden.filter((video) => {
+      if (isMediaHidden(el, video)) return true;
+      setPoster(video);
+      return false;
+    });
+    if (!hidden.length) queries.forEach((mq) => mq.removeEventListener('change', onChange));
+  };
+  queries.forEach((mq) => mq.addEventListener('change', onChange));
 }
 
 export default async function init(el) {
@@ -312,7 +313,7 @@ export default async function init(el) {
   foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
-  const asset = foreground.querySelector('div > picture, :is(.video-container, .pause-play-wrapper), div > video, div > a[href*=".mp4"], div > a.image-link, a.video.link-block:not([href*="_hide-controls"])');
+  const asset = foreground.querySelector('div > picture, :is(.video-container, .pause-play-wrapper), div > video, div > a[href*=".mp4"], div > a.image-link');
   const allRows = foreground.querySelectorAll('div > div');
   copy = anyTag.closest('div');
   copy.classList.add('copy');
@@ -323,9 +324,8 @@ export default async function init(el) {
     setBackgroundFocus(asset); // Used in DA focal point feature
     mediaClasses.forEach((className) => {
       if (!el.classList.contains(className)) return;
-      const foregroundMedia = createTag('div', { class: 'foreground-media' }, asset);
-      foregroundMedia.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');
-      el.appendChild(foregroundMedia);
+      asset.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');
+      el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     });
   } else {
     [...fRows].forEach((row) => {
@@ -334,7 +334,7 @@ export default async function init(el) {
       }
     });
   }
-  const videoLoads = loadVideos(el);
+  loadPosters(el);
 
   const assetUnknown = (allRows.length === 2
     && allRows[1].classList.length === 0)
@@ -400,7 +400,6 @@ export default async function init(el) {
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
   handleViewportOrder(copy);
-  promiseArr.push(...videoLoads);
 
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(copy, el.classList));
