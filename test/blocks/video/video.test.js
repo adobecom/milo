@@ -400,10 +400,17 @@ describe('poster deferral via --poster-hidden', () => {
     expect(plain.getAttribute('poster')).to.include('media_plain.png');
   });
 
-  it('restores the deferred poster once the video becomes visible', async () => {
+  it('keeps the poster deferred while hidden and restores it once the video is shown', async () => {
     await setViewport(viewports.mobile);
+    const cell = document.querySelector('.fg-video').parentElement;
+    cell.classList.add('foreground-media');
     const [video] = decorateAll('.fg-video');
+    expect(getComputedStyle(cell).display).to.equal('none');
+    await new Promise((resolve) => { setTimeout(resolve, 300); });
     expect(video.hasAttribute('poster')).to.be.false;
+    expect(video.dataset.hiddenPoster).to.include('media_fg.png');
+
+    await setViewport(viewports.desktop);
     await waitFor(() => video.hasAttribute('poster'));
     expect(video.getAttribute('poster')).to.include('media_fg.png');
     expect(video.dataset.hiddenPoster).to.be.undefined;
