@@ -142,10 +142,13 @@ body {
 
 .repo-info {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: var(--spacing-600);
 }
 
 .repo-info p {
+  overflow-wrap: anywhere;
   margin: 0;
   font-size: var(--s2-font-size-100);
   color: var(--s2-gray-600);
@@ -245,15 +248,33 @@ body {
   font-style: italic;
 }
 
-.find-cards {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+.detail-cards.find-cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+
+.find-cards .detail-card {
+  width: auto;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.find-cards .detail-card > div {
+  min-width: 0;
+}
+
+.promote-report-btn {
+  grid-column: -2 / -1;
+  justify-self: end;
+  align-self: start;
+  max-width: 100%;
 }
 
 /* Find step header with action buttons */
 
 .find-header {
   display: flex;
-  flex-direction: row;
+  flex-flow: row wrap;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--spacing-400);
@@ -263,7 +284,7 @@ body {
 }
 
 .find-header-title {
-  flex: 1;
+  flex: 1 1 150px;
   min-width: 0;
   margin: 0;
   padding-top: 4px;
@@ -271,17 +292,18 @@ body {
 
 .find-header-actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--spacing-300);
   align-items: center;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
   margin-left: auto;
 }
 
 /* Match primary (accent) buttons; outline = white fill */
 
-.find-header-actions .find-action-btn {
+.find-action-btn {
   padding: 8px 20px;
   min-height: 36px;
   border-radius: 20px;
@@ -293,17 +315,17 @@ body {
   cursor: pointer;
 }
 
-.find-header-actions .find-action-btn-outline {
+.find-action-btn-outline {
   background: #fff !important;
   color: var(--s2-blue-800) !important;
   border: 2px solid var(--s2-blue-800) !important;
 }
 
-.find-header-actions .find-action-btn-outline:hover {
+.find-action-btn-outline:hover {
   background: var(--s2-gray-50) !important;
 }
 
-.find-header-actions .find-action-btn-outline:active {
+.find-action-btn-outline:active {
   background: var(--s2-gray-100) !important;
 }
 
