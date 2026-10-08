@@ -268,6 +268,54 @@ describe('Utils', () => {
       utils.setConfig(config);
     });
 
+    describe('eager MAS initService', () => {
+      let merch;
+
+      before(async () => {
+        merch = await import('../../libs/blocks/merch/merch.js');
+      });
+
+      beforeEach(() => {
+        merch.initService.promise = undefined;
+      });
+
+      it('starts the commerce service for an authored merch block in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      it('starts the commerce service for a MAS studio link in the first section', async () => {
+        document.body.innerHTML = '<main><div><a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      it('does not start it without first-section commerce content', async () => {
+        document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('does not start it when the OST tool is in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="ost"></div><div class="merch"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('does not start it when the kill switch is on', async () => {
+        document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+    });
+
     it('warms icons.js and icons.css when the first section contains icons', () => {
       document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
       utils.preloadLcpCodeFiles();
