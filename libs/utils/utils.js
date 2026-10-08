@@ -2296,7 +2296,7 @@ function isMasGeoDetectionOn() {
   return ['on', 'true'].includes(geoDetection?.toLowerCase());
 }
 
-const fromBlockRoot = (file) => (blockPath) => `${blockPath.split('/').slice(0, -3).join('/')}/${file}`;
+const relativeToBlock = (specifier) => (blockPath) => new URL(specifier, new URL(`${blockPath}.js`, window.location.href)).href;
 
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
@@ -2307,10 +2307,10 @@ const STATIC_BLOCK_DEPS = {
   merch: [
     () => getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
-    fromBlockRoot('utils/action.js'),
-    fromBlockRoot('utils/decorate.js'),
-    fromBlockRoot('features/placeholders.js'),
-    (blockPath) => isMasGeoDetectionOn() && fromBlockRoot('utils/market.js')(blockPath),
+    relativeToBlock('../../utils/action.js'),
+    relativeToBlock('../../utils/decorate.js'),
+    relativeToBlock('../../features/placeholders.js'),
+    (blockPath) => isMasGeoDetectionOn() && relativeToBlock('../../utils/market.js')(blockPath),
   ],
 };
 
