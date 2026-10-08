@@ -1,0 +1,110 @@
+.related-content-card {
+  max-width: var(--body-max-width);
+  margin: 16px auto;
+}
+
+.related-content-card .related-content-card-link {
+  display: flex;
+  align-items: center;
+  max-width: 700px;
+  border: 1px solid #c6c6c6;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+
+.related-content-card .related-content-card-link:hover,
+.related-content-card .related-content-card-link:focus-visible {
+  border-color: #929292;
+}
+
+.related-content-card .related-content-card-link:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 2px;
+}
+
+.related-content-card .related-content-card-image {
+  flex: 0 0 auto;
+  width: 130px;
+  height: 130px;
+  align-self: stretch;
+}
+
+.related-content-card .related-content-card-image picture,
+.related-content-card .related-content-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.related-content-card .related-content-card-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 24px;
+  min-width: 0;
+}
+
+.related-content-card .related-content-card-eyebrow {
+  margin: 0;
+  color: #6e6e6e;
+  font-size: var(--type-detail-m-size, 14px);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.related-content-card .related-content-card-title {
+  margin: 0 0 4px;
+  font-size: var(--type-heading-xs-size, 18px);
+  line-height: 1.25;
+  font-weight: 800;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.related-content-card .related-content-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #6e6e6e;
+  font-size: var(--type-detail-m-size, 14px);
+}
+
+.related-content-card .related-content-card-separator {
+  color: #c6c6c6;
+}
+
+@media (max-width: 600px) {
+  .related-content-card .related-content-card-link {
+    max-width: 404px;
+  }
+
+  .related-content-card .related-content-card-copy {
+    padding: 8px 16px;
+  }
+
+  .related-content-card .related-content-card-eyebrow {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 600px) {
+  .related-content-card .related-content-card-eyebrow,
+  .related-content-card .related-content-card-meta  {
+    font-size: 16px;
+  }
+
+  .related-content-card .related-content-card-title {
+    font-size: 20px;
+  }
+}
