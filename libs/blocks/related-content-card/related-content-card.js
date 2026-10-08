@@ -93,6 +93,20 @@ function getLinkedCategory(meta) {
   return topic ? formatCategory(topic) : '';
 }
 
+function getLinkedPicture(meta, doc, articleUrl) {
+  try {
+    const picture = meta.cardimage?.querySelector('picture');
+    if (picture) return resolveImageUrls(picture.cloneNode(true), articleUrl.href);
+    const ogImage = getMetadata('og:image', doc);
+    return ogImage
+      ? createTag('picture', null, createTag('img', { src: ogImage, alt: '', loading: 'lazy' }))
+      : null;
+  } catch (err) {
+    logError(`failed to resolve linked image for ${articleUrl.href}: ${err.message}`);
+    return null;
+  }
+}
+
 async function getReadingTime(doc, config) {
   const main = doc.querySelector('main') || doc.body;
   const clone = main.cloneNode(true);
@@ -105,11 +119,15 @@ async function fetchLinkedData(link, config) {
   let articleUrl;
   try {
     articleUrl = new URL(link.href);
-  } catch {
+    articleUrl.hash = '';
+  } catch (err) {
+    logError(`invalid linked article URL ${link.href}: ${err.message}`);
     return null;
   }
   try {
-    const resp = await fetch(articleUrl.pathname);
+    const fetchUrl = articleUrl.origin === window.location.origin
+      ? `${articleUrl.pathname}${articleUrl.search}` : articleUrl.href;
+    const resp = await fetch(fetchUrl);
     if (!resp.ok) throw new Error(`status ${resp.status}`);
     const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
     const meta = getCardMetadata(doc);
@@ -117,23 +135,15 @@ async function fetchLinkedData(link, config) {
     const title = trimTitle(meta.title?.textContent.trim())
       || trimTitle(getMetadata('og:title', doc)) || trimTitle(doc.title);
 
-    let picture = meta.cardimage?.querySelector('picture');
-    if (picture) {
-      picture = resolveImageUrls(picture.cloneNode(true), articleUrl.href);
-    } else {
-      const ogImage = getMetadata('og:image', doc);
-      if (ogImage) picture = createTag('picture', null, createTag('img', { src: ogImage, alt: '', loading: 'lazy' }));
-    }
-
     return {
       title,
-      picture,
+      picture: getLinkedPicture(meta, doc, articleUrl),
       date: meta.carddate?.textContent.trim() || getMetadata('publication-date', doc) || '',
       category: getLinkedCategory(meta),
       readingTime: await getReadingTime(doc, config),
     };
   } catch (err) {
-    logError(`failed to fetch linked article ${articleUrl.pathname}: ${err.message}`);
+    logError(`failed to fetch linked article ${articleUrl.href}: ${err.message}`);
     return null;
   }
 }
@@ -142,7 +152,10 @@ function getAuthoredData(block) {
   const link = block.querySelector('a[href]');
   const heading = block.querySelector('h1, h2, h3, h4, h5, h6');
   const headingLink = heading?.querySelector('a[href]');
-  const textCell = heading?.closest('div') || block.querySelector('div');
+  const textCell = heading?.closest('div')
+    || [...block.querySelectorAll(':scope > div > div')].find((cell) => (
+      [...cell.querySelectorAll(':scope > p')].some((p) => !p.querySelector('a[href], picture'))
+    ));
   const picture = block.querySelector('picture');
 
   const dateStrong = textCell?.querySelector('p > strong');

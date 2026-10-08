@@ -26,12 +26,14 @@ function buildArticle({
   tags = 'caas:content-type/blog, caas:topic/news, caas:topic/summit',
   bodyWords = 400,
   cardImage = true,
+  cardImageSrc = './media_abc.png?width=750&format=png',
+  ogImage = '/mock/og-image.png',
 } = {}) {
   const cardImageRow = cardImage ? `
     <div><div>cardImage</div><div>
       <picture>
         <source type="image/webp" srcset="./media_abc.png?width=2000&format=webply" media="(min-width: 600px)">
-        <img loading="lazy" alt="" src="./media_abc.png?width=750&format=png" width="1512" height="852">
+        <img loading="lazy" alt="" src="${cardImageSrc}" width="1512" height="852">
       </picture>
     </div></div>` : '';
   const cardDateRow = cardDate ? `<div><div>cardDate</div><div>${cardDate}</div></div>` : '';
@@ -39,12 +41,13 @@ function buildArticle({
   const titleRow = title ? `<div><div>Title</div><div>${title}</div></div>` : '';
   const ogTitleMeta = ogTitle ? `<meta property="og:title" content="${ogTitle}">` : '';
   const pubDateMeta = pubDate ? `<meta name="publication-date" content="${pubDate}">` : '';
+  const ogImageMeta = ogImage ? `<meta property="og:image" content="${ogImage}">` : '';
 
   return `<!DOCTYPE html><html><head>
     <title>Document Title</title>
     ${ogTitleMeta}
     ${pubDateMeta}
-    <meta property="og:image" content="/mock/og-image.png">
+    ${ogImageMeta}
   </head><body><main>
     <div class="article-header"><h1>${words(1000)}</h1></div>
     <div class="section">
@@ -61,6 +64,7 @@ function buildArticle({
 }
 
 let fetchStub;
+let originalLana;
 
 function stubFetch(routes) {
   fetchStub = sinon.stub(window, 'fetch').callsFake(async (url) => {
@@ -72,6 +76,8 @@ function stubFetch(routes) {
 
 describe('related-content-card', () => {
   beforeEach(async () => {
+    originalLana = window.lana;
+    window.lana = { log: sinon.spy() };
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     stubFetch({
       '/mock/full-article': buildArticle(),
@@ -83,6 +89,7 @@ describe('related-content-card', () => {
 
   afterEach(() => {
     fetchStub.restore();
+    window.lana = originalLana;
   });
 
   it('renders a card from authored data only (no link)', async () => {
@@ -112,6 +119,33 @@ describe('related-content-card', () => {
     expect(block.querySelector('.related-content-card-eyebrow').textContent).to.equal('April 2026');
     // First caas:topic tag -> category label.
     expect(block.querySelector('.related-content-card-category').textContent).to.equal('News');
+  });
+
+  it('preserves the query when fetching a same-origin article', async () => {
+    fetchStub.restore();
+    stubFetch({
+      '/mock/full-article?version=2': buildArticle({ title: 'Version two.' }),
+    });
+    const block = document.querySelector('#card-link');
+    block.querySelector('a').href = '/mock/full-article?version=2#section';
+    await init(block);
+    expect(fetchStub.calledOnceWithExactly('/mock/full-article?version=2')).to.be.true;
+    expect(block.querySelector('h3').textContent).to.equal('Version two.');
+    expect(block.querySelector('.related-content-card-link').hash).to.equal('#section');
+  });
+
+  it('preserves the origin when fetching a cross-origin article', async () => {
+    const articleUrl = 'https://example.com/mock/full-article?version=2';
+    fetchStub.restore();
+    stubFetch({
+      [articleUrl]: buildArticle({ title: 'Other origin.', cardImage: false, ogImage: '' }),
+    });
+    const block = document.querySelector('#card-link');
+    block.querySelector('a').href = `${articleUrl}#section`;
+    await init(block);
+    expect(fetchStub.calledOnceWithExactly(articleUrl)).to.be.true;
+    expect(block.querySelector('h3').textContent).to.equal('Other origin.');
+    expect(block.querySelector('.related-content-card-link').href).to.equal(`${articleUrl}#section`);
   });
 
   it('resolves relative linked image URLs against the article URL', async () => {
@@ -144,7 +178,49 @@ describe('related-content-card', () => {
     // Empty reading-time slot falls back to the computed linked value.
     expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('2 min read');
     // Authored category wins over linked.
-    expect(block.querySelector('.related-content-card-category').textContent).to.equal('My Custom Category');
+    expect(block.querySelector('.related-content-card-category').textContent)
+      .to.equal('My Custom Category');
+  });
+
+  ['', '<h2></h2>'].forEach((heading) => {
+    it(`preserves authored fields with an ${heading ? 'empty' : 'omitted'} title`, async () => {
+      const block = document.querySelector('#card-partial');
+      const textCell = block.querySelector('h2').parentElement;
+      block.querySelector('a').parentElement.innerHTML = '<p><a href="/mock/full-article">Article</a></p>';
+      textCell.innerHTML = `
+        <p><strong>2026-06-15</strong></p>
+        ${heading}
+        <p>7 mins</p>
+        <p>My Custom Category</p>`;
+      await init(block);
+      expect(block.querySelector('h3').textContent).to.equal('Card Metadata Title.');
+      expect(block.querySelector('.related-content-card-eyebrow').textContent).to.equal('June 2026');
+      expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('7 mins');
+      expect(block.querySelector('.related-content-card-category').textContent).to.equal('My Custom Category');
+    });
+  });
+
+  ['#card-link', '#card-mix'].forEach((selector) => {
+    it(`preserves linked metadata when the optional image is malformed (${selector})`, async () => {
+      fetchStub.restore();
+      stubFetch({ '/mock/full-article': buildArticle({ cardImageSrc: 'http://' }) });
+      const block = document.querySelector(selector);
+      const authoredTitle = block.querySelector('h2')?.textContent;
+      await init(block);
+      expect(block.querySelector('h3').textContent).to.equal(authoredTitle || 'Card Metadata Title.');
+      expect(block.classList.contains('related-content-card-unresolved')).to.be.false;
+      expect(block.querySelector('.related-content-card-eyebrow').textContent).to.equal('April 2026');
+      expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('2 min read');
+      expect(block.querySelector('.related-content-card-category').textContent).to.equal('News');
+      const img = block.querySelector('.related-content-card-image img');
+      if (selector === '#card-mix') {
+        expect(img.getAttribute('src')).to.equal('/authored-mix.png');
+      } else {
+        expect(img === null).to.be.true;
+      }
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.firstCall.args[0]).to.contain('failed to resolve linked image');
+    });
   });
 
   it('omits absent optional fields without dangling separators', async () => {
