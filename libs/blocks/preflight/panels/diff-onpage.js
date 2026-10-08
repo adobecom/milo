@@ -134,9 +134,9 @@ export const setHighlightsDismissed = (value) => {
   try { localStorage.setItem(DISMISS_KEY, value ? '1' : '0'); } catch { /* storage may be blocked */ }
 };
 
-function showHighlightControl(root, applyOverlays) {
+function showHighlightControl(root, applyOverlays, forceHighlights) {
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
-  const dismissed = areHighlightsDismissed();
+  let dismissed = !forceHighlights && areHighlightsDismissed();
   const labelText = dismissed ? CONTROL_LABEL_OFF : CONTROL_LABEL_ON;
   const toggleText = dismissed ? 'Show' : 'Hide';
   const label = createTag('span', { class: 'preflight-diff-control-label', 'aria-live': 'polite' }, labelText);
@@ -147,17 +147,17 @@ function showHighlightControl(root, applyOverlays) {
     [label, toggle],
   );
   toggle.addEventListener('click', () => {
-    if (areHighlightsDismissed()) {
+    if (dismissed) {
       applyOverlays();
-      setHighlightsDismissed(false);
       toggle.textContent = 'Hide';
       label.textContent = CONTROL_LABEL_ON;
     } else {
       clearOverlays(root);
-      setHighlightsDismissed(true);
       toggle.textContent = 'Show';
       label.textContent = CONTROL_LABEL_OFF;
     }
+    dismissed = !dismissed;
+    if (!forceHighlights) setHighlightsDismissed(dismissed);
   });
   document.body.append(control);
 }
@@ -167,7 +167,6 @@ export function highlightOnPage(diff, root) {
 
   const applyOverlays = () => {
     clearOverlays(root);
-    let applied = 0;
     const apply = (change, modifierClass) => {
       let el = null;
       try {
@@ -190,25 +189,19 @@ export function highlightOnPage(diff, root) {
       const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
       const srLabel = createTag('span', { class: `sr-only ${SR_ONLY_CLASS}` }, SR_LABEL[modifierClass]);
       host.append(overlay, srLabel);
-      applied += 1;
     };
     (diff?.added || []).forEach((change) => apply(change, ADDED_MODIFIER));
     (diff?.modified || []).forEach((change) => apply(change, MODIFIED_MODIFIER));
-    return applied;
   };
 
-  const hasChanges = ((diff?.added?.length || 0) + (diff?.modified?.length || 0)) > 0;
-  if (hasChanges) {
-    if (!areHighlightsDismissed()) applyOverlays();
-    showHighlightControl(root, applyOverlays);
+  if (diff?.added?.length || diff?.modified?.length) {
+    const autoHighlight = new URLSearchParams(window.location.search).get('autoHighlight');
+    const forceHighlights = autoHighlight === 'true';
+    if (forceHighlights || !areHighlightsDismissed()) applyOverlays();
+    showHighlightControl(root, applyOverlays, forceHighlights);
   }
 
   return function cleanup() {
     clearHighlights(root);
   };
-}
-
-export function autoHighlightOnPage(diff, root) {
-  if (!root) return undefined;
-  return highlightOnPage(diff, root);
 }

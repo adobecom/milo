@@ -3,7 +3,7 @@ import loadC2Tokens from '../../c2-tokens.js';
 import fetchVersions from './fetchVersions.js';
 import computeDiff from './computeDiff.js';
 import collectFragmentChanges from './fragments.js';
-import { autoHighlightOnPage } from '../../panels/diff-onpage.js';
+import { highlightOnPage } from '../../panels/diff-onpage.js';
 
 export default async function autoHighlightUnpublished() {
   const root = document.querySelector('main');
@@ -23,8 +23,8 @@ export default async function autoHighlightUnpublished() {
       new Promise((res) => { loadStyle(`${base}/blocks/preflight/panels/diff-onpage.css`, res); }),
       loadC2Tokens(base),
     ]);
-    const cleanup = autoHighlightOnPage(content, root);
-    if (cleanup) window.addEventListener('popstate', cleanup, { once: true });
+    const cleanup = highlightOnPage(content, root);
+    window.addEventListener('popstate', cleanup, { once: true });
   } catch (e) {
     window.lana?.log?.(`[preflight][diff] auto-highlight failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
   }
