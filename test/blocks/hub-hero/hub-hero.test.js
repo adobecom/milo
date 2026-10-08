@@ -64,6 +64,141 @@ describe('hub-hero block', () => {
     });
   });
 
+  describe('hub-hero header pinning with a gnav promo', () => {
+    let block;
+    let heroHeader;
+    let promo;
+    let nav;
+    let observeSpy;
+    let originalMargin;
+    let originalViewport;
+
+    beforeEach(async () => {
+      originalMargin = document.body.style.margin;
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      await setViewport({ width: 1280, height: 800 });
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      document.body.style.margin = '0';
+      document.body.insertAdjacentHTML('afterbegin', `
+        <style>
+          .hub-hero { position: relative; z-index: 5; height: 4000px; }
+          .hub-hero-header { padding-top: 188px; }
+          .hub-hero-header.pinned { position: fixed; top: 0; left: 0; right: 0; }
+          .feds-promo-aside-wrapper {
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+          }
+        </style>
+        <header></header>
+        <div class="feds-promo-aside-wrapper" style="height: 0px">
+          <a href="#promo">Promo offer</a>
+        </div>
+      `);
+      nav = document.querySelector('header');
+      promo = document.querySelector('.feds-promo-aside-wrapper');
+      block = document.querySelector('.hub-hero');
+      observeSpy = sinon.spy(ResizeObserver.prototype, 'observe');
+      window.scrollTo(0, 0);
+      await init(block);
+      heroHeader = block.querySelector('.hub-hero-header');
+      await settleLayout();
+    });
+
+    afterEach(async () => {
+      document.body.replaceChildren();
+      document.body.style.margin = originalMargin;
+      await settleLayout();
+      sinon.restore();
+      await setViewport(originalViewport);
+    });
+
+    it('unpins after a late 72px promo shift and exposes its link without scrolling', async () => {
+      expect(block.getBoundingClientRect().top).to.equal(0);
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+      const { scrollY } = window;
+
+      promo.style.height = '72px';
+      await settleLayout();
+
+      expect(window.scrollY).to.equal(scrollY);
+      expect(block.getBoundingClientRect().top).to.equal(72);
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+      const link = promo.querySelector('a');
+      const rect = link.getBoundingClientRect();
+      const target = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+      );
+      expect(target.closest('a')).to.equal(link);
+    });
+
+    it('repins when the promo collapses without scrolling', async () => {
+      promo.style.height = '72px';
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+
+      promo.style.height = '0px';
+      await settleLayout();
+      expect(block.getBoundingClientRect().top).to.equal(0);
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+      expect(window.scrollY).to.equal(0);
+    });
+
+    it('observes a promo wrapper inserted after initialization', async () => {
+      promo.remove();
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+
+      const replacement = promo.cloneNode(true);
+      replacement.style.height = '72px';
+      document.body.prepend(replacement);
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+
+      replacement.style.height = '0px';
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+    });
+
+    it('rechecks pinning when the gnav height changes', async () => {
+      nav.style.height = '64px';
+      await settleLayout();
+      expect(block.getBoundingClientRect().top).to.equal(64);
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+    });
+
+    it('still pins on scroll and unpins after the carousel assembles', async () => {
+      promo.style.height = '72px';
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+
+      window.scrollTo(0, 100);
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+
+      window.scrollTo(0, 2200);
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+
+      window.scrollTo(0, 0);
+      await settleLayout();
+      expect(heroHeader.classList.contains('pinned')).to.be.false;
+    });
+
+    it('disconnects layout observation and cancels a queued pin check on removal', async () => {
+      const layoutObserver = observeSpy.getCalls().find((call) => call.args[0] === promo).thisValue;
+      const disconnectSpy = sinon.spy(layoutObserver, 'disconnect');
+      const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
+      window.dispatchEvent(new Event('scroll'));
+      block.remove();
+      await settleLayout();
+
+      expect(disconnectSpy.calledOnce).to.be.true;
+      expect(cancelSpy.calledOnce).to.be.true;
+      expect(cancelSpy.firstCall.args[0]).to.be.greaterThan(0);
+      expect(heroHeader.classList.contains('pinned')).to.be.true;
+    });
+  });
+
   describe('carousel slides (default.html)', () => {
     let slides;
     before(async () => {
