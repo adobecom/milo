@@ -81,6 +81,16 @@ async function decorateAppPrompt(el) {
   });
 }
 
+// Mirrors c1 gnav's decorateBrandConciergeGlobal
+async function loadBrandConcierge(block) {
+  const { base } = getConfig();
+  const [{ default: initBrandConcierge }] = await Promise.all([
+    import('../brand-concierge-global/brand-concierge-global.js'),
+    loadStyles(`${base}/c2/blocks/brand-concierge-global/brand-concierge-global.css`),
+  ]);
+  await initBrandConcierge(block);
+}
+
 export default async function init(el) {
   const config = getConfig();
   const isLingo = lingoActive();
@@ -195,6 +205,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });

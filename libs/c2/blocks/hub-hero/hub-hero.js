@@ -164,31 +164,54 @@ const initHeaderPin = (hubHero, header) => {
 
   const pinController = new AbortController();
 
-  const headerResizeObserver = new ResizeObserver(() => {
-    hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
-  });
-  headerResizeObserver.observe(header);
-
-  let ticking = false;
+  let pinFrame = 0;
   const checkPin = () => {
     const heroRect = hubHero.getBoundingClientRect();
     const carouselAssembled = getHubHeroProgress(hubHero) >= 0.5;
     header.classList.toggle('pinned', !carouselAssembled && heroRect.top <= 0 && heroRect.bottom > 0);
-    ticking = false;
   };
-  window.addEventListener('scroll', () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(checkPin);
-  }, { signal: pinController.signal, passive: true });
-  requestAnimationFrame(checkPin);
+  const scheduleCheckPin = () => {
+    if (pinFrame || pinController.signal.aborted) return;
+    pinFrame = requestAnimationFrame(() => {
+      pinFrame = 0;
+      checkPin();
+    });
+  };
+
+  const headerResizeObserver = new ResizeObserver(() => {
+    hubHero.style.setProperty('--hub-hero-header-height', `${header.getBoundingClientRect().height}px`);
+    scheduleCheckPin();
+  });
+  headerResizeObserver.observe(header);
+
+  // Promo offsets can move the hero without resizing its own header.
+  const navResizeObserver = new ResizeObserver(scheduleCheckPin);
+  const navHeader = document.querySelector('header');
+  if (navHeader) navResizeObserver.observe(navHeader);
+  let promoWrapper = null;
+  const observePromo = () => {
+    const nextWrapper = document.querySelector('.feds-promo-aside-wrapper');
+    if (nextWrapper === promoWrapper) return;
+    if (promoWrapper) navResizeObserver.unobserve(promoWrapper);
+    promoWrapper = nextWrapper;
+    if (promoWrapper) navResizeObserver.observe(promoWrapper);
+    scheduleCheckPin();
+  };
+  observePromo();
+
+  window.addEventListener('scroll', scheduleCheckPin, { signal: pinController.signal, passive: true });
+  scheduleCheckPin();
 
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
       pinController.abort();
+      cancelAnimationFrame(pinFrame);
       headerResizeObserver.disconnect();
+      navResizeObserver.disconnect();
       observer.disconnect();
+      return;
     }
+    observePromo();
   }).observe(document.body, { childList: true, subtree: true });
 };
 
