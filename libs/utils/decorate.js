@@ -605,6 +605,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   // Router Marquee poster deferred to a private attr
   // until slide activates, avoiding eager fetch when hidden.
   if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
+  else if (dataset.videoPoster && getComputedStyle(anchorTag).getPropertyValue('--poster-hidden')) attrs = attrs.replace("poster='", "data-hidden-poster='");
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -625,6 +626,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
+      if (videoEl.dataset.hiddenPoster) {
+        videoEl.poster = videoEl.dataset.hiddenPoster;
+        delete videoEl.dataset.hiddenPoster;
+      }
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },

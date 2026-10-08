@@ -295,6 +295,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
 /* mobile ONLY */
 @media (max-width: 600px) {
+  .hero-marquee.media-hidden-mobile { --poster-hidden: 1; }
+  .hero-marquee.media-hidden-mobile > div:first-child:not(:only-child) { --poster-hidden: initial; }
+
   .hero-marquee .con-button {
     display: block;
     text-align: center;
@@ -373,6 +376,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
+  .hero-marquee:is(.media-hidden-tablet, .media-hidden-tablet-tablet) { --poster-hidden: 1; }
+  .hero-marquee:is(.media-hidden-tablet, .media-hidden-tablet-tablet) > div:first-child:not(:only-child) { --poster-hidden: initial; }
+
   .hero-marquee.media-cover:not(.bg-bottom-mobile) {
     padding-bottom: 0;
   }
