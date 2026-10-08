@@ -3,11 +3,16 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor } from '../../helpers/waitfor.js';
 import { setConfig, loadArea, loadStyle } from '../../../libs/utils/utils.js';
+import { decorateAnchorVideo } from '../../../libs/utils/decorate.js';
 
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+
+before(async () => {
+  await new Promise((resolve) => { loadStyle('/libs/styles/styles.css', resolve); });
+});
 
 describe('hero-marquee video posters', () => {
   let main;
@@ -60,6 +65,18 @@ describe('hero-marquee video posters', () => {
     expect(fg().getAttribute('poster')).to.include('#fg');
   });
 
+  it('restores a deferred poster once visible even if hero-marquee code never runs', async () => {
+    const a = main.querySelector('a[href*="media_fg"]');
+    main.firstElementChild.classList.add('section');
+    main.querySelector('.hero-marquee').className = 'hero-marquee';
+    decorateAnchorVideo({ src: a.href, anchorTag: a });
+    const el = main.querySelector('video');
+    expect(el.hasAttribute('poster')).to.be.false;
+
+    await waitFor(() => el.hasAttribute('poster'), 1500);
+    expect(el.getAttribute('poster')).to.include('#fg');
+  });
+
   it('keeps posters as-is when MEP swaps the hero-marquee code', async () => {
     setConfig({ ...config, mep: { blocks: { 'hero-marquee': '/libs/mep/ace1052/hero-marquee' } } });
     await setViewport({ width: 375, height: 800 });
@@ -77,7 +94,6 @@ describe('hero-marquee video posters match the CSS', () => {
   before(async () => {
     window.lana = { log: sinon.stub() };
     fixture = await readFile({ path: './mocks/video.html' });
-    await new Promise((resolve) => { loadStyle('/libs/styles/styles.css', resolve); });
   });
 
   after(async () => {

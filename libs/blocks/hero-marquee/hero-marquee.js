@@ -265,31 +265,12 @@ function isMediaHidden(el, node) {
   ));
 }
 
-function setPoster(video) {
-  video.setAttribute('poster', video.dataset.hmPoster);
-  delete video.dataset.hmPoster;
-}
-
 function loadPosters(el) {
-  let hidden = [...el.querySelectorAll('video[data-hm-poster]')].filter((video) => {
-    if (isMediaHidden(el, video)) return true;
-    setPoster(video);
-    return false;
+  el.querySelectorAll('video[data-hm-poster]').forEach((video) => {
+    if (isMediaHidden(el, video)) return;
+    video.setAttribute('poster', video.dataset.hmPoster);
+    delete video.dataset.hmPoster;
   });
-  if (!hidden.length) return;
-  const queries = [...new Set([
-    ...Object.values(BG_VIEWPORTS),
-    ...HIDDEN_FOREGROUND_MEDIA.map(({ media }) => media),
-  ])].map((query) => window.matchMedia(query));
-  const onChange = () => {
-    hidden = hidden.filter((video) => {
-      if (isMediaHidden(el, video)) return true;
-      setPoster(video);
-      return false;
-    });
-    if (!hidden.length) queries.forEach((mq) => mq.removeEventListener('change', onChange));
-  };
-  queries.forEach((mq) => mq.addEventListener('change', onChange));
 }
 
 export default async function init(el) {

@@ -628,6 +628,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
+      if (videoEl.dataset.hmPoster) {
+        videoEl.setAttribute('poster', videoEl.dataset.hmPoster);
+        delete videoEl.dataset.hmPoster;
+      }
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
