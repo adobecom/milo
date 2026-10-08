@@ -1548,6 +1548,11 @@ span.hang-opening-quote {
          gap tight without the asset ending too high. */
       &.has-background .section-background {
         margin-block-start: calc(-50vh * var(--gd-content-rate, 0.15) * 0.85);
+
+        /* The pull-up only offsets the text parallax, which reduced motion disables. */
+        @media (prefers-reduced-motion: reduce) {
+          margin-block-start: 0;
+        }
       }
 
       &.has-background .section-background img {

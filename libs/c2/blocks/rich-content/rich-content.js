@@ -23,6 +23,9 @@ function initNavHeight(el) {
     }
   });
   observer.observe(header);
+  // getGnavHeight() also counts the promo, which sits outside the header.
+  const promo = document.querySelector('.feds-promo-aside-wrapper');
+  if (promo) observer.observe(promo);
 }
 
 function hangOpeningQuote(header) {
