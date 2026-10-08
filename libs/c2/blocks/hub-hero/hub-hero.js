@@ -6,6 +6,7 @@ import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utili
 import icons from '../../assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
+const hoverPositions = new WeakMap();
 let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
@@ -93,6 +94,7 @@ const getHubHeroScrollRange = (hubHero) => ({
 });
 
 const scrollHubHeroTo = (el, progress) => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const hubHero = el.closest('.hub-hero');
@@ -139,19 +141,23 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
-const initNavHeight = (hubHero) => {
+const initCarouselPosition = (hubHero) => {
   const header = document.querySelector('header');
-  if (!header) return;
+  const carouselHeader = hubHero.querySelector('.hub-hero-carousel-header > div');
 
-  const syncNavHeight = () => hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
-  syncNavHeight();
+  const syncHeights = () => {
+    if (header) hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
+    hubHero.style.setProperty('--hub-hero-carousel-header-height', `${carouselHeader.getBoundingClientRect().height}px`);
+  };
+  syncHeights();
 
-  const navResizeObserver = new ResizeObserver(syncNavHeight);
-  navResizeObserver.observe(header);
+  const resizeObserver = new ResizeObserver(syncHeights);
+  if (header) resizeObserver.observe(header);
+  resizeObserver.observe(carouselHeader);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
-      navResizeObserver.disconnect();
+      resizeObserver.disconnect();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -264,10 +270,42 @@ const removeHovered = (carousel) => {
   [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
+const updateCarouselAnchoring = (container) => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    removeHovered(container);
+    container.classList.remove('stick-left', 'stick-right');
+    return;
+  }
+  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
+    || container.querySelector('.hub-hero-carousel-item:focus-visible');
+  if (!slideEl) {
+    container.classList.remove('stick-left', 'stick-right');
+    return;
+  }
+
+  const hubHero = slideEl.closest('.hub-hero');
+  const slideIndex = Number(slideEl.dataset.index);
+  const slideCount = parseInt(getComputedStyle(hubHero).getPropertyValue('--slides'), 10) || 0;
+  const maxIndex = hubHero.classList.contains('slides-3') ? 3 : slideCount;
+  const rtl = isRtl();
+  // Viewport height can shrink the rendered row below its authored width cap.
+  const needsStick = container.getBoundingClientRect().width > window.innerWidth;
+  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
+  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
+};
+
 const onCarouselLeave = (event) => {
-  const carouselContainer = event.target;
+  const carouselContainer = event.currentTarget.querySelector('.hub-hero-carousel-container')
+    || event.currentTarget;
+  const bounds = carouselContainer.getBoundingClientRect();
+  const inEdgeGap = event.clientY >= bounds.top && event.clientY < bounds.bottom
+    && ((carouselContainer.classList.contains('stick-left') && event.clientX >= 0 && event.clientX < bounds.left)
+      || (carouselContainer.classList.contains('stick-right') && event.clientX >= bounds.right && event.clientX < window.innerWidth));
+  if (event.currentTarget === carouselContainer && inEdgeGap) return;
+
   clearTimeout(leaveTimeouts.get(carouselContainer));
   leaveTimeouts.set(carouselContainer, setTimeout(() => {
+    hoverPositions.delete(carouselContainer);
     carouselContainer.classList.remove('stick-left', 'stick-right');
     removeHovered(carouselContainer.closest('.hub-hero-carousel'));
   }, 10));
@@ -275,43 +313,46 @@ const onCarouselLeave = (event) => {
 
 const onHover = (event) => {
   const isFocus = event.type === 'focus';
-  const slideEl = event.target;
-  if (isFocus && slideEl.matches(':focus-visible')) scrollHubHeroTo(slideEl, 0.6);
-  const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
+  const slideEl = isFocus ? event.currentTarget
+    : event.target.closest('.hub-hero-carousel-item[data-index]');
+  const carouselContainer = isFocus ? slideEl.closest('.hub-hero-carousel-container')
+    : event.currentTarget.querySelector('.hub-hero-carousel-container');
   if (!carouselContainer) return;
-  clearTimeout(leaveTimeouts.get(carouselContainer));
+  if (!isFocus) {
+    const previous = hoverPositions.get(carouselContainer);
+    hoverPositions.set(carouselContainer, { x: event.clientX, y: event.clientY });
+    // Layout changes can retarget mouse events without the pointer moving.
+    if (previous?.x === event.clientX && previous?.y === event.clientY) return;
+  }
+  if (!slideEl) {
+    const bounds = carouselContainer.getBoundingClientRect();
+    if (event.clientY < bounds.top || event.clientY >= bounds.bottom) onCarouselLeave(event);
+    return;
+  }
 
   const video = slideEl.querySelector('video');
+  clearTimeout(leaveTimeouts.get(carouselContainer));
+  if (!isFocus && slideEl.classList.contains('hovered')
+    && !slideLeaveTimeouts.has(video) && !rewindIntervals.has(video)) return;
+
+  if (isFocus && slideEl.matches(':focus-visible')) scrollHubHeroTo(slideEl, 0.6);
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.delete(video);
 
-  const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
-  if (video && !isThreeSlides) {
-    stopRewind(video);
-    video.play().catch(() => { });
-  }
-
-  const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
   if (!container) return;
 
-  removeHovered(slideEl.closest('.hub-hero-carousel'));
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
+    if (video && !isThreeSlides) {
+      stopRewind(video);
+      video.play().catch(() => { });
+    }
 
-  const rtl = isRtl();
-  const hubHero = slideEl.closest('.hub-hero');
-  const isThree = hubHero?.classList.contains('slides-3');
-  const styles = getComputedStyle(hubHero);
-  const slideCount = parseInt(styles.getPropertyValue('--slides'), 10) || 0;
-  const maxIndex = isThree ? 3 : slideCount;
-  const slideWidth = parseFloat(styles.getPropertyValue('--slide-width')) || 0;
-  const endGap = parseFloat(styles.getPropertyValue('--end-gap')) || 0;
-  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const unhoveredTotal = slideWidth * slideCount + (endGap * rootFontSize) * (slideCount - 1);
-  const needsStick = unhoveredTotal > window.innerWidth;
-
-  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
-  container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
-  container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
+    removeHovered(slideEl.closest('.hub-hero-carousel'));
+    slideEl.classList.add(isFocus ? 'focused' : 'hovered');
+  }
+  updateCarouselAnchoring(container);
 
   if (hoverTracked) return;
 
@@ -407,7 +448,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   }
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
-  slideEl.addEventListener('mouseenter', onHover);
   slideEl.addEventListener('focus', onHover);
   return slideEl;
 };
@@ -448,14 +488,22 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
+  decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
+  decoratedCarousel.addEventListener('mousemove', onHover);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
+  const carouselContainer = decoratedCarousel.querySelector('.hub-hero-carousel-container');
+  const updateAnchoring = () => updateCarouselAnchoring(carouselContainer);
+  const carouselResizeObserver = new ResizeObserver(updateAnchoring);
+  carouselResizeObserver.observe(carouselContainer);
+  window.addEventListener('resize', updateAnchoring, { signal: scrollController.signal });
   window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
       scrollController.abort();
+      carouselResizeObserver.disconnect();
       mobileObservers.forEach((o) => o.disconnect());
       observer.disconnect();
     }
@@ -662,7 +710,7 @@ export default async function init(el) {
 
   initElasticFirstSlideOffset(el, grid, elasticCarousel);
 
-  initNavHeight(el);
+  initCarouselPosition(el);
   initHeaderPin(el, heroHeader);
   initCarouselContainerExpand(el);
   if (isThreeSlides) handleSlidesThreeVideos(el);
