@@ -229,7 +229,7 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
   if (action === 'replace') {
-    // The replaced media may still be downloading; let the fragment reuse those URLs.
+    // el is removed before the fragment loads; fragment.js reuses these URLs (replaceDotMedia).
     const mediaSel = 'img[src*="media_"], source[srcset*="media_"]';
     const media = [el, ...el.querySelectorAll(mediaSel)]
       .filter((m) => m.matches(mediaSel))

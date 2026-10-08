@@ -99,8 +99,7 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-// EDS resolves ./media_<hash> per document, so the same image used by the page and a fragment
-// gets two URLs. Keyed by origin + file + query so only byte-identical requests are matched.
+// EDS resolves ./media_<hash> per document; origin + file + query identifies identical bytes.
 const getMediaKey = (ref, base) => {
   if (typeof ref !== 'string' || /[\s,]/.test(ref.trim())) return null;
   try {
@@ -112,32 +111,26 @@ const getMediaKey = (ref, base) => {
   }
 };
 
-// Media the page references or already downloaded. MEP passes the media of the element it
-// replaced, which can still be downloading and so is not yet in Resource Timing.
+const isBrokenImage = (el) => {
+  const img = el.tagName === 'IMG' ? el : el.parentElement?.querySelector('img');
+  return !!img?.complete && !img.naturalWidth;
+};
+
+// MEP removes replaced elements before fragments load, so it hands their media via data-mep-media.
 const getPageMedia = (neededKeys, replacedMedia) => {
   const media = new Map();
-  const failed = new Set();
-  const loaded = [];
-  performance.getEntriesByType('resource').forEach(({ name, responseStatus }) => {
-    if (responseStatus >= 400) failed.add(getMediaKey(name, window.location.href));
-    else loaded.push(name);
-  });
   const add = (ref) => {
     const key = getMediaKey(ref, window.location.href);
-    if (key && !failed.has(key) && !media.has(key)) {
-      media.set(key, new URL(ref, window.location.href).href);
-    }
+    if (key && !media.has(key)) media.set(key, new URL(ref, window.location.href).href);
   };
-  const hasAll = () => [...neededKeys].every((key) => media.has(key));
   try {
     [].concat(JSON.parse(replacedMedia || '[]')).forEach(add);
   } catch { /* ignore malformed handoff */ }
-  if (hasAll()) return media;
+  if ([...neededKeys].every((key) => media.has(key))) return media;
   document.querySelectorAll('img[src*="media_"], source[srcset*="media_"]').forEach((el) => {
-    if (el.tagName === 'IMG' && el.complete && !el.naturalWidth) return;
+    if (isBrokenImage(el)) return;
     add(el.getAttribute(el.tagName === 'IMG' ? 'src' : 'srcset'));
   });
-  loaded.forEach(add);
   return media;
 };
 
