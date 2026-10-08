@@ -81,6 +81,7 @@ const C1_BLOCKS = [
   'read-more',
   'recommended-articles',
   'region-nav',
+  'related-content-card',
   'review',
   'section-metadata',
   'slideshare',
