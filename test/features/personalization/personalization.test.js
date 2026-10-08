@@ -6,7 +6,7 @@ import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '..
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  fetchData, DATA_TYPE, categorizeActions,
+  fetchData, DATA_TYPE, categorizeActions, replaceInner,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -735,8 +735,44 @@ describe('matchGlob function', () => {
     expect(JSON.parse(a.dataset.mepMedia)).to.deep.equal([
       './media_1a.png?width=750',
       './media_1a.png?width=2000 1x',
-      './media_1a.png?width=750',
     ]);
+  });
+
+  it('leaves images that failed to load out of the replace handoff', async () => {
+    const parent = document.createElement('div');
+    const el = document.createElement('div');
+    parent.appendChild(el);
+    document.body.append(parent);
+    try {
+      await new Promise((resolve) => {
+        el.innerHTML = '<img src="/does-not-exist/media_1broken.png"><picture><source srcset="/does-not-exist/media_1broken.png?w=2"><img src="/does-not-exist/media_1broken.png?w=1"></picture>';
+        const imgs = [...el.querySelectorAll('img')];
+        let pending = imgs.length;
+        imgs.forEach((img) => img.addEventListener('error', () => { pending -= 1; if (!pending) resolve(); }, { once: true }));
+      });
+      const wrapper = await createContent(el, { content: '/fragments/marquee', manifestId: 'm', targetManifestId: '', action: 'replace', modifiers: [] });
+      expect((wrapper.querySelector('a') || wrapper).dataset.mepMedia).to.be.undefined;
+    } finally {
+      parent.remove();
+    }
+  });
+
+  it('hands the replaced page media to fragment links in replacePage content', async () => {
+    const main = document.createElement('div');
+    main.innerHTML = '<div><picture><img src="./media_1rp.png?width=750"></picture></div>';
+    setFetchResponse('<div><a href="/fragments/hero">frag</a><a href="/products/other">page</a></div>', 'text');
+    expect(await replaceInner('/products/replacement', main)).to.be.true;
+    expect(JSON.parse(main.querySelector('a[href="/fragments/hero"]').dataset.mepMedia))
+      .to.deep.equal(['./media_1rp.png?width=750']);
+    expect(main.querySelector('a[href="/products/other"]').dataset.mepMedia).to.be.undefined;
+  });
+
+  it('does not add a replacePage handoff when the page has no media', async () => {
+    const main = document.createElement('div');
+    main.innerHTML = '<div><p>no media</p></div>';
+    setFetchResponse('<div><a href="/fragments/hero">frag</a></div>', 'text');
+    await replaceInner('/products/replacement', main);
+    expect(main.querySelector('a').dataset.mepMedia).to.be.undefined;
   });
 
   it('does not add a media handoff for non-replace actions or elements without media', async () => {

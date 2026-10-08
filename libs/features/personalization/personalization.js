@@ -217,6 +217,18 @@ const getUpdatedHref = (el, content, action) => {
   return newContent;
 };
 
+const MEDIA_SEL = 'img[src*="media_"], source[srcset*="media_"]';
+
+const isBrokenImage = (el) => {
+  const img = el.tagName === 'IMG' ? el : el.parentElement?.querySelector('img');
+  return !!img?.complete && !img.naturalWidth;
+};
+
+// MEP removes these elements before fragments load; fragment.js reuses the URLs (replaceDotMedia).
+const getMediaRefs = (el) => [...new Set([el, ...el.querySelectorAll(MEDIA_SEL)]
+  .filter((m) => m.matches(MEDIA_SEL) && !isBrokenImage(m))
+  .map((m) => m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset')))];
+
 const createFrag = async (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   let href = content;
@@ -229,11 +241,7 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
   if (action === 'replace') {
-    // el is removed before the fragment loads; fragment.js reuses these URLs (replaceDotMedia).
-    const mediaSel = 'img[src*="media_"], source[srcset*="media_"]';
-    const media = [el, ...el.querySelectorAll(mediaSel)]
-      .filter((m) => m.matches(mediaSel))
-      .map((m) => m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset'));
+    const media = getMediaRefs(el);
     if (media.length) a.dataset.mepMedia = JSON.stringify(media);
   }
   let containerType = 'other';
@@ -450,7 +458,12 @@ export async function replaceInner(path, element) {
   const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
+  const media = getMediaRefs(element);
   element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
+  if (media.length) {
+    const mepMedia = JSON.stringify(media);
+    element.querySelectorAll('a[href*="/fragments/"]').forEach((a) => { a.dataset.mepMedia = mepMedia; });
+  }
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
   return true;

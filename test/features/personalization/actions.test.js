@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleCommands } from '../../../libs/features/personalization/personalization.js';
+import { init, handleCommands, replaceInner } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -96,6 +96,27 @@ describe('replace action', () => {
       expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
     } finally {
       rootEl.remove();
+    }
+  });
+
+  it('hands the original page media to fragments in replacePage content', async () => {
+    const pageSrc = '/products/media_15rp.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rp';
+    const main = document.createElement('div');
+    main.innerHTML = `<div><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(main);
+    window.fetch = stub().callsFake((url) => {
+      if (`${url}`.includes('replacement.plain.html')) return getFetchPromise(`<div><a href="${fragPath}">frag</a></div>`, 'text');
+      return getFetchPromise('<div><picture><img src="./media_15rp.png?width=750&format=png&optimize=medium"></picture></div>', 'text');
+    });
+
+    try {
+      await replaceInner('/products/replacement', main);
+      expect(main.querySelector(`img[src="${pageSrc}"]`)).to.be.null;
+      await initFragments(main.querySelector('a'));
+      expect(main.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      main.remove();
     }
   });
 });
