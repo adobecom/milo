@@ -1,0 +1,25 @@
+{
+  "result": [
+    {
+      "aLastSeen": "2025-03-10T19:38:08.000Z",
+      "pageId": 1,
+      "pLastSeen": "2025-03-10T19:38:08.000Z",
+      "url": "https://www.adobe.com/products/photoshop.html",
+      "target": "<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+      "targetActivityName": "<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+      "manifestUrl": "javascript:window.mmmXss=true"
+    },
+    {
+      "aLastSeen": "2025-03-10T19:38:08.000Z",
+      "pageId": 2,
+      "pLastSeen": "2025-03-10T19:38:08.000Z",
+      "url": "javascript:window.mmmXss=true//<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+      "target": "on"
+    }
+  ],
+  "orderBy": "p.url",
+  "order": "\"><img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+  "totalRecords": 2,
+  "perPage": 25,
+  "pageNum": 1
+}

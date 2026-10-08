@@ -44,7 +44,7 @@ export function escapeAttr(str) {
 }
 
 // Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
-function safeUrl(url) {
+export function safeUrl(url) {
   if (typeof url !== 'string') return '';
   try {
     const { protocol } = new URL(url, window.location.origin);

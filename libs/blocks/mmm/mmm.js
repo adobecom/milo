@@ -1,9 +1,6 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-// TEMP: pinned to legacy preview.js for the ?mepnext fallback
-// (static import can't follow the param). Revert to mep-next.js + drop the
-// isMmm arg below once mep-next is validated.
-import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
+import { getMepPopup, API_URLS, safeUrl } from '../../features/mep/mep-next/mep-next.js';
 
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
@@ -122,6 +119,14 @@ const SEARCH = () => getLocalStorageFilter() ?? {
   metadataFilter: '',
 };
 
+function textTag(tag, attributes, text) {
+  const el = createTag(tag, attributes);
+  el.textContent = text ?? '';
+  return el;
+}
+
+const hrefAttr = (url) => (url ? { href: url } : {});
+
 async function toggleDrawer(target, dd, pageId) {
   const el = target.closest('button');
   const expanded = el.getAttribute('aria-expanded') === 'true';
@@ -141,7 +146,7 @@ async function toggleDrawer(target, dd, pageId) {
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
     const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     if (!pageData) return;
-    loading.replaceWith(await getMepPopup(pageData, true));
+    loading.replaceWith(await getMepPopup(pageData));
     dd.classList.add('placeholder-resolved');
   }
 }
@@ -151,9 +156,9 @@ function createButtonDetailsPair(mmmEl, page) {
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const anchor = createTag('a', { href: url }, url);
+  const anchor = textTag('a', hrefAttr(safeUrl(url)), url);
   const hTag = createTag('h5', false, anchor);
-  const activitiesNum = createTag(
+  const activitiesNum = textTag(
     'span',
     { class: 'mmm-page_item-subtext' },
     `${numOfActivities} Manifest(s) found`,
@@ -452,7 +457,8 @@ async function createFiltersForm(el) {
 }
 
 function createPaginationEl({ data, el }) {
-  const { pageNum, perPage, totalRecords } = data;
+  const { pageNum, perPage } = data;
+  const totalRecords = Number(data.totalRecords) || 0;
   const arrowIcons = {
     first: '<svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.205 10.59L8.61504 6L13.205 1.41L11.795 0L5.79504 6L11.795 12L13.205 10.59ZM0.795044 0H2.79504V12H0.795044V0Z" fill="black"/></svg>',
     prev: '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.70504 1.41L6.29504 0L0.295044 6L6.29504 12L7.70504 10.59L3.12504 6L7.70504 1.41Z" fill="black"/></svg>',
@@ -509,7 +515,7 @@ function createPaginationEl({ data, el }) {
     const paginationSummary = createTag(
       'div',
       { class: 'mmm-pagination-summary' },
-      `<div><span>${range} of ${totalRecords.toLocaleString()}</span><div>`,
+      createTag('div', false, textTag('span', false, `${range} of ${totalRecords.toLocaleString()}`)),
     );
     paginationWrapper.append(
       createTag('div', { id: 'pagination-select' }, [paginationLabel, paginationDropdown]),
@@ -583,7 +589,10 @@ function createReportButton() {
       setTimeout(() => e.target.closest('p').classList.remove('minError'), 3000);
       return;
     }
-    selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href.split('?')[0]));
+    selectedCheckboxes.forEach((checkedBox) => {
+      const link = checkedBox.closest('.mmm-report-row').querySelector('a');
+      if (link?.hasAttribute('href')) reportData.push(link.href.split('?')[0]);
+    });
     navigator.clipboard.writeText(`Please turn off Target integration from the following ${reportData.length > 1 ? `${reportData.length} pages:` : 'page:'}\n${reportData.join('\n')}`);
     e.target.closest('p').classList.remove('minError');
     e.target.closest('p').classList.add('copySuccess');
@@ -594,8 +603,35 @@ function createReportButton() {
   parentContainer.prepend(topButtonContainer);
 }
 
+function createReportRow(item, index) {
+  const checkbox = createTag('input', {
+    type: 'checkbox',
+    id: `entry-${index}`,
+    name: `entry-${index}`,
+    value: `entry-${index}`,
+    class: 'mmm-report-add',
+  });
+  const pageUrl = safeUrl(item.url);
+  const pageLink = textTag('a', { ...hrefAttr(pageUrl && `${pageUrl}?mep`), target: '_blank' }, item.url);
+  const manifestLink = textTag('a', {
+    class: 'small',
+    target: '_blank',
+    ...hrefAttr(safeUrl(getAbsUrl(item.manifestUrl, item.url))),
+  }, item.targetActivityName);
+  const activityCell = textTag('div', false, getDate(item.aLastSeen));
+  activityCell.append(createTag('br'), manifestLink);
+  return createTag('div', { class: 'mmm-report-row' }, [
+    createTag('div', false, checkbox),
+    createTag('div', false, pageLink),
+    textTag('div', false, item.target),
+    activityCell,
+    textTag('div', false, getDate(item.pLastSeen)),
+  ]);
+}
+
 function createReport(el, data) {
-  const { result, orderBy, order } = data;
+  const { result, orderBy } = data;
+  const order = data.order === 'desc' ? 'desc' : 'asc';
   const arrow = '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>';
   const headers = [
     { label: 'URL', orderBy: 'p.url', order: 'asc' },
@@ -617,21 +653,10 @@ function createReport(el, data) {
         </div>
       `).join('')}
       </div>
-      <div class="mmm-report-body">
-        ${result.map((item, index) => `
-          <div class="mmm-report-row">
-            <div>
-              <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry-${index}" class="mmm-report-add">
-            </div>
-            <div><a href="${item.url}?mep" target="_blank">${item.url}</a></div>
-            <div>${item.target}</div>
-            <div>${getDate(item.aLastSeen)}<br/><a class="small" target="_blank" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></div>
-            <div>${getDate(item.pLastSeen)}</div>
-          </div>
-        `).join('')}
-      </div>
+      <div class="mmm-report-body"></div>
     </div>
   `;
+  el.querySelector('.mmm-report-body').append(...result.map(createReportRow));
 
   el.querySelectorAll('.mmm-report-header div.sortable').forEach((header) => {
     header.addEventListener('click', (e) => {
@@ -652,18 +677,14 @@ function createReport(el, data) {
 function buildUrlPod(list, title) {
   if (!list.length) return;
   const container = document.querySelector('.mmm-metadata-lookup__results');
-  const html = `
-    <div class="mmm-metadata-url-pod">
-      <h3>${title}</h3>
-      ${list.map((item) => `
-      <div class="mmm-metadata-url-pod__item">
-        <span>${item.URL || item.split(/\.com|\.html/g)[1]}</span>
-      </div>
-      `).join('')}
-    </div>
-    <button class="mmm-metadata-lookup__button" data-result=${JSON.stringify(list)}>Copy</button>
-    `;
-  container.append(createTag('div', { class: 'mmm-metadata-url-pod-container' }, html));
+  const pod = createTag('div', { class: 'mmm-metadata-url-pod' }, textTag('h3', false, title));
+  list.forEach((item) => {
+    const text = item.URL || item.split(/\.com|\.html/g)[1];
+    pod.append(createTag('div', { class: 'mmm-metadata-url-pod__item' }, textTag('span', false, text)));
+  });
+  const copyButton = textTag('button', { class: 'mmm-metadata-lookup__button' }, 'Copy');
+  copyButton.dataset.result = JSON.stringify(list);
+  container.append(createTag('div', { class: 'mmm-metadata-url-pod-container' }, [pod, copyButton]));
 }
 
 function updatePageTargetStatus(url, target) {

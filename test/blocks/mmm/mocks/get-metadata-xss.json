@@ -1,0 +1,5 @@
+{
+  "data": [
+    { "URL": "/<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">", "target": "on" }
+  ]
+}
