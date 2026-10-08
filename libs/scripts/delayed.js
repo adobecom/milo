@@ -120,9 +120,9 @@ export const loadPreflightResults = async () => {
 
   const run = async () => {
     if (!isDaPreview
-      && ((isPreview && autoHighlight !== 'false') || (isLocal && autoHighlight === 'true'))) {
+      && ((isPreview && autoHighlight !== 'off') || (isLocal && autoHighlight === 'on'))) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
-      await autoHighlightUnpublished();
+      await autoHighlightUnpublished(autoHighlight === 'on');
     }
     if (!isLocal) {
       const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');

@@ -162,7 +162,7 @@ function showHighlightControl(root, applyOverlays, forceHighlights) {
   document.body.append(control);
 }
 
-export function highlightOnPage(diff, root) {
+export function highlightOnPage(diff, root, forceHighlights) {
   clearHighlights(root);
 
   const applyOverlays = () => {
@@ -195,8 +195,6 @@ export function highlightOnPage(diff, root) {
   };
 
   if (diff?.added?.length || diff?.modified?.length) {
-    const autoHighlight = new URLSearchParams(window.location.search).get('autoHighlight');
-    const forceHighlights = autoHighlight === 'true';
     if (forceHighlights || !areHighlightsDismissed()) applyOverlays();
     showHighlightControl(root, applyOverlays, forceHighlights);
   }

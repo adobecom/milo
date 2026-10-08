@@ -139,16 +139,16 @@ describe('loadPreflightResults', () => {
     expect(document.querySelector('.preflight-diff-highlight-control')).to.be.null;
   });
 
-  it('does not enable local highlights for an invalid override', async () => {
-    setParam('autoHighlight', 'invalid');
+  it('only enables local highlights for autoHighlight=on', async () => {
+    setParam('autoHighlight', 'true');
     document.body.insertAdjacentHTML('beforeend', '<main></main>');
     await loadPreflightResults();
     expect(fetchStub.called).to.equal(false);
   });
 
   ['dapreview', 'quick-edit'].forEach((param) => {
-    it(`skips ${param} pages even with autoHighlight=true`, async () => {
-      setParam('autoHighlight', 'true');
+    it(`skips ${param} pages even with autoHighlight=on`, async () => {
+      setParam('autoHighlight', 'on');
       setParam(param, 'on');
       document.body.insertAdjacentHTML('beforeend', '<main></main>');
       await loadPreflightResults();
@@ -166,19 +166,18 @@ describe('loadPreflightResults', () => {
   });
 
   it('waits for auto-highlight to finish before resolving', async () => {
-    setParam('autoHighlight', 'true');
+    setParam('autoHighlight', 'on');
     let resolveFetch;
+    let fetchStarted;
     const pendingFetch = new Promise((resolve) => { resolveFetch = resolve; });
+    const started = new Promise((resolve) => { fetchStarted = resolve; });
     fetchStub.resetBehavior();
-    fetchStub.returns(pendingFetch);
+    fetchStub.callsFake(() => { fetchStarted(); return pendingFetch; });
     document.body.insertAdjacentHTML('beforeend', '<main></main>');
 
     let settled = false;
     const loading = loadPreflightResults().then(() => { settled = true; });
-    for (let i = 0; i < 20 && !fetchStub.called; i += 1) {
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
-    }
-    expect(fetchStub.called).to.equal(true);
+    await started;
     await Promise.resolve();
     const settledBeforeFetch = settled;
     resolveFetch({ ok: false, status: 500 });

@@ -536,22 +536,14 @@ describe('preflight diff-onpage', () => {
 
   describe('preview-load auto-apply (FA #1)', () => {
     let root;
-    let originalUrl;
     const diff = { added: [{ path: '/div[1]/p[1]', kind: 'leaf', tag: 'P', previewText: 'Hello world' }], modified: [] };
-    const setOverride = (value) => {
-      const url = new URL(window.location.href);
-      url.searchParams.set('autoHighlight', value);
-      window.history.replaceState(null, '', url);
-    };
     beforeEach(() => {
-      originalUrl = window.location.href;
       setHighlightsDismissed(false);
       root = document.createElement('main');
       root.innerHTML = '<div><p>Hello world</p></div>';
       document.body.append(root);
     });
     afterEach(() => {
-      window.history.replaceState(null, '', originalUrl);
       clearHighlights(root);
       root.remove();
       setHighlightsDismissed(false);
@@ -573,9 +565,8 @@ describe('preflight diff-onpage', () => {
 
     it('forces highlights on despite a saved Hide preference without changing it', () => {
       setHighlightsDismissed(true);
-      setOverride('true');
 
-      highlightOnPage(diff, root);
+      highlightOnPage(diff, root, true);
 
       expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
       expect(localStorage.getItem('preflight-diff-hidden')).to.equal('1');
@@ -586,16 +577,6 @@ describe('preflight diff-onpage', () => {
       expect(root.querySelector('.preflight-diff-overlay.is-added')).to.exist;
       expect(localStorage.getItem('preflight-diff-hidden')).to.equal('1');
       expect(areHighlightsDismissed()).to.equal(true);
-    });
-
-    it('retains the saved Hide preference for an invalid override', () => {
-      setHighlightsDismissed(true);
-      setOverride('invalid');
-
-      highlightOnPage(diff, root);
-
-      expect(root.querySelector('.preflight-diff-overlay')).to.not.exist;
-      expect(document.querySelector('.preflight-diff-control-hide')).to.exist;
     });
   });
 });
