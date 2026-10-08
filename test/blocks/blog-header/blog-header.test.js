@@ -34,6 +34,7 @@ setConfig({
 window.lana = { log: stub() };
 
 const svgText = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.svg' });
+const blogHeaderCss = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.css' });
 
 function buildProfile({
   name = 'Profile Name',
@@ -536,6 +537,268 @@ describe('blog-header decoration', () => {
     expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('Rachel Thornton');
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+  });
+});
+
+describe('blog-header section dividers', () => {
+  let fetchStub;
+
+  /* Builds `main > .section` siblings the way loadArea() does, with an
+     optional `.card-metadata` marker standing in for the related-content
+     cards section, so divider boundary logic can be tested without a page. */
+  function buildSections({ noDividers = false, articleSections = 2, relatedContent = true } = {}) {
+    const main = document.createElement('main');
+    const headerSection = document.createElement('div');
+    headerSection.className = 'section';
+    const block = document.createElement('div');
+    block.className = noDividers ? 'blog-header no-dividers' : 'blog-header';
+    block.innerHTML = '<div><div><h1>Title of the article</h1></div></div>'
+      + '<div><div>Summary of the article</div></div>';
+    headerSection.append(block);
+    main.append(headerSection);
+
+    for (let i = 0; i < articleSections; i += 1) {
+      const section = document.createElement('div');
+      section.className = 'section';
+      section.innerHTML = `<div><p>Article paragraph ${i}</p></div>`;
+      main.append(section);
+    }
+
+    if (relatedContent) {
+      const section = document.createElement('div');
+      section.className = 'section';
+      section.innerHTML = '<div><div class="card-metadata"></div></div>';
+      main.append(section);
+    }
+
+    document.body.append(main);
+    return { main, headerSection, block };
+  }
+
+  afterEach(async () => {
+    await cleanup();
+    fetchStub?.restore();
+  });
+
+  it('frames the header section and every following article section', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection } = buildSections();
+    await init(headerSection.querySelector('.blog-header'));
+    const sections = [...main.querySelectorAll('.section')];
+    expect(headerSection.classList.contains('blog-divider-frame')).to.equal(true);
+    expect(headerSection.classList.contains('blog-divider-bottom')).to.equal(true);
+    expect(sections[1].classList.contains('blog-divider-frame')).to.equal(true);
+    expect(sections[2].classList.contains('blog-divider-frame')).to.equal(true);
+  });
+
+  it('stops framing at the related-content (card-metadata) section and beyond', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection } = buildSections();
+    await init(headerSection.querySelector('.blog-header'));
+    const sections = [...main.querySelectorAll('.section')];
+    const relatedSection = sections.at(-1);
+    expect(relatedSection.querySelector('.card-metadata')).to.exist;
+    expect(relatedSection.classList.contains('blog-divider-frame')).to.equal(false);
+  });
+
+  it('frames all article sections when related content is absent', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection } = buildSections({ relatedContent: false });
+    await init(headerSection.querySelector('.blog-header'));
+    const sections = [...main.querySelectorAll('.section')];
+    expect(sections.every((section) => section.classList.contains('blog-divider-frame'))).to.equal(true);
+  });
+
+  it('spans collapsed margins without changing article geometry', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    const sections = [...main.children];
+    sections[1].firstElementChild.firstElementChild.style.marginBlock = '24px';
+    sections[2].firstElementChild.firstElementChild.style.marginBlock = '32px';
+    const original = sections.map((section) => section.getBoundingClientRect());
+    await init(block);
+    // Header decoration changes its height, so compare the divider with the final layout.
+    const headerRect = headerSection.getBoundingClientRect();
+    const lastArticleRect = sections[2].getBoundingClientRect();
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(lastArticleRect.bottom - headerRect.top, 0.01);
+    expect(sections[2].getBoundingClientRect().top - sections[1].getBoundingClientRect().bottom)
+      .to.equal(original[2].top - original[1].bottom);
+    expect(sections[1].getBoundingClientRect().height).to.equal(original[1].height);
+    expect(sections[2].getBoundingClientRect().height).to.equal(original[2].height);
+  });
+
+  it('updates the continuous frame when article content resizes', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    await init(block);
+    const height = parseFloat(headerSection.style.getPropertyValue('--blog-divider-height'));
+    const lastArticle = main.children[2];
+    lastArticle.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => (
+      parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')) > height
+    ));
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(
+        lastArticle.getBoundingClientRect().bottom - headerSection.getBoundingClientRect().top,
+        0.01,
+      );
+  });
+
+  it('includes leading article text in a mixed related-content section without framing its cards', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    const relatedSection = main.lastElementChild;
+    relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Final article paragraph.</p></div>'
+      + '<div class="text"><h2>Recommended for you</h2></div>');
+    const articleEnd = relatedSection.firstElementChild;
+    await init(block);
+    const expectedHeight = articleEnd.getBoundingClientRect().bottom
+      - headerSection.getBoundingClientRect().top;
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(expectedHeight, 0.01);
+    expect(relatedSection.classList.contains('blog-divider-frame')).to.equal(false);
+
+    relatedSection.lastElementChild.insertAdjacentHTML('beforeend', '<div style="height: 200px"></div>');
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(expectedHeight, 0.01);
+
+    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => (
+      parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')) > expectedHeight
+    ));
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(
+        articleEnd.getBoundingClientRect().bottom - headerSection.getBoundingClientRect().top,
+        0.01,
+      );
+  });
+
+  it('detects the final article wrapper created after header initialization', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    await init(block);
+    const height = parseFloat(headerSection.style.getPropertyValue('--blog-divider-height'));
+    const relatedSection = main.lastElementChild;
+    relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Later decorated article text.</p></div>'
+      + '<div class="text"><h2>Recommended for you</h2></div>');
+    await waitFor(() => (
+      parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')) > height
+    ));
+    expect(parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')))
+      .to.be.closeTo(
+        relatedSection.firstElementChild.getBoundingClientRect().bottom
+          - headerSection.getBoundingClientRect().top,
+        0.01,
+      );
+  });
+
+  it('disables every divider, including on sections after the header, when no-dividers is set', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection } = buildSections({ noDividers: true });
+    await init(headerSection.querySelector('.blog-header'));
+    const sections = [...main.querySelectorAll('.section')];
+    expect(sections.some((section) => (
+      section.classList.contains('blog-divider-frame') || section.classList.contains('blog-divider-bottom')
+    ))).to.equal(false);
+    expect(headerSection.style.getPropertyValue('--blog-divider-height')).to.equal('');
+  });
+
+  describe('divider styling', () => {
+    let style;
+    let framingMedia;
+
+    beforeEach(() => {
+      fetchStub = mockFetch();
+      style = document.createElement('style');
+      style.textContent = blogHeaderCss;
+      document.head.append(style);
+      framingMedia = [...style.sheet.cssRules].find((rule) => (
+        rule.type === CSSRule.MEDIA_RULE
+        && [...rule.cssRules].some((nestedRule) => (
+          nestedRule.selectorText === '.blog-divider-frame.blog-divider-bottom::before'
+        ))
+      ));
+    });
+
+    afterEach(() => {
+      style.remove();
+    });
+
+    it('positions the continuous frame 56px outside the container above section backgrounds without changing layout', async () => {
+      expect(framingMedia.conditionText).to.equal('(min-width: 600px)');
+      framingMedia.media.mediaText = 'all';
+      const { main, headerSection, block } = buildSections();
+      main.style.setProperty('--grid-margins-width', '120px');
+      main.style.setProperty('--color-gray-400', '#B6B6B6');
+      const tableSection = main.children[1];
+      tableSection.style.cssText = 'position: relative; display: grid; background: white';
+      await init(block);
+
+      const frame = getComputedStyle(headerSection, '::before');
+      expect(frame.content).to.equal('""');
+      expect(frame.insetInlineStart).to.equal('64px');
+      expect(frame.insetInlineEnd).to.equal('64px');
+      expect(frame.zIndex).to.equal('1');
+      expect(frame.pointerEvents).to.equal('none');
+      expect(frame.backgroundSize).to.equal('2px 100%, 2px 100%');
+      expect(parseFloat(frame.blockSize)).to.be.closeTo(
+        parseFloat(headerSection.style.getPropertyValue('--blog-divider-height')),
+        0.01,
+      );
+      expect(getComputedStyle(main.children[2], '::before').content).to.equal('none');
+      expect(getComputedStyle(tableSection).backgroundColor).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(tableSection).display).to.equal('grid');
+
+      const rectangles = [...main.children].map(
+        (section) => section.getBoundingClientRect().toJSON(),
+      );
+      framingMedia.media.mediaText = 'not all';
+      expect([...main.children].map((section) => section.getBoundingClientRect().toJSON()))
+        .to.deep.equal(rectangles);
+    });
+
+    it('clamps both frame offsets at the viewport edge when the gutters are narrower than 56px', async () => {
+      framingMedia.media.mediaText = 'all';
+      const { main, headerSection, block } = buildSections();
+      main.style.setProperty('--grid-margins-width', '40px');
+      await init(block);
+      const frame = getComputedStyle(headerSection, '::before');
+      expect(frame.insetInlineStart).to.equal('0px');
+      expect(frame.insetInlineEnd).to.equal('0px');
+      expect(parseFloat(frame.width))
+        .to.be.closeTo(headerSection.getBoundingClientRect().width, 0.01);
+    });
+
+    it('hides vertical framing on mobile while retaining the full-width header-bottom divider', async () => {
+      framingMedia.media.mediaText = 'not all';
+      const { headerSection, block } = buildSections();
+      await init(block);
+      expect(getComputedStyle(headerSection, '::before').content).to.equal('none');
+      const bottom = getComputedStyle(headerSection, '::after');
+      expect(bottom.content).to.equal('""');
+      expect(bottom.insetInlineStart).to.equal('0px');
+      expect(bottom.insetInlineEnd).to.equal('0px');
+      expect(bottom.height).to.equal('2px');
+      expect(bottom.pointerEvents).to.equal('none');
+    });
+
+    it('renders no divider pseudo-elements without an enabled blog header', async () => {
+      framingMedia.media.mediaText = 'all';
+      const { main, headerSection, block } = buildSections({ noDividers: true });
+      await init(block);
+      expect(getComputedStyle(headerSection, '::before').content).to.equal('none');
+      expect(getComputedStyle(headerSection, '::after').content).to.equal('none');
+      block.remove();
+      expect(main.querySelector('.blog-header')).to.not.exist;
+      [...main.children].forEach((section) => {
+        expect(getComputedStyle(section, '::before').content).to.equal('none');
+        expect(getComputedStyle(section, '::after').content).to.equal('none');
+      });
+    });
   });
 });
 

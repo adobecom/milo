@@ -196,6 +196,46 @@ a.blog-header-author-name:hover {
   }
 }
 
+.blog-divider-frame {
+  position: relative;
+}
+
+.blog-divider-frame::before {
+  content: none;
+}
+
+/* A single continuous frame sits at the existing container edges. */
+@media (min-width: 600px) {
+  .blog-divider-frame.blog-divider-bottom::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    block-size: var(--blog-divider-height, 100%);
+    inset-inline-start: max(0px, calc(var(--grid-margins-width) - 56px));
+    inset-inline-end: max(0px, calc(var(--grid-margins-width) - 56px));
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px),
+      repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px);
+    background-repeat: repeat-y, repeat-y;
+    background-position: left top, right top;
+    background-size: 2px 100%, 2px 100%;
+    z-index: 1;
+  }
+}
+
+/* Full-width divider at the bottom of the header section only; kept on mobile. */
+.blog-divider-bottom::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 2px;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(to right, var(--color-gray-400) 0 2px, transparent 2px 7px);
+  background-repeat: repeat-x;
+}
+
 /* Blog Social share modal (appended to body by getModal) */
 .blog-share-modal.dialog-modal {
   width: fit-content;

@@ -465,6 +465,42 @@ async function buildByline(authorRows, config, base) {
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
+function decorateDividers(el) {
+  if (el.classList.contains('no-dividers')) return;
+  const headerSection = el.closest('.section');
+  if (!headerSection) return;
+
+  headerSection.classList.add('blog-divider-frame', 'blog-divider-bottom');
+  const sections = [headerSection];
+  let section = headerSection.nextElementSibling;
+  while (section?.classList.contains('section') && !section.querySelector('.card-metadata')) {
+    section.classList.add('blog-divider-frame');
+    sections.push(section);
+    section = section.nextElementSibling;
+  }
+  const relatedSection = section?.querySelector('.card-metadata') ? section : null;
+
+  // Span collapsed margins without changing the article's layout.
+  const updateFrame = (entries, resizeObserver) => {
+    if (!headerSection.isConnected) {
+      resizeObserver.disconnect();
+      return;
+    }
+    // The related section can start with article text, wrapped during later decoration.
+    const endpoint = relatedSection?.querySelector(':scope > .content:first-child')
+      || sections.at(-1);
+    resizeObserver.observe(endpoint);
+    const height = endpoint.getBoundingClientRect().bottom
+      - headerSection.getBoundingClientRect().top;
+    headerSection.style.setProperty('--blog-divider-height', `${height}px`);
+  };
+  const observer = new ResizeObserver(updateFrame);
+  sections.forEach((framedSection) => observer.observe(framedSection));
+  if (relatedSection) observer.observe(relatedSection);
+  observer.observe(headerSection.parentElement);
+  updateFrame([], observer);
+}
+
 export default async function init(el) {
   const main = el.closest('main');
   const readingTime = main ? getReadingTime(main) : 0;
@@ -486,6 +522,7 @@ export default async function init(el) {
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
   el.append(byline);
+  decorateDividers(el);
 
   return readingTime;
 }
