@@ -140,7 +140,9 @@ async function buildSharing() {
   const allAnchorTags = platforms.map((platform) => {
     const platformProperties = platformMap[platform];
     if (platformProperties) {
-      return createTag('a', platformProperties, svgs[platform].cloneNode(true));
+      const icon = svgs[platform].cloneNode(true);
+      if (platform === 'facebook') icon.setAttribute('viewBox', '4 0 10 18');
+      return createTag('a', platformProperties, icon);
     }
     return null;
   }).filter(Boolean);
