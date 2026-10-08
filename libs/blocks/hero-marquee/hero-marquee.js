@@ -11,8 +11,6 @@ import {
 import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
-// Mirror the CSS that hides media per viewport: background *-only cells (styles.css) and
-// media-hidden-* (hero-marquee.css, where mobile and tablet both match at exactly 600px).
 const TABLET = '(min-width: 600px) and (max-width: 1199px)';
 const BG_VIEWPORTS = {
   'mobile-only': '(max-width: 599px)',
@@ -270,12 +268,9 @@ function isMediaHidden(el, a) {
 async function loadVideo(a) {
   const bgCell = a.closest('.background > div');
   await loadBlock(a);
-  // Parity with decorateBlockBg, which ran before this video existed.
   bgCell?.querySelector('video')?.setAttribute('disablepictureinpicture', 'true');
 }
 
-// Core leaves hero-marquee's video link-blocks to the block so a <video> (and its poster
-// request) is only created once the media is actually shown on the current viewport.
 function loadVideos(el) {
   const links = [...el.querySelectorAll('a.video.link-block')];
   let hidden = links.filter((a) => isMediaHidden(el, a));
@@ -317,7 +312,6 @@ export default async function init(el) {
   foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
-  // Unloaded video link-blocks match where decorateAnchorVideo would add a .video-container.
   const asset = foreground.querySelector('div > picture, :is(.video-container, .pause-play-wrapper), div > video, div > a[href*=".mp4"], div > a.image-link, a.video.link-block:not([href*="_hide-controls"])');
   const allRows = foreground.querySelectorAll('div > div');
   copy = anyTag.closest('div');
@@ -329,7 +323,6 @@ export default async function init(el) {
     setBackgroundFocus(asset); // Used in DA focal point feature
     mediaClasses.forEach((className) => {
       if (!el.classList.contains(className)) return;
-      // Set on the wrapper so it also reaches a video that replaces the link later.
       const foregroundMedia = createTag('div', { class: 'foreground-media' }, asset);
       foregroundMedia.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');
       el.appendChild(foregroundMedia);
@@ -341,7 +334,6 @@ export default async function init(el) {
       }
     });
   }
-  // Start as soon as asset placement is known so a visible (LCP) poster isn't held back.
   const videoLoads = loadVideos(el);
 
   const assetUnknown = (allRows.length === 2

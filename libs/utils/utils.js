@@ -2022,8 +2022,6 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-// Blocks that load their own video link-blocks, so media they hide on the current viewport never
-// gets a <video> or poster request. Only when Milo's own code runs (not MEP/externalLibs swaps).
 const BLOCKS_OWNING_VIDEOS = ['hero-marquee'];
 const ownsVideoLinks = (block) => {
   const name = block.classList[0];
@@ -3101,7 +3099,6 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
-  // Warm video code for blocks that load their own videos, as the autoblock path would.
   preloadBlockResources(section.blockOwnedLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
