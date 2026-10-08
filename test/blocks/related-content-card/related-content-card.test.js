@@ -123,9 +123,7 @@ describe('related-content-card', () => {
 
   it('preserves the query when fetching a same-origin article', async () => {
     fetchStub.restore();
-    stubFetch({
-      '/mock/full-article?version=2': buildArticle({ title: 'Version two.' }),
-    });
+    stubFetch({ '/mock/full-article?version=2': buildArticle({ title: 'Version two.' }) });
     const block = document.querySelector('#card-link');
     block.querySelector('a').href = '/mock/full-article?version=2#section';
     await init(block);
@@ -137,9 +135,7 @@ describe('related-content-card', () => {
   it('preserves the origin when fetching a cross-origin article', async () => {
     const articleUrl = 'https://example.com/mock/full-article?version=2';
     fetchStub.restore();
-    stubFetch({
-      [articleUrl]: buildArticle({ title: 'Other origin.', cardImage: false, ogImage: '' }),
-    });
+    stubFetch({ [articleUrl]: buildArticle({ title: 'Other origin.', cardImage: false, ogImage: '' }) });
     const block = document.querySelector('#card-link');
     block.querySelector('a').href = `${articleUrl}#section`;
     await init(block);
