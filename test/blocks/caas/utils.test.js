@@ -1102,7 +1102,10 @@ describe('getCountryAndLang with a BACOM /ara base-site (autodetect lingo)', () 
     'site-locales': {
       data: [
         { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/ca, /au' },
-        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '' },
+        // regionalSites carries a GEO-IP-promotable Arabic regional ('/ae_ar') so
+        // the alias-normalization change can be exercised against a real country
+        // promotion, not just the base '/ara' -> 'xx'/'ar' case.
+        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '/ae_ar' },
       ],
     },
   };
@@ -1132,6 +1135,41 @@ describe('getCountryAndLang with a BACOM /ara base-site (autodetect lingo)', () 
       // Short-circuits the GEO IP fallback with a non-regional country so the
       // test doesn't attempt a real network/Akamai lookup via getCountry().
       mep: { countryIP: 'us' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
+  });
+
+  // Catches regressions in Arabic GEO-IP promotion that the base-case test above
+  // can't: it uses GEO country 'us' with no matching regional, so it produces
+  // the same result before and after the alias-normalization changes.
+  it('promotes to country: ae when GEO IP matches the /ara regional site', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ae' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('ae');
+    expect(expected.language).to.eq('ar');
+  });
+
+  it('does NOT promote to country: ar for GEO IP Argentina (must not collide with the "ara" alias)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ar' },
     });
 
     const expected = await getCountryAndLang({
