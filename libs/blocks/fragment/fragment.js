@@ -116,7 +116,6 @@ const isBrokenImage = (el) => {
   return !!img?.complete && !img.naturalWidth;
 };
 
-// MEP removes elements before fragments load, so it records their media (deleteMarkedEls).
 const getPageMedia = (neededKeys, removedMedia) => {
   const media = new Map();
   const add = (ref) => {
