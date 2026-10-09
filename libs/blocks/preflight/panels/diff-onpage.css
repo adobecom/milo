@@ -94,7 +94,7 @@
 }
 
 @media (max-width: 599px) {
-  .preflight-diff-control-label {
+  .preflight-diff-control-state {
     display: none;
   }
 }

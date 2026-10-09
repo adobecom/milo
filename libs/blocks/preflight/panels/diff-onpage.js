@@ -16,8 +16,9 @@ const SR_LABEL = {
   [MODIFIED_MODIFIER]: 'Unpublished — changed',
 };
 
-const CONTROL_LABEL_ON = 'Unpublished changes highlighted';
-const CONTROL_LABEL_OFF = 'Unpublished changes not highlighted';
+const CONTROL_LABEL = 'Unpublished changes';
+const CONTROL_LABEL_ON = 'highlighted';
+const CONTROL_LABEL_OFF = 'not highlighted';
 
 const VOID_HOST_TAGS = new Set(['IMG', 'VIDEO', 'IFRAME', 'AUDIO', 'EMBED', 'OBJECT', 'CANVAS', 'INPUT']);
 
@@ -139,7 +140,8 @@ function showHighlightControl(root, applyOverlays) {
   const dismissed = areHighlightsDismissed();
   const labelText = dismissed ? CONTROL_LABEL_OFF : CONTROL_LABEL_ON;
   const toggleText = dismissed ? 'Show' : 'Hide';
-  const label = createTag('span', { class: 'preflight-diff-control-label', 'aria-live': 'polite' }, labelText);
+  const state = createTag('span', { class: 'preflight-diff-control-state' }, labelText);
+  const label = createTag('span', { class: 'preflight-diff-control-label', 'aria-live': 'polite', 'aria-atomic': 'true' }, [`${CONTROL_LABEL} `, state]);
   const toggle = createTag('button', { class: 'preflight-diff-control-hide' }, toggleText);
   const control = createTag(
     'div',
@@ -151,12 +153,12 @@ function showHighlightControl(root, applyOverlays) {
       applyOverlays();
       setHighlightsDismissed(false);
       toggle.textContent = 'Hide';
-      label.textContent = CONTROL_LABEL_ON;
+      state.textContent = CONTROL_LABEL_ON;
     } else {
       clearOverlays(root);
       setHighlightsDismissed(true);
       toggle.textContent = 'Show';
-      label.textContent = CONTROL_LABEL_OFF;
+      state.textContent = CONTROL_LABEL_OFF;
     }
   });
   document.body.append(control);
