@@ -4,25 +4,21 @@ const SPECIALTY_SELECTOR = '.parallax-garage-door-reveal, .parallax-move-up-fast
 const ASIDE_CONTENT = '.rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid';
 const ASIDE_SELECTOR = `.section.parallax-double-garage-door:has(> ${ASIDE_CONTENT})`;
 const SUPPORTS_HAS = window.CSS?.supports?.('selector(:has(*))') ?? false;
-const ORIGINAL_ENTRANCES = new Set(['enable-parallax', 'enable-parallax-stagger', 'enable-grid-parallax']);
+// Scroll-linked parallax entrances that the one-time timed entrance replaces.
+const SCROLL_ENTRANCES = new Set(['enable-parallax', 'enable-parallax-stagger', 'enable-grid-parallax']);
 const groups = new WeakMap();
 const sections = new Map();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-function preserveOtherAnimations(item) {
-  const names = getComputedStyle(item).animationName.split(', ');
-  if (names.some((name) => name !== 'none')) {
-    item.style.setProperty(
-      '--c2-entrance-remaining-animations',
-      names.map((name) => (ORIGINAL_ENTRANCES.has(name) ? 'none' : name)).join(', '),
-    );
-  }
+// Content running any other animation keeps its own motion untouched.
+function hasOtherAnimation(item) {
+  return getComputedStyle(item).animationName.split(', ')
+    .some((name) => name !== 'none' && !SCROLL_ENTRANCES.has(name));
 }
 
 function reveal(state, indices, observer, settled = reducedMotion.matches) {
   indices.forEach((index) => {
     state.played.add(index);
-    if (settled && state.original[index]) preserveOtherAnimations(state.items[index]);
     state.items[index]?.classList.add('c2-entrance-played');
     if (settled) state.items[index]?.classList.add('c2-entrance-settled');
   });
@@ -30,10 +26,9 @@ function reveal(state, indices, observer, settled = reducedMotion.matches) {
 }
 
 function clearItem(item) {
-  item.classList.remove('c2-entrance-item', 'c2-entrance-original', 'c2-entrance-played', 'c2-entrance-settled');
+  item.classList.remove('c2-entrance-item', 'c2-entrance-played', 'c2-entrance-settled');
   item.style.removeProperty('--c2-entrance-index');
   item.style.removeProperty('--c2-entrance-count');
-  item.style.removeProperty('--c2-entrance-remaining-animations');
 }
 
 function clearEntrance(source) {
@@ -42,35 +37,16 @@ function clearEntrance(source) {
   state.observers.forEach((observer) => observer.disconnect());
   state.listeners.abort();
   state.items.forEach(clearItem);
-  source.classList.remove('c2-entrance-group', 'c2-entrance-original');
+  source.classList.remove('c2-entrance-group');
   groups.delete(source);
 }
 
-function isOriginalEntrance(animation) {
-  return ORIGINAL_ENTRANCES.has(animation.animationName);
-}
-
-// Keep the original CSS range; only latch its first forward completion.
-function latchOriginalFinish(state, index) {
-  const animations = state.items[index].getAnimations().filter(isOriginalEntrance);
-  if (!animations.length) return;
-  const finish = () => {
-    if (animations.every((animation) => animation.playState === 'finished')) {
-      reveal(state, [index], undefined, true);
-    }
-  };
-  animations.forEach((animation) => {
-    animation.addEventListener('finish', finish, { signal: state.listeners.signal });
-  });
-  finish();
-}
-
 function observeBatch(state, source, indices, rows) {
-  const timed = indices.filter((index) => !state.played.has(index) && !state.original[index]);
+  const timed = indices.filter((index) => !state.played.has(index) && !state.skipped[index]);
   if (!timed.length) return;
   // Like the prototype, trigger on the first visible item rather than the padded block.
-  const first = indices.map((index) => state.items[index])
-    .find((item) => item.offsetWidth || item.offsetHeight) ?? state.items[indices[0]];
+  const first = timed.map((index) => state.items[index])
+    .find((item) => item.offsetWidth || item.offsetHeight) ?? state.items[timed[0]];
   const anchor = first.querySelector(':scope > .faq-trigger') ?? first;
   const trigger = Number.parseFloat(getComputedStyle(rows ? first : source).getPropertyValue('--c2-entrance-trigger')) / 100;
   const observer = new IntersectionObserver((entries) => {
@@ -95,14 +71,13 @@ function addEntrance(source, items, rows = false) {
       item === items[index] && state.ready[index] === ready[index]
     )) && (!rows || state.rowTops?.every((top, index) => top === rowTops[index]))) return;
   const previousItems = state?.items;
-  source.classList.add('c2-entrance-original');
-  const original = items.map((item, index) => {
+  const skipped = items.map((item, index) => {
     if (previousItems?.[index] === item
       && ((!state.stale && state.ready[index] === ready[index]) || state.played.has(index))) {
-      return state.original[index];
+      return state.skipped[index];
     }
     item.classList.remove('c2-entrance-item');
-    return getComputedStyle(item).animationName.split(', ').some((name) => name !== 'none');
+    return hasOtherAnimation(item);
   });
   state?.observers.forEach((observer) => observer.disconnect());
   state?.listeners.abort();
@@ -115,13 +90,12 @@ function addEntrance(source, items, rows = false) {
     items,
     ready,
     rowTops,
-    original,
+    skipped,
     played,
     observers: [],
     listeners: new AbortController(),
   };
   groups.set(source, state);
-  source.classList.toggle('c2-entrance-original', original.some(Boolean));
   source.classList.add('c2-entrance-group');
 
   const batches = [];
@@ -140,14 +114,10 @@ function addEntrance(source, items, rows = false) {
         items[index].style.setProperty('--c2-entrance-index', String(order));
         items[index].style.setProperty('--c2-entrance-count', String(ordered.length));
       }
-      items[index].classList.add('c2-entrance-item');
-      items[index].classList.toggle('c2-entrance-original', original[index]);
-      if (original[index]) preserveOtherAnimations(items[index]);
+      items[index].classList.toggle('c2-entrance-item', !skipped[index]);
       if (state.played.has(index)) {
         items[index].classList.add('c2-entrance-played');
         if (previousItems[index] !== items[index]) items[index].classList.add('c2-entrance-settled');
-      } else if (original[index] && !reducedMotion.matches) {
-        latchOriginalFinish(state, index);
       }
     });
     if (reducedMotion.matches) reveal(state, indices.filter((index) => !state.played.has(index)));

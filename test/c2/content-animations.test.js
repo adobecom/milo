@@ -20,13 +20,6 @@ describe('C2 content animations', () => {
     section.append(el);
     return el;
   };
-  const initTimed = (el) => {
-    const items = [section, ...section.querySelectorAll('*')];
-    const names = items.map((item) => item.style.animationName);
-    items.forEach((item) => { item.style.animationName = 'none'; });
-    initContentAnimations(el);
-    items.forEach((item, index) => { item.style.animationName = names[index]; });
-  };
 
   before(async () => {
     stylesheet = document.createElement('link');
@@ -112,7 +105,7 @@ describe('C2 content animations', () => {
   it('groups whole cards by row rather than their internal content', () => {
     const el = block('side-by-side parallax-stagger-ltr', '<div class="card"><h3>One</h3></div><div class="card"><h3>Two</h3></div><div class="card"><h3>Three</h3></div>');
     el.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:24px';
-    initTimed(el);
+    initContentAnimations(el);
     expect(el.querySelectorAll('.c2-entrance-item')).to.have.length(3);
     expect(el.querySelector('h3').classList.contains('c2-entrance-item')).to.be.false;
     expect(observers).to.have.length(2);
@@ -125,7 +118,7 @@ describe('C2 content animations', () => {
   it('preserves right-to-left authored staggering', () => {
     const el = block('side-by-side parallax-stagger-rtl', '<div>One</div><div>Two</div>');
     el.style.cssText = 'display:flex';
-    initTimed(el);
+    initContentAnimations(el);
     expect(el.children[0].style.getPropertyValue('--c2-entrance-index')).to.equal('1');
     expect(el.children[1].style.getPropertyValue('--c2-entrance-index')).to.equal('0');
     observers[0].callback([{ isIntersecting: true }]);
@@ -140,25 +133,23 @@ describe('C2 content animations', () => {
     expect(el.querySelectorAll('.news-items > .c2-entrance-item')).to.have.length(2);
   });
 
-  it('preserves individual FAQ ranges and latches each native completion', async () => {
+  it('triggers each FAQ item once from its question at the stage start line', () => {
     const el = block('faq', '<div><div><h3>First question?</h3><p>Answer</p></div></div><div><div><h3>Second question?</h3><p>Answer</p></div></div>');
     initFAQ(el);
     initContentAnimations(el);
     const items = [...el.querySelectorAll('.faq-item')];
     expect(el.querySelector('.faq-list').classList.contains('c2-entrance-item')).to.be.false;
-    expect(observers).to.have.length(0);
-    items.forEach((item) => {
-      expect(item.classList.contains('c2-entrance-item')).to.be.true;
-      expect(getComputedStyle(item).getPropertyValue('--parallax-translate-y').trim()).to.equal('100%');
-      expect(getComputedStyle(item).translate).to.equal('none');
-      expect(getComputedStyle(item).animationTimeline).to.equal('--faq-trigger-timeline');
-      expect(getComputedStyle(item).animationRangeStart).to.equal('entry');
-      expect(getComputedStyle(item).animationRangeEnd).to.equal('entry');
+    expect(observers).to.have.length(2);
+    items.forEach((item, index) => {
+      expect(observers[index].observe.firstCall.args[0]).to.equal(item.querySelector('.faq-trigger'));
+      expect(observers[index].options.rootMargin).to.equal(`0px 0px ${Math.round(-window.innerHeight * 0.1)}px 0px`);
+      expect(getComputedStyle(item).animationTimeline).to.equal('auto');
+      expect(getComputedStyle(item).opacity).to.equal('0');
     });
-    items[0].getAnimations()[0].finish();
-    await settle();
-    expect(items[0].classList.contains('c2-entrance-played')).to.be.true;
-    expect(getComputedStyle(items[0]).animationName).to.equal('none');
+    observers[0].callback([{ isIntersecting: true }]);
+    expect(getComputedStyle(items[0]).translate).to.equal('0px 100%');
+    expect(getComputedStyle(items[0]).animationDuration).to.equal('1.05s, 1.05s, 1.05s, 1.05s');
+    expect(getComputedStyle(items[0]).animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
     expect(items[1].classList.contains('c2-entrance-played')).to.be.false;
   });
 
@@ -182,7 +173,7 @@ describe('C2 content animations', () => {
     const title = el.querySelector('h2');
     const animation = title.getAnimations()[0];
     initContentAnimations(el);
-    expect(title.classList.contains('c2-entrance-original')).to.be.true;
+    expect(title.classList.contains('c2-entrance-item')).to.be.false;
     expect(getComputedStyle(title).animationName).to.equal('test-caption-motion');
     expect(title.getAnimations()[0]).to.equal(animation);
     observers[0].callback([{ isIntersecting: true }]);
@@ -190,43 +181,36 @@ describe('C2 content animations', () => {
     expect(title.getAnimations()[0]).to.equal(animation);
   });
 
-  it('keeps Quick Actions native timing even when its block stylesheet loads last', async () => {
+  it('replaces Quick Actions scroll timing even when its block stylesheet loads last', () => {
     const el = block('quick-actions', '<style>.quick-actions-grid.parallax-stagger-ltr > :not([class*="section-"]) { animation-name: enable-parallax-stagger; }</style><div class="quick-actions-grid parallax-stagger-ltr"><a class="quick-actions-tile">One</a><a class="quick-actions-tile">Two</a></div>');
     initContentAnimations(el);
-    el.querySelectorAll('.quick-actions-tile').forEach((item) => {
-      expect(getComputedStyle(item).animationName).to.equal('enable-parallax-stagger');
-      expect(getComputedStyle(item).animationTimeline).to.equal('--parallax-stagger-timeline');
-      item.getAnimations()[0].finish();
-    });
-    await settle();
-    el.querySelectorAll('.quick-actions-tile').forEach((item) => {
+    const tiles = el.querySelectorAll('.quick-actions-tile');
+    tiles.forEach((item) => {
       expect(getComputedStyle(item).animationName).to.equal('none');
-      expect(item.classList.contains('c2-entrance-settled')).to.be.true;
+      expect(getComputedStyle(item).opacity).to.equal('0');
+    });
+    observers[0].callback([{ isIntersecting: true }]);
+    tiles.forEach((item) => {
+      expect(getComputedStyle(item).animationName).to.include('c2-entrance-rise');
+      expect(getComputedStyle(item).animationTimeline).to.equal('auto');
     });
   });
 
-  it('preserves Quick Actions original animation objects, offsets and scroll ranges', async () => {
+  it('keeps Quick Actions stagger offsets without their scroll ranges', () => {
     const el = block('quick-actions', '<div class="quick-actions-grid parallax-stagger-ltr six-up"><a>One</a><a>Two</a><a>Three</a><a>Four</a><a>Five</a><a>Six</a></div>');
     const grid = el.firstElementChild;
-    grid.style.display = 'grid';
-    await settle();
-    const items = [...grid.children];
-    const properties = ['animationName', 'animationTimeline', 'animationRangeStart',
-      'animationRangeEnd', 'animationDuration', 'animationDelay', 'animationTimingFunction',
-      'transform', 'opacity'];
-    const styles = items.map((item) => (
-      properties.map((property) => getComputedStyle(item)[property])
-    ));
-    const animations = items.map((item) => item.getAnimations()[0]);
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(6, 1fr)';
     initContentAnimations(el);
-    expect(animations[0].effect.getKeyframes()[0].transform).to.include('72px');
-    expect(animations[5].effect.getKeyframes()[0].transform).to.include('588px');
-    items.forEach((item, index) => {
-      expect(properties.map((property) => getComputedStyle(item)[property]))
-        .to.deep.equal(styles[index]);
-      expect(item.getAnimations()[0]).to.equal(animations[index]);
+    const items = [...grid.children];
+    expect(observers).to.have.length(1);
+    observers[0].callback([{ isIntersecting: true }]);
+    expect(getComputedStyle(items[0]).translate).to.equal('0px 72px');
+    expect(getComputedStyle(items[5]).translate).to.equal('0px 588px');
+    items.forEach((item) => {
+      expect(getComputedStyle(item).animationTimeline).to.equal('auto');
+      expect(getComputedStyle(item).animationRangeStart).to.equal('normal');
+      expect(getComputedStyle(item).animationDuration.split(',')[0]).to.equal('1.05s');
     });
-    expect(observers).to.have.length(0);
   });
 
   it('preserves hover filters and transforms before and after the entrance', async () => {
@@ -246,20 +230,23 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(item).transform).to.equal('matrix(1.015, 0, 0, 1.015, 0, 0)');
   });
 
-  it('retains combined authored move, opacity, scale and blur on their original timeline', async () => {
+  it('plays combined authored move, opacity, scale and blur as one timed entrance', () => {
     const el = block('parallax-move-up parallax-opacity parallax-scale-up parallax-blur', '<p>Content</p>');
     initContentAnimations(el);
-    await settle();
+    expect(getComputedStyle(el).animationName).to.equal('none');
+    observers[0].callback([{ isIntersecting: true }]);
     const style = getComputedStyle(el);
-    expect(style.animationName).to.equal('enable-parallax');
-    expect(style.animationTimeline).to.equal('view(40% 10%)');
-    const from = el.getAnimations()[0].effect.getKeyframes()[0];
-    expect(from.transform).to.include('100px');
-    expect(from.transform).to.include('0.9');
-    expect(from.filter).to.equal('blur(10px)');
+    expect(style.animationName).to.equal('c2-entrance-rise, c2-entrance-fade, c2-entrance-scale, c2-entrance-blur');
+    expect(style.animationTimeline).to.equal('auto');
+    expect(style.animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
+    expect(style.animationDelay).to.equal('0s, 0s, 0s, 0s');
+    expect(style.translate).to.equal('0px 100px');
+    expect(style.scale).to.equal('0.9');
+    expect(style.filter).to.equal('blur(10px)');
+    expect(style.opacity).to.equal('0');
   });
 
-  it('preserves authored masonry offsets and easing with a visible row stagger', async () => {
+  it('preserves authored masonry offsets and easing with a visible row stagger', () => {
     section.classList.add('parallax-stagger-ltr', 'masonry-layout');
     section.style.cssText += ';display:grid;grid-template-columns:1fr 1fr';
     const first = block('explore-card', '<h3>One</h3>');
@@ -267,12 +254,11 @@ describe('C2 content animations', () => {
     first.style.setProperty('--parallax-stagger-index', '0.25');
     second.style.setProperty('--parallax-stagger-index', '0.75');
     initContentAnimations(first);
-    await settle();
-    expect(getComputedStyle(first).translate).to.equal('none');
-    expect(first.getAnimations()[0].effect.getKeyframes()[0].transform).to.include('37.5px');
-    expect(second.getAnimations()[0].effect.getKeyframes()[0].transform).to.include('112.5px');
-    expect(getComputedStyle(second).animationDelay).to.equal('0s');
-    expect(getComputedStyle(first).animationTimeline).to.equal('view()');
+    observers[0].callback([{ isIntersecting: true }]);
+    expect(getComputedStyle(first).translate).to.equal('0px 37.5px');
+    expect(getComputedStyle(second).translate).to.equal('0px 112.5px');
+    expect(getComputedStyle(second).animationDelay.split(',')[0]).to.equal('0.15s');
+    expect(getComputedStyle(first).animationTimeline).to.equal('auto');
     expect(getComputedStyle(first).animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
   });
 
@@ -304,12 +290,11 @@ describe('C2 content animations', () => {
     expect(observers).to.have.length(1);
   });
 
-  it('clears old text targets when authoring switches to a whole-block native entrance', async () => {
+  it('clears old text targets when authoring switches to a whole-block entrance', async () => {
     const el = block('rich-content parallax-line-height', '<div class="content"><h2>Title</h2><p>Body</p></div>');
     initContentAnimations(el);
     el.classList.add('parallax-opacity');
     await settle();
-    expect(el.classList.contains('c2-entrance-original')).to.be.true;
     expect(el.classList.contains('c2-entrance-item')).to.be.true;
     [...el.querySelector('.content').children].forEach((item) => {
       expect(item.classList.contains('c2-entrance-item')).to.be.false;
@@ -321,7 +306,7 @@ describe('C2 content animations', () => {
   it('does not replay text when a completed whole-block entrance changes authoring', async () => {
     const el = block('rich-content parallax-opacity', '<div class="content"><h2>Title</h2><p>Body</p></div>');
     initContentAnimations(el);
-    el.getAnimations()[0].finish();
+    observers[0].callback([{ isIntersecting: true }]);
     await settle();
     el.classList.remove('parallax-opacity');
     el.classList.add('parallax-line-height');
@@ -334,7 +319,7 @@ describe('C2 content animations', () => {
       expect(getComputedStyle(item).animationName).to.equal('none');
       expect(getComputedStyle(item).opacity).to.equal('1');
     });
-    expect(observers).to.have.length(0);
+    expect(observers).to.have.length(1);
   });
 
   it('waits for block decoration before registering an authored entrance', () => {
@@ -367,7 +352,9 @@ describe('C2 content animations', () => {
     const second = block('explore-card', '<h3>Two</h3>');
     second.dataset.blockStatus = 'loading';
     initContentAnimations(first);
+    observers[0].callback([{ isIntersecting: true }]);
     const animation = first.getAnimations()[0];
+    expect(animation).to.exist;
     second.dataset.blockStatus = 'loaded';
     initContentAnimations(second);
     expect(first.classList.contains('c2-entrance-settled')).to.be.false;
@@ -381,10 +368,8 @@ describe('C2 content animations', () => {
     const second = block('explore-card', '<h3>Two</h3>');
     const third = block('explore-card', '<h3>Three</h3>');
     initContentAnimations(first);
-    expect(observers).to.have.length(0);
     section.classList.add('two-up');
     await settle();
-    expect(observers).to.have.length(0);
     expect([first, second, third].map((item) => item.style.getPropertyValue('--c2-entrance-index'))).to.deep.equal(['0', '1', '0']);
   });
 
@@ -400,7 +385,6 @@ describe('C2 content animations', () => {
     expect(section.querySelector('.c2-entrance-item')).to.be.null;
     delete section.dataset.status;
     await settle();
-    expect(observers).to.have.length(0);
     expect([first, second, third].map((item) => item.style.getPropertyValue('--c2-entrance-index'))).to.deep.equal(['0', '1', '0']);
     expect(third.classList.contains('c2-entrance-played')).to.be.false;
   });
@@ -480,7 +464,7 @@ describe('C2 content animations', () => {
     const first = block('base-card', '<p>First</p>');
     const second = block('base-card', '<p>Loading</p>');
     second.dataset.blockStatus = 'loading';
-    initTimed(first);
+    initContentAnimations(first);
     observers[0].callback([{ isIntersecting: true }]);
     const animation = first.getAnimations()[0];
     const index = first.style.getPropertyValue('--c2-entrance-index');
@@ -511,28 +495,10 @@ describe('C2 content animations', () => {
     expect(observers.every((observer) => observer.disconnect.called)).to.be.true;
   });
 
-  it('latches native completion once, not bubbled animationend or an unfinished notification', async () => {
-    const el = block('parallax-move-up parallax-opacity', '<p>Content</p>');
-    initContentAnimations(el);
-    const animation = el.getAnimations()[0];
-    el.dispatchEvent(new AnimationEvent('animationend', { animationName: 'enable-parallax' }));
-    animation.dispatchEvent(new Event('finish'));
-    expect(el.classList.contains('c2-entrance-played')).to.be.false;
-    animation.finish();
-    await settle();
-    expect(el.classList.contains('c2-entrance-settled')).to.be.true;
-    expect(getComputedStyle(el).animationName).to.equal('none');
-    initContentAnimations(el);
-    window.dispatchEvent(new Event('resize'));
-    await settle();
-    expect(getComputedStyle(el).animationName).to.equal('none');
-    expect(observers).to.have.length(0);
-  });
-
   it('does not rescan the section for its own entrance class changes', async () => {
     section.classList.add('parallax-stagger-ltr');
     const card = block('base-card', '<p>Card</p>');
-    initTimed(card);
+    initContentAnimations(card);
     await settle();
     const scan = sinon.spy(section, 'querySelectorAll');
     try {
@@ -568,7 +534,7 @@ describe('C2 content animations', () => {
     await settle();
   });
 
-  it('settles focused native content without waiting for its CSS range to finish', () => {
+  it('settles focused whole-block content before its trigger line', () => {
     const el = block('parallax-move-up parallax-opacity', '<p>Content</p>');
     initContentAnimations(el);
     el.dispatchEvent(new Event('focusin'));
@@ -577,45 +543,40 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(el).animationName).to.equal('none');
   });
 
-  it('keeps unrelated animations on the same element running after the native entrance finishes', async () => {
+  it('leaves content with its own extra animations untouched', () => {
     const el = block('parallax-move-up test-native-with-pulse', '<style>.test-native-with-pulse { animation-name: enable-parallax, test-content-pulse; animation-duration: auto, 10s; animation-timeline: view(40% 10%), auto; animation-iteration-count: 1, infinite; } @keyframes test-content-pulse { from { color: red; } to { color: blue; } }</style><p>Content</p>');
-    const pulse = el.getAnimations().find((animation) => animation.animationName === 'test-content-pulse');
+    const animations = el.getAnimations();
     initContentAnimations(el);
-    el.getAnimations().find((animation) => animation.animationName === 'enable-parallax').finish();
-    await settle();
-    expect(getComputedStyle(el).animationName).to.equal('none, test-content-pulse');
-    expect(el.getAnimations()).to.deep.equal([pulse]);
-    expect(pulse.playState).to.equal('running');
-    expect(pulse.effect.getTiming().duration).to.equal(10000);
+    expect(el.classList.contains('c2-entrance-item')).to.be.false;
+    expect(getComputedStyle(el).animationName).to.equal('enable-parallax, test-content-pulse');
+    expect(el.getAnimations()).to.deep.equal(animations);
+    expect(observers).to.have.length(0);
   });
 
-  it('preserves native card hover opacity after disabling its finished entrance', async () => {
+  it('returns cards to their own hover opacity once the entrance finishes', async () => {
     const style = document.createElement('style');
     style.textContent = '.test-opacity-hover.active-hover { opacity: 0.87; }';
     section.append(style);
     const el = block('side-by-side parallax-stagger-ltr', '<div class="test-opacity-hover active-hover">Card</div>');
     const item = el.firstElementChild;
     initContentAnimations(el);
-    expect(getComputedStyle(item).opacity).to.equal('0.87');
-    item.getAnimations()[0].finish();
+    expect(getComputedStyle(item).opacity).to.equal('0');
+    observers[0].callback([{ isIntersecting: true }]);
     await settle();
+    item.getAnimations().forEach((animation) => animation.finish());
+    expect(item.getAnimations()).to.have.length(0);
     expect(getComputedStyle(item).opacity).to.equal('0.87');
     item.classList.remove('active-hover');
     expect(getComputedStyle(item).opacity).to.equal('1');
   });
 
-  it('waits for all native entrance effects before settling a combined animation', async () => {
+  it('replaces every scroll-linked entrance on the same element', () => {
     const el = block('parallax-move-up test-two-native-entrances', '<style>.test-two-native-entrances { animation-name: enable-parallax, enable-grid-parallax; }</style><p>Content</p>');
+    expect(el.getAnimations()).to.have.length(2);
     initContentAnimations(el);
-    const animations = el.getAnimations();
-    expect(animations).to.have.length(2);
-    animations[0].finish();
-    await settle();
-    expect(el.classList.contains('c2-entrance-settled')).to.be.false;
-    animations[1].finish();
-    await settle();
-    expect(el.classList.contains('c2-entrance-settled')).to.be.true;
-    expect(getComputedStyle(el).animationName).to.equal('none, none');
+    expect(el.classList.contains('c2-entrance-item')).to.be.true;
+    expect(el.getAnimations()).to.have.length(0);
+    expect(observers).to.have.length(1);
   });
 
   it('shows timed entrances and aside content without motion when reduced motion is preferred', async () => {

@@ -1698,6 +1698,14 @@ span.hang-opening-quote {
   }
 }
 
+/* Whole-block move/opacity keeps the stage curve and full-length fade, like FAQ. */
+.c2-entrance-group:is(.parallax-opacity, .parallax-move-up):not(.rich-content, .faq-item) {
+  --c2-entrance-easing: var(--parallax-easing);
+  --c2-entrance-fade-easing: var(--c2-entrance-easing);
+  --c2-entrance-fade-delay: 0ms;
+  --c2-entrance-fade-duration: var(--c2-entrance-duration);
+}
+
 .c2-entrance-group.parallax-opacity:not(.rich-content, .faq-item) {
   --c2-entrance-y: 0;
 }
@@ -1738,12 +1746,16 @@ span.hang-opening-quote {
   --c2-entrance-blur-animation: c2-entrance-blur;
 }
 
-.c2-entrance-item[class]:not(.c2-entrance-original),
-.c2-entrance-group[class] .c2-entrance-item[class]:not(.c2-entrance-original) {
+/* Played entrances fill only backwards: once finished, content returns to its own styles
+   (hover opacity, transforms) with no animation left holding it. */
+:is(.c2-entrance-item[class], .c2-entrance-group[class] .c2-entrance-item[class]) {
   animation: none;
-  opacity: 0;
 
-  &.c2-entrance-played {
+  &:not(.c2-entrance-played) {
+    opacity: 0;
+  }
+
+  &.c2-entrance-played:not(.c2-entrance-settled) {
     animation-name:
       c2-entrance-rise, c2-entrance-fade,
       var(--c2-entrance-scale-animation, none), var(--c2-entrance-blur-animation, none);
@@ -1754,56 +1766,34 @@ span.hang-opening-quote {
       var(--c2-entrance-easing), var(--c2-entrance-fade-easing),
       var(--c2-entrance-easing), var(--c2-entrance-easing);
     animation-delay: var(--c2-entrance-delay), var(--c2-entrance-fade-delay), 0s, 0s;
-    animation-fill-mode: both;
+    animation-fill-mode: backwards;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    &,
-    &.c2-entrance-played {
-      animation: none;
+    &:not(.c2-entrance-played) {
       opacity: 1;
+    }
+
+    &.c2-entrance-played:not(.c2-entrance-settled) {
+      animation: none;
     }
   }
 }
 
-.c2-entrance-item.c2-entrance-played.c2-entrance-settled[class] {
-  animation-name: none;
-}
-
-.c2-entrance-item.c2-entrance-played.c2-entrance-settled[class]:not(.c2-entrance-original) {
-  opacity: 1;
-}
-
-.c2-entrance-item.c2-entrance-played.c2-entrance-settled.c2-entrance-original[class] {
-  animation-name: var(--c2-entrance-remaining-animations, none);
-}
-
-.c2-entrance-group[class] .c2-entrance-item.c2-entrance-played.c2-entrance-settled[class] {
-  animation-name: none;
-}
-
-.c2-entrance-group[class] .c2-entrance-item.c2-entrance-played.c2-entrance-settled.c2-entrance-original[class] {
-  animation-name: var(--c2-entrance-remaining-animations, none);
-}
-
 @keyframes c2-entrance-rise {
   from { translate: 0 var(--c2-entrance-y); }
-  to { translate: 0 0; }
 }
 
 @keyframes c2-entrance-scale {
   from { scale: var(--parallax-scale); }
-  to { scale: 1; }
 }
 
 @keyframes c2-entrance-blur {
   from { filter: blur(var(--parallax-blur)); }
-  to { filter: blur(0); }
 }
 
 @keyframes c2-entrance-fade {
   from { opacity: var(--c2-entrance-opacity, 0); }
-  to { opacity: 1; }
 }
 
 .dark {

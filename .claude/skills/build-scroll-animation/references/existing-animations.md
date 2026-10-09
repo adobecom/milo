@@ -9,24 +9,29 @@ class achieves the desired effect, reuse it.
 
 ## One-time content entrances
 
-On C2 pages, `libs/c2/content-animations.js` retains authored and baked-in
-activation (including News, Quick Actions, and individual FAQ questions).
-Existing CSS entrances retain their original scroll timelines, start/end
-ranges, offsets and easing for their first pass. JavaScript listens to the
-native animation's forward `finish` notification and locks its final state
-once, disabling only the entrance names rather than unrelated animations
-on the same element. It does not listen to scroll, interpolate motion or
-track scroll direction.
-Quick Actions has no replacement duration or added per-tile delays.
+On C2 pages, `libs/c2/content-animations.js` replaces the scroll-linked
+entrance classes (`parallax-move-up`, `parallax-opacity`, `parallax-stagger-*`,
+including News, Quick Actions, Explore and individual FAQ questions) with a
+one-time CSS animation. An `IntersectionObserver` adds `c2-entrance-played`
+when the content crosses its trigger line; CSS owns all motion. JavaScript
+does not listen to scroll, interpolate motion or track scroll direction, and
+played content never reverses.
+
+Existing entrances keep stage's start line (90% of the viewport, measured from
+the FAQ question for FAQ items), distances, stagger offsets and
+`--parallax-easing`, with the fade running for the whole movement. Their
+finish is the shared 1050ms duration rather than a scroll position. Card rows
+trigger independently, so lower rows on mobile start when they arrive.
 
 New `parallax-line-height` text entrances and the hover list following the
-aside composition use the prototype's 1050ms CSS animation, triggered at
-80% and 90% of the viewport respectively. Where the browser or responsive
-layout does not provide an existing CSS animation, the helper uses a timed
-fallback. Existing custom animations are preserved rather than replaced.
-Pending timed items are hidden without a transform, so their
-viewport trigger is not delayed by their movement. Scale and blur only
-participate when their corresponding variants are present.
+aside composition use the prototype's 1050ms timing, curve and fade windows,
+triggered at 80% and 90% of the viewport respectively.
+Pending items are hidden without a transform, so their viewport trigger is
+not delayed by their movement. Played animations fill only backwards: once
+finished they leave no animation behind, so hover opacity and transforms
+apply normally. Scale and blur only participate when their corresponding
+variants are present. Content already running any other animation keeps its
+own motion and gets no entrance.
 
 JavaScript supplies structural `--c2-entrance-index` and
 `--c2-entrance-count` metadata, not animation values. CSS distributes any
@@ -42,7 +47,7 @@ before the media and accordion, with semantic text phases in older browsers.
 Registration waits until Milo reveals the fully loaded section.
 Resize and lazy-loaded siblings do not interrupt in-flight timed animations
 or change their index/count. Rebuilding or clearing a group aborts its old
-focus and native-completion listeners. Focus and reduced motion display
+focus listener. Focus and reduced motion display
 content immediately; unrelated child animations and hover effects remain
 intact.
 
