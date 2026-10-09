@@ -2,6 +2,7 @@ import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 import {
   initService,
   createAemFragment,
@@ -130,7 +131,7 @@ function generateCheckboxGroups(checkboxGroups) {
 // Product-pricing uses a plain-HTML filter bar + left drawer instead of the
 // SWC sidenav. Both write the active filters to the URL hash; the collection
 // re-filters via its own hashchange listener.
-const SLIDERS_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6M12 4h2M2 8h2M8 8h6M2 12h6M12 12h2" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/><circle cx="6" cy="8" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/></svg>';
+const SLIDERS_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.3998 5.41718H3.53476C3.80728 6.56132 4.83179 7.41718 6.058 7.41718C7.28422 7.41718 8.30874 6.56132 8.58124 5.41718H14.5998C14.931 5.41718 15.1998 5.14843 15.1998 4.81718C15.1998 4.48593 14.931 4.21718 14.5998 4.21718H8.58124C8.30873 3.07303 7.28422 2.21718 6.058 2.21718C4.83179 2.21718 3.80727 3.07303 3.53476 4.21718H1.3998C1.06856 4.21718 0.799805 4.48593 0.799805 4.81718C0.799805 5.14843 1.06856 5.41718 1.3998 5.41718ZM6.058 3.41718C6.82988 3.41718 7.458 4.04531 7.458 4.81718C7.458 5.58905 6.82988 6.21718 6.058 6.21718C5.28613 6.21718 4.658 5.58905 4.658 4.81718C4.658 4.04531 5.28613 3.41718 6.058 3.41718Z"/><path d="M14.5998 10.6172H12.5813C12.3087 9.47304 11.2842 8.61719 10.058 8.61719C8.8318 8.61719 7.80728 9.47304 7.53477 10.6172H1.3998C1.06856 10.6172 0.799805 10.8859 0.799805 11.2172C0.799805 11.5484 1.06856 11.8172 1.3998 11.8172H7.53476C7.80728 12.9613 8.83179 13.8172 10.058 13.8172C11.2842 13.8172 12.3087 12.9613 12.5812 11.8172H14.5998C14.931 11.8172 15.1998 11.5484 15.1998 11.2172C15.1998 10.8859 14.9311 10.6172 14.5998 10.6172ZM10.058 12.6172C9.28613 12.6172 8.658 11.9891 8.658 11.2172C8.658 10.4453 9.28613 9.81719 10.058 9.81719C10.8299 9.81719 11.458 10.4453 11.458 11.2172C11.458 11.9891 10.8299 12.6172 10.058 12.6172Z"/></svg>';
 const CHEVRON_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
 const CLOSE_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg>';
 const SEARCH_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.5"/></svg>';
@@ -154,6 +155,13 @@ function writeHash(params) {
   window.location.hash = params.toString();
 }
 
+// A shopper's change goes back to page 1. Load-time params keep a deep-linked page.
+const firstPage = (params) => {
+  const next = new URLSearchParams(params);
+  next.delete('page');
+  return next;
+};
+
 // Every selected pill counts, including the default category, so Featured +
 // Individuals reads "All Filters (2)". 'all' means unfiltered.
 export function countApplied(params, groups = []) {
@@ -164,11 +172,17 @@ export function countApplied(params, groups = []) {
 }
 
 // The one shape the bar and drawer both render.
-export function productPricingFilterGroups(data) {
+// `default-<group>` in the section metadata names the option a group opens on.
+export function productPricingFilterGroups(data, meta = {}) {
   const { hierarchy = [], sidenavSettings = {}, placeholders = {} } = data;
   const groups = [];
+  const withDefault = (group) => {
+    const named = meta[`default-${group.deeplink}`]?.text;
+    const match = group.options.find((option) => option.value.toLowerCase() === named);
+    return match ? { ...group, defaultValue: match.value } : group;
+  };
   if (hierarchy.length) {
-    groups.push({
+    groups.push(withDefault({
       title: placeholders.filtersCategory,
       deeplink: 'filter',
       optional: false,
@@ -178,17 +192,17 @@ export function productPricingFilterGroups(data) {
         value: node.queryLabel || node.label.toLowerCase(),
         label: node.label,
       })),
-    });
+    }));
   }
   (sidenavSettings.tagFilters || [])
     .filter((group) => group.checkboxes?.length)
-    .forEach((group) => groups.push({
+    .forEach((group) => groups.push(withDefault({
       title: group.title || group.label || group.deeplink,
       deeplink: group.deeplink,
       // Every group is single-select. Only types can be cleared to none.
       optional: group.deeplink === 'types',
       options: group.checkboxes.map((cb) => ({ value: cb.name, label: cb.label })),
-    }));
+    })));
   return groups;
 }
 
@@ -207,18 +221,15 @@ function buildPill({ value, label }, group, scope) {
 }
 
 // Selecting the active pill of an optional group clears it.
-export function toggleFilterHash(deeplink, value, optional) {
-  const params = hashParams();
-  if (optional && params.get(deeplink) === value) params.delete(deeplink);
-  else params.set(deeplink, value);
-  writeHash(params);
+export function toggleParams(params, deeplink, value, optional) {
+  const next = firstPage(params);
+  if (optional && params.get(deeplink) === value) next.delete(deeplink);
+  else next.set(deeplink, value);
+  return next;
 }
 
-function setHashParam(key, value) {
-  const params = hashParams();
-  if (value) params.set(key, value);
-  else params.delete(key);
-  writeHash(params);
+export function toggleFilterHash(deeplink, value, optional) {
+  writeHash(toggleParams(hashParams(), deeplink, value, optional));
 }
 
 // MAS's own collection header never renders without an sp-sidenav, so the bar
@@ -234,14 +245,17 @@ export function emptyResultsMarkup(placeholders = {}, values = {}) {
 }
 
 // resultCount is undefined before the first render, 0 for an empty result set.
-export function filterBarLabels(params, groups, placeholders, resultCount) {
-  const applied = countApplied(params, groups);
+export function filterBarLabels(params, groups, placeholders, resultCount, categoryOff = false) {
+  const applied = countApplied(params, categoryOff ? groups.filter((g) => !g.category) : groups);
   const category = groups.find((group) => group.category);
   const searchTerm = params.get('search') || '';
+  const results = resultCount == null ? '' : `${resultCount} ${placeholders.filtersResults}`;
   return {
     applied: `${applied} ${placeholders.filtersApplied}`,
     trigger: `${placeholders.allFilters} (${applied})`,
-    results: resultCount == null ? '' : `${resultCount} ${placeholders.filtersResults}`,
+    results,
+    // Zero results is announced by the empty state.
+    announce: resultCount ? results : '',
     empty: resultCount === 0 ? emptyResultsMarkup(placeholders, {
       resultCount,
       searchTerm,
@@ -250,17 +264,144 @@ export function filterBarLabels(params, groups, placeholders, resultCount) {
   };
 }
 
-export function defaultParams(groups) {
-  return groups
-    .filter((group) => !group.optional && group.options.length)
-    .map((group) => [group.deeplink, group.options[0].value]);
+// Tag pills that match no card, given the other groups' selections. Categories
+// are never unavailable.
+export function unavailablePills(cards, groups, params) {
+  if (!cards.length) return new Set();
+  const has = (card, { category, deeplink }, value) => (category
+    ? value in card.filters
+    : card.tags.includes(`${deeplink}:${value}`));
+  const unavailable = new Set();
+  groups.filter((group) => !group.category).forEach((group) => {
+    const others = groups.filter((g) => g !== group && params.get(g.deeplink));
+    group.options.forEach(({ value }) => {
+      const matches = cards.some((card) => has(card, group, value)
+        && others.every((other) => has(card, other, params.get(other.deeplink))));
+      if (!matches) unavailable.add(`${group.deeplink}:${value}`);
+    });
+  });
+  return unavailable;
 }
 
+const loadedCards = (collection) => [...collection.querySelectorAll(':scope > merch-card')]
+  .filter((card) => !card.failed)
+  .map((card) => ({
+    filters: card.filters ?? {},
+    tags: (card.getAttribute('filter-tags') || '').split(','),
+    edu: card.getAttribute('size') === 'edu',
+    // MAS hides filtered-out cards with an inline display:none.
+    visible: card.style.display !== 'none',
+  }));
+
+// The EDU card is the only card showing.
+export const eduOnly = (cards) => {
+  const shown = cards.filter((card) => card.visible);
+  return shown.length > 0 && shown.every((card) => card.edu);
+};
+
+const withoutGroups = (params, groups) => {
+  const rest = new URLSearchParams(params);
+  groups.forEach(({ deeplink }) => rest.delete(deeplink));
+  return rest;
+};
+
+// A named default wins. Otherwise only the category opens on its first option.
+const defaultValue = (group) => group.defaultValue
+  ?? (group.category ? group.options[0]?.value : undefined);
+
+// Required tag groups (pricing) follow the category.
+const followsCategory = (group) => !group.category && !group.optional;
+
+// Picking a category clears the groups that follow it.
+export function selectCategory(params, groups, value) {
+  const next = firstPage(params);
+  groups.filter(followsCategory).forEach(({ deeplink }) => next.delete(deeplink));
+  next.set(groups.find((group) => group.category).deeplink, value);
+  return next;
+}
+
+// For each following group with no selection, its first option that a card of
+// the category carries. A search selects nothing.
+export function derivedSelections(cards, groups, params) {
+  const category = groups.find((group) => group.category);
+  const selected = params.get(category?.deeplink);
+  if (!selected || params.has('search')) return [];
+  const inCategory = cards.filter((card) => selected in card.filters);
+  return groups.filter(followsCategory)
+    .filter(({ deeplink }) => !params.get(deeplink))
+    .flatMap(({ deeplink, options }) => {
+      const first = options.find(({ value }) => inCategory
+        .some((card) => card.tags.includes(`${deeplink}:${value}`)));
+      return first ? [[deeplink, first.value]] : [];
+    });
+}
+
+export function defaultParams(groups) {
+  return groups
+    .map((group) => [group.deeplink, defaultValue(group)])
+    .filter(([, value]) => value);
+}
+
+// `category-off-for` lists group:tag pairs. Category is off while one is selected.
+export const categoryOffTags = (meta) => (meta['category-off-for']?.text ?? '')
+  .split(',').map((tag) => tag.trim()).filter(Boolean);
+
+export const isCategoryOff = (params, tags) => tags.some((tag) => {
+  const [group, value] = tag.split(':');
+  return params.get(group) === value;
+});
+
 export function resetParams(params, groups) {
-  const reset = new URLSearchParams(params);
-  groups.forEach(({ deeplink }) => reset.delete(deeplink));
+  const reset = withoutGroups(firstPage(params), groups);
+  reset.delete('search');
   defaultParams(groups).forEach(([key, value]) => reset.set(key, value));
   return reset;
+}
+
+// Search runs over the whole catalog: category All, no other group.
+export function scopeToSearch(params, groups) {
+  const scoped = withoutGroups(params, groups);
+  const category = groups.find((group) => group.category);
+  if (category) scoped.set(category.deeplink, 'all');
+  return scoped;
+}
+
+// The selections to restore when the search is cleared.
+export function groupSelections(params, groups) {
+  return groups
+    .filter(({ deeplink }) => params.get(deeplink))
+    .map(({ deeplink }) => [deeplink, params.get(deeplink)]);
+}
+
+// `saved` is undefined for a deep-linked search: fall back to the defaults.
+export function leaveSearch(params, groups, saved = defaultParams(groups)) {
+  const left = withoutGroups(params, groups);
+  left.delete('search');
+  saved.forEach(([key, value]) => left.set(key, value));
+  return left;
+}
+
+// The URL after a search edit, and the selections to restore on clear.
+// `params` is undefined when nothing changes.
+export function searchTransition(params, term, saved, groups) {
+  const searching = params.has('search');
+  if (!term) {
+    return searching
+      ? { params: leaveSearch(firstPage(params), groups, saved), saved: undefined }
+      : { params: undefined, saved };
+  }
+  // Only the first keystroke scopes, so pills picked during a search stick.
+  const next = searching ? firstPage(params) : scopeToSearch(firstPage(params), groups);
+  next.set('search', term);
+  return { params: next, saved: searching ? saved : groupSelections(params, groups) };
+}
+
+// What a page load adds to the hash. A deep-linked search gets search scope, not defaults.
+export function seedParams(params, groups) {
+  const seeds = params.has('search')
+    ? [...scopeToSearch(new URLSearchParams(), groups)]
+    : defaultParams(groups);
+  return seeds.filter(([key]) => !params.get(key));
 }
 
 export function syncPills(params, root) {
@@ -278,10 +419,12 @@ export function barGroups(groups) {
 // desktop gets a plain heading. Optional groups get role=group because their
 // pills are checkboxes, not radios.
 function buildGroupCard(group) {
+  const bodyId = `product-pricing-${group.deeplink}-pills`;
   const toggle = createTag('button', {
     class: 'product-pricing-group-toggle',
     type: 'button',
     'aria-expanded': 'true',
+    'aria-controls': bodyId,
     'aria-label': group.title,
   }, svgIcon(CHEVRON_ICON));
   toggle.addEventListener('click', () => {
@@ -289,6 +432,7 @@ function buildGroupCard(group) {
   });
   const header = createTag('h3', { class: 'product-pricing-group-header' }, [createTag('span', {}, group.title), toggle]);
   const bodyAttrs = {
+    id: bodyId,
     class: 'product-pricing-group-pills',
     role: group.optional ? 'group' : 'radiogroup',
     'aria-label': group.title,
@@ -315,7 +459,8 @@ function buildProductPricingDrawer(collection, groups) {
   // Inner wrapper so backdrop clicks target the dialog while content clicks don't.
   const inner = createTag('div', { class: 'product-pricing-drawer-inner' }, [header, subRow, groupsEl]);
   // <dialog> gives focus trap, Esc-to-close, inert background, and focus restore.
-  const root = createTag('dialog', { class: 'product-pricing-drawer', 'aria-label': placeholders.allFilters }, inner);
+  // data-lenis-prevent: Lenis would turn wheel and touch here into page scrolls.
+  const root = createTag('dialog', { class: 'product-pricing-drawer', 'aria-label': placeholders.allFilters, 'data-lenis-prevent': '' }, inner);
   return { root, closeBtn, reset, applied, results };
 }
 
@@ -326,10 +471,33 @@ export function pageStep(rowWidth, fadeWidth) {
   return Math.max(rowWidth - 2 * fadeWidth, rowWidth / 2);
 }
 
-// Which edges have content past them. 1px slack absorbs subpixel widths, so a
-// row that fits never shows an arrow.
+// Mirrors the CSS. The search is one MAS card wide: 3 columns (4 from 1440), 261px to 474px.
+const PILL_GAP = 8;
+const DESKTOP_MIN = 1280;
+const XL_MIN = 1440;
+
+export function searchWidth(viewport, barWidth) {
+  const cols = viewport >= XL_MIN ? 4 : 3;
+  return Math.min(474, Math.max(261, (barWidth - (cols - 1) * PILL_GAP) / cols));
+}
+
+// Uses the pills' own widths, so stacking cannot un-stack itself.
+export function isStacked({ viewport, barWidth, pillWidths }) {
+  const pills = pillWidths.reduce((sum, width) => sum + width + PILL_GAP, -PILL_GAP);
+  return viewport < DESKTOP_MIN
+    || pills + PILL_GAP + searchWidth(viewport, barWidth) > barWidth;
+}
+
+// Which edges have content past them. 1px slack absorbs subpixel widths.
+// scrollLeft is negative in RTL, so measure from the start.
 export function scrollEdges({ scrollLeft, scrollWidth, clientWidth }) {
-  return { prev: scrollLeft > 1, next: scrollLeft + clientWidth < scrollWidth - 1 };
+  const fromStart = Math.abs(scrollLeft);
+  return { prev: fromStart > 1, next: fromStart + clientWidth < scrollWidth - 1 };
+}
+
+// `next` scrolls toward the end of the row, which is left in RTL.
+export function scrollOffset(dir, step, rtl) {
+  return (dir === 'next') === rtl ? -step : step;
 }
 
 function buildProductPricingBar(collection, groups) {
@@ -355,7 +523,6 @@ function buildProductPricingBar(collection, groups) {
   // Over the edge fades, shown only while there is content past that edge, so
   // a tap there pages the row instead of hitting the half-hidden pill under it.
   // Pointer-only: keyboard focus already scrolls each pill into view.
-  // ponytail: LTR only, flip the sign and chevrons if an RTL locale ships this.
   const scrollButton = (dir) => {
     const button = createTag('button', {
       class: `product-pricing-filter-scroll product-pricing-filter-scroll-${dir}`,
@@ -365,28 +532,34 @@ function buildProductPricingBar(collection, groups) {
     });
     button.addEventListener('click', () => {
       const step = pageStep(pills.clientWidth, button.offsetWidth);
-      pills.scrollBy({ left: dir === 'next' ? step : -step });
+      const rtl = getComputedStyle(pills).direction === 'rtl';
+      pills.scrollBy({ left: scrollOffset(dir, step, rtl) });
     });
     return button;
   };
   const prev = scrollButton('prev');
   const next = scrollButton('next');
-  const updateEdges = () => {
+  const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
+
+  const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText, 'aria-label': placeholders.searchText });
+  const search = createTag('div', { class: 'product-pricing-filter-search', role: 'search' }, [searchInput, svgIcon(SEARCH_ICON)]);
+
+  const root = createTag('div', { class: 'product-pricing-filter-bar' }, [row, search]);
+  const update = () => {
     const edges = scrollEdges(pills);
     prev.toggleAttribute('data-active', edges.prev);
     next.toggleAttribute('data-active', edges.next);
+    root.toggleAttribute('data-stacked', isStacked({
+      viewport: window.innerWidth,
+      barWidth: root.clientWidth,
+      pillWidths: [...pills.children].map((el) => el.offsetWidth).filter(Boolean),
+    }));
   };
-  pills.addEventListener('scroll', updateEdges, { passive: true });
-  // The row resizes with the viewport; the groups resize when the active
-  // category pill changes. Either can start or end the overflow.
-  const resize = new ResizeObserver(updateEdges);
-  [pills, ...pills.children].forEach((el) => resize.observe(el));
-  const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
-
-  const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText });
-  const search = createTag('div', { class: 'product-pricing-filter-search' }, [searchInput, svgIcon(SEARCH_ICON)]);
-
-  const root = createTag('div', { class: 'product-pricing-filter-bar' }, [row, search]);
+  pills.addEventListener('scroll', update, { passive: true });
+  // The viewport or the active category pill can start or end the overflow.
+  // Stacking resizes the bar, so update on the next frame.
+  const resize = new ResizeObserver(() => requestAnimationFrame(update));
+  [root, pills, ...pills.children].forEach((el) => resize.observe(el));
   return { root, trigger, triggerLabel, searchInput };
 }
 
@@ -398,7 +571,11 @@ export function mountProductPricingFilter(collection, container) {
   const { base } = getConfig();
   loadStyle(`${base}/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css`);
 
-  const groups = productPricingFilterGroups(collection.data);
+  const sectionMetadata = container.closest('.section')?.querySelector('.section-metadata');
+  const meta = sectionMetadata ? getMetadata(sectionMetadata) : {};
+  const groups = productPricingFilterGroups(collection.data, meta);
+  const offTags = categoryOffTags(meta);
+  const categoryDeeplink = groups.find((group) => group.category)?.deeplink;
   const drawer = buildProductPricingDrawer(collection, groups);
   const bar = buildProductPricingBar(collection, groups);
   const { trigger } = bar;
@@ -415,45 +592,87 @@ export function mountProductPricingFilter(collection, container) {
   const { searchInput } = bar;
   // Replaces the grid when a filter set matches nothing.
   const emptyEl = createTag('div', { class: 'product-pricing-results', role: 'status', 'aria-live': 'polite' });
+  // Screen readers get the count, which the empty state does not cover.
+  const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
   const renderLabels = (params) => {
-    const labels = filterBarLabels(params, groups, placeholders, resultCount);
+    const off = isCategoryOff(params, offTags);
+    const labels = filterBarLabels(params, groups, placeholders, resultCount, off);
     drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
     drawer.results.textContent = labels.results;
     emptyEl.innerHTML = labels.empty;
+    // Same text again would be re-announced.
+    if (countEl.textContent !== labels.announce) countEl.textContent = labels.announce;
+  };
+  // The selected pill stays live. Search is ignored.
+  const renderAvailability = (params) => {
+    const unavailable = unavailablePills(loadedCards(collection), groups, params);
+    const categoryOff = isCategoryOff(params, offTags);
+    surfaces.forEach((root) => root.querySelectorAll('.product-pricing-pill input').forEach((input) => {
+      const offByCategory = categoryOff && input.dataset.deeplink === categoryDeeplink;
+      input.disabled = offByCategory
+        || (unavailable.has(`${input.dataset.deeplink}:${input.value}`) && !input.checked);
+    }));
+  };
+  const render = (params) => {
+    renderLabels(params);
+    renderAvailability(params);
+  };
+  // Fills the following groups once cards load. True when it wrote the hash.
+  const settle = () => {
+    const missing = derivedSelections(loadedCards(collection), groups, hashParams());
+    if (!missing.length) return false;
+    const params = hashParams();
+    missing.forEach(([key, value]) => params.set(key, value));
+    writeHash(params);
+    return true;
   };
   const sync = () => {
+    if (settle()) return;
     const params = hashParams();
     surfaces.forEach((root) => syncPills(params, root));
-    renderLabels(params);
+    render(params);
     const term = params.get('search') || '';
     if (document.activeElement !== searchInput) searchInput.value = term;
   };
-  searchInput.addEventListener('input', debounce(() => setHashParam('search', searchInput.value.trim())));
+  // Selections to restore on clear. Undefined for a deep-linked search.
+  let beforeSearch;
+  searchInput.addEventListener('input', debounce(() => {
+    const next = searchTransition(hashParams(), searchInput.value.trim(), beforeSearch, groups);
+    beforeSearch = next.saved;
+    if (next.params) writeHash(next.params);
+  }));
 
   surfaces.forEach((root) => root.addEventListener('change', (e) => {
     const input = e.target.closest('.product-pricing-pill input');
     if (!input) return;
-    toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.optional === 'true');
+    if (input.dataset.deeplink === categoryDeeplink) {
+      writeHash(selectCategory(hashParams(), groups, input.value));
+    } else {
+      toggleFilterHash(input.dataset.deeplink, input.value, input.dataset.optional === 'true');
+    }
   }));
   drawer.reset.addEventListener('click', () => {
+    beforeSearch = undefined;
     writeHash(resetParams(hashParams(), groups));
   });
   collection.addEventListener(COLLECTION_LITERALS_CHANGED, (e) => {
     resultCount = e.detail?.resultCount;
-    renderLabels(hashParams());
+    settle();
+    render(hashParams());
+    collection.toggleAttribute('data-edu-only', eduOnly(loadedCards(collection)));
   });
   window.addEventListener('hashchange', sync);
   const initial = hashParams();
-  const missing = defaultParams(groups).filter(([key]) => !initial.get(key));
+  const missing = seedParams(initial, groups);
   if (missing.length) {
     missing.forEach(([key, value]) => initial.set(key, value));
     writeHash(initial);
   }
   sync();
 
-  container.prepend(bar.root, emptyEl);
+  container.prepend(bar.root, emptyEl, countEl);
   container.append(drawer.root);
 }
 
@@ -639,6 +858,17 @@ function paintStPriceRed(collection, locale) {
   }
 }
 
+// MAS takes the variant from the first card, so a `pro` (EDU) card first makes the
+// collection `plans`. Remove once MAS picks the variant from most cards.
+export function fixProductPricingVariant(collection) {
+  const cards = [...collection.querySelectorAll(':scope > merch-card')];
+  if (collection.variant === 'product-pricing'
+    || !cards.some((card) => card.variant === 'product-pricing')) return;
+  collection.classList.remove(collection.variant, 'four-merch-cards');
+  collection.classList.add('product-pricing');
+  collection.variant = 'product-pricing';
+}
+
 export async function createCollection(el, options) {
   const aemFragment = createAemFragment(options);
   // Get MEP overrides if available
@@ -682,6 +912,7 @@ export async function createCollection(el, options) {
   if (!success && isMasErrorEnv() && !collection.querySelector('.mas-frag-error')) {
     collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
   }
+  fixProductPricingVariant(collection);
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
