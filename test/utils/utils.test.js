@@ -737,6 +737,23 @@ describe('Utils', () => {
       expect(link.href).to.equal(`${window.location.href}#test`);
     });
 
+    it('Awaits image-video-link decoration so the play-button modal link exists before blocks load (MWPW-210257)', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p class="image-link-play"><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | :play:" class="image-link"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      // The modal image link (poster + play button) must be fully built synchronously
+      // after the await resolves - no setTimeout - otherwise a block that loads next
+      // (e.g. how-to) races against the fire-and-forget import and drops the video.
+      expect(container.querySelector('.modal-img-link')).to.exist;
+    });
+
+    it('Does not reject decorateLinksAsync when image-video-link fails (malformed icon)', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | badicon"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      expect(container.querySelector('a.image-link')).to.exist;
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
