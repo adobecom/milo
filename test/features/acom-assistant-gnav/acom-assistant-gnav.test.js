@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import loadDelayed, { loadAcomAssistant, loadJarvisChat } from '../../../libs/scripts/delayed.js';
-import { decorateNavWithAssistant } from '../../../libs/features/acom-assistant-gnav.js';
+import { decorateNavWithAssistant, getAuthoredGnavCards } from '../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, getMetadata, setConfig } from '../../../libs/utils/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
@@ -60,6 +60,13 @@ describe('Delayed Assistant navigation startup', () => {
     window.AdobeMessagingExperienceClient = originalClient;
     window.adobePrivacy = originalPrivacy;
     setConfig(originalConfig);
+  });
+
+  it('keeps authored GNav prompts for chat-link initialization', () => {
+    document.body.innerHTML = '<nav><div class="feds-bc-wrapper"></div></nav><div class="cards"><div>Prompt</div></div>';
+    const cards = document.querySelector('.cards');
+    decorateNavWithAssistant(cards, document.querySelector('nav'));
+    expect(getAuthoredGnavCards()).to.equal(cards);
   });
 
   it('does not load Assistant when its metadata is off', async () => {
@@ -125,7 +132,10 @@ describe('Delayed Assistant navigation startup', () => {
     const config = client.initialize.firstCall.args[0];
     expect(config.appid).to.equal('delayed-assistant');
     expect(config.appver).to.equal('2.0');
-    expect(config.context.prompts).to.deep.equal([{ label: 'Help me choose an app' }]);
+    expect(config.context.prompts).to.deep.equal([{
+      label: 'Help me choose an app',
+      action: { click_analytics: 'BC-suggested_prompt_clicked|gnav|Help me choose an app' },
+    }]);
     await loadAcomAssistant(getMetadata);
     expect(client.initialize.calledOnce).to.be.true;
   });

@@ -12,7 +12,7 @@ import {
   loadIms,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
-import { decorateAcomAssistantGnav } from '../../../features/acom-assistant-gnav.js';
+import { decorateAcomAssistantGnav, decorateAcomAssistantGnavBlock } from '../../../features/acom-assistant-gnav.js';
 
 export { decorateAcomAssistantGnav };
 
@@ -85,7 +85,8 @@ async function decorateAppPrompt(el) {
 }
 
 // Mirrors c1 gnav's decorateBrandConciergeGlobal
-async function loadBrandConcierge(block) {
+export async function loadBrandConcierge(block) {
+  if (decorateAcomAssistantGnavBlock(block)) return;
   const { base } = getConfig();
   const [{ default: initBrandConcierge }] = await Promise.all([
     import('../brand-concierge-global/brand-concierge-global.js'),

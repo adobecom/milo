@@ -26,16 +26,18 @@ export async function loadAcomAssistantGnav() {
   await ensureAcomAssistant(authoredCards);
 }
 
+export const getAuthoredGnavCards = () => authoredCards;
+
 export function decorateAcomAssistantGnav(el, cards) {
   if (getMetadata('acom-assistant') !== 'on') return null;
   const wrapper = el.querySelector('.feds-bc-wrapper');
   if (!wrapper) return null;
+  if (cards) authoredCards = cards;
   let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
   if (!mount) {
     mount = document.createElement('div');
     mount.id = 'acomAssistant-gnav-mount';
     wrapper.append(mount);
-    authoredCards = cards;
     if (delayedStarted) loadAcomAssistantGnav().catch(logInitializationError);
   }
   return mount;
@@ -45,4 +47,25 @@ export function decorateNavWithAssistant(cards, topNav) {
   if (!decorateAcomAssistantGnav(topNav, cards)) return;
   window.milo ||= {};
   window.milo.brandConcierge = { brandConciergeGlobal: true };
+}
+
+/** Federal can supply authored prompts before its navigation has been mounted. */
+export function decorateAcomAssistantGnavBlock(block) {
+  if (getMetadata('acom-assistant') !== 'on') return false;
+  const [cards] = block.children;
+  if (cards) authoredCards = cards;
+  block.replaceChildren();
+
+  const topNav = document.querySelector('header.global-navigation nav');
+  if (topNav) {
+    decorateNavWithAssistant(cards, topNav);
+  } else {
+    const navCheck = setInterval(() => {
+      const nav = document.querySelector('header.global-navigation nav');
+      if (!nav) return;
+      clearInterval(navCheck);
+      decorateNavWithAssistant(cards, nav);
+    }, 100);
+  }
+  return true;
 }
