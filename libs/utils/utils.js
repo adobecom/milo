@@ -387,10 +387,16 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export const AUP_SELECT_MODES = Object.freeze({ ON: 'on', UCV3_IN_IFRAME: 'ucv3_in_iframe' });
+
+export function getAupSelectMode() {
+  const value = new URLSearchParams(window.location.search).get('aup-select')
+    ?? getMetadata('aup-select');
+  return Object.values(AUP_SELECT_MODES).includes(value) ? value : null;
+}
+
 export function isAupEnabled(useUniversalNav = false) {
-  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
-    || (new URLSearchParams(window.location.search).get('aup-select')
-      ?? getMetadata('aup-select')) === 'on';
+  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectMode());
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
