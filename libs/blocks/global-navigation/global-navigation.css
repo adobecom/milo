@@ -57,6 +57,23 @@ header.global-navigation {
   justify-content: space-between;
 }
 
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
+  display: flex;
+  align-items: center;
+  width: auto;
+  margin-inline-start: auto;
+  padding: 0 8px;
+}
+
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper #acomAssistant-gnav-mount {
+  display: flex;
+  height: 40px;
+  justify-content: flex-end;
+  max-width: 340px;
+}
+
 .feds-nav-wrapper {
   position: absolute;
   top: 100%;

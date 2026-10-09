@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -25,19 +25,30 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
+let useAcomAssistant = false;
+let acomAssistantModulePromise;
+
+async function routeAcomAssistantInput(options) {
+  acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
+  const { acomAssistantRouteInput } = await acomAssistantModulePromise;
+  return acomAssistantRouteInput(options);
+}
 
 function checkGlobal() {
   const params = new URLSearchParams(window.location.search);
   if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
     return window.milo.brandConcierge.brandConciergeGlobal;
   }
-  if (params.get('side-overlay') === 'true') {
-    return true;
-  }
-  return false;
+  return params.get('side-overlay') === 'true';
 }
 
-function routeInput(text) {
+function routeInput({ text, cards, source = 'input' }) {
+  if (useAcomAssistant) {
+    routeAcomAssistantInput({ text, cards, source }).catch((error) => {
+      window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+    });
+    return;
+  }
   if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
@@ -50,7 +61,7 @@ function routeInput(text) {
   }
 }
 
-function handleInput(text, input) {
+function handleInput(text, input, cards) {
   const textWrapper = input.querySelector('.bc-textarea-grow-wrap');
   const textArea = input.querySelector('textarea');
   const submitButton = input.querySelector('.input-field-button');
@@ -59,37 +70,40 @@ function handleInput(text, input) {
   submitButton.disabled = true;
   textArea.blur();
 
-  routeInput(text);
+  routeInput({ text, cards });
 }
 
-function handleSuggestedPrompt(text, cards, event) {
+function handleSuggestedPrompt(text, event, cards) {
   event.target.blur();
-  routeInput(text);
+  routeInput({ text, cards, source: 'prompt' });
 }
 
-function handleFloatingButton() {
-  routeInput(null);
+function handleFloatingButton(cards) {
+  routeInput({ cards });
 }
 
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   sideOverlayTop();
   initAnalytics('BC-Inline-shown');
@@ -108,6 +122,10 @@ export default async function init(el) {
     }
   }
   const [background, header, cards, input, legal] = rows;
+  // Bind handlers to this block's cards so multiple BC blocks don't share prompts.
+  const onInput = (text, inputEl) => handleInput(text, inputEl, cards);
+  const onPrompt = (text, cardSection, event) => handleSuggestedPrompt(text, event, cards);
+  const onFloatingButton = () => handleFloatingButton(cards);
 
   setAuthoredContent(header, cards, input);
 
@@ -158,18 +176,18 @@ export default async function init(el) {
   }
 
   if (variants.isFloatingButton || variants.isFloatingButtonOnly) {
-    decorateFloatingButton(el, input, handleFloatingButton, variants);
+    decorateFloatingButton(el, input, onFloatingButton, variants);
   }
 
   if (variants.isDefault) {
     decorateBackground(el, background);
     decorateHeader(el, header);
     if (variants.inputFirst) {
-      decorateInput(el, input, { handle: handleInput });
-      decorateCards(el, cards, { handle: handleSuggestedPrompt });
+      decorateInput(el, input, { handle: onInput });
+      decorateCards(el, cards, { handle: onPrompt });
     } else {
-      decorateCards(el, cards, { handle: handleSuggestedPrompt });
-      decorateInput(el, input, { handle: handleInput });
+      decorateCards(el, cards, { handle: onPrompt });
+      decorateInput(el, input, { handle: onInput });
     }
     decorateLegal(el, legal);
   }
@@ -177,16 +195,16 @@ export default async function init(el) {
   if (variants.isHero) {
     decorateBackground(el, background);
     decorateHeader(el, header);
-    decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateInput(el, input, { handle: onInput });
+    decorateCards(el, cards, { handle: onPrompt });
     decorateLegal(el, legal);
   }
 
   if (variants.isMarquee) {
     decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
-    decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateInput(el, input, { handle: onInput });
+    decorateCards(el, cards, { handle: onPrompt });
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
@@ -200,7 +218,7 @@ export default async function init(el) {
   }
 
   if (variants.isFloatingInput || variants.isFloatingInputOnly) {
-    const floatingInputEvents = { inputHandle: handleInput, cardHandle: handleSuggestedPrompt };
+    const floatingInputEvents = { inputHandle: onInput, cardHandle: onPrompt };
     decorateFloatingInput(el, cards, input, floatingInputEvents, variants);
   }
 
@@ -210,6 +228,8 @@ export default async function init(el) {
   if (gradientRow) el.removeChild(gradientRow);
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
+  if (useAcomAssistant) return;
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {

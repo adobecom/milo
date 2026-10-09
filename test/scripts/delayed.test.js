@@ -162,3 +162,64 @@ describe('loadPreflightResults', () => {
     expect(settled).to.equal(true);
   });
 });
+
+describe('loadJarvisChat Assistant routing', () => {
+  let originalConfig;
+  let originalClient;
+  let listenerSpy;
+  let loadScript;
+  let loadStyle;
+  let metadata;
+
+  beforeEach(() => {
+    originalConfig = getConfig();
+    originalClient = window.AdobeMessagingExperienceClient;
+    window.AdobeMessagingExperienceClient = { initialize: sinon.spy() };
+    setConfig({ env: { name: 'stage' }, locale: { ietf: 'en-US' }, jarvis: { id: 'jarvis-app', version: '2.0', onDemand: false } });
+    listenerSpy = sinon.spy(document, 'addEventListener');
+    loadScript = sinon.stub().resolves();
+    loadStyle = sinon.stub().resolves();
+    metadata = { 'jarvis-chat': 'on', 'acom-assistant': 'on' };
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    listenerSpy.getCalls().forEach(({ args }) => document.removeEventListener(...args));
+    listenerSpy.restore();
+    window.AdobeMessagingExperienceClient = originalClient;
+    setConfig(originalConfig);
+    document.body.innerHTML = '';
+  });
+
+  const run = () => loadJarvisChat(getConfig, (name) => metadata[name], loadScript, loadStyle);
+
+  it('keeps existing Jarvis startup when Assistant is on but no BC placement exists', async () => {
+    await run();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    expect(loadScript.calledOnce).to.be.true;
+    expect(loadScript.firstCall.args[0]).to.include('stage-client.messaging.adobe.com');
+  });
+
+  it('uses Assistant chat links when the GNav BC placement is enabled', async () => {
+    metadata['gnav-brand-concierge'] = 'on';
+    await run();
+    expect(loadScript.called).to.be.false;
+    expect(listenerSpy.withArgs('click').calledOnce).to.be.true;
+  });
+
+  it('uses Assistant chat links when a standalone BC block exists', async () => {
+    document.body.innerHTML = '<div class="brand-concierge"></div>';
+    await run();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    expect(loadScript.called).to.be.false;
+    expect(window.AdobeMessagingExperienceClient.initialize.called).to.be.false;
+  });
+
+  it('keeps existing Jarvis startup when Assistant metadata is off', async () => {
+    metadata['acom-assistant'] = 'off';
+    document.body.innerHTML = '<div class="brand-concierge"></div>';
+    await run();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    expect(loadScript.calledOnce).to.be.true;
+  });
+});

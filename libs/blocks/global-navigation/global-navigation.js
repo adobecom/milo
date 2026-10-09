@@ -592,6 +592,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
+    this.useAcomAssistant = getMetadata('acom-assistant') === 'on';
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
@@ -634,6 +635,7 @@ class Gnav {
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.revealGnav,
+      this.decorateAcomAssistantGnav,
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
@@ -1774,9 +1776,17 @@ class Gnav {
   });
 
   decorateBrandConciergeGlobal = async () => {
+    if (this.useAcomAssistant) return;
     const rawBlock = this.content.querySelector('.brand-concierge-global');
     if (!rawBlock) return;
     await loadBlock(rawBlock);
+  };
+
+  decorateAcomAssistantGnav = async () => {
+    if (!this.useAcomAssistant || !this.elements.topnav.querySelector('.feds-bc-wrapper')) return;
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
+    const cards = this.content.querySelector('.brand-concierge-global > div');
+    decorateNavWithAssistant(cards, this.elements.topnav);
   };
 
   decorateMainNav = async () => {

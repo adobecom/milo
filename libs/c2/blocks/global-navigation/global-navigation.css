@@ -4,6 +4,27 @@ header.global-navigation.c2-gnav-c1-host {
   background-color: var(--feds-background-nav, #fff);
 }
 
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+  padding: 0 8px;
+}
+
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper #acomAssistant-gnav-mount {
+  display: flex;
+  height: 40px;
+  justify-content: flex-end;
+  max-width: 340px;
+}
+
+/* stylelint-disable-next-line selector-id-pattern */
+.global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) ~ .feds-utilities {
+  margin-left: 0;
+}
+
 @media (min-width: 900px) {
   .appPrompt {
     z-index: 10;
