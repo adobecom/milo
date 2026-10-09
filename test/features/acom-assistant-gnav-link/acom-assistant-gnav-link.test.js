@@ -8,20 +8,20 @@ describe('Chat link startup selection', () => {
   let initializedConfig;
   let originalClient;
   let originalLana;
-  let originalSearch;
   let clientScript;
+  let assistantIdMetadata;
+  let assistantVersionMetadata;
   let initChatLinks;
   let listenerSpy;
   let loadScript;
   let loadStyle;
   let getMetadata;
   let openContexts;
-  const BC_IDENTITY = { appid: 'bc-adobedotcom2', appver: '1.0' };
+  const BC_IDENTITY = { appid: 'homepage_loggedout_default', appver: '2.0' };
 
   before(() => {
     originalClient = window.AdobeMessagingExperienceClient;
     originalLana = window.lana;
-    originalSearch = window.location.search;
     client = {
       initialize: sinon.spy((config) => {
         initializedConfig = config;
@@ -43,6 +43,14 @@ describe('Chat link startup selection', () => {
     clientScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
     clientScript.dataset.loaded = 'true';
     document.head.append(clientScript);
+    assistantIdMetadata = document.createElement('meta');
+    assistantIdMetadata.name = 'acom-assistant-id';
+    assistantIdMetadata.content = 'unused-assistant-id';
+    document.head.append(assistantIdMetadata);
+    assistantVersionMetadata = document.createElement('meta');
+    assistantVersionMetadata.name = 'acom-assistant-version';
+    assistantVersionMetadata.content = 'unused-assistant-version';
+    document.head.append(assistantVersionMetadata);
   });
 
   beforeEach(async () => {
@@ -52,7 +60,6 @@ describe('Chat link startup selection', () => {
       locale: { ietf: 'en-US' },
       jarvis: { id: 'homepage_loggedout_default', version: '2.0', onDemand: false },
     });
-    window.history.replaceState(null, '', window.location.pathname);
     window.lana = { log: sinon.spy() };
     client.initialize.resetHistory();
     client.reinitialize.resetHistory();
@@ -79,12 +86,13 @@ describe('Chat link startup selection', () => {
 
   after(() => {
     clientScript.remove();
+    assistantIdMetadata.remove();
+    assistantVersionMetadata.remove();
     window.AdobeMessagingExperienceClient = originalClient;
     window.lana = originalLana;
-    window.history.replaceState(null, '', window.location.pathname + originalSearch);
   });
 
-  it('uses original Jarvis when the Assistant flag is absent', async () => {
+  it('uses original Jarvis when Assistant metadata is absent', async () => {
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     expect(client.initialize.calledOnce).to.be.true;
     expect(initializedConfig.appid).to.equal('homepage_loggedout_default');
@@ -92,18 +100,27 @@ describe('Chat link startup selection', () => {
     expect(initializedConfig.componentid).to.be.undefined;
   });
 
-  it('lets query off override metadata on and preserves Jarvis on-demand startup', async () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=off`);
+  it('registers Assistant links when metadata is on', async () => {
     getMetadata.withArgs('acom-assistant').returns('on');
     getMetadata.withArgs('jarvis-on-demand').returns('on');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     expect(client.initialize.called).to.be.false;
     expect(loadScript.called).to.be.false;
+    expect(listenerSpy.withArgs('click').calledOnce).to.be.true;
   });
 
-  it('lets query on override metadata off without starting a second client', async () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=on`);
+  it('preserves Jarvis on-demand startup when Assistant metadata is off', async () => {
     getMetadata.withArgs('acom-assistant').returns('off');
+    getMetadata.withArgs('jarvis-on-demand').returns('on');
+    await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
+    expect(client.initialize.called).to.be.false;
+    expect(loadScript.called).to.be.false;
+    expect(getMetadata.calledWith('jarvis-on-demand')).to.be.true;
+    expect(listenerSpy.withArgs('click').calledOnce).to.be.true;
+  });
+
+  it('uses Assistant metadata without starting a second client', async () => {
+    getMetadata.withArgs('acom-assistant').returns('on');
     getMetadata.withArgs('foundation').returns('c2');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
@@ -115,8 +132,8 @@ describe('Chat link startup selection', () => {
     document.querySelector('a').click();
     await waitFor(() => client.openMessagingWindow.called);
     expect(client.initialize.calledOnce).to.be.true;
-    expect(initializedConfig.appid).to.equal('bc-adobedotcom2');
-    expect(initializedConfig.appver).to.equal('1.0');
+    expect(initializedConfig.appid).to.equal(getConfig().jarvis.id);
+    expect(initializedConfig.appver).to.equal(getConfig().jarvis.version);
     expect(initializedConfig.componentid).to.equal('brand-concierge');
     expect(client.openMessagingWindow.calledOnceWith({ sourceType: 'a', sourceText: 'Contact us' })).to.be.true;
     expect(openContexts).to.deep.equal([BC_IDENTITY]);
@@ -163,7 +180,7 @@ describe('Chat link startup selection', () => {
     await waitFor(() => window.lana.log.called);
     expect(window.lana.log.firstCall.args[0]).to.include('open failed');
     expect(loadScript.called).to.be.false;
-    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal('bc-adobedotcom2');
+    expect(initializedConfig.callbacks.getContextCallback().appid).to.equal(getConfig().jarvis.id);
   });
 
   it('shares one initialization between C1 and C2 BC bootstraps', async () => {

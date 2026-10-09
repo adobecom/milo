@@ -1,8 +1,7 @@
 let linksInitialized = false;
 
 export default async function initChatLinks(config, loadScript, loadStyle, getMetadata) {
-  const enableAssistantUI = new URLSearchParams(window.location.search).get('acom-assistant')
-    || getMetadata('acom-assistant');
+  const enableAssistantUI = getMetadata('acom-assistant');
   if (enableAssistantUI !== 'on') {
     const { initJarvisChat } = await import('./jarvis-chat.js');
     await initJarvisChat(config, loadScript, loadStyle, getMetadata);

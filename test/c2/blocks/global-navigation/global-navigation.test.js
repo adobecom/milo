@@ -63,6 +63,14 @@ describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
       expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
       expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
     });
+
+    it('does not mount when Assistant metadata is absent', () => {
+      meta.remove();
+      document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
   });
 
   it('accepts a valid branch name', () => {

@@ -5,12 +5,10 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { ensureAcomAssistant } from '../../../libs/blocks/brand-concierge/acom-assistant-bootstrap.js';
 
 describe('C1 global navigation authored Assistant entry point', () => {
-  let originalUrl;
   let originalClient;
   let client;
 
   before(() => {
-    originalUrl = window.location.href;
     originalClient = window.AdobeMessagingExperienceClient;
     client = {
       initialize: sinon.spy((config) => {
@@ -37,7 +35,6 @@ describe('C1 global navigation authored Assistant entry point', () => {
     sinon.restore();
     document.querySelectorAll('meta[name="acom-assistant"], meta[name="gnav-brand-concierge"]')
       .forEach((meta) => meta.remove());
-    window.history.replaceState(null, '', originalUrl);
     document.body.innerHTML = '';
     delete window.milo;
   });
@@ -53,7 +50,6 @@ describe('C1 global navigation authored Assistant entry point', () => {
     </div>`;
 
   it('does not add an entry point with only the Assistant flag enabled', async () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=on`);
     await createFullGlobalNavigation({ imsInitialized: true });
 
     expect(document.querySelector('.feds-bc-wrapper')).to.be.null;
@@ -70,8 +66,6 @@ describe('C1 global navigation authored Assistant entry point', () => {
   });
 
   it('uses Assistant for an authored entry point and retains authored prompts', async () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=on`);
-    document.querySelector('meta[name="acom-assistant"]').content = 'off';
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({ globalNavigation: authoredNav, imsInitialized: true });
     await ensureAcomAssistant();
@@ -92,8 +86,8 @@ describe('C1 global navigation authored Assistant entry point', () => {
     expect(client.initialize.calledOnce).to.be.true;
   });
 
-  it('lets query off override metadata on without removing the authored wrapper', async () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?acom-assistant=off`);
+  it('does not mount Assistant when metadata is off without removing the authored wrapper', async () => {
+    document.querySelector('meta[name="acom-assistant"]').content = 'off';
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({ imsInitialized: true });
 

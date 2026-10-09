@@ -165,8 +165,7 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));

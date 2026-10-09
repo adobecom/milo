@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
@@ -694,12 +694,17 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   let originalClient;
   let clientScript;
   let pageMetadata;
+  let originalConfig;
 
   before(() => {
+    originalConfig = getConfig();
+    setConfig({ ...originalConfig, jarvis: { id: 'brand-concierge-jarvis', version: '3.0' } });
     pageMetadata = document.createElement('div');
     pageMetadata.innerHTML = `
       <meta property="og:title" content="Explore Adobe apps">
       <meta property="og:description" content="Find the right creative tools for you.">
+      <meta name="acom-assistant-id" content="unused-assistant-id">
+      <meta name="acom-assistant-version" content="unused-assistant-version">
     `;
     pageMetadata = [...pageMetadata.children];
     document.head.append(...pageMetadata);
@@ -724,6 +729,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     pageMetadata.forEach((meta) => meta.remove());
     clientScript.remove();
     window.AdobeMessagingExperienceClient = originalClient;
+    setConfig(originalConfig);
   });
 
   beforeEach(() => {
@@ -760,13 +766,13 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
     expect(openMessagingWindowSpy.called).to.be.true;
 
-    // Uses the Assistant team's bc-adobedotcom2 test appid, not a Jarvis-borrowed one, and
-    // getContextCallback reports that same identity by default (no Jarvis link clicked).
-    expect(capturedInitConfig.appid === 'bc-adobedotcom2').to.be.true;
+    expect(capturedInitConfig.appid).to.equal(getConfig().jarvis.id);
+    expect(capturedInitConfig.appver).to.equal(getConfig().jarvis.version);
     expect(capturedInitConfig.pageTitle).to.equal('Explore Adobe apps');
     expect(capturedInitConfig.pageDescription).to.equal('Find the right creative tools for you.');
     const context = capturedInitConfig.callbacks.getContextCallback();
-    expect(context.appid === 'bc-adobedotcom2').to.be.true;
+    expect(context.appid).to.equal(getConfig().jarvis.id);
+    expect(context.appver).to.equal(getConfig().jarvis.version);
   });
 
   it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
