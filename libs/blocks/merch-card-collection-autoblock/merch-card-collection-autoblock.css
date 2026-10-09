@@ -67,7 +67,10 @@
   /* overflow clips at the padding box. 4px holds the focus ring (2px outline + 2px offset). */
   padding: 4px;
   margin: -4px;
+  scrollbar-width: none;
 }
+
+.product-pricing-filter-pills::-webkit-scrollbar { display: none; }
 
 .product-pricing-filter-group {
   display: flex;
@@ -400,6 +403,19 @@
 
 @media (width < 600px) {
   .product-pricing-drawer { width: 100%; }
+
+  /* The pill row bleeds to the viewport edges so the fades and chevrons sit
+     there. 50% - 50vw is the container margin; the padding puts the first pill
+     back in line with the cards. */
+  .product-pricing-filter-pills {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+  }
+
+  .product-pricing-filter-scroll-prev { inset-inline-start: calc(50% - 50vw); }
+  .product-pricing-filter-scroll-next { inset-inline-end: calc(50% - 50vw); }
+  .product-pricing-filter-scroll-prev::after { inset-inline-start: 8px; }
+  .product-pricing-filter-scroll-next::after { inset-inline-end: 8px; }
 
   .product-pricing-drawer-title {
     font-size: 24px;
