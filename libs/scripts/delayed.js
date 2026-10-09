@@ -20,8 +20,16 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   if (jarvis === 'mobile' && desktopViewport) return;
   if (jarvis === 'desktop' && !desktopViewport) return;
 
-  const { default: initChatLinks } = await import('../features/acom-assistant-gnav-link.js');
-  await initChatLinks(config, loadScript, loadStyle, getMetadata);
+  const hasBrandConcierge = getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
+    || !!document.querySelector('.feds-bc-wrapper, .brand-concierge');
+  if (getMetadata('acom-assistant') === 'on' && hasBrandConcierge) {
+    const { default: initChatLinks } = await import('../features/acom-assistant-gnav-link.js');
+    await initChatLinks(config, loadScript, loadStyle, getMetadata);
+    return;
+  }
+
+  const { initJarvisChat } = await import('../features/jarvis-chat.js');
+  initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
 export const loadBlockNotifications = async (getConfig, loadStyle) => {
