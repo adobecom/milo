@@ -1576,6 +1576,9 @@ span.hang-opening-quote {
   }
 
   /* stylelint-disable property-no-unknown -- Scroll timelines require newer CSS property definitions. */
+
+  /* Rich Content + Split Aside; keep in sync with ASIDE_SELECTOR in libs/c2/content-animations.js.
+     Ranges, 20px rise steps, and phase order follow proto.adobe.io/RichContent-MotionLogic. */
   :where(.section.parallax-double-garage-door:has(> .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid)) {
     timeline-scope: --c2-aside-timeline;
 
@@ -1615,6 +1618,13 @@ span.hang-opening-quote {
     &:focus-within > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
       animation: none;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      > .rich-content:has(+ .split-aside-grid) .content > *,
+      > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+        animation: none;
+      }
+    }
   }
 
   @keyframes c2-aside-fade {
@@ -1641,6 +1651,10 @@ span.hang-opening-quote {
   initial-value: 0;
 }
 
+/* [class] lifts entrance rules above same-specificity native entrance rules in block CSS,
+   e.g. quick-actions.css `.quick-actions-grid.parallax-stagger-ltr > :not([class*="section-"])`,
+   which load after this file. Distances, 1050ms duration, and fade windows follow
+   proto.adobe.io/RichContent-MotionLogic. */
 .c2-entrance-group[class],
 .c2-entrance-group[class] > :not([class*="section-"]),
 .c2-entrance-item[class] {
@@ -1651,11 +1665,26 @@ span.hang-opening-quote {
   --c2-entrance-fade-start: calc(0.1 + var(--c2-entrance-step) * 0.45);
   --c2-entrance-fade-end: calc(0.72 + var(--c2-entrance-step) * 0.28);
 
-  /* Inverse ease-out cubic maps the prototype's progress windows to fade times. */
-  --c2-entrance-fade-delay: calc(var(--c2-entrance-duration) * (1 - pow(1 - var(--c2-entrance-fade-start), 1 / 3)));
-  --c2-entrance-fade-duration: calc(var(--c2-entrance-duration) * (pow(1 - var(--c2-entrance-fade-start), 1 / 3) - pow(1 - var(--c2-entrance-fade-end), 1 / 3)));
+  /* Inverse ease-out cubic maps the prototype's progress windows to fade times:
+     a and b are the remaining (1 - t) at the fade start and end. */
+  --c2-entrance-fade-a: pow(1 - var(--c2-entrance-fade-start), 1 / 3);
+  --c2-entrance-fade-b: pow(1 - var(--c2-entrance-fade-end), 1 / 3);
+  --c2-entrance-fade-delay: calc(var(--c2-entrance-duration) * (1 - var(--c2-entrance-fade-a)));
+  --c2-entrance-fade-duration: calc(var(--c2-entrance-duration) * (var(--c2-entrance-fade-a) - var(--c2-entrance-fade-b)));
   --c2-entrance-delay: 0ms;
   --c2-entrance-easing: cubic-bezier(0.33, 1, 0.68, 1);
+  --c2-entrance-fade-easing: var(--c2-entrance-easing);
+
+  /* The prototype fades linearly in eased progress; this is that exact slice of the
+     ease-out cubic curve, so fades ending before 1 don't front-load their opacity. */
+  @supports (animation-timing-function: cubic-bezier(calc(1 / 3), calc(1), calc(2 / 3), 1)) {
+    --c2-entrance-fade-easing: cubic-bezier(
+      calc(1 / 3),
+      calc(pow(var(--c2-entrance-fade-a), 2) / (pow(var(--c2-entrance-fade-a), 2) + var(--c2-entrance-fade-a) * var(--c2-entrance-fade-b) + pow(var(--c2-entrance-fade-b), 2))),
+      calc(2 / 3),
+      calc((pow(var(--c2-entrance-fade-a), 2) + var(--c2-entrance-fade-a) * var(--c2-entrance-fade-b)) / (pow(var(--c2-entrance-fade-a), 2) + var(--c2-entrance-fade-a) * var(--c2-entrance-fade-b) + pow(var(--c2-entrance-fade-b), 2)))
+    );
+  }
 }
 
 .c2-entrance-group.rich-content {
@@ -1684,6 +1713,7 @@ span.hang-opening-quote {
 .faq-item.c2-entrance-group {
   --c2-entrance-y: var(--parallax-translate-y, 100%);
   --c2-entrance-easing: var(--parallax-easing);
+  --c2-entrance-fade-easing: var(--c2-entrance-easing);
   --c2-entrance-fade-delay: 0ms;
   --c2-entrance-fade-duration: var(--c2-entrance-duration);
 }
@@ -1693,6 +1723,7 @@ span.hang-opening-quote {
   --c2-entrance-opacity: var(--parallax-opacity-from, 1);
   --c2-entrance-easing: var(--parallax-easing);
   --c2-entrance-delay: calc(var(--c2-entrance-step) * 150ms);
+  --c2-entrance-fade-easing: var(--c2-entrance-easing);
   --c2-entrance-fade-delay: var(--c2-entrance-delay);
   --c2-entrance-fade-duration: var(--c2-entrance-duration);
 }
@@ -1720,10 +1751,18 @@ span.hang-opening-quote {
       var(--c2-entrance-duration), var(--c2-entrance-fade-duration),
       var(--c2-entrance-duration), var(--c2-entrance-duration);
     animation-timing-function:
-      var(--c2-entrance-easing), var(--c2-entrance-easing),
+      var(--c2-entrance-easing), var(--c2-entrance-fade-easing),
       var(--c2-entrance-easing), var(--c2-entrance-easing);
     animation-delay: var(--c2-entrance-delay), var(--c2-entrance-fade-delay), 0s, 0s;
     animation-fill-mode: both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &.c2-entrance-played {
+      animation: none;
+      opacity: 1;
+    }
   }
 }
 
@@ -1765,16 +1804,6 @@ span.hang-opening-quote {
 @keyframes c2-entrance-fade {
   from { opacity: var(--c2-entrance-opacity, 0); }
   to { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .c2-entrance-item[class]:not(.c2-entrance-original),
-  .c2-entrance-group[class] .c2-entrance-item:not(.c2-entrance-original),
-  .section.parallax-double-garage-door:has(> .rich-content + .split-aside-grid) > .rich-content:has(+ .split-aside-grid) .content > *,
-  .section.parallax-double-garage-door:has(> .rich-content + .split-aside-grid) > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
-    animation: none !important;
-    opacity: 1;
-  }
 }
 
 .dark {

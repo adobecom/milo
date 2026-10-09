@@ -32,7 +32,10 @@ JavaScript supplies structural `--c2-entrance-index` and
 `--c2-entrance-count` metadata, not animation values. CSS distributes any
 number of items within the prototype's displacement and opacity windows;
 there are no numbered step selectors or maximum content count. Fade timings
-derive from the prototype's inverse ease-out-cubic curve. CSS-only aside text
+derive from the prototype's inverse ease-out-cubic curve, and each fade uses
+the matching slice of that curve so opacity stays linear in eased progress,
+as in the prototype. Timed groups trigger from their first visible item
+(the prototype's anchor), not the padded block. CSS-only aside text
 uses `sibling-index()` / `sibling-count()` to order any number of text items
 before the media and accordion, with semantic text phases in older browsers.
 
@@ -42,11 +45,6 @@ or change their index/count. Rebuilding or clearing a group aborts its old
 focus and native-completion listeners. Focus and reduced motion display
 content immediately; unrelated child animations and hover effects remain
 intact.
-
-C2 reloads without a hash start at the top even when Chrome DevTools
-changes loading timings. Boot temporarily suspends native scroll
-restoration until loading finishes; hash links and back/forward
-navigation retain their existing behavior.
 
 The authored Rich Content + Split Aside composition inside
 `parallax-double-garage-door` instead uses a CSS-only shared view

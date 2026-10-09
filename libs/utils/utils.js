@@ -1490,8 +1490,12 @@ export async function loadBlock(block) {
   await Promise.all([styleLoaded, scriptLoaded]);
   const isC2Content = getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name);
   if ((isC2Content || blockPath.includes('/c2/')) && block.dataset.blockStatus === 'loaded') {
-    const { default: initContentAnimations } = await import('../c2/content-animations.js');
-    initContentAnimations(block);
+    import('../c2/content-animations.js')
+      .then(({ default: initContentAnimations }) => initContentAnimations(block))
+      .catch((e) => window.lana?.log(`Failed to initialize C2 content animations: ${e}`, {
+        tags: 'c2-content-animations',
+        severity: 'error',
+      }));
   }
   return block;
 }
@@ -3132,23 +3136,6 @@ function warmTypekit() {
     .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
 }
 
-export function resetReloadScroll() {
-  if (getMetadata('foundation') !== 'c2' || window.location.hash
-    || performance.getEntriesByType('navigation')[0]?.type !== 'reload') return;
-
-  // Keep reloads at the top regardless of when Chrome restores the growing document.
-  const { scrollRestoration } = window.history;
-  window.history.scrollRestoration = 'manual';
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  const restore = () => {
-    window.history.scrollRestoration = scrollRestoration;
-    document.removeEventListener(MILO_EVENTS.DEFERRED, restore);
-    window.removeEventListener('pagehide', restore);
-  };
-  document.addEventListener(MILO_EVENTS.DEFERRED, restore, { once: true });
-  window.addEventListener('pagehide', restore, { once: true });
-}
-
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3167,7 +3154,6 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    resetReloadScroll();
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
       importFonts();

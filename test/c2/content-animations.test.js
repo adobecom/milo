@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { emulateMedia } from '@web/test-runner-commands';
 import initContentAnimations from '../../libs/c2/content-animations.js';
 import initFAQ from '../../libs/c2/blocks/faq/faq.js';
 
@@ -457,7 +458,23 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(el.children[11]).translate).to.equal('0px 96px');
   });
 
-  it('preserves in-flight timing and metadata across resize and late-loading RTL siblings', () => {
+  it('triggers from the first item and fades linearly in eased progress like the prototype', () => {
+    const el = block('hover-list parallax-line-height', '<div>Headline</div><div>List</div>');
+    el.style.paddingTop = '128px';
+    initContentAnimations(el);
+    expect(observers[0].observe.firstCall.args[0]).to.equal(el.children[0]);
+    observers[0].callback([{ isIntersecting: true }]);
+    const easing = (item) => getComputedStyle(item).animationTimingFunction
+      .split(/,\s(?=cubic|ease|linear)/)[1].match(/[\d.]+/g).map(Number);
+    const near = (values, expected) => values.every((value, index) => (
+      Math.abs(value - expected[index]) < 0.001
+    ));
+    // Fade window 0.10–0.72 is the matching slice of the ease-out cubic; 0.55–1 is its tail.
+    expect(near(easing(el.children[0]), [1 / 3, 0.468, 2 / 3, 0.7851])).to.be.true;
+    expect(near(easing(el.children[1]), [1 / 3, 1, 2 / 3, 1])).to.be.true;
+  });
+
+  it('preserves in-flight timing and metadata across resize and late-loading RTL siblings', async () => {
     section.classList.add('parallax-stagger-rtl');
     section.style.cssText += ';display:grid;grid-template-columns:1fr 1fr';
     const first = block('base-card', '<p>First</p>');
@@ -471,6 +488,7 @@ describe('C2 content animations', () => {
     second.dataset.blockStatus = 'loaded';
     initContentAnimations(second);
     window.dispatchEvent(new Event('resize'));
+    await settle();
     expect(first.classList.contains('c2-entrance-settled')).to.be.false;
     expect(first.getAnimations()[0]).to.equal(animation);
     expect(first.style.getPropertyValue('--c2-entrance-index')).to.equal(index);
@@ -481,6 +499,7 @@ describe('C2 content animations', () => {
     const el = block('rich-content parallax-line-height', '<div class="content"><p><a href="#">Link</a></p></div>');
     initContentAnimations(el);
     window.dispatchEvent(new Event('resize'));
+    await settle();
     const item = el.querySelector('p');
     section.classList.add('parallax-garage-door-reveal');
     await settle();
@@ -505,8 +524,48 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(el).animationName).to.equal('none');
     initContentAnimations(el);
     window.dispatchEvent(new Event('resize'));
+    await settle();
     expect(getComputedStyle(el).animationName).to.equal('none');
     expect(observers).to.have.length(0);
+  });
+
+  it('does not rescan the section for its own entrance class changes', async () => {
+    section.classList.add('parallax-stagger-ltr');
+    const card = block('base-card', '<p>Card</p>');
+    initTimed(card);
+    await settle();
+    const scan = sinon.spy(section, 'querySelectorAll');
+    try {
+      observers[0].callback([{ isIntersecting: true }]);
+      await settle();
+      expect(card.classList.contains('c2-entrance-played')).to.be.true;
+      expect(scan.called).to.be.false;
+      card.classList.add('authored-variant');
+      await settle();
+      expect(scan.called).to.be.true;
+    } finally {
+      scan.restore();
+    }
+  });
+
+  it('coalesces resize bursts into one shared refresh per frame', async () => {
+    const el = block('rich-content parallax-line-height', '<div class="content"><p>One</p></div>');
+    initContentAnimations(el);
+    await settle();
+    const frame = sinon.spy(window, 'requestAnimationFrame');
+    try {
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event('resize'));
+      expect(frame.calledOnce).to.be.true;
+      await settle();
+      const calls = frame.callCount;
+      window.dispatchEvent(new Event('resize'));
+      expect(frame.callCount).to.equal(calls + 1);
+    } finally {
+      frame.restore();
+    }
+    await settle();
   });
 
   it('settles focused native content without waiting for its CSS range to finish', () => {
@@ -557,6 +616,25 @@ describe('C2 content animations', () => {
     await settle();
     expect(el.classList.contains('c2-entrance-settled')).to.be.true;
     expect(getComputedStyle(el).animationName).to.equal('none, none');
+  });
+
+  it('shows timed entrances and aside content without motion when reduced motion is preferred', async () => {
+    section.classList.add('parallax-double-garage-door');
+    const rich = block('rich-content', '<div class="content"><p>Eyebrow</p><h2>Title</h2></div>');
+    const aside = block('split-aside-grid', '<div class="split-aside-grid-items"><button>Accordion</button></div><div class="split-aside-grid-stack"></div>');
+    const timed = block('base-card', '<p>Card</p>');
+    timed.classList.add('c2-entrance-item', 'c2-entrance-played');
+    const targets = [rich.querySelector('h2'), aside.querySelector('.split-aside-grid-items'), timed];
+    expect(getComputedStyle(timed).animationName).to.not.equal('none');
+    await emulateMedia({ reducedMotion: 'reduce' });
+    try {
+      targets.forEach((item) => {
+        expect(getComputedStyle(item).animationName).to.equal('none');
+        expect(getComputedStyle(item).opacity).to.equal('1');
+      });
+    } finally {
+      await emulateMedia({ reducedMotion: 'no-preference' });
+    }
   });
 
   it('adds scroll-linked aside reveals while preserving the existing door motion', () => {

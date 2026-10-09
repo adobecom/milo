@@ -915,6 +915,22 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+
+    it('initializes C2 content animations without blocking the block load', async () => {
+      const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
+      document.head.append(foundation);
+      document.body.innerHTML = '<div class="section"><div class="rich-content parallax-line-height"><div><div><h2>Title</h2><p>Body</p></div></div></div></div>';
+      const richContent = document.querySelector('.rich-content');
+      try {
+        const block = await utils.loadBlock(richContent);
+        expect(block).to.equal(richContent);
+        expect(block.dataset.blockStatus).to.equal('loaded');
+        await waitFor(() => block.classList.contains('c2-entrance-group'), 2000);
+        expect(block.classList.contains('c2-entrance-group')).to.be.true;
+      } finally {
+        foundation.remove();
+      }
+    });
   });
 
   describe('stageDomainsMap', () => {
@@ -1107,83 +1123,6 @@ describe('Utils', () => {
       await utils.loadArea();
       await waitFor(() => window.lana.log.calledWith(expectedError), 2000);
       expect(window.lana.log.calledWith(expectedError)).to.be.true;
-    });
-  });
-
-  describe('resetReloadScroll', () => {
-    let navigation;
-    let scroll;
-    let foundation;
-    let originalFoundation;
-    let hadFoundation;
-    let originalUrl;
-    let originalRestoration;
-
-    beforeEach(() => {
-      originalUrl = window.location.href;
-      originalRestoration = window.history.scrollRestoration;
-      window.history.scrollRestoration = 'auto';
-      foundation = document.head.querySelector('meta[name="foundation"]');
-      hadFoundation = Boolean(foundation);
-      originalFoundation = foundation?.getAttribute('content');
-      foundation ??= createTag('meta', { name: 'foundation' });
-      foundation.content = 'c2';
-      if (!hadFoundation) document.head.append(foundation);
-      navigation = sinon.stub(performance, 'getEntriesByType');
-      navigation.withArgs('navigation').returns([{ type: 'reload' }]);
-      scroll = sinon.stub(window, 'scrollTo');
-      window.history.replaceState(null, '', originalUrl.split('#')[0]);
-    });
-
-    afterEach(() => {
-      document.dispatchEvent(new Event(utils.MILO_EVENTS.DEFERRED));
-      navigation.restore();
-      scroll.restore();
-      window.history.replaceState(null, '', originalUrl);
-      window.history.scrollRestoration = originalRestoration;
-      if (!hadFoundation) foundation.remove();
-      else if (originalFoundation === null) foundation.removeAttribute('content');
-      else foundation.setAttribute('content', originalFoundation);
-    });
-
-    it('starts C2 reloads at the top and restores normal history behavior after loading', () => {
-      utils.resetReloadScroll();
-      expect(window.history.scrollRestoration).to.equal('manual');
-      expect(scroll.calledOnceWithExactly({ top: 0, left: 0, behavior: 'instant' })).to.be.true;
-      document.dispatchEvent(new Event(utils.MILO_EVENTS.DEFERRED));
-      expect(window.history.scrollRestoration).to.equal('auto');
-      window.history.scrollRestoration = 'manual';
-      window.dispatchEvent(new Event('pagehide'));
-      expect(window.history.scrollRestoration).to.equal('manual');
-    });
-
-    it('restores history behavior when leaving before loading finishes', () => {
-      utils.resetReloadScroll();
-      window.dispatchEvent(new Event('pagehide'));
-      expect(window.history.scrollRestoration).to.equal('auto');
-    });
-
-    ['navigate', 'back_forward'].forEach((type) => {
-      it(`preserves ${type} scroll behavior`, () => {
-        navigation.withArgs('navigation').returns([{ type }]);
-        utils.resetReloadScroll();
-        expect(scroll.called).to.be.false;
-        expect(window.history.scrollRestoration).to.equal('auto');
-      });
-    });
-
-    it('preserves hash links on reload', () => {
-      window.history.replaceState(null, '', '#faq');
-      utils.resetReloadScroll();
-      expect(scroll.called).to.be.false;
-      expect(window.history.scrollRestoration).to.equal('auto');
-    });
-
-    it('leaves non-C2 pages unchanged', () => {
-      foundation.content = 'c1';
-      utils.resetReloadScroll();
-      expect(scroll.called).to.be.false;
-      expect(window.history.scrollRestoration).to.equal('auto');
     });
   });
 

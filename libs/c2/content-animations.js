@@ -1,9 +1,12 @@
 const ENTRANCE_SELECTOR = '.parallax-line-height, .parallax-stagger-ltr, .parallax-stagger-rtl, .parallax-move-up, .parallax-opacity';
 const SPECIALTY_SELECTOR = '.parallax-garage-door-reveal, .parallax-move-up-fast, .parallax-video-garage-door';
-const ASIDE_SELECTOR = '.section.parallax-double-garage-door:has(> .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid)';
+// Keep in sync with the Rich Content + Split Aside rule in libs/c2/styles/styles.css.
+const ASIDE_CONTENT = '.rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid';
+const ASIDE_SELECTOR = `.section.parallax-double-garage-door:has(> ${ASIDE_CONTENT})`;
+const SUPPORTS_HAS = window.CSS?.supports?.('selector(:has(*))') ?? false;
 const ORIGINAL_ENTRANCES = new Set(['enable-parallax', 'enable-parallax-stagger', 'enable-grid-parallax']);
 const groups = new WeakMap();
-const sections = new WeakSet();
+const sections = new Map();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 function preserveOtherAnimations(item) {
@@ -41,6 +44,45 @@ function clearEntrance(source) {
   state.items.forEach(clearItem);
   source.classList.remove('c2-entrance-group', 'c2-entrance-original');
   groups.delete(source);
+}
+
+function isOriginalEntrance(animation) {
+  return ORIGINAL_ENTRANCES.has(animation.animationName);
+}
+
+// Keep the original CSS range; only latch its first forward completion.
+function latchOriginalFinish(state, index) {
+  const animations = state.items[index].getAnimations().filter(isOriginalEntrance);
+  if (!animations.length) return;
+  const finish = () => {
+    if (animations.every((animation) => animation.playState === 'finished')) {
+      reveal(state, [index], undefined, true);
+    }
+  };
+  animations.forEach((animation) => {
+    animation.addEventListener('finish', finish, { signal: state.listeners.signal });
+  });
+  finish();
+}
+
+function observeBatch(state, source, indices, rows) {
+  const timed = indices.filter((index) => !state.played.has(index) && !state.original[index]);
+  if (!timed.length) return;
+  // Like the prototype, trigger on the first visible item rather than the padded block.
+  const first = indices.map((index) => state.items[index])
+    .find((item) => item.offsetWidth || item.offsetHeight) ?? state.items[indices[0]];
+  const anchor = first.querySelector(':scope > .faq-trigger') ?? first;
+  const trigger = Number.parseFloat(getComputedStyle(rows ? first : source).getPropertyValue('--c2-entrance-trigger')) / 100;
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) reveal(state, timed, observer);
+  }, { rootMargin: `0px 0px ${Math.round(-window.innerHeight * (1 - trigger))}px 0px` });
+  state.observers.push(observer);
+  observer.observe(anchor);
+  const rect = anchor.getBoundingClientRect();
+  // Deep-linked content above the viewport must not remain hidden.
+  if (rect.height && rect.width && rect.top <= window.innerHeight * trigger) {
+    reveal(state, timed, observer);
+  }
 }
 
 function addEntrance(source, items, rows = false) {
@@ -86,9 +128,8 @@ function addEntrance(source, items, rows = false) {
   items.forEach((item, index) => {
     if (!ready[index]) return;
     const previous = batches[batches.length - 1];
-    if (!rows || (previous && Math.abs(items[previous[0]].offsetTop - item.offsetTop) < 2)) {
-      if (previous) previous.push(index);
-      else batches.push([index]);
+    if (previous && (!rows || Math.abs(items[previous[0]].offsetTop - item.offsetTop) < 2)) {
+      previous.push(index);
     } else batches.push([index]);
   });
 
@@ -106,46 +147,11 @@ function addEntrance(source, items, rows = false) {
         items[index].classList.add('c2-entrance-played');
         if (previousItems[index] !== items[index]) items[index].classList.add('c2-entrance-settled');
       } else if (original[index] && !reducedMotion.matches) {
-        // Keep the original CSS range; only latch its first forward completion.
-        items[index].getAnimations()
-          .filter((animation) => ORIGINAL_ENTRANCES.has(animation.animationName))
-          .forEach((animation) => {
-            const finish = () => {
-              if (animation.playState === 'finished'
-                && items[index].getAnimations()
-                  .filter((effect) => ORIGINAL_ENTRANCES.has(effect.animationName))
-                  .every((effect) => effect.playState === 'finished')) {
-                reveal(state, [index], undefined, true);
-              }
-            };
-            animation.addEventListener('finish', finish, { signal: state.listeners.signal });
-            finish();
-          });
+        latchOriginalFinish(state, index);
       }
     });
-    const pending = indices.filter((index) => !state.played.has(index));
-    if (!pending.length) return;
-    if (reducedMotion.matches) {
-      reveal(state, pending);
-      return;
-    }
-    const timed = pending.filter((index) => !original[index]);
-    if (!timed.length) return;
-
-    const item = rows ? items[indices[0]] : source;
-    const anchor = item.querySelector(':scope > .faq-trigger') ?? item;
-    const style = getComputedStyle(item);
-    const trigger = Number.parseFloat(style.getPropertyValue('--c2-entrance-trigger')) / 100;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) reveal(state, timed, observer);
-    }, { rootMargin: `0px 0px ${Math.round(-window.innerHeight * (1 - trigger))}px 0px` });
-    state.observers.push(observer);
-    observer.observe(anchor);
-    const rect = anchor.getBoundingClientRect();
-    // Deep-linked content above the viewport must not remain hidden.
-    if (rect.height && rect.width && rect.top <= window.innerHeight * trigger) {
-      reveal(state, timed, observer);
-    }
+    if (reducedMotion.matches) reveal(state, indices.filter((index) => !state.played.has(index)));
+    else observeBatch(state, source, indices, rows);
   });
   source.addEventListener('focusin', () => {
     reveal(state, items.map((item, index) => index), undefined, true);
@@ -163,12 +169,19 @@ function entranceGroups(section) {
   return sources;
 }
 
+function entranceItems(source) {
+  if (source.matches('.parallax-stagger-ltr, .parallax-stagger-rtl')) return directContent(source);
+  if (source.matches('.parallax-move-up, .parallax-opacity')) return [source];
+  if (source.matches('.rich-content')) return [...source.querySelector('.content')?.children ?? []];
+  if (source.matches('.hover-list, .faq')) return directContent(source);
+  return [source];
+}
+
 function initEntrances(section) {
   if (reducedMotion.matches) return;
   if (section.matches('[data-status="pending"], [data-status="decorated"]')) return;
-  const isAside = section.matches(ASIDE_SELECTOR);
-  const aside = isAside
-    ? section.querySelector(':scope > .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid') : null;
+  const isAside = SUPPORTS_HAS && section.matches(ASIDE_SELECTOR);
+  const aside = isAside ? section.querySelector(`:scope > ${ASIDE_CONTENT}`) : null;
   const rich = aside?.previousElementSibling;
   entranceGroups(section).forEach((source) => {
     const isAsideHoverList = isAside && source.matches('.hover-list');
@@ -184,18 +197,7 @@ function initEntrances(section) {
     const block = source.closest('[data-block-status]');
     if (block && block.dataset.blockStatus !== 'loaded') return;
     if (source.parentElement?.closest(ENTRANCE_SELECTOR)) return;
-
-    if (source.matches('.parallax-stagger-ltr, .parallax-stagger-rtl')) {
-      addEntrance(source, directContent(source), true);
-    } else if (source.matches('.parallax-move-up, .parallax-opacity')) {
-      addEntrance(source, [source]);
-    } else if (source.matches('.rich-content')) {
-      addEntrance(source, [...source.querySelector('.content')?.children ?? []]);
-    } else if (source.matches('.hover-list, .faq')) {
-      addEntrance(source, directContent(source));
-    } else {
-      addEntrance(source, [source]);
-    }
+    addEntrance(source, entranceItems(source), source.matches('.parallax-stagger-ltr, .parallax-stagger-rtl'));
   });
 
   if (isAside) {
@@ -205,29 +207,40 @@ function initEntrances(section) {
   }
 }
 
-export default function initContentAnimations(block) {
-  const section = block.closest('.section');
-  if (!section) return;
-  initEntrances(section);
-  if (sections.has(section)) return;
-  sections.add(section);
-  const observer = new MutationObserver((mutations) => {
-    if (!section.isConnected) return;
-    if (mutations.some(({ type, target }) => type === 'childList'
-      || target === section || target.hasAttribute('data-block-status'))) initEntrances(section);
+function authoredClasses(value) {
+  return (value ?? '').split(/\s+/).filter((name) => name && !name.startsWith('c2-entrance-')).sort().join(' ');
+}
+
+// Ignore class changes this module makes itself so reveals don't rescan the section.
+function needsRefresh(section, { type, target, attributeName, oldValue }) {
+  if (type === 'childList') return true;
+  if (target !== section && !target.hasAttribute('data-block-status')) return false;
+  return attributeName !== 'class' || authoredClasses(oldValue) !== authoredClasses(target.className);
+}
+
+function trackedSections() {
+  sections.forEach((observer, section) => {
+    if (section.isConnected) return;
+    observer.disconnect();
+    sections.delete(section);
   });
-  observer.observe(section, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-status'] });
-  window.addEventListener('resize', () => {
-    if (!section.isConnected) return;
+  return [...sections.keys()];
+}
+
+let resizeFrame;
+function refreshAfterResize() {
+  resizeFrame = undefined;
+  trackedSections().forEach((section) => {
     entranceGroups(section).forEach((source) => {
       const state = groups.get(source);
-      if (!state || state.played.size === state.items.length) return;
-      state.stale = true;
+      if (state && state.played.size < state.items.length) state.stale = true;
     });
     initEntrances(section);
   });
-  reducedMotion.addEventListener('change', () => {
-    if (!section.isConnected) return;
+}
+
+function refreshMotionPreference() {
+  trackedSections().forEach((section) => {
     if (!reducedMotion.matches) {
       initEntrances(section);
       return;
@@ -235,8 +248,38 @@ export default function initContentAnimations(block) {
     entranceGroups(section).forEach((source) => {
       const state = groups.get(source);
       if (!state) return;
-      state.observers.forEach((entryObserver) => entryObserver.disconnect());
+      state.observers.forEach((observer) => observer.disconnect());
       reveal(state, state.items.map((item, index) => index));
     });
   });
+}
+
+let listening = false;
+function listenOnce() {
+  if (listening) return;
+  listening = true;
+  window.addEventListener('resize', () => {
+    if (!resizeFrame) resizeFrame = requestAnimationFrame(refreshAfterResize);
+  });
+  reducedMotion.addEventListener('change', refreshMotionPreference);
+}
+
+export default function initContentAnimations(block) {
+  const section = block.closest('.section');
+  if (!section) return;
+  initEntrances(section);
+  if (trackedSections().includes(section)) return;
+  const observer = new MutationObserver((mutations) => {
+    if (!section.isConnected) return;
+    if (mutations.some((mutation) => needsRefresh(section, mutation))) initEntrances(section);
+  });
+  observer.observe(section, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: ['class', 'data-status'],
+  });
+  listenOnce();
+  sections.set(section, observer);
 }
