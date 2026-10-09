@@ -1,8 +1,7 @@
 let linksInitialized = false;
 
 export default async function initChatLinks(config, loadScript, loadStyle, getMetadata) {
-  const enableAssistantUI = new URLSearchParams(window.location.search).get('acom-assistant')
-    || getMetadata('acom-assistant');
+  const enableAssistantUI = getMetadata('acom-assistant');
   if (enableAssistantUI !== 'on') {
     const { initJarvisChat } = await import('./jarvis-chat.js');
     await initJarvisChat(config, loadScript, loadStyle, getMetadata);
@@ -23,11 +22,16 @@ export default async function initChatLinks(config, loadScript, loadStyle, getMe
     if (!link) return;
     event.preventDefault();
     try {
-      const [{ ensureAcomAssistant }, { openAcomAssistantChat }] = await Promise.all([
+      const [
+        { ensureAcomAssistant },
+        { openAcomAssistantChat },
+        { getAuthoredGnavCards },
+      ] = await Promise.all([
         import(bootstrapPath),
         import('./acom-assistant.js'),
+        import('./acom-assistant-gnav.js'),
       ]);
-      await ensureAcomAssistant();
+      await ensureAcomAssistant(getAuthoredGnavCards());
       const sourceType = event.target.tagName?.toLowerCase();
       const sourceText = sourceType === 'img'
         ? event.target.alt?.trim() : event.target.innerText?.trim();

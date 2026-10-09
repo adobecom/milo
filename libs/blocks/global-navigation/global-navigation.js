@@ -592,8 +592,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
-    const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-    this.useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+    this.useAcomAssistant = getMetadata('acom-assistant') === 'on';
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
@@ -1785,7 +1784,7 @@ class Gnav {
 
   decorateAcomAssistantGnav = async () => {
     if (!this.useAcomAssistant || !this.elements.topnav.querySelector('.feds-bc-wrapper')) return;
-    const { decorateNavWithAssistant } = await import('../brand-concierge-global/brand-concierge-global.js');
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
     const cards = this.content.querySelector('.brand-concierge-global > div');
     decorateNavWithAssistant(cards, this.elements.topnav);
   };

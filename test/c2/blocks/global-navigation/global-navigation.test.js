@@ -1,9 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import {
-  decorateAcomAssistantGnav,
-  getFederalDomain,
-} from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { getFederalDomain } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 
 const DEFAULT = 'https://main--federal--adobecom.aem.page/federal';
 
@@ -58,6 +56,14 @@ describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
 
     it('does not mount when Assistant is disabled', () => {
       meta.content = 'off';
+      document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
+
+    it('does not mount when Assistant metadata is absent', () => {
+      meta.remove();
       document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
 
       expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;

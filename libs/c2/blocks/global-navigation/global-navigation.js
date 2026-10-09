@@ -13,6 +13,8 @@ import {
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
+const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
+
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
@@ -51,26 +53,6 @@ export function getFederalDomain(config) {
   return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
-export function decorateAcomAssistantGnav(el) {
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  if ((acomAssistantParam || getMetadata('acom-assistant')) !== 'on') return null;
-  const bcWrapper = el.querySelector('nav .feds-bc-wrapper');
-  if (!bcWrapper) return null;
-  let mount = bcWrapper.querySelector('#acomAssistant-gnav-mount');
-  if (!mount) {
-    mount = document.createElement('div');
-    mount.id = 'acomAssistant-gnav-mount';
-    bcWrapper.append(mount);
-  }
-  return mount;
-}
-
-async function initAcomAssistantGnav(el) {
-  if (!decorateAcomAssistantGnav(el)) return;
-  const { ensureAcomAssistant } = await import('../brand-concierge/acom-assistant-bootstrap.js');
-  await ensureAcomAssistant();
-}
-
 async function decorateAppPrompt(el) {
   const state = getMetadata('app-prompt')?.toLowerCase();
   const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
@@ -102,7 +84,12 @@ async function decorateAppPrompt(el) {
 }
 
 // Mirrors c1 gnav's decorateBrandConciergeGlobal
-async function loadBrandConcierge(block) {
+export async function loadBrandConcierge(block) {
+  if (getMetadata('acom-assistant') === 'on') {
+    const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
+    decorateAcomAssistantGnavBlock(block);
+    return;
+  }
   const { base } = getConfig();
   const [{ default: initBrandConcierge }] = await Promise.all([
     import('../brand-concierge-global/brand-concierge-global.js'),
@@ -230,14 +217,11 @@ export default async function init(el) {
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
-  }).then((gnav) => {
-    initAcomAssistantGnav(el).catch((error) => {
-      window.lana?.log?.('Failed to initialize Acom Assistant in C2 global navigation', {
-        error,
-        tags: 'global-navigation',
-        errorType: 'e',
-      });
-    });
+  }).then(async (gnav) => {
+    if (getMetadata('acom-assistant') === 'on') {
+      const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+      decorateAcomAssistantGnav(el);
+    }
     return gnav;
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {

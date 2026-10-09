@@ -28,10 +28,10 @@ const variants = {};
 let useAcomAssistant = false;
 let acomAssistantModulePromise;
 
-async function routeAcomAssistantInput(text, cards) {
+async function routeAcomAssistantInput(options) {
   acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
   const { default: acomAssistantRouteInput } = await acomAssistantModulePromise;
-  return acomAssistantRouteInput(text, cards);
+  return acomAssistantRouteInput(options);
 }
 
 function checkGlobal() {
@@ -45,9 +45,9 @@ function checkGlobal() {
   return false;
 }
 
-function routeInput(text, cards) {
+function routeInput({ text, cards, source = 'input' }) {
   if (useAcomAssistant) {
-    routeAcomAssistantInput(text, cards).catch((error) => {
+    routeAcomAssistantInput({ text, cards, source }).catch((error) => {
       window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
     });
     return;
@@ -73,23 +73,22 @@ function handleInput(text, input, cards) {
   submitButton.disabled = true;
   textArea.blur();
 
-  routeInput(text, cards);
+  routeInput({ text, cards });
 }
 
 function handleSuggestedPrompt(text, event, cards) {
   event.target.blur();
-  routeInput(text, cards);
+  routeInput({ text, cards, source: 'prompt' });
 }
 
 function handleFloatingButton(cards) {
-  routeInput(null, cards);
+  routeInput({ cards });
 }
 
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
-  const acomAssistantParam = new URLSearchParams(window.location.search).get('acom-assistant');
-  useAcomAssistant = (acomAssistantParam || getMetadata('acom-assistant')) === 'on';
+  useAcomAssistant = getMetadata('acom-assistant') === 'on';
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
