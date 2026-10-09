@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { createFullGlobalNavigation } from './test-utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
-import { ensureAcomAssistant } from '../../../libs/blocks/brand-concierge/acom-assistant-bootstrap.js';
+import { loadAcomAssistantGnav } from '../../../libs/features/acom-assistant-gnav.js';
 
 describe('C1 global navigation authored Assistant entry point', () => {
   let originalClient;
@@ -68,7 +68,8 @@ describe('C1 global navigation authored Assistant entry point', () => {
   it('uses Assistant for an authored entry point and retains authored prompts', async () => {
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({ globalNavigation: authoredNav, imsInitialized: true });
-    await ensureAcomAssistant();
+    expect(client.initialize.called).to.be.false;
+    await loadAcomAssistantGnav();
 
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
     expect(client.initialize.calledOnce).to.be.true;
@@ -80,7 +81,7 @@ describe('C1 global navigation authored Assistant entry point', () => {
   it('mounts Assistant in the authored wrapper without requiring a BC block', async () => {
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({ imsInitialized: true });
-    await ensureAcomAssistant();
+    await loadAcomAssistantGnav();
 
     expect(document.querySelector('.feds-bc-wrapper #acomAssistant-gnav-mount')).to.exist;
     expect(client.initialize.calledOnce).to.be.true;

@@ -1,5 +1,8 @@
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
+import { spy, stub } from 'sinon';
+import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
+import { loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { waitFor } from '../../../helpers/waitfor.js';
 import {
   decorateAcomAssistantGnav,
   getFederalDomain,
@@ -70,6 +73,47 @@ describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
 
       expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
       expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
+
+    it('initializes navigation that arrives after the delayed phase without loading twice', async () => {
+      const originalConfig = getConfig();
+      const originalClient = window.AdobeMessagingExperienceClient;
+      setConfig({ env: { name: 'stage' }, jarvis: { id: 'late-c2-assistant', version: '2.0' } });
+      const foundation = document.createElement('meta');
+      foundation.name = 'foundation';
+      foundation.content = 'c2';
+      const script = document.createElement('script');
+      script.type = 'javascript/blocked';
+      script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+      script.dataset.loaded = 'true';
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+      document.head.append(foundation, script, style);
+      const initialize = spy((config) => {
+        config.callbacks.onReadyCallback();
+        return { status: 'success' };
+      });
+      window.AdobeMessagingExperienceClient = { initialize };
+
+      try {
+        await loadAcomAssistantGnav();
+        expect(initialize.called).to.be.false;
+        document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+        const header = document.querySelector('header');
+        decorateAcomAssistantGnav(header);
+        await waitFor(() => initialize.called);
+        expect(initialize.firstCall.args[0].appid).to.equal('late-c2-assistant');
+        decorateAcomAssistantGnav(header);
+        await loadAcomAssistantGnav();
+        expect(initialize.calledOnce).to.be.true;
+      } finally {
+        foundation.remove();
+        script.remove();
+        style.remove();
+        window.AdobeMessagingExperienceClient = originalClient;
+        setConfig(originalConfig);
+      }
     });
   });
 

@@ -24,6 +24,13 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   await initChatLinks(config, loadScript, loadStyle, getMetadata);
 };
 
+/** Assistant navigation uses its own metadata, independent of legacy Jarvis viewport settings. */
+export const loadAcomAssistant = async (getMetadata) => {
+  if (getMetadata('acom-assistant') !== 'on') return;
+  const { loadAcomAssistantGnav } = await import('../features/acom-assistant-gnav.js');
+  await loadAcomAssistantGnav();
+};
+
 export const loadBlockNotifications = async (getConfig, loadStyle) => {
   const { env, miloLibs, codeRoot } = getConfig();
 
@@ -148,6 +155,12 @@ const loadDelayed = ([
     if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript);
     loadAriaAutomation();
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    loadAcomAssistant(getMetadata).catch((error) => {
+      window.lana?.log?.(`AcomAssistant: delayed initialization failed (${error.message})`, {
+        tags: 'acom-assistant',
+        severity: 'error',
+      });
+    });
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     loadBlockNotifications(getConfig, loadStyle);
     if (getMetadata('interlinks') === 'on') {
