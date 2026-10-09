@@ -1189,6 +1189,11 @@ describe('merch-card-collection autoblock', () => {
       expect(trigger.getAttribute('aria-expanded')).to.equal('false');
     });
 
+    it('tells Lenis to leave the drawer alone so it scrolls itself', () => {
+      const { container } = mount();
+      expect(container.querySelector('.product-pricing-drawer').hasAttribute('data-lenis-prevent')).to.be.true;
+    });
+
     it('closes the drawer on a backdrop click but not a content click', () => {
       const { container } = mount();
       const drawer = container.querySelector('.product-pricing-drawer');

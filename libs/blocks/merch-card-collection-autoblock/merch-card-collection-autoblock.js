@@ -459,7 +459,10 @@ function buildProductPricingDrawer(collection, groups) {
   // Inner wrapper so backdrop clicks target the dialog while content clicks don't.
   const inner = createTag('div', { class: 'product-pricing-drawer-inner' }, [header, subRow, groupsEl]);
   // <dialog> gives focus trap, Esc-to-close, inert background, and focus restore.
-  const root = createTag('dialog', { class: 'product-pricing-drawer', 'aria-label': placeholders.allFilters }, inner);
+  // data-lenis-prevent: on C2 pages Lenis turns every wheel and touch into a page
+  // scroll, so without it the panel never scrolls and the page behind moves.
+  const attrs = { class: 'product-pricing-drawer', 'aria-label': placeholders.allFilters, 'data-lenis-prevent': '' };
+  const root = createTag('dialog', attrs, inner);
   return { root, closeBtn, reset, applied, results };
 }
 

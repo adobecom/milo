@@ -145,6 +145,13 @@
   background: #f8f8f8;
 }
 
+/* showModal() leaves the page scrollable, and wheel over the backdrop scrolls it.
+   The gutter keeps the page from shifting when the scrollbar goes away. */
+:root:has(.product-pricing-drawer[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
 .product-pricing-drawer::backdrop { background: rgb(0 0 0 / 50%); }
 
 .product-pricing-drawer[open] { animation: product-pricing-drawer-in 0.3s ease; }
@@ -158,6 +165,7 @@
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
+  overscroll-behavior: contain; /* stops at the panel's top and bottom, not the page */
 }
 
 .product-pricing-drawer-header {
