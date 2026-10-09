@@ -73,7 +73,10 @@ describe('C1 global navigation authored Assistant entry point', () => {
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
     expect(client.initialize.calledOnce).to.be.true;
     expect(client.initialize.firstCall.args[0].context.prompts)
-      .to.deep.equal([{ label: 'Help me choose an app' }]);
+      .to.deep.equal([{
+        label: 'Help me choose an app',
+        action: { click_analytics: 'BC-suggested_prompt_clicked|gnav|Help me choose an app' },
+      }]);
     expect(document.querySelector('.bc-gnav')).to.be.null;
   });
 

@@ -12,6 +12,9 @@ import {
   loadIms,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+import { decorateAcomAssistantGnav, decorateAcomAssistantGnavBlock } from '../../../features/acom-assistant-gnav.js';
+
+export { decorateAcomAssistantGnav };
 
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
@@ -51,25 +54,6 @@ export function getFederalDomain(config) {
   return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
-export function decorateAcomAssistantGnav(el) {
-  if (getMetadata('acom-assistant') !== 'on') return null;
-  const bcWrapper = el.querySelector('nav .feds-bc-wrapper');
-  if (!bcWrapper) return null;
-  let mount = bcWrapper.querySelector('#acomAssistant-gnav-mount');
-  if (!mount) {
-    mount = document.createElement('div');
-    mount.id = 'acomAssistant-gnav-mount';
-    bcWrapper.append(mount);
-  }
-  return mount;
-}
-
-async function initAcomAssistantGnav(el) {
-  if (!decorateAcomAssistantGnav(el)) return;
-  const { ensureAcomAssistant } = await import('../brand-concierge/acom-assistant-bootstrap.js');
-  await ensureAcomAssistant();
-}
-
 async function decorateAppPrompt(el) {
   const state = getMetadata('app-prompt')?.toLowerCase();
   const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
@@ -101,7 +85,8 @@ async function decorateAppPrompt(el) {
 }
 
 // Mirrors c1 gnav's decorateBrandConciergeGlobal
-async function loadBrandConcierge(block) {
+export async function loadBrandConcierge(block) {
+  if (decorateAcomAssistantGnavBlock(block)) return;
   const { base } = getConfig();
   const [{ default: initBrandConcierge }] = await Promise.all([
     import('../brand-concierge-global/brand-concierge-global.js'),
@@ -230,13 +215,7 @@ export default async function init(el) {
       convertStageLinks({ anchors, config, hostname, href });
     },
   }).then((gnav) => {
-    initAcomAssistantGnav(el).catch((error) => {
-      window.lana?.log?.('Failed to initialize Acom Assistant in C2 global navigation', {
-        error,
-        tags: 'global-navigation',
-        errorType: 'e',
-      });
-    });
+    decorateAcomAssistantGnav(el);
     return gnav;
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {

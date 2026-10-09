@@ -18,10 +18,12 @@ import {
   isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
+import { decorateNavWithAssistant } from '../../features/acom-assistant-gnav.js';
+
+export { decorateNavWithAssistant };
 
 let stayActive = false;
 let useAcomAssistant = false;
-let acomAssistantModulePromise;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -69,28 +71,6 @@ function promptDown() {
 
 function promptUp() {
   stayActive = false;
-}
-
-export function decorateNavWithAssistant(cards, topNav) {
-  const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  if (!bcWrapper || bcWrapper.querySelector('#acomAssistant-gnav-mount')) return;
-
-  // Per the wiki, the client discovers this mount point and builds its own GNav
-  // icon/expanded-input/minimized states into it
-  // https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration
-  const mount = createTag('div', { id: 'acomAssistant-gnav-mount' });
-  bcWrapper.appendChild(mount);
-  acomAssistantModulePromise ||= import('../brand-concierge/acom-assistant-bootstrap.js');
-  acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards))
-    .catch((error) => {
-      window.lana?.log?.(`AcomAssistant: failed to initialize GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
-    });
-
-  if (window?.milo) {
-    window.milo.brandConcierge = { brandConciergeGlobal: true };
-  } else {
-    window.milo = { brandConcierge: { brandConciergeGlobal: true } };
-  }
 }
 
 function decorateGnav(cards, input, topNav, el) {

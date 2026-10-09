@@ -7,8 +7,12 @@ const chatLabelText = 'Ask';
 function extractCardPrompts(cards) {
   if (!cards) return undefined;
   const prompts = [...cards.querySelectorAll(':scope > div')]
-    .map((row) => ({ label: row.textContent.trim() }))
-    .filter((prompt) => prompt.label);
+    .map((row) => row.textContent.trim())
+    .filter(Boolean)
+    .map((label) => ({
+      label,
+      action: { click_analytics: `BC-suggested_prompt_clicked|gnav|${label}` },
+    }));
   return prompts.length ? prompts : undefined;
 }
 
