@@ -9,30 +9,39 @@ class achieves the desired effect, reuse it.
 
 ## One-time content entrances
 
-On C2 pages, `libs/c2/content-animations.js` converts authored
-`parallax-line-height`, `parallax-stagger-ltr`, `parallax-stagger-rtl`,
-`parallax-move-up`, and `parallax-opacity` content entrances into
-one-time viewport-triggered animations. Existing built-in activation
-(for example, News, Quick Actions, and FAQ) remains built-in.
+On C2 pages, `libs/c2/content-animations.js` retains authored and baked-in
+activation (including News, Quick Actions, and individual FAQ questions).
+Existing CSS entrances retain their original scroll timelines, start/end
+ranges, offsets and easing for their first pass. JavaScript listens to the
+native animation's forward `finish` notification and locks its final state
+once, disabling only the entrance names rather than unrelated animations
+on the same element. It does not listen to scroll, interpolate motion or
+track scroll direction.
+Quick Actions has no replacement duration or added per-tile delays.
 
-JavaScript only groups content, observes viewport entry, and retains
-the played state across responsive content changes. Keyframes,
-durations, offsets, easing, and opacity stagger are defined in CSS.
-Card rows trigger independently; reduced motion displays content
-without the entrance animation. FAQ questions retain their individual
-move-up and fade entrances, anchored to each question's trigger rather
-than revealing the entire accordion at once. Pending items are hidden
-without an initial transform, so their viewport trigger is not delayed
-by the entrance's movement. FAQ and card rows retain their existing
-parallax offsets and easing; cards add CSS delays in authored row order.
-Row registration waits until Milo reveals the fully loaded section,
-so hidden cards are not mistaken for a single row.
-Lazy-loaded siblings do not interrupt an entrance already in progress.
-Unrelated child animations
-and hover filters are preserved; scale and blur only participate when
-their corresponding variants are present.
-Quick Actions uses a shared 400ms entrance without added per-tile delays,
-retaining its original staggered movement offsets and easing.
+New `parallax-line-height` text entrances and the hover list following the
+aside composition use the prototype's 1050ms CSS animation, triggered at
+80% and 90% of the viewport respectively. Where the browser or responsive
+layout does not provide an existing CSS animation, the helper uses a timed
+fallback. Existing custom animations are preserved rather than replaced.
+Pending timed items are hidden without a transform, so their
+viewport trigger is not delayed by their movement. Scale and blur only
+participate when their corresponding variants are present.
+
+JavaScript supplies structural `--c2-entrance-index` and
+`--c2-entrance-count` metadata, not animation values. CSS distributes any
+number of items within the prototype's displacement and opacity windows;
+there are no numbered step selectors or maximum content count. Fade timings
+derive from the prototype's inverse ease-out-cubic curve. CSS-only aside text
+uses `sibling-index()` / `sibling-count()` to order any number of text items
+before the media and accordion, with semantic text phases in older browsers.
+
+Registration waits until Milo reveals the fully loaded section.
+Resize and lazy-loaded siblings do not interrupt in-flight timed animations
+or change their index/count. Rebuilding or clearing a group aborts its old
+focus and native-completion listeners. Focus and reduced motion display
+content immediately; unrelated child animations and hover effects remain
+intact.
 
 C2 reloads without a hash start at the top even when Chrome DevTools
 changes loading timings. Boot temporarily suspends native scroll
