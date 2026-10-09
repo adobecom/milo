@@ -226,7 +226,13 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => {
+  gnavPromise.then((nav) => {
+    if (typeof nav?.reloadUnav === 'function') {
+      // Preserve the legacy host-auth refresh entry point for C2 navigation.
+      window.feds = window.feds || {};
+      window.feds.nav = window.feds.nav || {};
+      window.feds.nav.reloadUnav = nav.reloadUnav.bind(nav);
+    }
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
   });
