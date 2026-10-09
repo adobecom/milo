@@ -28,10 +28,10 @@ const variants = {};
 let useAcomAssistant = false;
 let acomAssistantModulePromise;
 
-async function routeAcomAssistantInput(text, cards) {
+async function routeAcomAssistantInput(options) {
   acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
   const { acomAssistantRouteInput } = await acomAssistantModulePromise;
-  return acomAssistantRouteInput(text, cards);
+  return acomAssistantRouteInput(options);
 }
 
 function checkGlobal() {
@@ -42,9 +42,9 @@ function checkGlobal() {
   return params.get('side-overlay') === 'true';
 }
 
-function routeInput(text, cards) {
+function routeInput({ text, cards, source = 'input' }) {
   if (useAcomAssistant) {
-    routeAcomAssistantInput(text, cards).catch((error) => {
+    routeAcomAssistantInput({ text, cards, source }).catch((error) => {
       window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
     });
     return;
@@ -70,16 +70,16 @@ function handleInput(text, input, cards) {
   submitButton.disabled = true;
   textArea.blur();
 
-  routeInput(text, cards);
+  routeInput({ text, cards });
 }
 
 function handleSuggestedPrompt(text, event, cards) {
   event.target.blur();
-  routeInput(text, cards);
+  routeInput({ text, cards, source: 'prompt' });
 }
 
 function handleFloatingButton(cards) {
-  routeInput(null, cards);
+  routeInput({ cards });
 }
 
 export default async function init(el) {

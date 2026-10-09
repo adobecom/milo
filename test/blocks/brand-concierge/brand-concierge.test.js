@@ -789,9 +789,13 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     const cardText = button.querySelector('.prompt-card-text').textContent.trim();
     button.click();
 
-    await waitFor(() => sendUserMessageSpy.calledWith({ label: cardText }));
+    const expected = {
+      label: cardText,
+      action: { click_analytics: `BC-suggested_prompt_clicked|inline|${cardText}` },
+    };
+    await waitFor(() => sendUserMessageSpy.calledWith(expected));
 
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
-    expect(sendUserMessageSpy.calledWith({ label: cardText })).to.be.true;
+    expect(sendUserMessageSpy.calledWith(expected)).to.be.true;
   });
 });

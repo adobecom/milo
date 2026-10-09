@@ -2,9 +2,11 @@ import { bcAnalytics } from './bc-analytics.js';
 
 /*
  * Best-effort adapter from AcomAssistant's analyticsCallback event shape into BC's
- * existing bcAnalytics()/dunamis pipeline. The wiki marks this mapping "InProgress" --
- * only fields with a clear, confident correspondence are forwarded; anything else is
- * logged (not silently dropped) so gaps stay visible until Adobe finalizes the contract.
+ * existing bcAnalytics() Adobe Analytics (_satellite) dashboards. The client sends its
+ * own events to Dunamis; this only preserves BC reporting. The wiki marks this mapping
+ * "InProgress" -- only fields with a clear, confident correspondence are forwarded;
+ * anything else is logged (not silently dropped) so gaps stay visible until Adobe
+ * finalizes the contract.
  * https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration
  */
 export default function acomAssistantAnalyticsAdapter(eventsData) {
