@@ -1578,6 +1578,8 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
+const isMasFieldAutoblock = (key, url) => key === 'merch-card-autoblock' && url.hash.includes('field=');
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   let url;
@@ -1654,7 +1656,7 @@ export function decorateAutoBlock(a) {
     // Inline field links (mas.adobe.com/studio.html#...&field=...) render through the
     // lightweight merch block instead of merch-card-autoblock, keeping merch-card and its
     // dependencies out of the critical path when only a field is authored (e.g. in marquee).
-    if (key === 'merch-card-autoblock' && url.hash.includes('field=')) {
+    if (isMasFieldAutoblock(key, url)) {
       a.className = 'merch link-block';
       return true;
     }
@@ -2288,6 +2290,15 @@ function getMasDepUrl(component) {
   return `${baseUrl}/web-components/dist/${component}`;
 }
 
+export function isMasGeoDetectionEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+const relativeToBlock = (specifier) => (blockPath) => new URL(specifier, new URL(`${blockPath}.js`, window.location.href)).href;
+
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
     getMasDepUrl('lit-all.min.js'),
@@ -2295,8 +2306,12 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('merch-quantity-select.js'),
   ],
   merch: [
-    getMasDepUrl('commerce.js'),
+    () => getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+    relativeToBlock('../../utils/action.js'),
+    relativeToBlock('../../utils/decorate.js'),
+    relativeToBlock('../../features/placeholders.js'),
+    (blockPath) => isMasGeoDetectionEnabled() && relativeToBlock('../../utils/market.js')(blockPath),
   ],
 };
 
@@ -2315,10 +2330,10 @@ const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => bloc
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${blockPath}.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   (blockDeps.get(name) ?? []).forEach((dep) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    if (typeof url === 'string') loadLink(url, { rel: 'modulepreload', crossorigin: 'anonymous' });
   });
   if (!hasStyles) return null;
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
@@ -2347,6 +2362,7 @@ export function preloadLcpCodeFiles(area = document) {
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
+  let hasMasField = false;
   firstSection.querySelectorAll('a[href]').forEach((a) => {
     let url;
     try { url = new URL(a.href); } catch { return; }
@@ -2354,6 +2370,7 @@ export function preloadLcpCodeFiles(area = document) {
     if (!match) return;
     const name = Object.keys(match)[0];
     if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    if (isMasFieldAutoblock(name, url)) hasMasField = true;
     autoNames.add(name);
   });
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
@@ -2368,7 +2385,8 @@ export function preloadLcpCodeFiles(area = document) {
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
-  const allBlocks = [...blocks, ...autoBlockEls];
+  const masFieldEls = hasMasField ? [createTag('div', { class: 'merch' })] : [];
+  const allBlocks = [...blocks, ...autoBlockEls, ...masFieldEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
   const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
@@ -2426,7 +2444,7 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || nonPznOffer)) return;
 
   const { base } = getConfig();
-  loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${base}/martech/helpers.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
@@ -2943,9 +2961,7 @@ export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
-  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
-  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled()) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }

@@ -76,6 +76,7 @@ export const getFederatedContentRoot = () => '';
 export const getFedsPlaceholderConfig = () => ({});
 export const shouldBlockFreeTrialLinks = () => false;
 export const isAupEnabled = () => false;
+export const isMasGeoDetectionEnabled = () => false;
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
 
