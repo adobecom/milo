@@ -132,15 +132,14 @@
 
   .rcc-item {
     font-weight: var(--s2a-font-weight-body);
-    color: var(--s2a-color-content-knockout);
-    opacity: 0.12;
-    transition: opacity 0.3s ease;
+    color: var(--s2a-color-transparent-white-64);
+    transition: color 0.3s ease;
     cursor: default;
     user-select: none;
     white-space: nowrap;
 
     &.is-active {
-      opacity: 1;
+      color: var(--s2a-color-content-knockout);
     }
   }
 
