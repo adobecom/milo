@@ -2374,7 +2374,7 @@ export function preloadLcpCodeFiles(area = document) {
   const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
     && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...autoNames].some(isCommerceBlock));
-  if (hasCommerceContent) {
+  if (hasCommerceContent && !new URLSearchParams(window.location.search).has('at_preview_token')) {
     import(`${base}/blocks/merch/merch.js`)
       .then((mod) => mod.initService().catch((e) => {
         mod.initService.promise = undefined;
