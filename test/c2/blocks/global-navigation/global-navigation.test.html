@@ -23,7 +23,7 @@
     import { expect } from '@esm-bundle/chai';
     import sinon from 'sinon';
     import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
-    import { calls } from './mocks/federal-main.js';
+    import { calls, setNavigation } from './mocks/federal-main.js';
     import init from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 
     const gnavSheet = '/test/features/placeholders/placeholders-geo-ip-gnav.json';
@@ -153,6 +153,83 @@
           const args = await runInit();
           const map = await args.placeholders;
           expect(map.get('phone-number-geo-ip')).to.equal('800 555 1234');
+        });
+
+        describe('legacy host-auth refresh adapter', () => {
+          let originalFeds;
+          let originalIms;
+
+          beforeEach(() => {
+            originalFeds = window.feds;
+            originalIms = window.adobeIMS;
+            delete window.feds;
+            window.adobeIMS = { initialized: true, isSignedInUser: () => false };
+            disableLingo();
+          });
+
+          afterEach(() => {
+            if (originalFeds === undefined) delete window.feds;
+            else window.feds = originalFeds;
+            if (originalIms === undefined) delete window.adobeIMS;
+            else window.adobeIMS = originalIms;
+            setNavigation({});
+          });
+
+          async function initialize(navigation) {
+            setNavigation(navigation);
+            await runInit();
+            expect(await getConfig().federal.fedsGlobalNavigation).to.equal(navigation);
+          }
+
+          it('delegates Federal reloadUnav while preserving existing feds and nav properties', async () => {
+            const result = Promise.resolve('reloaded');
+            const reload = sinon.stub();
+            const oldReloadUnav = sinon.stub();
+            const nav = { reload, reloadUnav: oldReloadUnav, custom: true };
+            const feds = { debug: { enabled: true }, nav };
+            window.feds = feds;
+            const navigation = { reloadUnav: sinon.stub().returns(result) };
+            await initialize(navigation);
+
+            expect(window.feds).to.equal(feds);
+            expect(window.feds.debug).to.deep.equal({ enabled: true });
+            expect(window.feds.nav).to.equal(nav);
+            expect(nav.reload).to.equal(reload);
+            expect(nav.custom).to.equal(true);
+            expect(nav.reloadUnav('options')).to.equal(result);
+            expect(navigation.reloadUnav.calledOnceWithExactly('options')).to.equal(true);
+            expect(navigation.reloadUnav.firstCall.thisValue).to.equal(navigation);
+            expect(oldReloadUnav.called).to.equal(false);
+          });
+
+          it('adds nav without replacing existing feds properties', async () => {
+            const feds = { debug: true };
+            window.feds = feds;
+            await initialize({ reloadUnav() {} });
+            expect(window.feds).to.equal(feds);
+            expect(window.feds.debug).to.equal(true);
+            expect(window.feds.nav.reloadUnav).to.be.a('function');
+          });
+
+          it('does not advertise refresh when Federal provides no reloadUnav', async () => {
+            await initialize({});
+            expect(window.feds).to.equal(undefined);
+          });
+
+          it('leaves existing nav untouched when reloadUnav is not callable', async () => {
+            const reloadUnav = sinon.stub();
+            const feds = { debug: true, nav: { reloadUnav } };
+            window.feds = feds;
+            await initialize({ reloadUnav: true });
+            expect(window.feds).to.equal(feds);
+            expect(window.feds.nav.reloadUnav).to.equal(reloadUnav);
+          });
+
+          it('propagates Federal reload errors instead of claiming success', async () => {
+            const error = new Error('reload unavailable');
+            await initialize({ reloadUnav: sinon.stub().throws(error) });
+            expect(() => window.feds.nav.reloadUnav()).to.throw(error);
+          });
         });
       });
     });
