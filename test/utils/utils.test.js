@@ -1110,6 +1110,83 @@ describe('Utils', () => {
     });
   });
 
+  describe('resetReloadScroll', () => {
+    let navigation;
+    let scroll;
+    let foundation;
+    let originalFoundation;
+    let hadFoundation;
+    let originalUrl;
+    let originalRestoration;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalRestoration = window.history.scrollRestoration;
+      window.history.scrollRestoration = 'auto';
+      foundation = document.head.querySelector('meta[name="foundation"]');
+      hadFoundation = Boolean(foundation);
+      originalFoundation = foundation?.getAttribute('content');
+      foundation ??= createTag('meta', { name: 'foundation' });
+      foundation.content = 'c2';
+      if (!hadFoundation) document.head.append(foundation);
+      navigation = sinon.stub(performance, 'getEntriesByType');
+      navigation.withArgs('navigation').returns([{ type: 'reload' }]);
+      scroll = sinon.stub(window, 'scrollTo');
+      window.history.replaceState(null, '', originalUrl.split('#')[0]);
+    });
+
+    afterEach(() => {
+      document.dispatchEvent(new Event(utils.MILO_EVENTS.DEFERRED));
+      navigation.restore();
+      scroll.restore();
+      window.history.replaceState(null, '', originalUrl);
+      window.history.scrollRestoration = originalRestoration;
+      if (!hadFoundation) foundation.remove();
+      else if (originalFoundation === null) foundation.removeAttribute('content');
+      else foundation.setAttribute('content', originalFoundation);
+    });
+
+    it('starts C2 reloads at the top and restores normal history behavior after loading', () => {
+      utils.resetReloadScroll();
+      expect(window.history.scrollRestoration).to.equal('manual');
+      expect(scroll.calledOnceWithExactly({ top: 0, left: 0, behavior: 'instant' })).to.be.true;
+      document.dispatchEvent(new Event(utils.MILO_EVENTS.DEFERRED));
+      expect(window.history.scrollRestoration).to.equal('auto');
+      window.history.scrollRestoration = 'manual';
+      window.dispatchEvent(new Event('pagehide'));
+      expect(window.history.scrollRestoration).to.equal('manual');
+    });
+
+    it('restores history behavior when leaving before loading finishes', () => {
+      utils.resetReloadScroll();
+      window.dispatchEvent(new Event('pagehide'));
+      expect(window.history.scrollRestoration).to.equal('auto');
+    });
+
+    ['navigate', 'back_forward'].forEach((type) => {
+      it(`preserves ${type} scroll behavior`, () => {
+        navigation.withArgs('navigation').returns([{ type }]);
+        utils.resetReloadScroll();
+        expect(scroll.called).to.be.false;
+        expect(window.history.scrollRestoration).to.equal('auto');
+      });
+    });
+
+    it('preserves hash links on reload', () => {
+      window.history.replaceState(null, '', '#faq');
+      utils.resetReloadScroll();
+      expect(scroll.called).to.be.false;
+      expect(window.history.scrollRestoration).to.equal('auto');
+    });
+
+    it('leaves non-C2 pages unchanged', () => {
+      foundation.content = 'c1';
+      utils.resetReloadScroll();
+      expect(scroll.called).to.be.false;
+      expect(window.history.scrollRestoration).to.equal('auto');
+    });
+  });
+
   describe('scrollToHashedElement', () => {
     before(() => {
       const div = document.createElement('div');

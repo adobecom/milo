@@ -111,15 +111,15 @@ describe('FAQ', () => {
     expect(trigger.getAttribute('daa-ll')).to.match(/^close-1--/);
   });
 
-  it('tags each item with the entry-animation classes', async () => {
+  it('tags each question for its built-in entry animation', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.faq');
     init(block);
 
-    block.querySelectorAll('.faq-item').forEach((item) => {
-      expect(item.classList.contains('parallax-move-up')).to.be.true;
-      expect(item.classList.contains('parallax-opacity')).to.be.true;
-    });
+    const items = [...block.querySelectorAll('.faq-item')];
+    expect(items.every((item) => item.classList.contains('parallax-move-up'))).to.be.true;
+    expect(items.every((item) => item.classList.contains('parallax-opacity'))).to.be.true;
+    expect(block.querySelector('.faq-list.parallax-move-up')).to.be.null;
   });
 
   describe('SEO variant', () => {

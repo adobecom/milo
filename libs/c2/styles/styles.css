@@ -1574,6 +1574,224 @@ span.hang-opening-quote {
     from { transform: translateY(0); }
     to { transform: translateY(20vh); }
   }
+
+  /* stylelint-disable property-no-unknown -- Scroll timelines require newer CSS property definitions. */
+  :where(.section.parallax-double-garage-door:has(> .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid)) {
+    timeline-scope: --c2-aside-timeline;
+
+    > .rich-content:has(+ .split-aside-grid) {
+      animation: none;
+      view-timeline: --c2-aside-timeline block;
+    }
+
+    > .rich-content:has(+ .split-aside-grid) .content > *,
+    > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+      --c2-aside-order: 0;
+
+      animation: c2-aside-fade linear both, c2-aside-rise linear both;
+      animation-timeline: --c2-aside-timeline, --c2-aside-timeline;
+      animation-range:
+        entry-crossing calc(5.75vh + var(--c2-aside-order) * 6.75vh)
+        entry-crossing 49.25vh,
+        entry-crossing -22vh entry-crossing 53vh;
+    }
+
+    > .rich-content:has(+ .split-aside-grid) .content > :nth-child(2) { --c2-aside-order: 1; }
+    > .rich-content:has(+ .split-aside-grid) .content > :nth-child(3) { --c2-aside-order: 2; }
+
+    > .rich-content:has(+ .split-aside-grid) .content > :nth-child(n+4),
+    > .split-aside-grid .split-aside-grid-stack { --c2-aside-order: 3; }
+
+    > .split-aside-grid .split-aside-grid-items { --c2-aside-order: 4; }
+
+    &:focus-within > .rich-content:has(+ .split-aside-grid) .content > *,
+    &:focus-within > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+      animation: none;
+    }
+  }
+
+  @keyframes c2-aside-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes c2-aside-rise {
+    from { transform: translateY(calc(var(--c2-aside-order) * 20px)); }
+    to { transform: translateY(0); }
+  }
+  /* stylelint-enable property-no-unknown */
+}
+
+.c2-entrance-group[class],
+.c2-entrance-group[class] > :not([class*="section-"]) {
+  --c2-entrance-trigger: 90%;
+  --c2-entrance-y: 64px;
+  --c2-entrance-duration: 1050ms;
+  --c2-entrance-fade-delay: 36ms;
+  --c2-entrance-fade-duration: 327ms;
+  --c2-entrance-delay: 0ms;
+  --c2-entrance-easing: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.c2-entrance-group[class] {
+  animation: none;
+}
+
+.c2-entrance-group.rich-content {
+  --c2-entrance-trigger: 80%;
+
+  .c2-entrance-item {
+    --c2-entrance-y: 24px;
+    --c2-entrance-fade-delay: 67ms;
+    --c2-entrance-fade-duration: 596ms;
+  }
+
+  [data-c2-entrance-step="1"] {
+    --c2-entrance-y: 48px;
+    --c2-entrance-fade-delay: 217ms;
+    --c2-entrance-fade-duration: 447ms;
+  }
+
+  [data-c2-entrance-step="2"] {
+    --c2-entrance-y: 72px;
+    --c2-entrance-fade-delay: 397ms;
+    --c2-entrance-fade-duration: 266ms;
+  }
+}
+
+.c2-entrance-group.parallax-opacity:not(.rich-content, .faq-item) {
+  --c2-entrance-y: 0;
+}
+
+.c2-entrance-group.parallax-move-up:not(.rich-content, .faq-item) {
+  --c2-entrance-y: 100px;
+
+  &:not(.parallax-opacity) {
+    --c2-entrance-opacity: 1;
+  }
+}
+
+.c2-entrance-group:not(.rich-content) [data-c2-entrance-step="1"] {
+  --c2-entrance-y: 96px;
+  --c2-entrance-fade-delay: 245ms;
+  --c2-entrance-fade-duration: 805ms;
+}
+
+.c2-entrance-group:not(.rich-content) {
+  [data-c2-entrance-step="2"] {
+    --c2-entrance-y: 128px;
+    --c2-entrance-fade-delay: 350ms;
+    --c2-entrance-fade-duration: 700ms;
+  }
+
+  [data-c2-entrance-step="3"] {
+    --c2-entrance-y: 160px;
+    --c2-entrance-fade-delay: 450ms;
+    --c2-entrance-fade-duration: 600ms;
+  }
+
+  [data-c2-entrance-step="4"] {
+    --c2-entrance-y: 192px;
+    --c2-entrance-fade-delay: 550ms;
+    --c2-entrance-fade-duration: 500ms;
+  }
+
+  [data-c2-entrance-step="5"] {
+    --c2-entrance-y: 224px;
+    --c2-entrance-fade-delay: 650ms;
+    --c2-entrance-fade-duration: 400ms;
+  }
+}
+
+.faq-item.c2-entrance-group {
+  --c2-entrance-y: var(--parallax-translate-y, 100%);
+  --c2-entrance-easing: var(--parallax-easing);
+  --c2-entrance-fade-delay: 0ms;
+  --c2-entrance-fade-duration: var(--c2-entrance-duration);
+}
+
+.c2-entrance-group:is(.parallax-stagger-ltr, .parallax-stagger-rtl) > .c2-entrance-item {
+  --c2-entrance-y: var(--parallax-stagger-from, 64px);
+  --c2-entrance-opacity: var(--parallax-opacity-from, 1);
+  --c2-entrance-easing: var(--parallax-easing);
+  --c2-entrance-fade-delay: var(--c2-entrance-delay);
+  --c2-entrance-fade-duration: var(--c2-entrance-duration);
+
+  &[data-c2-entrance-step="1"] { --c2-entrance-delay: 150ms; }
+  &[data-c2-entrance-step="2"] { --c2-entrance-delay: 300ms; }
+  &[data-c2-entrance-step="3"] { --c2-entrance-delay: 450ms; }
+  &[data-c2-entrance-step="4"] { --c2-entrance-delay: 600ms; }
+  &[data-c2-entrance-step="5"] { --c2-entrance-delay: 750ms; }
+}
+
+.quick-actions-grid.c2-entrance-group > .c2-entrance-item[data-c2-entrance-step] {
+  --c2-entrance-duration: 400ms;
+  --c2-entrance-delay: 0ms;
+}
+
+.c2-entrance-group:is(.parallax-scale-up, .parallax-scale-down),
+.c2-entrance-item:is(.parallax-scale-up, .parallax-scale-down) {
+  --c2-entrance-scale-animation: c2-entrance-scale;
+}
+
+.c2-entrance-group.parallax-blur,
+.c2-entrance-item.parallax-blur {
+  --c2-entrance-blur-animation: c2-entrance-blur;
+}
+
+.c2-entrance-item[class],
+.c2-entrance-group[class] .c2-entrance-item[class] {
+  animation: none;
+  opacity: 0;
+
+  &.c2-entrance-played {
+    animation-name:
+      c2-entrance-rise, c2-entrance-fade,
+      var(--c2-entrance-scale-animation, none), var(--c2-entrance-blur-animation, none);
+    animation-duration:
+      var(--c2-entrance-duration), var(--c2-entrance-fade-duration),
+      var(--c2-entrance-duration), var(--c2-entrance-duration);
+    animation-timing-function:
+      var(--c2-entrance-easing), var(--c2-entrance-easing),
+      var(--c2-entrance-easing), var(--c2-entrance-easing);
+    animation-delay: var(--c2-entrance-delay), var(--c2-entrance-fade-delay), 0s, 0s;
+    animation-fill-mode: both;
+  }
+
+  &.c2-entrance-settled {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@keyframes c2-entrance-rise {
+  from { translate: 0 var(--c2-entrance-y); }
+  to { translate: 0 0; }
+}
+
+@keyframes c2-entrance-scale {
+  from { scale: var(--parallax-scale); }
+  to { scale: 1; }
+}
+
+@keyframes c2-entrance-blur {
+  from { filter: blur(var(--parallax-blur)); }
+  to { filter: blur(0); }
+}
+
+@keyframes c2-entrance-fade {
+  from { opacity: var(--c2-entrance-opacity, 0); }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c2-entrance-item[class],
+  .c2-entrance-group[class] .c2-entrance-item,
+  .section.parallax-double-garage-door:has(> .rich-content + .split-aside-grid) > .rich-content:has(+ .split-aside-grid) .content > *,
+  .section.parallax-double-garage-door:has(> .rich-content + .split-aside-grid) > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+    animation: none !important;
+    opacity: 1;
+  }
 }
 
 .dark {

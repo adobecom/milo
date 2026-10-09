@@ -7,6 +7,47 @@ class achieves the desired effect, reuse it.
 
 ---
 
+## One-time content entrances
+
+On C2 pages, `libs/c2/content-animations.js` converts authored
+`parallax-line-height`, `parallax-stagger-ltr`, `parallax-stagger-rtl`,
+`parallax-move-up`, and `parallax-opacity` content entrances into
+one-time viewport-triggered animations. Existing built-in activation
+(for example, News, Quick Actions, and FAQ) remains built-in.
+
+JavaScript only groups content, observes viewport entry, and retains
+the played state across responsive content changes. Keyframes,
+durations, offsets, easing, and opacity stagger are defined in CSS.
+Card rows trigger independently; reduced motion displays content
+without the entrance animation. FAQ questions retain their individual
+move-up and fade entrances, anchored to each question's trigger rather
+than revealing the entire accordion at once. Pending items are hidden
+without an initial transform, so their viewport trigger is not delayed
+by the entrance's movement. FAQ and card rows retain their existing
+parallax offsets and easing; cards add CSS delays in authored row order.
+Row registration waits until Milo reveals the fully loaded section,
+so hidden cards are not mistaken for a single row.
+Lazy-loaded siblings do not interrupt an entrance already in progress.
+Unrelated child animations
+and hover filters are preserved; scale and blur only participate when
+their corresponding variants are present.
+Quick Actions uses a shared 400ms entrance without added per-tile delays,
+retaining its original staggered movement offsets and easing.
+
+C2 reloads without a hash start at the top even when Chrome DevTools
+changes loading timings. Boot temporarily suspends native scroll
+restoration until loading finishes; hash links and back/forward
+navigation retain their existing behavior.
+
+The authored Rich Content + Split Aside composition inside
+`parallax-double-garage-door` instead uses a CSS-only shared view
+timeline: eyebrow, heading, body, media, then aside. A following hover
+list resumes one-time triggered entrances. Existing garage-door
+section movement, `parallax-garage-door-reveal`, and the Firefox
+`scroll-animations.js` fallback are not changed by this treatment.
+
+---
+
 ## Architecture
 
 All scroll-driven animations share a common base selector and a
