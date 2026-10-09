@@ -2290,10 +2290,11 @@ function getMasDepUrl(component) {
   return `${baseUrl}/web-components/dist/${component}`;
 }
 
-function isMasGeoDetectionOn() {
-  const geoDetection = new URLSearchParams(window.location.search).get('mas-geo-detection')
-    ?? getMetadata('mas-geo-detection');
-  return ['on', 'true'].includes(geoDetection?.toLowerCase());
+export function isMasGeoDetectionEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
 }
 
 const relativeToBlock = (specifier) => (blockPath) => new URL(specifier, new URL(`${blockPath}.js`, window.location.href)).href;
@@ -2310,7 +2311,7 @@ const STATIC_BLOCK_DEPS = {
     relativeToBlock('../../utils/action.js'),
     relativeToBlock('../../utils/decorate.js'),
     relativeToBlock('../../features/placeholders.js'),
-    (blockPath) => isMasGeoDetectionOn() && relativeToBlock('../../utils/market.js')(blockPath),
+    (blockPath) => isMasGeoDetectionEnabled() && relativeToBlock('../../utils/market.js')(blockPath),
   ],
 };
 
@@ -2960,7 +2961,7 @@ export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionOn()) return;
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled()) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
