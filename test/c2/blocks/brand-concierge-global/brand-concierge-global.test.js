@@ -1,11 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../../libs/c2/blocks/brand-concierge-global/brand-concierge-global.js';
-import {
-  decorateAcomAssistantGnav,
-  loadBrandConcierge,
-} from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
-import { loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -89,9 +86,9 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     expect(initialize.called).to.be.false;
   });
 
-  it('also bypasses legacy listeners and restored overlays when the block loads directly', () => {
+  it('also bypasses legacy listeners and restored overlays when the block loads directly', async () => {
     localStorage.setItem('bc-side-overlay', 'open');
-    init(block);
+    await init(block);
 
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
     expect(document.querySelector('.bc-gnav')).to.be.null;

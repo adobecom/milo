@@ -1,9 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import {
-  decorateAcomAssistantGnav,
-  getFederalDomain,
-} from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { getFederalDomain } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 
 const DEFAULT = 'https://main--federal--adobecom.aem.page/federal';
 

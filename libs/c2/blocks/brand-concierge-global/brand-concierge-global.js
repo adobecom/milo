@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getMetadata } from '../../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -18,7 +18,6 @@ import {
   isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
-import { decorateAcomAssistantGnavBlock } from '../../../features/acom-assistant-gnav.js';
 
 let stayActive = false;
 
@@ -136,8 +135,12 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
-export default function init(el) {
-  if (decorateAcomAssistantGnavBlock(el)) return;
+export default async function init(el) {
+  if (getMetadata('acom-assistant') === 'on') {
+    const { decorateAcomAssistantGnavBlock } = await import('../../../features/acom-assistant-gnav.js');
+    decorateAcomAssistantGnavBlock(el);
+    return;
+  }
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));

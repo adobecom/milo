@@ -18,9 +18,6 @@ import {
   isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
-import { decorateNavWithAssistant } from '../../features/acom-assistant-gnav.js';
-
-export { decorateNavWithAssistant };
 
 let stayActive = false;
 let useAcomAssistant = false;
@@ -73,8 +70,9 @@ function promptUp() {
   stayActive = false;
 }
 
-function decorateGnav(cards, input, topNav, el) {
+async function decorateGnav(cards, input, topNav, el) {
   if (useAcomAssistant) {
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
     decorateNavWithAssistant(cards, topNav);
     return;
   }
@@ -174,7 +172,9 @@ export default function init(el) {
     const topNav = document.querySelector('header.global-navigation nav');
     if (topNav) {
       clearInterval(navCheck);
-      decorateGnav(cards, input, topNav, el);
+      decorateGnav(cards, input, topNav, el).catch((error) => {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      });
     }
   }, 100);
 
