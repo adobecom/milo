@@ -925,6 +925,7 @@
 
     .section.parallax-video-garage-door:has(.rich-content.media) {
       overflow: clip;
+      will-change: transform;
       animation: rc-video-top-door ease-out both, rc-video-exit ease-out both;
       animation-timeline: view(), view();
       animation-range: entry 0% entry 70%, exit 40% exit 90%;

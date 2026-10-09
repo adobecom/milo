@@ -129,19 +129,6 @@
   }
 }
 
-/* anchor items to their trigger timeline to avoid jump on expansion */
-@supports (animation-timeline: view()) {
-  .faq-trigger {
-    view-timeline: --faq-trigger-timeline block;
-    view-timeline-inset: 40% 10%;
-  }
-
-  .faq-item {
-    timeline-scope: --faq-trigger-timeline;
-    animation-timeline: --faq-trigger-timeline;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .faq-item > .faq-panel {
     transition: none;

@@ -122,8 +122,8 @@ describe('C2 content animations', () => {
     expect(el.children[0].style.getPropertyValue('--c2-entrance-index')).to.equal('1');
     expect(el.children[1].style.getPropertyValue('--c2-entrance-index')).to.equal('0');
     observers[0].callback([{ isIntersecting: true }]);
-    expect(getComputedStyle(el.children[0]).animationDelay).to.equal('0.15s, 0.15s, 0s, 0s');
-    expect(getComputedStyle(el.children[1]).animationDelay).to.equal('0s, 0s, 0s, 0s');
+    expect(getComputedStyle(el.children[0]).animationDelay).to.equal('0.15s, 0.15s, 0s, 0s, 0s');
+    expect(getComputedStyle(el.children[1]).animationDelay).to.equal('0s, 0s, 0s, 0s, 0s');
   });
 
   it('converts built-in stagger classes without adding entrances elsewhere', () => {
@@ -148,7 +148,7 @@ describe('C2 content animations', () => {
     });
     observers[0].callback([{ isIntersecting: true }]);
     expect(getComputedStyle(items[0]).translate).to.equal('0px 100%');
-    expect(getComputedStyle(items[0]).animationDuration).to.equal('1.05s, 1.05s, 1.05s, 1.05s');
+    expect(getComputedStyle(items[0]).animationDuration).to.equal('1.05s, 1.05s, 1.05s, 1.05s, 1.05s');
     expect(getComputedStyle(items[0]).animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
     expect(items[1].classList.contains('c2-entrance-played')).to.be.false;
   });
@@ -181,15 +181,22 @@ describe('C2 content animations', () => {
     expect(title.getAnimations()[0]).to.equal(animation);
   });
 
-  it('replaces Quick Actions scroll timing even when its block stylesheet loads last', () => {
-    const el = block('quick-actions', '<style>.quick-actions-grid.parallax-stagger-ltr > :not([class*="section-"]) { animation-name: enable-parallax-stagger; }</style><div class="quick-actions-grid parallax-stagger-ltr"><a class="quick-actions-tile">One</a><a class="quick-actions-tile">Two</a></div>');
-    initContentAnimations(el);
+  it('leaves no scroll-driven motion on entrance classes before they trigger', () => {
+    section.classList.add('parallax-stagger-ltr');
+    const whole = block('parallax-move-up parallax-opacity parallax-scale-up parallax-blur', '<p>Content</p>');
+    const el = block('quick-actions', '<div class="quick-actions-grid parallax-stagger-ltr"><a class="quick-actions-tile">One</a><a class="quick-actions-tile">Two</a></div>');
     const tiles = el.querySelectorAll('.quick-actions-tile');
+    [section, whole, el.firstElementChild, ...tiles].forEach((item) => {
+      expect(getComputedStyle(item).animationName).to.equal('none');
+      expect(getComputedStyle(item).viewTimelineName).to.equal('none');
+    });
+    section.classList.remove('parallax-stagger-ltr');
+    initContentAnimations(el);
     tiles.forEach((item) => {
       expect(getComputedStyle(item).animationName).to.equal('none');
       expect(getComputedStyle(item).opacity).to.equal('0');
     });
-    observers[0].callback([{ isIntersecting: true }]);
+    observers.forEach((observer) => observer.callback([{ isIntersecting: true }]));
     tiles.forEach((item) => {
       expect(getComputedStyle(item).animationName).to.include('c2-entrance-rise');
       expect(getComputedStyle(item).animationTimeline).to.equal('auto');
@@ -223,7 +230,7 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(item).filter).to.equal('brightness(0.98)');
     expect(getComputedStyle(item).scale).to.equal('none');
     observers[0].callback([{ isIntersecting: true }]);
-    expect(getComputedStyle(item).animationName).to.equal('c2-entrance-rise, c2-entrance-fade, none, none');
+    expect(getComputedStyle(item).animationName).to.equal('c2-entrance-rise, c2-entrance-fade, none, none, none');
     await settle();
     item.getAnimations().forEach((animation) => animation.finish());
     expect(getComputedStyle(item).filter).to.equal('brightness(0.98)');
@@ -236,10 +243,10 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(el).animationName).to.equal('none');
     observers[0].callback([{ isIntersecting: true }]);
     const style = getComputedStyle(el);
-    expect(style.animationName).to.equal('c2-entrance-rise, c2-entrance-fade, c2-entrance-scale, c2-entrance-blur');
+    expect(style.animationName).to.equal('c2-entrance-rise, c2-entrance-fade, c2-entrance-scale, c2-entrance-blur, none');
     expect(style.animationTimeline).to.equal('auto');
     expect(style.animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
-    expect(style.animationDelay).to.equal('0s, 0s, 0s, 0s');
+    expect(style.animationDelay).to.equal('0s, 0s, 0s, 0s, 0s');
     expect(style.translate).to.equal('0px 100px');
     expect(style.scale).to.equal('0.9');
     expect(style.filter).to.equal('blur(10px)');
@@ -544,11 +551,11 @@ describe('C2 content animations', () => {
   });
 
   it('leaves content with its own extra animations untouched', () => {
-    const el = block('parallax-move-up test-native-with-pulse', '<style>.test-native-with-pulse { animation-name: enable-parallax, test-content-pulse; animation-duration: auto, 10s; animation-timeline: view(40% 10%), auto; animation-iteration-count: 1, infinite; } @keyframes test-content-pulse { from { color: red; } to { color: blue; } }</style><p>Content</p>');
+    const el = block('parallax-move-up test-native-with-pulse', '<style>.test-native-with-pulse { animation: test-content-pulse 10s linear infinite; } @keyframes test-content-pulse { from { color: red; } to { color: blue; } }</style><p>Content</p>');
     const animations = el.getAnimations();
     initContentAnimations(el);
     expect(el.classList.contains('c2-entrance-item')).to.be.false;
-    expect(getComputedStyle(el).animationName).to.equal('enable-parallax, test-content-pulse');
+    expect(getComputedStyle(el).animationName).to.equal('test-content-pulse');
     expect(el.getAnimations()).to.deep.equal(animations);
     expect(observers).to.have.length(0);
   });
@@ -570,13 +577,79 @@ describe('C2 content animations', () => {
     expect(getComputedStyle(item).opacity).to.equal('1');
   });
 
-  it('replaces every scroll-linked entrance on the same element', () => {
-    const el = block('parallax-move-up test-two-native-entrances', '<style>.test-two-native-entrances { animation-name: enable-parallax, enable-grid-parallax; }</style><p>Content</p>');
-    expect(el.getAnimations()).to.have.length(2);
-    initContentAnimations(el);
-    expect(el.classList.contains('c2-entrance-item')).to.be.true;
-    expect(el.getAnimations()).to.have.length(0);
-    expect(observers).to.have.length(1);
+  it('plays base-card media zoom and featured radius once, in place, inside a staggered card', async () => {
+    const cardStylesheet = document.createElement('link');
+    cardStylesheet.rel = 'stylesheet';
+    cardStylesheet.href = '/libs/c2/blocks/base-card/base-card.css';
+    await new Promise((resolve) => {
+      cardStylesheet.onload = resolve;
+      document.head.append(cardStylesheet);
+    });
+    try {
+      const el = block('parallax-stagger-ltr', '<div class="base-card featured" data-block-status="loaded"><div class="media parallax-featured-card-media"><picture class="parallax-scale-down"><img alt=""></picture></div></div>');
+      const media = el.querySelector('.media');
+      const picture = el.querySelector('picture');
+      expect(getComputedStyle(media).animationName).to.equal('none');
+      expect(getComputedStyle(picture).animationName).to.equal('none');
+      initContentAnimations(el);
+      expect(el.firstElementChild.classList.contains('c2-entrance-item')).to.be.true;
+      [media, picture].forEach((item) => {
+        expect(item.classList.contains('c2-entrance-effect')).to.be.true;
+        expect(getComputedStyle(item).opacity).to.equal('1');
+      });
+      expect(getComputedStyle(picture).scale).to.equal('1.1');
+      expect(getComputedStyle(media).clipPath).to.equal('inset(0px)');
+      expect(observers).to.have.length(3);
+      observers.forEach((observer) => observer.callback([{ isIntersecting: true }]));
+      expect(getComputedStyle(picture).animationName).to.equal('c2-entrance-rise, c2-entrance-fade, c2-entrance-scale, none, none');
+      expect(getComputedStyle(media).animationName)
+        .to.equal('c2-entrance-rise, c2-entrance-fade, none, none, grow-featured-card-radius');
+      expect(getComputedStyle(picture).translate).to.equal('0px');
+      expect(getComputedStyle(picture).opacity).to.equal('1');
+      await settle();
+      [media, picture].forEach((item) => item.getAnimations()
+        .forEach((animation) => animation.finish()));
+      expect(getComputedStyle(picture).scale).to.equal('none');
+      expect(getComputedStyle(media).clipPath).to.not.equal('inset(0px)');
+    } finally {
+      cardStylesheet.remove();
+    }
+  });
+
+  it('plays the social-proof stretch once from its trigger instead of a scroll timeline', async () => {
+    const proofStylesheet = document.createElement('link');
+    proofStylesheet.rel = 'stylesheet';
+    proofStylesheet.href = '/libs/c2/blocks/social-proof/social-proof.css';
+    await new Promise((resolve) => {
+      proofStylesheet.onload = resolve;
+      document.head.append(proofStylesheet);
+    });
+    try {
+      const el = block('social-proof', '<div><div class="foreground"><h3>Quote</h3></div><div class="media"><picture><img alt=""></picture></div></div>');
+      const row = el.firstElementChild;
+      const img = el.querySelector('img');
+      [row, row.firstElementChild, img].forEach((item) => {
+        expect(getComputedStyle(item).animationName).to.equal('none');
+        expect(getComputedStyle(item).animationTimeline).to.equal('auto');
+      });
+      initContentAnimations(el);
+      expect(el.classList.contains('c2-entrance-effect')).to.be.true;
+      expect(getComputedStyle(el).opacity).to.equal('1');
+      expect(getComputedStyle(row).transform).to.not.equal('none');
+      expect(observers).to.have.length(1);
+      observers[0].callback([{ isIntersecting: true }]);
+      expect(getComputedStyle(row).animationName).to.equal('social-proof-stretch');
+      expect(getComputedStyle(row.firstElementChild).animationName).to.equal('social-proof-content-enter');
+      expect(getComputedStyle(img).animationName).to.equal('social-proof-image-zoom');
+      expect(getComputedStyle(row).animationDuration).to.equal('1.05s');
+      await settle();
+      [el, row, row.firstElementChild, img].forEach((item) => item.getAnimations()
+        .forEach((animation) => animation.finish()));
+      expect(getComputedStyle(row).transform).to.equal('none');
+      expect(getComputedStyle(img).transform).to.equal('none');
+    } finally {
+      proofStylesheet.remove();
+    }
   });
 
   it('shows timed entrances and aside content without motion when reduced motion is preferred', async () => {

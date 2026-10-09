@@ -88,7 +88,13 @@
     }
 
     .parallax-featured-card-media {
-      animation-name: grow-featured-card-radius;
+      @media (width < 2560px) {
+        --c2-entrance-clip-animation: grow-featured-card-radius;
+
+        &.c2-entrance-item:not(.c2-entrance-played) {
+          clip-path: inset(0 round 0);
+        }
+      }
     }
   }
 }
@@ -168,11 +174,5 @@
     .foreground {
       padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
     }
-  }
-}
-
-@media (width >= 2560px) {
-  .base-card.featured .parallax-featured-card-media {
-    animation-name: none;
   }
 }

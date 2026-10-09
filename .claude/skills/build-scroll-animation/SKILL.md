@@ -125,10 +125,11 @@ existing `parallax-*` class. This is the most important phase:
    of classes) already achieves the desired effect. For example,
    "fade in and slide up on entry" is just
    `parallax-move-up parallax-opacity`.
-2. **Variable override?** If the effect type matches (transform,
-   opacity, blur) but the values or range differ, check whether
-   overriding `--parallax-*` variables in a new class (reusing the
-   `enable-parallax` keyframe) would work.
+2. **Entrance input override?** If it is a one-time entrance that
+   only differs in magnitude, set the `--c2-entrance-*` input in a
+   new class. Entrances are timed and must never get scroll-driven
+   CSS; only garage-door, section transition and sticky moments are
+   scroll-driven.
 3. **New keyframe needed?** Only if steps 1-2 cannot achieve
    the effect.
 
@@ -166,9 +167,9 @@ Read the target block's CSS and JS from `libs/c2/blocks/<name>/`:
 
 Read the `@supports (animation-timeline: view())` block in
 `libs/c2/styles/styles.css` to understand:
-- The base `[class*="parallax-"]` declaration
-- The `enable-parallax` keyframe
-- How existing animations are structured
+- How existing scroll-driven moments (garage doors, grid,
+  move-up-fast) declare their own timeline and range
+- That the timed entrance CSS outside `@supports` is not part of it
 
 **Load `references/scroll-animation-api.md` now** if you need
 to reference range names, `view()` parameters, or timeline syntax.
@@ -181,9 +182,9 @@ Add the new animation CSS **inside** the existing
 
 Follow these rules:
 
-1. **Variable overrides first**: if the effect can be achieved by
-   overriding `--parallax-*` variables, write only a class with
-   variable overrides. No new keyframe.
+1. **Entrances are not scroll-driven**: if the effect is a one-time
+   entrance, use or override the timed entrance inputs instead of
+   writing anything inside `@supports`.
 
 2. **Minimal keyframes**: if a new keyframe is needed, animate
    only the properties that change. Prefer `from`-only keyframes
@@ -219,9 +220,9 @@ Follow these rules:
 
 ### 3d. Placement within the file
 
-Insert new CSS in a logical location within the `@supports` block:
-- Simple variant classes → near the existing variants
-  (`parallax-move-up`, `parallax-opacity`, etc.)
+Insert new CSS in a logical location:
+- Entrance input classes → with the timed entrance inputs outside
+  `@supports` (next to `parallax-scale-up`, `parallax-blur`, etc.)
 - New keyframes → after the keyframe they are most related to
 - Complex multi-element animations → at the end of the
   `@supports` block, before the closing `}`

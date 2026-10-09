@@ -1,66 +1,60 @@
 # Animation Patterns & Simplicity Guidelines
 
-Patterns for building scroll-driven animations, with a strong bias
-toward simplicity. The guiding principle: **if the effect can be
-achieved by setting a CSS variable on the existing `enable-parallax`
-keyframe, do not write a new keyframe.**
+Patterns for building C2 animations, with a strong bias toward
+simplicity. The guiding principles:
+
+- **Content entrances are one-time and timed, never scroll-driven.** Use
+  the existing `parallax-*` entrance classes; `content-animations.js`
+  triggers them. Do not give an entrance any `animation-timeline`,
+  `view-timeline` or `animation-range`.
+- **Scroll-driven CSS is only for scroll moments** such as garage doors,
+  section transitions and sticky effects.
 
 ---
 
 ## Decision tree: how to implement an animation
 
 ```
-Is the effect a combination of move/scale/blur/opacity on entry?
-  ├─ YES → Use existing parallax-* classes (compose them)
-  │        Done. No new CSS needed.
+Is it content appearing once (move/scale/blur/opacity/stagger)?
+  ├─ YES → Use existing parallax-* entrance classes (compose them).
+  │        Need a different magnitude? Set the --c2-entrance-* input in a
+  │        new class. No scroll timeline, no new keyframe.
   │
-  └─ NO → Does it need different range/timing but same transform types?
-           ├─ YES → Override --parallax-range-* and --parallax-* vars
-           │        in a new class. Reuse enable-parallax keyframe.
+  └─ NO → Is the motion meant to follow the scroll position
+          (garage door, section transition, sticky shift)?
+           ├─ YES → Does it animate one element?
+           │         ├─ YES → Pattern 2 (new keyframe, single element)
+           │         └─ NO  → Pattern 3 (multi-element orchestration)
+           │        Page-scroll based → Pattern 4.
            │
-           └─ NO → Does it animate a property not in enable-parallax
-                   (e.g. line-height, clip-path, width)?
-                    ├─ YES → Write a new @keyframes + new class.
-                    │        Minimal: only the properties needed.
-                    │
-                    └─ NO → Does it need multiple elements animating
-                            independently (different timelines/ranges)?
-                             ├─ YES → Multi-keyframe approach.
-                             │        Each sub-element gets its own
-                             │        animation + timeline + range.
-                             │
-                             └─ NO → Re-examine. You likely missed
-                                     a simpler path above.
+           └─ NO → Re-examine. It is probably a timed entrance.
 ```
 
 ---
 
-## Pattern 1: Variable override (simplest)
+## Pattern 1: Entrance input override (simplest)
 
-For effects that differ from existing classes only in magnitude or
-range.
+For entrances that differ from existing classes only in magnitude.
 
 ```css
 .parallax-move-up-large {
-  --parallax-translate-y: 200px;
-  --parallax-range-end-name: cover;
-  --parallax-range-end-length: 40%;
+  --c2-entrance-y: 200px;
 }
 ```
 
-No new keyframe needed. The `enable-parallax` keyframe picks up the
-overridden variables automatically.
+The shared timed keyframes pick up the input automatically. Never add a
+scroll timeline or range to an entrance.
 
 ### When to use
-- The effect involves transform, opacity, scale, blur, or any
-  combination of these
-- Only the magnitude or animation range differs from existing classes
+- The effect involves move, opacity, scale, blur, or any combination
+- Only the magnitude differs from existing classes
 
 ---
 
 ## Pattern 2: New keyframe, single element
 
-For effects that animate properties not covered by `enable-parallax`.
+For scroll-driven effects on one element (e.g. a clip reveal tied to a
+garage-door moment).
 
 ```css
 .parallax-clip-reveal {
@@ -151,9 +145,9 @@ Before finalizing any animation, answer these questions:
    Check `references/existing-animations.md`. Composing
    `parallax-move-up parallax-opacity` may be all you need.
 
-2. **Can variable overrides achieve this?**
-   If the effect is the same type (transform/opacity/blur) but
-   different values or range, override `--parallax-*` variables.
+2. **Is this really scroll-driven?**
+   Content entrances must stay timed. Only garage-door, section
+   transition and sticky moments may use scroll timelines.
 
 3. **Is every keyframe property necessary?**
    Remove any property from the keyframe that does not visibly
@@ -189,7 +183,7 @@ Before finalizing any animation, answer these questions:
 
 | Desired effect | Classes / approach |
 |---|---|
-| Fade in on entry | `parallax-opacity` |
+| Fade in once | `parallax-opacity` |
 | Slide up + fade in | `parallax-move-up parallax-opacity` |
 | Scale up + fade in | `parallax-scale-up parallax-opacity` |
 | Zoom out + blur clear | `parallax-scale-down parallax-blur` |
@@ -197,5 +191,4 @@ Before finalizing any animation, answer these questions:
 | Card grid stagger (RTL) | `parallax-stagger-rtl` on section |
 | Sticky section with darkening | `parallax-move-up-fast` |
 | Section growing from below | `parallax-garage-door-reveal` |
-| Custom slide distance | Override `--parallax-translate-y` in new class |
-| Custom entry range | Override `--parallax-range-*` vars in new class |
+| Custom slide distance | Override `--c2-entrance-y` in new class |

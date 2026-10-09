@@ -1,69 +1,103 @@
-# Existing Scroll Animations Reference
+# Existing Animations Reference
 
-Catalog of all scroll-driven animation classes defined in
-`libs/c2/styles/styles.css` inside `@supports (animation-timeline: view())`.
+Catalog of the C2 motion classes in `libs/c2/styles/styles.css`.
 **Always check this catalog before writing new CSS.** If an existing
 class achieves the desired effect, reuse it.
+
+C2 has two kinds of motion, and they must not be mixed:
+
+- **One-time entrances** (`parallax-move-up`, `parallax-opacity`,
+  `parallax-scale-up`, `parallax-scale-down`, `parallax-blur`,
+  `parallax-stagger-*`, `parallax-line-height`, base-card
+  `parallax-featured-card-media`, and the `social-proof` block's stretch). These are timed CSS animations that an
+  `IntersectionObserver` triggers once. They have **no** scroll-driven
+  CSS: no `animation-timeline`, `view-timeline` or `animation-range`.
+- **Scroll-driven moments**: garage-door sections, the Rich Content +
+  Split Aside composition inside `parallax-double-garage-door`, the
+  `parallax-scale-down-grid` section transition, and block-specific
+  scroll effects. Only these use `@supports (animation-timeline: view())`.
+
+Do not add scroll-driven CSS to an entrance class, and do not "lock" a
+scroll animation to make it behave like a timed one.
 
 ---
 
 ## One-time content entrances
 
-On C2 pages, `libs/c2/content-animations.js` replaces the scroll-linked
-entrance classes (`parallax-move-up`, `parallax-opacity`, `parallax-stagger-*`,
-including News, Quick Actions, Explore and individual FAQ questions) with a
-one-time CSS animation. An `IntersectionObserver` adds `c2-entrance-played`
-when the content crosses its trigger line; CSS owns all motion. JavaScript
-does not listen to scroll, interpolate motion or track scroll direction, and
-played content never reverses.
+`libs/c2/content-animations.js` finds entrance sources once their block has
+loaded and its section is revealed. It adds `c2-entrance-group` /
+`c2-entrance-item`, writes the structural `--c2-entrance-index` and
+`--c2-entrance-count` metadata, and adds `c2-entrance-played` when the
+content crosses its trigger line. CSS owns all motion. JavaScript does not
+listen to scroll, interpolate motion or track scroll direction, and played
+content never reverses.
 
-Existing entrances keep stage's start line (90% of the viewport, measured from
-the FAQ question for FAQ items), distances, stagger offsets and
-`--parallax-easing`, with the fade running for the whole movement. Their
-finish is the shared 1050ms duration rather than a scroll position. Card rows
-trigger independently, so lower rows on mobile start when they arrive.
+Sources inside a garage-door section (`SPECIALTY_SELECTOR`) are skipped:
+that content is part of the door interaction. Content already running any
+other animation keeps its own motion and gets no entrance.
+
+### Authored inputs
+
+The authored classes only feed custom-property inputs to the shared timed
+keyframes (all outside `@supports`):
+
+| Class | Input | Timed effect |
+|-------|-------|--------------|
+| `parallax-move-up` | `--c2-entrance-y: 100px` (opacity stays 1 without `parallax-opacity`) | Slides up 100px |
+| `parallax-opacity` | `--c2-entrance-y: 0` (fade only) | Fades from 0 to 1 |
+| `parallax-scale-up` | `--c2-entrance-scale-from: 0.9` | Scales from 90% to 100% |
+| `parallax-scale-down` | `--c2-entrance-scale-from: 1.1` | Scales from 110% to 100% (may need clipping) |
+| `parallax-blur` | `--c2-entrance-blur-from: 10px` | Blurs from 10px to 0 |
+
+These compose: `parallax-move-up parallax-opacity` slides and fades.
+Scale, blur and the base-card clip on their own (no move/opacity class)
+are "effect-only" (`c2-entrance-effect`): the element stays visible and in
+place while only that effect plays. Block CSS can add one extra animation
+through the non-inheriting `--c2-entrance-clip-animation` slot (used for
+the featured base-card radius below 2560px).
+
+### Timing
+
+Existing entrances keep stage's start line (90% of the viewport, measured
+from the FAQ question for FAQ items), distances, stagger offsets and
+`--parallax-easing`, with the fade running for the whole movement. They
+finish after the shared 1050ms duration.
 
 New `parallax-line-height` text entrances and the hover list following the
-aside composition use the prototype's 1050ms timing, curve and fade windows,
-triggered at 80% and 90% of the viewport respectively.
+aside composition use the prototype's 1050ms timing, curve and fade
+windows, triggered at 80% and 90% of the viewport respectively. CSS
+distributes any number of items within the prototype's displacement and
+opacity windows; there are no numbered step selectors or maximum count.
+
 Pending items are hidden without a transform, so their viewport trigger is
 not delayed by their movement. Played animations fill only backwards: once
 finished they leave no animation behind, so hover opacity and transforms
-apply normally. Scale and blur only participate when their corresponding
-variants are present. Content already running any other animation keeps its
-own motion and gets no entrance.
+apply normally. Resize and lazy-loaded siblings do not interrupt in-flight
+animations. Focus and reduced motion display content immediately.
 
-JavaScript supplies structural `--c2-entrance-index` and
-`--c2-entrance-count` metadata, not animation values. CSS distributes any
-number of items within the prototype's displacement and opacity windows;
-there are no numbered step selectors or maximum content count. Fade timings
-derive from the prototype's inverse ease-out-cubic curve, and each fade uses
-the matching slice of that curve so opacity stays linear in eased progress,
-as in the prototype. Timed groups trigger from their first visible item
-(the prototype's anchor), not the padded block. CSS-only aside text
-uses `sibling-index()` / `sibling-count()` to order any number of text items
-before the media and accordion, with semantic text phases in older browsers.
+### Stagger
 
-Registration waits until Milo reveals the fully loaded section.
-Resize and lazy-loaded siblings do not interrupt in-flight timed animations
-or change their index/count. Rebuilding or clearing a group aborts its old
-focus listener. Focus and reduced motion display
-content immediately; unrelated child animations and hover effects remain
-intact.
+Applied to a **section** (parent of multiple blocks).
 
-The authored Rich Content + Split Aside composition inside
-`parallax-double-garage-door` instead uses a CSS-only shared view
-timeline: eyebrow, heading, body, media, then aside. A following hover
-list resumes one-time triggered entrances. Existing garage-door
-section movement, `parallax-garage-door-reveal`, and the Firefox
-`scroll-animations.js` fallback are not changed by this treatment.
+| Class | Effect |
+|-------|--------|
+| `parallax-stagger-ltr` | Children rise left-to-right based on column position |
+| `parallax-stagger-rtl` | Children rise right-to-left |
+
+- `--parallax-stagger-index` (column) and `--parallax-stagger-row-index`
+  are assigned via `:nth-child()` per `two-up`/`three-up`/`four-up`/
+  `six-up` class; `masonry-layout` uses its own drift (150px at 768px+).
+- `--parallax-stagger-drift` (default 48px) and the indices produce
+  `--parallax-stagger-from`, which becomes each item's `--c2-entrance-y`.
+- Each item is delayed by its step (up to 150ms). Card rows trigger
+  independently, so lower rows on mobile start when they arrive.
 
 ---
 
-## Architecture
+## Scroll-driven moments
 
-All scroll-driven animations share a common base selector and a
-project-wide easing variable:
+Everything below lives inside `@supports (animation-timeline: view())`
+and uses the project easing:
 
 ```css
 :root {
@@ -71,125 +105,22 @@ project-wide easing variable:
 }
 ```
 
-This easing is the **default for all animations**. Do not use a
-different timing function unless the design specs explicitly
-require it.
+Use a different timing function only if the design specs require it.
+Each scroll-driven class declares its own `animation`,
+`animation-timeline` and `animation-range`; there is no shared base rule
+or shared `enable-parallax` keyframe.
 
-```css
-[class*="parallax-"] {
-  --parallax-opacity-from: 1;
-  --parallax-translate-y: 0;
-  --parallax-translate-x: 0;
-  --parallax-scale: 1;
-  --parallax-blur: 0;
+### Grid animation (`parallax-scale-down-grid`)
 
-  --parallax-range-start-name: entry;
-  --parallax-range-start-length: 0%;
-  --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
-  --parallax-range-end-name: entry;
-  --parallax-range-end-length: 100%;
-  --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
+A section transition that animates the grid max-width and margins with
+`enable-grid-parallax` (`--grid-max-width`, `--grid-margin-width`) on
+`view(block 40% 10%)`, range `entry 0% entry 100%`. Uses `overflow: clip`.
 
-  animation-name: enable-parallax;
-  animation-timing-function: var(--parallax-easing);
-  animation-fill-mode: both;
-  animation-timeline: view(block 40% 10%);
-  animation-range: var(--parallax-range-start) var(--parallax-range-end);
-  will-change: opacity, transform, filter;
-}
-```
+### Rich Content + Split Aside composition
 
-**Key design pattern**: variants override CSS custom properties
-rather than re-declaring animation properties. The shared
-`enable-parallax` keyframe reads those variables:
-
-```css
-@keyframes enable-parallax {
-  from {
-    opacity: var(--parallax-opacity-from);
-    transform: translate3d(var(--parallax-translate-x), var(--parallax-translate-y), 0)
-      scale(var(--parallax-scale));
-    filter: blur(var(--parallax-blur));
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
-}
-```
-
-This means simple animations (move, scale, blur, opacity) only
-need a class that sets the appropriate `--parallax-*` variable.
-
----
-
-## Simple variant classes
-
-These compose with each other. Applying multiple classes combines
-their effects because each sets a different variable.
-
-| Class | Variable set | Effect |
-|-------|-------------|--------|
-| `parallax-move-up` | `--parallax-translate-y: 100px` | Slides up 100px during entry |
-| `parallax-scale-up` | `--parallax-scale: 0.9` | Scales from 90% to 100% |
-| `parallax-scale-down` | `--parallax-scale: 1.1` | Scales from 110% to 100% (may need clipping) |
-| `parallax-blur` | `--parallax-blur: 10px` | Blurs from 10px to 0 |
-| `parallax-opacity` | `--parallax-opacity-from: 0` | Fades from 0 to 1 |
-
-### Composability example
-
-```html
-<div class="parallax-move-up parallax-opacity">
-```
-
-This element will slide up AND fade in simultaneously, because
-`enable-parallax` reads both `--parallax-translate-y` and
-`--parallax-opacity-from`.
-
----
-
-## Grid animation
-
-| Class | Effect |
-|-------|--------|
-| `parallax-scale-down-grid` | Animates grid max-width and margins. Uses its own keyframe `enable-grid-parallax` that transitions `--grid-max-width` and `--grid-margin-width`. Uses `overflow: clip`. |
-
----
-
-## Stagger animations
-
-Applied to a **section** (parent of multiple blocks), not to
-individual blocks.
-
-| Class | Effect |
-|-------|--------|
-| `parallax-stagger-ltr` | Children stagger left-to-right based on column position |
-| `parallax-stagger-rtl` | Children stagger right-to-left |
-
-**How it works:**
-- The section uses `enable-parallax-stagger` keyframe that
-  animates `--parallax-stagger-progress` from 1 to 0.
-- Each child calculates its own `transform: translateY()` from
-  a `--parallax-stagger-from` value based on its column and row
-  index.
-- Column indices (`--parallax-stagger-index`) are assigned via
-  `:nth-child()` selectors per `-up` class.
-- Row indices (`--parallax-stagger-row-index`) are assigned
-  similarly.
-- The `--parallax-stagger-drift` variable (default 48px) controls
-  maximum vertical offset.
-
-**Range adjustment for multiple rows:**
-- 2 rows: `--parallax-range-end: cover 70%`
-- 3+ rows: `--parallax-range-end: cover 80%`
-
-**Desktop only**: stagger animations are wrapped in
-`@media (width >= 768px)`.
-
----
-
-## Custom / complex animations
+Inside `parallax-double-garage-door`, a CSS-only shared view timeline
+reveals eyebrow, heading, body, media, then aside. A following hover list
+resumes one-time triggered entrances.
 
 ### Garage door reveal (`parallax-garage-door-reveal`)
 
@@ -223,7 +154,8 @@ A sticky section that scrolls away quickly while darkening.
 
 ## Reduced motion
 
-All parallax classes respect `prefers-reduced-motion: reduce` via
+Timed entrances show content immediately under reduced motion. All
+scroll-driven parallax classes respect `prefers-reduced-motion: reduce` via
 a blanket rule:
 
 ```css
@@ -245,9 +177,8 @@ an explicit reduced-motion override.
 
 ## Naming convention
 
-All scroll-driven animation classes use the `parallax-` prefix.
+All C2 motion classes use the `parallax-` prefix.
 New animations should follow this convention whenever possible.
-The `[class*="parallax-"]` base selector and the
-`prefers-reduced-motion` blanket rule both depend on this prefix.
+The `prefers-reduced-motion` blanket rule depends on this prefix.
 If a non-standard name is necessary, it requires user approval and
 an explicit `prefers-reduced-motion` override.

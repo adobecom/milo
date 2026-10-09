@@ -2,20 +2,11 @@
   overflow: clip;
   border-radius: var(--s2a-border-radius-24);
   container-type: inline-size;
-  --animation-timeline: --social-proof-view;
-  --animation-range: entry 10% contain 60%;
-  --animation-fill: both;
 
   > div {
     --stretch-target: 100cqi;
     --stretch-peak: min(2560px, 100vw);
     --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
-    view-timeline-name: --social-proof-view;
-    view-timeline-axis: block;
-    animation: social-proof-stretch var(--parallax-easing);
-    animation-timeline: var(--animation-timeline);
-    animation-range: var(--animation-range);
-    animation-fill-mode: var(--animation-fill);
     transform-origin: center top;
     will-change: transform;
     display: flex;
@@ -31,10 +22,6 @@
       padding-inline: var(--s2a-spacing-md);
       max-width: 460px;
       transform: translateY(var(--social-proof-content-shift));
-      animation: social-proof-content-enter var(--parallax-easing);
-      animation-timeline: var(--animation-timeline);
-      animation-range: var(--animation-range);
-      animation-fill-mode: var(--animation-fill);
       will-change: transform;
 
       .content p:last-child {
@@ -58,10 +45,6 @@
           object-fit: cover;
           width: 100%;
           height: 100%;
-          animation: social-proof-image-zoom var(--parallax-easing);
-          animation-timeline: var(--animation-timeline);
-          animation-range: var(--animation-range);
-          animation-fill-mode: var(--animation-fill);
           will-change: transform;
         }
       }
@@ -151,27 +134,45 @@
   initial-value: 0%;
 }
 
-@supports (animation-timeline: view()) {
-  @keyframes social-proof-stretch {
-    from { transform: scale(var(--stretch-from)); }
-    to   { transform: scale(1); }
+/* One-time entrance: libs/c2/content-animations.js adds c2-entrance-played once the
+   block reaches its trigger line; until then the card waits in its stretched state. */
+.social-proof.c2-entrance-item:not(.c2-entrance-played) > div {
+  transform: scale(var(--stretch-from));
+
+  .foreground {
+    --social-proof-content-scale: var(--stretch-from);
+    --social-proof-content-shift: 15%;
   }
 
-  @keyframes social-proof-image-zoom {
-    from { transform: scale(var(--stretch-from)); }
-    to   { transform: scale(1); }
+  .media img {
+    transform: scale(var(--stretch-from));
+  }
+}
+
+.social-proof.c2-entrance-played:not(.c2-entrance-settled) > div {
+  animation: social-proof-stretch var(--c2-entrance-duration) var(--parallax-easing) backwards;
+
+  .foreground {
+    animation: social-proof-content-enter var(--c2-entrance-duration) var(--parallax-easing) backwards;
   }
 
-  @keyframes social-proof-content-enter {
-    from {
-      --social-proof-content-scale: var(--stretch-from);
-      --social-proof-content-shift: 15%;
-    }
+  .media img {
+    animation: social-proof-image-zoom var(--c2-entrance-duration) var(--parallax-easing) backwards;
+  }
+}
 
-    to {
-      --social-proof-content-scale: 1;
-      --social-proof-content-shift: 0%;
-    }
+@keyframes social-proof-stretch {
+  from { transform: scale(var(--stretch-from)); }
+}
+
+@keyframes social-proof-image-zoom {
+  from { transform: scale(var(--stretch-from)); }
+}
+
+@keyframes social-proof-content-enter {
+  from {
+    --social-proof-content-scale: var(--stretch-from);
+    --social-proof-content-shift: 15%;
   }
 }
 

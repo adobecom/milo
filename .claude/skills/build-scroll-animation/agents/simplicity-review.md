@@ -34,10 +34,12 @@ If existing classes suffice:
 
 ### Step 2 — Can variable overrides do this?
 
-If the effect involves transform, opacity, scale, blur, or filter
-but at different magnitudes or ranges, check whether overriding
-`--parallax-*` variables in a single new class (with no new
-keyframe) achieves the effect.
+If the effect is a one-time content entrance (move, opacity, scale,
+blur) at a different magnitude, check whether overriding the timed
+`--c2-entrance-*` inputs in a single new class (with no new keyframe)
+achieves the effect. Entrances must never get scroll-driven CSS
+(`animation-timeline`, `view-timeline`, `animation-range`); reject any
+proposal that adds it.
 
 **Output**: the proposed variable-override-only class, or
 explanation of why variable overrides are insufficient.
