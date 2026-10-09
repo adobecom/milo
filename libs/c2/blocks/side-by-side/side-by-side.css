@@ -180,7 +180,12 @@
   }
 }
 
-
+@media (width < 768px) {
+  /* TODO: Temp - set only side-by-side block to have 8px margin (gutters) */
+  .section.container .side-by-side {
+    margin-inline: calc(8px - var(--grid-margin-width));
+  }
+}
 
 @media (width >= 768px) {
   .side-by-side {
