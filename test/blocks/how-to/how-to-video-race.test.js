@@ -38,7 +38,7 @@ function buildHowToWithPoster() {
   return el;
 }
 
-describe('How To video poster race (MWPW-210257)', () => {
+describe('How To video poster race', () => {
   it('drops the video when the how-to block runs before image-video-link decoration resolves', async () => {
     const block = buildHowToWithPoster();
 
