@@ -1559,14 +1559,16 @@ export function decorateImageLinks(el) {
           imageVideoLinkPromises.push(
             import('./image-video-link.js')
               .then((mod) => mod.default(picParent, aTag, icon))
-              .catch((e) => console.log('Error:', `${e.message} '${source.trim()}'`)),
+              .catch((e) => {
+                window.lana?.log(`Failed to decorate image video link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
+              }),
           );
         } else {
           aTag.append(pic);
         }
       }
     } catch (e) {
-      console.log('Error:', `${e.message} '${source.trim()}'`);
+      window.lana?.log(`Failed to decorate image link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
     }
   });
   return imageVideoLinkPromises;
