@@ -737,7 +737,7 @@ describe('Utils', () => {
       expect(link.href).to.equal(`${window.location.href}#test`);
     });
 
-    it('Awaits image-video-link decoration so the play-button modal link exists before blocks load (MWPW-210257)', async () => {
+    it('Awaits image-video-link decoration so the play-button modal link exists before blocks load', async () => {
       const container = document.createElement('div');
       container.innerHTML = '<p class="image-link-play"><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | :play:" class="image-link"/></picture></p>';
       await utils.decorateLinksAsync(container);
