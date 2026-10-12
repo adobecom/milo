@@ -279,6 +279,251 @@ describe('hub-hero block', () => {
     });
   });
 
+  describe('carousel desktop geometry', () => {
+    let styles;
+    let originalViewport;
+    let originalDirection;
+
+    const settleLayout = async () => {
+      for (let frame = 0; frame < 3; frame += 1) {
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      }
+    };
+
+    before(async () => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      originalDirection = document.documentElement.getAttribute('dir');
+      styles = document.createElement('style');
+      styles.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' })
+        + await readFile({ path: '../../../libs/c2/blocks/hub-hero/hub-hero.css' });
+      document.head.append(styles);
+    });
+
+    afterEach(async () => {
+      document.body.replaceChildren();
+      window.scrollTo(0, 0);
+      if (originalDirection === null) document.documentElement.removeAttribute('dir');
+      else document.documentElement.setAttribute('dir', originalDirection);
+      await settleLayout();
+    });
+
+    after(async () => {
+      styles.remove();
+      await setViewport(originalViewport);
+    });
+
+    const loadCarousel = async (slideCount = 3) => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.hub-hero');
+      if (slideCount === 3) {
+        block.classList.add('slides-3');
+        block.insertBefore(block.children[2].cloneNode(true), block.children[3]);
+        block.lastElementChild.remove();
+      }
+      const image = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="gray"/></svg>';
+      const svg = `data:image/svg+xml,${encodeURIComponent(image)}`;
+      block.querySelectorAll('img').forEach((img) => { img.src = svg; });
+      // Match the paragraph-authored footers used by current C2 content.
+      block.querySelectorAll('h3').forEach((heading) => {
+        const paragraph = document.createElement('p');
+        paragraph.textContent = heading.textContent;
+        heading.replaceWith(paragraph);
+      });
+      await init(block);
+      await settleLayout();
+      return block;
+    };
+
+    [
+      { width: 1280, height: 800, expectedGridWidth: 256, finalWidth: 240 },
+      { width: 1470, height: 800, expectedGridWidth: 294, finalWidth: 392 },
+      { width: 1470, height: 1100, expectedGridWidth: 294, finalWidth: 392 },
+    ].forEach(({ width: viewportWidth, height, expectedGridWidth, finalWidth }) => {
+      ['ltr', 'rtl'].forEach((direction) => {
+        it(`matches the grid then assembles smoothly at ${viewportWidth}x${height} in ${direction}`, async () => {
+          await setViewport({ width: viewportWidth, height });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel();
+          const row = block.querySelector('.hub-hero-carousel-container');
+          expect(getComputedStyle(row).animationName).to.equal('carousel-slides-three-assemble');
+          const cards = [...row.querySelectorAll('[data-index]')];
+          const gridWidth = block.querySelector('.hub-hero-image-grid-container-col > div')
+            .getBoundingClientRect().width;
+          expect(gridWidth).to.be.closeTo(expectedGridWidth, 0.1);
+          cards.forEach((card) => {
+            expect(card.getBoundingClientRect().width).to.be.closeTo(gridWidth, 0.1);
+          });
+          const startGap = parseFloat(getComputedStyle(row).gap);
+          const initialWidth = 3 * gridWidth + 2 * startGap;
+          expect(row.getBoundingClientRect().width).to.be.closeTo(initialWidth, 0.1);
+          let previousWidths = cards.map((card) => card.getBoundingClientRect().width);
+          for (const scrollY of [400, 800, 1200, 1800]) {
+            window.scrollTo(0, scrollY);
+            await settleLayout();
+            const widths = cards.map((card) => card.getBoundingClientRect().width);
+            for (let index = 0; index < widths.length; index += 1) {
+              const width = widths[index];
+              expect(width).to.be.at.least(Math.min(gridWidth, finalWidth) - 0.1);
+              expect(width).to.be.at.most(Math.max(gridWidth, finalWidth) + 0.1);
+              if (finalWidth < gridWidth) {
+                expect(width).to.be.at.most(previousWidths[index] + 0.1);
+              } else {
+                expect(width).to.be.at.least(previousWidths[index] - 0.1);
+              }
+            }
+            previousWidths = widths;
+          }
+          cards.forEach((card) => {
+            expect(card.getBoundingClientRect().width).to.be.closeTo(finalWidth, 0.1);
+          });
+          const endGap = parseFloat(getComputedStyle(row).gap);
+          const rowWidth = row.getBoundingClientRect().width;
+          expect(rowWidth).to.be.closeTo(3 * finalWidth + 2 * endGap, 0.1);
+          cards[0].classList.add('hovered');
+          await new Promise((resolve) => { setTimeout(resolve, 350); });
+          expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.1);
+        });
+      });
+    });
+
+    it('does not change four-slide row animation', async () => {
+      await setViewport({ width: 1470, height: 800 });
+      const block = await loadBlock('./mocks/default.html');
+      expect(getComputedStyle(block.querySelector('.hub-hero-carousel-container')).animationName)
+        .to.equal('carouselGapShrinkWidthGrowth');
+    });
+
+    it('does not apply the desktop row-sizing animation on mobile', async () => {
+      await setViewport({ width: 375, height: 800 });
+      const block = await loadCarousel();
+      expect(getComputedStyle(block.querySelector('.hub-hero-carousel-container')).animationName)
+        .to.not.include('carousel-slides-three-assemble');
+    });
+
+    [3, 4].forEach((slideCount) => {
+      ['ltr', 'rtl'].forEach((direction) => {
+        it(`reveals ${slideCount}-slide ${direction} footer icons without a layout jump`, async () => {
+          await setViewport({ width: 1470, height: 800 });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel(slideCount);
+          window.scrollTo(0, 1800);
+          await settleLayout();
+          const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+          const footer = card.querySelector('.hub-hero-carousel-item-footer');
+          const paragraph = footer.querySelector('p');
+          const icon = footer.querySelector('span');
+          paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
+          await settleLayout();
+          const measure = () => {
+            const bounds = footer.getBoundingClientRect();
+            const text = paragraph.getBoundingClientRect();
+            const symbol = icon.getBoundingClientRect();
+            const style = getComputedStyle(footer);
+            const innerWidth = bounds.width
+              - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            return {
+              height: bounds.height,
+              textWidth: text.width,
+              reserved: innerWidth - text.width,
+              opacity: parseFloat(getComputedStyle(icon).opacity),
+              inset: direction === 'ltr' ? bounds.right - symbol.right : symbol.left - bounds.left,
+              padding: parseFloat(direction === 'ltr' ? style.paddingRight : style.paddingLeft),
+            };
+          };
+          const initial = measure();
+          expect(getComputedStyle(icon).position).to.equal('absolute');
+          expect(initial.reserved).to.be.closeTo(0, 0.1);
+          expect(initial.opacity).to.equal(0);
+          expect(initial.inset).to.be.closeTo(initial.padding, 0.1);
+          const samples = [];
+          const start = performance.now();
+          card.classList.add('hovered');
+          await new Promise((resolve) => {
+            const sample = () => {
+              const elapsed = performance.now() - start;
+              samples.push({ elapsed, ...measure() });
+              if (elapsed < 450) requestAnimationFrame(sample);
+              else resolve();
+            };
+            requestAnimationFrame(sample);
+          });
+          const hovered = measure();
+          const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
+          expect(hovered.reserved).to.be.closeTo(icon.getBoundingClientRect().width + gap, 0.1);
+          expect(hovered.opacity).to.equal(1);
+          expect(samples.filter((sample) => sample.reserved > 1
+            && sample.reserved < hovered.reserved - 1).length).to.be.at.least(2);
+          samples.filter((sample) => sample.elapsed < 280).forEach((sample) => {
+            expect(sample.opacity).to.equal(0);
+          });
+          samples.forEach((sample) => {
+            expect(sample.height).to.be.closeTo(initial.height, 0.1);
+            expect(sample.inset).to.be.closeTo(sample.padding, 0.1);
+            expect(sample.textWidth)
+              .to.be.at.least(Math.min(initial.textWidth, hovered.textWidth) - 0.1);
+            expect(sample.textWidth)
+              .to.be.at.most(Math.max(initial.textWidth, hovered.textWidth) + 0.1);
+          });
+          card.classList.remove('hovered');
+          expect(parseFloat(getComputedStyle(icon).transitionDelay)).to.equal(0);
+          await new Promise((resolve) => { setTimeout(resolve, 130); });
+          expect(measure().opacity).to.equal(0);
+          await new Promise((resolve) => { setTimeout(resolve, 220); });
+          expect(measure().reserved).to.be.closeTo(0, 0.1);
+          block.style.setProperty('--s2a-spacing-lg', '32px');
+          await settleLayout();
+          expect(measure().inset).to.be.closeTo(32, 0.1);
+        });
+      });
+    });
+
+    it('reveals the footer icon for native keyboard focus without a focused class', async () => {
+      await setViewport({ width: 1470, height: 800 });
+      const block = await loadCarousel();
+      window.scrollTo(0, 1800);
+      await settleLayout();
+      const original = block.querySelector('.hub-hero-carousel-item[data-index]');
+      const card = original.cloneNode(true);
+      original.replaceWith(card);
+      card.focus();
+      expect(card.matches(':focus-visible')).to.be.true;
+      expect(card.classList.contains('focused')).to.be.false;
+      await new Promise((resolve) => { setTimeout(resolve, 450); });
+      expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
+        .to.equal('1');
+    });
+
+    it('never temporarily narrows footer text before a card expands', async () => {
+      for (const width of [1280, 1100, 850]) {
+        await setViewport({ width, height: 800 });
+        const block = await loadCarousel();
+        window.scrollTo(0, 1800);
+        await settleLayout();
+        const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+        const paragraph = card.querySelector('.hub-hero-carousel-item-footer p');
+        const initialWidth = paragraph.getBoundingClientRect().width;
+        const samples = [initialWidth];
+        card.classList.add('hovered');
+        await new Promise((resolve) => {
+          const start = performance.now();
+          const sample = () => {
+            samples.push(paragraph.getBoundingClientRect().width);
+            if (performance.now() - start < 400) requestAnimationFrame(sample);
+            else resolve();
+          };
+          requestAnimationFrame(sample);
+        });
+        expect(samples.at(-1)).to.be.above(initialWidth);
+        for (let index = 1; index < samples.length; index += 1) {
+          expect(samples[index]).to.be.at.least(samples[index - 1] - 0.1);
+        }
+        block.remove();
+        window.scrollTo(0, 0);
+        await settleLayout();
+      }
+    }).timeout(5000);
+  });
+
   describe('fallback branches (fallbacks.html)', () => {
     let block;
     before(async () => {
