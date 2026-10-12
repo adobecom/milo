@@ -217,12 +217,6 @@ export default async function init(el) {
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
-  }).then(async (gnav) => {
-    if (getMetadata('acom-assistant') === 'on') {
-      const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
-      decorateAcomAssistantGnav(el);
-    }
-    return gnav;
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
@@ -231,9 +225,17 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => {
+  gnavPromise.then(async () => {
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
+    if (getMetadata('acom-assistant') === 'on') {
+      try {
+        const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+        decorateAcomAssistantGnav(el);
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+      }
+    }
   });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
