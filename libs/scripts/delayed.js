@@ -117,7 +117,6 @@ export const loadPreflightResults = async () => {
   if (isDaPreview) {
     const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
     showDraftStatus();
-    return;
   }
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');

@@ -162,13 +162,13 @@ describe('loadPreflightResults', () => {
     expect(settled).to.equal(true);
   });
 
-  it('shows the draft status bar instead in DA Live Preview', async () => {
+  it('shows the draft status bar in DA Live Preview', async () => {
     const url = window.location.href;
     window.history.replaceState(null, '', '?dapreview=local');
     await loadPreflightResults();
     window.history.replaceState(null, '', url);
     const bar = document.documentElement.querySelector(':scope > .draft-status');
-    expect(bar !== null).to.equal(true);
+    expect(bar).to.exist;
     bar.querySelector('.notification-close').click();
   });
 });

@@ -1,8 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { countIssues } from '../../../../libs/blocks/preflight/checks/issueCounts.js';
 
-const zero = { errors: 0, warnings: 0 };
-
 describe('Preflight issue counts', () => {
   it('counts each tab the way its panel lists issues', () => {
     expect(countIssues({
@@ -24,7 +22,7 @@ describe('Preflight issue counts', () => {
 
   it('counts nothing for missing, passing, or detail-less categories', () => {
     const empty = Object.fromEntries(['General', 'SEO', 'M@S', 'Accessibility', 'Performance', 'Assets']
-      .map((tab) => [tab, zero]));
+      .map((tab) => [tab, { errors: 0, warnings: 0 }]));
     expect(countIssues({})).to.deep.equal(empty);
     expect(countIssues({
       accessibility: [{ status: 'pass', details: { issuesCount: 4 } }],

@@ -74,8 +74,8 @@ describe('Sanity Checks', () => {
     await addImg(second, 900, 900);
     setLikelyLcp();
     main.remove();
-    expect((await getLcpEntry(window.location.href)).element === big).to.equal(true);
-    expect((await getLcpEntry(window.location.pathname)).element === big).to.equal(true);
+    expect((await getLcpEntry(window.location.href)).element).to.equal(big);
+    expect((await getLcpEntry(window.location.pathname)).element).to.equal(big);
   });
 
   it('setLikelyLcp reports no LCP without media in the first section', async () => {

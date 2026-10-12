@@ -83,7 +83,8 @@
 }
 
 .draft-status .preflight-notification {
-  padding: 8px 8px 8px 16px;
+  padding: 8px;
+  padding-inline-start: 16px;
   border-color: var(--draft-status-color);
   background: var(--draft-status-color);
   color: rgb(255 255 255);

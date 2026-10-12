@@ -83,8 +83,8 @@ describe('preflight checks localization', () => {
   it('clearLocalizationCache starts a fresh run', async () => {
     clearLocalizationCache();
     const runB = localization.runChecks({ area: container });
-    expect(runB === runA).to.equal(false);
-    expect(localization.runChecks({ area: container }) === runB).to.equal(true);
+    expect(runB).to.not.equal(runA);
+    expect(localization.runChecks({ area: container })).to.equal(runB);
     await runB;
   });
 });

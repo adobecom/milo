@@ -4,21 +4,19 @@ import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import showDraftStatus, { summarize } from '../../../libs/features/preflight/draft-status.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
-const tabs = (...counts) => Object.fromEntries(counts.map((count, idx) => [idx, count]));
-
 describe('summarize', () => {
   it('reports issues and warnings as a failure', () => {
-    expect(summarize(tabs({ errors: 2, warnings: 1 }, { errors: 1, warnings: 0 })))
+    expect(summarize({ General: { errors: 2, warnings: 1 }, SEO: { errors: 1, warnings: 0 } }))
       .to.deep.equal({ status: 'fail', text: 'Preflight found 3 issues, 1 warning' });
   });
 
   it('reports warnings only as a warning', () => {
-    expect(summarize(tabs({ errors: 0, warnings: 1 }, { errors: 0, warnings: 0 })))
+    expect(summarize({ General: { errors: 0, warnings: 1 }, SEO: { errors: 0, warnings: 0 } }))
       .to.deep.equal({ status: 'warn', text: 'Preflight found 1 warning' });
   });
 
   it('reports a pass when nothing fails', () => {
-    expect(summarize(tabs({ errors: 0, warnings: 0 })))
+    expect(summarize({ General: { errors: 0, warnings: 0 } }))
       .to.deep.equal({ status: 'pass', text: 'Preflight: no issues' });
   });
 });
@@ -71,9 +69,13 @@ describe('showDraftStatus', () => {
     await waitFor(() => window.fetch.callCount > checksBefore, 2000, 20);
   });
 
-  it('opens the report outside the body so it survives edits, and closes it', async () => {
-    bar().querySelector('.preflight-review-link').click();
+  it('opens one report outside the body so it survives edits, and closes it', async () => {
+    const review = bar().querySelector('.preflight-review-link');
+    review.click();
+    review.click();
     await waitFor(() => document.documentElement.querySelector(':scope > #preflight'), 5000, 50);
+    await settle();
+    expect(document.querySelectorAll('#preflight, .modal-curtain').length).to.equal(2);
     const dialog = document.getElementById('preflight');
     expect(dialog.nextElementSibling.classList.contains('modal-curtain')).to.equal(true);
     dialog.querySelector('.dialog-close').click();
