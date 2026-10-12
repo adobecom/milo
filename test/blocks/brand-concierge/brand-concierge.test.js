@@ -629,5 +629,60 @@ describe('Brand Concierge back-navigation analytics', () => {
       expect(state.bcDestinationPage).to.equal('');
     });
   });
+
+  describe('card analytics formatting', () => {
+    it('formats nested product fields and keeps login status only for Firefly clicks', () => {
+      const track = sinon.spy();
+      window._satellite = { track };
+
+      bcAnalytics({
+        eventType: 'cards:rendered',
+        data: {
+          element: [{
+            cardType: 'acomProduct',
+            entity_info: {
+              productName: 'Acrobat',
+              productPageURL: 'https://acrobat.adobe.com/pdf-editor',
+            },
+          }],
+          displayMode: 'single',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: { cardType: 'acomProduct', loginStatus: 'logged-in', entity_info: { productName: 'Acrobat' } },
+          destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: {
+            type: 'firefly-community-gallery',
+            cardType: 'firefly-community-gallery',
+            productName: 'Firefly',
+            loginStatus: 'logged-in',
+          },
+          destinationUrl: 'https://firefly.adobe.com',
+        },
+      });
+
+      const impressionData = track.firstCall.args[1].data;
+      const impressions = impressionData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.additionalImpressions;
+      expect(impressions)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor');
+      const productData = track.secondCall.args[1].data;
+      expect(productData.web.webInteraction.name).to.equal('BC-card_clicked|acomProduct|Acrobat');
+      const productClick = productData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.click;
+      expect(productClick)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+      const fireflyData = track.thirdCall.args[1].data;
+      expect(fireflyData.web.webInteraction.name)
+        .to.equal('BC-card_clicked|firefly-community-gallery|Firefly|loginStatus:logged-in');
+    });
+  });
 });
 /* eslint-enable no-underscore-dangle */

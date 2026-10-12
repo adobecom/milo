@@ -68,7 +68,9 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 
 const { replaceKey, replaceKeyArray } = placeholders;
 const {
+  AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
+  getAupModalTitle,
   getMiloLocaleSettings,
   isMasGeoDetectionEnabled,
 } = merch;
@@ -123,6 +125,12 @@ const {
 export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
+
+// Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
+export async function sendAupDialogCloseAnalytics(modalHash, source) {
+  const { sendAnalytics } = await import('../../martech/helpers.js');
+  sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
+}
 
 function getHelpChildren() {
   const { unav } = getConfig();
@@ -629,6 +637,7 @@ class Gnav {
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
+      this.initToolbarCtaOverflow,
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.isLocalNav());
@@ -677,6 +686,14 @@ class Gnav {
     return cta;
   };
 
+  // Clone the trailing CTA-typed nav item into a toolbar slot so it stays
+  // visible beside the hamburger at mobile/compact widths, not only in the drawer.
+  decoratePinnedCta = () => {
+    const ctaWrapper = [...this.elements.mainNav.querySelectorAll(':scope > * > .feds-cta-wrapper')].pop();
+    if (!ctaWrapper) return '';
+    return toFragment`<div class="feds-pinned-cta">${ctaWrapper.cloneNode(true)}</div>`;
+  };
+
   decorateTopNav = () => {
     const {
       searchEnabled,
@@ -696,6 +713,7 @@ class Gnav {
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
         ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${this.decoratePinnedCta()}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -957,6 +975,45 @@ class Gnav {
     schedule();
   };
 
+  // Hide the toolbar CTAs (pinned clone + product entry) if they'd collide with
+  // the brand/hamburger and trailing widgets at mobile/compact widths; they stay
+  // reachable in the drawer.
+  initToolbarCtaOverflow = () => {
+    const header = this.block;
+    const { topnav, navWrapper } = this.elements;
+    const ctaSelector = '.feds-pinned-cta, .feds-product-entry-cta, .feds-product-entry-cta-placeholder';
+    if (!(topnav instanceof HTMLElement) || !topnav.querySelector(ctaSelector)) return;
+    const CTA_OVERFLOW_GAP = 16;
+    let rafId = null;
+
+    const measure = () => {
+      rafId = null;
+      // Drawer open already hides the pinned copy via CSS; skip re-measuring.
+      if (navWrapper?.classList.contains('feds-nav-wrapper--expanded')) return;
+      if (!this.isEffectivelyMobile()) {
+        header.classList.remove('feds-cta-overflow');
+        return;
+      }
+      // Clear our own class first so the CTAs' true width is counted; leaving
+      // them collapsed to 0 would flip the fit result and cause a toggle loop.
+      header.classList.remove('feds-cta-overflow');
+      const needed = [...topnav.children].reduce(
+        (sum, el) => (el === navWrapper ? sum : sum + el.offsetWidth),
+        0,
+      ) + CTA_OVERFLOW_GAP;
+      header.classList.toggle('feds-cta-overflow', needed > topnav.clientWidth);
+    };
+
+    const schedule = () => { if (rafId === null) rafId = requestAnimationFrame(measure); };
+
+    new ResizeObserver(schedule).observe(topnav);
+    new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
+    isDesktop.addEventListener('change', schedule);
+    if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', schedule);
+    document.fonts?.ready?.then(schedule);
+    schedule();
+  };
+
   loadDelayed = async () => {
     this.ready = this.ready || new Promise(async (resolve) => {
       try {
@@ -1140,12 +1197,14 @@ class Gnav {
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/stable/main.js`,
       null,
       { mode: 'async' },
     );
 
-    let teardownActiveDialog;
+    let cancelActiveDialog;
+    let dialogRequest = 0;
+    const claimedAupModalHashes = new WeakSet();
     window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
       appId: 'adobe_com',
       apiKey: imsClientId,
@@ -1159,95 +1218,145 @@ class Gnav {
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
-      showDialog: async (element, _, closeCallback) => {
-        const cleanupAupModalHash = getAupModalHashCleanup();
+      showDialog: async (element, options, closeCallback) => {
+        dialogRequest += 1;
+        const request = dialogRequest;
+        const availableAupCleanup = getAupModalHashCleanup();
+        const canClaimHash = availableAupCleanup && !claimedAupModalHashes.has(availableAupCleanup);
+        const cleanupAupModalHash = canClaimHash
+          ? availableAupCleanup : undefined;
+        if (cleanupAupModalHash) claimedAupModalHashes.add(cleanupAupModalHash);
         const modalHash = cleanupAupModalHash && window.location.hash;
+        const modalTitle = cleanupAupModalHash && getAupModalTitle();
         const isIframe = element.tagName === 'IFRAME';
-        try {
-          if (isIframe) {
-            await Promise.all([
-              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-            ]);
-          }
-        } catch (e) {
-          cleanupAupModalHash?.();
-          throw e;
-        }
-        teardownActiveDialog?.();
+        const controller = new AbortController();
         let dialog;
+        let closeMiloModal;
         let finishLoading;
-        let closeDialog;
-        let onDialogCancel;
-        let onDialogClick;
         let onNavigation;
-        let isTornDown = false;
-        const teardown = () => {
-          if (isTornDown) return;
-          isTornDown = true;
+        let onWorkflowClose;
+        let onWorkflowSuccess;
+        let requestClose;
+        let closing;
+        let settled = false;
+        let workflowClosed = false;
+        let workflowSucceeded = false;
+        const cleanup = () => {
+          controller.abort();
           finishLoading?.();
-          element.removeEventListener('close', closeDialog);
-          dialog?.removeEventListener('cancel', onDialogCancel);
-          dialog?.removeEventListener('click', onDialogClick);
+          element.removeEventListener('close', onWorkflowClose);
+          element.removeEventListener('success', onWorkflowSuccess);
           window.removeEventListener('popstate', onNavigation);
           window.removeEventListener('hashchange', onNavigation);
-          if (dialog?.open) dialog.close();
-          dialog?.remove();
-          document.documentElement.classList.remove('disable-scroll');
-          if (teardownActiveDialog === teardown) teardownActiveDialog = undefined;
+          if (cancelActiveDialog === requestClose) cancelActiveDialog = undefined;
           cleanupAupModalHash?.();
         };
-        closeDialog = () => {
-          teardown();
+        const finishWorkflow = () => {
+          if (settled) return;
+          settled = true;
+          if (!workflowClosed) {
+            element.dispatchEvent(new Event('cancel'));
+            if (!workflowClosed) element.dispatchEvent(new Event('close'));
+          }
+          cleanup();
           closeCallback({ type: 'close' });
         };
-        const cancel = () => {
-          // The orchestrator settles on cancel; close releases its event listeners.
-          element.dispatchEvent(new Event('cancel'));
-          element.dispatchEvent(new Event('close'));
+        requestClose = () => {
+          if (closing) return closing;
+          if (settled) return undefined;
+          if (dialog) closing = closeMiloModal(dialog);
+          else finishWorkflow();
+          return closing;
+        };
+        onWorkflowSuccess = () => {
+          workflowSucceeded = true;
+        };
+        onWorkflowClose = () => {
+          // Closes started by the Milo modal (button, curtain, Escape) carry their own daa-ll
+          // and settle first; an unsettled close from the workflow is the user dismissing it.
+          if (dialog && !settled && !closing && !workflowSucceeded) {
+            sendAupDialogCloseAnalytics(modalHash, 'buttonClose');
+          }
+          workflowClosed = true;
+          requestClose();
         };
         onNavigation = () => {
-          if (modalHash && window.location.hash !== modalHash) cancel();
+          if (modalHash && window.location.hash !== modalHash) requestClose();
         };
-        onDialogCancel = (e) => {
-          if (e.target !== dialog) return;
-          e.preventDefault();
-          cancel();
-        };
-        onDialogClick = (e) => {
-          if (e.target === dialog) cancel();
-        };
+        element.addEventListener('close', onWorkflowClose);
+        element.addEventListener('success', onWorkflowSuccess);
         try {
-          dialog = document.createElement('dialog');
-          dialog.id = 'aup-workflow-dialog';
+          const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
+          const [{ getModal, closeModal }] = await Promise.all([
+            import(isC2 ? '../../c2/blocks/modal/modal.js' : '../modal/modal.js'),
+            ...(isIframe ? [
+              import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+              import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+            ] : []),
+          ]);
+          closeMiloModal = closeModal;
+          if (settled) return;
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          await cancelActiveDialog?.();
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          const content = document.createElement('div');
+          content.className = 'aup-workflow-content';
+          const title = options?.title || element.getAttribute('aria-label')
+            || modalTitle || element.getAttribute('title');
+          const labelledBy = element.getAttribute('aria-labelledby');
           if (isIframe) {
             const spinner = toFragment`
               <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
                 <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
               </sp-theme>`;
-            dialog.classList.add('loading');
-            dialog.appendChild(spinner);
+            content.classList.add('loading');
+            content.appendChild(spinner);
             finishLoading = () => {
-              element.removeEventListener('load', finishLoading);
-              dialog.classList.remove('loading');
+              element.removeEventListener('app_loaded', finishLoading);
+              content.classList.remove('loading');
+              dialog?.classList.add('hide-close-button');
               spinner.remove();
               finishLoading = undefined;
             };
-            element.addEventListener('load', finishLoading, { once: true });
+            element.addEventListener('app_loaded', finishLoading, { once: true });
           }
-          dialog.appendChild(element);
-          document.body.appendChild(dialog);
-          element.addEventListener('close', closeDialog, { once: true });
-          dialog.addEventListener('cancel', onDialogCancel);
-          dialog.addEventListener('click', onDialogClick);
+          content.appendChild(element);
           window.addEventListener('popstate', onNavigation);
           window.addEventListener('hashchange', onNavigation);
-          teardownActiveDialog = teardown;
-          document.documentElement.classList.add('disable-scroll');
-          dialog.showModal();
-          onNavigation();
+          dialog = await getModal(null, {
+            id: 'aup-workflow-dialog',
+            class: 'aup-modal',
+            content,
+            title,
+            hash: modalHash,
+            signal: controller.signal,
+            closeEvent: 'closeModal',
+            closeCallback: finishWorkflow,
+          });
+          if (settled) {
+            if (dialog?.isConnected) await closeMiloModal(dialog);
+            return;
+          }
+          if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+            await requestClose();
+            return;
+          }
+          if (!finishLoading) dialog.classList.add('hide-close-button');
+          if (labelledBy) {
+            dialog.setAttribute('aria-labelledby', labelledBy);
+            dialog.removeAttribute('aria-label');
+          } else if (title) {
+            dialog.setAttribute('aria-label', title);
+          }
+          cancelActiveDialog = requestClose;
         } catch (e) {
-          teardown();
+          cleanup();
           throw e;
         }
       },
@@ -1256,6 +1365,7 @@ class Gnav {
     const features = ['useToasts'];
     if (isAupEnabled()) features.push('tmp_aupsdk_ucv3_in_iframe');
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
+    window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
     return window.aupsdk;
   };
 

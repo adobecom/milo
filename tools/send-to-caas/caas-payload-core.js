@@ -151,6 +151,7 @@ const LANGS = {
   ja: 'ja',
   ar: 'ar',
   arabic: 'ar',
+  ara: 'ar',
   bg: 'bg',
   cs: 'cs',
   da: 'da',
@@ -364,6 +365,19 @@ const getGrayboxExperienceId = (
 
 // ---- Lang-first subsystem (copied from libs/blocks/caas/utils.js) ----
 
+// Copied verbatim from libs/blocks/caas/utils.js (BASE_SITE_LANG_TAG_ALIASES /
+// normalizeBaseSiteLang). Some lingo-site-mapping base-site path segments don't
+// match an existing caas:language tag id (e.g. the '/ara' base-site resolves to
+// the 3-letter path segment 'ara', but the CaaS language taxonomy only has
+// 'ar'). This maps those base-site segments to the tag id they should resolve
+// to wherever a base-site segment is returned as a language value.
+const BASE_SITE_LANG_TAG_ALIASES = { ara: 'ar' };
+const normalizeBaseSiteLang = (lang) => (
+  Object.prototype.hasOwnProperty.call(BASE_SITE_LANG_TAG_ALIASES, lang)
+    ? BASE_SITE_LANG_TAG_ALIASES[lang]
+    : lang
+);
+
 // Copied verbatim from libs/blocks/caas/utils.js (isLocaleInRegionalSites).
 const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   if (!regionalSites) return false;
@@ -550,7 +564,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
         if (baseLocale && localeStr === baseLocale) {
           lingoSiteMapping = {
             country: 'xx',
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
           return;
         }
@@ -564,7 +578,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
           }
           lingoSiteMapping = {
             country: localeStr,
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
         }
       });

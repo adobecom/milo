@@ -22,7 +22,7 @@
   --bc-tooltip-font-size: 14px;
   --bc-tooltip-line-height: 21px;
   --bc-input-font-size: 14px;
-  --bc-input-line-height: 22px;
+  --bc-input-line-height: 20px;
   --bc-input-radius: 26px;
   --bc-input-height: 40px;
   --bc-input-border-size: 1px;
@@ -54,6 +54,16 @@
   top: calc(100% - 2px);
   z-index: 2;
   pointer-events: none;
+}
+
+.bc-gnav.is-c2 .bc-prompt-cards,
+.global-navigation.c2-gnav-c1-host .bc-gnav .bc-prompt-cards {
+  top: calc(100% + 8px);
+}
+
+/* c1 nav on a c2 page */
+.global-navigation.ready .bc-gnav.is-c2 .bc-prompt-cards {
+  top: calc(100% - 2px);
 }
 
 .bc-gnav .prompt-card-button {
@@ -266,7 +276,7 @@
   overflow-wrap: normal;
   min-height: var(--bc-input-height);
   max-height: var(--bc-input-height);
-  padding: 8px 0;
+  padding: 9px 0;
   box-sizing: border-box;
   grid-area: 1 / 1 / 2 / 2;
   white-space: nowrap;
@@ -341,13 +351,13 @@
   }
 
   to {
-    right: 24px;
+    right: 0;
   }
 }
 
 @keyframes slide-out {
   from {
-    right: 24px;
+    right: 0;
   }
 
   to {
@@ -559,7 +569,6 @@
   display: flex;
 }
 
-.bc-side-open .bc-gnav .bc-prompt-cards,
 .bc-side-open .bc-gnav .bc-input-field {
   display: none;
 }
@@ -679,6 +688,10 @@
 
   #brand-concierge-side.dialog-modal .bc-expand-button {
     display: block;
+  }
+
+  html.disable-scroll:has(.bc-side-open):not(body:has(.bc-susi-modal)) {
+    overflow: auto;
   }
 
   body.disable-scroll.bc-side-open:not(body:has(.bc-susi-modal)) {
