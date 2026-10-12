@@ -1,58 +1,281 @@
 .section {
-  &:has(.floating-cta .promo-cta .icon-button) {
-    bottom: 0;
+  &:has(.floating-cta .promo-cta .floating-cta-content) {
+    inset-block-end: 0;
     position: sticky;
     z-index: 4;
   }
+
   &.rounded-corners-bottom,
   &.rounded-corners {
     & + .section {
       &:has(.floating-cta) {
         margin-block: var(--s2a-spacing-xl) calc(-1 * var(--s2a-spacing-xl));
+
+        /* cancel section-metadata's generic rounded-corners overlap spacer
+           so the two don't stack */
+        &::before {
+          content: none;
+        }
       }
+    }
+  }
+
+  /* the reverse adjacency: cancel section-metadata's generic overlap spacer the same way. */
+  &:has(.floating-cta):has(+ .rounded-corners),
+  &:has(.floating-cta):has(+ .rounded-corners-top) {
+    &::after {
+      content: none;
     }
   }
 }
 
 .floating-cta {
-  display: flex;
-  justify-content: center;
   .promo-cta {
-    bottom: var(--s2a-spacing-20);
-    clip-path: inset(50% round var(--s2a-border-radius-12));
-    opacity: 0;
+    --floating-cta-radius: var(--s2a-border-radius-8) var(--s2a-border-radius-8) 0 0;
+
+    backdrop-filter: blur(27px); /* no token */
+    background: var(--s2a-color-transparent-black-48);
+    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+    border-radius: var(--floating-cta-radius);
+    inset-block-end: 0;
+    color: var(--s2a-color-content-knockout);
+    gap: 14px; /* No token */
+    inset-inline: 0;
+    justify-content: center;
+    padding: 22px var(--s2a-spacing-lg) var(--s2a-spacing-md); /* 22px: no token */
     position: absolute;
-    transform: translateY(var(--s2a-spacing-lg));
+    transform: translateY(100%);
+    opacity: 0;
     transition:
-      opacity 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
-      clip-path 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
-      transform 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53);
-    will-change: opacity, clip-path, transform;
+      transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+      opacity 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+    will-change: transform, opacity;
+
+    .floating-cta-content,
+    .floating-cta-lockup,
+    .floating-cta-actions {
+      align-items: center;
+      display: flex;
+    }
+
+    .floating-cta-content {
+      gap: var(--s2a-spacing-md);
+    }
+
+    .floating-cta-lockup {
+      gap: 14px; /* No token */
+    }
+
+    .icon-button {
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
+      background-color: var(--s2a-color-transparent-black-04);
+      margin-inline-start: 0;
+
+      path {
+        fill: var(--s2a-color-content-knockout);
+      }
+    }
+
+    &:hover,
+    &:focus {
+      .icon-button {
+        background-color: var(--s2a-color-transparent-white-24);
+        border-color: var(--s2a-color-transparent-white-12);
+      }
+    }
+
+    &:active {
+      .icon-button {
+        background-color: var(--s2a-color-content-knockout);
+        border-color: var(--s2a-color-content-knockout);
+
+        path {
+          fill: var(--s2a-color-transparent-black-48);
+        }
+      }
+    }
+
     &.active {
-      clip-path: inset(0% round var(--s2a-border-radius-12));
-      opacity: 1;
       transform: translateY(0);
+      opacity: 1;
+    }
+
+    &.disable-animation {
+      transition: none;
+      animation: none;
+
+      .floating-cta-content,
+      .floating-cta-lockup,
+      .floating-cta-actions {
+        transition: none;
+      }
+    }
+
+    &.disable-animation:focus-within {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  &.non-mneumonic .promo-cta .floating-cta-content {
+    flex-direction: column;
+    gap: var(--s2a-spacing-sm);
+    text-align: center;
+    max-width: 272px;
+
+    .floating-cta-actions,
+    .con-button {
+      width: 100%;
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .floating-cta {
+    .promo-cta {
+      --floating-cta-radius: var(--s2a-border-radius-round);
+      --spring-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --spring-in-rise: cubic-bezier(0.34, 0.59, 0.17, 1.24);
+      --spring-in-settle: cubic-bezier(0.24, 0.43, 0.15, 1.01);
+
+      inline-size: var(--cta-full-height);
+      box-sizing: border-box;
+      inset-block-end: var(--s2a-spacing-20);
+      margin-inline: auto;
+      opacity: 0;
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-lg) var(--s2a-spacing-md) var(--s2a-spacing-xl);
+      transform: translateY(calc(100% + var(--s2a-spacing-20)));
       transition:
-        opacity 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        clip-path 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-      &:focus-visible {
-        clip-path: inset(-3px round var(--s2a-border-radius-12));
-        outline-offset: var(--s2a-border-width-2);
+        inline-size 0.2s var(--spring-out),
+        opacity 0.2s var(--spring-out) 0.3s,
+        transform 0.2s var(--spring-out) 0.3s;
+      will-change: opacity, transform;
+
+      .floating-cta-lockup {
+        opacity: 0;
+        scale: 0.5;
+        transform-origin: center;
+        transition:
+          opacity 0.2s var(--spring-out),
+          scale 0.2s var(--spring-out);
+      }
+
+      .floating-cta-actions {
+        scale: 0;
+        translate: var(--cta-action-offset, 0);
+        transform-origin: center;
+        transition:
+          scale 0.2s var(--spring-out),
+          translate 0.2s var(--spring-out);
+      }
+
+      &.measuring,
+      &.measuring.active,
+      &.measuring.disable-animation {
+        transition: none;
+        animation: none;
+        visibility: hidden;
+        inline-size: max-content;
+      }
+
+      &.active {
+        inline-size: var(--cta-full-width, 320px);
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+          opacity 0.3s var(--spring-in-settle),
+          transform 0.5s var(--spring-in-rise),
+          inline-size 0.7s var(--spring-in-settle) 0.4s;
+        animation: floating-cta-spread 0.9s linear both;
+        transform-origin: top center;
+
+        .floating-cta-lockup {
+          opacity: 1;
+          scale: 1;
+          transition:
+            opacity 0.5s var(--spring-in-settle) 0.6s,
+            scale 0.5s var(--spring-in-settle) 0.6s;
+        }
+
+        .floating-cta-actions {
+          scale: 1;
+          translate: 0 0;
+          transition:
+            scale 0.6s var(--spring-in-settle) 0.2s,
+            translate 0.55s var(--spring-in-settle) 0.4s;
+        }
+
+        &:focus-visible {
+          outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
+          outline-offset: var(--s2a-border-width-2);
+          box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
+        }
+      }
+
+      &.disable-animation:focus-within {
+        opacity: 1;
+        transform: translateY(0);
+        inline-size: var(--cta-full-width);
+
+        .floating-cta-content,
+        .floating-cta-lockup {
+          opacity: 1;
+          scale: 1;
+        }
+
+        .floating-cta-actions {
+          scale: 1;
+          translate: 0 0;
+        }
+      }
+    }
+
+    &.non-mneumonic .promo-cta {
+      .floating-cta-content {
+        gap: var(--s2a-spacing-xl);
+        flex-direction: row;
+        max-width: unset;
+        opacity: 0;
+        scale: 0.5;
+        transition:
+          opacity 0.2s var(--spring-out),
+          scale 0.2s var(--spring-out);
+
+        .active & {
+          opacity: 1;
+          scale: 1;
+          transition:
+            scale 0.5s var(--spring-in-settle) 0.6s,
+            opacity 0.5s var(--spring-in-settle) 0.6s;
+        }
+
+        & > * {
+          transition: none;
+          opacity: 1;
+          scale: 1;
+          translate: 0 0;
+
+        }
       }
     }
   }
 }
 
+@keyframes floating-cta-spread {
+  0%, 29% { scale: 1 1; }
+  43% { scale: 1 0.75; }
+  100% { scale: 1 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .floating-cta {
-    .promo-cta {
-      clip-path: none;
-      transform: none;
-      transition: none;
-      &.active {
-        transition: none;
-      }
+    .promo-cta,
+    .promo-cta.active,
+    .promo-cta .floating-cta-lockup,
+    .promo-cta .floating-cta-actions,
+    .promo-cta .floating-cta-content {
+      transition: none !important;
+      animation: none !important;
     }
   }
 }

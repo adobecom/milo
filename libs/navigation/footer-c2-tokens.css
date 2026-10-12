@@ -1,0 +1,239 @@
+/* s2a design tokens required by the c2 footer (../c2/blocks/global-footer).
+   These @imports point at the actual token source files Milo's c2 styles.css
+   is generated from, so this file stays in sync automatically as tokens change
+   — do not hand-copy values here. Order matters: later files override/extend
+   variables declared in earlier ones (mirrors the order in ../c2/styles/styles.css). */
+@import '../c2/styles/deps/tokens.primitives.css';
+@import '../c2/styles/deps/tokens.primitives.light.css';
+@import '../c2/styles/deps/tokens.semantic.css';
+@import '../c2/styles/deps/tokens.semantic.light.css';
+@import '../c2/styles/deps/tokens.responsive.sm.css';
+@import '../c2/styles/deps/tokens.responsive.md.css';
+@import '../c2/styles/deps/tokens.responsive.lg.css';
+@import '../c2/styles/deps/tokens.responsive.xl.css';
+
+/* Legacy --feds-* variables the c2 footer still references for its region-picker
+   dropdown (global-footer.css) and menu border (global-footer/menu/menu.css).
+   Copied from ../blocks/global-navigation/base.css — importing that whole file
+   would pull in unrelated legacy gnav styles, so just the values are duplicated
+   here, same approach as common.css above. */
+:root {
+  --feds-background-nav: #f8f8f8;
+  --feds-borderColor: #eaeaea;
+  --feds-borderColor-menu: #e1e1e1;
+  --feds-background-link--hover: #e9e9e9;
+
+  /* Milo grid variables backing the .container utility class below, not part
+     of the s2a token deps above. Copied from ../c2/styles/styles.css. */
+  --grid-margin-width-base: var(--s2a-spacing-24);
+  --grid-margin-width-fixed: var(--s2a-spacing-24);
+  --grid-margin-width: var(--grid-margin-width-base);
+  --grid-margin-width-target: var(--grid-margin-width-base);
+  --grid-max-width-default: 1920px;
+  --grid-max-width-fluid: 2560px;
+
+  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+
+  /* Easing for the .con-button transition below; copied from
+     ../c2/styles/styles.css (not part of the s2a token deps). */
+  --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
+}
+
+@media (width >= 768px) {
+  :root {
+    --grid-margin-width-base: 8.333%;
+  }
+}
+
+/* Utility classes the c2 footer's markup applies (global-footer.js:
+   `.container`, `.body-md`, `.caption`) that are defined in Milo's global
+   ../c2/styles/styles.css rather than in global-footer.css itself. Copied
+   here since importing all of styles.css would pull in unrelated page-layout
+   rules that don't apply outside a Milo page. */
+.container {
+  --grid-max-width: var(--grid-max-width-default);
+  --grid-max-width-target: var(--grid-max-width-default);
+  --grid-content-width: var(--grid-max-width);
+  --grid-padding: max(
+    var(--grid-margin-width),
+    calc((100% - var(--grid-content-width)) / 2)
+  );
+
+  width: auto;
+  max-width: none;
+  padding-inline: var(--grid-padding);
+
+  &.fluid {
+    --grid-max-width: var(--grid-max-width-fluid);
+    --grid-margin-width: 0px;
+  }
+
+  &.fixed {
+    --grid-margin-width: var(--grid-margin-width-fixed);
+    --grid-margin-width-target: var(--grid-margin-width-fixed);
+  }
+
+  .container {
+    padding-inline: 0;
+  }
+}
+
+.body-md {
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+}
+
+.caption, [class*="caption-"] {
+  font-weight: var(--s2a-font-weight-caption);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  letter-spacing: var(--s2a-typography-letter-spacing-caption);
+}
+
+h1, h2, h3, h4, h5, h6, [class*="heading-"] {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  line-height: 100%;
+  scroll-margin-top: var(--feds-totalheight-nav, 0);
+
+  strong {
+    font-weight: inherit;
+  }
+
+  a,
+  a:is(:hover, :focus, :active) {
+    color: currentcolor;
+  }
+}
+
+/* c2 .con-button, produced by merch links in the footer (menu.js). Copied from
+   ../c2/styles/styles.css; common.css (imported first) ships the legacy c1
+   con-button, so this overrides it for the c2 footer bundle only. Only the base
+   rule is needed — the footer uses `feds--dark`, not `.dark`, so the dark
+   con-button variants in styles.css don't apply here. */
+.con-button {
+  --cta-backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
+
+  box-sizing: border-box;
+  background-color: var(--s2a-color-transparent-black-00);
+  backdrop-filter: var(--cta-backdrop-filter);
+  -webkit-backdrop-filter: var(--cta-backdrop-filter);
+  border-radius: var(--s2a-border-radius-round);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-gray-1000);
+  color: var(--s2a-color-gray-1000);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-xs);
+  font-size: var(--s2a-typography-font-size-label);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: var(--s2a-typography-line-height-label);
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
+  text-decoration: none;
+  height: var(--s2a-spacing-2xl);
+  padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
+  transition: background-color 300ms var(--parallax-easing),
+    border-color 300ms var(--parallax-easing),
+    color 300ms var(--parallax-easing);
+
+  &:focus-visible {
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
+    outline-offset: var(--s2a-border-width-2);
+    box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
+  }
+
+  &:is(:disabled, [aria-disabled="true"], .disabled) {
+    pointer-events: none;
+    opacity: 48%;
+    cursor: not-allowed;
+  }
+
+  &.outline {
+    &:hover {
+      background-color: var(--s2a-color-transparent-black-08);
+    }
+
+    &:active {
+      background-color: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-gray-25);
+    }
+  }
+
+  &.button-xs {
+    padding: var(--s2a-spacing-none) var(--s2a-spacing-sm);
+    height: var(--s2a-spacing-lg);
+  }
+
+  &.blue {
+    background-color: var(--s2a-color-blue-900);
+    border-color: var(--s2a-color-blue-900);
+    --cta-backdrop-filter: none;
+    color: var(--s2a-color-gray-25);
+
+    &:hover {
+      background-color: var(--s2a-color-blue-1000);
+      border-color: var(--s2a-color-blue-1000);
+    }
+    &:active {
+      background-color: var(--s2a-color-blue-1100);
+      border-color: var(--s2a-color-blue-1100);
+    }
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  &.fill {
+    background-color: var(--s2a-color-gray-1000);
+    border-color: var(--s2a-color-gray-1000);
+    --cta-backdrop-filter: none;
+    color: var(--s2a-color-gray-25);
+
+    &:hover {
+      background-color: var(--s2a-color-transparent-black-64);
+      border-color: var(--s2a-color-transparent-black-64);
+    }
+
+    &:active {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  &.transparent {
+    border: none;
+    --cta-backdrop-filter: none;
+
+    &:hover {
+      background-color: var(--s2a-color-transparent-black-08);
+    }
+
+    &:active {
+      background-color: var(--s2a-color-transparent-black-12);
+      color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+.email-collection-c2 {
+  color: #000000;
+}
+
+.global-footer:not(.mobile) .feds-navLink-image picture {
+  width: max-content;
+  max-width: 100%;
+}
+

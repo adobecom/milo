@@ -4,10 +4,21 @@
   padding-block-end: var(--s2a-layout-md);
 }
 
-.hover-list-headline {
+.hover-list-desc-wrapper {
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
+}
+
+.hover-list-desc {
+  display: grid;
+  row-gap: var(--s2a-spacing-xs);
   color: var(--s2a-color-content-knockout);
   padding-block: var(--s2a-spacing-md);
+  text-wrap: pretty;
+
+  .standalone-link {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 .hover-list-items {
@@ -63,6 +74,10 @@
   overflow: hidden;
 }
 
+.hover-list.no-animation .hover-list-media {
+  display: none;
+}
+
 .hover-list-media picture,
 .hover-list-media img {
   block-size: 100%;
@@ -78,13 +93,17 @@
     padding-block: var(--s2a-layout-sm);
   }
 
-  .hover-list-headline-wrapper {
+  .hover-list-desc-wrapper {
     align-self: start;
     flex: 1;
   }
 
-  .hover-list-headline {
+  .hover-list-desc {
     padding-block: var(--s2a-spacing-sm);
+  }
+
+  .hover-list.compact-headline .hover-list-desc {
+    max-inline-size: 35vw;
   }
 
   .hover-list-col {
@@ -117,7 +136,7 @@
 }
 
 @media (768px <= width < 1280px) {
-  .hover-list-headline {
+  .hover-list-desc {
     position: sticky;
     top: 180px;
   }
@@ -140,6 +159,10 @@
     padding-block: var(--s2a-layout-lg);
   }
 
+  .hover-list-desc {
+    width: 60%;
+  }
+
   .hover-list-item {
     align-items: center;
     block-size: 100px;
@@ -150,6 +173,16 @@
     @media (hover: hover) {
       &:hover {
         background: var(--s2a-color-transparent-white-08);
+      }
+    }
+  }
+
+  .hover-list.no-animation .hover-list-item {
+    cursor: default;
+
+    @media (hover: hover) {
+      &:hover {
+        background: transparent;
       }
     }
   }

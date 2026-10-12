@@ -212,6 +212,39 @@ describe('Blog Author', () => {
     expect(el.textContent).to.not.include('#f0e6d3');
   });
 
+  it('strips whitespace/newlines surrounding authored name and title in the schema', async () => {
+    document.body.innerHTML = `
+      <div class="blog-author">
+        <div><div>
+              Adobe for Business Team
+            </div></div>
+        <div><div>
+              Senior Director, Marketing
+            </div></div>
+        <div><div><p>Leads content strategy for the blog.</p></div></div>
+      </div>`;
+    await init(document.querySelector('.blog-author'));
+    const schema = getPersonSchema();
+    expect(schema.name).to.equal('Adobe for Business Team');
+    expect(schema.jobTitle).to.equal('Senior Director, Marketing');
+    expect(schema.description).to.equal('Leads content strategy for the blog.');
+  });
+
+  it('strips whitespace/newlines from the schema name without removing an authored h1', async () => {
+    document.body.innerHTML = `
+      <div class="blog-author">
+        <div><div>
+              <h1 id="shelly-chiang">Shelly Chiang</h1>
+            </div></div>
+      </div>`;
+    await init(document.querySelector('.blog-author'));
+    const nameEl = document.querySelector('.blog-author-name');
+    expect(nameEl.querySelector('h1')).to.exist;
+    expect(nameEl.querySelector('h1').id).to.equal('shelly-chiang');
+    const schema = getPersonSchema();
+    expect(schema.name).to.equal('Shelly Chiang');
+  });
+
   it('does not treat non-hex text as a background color', async () => {
     await init(document.querySelector('.blog-author'));
     const el = document.querySelector('.blog-author');

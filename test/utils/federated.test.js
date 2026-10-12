@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { getFederatedUrl, getFederatedContentRoot } from '../../libs/utils/utils.js';
+import { getFederatedUrl, getFederatedContentRoot, getConfig } from '../../libs/utils/utils.js';
 
 const baseHost = 'https://main--federal--adobecom.aem.page';
 
@@ -17,6 +17,8 @@ describe('Federated navigation utilities', () => {
   });
 
   describe('getFederatedUrl', () => {
+    afterEach(() => { delete getConfig().fedContentPrefix; });
+
     it('should return the url if its not federated', () => {
       expect(getFederatedUrl('https://adobe.com/foo-fragment.html')).to.equal('https://adobe.com/foo-fragment.html');
 
@@ -36,6 +38,20 @@ describe('Federated navigation utilities', () => {
 
     it('should return the federated url for a relative link', () => {
       expect(getFederatedUrl('/federal/foo-fragment.html')).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+    });
+
+    it('shouldnt federate an already federated url twice', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(getFederatedUrl(`${baseHost}/federal/foo-fragment.html`)).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+    });
+
+    it('shouldnt double the fedContentPrefix on an absolute link', () => {
+      getConfig().fedContentPrefix = '/dc-shared';
+      expect(getFederatedUrl('https://adobe.com/dc-shared/federal/foo-fragment.html')).to.equal(
         `${baseHost}/federal/foo-fragment.html`,
       );
     });

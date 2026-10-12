@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 
 // TODO: Remove once mas-field is published to @adobecom/mas-platform.
 // All other MAS components (merch-card, merch-quantity-select, etc.) resolve via the import map
@@ -454,6 +455,39 @@ describe('mas-field', () => {
         expect(actionArea.style.visibility).to.equal('');
       } finally {
         clock.restore();
+      }
+    });
+
+    it('keeps the CTA held while the page is hidden (MWPW-207104)', async () => {
+      const clock = sinon.useFakeTimers();
+      const visibility = stubVisibility();
+      try {
+        const card = document.createElement('div');
+        const pricing = document.createElement('p');
+        const price = document.createElement('mas-field');
+        price.setAttribute('field', 'prices');
+        let resolvePrice;
+        price.checkReady = () => new Promise((r) => { resolvePrice = r; });
+        pricing.append(price);
+        const actionArea = document.createElement('p');
+        actionArea.append(document.createElement('a'));
+        card.append(pricing, actionArea);
+
+        holdCtaUntilPrice(actionArea);
+        expect(actionArea.style.visibility).to.equal('hidden');
+
+        // Frozen webview: the CTA must not be revealed over a still-unresolved price.
+        visibility.hide();
+        await clock.tickAsync(60000);
+        expect(actionArea.style.visibility).to.equal('hidden');
+
+        resolvePrice(true);
+        visibility.show();
+        await clock.tickAsync(0);
+        expect(actionArea.style.visibility).to.equal('');
+      } finally {
+        clock.restore();
+        visibility.restore();
       }
     });
 

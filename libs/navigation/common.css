@@ -61,7 +61,7 @@
    -webkit-font-smoothing: antialiased;
 }
 
-.global-navigation a, .global-footer a, .dialog-modal a {
+.global-navigation a, .global-footer a {
   text-decoration: none;
 }
 

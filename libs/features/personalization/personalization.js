@@ -88,6 +88,8 @@ const MANIFEST_KEYS = [
   'pagefilter',
   'page filter',
   'page filter optional',
+  'country filter',
+  'country filter optional',
 ];
 
 export const DATA_TYPE = {
@@ -809,6 +811,36 @@ export async function handleCommands(
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
+const getCountryList = (countryValues) => countryValues.split(',')
+  .map((country) => normCountryCode(country.trim()))
+  .filter(Boolean);
+
+const matchesCountryList = (countryList, config) => {
+  if (!countryList.length) return false;
+  const countryIP = normCountryCode(config.mep?.countryIP);
+  return !!countryIP && countryList.includes(countryIP);
+};
+
+export const matchesCountryFilter = (filterValue, config = getConfig()) => {
+  if (!filterValue.trim()) return true;
+  const countryList = getCountryList(filterValue);
+  if (!countryList.length) {
+    log('Country filter contains no country codes:', filterValue);
+    return false;
+  }
+  return matchesCountryList(countryList, config);
+};
+
+const matchesCountryIP = (name, config) => {
+  const countryValues = name.match(/countryip\(([^)]+)\)/)?.[1];
+  if (!countryValues) return false;
+  return matchesCountryList(getCountryList(countryValues), config);
+};
+
+function hasCountryMatch(str, config) {
+  return str.includes('countryip') && matchesCountryIP(str, config);
+}
+
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
   const config = getConfig();
   let manifestId = getFileName(manifestPath);
@@ -823,9 +855,11 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
     return;
   }
   const pageFilter = line['page filter'] || line['page filter optional'];
+  const countryFilter = line['country filter'] || line['country filter optional'];
   const { selector } = line;
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
+  if (countryFilter && !matchesCountryFilter(countryFilter, config)) return;
 
   if (!config.mep?.preview) manifestId = false;
   const { origin } = PAGE_URL;
@@ -928,21 +962,6 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-const matchesCountryIP = (name, config) => {
-  if (!name.includes('countryip')) return false;
-  const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
-  if (!countryList?.length) return false;
-  return countryList.includes(config.mep?.countryIP);
-};
-
-function hasCountryMatch(str, config) {
-  if (str.includes('countryip')) {
-    const modifiedStr = str.replace('uk', 'gb');
-    return matchesCountryIP(modifiedStr, config);
-  }
-  return false;
-}
-
 export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP } = config.mep || {};
@@ -1217,10 +1236,15 @@ export function setConsentEnabled(manifestConfig) {
   overrideVariant(manifestPath, 'Default');
 }
 
-function recordManifestError(name, manifestPath, error) {
+function recordManifestError(name, manifestPath, error, source) {
   const config = getConfig();
   config.mep.manifestErrors ??= [];
-  config.mep.manifestErrors.push({ name: name || getFileName(manifestPath), manifestPath, error });
+  config.mep.manifestErrors.push({
+    name: name || getFileName(manifestPath),
+    manifestPath,
+    error,
+    source,
+  });
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1243,14 +1267,14 @@ async function getManifestConfig(info, variantOverride) {
   if (!data) {
     data = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
     if (!data) {
-      recordManifestError(name, manifestPath, 'Manifest');
+      recordManifestError(name, manifestPath, 'Manifest', source);
       return null;
     }
   }
 
   const persData = data.experiences?.data || data.data || (Array.isArray(data) ? data : null);
   if (!persData) {
-    recordManifestError(name, manifestPath, 'Experiences tab');
+    recordManifestError(name, manifestPath, 'Experiences tab', source);
     return null;
   }
   const infoTab = manifestInfo || data.info?.data;
@@ -1265,7 +1289,7 @@ async function getManifestConfig(info, variantOverride) {
 
   if (!manifestConfig) {
     log('Error loading personalization manifestConfig: ', name || manifestPath);
-    recordManifestError(name, manifestPath, 'Experience columns');
+    recordManifestError(name, manifestPath, 'Experience columns', source);
     return null;
   }
   const infoKeyMap = {

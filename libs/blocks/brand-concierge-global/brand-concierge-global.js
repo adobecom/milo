@@ -6,6 +6,8 @@ import {
   updateReplicatedValue,
   handleConsent,
   hasChatCookie,
+  isC2,
+  isC2Nav,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -69,7 +71,7 @@ function promptUp() {
 
 function decorateGnav(cards, input, topNav, el) {
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}${isC2() ? 'is-c2' : ''}${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
   const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
@@ -92,7 +94,7 @@ function decorateGnav(cards, input, topNav, el) {
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, false, 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'gnav');
     const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');
@@ -156,7 +158,7 @@ export default function init(el) {
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
   const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
+    const topNav = document.querySelector('header.global-navigation nav');
     if (topNav) {
       clearInterval(navCheck);
       decorateGnav(cards, input, topNav, el);

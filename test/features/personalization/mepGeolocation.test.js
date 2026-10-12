@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
-import { init } from '../../../libs/features/personalization/personalization.js';
+import { init, matchesCountryFilter } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepGeolocationSettings.js';
 
 const setFetchResponse = async (manifestPath) => {
@@ -66,6 +66,13 @@ describe('mepGeolocation', () => {
     expect(document.querySelector('.how-to')).to.be.null;
   });
 
+  it('normalizes countryIP variant country codes', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'gb' });
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
+    await init({ ...mepSettings, akamaiCode: 'gb' });
+    expect(document.querySelector('.how-to')).to.be.null;
+  });
+
   it('country cookie overrides geo for countryIP', async () => {
     await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
     document.cookie = 'country=us';
@@ -102,5 +109,35 @@ describe('mepGeolocation', () => {
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init({ ...mepSettings, akamaiCode: 'us' });
     expect(document.querySelector('.how-to')).to.be.null;
+  });
+
+  it('applies action when country filter matches countryIP', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    await init({ ...mepSettings, akamaiCode: 'de' });
+    expect(document.querySelector('.how-to')).to.be.null;
+  });
+
+  it('skips action when country filter does not match countryIP', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'us' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    await init({ ...mepSettings, akamaiCode: 'us' });
+    expect(document.querySelector('.how-to')).to.not.be.null;
+  });
+
+  it('normalizes country filter country codes', async () => {
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'gb' });
+    await setFetchResponse('./mocks/manifestCountryFilter.json');
+    await init({ ...mepSettings, akamaiCode: 'gb' });
+    expect(document.querySelector('.how-to')).to.be.null;
+  });
+
+  it('leaves blank country filters unrestricted and rejects empty country lists', () => {
+    const testConfig = { mep: { countryIP: 'de' } };
+    expect(matchesCountryFilter('', testConfig)).to.be.true;
+    expect(matchesCountryFilter('   ', testConfig)).to.be.true;
+    expect(matchesCountryFilter(' , , ', testConfig)).to.be.false;
   });
 });
