@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { emulateMedia } from '@web/test-runner-commands';
+import { emulateMedia, setViewport } from '@web/test-runner-commands';
 import initContentAnimations from '../../libs/c2/content-animations.js';
 import initFAQ from '../../libs/c2/blocks/faq/faq.js';
 
@@ -55,9 +55,10 @@ describe('C2 content animations', () => {
     document.body.append(section);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     section.remove();
     stub.restore();
+    await setViewport({ width: 800, height: 600 });
   });
 
   after(() => {
@@ -102,7 +103,19 @@ describe('C2 content animations', () => {
     expect(items.every((item) => item.classList.contains('c2-entrance-played'))).to.be.true;
   });
 
-  it('groups whole cards by row rather than their internal content', () => {
+  it('enters a multi-column stagger grid as one on desktop', async () => {
+    await setViewport({ width: 1280, height: 800 });
+    const el = block('side-by-side parallax-stagger-ltr', '<div class="card"><h3>One</h3></div><div class="card"><h3>Two</h3></div><div class="card"><h3>Three</h3></div>');
+    el.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:24px';
+    initContentAnimations(el);
+    expect(observers).to.have.length(1);
+    expect([...el.children].map((item) => item.style.getPropertyValue('--c2-entrance-index'))).to.deep.equal(['0', '1', '2']);
+    observers[0].callback([{ isIntersecting: true }]);
+    expect([...el.children].every((item) => item.classList.contains('c2-entrance-played'))).to.be.true;
+  });
+
+  it('groups whole cards by row rather than their internal content', async () => {
+    await setViewport({ width: 600, height: 800 });
     const el = block('side-by-side parallax-stagger-ltr', '<div class="card"><h3>One</h3></div><div class="card"><h3>Two</h3></div><div class="card"><h3>Three</h3></div>');
     el.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:24px';
     initContentAnimations(el);
@@ -369,7 +382,8 @@ describe('C2 content animations', () => {
   });
 
   it('updates row staggering when section decoration changes the card layout', async () => {
-    section.classList.add('parallax-stagger-ltr');
+    await setViewport({ width: 1280, height: 800 });
+    section.classList.add('parallax-stagger-ltr', 'masonry-layout');
     section.style.display = 'grid';
     const first = block('explore-card', '<h3>One</h3>');
     const second = block('explore-card', '<h3>Two</h3>');
@@ -381,8 +395,9 @@ describe('C2 content animations', () => {
   });
 
   it('waits for the hidden section to finish loading before grouping card rows', async () => {
+    await setViewport({ width: 1280, height: 800 });
     section.dataset.status = 'decorated';
-    section.classList.add('parallax-stagger-ltr', 'two-up');
+    section.classList.add('parallax-stagger-ltr', 'masonry-layout', 'two-up');
     section.style.display = 'grid';
     const first = block('explore-card', '<h3>One</h3>');
     const second = block('explore-card', '<h3>Two</h3>');
@@ -645,8 +660,9 @@ describe('C2 content animations', () => {
       await settle();
       [el, row, row.firstElementChild, img].forEach((item) => item.getAnimations()
         .forEach((animation) => animation.finish()));
-      expect(getComputedStyle(row).transform).to.equal('none');
-      expect(getComputedStyle(img).transform).to.equal('none');
+      [row, img].forEach((item) => {
+        expect(new DOMMatrix(getComputedStyle(item).transform).isIdentity).to.be.true;
+      });
     } finally {
       proofStylesheet.remove();
     }

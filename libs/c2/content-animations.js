@@ -1,8 +1,8 @@
 const ENTRANCE_SELECTOR = '.parallax-line-height, .parallax-stagger-ltr, .parallax-stagger-rtl, .parallax-move-up, .parallax-opacity';
-// Scale, blur, clip, or block-owned motion (social-proof) play in place, even inside
-// another entrance.
-const EFFECT_SELECTOR = '.parallax-scale-up, .parallax-scale-down, .parallax-blur, '
-  + '.parallax-featured-card-media, .social-proof';
+// Scale, blur, clip, or block-owned motion (social-proof, carousels) play in place, even
+// inside another entrance.
+const EFFECT_SELECTOR = '.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid, .parallax-blur, '
+  + '.parallax-featured-card-media, .social-proof, .carousel-c2, .elastic-carousel';
 const SOURCE_SELECTOR = `${ENTRANCE_SELECTOR}, ${EFFECT_SELECTOR}`;
 const SPECIALTY_SELECTOR = '.parallax-garage-door-reveal, .parallax-move-up-fast, .parallax-video-garage-door';
 // Keep in sync with the Rich Content + Split Aside rule in libs/c2/styles/styles.css.
@@ -12,6 +12,7 @@ const SUPPORTS_HAS = window.CSS?.supports?.('selector(:has(*))') ?? false;
 const groups = new WeakMap();
 const sections = new Map();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const singleColumn = window.matchMedia('(width < 768px)');
 
 const isEffectOnly = (source) => source.matches(EFFECT_SELECTOR)
   && !source.matches(ENTRANCE_SELECTOR);
@@ -23,9 +24,20 @@ function hasOtherAnimation(item) {
 
 function reveal(state, indices, observer, settled = reducedMotion.matches) {
   indices.forEach((index) => {
+    const item = state.items[index];
+    if (!item) return;
     state.played.add(index);
-    state.items[index]?.classList.add('c2-entrance-played');
-    if (settled) state.items[index]?.classList.add('c2-entrance-settled');
+    item.classList.add('c2-entrance-played');
+    if (settled) item.classList.add('c2-entrance-settled');
+    else if (item.classList.contains('c2-entrance-group')) {
+      // Block-owned motion must not replay when its markup is re-inserted (carousel clones),
+      // so settle once every timed animation in the block has finished.
+      item.addEventListener('animationend', () => {
+        const running = item.getAnimations({ subtree: true })
+          .some((animation) => animation.timeline === document.timeline && animation.playState === 'running');
+        if (!running) item.classList.add('c2-entrance-settled');
+      }, { signal: state.listeners.signal });
+    }
   });
   observer?.disconnect();
 }
@@ -74,7 +86,9 @@ function addEntrance(source, items, rows = false) {
   if (state && !state.stale && state.items.length === items.length
     && state.items.every((item, index) => (
       item === items[index] && state.ready[index] === ready[index]
-    )) && (!rows || state.rowTops?.every((top, index) => top === rowTops[index]))) return;
+    )) && (rows
+    ? state.rowTops?.every((top, index) => top === rowTops[index])
+    : !state.rowTops)) return;
   const previousItems = state?.items;
   const skipped = items.map((item, index) => {
     if (previousItems?.[index] === item
@@ -139,6 +153,12 @@ function directContent(el) {
   return [...el.children].filter((child) => !child.matches('[class*="section-"], .aria-live-container'));
 }
 
+// Like stage's shared section timeline, a multi-column grid enters as one; masonry and
+// single-column layouts enter row by row as each row arrives.
+function staggersByRow(source) {
+  return source.classList.contains('masonry-layout') || singleColumn.matches;
+}
+
 function entranceGroups(section) {
   const sources = [...section.querySelectorAll('.c2-entrance-group')];
   if (section.classList.contains('c2-entrance-group')) sources.unshift(section);
@@ -175,7 +195,8 @@ function initEntrances(section) {
     if (block && block.dataset.blockStatus !== 'loaded') return;
     const isEntrance = source.matches(ENTRANCE_SELECTOR);
     if (isEntrance && source.parentElement?.closest(ENTRANCE_SELECTOR)) return;
-    addEntrance(source, entranceItems(source), source.matches('.parallax-stagger-ltr, .parallax-stagger-rtl'));
+    const isStagger = source.matches('.parallax-stagger-ltr, .parallax-stagger-rtl');
+    addEntrance(source, entranceItems(source), isStagger && staggersByRow(source));
   });
 
   if (isAside) {

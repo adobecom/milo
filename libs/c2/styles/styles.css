@@ -1211,36 +1211,6 @@ span.hang-opening-quote {
     }
   }
 
-  /* Grid parallax declarations */
-  .parallax-scale-down-grid {
-    --parallax-scale-grid-margin: var(--grid-margin-width);
-    --grid-scale-angle: atan2(
-      min(var(--grid-max-width-fluid), 100vw),
-      min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
-    );
-    --grid-scale-multiplier: tan(var(--grid-scale-angle));
-
-    animation: enable-grid-parallax var(--parallax-easing) both;
-    animation-timeline: view(block 40% 10%);
-    animation-range: entry 0% entry 100%;
-    transform-origin: top center;
-    overflow-x: clip;
-    will-change: scale;
-
-    @media (width >= 768px) {
-      /* 8.333% grid margin as a length (a % can't resolve inside atan2)
-      Keep value in sync with --grid-margin-width-base */
-      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
-    }
-
-    :has(> &) { overflow-x: clip; }
-  }
-
-  @keyframes enable-grid-parallax {
-    from { scale: var(--grid-scale-multiplier, 1); }
-    to   { scale: 1; }
-  }
-
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
@@ -1555,8 +1525,22 @@ span.hang-opening-quote {
   --c2-entrance-opacity: 0;
 }
 
-.c2-entrance-group:is(.parallax-scale-up, .parallax-scale-down),
-.c2-entrance-item:is(.parallax-scale-up, .parallax-scale-down) {
+/* Stage runs a multi-row grid on one timeline that ends at the viewport top, about 1.8x a
+   single row's range, so every row settles together; the stagger comes from distance. */
+@media (width >= 768px) {
+  .c2-entrance-group:is(.parallax-stagger-ltr, .parallax-stagger-rtl):not(.masonry-layout):is(
+    .two-up:has(> :nth-child(3 of :not([class*="section-"]))),
+    .three-up:has(> :nth-child(4 of :not([class*="section-"]))),
+    .four-up:has(> :nth-child(5 of :not([class*="section-"]))),
+    .six-up:has(> :nth-child(7 of :not([class*="section-"])))
+  ) > .c2-entrance-item {
+    --c2-entrance-duration: 1890ms;
+    --c2-entrance-delay: 0ms;
+  }
+}
+
+.c2-entrance-group:is(.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid),
+.c2-entrance-item:is(.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid) {
   --c2-entrance-scale-animation: c2-entrance-scale;
 }
 
@@ -1588,7 +1572,7 @@ span.hang-opening-quote {
     opacity: 1;
   }
 
-  &:is(.parallax-scale-up, .parallax-scale-down):not(.c2-entrance-played) {
+  &:is(.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid):not(.c2-entrance-played) {
     scale: var(--c2-entrance-scale-from);
   }
 
@@ -1641,7 +1625,7 @@ span.hang-opening-quote {
 /* stylelint-disable no-descending-specificity -- Inputs only set custom properties. */
 
 /* Timed entrance inputs for the authored parallax-* entrance classes; libs/c2/content-animations.js
-   triggers them once. Only garage-door moments and section transitions stay scroll-driven. */
+   triggers them once. Only garage-door moments stay scroll-driven. */
 .parallax-scale-up {
   --c2-entrance-scale-from: 0.9;
 }
@@ -1654,6 +1638,29 @@ span.hang-opening-quote {
 
 .parallax-blur {
   --c2-entrance-blur-from: 10px;
+}
+
+/* Starts at full bleed and settles into the grid once; stage's view range (inset 40% 10%)
+   spans about one entrance duration. */
+.parallax-scale-down-grid {
+  --parallax-scale-grid-margin: var(--grid-margin-width);
+  --grid-scale-angle: atan2(
+    min(var(--grid-max-width-fluid), 100vw),
+    min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
+  );
+  --grid-scale-multiplier: tan(var(--grid-scale-angle));
+  --c2-entrance-scale-from: var(--grid-scale-multiplier, 1);
+
+  transform-origin: top center;
+  overflow-x: clip;
+
+  @media (width >= 768px) {
+    /* 8.333% grid margin as a length (a % can't resolve inside atan2)
+    Keep value in sync with --grid-margin-width-base */
+    &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
+  }
+
+  :has(> &) { overflow-x: clip; }
 }
 
 [class*="parallax-stagger-"] {

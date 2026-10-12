@@ -128,7 +128,7 @@ existing `parallax-*` class. This is the most important phase:
 2. **Entrance input override?** If it is a one-time entrance that
    only differs in magnitude, set the `--c2-entrance-*` input in a
    new class. Entrances are timed and must never get scroll-driven
-   CSS; only garage-door, section transition and sticky moments are
+   CSS; only garage-door, section stacking and sticky moments are
    scroll-driven.
 3. **New keyframe needed?** Only if steps 1-2 cannot achieve
    the effect.

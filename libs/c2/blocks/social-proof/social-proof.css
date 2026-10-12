@@ -150,29 +150,36 @@
 }
 
 .social-proof.c2-entrance-played:not(.c2-entrance-settled) > div {
-  animation: social-proof-stretch var(--c2-entrance-duration) var(--parallax-easing) backwards;
+  animation: social-proof-stretch var(--c2-entrance-duration) var(--parallax-easing) both;
 
   .foreground {
-    animation: social-proof-content-enter var(--c2-entrance-duration) var(--parallax-easing) backwards;
+    animation: social-proof-content-enter var(--c2-entrance-duration) var(--parallax-easing) both;
   }
 
   .media img {
-    animation: social-proof-image-zoom var(--c2-entrance-duration) var(--parallax-easing) backwards;
+    animation: social-proof-image-zoom var(--c2-entrance-duration) var(--parallax-easing) both;
   }
 }
 
 @keyframes social-proof-stretch {
   from { transform: scale(var(--stretch-from)); }
+  to   { transform: scale(1); }
 }
 
 @keyframes social-proof-image-zoom {
   from { transform: scale(var(--stretch-from)); }
+  to   { transform: scale(1); }
 }
 
 @keyframes social-proof-content-enter {
   from {
     --social-proof-content-scale: var(--stretch-from);
     --social-proof-content-shift: 15%;
+  }
+
+  to {
+    --social-proof-content-scale: 1;
+    --social-proof-content-shift: 0%;
   }
 }
 

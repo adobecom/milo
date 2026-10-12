@@ -9,13 +9,22 @@ C2 has two kinds of motion, and they must not be mixed:
 - **One-time entrances** (`parallax-move-up`, `parallax-opacity`,
   `parallax-scale-up`, `parallax-scale-down`, `parallax-blur`,
   `parallax-stagger-*`, `parallax-line-height`, base-card
-  `parallax-featured-card-media`, and the `social-proof` block's stretch). These are timed CSS animations that an
+  `parallax-featured-card-media`, `parallax-scale-down-grid`, and the
+  `social-proof`, `carousel-c2` and desktop `elastic-carousel` block
+  entrances). These are timed CSS animations that an
   `IntersectionObserver` triggers once. They have **no** scroll-driven
   CSS: no `animation-timeline`, `view-timeline` or `animation-range`.
 - **Scroll-driven moments**: garage-door sections, the Rich Content +
-  Split Aside composition inside `parallax-double-garage-door`, the
-  `parallax-scale-down-grid` section transition, and block-specific
-  scroll effects. Only these use `@supports (animation-timeline: view())`.
+  Split Aside composition inside `parallax-double-garage-door`, and
+  block effects that keep changing while content is on screen or leaving
+  it (mobile `elastic-carousel` stacking, section stacking, sticky
+  effects). Only these use `@supports (animation-timeline: view())`.
+
+An animation is an entrance when it starts offset, scaled or hidden,
+ends at the element's natural state, and finishes as the element
+arrives. When converting one, keep stage's choreography: map each part's
+scroll range to a duration and delay at the shared rate (about one
+`--c2-entrance-duration` per 440px of scroll).
 
 Do not add scroll-driven CSS to an entrance class, and do not "lock" a
 scroll animation to make it behave like a timed one.
@@ -112,9 +121,10 @@ or shared `enable-parallax` keyframe.
 
 ### Grid animation (`parallax-scale-down-grid`)
 
-A section transition that animates the grid max-width and margins with
-`enable-grid-parallax` (`--grid-max-width`, `--grid-margin-width`) on
-`view(block 40% 10%)`, range `entry 0% entry 100%`. Uses `overflow: clip`.
+A triggered entrance: the section starts scaled to full bleed
+(`--grid-scale-multiplier`) and settles into the grid once over
+`--c2-entrance-duration`, through the shared entrance scale slot.
+Uses `overflow-x: clip`.
 
 ### Rich Content + Split Aside composition
 

@@ -8,7 +8,7 @@ simplicity. The guiding principles:
   triggers them. Do not give an entrance any `animation-timeline`,
   `view-timeline` or `animation-range`.
 - **Scroll-driven CSS is only for scroll moments** such as garage doors,
-  section transitions and sticky effects.
+  section stacking and sticky effects.
 
 ---
 
@@ -21,7 +21,7 @@ Is it content appearing once (move/scale/blur/opacity/stagger)?
   │        new class. No scroll timeline, no new keyframe.
   │
   └─ NO → Is the motion meant to follow the scroll position
-          (garage door, section transition, sticky shift)?
+          (garage door, section stacking, sticky shift)?
            ├─ YES → Does it animate one element?
            │         ├─ YES → Pattern 2 (new keyframe, single element)
            │         └─ NO  → Pattern 3 (multi-element orchestration)
