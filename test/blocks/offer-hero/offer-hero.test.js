@@ -1,7 +1,7 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { loadStyle } from '../../../libs/utils/utils.js';
+import { getConfig, loadStyle } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
@@ -9,10 +9,59 @@ import init from '../../../libs/c2/blocks/offer-hero/offer-hero.js';
 
 describe('offer-hero', () => {
   describe('MEP inline MAS editing', () => {
-    afterEach(() => {
+    let originalViewport;
+    let originalMep;
+    beforeEach(() => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      originalMep = getConfig().mep;
+      getConfig().mep = { ...originalMep, preview: true };
+    });
+    afterEach(async () => {
       unwatchForMasContent();
       delete document.body.dataset.mepMasHighlight;
       sinon.restore();
+      getConfig().mep = originalMep;
+      await setViewport(originalViewport);
+    });
+
+    it('opens Studio for fields inherited across mobile, tablet, and desktop viewports', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/mas-fields.html' });
+      const block = document.querySelector('.offer-hero');
+      const rows = [...block.children];
+      block.prepend(Object.assign(document.createElement('div'), { innerHTML: '<div>mobile-viewport</div>' }));
+      ['tablet', 'desktop'].forEach((viewport) => {
+        block.insertAdjacentHTML('beforeend', `<div><div>${viewport}-viewport</div></div>`);
+        rows.forEach((row) => {
+          const emptyRow = document.createElement('div');
+          [...row.children].forEach(() => emptyRow.append(document.createElement('div')));
+          block.append(emptyRow);
+        });
+      });
+      const fields = [...block.querySelectorAll('mas-field')];
+      fields.forEach((field, index) => {
+        field.dataset.masBlock = 'inline';
+        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=viewport-${index}`);
+      });
+      const openStub = sinon.stub(window, 'open');
+      document.body.dataset.mepMasHighlight = 'true';
+      watchForMasContent();
+      init(block);
+
+      for (const width of [375, 1000, 1440]) {
+        await setViewport({ width, height: 900 });
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+        const renderedFields = [...block.querySelectorAll('mas-field')];
+        expect(renderedFields.length).to.equal(fields.length);
+        renderedFields.forEach((field, index) => {
+          const url = `https://mas.adobe.com/studio.html#query=viewport-${index}`;
+          expect(mepMasStudioUrls.get(field)).to.equal(url);
+          const rectStub = sinon.stub(field, 'getBoundingClientRect')
+            .returns({ top: 100, right: 400, height: 30 });
+          field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+          expect(openStub.lastCall.args).to.deep.equal([url, '_blank', 'noopener,noreferrer']);
+          rectStub.restore();
+        });
+      }
     });
 
     it('preserves MAS editing when promoting the hero heading and moving card text', async () => {

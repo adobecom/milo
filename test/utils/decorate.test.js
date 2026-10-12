@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
+import { getConfig } from '../../libs/utils/utils.js';
 import {
   setBackgroundFocus, decorateBlockText, getButtonType,
   decoratePictures, decorateViewportContent, normalizeMasFieldText,
@@ -383,6 +384,27 @@ describe('decorateViewportContent — resolveInheritance extra-row handling', ()
   // `el` (via applyViewportContent's replaceChildren), so assert against
   // `el.children` — the same DOM a block's own decorate() would see — rather
   // than the internal per-viewport container references.
+
+  it('does not notify MEP about inherited content outside preview mode', () => {
+    const config = getConfig();
+    const originalMep = config.mep;
+    const events = [];
+    const listener = (event) => events.push(event);
+    document.addEventListener('mep:content-cloned', listener);
+    try {
+      config.mep = { ...originalMep, preview: false };
+      const el = buildBlock({
+        mobileText: ['mobile A', 'mobile B'],
+        tabletMedia: ['', ''],
+        tabletText: ['', ''],
+      });
+      decorateViewportContent(el, () => {});
+      expect(events.length).to.equal(0);
+    } finally {
+      config.mep = originalMep;
+      document.removeEventListener('mep:content-cloned', listener);
+    }
+  });
 
   it('content row (row 0): empty cell still inherits from the previous viewport', () => {
     const el = buildBlock({
