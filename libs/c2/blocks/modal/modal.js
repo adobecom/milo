@@ -285,7 +285,11 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
+  const documentKeydownListener = (event) => {
+    if (event.key !== 'Escape') return;
+    close.setAttribute('daa-ll', `${analyticsEventName}:modalClose:escapeClose`);
+    close.click();
+  };
   dialog.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 

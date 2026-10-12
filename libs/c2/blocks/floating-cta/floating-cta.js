@@ -4,6 +4,8 @@ import icons from '../../assets/icons.js';
 
 const mobileQuery = window.matchMedia('(width < 768px)');
 
+const getMerchSection = () => document.querySelector('main > .section:has(merch-card)');
+
 function waitForCheckoutLink(linkPara, timeoutMs = 10000) {
   const existing = linkPara.querySelector('a');
   if (existing?.isCheckoutLink) return Promise.resolve(existing);
@@ -50,7 +52,7 @@ function moveFloatingSection(el) {
   const section = el.closest('.section');
   if (!section) return;
   const main = document.querySelector('main');
-  const hasMerchSection = document.querySelector('merch-card')?.closest('.section');
+  const hasMerchSection = getMerchSection();
   if (hasMerchSection) {
     hasMerchSection.before(section);
     return;
@@ -60,7 +62,8 @@ function moveFloatingSection(el) {
 
 function revealCta(ctaEl) {
   const revealTrigger = document.querySelector('main > .section');
-  const hideTrigger = document.querySelector('merch-card') || document.querySelector('footer');
+  const initialMerchSection = getMerchSection();
+  const hideTrigger = initialMerchSection || document.querySelector('footer');
   if (!revealTrigger && !hideTrigger) return;
 
   let isPastIntro = false;
@@ -93,12 +96,12 @@ function revealCta(ctaEl) {
   });
   anchor?.addEventListener('blur', update);
 
-  if (hideTrigger?.matches('merch-card')) return;
+  if (initialMerchSection) return;
 
   let retargeted = false;
   const retargetOutro = () => {
     if (retargeted) return;
-    const merchSection = document.querySelector('merch-card')?.closest('.section');
+    const merchSection = getMerchSection();
     if (!merchSection) return;
     retargeted = true;
     moveFloatingSection(ctaEl);

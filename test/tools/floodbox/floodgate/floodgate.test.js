@@ -516,6 +516,150 @@ describe('MiloFloodgate', () => {
       applyPromoteIgnore(el);
       expect(el._filesToProcess).to.deep.equal(['/org/repo/other.html']);
     });
+
+    it('matches extensionless pages against normalized ignore paths', () => {
+      el._filesToProcess = ['/org/repo/page', '/org/repo/other'];
+      el._promoteIgnorePaths = ['/page.html'];
+      applyPromoteIgnore(el);
+      expect(el._filesToProcess).to.deep.equal(['/org/repo/other']);
+      expect(el._promoteIgnoreList).to.deep.equal([
+        { href: '/org/repo/page', status: 'Ignored' },
+      ]);
+    });
+  });
+
+  describe('promote path report', () => {
+    let createUrl;
+    let click;
+    let clock;
+
+    beforeEach(async () => {
+      el = createComponent();
+      el._selectedOption = 'fgPromote';
+      el._tabUiStart = true;
+      el._startFind = true;
+      el._actionReady = true;
+      el._filesToProcess = [
+        '/org/repo/page',
+        '/org/repo/fragments/banner',
+        '/org/repo/assets/image.png',
+        '/org/repo/metadata.json',
+      ];
+      el._fragmentsAssets = new Set(['/org/repo/fragments/banner', '/org/repo/assets/image.png']);
+      el._floodgateConfig = { getPromoteIgnorePaths: () => ['/metadata.json'] };
+      await el.updateComplete;
+      clock = sinon.useFakeTimers();
+      createUrl = sinon.stub(URL, 'createObjectURL').returns('blob:test-report');
+      sinon.stub(URL, 'revokeObjectURL');
+      click = sinon.stub(HTMLAnchorElement.prototype, 'click');
+    });
+
+    async function downloadReport() {
+      el.shadowRoot.querySelector('.promote-report-btn').click();
+      const blob = createUrl.firstCall.args[0];
+      const link = click.firstCall.thisValue;
+      expect(blob.type).to.equal('text/plain;charset=utf-8');
+      expect(link.download).to.equal('promote-paths.txt');
+      expect(link.href).to.equal('blob:test-report');
+      expect(link.isConnected).to.be.false;
+      clock.tick(0);
+      expect(URL.revokeObjectURL.calledOnceWithExactly('blob:test-report')).to.be.true;
+      return blob.text();
+    }
+
+    it('downloads pages, fragments and assets in list order, excluding configured ignores', async () => {
+      expect(await downloadReport()).to.equal(
+        '/org/repo/page\n/org/repo/fragments/banner\n/org/repo/assets/image.png',
+      );
+      expect(el._filesToProcess).to.have.length(4);
+      expect(el._promoteIgnoreList).to.deep.equal([]);
+      expect(el._actionReady).to.be.true;
+      expect(el._startPromote).to.be.false;
+    });
+
+    it('reads the latest ignore textarea and excludes pages and folders', async () => {
+      el._promoteIgnore = true;
+      el.requestUpdate();
+      await el.updateComplete;
+      el.shadowRoot.querySelector('textarea[name="promote-ignore-paths"]').value = ' /page \n\n/fragments/\n';
+      expect(await downloadReport()).to.equal('/org/repo/assets/image.png');
+      expect(el._filesToProcess).to.have.length(4);
+    });
+
+    it('downloads an empty report when every path is ignored', async () => {
+      el._promoteIgnore = true;
+      el.requestUpdate();
+      await el.updateComplete;
+      el.shadowRoot.querySelector('textarea[name="promote-ignore-paths"]').value = '/org/repo/';
+      expect(await downloadReport()).to.equal('');
+    });
+
+    it('only displays the report button for promote', async () => {
+      const button = el.shadowRoot.querySelector('.promote-report-btn');
+      expect(button.textContent).to.equal('Get Report');
+      expect(button.parentElement.classList.contains('find-cards')).to.be.true;
+      expect(button.disabled).to.be.false;
+      el._selectedOption = 'fgCopy';
+      el.requestUpdate();
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector('.promote-report-btn')).to.be.null;
+      el._selectedOption = 'fgDelete';
+      el.requestUpdate();
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector('.promote-report-btn')).to.be.null;
+    });
+
+    it('aligns the report with the top of the pills and the right of Start Promote', () => {
+      const report = el.shadowRoot.querySelector('.promote-report-btn').getBoundingClientRect();
+      const total = el.shadowRoot.querySelector('.find-cards .detail-card:last-of-type').getBoundingClientRect();
+      const start = el.shadowRoot.querySelector('.find-header-actions .accent').getBoundingClientRect();
+      expect(report.width).to.be.greaterThan(0);
+      expect(report.top).to.equal(total.top);
+      expect(report.right).to.equal(start.right);
+      expect(report.top).to.be.greaterThan(start.bottom);
+    });
+
+    [900, 700, 500, 360, 280].forEach((width) => {
+      it(`keeps pills and actions within a ${width}px component without overlap`, () => {
+        el.style.width = `${width}px`;
+        el.style.maxWidth = 'none';
+        el.style.fontSize = '18px';
+        el.style.setProperty('--spacing-200', '12px');
+        el.style.setProperty('--spacing-300', '18px');
+        el.style.setProperty('--spacing-400', '24px');
+        const root = el.shadowRoot;
+        const container = root.querySelector('.find-cards');
+        const bounds = container.getBoundingClientRect();
+        const cards = [...container.children];
+        cards.forEach((card, index) => {
+          const rect = card.getBoundingClientRect();
+          expect(rect.left).to.be.at.least(bounds.left - 1);
+          expect(rect.right).to.be.at.most(bounds.right + 1);
+          expect(card.scrollWidth).to.be.at.most(card.clientWidth + 1);
+          cards.slice(index + 1).forEach((other) => {
+            const otherRect = other.getBoundingClientRect();
+            const overlaps = rect.left < otherRect.right && rect.right > otherRect.left
+              && rect.top < otherRect.bottom && rect.bottom > otherRect.top;
+            expect(overlaps).to.be.false;
+          });
+        });
+        const report = root.querySelector('.promote-report-btn').getBoundingClientRect();
+        expect(report.right).to.be.closeTo(bounds.right, 1);
+        const header = root.querySelector('.find-header').getBoundingClientRect();
+        root.querySelectorAll('.find-header-actions button').forEach((button) => {
+          const rect = button.getBoundingClientRect();
+          expect(rect.left).to.be.at.least(header.left - 1);
+          expect(rect.right).to.be.at.most(header.right + 1);
+        });
+      });
+    });
+
+    it('disables the report button when there are no files', async () => {
+      el._filesToProcess = [];
+      el.requestUpdate();
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector('.promote-report-btn').disabled).to.be.true;
+    });
   });
 
   describe('aemUrlToPageUrl', () => {

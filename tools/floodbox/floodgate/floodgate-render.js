@@ -110,6 +110,11 @@ export function renderFindStep(cmp) {
           ${floodbox.renderBadge('Pages', cmp._filesToProcess.length - fragmentCount)}
           ${cmp._selectedOption !== 'fgDelete' ? floodbox.renderBadge('Fragments & Assets', fragmentCount) : nothing}
           ${floodbox.renderBadge('Total', cmp._filesToProcess.length)}
+          ${cmp._selectedOption === 'fgPromote' ? html`
+            <button class="find-action-btn find-action-btn-outline promote-report-btn" type="button"
+              .disabled=${cmp._filesToProcess.length === 0}
+              @click=${() => cmp.handlePromoteReport()}>Get Report</button>
+          ` : nothing}
         </div>
         ${cmp._selectedOption === 'fgPromote' ? html`
           <div class="ignore-section">

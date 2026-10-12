@@ -189,10 +189,11 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-const decorateCtas = (textCol) => {
+const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
-  cta.classList.add('rm-ctas', 'dark', 'action-area');
+  cta.classList.add('rm-ctas', 'action-area');
+  cta.classList.toggle('dark', !isLight);
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
@@ -253,33 +254,34 @@ const loadVideo = (video) => {
 // Slides are stacked at inset:0, so loading="lazy" never defers the off-screen
 // ones. Stash the picture sources and restore them only when the slide is needed.
 const stashSlideImage = (slide) => {
-  const pic = slide?.querySelector('.rm-background picture');
-  if (!pic) return;
-  pic.querySelectorAll('source[srcset]').forEach((s) => {
-    s.dataset.lazySrcset = s.getAttribute('srcset');
-    s.removeAttribute('srcset');
+  slide?.querySelectorAll('.rm-background picture, .rm-foreground picture').forEach((pic) => {
+    pic.querySelectorAll('source[srcset]').forEach((s) => {
+      s.dataset.lazySrcset = s.getAttribute('srcset');
+      s.removeAttribute('srcset');
+    });
+    const img = pic.querySelector('img');
+    if (img?.getAttribute('src')) {
+      img.dataset.lazySrc = img.getAttribute('src');
+      img.removeAttribute('src');
+    }
   });
-  const img = pic.querySelector('img');
-  if (img?.getAttribute('src')) {
-    img.dataset.lazySrc = img.getAttribute('src');
-    img.removeAttribute('src');
-  }
 };
 
 const loadSlideImage = (slide, lowPriority = false) => {
-  const pic = slide?.querySelector('.rm-background picture');
-  if (!pic || pic.dataset.loaded) return;
-  pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
-    s.setAttribute('srcset', s.dataset.lazySrcset);
-    delete s.dataset.lazySrcset;
+  slide?.querySelectorAll('.rm-background picture, .rm-foreground picture').forEach((pic) => {
+    if (pic.dataset.loaded) return;
+    pic.querySelectorAll('source[data-lazy-srcset]').forEach((s) => {
+      s.setAttribute('srcset', s.dataset.lazySrcset);
+      delete s.dataset.lazySrcset;
+    });
+    const img = pic.querySelector('img');
+    if (img?.dataset.lazySrc) {
+      if (lowPriority) img.setAttribute('fetchpriority', 'low');
+      img.setAttribute('src', img.dataset.lazySrc);
+      delete img.dataset.lazySrc;
+    }
+    pic.dataset.loaded = 'true';
   });
-  const img = pic.querySelector('img');
-  if (img?.dataset.lazySrc) {
-    if (lowPriority) img.setAttribute('fetchpriority', 'low');
-    img.setAttribute('src', img.dataset.lazySrc);
-    delete img.dataset.lazySrc;
-  }
-  pic.dataset.loaded = 'true';
 };
 
 // Load a slide's picture and video together (slide change / preload).
@@ -333,13 +335,35 @@ const loadViewportVideos = (el) => {
   playActiveVideo(video);
 };
 
-const decorateSlide = (slide) => {
+// The media column may author each image/video inside its own empty <p>
+// (Word/AEM authoring). The background styles size the picture against
+// .rm-background via height:100%, which only works when the media is a direct
+// child, so flatten those wrappers before decorating.
+const unwrapMedia = (container) => {
+  container?.querySelectorAll(':scope > p').forEach((p) => {
+    if (p.textContent.trim() || !p.querySelector(':scope > picture, :scope > video, :scope > img')) return;
+    p.replaceWith(...p.childNodes);
+  });
+};
+
+const splitForegroundMedia = (imageCol) => {
+  const pictures = [...(imageCol?.querySelectorAll('picture') ?? [])];
+  if (pictures.length < 2) return null;
+  const [first] = pictures;
+  const foreground = createTag('div', { class: 'rm-foreground' }, first);
+  return foreground;
+};
+
+const decorateSlide = (slide, isLight) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
+  unwrapMedia(imageCol);
   textCol.classList.add('rm-content');
   const contentWrapper = createTag('div', { class: 'rm-content-wrapper' });
   slide.insertBefore(contentWrapper, textCol);
+  const foreground = splitForegroundMedia(imageCol);
+  if (foreground) contentWrapper.append(foreground);
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
@@ -347,7 +371,7 @@ const decorateSlide = (slide) => {
 
   if (!textCol) return;
   decorateText(textCol);
-  decorateCtas(textCol);
+  decorateCtas(textCol, isLight);
 };
 
 const buildCard = (slide) => {
@@ -483,12 +507,19 @@ const updateContentSpacing = (el) => {
   // layout and force the subsequent getBoundingClientRect reads to reflow again.
   const wrapperPadTop = getCssPx(wrapper, 'padding-top');
   const contentH = content.offsetHeight;
+  const foreground = activeSlide.querySelector('.rm-foreground');
+  const foregroundH = foreground
+    ? foreground.offsetHeight + getCssPx(foreground, 'margin-bottom')
+    : 0;
   const controlsH = controls.offsetHeight;
   const controlsTop = controls.getBoundingClientRect().top - 24;
   const contentBottom = content.getBoundingClientRect().bottom;
 
+  // Expose controls height so the foreground mobile layout can reserve space for
+  // the absolutely-positioned controls below the copy.
+  vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
   // Set min-height so the viewport never shrinks below what the content needs
-  const needed = wrapperPadTop + contentH + 24 + controlsH;
+  const needed = wrapperPadTop + foregroundH + contentH + 24 + controlsH;
   const minHeight = `${Math.max(window.innerHeight, needed)}px`;
   if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
@@ -869,13 +900,13 @@ const startAutoplay = (slides, cards, container, block, gateOnFirstFrame = true)
   };
 };
 
-const buildViewport = (viewport, slides, isActiveViewport) => {
+const buildViewport = (viewport, slides, isActiveViewport, isLight) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   // A pending promo slide is display:none and commonly stays that way for the whole visit
   // (no promotion for this user), so the first *visible* slide - not index 0 - starts active.
   const firstIdx = Math.max(slides.findIndex((s) => !isPromoPending(s)), 0);
   slides.forEach((slide, i) => {
-    decorateSlide(slide);
+    decorateSlide(slide, isLight);
     slide.setAttribute('role', 'tabpanel');
     slide.setAttribute('aria-roledescription', 'slide');
     // Keep only the active viewport's first visible slide image eager; every other slide
@@ -922,8 +953,9 @@ export default function init(el) {
   markPromoSlides(el, viewports);
   reorderSlidesMaybe(el, viewports);
   const initialVp = getActiveViewport();
+  const isLight = el.classList.contains('light');
   const containers = Object.entries(viewports)
-    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp));
+    .map(([vp, slides]) => buildViewport(vp, slides, vp === initialVp, isLight));
   el.replaceChildren(...containers);
   const controllersByVp = new Map();
   let activeVpName = null;

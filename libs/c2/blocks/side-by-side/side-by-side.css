@@ -27,6 +27,10 @@
     }
   }
 
+  .card-stacked .foreground [class^='body-'] {
+    color: var(--s2a-color-content-subtle);
+  }
+
   > .card:first-child {
     --parallax-stagger-index: 0.5;
   }
