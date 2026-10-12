@@ -372,6 +372,11 @@ describe('merch-card-collection autoblock', () => {
       expect(container, 'collection container should be created inside the test wrap').to.exist;
       expect(container.dataset.masBlock).to.equal('collection');
       expect(mepMasStudioUrls.get(container)).to.equal(studioHref);
+
+      const resources = container.querySelector('sp-sidenav-item[href="https://www.adobe.com/resources"]');
+      const resLink = resources.shadowRoot.querySelector('a');
+      expect(resLink.getAttribute('aria-label')).to.equal('Special Offers - opens in a new window');
+      expect(resources.getAttribute('aria-label')).to.equal(null);
     });
 
     it('createCollection does NOT stamp or capture href when mep.preview is off', async () => {
