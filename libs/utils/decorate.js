@@ -158,6 +158,24 @@ export function decorateBlockText(el, config = blockTextConfig, type = null) {
   if (type === 'merch') decorateIconStack(el);
 }
 
+export function normalizeMasFieldText(cell, bodySize, fieldSelector = 'mas-field') {
+  cell.querySelectorAll(`:scope > ${fieldSelector}, :scope > p.body-${bodySize} > ${fieldSelector}`)
+    .forEach((field) => {
+      if (field.querySelector('h1, h2, h3, h4, h5, h6') || field.getAttribute('field')?.startsWith('ctas')) return;
+      const parent = field.parentElement;
+      const body = createTag('div', { class: `body-${bodySize}` });
+      // A div survives merch.js unwrapping block-valued fields, unlike an authored p.
+      if (parent === cell) {
+        field.before(body);
+        body.append(field);
+      } else {
+        [...parent.attributes].forEach(({ name, value }) => body.setAttribute(name, value));
+        body.append(...parent.childNodes);
+        parent.replaceWith(body);
+      }
+    });
+}
+
 export function handleFocalpoint(pic, child, removeChild) {
   const image = pic.querySelector('img');
   if (!child || !image) return;
