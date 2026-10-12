@@ -712,14 +712,16 @@ function isEmptyCell(el) {
   return !el.children.length && !el.textContent?.trim();
 }
 
+export function cloneWithPreviewMetadata(source) {
+  const clone = source.cloneNode(true);
+  if (getConfig()?.mep?.preview && source.nodeType === Node.ELEMENT_NODE) {
+    document.dispatchEvent(new CustomEvent('mep:content-cloned', { detail: { source, clone } }));
+  }
+  return clone;
+}
+
 function cloneChildren(source) {
-  return [...source.childNodes].map((child) => {
-    const clone = child.cloneNode(true);
-    if (getConfig()?.mep?.preview && child.nodeType === Node.ELEMENT_NODE) {
-      document.dispatchEvent(new CustomEvent('mep:content-cloned', { detail: { source: child, clone } }));
-    }
-    return clone;
-  });
+  return [...source.childNodes].map(cloneWithPreviewMetadata);
 }
 
 function parseVariants(text) {

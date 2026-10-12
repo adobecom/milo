@@ -1,6 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { getConfig } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/router-marquee/router-marquee.js';
 
@@ -10,6 +13,64 @@ const FIRST_FRAME_FALLBACK_MS = 8000;
 const mobileVp = (block) => block.querySelector('.rm-viewport[data-viewport="mobile"]');
 
 describe('Router Marquee', () => {
+  describe('MEP inline MAS editing', () => {
+    let originalMep;
+    beforeEach(() => {
+      originalMep = getConfig().mep;
+      getConfig().mep = { ...originalMep, preview: true };
+    });
+    afterEach(() => {
+      unwatchForMasContent();
+      delete document.body.dataset.mepMasHighlight;
+      getConfig().mep = originalMep;
+      sinon.restore();
+    });
+
+    ['missing viewport', 'empty columns'].forEach((variant) => {
+      it(`preserves Studio editing when inheriting ${variant}`, async () => {
+        document.body.innerHTML = await readFile({ path: './mocks/nested-paragraphs.html' });
+        const block = document.querySelector('.router-marquee');
+        const original = block.querySelector('mas-field');
+        const url = 'https://mas.adobe.com/studio.html#content-type=merch-card&query=router&field=prices';
+        original.dataset.masBlock = 'inline';
+        mepMasStudioUrls.set(original, url);
+        if (variant === 'empty columns') {
+          block.insertAdjacentHTML('beforeend', '<div><div>tablet-viewport</div></div><div><div></div><div></div></div>');
+        }
+        const openStub = sinon.stub(window, 'open');
+        document.body.dataset.mepMasHighlight = 'true';
+        watchForMasContent();
+        init(block);
+
+        ['mobile', 'tablet', 'desktop'].forEach((viewport) => {
+          const field = block.querySelector(`.rm-viewport[data-viewport="${viewport}"] mas-field`);
+          expect(field).to.exist;
+          expect(mepMasStudioUrls.get(field)).to.equal(url);
+          sinon.stub(field, 'getBoundingClientRect').returns({ top: 100, right: 400, height: 30 });
+          field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+          expect(openStub.lastCall.args).to.deep.equal([url, '_blank', 'noopener,noreferrer']);
+        });
+        expect(openStub.callCount).to.equal(3);
+      });
+    });
+  });
+
+  it('separates adjacent inline MAS paragraphs with a space', async () => {
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/c2/blocks/router-marquee/router-marquee.css' });
+    document.head.append(style);
+    try {
+      document.body.innerHTML = '<div class="router-marquee"><mas-field><span data-role="mas-field-content"><p>A$9.99/mo</p><p>Terms apply.</p></span></mas-field></div>';
+      const [first, second] = document.querySelectorAll('mas-field p');
+      expect(getComputedStyle(first).display).to.equal('inline');
+      expect(getComputedStyle(second).display).to.equal('inline');
+      expect(getComputedStyle(first, '::before').content).to.equal('none');
+      expect(getComputedStyle(second, '::before').content).to.equal('" "');
+    } finally {
+      style.remove();
+    }
+  });
+
   it('builds one viewport per breakpoint, cloning missing breakpoints', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.router-marquee');
