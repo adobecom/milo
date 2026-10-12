@@ -140,7 +140,7 @@
 
   .rcc-item {
     font-weight: var(--s2a-font-weight-body);
-    color: var(--s2a-color-transparent-white-64);
+    color: var(--s2a-color-transparent-white-48);
     transition: color 0.3s ease;
     cursor: default;
     user-select: none;
