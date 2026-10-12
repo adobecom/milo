@@ -1,4 +1,4 @@
-import { createTag, getMetadata } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -143,7 +143,7 @@ async function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
-  useAcomAssistant = getMetadata('acom-assistant') === 'on';
+  useAcomAssistant = isAcomAssistantEnabled();
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));

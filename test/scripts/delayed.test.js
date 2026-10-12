@@ -189,9 +189,13 @@ describe('loadJarvisChat Assistant routing', () => {
     window.AdobeMessagingExperienceClient = originalClient;
     setConfig(originalConfig);
     document.body.innerHTML = '';
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
   });
 
-  const run = () => loadJarvisChat(getConfig, (name) => metadata[name], loadScript, loadStyle);
+  const run = () => {
+    document.head.append(Object.assign(document.createElement('meta'), { name: 'acom-assistant', content: metadata['acom-assistant'] }));
+    return loadJarvisChat(getConfig, (name) => metadata[name], loadScript, loadStyle);
+  };
 
   it('keeps existing Jarvis startup when Assistant is on but no BC placement exists', async () => {
     await run();

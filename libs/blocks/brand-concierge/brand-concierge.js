@@ -1,4 +1,4 @@
-import { createTag, getMetadata } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -85,7 +85,7 @@ function handleFloatingButton(cards) {
 export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
-  useAcomAssistant = getMetadata('acom-assistant') === 'on';
+  useAcomAssistant = isAcomAssistantEnabled();
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));

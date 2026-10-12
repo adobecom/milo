@@ -10,6 +10,7 @@ import {
   getLingoRegion,
   getFederatedUrl,
   loadIms,
+  isAcomAssistantEnabled,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -85,7 +86,7 @@ async function decorateAppPrompt(el) {
 
 // Mirrors c1 gnav's decorateBrandConciergeGlobal
 export async function loadBrandConcierge(block) {
-  if (getMetadata('acom-assistant') === 'on') {
+  if (isAcomAssistantEnabled()) {
     const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
     decorateAcomAssistantGnavBlock(block);
     return;
@@ -228,7 +229,7 @@ export default async function init(el) {
   gnavPromise.then(async () => {
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
-    if (getMetadata('acom-assistant') === 'on') {
+    if (isAcomAssistantEnabled()) {
       try {
         const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
         decorateAcomAssistantGnav(el);

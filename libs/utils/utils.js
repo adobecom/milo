@@ -460,6 +460,13 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
+// TODO: ?acom-assistant=off on stage is a temporary QE override; remove after rollout.
+export function isAcomAssistantEnabled() {
+  const isStage = getConfig().env?.name === 'stage';
+  if (isStage && PAGE_URL.searchParams.get('acom-assistant') === 'off') return false;
+  return getMetadata('acom-assistant') === 'on';
+}
+
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
   if (federatedContentRoot) return federatedContentRoot;
