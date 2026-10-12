@@ -56,6 +56,12 @@
     background: var(--s2a-color-transparent-black-64);
   }
 
+  .rcc-bg-light .rcc-bg-overlay {
+    background:
+      linear-gradient(rgb(0 0 0 / 15%), rgb(0 0 0 / 15%)),
+      var(--s2a-color-transparent-black-64);
+  }
+
   .rcc-content {
     --rcc-inline-padding: max(
       var(--grid-margin-width-fixed),
