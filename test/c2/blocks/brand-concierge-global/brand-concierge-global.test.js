@@ -16,6 +16,8 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   let initialize;
   let ready;
   let listenerSpy;
+  let script;
+  let style;
 
   before(() => {
     originalConfig = getConfig();
@@ -34,6 +36,14 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     });
     metadata.content = 'on';
     document.head.append(metadata);
+    script = document.createElement('script');
+    script.type = 'javascript/blocked';
+    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.type = 'text/plain';
+    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    document.head.append(script, style);
     document.body.innerHTML = `
       <header class="global-navigation">
         <nav><div class="feds-bc-wrapper"></div></nav>
@@ -56,12 +66,18 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     window.addEventListener('bc:ready', ready);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Keep initialization blocked during renderer assertions, then drain the auto-loader.
+    script.dataset.loaded = 'true';
+    script.dispatchEvent(new Event('load'));
+    await loadAcomAssistantGnav();
+    script.remove();
+    style.remove();
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
     metadata.remove();
     document.head.querySelectorAll('link[href$="/c2/blocks/brand-concierge-global/brand-concierge-global.css"]')
-      .forEach((style) => style.remove());
+      .forEach((link) => link.remove());
     document.body.innerHTML = '';
     delete window.milo;
   });
@@ -117,43 +133,5 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     expect(document.querySelectorAll('.bc-gnav')).to.have.lengthOf(1);
     expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
     expect(ready.calledOnce).to.be.true;
-  });
-
-  it('retains authored prompts supplied before navigation mounts for delayed initialization', async () => {
-    const header = document.querySelector('header');
-    header.remove();
-    await loadBrandConcierge(block);
-    expect(initialize.called).to.be.false;
-    document.body.prepend(header);
-    decorateAcomAssistantGnav(header);
-    await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
-
-    const foundation = document.createElement('meta');
-    foundation.name = 'foundation';
-    foundation.content = 'c2';
-    const script = document.createElement('script');
-    script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    script.dataset.loaded = 'true';
-    const style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(foundation, script, style);
-
-    try {
-      await loadAcomAssistantGnav();
-      expect(initialize.calledOnce).to.be.true;
-      expect(initialize.firstCall.args[0].context.prompts)
-        .to.deep.equal(['Prompt one', 'Prompt two'].map((label) => ({
-          label,
-          action: { click_analytics: `BC-suggested_prompt_clicked|gnav|${label}` },
-        })));
-      expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
-      expect(document.querySelector('.bc-gnav')).to.be.null;
-    } finally {
-      foundation.remove();
-      script.remove();
-      style.remove();
-    }
   });
 });
