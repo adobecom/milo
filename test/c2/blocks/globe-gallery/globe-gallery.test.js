@@ -60,9 +60,7 @@ describe('globe-gallery: static-mode arc copy', () => {
   beforeEach(async () => {
     viewport = { width: window.innerWidth, height: window.innerHeight };
     stylesheet = document.createElement('style');
-    stylesheet.textContent = await readFile({
-      path: '../../../../libs/c2/blocks/globe-gallery/globe-gallery.css',
-    });
+    stylesheet.textContent = await readFile({ path: '../../../../libs/c2/blocks/globe-gallery/globe-gallery.css' });
     document.head.append(stylesheet);
   });
 
@@ -115,7 +113,9 @@ describe('globe-gallery: static-mode arc copy', () => {
       await init(block);
       expect(block.globeRuntime).to.exist;
       expect(block.classList.contains('globe-gallery-reduced')).to.be.true;
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
       const copy = block.querySelector('.globe-gallery-arc-copy');
       ['ltr', 'rtl'].forEach((dir) => {
         document.documentElement.dir = dir;
