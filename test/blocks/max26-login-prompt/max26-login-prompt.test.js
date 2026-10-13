@@ -1,4 +1,4 @@
-import { readFile, setViewport, sendKeys } from '@web/test-runner-commands';
+import { readFile, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { createTag, loadBlock, loadStyle, setConfig } from '../../../libs/utils/utils.js';
@@ -6,9 +6,9 @@ import { createTag, loadBlock, loadStyle, setConfig } from '../../../libs/utils/
 document.head.append(createTag('meta', { name: 'foundation', content: 'c2' }));
 setConfig({
   codeRoot: '/libs',
-  mep: { blocks: { 'max26-login-prompt': '/libs/mep/evnt026/max26-login-prompt' } },
+  mep: { blocks: { 'max26-login-prompt': '/libs/mep/evnt027/max26-login-prompt' } },
 });
-const { default: init } = await import('../../../libs/mep/evnt026/max26-login-prompt/max26-login-prompt.js');
+const { default: init } = await import('../../../libs/mep/evnt027/max26-login-prompt/max26-login-prompt.js');
 const { getModal, closeModal } = await import('../../../libs/c2/blocks/modal/modal.js');
 
 async function fixture() {
@@ -33,7 +33,7 @@ describe('MAX 2026 login prompt', () => {
     await Promise.all([
       '/libs/c2/styles/styles.css',
       '/libs/c2/blocks/modal/modal.css',
-      '/libs/mep/evnt026/max26-login-prompt/max26-login-prompt.css',
+      '/libs/mep/evnt027/max26-login-prompt/max26-login-prompt.css',
     ].map((path) => new Promise((resolve) => { loadStyle(path, resolve); })));
   });
 
@@ -96,6 +96,43 @@ describe('MAX 2026 login prompt', () => {
     expect(background.getAttribute('aria-hidden')).to.equal('true');
     background.querySelectorAll('img').forEach((img) => expect(img.alt).to.equal(''));
     expect(block.querySelector('#max-logo img').alt).to.equal('Adobe MAX');
+  });
+
+  it('keeps the primary CTA black on the white panel despite dark-theme styles and stylesheet order', async () => {
+    const block = await fixture();
+    const sharedStyles = document.querySelector('link[href="/libs/c2/styles/styles.css"]');
+    const { nextSibling } = sharedStyles;
+    document.head.append(sharedStyles);
+    try {
+      init(block);
+      const signIn = block.querySelector('.max26-login-prompt-sign-in');
+      expect(getComputedStyle(signIn).backgroundColor).to.equal('rgb(0, 0, 0)');
+      expect(getComputedStyle(signIn).borderTopColor).to.equal('rgb(0, 0, 0)');
+      expect(getComputedStyle(signIn).color).to.equal('rgb(255, 255, 255)');
+      signIn.focus();
+      expect(getComputedStyle(signIn).backgroundColor).to.equal('rgb(0, 0, 0)');
+      expect(getComputedStyle(signIn).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(signIn).outlineStyle).to.equal('solid');
+      const unrelated = createTag('a', { class: 'con-button fill' }, 'Unrelated CTA');
+      document.body.append(createTag('div', { class: 'dark' }, unrelated));
+      expect(getComputedStyle(unrelated).backgroundColor).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(unrelated).color).to.equal('rgb(0, 0, 0)');
+    } finally {
+      document.head.insertBefore(sharedStyles, nextSibling);
+    }
+  });
+
+  it('preserves white CTA text on a dark hover background', async () => {
+    const block = await fixture();
+    init(block);
+    const signIn = block.querySelector('.max26-login-prompt-sign-in');
+    signIn.style.transition = 'none';
+    const { x, y, width, height } = signIn.getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(x + width / 2), Math.round(y + height / 2)] });
+    expect(signIn.matches(':hover')).to.be.true;
+    expect(getComputedStyle(signIn).backgroundColor).to.equal('rgb(41, 41, 41)');
+    expect(getComputedStyle(signIn).color).to.equal('rgb(255, 255, 255)');
+    await sendMouse({ type: 'move', position: [0, 0] });
   });
 
   it('preserves authored typography overrides and the future post variant', async () => {
@@ -176,10 +213,26 @@ describe('MAX 2026 login prompt', () => {
       expect(block.getBoundingClientRect().width).to.be.closeTo(shell, 1);
       expect(parseFloat(getComputedStyle(block).paddingInlineStart)).to.equal(inset);
       expect(block.querySelector('.max26-login-prompt-sign-in').getBoundingClientRect().width).to.equal(170);
+      expect(getComputedStyle(block.querySelector('.max26-login-prompt-sign-in')).backgroundColor)
+        .to.equal('rgb(0, 0, 0)');
+      expect(getComputedStyle(block.querySelector('.max26-login-prompt-sign-in')).color)
+        .to.equal('rgb(255, 255, 255)');
       expect(getComputedStyle(block.querySelector('.max26-login-prompt-foreground')).backgroundColor)
         .to.equal('rgb(255, 255, 255)');
       expect(getComputedStyle(block.querySelector('.max26-login-prompt-logo img')).display).to.equal('block');
       expect(dialog.getBoundingClientRect().width).to.be.closeTo(shell, 1);
+      const close = dialog.querySelector('button.dialog-close');
+      expect(close.getAttribute('aria-label')).to.equal('Close');
+      expect(close.getBoundingClientRect().width).to.equal(40);
+      expect(close.getBoundingClientRect().height).to.equal(40);
+      expect(getComputedStyle(close).backgroundColor).to.equal('rgb(225, 225, 225)');
+      expect(getComputedStyle(close.querySelector('svg')).display).to.equal('block');
+      expect(close.querySelector('svg').getBoundingClientRect().width).to.equal(32);
+      expect(getComputedStyle(close.querySelector('line')).stroke).to.equal('rgb(0, 0, 0)');
+      const closeBounds = close.getBoundingClientRect();
+      const dialogBounds = dialog.getBoundingClientRect();
+      expect(closeBounds.top - dialogBounds.top).to.be.closeTo(12, 1);
+      expect(dialogBounds.right - closeBounds.right).to.be.closeTo(12, 1);
     });
   });
 

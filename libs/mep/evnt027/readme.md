@@ -18,12 +18,12 @@ Content is supplied by
 The primary CTA preserves its authored URL. Continue as guest becomes a button
 that closes the enclosing shared C2 dialog, without navigating.
 
-Map the block in the personalization manifest:
+The personalization manifest must produce this block mapping in `config.mep`:
 
 ```json
 {
   "blocks": {
-    "max26-login-prompt": "https://max-login-prompt-c2--milo--adobecom.aem.live/libs/mep/evnt026/max26-login-prompt"
+    "max26-login-prompt": "https://max-login-prompt-c2--milo--adobecom.aem.live/libs/mep/evnt027/max26-login-prompt"
   }
 }
 ```
