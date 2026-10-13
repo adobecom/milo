@@ -21,6 +21,14 @@ describe('C2 content animations', () => {
     return el;
   };
 
+  // Outside the aside, hover-list has no entrance of its own.
+  const asideHoverList = (html) => {
+    section.classList.add('parallax-double-garage-door');
+    block('rich-content', '<div class="content"><h2>Title</h2></div>');
+    block('split-aside-grid', '<div class="split-aside-grid-items">Aside</div><div class="split-aside-grid-stack">Image</div>');
+    return block('hover-list', html);
+  };
+
   before(async () => {
     stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
@@ -66,21 +74,21 @@ describe('C2 content animations', () => {
     faqStylesheet.remove();
   });
 
-  it('leaves unanimated content and specialty garage-door reveals unchanged', () => {
-    const plain = block('rich-content', '<div class="foreground"><div class="content"><h2>Title</h2></div></div>');
+  it('leaves hero rich content and specialty garage-door reveals unchanged', () => {
+    const plain = block('rich-content hero', '<div class="foreground"><div class="content"><h2>Title</h2></div></div>');
     initContentAnimations(plain);
     expect(plain.querySelector('.c2-entrance-item')).to.be.null;
 
     section.classList.add('parallax-garage-door-reveal');
-    const hero = block('rich-content parallax-line-height', '<div class="foreground"><div class="content"><h2>Hero</h2></div></div>');
+    const hero = block('rich-content', '<div class="foreground"><div class="content"><h2>Hero</h2></div></div>');
     initContentAnimations(hero);
     expect(hero.querySelector('.c2-entrance-item')).to.be.null;
     expect(getComputedStyle(section).animationName).to.equal('garage-door-grow');
     expect(observers).to.have.length(0);
   });
 
-  it('triggers authored rich-content text once without a scroll timeline', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="foreground"><div class="content"><p>Eyebrow</p><h2>Title</h2><p>Body</p></div></div>');
+  it('triggers rich-content text once without a scroll timeline', async () => {
+    const el = block('rich-content', '<div class="foreground"><div class="content"><p>Eyebrow</p><h2>Title</h2><p>Body</p></div></div>');
     initContentAnimations(el);
     const items = [...el.querySelector('.content').children];
     expect(getComputedStyle(items[0]).animationTimeline).to.equal('auto');
@@ -167,13 +175,13 @@ describe('C2 content animations', () => {
   });
 
   it('does not suppress unrelated child animations', () => {
-    const el = block('rich-content parallax-line-height', '<style>.test-animated-child { animation: test-child-motion 2s linear infinite; } @keyframes test-child-motion { to { opacity: .5; } }</style><div class="foreground test-animated-child"><div class="content"><h2>Title</h2></div></div>');
+    const el = block('rich-content', '<style>.test-animated-child { animation: test-child-motion 2s linear infinite; } @keyframes test-child-motion { to { opacity: .5; } }</style><div class="foreground test-animated-child"><div class="content"><h2>Title</h2></div></div>');
     initContentAnimations(el);
     expect(getComputedStyle(el.querySelector('.foreground')).animationName).to.equal('test-child-motion');
   });
 
   it('does not reset unrelated animations on a rich-content grouping container', () => {
-    const el = block('rich-content parallax-line-height test-animated-group', '<style>.test-animated-group { animation: test-group-motion 5s linear infinite; } @keyframes test-group-motion { from { color: red; } to { color: blue; } }</style><div class="content"><h2>Title</h2></div>');
+    const el = block('rich-content test-animated-group', '<style>.test-animated-group { animation: test-group-motion 5s linear infinite; } @keyframes test-group-motion { from { color: red; } to { color: blue; } }</style><div class="content"><h2>Title</h2></div>');
     const animation = el.getAnimations()[0];
     initContentAnimations(el);
     expect(getComputedStyle(el).animationName).to.equal('test-group-motion');
@@ -182,7 +190,7 @@ describe('C2 content animations', () => {
   });
 
   it('preserves an existing custom animation on a text target instead of replacing it', () => {
-    const el = block('rich-content parallax-line-height', '<style>.test-animated-caption { animation: test-caption-motion 5s linear infinite; } @keyframes test-caption-motion { from { color: red; } to { color: blue; } }</style><div class="content"><h2 class="test-animated-caption">Title</h2><p>Body</p></div>');
+    const el = block('rich-content', '<style>.test-animated-caption { animation: test-caption-motion 5s linear infinite; } @keyframes test-caption-motion { from { color: red; } to { color: blue; } }</style><div class="content"><h2 class="test-animated-caption">Title</h2><p>Body</p></div>');
     const title = el.querySelector('h2');
     const animation = title.getAnimations()[0];
     initContentAnimations(el);
@@ -234,7 +242,7 @@ describe('C2 content animations', () => {
   });
 
   it('preserves hover filters and transforms before and after the entrance', async () => {
-    const el = block('hover-list parallax-line-height', '<div>Card</div>');
+    const el = asideHoverList('<div>Card</div>');
     const item = el.firstElementChild;
     item.style.filter = 'brightness(0.98)';
     item.style.transform = 'scale(1.015)';
@@ -283,7 +291,7 @@ describe('C2 content animations', () => {
   });
 
   it('reveals focused content before its observer triggers', () => {
-    const el = block('rich-content parallax-line-height', '<div class="content"><p><a href="#">Link</a></p></div>');
+    const el = block('rich-content', '<div class="content"><p><a href="#">Link</a></p></div>');
     initContentAnimations(el);
     el.querySelector('a').focus();
     expect(el.querySelector('.c2-entrance-item').classList.contains('c2-entrance-played')).to.be.true;
@@ -293,13 +301,13 @@ describe('C2 content animations', () => {
 
   it('shows content loaded above the viewport immediately', () => {
     section.style.marginTop = '0';
-    const el = block('rich-content parallax-line-height', '<div class="content"><h2>Visible title</h2></div>');
+    const el = block('rich-content', '<div class="content"><h2>Visible title</h2></div>');
     initContentAnimations(el);
     expect(el.querySelector('.c2-entrance-item').classList.contains('c2-entrance-played')).to.be.true;
   });
 
   it('preserves played state when viewport content is replaced', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="content"><h2>Desktop title</h2></div>');
+    const el = block('rich-content', '<div class="content"><h2>Desktop title</h2></div>');
     initContentAnimations(el);
     observers[0].callback([{ isIntersecting: true }]);
     el.innerHTML = '<div class="content"><h2>Mobile title</h2></div>';
@@ -311,7 +319,7 @@ describe('C2 content animations', () => {
   });
 
   it('clears old text targets when authoring switches to a whole-block entrance', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="content"><h2>Title</h2><p>Body</p></div>');
+    const el = block('rich-content', '<div class="content"><h2>Title</h2><p>Body</p></div>');
     initContentAnimations(el);
     el.classList.add('parallax-opacity');
     await settle();
@@ -329,7 +337,6 @@ describe('C2 content animations', () => {
     observers[0].callback([{ isIntersecting: true }]);
     await settle();
     el.classList.remove('parallax-opacity');
-    el.classList.add('parallax-line-height');
     await settle();
     expect(el.classList.contains('c2-entrance-item')).to.be.false;
     [...el.querySelector('.content').children].forEach((item, index) => {
@@ -343,7 +350,7 @@ describe('C2 content animations', () => {
   });
 
   it('waits for block decoration before registering an authored entrance', () => {
-    const el = block('rich-content parallax-line-height', '<div>Undecorated</div>');
+    const el = block('rich-content', '<div>Undecorated</div>');
     el.dataset.blockStatus = 'loading';
     initContentAnimations(el);
     expect(observers).to.have.length(0);
@@ -419,7 +426,7 @@ describe('C2 content animations', () => {
   });
 
   it('restores specialty motion when responsive authoring introduces a garage door', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="foreground"><div class="content"><h2>Title</h2></div></div>');
+    const el = block('rich-content', '<div class="foreground"><div class="content"><h2>Title</h2></div></div>');
     initContentAnimations(el);
     expect(el.querySelector('.c2-entrance-item')).to.exist;
     section.classList.add('parallax-garage-door-reveal');
@@ -430,7 +437,7 @@ describe('C2 content animations', () => {
   });
 
   it('supports any number of rich-content items within the prototype timing envelope', () => {
-    const el = block('rich-content parallax-line-height', `<div class="content">${Array.from({ length: 12 }, (_, index) => `<p>Item ${index}</p>`).join('')}</div>`);
+    const el = block('rich-content', `<div class="content">${Array.from({ length: 12 }, (_, index) => `<p>Item ${index}</p>`).join('')}</div>`);
     initContentAnimations(el);
     const items = [...el.querySelector('.content').children];
     items.forEach((item, index) => {
@@ -451,7 +458,7 @@ describe('C2 content animations', () => {
   });
 
   it('distributes arbitrary hover-list content without numbered selectors or growing durations', () => {
-    const el = block('hover-list parallax-line-height', Array.from({ length: 12 }, (_, index) => `<div>Item ${index}</div>`).join(''));
+    const el = asideHoverList(Array.from({ length: 12 }, (_, index) => `<div>Item ${index}</div>`).join(''));
     initContentAnimations(el);
     observers[0].callback([{ isIntersecting: true }]);
     const delays = [...el.children].map((item) => (
@@ -465,7 +472,7 @@ describe('C2 content animations', () => {
   });
 
   it('triggers from the first item and fades linearly in eased progress like the prototype', () => {
-    const el = block('hover-list parallax-line-height', '<div>Headline</div><div>List</div>');
+    const el = asideHoverList('<div>Headline</div><div>List</div>');
     el.style.paddingTop = '128px';
     initContentAnimations(el);
     expect(observers[0].observe.firstCall.args[0]).to.equal(el.children[0]);
@@ -502,7 +509,7 @@ describe('C2 content animations', () => {
   });
 
   it('does not let an aborted focus listener restore cleared entrance classes', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="content"><p><a href="#">Link</a></p></div>');
+    const el = block('rich-content', '<div class="content"><p><a href="#">Link</a></p></div>');
     initContentAnimations(el);
     window.dispatchEvent(new Event('resize'));
     await settle();
@@ -537,7 +544,7 @@ describe('C2 content animations', () => {
   });
 
   it('coalesces resize bursts into one shared refresh per frame', async () => {
-    const el = block('rich-content parallax-line-height', '<div class="content"><p>One</p></div>');
+    const el = block('rich-content', '<div class="content"><p>One</p></div>');
     initContentAnimations(el);
     await settle();
     const frame = sinon.spy(window, 'requestAnimationFrame');
@@ -690,7 +697,7 @@ describe('C2 content animations', () => {
   it('adds scroll-linked aside reveals while preserving the existing door motion', () => {
     section.classList.add('parallax-double-garage-door');
     section.style.paddingTop = '124px';
-    const rich = block('rich-content parallax-line-height', '<div class="content"><p>Eyebrow</p><h2>Title</h2><p>Body</p></div>');
+    const rich = block('rich-content', '<div class="content"><p>Eyebrow</p><h2>Title</h2><p>Body</p></div>');
     const aside = block('split-aside-grid parallax-stagger-ltr', '<div class="split-aside-grid-items"><button>Accordion</button></div><div class="split-aside-grid-stack"><div class="media">Image</div></div>');
     const hover = block('hover-list', '<div class="hover-list-desc-wrapper">Heading</div><div class="hover-list-col">List</div>');
     initContentAnimations(aside);

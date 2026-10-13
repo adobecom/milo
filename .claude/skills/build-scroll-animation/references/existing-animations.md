@@ -8,7 +8,7 @@ C2 has two kinds of motion, and they must not be mixed:
 
 - **One-time entrances** (`parallax-move-up`, `parallax-opacity`,
   `parallax-scale-up`, `parallax-scale-down`, `parallax-blur`,
-  `parallax-stagger-*`, `parallax-line-height`, base-card
+  `parallax-stagger-*`, default Rich Content text rise, base-card
   `parallax-featured-card-media`, `parallax-scale-down-grid`, and the
   `social-proof`, `carousel-c2` and desktop `elastic-carousel` block
   entrances). These are timed CSS animations that an
@@ -72,7 +72,8 @@ from the FAQ question for FAQ items), distances, stagger offsets and
 `--parallax-easing`, with the fade running for the whole movement. They
 finish after the shared 1050ms duration.
 
-New `parallax-line-height` text entrances and the hover list following the
+Rich Content text (on by default, except heroes and carousel slides; translate only, never
+line-height) and the hover list following the
 aside composition use the prototype's 1050ms timing, curve and fade
 windows, triggered at 80% and 90% of the viewport respectively. CSS
 distributes any number of items within the prototype's displacement and

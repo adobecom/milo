@@ -1251,8 +1251,8 @@ span.hang-opening-quote {
       animation-timeline: view();
       animation-range: cover -10% cover 70%;
 
-      * {
-        animation: garage-door-line-height ease-out both;
+      .content > * {
+        animation: garage-door-text-rise ease-out both;
         animation-timeline: view();
         animation-range: entry 30% cover 60%;
       }
@@ -1273,8 +1273,8 @@ span.hang-opening-quote {
     to { transform: scale(1.1); }
   }
 
-  @keyframes garage-door-line-height {
-    from { line-height: 60%; }
+  @keyframes garage-door-text-rise {
+    from { transform: translateY(50%); }
   }
 
   /* Section 1 to section 2 parallax declarations */

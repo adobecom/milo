@@ -919,7 +919,7 @@ describe('Utils', () => {
     it('initializes C2 content animations without blocking the block load', async () => {
       const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
       document.head.append(foundation);
-      document.body.innerHTML = '<div class="section"><div class="rich-content parallax-line-height"><div><div><h2>Title</h2><p>Body</p></div></div></div></div>';
+      document.body.innerHTML = '<div class="section"><div class="rich-content"><div><div><h2>Title</h2><p>Body</p></div></div></div></div>';
       const richContent = document.querySelector('.rich-content');
       try {
         const block = await utils.loadBlock(richContent);

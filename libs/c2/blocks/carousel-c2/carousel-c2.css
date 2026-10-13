@@ -331,7 +331,7 @@
     transform: translate(-5%, 70%);
 
     > [class*="title-"] {
-      line-height: 200%;
+      transform: translateY(50%);
     }
 
     > :not([class*="title-"]) {
@@ -425,7 +425,7 @@
 }
 
 @keyframes title-enter {
-  from { line-height: 200%; }
+  from { transform: translateY(50%); }
 }
 
 @keyframes text-enter {

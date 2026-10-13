@@ -1,10 +1,13 @@
-const ENTRANCE_SELECTOR = '.parallax-line-height, .parallax-stagger-ltr, .parallax-stagger-rtl, .parallax-move-up, .parallax-opacity';
+// Rich Content text rises by default; heroes keep their own motion.
+const ENTRANCE_SELECTOR = '.rich-content:not(.hero), .parallax-stagger-ltr, .parallax-stagger-rtl, .parallax-move-up, .parallax-opacity';
 // Scale, blur, clip, or block-owned motion (social-proof, carousels) play in place, even
 // inside another entrance.
 const EFFECT_SELECTOR = '.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid, .parallax-blur, '
   + '.parallax-featured-card-media, .social-proof, .carousel-c2, .elastic-carousel';
 const SOURCE_SELECTOR = `${ENTRANCE_SELECTOR}, ${EFFECT_SELECTOR}`;
 const SPECIALTY_SELECTOR = '.parallax-garage-door-reveal, .parallax-move-up-fast, .parallax-video-garage-door';
+// Blocks that own their content motion; nested Rich Content stays with the block.
+const OWNED_SELECTOR = '.carousel-c2, .elastic-carousel';
 // Keep in sync with the Rich Content + Split Aside rule in libs/c2/styles/styles.css.
 const ASIDE_CONTENT = '.rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid';
 const ASIDE_SELECTOR = `.section.parallax-double-garage-door:has(> ${ASIDE_CONTENT})`;
@@ -184,12 +187,13 @@ function initEntrances(section) {
     const isAsideHoverList = isAside && source.matches('.hover-list');
     if ((!source.matches(SOURCE_SELECTOR) && !isAsideHoverList)
       || source === rich || aside?.contains(source)
-      || source.closest(SPECIALTY_SELECTOR)) clearEntrance(source);
+      || source.closest(SPECIALTY_SELECTOR)
+      || source.parentElement?.closest(OWNED_SELECTOR)) clearEntrance(source);
   });
   const sources = [...section.querySelectorAll(SOURCE_SELECTOR)];
   if (section.matches(SOURCE_SELECTOR)) sources.unshift(section);
   sources.forEach((source) => {
-    if (source.closest(SPECIALTY_SELECTOR)) return;
+    if (source.closest(SPECIALTY_SELECTOR) || source.parentElement?.closest(OWNED_SELECTOR)) return;
     if (source === rich || aside?.contains(source)) return;
     const block = source.closest('[data-block-status]');
     if (block && block.dataset.blockStatus !== 'loaded') return;
