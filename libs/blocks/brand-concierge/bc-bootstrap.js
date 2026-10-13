@@ -484,7 +484,6 @@ export async function openSideModal(initialMessage, bootstrap) {
   sideOverlayTop();
 
   if (isC2()) modal.classList.add('is-c2');
-
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.body.classList.add('bc-side-open');
