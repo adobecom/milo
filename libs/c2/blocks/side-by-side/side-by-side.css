@@ -138,13 +138,14 @@
   .card-stacked {
     --parallax-stagger-index: 1.5;
     --card-stack-padding: 15%;
+    --card-stacked-foreground-padding: var(--s2a-spacing-md);
 
     display: flex;
     flex-direction: column;
     padding-inline: var(--card-stack-padding) 0;
 
     .foreground {
-      padding: var(--s2a-spacing-md);
+      padding: var(--card-stacked-foreground-padding);
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
@@ -209,6 +210,7 @@
 
     .card-stacked {
       --card-stack-padding: 0;
+      --card-stacked-foreground-padding: var(--s2a-spacing-lg);
 
       .media {
         min-height: 306px;
@@ -255,20 +257,20 @@
       --card-overlay-padding: var(--s2a-spacing-xl);
     }
 
-    .card-stacked {
-      .foreground {
-        padding: var(--s2a-spacing-xl);
-      }
-
-      .media .icon {
-        inset-block-start: var(--s2a-spacing-xl);
-        inset-inline-start: var(--s2a-spacing-xl);
-      }
+    .card-stacked .media .icon {
+      inset-block-start: var(--s2a-spacing-xl);
+      inset-inline-start: var(--s2a-spacing-xl);
     }
 
     &.featured .card-overlay .foreground {
       --card-overlay-padding: var(--s2a-spacing-2xl);
     }
+  }
+}
+
+@media (width >= 1440px) {
+  .side-by-side .card-stacked {
+    --card-stacked-foreground-padding: var(--s2a-spacing-xl);
   }
 }
 
