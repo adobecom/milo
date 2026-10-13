@@ -5,6 +5,7 @@ import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../li
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
+// Separate test page isolates the page-wide Assistant singleton.
 describe('C2 Brand Concierge navigation renderer selection', () => {
   let originalConfig;
   let originalClient;
@@ -15,8 +16,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   let initialize;
   let ready;
   let listenerSpy;
-  let mockScript;
-  let mockStyle;
 
   before(() => {
     originalConfig = getConfig();
@@ -35,15 +34,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     });
     metadata.content = 'on';
     document.head.append(metadata);
-    mockScript = document.createElement('script');
-    mockScript.type = 'javascript/blocked';
-    mockScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    mockScript.dataset.loaded = 'true';
-    mockStyle = document.createElement('link');
-    mockStyle.rel = 'stylesheet';
-    mockStyle.type = 'text/plain';
-    mockStyle.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(mockScript, mockStyle);
     document.body.innerHTML = `
       <header class="global-navigation">
         <nav><div class="feds-bc-wrapper"></div></nav>
@@ -67,8 +57,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   });
 
   afterEach(() => {
-    mockScript.remove();
-    mockStyle.remove();
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
     metadata.remove();
@@ -104,7 +92,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     script.dataset.loaded = 'true';
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.type = 'text/plain';
     style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
     document.head.append(foundation, script, style);
 

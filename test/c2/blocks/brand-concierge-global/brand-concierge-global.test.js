@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../../libs/c2/blocks/brand-concierge-global/brand-concierge-global.js';
 import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
-import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -16,8 +16,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   let initialize;
   let ready;
   let listenerSpy;
-  let script;
-  let mockStyle;
 
   before(() => {
     originalConfig = getConfig();
@@ -36,14 +34,6 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     });
     metadata.content = 'on';
     document.head.append(metadata);
-    script = document.createElement('script');
-    script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    mockStyle = document.createElement('link');
-    mockStyle.rel = 'stylesheet';
-    mockStyle.type = 'text/plain';
-    mockStyle.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(script, mockStyle);
     document.body.innerHTML = `
       <header class="global-navigation">
         <nav><div class="feds-bc-wrapper"></div></nav>
@@ -66,13 +56,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     window.addEventListener('bc:ready', ready);
   });
 
-  afterEach(async () => {
-    // Keep initialization blocked during renderer assertions, then drain the auto-loader.
-    script.dataset.loaded = 'true';
-    script.dispatchEvent(new Event('load'));
-    await loadAcomAssistantGnav();
-    script.remove();
-    mockStyle.remove();
+  afterEach(() => {
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
     metadata.remove();
