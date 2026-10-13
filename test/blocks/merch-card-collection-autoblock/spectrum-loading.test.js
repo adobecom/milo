@@ -1,15 +1,12 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import init, {
-  needsSpectrum,
-  loadSpectrumDependencies,
-} from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
+import init from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } }, miloLibs: '/libs' });
 
 // The window keeps Spectrum registered once loaded, so the order of these
-// tests matters: from no Spectrum at all to the full sidenav.
+// tests matters: no Spectrum at all, then the sidenav.
 const originalFetch = window.fetch;
 const COLLECTION = 'e58f8f75-b882-409a-9ff8-8826b36a8368';
 const BLADE = 'a0b1c2d3-0000-4000-8000-blade0000001';
@@ -64,14 +61,9 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
   });
 
   describe('blade (no hierarchy)', () => {
-    it('does not need Spectrum', async () => {
-      const collection = await mount(BLADE);
-      expect(collection.data.hierarchy).to.have.lengthOf(0);
-      expect(needsSpectrum(collection)).to.be.false;
-    });
-
     it('requests no Spectrum on init', async () => {
       const collection = await mount(BLADE);
+      expect(collection.data.hierarchy).to.have.lengthOf(0);
       expect(collection.querySelectorAll(':scope > merch-card').length).to.be.above(0);
       expect(document.querySelector('merch-sidenav')).to.not.exist;
       expect(spectrumRequests()).to.deep.equal([]);
@@ -97,40 +89,23 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
   });
 
   describe('collection with a hierarchy', () => {
-    it('needs Spectrum', async () => {
+    it('requests no Spectrum when the sidenav is not rendered', async () => {
       const collection = await mount(COLLECTION, '&sidenav=false');
       expect(collection.data.hierarchy.length).to.be.above(0);
-      expect(needsSpectrum(collection)).to.be.true;
+      expect(document.querySelector('merch-sidenav')).to.not.exist;
+      expect(spectrumRequests()).to.deep.equal([]);
+      expect(definedSpectrumElements()).to.deep.equal([]);
     });
 
-    it('loads the header and footer Spectrum without the sidenav one when sidenav=false', () => {
-      expect(customElements.get('sp-theme')).to.exist;
-      expect(customElements.get('sp-button')).to.exist;
-      expect(customElements.get('sp-search')).to.exist;
-      expect(customElements.get('sp-action-menu')).to.exist;
-      expect(customElements.get('sp-sidenav')).to.not.exist;
-      expect(customElements.get('sp-checkbox')).to.not.exist;
-      expect(spectrumRequests().some((name) => name.endsWith('/theme.js'))).to.be.true;
-      expect(spectrumRequests().some((name) => name.endsWith('/sidenav.js'))).to.be.false;
-    });
-
-    it('loads the sidenav Spectrum by default and renders the sidenav with it', async () => {
+    it('loads Spectrum when the sidenav is rendered', async () => {
       await mount(COLLECTION);
       const sidenav = document.querySelector('merch-sidenav');
       expect(sidenav).to.exist;
-      expect(customElements.get('sp-sidenav')).to.exist;
-      expect(customElements.get('sp-checkbox')).to.exist;
-      expect(spectrumRequests().some((name) => name.endsWith('/sidenav.js'))).to.be.true;
+      expect(definedSpectrumElements()).to.deep.equal(spectrumElements);
+      ['theme', 'base', 'shared', 'button', 'search', 'action-menu', 'sidenav', 'checkbox'].forEach((dep) => {
+        expect(spectrumRequests().some((name) => name.endsWith(`/${dep}.js`)), dep).to.be.true;
+      });
       expect(sidenav.querySelectorAll('sp-sidenav-item').length).to.be.above(0);
-    });
-  });
-
-  describe('loadSpectrumDependencies', () => {
-    it('resolves with every module of the requested set', async () => {
-      const withSidenav = await loadSpectrumDependencies({ sidenav: true });
-      const withoutSidenav = await loadSpectrumDependencies({ sidenav: false });
-      expect(withSidenav).to.have.lengthOf(14);
-      expect(withoutSidenav).to.have.lengthOf(10);
     });
   });
 });

@@ -67,8 +67,8 @@ async function loadDependencies(options) {
   await Promise.all(dependencyPromises);
 }
 
-// Header (search, filters, sort), footer (show more) and sidenav are the only
-// Spectrum consumers of a collection.
+// The sidenav, and the header it brings (search, filters, sort), are the only
+// Spectrum consumers of a collection, so Spectrum loads only when one renders.
 const SPECTRUM_COMMON_DEPS = ['base', 'shared', 'theme'];
 const SPECTRUM_COLLECTION_DEPS = [
   'button',
@@ -86,17 +86,9 @@ const SPECTRUM_SIDENAV_DEPS = [
   'link',
 ];
 
-// A collection without a hierarchy (a blade) is never filtered: MAS renders no
-// sidenav, header or show more button for it.
-export const needsSpectrum = (collection) => !!collection.data?.hierarchy?.length;
-
-export function loadSpectrumDependencies(options) {
+function loadSpectrumDependencies() {
   const { base } = getConfig();
-  const deps = [
-    ...SPECTRUM_COMMON_DEPS,
-    ...SPECTRUM_COLLECTION_DEPS,
-    ...(options.sidenav ? SPECTRUM_SIDENAV_DEPS : []),
-  ];
+  const deps = [...SPECTRUM_COMMON_DEPS, ...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS];
   return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
 }
 
@@ -694,7 +686,7 @@ async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
-
+  await loadSpectrumDependencies();
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
@@ -934,7 +926,6 @@ export async function createCollection(el, options) {
   }
   fixProductPricingVariant(collection);
   container.classList.add('collection-container', collection.variant);
-  if (needsSpectrum(collection)) await loadSpectrumDependencies(options);
 
   /* Sidenav */
   if (options.sidenav) {
