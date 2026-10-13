@@ -1658,15 +1658,17 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   reading to the very end hears the current card's name and role once more, after Close.
   `assertive` also works and interrupts the previous card, but VoiceOver prefixes it with a tone.
 
-**Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive** globe
+**Reduced motion** (`prefers-reduced-motion: reduce`, or a viewport height of at most 460 CSS pixels
+with resolution of at least 1.5dppx, including small zoomed windows) renders a **static interactive** globe
 instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery-reduced`):
 `computeFrame` pins scroll to `SPHERE_FORMED_PROGRESS` (formed sphere, `scrollVel` 0), auto-spin is
 off (drag + arrow-spin still work), the hover fisheye/scale/CA is suppressed (`hoverTarget` forced
 to 0 in `updateCardTransform`; the `cursor:pointer` affordance stays), and the modal snaps with no
 fly/warp (the modal reads RM through a **live getter** — it's built once, before `initRuntime`
 resolves the preference, and persists across rebuilds, so a snapshot would go stale). Rather than a tall runway
-+ fixed canvas, the globe is a static ~100vh section that scrolls away, with the pull-quote below in
-normal flow. The preference is **re-read on every `initRuntime`**, and a
++ fixed canvas, the arc-copy precedes a static ~100vh globe section that scrolls away, with the
+pull-quote below, all in normal flow. Keyboard focus scrolls to the globe's own top, past the copy.
+The preference is **re-read on every `initRuntime`**, and a
 `matchMedia('(prefers-reduced-motion: reduce)')` `change` listener feeds `doLayout`, so toggling
 the OS setting mid-session rebuilds through the same `destroy()`+`init()` path as a band / pointer
 change (no reload; the non-RM path clears the canvas `position` so a toggle-off reverts cleanly).
@@ -1701,7 +1703,10 @@ positioned in canvas px). The pieces:
   the spin toggle is additionally `display:none` (nothing to pause). See Globe controls.
 - **Pull-quote** — drops `absolute`/`sticky` → `static`, forced `opacity:1`, hugs the top of its
   box so it sits under the globe; `updatePullQuote` early-returns (CSS owns it).
-- **Arc-copy** — `display:none` (no arc phase; a fixed pill would hang over the scrolling page).
+- **Arc-copy** — visible in normal flow before the globe, with full-width wrapping
+  and the shared content inset. `updateArcCopy` early-returns so CSS owns opacity, transform, and
+  pointer events; the authored heading, paragraphs, and links remain available without animation.
+  `initRuntime` moves it before the globe under RM and restores the original DOM order otherwise.
 
 The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery-empty`.
 

@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
+import init from '../../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
   escapeHtml,
   fetchFragmentCards,
@@ -50,6 +51,96 @@ const LABELS = {
   closeBtn: 'Close',
   cardLabel: (i, n) => `${i} of ${n}`,
 };
+
+describe('globe-gallery: static-mode arc copy', () => {
+  let stylesheet;
+  let viewport;
+  let block;
+
+  beforeEach(async () => {
+    viewport = { width: window.innerWidth, height: window.innerHeight };
+    stylesheet = document.createElement('style');
+    stylesheet.textContent = await readFile({
+      path: '../../../../libs/c2/blocks/globe-gallery/globe-gallery.css',
+    });
+    document.head.append(stylesheet);
+  });
+
+  afterEach(async () => {
+    block?.globeRuntime?.destroy();
+    block = null;
+    document.body.innerHTML = '';
+    sinon.restore();
+    stylesheet.remove();
+    document.documentElement.removeAttribute('dir');
+    await setViewport(viewport);
+  });
+
+  [
+    { label: 'reduced motion on mobile', width: 320, height: 640, reduced: true },
+    { label: 'reduced motion on desktop', width: 1024, height: 768, reduced: true },
+    { label: 'a small zoomed viewport', width: 320, height: 230, reduced: false },
+  ].forEach(({ label, width, height, reduced }) => {
+    it(`keeps authored copy visible and in flow for ${label}`, async () => {
+      await setViewport({ width, height });
+      const matchMedia = window.matchMedia.bind(window);
+      sinon.stub(window, 'matchMedia').callsFake((query) => {
+        const result = matchMedia(query);
+        if (query === '(prefers-reduced-motion: reduce)') {
+          return { ...result, matches: reduced, addEventListener() {}, removeEventListener() {} };
+        }
+        if (query === '(height <= 460px) and (resolution >= 1.5dppx)') {
+          return { ...result, matches: !reduced };
+        }
+        return result;
+      });
+      const fetch = window.fetch.bind(window);
+      sinon.stub(window, 'fetch').callsFake((url, options) => (
+        url.endsWith('/arc-copy-test.plain.html')
+          ? Promise.resolve(new Response(
+            '<div><img src="/libs/img/favicons/favicon.ico"><h2>Test artist</h2></div>',
+          ))
+          : fetch(url, options)
+      ));
+      document.body.innerHTML = `
+        <div class="globe-gallery" style="--s2a-spacing-md:16px;--s2a-spacing-lg:24px">
+          <div><h2>Meet our creative community</h2>
+            <p>Every image tells a story. <a href="#details">Explore the artwork</a>.</p>
+          </div>
+          <div><a href="/arc-copy-test">Cards</a></div>
+          <div></div><div></div>
+          <div><h2>Creativity connects us.</h2><p>Alex Rivera</p><p>Designer</p></div>
+        </div>`;
+      block = document.querySelector('.globe-gallery');
+      await init(block);
+      expect(block.globeRuntime).to.exist;
+      expect(block.classList.contains('globe-gallery-reduced')).to.be.true;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const copy = block.querySelector('.globe-gallery-arc-copy');
+      ['ltr', 'rtl'].forEach((dir) => {
+        document.documentElement.dir = dir;
+        const style = getComputedStyle(copy);
+        const rect = copy.getBoundingClientRect();
+        expect(style.display).not.to.equal('none');
+        expect(style.position).to.equal('static');
+        expect(style.opacity).to.equal('1');
+        expect(style.transform).to.equal('none');
+        expect(style.pointerEvents).to.equal('auto');
+        expect(copy.style.opacity).to.equal('');
+        expect(copy.style.transform).to.equal('');
+        expect(rect.height).to.be.greaterThan(0);
+        expect(rect.width).to.be.at.most(block.clientWidth);
+        const world = block.querySelector('.globe-gallery-world');
+        expect(copy.nextElementSibling).to.equal(world);
+        expect(world.getBoundingClientRect().top).to.be.at.least(rect.bottom);
+        expect(block.querySelector('.globe-gallery-pullquote').getBoundingClientRect().top)
+          .to.be.at.least(world.getBoundingClientRect().bottom);
+        expect(copy.querySelector('h2').textContent).to.equal('Meet our creative community');
+        expect(copy.querySelector('a').getClientRects()).to.have.length.greaterThan(0);
+      });
+    });
+  });
+});
 
 describe('globe-gallery: authoring helpers', () => {
   it('escapes all HTML-significant characters and handles nullish values', () => {

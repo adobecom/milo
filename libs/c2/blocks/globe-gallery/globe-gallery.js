@@ -992,7 +992,7 @@ function createGlobeGalleryRuntime(
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
     const top = reducedMotion
-      ? blockDocTop
+      ? worldEl.getBoundingClientRect().top + window.scrollY
       : blockDocTop + formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC;
     // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
     // before the callback below lands. Above the block that tick would reset the orientation and
@@ -1408,7 +1408,7 @@ function createGlobeGalleryRuntime(
   }
 
   function updateArcCopy(frame) {
-    if (!arcCopy.el) return;
+    if (reducedMotion || !arcCopy.el) return;
     const arcCopyInE = easeOutCubic(Math.min(1, frame.arcCopyEntryT / TL.ARC_COPY_IN_ENTRY_T));
     const arcCopyOutT = Math.max(0, Math.min(
       1,
@@ -1902,6 +1902,9 @@ function createGlobeGalleryRuntime(
 
     reducedMotion = prefersReducedMotion();
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
+    const copyEl = q('.globe-gallery-arc-copy');
+    if (reducedMotion) worldEl.before(copyEl);
+    else worldEl.after(copyEl);
 
     // RM: canvas into normal flow so the globe scrolls away. Non-RM must restate `fixed` — the
     // only other place it is set is the inline style this would otherwise clear.
