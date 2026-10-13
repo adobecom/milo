@@ -569,13 +569,49 @@ describe('blog-header share modal', () => {
     expect(getShareData().url).to.equal('https://business.adobe.com/blog/post');
   });
 
+  [
+    'https://business.adobe.com/blog/media_share.png?width=1200&format=webp#preview',
+    '//business.adobe.com/blog/media_share.png?width=1200&format=webp#preview',
+    '/blog/media_share.png?width=1200&format=webp#preview',
+  ].forEach((image) => {
+    it(`uses the current page origin for the share image ${image}`, () => {
+      setMetadata('og:image', image);
+      expect(getShareData().image)
+        .to.equal(`${window.location.origin}/blog/media_share.png?width=1200&format=webp#preview`);
+    });
+  });
+
+  it('resolves page-relative share images against the current page', () => {
+    setMetadata('og:image', './media_share.png?width=1200');
+    expect(getShareData().image)
+      .to.equal(new URL('./media_share.png?width=1200', window.location.href).href);
+  });
+
+  it('omits the share image when no image metadata is authored', () => {
+    expect(getShareData().image).to.equal('');
+  });
+
+  it('logs invalid share image URLs without preventing sharing', () => {
+    setMetadata('og:image', 'https://[invalid');
+    const data = getShareData();
+    expect(data.image).to.equal('');
+    expect(window.lana.log.calledOnce).to.equal(true);
+    expect(window.lana.log.firstCall.args[0]).to.contain('Invalid share image URL');
+    expect(data.url).to.equal(getShareUrl());
+  });
+
   it('opens a modal with the preview card and share actions', async () => {
+    setMetadata('og:image', 'https://business.adobe.com/blog/media_share.png?width=1200');
+    setMetadata('og:image:alt', 'Article preview');
     const trigger = document.createElement('button');
     trigger.className = 'blog-header-test-trigger';
     document.body.append(trigger);
     const dialog = await openShareModal(trigger);
     expect(dialog).to.exist;
     expect(dialog.classList.contains('blog-share-modal')).to.equal(true);
+    const image = dialog.querySelector('.blog-share-card-image');
+    expect(image.src).to.equal(`${window.location.origin}/blog/media_share.png?width=1200`);
+    expect(image.alt).to.equal('Article preview');
     expect(dialog.querySelector('.blog-share-heading').textContent).to.equal('Share post');
     expect(dialog.querySelector('.dialog-close').getAttribute('aria-label')).to.equal('Close share dialog');
     const actions = dialog.querySelectorAll('.blog-share-action');

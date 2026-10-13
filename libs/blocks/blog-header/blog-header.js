@@ -270,11 +270,21 @@ export function getShareUrl() {
 }
 
 export function getShareData() {
+  let image = '';
+  const authoredImage = getMetadata('og:image');
+  if (authoredImage) {
+    try {
+      const imageUrl = new URL(authoredImage, window.location.href);
+      image = `${window.location.origin}${imageUrl.pathname}${imageUrl.search}${imageUrl.hash}`;
+    } catch (e) {
+      logError(`Invalid share image URL: ${authoredImage}`);
+    }
+  }
   return {
     url: getShareUrl(),
     title: getMetadata('og:title') || document.title,
     description: getMetadata('og:description') || getMetadata('description') || '',
-    image: getMetadata('og:image') || '',
+    image,
     imageAlt: getMetadata('og:image:alt') || '',
   };
 }
