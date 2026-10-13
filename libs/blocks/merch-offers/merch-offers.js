@@ -42,9 +42,6 @@ export default async function init(el) {
   if (el.classList.contains('secure-transaction')) {
     await Promise.all([
       ...commonsDeps,
-      import(`${base}/features/spectrum-web-components/dist/theme.js`),
-      import(`${base}/features/spectrum-web-components/dist/overlay.js`),
-      import(`${base}/features/spectrum-web-components/dist/popover.js`),
       loadMasComponent(MAS_MERCH_SECURE_TRANSACTION),
     ]);
     const [label, tooltip] = el.querySelectorAll('h5, p');
