@@ -62,6 +62,7 @@ describe('project-tracking UI', () => {
   let fetchStub;
 
   const tableUrls = () => [...block.querySelectorAll('.pt-table tbody .pt-link')].map((a) => a.textContent);
+  const chip = (status) => block.querySelector(`[data-status="${status}"]`);
   const waitForTable = () => waitForElement('.pt-table', { rootEl: block });
 
   beforeEach(async () => {
@@ -92,23 +93,107 @@ describe('project-tracking UI', () => {
     block.querySelector('.pt-check-btn').click();
     await waitForTable();
     const kids = [...block.querySelector('.pt-results').children].map((el) => el.className);
-    expect(kids).to.deep.equal(['pt-stats', 'pt-status-counts', 'pt-toolbar', 'pt-table-wrap']);
+    expect(kids).to.deep.equal(['pt-stats', 'pt-toolbar', 'pt-table-wrap']);
+    const toolbar = block.querySelector('.pt-toolbar');
+    expect([...toolbar.children].map((el) => el.className))
+      .to.deep.equal(['pt-status-counts', 'pt-sort', 'pt-search']);
+    expect(toolbar.querySelectorAll('select')).to.have.length(1);
   });
 
-  it('status badges act as toggleable quick filters synced with the dropdown', async () => {
+  it('status chips act as toggleable filters', async () => {
     block.querySelector('.pt-check-btn').click();
     await waitForTable();
-    const badge = (s) => [...block.querySelectorAll('.pt-badge-btn')].find((b) => b.textContent.startsWith(s));
 
-    badge('Live').click();
+    chip('Live').click();
     expect(tableUrls()).to.deep.equal(Object.keys(ROWS).slice(1));
-    expect(badge('Live').getAttribute('aria-pressed')).to.equal('true');
-    expect(block.querySelector('.pt-filter').value).to.equal('Live');
+    expect(chip('Live').getAttribute('aria-pressed')).to.equal('true');
 
-    badge('Live').click();
+    chip('Live').click();
     expect(tableUrls()).to.have.length(3);
-    expect(badge('Live').getAttribute('aria-pressed')).to.equal('false');
-    expect(block.querySelector('.pt-filter').value).to.equal('all');
+    expect(chip('Live').getAttribute('aria-pressed')).to.equal('false');
+  });
+
+  it('shows every status chip including zero counts and selects All initially', async () => {
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    const chips = [...block.querySelectorAll('.pt-badge-btn')];
+    expect(chips.map((el) => el.textContent))
+      .to.deep.equal(['All 3', 'No history found 1', 'Previewed 0', 'Live 2', 'Unsupported 0']);
+    expect(chips.map((el) => el.getAttribute('aria-pressed')))
+      .to.deep.equal(['true', 'false', 'false', 'false', 'false']);
+  });
+
+  it('All resets the status filter without clearing URL search', async () => {
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    const search = block.querySelector('.pt-search');
+    search.value = '/b';
+    search.dispatchEvent(new Event('input'));
+    chip('No history found').click();
+    expect(tableUrls()).to.have.length(0);
+    expect(chip('all') !== null).to.be.true;
+    chip('all').click();
+    expect(tableUrls()).to.deep.equal([Object.keys(ROWS)[1]]);
+    expect(search.value).to.equal('/b');
+    expect(chip('all').getAttribute('aria-pressed')).to.equal('true');
+    expect(chip('No history found').getAttribute('aria-pressed')).to.equal('false');
+  });
+
+  it('keeps focus on an activated chip while updating its filter state', async () => {
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    const live = chip('Live');
+    live.focus();
+    live.click();
+    expect(document.activeElement === live).to.be.true;
+    expect(live.getAttribute('aria-pressed')).to.equal('true');
+    expect(tableUrls()).to.deep.equal(Object.keys(ROWS).slice(1));
+    live.click();
+    expect(document.activeElement === live).to.be.true;
+    expect(live.getAttribute('aria-pressed')).to.equal('false');
+    expect(tableUrls()).to.have.length(3);
+  });
+
+  it('filters an empty status without losing the controls', async () => {
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    expect(chip('Unsupported') !== null).to.be.true;
+    chip('Unsupported').click();
+    expect(tableUrls()).to.have.length(0);
+    expect(chip('Unsupported').getAttribute('aria-pressed')).to.equal('true');
+    expect(block.querySelector('.pt-muted').textContent)
+      .to.equal('No pages match the current filter or search.');
+    chip('all').click();
+    expect(tableUrls()).to.have.length(3);
+  });
+
+  it('filters Previewed pages', async () => {
+    fetchStub.callsFake(async (url, opts) => {
+      const { urls } = JSON.parse(opts.body);
+      return new Response(JSON.stringify(urls.map((u, i) => ({
+        url: u,
+        status: i === 0 ? 'Previewed' : 'Live',
+        lastPreview: '2026-09-01T00:00:00Z',
+      }))));
+    });
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    expect(chip('Previewed').textContent).to.equal('Previewed 1');
+    chip('Previewed').click();
+    expect(tableUrls()).to.deep.equal([Object.keys(ROWS)[0]]);
+    expect(chip('Previewed').getAttribute('aria-pressed')).to.equal('true');
+  });
+
+  it('updates chip counts when checking a new URL list', async () => {
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    block.querySelector('#pt-urls').value = Object.keys(ROWS).slice(1).join('\n');
+    block.querySelector('.pt-check-btn').click();
+    await waitForTable();
+    expect(chip('all').textContent).to.equal('All 2');
+    expect(chip('No history found').textContent).to.equal('No history found 0');
+    expect(chip('Live').textContent).to.equal('Live 2');
+    expect(tableUrls()).to.deep.equal(Object.keys(ROWS).slice(1));
   });
 
   it('renders backend-supplied text as text, never as HTML', async () => {
@@ -144,10 +229,10 @@ describe('project-tracking UI', () => {
 
     const statuses = [...block.querySelectorAll('.pt-table tbody .pt-badge')].map((b) => b.textContent);
     expect(statuses).to.deep.equal(['Unsupported', 'Live', 'Live']);
-    const badge = [...block.querySelectorAll('.pt-badge-btn')].find((b) => b.textContent === 'Unsupported 1');
-    badge.click();
+    expect(chip('Unsupported').textContent).to.equal('Unsupported 1');
+    chip('Unsupported').click();
     expect(tableUrls()).to.deep.equal([Object.keys(ROWS)[0]]);
-    expect(block.querySelector('.pt-filter').value).to.equal('Unsupported');
+    expect(chip('Unsupported').getAttribute('aria-pressed')).to.equal('true');
 
     expect(block.querySelector('.pt-stat-preflight .pt-stat-note').textContent)
       .to.equal('Score 90+ · 1 of 3 pages have a preflight run');
@@ -164,20 +249,16 @@ describe('project-tracking UI', () => {
     expect(tableUrls()).to.deep.equal([Object.keys(ROWS)[1]]);
   });
 
-  it('uses No history found in table rows, quick filters, dropdown and status sorting', async () => {
+  it('uses No history found in table rows, chips and status sorting', async () => {
     block.querySelector('.pt-check-btn').click();
     await waitForTable();
     const statuses = () => [...block.querySelectorAll('.pt-table tbody .pt-badge')].map((b) => b.textContent);
     expect(statuses()).to.deep.equal(['No history found', 'Live', 'Live']);
-    const badge = block.querySelector('[data-status="No history found"]');
-    expect(badge.textContent).to.equal('No history found 1');
-    badge.click();
+    expect(chip('No history found').textContent).to.equal('No history found 1');
+    chip('No history found').click();
     expect(tableUrls()).to.deep.equal([Object.keys(ROWS)[0]]);
-    const filter = block.querySelector('.pt-filter');
-    expect(filter.value).to.equal('No history found');
-    expect([...filter.options].map((o) => o.textContent)).not.to.include('Draft');
-    filter.value = 'all';
-    filter.dispatchEvent(new Event('change'));
+    expect(chip('No history found').getAttribute('aria-pressed')).to.equal('true');
+    chip('No history found').click();
     const sort = block.querySelector('.pt-sort');
     sort.value = 'status';
     sort.dispatchEvent(new Event('change'));

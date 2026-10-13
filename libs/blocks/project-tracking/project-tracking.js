@@ -142,18 +142,16 @@ function renderResults(mount, rows, since, view, toolbar) {
     stats.append(card);
   }
 
-  const countStrip = createTag('div', { class: 'pt-status-counts', role: 'group', 'aria-label': 'Filter by status' });
-  Object.entries(STATUS_CLASS).forEach(([status, className]) => {
-    const n = status === 'No history found' ? counts.noHistory : counts[status.toLowerCase()];
-    if (status === 'Unsupported' && !n) return;
+  const countStrip = toolbar.querySelector('.pt-status-counts');
+  [...countStrip.children].forEach((badge) => {
+    const { status } = badge.dataset;
+    const label = status === 'all' ? 'All' : status;
+    const countKey = status === 'No history found' ? 'noHistory' : status.toLowerCase();
+    const n = status === 'all' ? counts.total : counts[countKey];
     const active = view.filter === status;
-    countStrip.append(textTag('button', {
-      type: 'button',
-      class: `pt-badge pt-badge-btn ${className}`,
-      'data-status': status,
-      'aria-pressed': String(active),
-      title: active ? 'Show all statuses' : `Show only ${status} pages`,
-    }, `${status} ${n}`));
+    badge.textContent = `${label} ${n}`;
+    badge.setAttribute('aria-pressed', String(active));
+    badge.title = status === 'all' || active ? 'Show all statuses' : `Show only ${status} pages`;
   });
 
   const visible = applyView(rows, view);
@@ -197,7 +195,7 @@ function renderResults(mount, rows, since, view, toolbar) {
   });
   table.append(tbody);
 
-  mount.prepend(stats, countStrip);
+  mount.prepend(stats);
   mount.append(createTag('div', { class: 'pt-table-wrap' }, table));
   if (total === 0) {
     mount.append(createTag('p', { class: 'pt-muted' }, 'No pages match the current filter or search.'));
@@ -246,12 +244,18 @@ export default async function init(block) {
 
   const view = { filter: 'all', sort: 'url', search: '', page: 1 };
   const toolbar = createTag('div', { class: 'pt-toolbar' });
-  const filterSel = createTag('select', { class: 'pt-filter', 'aria-label': 'Filter by status' });
-  fillSelect(filterSel, [['all', 'All statuses'], ...Object.keys(STATUS_CLASS).map((s) => [s, s])]);
+  const countStrip = createTag('div', { class: 'pt-status-counts', role: 'group', 'aria-label': 'Filter by status' });
+  Object.entries({ all: 'pt-badge-no-history', ...STATUS_CLASS }).forEach(([status, className]) => {
+    countStrip.append(createTag('button', {
+      type: 'button',
+      class: `pt-badge pt-badge-btn ${className}`,
+      'data-status': status,
+    }));
+  });
   const sortSel = createTag('select', { class: 'pt-sort', 'aria-label': 'Sort by' });
   fillSelect(sortSel, [['url', 'Sort: URL'], ['status', 'Sort: Status'], ['lastPublish', 'Sort: Last published'], ['lastPreview', 'Sort: Last previewed']]);
   const searchInput = createTag('input', { type: 'search', class: 'pt-search', placeholder: 'Search URL…', 'aria-label': 'Search URL' });
-  toolbar.append(filterSel, sortSel, searchInput);
+  toolbar.append(countStrip, sortSel, searchInput);
 
   const resultsInit = createTag('p', { class: 'pt-muted' }, 'Results will appear here after you check status.');
   const results = createTag('div', { class: 'pt-results', 'aria-live': 'polite' }, resultsInit);
@@ -281,7 +285,6 @@ export default async function init(block) {
 
   const updateView = (patch = {}) => {
     Object.assign(view, patch, { page: 1 });
-    filterSel.value = view.filter;
     rerender();
   };
   results.addEventListener('click', (e) => {
@@ -357,7 +360,6 @@ export default async function init(block) {
   checkBtn.addEventListener('click', check);
   onToken(() => check());
   since.addEventListener('change', () => updateView());
-  filterSel.addEventListener('change', () => updateView({ filter: filterSel.value }));
   sortSel.addEventListener('change', () => updateView({ sort: sortSel.value }));
   searchInput.addEventListener('input', () => updateView({ search: searchInput.value }));
 }

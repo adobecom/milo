@@ -356,7 +356,6 @@
     margin-block: 12px;
   }
 
-  & .pt-filter,
   & .pt-sort,
   & .pt-search {
     padding: 6px 10px;
@@ -371,11 +370,16 @@
     min-width: 160px;
   }
 
+  @media (max-width: 600px) {
+    & .pt-search {
+      flex-basis: 100%;
+    }
+  }
+
   & .pt-status-counts {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin-block-end: 12px;
   }
 
   & .pt-badge {
