@@ -5,47 +5,45 @@ import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../li
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
-// A separate test page keeps the once-per-page Assistant state free of earlier mounts.
-describe('C2 Brand Concierge delayed Assistant initialization', () => {
+describe('C2 Brand Concierge navigation renderer selection', () => {
   let originalConfig;
   let originalClient;
   let originalPrivacy;
+  let originalOverlay;
   let metadata;
-  let foundation;
-  let script;
-  let style;
+  let block;
   let initialize;
+  let ready;
+  let listenerSpy;
+  let mockScript;
+  let mockStyle;
 
   before(() => {
     originalConfig = getConfig();
     originalClient = window.AdobeMessagingExperienceClient;
     originalPrivacy = window.adobePrivacy;
+    originalOverlay = localStorage.getItem('bc-side-overlay');
+    metadata = document.createElement('meta');
+    metadata.name = 'acom-assistant';
+  });
+
+  beforeEach(() => {
     setConfig({
       codeRoot: '/libs',
       env: { name: 'stage' },
       jarvis: { id: 'c2-assistant', version: '2.0' },
     });
-    initialize = sinon.spy((config) => {
-      config.callbacks.onReadyCallback();
-      return { status: 'success' };
-    });
-    window.AdobeMessagingExperienceClient = { initialize };
-    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
-    metadata = document.createElement('meta');
-    metadata.name = 'acom-assistant';
     metadata.content = 'on';
-    foundation = document.createElement('meta');
-    foundation.name = 'foundation';
-    foundation.content = 'c2';
-    script = document.createElement('script');
-    script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    script.dataset.loaded = 'true';
-    style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.type = 'text/plain';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(metadata, foundation, script, style);
+    document.head.append(metadata);
+    mockScript = document.createElement('script');
+    mockScript.type = 'javascript/blocked';
+    mockScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    mockScript.dataset.loaded = 'true';
+    mockStyle = document.createElement('link');
+    mockStyle.rel = 'stylesheet';
+    mockStyle.type = 'text/plain';
+    mockStyle.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    document.head.append(mockScript, mockStyle);
     document.body.innerHTML = `
       <header class="global-navigation">
         <nav><div class="feds-bc-wrapper"></div></nav>
@@ -55,37 +53,75 @@ describe('C2 Brand Concierge delayed Assistant initialization', () => {
         <div><div>Ask Adobe anything</div></div>
       </div>
     `;
+    block = document.querySelector('.brand-concierge-global');
+    initialize = sinon.spy((config) => {
+      config.callbacks.onReadyCallback();
+      return { status: 'success' };
+    });
+    window.AdobeMessagingExperienceClient = { initialize };
+    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
+    localStorage.setItem('bc-side-overlay', 'closed');
+    listenerSpy = sinon.spy(window, 'addEventListener');
+    ready = sinon.spy();
+    window.addEventListener('bc:ready', ready);
+  });
+
+  afterEach(() => {
+    mockScript.remove();
+    mockStyle.remove();
+    listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
+    listenerSpy.restore();
+    metadata.remove();
+    document.head.querySelectorAll('link[href$="/c2/blocks/brand-concierge-global/brand-concierge-global.css"]')
+      .forEach((style) => style.remove());
+    document.body.innerHTML = '';
+    delete window.milo;
   });
 
   after(() => {
-    metadata.remove();
-    foundation.remove();
-    script.remove();
-    style.remove();
-    document.body.innerHTML = '';
-    delete window.milo;
     window.AdobeMessagingExperienceClient = originalClient;
     window.adobePrivacy = originalPrivacy;
+    if (originalOverlay === null) localStorage.removeItem('bc-side-overlay');
+    else localStorage.setItem('bc-side-overlay', originalOverlay);
     setConfig(originalConfig);
   });
 
   it('retains authored prompts supplied before navigation mounts for delayed initialization', async () => {
     const header = document.querySelector('header');
     header.remove();
-    await loadBrandConcierge(document.querySelector('.brand-concierge-global'));
+    await loadBrandConcierge(block);
     expect(initialize.called).to.be.false;
     document.body.prepend(header);
     decorateAcomAssistantGnav(header);
     await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
 
-    await loadAcomAssistantGnav();
-    expect(initialize.calledOnce).to.be.true;
-    expect(initialize.firstCall.args[0].context.prompts)
-      .to.deep.equal(['Prompt one', 'Prompt two'].map((label) => ({
-        label,
-        action: { click_analytics: `BC-suggested_prompt_clicked|gnav|${label}` },
-      })));
-    expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
-    expect(document.querySelector('.bc-gnav')).to.be.null;
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    const script = document.createElement('script');
+    script.type = 'javascript/blocked';
+    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    script.dataset.loaded = 'true';
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.type = 'text/plain';
+    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    document.head.append(foundation, script, style);
+
+    try {
+      await loadAcomAssistantGnav();
+      expect(initialize.calledOnce).to.be.true;
+      expect(initialize.firstCall.args[0].context.prompts)
+        .to.deep.equal(['Prompt one', 'Prompt two'].map((label) => ({
+          label,
+          action: { click_analytics: `BC-suggested_prompt_clicked|gnav|${label}` },
+        })));
+      expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+      expect(document.querySelector('.bc-gnav')).to.be.null;
+    } finally {
+      foundation.remove();
+      script.remove();
+      style.remove();
+    }
   });
 });

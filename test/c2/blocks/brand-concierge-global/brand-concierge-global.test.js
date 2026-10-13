@@ -17,7 +17,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   let ready;
   let listenerSpy;
   let script;
-  let style;
+  let mockStyle;
 
   before(() => {
     originalConfig = getConfig();
@@ -39,11 +39,11 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     script = document.createElement('script');
     script.type = 'javascript/blocked';
     script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.type = 'text/plain';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(script, style);
+    mockStyle = document.createElement('link');
+    mockStyle.rel = 'stylesheet';
+    mockStyle.type = 'text/plain';
+    mockStyle.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    document.head.append(script, mockStyle);
     document.body.innerHTML = `
       <header class="global-navigation">
         <nav><div class="feds-bc-wrapper"></div></nav>
@@ -72,12 +72,12 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     script.dispatchEvent(new Event('load'));
     await loadAcomAssistantGnav();
     script.remove();
-    style.remove();
+    mockStyle.remove();
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
     metadata.remove();
     document.head.querySelectorAll('link[href$="/c2/blocks/brand-concierge-global/brand-concierge-global.css"]')
-      .forEach((link) => link.remove());
+      .forEach((style) => style.remove());
     document.body.innerHTML = '';
     delete window.milo;
   });
