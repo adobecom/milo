@@ -275,11 +275,15 @@ function getBadgeEntry(el) {
   };
 }
 
-function isBadgeOccluded({ el, left, top }) {
+function isBadgeOccluded({ el, left, top }, badges) {
   const x = left + 4;
   const y = top + 4;
   if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
   const target = document.elementFromPoint(x, y);
+  const coveredByBadge = badges.some((badge) => badge.el.contains(target)
+    && x >= badge.left && x < badge.right
+    && y >= badge.top && y < badge.top + badge.badgeHeight);
+  if (coveredByBadge) return false;
   return !!target && !el.contains(target) && !target.contains(el);
 }
 
@@ -302,7 +306,8 @@ function adjustBadgePositions() {
   const positioned = allBadges
     .filter((el) => el.getClientRects().length > 0)
     .map(getBadgeEntry)
-    .filter((badge) => badge && !isBadgeOccluded(badge));
+    .filter(Boolean)
+    .filter((badge, index, badges) => !isBadgeOccluded(badge, badges));
   positioned.sort((a, b) => a.top - b.top);
 
   const placed = [];

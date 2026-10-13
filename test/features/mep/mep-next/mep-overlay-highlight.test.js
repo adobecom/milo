@@ -177,6 +177,87 @@ describe('toggleHighlight', () => {
   });
 });
 
+describe('badge occlusion during stacking', () => {
+  let fixture;
+  let style;
+
+  beforeEach(() => {
+    style = document.createElement('style');
+    style.textContent = `
+      .badge-stacking-test > div {
+        position: absolute;
+        left: 0;
+        top: var(--badge-top-offset, 0px);
+        width: 140px;
+        height: 100px;
+      }
+      .badge-stacking-test > .mep-caas-edit-badge,
+      .badge-stacking-test > [data-fragment-default]::before {
+        width: 140px;
+        height: 35px;
+        padding: 0;
+        border: 0;
+      }
+      .badge-stacking-test > [data-fragment-default]::before {
+        content: 'Badge';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: var(--badge-top-offset, 0px);
+      }
+    `;
+    document.head.append(style);
+    fixture = document.createElement('div');
+    fixture.className = 'badge-stacking-test';
+    fixture.style.cssText = 'position: fixed; left: 100px; top: 100px; width: 140px; height: 100px; z-index: 10000;';
+    document.body.append(fixture);
+  });
+
+  afterEach(() => {
+    toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: false } });
+    fixture.remove();
+    style.remove();
+    delete document.body.dataset.otherHighlight;
+  });
+
+  function addBadge(realDom) {
+    const badge = document.createElement('div');
+    if (realDom) {
+      badge.className = 'mep-caas-edit-badge';
+      badge.innerHTML = '<span>Badge</span>';
+    } else {
+      badge.dataset.fragmentDefault = '';
+    }
+    fixture.append(badge);
+    return badge;
+  }
+
+  [[false, false], [true, true], [false, true], [true, false]].forEach(([firstReal, secondReal]) => {
+    it(`stacks overlapping ${firstReal ? 'DOM' : 'pseudo'} and ${secondReal ? 'DOM' : 'pseudo'} badges`, () => {
+      const first = addBadge(firstReal);
+      const second = addBadge(secondReal);
+
+      toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
+
+      expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
+      expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('39px');
+    });
+  });
+
+  it('still excludes badges covered by an unrelated element', () => {
+    const first = addBadge(false);
+    const second = addBadge(true);
+    const blocker = document.createElement('div');
+    blocker.style.zIndex = '1';
+    fixture.append(blocker);
+
+    toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
+
+    expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
+    expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('');
+  });
+});
+
 describe('badge offset inheritance', () => {
   let link;
   let host;
