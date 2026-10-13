@@ -1172,6 +1172,10 @@
   .floating-input .bc-floating-input .bc-input-field {
     min-width: 340px;
   }
+
+  .floating-mobile-hide .bc-floating-element {
+    display: flex;
+  }
 }
 
 @media screen and (min-width: 900px) {
@@ -1200,10 +1204,6 @@
   body:has(.brand-concierge.floating-input) #brand-concierge-side.dialog-modal.expanded {
     max-width: 1412px;
     width: calc(100% - 48px);
-  }
-
-  .floating-mobile-hide .bc-floating-element {
-    display: flex;
   }
 }
 
