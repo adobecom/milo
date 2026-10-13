@@ -111,39 +111,24 @@ const getMediaKey = (ref, base) => {
   }
 };
 
-const isBrokenImage = (el) => {
-  const img = el.tagName === 'IMG' ? el : el.parentElement?.querySelector('img');
-  return !!img?.complete && !img.naturalWidth;
-};
-
-const getPageMedia = (neededKeys, removedMedia) => {
+const getRemovedMedia = (removedMedia) => {
   const media = new Map();
-  const add = (ref) => {
+  removedMedia?.forEach((ref) => {
     const key = getMediaKey(ref, window.location.href);
     if (key && !media.has(key)) media.set(key, new URL(ref, window.location.href).href);
-  };
-  removedMedia?.forEach(add);
-  if ([...neededKeys].every((key) => media.has(key))) return media;
-  document.querySelectorAll('img[src*="media_"], source[srcset*="media_"]').forEach((el) => {
-    if (isBrokenImage(el)) return;
-    add(el.getAttribute(el.tagName === 'IMG' ? 'src' : 'srcset'));
   });
   return media;
 };
 
 export function replaceDotMedia(path, doc, removedMedia) {
-  const els = [...doc.querySelectorAll('img[src^="./media_"], source[srcset^="./media_"]')];
+  const els = doc.querySelectorAll('img[src^="./media_"], source[srcset^="./media_"]');
   if (!els.length) return;
   const docBase = new URL(path, window.location);
-  const refs = els.map((el) => {
+  const removed = getRemovedMedia(removedMedia);
+  els.forEach((el) => {
     const attr = el.tagName === 'IMG' ? 'src' : 'srcset';
     const authored = el.getAttribute(attr);
-    return { el, attr, authored, key: getMediaKey(authored, docBase) };
-  });
-  const neededKeys = new Set(refs.map(({ key }) => key).filter(Boolean));
-  const pageMedia = getPageMedia(neededKeys, removedMedia);
-  refs.forEach(({ el, attr, authored, key }) => {
-    el[attr] = pageMedia.get(key) || new URL(authored, docBase).href;
+    el[attr] = removed.get(getMediaKey(authored, docBase)) || new URL(authored, docBase).href;
   });
 }
 

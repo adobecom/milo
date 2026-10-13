@@ -208,16 +208,6 @@ describe('Fragments', () => {
       pageEl = null;
     });
 
-    it('reuses media the page references instead of rebasing to the fragment path', () => {
-      pageEl = createTag('div', {}, `<picture><source srcset="/products/media_15abc.png${query}"><img src="/products/media_15abc.png${query}" loading="lazy"></picture>`);
-      document.body.append(pageEl);
-      const doc = parse(`<picture><source srcset="./media_15abc.png${query}"><img src="./media_15abc.png${query}"></picture>`);
-      replaceDotMedia(fragPath, doc);
-      const pageHref = `${window.location.origin}/products/media_15abc.png${query}`;
-      expect(doc.querySelector('source').getAttribute('srcset')).to.equal(pageHref);
-      expect(doc.querySelector('img').getAttribute('src')).to.equal(pageHref);
-    });
-
     it('reuses media MEP recorded from removed elements', () => {
       const doc = parse(`<img src="./media_16mep.png${query}">`);
       replaceDotMedia(fragPath, doc, new Set([`./media_16mep.png${query}`]));
@@ -246,38 +236,6 @@ describe('Fragments', () => {
       }
     });
 
-    it('does not reuse a page source whose picture failed to load', async () => {
-      const pageHref = `${window.location.origin}/does-not-exist/media_17srcfail.png${query}`;
-      pageEl = createTag('picture', {}, `<source srcset="${pageHref}"><img src="${pageHref}">`);
-      await new Promise((resolve) => {
-        pageEl.querySelector('img').addEventListener('error', resolve, { once: true });
-        document.body.append(pageEl);
-      });
-      const doc = parse(`<picture><source srcset="./media_17srcfail.png${query}"></picture>`);
-      replaceDotMedia(fragPath, doc);
-      expect(doc.querySelector('source').getAttribute('srcset')).to.equal(fragMedia(`media_17srcfail.png${query}`));
-    });
-
-    it('skips the page scan when MEP removed media covers every fragment media', () => {
-      const qsa = stub(document, 'querySelectorAll').callThrough();
-      const doc = parse(`<img src="./media_16cover.png${query}">`);
-      replaceDotMedia(fragPath, doc, new Set([`/products/media_16cover.png${query}`]));
-      expect(qsa.called).to.be.false;
-      qsa.restore();
-      expect(doc.querySelector('img').getAttribute('src')).to.equal(`${window.location.origin}/products/media_16cover.png${query}`);
-    });
-
-    it('does not reuse a broken page image', async () => {
-      pageEl = createTag('img', { src: '/does-not-exist/media_17broken.png' });
-      await new Promise((resolve) => {
-        pageEl.addEventListener('error', resolve, { once: true });
-        document.body.append(pageEl);
-      });
-      const doc = parse('<img src="./media_17broken.png">');
-      replaceDotMedia(fragPath, doc);
-      expect(doc.querySelector('img').getAttribute('src')).to.equal(fragMedia('media_17broken.png'));
-    });
-
     it('does not reuse media with a different query', () => {
       const doc = parse(`<img src="./media_18q.png${query}">`);
       replaceDotMedia(fragPath, doc, new Set(['/products/media_18q.png?width=2000&format=webply&optimize=medium']));
@@ -291,20 +249,11 @@ describe('Fragments', () => {
     });
 
     it('ignores malformed and multi-candidate URLs without throwing', () => {
-      pageEl = createTag('picture', {}, '<source srcset="/products/media_20a.png 1x, /products/media_20b.png 2x">');
-      document.body.append(pageEl);
       const doc = parse('<img src="./media_20a.png"><img src="./media_20bad.png"><source srcset="./media_20a.png 1x, ./media_20b.png 2x">');
       expect(() => replaceDotMedia(fragPath, doc, new Set(['https://%/media_20bad.png']))).to.not.throw();
       const [a, bad] = doc.querySelectorAll('img');
       expect(a.getAttribute('src')).to.equal(fragMedia('media_20a.png'));
       expect(bad.getAttribute('src')).to.equal(fragMedia('media_20bad.png'));
-    });
-
-    it('does not scan the page when the fragment has no media', () => {
-      const qsa = stub(document, 'querySelectorAll').callThrough();
-      replaceDotMedia(fragPath, parse('<p>no media</p>'));
-      qsa.restore();
-      expect(qsa.called).to.be.false;
     });
   });
 
