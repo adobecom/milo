@@ -783,6 +783,41 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     expect(ctas.querySelector('em, strong')).to.not.exist;
   });
 
+  it('drops an initially hidden empty field and flattens the row around the valid button', async () => {
+    const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${hiddenField} ${hiddenField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('mas-field')).to.not.exist;
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.classList.contains('rm-cta-primary')).to.be.true;
+  });
+
+  it('flattens once a pending field resolves empty, keeping the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    const field = ctas.querySelector('mas-field');
+    expect(field).to.exist;
+    expect(ctas.querySelector('.rm-cta-primary').parentElement.tagName).to.equal('STRONG');
+
+    // what mas-field does for a loaded fragment with no such CTA: hide itself, then mas:ready
+    field.hidden = true;
+    field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+    await until(() => !ctas.querySelector('mas-field'));
+
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.textContent).to.equal('Buy now');
+  });
+
+  it('keeps a pending field while a sibling field is hidden', async () => {
+    const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
+    await mount(`${hiddenField} ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelectorAll('mas-field:not([hidden])').length).to.equal(1);
+  });
+
   describe('on /kr', () => {
     let config;
     before(async () => {

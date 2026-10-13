@@ -199,16 +199,19 @@ const decorateCtas = (textCol, isLight) => {
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
   secondary?.classList.add('con-button', 'outline');
   const buttons = [primary, secondary].filter((btn) => btn && !shouldBlockFreeTrialLinks(btn));
-  // A mas-field still here timed out in merch.js. Keep it so its mas:ready hoists the link
-  // (watchMasFieldCtas), then decorate again once that field has been replaced.
-  const pending = cta.querySelectorAll('em mas-field').length;
+  // A mas-field still loading timed out in merch.js. Keep it so its mas:ready hoists the link
+  // (watchMasFieldCtas), then decorate again once it is replaced. A [hidden] field resolved
+  // to nothing on purpose: it is not pending and is dropped below.
+  const pendingSelector = 'em mas-field:not([hidden])';
+  const pending = cta.querySelectorAll(pendingSelector).length;
   if (pending) {
     const observer = new MutationObserver(() => {
-      if (cta.querySelectorAll('em mas-field').length === pending) return;
+      if (cta.querySelectorAll(pendingSelector).length === pending) return;
       observer.disconnect();
       decorateCtas(textCol, isLight);
     });
-    observer.observe(cta, { childList: true, subtree: true });
+    const watch = { childList: true, subtree: true, attributes: true };
+    observer.observe(cta, { ...watch, attributeFilter: ['hidden'] });
     return;
   }
   cta.replaceChildren(...buttons);
