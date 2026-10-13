@@ -99,7 +99,6 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-// EDS resolves ./media_<hash> per document; origin + file + query identifies identical bytes.
 const getMediaKey = (ref, base) => {
   if (typeof ref !== 'string' || /[\s,]/.test(ref.trim())) return null;
   try {

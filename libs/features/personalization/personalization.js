@@ -224,7 +224,6 @@ const isBrokenImage = (el) => {
   return !!img?.complete && !img.naturalWidth;
 };
 
-// MEP removes elements before fragments load; fragment.js reuses their media (replaceDotMedia).
 const recordRemovedMedia = (el) => {
   const { mep } = getConfig();
   if (!mep) return;
