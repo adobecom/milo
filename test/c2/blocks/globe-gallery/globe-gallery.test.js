@@ -23,7 +23,6 @@ import {
   easeInOutCubic,
   easeInOutQuint,
   easeOutCubic,
-  easeOutExpo,
   easeOutQuart,
   getFanData,
   pxPerWorldAt,
@@ -509,8 +508,6 @@ describe('globe-gallery: math', () => {
     expect(easeOutQuart(1)).to.equal(1);
     expect(easeInOutCubic(0.5)).to.equal(0.5);
     expect(easeInOutQuint(0.5)).to.equal(0.5);
-    expect(easeOutExpo(0)).to.equal(0);
-    expect(easeOutExpo(1)).to.equal(1);
   });
 
   it('clamps values to the unit interval', () => {

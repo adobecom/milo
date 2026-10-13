@@ -1902,9 +1902,9 @@ function createGlobeGalleryRuntime(
 
     reducedMotion = prefersReducedMotion();
     root.classList.toggle('globe-gallery-reduced', reducedMotion);
-    const copyEl = q('.globe-gallery-arc-copy');
-    if (reducedMotion) worldEl.before(copyEl);
-    else worldEl.after(copyEl);
+    arcCopy.el = q('.globe-gallery-arc-copy');
+    if (reducedMotion) worldEl.before(arcCopy.el);
+    else worldEl.after(arcCopy.el);
 
     // RM: canvas into normal flow so the globe scrolls away. Non-RM must restate `fixed` — the
     // only other place it is set is the inline style this would otherwise clear.
@@ -2041,7 +2041,6 @@ function createGlobeGalleryRuntime(
 
     canvas.style.display = 'block';
 
-    arcCopy.el = q('.globe-gallery-arc-copy');
     arcCopy.opStr = '';
     arcCopy.transformStr = '';
 
