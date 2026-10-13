@@ -232,16 +232,22 @@ describe('badge occlusion during stacking', () => {
     return badge;
   }
 
-  [[false, false], [true, true], [false, true], [true, false]].forEach(([firstReal, secondReal]) => {
-    it(`stacks overlapping ${firstReal ? 'DOM' : 'pseudo'} and ${secondReal ? 'DOM' : 'pseudo'} badges`, () => {
-      const first = addBadge(firstReal);
-      const second = addBadge(secondReal);
+  [
+    [false, false], [true, true], [false, true], [true, false],
+  ].forEach(([firstReal, secondReal]) => {
+    it(
+      `stacks overlapping ${firstReal ? 'DOM' : 'pseudo'}`
+        + ` and ${secondReal ? 'DOM' : 'pseudo'} badges`,
+      () => {
+        const first = addBadge(firstReal);
+        const second = addBadge(secondReal);
 
-      toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
+        toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
 
-      expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
-      expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('39px');
-    });
+        expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
+        expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('39px');
+      },
+    );
   });
 
   it('still excludes badges covered by an unrelated element', () => {
