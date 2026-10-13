@@ -119,7 +119,7 @@
   max-width: 100%;
 }
 
-.max26-login-prompt-sign-in {
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in {
   /* Figma specifies a 170px primary CTA; longer labels can wrap. */
   width: 170px;
   max-width: 100%;
@@ -127,6 +127,19 @@
   min-height: var(--s2a-spacing-40);
   padding-block: var(--s2a-spacing-8);
   text-align: center;
+  background-color: var(--s2a-color-gray-1000);
+  border-color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-gray-25);
+}
+
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in:hover {
+  background-color: var(--s2a-color-gray-800);
+  border-color: var(--s2a-color-gray-800);
+}
+
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in:active {
+  background-color: var(--s2a-color-gray-900);
+  border-color: var(--s2a-color-gray-900);
 }
 
 .max26-login-prompt-guest {
@@ -182,6 +195,13 @@
 
 .dialog-modal:has(.max26-login-prompt) .dialog-close:is(:hover, :focus) {
   background-color: var(--s2a-color-gray-300);
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close svg {
+  display: block;
+  width: var(--s2a-spacing-32);
+  height: var(--s2a-spacing-32);
+  margin: auto;
 }
 
 .dialog-modal:has(.max26-login-prompt) .dialog-close circle {
