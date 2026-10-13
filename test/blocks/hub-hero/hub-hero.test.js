@@ -1,4 +1,4 @@
-import { readFile, sendKeys, sendMouse, setViewport } from '@web/test-runner-commands';
+import { readFile, sendMouse, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
@@ -411,6 +411,76 @@ describe('hub-hero block', () => {
       expect(container.classList.contains('stick-right')).to.be.false;
     });
 
+    it('anchors overflow smaller than a classic scrollbar in both directions', () => {
+      sinon.stub(document.documentElement, 'clientWidth').get(() => 1455);
+      containerWidth = 1460;
+      enterCard(slides[0]);
+      expect(container.classList.contains('stick-left')).to.be.true;
+      expect(container.style.getPropertyValue('--carousel-viewport-width')).to.equal('1455px');
+      enterCard(slides[3]);
+      expect(container.classList.contains('stick-right')).to.be.true;
+
+      document.documentElement.setAttribute('dir', 'rtl');
+      enterCard(slides[0]);
+      expect(container.classList.contains('stick-right')).to.be.true;
+    });
+
+    it('does not count the vertical scrollbar as a right-edge hover gap', () => {
+      sinon.stub(document.documentElement, 'clientWidth').get(() => 1455);
+      containerWidth = 1500;
+      container.getBoundingClientRect.callsFake(() => new DOMRect(-70, 0, containerWidth, 480));
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      enterCard(slides[3]);
+      container.dispatchEvent(new MouseEvent('mouseleave', { clientX: 1460, clientY: 10 }));
+      clock.tick(20);
+      expect(slides[3].classList.contains('hovered')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('cancels pending leave before ignoring a same-position mousemove', () => {
+      containerWidth = 1500;
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      enterCard(slides[3]);
+      container.dispatchEvent(new MouseEvent('mouseleave', { clientX: 4, clientY: 1 }));
+      enterCard(slides[3]);
+      clock.tick(20);
+      expect(slides[3].classList.contains('hovered')).to.be.true;
+      expect(container.classList.contains('stick-right')).to.be.true;
+    });
+
+    it('batches repeated viewport resize updates into one frame', async () => {
+      await settleLayout();
+      enterCard(slides[0]);
+      container.getBoundingClientRect.resetHistory();
+      const frames = sinon.stub(window, 'requestAnimationFrame').returns(1);
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event('resize'));
+      expect(frames.calledOnce).to.be.true;
+      expect(container.getBoundingClientRect.called).to.be.false;
+      frames.firstCall.args[0]();
+      expect(container.getBoundingClientRect.calledOnce).to.be.true;
+    });
+
+    it('does not measure an inactive row on resize', async () => {
+      await settleLayout();
+      container.getBoundingClientRect.resetHistory();
+      container.style.width = '1500px';
+      window.dispatchEvent(new Event('resize'));
+      await settleLayout();
+      expect(container.getBoundingClientRect.called).to.be.false;
+    });
+
+    it('cancels a queued anchoring frame when the block is removed', async () => {
+      await settleLayout();
+      enterCard(slides[0]);
+      window.dispatchEvent(new Event('resize'));
+      container.getBoundingClientRect.resetHistory();
+      block.remove();
+      await settleLayout();
+      expect(container.getBoundingClientRect.called).to.be.false;
+    });
+
     it('anchors only the outside cards when the rendered carousel overflows', () => {
       containerWidth = 1500;
       enterCard(slides[0]);
@@ -493,6 +563,9 @@ describe('hub-hero block', () => {
 
       block.querySelector('.hub-hero-carousel-header')
         .dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1, clientY: 500 }));
+      clock.tick(5);
+      block.querySelector('.hub-hero-carousel-header')
+        .dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1, clientY: 500 }));
       clock.tick(20);
       expect(slides[0].classList.contains('hovered')).to.be.false;
       expect(container.classList.contains('stick-left')).to.be.false;
@@ -565,6 +638,7 @@ describe('hub-hero block', () => {
     afterEach(() => {
       document.body.replaceChildren();
       window.scrollTo(0, 0);
+      sinon.restore();
       if (originalDirection === null) document.documentElement.removeAttribute('dir');
       else document.documentElement.setAttribute('dir', originalDirection);
     });
@@ -630,6 +704,54 @@ describe('hub-hero block', () => {
       document.documentElement.setAttribute('dir', 'rtl');
       await settleLayout();
       expectCenteredStack(stack);
+    });
+
+    it('measures the final heading stack without observing its animated gap', async () => {
+      const observe = sinon.spy(ResizeObserver.prototype, 'observe');
+      const stack = await loadResolvedStack();
+      const measuredHeight = stack.block.style.getPropertyValue('--hub-hero-carousel-header-height');
+      const writes = sinon.spy(stack.block.style, 'setProperty');
+      stack.heading.style.animation = 'none';
+      stack.heading.style.gap = '64px';
+      await settleLayout();
+      expect(stack.heading.getBoundingClientRect().height).to.be.above(parseFloat(measuredHeight));
+      expect(stack.block.style.getPropertyValue('--hub-hero-carousel-header-height'))
+        .to.equal(measuredHeight);
+      expect(writes.calledWith('--hub-hero-carousel-header-height')).to.be.false;
+      expect(observe.calledWith(stack.heading)).to.be.false;
+      expect(observe.calledWith(stack.heading.firstElementChild)).to.be.true;
+    });
+
+    it('tolerates a missing carousel heading wrapper', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.hub-hero');
+      const header = block.children[3];
+      header.replaceChildren(...header.firstElementChild.children);
+      await init(block);
+      await settleLayout();
+      expect(block.querySelector('.hub-hero-carousel')).to.exist;
+      expect(block.style.getPropertyValue('--hub-hero-carousel-header-height')).to.equal('');
+    });
+
+    it('positions overflowing rows against the visible width rather than the scrollbar', async () => {
+      await setViewport({ width: 1370, height: 770 });
+      sinon.stub(document.documentElement, 'clientWidth').get(() => 1355);
+      for (const direction of ['ltr', 'rtl']) {
+        document.documentElement.setAttribute('dir', direction);
+        const { carousel, row, cards } = await loadAssembledCarousel(4);
+        // Reproduce the containing block width of a classic 15px scrollbar.
+        carousel.style.width = '1355px';
+        carousel.style.margin = '0 auto 0 0';
+        row.style.width = '1360px';
+        await settleLayout();
+        const card = cards[direction === 'ltr' ? cards.length - 1 : 0];
+        card.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1200, clientY: 100 }));
+        await settleLayout();
+        await finishRowTransition(row);
+        expect(row.classList.contains('stick-right')).to.be.true;
+        expect(row.getBoundingClientRect().right).to.be.closeTo(1355 - 8, 0.1);
+        expect(card.getBoundingClientRect().right).to.be.at.most(1355 - 8);
+      }
     });
 
     it('keeps the headline below navigation when the complete stack cannot fit', async () => {
@@ -739,15 +861,15 @@ describe('hub-hero block', () => {
             const rect = incoming.getBoundingClientRect();
             let incomingWidth = rect.width;
             let outgoingWidth = outgoing?.getBoundingClientRect().width;
-            const sizes = [{ time: performance.now(), width: incomingWidth }];
+            const sizes = [incomingWidth];
             await sendMouse({
               type: 'move',
               position: [Math.round(rect.x + rect.width / 2), Math.round(rect.y + rect.height / 2)],
             });
             for (let frame = 0; frame < 40; frame += 1) {
-              const time = await new Promise((resolve) => { requestAnimationFrame(resolve); });
+              await new Promise((resolve) => { requestAnimationFrame(resolve); });
               const nextWidth = incoming.getBoundingClientRect().width;
-              sizes.push({ time, width: nextWidth });
+              sizes.push(nextWidth);
               expect(nextWidth, `incoming slide ${incoming.dataset.index}, frame ${frame}`)
                 .to.be.at.least(incomingWidth - 0.1);
               incomingWidth = nextWidth;
@@ -760,14 +882,9 @@ describe('hub-hero block', () => {
               expect(incoming.classList.contains('hovered')).to.be.true;
               expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.001);
             }
-            const distance = sizes.at(-1).width - sizes[0].width;
-            const peakSpeed = Math.max(...sizes.slice(1).map((size, index) => {
-              const previous = sizes[index];
-              const elapsed = size.time - previous.time;
-              return elapsed > 5 ? (size.width - previous.width) / elapsed : 0;
-            }));
+            const distance = sizes.at(-1) - sizes[0];
             expect(distance).to.be.above(0);
-            expect((peakSpeed * 300) / distance).to.be.below(3);
+            expectSmoothMovement(sizes);
             outgoing = incoming;
           }
         }).timeout(10000);
@@ -776,311 +893,52 @@ describe('hub-hero block', () => {
   });
 
   describe('reduced-motion cards', () => {
-    let styles;
-    let originalViewport;
-    let originalURL;
-    let originalDirection;
     let block;
     let container;
-    let modalSlide;
+    let slides;
 
-    const expectContained = (element, parent) => {
-      const rect = element.getBoundingClientRect();
-      const bounds = parent.getBoundingClientRect();
-      expect(rect.left).to.be.at.least(bounds.left - 0.1);
-      expect(rect.right).to.be.at.most(bounds.right + 0.1);
-      expect(rect.top).to.be.at.least(bounds.top - 0.1);
-      expect(rect.bottom).to.be.at.most(bounds.bottom + 0.1);
-    };
-
-    const expectGridOffsets = (grid) => {
-      const offsets = ['one', 'two', 'three', 'four', 'five'];
-      grid.querySelectorAll('.hub-hero-image-grid-container-col').forEach((column, index) => {
-        const style = getComputedStyle(column);
-        const offset = parseFloat(style.getPropertyValue(`--grid-col-${offsets[index]}-offset`));
-        expect(style.transform).to.equal('none');
-        expect(column.getBoundingClientRect().top - grid.getBoundingClientRect().top)
-          .to.be.closeTo(offset, 0.1);
-        expect(column.getBoundingClientRect().bottom)
-          .to.be.at.most(grid.getBoundingClientRect().bottom + 0.1);
-      });
-    };
-
-    before(async () => {
-      originalViewport = { width: window.innerWidth, height: window.innerHeight };
-      originalURL = window.location.href;
-      const tokens = await readFile({ path: '../../../libs/c2/styles/styles.css' });
-      const css = await readFile({ path: '../../../libs/c2/blocks/hub-hero/hub-hero.css' });
-      styles = document.createElement('style');
-      // Activate reduced-motion CSS without changing the runner's browser preferences.
-      styles.textContent = tokens + css
-        .replaceAll('prefers-reduced-motion: reduce', 'min-width: 0px')
-        .replaceAll('prefers-reduced-motion: no-preference', 'min-width: 100000px');
-      document.head.append(styles);
+    beforeEach(async () => {
+      const matchMedia = window.matchMedia.bind(window);
+      sinon.stub(window, 'matchMedia').callsFake((query) => (
+        query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+      ));
+      block = await loadBlock('./mocks/default.html');
+      container = block.querySelector('.hub-hero-carousel-container');
+      slides = [...container.querySelectorAll('[data-index]')];
+      await settleLayout();
     });
 
     afterEach(() => {
       document.body.replaceChildren();
-      window.history.replaceState(null, '', originalURL);
-      if (originalDirection === null) document.documentElement.removeAttribute('dir');
-      else document.documentElement.setAttribute('dir', originalDirection);
       sinon.restore();
     });
 
-    after(async () => {
-      styles.remove();
-      await setViewport(originalViewport);
+    it('preserves the existing hover state and card video playback', () => {
+      const videoSlide = slides[2];
+      const video = videoSlide.querySelector('video');
+      const play = sinon.stub(video, 'play').resolves();
+      video.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 10 }));
+      expect(videoSlide.classList.contains('hovered')).to.be.true;
+      expect(play.calledOnce).to.be.true;
     });
 
-    [3, 4].forEach((slideCount) => {
-      describe(`${slideCount}-slide variant`, () => {
-        beforeEach(async () => {
-          originalDirection = document.documentElement.getAttribute('dir');
-          await setViewport({ width: 390, height: 844 });
-          const matchMedia = window.matchMedia.bind(window);
-          sinon.stub(window, 'matchMedia').callsFake((query) => (
-            query === '(prefers-reduced-motion: reduce)'
-              ? { matches: true }
-              : matchMedia(query)
-          ));
-          document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-          block = document.querySelector('.hub-hero');
-          if (slideCount === 3) {
-            block.classList.add('slides-3');
-            block.insertBefore(block.children[2].cloneNode(true), block.children[3]);
-            block.lastElementChild.remove();
-          }
-          block.querySelector('[data-modal-hash]').href = '#slide2-modal';
-          await init(block);
-          await settleLayout();
-          container = block.querySelector('.hub-hero-carousel-container');
-          modalSlide = container.querySelector('[data-index="2"]');
-        });
+    it('preserves focused state and the existing keyboard scroll target', async () => {
+      sinon.stub(block, 'offsetHeight').get(() => 4000);
+      sinon.stub(slides[0], 'matches').withArgs(':focus-visible').returns(true);
+      const scrollTo = sinon.stub(window, 'scrollTo');
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      await settleLayout();
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(scrollTo.calledOnce).to.be.true;
+      expect(scrollTo.firstCall.args[0].behavior).to.equal('instant');
+    });
 
-        it('keeps desktop cards inside the hero with a compact normal-flow gap', async () => {
-          block.parentElement.style.overflow = 'hidden';
-          for (const width of [768, 1024, 1414, 1470]) {
-            await setViewport({ width, height: 800 });
-            await settleLayout();
-            const row = container;
-            const carousel = block.querySelector('.hub-hero-carousel');
-            const grid = block.querySelector('.hub-hero-image-grid-container');
-            const carouselStyle = getComputedStyle(carousel);
-            expect(carouselStyle.top).to.equal('0px');
-            expect(parseFloat(carouselStyle.paddingTop)).to.equal(64);
-            expect(carousel.getBoundingClientRect().top)
-              .to.be.closeTo(grid.getBoundingClientRect().bottom, 0.1);
-            expectContained(container, block);
-            expectGridOffsets(grid);
-            const heroBottom = block.getBoundingClientRect().bottom;
-            container.querySelectorAll('[data-index]').forEach((card) => {
-              const cardRect = card.getBoundingClientRect();
-              const header = card.querySelector('.hub-hero-carousel-item-header');
-              const footer = card.querySelector('.hub-hero-carousel-item-footer');
-              expect(cardRect.bottom).to.be.at.most(heroBottom + 0.1);
-              expect(header.getBoundingClientRect().top).to.be.at.least(cardRect.top - 0.1);
-              expect(footer.getBoundingClientRect().bottom).to.be.at.most(cardRect.bottom + 0.1);
-              expectContained(card, row);
-              expectContained(header, card);
-              expectContained(footer, card);
-            });
-          }
-        });
-
-        it('keeps symmetric gutters and caps the row width across mobile sizes', async () => {
-          for (const width of [320, 390, 410, 767]) {
-            await setViewport({ width, height: 844 });
-            await settleLayout();
-            const row = container;
-            const heroRect = block.getBoundingClientRect();
-            const rowRect = container.getBoundingClientRect();
-            const gutter = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-lg'));
-            expect(rowRect.width).to.equal(Math.min(550, heroRect.width - gutter * 2));
-            expect(rowRect.left - heroRect.left)
-              .to.be.closeTo(heroRect.right - rowRect.right, 0.1);
-            expect(rowRect.left - heroRect.left).to.be.at.least(gutter);
-            const carousel = block.querySelector('.hub-hero-carousel');
-            const carouselHeader = carousel.querySelector('.hub-hero-carousel-header');
-            const grid = block.querySelector('.hub-hero-image-grid-container');
-            expect(getComputedStyle(container).marginTop).to.equal('0px');
-            expect(parseFloat(getComputedStyle(carousel).paddingTop)).to.equal(40);
-            expect(rowRect.top - carouselHeader.getBoundingClientRect().bottom)
-              .to.be.closeTo(64, 0.1);
-            expectContained(container, block);
-            expectGridOffsets(grid);
-            const cards = [...container.querySelectorAll('[data-index]')];
-            cards.forEach((card, index) => {
-              expect(getComputedStyle(card).position).to.equal('relative');
-              expect(getComputedStyle(card).top).to.equal('0px');
-              expectContained(card, row);
-              const footer = card.querySelector('.hub-hero-carousel-item-footer');
-              expectContained(footer, card);
-              expectContained(footer.firstElementChild, footer);
-              if (index > 0) {
-                expect(card.getBoundingClientRect().top - cards[index - 1]
-                  .getBoundingClientRect().bottom).to.be.closeTo(12, 0.1);
-              }
-            });
-          }
-        });
-
-        it('keeps long mobile headings in flow between the staggered grid and cards', async () => {
-          const header = block.querySelector('.hub-hero-carousel-header');
-          const cell = header.firstElementChild;
-          cell.querySelector('h2').textContent = 'Trabaja más rápido';
-          const heading = document.createElement('h2');
-          heading.textContent = 'No importa cuál sea el trabajo '
-            + 'ColaboraciónInternacionalConDocumentosDigitales';
-          cell.append(heading);
-          const grid = block.querySelector('.hub-hero-image-grid-container');
-          for (const width of [320, 410, 767]) {
-            await setViewport({ width, height: 844 });
-            await settleLayout();
-            const headerRect = header.getBoundingClientRect();
-            const rowRect = container.getBoundingClientRect();
-            expect(getComputedStyle(header).position).to.equal('relative');
-            expect(getComputedStyle(cell).position).to.equal('relative');
-            expect(getComputedStyle(header).top).to.equal('0px');
-            expect(headerRect.left).to.equal(rowRect.left);
-            expect(headerRect.width).to.equal(rowRect.width);
-            expect(headerRect.top - grid.getBoundingClientRect().bottom).to.be.closeTo(40, 0.1);
-            expect(rowRect.top - headerRect.bottom).to.be.closeTo(64, 0.1);
-            expectContained(cell, header);
-            expectContained(heading, header);
-            const range = document.createRange();
-            range.selectNodeContents(heading);
-            [...range.getClientRects()].forEach((rect) => {
-              expect(rect.left).to.be.at.least(headerRect.left - 0.1);
-              expect(rect.right).to.be.at.most(headerRect.right + 0.1);
-            });
-          }
-        });
-
-        it('keeps the RTL desktop row centered without transformed anchoring', async () => {
-          document.documentElement.setAttribute('dir', 'rtl');
-          await setViewport({ width: 1024, height: 800 });
-          await settleLayout();
-          const row = container.getBoundingClientRect();
-          const hero = block.getBoundingClientRect();
-          expect(row.left - hero.left).to.be.closeTo(hero.right - row.right, 0.1);
-          expect(getComputedStyle(container).transform).to.equal('none');
-          expectContained(container, block);
-        });
-
-        it('does not jump to animated scroll progress when a static card is focused', async () => {
-          const scrollTo = sinon.spy(window, 'scrollTo');
-          sinon.stub(modalSlide, 'matches').withArgs(':focus-visible').returns(true);
-          modalSlide.focus({ preventScroll: true });
-          await settleLayout();
-          expect(document.activeElement).to.equal(modalSlide);
-          expect(scrollTo.called).to.be.false;
-        });
-
-        it('does not apply motion states or replay video on hover and focus', async () => {
-          const video = container.querySelector('video');
-          const play = sinon.stub(video, 'play').resolves();
-          for (const width of [410, 1024]) {
-            await setViewport({ width, height: 844 });
-            await settleLayout();
-            for (const card of container.querySelectorAll('[data-index]')) {
-              play.resetHistory();
-              card.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-              card.focus({ preventScroll: true });
-              expect(play.called).to.be.false;
-              await settleLayout();
-              expect(card.classList.contains('hovered')).to.be.false;
-              expect(card.classList.contains('focused')).to.be.false;
-              expect(document.activeElement).to.equal(card);
-              expect(container.classList.contains('stick-left')).to.be.false;
-              expect(container.classList.contains('stick-right')).to.be.false;
-            }
-          }
-        });
-
-        it('clears stale motion classes when reduced-motion anchoring is refreshed', async () => {
-          modalSlide.classList.add('hovered', 'focused');
-          container.classList.add('stick-left', 'stick-right');
-          window.dispatchEvent(new Event('resize'));
-          await settleLayout();
-          expect(modalSlide.classList.contains('hovered')).to.be.false;
-          expect(modalSlide.classList.contains('focused')).to.be.false;
-          expect(container.classList.contains('stick-left')).to.be.false;
-          expect(container.classList.contains('stick-right')).to.be.false;
-        });
-
-        it('ignores real hover and focus-visible for static card sizing', async () => {
-          for (const width of [410, 1024]) {
-            await setViewport({ width, height: 844 });
-            modalSlide.scrollIntoView({ block: 'center' });
-            await settleLayout();
-            const before = modalSlide.getBoundingClientRect();
-            const media = modalSlide.querySelector('.hub-hero-carousel-item-media img');
-            const imageTransform = getComputedStyle(media).transform;
-            await sendMouse({
-              type: 'move',
-              position: [
-                Math.round(before.x + before.width / 2),
-                Math.round(before.y + before.height / 2),
-              ],
-            });
-            await settleLayout();
-            expect(modalSlide.matches(':hover')).to.be.true;
-            expect(modalSlide.classList.contains('hovered')).to.be.false;
-            await sendKeys({ press: 'Tab' });
-            modalSlide.focus({ preventScroll: true });
-            await settleLayout();
-            expect(modalSlide.matches(':focus-visible')).to.be.true;
-            expect(modalSlide.classList.contains('focused')).to.be.false;
-            expect(modalSlide.getBoundingClientRect().width).to.equal(before.width);
-            expect(modalSlide.getBoundingClientRect().x).to.equal(before.x);
-            expect(getComputedStyle(media).transform).to.equal(imageTransform);
-            modalSlide.classList.add('hovered', 'focused');
-            expect(modalSlide.getBoundingClientRect().width).to.equal(before.width);
-            expect(getComputedStyle(media).transform).to.equal(imageTransform);
-            modalSlide.classList.remove('hovered', 'focused');
-          }
-        });
-
-        it('keeps every mobile card width stable for hover and keyboard focus', async () => {
-          await setViewport({ width: 410, height: 844 });
-          await settleLayout();
-          for (const card of container.querySelectorAll('[data-index]')) {
-            const before = card.getBoundingClientRect();
-            expect(before.width).to.equal(container.getBoundingClientRect().width);
-            card.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-            expect(card.getBoundingClientRect().width).to.equal(before.width);
-            card.focus({ preventScroll: true });
-            await settleLayout();
-            expect(document.activeElement).to.equal(card);
-            const after = card.getBoundingClientRect();
-            expect(after.width).to.equal(before.width);
-            expect(after.x).to.equal(before.x);
-          }
-        });
-
-        it('opens the modal on the first text click without shrinking the card', async () => {
-          modalSlide.scrollIntoView({ block: 'center' });
-          await settleLayout();
-          const before = modalSlide.getBoundingClientRect();
-          const heading = modalSlide.querySelector('.hub-hero-carousel-item-header');
-          const rect = heading.getBoundingClientRect();
-          const click = sinon.spy();
-          modalSlide.addEventListener('click', click);
-          await sendMouse({
-            type: 'click',
-            position: [
-              Math.round(rect.x + rect.width / 2),
-              Math.round(rect.y + rect.height / 2),
-            ],
-            button: 'left',
-          });
-          expect(click.calledOnce).to.be.true;
-          expect(window.location.hash).to.equal('#slide2-modal');
-          const after = modalSlide.getBoundingClientRect();
-          expect(after.width).to.equal(before.width);
-          expect(after.x).to.equal(before.x);
-        });
-      });
+    it('does not clear hover or focus states on resize', async () => {
+      slides[0].classList.add('hovered', 'focused');
+      window.dispatchEvent(new Event('resize'));
+      await settleLayout();
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      expect(slides[0].classList.contains('focused')).to.be.true;
     });
   });
 

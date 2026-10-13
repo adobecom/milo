@@ -94,7 +94,6 @@ const getHubHeroScrollRange = (hubHero) => ({
 });
 
 const scrollHubHeroTo = (el, progress) => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const hubHero = el.closest('.hub-hero');
@@ -144,16 +143,23 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
 const initCarouselPosition = (hubHero) => {
   const header = document.querySelector('header');
   const carouselHeader = hubHero.querySelector('.hub-hero-carousel-header > div');
+  if (!header && !carouselHeader) return;
+  const headings = [...(carouselHeader?.children ?? [])];
 
   const syncHeights = () => {
     if (header) hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
-    hubHero.style.setProperty('--hub-hero-carousel-header-height', `${carouselHeader.getBoundingClientRect().height}px`);
+    if (!carouselHeader) return;
+    // The assembled heading has zero gap; do not measure its scroll-animated container.
+    const height = headings.reduce((total, heading) => (
+      total + heading.getBoundingClientRect().height
+    ), 0);
+    hubHero.style.setProperty('--hub-hero-carousel-header-height', `${height}px`);
   };
   syncHeights();
 
   const resizeObserver = new ResizeObserver(syncHeights);
   if (header) resizeObserver.observe(header);
-  resizeObserver.observe(carouselHeader);
+  headings.forEach((heading) => resizeObserver.observe(heading));
 
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
@@ -270,16 +276,13 @@ const removeHovered = (carousel) => {
   [...slides]?.forEach((sld) => sld.classList.remove('hovered', 'focused'));
 };
 
+const clearCarouselAnchoring = (container) => container.classList.remove('stick-left', 'stick-right');
+
 const updateCarouselAnchoring = (container) => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    removeHovered(container);
-    container.classList.remove('stick-left', 'stick-right');
-    return;
-  }
   const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
     || container.querySelector('.hub-hero-carousel-item:focus-visible');
   if (!slideEl) {
-    container.classList.remove('stick-left', 'stick-right');
+    clearCarouselAnchoring(container);
     return;
   }
 
@@ -289,24 +292,37 @@ const updateCarouselAnchoring = (container) => {
   const maxIndex = hubHero.classList.contains('slides-3') ? 3 : slideCount;
   const rtl = isRtl();
   // Viewport height can shrink the rendered row below its authored width cap.
-  const needsStick = container.getBoundingClientRect().width > window.innerWidth;
+  const viewportWidth = document.documentElement.clientWidth;
+  const needsStick = container.getBoundingClientRect().width > viewportWidth;
+  const viewportValue = `${viewportWidth}px`;
+  if (container.style.getPropertyValue('--carousel-viewport-width') !== viewportValue) {
+    container.style.setProperty('--carousel-viewport-width', viewportValue);
+  }
   container.classList.toggle('stick-left', needsStick && (rtl ? slideIndex === maxIndex : slideIndex === 1));
   container.classList.toggle('stick-right', needsStick && (rtl ? slideIndex === 1 : slideIndex === maxIndex));
+};
+
+const isInCarouselEdgeGap = (container, event) => {
+  const bounds = container.getBoundingClientRect();
+  const withinHeight = event.clientY >= bounds.top && event.clientY < bounds.bottom;
+  if (!withinHeight) return false;
+  const inLeftGap = container.classList.contains('stick-left')
+    && event.clientX >= 0 && event.clientX < bounds.left;
+  const inRightGap = container.classList.contains('stick-right')
+    && event.clientX >= bounds.right && event.clientX < document.documentElement.clientWidth;
+  return inLeftGap || inRightGap;
 };
 
 const onCarouselLeave = (event) => {
   const carouselContainer = event.currentTarget.querySelector('.hub-hero-carousel-container')
     || event.currentTarget;
-  const bounds = carouselContainer.getBoundingClientRect();
-  const inEdgeGap = event.clientY >= bounds.top && event.clientY < bounds.bottom
-    && ((carouselContainer.classList.contains('stick-left') && event.clientX >= 0 && event.clientX < bounds.left)
-      || (carouselContainer.classList.contains('stick-right') && event.clientX >= bounds.right && event.clientX < window.innerWidth));
-  if (event.currentTarget === carouselContainer && inEdgeGap) return;
+  if (event.currentTarget === carouselContainer
+    && isInCarouselEdgeGap(carouselContainer, event)) return;
 
   clearTimeout(leaveTimeouts.get(carouselContainer));
   leaveTimeouts.set(carouselContainer, setTimeout(() => {
     hoverPositions.delete(carouselContainer);
-    carouselContainer.classList.remove('stick-left', 'stick-right');
+    clearCarouselAnchoring(carouselContainer);
     removeHovered(carouselContainer.closest('.hub-hero-carousel'));
   }, 10));
 };
@@ -318,11 +334,12 @@ const onHover = (event) => {
   const carouselContainer = isFocus ? slideEl.closest('.hub-hero-carousel-container')
     : event.currentTarget.querySelector('.hub-hero-carousel-container');
   if (!carouselContainer) return;
+  clearTimeout(leaveTimeouts.get(carouselContainer));
   if (!isFocus) {
     const previous = hoverPositions.get(carouselContainer);
     hoverPositions.set(carouselContainer, { x: event.clientX, y: event.clientY });
     // Layout changes can retarget mouse events without the pointer moving.
-    if (previous?.x === event.clientX && previous?.y === event.clientY) return;
+    if (slideEl && previous?.x === event.clientX && previous?.y === event.clientY) return;
   }
   if (!slideEl) {
     const bounds = carouselContainer.getBoundingClientRect();
@@ -331,7 +348,6 @@ const onHover = (event) => {
   }
 
   const video = slideEl.querySelector('video');
-  clearTimeout(leaveTimeouts.get(carouselContainer));
   if (!isFocus && slideEl.classList.contains('hovered')
     && !slideLeaveTimeouts.has(video) && !rewindIntervals.has(video)) return;
 
@@ -342,16 +358,14 @@ const onHover = (event) => {
   const container = slideEl.parentElement;
   if (!container) return;
 
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
-    if (video && !isThreeSlides) {
-      stopRewind(video);
-      video.play().catch(() => { });
-    }
-
-    removeHovered(slideEl.closest('.hub-hero-carousel'));
-    slideEl.classList.add(isFocus ? 'focused' : 'hovered');
+  const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
+  if (video && !isThreeSlides) {
+    stopRewind(video);
+    video.play().catch(() => { });
   }
+
+  removeHovered(slideEl.closest('.hub-hero-carousel'));
+  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
   updateCarouselAnchoring(container);
 
   if (hoverTracked) return;
@@ -493,16 +507,26 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
   const carouselContainer = decoratedCarousel.querySelector('.hub-hero-carousel-container');
-  const updateAnchoring = () => updateCarouselAnchoring(carouselContainer);
-  const carouselResizeObserver = new ResizeObserver(updateAnchoring);
+  let anchoringFrame = 0;
+  const scheduleAnchoring = () => {
+    if (anchoringFrame || scrollController.signal.aborted) return;
+    if (!carouselContainer.querySelector('.hovered, .focused, :focus-visible')) return;
+    anchoringFrame = requestAnimationFrame(() => {
+      anchoringFrame = 0;
+      updateCarouselAnchoring(carouselContainer);
+    });
+  };
+  const carouselResizeObserver = new ResizeObserver(scheduleAnchoring);
   carouselResizeObserver.observe(carouselContainer);
-  window.addEventListener('resize', updateAnchoring, { signal: scrollController.signal });
+  // The viewport can cross the overflow threshold without changing the row's width.
+  window.addEventListener('resize', scheduleAnchoring, { signal: scrollController.signal });
   window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
       scrollController.abort();
+      if (anchoringFrame) cancelAnimationFrame(anchoringFrame);
       carouselResizeObserver.disconnect();
       mobileObservers.forEach((o) => o.disconnect());
       observer.disconnect();
