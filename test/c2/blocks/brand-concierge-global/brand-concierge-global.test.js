@@ -6,7 +6,7 @@ import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../li
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
-describe('C2 Brand Concierge navigation renderer selection', () => {
+describe('C2 Brand Concierge navigation renderer selection (stage baseline)', () => {
   let originalConfig;
   let originalClient;
   let originalPrivacy;
