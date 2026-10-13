@@ -331,6 +331,38 @@ describe('autoblock', () => {
       }
     });
 
+    it('debounces the resize style sync by 150ms', async () => {
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 24px; }
+        @media (max-width: 767px) { merch-card h3 { font-size: 18px; } }
+      `;
+      const card = makeCard(['h3']);
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+      try {
+        await setViewport({ width: 1200, height: 800 });
+        overrideCardHeadingLevel(card, 2);
+        const heading = card.querySelector('h2');
+        expect(heading.style.fontSize).to.equal('24px');
+        await setViewport({ width: 600, height: 800 });
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(100);
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(100);
+        expect(heading.style.fontSize).to.equal('24px');
+        clock.tick(50);
+        expect(heading.style.fontSize).to.equal('18px');
+      } finally {
+        clock.restore();
+        style.remove();
+        card.remove();
+        await setViewport(viewport);
+      }
+    });
+
     it('swaps the tag of a heading wrapping a customized built-in (inline-price), preserving content', () => {
       const card = makeCard(['h3']);
       const priceHeading = document.createElement('h3');
