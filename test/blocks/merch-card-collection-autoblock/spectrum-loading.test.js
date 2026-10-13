@@ -130,7 +130,7 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
       const withSidenav = await loadSpectrumDependencies({ sidenav: true });
       const withoutSidenav = await loadSpectrumDependencies({ sidenav: false });
       expect(withSidenav).to.have.lengthOf(14);
-      expect(withoutSidenav).to.have.lengthOf(8);
+      expect(withoutSidenav).to.have.lengthOf(10);
     });
   });
 });

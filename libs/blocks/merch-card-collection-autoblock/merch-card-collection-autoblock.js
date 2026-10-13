@@ -69,8 +69,8 @@ async function loadDependencies(options) {
 
 // Header (search, filters, sort), footer (show more) and sidenav are the only
 // Spectrum consumers of a collection.
+const SPECTRUM_COMMON_DEPS = ['base', 'shared', 'theme'];
 const SPECTRUM_COLLECTION_DEPS = [
-  'theme',
   'button',
   'action-button',
   'action-menu',
@@ -80,8 +80,6 @@ const SPECTRUM_COLLECTION_DEPS = [
   'tray',
 ];
 const SPECTRUM_SIDENAV_DEPS = [
-  'base',
-  'shared',
   'sidenav',
   'checkbox',
   'dialog',
@@ -94,9 +92,11 @@ export const needsSpectrum = (collection) => !!collection.data?.hierarchy?.lengt
 
 export function loadSpectrumDependencies(options) {
   const { base } = getConfig();
-  const deps = options.sidenav
-    ? [...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS]
-    : SPECTRUM_COLLECTION_DEPS;
+  const deps = [
+    ...SPECTRUM_COMMON_DEPS,
+    ...SPECTRUM_COLLECTION_DEPS,
+    ...(options.sidenav ? SPECTRUM_SIDENAV_DEPS : []),
+  ];
   return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
 }
 
