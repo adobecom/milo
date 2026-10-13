@@ -158,6 +158,18 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
+const getLcpSnapshot = () => {
+  const section = document.querySelector('body > main > div');
+  if (!section) return null;
+  const sources = [...section.querySelectorAll('source[srcset*="media_"]')]
+    .map((s) => new URL(s.getAttribute('srcset').split(',')[0].trim().split(/\s+/)[0], window.location.href).href);
+  return {
+    section,
+    images: [...[...section.querySelectorAll('img[src*="media_"]')].map((img) => img.src), ...sources],
+    fragments: [...section.querySelectorAll('a[href*="/fragments/"]')].map((a) => a.href),
+  };
+};
+
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
@@ -1536,6 +1548,12 @@ export async function applyPers({ manifests }) {
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
+  if (config.mep.preview) {
+    config.mep.manifestVariants ??= {};
+    experiments.forEach((exp) => {
+      if (exp?.variants) config.mep.manifestVariants[exp.manifestPath] = exp.variants;
+    });
+  }
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
@@ -1795,6 +1813,7 @@ export async function init(enablements = {}) {
       akamaiCode: akamaiCode?.toLowerCase(),
       consentState: getMepConsentConfig(),
     };
+    if (config.mep.preview) config.mep.lcpSnapshot = getLcpSnapshot();
 
     manifests = manifests.concat(await combineMepSources(
       pzn,
@@ -1830,12 +1849,17 @@ export async function init(enablements = {}) {
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       // TEMP: ?mepnext=off -> preview.js, else mep-next; gate + toLowerCase() hack die on removal.
-      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off'
-        ? './preview.js' : '../mep/mep-next/mep-next.js';
+      const isLegacyPreview = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off';
+      const previewSrc = isLegacyPreview ? './preview.js' : '../mep/mep-next/mep-next.js';
       import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });
+      if (!isLegacyPreview) {
+        import('../mep/mep-next/mep-lcp-check.js')
+          .then(({ default: checkLcpNearDups }) => checkLcpNearDups())
+          .catch((e) => log(`MEP LCP check error: ${e.toString()}`));
+      }
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
