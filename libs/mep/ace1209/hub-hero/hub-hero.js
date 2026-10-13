@@ -139,9 +139,6 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
   requestAnimationFrame(checkLock);
 };
 
-// Reads the real, currently-rendered nav height (accounts for localnav/promo banner)
-// instead of relying on the static --feds-height-nav/--hub-hero-nav-h CSS fallbacks,
-// matching the pattern used in comparison-table-c2.js's setupCollapsingHeader.
 const initNavHeight = (hubHero) => {
   const header = document.querySelector('header');
   if (!header) return;
@@ -175,7 +172,8 @@ const initHeaderPin = (hubHero, header) => {
   let ticking = false;
   const checkPin = () => {
     const heroRect = hubHero.getBoundingClientRect();
-    header.classList.toggle('pinned', heroRect.top <= 0 && heroRect.bottom > 0);
+    const carouselAssembled = getHubHeroProgress(hubHero) >= 0.5;
+    header.classList.toggle('pinned', !carouselAssembled && heroRect.top <= 0 && heroRect.bottom > 0);
     ticking = false;
   };
   window.addEventListener('scroll', () => {
@@ -189,6 +187,39 @@ const initHeaderPin = (hubHero, header) => {
     if (!document.contains(hubHero)) {
       pinController.abort();
       headerResizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
+const initCarouselContainerExpand = (hubHero) => {
+  const container = hubHero.querySelector('.hub-hero-carousel-container');
+  if (!container) return;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    container.style.setProperty('--expand-progress', 1);
+    return;
+  }
+
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    if (!mobileQuery.matches) return;
+    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }, { signal: controller.signal, passive: true });
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(update), { signal: controller.signal });
+  requestAnimationFrame(update);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -427,6 +458,34 @@ const setCarouselSlideOffsets = (grid, carousel) => {
     const correction = contentHeight - gridHeight;
     hubHero.style.setProperty(`--carousel-slide-${nthChild}-correction`, `${correction}px`);
   });
+  const col3 = cols[2];
+  const col3LastChild = col3?.children[col3.children.length - 1];
+  if (col3LastChild) {
+    const gridBottom = grid.getBoundingClientRect().bottom;
+    const col3LastChildBottom = col3LastChild.getBoundingClientRect().bottom;
+    hubHero.style.setProperty('--grid-col-three-bottom-gap', `${gridBottom - col3LastChildBottom}px`);
+  }
+};
+
+const setElasticFirstSlideOffset = (hubHero) => {
+  if (!window.matchMedia('(width < 768px)').matches) return;
+  const media = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-media');
+  if (!media) return;
+  const mediaStyle = getComputedStyle(media);
+  const gridImgWidthMin = parseFloat(mediaStyle.getPropertyValue('--grid-img-width-min'));
+  const gridImgClipRatio = parseFloat(mediaStyle.getPropertyValue('--grid-img-clip-ratio')) || 1;
+  const mediaHeight = media.getBoundingClientRect().height;
+  if (!gridImgWidthMin || !mediaHeight) return;
+  const probe = createTag('div', { style: 'position: absolute; visibility: hidden; height: 0; width: var(--start-gap);' });
+  hubHero.append(probe);
+  const startGap = probe.getBoundingClientRect().width;
+  probe.remove();
+  const gridColThreeBottomGap = parseFloat(
+    getComputedStyle(hubHero).getPropertyValue('--grid-col-three-bottom-gap'),
+  ) || 0;
+  const gapPx = (mediaHeight / 2) - ((gridImgWidthMin * gridImgClipRatio) / 2)
+    - startGap + gridColThreeBottomGap;
+  hubHero.style.setProperty('--elastic-mobile-first-slide-offset', `${-gapPx}px`);
 };
 
 const handleGridImages = (imageContainers, slides, isThreeSlides) => {
@@ -530,10 +589,24 @@ const handleSlidesThreeVideos = (hubHero) => {
   });
 };
 
-const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
-  requestAnimationFrame(() => {
+const initElasticFirstSlideOffset = (hubHero, grid, elasticCarousel) => {
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+
+  const recompute = () => {
     setCarouselSlideOffsets(grid, elasticCarousel);
-  });
+    if (mobileQuery.matches) setElasticFirstSlideOffset(hubHero);
+  };
+
+  requestAnimationFrame(recompute);
+  mobileQuery.addEventListener('change', () => requestAnimationFrame(recompute), { signal: controller.signal });
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      controller.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 };
 
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
@@ -563,8 +636,11 @@ export default async function init(el) {
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
-  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
+
+  initElasticFirstSlideOffset(el, grid, elasticCarousel);
+
   initNavHeight(el);
   initHeaderPin(el, heroHeader);
+  initCarouselContainerExpand(el);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }
