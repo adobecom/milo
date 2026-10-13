@@ -1488,15 +1488,6 @@ export async function loadBlock(block) {
   });
 
   await Promise.all([styleLoaded, scriptLoaded]);
-  const isC2Content = getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name);
-  if ((isC2Content || blockPath.includes('/c2/')) && block.dataset.blockStatus === 'loaded') {
-    import('../c2/content-animations.js')
-      .then(({ default: initContentAnimations }) => initContentAnimations(block))
-      .catch((e) => window.lana?.log(`Failed to initialize C2 content animations: ${e}`, {
-        tags: 'c2-content-animations',
-        severity: 'error',
-      }));
-  }
   return block;
 }
 
@@ -3088,7 +3079,16 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
+const logAnimationError = (e) => window.lana?.log(`Failed to initialize C2 content animations: ${e}`, {
+  tags: 'c2-content-animations',
+  severity: 'error',
+});
+
 async function processSection(section, config, isDoc, lcpSectionId) {
+  // Loaded alongside the blocks so entrances are ready when the section is revealed.
+  const contentAnimations = getMetadata('foundation') === 'c2'
+    ? import('../c2/content-animations.js').then((module) => module.default, logAnimationError)
+    : null;
   await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -3112,6 +3112,7 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
+  contentAnimations?.then((init) => init?.(section.el)).catch(logAnimationError);
   if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;

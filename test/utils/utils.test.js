@@ -916,17 +916,16 @@ describe('Utils', () => {
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
 
-    it('initializes C2 content animations without blocking the block load', async () => {
+    it('initializes C2 content animations once a section has loaded', async () => {
       const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
       document.head.append(foundation);
-      document.body.innerHTML = '<div class="section"><div class="rich-content"><div><div><h2>Title</h2><p>Body</p></div></div></div></div>';
-      const richContent = document.querySelector('.rich-content');
+      document.body.innerHTML = '<main><div><div class="rich-content"><div><div><h2>Title</h2><p>Body</p></div></div></div></div></main>';
       try {
-        const block = await utils.loadBlock(richContent);
-        expect(block).to.equal(richContent);
-        expect(block.dataset.blockStatus).to.equal('loaded');
-        await waitFor(() => block.classList.contains('c2-entrance-group'), 2000);
-        expect(block.classList.contains('c2-entrance-group')).to.be.true;
+        await utils.loadArea();
+        const richContent = document.querySelector('.rich-content');
+        expect(richContent.dataset.blockStatus).to.equal('loaded');
+        await waitFor(() => richContent.classList.contains('c2-entrance-group'), 2000);
+        expect(richContent.classList.contains('c2-entrance-group')).to.be.true;
       } finally {
         foundation.remove();
       }

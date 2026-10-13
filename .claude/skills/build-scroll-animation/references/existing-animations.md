@@ -33,8 +33,10 @@ scroll animation to make it behave like a timed one.
 
 ## One-time content entrances
 
-`libs/c2/content-animations.js` finds entrance sources once their block has
-loaded and its section is revealed. It adds `c2-entrance-group` /
+`libs/c2/content-animations.js` runs once per section, right after all of
+the section's blocks have loaded (`processSection` in `libs/utils/utils.js`),
+and re-checks sections on resize so responsive section styles and grid rows
+stay correct. It adds `c2-entrance-group` /
 `c2-entrance-item`, writes the structural `--c2-entrance-index` and
 `--c2-entrance-count` metadata, and adds `c2-entrance-played` when the
 content crosses its trigger line. CSS owns all motion. JavaScript does not
