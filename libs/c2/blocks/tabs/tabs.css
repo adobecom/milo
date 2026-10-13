@@ -289,11 +289,6 @@
         width: auto;
         margin: 0;
       }
-
-      &.center > .tabs-wrapper {
-        /* justify-content: flex-start; */
-
-      }
     }
   }
 
