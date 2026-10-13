@@ -43,11 +43,15 @@
 .article-byline .article-author-image,
 .article-byline .article-author-image img {
   flex: 0 0 64px;
-  margin: 0 var(--spacing-xs) 0 0;
+  margin: 0;
   height: 64px;
   width: 64px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.article-byline .article-author-image {
+  margin-inline-end: var(--spacing-xs);
 }
 
 .article-byline .article-byline-info {
@@ -72,7 +76,7 @@
 
 .article-byline-sharing svg {
   height: 22px;
-  width: 22px;
+  width: auto;
 }
 
 .article-byline-sharing a[data-href*="twitter"]:hover svg,
@@ -223,11 +227,8 @@
 
   .article-byline .article-byline-sharing {
     flex: 0 1 auto;
+    gap: 8px;
     margin-top: 0;
-  }
-
-  .article-byline .article-byline-sharing span:not(:last-child) {
-    margin-right: 8px;
   }
 
   .article-feature-video .milo-video,
