@@ -189,6 +189,20 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
+// A mas-field merch.js gave up waiting for. A [hidden] one loaded with nothing to show.
+const PENDING_FIELDS = 'em mas-field:not([hidden])';
+
+// merch.js swaps a late link in for its mas-field on mas:ready, and mas-field hides itself when it
+// resolves empty. Either changes the pending count.
+const onPendingChange = (cta, count, callback) => {
+  const observer = new MutationObserver(() => {
+    if (cta.querySelectorAll(PENDING_FIELDS).length === count) return;
+    observer.disconnect();
+    callback();
+  });
+  observer.observe(cta, { childList: true, subtree: true, attributeFilter: ['hidden'] });
+};
+
 const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
@@ -199,19 +213,10 @@ const decorateCtas = (textCol, isLight) => {
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
   secondary?.classList.add('con-button', 'outline');
   const buttons = [primary, secondary].filter((btn) => btn && !shouldBlockFreeTrialLinks(btn));
-  // A mas-field still loading timed out in merch.js. Keep it so its mas:ready hoists the link
-  // (watchMasFieldCtas), then decorate again once it is replaced. A [hidden] field resolved
-  // to nothing on purpose: it is not pending and is dropped below.
-  const pendingSelector = 'em mas-field:not([hidden])';
-  const pending = cta.querySelectorAll(pendingSelector).length;
+  // Keep pending fields so their late link can arrive, then decorate again.
+  const pending = cta.querySelectorAll(PENDING_FIELDS).length;
   if (pending) {
-    const observer = new MutationObserver(() => {
-      if (cta.querySelectorAll(pendingSelector).length === pending) return;
-      observer.disconnect();
-      decorateCtas(textCol, isLight);
-    });
-    const watch = { childList: true, subtree: true, attributes: true };
-    observer.observe(cta, { ...watch, attributeFilter: ['hidden'] });
+    onPendingChange(cta, pending, () => decorateCtas(textCol, isLight));
     return;
   }
   cta.replaceChildren(...buttons);

@@ -710,6 +710,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     <div><p>background</p></div>
   </div>`;
   const lateField = '<em><strong><mas-field field="cta"><aem-fragment></aem-fragment></mas-field></strong></em>';
+  const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
   const secondary = '<em><a href="/learn">Learn more</a></em>';
   const desktop = () => block.querySelector('.rm-viewport[data-viewport="desktop"]');
 
@@ -784,7 +785,6 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
   });
 
   it('drops an initially hidden empty field and flattens the row around the valid button', async () => {
-    const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
     await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${hiddenField} ${hiddenField}`);
 
     const ctas = desktop().querySelector('.rm-ctas');
@@ -811,7 +811,6 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
   });
 
   it('keeps a pending field while a sibling field is hidden', async () => {
-    const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
     await mount(`${hiddenField} ${lateField}`);
 
     const ctas = desktop().querySelector('.rm-ctas');
