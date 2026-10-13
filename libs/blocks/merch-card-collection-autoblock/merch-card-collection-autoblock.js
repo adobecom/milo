@@ -58,32 +58,46 @@ async function loadDependencies(options) {
     throw new Error('Failed to initialize mas commerce service');
   }
 
-  const { base } = getConfig();
   const dependencyPromises = [
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
-    import(`${base}/features/spectrum-web-components/dist/theme.js`),
-    import(`${base}/features/spectrum-web-components/dist/button.js`),
-    import(`${base}/features/spectrum-web-components/dist/action-button.js`),
-    import(`${base}/features/spectrum-web-components/dist/action-menu.js`),
-    import(`${base}/features/spectrum-web-components/dist/search.js`),
-    import(`${base}/features/spectrum-web-components/dist/menu.js`),
-    import(`${base}/features/spectrum-web-components/dist/overlay.js`),
-    import(`${base}/features/spectrum-web-components/dist/tray.js`),
   ];
-  if (options.sidenav) {
-    dependencyPromises.push(...[
-      loadMasComponent(MAS_MERCH_SIDENAV),
-      import(`${base}/features/spectrum-web-components/dist/base.js`),
-      import(`${base}/features/spectrum-web-components/dist/shared.js`),
-      import(`${base}/features/spectrum-web-components/dist/sidenav.js`),
-      import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
-      import(`${base}/features/spectrum-web-components/dist/dialog.js`),
-      import(`${base}/features/spectrum-web-components/dist/link.js`),
-    ]);
-  }
+  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
   await Promise.all(dependencyPromises);
+}
+
+// Header (search, filters, sort), footer (show more) and sidenav are the only
+// Spectrum consumers of a collection.
+const SPECTRUM_COLLECTION_DEPS = [
+  'theme',
+  'button',
+  'action-button',
+  'action-menu',
+  'search',
+  'menu',
+  'overlay',
+  'tray',
+];
+const SPECTRUM_SIDENAV_DEPS = [
+  'base',
+  'shared',
+  'sidenav',
+  'checkbox',
+  'dialog',
+  'link',
+];
+
+// A collection without a hierarchy (a blade) is never filtered: MAS renders no
+// sidenav, header or show more button for it.
+export const needsSpectrum = (collection) => !!collection.data?.hierarchy?.length;
+
+export function loadSpectrumDependencies(options) {
+  const { base } = getConfig();
+  const deps = options.sidenav
+    ? [...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS]
+    : SPECTRUM_COLLECTION_DEPS;
+  return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
 }
 
 function localizeIconPath(iconPath) {
@@ -920,6 +934,7 @@ export async function createCollection(el, options) {
   }
   fixProductPricingVariant(collection);
   container.classList.add('collection-container', collection.variant);
+  if (needsSpectrum(collection)) await loadSpectrumDependencies(options);
 
   /* Sidenav */
   if (options.sidenav) {
