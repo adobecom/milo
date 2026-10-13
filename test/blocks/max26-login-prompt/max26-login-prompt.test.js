@@ -221,6 +221,9 @@ describe('MAX 2026 login prompt', () => {
         .to.equal('rgb(255, 255, 255)');
       expect(getComputedStyle(block.querySelector('.max26-login-prompt-logo img')).display).to.equal('block');
       expect(dialog.getBoundingClientRect().width).to.be.closeTo(shell, 1);
+      const guestButton = block.querySelector('.max26-login-prompt-guest');
+      expect(guestButton.parentElement.getBoundingClientRect().height)
+        .to.equal(guestButton.getBoundingClientRect().height);
       const close = dialog.querySelector('button.dialog-close');
       expect(close.getAttribute('aria-label')).to.equal('Close');
       expect(close.getBoundingClientRect().width).to.equal(40);
