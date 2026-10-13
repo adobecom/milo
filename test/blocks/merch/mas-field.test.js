@@ -405,6 +405,65 @@ describe('mas-field', () => {
       expect(document.head.querySelector('link[href*="blocks/merch/merch.css"]')).to.exist;
     });
 
+    describe('fragment failure', () => {
+      const createLink = () => {
+        const a = document.createElement('a');
+        a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=failing-fragment&field=prices';
+        a.textContent = '[[failing:prices]]';
+        document.body.append(a);
+        return a;
+      };
+      const settlesBeforeTimeout = (promise) => Promise.race([
+        promise.then(() => 'settled'),
+        new Promise((r) => { setTimeout(() => r('pending'), 1000); }),
+      ]);
+
+      const stubs = [];
+      afterEach(() => stubs.splice(0).forEach((stub) => stub.restore()));
+
+      it('does not wait for the field timeout when the fragment emits aem:error', async () => {
+        stubs.push(sinon.stub(customElements.get('mas-field').prototype, 'checkReady')
+          .returns(new Promise(() => {})));
+        const initialized = init(createLink());
+        await new Promise((r) => { setTimeout(r, 200); });
+        document.querySelector('mas-field aem-fragment')
+          .dispatchEvent(new CustomEvent('aem:error', { bubbles: true, composed: true }));
+        expect(await settlesBeforeTimeout(initialized)).to.equal('settled');
+      });
+
+      it('does not wait for the field timeout when the fragment already failed', async () => {
+        stubs.push(sinon.stub(customElements.get('mas-field').prototype, 'checkReady')
+          .returns(new Promise(() => {})));
+        const createTag = document.createElement.bind(document);
+        stubs.push(sinon.stub(document, 'createElement').callsFake((...args) => {
+          const el = createTag(...args);
+          if (args[0] === 'aem-fragment') el.classList.add('error');
+          return el;
+        }));
+        const initialized = init(createLink());
+        expect(await settlesBeforeTimeout(initialized)).to.equal('settled');
+      });
+    });
+
+    it('reveals the CTA as soon as the price fragment fails', async () => {
+      const card = document.createElement('div');
+      const pricing = document.createElement('p');
+      const price = document.createElement('mas-field');
+      price.setAttribute('field', 'prices');
+      price.checkReady = () => new Promise(() => {});
+      pricing.append(price);
+      const actionArea = document.createElement('p');
+      actionArea.append(document.createElement('a'));
+      card.append(pricing, actionArea);
+
+      holdCtaUntilPrice(actionArea);
+      expect(actionArea.style.visibility).to.equal('hidden');
+
+      price.dispatchEvent(new CustomEvent('aem:error'));
+      await new Promise((r) => { setTimeout(r); });
+      expect(actionArea.style.visibility).to.equal('');
+    });
+
     it('holds the CTA action area hidden until the card price is ready', async () => {
       const card = document.createElement('div');
       const pricing = document.createElement('p');

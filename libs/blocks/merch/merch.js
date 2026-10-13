@@ -1906,10 +1906,9 @@ function upgradeCommerceLinks(content) {
 }
 
 function withTimeout(promise) {
-  return Promise.race([
-    promise,
-    new Promise((resolve) => { setTimeout(() => resolve('timeout'), FIELD_TIMEOUT); }),
-  ]);
+  let id;
+  const timeout = new Promise((resolve) => { id = setTimeout(() => resolve('timeout'), FIELD_TIMEOUT); });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(id));
 }
 
 const foregroundTimers = new Map();
@@ -1984,6 +1983,26 @@ function withForegroundTimeout(promise) {
   return raceForegroundTimeout(promise, FIELD_TIMEOUT);
 }
 
+/**
+ * mas-field.checkReady() only settles on aem:load, so a failed fragment (e.g. a 404) would
+ * leave it pending until FIELD_TIMEOUT while the section stays hidden. Settle with false as
+ * soon as the fragment fails, including when it failed before this was called.
+ */
+function fieldReady(masField) {
+  let onError;
+  const failed = new Promise((resolve) => {
+    if (masField.hasAttribute('failed')
+      || masField.querySelector('aem-fragment')?.classList.contains('error')) {
+      resolve(false);
+      return;
+    }
+    onError = () => resolve(false);
+    masField.addEventListener('aem:error', onError, { once: true });
+  });
+  return Promise.race([masField.checkReady(), failed])
+    .finally(() => masField.removeEventListener('aem:error', onError));
+}
+
 async function loadFieldDependencies() {
   const servicePromise = initService();
   const success = await withTimeout(servicePromise);
@@ -2007,7 +2026,7 @@ async function checkFieldReady(masField, fragment) {
     }
   }
 
-  const success = await withForegroundTimeout(masField.checkReady());
+  const success = await withForegroundTimeout(fieldReady(masField));
   if (success === 'timeout') {
     fieldLog.error(`${masField.tagName} did not initialize within given timeout`);
   } else if (!success) {
@@ -2075,7 +2094,7 @@ export function holdCtaUntilPrice(container) {
   if (!price?.checkReady) return;
   container.style.visibility = 'hidden';
   const reveal = () => { container.style.visibility = ''; };
-  withForegroundTimeout(price.checkReady().catch(() => false)).then(reveal);
+  withForegroundTimeout(fieldReady(price).catch(() => false)).then(reveal);
 }
 
 /**
