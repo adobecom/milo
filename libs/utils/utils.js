@@ -2375,14 +2375,19 @@ export function preloadLcpCodeFiles(area = document) {
     && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...autoNames].some(isCommerceBlock));
   if (hasCommerceContent) {
+    // Target previews must apply their AUP config before the service initializes.
+    const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
     import(`${base}/blocks/merch/merch.js`)
-      .then((mod) => mod.initService().catch((e) => {
-        mod.initService.promise = undefined;
-        window.lana?.log(
-          `MAS: eager initService failed, falling back to lazy init - ${e}`,
-          { severity: 'info', tags: 'mas-lcp' },
-        );
-      }))
+      .then((mod) => {
+        if (skipInit) return undefined;
+        return mod.initService().catch((e) => {
+          mod.initService.promise = undefined;
+          window.lana?.log(
+            `MAS: eager initService failed, falling back to lazy init - ${e}`,
+            { severity: 'info', tags: 'mas-lcp' },
+          );
+        });
+      })
       .catch(() => {});
   }
 

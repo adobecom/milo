@@ -270,13 +270,19 @@ describe('Utils', () => {
 
     describe('eager MAS initService', () => {
       let merch;
+      let originalUrl;
 
       before(async () => {
         merch = await import('../../libs/blocks/merch/merch.js');
       });
 
       beforeEach(() => {
+        originalUrl = window.location.href;
         merch.initService.promise = undefined;
+      });
+
+      afterEach(() => {
+        window.history.replaceState(null, '', originalUrl);
       });
 
       it('starts the commerce service for an authored merch block in the first section', async () => {
@@ -291,6 +297,25 @@ describe('Utils', () => {
         utils.preloadLcpCodeFiles();
         await waitFor(() => merch.initService.promise, 2000);
         expect(merch.initService.promise).to.exist;
+      });
+
+      ['preview-token', ''].forEach((token) => {
+        [
+          ['authored merch block', '<div class="merch-card"></div>'],
+          ['MAS studio link', '<a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a>'],
+        ].forEach(([name, content]) => {
+          it(`does not eagerly initialize a ${name} with ${token ? 'a populated' : 'an empty'} Target preview token`, async () => {
+            const url = new URL(originalUrl);
+            url.searchParams.set('at_preview_token', token);
+            window.history.replaceState(null, '', url);
+            document.body.innerHTML = `<main><div><div class="marquee"></div>${content}<span class="icon icon-play"></span></div></main>`;
+            utils.preloadLcpCodeFiles();
+            await new Promise((r) => { setTimeout(r, 50); });
+            expect(merch.initService.promise).to.be.undefined;
+            expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+            expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+          });
+        });
       });
 
       it('does not start it without first-section commerce content', async () => {
