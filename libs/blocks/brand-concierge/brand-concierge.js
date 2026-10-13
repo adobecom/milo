@@ -12,6 +12,7 @@ import {
   updateReplicatedValue,
   handleConsent,
   hasChatCookie,
+  isC2,
 } from './bc-utils.js';
 import {
   loadWebclient,
@@ -221,6 +222,8 @@ export default async function init(el) {
     const floatingInputEvents = { inputHandle: onInput, cardHandle: onPrompt };
     decorateFloatingInput(el, cards, input, floatingInputEvents, variants);
   }
+
+  if (isC2()) el.classList.add('is-c2');
 
   rows.forEach((row) => {
     el.removeChild(row);

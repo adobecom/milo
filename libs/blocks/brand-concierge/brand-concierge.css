@@ -347,6 +347,10 @@
   opacity: 1;
 }
 
+.floating-mobile-hide .bc-floating-element {
+    display: none;
+}
+
 /* floating-button */
 .bc-floating-button {
   bottom: 0;
@@ -965,6 +969,7 @@
 
 .bc-modal-title {
   font-size: 16px;
+  letter-spacing: normal;
   line-height: 32px;
   font-weight: 900;
   color: #000;
@@ -1195,6 +1200,10 @@
   body:has(.brand-concierge.floating-input) #brand-concierge-side.dialog-modal.expanded {
     max-width: 1412px;
     width: calc(100% - 48px);
+  }
+
+  .floating-mobile-hide .bc-floating-element {
+    display: flex;
   }
 }
 

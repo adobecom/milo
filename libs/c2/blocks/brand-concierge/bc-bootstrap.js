@@ -413,7 +413,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, `${chatLabelText}`);
   const expandButton = createTag('button', { class: 'bc-expand-button', 'aria-label': 'expand-modal' }, expandIcon);
-  const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
+  const header = createTag('div', { class: 'bc-modal-header ' }, [title, getBetaLabel(), expandButton]);
   const mountEl = createTag('div', { id: mountId });
 
   // Call setSideOverlayTop when the gnav top changes on resize for any reason (promo reflow)
@@ -483,6 +483,7 @@ export async function openSideModal(initialMessage, bootstrap) {
   handleLocalNav();
   sideOverlayTop();
 
+  modal.classList.add(`${isC2() ? 'is-c2' : ''}`);
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.body.classList.add('bc-side-open');
