@@ -1,4 +1,4 @@
-import { createTag, getMetadata } from '../../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -136,7 +136,7 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default async function init(el) {
-  if (getMetadata('acom-assistant') === 'on') {
+  if (isAcomAssistantEnabled()) {
     const { decorateAcomAssistantGnavBlock } = await import('../../../features/acom-assistant-gnav.js');
     decorateAcomAssistantGnavBlock(el);
     return;

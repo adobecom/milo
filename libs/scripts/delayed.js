@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { isAcomAssistantEnabled } from '../utils/utils.js';
+
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
@@ -22,7 +24,7 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 
   const hasBrandConcierge = getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
     || !!document.querySelector('.brand-concierge');
-  if (getMetadata('acom-assistant') === 'on' && hasBrandConcierge) {
+  if (isAcomAssistantEnabled() && hasBrandConcierge) {
     const { default: initChatLinks } = await import('../features/acom-assistant-gnav-link.js');
     await initChatLinks(config, loadScript, loadStyle, getMetadata);
     return;

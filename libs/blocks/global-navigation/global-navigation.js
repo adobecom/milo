@@ -16,6 +16,7 @@ import {
   shouldBlockFreeTrialLinks,
   getLingoRegion,
   lingoActive,
+  isAcomAssistantEnabled,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -592,7 +593,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
-    this.useAcomAssistant = getMetadata('acom-assistant') === 'on';
+    this.useAcomAssistant = isAcomAssistantEnabled();
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }

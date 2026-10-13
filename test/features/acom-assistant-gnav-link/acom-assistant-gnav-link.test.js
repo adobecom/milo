@@ -17,6 +17,9 @@ describe('Chat link startup selection', () => {
   let loadStyle;
   let getMetadata;
   let openContexts;
+  const setAssistantFlag = (content) => {
+    document.head.append(Object.assign(document.createElement('meta'), { name: 'acom-assistant', content }));
+  };
   const BC_IDENTITY = { appid: 'homepage_loggedout_default', appver: '2.0' };
 
   before(() => {
@@ -79,6 +82,7 @@ describe('Chat link startup selection', () => {
   });
 
   afterEach(() => {
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
     listenerSpy.getCalls().forEach(({ args }) => document.removeEventListener(...args));
     listenerSpy.restore();
     document.body.innerHTML = '';
@@ -101,7 +105,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('registers Assistant links when metadata is on', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     getMetadata.withArgs('jarvis-on-demand').returns('on');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     expect(client.initialize.called).to.be.false;
@@ -110,7 +114,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('preserves Jarvis on-demand startup when Assistant metadata is off', async () => {
-    getMetadata.withArgs('acom-assistant').returns('off');
+    setAssistantFlag('off');
     getMetadata.withArgs('jarvis-on-demand').returns('on');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     expect(client.initialize.called).to.be.false;
@@ -120,7 +124,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('uses Assistant metadata without starting a second client', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     getMetadata.withArgs('foundation').returns('c2');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
@@ -140,7 +144,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('opens BC from a footer Jarvis link, ignoring its Jarvis surface config', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     getMetadata.withArgs('foundation').returns('c2');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     document.querySelector('a').click();
@@ -152,7 +156,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('uses the C1 BC bootstrap on C1 pages', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     document.querySelector('a').click();
     await waitFor(() => client.openMessagingWindow.called);
@@ -161,7 +165,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('opens BC from links without any Jarvis configuration', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     getMetadata.withArgs('foundation').returns('c2');
     document.body.insertAdjacentHTML('beforeend', '<nav><a href="#open-jarvis-chat">Message us</a></nav>');
     await initChatLinks({}, loadScript, loadStyle, getMetadata);
@@ -173,7 +177,7 @@ describe('Chat link startup selection', () => {
   });
 
   it('logs Assistant link failures without falling back to another client', async () => {
-    getMetadata.withArgs('acom-assistant').returns('on');
+    setAssistantFlag('on');
     client.openMessagingWindow.rejects(new Error('open failed'));
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
     document.querySelector('a').click();

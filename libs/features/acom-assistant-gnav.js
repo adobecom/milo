@@ -1,4 +1,4 @@
-import { getMetadata } from '../utils/utils.js';
+import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
 
 let authoredCards;
 
@@ -10,7 +10,7 @@ function logInitializationError(error) {
 }
 
 export async function loadAcomAssistantGnav() {
-  if (getMetadata('acom-assistant') !== 'on'
+  if (!isAcomAssistantEnabled()
     || !document.querySelector('.feds-bc-wrapper #acomAssistant-gnav-mount')) return;
 
   const bootstrapPath = getMetadata('foundation') === 'c2'
@@ -27,7 +27,7 @@ export const getAuthoredGnavCards = () => authoredCards;
  *  icon/expanded-input/minimized states into it.
  *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
 export function decorateAcomAssistantGnav(el, cards) {
-  if (getMetadata('acom-assistant') !== 'on') return null;
+  if (!isAcomAssistantEnabled()) return null;
   const wrapper = el.querySelector('.feds-bc-wrapper');
   if (!wrapper) return null;
   if (cards) authoredCards = cards;
@@ -49,7 +49,7 @@ export function decorateNavWithAssistant(cards, topNav) {
 
 /** Federal can supply authored prompts before its navigation has been mounted. */
 export function decorateAcomAssistantGnavBlock(block) {
-  if (getMetadata('acom-assistant') !== 'on') return false;
+  if (!isAcomAssistantEnabled()) return false;
   const [cards] = block.children;
   if (cards) authoredCards = cards;
   block.replaceChildren();
