@@ -162,19 +162,23 @@ a.blog-header-author-name:hover {
   }
 
   .blog-header-byline {
+    gap: var(--spacing-l);
+  }
+}
+
+@media (min-width: 1200px) {
+  .blog-header-title h1 {
+    font-size: 64px;
+  }
+
+  .blog-header-byline {
     flex-direction: row;
     align-items: center;
   }
 
   .blog-header-authors {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
+    flex-direction: row;
     gap: var(--spacing-m);
-  }
-
-  .blog-header-author {
-    max-width: 340px;
   }
 
   .blog-header-author-avatar {
@@ -193,12 +197,6 @@ a.blog-header-author-name:hover {
   .blog-header-share svg {
     width: 22px;
     height: 22px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .blog-header-title h1 {
-    font-size: 64px;
   }
 }
 

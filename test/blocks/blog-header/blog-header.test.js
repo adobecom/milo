@@ -607,8 +607,8 @@ describe('blog-header author layout', () => {
   };
 
   Object.entries(longTitles).forEach(([language, title]) => {
-    [600, 768, 1024, 1200, 1440].forEach((width) => {
-      it(`keeps equal author widths with a long ${language} title at ${width}px`, async () => {
+    [600, 768, 1024, 1199, 1200, 1440].forEach((width) => {
+      it(`uses the responsive author layout with a long ${language} title at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
         document.documentElement.lang = language === 'Japanese' ? 'ja' : 'en';
         const { block } = buildBlock({ authors: 2, link: false });
@@ -618,28 +618,42 @@ describe('blog-header author layout', () => {
         authors[1].querySelector('.blog-header-author-meta').textContent = title;
         const first = authors[0].getBoundingClientRect();
         const second = authors[1].getBoundingClientRect();
-        const group = block.querySelector('.blog-header-authors').getBoundingClientRect();
+        const authorGroup = block.querySelector('.blog-header-authors');
+        const group = authorGroup.getBoundingClientRect();
         const share = block.querySelector('.blog-header-share').getBoundingClientRect();
         const byline = block.querySelector('.blog-header-byline');
 
-        expect(first.width).to.be.closeTo(second.width, 0.5);
-        expect(first.top).to.be.closeTo(second.top, 0.5);
-        expect(first.right).to.be.lessThan(second.left);
+        if (width < 1200) {
+          expect(first.width).to.be.closeTo(second.width, 0.5);
+          expect(second.top).to.be.greaterThan(first.bottom);
+          expect(first.left).to.be.closeTo(second.left, 0.5);
+          expect(share.top).to.be.greaterThan(group.bottom);
+          expect(share.left).to.be.closeTo(group.left, 0.5);
+        } else {
+          const firstInfo = authors[0].querySelector('.blog-header-author-info').getBoundingClientRect();
+          expect(first.top).to.be.closeTo(second.top, 0.5);
+          expect(first.width).to.be.lessThan(second.width);
+          expect(first.right).to.be.closeTo(firstInfo.right, 0.5);
+          expect(second.left - first.right)
+            .to.be.closeTo(parseFloat(getComputedStyle(authorGroup).columnGap), 0.5);
+          expect(group.right).to.be.lessThan(share.left);
+          expect(share.right).to.be.closeTo(byline.getBoundingClientRect().right, 0.5);
+        }
         expect(second.right).to.be.closeTo(group.right, 0.5);
-        expect(group.right).to.be.lessThan(share.left);
-        expect(share.right).to.be.closeTo(byline.getBoundingClientRect().right, 0.5);
         expect(byline.scrollWidth).to.be.at.most(byline.clientWidth);
         authors.forEach((author) => {
-          expect(author.getBoundingClientRect().width).to.be.at.most(340);
+          expect(getComputedStyle(author).maxWidth).to.equal('none');
           expect(author.querySelector('.blog-header-author-avatar').getBoundingClientRect().width)
-            .to.equal(64);
+            .to.equal(width < 1200 ? 48 : 64);
           expect(author.scrollWidth).to.be.at.most(author.clientWidth);
         });
+        expect(block.querySelector('.blog-header-share svg').getBoundingClientRect().width)
+          .to.equal(width < 1200 ? 16 : 22);
       });
     });
   });
 
-  it('caps both author widths at 340px on a wide desktop with long content', async () => {
+  it('allows author widths to exceed 340px on a wide desktop with long content', async () => {
     await setViewport({ width: 1440, height: 900 });
     const { block } = buildBlock({ authors: 2, link: false });
     await init(block);
@@ -648,8 +662,8 @@ describe('blog-header author layout', () => {
       author.querySelector('.blog-header-author-meta').textContent = longTitles.English.repeat(4);
     });
     authors.forEach((author) => {
-      expect(getComputedStyle(author).maxWidth).to.equal('340px');
-      expect(author.getBoundingClientRect().width).to.be.closeTo(340, 0.5);
+      expect(getComputedStyle(author).maxWidth).to.equal('none');
+      expect(author.getBoundingClientRect().width).to.be.greaterThan(340);
       expect(author.scrollWidth).to.be.at.most(author.clientWidth);
     });
     const share = block.querySelector('.blog-header-share').getBoundingClientRect();
@@ -665,7 +679,7 @@ describe('blog-header author layout', () => {
     expect(author.width).to.be.closeTo(group.width, 0.5);
   });
 
-  [375, 599].forEach((width) => {
+  [375, 599, 600, 1199].forEach((width) => {
     it(`preserves stacked authors and the share button at ${width}px`, async () => {
       await setViewport({ width, height: 900 });
       const { block } = buildBlock({ authors: 2, link: false });
