@@ -61,6 +61,14 @@ async function openReport() {
   keepAcrossEdits(dialog, curtain);
 }
 
+async function refreshOpenReport(draft) {
+  const report = document.querySelector('#preflight .preflight');
+  if (!report) return;
+  const freshReport = await loadReport();
+  if (draft !== checkedDraft || !report.isConnected) return;
+  report.replaceWith(freshReport);
+}
+
 function show({ status, text }) {
   bar.dataset.status = status;
   bar.querySelector('.notification-message').textContent = text;
@@ -77,8 +85,7 @@ async function check() {
   const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS }).catch(() => null);
   if (draft !== checkedDraft) return;
   show(counts ? summarize(counts) : FAILED);
-  const report = document.querySelector('#preflight .preflight');
-  if (report) report.replaceWith(await loadReport());
+  await refreshOpenReport(draft);
 }
 
 function close() {

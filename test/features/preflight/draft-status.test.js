@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import showDraftStatus, { summarize } from '../../../libs/features/preflight/draft-status.js';
+import { getPreflightResults, clearPreflightCache } from '../../../libs/blocks/preflight/checks/preflightApi.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
 describe('summarize', () => {
@@ -18,6 +19,38 @@ describe('summarize', () => {
   it('reports a pass when nothing fails', () => {
     expect(summarize({ General: { errors: 0, warnings: 0 } }))
       .to.deep.equal({ status: 'pass', text: 'Preflight: no issues' });
+  });
+});
+
+describe('overlapping draft checks', () => {
+  it('an older check that finishes late does not hand its result to a newer check', async () => {
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' } });
+    let holdNextExclusions = false;
+    let releaseNewer;
+    const fetchStub = sinon.stub(window, 'fetch').callsFake(async (url) => {
+      if (holdNextExclusions && String(url).includes('preflight-exclusions')) {
+        holdNextExclusions = false;
+        await new Promise((resolve) => { releaseNewer = resolve; });
+      }
+      return { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' };
+    });
+    const main = document.createElement('main');
+    main.innerHTML = '<div><h1>One</h1><h1>Two</h1></div>';
+    document.body.append(main);
+
+    const older = getPreflightResults({ merchDelayMs: 300 });
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    main.innerHTML = '<div><h1>Only one</h1></div>';
+    clearPreflightCache();
+    holdNextExclusions = true;
+    const newer = getPreflightResults({ merchDelayMs: 0 });
+    const olderResult = await older;
+    releaseNewer();
+    const newerResult = await newer;
+
+    fetchStub.restore();
+    main.remove();
+    expect(newerResult === olderResult).to.equal(false);
   });
 });
 

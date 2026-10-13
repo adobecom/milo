@@ -32,8 +32,10 @@ import { SEVERITY } from './constants.js';
 let checksSuite = null;
 
 const globalPreflightCache = new Map();
+let cacheGeneration = 0;
 
 export function clearPreflightCache() {
+  cacheGeneration += 1;
   globalPreflightCache.clear();
 }
 
@@ -136,6 +138,7 @@ export async function getPreflightResults(options = {}) {
     injectVisualMetadata = false,
     merchDelayMs,
   } = options;
+  const generation = cacheGeneration;
 
   const excludedURLS = await fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`)
     .then((res) => (res.ok ? res.json() : null))
@@ -167,7 +170,7 @@ export async function getPreflightResults(options = {}) {
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
 
-  if (useCache) globalPreflightCache.set(cacheKey, result);
+  if (useCache && generation === cacheGeneration) globalPreflightCache.set(cacheKey, result);
 
   return result;
 }
