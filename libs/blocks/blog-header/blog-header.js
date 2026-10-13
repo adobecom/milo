@@ -130,7 +130,7 @@ function fetchAuthorProfile(profileUrl) {
 function defaultAvatar(base) {
   return createTag('img', {
     class: 'blog-header-avatar',
-    src: `${base}/blocks/blog-header/img/author-placeholder.png`,
+    src: `${base}/blocks/article-header/adobe-logo.svg`,
     alt: '',
     loading: 'lazy',
   });
@@ -167,8 +167,12 @@ async function loadAuthorProfile(profileUrl, data, avatar, info) {
     const clone = profile.picture.cloneNode(true);
     resolveMediaUrls(clone, profileUrl);
     const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
-    img?.classList.add('blog-header-avatar');
-    avatar.replaceChildren(clone);
+    if (img?.getAttribute('src') === 'about:error') {
+      logError(`author profile image is invalid for ${profileUrl}`);
+    } else {
+      img?.classList.add('blog-header-avatar');
+      avatar.replaceChildren(clone);
+    }
   }
   if (data.needsName && profile.name) {
     info.querySelector('.blog-header-author-name').replaceWith(createNameEl(profile.name, data.href));

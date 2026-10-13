@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -96,6 +96,7 @@ function buildBlock({
 } = {}) {
   const main = document.createElement('main');
   const section = document.createElement('div');
+  section.className = 'section';
   const block = document.createElement('div');
   block.className = 'blog-header';
   block.innerHTML = '<div><div><h1>Title of the article</h1></div></div>';
@@ -119,7 +120,7 @@ function buildBlock({
 
 function setMetadata(name, content) {
   const meta = document.createElement('meta');
-  meta.name = name;
+  meta.setAttribute(name.includes(':') ? 'property' : 'name', name);
   meta.content = content;
   meta.className = 'blog-header-test-metadata';
   document.head.append(meta);
@@ -409,7 +410,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => block.querySelector('.blog-header-author-meta'));
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.contain('author-placeholder.png');
+      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(block.querySelector('.blog-header-author-meta').textContent)
       .to.equal('Profile Title | Profile Company');
     expect(window.lana.log.called).to.equal(false);
@@ -460,6 +461,9 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock({ link: false, metadata: false });
     await init(block);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
+    const avatar = block.querySelector('.blog-header-avatar');
+    expect(avatar.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
+    expect(avatar.alt).to.equal('');
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
   });
 
@@ -469,7 +473,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     const img = block.querySelector('.blog-header-author-avatar img.blog-header-avatar');
-    expect(img.getAttribute('src')).to.contain('author-placeholder.png');
+    expect(img.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(window.lana.log.called).to.equal(true);
   });
 
@@ -482,7 +486,7 @@ describe('blog-header decoration', () => {
       .to.equal(new URL(profilePath, window.location.origin).href);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.contain('author-placeholder.png');
+      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
   });
 
   it('uses the default avatar and logs a rejected profile request', async () => {
@@ -491,7 +495,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.contain('author-placeholder.png');
+      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(window.lana.log.firstCall.args[0]).to.contain('network down');
   });
 
@@ -501,7 +505,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.contain('author-placeholder.png');
+      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(window.lana.log.firstCall.args[0]).to.contain('response body failed');
   });
 
@@ -510,8 +514,32 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.contain('author-placeholder.png');
+      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(window.lana.log.called).to.equal(false);
+  });
+
+  [
+    ['img', '<img src="about:error" alt="">'],
+    ['picture', '<picture><img src="about:error" alt=""></picture>'],
+  ].forEach(([type, image]) => {
+    it(`keeps the Adobe logo for an about:error profile ${type} while resolving author details`, async () => {
+      const profileMarkup = buildProfile({ picture: false }).replace(
+        '<div class="blog-author">',
+        `<div class="blog-author"><div><div>${image}</div></div>`,
+      );
+      fetchStub = mockFetch({ profileMarkup });
+      const { block, profilePath } = buildBlock({ name: null, metadata: false });
+      await init(block);
+      await waitFor(() => block.querySelector('.blog-header-author-meta'));
+      expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
+        .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      expect(block.querySelector('.blog-header-author-name').textContent).to.equal('Profile Name');
+      expect(block.querySelector('.blog-header-author-name').getAttribute('href')).to.equal(profilePath);
+      expect(block.querySelector('.blog-header-author-meta').textContent)
+        .to.equal('Profile Title | Profile Company');
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[0]).to.contain('author profile image is invalid');
+    });
   });
 
   it('deduplicates repeated profile requests for the same author', async () => {
@@ -536,6 +564,121 @@ describe('blog-header decoration', () => {
     expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('Rachel Thornton');
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+  });
+});
+
+describe('blog-header author layout', () => {
+  let css;
+  let stylesheet;
+  let fetchStub;
+  let originalViewport;
+  let originalLang;
+
+  before(async () => {
+    css = (await Promise.all([
+      readFile({ path: '../../../libs/styles/styles.css' }),
+      readFile({ path: '../../../libs/blocks/blog-header/blog-header.css' }),
+    ])).join('\n');
+  });
+
+  beforeEach(() => {
+    originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    originalLang = document.documentElement.getAttribute('lang');
+    stylesheet = document.createElement('style');
+    stylesheet.textContent = css;
+    document.head.append(stylesheet);
+    fetchStub = mockFetch();
+  });
+
+  afterEach(async () => {
+    await cleanup();
+    stylesheet.remove();
+    fetchStub.restore();
+    if (originalLang === null) document.documentElement.removeAttribute('lang');
+    else document.documentElement.setAttribute('lang', originalLang);
+    await setViewport(originalViewport);
+  });
+
+  const longTitles = {
+    English: 'Adobe Product Marketing Director with a very long job title | Adobe',
+    Japanese: '\u30a2\u30c9\u30d3 '
+      + '\u30d7\u30ed\u30c0\u30af\u30c8\u30de\u30fc\u30b1\u30c6\u30a3\u30f3\u30b0 '
+      + '\u30c7\u30a3\u30ec\u30af\u30bf\u30fc | Adobe',
+  };
+
+  Object.entries(longTitles).forEach(([language, title]) => {
+    [600, 768, 1024, 1200, 1440].forEach((width) => {
+      it(`keeps equal author widths with a long ${language} title at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        document.documentElement.lang = language === 'Japanese' ? 'ja' : 'en';
+        const { block } = buildBlock({ authors: 2, link: false });
+        await init(block);
+        const authors = block.querySelectorAll('.blog-header-author');
+        authors[1].querySelector('.blog-header-author-name').textContent = 'Alex Erickson';
+        authors[1].querySelector('.blog-header-author-meta').textContent = title;
+        const first = authors[0].getBoundingClientRect();
+        const second = authors[1].getBoundingClientRect();
+        const group = block.querySelector('.blog-header-authors').getBoundingClientRect();
+        const share = block.querySelector('.blog-header-share').getBoundingClientRect();
+        const byline = block.querySelector('.blog-header-byline');
+
+        expect(first.width).to.be.closeTo(second.width, 0.5);
+        expect(first.top).to.be.closeTo(second.top, 0.5);
+        expect(first.right).to.be.lessThan(second.left);
+        expect(second.right).to.be.closeTo(group.right, 0.5);
+        expect(group.right).to.be.lessThan(share.left);
+        expect(share.right).to.be.closeTo(byline.getBoundingClientRect().right, 0.5);
+        expect(byline.scrollWidth).to.be.at.most(byline.clientWidth);
+        authors.forEach((author) => {
+          expect(author.getBoundingClientRect().width).to.be.at.most(340);
+          expect(author.querySelector('.blog-header-author-avatar').getBoundingClientRect().width)
+            .to.equal(64);
+          expect(author.scrollWidth).to.be.at.most(author.clientWidth);
+        });
+      });
+    });
+  });
+
+  it('caps both author widths at 340px on a wide desktop with long content', async () => {
+    await setViewport({ width: 1440, height: 900 });
+    const { block } = buildBlock({ authors: 2, link: false });
+    await init(block);
+    const authors = block.querySelectorAll('.blog-header-author');
+    authors.forEach((author) => {
+      author.querySelector('.blog-header-author-meta').textContent = longTitles.English.repeat(4);
+    });
+    authors.forEach((author) => {
+      expect(getComputedStyle(author).maxWidth).to.equal('340px');
+      expect(author.getBoundingClientRect().width).to.be.closeTo(340, 0.5);
+      expect(author.scrollWidth).to.be.at.most(author.clientWidth);
+    });
+    const share = block.querySelector('.blog-header-share').getBoundingClientRect();
+    expect(authors[1].getBoundingClientRect().right).to.be.lessThan(share.left);
+  });
+
+  it('uses a single column when there is only one author on tablet', async () => {
+    await setViewport({ width: 768, height: 900 });
+    const { block } = buildBlock({ link: false });
+    await init(block);
+    const author = block.querySelector('.blog-header-author').getBoundingClientRect();
+    const group = block.querySelector('.blog-header-authors').getBoundingClientRect();
+    expect(author.width).to.be.closeTo(group.width, 0.5);
+  });
+
+  [375, 599].forEach((width) => {
+    it(`preserves stacked authors and the share button at ${width}px`, async () => {
+      await setViewport({ width, height: 900 });
+      const { block } = buildBlock({ authors: 2, link: false });
+      await init(block);
+      const authors = block.querySelectorAll('.blog-header-author');
+      const first = authors[0].getBoundingClientRect();
+      const second = authors[1].getBoundingClientRect();
+      const share = block.querySelector('.blog-header-share').getBoundingClientRect();
+      expect(second.top).to.be.greaterThan(first.bottom);
+      expect(share.top).to.be.greaterThan(second.bottom);
+      expect(authors[0].querySelector('.blog-header-author-avatar').getBoundingClientRect().width)
+        .to.equal(48);
+    });
   });
 });
 
