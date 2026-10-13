@@ -25,6 +25,7 @@ function buildArticle({
   pubDate = '2026-04-20',
   tags = 'caas:content-type/blog, caas:topic/news, caas:topic/summit',
   bodyWords = 400,
+  bodyText = words(bodyWords),
   cardImage = true,
   cardImageSrc = './media_abc.png?width=750&format=png',
   ogImage = '/mock/og-image.png',
@@ -58,13 +59,15 @@ function buildArticle({
         <div><div>primaryTag</div><div>caas:content-type/blog</div></div>
         ${tagsRow}
       </div>
-      <p>${words(bodyWords)}</p>
+      <p>${bodyText}</p>
     </div>
   </main></body></html>`;
 }
 
 let fetchStub;
 let originalLana;
+let originalLocale;
+let originalPlaceholders;
 
 function stubFetch(routes) {
   fetchStub = sinon.stub(window, 'fetch').callsFake(async (url) => {
@@ -77,6 +80,8 @@ function stubFetch(routes) {
 describe('related-content-card', () => {
   beforeEach(async () => {
     originalLana = window.lana;
+    originalLocale = config.locale;
+    originalPlaceholders = config.placeholders;
     window.lana = { log: sinon.spy() };
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     stubFetch({
@@ -90,6 +95,8 @@ describe('related-content-card', () => {
   afterEach(() => {
     fetchStub.restore();
     window.lana = originalLana;
+    config.locale = originalLocale;
+    config.placeholders = originalPlaceholders;
   });
 
   it('renders a card from authored data only (no link)', async () => {
@@ -235,6 +242,40 @@ describe('related-content-card', () => {
     await init(block);
     // 400 body words / 200 wpm = 2 min; excluded header (1000 words) is ignored.
     expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('2 min read');
+  });
+
+  [[200, 1], [201, 2], [400, 2]].forEach(([wordCount, minutes]) => {
+    it(`segments ${wordCount} Japanese words without spaces into ${minutes} minute(s)`, async () => {
+      config.locale = { ...config.locale, ietf: 'ja-JP' };
+      config.placeholders = {
+        '1-min-read': '1\u5206\u3067\u8aad\u3081\u307e\u3059',
+        '5-min-read': '5\u5206\u3067\u8aad\u3081\u307e\u3059',
+      };
+      fetchStub.restore();
+      stubFetch({
+        '/mock/full-article': buildArticle({ bodyText: '\u732b\u3002'.repeat(wordCount) }),
+      });
+      const block = document.querySelector('#card-link');
+      await init(block);
+      expect(block.querySelector('.related-content-card-readtime').textContent)
+        .to.equal(`${minutes}\u5206\u3067\u8aad\u3081\u307e\u3059`);
+      expect(fetchStub.calledOnceWithExactly('/mock/full-article')).to.be.true;
+    });
+  });
+
+  it('counts English article words on a Japanese page', async () => {
+    config.locale = { ...config.locale, ietf: 'ja-JP' };
+    const block = document.querySelector('#card-link');
+    await init(block);
+    expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('2 min read');
+  });
+
+  it('preserves authored reading time on a Japanese page', async () => {
+    config.locale = { ...config.locale, ietf: 'ja-JP' };
+    const block = document.querySelector('#card-data');
+    await init(block);
+    expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('5 mins');
+    expect(fetchStub.called).to.be.false;
   });
 
   it('falls back to og:title when no card-metadata Title exists', async () => {

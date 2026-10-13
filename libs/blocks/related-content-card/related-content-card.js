@@ -8,15 +8,16 @@ const READING_TIME_EXCLUDE = [
   '.article-feed', '.featured-article',
 ].join(', ');
 
-function getTextLength(node) {
+function getTextLength(node, segmenter) {
   let textLength = 0;
   for (const childNode of node.childNodes) {
     if (childNode.nodeType === Node.TEXT_NODE) {
-      if (childNode.textContent.match(/\S+/g)) {
-        textLength += childNode.textContent.match(/\S+/g).length;
-      }
+      textLength += segmenter
+        ? [...segmenter.segment(childNode.textContent)]
+          .filter((segment) => segment.isWordLike).length
+        : (childNode.textContent.match(/\S+/g) || []).length;
     } else {
-      textLength += getTextLength(childNode);
+      textLength += getTextLength(childNode, segmenter);
     }
   }
   return textLength;
@@ -111,7 +112,10 @@ async function getReadingTime(doc, config) {
   const main = doc.querySelector('main') || doc.body;
   const clone = main.cloneNode(true);
   clone.querySelectorAll(READING_TIME_EXCLUDE).forEach((el) => el.remove());
-  const words = Math.max(getTextLength(clone), 1);
+  // Japanese words are not separated by spaces; ignore punctuation-only segments.
+  const segmenter = /^ja(?:-|$)/i.test(config.locale?.ietf)
+    ? new Intl.Segmenter(config.locale.ietf, { granularity: 'word' }) : null;
+  const words = Math.max(getTextLength(clone, segmenter), 1);
   return getReadingTimeText(words, config);
 }
 
