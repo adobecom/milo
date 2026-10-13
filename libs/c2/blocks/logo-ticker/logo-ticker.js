@@ -51,6 +51,8 @@ function initPlayPause(button, el, playLabel, pauseLabel) {
   update(isPlaying);
 }
 
+const MAX_SCROLL_DELTA = 100;
+
 function addScrollBoost(track, el, getIsPlaying) {
   let targetOffset = 0;
   let currentOffset = 0;
@@ -58,11 +60,15 @@ function addScrollBoost(track, el, getIsPlaying) {
   let isVisible = false;
   let rafId = null;
 
-  new IntersectionObserver(([entry]) => { isVisible = entry.isIntersecting; }).observe(el);
+  new IntersectionObserver(([entry]) => {
+    isVisible = entry.isIntersecting;
+    lastScrollY = window.lenis?.animatedScroll ?? window.scrollY;
+    if (!isVisible) targetOffset = currentOffset;
+  }).observe(el);
 
   const step = () => {
     const y = window.lenis?.animatedScroll ?? window.scrollY;
-    const delta = y - lastScrollY;
+    const delta = Math.max(-MAX_SCROLL_DELTA, Math.min(y - lastScrollY, MAX_SCROLL_DELTA));
     lastScrollY = y;
 
     if (getIsPlaying() && !track.classList.contains('is-static') && delta !== 0) {
