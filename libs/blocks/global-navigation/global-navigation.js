@@ -16,6 +16,7 @@ import {
   shouldBlockFreeTrialLinks,
   getLingoRegion,
   lingoActive,
+  isAcomAssistantEnabled,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -592,6 +593,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
+    this.useAcomAssistant = isAcomAssistantEnabled();
     // Opt-in dynamic reflow: collapse to the mobile drawer when the nav overflows.
     this.dynamicReflowEnabled = getMetadata('gnav-dynamic-reflow')?.toLowerCase() === 'on';
   }
@@ -634,6 +636,7 @@ class Gnav {
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.revealGnav,
+      this.decorateAcomAssistantGnav,
       this.ims,
       this.addChangeEventListeners,
       this.initCompactOverflow,
@@ -1197,7 +1200,7 @@ class Gnav {
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/stable/main.js`,
       null,
       { mode: 'async' },
     );
@@ -1774,9 +1777,17 @@ class Gnav {
   });
 
   decorateBrandConciergeGlobal = async () => {
+    if (this.useAcomAssistant) return;
     const rawBlock = this.content.querySelector('.brand-concierge-global');
     if (!rawBlock) return;
     await loadBlock(rawBlock);
+  };
+
+  decorateAcomAssistantGnav = async () => {
+    if (!this.useAcomAssistant || !this.elements.topnav.querySelector('.feds-bc-wrapper')) return;
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
+    const cards = this.content.querySelector('.brand-concierge-global > div');
+    decorateNavWithAssistant(cards, this.elements.topnav);
   };
 
   decorateMainNav = async () => {
