@@ -207,7 +207,7 @@ const CARD_ACTION_COPY_CLASS = 'mep-mas-card-action-copy';
 // aem-fragment merch-cards are shadow-DOM hosts that only render slotted
 // children, so a stack appended inside the card is never projected. It lives on
 // <body> and is positioned over the card's box via getBoundingClientRect.
-const CARD_STACK_Z_INDEX = '999';
+const CARD_STACK_Z_INDEX = '9';
 const cardActionStacks = new WeakMap(); // card -> stack
 const cardStackOwners = new WeakMap(); // stack -> card
 const liveCardActionStacks = new Set();
