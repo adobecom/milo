@@ -115,6 +115,7 @@
 }
 
 .max26-login-prompt-actions > p {
+  display: flex;
   margin: 0;
   max-width: 100%;
 }
