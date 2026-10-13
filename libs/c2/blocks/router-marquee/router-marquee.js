@@ -198,8 +198,20 @@ const decorateCtas = (textCol, isLight) => {
   const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
   secondary?.classList.add('con-button', 'outline');
-  cta.replaceChildren(...[primary, secondary]
-    .filter((btn) => btn && !shouldBlockFreeTrialLinks(btn)));
+  const buttons = [primary, secondary].filter((btn) => btn && !shouldBlockFreeTrialLinks(btn));
+  // A mas-field still here timed out in merch.js. Keep it so its mas:ready hoists the link
+  // (watchMasFieldCtas), then decorate again once that field has been replaced.
+  const pending = cta.querySelectorAll('em mas-field').length;
+  if (pending) {
+    const observer = new MutationObserver(() => {
+      if (cta.querySelectorAll('em mas-field').length === pending) return;
+      observer.disconnect();
+      decorateCtas(textCol, isLight);
+    });
+    observer.observe(cta, { childList: true, subtree: true });
+    return;
+  }
+  cta.replaceChildren(...buttons);
 };
 
 const prepareVideo = (imageCol) => {
