@@ -5,6 +5,7 @@
   --hub-hero-height: 4000px;
   --slide-header-h: 64px;
   --slide-footer-h: 96px;
+  --footer-icon-size: calc(var(--s2a-font-size-sm) + 2 * var(--s2a-spacing-md) + 2 * var(--s2a-border-width-sm));
   --media-mobile-max-width: 500px;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --hub-hero-carousel-container-height: min(60vh, 548px);
@@ -620,6 +621,11 @@
 
 /** mobile only */
 @media (width < 768px) {
+  .hub-hero-carousel-item-footer *:not(svg, p) {
+    display: block;
+    white-space: nowrap;
+  }
+
   .hub-hero {
     height: auto;
     position: relative;
@@ -917,18 +923,11 @@
   }
 
   .hub-hero-carousel-item-footer *:not(svg) {
-    display: block;
-    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     margin: var(--s2a-spacing-md) 0 0 0;
   }
 
-  .hub-hero-carousel-item-footer p {
-    /* stylelint-disable-next-line value-no-vendor-prefix -- Required by -webkit-line-clamp. */
-    display: -webkit-box;
-    white-space: normal;
-  }
 }
 
 /** tablet up */
@@ -1084,8 +1083,6 @@
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
       .hub-hero-carousel-item-footer {
-        --footer-icon-size: calc(var(--s2a-font-size-sm) + 2 * var(--s2a-spacing-md) + 2 * var(--s2a-border-width-sm));
-
         box-sizing: border-box;
         min-height: calc(var(--footer-icon-size) + 2 * var(--s2a-spacing-lg));
       }
@@ -1312,6 +1309,15 @@
     --grid-col-four-offset: 184px;
     --hub-hero-carousel-item-max-width: min(392px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
     --hub-hero-carousel-container-height: min(60vh, 690px);
+  }
+
+  @media (hover: hover) {
+    .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) {
+      --hover-w: max(
+        calc(var(--slide-max-width) + var(--footer-icon-size) + var(--s2a-spacing-xs)),
+        min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5))
+      );
+    }
   }
 
 }
