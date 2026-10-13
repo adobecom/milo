@@ -137,6 +137,7 @@ const C2_BLOCKS = [
   'hub-hero',
   'iframe',
   'logo-ticker',
+  'max26-login-prompt',
   'martech-metadata',
   'modal-metadata',
   'modal',
