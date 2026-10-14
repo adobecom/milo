@@ -1,5 +1,5 @@
 .related-content-card {
-  max-width: var(--body-max-width);
+  max-width: var(--grid-container-width);
   margin: 16px auto;
 }
 
@@ -26,10 +26,18 @@
 }
 
 .related-content-card .related-content-card-image {
+  position: relative;
   flex: 0 0 auto;
   width: 130px;
-  height: 130px;
+  min-height: 130px;
+  height: auto;
   align-self: stretch;
+  overflow: hidden;
+}
+
+.related-content-card .related-content-card-image picture {
+  position: absolute;
+  inset: 0;
 }
 
 .related-content-card .related-content-card-image picture,
@@ -102,6 +110,10 @@
   .related-content-card .related-content-card-eyebrow,
   .related-content-card .related-content-card-meta  {
     font-size: 16px;
+  }
+
+  .related-content-card {
+    max-width: var(--body-max-width);
   }
 
   .related-content-card .related-content-card-title {
