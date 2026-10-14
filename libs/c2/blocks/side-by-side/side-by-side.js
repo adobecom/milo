@@ -70,13 +70,14 @@ function getCardType(block) {
   return CARD_TYPE;
 }
 
-function decorateCardStackedIcon(mediaContainer) {
+function decorateCardStackedIcon(mediaContainer, variant) {
   const medias = mediaContainer.querySelectorAll('img, video');
   if (medias.length <= 1) return;
   const icon = medias[0];
   const iconContainer = icon.closest('p');
   iconContainer.classList.add('icon');
   if (isSvgUrl(icon.src)) icon.src = getFederatedUrl(icon.src);
+  if (variant === 'card-overlay') iconContainer.remove();
   const imgVideoContainer = medias[1].closest('p');
   mediaContainer.append(...imgVideoContainer.children);
   imgVideoContainer.remove();
@@ -100,7 +101,7 @@ function decorate(block, el) {
     decorateCardText(foreground);
 
     const variant = cardType[i];
-    if (variant === 'card-stacked') decorateCardStackedIcon(media);
+    decorateCardStackedIcon(media, variant);
     const card = createTag('div', { class: `card ${variant}` });
     if (variant === 'card-overlay') card.append(createTag('div', { class: 'content-aux' }));
     card.append(media, foreground);

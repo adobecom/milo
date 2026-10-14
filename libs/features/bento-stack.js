@@ -1,3 +1,5 @@
+import { fitsInViewport } from '../utils/viewport-fit.js';
+
 const MOBILE = '(width < 768px)';
 
 export function getCards(section) {
@@ -32,12 +34,18 @@ function measure(section, cards) {
   const gnav = document.querySelector('header.global-navigation nav');
   const bottom = gnav?.getBoundingClientRect().bottom;
   if (bottom > 0) section.style.setProperty('--gnav-offset', `${Math.round(bottom)}px`);
+
+  // Stacked cards pin at --card-front-y; if the tallest card can't fit below that, part of
+  // it is never visible (e.g. 200%+ zoom, short windows), so use the static layout instead.
+  const pinTop = parseFloat(getComputedStyle(cards[0]).top) || 0;
+  section.classList.toggle('bento-stack-static', !fitsInViewport(max, pinTop));
 }
 
 function clearMeasurements(section) {
   section.style.removeProperty('--card-height');
   section.style.removeProperty('--title-height');
   section.style.removeProperty('--gnav-offset');
+  section.classList.remove('bento-stack-static');
 }
 
 export function contentReady(cards) {
@@ -77,6 +85,7 @@ export default function initBentoStack(section) {
       if (!section.isConnected) {
         ro?.disconnect();
         mq.removeEventListener('change', update);
+        window.removeEventListener('resize', update);
         return;
       }
       // (clearing/setting --card-height resizes the observed content).
@@ -97,5 +106,7 @@ export default function initBentoStack(section) {
     const title = section.querySelector(':scope > .rich-content');
     if (title) ro.observe(title);
     mq.addEventListener('change', update);
+    // Viewport height can change without crossing the MOBILE breakpoint, so re-check the fit.
+    window.addEventListener('resize', update);
   });
 }
