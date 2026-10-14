@@ -146,14 +146,16 @@
 
   .rcc-item {
     font-weight: var(--s2a-font-weight-body);
-    color: var(--s2a-color-transparent-white-48);
-    transition: color 0.3s ease;
+    color: var(--s2a-color-content-knockout);
+    /* fade via opacity (not alpha color) so overlapping glyphs don't double-blend */
+    opacity: 0.48;
+    transition: opacity 0.3s ease;
     cursor: default;
     user-select: none;
     white-space: nowrap;
 
     &.is-active {
-      color: var(--s2a-color-content-knockout);
+      opacity: 1;
     }
   }
 
