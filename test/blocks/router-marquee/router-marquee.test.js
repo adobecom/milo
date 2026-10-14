@@ -722,8 +722,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     field.append(content);
     field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
   };
-  // Let IntersectionObserver entries queued by earlier blocks deliver before init replaces
-  // the module-level SLIDE_ANALYTICS they index into.
+  // Flush IntersectionObserver entries from earlier blocks before init replaces SLIDE_ANALYTICS.
   const mount = async (cta) => {
     await nextFrame();
     await nextFrame();
@@ -737,7 +736,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
   before(async () => {
     const { setConfig } = await import('../../../libs/utils/utils.js');
     setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
-    // registers the shared watchMasFieldCtas listener that hoists a late CTA
+    // registers the watchMasFieldCtas listener that hoists a late CTA
     const { initMasField } = await import('../../../libs/blocks/merch/merch.js');
     const probe = document.createElement('a');
     probe.href = 'https://mas.adobe.com/studio.html#';
@@ -764,7 +763,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     expect(primary.textContent).to.equal('Buy now');
     expect(primary.classList.contains('con-button')).to.be.true;
     expect(ctas.querySelector('mas-field')).to.not.exist;
-    // flattened like a button that resolved in time: the em/strong wrappers are gone
+    // flattened like an on-time button
     expect(ctas.querySelector('em, strong')).to.not.exist;
     expect([...ctas.children].map((c) => c.textContent)).to.deep.equal(['Buy now', 'Learn more']);
   });
@@ -801,7 +800,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     expect(field).to.exist;
     expect(ctas.querySelector('.rm-cta-primary').parentElement.tagName).to.equal('STRONG');
 
-    // what mas-field does for a loaded fragment with no such CTA: hide itself, then mas:ready
+    // mas-field with no such CTA hides itself, then fires mas:ready
     field.hidden = true;
     field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
     await until(() => !ctas.querySelector('mas-field'));

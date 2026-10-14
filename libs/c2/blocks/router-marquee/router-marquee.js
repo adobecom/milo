@@ -189,11 +189,10 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-// A mas-field merch.js gave up waiting for. A [hidden] one loaded with nothing to show.
+// mas-field merch.js timed out on. [hidden] ones resolved empty and are not pending.
 const PENDING_FIELDS = 'em mas-field:not([hidden])';
 
-// merch.js swaps a late link in for its mas-field on mas:ready, and mas-field hides itself when it
-// resolves empty. Either changes the pending count.
+// A late link replaces its mas-field, or the field hides. Either changes the pending count.
 const onPendingChange = (cta, count, callback) => {
   const observer = new MutationObserver(() => {
     if (cta.querySelectorAll(PENDING_FIELDS).length === count) return;
