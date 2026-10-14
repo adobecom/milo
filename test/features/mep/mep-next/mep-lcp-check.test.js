@@ -13,6 +13,7 @@ const {
   isHeroSelector,
   getHeroCandidates,
   findHiddenHeroImages,
+  whenLcpAreaSettled,
   compareImages,
   findNearDuplicates,
   createLimiter,
@@ -262,6 +263,23 @@ describe('mep-lcp-check', () => {
     });
   });
 
+  describe('whenLcpAreaSettled', () => {
+    let main;
+
+    afterEach(() => main.remove());
+
+    it('waits for pending sections and gives up after the timeout', async () => {
+      main = document.createElement('main');
+      main.innerHTML = '<div class="section"><div class="fragment"><div class="section" data-status="decorated"></div></div></div>';
+      document.body.append(main);
+      const [section] = main.children;
+      expect(await whenLcpAreaSettled(section, 30, 10)).to.be.false;
+      const settled = whenLcpAreaSettled(section, 1000, 10);
+      delete main.querySelector('[data-status]').dataset.status;
+      expect(await settled).to.be.true;
+    });
+  });
+
   describe('findHiddenHeroImages without MEP changes', () => {
     let main;
 
@@ -303,26 +321,31 @@ describe('mep-lcp-check', () => {
     });
 
     it('logs findings once per manifest', async () => {
+      const section = document.createElement('div');
+      section.innerHTML = `<picture><source srcset="${MOCKS}/media_aaa111.png?width=750 750w"><img alt="" src="${IMG_A}"></picture>`;
       const warn = sinon.stub(console, 'warn');
       sinon.stub(console, 'groupCollapsed');
       sinon.stub(console, 'groupEnd');
       getConfig().mep = {
         preview: true,
-        lcpSnapshot: { images: [IMG_A], fragments: [] },
-        manifestVariants: {
-          '/test/init-manifest.json': {
+        lcpSection: { original: section, clone: section.cloneNode(true) },
+        lcpExperiments: [null, { manifestPath: '/test/default.json' }, {
+          manifestPath: '/test/init-manifest.json',
+          variants: {
             phone: {
               commands: [{ action: 'replace', selector: 'any-marquee', content: `${MOCKS}/hero-near` }],
               fragments: [],
             },
           },
-        },
+        }],
       };
       const findings = await init();
       expect(findings).to.have.length(1);
       expect(warn.calledOnce).to.be.true;
       expect(warn.firstCall.args[0]).to.include('/test/init-manifest.json');
       expect(warn.firstCall.args[0]).to.include('media_aaa111.png');
+      expect(getConfig().mep.lcpSnapshot.images.map(getMediaName))
+        .to.deep.equal(['media_aaa111.png', 'media_aaa111.png']);
       expect(await init()).to.equal(getConfig().mep.lcpFindings);
       expect(warn.calledOnce).to.be.true;
     });

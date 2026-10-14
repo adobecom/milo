@@ -865,6 +865,10 @@ export async function getMepPopup(mepConfig) {
 }
 
 export async function saveToMmm() {
+  // hooked here so personalization.js needs no extra preview import; runs on every init pass
+  import('./mep-lcp-check.js')
+    .then(({ default: checkLcpImages }) => checkLcpImages())
+    .catch((e) => window.lana?.log(`MEP LCP check error: ${e.toString()}`));
   const data = parseMepConfig();
   if (!data) return false;
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];

@@ -172,6 +172,19 @@ export async function getFragmentImages(fragmentUrl, root, depth = 0) {
   return [...images, ...nested.flat()];
 }
 
+export function getLcpSnapshot(lcpSection) {
+  if (!lcpSection?.clone) return null;
+  const { original, clone } = lcpSection;
+  const toUrl = (src) => new URL(src, window.location.href).href;
+  const sources = [...clone.querySelectorAll('source[srcset*="media_"]')]
+    .map((s) => toUrl(s.getAttribute('srcset').split(',')[0].trim().split(/\s+/)[0]));
+  return {
+    section: original,
+    images: [...[...clone.querySelectorAll('img[src*="media_"]')].map((img) => toUrl(img.getAttribute('src'))), ...sources],
+    fragments: [...clone.querySelectorAll('a[href*="/fragments/"]')].map((a) => toUrl(a.getAttribute('href'))),
+  };
+}
+
 export async function getPageLcpImages(snapshot) {
   if (!snapshot) return [];
   const nested = await Promise.all(snapshot.fragments
@@ -298,10 +311,28 @@ const isRendered = (el) => el.getClientRects().length > 0;
 const wasRequested = (name) => performance.getEntriesByType('resource')
   .some((entry) => getMediaName(entry.name) === name);
 
-export function findHiddenHeroImages(pageImageNames, originalSection) {
+const getLcpAreaSections = (originalSection) => {
   const sections = [...document.querySelectorAll('body > main > div')];
-  const originalIdx = Math.max(sections.indexOf(originalSection), 0);
-  const scanned = sections.slice(0, originalIdx + 1);
+  return sections.slice(0, Math.max(sections.indexOf(originalSection), 0) + 1);
+};
+
+// sections (including fragment sections) stay display:none while data-status is set
+const isSettled = (sections) => sections.every((section) => section.classList.contains('section')
+  && !section.dataset.status && !section.querySelector('.section[data-status]'));
+
+export const whenLcpAreaSettled = (originalSection, timeout = 10000, interval = 200) => (
+  new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      if (isSettled(getLcpAreaSections(originalSection))) resolve(true);
+      else if (Date.now() - start >= timeout) resolve(false);
+      else setTimeout(check, interval);
+    };
+    check();
+  }));
+
+export function findHiddenHeroImages(pageImageNames, originalSection) {
+  const scanned = getLcpAreaSections(originalSection);
   const manifests = [...new Set(scanned.flatMap((section) => [
     section.dataset.manifestId,
     ...[...section.querySelectorAll('[data-manifest-id]')].map((el) => el.dataset.manifestId),
@@ -367,18 +398,20 @@ const whenIdle = () => new Promise((resolve) => {
 
 export default async function init() {
   const { mep } = getConfig();
-  if (!mep?.preview || !mep.lcpSnapshot) return [];
-  const experiments = Object.entries(mep.manifestVariants || {})
-    .filter(([manifestPath]) => !checkedManifests.has(manifestPath))
-    .map(([manifestPath, variants]) => {
-      checkedManifests.add(manifestPath);
-      return { manifestPath, variants };
-    });
+  if (!mep?.preview || !mep.lcpSection) return [];
+  const experiments = (mep.lcpExperiments || []).filter((exp) => {
+    if (!exp?.variants || checkedManifests.has(exp.manifestPath)) return false;
+    checkedManifests.add(exp.manifestPath);
+    return true;
+  });
   if (!experiments.length) return mep.lcpFindings || [];
   await whenIdle();
+  mep.lcpSnapshot ??= getLcpSnapshot(mep.lcpSection);
   const result = await findNearDuplicates(experiments, mep.lcpSnapshot);
   const pageImageNames = (await getPageLcpImages(mep.lcpSnapshot)).map(getMediaName);
-  result.findings.push(...findHiddenHeroImages(pageImageNames, mep.lcpSnapshot.section));
+  if (await whenLcpAreaSettled(mep.lcpSnapshot.section)) {
+    result.findings.push(...findHiddenHeroImages(pageImageNames, mep.lcpSnapshot.section));
+  }
   mep.lcpFindings = [...(mep.lcpFindings || []), ...result.findings];
   logFindings(result);
   return mep.lcpFindings;
