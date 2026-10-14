@@ -1,7 +1,7 @@
 # MAX 2026 login prompt
 
 `max26-login-prompt` is an experiment-only C2 block. The default content is the
-live-event variant; `post` is reserved for the later post-event implementation.
+live-event variant; add `post` for the post-event variant.
 The shared C2 Tour and Modal blocks are not modified.
 
 ## Authoring
@@ -17,6 +17,30 @@ Content is supplied by
 `https://main--upp--adobecom.aem.live/homepage/fragments/mep/max2026/login-modal`.
 The primary CTA preserves its authored URL. Continue as guest becomes a button
 that closes the enclosing shared C2 dialog, without navigating.
+
+### Post-event authoring
+
+Author `max26-login-prompt (dark, post)` with the same two-row structure and
+artwork/logo, but end the content row with **one primary link and no guest link**.
+Content remains authored, not hardcoded by the block. The Post Event Figma copy is:
+
+| Element | Content |
+| --- | --- |
+| Heading | Relive the best moments of MAX. |
+| Body | Watch sessions, keynotes, MAX Sneaks, and more — all on demand. Sign up to stay up to date with the latest from MAX. |
+| Primary CTA | Sign up |
+
+Use a separate post-event fragment rather than replacing the live fragment.
+The primary CTA still uses its authored URL; the charter has not yet confirmed
+the post-event IMS destination or parameters. The URL in the post-event test
+fixture is a placeholder, not a launch destination.
+
+The approved post-event layout follows Figma's single-CTA design despite the
+charter's generic guest-click tracking entry. X, backdrop, and Escape still
+close the shared dialog. The post-event shell is 807×574px on desktop and
+327×464px at a 375px viewport; the live variant's spacing is unchanged.
+
+### Experiment mapping and modal integration
 
 The personalization manifest must produce this block mapping in `config.mep`:
 
