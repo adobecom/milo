@@ -2029,9 +2029,72 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+// TODO: make `-viewport` required post-rollout (drop the bare-keyword fallback)
+const VIEWPORT_DELIMITER = /^(mobile|tablet|desktop)(-viewport)?\s*(\(.*\))?$/s;
+
+function isEmptyCell(cell) {
+  return !cell || (!cell.children.length && !cell.textContent.trim());
+}
+
+function isEmptyRow(row) {
+  return !row.textContent.trim() && [...row.children].every(isEmptyCell);
+}
+
+function getDelimiterKeyword(row) {
+  return row.children.length === 1
+    && VIEWPORT_DELIMITER.exec(row.children[0].textContent.trim().toLowerCase())?.[1];
+}
+
+export function getViewportContent(allRows, viewport, index) {
+  const delimiterIdx = allRows.findIndex((row) => getDelimiterKeyword(row) === viewport);
+  if (delimiterIdx < 0) return { delimiterIdx, viewportRows: [] };
+
+  const nextIdx = allRows
+    .findIndex((row, i) => i > delimiterIdx && VIEWPORT_KEYWORDS
+      .indexOf(getDelimiterKeyword(row)) > index);
+  const viewportRows = allRows.slice(delimiterIdx + 1, nextIdx < 0 ? allRows.length : nextIdx);
+  return { delimiterIdx, viewportRows };
+}
+
+function inheritRowCells(row, prevRow) {
+  if (!prevRow) return;
+  // Copied MEP placeholders expand like the source, keeping later rows/cells aligned
+  if (prevRow.dataset.mepReplaceType === 'row') {
+    if (!isEmptyRow(row)) return;
+    row.dataset.mepReplaceType = 'row';
+    row.replaceChildren(...prevRow.cloneNode(true).childNodes);
+    return;
+  }
+
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (!isEmptyCell(col) || isEmptyCell(prevCol)) return;
+    if (prevCol.dataset.mepReplaceType === 'cell') col.dataset.mepReplaceType = 'cell';
+    col.replaceChildren(...prevCol.cloneNode(true).childNodes);
+  });
+}
+
+export function inheritViewportContent(section) {
+  if (getMetadata('foundation') !== 'c2') return;
+  section.querySelectorAll(':scope > div[class]').forEach((block) => {
+    const rows = [...block.children]
+      .filter((row) => row.children[0]?.textContent.trim().toLowerCase() !== 'mep-lingo');
+    if (!rows.length || getDelimiterKeyword(rows[0]) !== 'mobile') return;
+    let prevRows = [];
+    VIEWPORT_KEYWORDS.forEach((viewport, index) => {
+      const { viewportRows, delimiterIdx } = getViewportContent(rows, viewport, index);
+      if (delimiterIdx < 0) return;
+      viewportRows.forEach((row, i) => inheritRowCells(row, prevRows[i]));
+      prevRows = viewportRows;
+    });
+  });
+}
+
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  inheritViewportContent(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
