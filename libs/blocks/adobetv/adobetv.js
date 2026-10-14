@@ -1,4 +1,4 @@
-import { decorateAnchorVideo } from '../../utils/decorate.js';
+import { decorateAnchorVideo, getMpcPlayerId } from '../../utils/decorate.js';
 import { createTag, getConfig, getFederatedContentRoot } from '../../utils/utils.js';
 
 let captionsLangMapPromise = null;
@@ -85,10 +85,30 @@ const createIframeWithCaptions = (a, url, geo) => {
   }
 };
 
+const PLAYBACK_HASH = /autoplay|hoverplay|viewportplay/;
+
+// Authored like an MP4 (image-alt poster or a playback hash), so render natively, not as an iframe.
+const isAuthoredAsVideo = (a) => !!a.dataset.videoPoster || PLAYBACK_HASH.test(a.hash);
+
+// MPC player options are query params; map those a native <video> supports onto Milo's video hash.
+function mpcParamsToHash(a) {
+  if (a.hash) return;
+  const params = new URL(a.href).searchParams;
+  let hash = '';
+  if (params.get('autoplay') === 'true') hash = params.get('end') === 'replay' ? '#autoplay' : '#autoplay1';
+  if (params.get('chrome') === 'false') hash += '#_hide-controls';
+  a.hash = hash;
+}
+
 export default function init(a) {
   a.classList.add('hide-video');
   const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
-  if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
+  const isMp4 = a.href.includes('.mp4');
+  const isMpcPlayer = !!getMpcPlayerId(a.href);
+  const isNativeVideo = (isMp4 && bgBlocks.some((b) => a.closest(`.${b}`)))
+    || ((isMp4 || isMpcPlayer) && isAuthoredAsVideo(a));
+  if (isNativeVideo) {
+    if (isMpcPlayer) mpcParamsToHash(a);
     a.classList.add('hide');
     if (!a.parentNode) return;
     decorateAnchorVideo({

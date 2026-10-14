@@ -1,5 +1,6 @@
 import {
   createTag,
+  loadLink,
   loadStyle,
   getConfig,
   getMetadata,
@@ -595,8 +596,49 @@ export function decoratePausePlayWrapper(videoEl, videoAttrs) {
   }
 }
 
+const MPC_PLAYER_REGEX = /^https?:\/\/(?:stage-)?video\.tv\.adobe\.com\/v\/(\d+)/;
+const mpcDataCache = {};
+
+export const getMpcPlayerId = (url = '') => url.match(MPC_PLAYER_REGEX)?.[1];
+
+export function pickMpcMp4(sources = [], targetWidth = 0, quality = null) {
+  const mp4s = sources
+    .filter(({ format, src }) => format === 'mpeg4' && /\.mp4$/.test(src || ''))
+    .sort((a, b) => a.width - b.width);
+  const preferred = quality && mp4s.find(({ labelid }) => `${labelid}` === quality);
+  return (preferred || mp4s.find(({ width }) => width >= targetWidth) || mp4s.at(-1))?.src;
+}
+
+// Swaps the MPC player iframe for its direct MP4 rendition: no player document/JS/HLS on the page.
+async function loadMpcSource(videoEl, playerUrl) {
+  const id = getMpcPlayerId(playerUrl);
+  loadLink('https://images-tv.adobe.com', { rel: 'preconnect' });
+  mpcDataCache[id] ??= fetch(`${new URL(playerUrl).origin}/v/${id}?format=json`)
+    .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`status ${res.status}`))));
+  try {
+    const { sources } = await mpcDataCache[id];
+    const params = new URL(playerUrl).searchParams;
+    const targetWidth = (videoEl.offsetWidth || 0) * Math.min(window.devicePixelRatio || 1, 2);
+    const mp4 = pickMpcMp4(sources, targetWidth, params.get('quality'));
+    if (!mp4) throw new Error('no MP4 rendition');
+    if (params.get('mute') === 'true' || ['false', '0'].includes(params.get('hasaudio'))) {
+      videoEl.muted = true;
+    }
+    const start = parseInt(params.get('t'), 10);
+    const src = start > 0 ? `${mp4}#t=${start}` : mp4;
+    videoEl.dataset.videoSource = src;
+    if (!videoEl.querySelector('source')) {
+      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    }
+  } catch (e) {
+    delete mpcDataCache[id];
+    window.lana?.log(`Failed to load MPC video ${playerUrl}: ${e}`, { tags: 'mpc-video', severity: 'error' });
+  }
+}
+
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
+  const isMpcPlayer = !!getMpcPlayerId(src);
   const accessibilityEnabled = isVideoAccessible(anchorTag);
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
@@ -610,7 +652,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
-  let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
+  // MPC player URLs get data-video-source only once resolved to an MP4.
+  const videoSource = isMpcPlayer ? '' : `data-video-source=${src}`;
+  let video = `<video ${attrs} ${videoSource} ${videoIndex}></video>`;
   if (!attrs.includes('controls') && !attrs.includes('hoverplay') && accessibilityEnabled) {
     videoCounter += 1;
   }
@@ -633,6 +677,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
         delete videoEl.dataset.hmPoster;
       }
       if (videoEl.querySelector('source')) return;
+      if (isMpcPlayer) {
+        loadMpcSource(videoEl, src);
+        return;
+      }
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });

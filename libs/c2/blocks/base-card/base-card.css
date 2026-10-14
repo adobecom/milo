@@ -24,6 +24,12 @@
       display: flex;
     }
 
+    /* MPC MP4 renditions top out at 960px wide, so don't rely on intrinsic width. */
+    .video-container,
+    video {
+      width: 100%;
+    }
+
     .icon {
       height: 24px;
       width: 24px;
