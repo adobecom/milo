@@ -1466,6 +1466,13 @@ span.hang-opening-quote {
         animation: garage-door-bg-parallax linear both;
         animation-timeline: view();
         animation-range: cover 0% cover 50%;
+
+        /* The extra height and negative margin only offset the parallax
+           travel, which reduced motion disables. */
+        @media (prefers-reduced-motion: reduce) {
+          height: 100%;
+          margin-block-end: 0;
+        }
       }
     }
 
