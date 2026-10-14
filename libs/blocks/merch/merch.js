@@ -2,7 +2,8 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
 } from '../../utils/utils.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
+import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
 
@@ -273,7 +274,6 @@ export async function resolveCheckoutCountry(service) {
   try {
     const imsCountry = await service.imsCountryPromise;
     if (imsCountry) {
-      const { isSupportedMarket } = await import('../../utils/market.js');
       if (await isSupportedMarket(imsCountry)) return imsCountry;
     }
   } catch { /* ignore, fall back to validated market country */ }
@@ -302,7 +302,6 @@ function guardCheckoutLinkImsCountry(service) {
       // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
       // bailing out here (value already matches fallback) is what stops the loop.
       if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
-      const { isSupportedMarket } = await import('../../utils/market.js');
       if (await isSupportedMarket(country)) return;
       cta.dataset.imsCountry = fallback;
     });
@@ -1327,7 +1326,7 @@ export async function initService(force = false, attributes = {}) {
           : Promise.resolve(),
         localeSettingsPromise,
         useGeoMarket
-          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          ? getValidatedMarket()
           : Promise.resolve(null),
       ]);
 
@@ -1587,13 +1586,22 @@ export async function getPriceContext(el, params) {
   };
 }
 
+async function getGeoProductLabel(productCode) {
+  try {
+    return (await getGeoIpPlaceholders())?.get(`${productCode}-geo-ip`);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function addAriaLabelToCta(cta) {
   const productCode = cta.value[0]?.productArrangement?.productCode;
   const { marketSegment, customerSegment } = cta;
   const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
   let ariaLabel = cta.textContent;
+  const geoProduct = productCode && await getGeoProductLabel(productCode);
   ariaLabel = productCode
-    ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+    ? `${ariaLabel} - ${geoProduct || await replaceKey(productCode, getConfig())}`
     : ariaLabel;
   ariaLabel = segment
     ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`

@@ -649,3 +649,51 @@ describe('Router Marquee — autoplay first-frame gating', () => {
     expect(activeIndex(block)).to.equal(1);
   });
 });
+
+describe('router-marquee light variant, ctas and foreground media', () => {
+  // Let IntersectionObserver entries queued by earlier tests' blocks deliver before this
+  // init replaces the module-level SLIDE_ANALYTICS they index into.
+  const loadMock = async (path, { light = false } = {}) => {
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+    document.body.innerHTML = await readFile({ path });
+    const block = document.querySelector('.router-marquee');
+    if (light) block.classList.add('light');
+    init(block);
+    return block;
+  };
+
+  it('marks ctas dark by default', async () => {
+    const block = await loadMock('./mocks/foreground.html');
+
+    expect(mobileVp(block).querySelector('.rm-ctas').classList.contains('dark')).to.be.true;
+  });
+
+  it('drops the dark cta styling for the light variant', async () => {
+    const block = await loadMock('./mocks/foreground.html', { light: true });
+
+    expect(mobileVp(block).querySelector('.rm-ctas').classList.contains('dark')).to.be.false;
+  });
+
+  it('splits the first of two authored images into a foreground layer above the copy', async () => {
+    const block = await loadMock('./mocks/foreground.html');
+
+    const slide = mobileVp(block).querySelector('.rm-slide');
+    const foreground = slide.querySelector('.rm-content-wrapper > .rm-foreground');
+    expect(foreground).to.exist;
+    // the foreground sits before the copy within the wrapper
+    expect(foreground.nextElementSibling.classList.contains('rm-content')).to.be.true;
+    // first authored image becomes the foreground, the second stays as the background
+    expect(foreground.querySelector(':scope > picture img').getAttribute('alt')).to.equal('foreground');
+    expect(slide.querySelector('.rm-background > picture img').getAttribute('alt')).to.equal('background');
+  });
+
+  it('does not add a foreground layer when a slide authors a single image', async () => {
+    const block = await loadMock('./mocks/default.html');
+
+    mobileVp(block).querySelectorAll('.rm-slide').forEach((slide) => {
+      expect(slide.querySelector('.rm-foreground')).to.not.exist;
+    });
+  });
+});

@@ -1,0 +1,10 @@
+{
+  "total": 1,
+  "offset": 0,
+  "limit": 1,
+  "data": [
+    { "key": "CCSN-geo-ip", "DEFAULT": "", "KR": "Creative Cloud All Apps" }
+  ],
+  "columns": ["key", "DEFAULT", "KR"],
+  ":type": "sheet"
+}

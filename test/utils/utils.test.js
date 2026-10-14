@@ -268,6 +268,79 @@ describe('Utils', () => {
       utils.setConfig(config);
     });
 
+    describe('eager MAS initService', () => {
+      let merch;
+      let originalUrl;
+
+      before(async () => {
+        merch = await import('../../libs/blocks/merch/merch.js');
+      });
+
+      beforeEach(() => {
+        originalUrl = window.location.href;
+        merch.initService.promise = undefined;
+      });
+
+      afterEach(() => {
+        window.history.replaceState(null, '', originalUrl);
+      });
+
+      it('starts the commerce service for an authored merch block in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      it('starts the commerce service for a MAS studio link in the first section', async () => {
+        document.body.innerHTML = '<main><div><a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      ['preview-token', ''].forEach((token) => {
+        [
+          ['authored merch block', '<div class="merch-card"></div>'],
+          ['MAS studio link', '<a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a>'],
+        ].forEach(([name, content]) => {
+          it(`does not eagerly initialize a ${name} with ${token ? 'a populated' : 'an empty'} Target preview token`, async () => {
+            const url = new URL(originalUrl);
+            url.searchParams.set('at_preview_token', token);
+            window.history.replaceState(null, '', url);
+            document.body.innerHTML = `<main><div><div class="marquee"></div>${content}<span class="icon icon-play"></span></div></main>`;
+            utils.preloadLcpCodeFiles();
+            await new Promise((r) => { setTimeout(r, 50); });
+            expect(merch.initService.promise).to.be.undefined;
+            expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+            expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+          });
+        });
+      });
+
+      it('does not start it without first-section commerce content', async () => {
+        document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('does not start it when the OST tool is in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="ost"></div><div class="merch"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('does not start it when the kill switch is on', async () => {
+        document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+    });
+
     it('warms icons.js and icons.css when the first section contains icons', () => {
       document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
       utils.preloadLcpCodeFiles();
@@ -687,6 +760,23 @@ describe('Utils', () => {
       await utils.decorateLinksAsync(container);
       const link = container.querySelector('a');
       expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
+    it('Awaits image-video-link decoration so the play-button modal link exists before blocks load', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p class="image-link-play"><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | :play:" class="image-link"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      // The modal image link (poster + play button) must be fully built synchronously
+      // after the await resolves - no setTimeout - otherwise a block that loads next
+      // (e.g. how-to) races against the fire-and-forget import and drops the video.
+      expect(container.querySelector('.modal-img-link')).to.exist;
+    });
+
+    it('Does not reject decorateLinksAsync when image-video-link fails (malformed icon)', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | badicon"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      expect(container.querySelector('a.image-link')).to.exist;
     });
 
     it('Sets up milo.deferredPromise', async () => {
@@ -3958,6 +4048,16 @@ describe('Utils', () => {
       const link = createLink('무료 체험판');
       expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
       link.remove();
+    });
+  });
+
+  describe('isAcomAssistantEnabled', () => {
+    afterEach(() => document.head.querySelector('meta[name="acom-assistant"]')?.remove());
+
+    it('follows the acom-assistant metadata', () => {
+      expect(utils.isAcomAssistantEnabled()).to.be.false;
+      document.head.append(utils.createTag('meta', { name: 'acom-assistant', content: 'on' }));
+      expect(utils.isAcomAssistantEnabled()).to.be.true;
     });
   });
 });
