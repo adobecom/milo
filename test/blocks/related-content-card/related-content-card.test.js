@@ -128,6 +128,38 @@ describe('related-content-card', () => {
     expect(block.querySelector('.related-content-card-category').textContent).to.equal('News');
   });
 
+  describe('no-date modifier', () => {
+    let stylesheet;
+
+    before(async () => {
+      stylesheet = document.createElement('style');
+      stylesheet.textContent = await readFile({
+        path: '../../../libs/blocks/related-content-card/related-content-card.css',
+      });
+      document.head.append(stylesheet);
+    });
+
+    after(() => {
+      stylesheet.remove();
+    });
+
+    ['#card-data', '#card-link', '#card-mix'].forEach((selector) => {
+      it(`hides the date without hiding the title or metadata (${selector})`, async () => {
+        const block = document.querySelector(selector);
+        block.classList.add('no-date');
+        await init(block);
+        const date = block.querySelector('.related-content-card-eyebrow');
+        expect(date.textContent).to.equal('April 2026');
+        expect(getComputedStyle(date).display).to.equal('none');
+        expect(getComputedStyle(block.querySelector('h3')).display).not.to.equal('none');
+        expect(getComputedStyle(block.querySelector('.related-content-card-meta')).display)
+          .not.to.equal('none');
+        block.classList.remove('no-date');
+        expect(getComputedStyle(date).display).not.to.equal('none');
+      });
+    });
+  });
+
   it('preserves the query when fetching a same-origin article', async () => {
     fetchStub.restore();
     stubFetch({ '/mock/full-article?version=2': buildArticle({ title: 'Version two.' }) });

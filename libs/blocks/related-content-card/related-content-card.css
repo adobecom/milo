@@ -65,6 +65,10 @@
   line-height: 1.25;
 }
 
+.related-content-card.no-date .related-content-card-eyebrow {
+  display: none;
+}
+
 .related-content-card .related-content-card-title {
   margin: 0 0 4px;
   font-size: var(--type-heading-xs-size, 18px);
