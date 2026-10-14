@@ -26,8 +26,6 @@ export const getAuthoredGnavCards = () => authoredCards;
 
 /** Per the wiki, the client discovers this mount point and builds its own GNav
  *  icon/expanded-input/minimized states into it.
- *  Honor authored no-gnav-mobile below 900px at decoration time, without
- *  affecting inline BC inputs or chat links.
  *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
 export function decorateAcomAssistantGnav(el, cards, block) {
   if (!isAcomAssistantEnabled()) return null;
