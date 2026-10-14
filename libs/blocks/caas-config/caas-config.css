@@ -185,3 +185,46 @@ dd.content .nested .field input[type="text"] {
 dd.content .nested .note {
   padding-left: 16px;
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.tooltip::before {
+  content: "?";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #555;
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+}
+
+.tooltip-text {
+  display: block;
+  font-size: 14px;
+  line-height: 1.4;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 8px;
+  margin: 6px 6px 0;
+  position: absolute;
+  bottom: 100%;
+  white-space: normal;
+  transition: opacity 0.3s, visibility 0.3s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tooltip-text:hover,
+.tooltip:hover ~ .tooltip-text {
+  opacity: 1;
+  visibility: visible;
+}

@@ -163,6 +163,7 @@ const TagSelect = ({
   options = {},
   value = [],
   singleSelect = false,
+  tooltip,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModal, setIsModal] = useState(false);
@@ -256,6 +257,8 @@ const TagSelect = ({
   return html`
     <div class="tagselect" ref=${tagSelectRef}>
       <label>${label}</label>
+      ${tooltip && html`<i class="tooltip"></i>`}
+      ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
       <div class="tagselect-input" onClick=${toggleOpen}>
         <div class="tagselect-values">${selectedItems}</div>
         <div class="tagselect-add">
