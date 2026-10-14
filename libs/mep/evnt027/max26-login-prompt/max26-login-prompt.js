@@ -3,15 +3,16 @@ import { decorateBlockBg, decorateBlockText, decorateViewportContent } from '../
 import { closeModal } from '../../../c2/blocks/modal/modal.js';
 
 function decorate(block, root) {
+  const isPost = root.classList.contains('post');
   const [background, contentRow] = block.children;
   const content = contentRow?.firstElementChild;
   const logo = content?.querySelector(':scope > p:has(picture)');
   const heading = content?.querySelector('h1, h2, h3, h4, h5, h6');
-  const [signInRow, guestRow] = [...(content?.children ?? [])].slice(-2);
+  const [signInRow, guestRow] = [...(content?.children ?? [])].slice(isPost ? -1 : -2);
   const signIn = signInRow?.querySelector('a');
   const guest = guestRow?.querySelector('a');
-  if (!background?.querySelector('picture') || !logo || !heading || !signIn || !guest) {
-    throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and sign-in/guest links.');
+  if (!background?.querySelector('picture') || !logo || !heading || !signIn || (!isPost && !guest)) {
+    throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and a primary link, plus a guest link for the live variant.');
   }
 
   // Authors supply desktop artwork first; the shared background helper is mobile-first.
@@ -29,7 +30,7 @@ function decorate(block, root) {
     child !== logo && child !== signInRow && child !== guestRow
   )));
   const actions = createTag('div', { class: 'max26-login-prompt-actions' });
-  actions.append(signInRow, guestRow);
+  actions.append(...(isPost ? [signInRow] : [signInRow, guestRow]));
   const body = createTag('div', { class: 'max26-login-prompt-body' }, [copy, actions]);
   content.replaceChildren(logo, body);
   block.replaceChildren(background, content);
@@ -37,16 +38,18 @@ function decorate(block, root) {
 
   signIn.classList.remove('blue', 'outline');
   signIn.classList.add('con-button', 'fill', 'button-md', 'max26-login-prompt-sign-in');
-  const guestAttributes = Object.fromEntries([...guest.attributes]
-    .filter(({ name }) => name.startsWith('aria-') || name.startsWith('daa-'))
-    .map(({ name, value }) => [name, value]));
-  const guestButton = createTag('button', {
-    ...guestAttributes,
-    type: 'button',
-    class: 'max26-login-prompt-guest',
-  });
-  guestButton.append(...guest.childNodes);
-  guestRow.replaceChildren(guestButton);
+  if (guest) {
+    const guestAttributes = Object.fromEntries([...guest.attributes]
+      .filter(({ name }) => name.startsWith('aria-') || name.startsWith('daa-'))
+      .map(({ name, value }) => [name, value]));
+    const guestButton = createTag('button', {
+      ...guestAttributes,
+      type: 'button',
+      class: 'max26-login-prompt-guest',
+    });
+    guestButton.append(...guest.childNodes);
+    guestRow.replaceChildren(guestButton);
+  }
 
   const dialog = root.closest('.dialog-modal');
   if (dialog) {

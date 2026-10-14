@@ -107,6 +107,12 @@
   line-height: var(--s2a-font-line-height-20);
 }
 
+.max26-login-prompt.post .max26-login-prompt-copy .body-lg {
+  /* Figma's post-event mobile body is 214px wide, with no matching S2A token. */
+  max-width: 214px;
+  text-wrap: pretty;
+}
+
 .max26-login-prompt-actions {
   display: flex;
   flex-direction: column;
@@ -260,5 +266,20 @@
 
   .max26-login-prompt-actions {
     gap: 29px;
+  }
+
+  .max26-login-prompt.post .max26-login-prompt-body {
+    /* Figma's post-event CTA gap is 52px; there is no matching S2A token. */
+    gap: 52px;
+  }
+
+  .max26-login-prompt.post .max26-login-prompt-copy {
+    /* Figma's post-event copy is 604px wide with a 22px gap; neither has an S2A token. */
+    max-width: 604px;
+    gap: 22px;
+  }
+
+  .max26-login-prompt.post .max26-login-prompt-copy .body-lg {
+    max-width: none;
   }
 }

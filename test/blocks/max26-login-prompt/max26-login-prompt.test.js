@@ -11,13 +11,13 @@ setConfig({
 const { default: init } = await import('../../../libs/mep/evnt027/max26-login-prompt/max26-login-prompt.js');
 const { getModal, closeModal } = await import('../../../libs/c2/blocks/modal/modal.js');
 
-async function fixture() {
-  document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+async function fixture(variant = 'default') {
+  document.body.innerHTML = await readFile({ path: `./mocks/${variant}.html` });
   return document.querySelector('.max26-login-prompt');
 }
 
-async function openModal() {
-  const block = await fixture();
+async function openModal(variant = 'default') {
+  const block = await fixture(variant);
   const fragment = createTag('div', { class: 'fragment' }, block);
   const dialog = await getModal(null, {
     id: 'max26-test',
@@ -135,11 +135,10 @@ describe('MAX 2026 login prompt', () => {
     await sendMouse({ type: 'move', position: [0, 0] });
   });
 
-  it('preserves authored typography overrides and the future post variant', async () => {
+  it('preserves authored typography overrides', async () => {
     const block = await fixture();
-    block.classList.add('post', 'heading-3', 'body-sm');
+    block.classList.add('heading-3', 'body-sm');
     init(block);
-    expect(block.classList.contains('post')).to.be.true;
     expect(block.querySelector('h2.heading-3')).to.exist;
     expect(block.querySelector('.max26-login-prompt-copy p.body-sm')).to.exist;
   });
@@ -253,5 +252,105 @@ describe('MAX 2026 login prompt', () => {
     expect(close.left - bounds.left).to.be.closeTo(12, 1);
     expect(close.top).to.be.at.least(0);
     expect(block.scrollWidth).to.be.at.most(Math.ceil(block.getBoundingClientRect().width));
+  });
+
+  describe('post-event variant', () => {
+    it('loads through the same experiment mapping without requiring a guest link', async () => {
+      const block = await fixture('post');
+      await loadBlock(block);
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(block.querySelector('.max26-login-prompt-foreground')).to.exist;
+    });
+
+    it('preserves post-event copy, artwork, and the single authored CTA', async () => {
+      const block = await fixture('post');
+      init(block);
+      expect(block.querySelectorAll('picture').length).to.equal(3);
+      expect(block.querySelector('.max26-login-prompt-logo img').alt).to.equal('Adobe MAX');
+      expect(block.querySelector('.max26-login-prompt-copy h2.heading-2').textContent)
+        .to.equal('Relive the best moments of MAX.');
+      const paragraphs = block.querySelectorAll('.max26-login-prompt-copy p.body-lg');
+      expect(paragraphs.length).to.equal(1);
+      expect(paragraphs[0].textContent)
+        .to.equal('Watch sessions, keynotes, MAX Sneaks, and more — all on demand. Sign up to stay up to date with the latest from MAX.');
+      expect(block.querySelectorAll('.max26-login-prompt-actions > p').length).to.equal(1);
+      expect(block.querySelector('.max26-login-prompt-guest')).to.not.exist;
+      const signIn = block.querySelector('.max26-login-prompt-sign-in');
+      expect(signIn.textContent).to.equal('Sign up');
+      expect(signIn.getAttribute('href')).to.equal('https://example.com/max-post-sign-in');
+      expect(signIn.getAttribute('aria-label')).to.equal('Sign up for Adobe MAX');
+      expect(signIn.getAttribute('daa-ll')).to.equal('post-sign-up');
+      expect(signIn.matches('.con-button.fill.button-md')).to.be.true;
+    });
+
+    it('preserves authored typography overrides', async () => {
+      const block = await fixture('post');
+      block.classList.add('heading-3', 'body-sm');
+      init(block);
+      expect(block.querySelector('h2.heading-3')).to.exist;
+      expect(block.querySelector('.max26-login-prompt-copy p.body-sm')).to.exist;
+    });
+
+    it('reports a missing primary CTA instead of treating body copy as an action', async () => {
+      const block = await fixture('post');
+      block.lastElementChild.firstElementChild.lastElementChild.remove();
+      expect(() => init(block)).to.throw('max26-login-prompt requires');
+    });
+
+    it('continues to require the guest action in the live variant', async () => {
+      const block = await fixture();
+      block.lastElementChild.firstElementChild.lastElementChild.remove();
+      expect(() => init(block)).to.throw('max26-login-prompt requires');
+    });
+
+    ['close button', 'backdrop', 'Escape'].forEach((action) => {
+      it(`preserves shared-modal dismissal by ${action}`, async () => {
+        const { block, dialog } = await openModal('post');
+        expect(dialog.getAttribute('aria-labelledby')).to.equal(block.querySelector('h2').id);
+        if (action === 'close button') dialog.querySelector('.dialog-close').click();
+        if (action === 'backdrop') document.querySelector('.modal-curtain').click();
+        if (action === 'Escape') dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        expect(dialog.isConnected).to.be.false;
+        expect(document.querySelector('.modal-curtain')).to.not.exist;
+      });
+    });
+
+    [375, 1024, 1440, 1920].forEach((width) => {
+      it(`matches post-event spacing and keeps the CTA and X visible at ${width}px`, async () => {
+        await setViewport({ width, height: 1080 });
+        const { block, dialog } = await openModal('post');
+        const mobile = width < 768;
+        expect(block.getBoundingClientRect().width).to.equal(mobile ? 327 : 807);
+        expect(getComputedStyle(block.querySelector('.max26-login-prompt-body')).rowGap)
+          .to.equal(mobile ? '24px' : '52px');
+        expect(getComputedStyle(block.querySelector('.max26-login-prompt-copy')).rowGap).to.equal('22px');
+        expect(getComputedStyle(block.querySelector('.max26-login-prompt-copy p')).maxWidth)
+          .to.equal(mobile ? '214px' : 'none');
+        const signIn = block.querySelector('.max26-login-prompt-sign-in');
+        expect(signIn.getBoundingClientRect().width).to.equal(170);
+        expect(getComputedStyle(signIn).backgroundColor).to.equal('rgb(0, 0, 0)');
+        expect(getComputedStyle(signIn).color).to.equal('rgb(255, 255, 255)');
+        const close = dialog.querySelector('.dialog-close');
+        expect(close.getBoundingClientRect().width).to.equal(40);
+        expect(close.getBoundingClientRect().height).to.equal(40);
+        const bounds = dialog.getBoundingClientRect();
+        expect(close.getBoundingClientRect().top - bounds.top).to.be.closeTo(12, 1);
+        expect(bounds.right - close.getBoundingClientRect().right).to.be.closeTo(12, 1);
+      });
+    });
+
+    it('keeps the primary action reachable on a short RTL viewport', async () => {
+      await setViewport({ width: 320, height: 400 });
+      const { block, dialog } = await openModal('post');
+      dialog.dir = 'rtl';
+      const fragment = dialog.querySelector('.fragment');
+      fragment.scrollTop = fragment.scrollHeight;
+      const bounds = dialog.getBoundingClientRect();
+      expect(block.querySelector('.max26-login-prompt-sign-in').getBoundingClientRect().bottom)
+        .to.be.at.most(bounds.bottom + 1);
+      expect(dialog.querySelector('.dialog-close').getBoundingClientRect().left - bounds.left)
+        .to.be.closeTo(12, 1);
+      expect(block.scrollWidth).to.be.at.most(Math.ceil(block.getBoundingClientRect().width));
+    });
   });
 });
