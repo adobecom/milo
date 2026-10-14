@@ -128,14 +128,13 @@ describe('related-content-card', () => {
     expect(block.querySelector('.related-content-card-category').textContent).to.equal('News');
   });
 
-  describe('no-date modifier', () => {
+  describe('styles', () => {
     let stylesheet;
 
     before(async () => {
       stylesheet = document.createElement('style');
-      stylesheet.textContent = await readFile({
-        path: '../../../libs/blocks/related-content-card/related-content-card.css',
-      });
+      const path = '../../../libs/blocks/related-content-card/related-content-card.css';
+      stylesheet.textContent = await readFile({ path });
       document.head.append(stylesheet);
     });
 
@@ -156,6 +155,26 @@ describe('related-content-card', () => {
           .not.to.equal('none');
         block.classList.remove('no-date');
         expect(getComputedStyle(date).display).not.to.equal('none');
+      });
+    });
+
+    ['ja', 'ja-JP', 'ko', 'ko-KR', 'ar', 'en-US'].forEach((language) => {
+      it(`uses a 1.35 line height and two-line title clamp (${language})`, async () => {
+        const block = document.querySelector('#card-data');
+        block.lang = language;
+        block.style.width = '320px';
+        const titleText = new Array(50).fill('Typography gyp').join(' ');
+        block.querySelector('h2').textContent = titleText;
+        await init(block);
+        const title = block.querySelector('h3');
+        const style = getComputedStyle(title);
+        expect(parseFloat(style.lineHeight)).to.be.closeTo(parseFloat(style.fontSize) * 1.35, 0.01);
+        expect(style.webkitLineClamp).to.equal('2');
+        expect(style.overflow).to.equal('hidden');
+        expect(title.getBoundingClientRect().height)
+          .to.be.closeTo(parseFloat(style.lineHeight) * 2, 0.05);
+        expect(title.scrollHeight).to.be.greaterThan(title.clientHeight);
+        expect(title.textContent).to.equal(titleText);
       });
     });
   });
@@ -284,9 +303,8 @@ describe('related-content-card', () => {
         '5-min-read': '5\u5206\u3067\u8aad\u3081\u307e\u3059',
       };
       fetchStub.restore();
-      stubFetch({
-        '/mock/full-article': buildArticle({ bodyText: '\u732b\u3002'.repeat(wordCount) }),
-      });
+      const article = buildArticle({ bodyText: '\u732b\u3002'.repeat(wordCount) });
+      stubFetch({ '/mock/full-article': article });
       const block = document.querySelector('#card-link');
       await init(block);
       expect(block.querySelector('.related-content-card-readtime').textContent)
