@@ -20,9 +20,11 @@
 }
 
 .split-aside-grid-stack {
-  /* One side of the glass frame that sits outside the video: 8px padding (--s2a-spacing-xs)
-     + 1px border (--s2a-border-width-1) = 9px. Per axis the border-box is 2 * this larger. */
-  --split-aside-grid-glass: calc(var(--s2a-spacing-xs) + var(--s2a-border-width-1)); /* 9px */
+  --split-aside-grid-media-padding: var(--s2a-spacing-2xs);
+  /* One side of the glass frame that sits outside the video: media padding
+     (4px --s2a-spacing-2xs on mobile, 8px --s2a-spacing-xs from 768px)
+     + 1px border (--s2a-border-width-1) = 5px / 9px. Per axis the border-box is 2 * this larger. */
+  --split-aside-grid-glass: calc(var(--split-aside-grid-media-padding) + var(--s2a-border-width-1));
 
   position: relative;
   z-index: 1;
@@ -44,7 +46,7 @@
     height: 465px;
     border-radius: var(--s2a-border-radius-24);
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
-    padding: var(--s2a-spacing-xs);
+    padding: var(--split-aside-grid-media-padding);
     background-color: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(var(--s2a-blur-sm));
     overflow: hidden;
@@ -287,6 +289,8 @@
   }
 
   .split-aside-grid-stack {
+    --split-aside-grid-media-padding: var(--s2a-spacing-xs);
+
     inset-inline-end: calc(-1 * var(--grid-padding));
     grid-column: 6 / -1;
     width: auto;
