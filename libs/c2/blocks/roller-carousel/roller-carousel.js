@@ -35,11 +35,8 @@ function optimizeImageLoading(block, bg, media) {
     .forEach((img) => img.setAttribute('fetchpriority', 'low'));
 }
 
-const LIGHT_BG_APPS = new Set(['fill & sign', 'acrobat reader', 'character animator', 'acrobat pro']);
-
 function buildBgSlide(app, active) {
-  const isLight = LIGHT_BG_APPS.has(app.name.trim().toLowerCase());
-  const slide = createTag('div', { class: `rcc-bg-slide${active ? ' is-active' : ''}${isLight ? ' rcc-bg-light' : ''}` });
+  const slide = createTag('div', { class: `rcc-bg-slide${active ? ' is-active' : ''}` });
   const pic = prepPic(app.picture);
   if (pic) slide.append(pic);
   slide.append(createTag('div', { class: 'rcc-bg-overlay' }));
