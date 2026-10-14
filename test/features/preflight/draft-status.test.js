@@ -2,7 +2,6 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import showDraftStatus, { summarize } from '../../../libs/features/preflight/draft-status.js';
-import { getPreflightResults, clearPreflightCache } from '../../../libs/blocks/preflight/checks/preflightApi.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
 describe('summarize', () => {
@@ -22,48 +21,21 @@ describe('summarize', () => {
   });
 });
 
-describe('overlapping draft checks', () => {
-  it('an older check that finishes late does not hand its result to a newer check', async () => {
-    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' } });
-    let holdNextExclusions = false;
-    let releaseNewer;
-    const fetchStub = sinon.stub(window, 'fetch').callsFake(async (url) => {
-      if (holdNextExclusions && String(url).includes('preflight-exclusions')) {
-        holdNextExclusions = false;
-        await new Promise((resolve) => { releaseNewer = resolve; });
-      }
-      return { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' };
-    });
-    const main = document.createElement('main');
-    main.innerHTML = '<div><h1>One</h1><h1>Two</h1></div>';
-    document.body.append(main);
-
-    const older = getPreflightResults({ merchDelayMs: 300 });
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    main.innerHTML = '<div><h1>Only one</h1></div>';
-    clearPreflightCache();
-    holdNextExclusions = true;
-    const newer = getPreflightResults({ merchDelayMs: 0 });
-    const olderResult = await older;
-    releaseNewer();
-    const newerResult = await newer;
-
-    fetchStub.restore();
-    main.remove();
-    expect(newerResult === olderResult).to.equal(false);
-  });
-});
-
 describe('showDraftStatus', () => {
   const bar = () => document.documentElement.querySelector(':scope > .draft-status');
   const result = () => waitFor(() => bar().dataset.status !== 'checking', 5000, 50);
   const settle = () => new Promise((resolve) => { setTimeout(resolve, 100); });
   const rerender = () => document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+  const issueCount = () => Number(bar().textContent.match(/(\d+) issues?/)?.[1] ?? 0);
+  const checksRun = () => window.fetch.getCalls()
+    .filter(({ args }) => String(args[0]).includes('preflight-exclusions')).length;
   let main;
 
   before(() => {
-    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' } });
-    sinon.stub(window, 'fetch').resolves({ ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' });
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
+    sinon.stub(window, 'fetch').callsFake(async (url) => (String(url).includes('/.milo/config.json')
+      ? { ok: false, status: 404 }
+      : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' }));
     main = document.createElement('main');
     main.innerHTML = '<div><h1>Draft</h1><p>First paragraph</p></div>';
     document.body.append(main);
@@ -95,11 +67,21 @@ describe('showDraftStatus', () => {
   });
 
   it('re-checks when the draft content changes, keeping the last result visible', async () => {
-    const checksBefore = window.fetch.callCount;
-    main.querySelector('p').textContent = 'Edited paragraph';
+    const issuesBefore = issueCount();
+    main.querySelector('p').textContent = 'Lorem ipsum dolor sit amet';
     rerender();
     expect(bar().dataset.status).to.not.equal('checking');
-    await waitFor(() => window.fetch.callCount > checksBefore, 2000, 20);
+    await waitFor(() => issueCount() === issuesBefore + 1, 5000, 50);
+  });
+
+  it('re-checks edits to an image that holds the DA cursor', async () => {
+    main.querySelector('p').insertAdjacentHTML('afterend', '<img id="da-cursor-position" alt="">');
+    rerender();
+    await settle();
+    const runsBefore = checksRun();
+    main.querySelector('img').alt = 'Team photo';
+    rerender();
+    await waitFor(() => checksRun() > runsBefore, 2000, 20);
   });
 
   it('opens one report outside the body so it survives edits, and closes it', async () => {
@@ -113,6 +95,54 @@ describe('showDraftStatus', () => {
     expect(dialog.nextElementSibling.classList.contains('modal-curtain')).to.equal(true);
     dialog.querySelector('.dialog-close').click();
     await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+  });
+
+  it('unmounts a report once a fresh one replaces it', async function test() {
+    this.timeout(20000);
+    const report = () => document.querySelector('#preflight .preflight');
+    bar().querySelector('.preflight-review-link').click();
+    await waitFor(report, 5000, 50);
+    const oldReport = report();
+    main.querySelector('p').textContent = 'Edited with the report open';
+    rerender();
+    await waitFor(() => report() !== oldReport, 8000, 50);
+
+    report().querySelector('#tab-2').click();
+    await settle();
+
+    expect(oldReport.querySelector('#tab-2')?.getAttribute('aria-selected')).to.not.equal('true');
+    report().querySelector('#tab-1').click();
+    document.querySelector('#preflight .dialog-close').click();
+    await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+  });
+
+  it('keeps the newest report when an older refresh finishes first', async function test() {
+    this.timeout(20000);
+    setConfig({ codeRoot: '/test/features/preflight/mocks', georouting: { enabled: 'off' }, footerReady: true });
+    const report = () => document.querySelector('#preflight .preflight');
+    bar().querySelector('.preflight-review-link').click();
+    await waitFor(report, 5000, 50);
+    const heldReports = [];
+    window.holdReport = () => new Promise((resolve) => { heldReports.push(resolve); });
+    const editAndWaitForRefresh = async (text) => {
+      const refreshes = heldReports.length;
+      main.querySelector('p').textContent = text;
+      rerender();
+      await waitFor(() => heldReports.length > refreshes, 8000, 20);
+    };
+
+    await editAndWaitForRefresh('Older draft');
+    await editAndWaitForRefresh('Newer draft');
+    heldReports[0]();
+    await settle();
+    heldReports[1]();
+    await settle();
+
+    expect(report().textContent).to.contain('Newer draft');
+    delete window.holdReport;
+    document.querySelector('#preflight .dialog-close').click();
+    await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
   });
 
   it('stops checking once closed', async () => {

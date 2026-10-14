@@ -1,6 +1,13 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
+import loadDelayed, {
+  loadPrivacy,
+  loadJarvisChat,
+  loadGoogleLogin,
+  addRUMCampaignTrackingParameters,
+  loadPreflightResults,
+  isDaPreview,
+} from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -173,6 +180,26 @@ describe('loadPreflightResults', () => {
     bar?.querySelector('.notification-close').click();
     expect(bar !== null).to.equal(true);
     expect(diffFetched).to.equal(false);
+  });
+});
+
+describe('isDaPreview', () => {
+  [
+    ['main--da-bacom--adobecom.preview.da.live', '?quick-edit=on&controller=parent', true],
+    ['main--cc--adobecom.stage-preview.da.live', '?dapreview=on', true],
+    ['main--milo--adobecom.aem.page', '?quick-edit=on', true],
+    ['localhost', '?dapreview=local', true],
+    ['127.0.0.1', '?quick-edit=on', true],
+    ['main--milo--adobecom.aem.page', '', false],
+    ['localhost', '?quick-edit=', false],
+    ['main--milo--adobecom.aem.live', '?quick-edit=on', false],
+    ['www.adobe.com', '?dapreview=on', false],
+    ['main--milo--adobecom.preview.da.live.evil.com', '?quick-edit=on', false],
+    ['evil-preview.da.live', '?quick-edit=on', false],
+  ].forEach(([hostname, search, expected]) => {
+    it(`${expected ? 'detects' : 'ignores'} ${hostname}${search}`, () => {
+      expect(isDaPreview({ hostname, search })).to.equal(expected);
+    });
   });
 });
 

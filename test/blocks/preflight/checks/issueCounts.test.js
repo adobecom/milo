@@ -1,5 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import { countIssues } from '../../../../libs/blocks/preflight/checks/issueCounts.js';
+import sinon from 'sinon';
+import { setConfig } from '../../../../libs/utils/utils.js';
+import { countIssues, getIssueCounts } from '../../../../libs/blocks/preflight/checks/issueCounts.js';
 
 describe('Preflight issue counts', () => {
   it('counts each tab the way its panel lists issues', () => {
@@ -29,5 +31,46 @@ describe('Preflight issue counts', () => {
       merch: [{ status: 'fail' }],
       assets: [{}],
     })).to.deep.equal(empty);
+  });
+});
+
+describe('getIssueCounts', () => {
+  const draft = '<div><h1>Draft</h1><p>Real copy</p></div>';
+  const linkServiceDown = { ok: false, status: 404 };
+  let linkServiceConfig;
+  let main;
+
+  const seoErrors = async (html) => {
+    main.innerHTML = html;
+    const counts = await getIssueCounts({ useCache: false, merchDelayMs: 0 });
+    return counts.SEO.errors;
+  };
+
+  beforeEach(() => {
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
+    linkServiceConfig = linkServiceDown;
+    sinon.stub(window, 'fetch').callsFake(async (url) => (String(url).includes('/.milo/config.json')
+      ? linkServiceConfig
+      : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' }));
+    main = document.createElement('main');
+    document.body.append(main);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    main.remove();
+  });
+
+  it('counts SEO checks that finish after the run, like placeholder text', async () => {
+    const clean = await seoErrors(draft);
+    const placeholder = await seoErrors('<div><h1>Draft</h1><p>Lorem ipsum dolor</p></div>');
+    expect(placeholder - clean).to.equal(1);
+  });
+
+  it('counts an SEO check that throws as an issue, like the SEO panel shows it', async () => {
+    const linksChecked = await seoErrors(draft);
+    linkServiceConfig = { ok: true, status: 200, json: async () => ({}) };
+    const linksThrew = await seoErrors(draft);
+    expect(linksThrew - linksChecked).to.equal(1);
   });
 });

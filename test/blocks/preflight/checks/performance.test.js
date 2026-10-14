@@ -73,13 +73,33 @@ describe('Sanity Checks', () => {
     const big = await addImg(first, 200, 100);
     await addImg(second, 900, 900);
     setLikelyLcp();
+    const href = await getLcpEntry(window.location.href);
+    const pathname = await getLcpEntry(window.location.pathname);
     main.remove();
-    expect((await getLcpEntry(window.location.href)).element).to.equal(big);
-    expect((await getLcpEntry(window.location.pathname)).element).to.equal(big);
+    expect(href.element).to.equal(big);
+    expect(pathname.element).to.equal(big);
+  });
+
+  it('setLikelyLcp follows the first-section image after a re-render', async () => {
+    const main = document.createElement('main');
+    const draft = `<div class="section"><img width="200" height="100" src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"/>')}"></div>`;
+    main.innerHTML = draft;
+    document.body.append(main);
+    await main.querySelector('img').decode();
+    setLikelyLcp();
+    main.innerHTML = draft;
+    const rerendered = main.querySelector('img');
+    await rerendered.decode();
+
+    const lcp = await getLcpEntry(window.location.href);
+
+    main.remove();
+    expect(lcp?.element === rerendered).to.equal(true);
   });
 
   it('setLikelyLcp reports no LCP without media in the first section', async () => {
     setLikelyLcp(document.createElement('div'));
-    expect(await getLcpEntry(window.location.href)).to.equal(undefined);
+    const staleLcp = () => Promise.resolve({ url: 'previous-draft.jpg' });
+    expect(await getLcpEntry('no-media-draft', document, staleLcp)).to.equal(null);
   });
 });

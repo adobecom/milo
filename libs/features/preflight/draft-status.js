@@ -2,12 +2,13 @@ import { getIssueCounts } from '../../blocks/preflight/checks/issueCounts.js';
 import { clearPreflightCache } from '../../blocks/preflight/checks/preflightApi.js';
 import { clearLocalizationCache } from '../../blocks/preflight/checks/localization.js';
 import { setLikelyLcp } from '../../blocks/preflight/checks/performance.js';
+import { render } from '../../deps/htm-preact.js';
 import { createTag, getConfig, loadBlock, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 
 const MERCH_HYDRATION_MS = 1000;
 const HEADER_FOOTER_TIMEOUT_MS = 5000;
-const DA_CURSOR_MARKER = '#da-cursor-position';
+const DA_CURSOR = '#da-cursor-position';
 const CHECKING = { status: 'checking', text: 'Preflight is checking this page…' };
 const FAILED = { status: 'error', text: 'Preflight checks could not run' };
 const BAR = `<div class="preflight-notification"><div class="notification-content">
@@ -47,7 +48,8 @@ function waitForHeaderAndFooter() {
 
 function draftWithoutCursor() {
   const main = document.querySelector('main').cloneNode(true);
-  main.querySelector(DA_CURSOR_MARKER)?.remove();
+  main.querySelector(`span${DA_CURSOR}`)?.remove();
+  main.querySelector(DA_CURSOR)?.removeAttribute('id');
   return main.innerHTML;
 }
 
@@ -65,8 +67,9 @@ async function refreshOpenReport(draft) {
   const report = document.querySelector('#preflight .preflight');
   if (!report) return;
   const freshReport = await loadReport();
-  if (draft !== checkedDraft || !report.isConnected) return;
-  report.replaceWith(freshReport);
+  const isNewest = draft === checkedDraft;
+  render(null, isNewest ? report : freshReport);
+  if (isNewest) report.replaceWith(freshReport);
 }
 
 function show({ status, text }) {
@@ -81,7 +84,6 @@ async function check() {
   await waitForHeaderAndFooter();
   clearPreflightCache();
   clearLocalizationCache();
-  setLikelyLcp();
   const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS }).catch(() => null);
   if (draft !== checkedDraft) return;
   show(counts ? summarize(counts) : FAILED);
@@ -97,10 +99,11 @@ export default function showDraftStatus() {
   if (bar) return;
   loadStyle(`${getConfig().base}/styles/preflight-notification.css`);
   bar = createTag('div', { class: 'milo-preflight-overlay draft-status' }, BAR);
-  bar.querySelector('.preflight-review-link').addEventListener('click', debounce(openReport, 500));
+  bar.querySelector('.preflight-review-link').addEventListener('click', debounce(openReport));
   bar.querySelector('.notification-close').addEventListener('click', close);
   document.addEventListener(MILO_EVENTS.DEFERRED, check);
   keepAcrossEdits(bar);
+  setLikelyLcp();
   show(CHECKING);
   check();
 }

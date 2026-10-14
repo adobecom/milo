@@ -118,19 +118,25 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
-export const loadPreflightResults = async () => {
-  const { hostname, search } = window.location;
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-  const isPreview = hostname.endsWith('.aem.page');
-  const isLive = hostname.endsWith('.aem.live');
+const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+
+export const isDaPreview = ({ hostname, search }) => {
+  const isDaHost = isLocalHost(hostname) || hostname.endsWith('.aem.page')
+    || /\.(stage-)?preview\.da\.live$/.test(hostname);
   const params = new URLSearchParams(search);
-  const isDaPreview = (isLocal || isPreview || /\.(stage-)?preview\.da\.live$/.test(hostname))
-    && (params.get('dapreview') || params.get('quick-edit'));
-  if (isDaPreview) {
+  return isDaHost && ['dapreview', 'quick-edit'].some((name) => params.get(name));
+};
+
+export const loadPreflightResults = async () => {
+  if (isDaPreview(window.location)) {
     const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
     showDraftStatus();
     return;
   }
+  const { hostname } = window.location;
+  const isLocal = isLocalHost(hostname);
+  const isPreview = hostname.endsWith('.aem.page');
+  const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
 
   const run = async () => {

@@ -92,8 +92,8 @@ export const getChecksSuite = () => {
   });
 };
 
-const isUrlExcluded = (url, exclusionPatterns = {}) => {
-  if (!exclusionPatterns.data) return false;
+const isUrlExcluded = (url, exclusionPatterns) => {
+  if (!exclusionPatterns?.data) return false;
 
   return exclusionPatterns.data.some((item) => {
     const pattern = item.path;

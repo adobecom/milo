@@ -3,6 +3,7 @@ import { runChecks as runLocalizationChecks } from './localization.js';
 import { SEVERITY, STATUS } from './constants.js';
 
 const issues = (errors = 0, warnings = 0) => ({ errors, warnings });
+const failedToRun = { status: STATUS.FAIL };
 const isFail = (check) => check?.status === STATUS.FAIL;
 const isWarning = (check) => check?.status === STATUS.LIMBO
   || (isFail(check) && check.severity === SEVERITY.WARNING);
@@ -34,5 +35,7 @@ export async function getIssueCounts(options) {
     runLocalizationChecks({ area: document }).catch(() => []),
   ]);
   if (!results?.runChecks) return null;
-  return countIssues(results.runChecks, linkCheck?.details?.violations?.length);
+  const seo = await Promise.all((results.runChecks.seo ?? [])
+    .map((check) => Promise.resolve(check).catch(() => failedToRun)));
+  return countIssues({ ...results.runChecks, seo }, linkCheck?.details?.violations?.length);
 }
