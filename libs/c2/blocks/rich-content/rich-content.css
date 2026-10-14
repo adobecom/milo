@@ -752,6 +752,13 @@
 }
 
 @media (width < 768px) {
+  .section.bento.stack-mobile > .rich-content {
+    position: static;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
   .section.bento.stack-mobile:where(.bento-stack-ready) > .rich-content {
     --parallax-translate-y: -60px;
     --scrollport-h: min(var(--phone-h), 100svh);
@@ -759,17 +766,24 @@
     --title-release-offset: max(0px, calc(var(--scrollport-h) - var(--stack-pin-top) - var(--title-height)));
     --title-catchup: calc(var(--card-front-y) + var(--card-height) - var(--stack-pin-top) - var(--title-height));
 
-    position: sticky;
     top: var(--stack-pin-top);
     z-index: 1;
     margin: 0;
     line-height: 1;
     will-change: opacity, transform, translate;
-    animation:
-      stack-title-stagger var(--parallax-easing) both,
-      stack-title-card-match var(--parallax-easing) both;
-    animation-timeline: --stack-title-vt, --section-vt;
-    animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .section.bento.stack-mobile:where(.bento-stack-ready:not(.bento-stack-static)) > .rich-content {
+        position: sticky;
+        animation:
+          stack-title-stagger var(--parallax-easing) both,
+          stack-title-card-match var(--parallax-easing) both;
+        animation-timeline: --stack-title-vt, --section-vt;
+        animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
+      }
+    }
   }
 }
 
@@ -874,26 +888,6 @@
   .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-pull-offset: 70px;
     --rc-sweep-offset: 280px;
-  }
-}
-
-@supports not (animation-timeline: view()) {
-  @media (width < 768px) {
-    .section.bento.stack-mobile > .rich-content {
-      position: static;
-      transform: none;
-      opacity: 1;
-      animation: none;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) and (width < 768px) {
-  .section.bento.stack-mobile > .rich-content {
-    position: static;
-    transform: none;
-    opacity: 1;
-    animation: none;
   }
 }
 

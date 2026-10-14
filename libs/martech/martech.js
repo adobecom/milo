@@ -1,5 +1,5 @@
 import {
-  getConfig, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
+  getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
 } from '../utils/utils.js';
 
 const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
@@ -116,33 +116,31 @@ export const getTargetAjoPersonalization = async (
   return { targetAjoManifests, targetAjoPropositions };
 };
 
-const setupEntitlementCallback = () => {
-  const setEntitlements = async (destinations) => {
-    const { getEntitlements } = await import('../features/personalization/personalization.js');
-    return getEntitlements(destinations);
-  };
-
-  const getEntitlements = (resolve) => {
-    const handleEntitlements = (detail) => {
-      if (detail?.result?.destinations?.length) {
-        resolve(setEntitlements(detail.result.destinations));
-      } else {
-        resolve([]);
-      }
-    };
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
-      .then(handleEntitlements)
-      .catch(() => resolve([]));
-  };
-
+export const setupEntitlementCallback = (signedIn = Promise.resolve(true)) => {
   const { miloLibs, codeRoot, entitlements: resolveEnt } = getConfig();
-  getEntitlements(resolveEnt);
+  const entitlementEvent = waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, []);
 
-  loadLink(
-    `${miloLibs || codeRoot}/features/personalization/personalization.js`,
-    { as: 'script', rel: 'modulepreload' },
-  );
+  const handleEntitlements = async (detail) => {
+    if (!detail?.result?.destinations?.length) return [];
+    const { getEntitlements } = await import('../features/personalization/personalization.js');
+    return getEntitlements(detail.result.destinations);
+  };
+
+  signedIn
+    .then((isSignedIn) => {
+      if (!isSignedIn) return [];
+      loadLink(
+        `${miloLibs || codeRoot}/features/personalization/personalization.js`,
+        { as: 'script', rel: 'modulepreload' },
+      );
+      return entitlementEvent.then(handleEntitlements);
+    })
+    .catch(() => [])
+    .then(resolveEnt);
 };
+
+const hasServerSignInHint = () => !!window.performance
+  ?.getEntriesByType('navigation')?.[0]?.serverTiming?.length;
 
 function isProxied() {
   const { hostname } = window.location;
@@ -157,6 +155,9 @@ const loadMartechFiles = async (config) => {
   filesLoadedPromise = async () => {
     if (getMepEnablement('xlg') === 'loggedout' || !isSignedOut()) {
       setupEntitlementCallback();
+    } else if (!hasServerSignInHint()) {
+      // Server-Timing sign-in hint is absent on non-adobe.com hosts (e.g. aem.live).
+      setupEntitlementCallback(loadIms().then(() => !!window.adobeIMS?.isSignedInUser()));
     }
 
     setDeep(
