@@ -4033,4 +4033,14 @@ describe('Utils', () => {
       link.remove();
     });
   });
+
+  describe('isAcomAssistantEnabled', () => {
+    afterEach(() => document.head.querySelector('meta[name="acom-assistant"]')?.remove());
+
+    it('follows the acom-assistant metadata', () => {
+      expect(utils.isAcomAssistantEnabled()).to.be.false;
+      document.head.append(utils.createTag('meta', { name: 'acom-assistant', content: 'on' }));
+      expect(utils.isAcomAssistantEnabled()).to.be.true;
+    });
+  });
 });

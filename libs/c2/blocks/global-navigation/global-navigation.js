@@ -10,8 +10,11 @@ import {
   getLingoRegion,
   getFederatedUrl,
   loadIms,
+  isAcomAssistantEnabled,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
 
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
@@ -82,7 +85,12 @@ async function decorateAppPrompt(el) {
 }
 
 // Mirrors c1 gnav's decorateBrandConciergeGlobal
-async function loadBrandConcierge(block) {
+export async function loadBrandConcierge(block) {
+  if (isAcomAssistantEnabled()) {
+    const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
+    decorateAcomAssistantGnavBlock(block);
+    return;
+  }
   const { base } = getConfig();
   const [{ default: initBrandConcierge }] = await Promise.all([
     import('../brand-concierge-global/brand-concierge-global.js'),
@@ -218,9 +226,17 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => {
+  gnavPromise.then(async () => {
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
+    if (isAcomAssistantEnabled()) {
+      try {
+        const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+        decorateAcomAssistantGnav(el);
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+      }
+    }
   });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
