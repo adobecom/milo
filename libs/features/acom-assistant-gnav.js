@@ -1,6 +1,7 @@
 import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
 
 let authoredCards;
+let noGnavMobile = false;
 
 function logInitializationError(error) {
   window.lana?.log?.(`AcomAssistant: failed to initialize GNav (${error.message})`, {
@@ -25,12 +26,16 @@ export const getAuthoredGnavCards = () => authoredCards;
 
 /** Per the wiki, the client discovers this mount point and builds its own GNav
  *  icon/expanded-input/minimized states into it.
+ *  Honor authored no-gnav-mobile below 900px at decoration time, without
+ *  affecting inline BC inputs or chat links.
  *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
-export function decorateAcomAssistantGnav(el, cards) {
+export function decorateAcomAssistantGnav(el, cards, block) {
   if (!isAcomAssistantEnabled()) return null;
+  if (cards) authoredCards = cards;
+  if (block !== undefined) noGnavMobile = !!block?.classList.contains('no-gnav-mobile');
+  if (noGnavMobile && !window.matchMedia('(min-width: 900px)').matches) return null;
   const wrapper = el.querySelector('.feds-bc-wrapper');
   if (!wrapper) return null;
-  if (cards) authoredCards = cards;
   let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
   if (!mount) {
     mount = document.createElement('div');
@@ -41,8 +46,8 @@ export function decorateAcomAssistantGnav(el, cards) {
   return mount;
 }
 
-export function decorateNavWithAssistant(cards, topNav) {
-  if (!decorateAcomAssistantGnav(topNav, cards)) return;
+export function decorateNavWithAssistant(cards, topNav, block) {
+  if (!decorateAcomAssistantGnav(topNav, cards, block)) return;
   window.milo ||= {};
   window.milo.brandConcierge = { brandConciergeGlobal: true };
 }
@@ -52,6 +57,7 @@ export function decorateAcomAssistantGnavBlock(block) {
   if (!isAcomAssistantEnabled()) return false;
   const [cards] = block.children;
   if (cards) authoredCards = cards;
+  noGnavMobile = block.classList.contains('no-gnav-mobile');
   block.replaceChildren();
 
   const topNav = document.querySelector('header.global-navigation nav');
