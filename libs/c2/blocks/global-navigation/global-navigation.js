@@ -10,8 +10,11 @@ import {
   getLingoRegion,
   getFederatedUrl,
   loadIms,
+  isAcomAssistantEnabled,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
 
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
@@ -81,6 +84,21 @@ async function decorateAppPrompt(el) {
   });
 }
 
+// Mirrors c1 gnav's decorateBrandConciergeGlobal
+export async function loadBrandConcierge(block) {
+  if (isAcomAssistantEnabled()) {
+    const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
+    decorateAcomAssistantGnavBlock(block);
+    return;
+  }
+  const { base } = getConfig();
+  const [{ default: initBrandConcierge }] = await Promise.all([
+    import('../brand-concierge-global/brand-concierge-global.js'),
+    loadStyles(`${base}/c2/blocks/brand-concierge-global/brand-concierge-global.css`),
+  ]);
+  await initBrandConcierge(block);
+}
+
 export default async function init(el) {
   const config = getConfig();
   const isLingo = lingoActive();
@@ -95,7 +113,17 @@ export default async function init(el) {
   // isSignedInUser() check times out (uncaught) after 5s, leaving the unav
   // slot empty. Skip if adobeIMS is already initialized (e.g. a host that
   // bootstraps IMS itself outside of milo's loadIms) to avoid clobbering it.
-  if (!window.adobeIMS?.initialized) loadIms().catch(() => {});
+  const imsReady = window.adobeIMS?.initialized ? Promise.resolve() : loadIms();
+  // Handle early rejection while Federal is still fetching/rendering. Keep the
+  // original promise so UNAV can wait for readiness and recover from a timeout.
+  imsReady.catch((error) => {
+    if (error?.message === 'IMS timeout') return;
+    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
+      error,
+      tags: 'global-navigation',
+      errorType: 'i',
+    });
+  });
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
@@ -147,8 +175,7 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
-
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
@@ -171,6 +198,7 @@ export default async function init(el) {
     isLocalNav: false,
     mountpoint: el,
     unavEnabled,
+    imsReady,
     placeholders: placeholdersPromise,
     miloConfig: config,
     countryCode: countryCodePromise,
@@ -185,6 +213,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
@@ -197,9 +226,17 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => {
+  gnavPromise.then(async () => {
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
+    if (isAcomAssistantEnabled()) {
+      try {
+        const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+        decorateAcomAssistantGnav(el);
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+      }
+    }
   });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }

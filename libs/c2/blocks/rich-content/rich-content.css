@@ -638,45 +638,30 @@
     background-color: unset;
   }
 
+  /* Glass frame matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
   &.glass-border .media-cell :is(picture, .video-container) {
-    --glass-frame-width: 4px;
-    --glass-stroke: 0.6px;
-    --glass-fill: rgb(255 255 255 / 5%);
     box-sizing: border-box;
-    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
-    padding: var(--glass-frame-width);
-    background: var(--glass-fill);
-    background-clip: padding-box;
-    box-shadow: 0 var(--s2a-spacing-32) var(--s2a-spacing-64) var(--s2a-color-transparent-black-16), 0 var(--s2a-spacing-12) var(--s2a-spacing-24) rgb(0 0 0 / 14%), 0 var(--s2a-spacing-4) var(--s2a-spacing-8) var(--s2a-color-transparent-black-12);
-    border-radius: var(--s2a-border-radius-8);
-    backdrop-filter: blur(var(--s2a-blur-md));
+    border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
+    padding: var(--s2a-spacing-xs);
+    background-color: var(--s2a-color-transparent-white-04);
+    backdrop-filter: blur(var(--s2a-blur-sm));
+    box-shadow: 0 86.137px 68.909px 0 rgb(0 0 0 / 7%), 0 35.986px 28.789px 0 rgb(0 0 0 / 5%), 0 19.24px 15.392px 0 rgb(0 0 0 / 4%), 0 10.786px 8.629px 0 rgb(0 0 0 / 4%), 0 5.728px 4.583px 0 rgb(0 0 0 / 3%), 0 2.384px 1.907px 0 rgb(0 0 0 / 2%);
+    border-radius: var(--s2a-border-radius-xs);
     overflow: hidden;
 
     @media (width >= 768px) {
-      --glass-frame-width: 6.5px;
-      --glass-stroke: 1px;
       box-sizing: unset;
     }
 
-    @media (width >= 1024px) {
-      border-radius: var(--s2a-border-radius-16);
-    }
-
     @media (width >= 1280px) {
-      --glass-frame-width: 7.4px;
-      --glass-stroke: 1.2px;
-    }
-
-    @media (width >= 1440px) {
-      --glass-frame-width: 9.4px;
-      --glass-stroke: 1.6px;
+      border-radius: var(--s2a-border-radius-md);
     }
 
     :is(img, video) {
-      border-radius: var(--s2a-border-radius-4);
+      border-radius: var(--s2a-border-radius-2xs);
 
-      @media (width >= 1024px) {
-        border-radius: var(--s2a-border-radius-8);
+      @media (width >= 1280px) {
+        border-radius: var(--s2a-border-radius-xs);
       }
     }
   }

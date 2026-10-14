@@ -1225,6 +1225,34 @@ describe('formatDate via getManifestList', () => {
     expect(manifests[0].eventStart).to.be.a('string').and.not.empty;
     expect(manifests[0].eventStartIso).to.be.a('string').and.include('T');
     expect(manifests[0].eventEnd).to.be.a('string').and.not.empty;
+    expect(manifests[0].eventEndIso).to.equal('2024-06-30T12:00:00.000Z');
+  });
+
+  it('returns null end fields instead of throwing when end is an Invalid Date', () => {
+    setConfig({
+      ...config,
+      mep: {
+        ...config.mep,
+        experiments: [{
+          name: 'Invalid End Test',
+          manifest: '/invalid-end.json',
+          variantNames: ['v-a'],
+          selectedVariantName: 'v-a',
+          source: 'helix',
+          disabled: false,
+          event: { start: new Date('2024-06-01T12:00:00Z'), end: new Date('not-a-date+00:00') },
+        }],
+      },
+    });
+    let result;
+    expect(() => { result = getManifestList(); }).to.not.throw();
+    const [manifest] = result.manifests;
+    expect(manifest.eventStartIso).to.equal('2024-06-01T12:00:00.000Z');
+    expect(manifest.eventEnd).to.be.null;
+    expect(manifest.eventEndIso).to.be.null;
+    expect(manifest.eventEndDate).to.be.null;
+    expect(manifest.eventEndTime).to.be.null;
+    expect(manifest.showActive).to.be.false;
   });
 
   it('lastSeen in manifest descriptor is null (toActivity does not pass lastSeen through)', () => {
@@ -1250,9 +1278,9 @@ describe('formatDate via getManifestList', () => {
 describe('getLastSeen', () => {
   afterEach(() => setConfig(config));
 
-  it('returns a string (formatted date or fallback) for the current page', () => {
+  it('returns null rather than "Invalid Date" when the page has no lastSeen', () => {
     setConfig(config);
-    expect(getLastSeen()).to.be.a('string');
+    expect(getLastSeen()).to.be.null;
   });
 });
 
