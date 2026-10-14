@@ -392,17 +392,24 @@ function nestApplicationEntities(nodes) {
         if (entity['@id']) nestedIds.add(entity['@id']);
         delete nested['@id'];
         delete nested['@context'];
+        if (type === 'AggregateRating' && !aggregateRatingMeetsThresholds(nested)) return null;
         return nested;
       };
-      application[prop] = Array.isArray(application[prop])
-        ? application[prop].map(nest) : nest(application[prop]);
+      if (Array.isArray(application[prop])) {
+        application[prop] = application[prop].map(nest).filter((value) => value !== null);
+        if (application[prop].length === 0) delete application[prop];
+      } else {
+        const nested = nest(application[prop]);
+        if (nested === null) delete application[prop];
+        else application[prop] = nested;
+      }
     }
   }
   // Shared entities must still resolve from relationships outside the application.
   const referencedIds = new Set();
   const collectRefs = (value) => {
     if (!value || typeof value !== 'object') return;
-    if (value['@id'] && !value['@type']) referencedIds.add(value['@id']);
+    if (value['@id']) referencedIds.add(value['@id']);
     Object.values(value).forEach(collectRefs);
   };
   serializedNodes.forEach((node) => Object.values(node).forEach(collectRefs));

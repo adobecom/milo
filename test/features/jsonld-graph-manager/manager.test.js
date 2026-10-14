@@ -747,6 +747,23 @@ describe('SoftwareApplication nested entities', () => {
     expect(graph.find((node) => node['@type'] === 'Article').aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
   });
 
+  it('keeps a root Offer when a typed relationship outside the application references it', () => {
+    const offerId = 'https://producer.example/#paid';
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        offers: { '@type': 'Offer', '@id': offerId, price: '19.99', priceCurrency: 'USD' },
+      },
+      { '@type': 'Article', about: { '@type': 'Offer', '@id': offerId } },
+    ]));
+    trackedManager().init();
+
+    const graph = getManagedGraph()['@graph'];
+    expect(graph.find((node) => node['@type'] === 'Offer')).to.deep.include({ '@id': `${PAGE_URL}#paid`, price: '19.99', priceCurrency: 'USD' });
+    expect(graph.find((node) => node['@type'] === 'Article').about).to.deep.equal({ '@type': 'Offer', '@id': `${PAGE_URL}#paid` });
+  });
+
   it('rebuilds nested children from runtime contributions using existing source priority', () => {
     const boot = makeScript({
       '@type': 'SoftwareApplication',
@@ -781,6 +798,30 @@ describe('SoftwareApplication nested entities', () => {
         '@type': 'AggregateRating',
         '@id': 'https://producer.example/#rating',
         ratingValue: '3.9',
+        ratingCount: '200',
+      },
+    ]));
+    trackedManager().init();
+    const graph = getManagedGraph()['@graph'];
+    expect(graph.find((node) => node['@type'] === 'SoftwareApplication')).to.not.have.property('aggregateRating');
+    expect(graph.some((node) => node['@type'] === 'AggregateRating')).to.be.false;
+  });
+
+  it('removes a low-quality rating body supplied with an aggregateRating reference', () => {
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        aggregateRating: {
+          '@id': 'https://producer.example/#rating',
+          ratingValue: '3.9',
+          ratingCount: '99',
+        },
+      },
+      {
+        '@type': 'AggregateRating',
+        '@id': 'https://producer.example/#rating',
+        ratingValue: '4.5',
         ratingCount: '200',
       },
     ]));
