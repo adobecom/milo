@@ -34,7 +34,7 @@
     --floating-cta-radius: var(--s2a-border-radius-8) var(--s2a-border-radius-8) 0 0;
 
     backdrop-filter: blur(27px); /* no token */
-    background: var(--s2a-color-transparent-black-48);
+    background: var(--s2a-color-transparent-black-64);
     border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
     border-radius: var(--floating-cta-radius);
     inset-block-end: 0;
