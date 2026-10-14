@@ -10,8 +10,11 @@ import {
   getLingoRegion,
   getFederatedUrl,
   loadIms,
+  isAcomAssistantEnabled,
 } from '../../../utils/utils.js';
 import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
 
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
@@ -79,6 +82,21 @@ async function decorateAppPrompt(el) {
     parent,
     getAnchorState: () => window.UniversalNav?.getComponent?.('app-switcher'),
   });
+}
+
+// Mirrors c1 gnav's decorateBrandConciergeGlobal
+export async function loadBrandConcierge(block) {
+  if (isAcomAssistantEnabled()) {
+    const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
+    decorateAcomAssistantGnavBlock(block);
+    return;
+  }
+  const { base } = getConfig();
+  const [{ default: initBrandConcierge }] = await Promise.all([
+    import('../brand-concierge-global/brand-concierge-global.js'),
+    loadStyles(`${base}/c2/blocks/brand-concierge-global/brand-concierge-global.css`),
+  ]);
+  await initBrandConcierge(block);
 }
 
 export default async function init(el) {
@@ -195,6 +213,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
@@ -207,9 +226,17 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => {
+  gnavPromise.then(async () => {
     requestAnimationFrame(() => window.lenis?.resize());
     decorateAppPrompt(el);
+    if (isAcomAssistantEnabled()) {
+      try {
+        const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+        decorateAcomAssistantGnav(el);
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+      }
+    }
   });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
