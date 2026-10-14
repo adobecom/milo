@@ -439,8 +439,7 @@
     --icon-size: 18px;
 
     .hub-hero-image-grid-container-col div img,
-    .hub-hero-image-grid-container-col div video,
-    .hub-hero-carousel-item-media {
+    .hub-hero-image-grid-container-col div video {
       border-radius: var(--s2a-border-radius-sm);
     }
 
@@ -2106,6 +2105,7 @@
     }
 
     .hub-hero-image-grid-container-col div:nth-child(2),
+    .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2),
     .hub-hero-image-grid-container-col div:nth-child(3) {
       animation: none;
       translate: 0 0;

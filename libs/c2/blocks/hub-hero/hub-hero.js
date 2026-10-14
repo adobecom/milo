@@ -100,8 +100,9 @@ const scrollHubHeroTo = (el, progress) => {
       if (!hubHero) return;
       const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
       const heroStyle = getComputedStyle(hubHero);
-      const scrollRange = heroStyle.animationName.includes('hubHeroDesktopShrink')
-        ? parseFloat(heroStyle.getPropertyValue('--hub-hero-height')) - window.innerHeight
+      const heroHeight = parseFloat(heroStyle.getPropertyValue('--hub-hero-height'));
+      const scrollRange = heroStyle.animationName.includes('hubHeroDesktopShrink') && Number.isFinite(heroHeight)
+        ? heroHeight - window.innerHeight
         : totalScrollRange;
       if (scrollRange <= 0) return;
       const targetScrollY = hubHeroAbsTop + scrollRange * progress;
