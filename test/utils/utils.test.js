@@ -919,7 +919,8 @@ describe('Utils', () => {
     it('initializes C2 content animations once a section has loaded', async () => {
       const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
       document.head.append(foundation);
-      document.body.innerHTML = '<main><div><div class="rich-content"><div><div><h2>Title</h2><p>Body</p></div></div></div></div></main>';
+      // Stands in for the entrance role that C2 styles.css gives Rich Content.
+      document.body.innerHTML = '<style>.rich-content { --c2-entrance: content; }</style><main><div><div class="rich-content"><div><div><h2>Title</h2><p>Body</p></div></div></div></div></main>';
       try {
         await utils.loadArea();
         const richContent = document.querySelector('.rich-content');

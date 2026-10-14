@@ -5,7 +5,9 @@ simplicity. The guiding principles:
 
 - **Content entrances are one-time and timed, never scroll-driven.** Use
   the existing `parallax-*` entrance classes; `content-animations.js`
-  triggers them. Do not give an entrance any `animation-timeline`,
+  triggers them. A new entrance class needs an `--c2-entrance` role in
+  the "Entrance roles" rules in `libs/c2/styles/styles.css`. Do not give
+  an entrance any `animation-timeline`,
   `view-timeline` or `animation-range`.
 - **Scroll-driven CSS is only for scroll moments** such as garage doors,
   section stacking and sticky effects.

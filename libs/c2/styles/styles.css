@@ -1357,56 +1357,6 @@ span.hang-opening-quote {
 
   /* stylelint-disable property-no-unknown -- Scroll timelines require newer CSS property definitions. */
 
-  /* Rich Content + Split Aside; keep in sync with ASIDE_SELECTOR in libs/c2/content-animations.js.
-     Ranges, 20px rise steps, and phase order follow proto.adobe.io/RichContent-MotionLogic. */
-  :where(.section.parallax-double-garage-door:has(> .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid)) {
-    timeline-scope: --c2-aside-timeline;
-
-    > .rich-content:has(+ .split-aside-grid) {
-      animation: none;
-      view-timeline: --c2-aside-timeline block;
-    }
-
-    > .rich-content:has(+ .split-aside-grid) .content > *,
-    > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
-      --c2-aside-order: 2;
-
-      animation: c2-aside-fade linear both, c2-aside-rise linear both;
-      animation-timeline: --c2-aside-timeline, --c2-aside-timeline;
-      animation-range:
-        entry-crossing calc(5.75vh + var(--c2-aside-order) * 6.75vh)
-        entry-crossing 49.25vh,
-        entry-crossing -22vh entry-crossing 53vh;
-    }
-
-    > .rich-content:has(+ .split-aside-grid) .content > :where(:first-child) { --c2-aside-order: 0; }
-    > .rich-content:has(+ .split-aside-grid) .content > :where(:first-child) + * { --c2-aside-order: 1; }
-    > .rich-content:has(+ .split-aside-grid) .content > :where(h1, h2, h3, h4, h5, h6):where(:not(:first-child)) { --c2-aside-order: 1; }
-
-    > .split-aside-grid .split-aside-grid-stack { --c2-aside-order: 3; }
-
-    > .split-aside-grid .split-aside-grid-items { --c2-aside-order: 4; }
-
-    @supports (order: sibling-index()) {
-      > .rich-content:has(+ .split-aside-grid) .content > * {
-        /* stylelint-disable-next-line function-no-unknown -- Native sibling functions postdate the pinned CSS definitions. */
-        --c2-aside-order: calc((sibling-index() - 1) * min(1, 2 / max(1, sibling-count() - 1)));
-      }
-    }
-
-    &:focus-within > .rich-content:has(+ .split-aside-grid) .content > *,
-    &:focus-within > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
-      animation: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      > .rich-content:has(+ .split-aside-grid) .content > *,
-      > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
-        animation: none;
-      }
-    }
-  }
-
   @keyframes c2-aside-fade {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -1436,6 +1386,40 @@ span.hang-opening-quote {
   inherits: false;
   initial-value: 0;
 }
+
+/* Entrance roles tell libs/c2/content-animations.js what gets a one-time entrance and where
+   its items are. Later rules win.
+   - content: Rich Content text lines, one after another.
+   - self: the element itself.
+   - stagger / stagger-rtl: the children, one after another.
+   - children: the children, together.
+   - effect: the element plays in place, even inside another entrance.
+   - block: like effect, but the block animates its own content, so nothing inside it gets
+     a separate entrance. */
+@property --c2-entrance {
+  syntax: "*";
+  inherits: false;
+}
+
+/* stylelint-disable no-descending-specificity -- :where() keeps every role at zero specificity. */
+:where(.parallax-scale-up, .parallax-scale-down, .parallax-scale-down-grid, .parallax-blur,
+.parallax-featured-card-media, .social-proof) {
+  --c2-entrance: effect;
+}
+
+:where(.carousel-c2, .elastic-carousel) { --c2-entrance: block; }
+
+:where(.rich-content:not(.hero)) { --c2-entrance: content; }
+:where(.parallax-move-up, .parallax-opacity) { --c2-entrance: self; }
+:where(.parallax-stagger-ltr) { --c2-entrance: stagger; }
+:where(.parallax-stagger-rtl) { --c2-entrance: stagger-rtl; }
+
+/* Garage doors and sticky moments stay scroll-driven. The flag inherits, so nothing inside
+   them gets a one-time entrance. */
+:where(.parallax-garage-door-reveal, .parallax-move-up-fast, .parallax-video-garage-door) {
+  --c2-entrance-off: 1;
+}
+/* stylelint-enable no-descending-specificity */
 
 /* [class] keeps entrance state above same-specificity item styles in block CSS, which loads
    after this file. Distances, 1050ms duration, and fade windows follow
@@ -1681,6 +1665,70 @@ span.hang-opening-quote {
   }
 
   :has(> &) { overflow-x: clip; }
+}
+
+/* Rich Content + Split Aside: content follows the garage door on scroll, so it opts out of the
+   one-time entrance; the hover list after it still gets one.
+   Ranges, 20px rise steps, and phase order follow proto.adobe.io/RichContent-MotionLogic. */
+:where(.section.parallax-double-garage-door:has(> .rich-content:not(.hero, .merch-moment, .media) + .split-aside-grid)) {
+  > .rich-content:has(+ .split-aside-grid),
+  > .split-aside-grid {
+    --c2-entrance-off: 1;
+  }
+
+  > .hover-list {
+    --c2-entrance: children;
+  }
+
+  /* stylelint-disable property-no-unknown -- Scroll timelines require newer CSS property definitions. */
+  @supports (animation-timeline: view()) {
+    timeline-scope: --c2-aside-timeline;
+
+    > .rich-content:has(+ .split-aside-grid) {
+      animation: none;
+      view-timeline: --c2-aside-timeline block;
+    }
+
+    > .rich-content:has(+ .split-aside-grid) .content > *,
+    > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+      --c2-aside-order: 2;
+
+      animation: c2-aside-fade linear both, c2-aside-rise linear both;
+      animation-timeline: --c2-aside-timeline, --c2-aside-timeline;
+      animation-range:
+        entry-crossing calc(5.75vh + var(--c2-aside-order) * 6.75vh)
+        entry-crossing 49.25vh,
+        entry-crossing -22vh entry-crossing 53vh;
+    }
+
+    > .rich-content:has(+ .split-aside-grid) .content > :where(:first-child) { --c2-aside-order: 0; }
+    > .rich-content:has(+ .split-aside-grid) .content > :where(:first-child) + * { --c2-aside-order: 1; }
+    > .rich-content:has(+ .split-aside-grid) .content > :where(h1, h2, h3, h4, h5, h6):where(:not(:first-child)) { --c2-aside-order: 1; }
+
+    > .split-aside-grid .split-aside-grid-stack { --c2-aside-order: 3; }
+
+    > .split-aside-grid .split-aside-grid-items { --c2-aside-order: 4; }
+
+    @supports (order: sibling-index()) {
+      > .rich-content:has(+ .split-aside-grid) .content > * {
+        /* stylelint-disable-next-line function-no-unknown -- Native sibling functions postdate the pinned CSS definitions. */
+        --c2-aside-order: calc((sibling-index() - 1) * min(1, 2 / max(1, sibling-count() - 1)));
+      }
+    }
+
+    &:focus-within > .rich-content:has(+ .split-aside-grid) .content > *,
+    &:focus-within > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+      animation: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      > .rich-content:has(+ .split-aside-grid) .content > *,
+      > .split-aside-grid :is(.split-aside-grid-stack, .split-aside-grid-items) {
+        animation: none;
+      }
+    }
+  }
+  /* stylelint-enable property-no-unknown */
 }
 
 [class*="parallax-stagger-"] {

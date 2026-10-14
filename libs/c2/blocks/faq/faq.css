@@ -47,6 +47,9 @@
 }
 
 .faq-trigger {
+  /* Each item's one-time entrance starts when its question reaches the trigger line. */
+  --c2-entrance-anchor: 1;
+
   align-items: center;
   cursor: pointer;
   display: flex;

@@ -43,8 +43,18 @@ content crosses its trigger line. CSS owns all motion. JavaScript does not
 listen to scroll, interpolate motion or track scroll direction, and played
 content never reverses.
 
-Sources inside a garage-door section (`SPECIALTY_SELECTOR`) are skipped:
-that content is part of the door interaction. Content already running any
+CSS decides what gets an entrance; the JavaScript lists no classes or
+blocks. In `libs/c2/styles/styles.css` ("Entrance roles"), each animated
+class sets an `--c2-entrance` role: `content` (Rich Content text lines),
+`self`, `stagger` / `stagger-rtl`, `children`, `effect` (plays in place), or
+`block` (carousels: the block animates its own content, so nothing inside
+it gets a separate entrance). To add a new entrance, give its class a role
+there. A block can set `--c2-entrance-anchor` on an item's child to start
+that item from the child, as FAQ does with its question.
+
+Garage doors, sticky moments and the Rich Content + Split Aside content set
+`--c2-entrance-off`, which inherits, so nothing inside them gets an
+entrance: that content stays scroll-driven. Content already running any
 other animation keeps its own motion and gets no entrance.
 
 ### Authored inputs
