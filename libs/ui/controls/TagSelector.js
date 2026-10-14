@@ -257,9 +257,7 @@ const TagSelect = ({
 
   return html`
     <div class="tagselect" ref=${tagSelectRef}>
-      <label>${label}</label>
-      ${tooltip && html`<i class="tooltip"></i>`}
-      ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
+      <label title=${tooltip}>${label}</label>
       <div class="tagselect-input" onClick=${toggleOpen}>
         <div class="tagselect-values">${selectedItems}</div>
         <div class="tagselect-add">
