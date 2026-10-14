@@ -237,6 +237,8 @@ class Footer {
   };
 
   destroy = () => {
+    this.marketSelectorCleanup?.();
+    this.marketSelectorCleanup = null;
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     if (this.footerOrderMediaQuery && this.footerOrderMediaQueryHandler) {
@@ -351,8 +353,9 @@ class Footer {
       onFooterError?.(error);
       return;
     }
-    const [region, social, brand, mailingList, contactSupport] = [
-      '.region-selector',
+    const region = this.body.querySelector('.market-selector')
+      || this.body.querySelector('.region-selector');
+    const [social, brand, mailingList, contactSupport] = [
       '.social', '.brand',
       '.mailing-list',
       '.contact-support',
@@ -500,6 +503,29 @@ class Footer {
 
   decorateRegionPicker = async () => {
     this.elements.regionPicker = '';
+    const selector = this.body.querySelector('.market-selector');
+    if (selector) {
+      try {
+        const styleUrl = `${base}/blocks/market-selector/market-selector.css`;
+        const [{ default: initMarketSelector }] = await Promise.all([
+          import('../../../blocks/market-selector/market-selector.js'),
+          new Promise((resolve, reject) => {
+            loadStyle(styleUrl, (event) => {
+              if (event === 'error') reject(new Error(`Could not load ${styleUrl}`));
+              else resolve();
+            });
+          }),
+        ]);
+        this.marketSelectorCleanup?.();
+        const onCleanup = (cleanup) => { this.marketSelectorCleanup = cleanup; };
+        await initMarketSelector(selector, { onCleanup });
+        this.elements.regionPicker = selector;
+        return this.elements.regionPicker;
+      } catch (error) {
+        lanaLog({ message: 'Could not initialize market selector', error, tags: 'global-footer', errorType: 'e' });
+        selector.remove();
+      }
+    }
     const regionSelector = this.body.querySelector('.region-selector a');
     if (!regionSelector) return this.elements.regionPicker;
 

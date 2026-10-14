@@ -86,6 +86,64 @@ describe('Market selector block', () => {
     expect(document.querySelector('.market-selector-button span')).to.exist;
   });
 
+  it('retains the C1 selector when the page has a C2 footer override', async () => {
+    const metadata = document.createElement('meta');
+    metadata.name = 'footer-foundation';
+    metadata.content = 'c2';
+    document.head.append(metadata);
+    try {
+      const block = document.querySelector('.market-selector');
+      await init(block);
+      expect(block.querySelector('.market-selector-dropdown')).to.exist;
+    } finally {
+      metadata.remove();
+    }
+  });
+
+  it('offers listener cleanup for the C2 footer lifecycle', async () => {
+    const block = document.querySelector('.market-selector');
+    const onCleanup = sinon.spy();
+    await init(block, { onCleanup });
+    expect(onCleanup.calledOnce).to.equal(true);
+    const remove = sinon.spy(document, 'removeEventListener');
+    onCleanup.firstCall.args[0]();
+    expect(remove.withArgs('click').callCount).to.equal(2);
+  });
+
+  it('styles the existing controls only in a C2 footer', async () => {
+    const block = document.querySelector('.market-selector');
+    const footer = document.createElement('footer');
+    footer.className = 'global-footer';
+    block.replaceWith(footer);
+    footer.append(block);
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' });
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c1';
+    const footerFoundation = document.createElement('meta');
+    footerFoundation.name = 'footer-foundation';
+    footerFoundation.content = 'c2';
+    const popover = block.querySelector('.market-selector-popover');
+    try {
+      document.head.append(style, foundation);
+      expect(getComputedStyle(popover).position).to.equal('static');
+      foundation.content = 'c2';
+      expect(getComputedStyle(popover).position).not.to.equal('static');
+      foundation.content = 'c1';
+      document.head.append(footerFoundation);
+      expect(getComputedStyle(popover).position).not.to.equal('static');
+      expect(block.querySelectorAll('.market-selector-dropdown')).to.have.length(2);
+      expect(getComputedStyle(popover).display).to.equal('none');
+      block.querySelector('.market-selector-button').click();
+      expect(getComputedStyle(popover).display).to.equal('block');
+    } finally {
+      style.remove();
+      foundation.remove();
+      footerFoundation.remove();
+    }
+  });
+
   it('opens the market popover and lists supported regions', async () => {
     const buttons = document.querySelectorAll('.market-selector-button');
     const marketBtn = buttons[1];

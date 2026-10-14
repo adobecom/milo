@@ -431,6 +431,8 @@ class FooterKeyboardNavigation {
       return;
     }
 
+    if (e.target.closest('.market-selector')) return;
+
     if (this.isDesktopForFooter()) {
       if (e.target.closest(selectors.languagePicker)) return;
       const footerElement = e.target.closest(selectors.globalFooter);

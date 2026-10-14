@@ -459,11 +459,12 @@ function createDropdown(
     }
   });
 
-  document.addEventListener('click', (e) => {
+  const onOutsideClick = (e) => {
     if (!e.target.closest('.market-selector-dropdown')) {
       document.querySelectorAll('.market-selector-popover[data-open="true"]').forEach(closePopoverElement);
     }
-  });
+  };
+  document.addEventListener('click', onOutsideClick);
 
   popover.addEventListener('focusout', (e) => {
     const nextFocused = e.relatedTarget;
@@ -630,18 +631,28 @@ function createDropdown(
   list.addEventListener('touchend', onListTouchEnd, { passive: true });
   list.addEventListener('touchcancel', onListTouchEnd, { passive: true });
 
-  return { container, updateItems: renderItems, button };
+  return {
+    container,
+    updateItems: renderItems,
+    button,
+    cleanup: () => {
+      document.removeEventListener('click', onOutsideClick);
+      removeDragListeners();
+    },
+  };
 }
 
-export default async function init(block) {
+export default async function init(block, { onCleanup } = {}) {
   const config = await getMarketConfig();
   if (!config || !config.languages?.length) {
+    if (onCleanup) throw new Error('Market selector configuration is missing languages');
     block.innerHTML = '';
     return;
   }
 
   const markets = await loadMarketsData();
   if (!markets?.length) {
+    if (onCleanup) throw new Error('Market selector configuration is missing markets');
     block.innerHTML = '';
     return;
   }
@@ -708,4 +719,8 @@ export default async function init(block) {
   block.innerHTML = '';
   block.classList.add('feds-regionPicker-wrapper');
   block.append(wrapper);
+  onCleanup?.(() => {
+    langDropdown.cleanup();
+    marketDropdown.cleanup();
+  });
 }
