@@ -189,17 +189,18 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-// mas-field merch.js timed out on. [hidden] ones resolved empty and are not pending.
-const PENDING_FIELDS = 'em mas-field:not([hidden])';
+// mas-field merch.js timed out on. [hidden] ones resolved empty, and ones whose
+// aem-fragment failed (class "error", mas-field sets no attribute) will never resolve.
+const PENDING_FIELDS = 'em mas-field:not([hidden], :has(> aem-fragment.error))';
 
-// A late link replaces its mas-field, or the field hides. Either changes the pending count.
+// A late link replaces its mas-field, or the field hides or fails. Each changes the pending count.
 const onPendingChange = (cta, count, callback) => {
   const observer = new MutationObserver(() => {
     if (cta.querySelectorAll(PENDING_FIELDS).length === count) return;
     observer.disconnect();
     callback();
   });
-  observer.observe(cta, { childList: true, subtree: true, attributeFilter: ['hidden'] });
+  observer.observe(cta, { childList: true, subtree: true, attributeFilter: ['hidden', 'class'] });
 };
 
 const decorateCtas = (textCol, isLight) => {

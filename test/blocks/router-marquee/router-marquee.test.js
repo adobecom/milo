@@ -809,6 +809,20 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     expect(ctas.firstElementChild.textContent).to.equal('Buy now');
   });
 
+  it('flattens once a pending field fails to load, keeping the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('mas-field')).to.exist;
+
+    // aem-fragment marks itself with class "error" before it fires aem:error
+    ctas.querySelector('aem-fragment').classList.add('error');
+    await until(() => !ctas.querySelector('mas-field'));
+
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.textContent).to.equal('Buy now');
+  });
+
   it('keeps a pending field while a sibling field is hidden', async () => {
     await mount(`${hiddenField} ${lateField}`);
 
@@ -833,6 +847,16 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
       await until(() => !ctas.querySelector('mas-field'));
 
       expect([...ctas.children].map((c) => c.textContent)).to.deep.equal(['Learn more']);
+    });
+
+    it('removes an already-loaded free-trial CTA while another field is still pending', async () => {
+      const trial = '<em><strong><a href="/kr/cc-shared/fragments/trial-modals/x" data-modal-path="/kr/cc-shared/fragments/trial-modals/x">Free trial</a></strong></em>';
+      await mount(`${trial} ${lateField}`);
+
+      const ctas = desktop().querySelector('.rm-ctas');
+      expect(ctas.querySelector('mas-field')).to.exist;
+      expect(ctas.textContent).to.not.include('Free trial');
+      expect(ctas.querySelector('a')).to.not.exist;
     });
 
     it('keeps a late CTA that is not a free trial', async () => {
