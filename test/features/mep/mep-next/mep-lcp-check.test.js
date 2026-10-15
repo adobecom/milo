@@ -436,6 +436,37 @@ describe('mep-lcp-check', () => {
       expect(log.secondCall.args[0]).to.not.include('note: hero layouts differ');
       expect(log.lastCall.args[0]).to.include('* distance:');
     });
+
+    it('merges one fragment used by several commands in a variant', () => {
+      const log = sinon.stub(console, 'log');
+      const title = sinon.stub(console, 'groupCollapsed');
+      sinon.stub(console, 'groupEnd');
+      const finding = {
+        type: 'near-duplicate',
+        manifestPath: '/m.json',
+        variant: 'v',
+        action: 'replace',
+        selector: 'any-marquee action-area',
+        fragmentUrl: 'https://x/frag',
+        match: 'near-duplicate',
+        distance: 1,
+        viewports: ['tablet'],
+        fragmentRole: 'background cell 2 of 3',
+        pageRoles: ['background cell 2 of 3'],
+        fragmentImage: '/media_f1.png',
+        pageImage: '/media_p1.jpg',
+      };
+      logFindings({
+        findings: [finding, { ...finding, selector: 'any-marquee-section' }],
+        unable: [],
+      });
+      sinon.restore();
+      expect(title.firstCall.args[0]).to.include('(1)');
+      expect(log.callCount).to.equal(2);
+      const [msg] = log.firstCall.args;
+      expect(msg).to.include('variant "v" | replace "any-marquee action-area", replace "any-marquee-section"');
+      expect(msg.match(/tablet: fragment background cell 2 of 3/g)).to.have.length(1);
+    });
   });
 
   describe('init', () => {

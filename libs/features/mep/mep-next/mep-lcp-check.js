@@ -492,14 +492,13 @@ const describeImageFix = (f, i) => {
   ];
 };
 
-const describeNearDuplicates = (group) => {
-  const [first] = group;
+const describeNearDuplicates = ({ first, targets, fixes }) => {
   const lines = [
-    `${first.manifestPath} | variant "${first.variant}" | ${first.action} "${first.selector}"`,
+    `${first.manifestPath} | variant "${first.variant}" | ${targets.join(', ')}`,
     `  fragment: ${first.fragmentUrl}`,
-    ...group.flatMap((f, i) => describeImageFix(f, i + 1)),
+    ...fixes.flatMap((f, i) => describeImageFix(f, i + 1)),
   ];
-  const { layout } = group
+  const { layout } = fixes
     .find((f) => f.layout && f.pageRoles?.some((role) => role !== f.fragmentRole)) || {};
   if (layout) {
     lines.push(
@@ -511,14 +510,22 @@ const describeNearDuplicates = (group) => {
   return lines.join('\n');
 };
 
+// one variant can place the same fragment through several commands; report it once
 const groupByFragment = (findings) => {
   const groups = new Map();
   findings.forEach((f) => {
-    const key = [f.manifestPath, f.variant, f.action, f.selector, f.fragmentUrl].join('|');
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(f);
+    const key = [f.manifestPath, f.variant, f.fragmentUrl].join('|');
+    if (!groups.has(key)) groups.set(key, { first: f, targets: new Set(), fixes: new Map() });
+    const group = groups.get(key);
+    group.targets.add(`${f.action} "${f.selector}"`);
+    const fixKey = [f.fragmentImage, f.pageImage, f.fragmentRole, f.viewports?.join()].join('|');
+    if (!group.fixes.has(fixKey)) group.fixes.set(fixKey, f);
   });
-  return [...groups.values()];
+  return [...groups.values()].map(({ first, targets, fixes }) => ({
+    first,
+    targets: [...targets],
+    fixes: [...fixes.values()],
+  }));
 };
 
 export function logFindings({ findings, unable }, checked = 0) {
@@ -526,8 +533,10 @@ export function logFindings({ findings, unable }, checked = 0) {
     console.log(`${LOG_TITLE}: no issues found (${checked} variant${checked === 1 ? '' : 's'} checked)`);
     return;
   }
-  console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
-  groupByFragment(findings).forEach((group) => console.log(describeNearDuplicates(group)));
+  const groups = groupByFragment(findings);
+  const count = groups.reduce((n, group) => n + group.fixes.length, 0);
+  console.groupCollapsed(`${LOG_TITLE} (${count})`);
+  groups.forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   if (findings.length) console.log(DISTANCE_NOTE);
   console.groupEnd();
