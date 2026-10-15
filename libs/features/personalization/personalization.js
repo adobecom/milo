@@ -18,6 +18,7 @@ import {
   getCookie,
   isMasImsLoginEnabled,
   normCountryCode,
+  BREAKPOINTS,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -65,6 +66,7 @@ export const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
   includeGnav: 'include-gnav',
+  allBreakpoints: 'all-breakpoints',
 };
 let isPostLCP = false;
 const SELECTOR_TYPES = {
@@ -209,6 +211,35 @@ export function replacePlaceholders(value, ph) {
   return val;
 }
 
+const getBreakpoint = (row) => {
+  const text = row.querySelector(':scope > div')?.textContent.trim().toLowerCase();
+  return BREAKPOINTS.find((b) => text === b || text === `${b}-viewport`);
+};
+
+const getRowBreakpoint = (row) => {
+  let sibling = row?.previousElementSibling;
+  while (sibling) {
+    const breakpoint = getBreakpoint(sibling);
+    if (breakpoint) return breakpoint;
+    sibling = sibling.previousElementSibling;
+  }
+  return null;
+};
+
+// Rows under the given breakpoint label; all rows if there are none
+export const getBreakpointRows = (rows, breakpoint) => {
+  let current = null;
+  const filtered = rows.filter((row) => {
+    const label = getBreakpoint(row);
+    if (label) {
+      current = label;
+      return false;
+    }
+    return current === breakpoint;
+  });
+  return filtered.length ? filtered : rows;
+};
+
 const getUpdatedHref = (el, content, action) => {
   const href = el.getAttribute('href');
   const newContent = replacePlaceholders(content);
@@ -281,6 +312,11 @@ export const createContent = async (
 
   const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
+  const breakpoint = modifiers?.includes(FLAGS.allBreakpoints) && getRowBreakpoint(el);
+  if (breakpoint) {
+    const a = frag.matches('a') ? frag : frag.querySelector('a');
+    a.dataset.mepBreakpoint = breakpoint;
+  }
   return frag;
 };
 
@@ -295,6 +331,28 @@ export const handleTwpButtons = (el, selector) => {
       wrapper.innerHTML = result;
     }
   }
+};
+
+const log = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.log(...msg);
+};
+
+// Rows at the same slide position as `el` under every breakpoint label row of its block
+const getAllBreakpointRows = (el) => {
+  const rows = [...(el.parentElement?.children || [])];
+  const groups = [];
+  rows.forEach((row) => {
+    if (getBreakpoint(row)) groups.push([]);
+    else groups[groups.length - 1]?.push(row);
+  });
+  const group = groups.find((g) => g.includes(el));
+  if (!group) {
+    log('MEP: #_all-breakpoints ignored; it must match a block row under a breakpoint label');
+    return [el];
+  }
+  const idx = group.indexOf(el);
+  return groups.map((g) => g[idx]).filter(Boolean);
 };
 
 const COMMANDS = {
@@ -359,11 +417,6 @@ const COMMANDS = {
       addIds(el, manifestId, targetManifestId);
     }
   },
-};
-
-const log = (...msg) => {
-  const config = getConfig();
-  if (config.mep?.preview) console.log(...msg);
 };
 
 export const fetchData = async (url, type = DATA_TYPE.JSON, config) => {
@@ -782,7 +835,12 @@ export async function handleCommands(
 
       Object.assign(cmd, { modifiers, attribute });
 
-      for (const el of els || []) {
+      // Set dedupes rows reached from more than one match (e.g. with #_all)
+      const targets = modifiers?.includes(FLAGS.allBreakpoints)
+        ? [...new Set([...(els || [])].flatMap(getAllBreakpointRows))]
+        : els;
+
+      for (const el of targets || []) {
         if (el
           && (action in COMMANDS || action in CREATE_CMDS)
           && (!rootEl || rootEl.contains(el))

@@ -216,6 +216,7 @@ export const MILO_EVENTS = {
   QUERY_INDEX_PRIMARY_LOADED: 'milo:query-index:primary-loaded',
   QUERY_INDEX_ALL_LOADED: 'milo:query-index:all-loaded',
 };
+export const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
 const TARGET_TIMEOUT_MS = 4000;
 
 const LANGSTORE = 'langstore';

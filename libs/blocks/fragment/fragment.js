@@ -66,6 +66,11 @@ const insertInlineFrag = async (sections, a, relHref) => {
 
   if (rowOrCellInsertValue === 'row') {
     fragChildren = fragmentBlock?.querySelectorAll(':scope > div') || [];
+    const { mepBreakpoint } = a.dataset;
+    if (mepBreakpoint) {
+      const { getBreakpointRows } = await import('../../features/personalization/personalization.js');
+      fragChildren = getBreakpointRows([...fragChildren], mepBreakpoint);
+    }
   } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
     fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
   } else {
