@@ -31,7 +31,6 @@ const LOG_TITLE = 'MEP LCP image checks';
 const FIRST_SECTION_RE = /^main>div(:first-child|:first-of-type|:nth-child\(1\)|:nth-of-type\(1\))?(?=$|[\s>])/;
 
 const checkedVariants = new Set();
-const reportedHidden = new Set();
 const fragmentCache = new Map();
 const hashCache = new Map();
 
@@ -207,12 +206,11 @@ export async function getFragmentImages(fragmentUrl, root, depth = 0) {
 
 export function getLcpSnapshot(lcpSection) {
   if (!lcpSection?.clone) return null;
-  const { original, clone } = lcpSection;
+  const { clone } = lcpSection;
   const toUrl = (src) => new URL(src, window.location.href).href;
   const sources = [...clone.querySelectorAll('source[srcset*="media_"]')]
     .map((s) => toUrl(s.getAttribute('srcset').split(',')[0].trim().split(/\s+/)[0]));
   return {
-    section: original,
     root: clone,
     images: [...[...clone.querySelectorAll('img[src*="media_"]')].map((img) => toUrl(img.getAttribute('src'))), ...sources],
     fragments: [...clone.querySelectorAll('a[href*="/fragments/"]')].map((a) => toUrl(a.getAttribute('href'))),
@@ -444,7 +442,7 @@ export async function findNearDuplicates(experiments, snapshot) {
     getPageLcpImages(snapshot),
     getPageHero(snapshot),
   ]);
-  if (!pageImages.length) return { findings, unable: [], pageImages };
+  if (!pageImages.length) return { findings, unable: [] };
   await Promise.all(candidates.map(async (candidate) => {
     const { variant, action, selector, fragmentUrl, manifestPath } = candidate;
     const root = await getCandidateRoot(candidate);
@@ -465,77 +463,7 @@ export async function findNearDuplicates(experiments, snapshot) {
       ...match,
     }));
   }));
-  return { findings, unable: [...unable], pageImages };
-}
-
-const isRendered = (el) => el.getClientRects().length > 0;
-
-const isHashRequest = (url) => {
-  try {
-    return new URL(url).search === `?${HASH_IMAGE_PARAMS}`;
-  } catch {
-    return false;
-  }
-};
-
-// skip the checker's own hash fetches so they don't count as page downloads
-const wasRequested = (name) => performance.getEntriesByType('resource')
-  .some((entry) => !isHashRequest(entry.name) && getMediaName(entry.name) === name);
-
-const getLcpAreaSections = (originalSection) => {
-  const sections = [...document.querySelectorAll('body > main > div')];
-  return sections.slice(0, Math.max(sections.indexOf(originalSection), 0) + 1);
-};
-
-// sections (including fragment sections) stay display:none while data-status is set
-const isSettled = (sections) => sections.every((section) => section.classList.contains('section')
-  && !section.dataset.status && !section.querySelector('.section[data-status]'));
-
-export const whenLcpAreaSettled = (originalSection, timeout = 10000, interval = 200) => (
-  new Promise((resolve) => {
-    const start = Date.now();
-    const check = () => {
-      if (isSettled(getLcpAreaSections(originalSection))) resolve(true);
-      else if (Date.now() - start >= timeout) resolve(false);
-      else setTimeout(check, interval);
-    };
-    check();
-  }));
-
-export function findHiddenHeroImages(pageImageNames, originalSection) {
-  const scanned = getLcpAreaSections(originalSection);
-  const manifests = [...new Set(scanned.flatMap((section) => [
-    section.dataset.manifestId,
-    ...[...section.querySelectorAll('[data-manifest-id]')].map((el) => el.dataset.manifestId),
-  ]).filter(Boolean))];
-  if (!manifests.length) return [];
-  const images = scanned.flatMap((section) => [...section.querySelectorAll('img[src*="media_"]')]);
-  // responsive marquees hide per-viewport copies of media that is also shown visibly
-  const visibleNames = new Set(images.filter(isRendered)
-    .map((img) => getMediaName(img.getAttribute('src'))));
-  const findings = [];
-  scanned.forEach((section) => {
-    section.querySelectorAll('img[src*="media_"]').forEach((img) => {
-      const name = getMediaName(img.getAttribute('src'));
-      const block = img.closest('main > div > div') || section;
-      if (isRendered(block) || visibleNames.has(name) || !wasRequested(name)) return;
-      const label = img.closest('[data-path]')?.dataset.path
-        || img.closest('[class*="marquee"]')?.classList[0]
-        || block.classList[0]
-        || 'section';
-      const key = `${name}|${label}`;
-      if (reportedHidden.has(key)) return;
-      reportedHidden.add(key);
-      findings.push({
-        type: 'hidden-image',
-        source: pageImageNames.includes(name) ? 'page' : 'inserted',
-        image: img.currentSrc || img.src,
-        block: label,
-        manifests,
-      });
-    });
-  });
-  return findings;
+  return { findings, unable: [...unable] };
 }
 
 const describeVerdict = (f) => (f.match === 'possible'
@@ -592,14 +520,7 @@ const groupByFragment = (findings) => {
 export function logFindings({ findings, unable }) {
   if (!findings.length && !unable.length) return;
   console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
-  findings.filter((f) => f.type === 'hidden-image').forEach((f) => console.log(
-    `Hidden ${f.source} image in the LCP area still downloads: ${f.image}\n`
-    + `  hidden block: ${f.block}\n`
-    + `  manifests in LCP area: ${f.manifests.join(', ') || 'unknown'}\n`
-    + '  remove the hidden content instead of hiding it with CSS, or reuse the visible hero image',
-  ));
-  groupByFragment(findings.filter((f) => f.type === 'near-duplicate'))
-    .forEach((group) => console.log(describeNearDuplicates(group)));
+  groupByFragment(findings).forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   console.groupEnd();
 }
@@ -642,11 +563,6 @@ export default async function init() {
   await whenIdle();
   mep.lcpSnapshot ??= getLcpSnapshot(mep.lcpSection);
   const result = await findNearDuplicates(experiments, mep.lcpSnapshot);
-  if (await whenLcpAreaSettled(mep.lcpSnapshot.section)) {
-    const pageImages = result.pageImages || await getPageLcpImages(mep.lcpSnapshot);
-    const pageImageNames = pageImages.map(getMediaName);
-    result.findings.push(...findHiddenHeroImages(pageImageNames, mep.lcpSnapshot.section));
-  }
   mep.lcpFindings = [...(mep.lcpFindings || []), ...result.findings];
   logFindings(result);
   return mep.lcpFindings;

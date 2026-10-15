@@ -1800,7 +1800,7 @@ export async function init(enablements = {}) {
       consentState: getMepConsentConfig(),
     };
     const lcpEl = config.mep.lcpCheck && document.querySelector('body > main > div');
-    if (lcpEl) config.mep.lcpSection = { original: lcpEl, clone: lcpEl.cloneNode(true) };
+    if (lcpEl) config.mep.lcpSection = { clone: lcpEl.cloneNode(true) };
 
     manifests = manifests.concat(await combineMepSources(
       pzn,

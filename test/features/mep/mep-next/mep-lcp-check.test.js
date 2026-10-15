@@ -19,9 +19,7 @@ const {
   getPageHero,
   getVariantViewports,
   getVariantsToCheck,
-  findHiddenHeroImages,
   logFindings,
-  whenLcpAreaSettled,
   compareImages,
   findNearDuplicates,
   createLimiter,
@@ -246,7 +244,6 @@ describe('mep-lcp-check', () => {
       const result = await findNearDuplicates(offHero, { images: [], fragments: [abs(`${MOCKS}/fragments/page-hero`)] });
       sinon.restore();
       expect(result.findings).to.deep.equal([]);
-      expect(result.pageImages).to.be.undefined;
       expect(fetchSpy.called).to.be.false;
     });
   });
@@ -437,103 +434,6 @@ describe('mep-lcp-check', () => {
     });
   });
 
-  describe('findHiddenHeroImages', () => {
-    let main;
-    let original;
-
-    before(async () => {
-      await loadImg(IMG_A);
-      main = document.createElement('main');
-      const inserted = document.createElement('div');
-      inserted.innerHTML = `<div class="marquee" data-manifest-id="intl1207.json"><img alt="" src="${IMG_B}"></div>`;
-      original = document.createElement('div');
-      original.innerHTML = `<div class="fragment" data-path="/fragments/marquee" style="display:none"><img alt="" src="${IMG_A}"></div>
-        <div class="marquee"><div style="display:none"><img alt="" src="${IMG_A_NEAR}"></div></div>
-        <div class="hidden-lazy" style="display:none"><img alt="" loading="lazy" src="${MOCKS}/media_ccc444.png"></div>`;
-      const below = document.createElement('div');
-      below.innerHTML = `<div style="display:none"><img alt="" src="${IMG_A}?below"></div>`;
-      main.append(inserted, original, below);
-      document.body.append(main);
-    });
-
-    after(() => main.remove());
-
-    it('flags requested images in hidden hero blocks', () => {
-      const findings = findHiddenHeroImages(['media_aaa111.png'], original);
-      expect(findings).to.have.length(1);
-      expect(findings[0]).to.include({ type: 'hidden-image', source: 'page', block: '/fragments/marquee' });
-      expect(getMediaName(findings[0].image)).to.equal('media_aaa111.png');
-      expect(findings[0].manifests).to.deep.equal(['intl1207.json']);
-    });
-
-    it('reports each image once', () => {
-      expect(findHiddenHeroImages(['media_aaa111.png'], original)).to.deep.equal([]);
-    });
-
-    it('does not count the checker hash fetch as a page download', () => {
-      const url = new URL(`${MOCKS}/media_ccc444.png`, window.location.href).href;
-      const entries = sinon.stub(performance, 'getEntriesByType')
-        .returns([{ name: `${url}?width=64&format=png&optimize=medium` }]);
-      expect(findHiddenHeroImages(['media_ccc444.png'], original)).to.deep.equal([]);
-      entries.returns([{ name: url }]);
-      const findings = findHiddenHeroImages(['media_ccc444.png'], original);
-      sinon.restore();
-      expect(findings).to.have.length(1);
-      expect(getMediaName(findings[0].image)).to.equal('media_ccc444.png');
-    });
-
-    it('only scans the first section when the original section is gone', () => {
-      expect(findHiddenHeroImages([], document.createElement('div'))).to.deep.equal([]);
-    });
-  });
-
-  describe('whenLcpAreaSettled', () => {
-    let main;
-
-    afterEach(() => main.remove());
-
-    it('waits for pending sections and gives up after the timeout', async () => {
-      main = document.createElement('main');
-      main.innerHTML = '<div class="section"><div class="fragment"><div class="section" data-status="decorated"></div></div></div>';
-      document.body.append(main);
-      const [section] = main.children;
-      expect(await whenLcpAreaSettled(section, 30, 10)).to.be.false;
-      const settled = whenLcpAreaSettled(section, 1000, 10);
-      delete main.querySelector('[data-status]').dataset.status;
-      expect(await settled).to.be.true;
-    });
-  });
-
-  describe('findHiddenHeroImages without MEP changes', () => {
-    let main;
-
-    afterEach(() => main.remove());
-
-    const render = (html) => {
-      main = document.createElement('main');
-      const section = document.createElement('div');
-      section.innerHTML = html;
-      main.append(section);
-      document.body.append(main);
-      return section;
-    };
-
-    it('ignores hidden images when no manifest touched the LCP area', async () => {
-      await loadImg(IMG_A);
-      const section = render(`<div class="marquee" style="display:none"><img alt="" src="${IMG_A}#nomanifest"></div>`);
-      expect(findHiddenHeroImages(['media_aaa111.png'], section)).to.deep.equal([]);
-    });
-
-    it('ignores hidden copies of media that is also visible', async () => {
-      await loadImg(IMG_A);
-      const section = render(`<div class="marquee" data-manifest-id="a.json">
-        <div style="display:none"><img alt="" src="${IMG_A}#mobile"></div>
-        <div><img alt="" src="${IMG_A}#desktop"></div></div>
-        <div class="other" style="display:none"><img alt="" src="${IMG_A}#copy"></div>`);
-      expect(findHiddenHeroImages(['media_aaa111.png'], section)).to.deep.equal([]);
-    });
-  });
-
   describe('init', () => {
     afterEach(() => sinon.restore());
 
@@ -553,7 +453,7 @@ describe('mep-lcp-check', () => {
       getConfig().mep = {
         preview: true,
         lcpCheck: true,
-        lcpSection: { original: section, clone: section.cloneNode(true) },
+        lcpSection: { clone: section.cloneNode(true) },
         lcpExperiments: [null, { manifestPath: '/test/default.json' }, {
           manifestPath: '/test/init-manifest.json',
           variants: {
