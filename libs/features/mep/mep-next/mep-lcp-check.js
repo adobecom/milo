@@ -543,7 +543,8 @@ const describeNearDuplicates = (group) => {
     `  fragment: ${first.fragmentUrl}`,
     ...group.flatMap((f, i) => describeImageFix(f, i + 1)),
   ];
-  const { layout } = group.find((f) => f.layout) || {};
+  const { layout } = group
+    .find((f) => f.layout && f.pageRoles?.some((role) => role !== f.fragmentRole)) || {};
   if (layout) {
     lines.push(
       '  note: hero layouts differ, so match images by viewport, not by cell position',

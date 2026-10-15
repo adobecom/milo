@@ -413,6 +413,7 @@ describe('mep-lcp-check', () => {
       expect(msg).to.include('1. phone: fragment background cell 1 of 3 media_f1.png');
       expect(msg).to.include('2. tablet, desktop: fragment foreground image media_f2.png');
       expect(msg.match(/note: hero layouts differ/g)).to.have.length(1);
+      expect(log.secondCall.args[0]).to.not.include('note: hero layouts differ');
     });
   });
 
