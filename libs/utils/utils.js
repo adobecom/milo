@@ -3100,7 +3100,7 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
+async function processSection(section, config, lcpSectionId) {
   await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -3124,9 +3124,15 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
+}
+
+// The first section of a visible tab panel is the panel's above-the-fold content.
+function isFirstInVisibleTabPanel(el) {
+  const panel = el?.parentElement;
+  if (!panel?.classList.contains('tabpanel') || el.closest('.tabpanel[hidden]')) return false;
+  return panel.querySelector(':scope > .section') === el;
 }
 
 function loadLingoIndexes(area = document) {
@@ -3209,20 +3215,29 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   let lcpSectionId = null;
+  let inLcpChain = false;
 
-  for (const htmlSection of htmlSections) {
-    const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
+  for (const [i, htmlSection] of htmlSections.entries()) {
+    const section = await decorateSection(htmlSection, i);
     const isLastSection = section.idx === htmlSections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
+      inLcpChain = isDoc;
     }
-    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
+    // Tab panel sections chained to the LCP section load with LCP priority.
+    const lcpIdForSection = inLcpChain ? section.idx : lcpSectionId;
+    const sectionBlocks = await processSection(section, config, lcpIdForSection);
     areaBlocks.push(...sectionBlocks);
     if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
+
+    if (inLcpChain && !isFirstInVisibleTabPanel(htmlSections[i + 1])) {
+      inLcpChain = false;
+      await loadPostLCP(config);
+    }
   }
 
   if (isDoc) scheduleJsonLdInit();
