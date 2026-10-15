@@ -3,24 +3,42 @@ import {
   getConfig,
   getMetadata,
   localizeLink,
-  decorateLinksAsync,
+  localizeLinkAsync,
+  appendHtmlToLink,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
+  getFederatedUrl,
+  loadIms,
+  isAcomAssistantEnabled,
 } from '../../../utils/utils.js';
+import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
+
+const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
-function getFederalDomain(config) {
+// Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
+// federal's authored .svg icon anchors into <picture> (MWPW-198294).
+async function localizeGnavLinks(body) {
+  await Promise.all([...body.querySelectorAll('a')].map(async (a) => {
+    a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+  }));
+}
+
+export function getFederalDomain(config) {
   const env = getEnv(config);
 
   if (env.name !== 'prod') {
     const queryParams = new URLSearchParams(window.location.search);
-    const federalBranch = queryParams.get('fedsbranch');
-    if (federalBranch?.trim()) {
-      const sanitized = federalBranch.trim().toLowerCase();
-      if (sanitized === 'local') return 'http://localhost:3000/federal';
-      return `https://${sanitized}--federal--adobecom.aem.page/federal`;
+    const federalBranch = queryParams.get('fedsbranch')?.trim().toLowerCase();
+    // Branch names are [a-z0-9-] only; reject other characters so the value
+    // cannot break out of the host position of the import URL built below.
+    if (federalBranch && /^[a-z0-9-]+$/.test(federalBranch)) {
+      if (federalBranch === 'local') return 'http://localhost:3000/federal';
+      return `https://${federalBranch}--federal--adobecom.aem.page/federal`;
     }
   }
 
@@ -36,20 +54,86 @@ function getFederalDomain(config) {
   return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
+async function decorateAppPrompt(el) {
+  const state = getMetadata('app-prompt')?.toLowerCase();
+  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+  const hasMobileUA = MOBILE_UA_REGEX.test(navigator.userAgent);
+
+  if (state === 'off'
+    || !window.adobeIMS?.isSignedInUser()
+    || !isDesktop.matches
+    || hasMobileUA
+    || !entName?.length
+    || !promptPath?.length) return;
+
+  const parent = el.querySelector('.feds-utilities');
+  if (!parent) return;
+
+  const { base } = getConfig();
+  const [webappPrompt] = await Promise.all([
+    import('../../../features/webapp-prompt/webapp-prompt.js'),
+    loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
+  ]);
+
+  await webappPrompt.default({
+    promptPath,
+    entName,
+    parent,
+    getAnchorState: () => window.UniversalNav?.getComponent?.('app-switcher'),
+  });
+}
+
+// Mirrors c1 gnav's decorateBrandConciergeGlobal
+export async function loadBrandConcierge(block) {
+  if (isAcomAssistantEnabled()) {
+    const { decorateAcomAssistantGnavBlock } = await loadAcomAssistantGnavModule();
+    decorateAcomAssistantGnavBlock(block);
+    return;
+  }
+  const { base } = getConfig();
+  const [{ default: initBrandConcierge }] = await Promise.all([
+    import('../brand-concierge-global/brand-concierge-global.js'),
+    loadStyles(`${base}/c2/blocks/brand-concierge-global/brand-concierge-global.css`),
+  ]);
+  await initBrandConcierge(block);
+}
+
 export default async function init(el) {
   const config = getConfig();
   const isLingo = lingoActive();
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
+  const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+  if (isGnavOverrideOnC1) el.classList.add('c2-gnav-c1-host');
+
+  // Unlike the c1 gnav block, nothing else on a standalone c2 page bootstraps
+  // IMS. Without this, window.adobeIMS never initializes and UNAV's internal
+  // isSignedInUser() check times out (uncaught) after 5s, leaving the unav
+  // slot empty. Skip if adobeIMS is already initialized (e.g. a host that
+  // bootstraps IMS itself outside of milo's loadIms) to avoid clobbering it.
+  const imsReady = window.adobeIMS?.initialized ? Promise.resolve() : loadIms();
+  // Handle early rejection while Federal is still fetching/rendering. Keep the
+  // original promise so UNAV can wait for readiness and recover from a timeout.
+  imsReady.catch((error) => {
+    if (error?.message === 'IMS timeout') return;
+    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
+      error,
+      tags: 'global-navigation',
+      errorType: 'i',
+    });
+  });
+
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
-    // Federal replaces {{key}} tokens with a flat string swap and never runs
-    // milo's geo-aware decoration, so merge geo-IP overrides into the map here —
-    // otherwise {{…-geo-ip}} tokens in the gnav resolve to the base value.
+    // Federal does a flat token swap with no geo decoration, so merge geo-IP overrides
+    // here or {{…-geo-ip}} tokens resolve to the base value. The sheet is federal-owned
+    // (parallel to federal's placeholders.json), authored once for every site.
+    const geoIpSource = `${federalDomain}/globalnav/placeholders-geo-ip.json`;
     const [placeholders, geoIp] = await Promise.all([
       fetchPlaceholders({ config }),
-      isLingo ? getGeoIpPlaceholders(config) : null,
+      isLingo ? getGeoIpPlaceholders(config, geoIpSource) : null,
     ]);
     const map = new Map(Object.entries(placeholders));
     geoIp?.forEach((value, key) => map.set(key, value));
@@ -72,29 +156,65 @@ export default async function init(el) {
     return handleCommands(cs, root, true, true);
   };
 
-  const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
+  // Mirrors fragment.js's mep.fragments lookup + handleFragmentCommand: swaps
+  // a nested `#_inline` product-card (or other) fragment href for whatever
+  // MEP's page-wide fragment-replace manifest points it at.
+  const resolveFragmentHref = async (href) => {
+    const isFederalHref = href.includes('/federal/');
+    const path = isFederalHref
+      ? getFederatedUrl(href).replace('#_inline', '')
+      : new URL(href).pathname;
+    const mepFrag = config.mep?.fragments?.[path]
+      ?? config.mep?.fragments?.[path.replace(config.locale?.prefix ?? '', '')];
+    if (!mepFrag) return href;
+    const { handleFragmentCommand } = await import('../../../features/personalization/personalization.js');
+    const tempAnchor = document.createElement('a');
+    tempAnchor.href = href;
+    const resolved = handleFragmentCommand(mepFrag, tempAnchor);
+    return resolved ? tempAnchor.href : href;
+  };
 
+  const { main } = await import(federalGnavUrl);
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
+
+  const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
+  const unavEnabled = universalNavMeta === 'on'
+    || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
+  const countryCodePromise = (async () => {
+    const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
+    if (!isMasGeoDetectionEnabled()) return undefined;
+    const base = config.miloLibs || config.codeRoot;
+    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    return (await getValidatedMarket())?.toUpperCase();
+  })().catch(() => undefined);
 
   const gnavPromise = main({
     localizeLink,
-    // Lingo link transformation only — skip when lingo is off so federal doesn't
-    // re-run milo link decoration over links federal has already localized.
-    ...(isLingo && { decorateBody: decorateLinksAsync }),
+    // Lingo href transformation only; skip when lingo is off.
+    ...(isLingo && { decorateBody: localizeGnavLinks }),
     gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
-    unavEnabled: getMetadata('unav') === 'on',
+    unavEnabled,
+    imsReady,
     placeholders: placeholdersPromise,
     miloConfig: config,
+    countryCode: countryCodePromise,
     mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
+      resolveFragmentHref,
     },
+    merchDecorators: {
+      merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
+      masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
+    },
+    loadBrandConcierge,
+    appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
@@ -106,6 +226,23 @@ export default async function init(el) {
     });
     return {};
   });
-  gnavPromise.then(() => requestAnimationFrame(() => window.lenis?.resize()));
+  gnavPromise.then(async (nav) => {
+    if (typeof nav?.reloadUnav === 'function') {
+      // Preserve the legacy host-auth refresh entry point for C2 navigation.
+      window.feds = window.feds || {};
+      window.feds.nav = window.feds.nav || {};
+      window.feds.nav.reloadUnav = nav.reloadUnav.bind(nav);
+    }
+    requestAnimationFrame(() => window.lenis?.resize());
+    decorateAppPrompt(el);
+    if (isAcomAssistantEnabled()) {
+      try {
+        const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
+        decorateAcomAssistantGnav(el);
+      } catch (error) {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+      }
+    }
+  });
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }

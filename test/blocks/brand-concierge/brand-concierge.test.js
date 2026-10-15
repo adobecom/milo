@@ -1,14 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
+import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
-const { updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
+const { updateReplicatedValue, getChatSessionId } = await import('../../../libs/blocks/brand-concierge/bc-utils.js');
 const { getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
+const { bcAnalytics } = await import('../../../libs/blocks/brand-concierge/bc-analytics.js');
 
 describe('Brand Concierge', () => {
   afterEach(() => {
@@ -50,7 +51,7 @@ describe('Brand Concierge', () => {
     // input field
     const inputField = block.querySelector('.bc-input-field');
     expect(inputField).to.exist;
-    const input = inputField.querySelector('#bc-input-field');
+    const input = inputField.querySelector('.bc-input-field textarea');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal("Tell us what you'd like to do or create");
     const tooltip = inputField.querySelector('#bc-label-tooltip');
@@ -82,7 +83,7 @@ describe('Brand Concierge', () => {
 
     await init(block);
 
-    const input = block.querySelector('#bc-input-field');
+    const input = block.querySelector('.bc-input-field textarea');
     const button = block.querySelector('button.input-field-button');
     expect(button.disabled).to.equal(true);
 
@@ -105,7 +106,7 @@ describe('Brand Concierge', () => {
     expect(curtain.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
 
     // input cleared after opening
-    expect(block.querySelector('#bc-input-field').value).to.equal('');
+    expect(block.querySelector('.bc-input-field textarea').value).to.equal('');
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
@@ -249,7 +250,7 @@ describe('Brand Concierge', () => {
 
     await init(block);
 
-    const input = block.querySelector('#bc-input-field');
+    const input = block.querySelector('.bc-input-field textarea');
     input.value = 'Test message';
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -326,9 +327,9 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       const wrappers = background.querySelectorAll(':scope > div');
       expect(wrappers.length).to.equal(3);
-      expect(wrappers[0].classList.contains('desktop-only')).to.be.true;
+      expect(wrappers[0].classList.contains('mobile-only')).to.be.true;
       expect(wrappers[1].classList.contains('tablet-only')).to.be.true;
-      expect(wrappers[2].classList.contains('mobile-only')).to.be.true;
+      expect(wrappers[2].classList.contains('desktop-only')).to.be.true;
       wrappers.forEach((wrapper) => expect(wrapper.querySelector('picture')).to.exist);
     });
 
@@ -357,6 +358,94 @@ describe('Brand Concierge', () => {
       expect(background).to.exist;
       expect(background.querySelectorAll('picture').length).to.equal(1);
       expect(background.querySelector('.desktop-only, .tablet-only, .mobile-only')).to.be.null;
+    });
+
+    it('renders the title (not an eyebrow) when only a single heading is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-no-eyebrow.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const header = block.querySelector('.bc-header');
+      expect(header).to.exist;
+      expect(header.querySelector('.bc-header-eyebrow')).to.be.null;
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      const kids = [...header.children];
+      expect(kids[0].classList.contains('bc-header-title')).to.be.true;
+      expect(kids[1].classList.contains('bc-header-subtitle')).to.be.true;
+    });
+
+    it('does not set a custom gradient when none is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      expect(block.style.getPropertyValue('--bc-marquee-gradient')).to.equal('');
+    });
+
+    it('suppresses the gradient overlay when no-gradient is authored', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      block.classList.add('no-gradient');
+      await init(block);
+
+      const background = block.querySelector('.background');
+      expect(getComputedStyle(background, '::after').content).to.equal('none');
+    });
+
+    it('treats a blank leading row as no custom gradient without disturbing the other rows', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-blank-gradient-row.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      expect(block.style.getPropertyValue('--bc-marquee-gradient')).to.equal('');
+
+      const background = block.querySelector('.background');
+      expect(background.querySelectorAll('picture').length).to.equal(3);
+
+      const header = block.querySelector('.bc-header');
+      expect(header.querySelector('.bc-header-eyebrow').textContent.trim()).to.equal('Adobe for business');
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      expect(block.querySelectorAll('.bc-prompt-cards .prompt-card-button').length).to.equal(3);
+      expect(block.querySelector('.bc-legal').textContent).to.contain('Terms');
+    });
+
+    it('does not mistake a genuinely blank background row (no image anywhere) for an authored override', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-blank-background-no-image.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      expect(block.style.getPropertyValue('--bc-marquee-gradient')).to.equal('');
+
+      const header = block.querySelector('.bc-header');
+      expect(header.querySelector('.bc-header-eyebrow').textContent.trim()).to.equal('Adobe for business');
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      expect(block.querySelectorAll('.bc-prompt-cards .prompt-card-button').length).to.equal(3);
+      expect(block.querySelector('.bc-legal').textContent).to.contain('Terms');
+    });
+
+    it('reads an authored leading gradient row without disturbing the other rows', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-custom-gradient.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      expect(block.style.getPropertyValue('--bc-marquee-gradient'))
+        .to.equal('linear-gradient(270deg, rgba(0 0 0 / 0%) 0%, #000 60%)');
+
+      const background = block.querySelector('.background');
+      expect(background.querySelectorAll('picture').length).to.equal(3);
+
+      const header = block.querySelector('.bc-header');
+      expect(header.querySelector('.bc-header-eyebrow').textContent.trim()).to.equal('Adobe for business');
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+
+      expect(block.querySelectorAll('.bc-prompt-cards .prompt-card-button').length).to.equal(3);
+      expect(block.querySelector('.bc-legal').textContent).to.contain('Terms');
     });
   });
 
@@ -449,5 +538,264 @@ describe('Brand Concierge', () => {
     const tokenEventNoHandler = new CustomEvent('on-token', { detail: 'test-token' });
     susiNoToken.dispatchEvent(tokenEventNoHandler);
     // Should not throw even without onSuccessfulToken handler
+  });
+});
+
+/* eslint-disable no-underscore-dangle */
+describe('Brand Concierge back-navigation analytics', () => {
+  const SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
+
+  afterEach(() => {
+    document.cookie = `${SESSION_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    delete window._satellite;
+    sinon.restore();
+  });
+
+  describe('getChatSessionId', () => {
+    it('returns the decoded session id from the cookie', () => {
+      document.cookie = `${SESSION_COOKIE}=${encodeURIComponent('sess 123')}; path=/`;
+      expect(getChatSessionId()).to.equal('sess 123');
+    });
+
+    it('returns an empty string when the cookie is absent', () => {
+      expect(getChatSessionId()).to.equal('');
+    });
+  });
+
+  describe('bcAnalytics navigation:backNavigation', () => {
+    it('tracks a back-navigation event with all required fields', () => {
+      const track = sinon.spy();
+      window._satellite = { track };
+
+      bcAnalytics({
+        eventType: 'navigation:backNavigation',
+        data: {
+          clickType: 'inline_hyperlink',
+          sessionId: 'sess-1',
+          sourcePage: 'https://www.adobe.com/source',
+          destinationPage: 'https://www.adobe.com/dest',
+          loginStatus: 'logged-in',
+          navigatedBack: true,
+        },
+      });
+
+      expect(track.calledOnce).to.be.true;
+      const [type, payload] = track.firstCall.args;
+      expect(type).to.equal('event');
+      const eventName = 'BC-chat_inline_hyperlink_back_navigation';
+      expect(payload.data.web.webInteraction.name).to.equal(`${eventName}|loginStatus:logged-in`);
+      expect(payload.data.bc).to.include({
+        eventName,
+        sessionId: 'sess-1',
+        clickType: 'inline_hyperlink',
+        sourcePage: 'https://www.adobe.com/source',
+        destinationPage: 'https://www.adobe.com/dest',
+        navigatedBack: true,
+        loginStatus: 'logged-in',
+      });
+      expect(payload.data.bc.timestamp).to.be.a('string');
+    });
+
+    it('does not track when _satellite is unavailable', () => {
+      delete window._satellite;
+      expect(() => bcAnalytics({
+        eventType: 'navigation:backNavigation',
+        data: { clickType: 'cta' },
+      })).to.not.throw();
+    });
+  });
+
+  describe('card:clicked navigation recording', () => {
+    it('records the resolved destinationUrl from the event payload', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: { destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card' },
+      });
+
+      expect(replaceState.calledOnce).to.be.true;
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcClickType).to.equal('product_card_cta');
+      expect(state.bcDestinationPage).to.equal('https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+    });
+
+    it('stores an empty destination without falling back to the referrer', () => {
+      const replaceState = sinon.spy(window.history, 'replaceState');
+
+      bcAnalytics({ eventType: 'card:clicked', data: {} });
+
+      const [state] = replaceState.firstCall.args;
+      expect(state.bcDestinationPage).to.equal('');
+    });
+  });
+
+  describe('card analytics formatting', () => {
+    it('formats nested product fields and keeps login status only for Firefly clicks', () => {
+      const track = sinon.spy();
+      window._satellite = { track };
+
+      bcAnalytics({
+        eventType: 'cards:rendered',
+        data: {
+          element: [{
+            cardType: 'acomProduct',
+            entity_info: {
+              productName: 'Acrobat',
+              productPageURL: 'https://acrobat.adobe.com/pdf-editor',
+            },
+          }],
+          displayMode: 'single',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: { cardType: 'acomProduct', loginStatus: 'logged-in', entity_info: { productName: 'Acrobat' } },
+          destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: {
+            type: 'firefly-community-gallery',
+            cardType: 'firefly-community-gallery',
+            productName: 'Firefly',
+            loginStatus: 'logged-in',
+          },
+          destinationUrl: 'https://firefly.adobe.com',
+        },
+      });
+
+      const impressionData = track.firstCall.args[1].data;
+      const impressions = impressionData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.additionalImpressions;
+      expect(impressions)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor');
+      const productData = track.secondCall.args[1].data;
+      expect(productData.web.webInteraction.name).to.equal('BC-card_clicked|acomProduct|Acrobat');
+      const productClick = productData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.click;
+      expect(productClick)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+      const fireflyData = track.thirdCall.args[1].data;
+      expect(fireflyData.web.webInteraction.name)
+        .to.equal('BC-card_clicked|firefly-community-gallery|Firefly|loginStatus:logged-in');
+    });
+  });
+});
+/* eslint-enable no-underscore-dangle */
+
+describe('Brand Concierge - AcomAssistant flag', () => {
+  let sendUserMessageSpy;
+  let openMessagingWindowSpy;
+  let capturedInitConfig;
+  let originalClient;
+  let clientScript;
+  let pageMetadata;
+  let originalConfig;
+
+  before(() => {
+    originalConfig = getConfig();
+    setConfig({ ...originalConfig, jarvis: { id: 'brand-concierge-jarvis', version: '3.0' } });
+    pageMetadata = document.createElement('div');
+    pageMetadata.innerHTML = `
+      <meta property="og:title" content="Explore Adobe apps">
+      <meta property="og:description" content="Find the right creative tools for you.">
+      <meta name="acom-assistant-id" content="unused-assistant-id">
+      <meta name="acom-assistant-version" content="unused-assistant-version">
+    `;
+    pageMetadata = [...pageMetadata.children];
+    document.head.append(...pageMetadata);
+    originalClient = window.AdobeMessagingExperienceClient;
+    clientScript = document.createElement('script');
+    clientScript.type = 'javascript/blocked';
+    clientScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    clientScript.dataset.loaded = 'true';
+    document.head.append(clientScript);
+    window.AdobeMessagingExperienceClient = {
+      initialize: (cfg) => {
+        capturedInitConfig = cfg;
+        cfg.callbacks?.onReadyCallback?.();
+      },
+      reinitialize: () => {},
+      sendUserMessage: () => {},
+      openMessagingWindow: () => {},
+    };
+  });
+
+  after(() => {
+    pageMetadata.forEach((meta) => meta.remove());
+    clientScript.remove();
+    window.AdobeMessagingExperienceClient = originalClient;
+    setConfig(originalConfig);
+  });
+
+  beforeEach(() => {
+    sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
+    openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
+  });
+
+  afterEach(() => {
+    sendUserMessageSpy.restore();
+    openMessagingWindowSpy.restore();
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+  });
+
+  it('routes typed input through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const input = block.querySelector('.bc-input-field textarea');
+    input.value = 'Hello acom';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: 'Hello acom' }));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
+    expect(openMessagingWindowSpy.called).to.be.true;
+
+    expect(capturedInitConfig.appid).to.equal(getConfig().jarvis.id);
+    expect(capturedInitConfig.appver).to.equal(getConfig().jarvis.version);
+    expect(capturedInitConfig.pageTitle).to.equal('Explore Adobe apps');
+    expect(capturedInitConfig.pageDescription).to.equal('Find the right creative tools for you.');
+    const context = capturedInitConfig.callbacks.getContextCallback();
+    expect(context.appid).to.equal(getConfig().jarvis.id);
+    expect(context.appver).to.equal(getConfig().jarvis.version);
+  });
+
+  it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+    const block = document.querySelector('.brand-concierge.marquee');
+    await init(block);
+
+    const button = block.querySelector('.prompt-card-button');
+    const cardText = button.querySelector('.prompt-card-text').textContent.trim();
+    button.click();
+
+    const expected = {
+      label: cardText,
+      action: { click_analytics: `BC-suggested_prompt_clicked|inline|${cardText}` },
+    };
+    await waitFor(() => sendUserMessageSpy.calledWith(expected));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith(expected)).to.be.true;
   });
 });

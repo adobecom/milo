@@ -338,29 +338,60 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(iframe.classList.contains('loading')).to.be.true;
       expect(document.querySelector('.upgrade-flow-content sp-theme')).to.exist;
 
-      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' });
+      handleIFrameEvents({ origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' });
       expect(iframe.classList.contains('loading')).to.be.false;
       expect(document.querySelector('.upgrade-flow-content sp-theme')).not.to.exist;
     });
 
     it('should open external url if Type External', async () => {
-      const message = { data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
+      const message = { origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
     it('should open external url if Type SWITCH', async () => {
-      const message = { data: '{"app":"ManagePlan","subType":"SWITCH","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
+      const message = { origin: 'https://commerce-stg.adobe.com', data: '{"app":"ManagePlan","subType":"SWITCH","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
     it('should open external url and handle return back', async () => {
-      const message = { data: '{"app":"ManagePlan","subType":"RETURN_BACK","data":{"externalUrl":"https://www.google.com/maps","target":"_blank","returnUrl":"https://www.adobe.com"}}' };
+      const message = { origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"RETURN_BACK","data":{"externalUrl":"https://www.google.com/maps","target":"_blank","returnUrl":"https://www.adobe.com"}}' };
       handleIFrameEvents(message);
       const returnUrl = window.sessionStorage.getItem('upgradeModalReturnUrl');
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
-      expect(returnUrl).to.equal('https://www.adobe.com');
+      expect(returnUrl).to.equal('https://www.adobe.com/');
+    });
+
+    it('should open external url when origin is plan.adobe.com', async () => {
+      const message = { origin: 'https://plan.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
+      handleIFrameEvents(message);
+      expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    });
+
+    it('should open external url when origin is stage.plan.adobe.com', async () => {
+      const message = { origin: 'https://stage.plan.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
+      handleIFrameEvents(message);
+      expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    });
+
+    it('should ignore messages from an untrusted origin', async () => {
+      const message = { origin: 'https://evil.example.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
+      handleIFrameEvents(message);
+      expect(window.open.calledOnce).to.be.false;
+    });
+
+    it('should reject unsafe external URL (XSS payload)', async () => {
+      // eslint-disable-next-line no-script-url
+      const message = { origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"javascript:alert(1)","target":"_blank"}}' };
+      handleIFrameEvents(message);
+      expect(window.open.calledOnce).to.be.false;
+    });
+
+    it('should sanitize an invalid target to _blank', async () => {
+      const message = { origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"\\"><script>alert(1)</script>"}}' };
+      handleIFrameEvents(message);
+      expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
     it('should log lana message', async () => {
@@ -378,9 +409,9 @@ describe('Switch Modal (Upgrade Flow)', () => {
     });
 
     [
-      [{ data: {} }, 'should do nothing if message is not parseble'],
-      [{ data: '{"app":"ManagePlan","subType":"Invalid","data":{"actionRequired":false}}' }, 'should do nothing if message type is not valid'],
-      [{ data: '{"app":"ManagePlan","subType":"Error","data":{"actionRequired":false}}' }, 'should do nothing if message type is error'],
+      [{ origin: 'https://commerce.adobe.com', data: {} }, 'should do nothing if message is not parseble'],
+      [{ origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"Invalid","data":{"actionRequired":false}}' }, 'should do nothing if message type is not valid'],
+      [{ origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"Error","data":{"actionRequired":false}}' }, 'should do nothing if message type is error'],
     ].forEach(([message, desc]) => {
       it(desc, () => {
         expect(() => { handleIFrameEvents(message); }).not.to.throw();

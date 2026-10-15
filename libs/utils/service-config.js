@@ -2,18 +2,22 @@
  * Get author-facing config options.
  */
 
-import { getConfig, SLD } from './utils.js';
+import { getConfig, getValidatedRepoOwnerOrigin } from './utils.js';
 
 const DOT_MILO = '/.milo/config.json';
 
 let config;
 
-/* c8 ignore next 6 */
-function getSiteOrigin() {
+/**
+ * Resolves the origin to fetch the service config from. Falls back to the
+ * current origin when `repo`/`owner` are absent, or do not resolve to a
+ * safe *.aem.live host (VULN-38270).
+ */
+export function getSiteOrigin() {
   const search = new URLSearchParams(window.location.search);
   const repo = search.get('repo');
   const owner = search.get('owner');
-  return repo && owner ? `https://main--${repo}--${owner}.${SLD}.live` : window.location.origin;
+  return getValidatedRepoOwnerOrigin(repo, owner) || window.location.origin;
 }
 
 /**

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig, MILO_EVENTS, utf8ToB64 } from '../../../libs/utils/utils.js';
 import init, {
   setDataLayer,
   setDataLayerObj,
@@ -9,11 +9,14 @@ import init, {
   decorateURL,
   formSuccess,
   formSubmit,
+  formValidate,
   loadMarketo,
   logFailure,
   formTimeout,
   LANA_MESSAGE,
-  FORM_PARAM,
+  UNGATED_PARAM,
+  FORM_ID_PARAM,
+  NAMED_FORM_IDS,
   getMarketoLibsBase,
   loadDaMarketoBlock,
 } from '../../../libs/blocks/marketo/marketo.js';
@@ -177,14 +180,14 @@ describe('Marketo ungated one page experience', () => {
 
   beforeEach(() => {
     url = new URL(window.location);
-    url.searchParams.set(FORM_PARAM, 'off');
+    url.searchParams.set(UNGATED_PARAM, 'off');
     window.history.pushState({}, '', url);
     document.body.innerHTML = onePage;
     clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
-    url.searchParams.delete(FORM_PARAM);
+    url.searchParams.delete(UNGATED_PARAM);
     window.history.pushState({}, '', url);
     clock.restore();
   });
@@ -401,6 +404,43 @@ describe('Marketo failure logging', () => {
 
       expect(window.lana.log.called).to.be.false;
     });
+
+    it('cancels the pending submit-failure timeout once formSuccess runs', async () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+      formSubmit(formEl);
+      formSuccess(formEl, {});
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledWith(LANA_MESSAGE.SUBMIT_FAILED)).to.be.false;
+    });
+  });
+
+  describe('formValidate', () => {
+    it('logs a warning when a hidden field is marked required', () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+      const hiddenField = document.createElement('div');
+      hiddenField.className = 'mktoHidden';
+      hiddenField.innerHTML = '<input class="mktoRequired">';
+      formEl.appendChild(hiddenField);
+
+      formValidate(formEl);
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.HIDDEN_REQUIRED_FIELD,
+        sinon.match({ severity: 'w', sampleRate: 100 }),
+      )).to.be.true;
+    });
+
+    it('does not log when no hidden fields are marked required', () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+
+      formValidate(formEl);
+
+      expect(window.lana.log.called).to.be.false;
+    });
   });
 });
 
@@ -468,6 +508,88 @@ describe('Marketo formSuccess IMS', () => {
       { tags: 'marketo', severity: 'e' },
     )).to.be.true;
     expect(result).to.be.false;
+  });
+});
+
+describe('Marketo form id param', () => {
+  let url;
+
+  const setParam = (value) => {
+    url = new URL(window.location);
+    if (value === undefined) {
+      url.searchParams.delete(FORM_ID_PARAM);
+    } else {
+      url.searchParams.set(FORM_ID_PARAM, value);
+    }
+    window.history.pushState({}, '', url);
+  };
+
+  const formEl = () => document.querySelector('.marketo form');
+
+  beforeEach(() => {
+    window.lana = { log: sinon.spy() };
+    document.body.innerHTML = blockHTML;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    setParam(undefined);
+    setConfig(config);
+  });
+
+  describe('non-prod', () => {
+    beforeEach(() => setConfig({ ...config, env: { name: 'stage' } }));
+
+    it('uses the configured form id when no param is present', async () => {
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal('mktoForm_1723');
+    });
+
+    it('resolves a named alias to its form id', async () => {
+      setParam('prod');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal(`mktoForm_${NAMED_FORM_IDS.prod}`);
+    });
+
+    it('accepts a raw 4-digit form id', async () => {
+      setParam('9999');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal('mktoForm_9999');
+    });
+
+    it('ignores an id that is not exactly 4 digits', async () => {
+      setParam('123');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal('mktoForm_1723');
+    });
+
+    it('ignores a non-numeric value', async () => {
+      setParam('abcd');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal('mktoForm_1723');
+    });
+  });
+
+  describe('prod', () => {
+    beforeEach(() => setConfig({ ...config, env: { name: 'prod' } }));
+
+    it('allows a named alias', async () => {
+      setParam('prod');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal(`mktoForm_${NAMED_FORM_IDS.prod}`);
+    });
+
+    it('allows a raw id that matches a named form id', async () => {
+      setParam(NAMED_FORM_IDS.prod);
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal(`mktoForm_${NAMED_FORM_IDS.prod}`);
+    });
+
+    it('blocks a raw id that is not an allow-listed named form id', async () => {
+      setParam('9999');
+      await init(document.querySelector('.marketo'));
+      expect(formEl().id).to.equal('mktoForm_1723');
+    });
   });
 });
 
@@ -599,5 +721,71 @@ describe('da-marketo libs', () => {
       await init(el);
       expect(el.dataset.daMarketoRan).to.be.undefined;
     });
+  });
+});
+
+describe('marketo decorateForm (XSS prevention in the block sink)', () => {
+  // title/description are read from the base64 config that the configurator
+  // preview builds from hash-injected state, then inserted via createTag ->
+  // insertAdjacentHTML. They must be allowlist-sanitized before rendering.
+  const base = {
+    'form id': '1723',
+    'marketo munckin': '360-KCI-804',
+    'marketo host': 'engage.adobe.com',
+    'form.success.type': 'message',
+  };
+
+  const buildMarketoBlock = (cfg) => {
+    const b64 = utf8ToB64(JSON.stringify(cfg));
+    const el = document.createElement('div');
+    el.className = 'marketo';
+    el.innerHTML = `<div><div><a href="https://milo.adobe.com/tools/marketo#${b64}">Marketo Configurator</a></div></div>`;
+    document.body.appendChild(el);
+    return el;
+  };
+
+  beforeEach(() => {
+    window.lana = { log: sinon.spy() };
+    setConfig(config);
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = '';
+  });
+
+  it('strips an onerror handler injected via the title field', async () => {
+    const el = buildMarketoBlock({ ...base, title: '<img onerror=1>' });
+    await init(el);
+    const titleEl = el.querySelector('.marketo-title');
+    expect(titleEl).to.exist;
+    expect(titleEl.querySelectorAll('[onerror]').length).to.equal(0);
+    expect(titleEl.innerHTML).to.not.include('onerror');
+  });
+
+  it('strips an onload handler injected via the description field', async () => {
+    const el = buildMarketoBlock({ ...base, description: '<svg onload=1></svg>' });
+    await init(el);
+    const descEl = el.querySelector('.marketo-description');
+    expect(descEl).to.exist;
+    expect(descEl.querySelectorAll('[onload]').length).to.equal(0);
+    expect(descEl.innerHTML).to.not.include('onload');
+  });
+
+  it('neutralizes an entity-encoded title so no live element renders', async () => {
+    const el = buildMarketoBlock({ ...base, title: '&lt;img onerror=1&gt;' });
+    await init(el);
+    const titleEl = el.querySelector('.marketo-title');
+    expect(titleEl).to.exist;
+    expect(titleEl.querySelectorAll('img').length).to.equal(0);
+  });
+
+  it('preserves safe inline markup in the title (no regression for authored content)', async () => {
+    const el = buildMarketoBlock({ ...base, title: '<em>Register now</em>' });
+    await init(el);
+    const titleEl = el.querySelector('.marketo-title');
+    expect(titleEl.querySelectorAll('em').length).to.equal(1);
+    expect(titleEl.textContent).to.equal('Register now');
   });
 });

@@ -1,8 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { readFile } from '@web/test-runner-commands';
-import { getGrayboxExperienceId, initBulkPublisherLingoMapping } from '../../../libs/blocks/caas/utils.js';
-import { getBulkPublishLangAttr } from '../../../tools/send-to-caas/send-utils.js';
+import { getGrayboxExperienceId } from '../../../libs/blocks/caas/utils.js';
+import { getBulkPublishLangAttr, initBulkPublisherLingoMapping } from '../../../tools/send-to-caas/send-utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 

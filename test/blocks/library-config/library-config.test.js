@@ -176,3 +176,44 @@ describe('Library Config: containers', () => {
     expect(isMatching(containers[4], 'tag4', 'blocks')).to.be.true;
   });
 });
+
+describe('Library Config: getValidatedSuppliedLibrary (VULN-38270)', () => {
+  const DOMAIN = 'https://main--milo--adobecom.aem.live';
+  let getValidatedSuppliedLibrary;
+
+  before(async () => {
+    ({ getValidatedSuppliedLibrary } = await import('../../../libs/blocks/library-config/library-config.js'));
+  });
+
+  it('returns null when library is absent', () => {
+    expect(getValidatedSuppliedLibrary(null, DOMAIN)).to.be.null;
+    expect(getValidatedSuppliedLibrary('', DOMAIN)).to.be.null;
+  });
+
+  it('resolves a relative path against the validated domain', () => {
+    expect(getValidatedSuppliedLibrary('/custom/library.json', DOMAIN))
+      .to.equal('https://main--milo--adobecom.aem.live/custom/library.json');
+  });
+
+  it('accepts an absolute URL that matches the validated domain', () => {
+    expect(getValidatedSuppliedLibrary(`${DOMAIN}/custom/library.json`, DOMAIN))
+      .to.equal('https://main--milo--adobecom.aem.live/custom/library.json');
+  });
+
+  it('rejects an absolute URL pointing at a different host (arbitrary-fetch payload)', () => {
+    expect(getValidatedSuppliedLibrary('https://attacker.example/evil.json', DOMAIN)).to.be.null;
+    expect(getValidatedSuppliedLibrary('https://main--evil--x.aem.live/library.json', DOMAIN)).to.be.null;
+  });
+
+  it('rejects a protocol-relative URL that resolves off the validated domain', () => {
+    expect(getValidatedSuppliedLibrary('//attacker.example/evil.json', DOMAIN)).to.be.null;
+  });
+
+  it('does not throw on malformed payloads', () => {
+    // eslint-disable-next-line no-script-url -- payload must prove script URLs are rejected
+    const payloads = ['javascript:alert(1)', '//attacker.example/evil.json', 'not a url either'];
+    payloads.forEach((library) => {
+      expect(() => getValidatedSuppliedLibrary(library, DOMAIN), library).to.not.throw();
+    });
+  });
+});

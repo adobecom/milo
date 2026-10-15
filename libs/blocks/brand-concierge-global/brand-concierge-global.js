@@ -1,21 +1,26 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
   decorateCards,
   updateReplicatedValue,
   handleConsent,
-  setCssGnavHeight,
   hasChatCookie,
+  isC2,
+  isC2Nav,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
   bcBootstrap,
   openSideModal,
   setAuthoredContent,
+  sideOverlayTop,
+  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
+import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
+let useAcomAssistant = false;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -39,7 +44,6 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -47,7 +51,6 @@ function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  setCssGnavHeight();
   openSideModal(text, bcBootstrap);
 }
 
@@ -67,20 +70,38 @@ function promptUp() {
   stayActive = false;
 }
 
-function decorateGnav(cards, input, topNav, el) {
+async function decorateGnav(cards, input, topNav, el) {
+  if (useAcomAssistant) {
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
+    decorateNavWithAssistant(cards, topNav);
+    return;
+  }
+
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: 'bc-gnav' });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}${isC2() ? 'is-c2' : ''}${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
-  const gnavButtonSection = createTag('section', { class: `bc-gnav-button ${hasNoMobile ? ' no-gnav-mobile' : ''}` });
+  const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
 
   if (bcWrapper) {
     gnavButtonSection.appendChild(gnavButton);
     bcGnav.appendChild(gnavButtonSection);
 
+    window.addEventListener('bc:side-modal-open', () => {
+      if (!bcGnav.classList.contains('has-chat-history')) {
+        bcGnav.classList.add('has-chat-history');
+      }
+    });
+    // remove the has-chat-history class if the overlay is closed before chat history is written
+    window.addEventListener('bc:side-modal-close', () => {
+      if (!hasChatCookie()) {
+        bcGnav.classList.remove('has-chat-history');
+      }
+    });
+
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, false, 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'gnav');
     const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');
@@ -103,7 +124,12 @@ function decorateGnav(cards, input, topNav, el) {
       }, 500);
       if (document.body.classList.contains('bc-side-open')) {
         const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          document.body.classList.remove('bc-side-open');
+          handleGnavButton(event);
+        }
       } else handleGnavButton(event);
     });
     if (window?.milo) {
@@ -117,32 +143,38 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
+  useAcomAssistant = isAcomAssistantEnabled();
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
-  setCssGnavHeight();
+  initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
   const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
+    const topNav = document.querySelector('header.global-navigation nav');
     if (topNav) {
       clearInterval(navCheck);
-      decorateGnav(cards, input, topNav, el);
+      decorateGnav(cards, input, topNav, el).catch((error) => {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      });
     }
   }, 100);
 
@@ -150,8 +182,12 @@ export default function init(el) {
     el.removeChild(row);
   });
 
+  if (useAcomAssistant) return;
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open')) {
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
     openSideModal(null, bcBootstrap);
   }
 }

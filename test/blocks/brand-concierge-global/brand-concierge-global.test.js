@@ -7,6 +7,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge-global/brand-concierge-global.js');
+const { sideOverlayTop } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
 
 describe('Brand Concierge Global', () => {
   let block;
@@ -60,11 +61,25 @@ describe('Brand Concierge Global', () => {
     // global flag exposed on window.milo
     expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
 
-    // main-top CSS variable is set
-    expect(document.documentElement.style.getPropertyValue('--bc-gnav-height')).to.match(/px$/);
-
     // authored rows are removed from the block
     expect(block.children.length).to.equal(0);
+  });
+
+  it('decorates when the navigation is added after block initialization', async () => {
+    const header = document.querySelector('header.global-navigation');
+    header.remove();
+
+    init(block);
+    document.body.prepend(header);
+
+    const bcGnav = await waitForElement('.bc-gnav');
+    expect(header.querySelector('.feds-bc-wrapper .bc-gnav')).to.equal(bcGnav);
+  });
+
+  it('sets the --bc-side-overlay-top CSS variable when the gnav is present', () => {
+    document.documentElement.style.removeProperty('--bc-side-overlay-top');
+    sideOverlayTop();
+    expect(document.body.style.getPropertyValue('--bc-side-overlay-top')).to.match(/px$/);
   });
 
   it('adds the no-gnav-mobile modifier to the button section', async () => {

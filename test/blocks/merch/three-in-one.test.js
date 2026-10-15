@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -14,11 +15,7 @@ const {
   handle3in1IFrameEvents,
   handleTimeoutError,
   createContent,
-  decodeUrl,
-  normalizeUrl,
-  isHttps,
-  sanitizeUrl,
-  sanitizeTarget,
+  getIframeUrl,
   default: openThreeInOneModal,
 } = await import('../../../libs/blocks/merch/three-in-one.js');
 
@@ -60,6 +57,30 @@ describe('Three-in-One Modal', () => {
       expect(theme.style.display).to.equal('block');
       clock.tick(15000);
       expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+    });
+
+    it('does not fire the reload timeout while the page is hidden (MWPW-207104)', () => {
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const msgWrapper = document.querySelector('.error-wrapper');
+      const handleTimeoutErrorSpy = sinon.spy();
+      const visibility = stubVisibility();
+      try {
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+
+        // Frozen webview: the checkout error UI must not appear on resume.
+        visibility.hide();
+        clock.tick(60000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+
+        visibility.show();
+        clock.tick(14999);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        clock.tick(1);
+        expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+      } finally {
+        visibility.restore();
+      }
     });
 
     it('should create error message with retry button', async () => {
@@ -331,9 +352,102 @@ describe('Three-in-One Modal', () => {
       expect(modal.querySelector('iframe').src).to.equal('https://commerce-stg.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=ilst_direct_individual&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
     });
 
+    it('clears the retry timeout when the modal closes', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        await modal.closeCallback(modal);
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
+    it('clears the load timeout once the checkout app has loaded', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const modal = await openThreeInOneModal(document.querySelector('a'));
+        const iframe = modal.querySelector('iframe');
+        const theme = modal.querySelector('sp-theme');
+        const msgWrapper = createTag('div', { class: 'error-wrapper' });
+        const handleTimeoutErrorSpy = sinon.spy();
+
+        reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+        // Earlier tests leave other .three-in-one modals behind; the handler targets the first one.
+        document.body.prepend(modal);
+        handle3in1IFrameEvents({
+          origin: 'https://commerce.adobe.com',
+          data: JSON.stringify({ app: 'ucv3', subType: MSG_SUBTYPE.AppLoaded }),
+        });
+        clock.tick(15000);
+        expect(handleTimeoutErrorSpy.called).to.be.false;
+        modal.remove();
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
+    });
+
+    it('cleans up its foreground timeout when modal creation throws', async () => {
+      const link = createTag('a', {
+        href: 'https://commerce-stg.adobe.com/store/segmentation?ctx=if',
+        'data-modal': 'twp',
+        'data-modal-id': 'failed-three-in-one',
+      });
+      const error = new Error('Modal title unavailable');
+      const getAttribute = link.getAttribute.bind(link);
+      sinon.stub(link, 'getAttribute').callsFake((name) => {
+        if (name === 'aria-label') throw error;
+        return getAttribute(name);
+      });
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const initialTimers = clock.countTimers();
+        const rejection = await openThreeInOneModal(link).catch((caught) => caught);
+
+        expect(rejection).to.equal(error);
+        expect(clock.countTimers()).to.equal(initialTimers);
+      } finally {
+        sinon.restore();
+        clock.restore();
+      }
+    });
+  });
+
+  describe('getIframeUrl', () => {
+    const checkoutUrl = 'https://commerce-stg.adobe.com/store/segmentation?cli=mini_plans&ctx=if';
+
+    it('uses the link href', () => {
+      const link = createTag('a', { href: checkoutUrl });
+      link.checkoutUrl = 'https://commerce-stg.adobe.com/store/other';
+      expect(getIframeUrl(link)).to.equal(checkoutUrl);
+    });
+
+    it('uses the checkout URL when the href is a hash', () => {
+      const link = createTag('a', { href: '#' });
+      link.checkoutUrl = checkoutUrl;
+      expect(getIframeUrl(link)).to.equal(checkoutUrl);
+    });
+
+    it('never returns a hash URL', () => {
+      const link = createTag('a', { href: '#' });
+      expect(getIframeUrl(link)).to.be.undefined;
+      link.checkoutUrl = '#';
+      expect(getIframeUrl(link)).to.be.undefined;
+      expect(getIframeUrl(createTag('a'))).to.be.undefined;
+      expect(getIframeUrl()).to.be.undefined;
     });
   });
 
@@ -373,248 +487,6 @@ describe('Three-in-One Modal', () => {
       await checkoutLink.render();
       expect(checkoutLink).to.exist;
       expect(checkoutLink.href).to.include('rf=uc_segmentation_hide_tabs_cr');
-    });
-  });
-});
-
-describe('Three-in-One XSS Sanitization', () => {
-  describe('decodeUrl', () => {
-    it('should return URL unchanged when no decoding needed', () => {
-      expect(decodeUrl('https://example.com/path?query=value')).to.equal('https://example.com/path?query=value');
-      expect(decodeUrl('/relative/path')).to.equal('/relative/path');
-    });
-
-    it('should decode URL encoded once', () => {
-      expect(decodeUrl('https%3A//example.com')).to.equal('https://example.com');
-      expect(decodeUrl('https://example.com/path%3Fquery%3Dvalue')).to.equal('https://example.com/path?query=value');
-      expect(decodeUrl('hello%20world')).to.equal('hello world');
-    });
-
-    it('should decode URL encoded multiple times', () => {
-      expect(decodeUrl('https%253A//example.com')).to.equal('https://example.com');
-      expect(decodeUrl('hello%2520world')).to.equal('hello world');
-      expect(decodeUrl('https%25253A//example.com')).to.equal('https://example.com');
-      expect(decodeUrl('hello%252520world')).to.equal('hello world');
-      expect(decodeUrl('https%2525253A//example.com')).to.equal('https://example.com');
-      expect(decodeUrl('https%252525253A//example.com')).to.equal('https://example.com');
-    });
-
-    it('should stop at maximum iterations (5)', () => {
-      const sixTimesEncoded = 'https%25252525253A//example.com';
-      const expectedAfter5Decodes = 'https%3A//example.com';
-      expect(decodeUrl(sixTimesEncoded)).to.equal(expectedAfter5Decodes);
-      const sevenTimesEncoded = 'https%2525252525253A//example.com';
-      const expectedAfter5DecodesFrom7 = 'https%253A//example.com';
-      expect(decodeUrl(sevenTimesEncoded)).to.equal(expectedAfter5DecodesFrom7);
-    });
-
-    it('should handle malformed percent encoding gracefully', () => {
-      expect(decodeUrl('https://example.com%')).to.equal('https://example.com%');
-      expect(decodeUrl('https://example.com%2')).to.equal('https://example.com%2');
-      expect(decodeUrl('https://example.com%GG')).to.equal('https://example.com%GG');
-    });
-
-    it('should handle edge cases', () => {
-      expect(decodeUrl('')).to.equal(null);
-      expect(decodeUrl(null)).to.equal(null);
-      expect(decodeUrl(undefined)).to.equal(null);
-    });
-
-    it('should handle potential XSS payloads in encoded form', () => {
-      // eslint-disable-next-line no-script-url
-      expect(decodeUrl('javascript%253Aalert%25281%2529'))
-        // eslint-disable-next-line no-script-url
-        .to.equal('javascript:alert(1)');
-      expect(decodeUrl('data%253Atext%252Fhtml%252C%253Cscript%253Ealert%25281%2529%253C%252Fscript%253E'))
-        .to.equal('data:text/html,<script>alert(1)</script>');
-    });
-  });
-
-  describe('normalizeUrl', () => {
-    it('should return normal URLs unchanged', () => {
-      expect(normalizeUrl('https://example.com/path?query=value')).to.equal('https://example.com/path?query=value');
-      expect(normalizeUrl('/relative/path')).to.equal('/relative/path');
-    });
-
-    it('should trim whitespace from URLs', () => {
-      expect(normalizeUrl('  https://example.com  ')).to.equal('https://example.com');
-      expect(normalizeUrl('\t\nhttps://example.com\r\n')).to.equal('https://example.com');
-    });
-
-    it('should remove ASCII control characters', () => {
-      expect(normalizeUrl('https://example.com\x00')).to.equal('https://example.com');
-      expect(normalizeUrl('https://\x01example.com')).to.equal('https://example.com');
-    });
-
-    it('should remove Unicode control characters', () => {
-      expect(normalizeUrl('https://example.com\u0000')).to.equal('https://example.com');
-      expect(normalizeUrl('https://\u001fexample.com')).to.equal('https://example.com');
-      expect(normalizeUrl('https://example.com\u007f')).to.equal('https://example.com');
-      expect(normalizeUrl('https://example\u009f.com')).to.equal('https://example.com');
-      expect(normalizeUrl('https://example\u2000.com')).to.equal('https://example.com');
-      expect(normalizeUrl('https://example\u200d.com')).to.equal('https://example.com');
-      expect(normalizeUrl('https://example.com\ufeff')).to.equal('https://example.com');
-    });
-
-    it('should return null for dangerous protocols', () => {
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('javascript:alert(1)')).to.be.null;
-      expect(normalizeUrl('data:text/html,<script>alert(1)</script>')).to.be.null;
-      expect(normalizeUrl('vbscript:alert(1)')).to.be.null;
-      expect(normalizeUrl('file:///etc/passwd')).to.be.null;
-      expect(normalizeUrl('about:blank')).to.be.null;
-      expect(normalizeUrl('chrome://settings')).to.be.null;
-      expect(normalizeUrl('chrome-extension://abc123/popup.html')).to.be.null;
-      expect(normalizeUrl('filesystem:https://example.com/file')).to.be.null;
-      expect(normalizeUrl('blob:https://example.com/abc123')).to.be.null;
-      expect(normalizeUrl('mailto:user@example.com')).to.be.null;
-      expect(normalizeUrl('tel:+1234567890')).to.be.null;
-      expect(normalizeUrl('sms:+1234567890')).to.be.null;
-    });
-
-    it('should handle case-insensitive dangerous protocols', () => {
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('JAVASCRIPT:alert(1)')).to.be.null;
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('JavaScript:alert(1)')).to.be.null;
-      expect(normalizeUrl('DATA:text/html,<script>alert(1)</script>')).to.be.null;
-      expect(normalizeUrl('VbScript:alert(1)')).to.be.null;
-      expect(normalizeUrl('FILE:///etc/passwd')).to.be.null;
-      expect(normalizeUrl('CHROME://settings')).to.be.null;
-      expect(normalizeUrl('MAILTO:user@example.com')).to.be.null;
-    });
-
-    it('should handle URLs that become empty after normalization', () => {
-      expect(normalizeUrl('')).to.equal('');
-      expect(normalizeUrl('   ')).to.equal('');
-      expect(normalizeUrl('\x00\x01\x1f\x7f')).to.equal('');
-      expect(normalizeUrl('\u0000\u001f\u007f\u009f')).to.equal('');
-      expect(normalizeUrl('   \t\n\r   ')).to.equal('');
-    });
-
-    it('should handle mixed control characters and valid content', () => {
-      expect(normalizeUrl('https://\x00example\x01.com\x1f')).to.equal('https://example.com');
-      expect(normalizeUrl('  https://\u0000example\u001f.com\u200d  ')).to.equal('https://example.com');
-      expect(normalizeUrl('/path\x0a/to\x0d/resource')).to.equal('/path/to/resource');
-    });
-
-    it('should handle protocol-like strings that are not dangerous', () => {
-      expect(normalizeUrl('custom-protocol://example.com')).to.equal('custom-protocol://example.com');
-      expect(normalizeUrl('myapp://action?param=value')).to.equal('myapp://action?param=value');
-      expect(normalizeUrl('ws://example.com')).to.equal('ws://example.com');
-      expect(normalizeUrl('wss://example.com')).to.equal('wss://example.com');
-    });
-
-    it('should handle complex malicious payloads', () => {
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('java\x00script:alert(1)')).to.be.null;
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('java\u0000script:alert(1)')).to.be.null;
-      expect(normalizeUrl('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==')).to.be.null;
-      // eslint-disable-next-line no-script-url
-      expect(normalizeUrl('Java\x01Script:alert(1)')).to.be.null;
-    });
-  });
-
-  describe('isHttps', () => {
-    it('should return valid HTTPS Adobe.com URLs', () => {
-      expect(isHttps('https://adobe.com')).to.equal('https://adobe.com/');
-      expect(isHttps('http://commerce.adobe.com')).to.be.null;
-    });
-  });
-
-  describe('sanitizeUrl', () => {
-    it('should return null for invalid inputs', () => {
-      expect(sanitizeUrl(null)).to.be.null;
-      expect(sanitizeUrl(undefined)).to.be.null;
-      expect(sanitizeUrl('')).to.be.null;
-      expect(sanitizeUrl(false)).to.be.null;
-      expect(sanitizeUrl(0)).to.be.null;
-      expect(sanitizeUrl(123)).to.be.null;
-      expect(sanitizeUrl({})).to.be.null;
-      expect(sanitizeUrl([])).to.be.null;
-    });
-
-    it('should successfully process valid Adobe HTTPS URLs through the entire pipeline', () => {
-      expect(sanitizeUrl('https://adobe.com')).to.equal('https://adobe.com/');
-      expect(sanitizeUrl('https://commerce.adobe.com/path')).to.equal('https://commerce.adobe.com/path');
-      expect(sanitizeUrl('/relative/path')).to.equal('/relative/path');
-    });
-
-    it('should handle URLs requiring decoding + normalization + domain validation', () => {
-      expect(sanitizeUrl('https%3A//adobe.com')).to.equal('https://adobe.com/');
-      expect(sanitizeUrl('https%3A//commerce.adobe.com%2Fpath')).to.equal('https://commerce.adobe.com/path');
-      expect(sanitizeUrl('https://adobe.com\x00/path')).to.equal('https://adobe.com/path');
-      expect(sanitizeUrl('  https://commerce.adobe.com  ')).to.equal('https://commerce.adobe.com/');
-    });
-
-    it('should reject URLs that fail at the normalization step (dangerous protocols)', () => {
-      // eslint-disable-next-line no-script-url
-      expect(sanitizeUrl('javascript:alert(1)')).to.be.null;
-      expect(sanitizeUrl('data:text/html,<script>alert(1)</script>')).to.be.null;
-      // eslint-disable-next-line no-script-url
-      expect(sanitizeUrl('javascript%3Aalert%281%29')).to.be.null;
-      expect(sanitizeUrl('data%3Atext%2Fhtml%2Ctest')).to.be.null;
-    });
-
-    it('should handle complex scenarios with multiple encoding levels + normalization', () => {
-      expect(sanitizeUrl('https%253A//adobe.com\x00')).to.equal('https://adobe.com/');
-      expect(sanitizeUrl('  https%25253A//commerce.adobe.com  ')).to.equal('https://commerce.adobe.com/');
-      expect(sanitizeUrl('https%3A//adobe.com%2Fpath%3Fparam%3Dvalue')).to.equal('https://adobe.com/path?param=value');
-    });
-
-    it('should handle malformed URLs that cause URL constructor errors', () => {
-      expect(sanitizeUrl('https://')).to.be.null;
-      expect(sanitizeUrl('https://adobe.com:99999999')).to.be.null;
-      expect(sanitizeUrl('https://[invalid-ipv6]')).to.be.null;
-    });
-
-    it('should handle URLs that become invalid after decoding', () => {
-      // eslint-disable-next-line no-script-url
-      expect(sanitizeUrl('javascript%253Aalert%25281%2529')).to.be.null;
-      expect(sanitizeUrl('https%3A//')).to.be.null;
-    });
-
-    it('should handle edge cases in the pipeline', () => {
-      expect(sanitizeUrl('%20%20%20')).to.be.null;
-      expect(sanitizeUrl('\x00\x01\x1f')).to.be.null;
-      expect(sanitizeUrl('\u0000\u001f\u007f')).to.be.null;
-    });
-  });
-
-  describe('sanitizeTarget', () => {
-    it('should return _blank for falsy values', () => {
-      expect(sanitizeTarget(null)).to.equal('_blank');
-      expect(sanitizeTarget(undefined)).to.equal('_blank');
-      expect(sanitizeTarget('')).to.equal('_blank');
-      expect(sanitizeTarget(false)).to.equal('_blank');
-      expect(sanitizeTarget(0)).to.equal('_blank');
-    });
-
-    it('should return valid standard target values', () => {
-      expect(sanitizeTarget('_blank')).to.equal('_blank');
-      expect(sanitizeTarget('_self')).to.equal('_self');
-      expect(sanitizeTarget('_parent')).to.equal('_parent');
-      expect(sanitizeTarget('_top')).to.equal('_top');
-    });
-
-    it('should return _blank for targets with invalid characters', () => {
-      // eslint-disable-next-line no-script-url
-      expect(sanitizeTarget('javascript:alert(1)')).to.equal('_blank');
-      expect(sanitizeTarget('_blank onclick="alert(1)"')).to.equal('_blank');
-      expect(sanitizeTarget('my window')).to.equal('_blank');
-      expect(sanitizeTarget('window.open')).to.equal('_blank');
-      expect(sanitizeTarget('window[0]')).to.equal('_blank');
-      expect(sanitizeTarget('window+1')).to.equal('_blank');
-      expect(sanitizeTarget('<script>alert(1)</script>')).to.equal('_blank');
-    });
-
-    it('should handle complex malicious payloads', () => {
-      expect(sanitizeTarget('"><script>alert(1)</script>')).to.equal('_blank');
-      expect(sanitizeTarget("' onload='alert(1)")).to.equal('_blank');
-      // eslint-disable-next-line no-script-url
-      expect(sanitizeTarget('javascript://example.com/%0Aalert(1)')).to.equal('_blank');
-      expect(sanitizeTarget('data:text/html,<script>alert(1)</script>')).to.equal('_blank');
     });
   });
 });

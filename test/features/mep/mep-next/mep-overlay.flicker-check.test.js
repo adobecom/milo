@@ -45,10 +45,9 @@ const { default: init } = await import('../../../../libs/features/mep/mep-next/m
 
 after(() => fetchStub.restore());
 
-function makeMain() {
-  const el = document.createElement('main');
-  document.body.prepend(el);
-  return el;
+function makeBody() {
+  document.body.replaceChildren();
+  return document.body;
 }
 
 function makeHeader(bottom = 50) {
@@ -62,12 +61,12 @@ const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
 
 describe('mep-drawer idle flicker check', () => {
   it('does not mutate #mep-drawer style/attrs while idle (no scroll/resize/DOM changes)', async () => {
-    const mainEl = makeMain();
+    const bodyEl = makeBody();
     const headerEl = makeHeader(50);
     await init();
     await wait(150);
 
-    const drawer = mainEl.querySelector('#mep-drawer');
+    const drawer = bodyEl.querySelector('#mep-drawer');
     expect(drawer).to.exist;
     try { drawer.showPopover(); } catch { /* jsdom/older engines */ }
     await wait(150);
@@ -103,18 +102,17 @@ describe('mep-drawer idle flicker check', () => {
     expect(rafCalls, 'unexpected requestAnimationFrame scheduling while idle').to.equal(0);
 
     try { drawer.hidePopover(); } catch { /* jsdom/older engines */ }
-    mainEl.remove();
     headerEl.remove();
     document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
   }).timeout(6000);
 
   it('does not rebuild the M@S summary DOM when a re-rendering merch-card leaves the count unchanged', async () => {
-    const mainEl = makeMain();
+    const bodyEl = makeBody();
     const headerEl = makeHeader(50);
     await init();
     await wait(150);
 
-    const drawer = mainEl.querySelector('#mep-drawer');
+    const drawer = bodyEl.querySelector('#mep-drawer');
     try { drawer.showPopover(); } catch { /* jsdom/older engines */ }
     await wait(150);
 
@@ -158,18 +156,17 @@ describe('mep-drawer idle flicker check', () => {
 
     expect(childMutations, 'M@S summary DOM rebuilt even though the data never changed').to.equal(1);
 
-    mainEl.remove();
     headerEl.remove();
     document.querySelectorAll('#mep-drawer, .mep-fab, merch-card').forEach((el) => el.remove());
   }).timeout(8000);
 
   it('does not restyle #mep-drawer on repeated scroll events when the gnav offset is unchanged', async () => {
-    const mainEl = makeMain();
+    const bodyEl = makeBody();
     const headerEl = makeHeader(50);
     await init();
     await wait(150);
 
-    const drawer = mainEl.querySelector('#mep-drawer');
+    const drawer = bodyEl.querySelector('#mep-drawer');
     try { drawer.showPopover(); } catch { /* jsdom/older engines */ }
     await wait(150);
 
@@ -197,7 +194,6 @@ describe('mep-drawer idle flicker check', () => {
     expect(attrMutations, '#mep-drawer restyled even though the gnav offset never changed').to.equal(0);
 
     try { drawer.hidePopover(); } catch { /* jsdom/older engines */ }
-    mainEl.remove();
     headerEl.remove();
     document.querySelectorAll('#mep-drawer, .mep-fab').forEach((el) => el.remove());
   }).timeout(8000);

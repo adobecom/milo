@@ -35,6 +35,8 @@ const createTag = (tag, attributes = {}) => {
 
 const loadArea = () => Promise.resolve();
 
+const loadIms = () => Promise.resolve();
+
 const localizeLinkAsync = () => Promise.resolve();
 
 const loadLink = () => Promise.resolve();
@@ -138,6 +140,26 @@ const shouldAllowKrTrial = (button, localePrefix) => {
 const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
+const getGeoIpWarmSheet = () => undefined;
+const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
+
+// Unused by ost.js itself; only needed because merch.js statically imports
+// decorate.js, autoblock.js and market.js, which import these from utils.js.
+const isBot = () => false;
+const getMarketsUrl = () => '';
+const createIntersectionObserver = () => {};
+const getFederatedContentRoot = () => '';
+const getFedsPlaceholderConfig = () => ({});
+const shouldBlockFreeTrialLinks = () => false;
+const isAupEnabled = () => false;
+const decorateLinksAsync = () => Promise.resolve();
+const loadBlock = () => Promise.resolve();
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -166,6 +188,7 @@ export {
   getLocale,
   getMetadata,
   loadArea,
+  loadIms,
   loadScript,
   loadStyle,
   getCountry,
@@ -180,5 +203,18 @@ export {
   lingoActive,
   getGeoLocalePrefix,
   getPlaceholderPaths,
+  getGeoIpWarmSheet,
+  geoIpSiteKey,
+  normCountryCode,
+  resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
+  isBot,
+  getMarketsUrl,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
+  isAupEnabled,
+  decorateLinksAsync,
+  loadBlock,
 };

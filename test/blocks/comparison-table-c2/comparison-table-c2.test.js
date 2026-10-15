@@ -84,7 +84,10 @@ describe('Comparison Table C2', () => {
 
     const emptyCells = el.querySelectorAll('.cell-content.empty-cell');
     expect(emptyCells.length).to.equal(1);
-    expect(emptyCells[0].getAttribute('aria-hidden')).to.equal('true');
+    expect(emptyCells[0].getAttribute('aria-hidden')).to.be.null;
+    [...emptyCells[0].children].forEach((child) => {
+      expect(child.getAttribute('aria-hidden')).to.equal('true');
+    });
   });
 
   it('toggles the table open/closed when the header button is clicked', async () => {

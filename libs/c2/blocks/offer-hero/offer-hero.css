@@ -1,10 +1,16 @@
+@property --hero-eyebrow-gap {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
   overflow: visible;
 
   > .section-background {
     overflow: clip;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-22) var(--s2a-border-radius-22);
   }
 }
 
@@ -19,7 +25,7 @@
 
   .hero-content {
     padding-inline: var(--s2a-spacing-lg);
-    margin-top: 190px;
+    padding-top: 190px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,14 +66,15 @@
   }
 
   .what-included {
+    container: offer-hero-cards / inline-size;
     position: relative;
-    padding-block: 0 var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-xs);
     z-index: 2;
-    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
   }
 
   .hero-eyebrow {
-    --hero-eyebrow-gap: var(--s2a-spacing-lg);
+    --hero-eyebrow-gap: var(--s2a-spacing-2xl);
 
     position: fixed;
     top: 0;
@@ -85,7 +92,7 @@
   .hero-cards {
     max-width: var(--grid-max-width-default);
     margin-inline: auto;
-    padding-inline: var(--s2a-spacing-lg);
+    padding-bottom: var(--s2a-spacing-lg);
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--grid-gutter);
@@ -124,7 +131,7 @@
     box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
     overflow: hidden;
     transform-origin: top left;
-    padding-top: calc(100% * 100 / 109);
+    padding-top: calc(100% * 110 / 100);
     will-change: transform;
   }
 
@@ -323,7 +330,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 0;
-      margin-top: 184px;
+      padding-top: 184px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: calc(100% - 482px);
@@ -335,7 +342,11 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
+      --hero-eyebrow-gap: calc(var(--s2a-spacing-96) + var(--s2a-spacing-xl));
+    }
+
+    .what-included {
+      padding-inline: var(--s2a-spacing-lg);
     }
 
     .hero-cards {
@@ -353,10 +364,16 @@
 }
 
 @media (width >= 1280px) {
+  .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
+    > .section-background {
+      border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);
+    }
+  }
+
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
-      margin-top: 177px;
+      padding-top: 177px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;
@@ -377,8 +394,20 @@
   }
 }
 
-@media (width > 1440px) {
-  .offer-hero .what-included {
-    padding-bottom: var(--s2a-spacing-124);
+.dark {
+  .offer-hero {
+    .hero-card-tile {
+      background: transparent;
+    }
+
+    .hero-card-body-text {
+      color: var(--s2a-color-transparent-white-64);
+    }
+  }
+}
+
+@container offer-hero-cards (width >= 1920px) {
+  .offer-hero .hero-cards {
+    padding-bottom: var(--s2a-spacing-128);
   }
 }

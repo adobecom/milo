@@ -1,5 +1,28 @@
 # Commerce Settings
 
+## AUP Select environments
+
+`aup-select` uses the environment matching the current Milo environment by default (Stage on
+non-production hosts, production on production). The AUP SDK bundle loads from the matching CDN.
+
+Use the following query parameters for targeted validation:
+
+* `?commerce.env=prod` uses Commerce production only in non-production Milo environments.
+  The value is case-insensitive; production ignores this override.
+* `?commerce.landscape=DRAFT` combined with `?commerce.env=prod` uses draft offers from Commerce production.
+
+The deferred commerce `preload.js` (loaded for both AUP Select and the legacy 3-in-1 modal)
+follows the same Commerce environment as `mas-commerce-service`.
+
+## Market validation
+
+`market.js` is a static dependency of `merch.js`, so the browser discovers it with the
+initial merch module graph rather than waiting for commerce service initialization.
+Importing it does not fetch market configuration or geo data. Market detection during
+service initialization and checkout-country validation remain gated by
+`mas-geo-detection`; supported IMS countries are retained, while unsupported countries
+fall back to the service's validated market.
+
 ## WCS Locale
 To check which locale was used to render the price/CTA:
 * In the network tab search for a 'wcs' request, e.g.

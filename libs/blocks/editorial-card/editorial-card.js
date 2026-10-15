@@ -22,6 +22,78 @@ async function decorateLockupFromContent(el) {
   });
 }
 
+const isImageLink = (a) => /\.(svg|png|jpe?g|webp|gif)(\?|#|$)/i.test(a?.getAttribute('href') || '');
+
+const getStepText = (card) => {
+  const parts = [];
+  const heading = card.querySelector('h1, h2, h3, h4, h5, h6');
+  if (heading?.textContent.trim()) parts.push(heading.textContent.trim());
+  card.querySelectorAll('p').forEach((p) => {
+    if (!p.textContent.trim()) return;
+    const link = p.querySelector('a');
+    if (link && isImageLink(link)) return;
+    parts.push(p.textContent.trim());
+  });
+  return parts.join(' ');
+};
+
+const getHeadingInfo = (section) => {
+  const prev = section.previousElementSibling;
+  const heading = prev?.querySelector('h1, h2, h3, h4, h5, h6');
+  if (!heading?.textContent.trim()) return null;
+  const descP = prev.querySelector('p');
+  return {
+    name: heading.textContent.trim(),
+    description: descP ? descP.textContent.trim() : '',
+  };
+};
+
+const getStepLd = (count, card) => ({
+  '@type': 'HowToStep',
+  url: `${window.location.origin}${window.location.pathname}`,
+  name: `Step ${count}`,
+  itemListElement: [
+    {
+      '@type': 'HowToDirection',
+      text: getStepText(card),
+    },
+  ],
+});
+
+const setJsonLd = (name, description, stepsLd) => {
+  const jsonLd = {
+    '@context': 'http://schema.org',
+    '@type': 'HowTo',
+    name,
+    description,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Adobe',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg',
+      },
+    },
+    step: stepsLd,
+  };
+
+  const jsonLdScript = document.createElement('script');
+  jsonLdScript.type = 'application/ld+json';
+  jsonLdScript.text = JSON.stringify(jsonLd);
+  document.getElementsByTagName('head')[0].appendChild(jsonLdScript);
+};
+
+const emitHowToSchema = (el) => {
+  const section = el.closest('.section');
+  if (!section || section.dataset.howToSchema) return;
+  const steps = [...section.querySelectorAll('.editorial-card.seo')];
+  const info = getHeadingInfo(section);
+  if (!info) return;
+  section.dataset.howToSchema = 'true';
+  const stepsLd = steps.map((card, idx) => getStepLd(idx + 1, card));
+  setJsonLd(info.name, info.description, stepsLd);
+};
+
 const extendDeviceContent = (el) => {
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
@@ -106,6 +178,7 @@ function handleOpenClasses(el, hasOpenClass) {
 }
 
 const init = async (el) => {
+  if (el.classList.contains('seo')) emitHowToSchema(el);
   el.classList.add('con-block');
   const hasOpenClass = el.className.includes('open');
   handleOpenClasses(el, hasOpenClass);

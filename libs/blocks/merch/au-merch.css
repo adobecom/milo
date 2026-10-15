@@ -58,7 +58,12 @@ merch-card[id] [slot='heading-m'] [is="inline-price"] .price.price-strikethrough
   color: #ff0000;
 }
 
-merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix:before {
+merch-card[variant="pro"][id] [slot="heading-m"] [is="inline-price"] .price-annual-prefix:before,
+merch-card[id]:is([variant="simplified-pricing-express"], [variant="full-pricing-express"]) [slot='price'] [is="inline-price"] .price-annual-prefix:before,
+merch-card[variant="special-offers"][id] [slot="heading-xs-price"] [is="inline-price"] .price-annual-prefix:before,
+merch-card[variant^="mini-compare-chart"][id] [slot="heading-m-price"] [is="inline-price"] .price-annual-prefix:before,
+merch-card[id]:is([variant="product"], [variant="segment"]) [slot="heading-xs"] [is="inline-price"] .price-annual-prefix:before,
+merch-card[variant^="plans"][id] [slot="heading-m"] [is="inline-price"] .price-annual-prefix:before {
     white-space: pre;
     content: "\A";
 }
@@ -72,6 +77,41 @@ merch-card[variant^="plans"][id] [slot="heading-m"] p:has([data-template="strike
   font-size: 14px;
 }
 
+merch-card[variant="pro"][id] [slot="heading-m"] [is="inline-price"] .price-annual-prefix,
+merch-card[variant="pro"][id] [slot="heading-m"] [is="inline-price"] .price.price-annual span,
+merch-card[variant="pro"][id] [slot="heading-m"] [is="inline-price"] .price-annual-suffix {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: var(--consonant-merch-card-pro-font-family-regular);
+    letter-spacing: 0;
+}
+
+merch-card[variant="simplified-pricing-express"][id] [slot='price'] [is="inline-price"] .price-annual-prefix,
+merch-card[variant="simplified-pricing-express"][id] [slot='price'] [is="inline-price"] .price.price-annual span,
+merch-card[variant="simplified-pricing-express"][id] [slot='price'] [is="inline-price"] .price-annual-suffix,
+merch-card[variant="special-offers"][id] [slot="heading-xs-price"] [is="inline-price"] .price-annual-prefix,
+merch-card[variant="special-offers"][id] [slot="heading-xs-price"] [is="inline-price"] .price-annual,
+merch-card[variant="special-offers"][id] [slot="heading-xs-price"] [is="inline-price"] .price-annual-suffix,
+merch-card[id]:is([variant="product"], [variant="segment"]) [slot="heading-xs"] [is="inline-price"] .price-annual-prefix,
+merch-card[id]:is([variant="product"], [variant="segment"]) [slot="heading-xs"] [is="inline-price"] .price-annual,
+merch-card[id]:is([variant="product"], [variant="segment"]) [slot="heading-xs"] [is="inline-price"] .price-annual-suffix {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+merch-card[variant="full-pricing-express"][id] [slot='price'] [is="inline-price"] .price-annual-prefix,
+merch-card[variant="full-pricing-express"][id] [slot='price'] [is="inline-price"] .price-annual span,
+merch-card[variant="full-pricing-express"][id] [slot='price'] [is="inline-price"] .price-annual-suffix,
+merch-card[variant^="mini-compare-chart"][id] [slot="heading-m-price"] [is="inline-price"] .price-annual-prefix,
+merch-card[variant^="mini-compare-chart"][id] [slot="heading-m-price"] [is="inline-price"] .price-annual,
+merch-card[variant^="mini-compare-chart"][id] [slot="heading-m-price"] [is="inline-price"] .price-annual-suffix,
+merch-card[variant="plans-v2"][id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
+merch-card[variant="plans-v2"][id] [slot='heading-m'] [is="inline-price"] .price-annual span,
+merch-card[variant="plans-v2"][id] [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
+  font-size: 18px;
+  font-weight: 400;
+}
+
 merch-card[variant^="plans"][id] [slot="heading-m"] span.price.price-annual:not(.price-strikethrough):not(.price-promo-strikethrough):not(.price-legal),
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual,
@@ -80,6 +120,11 @@ merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
   line-height: 1.5;
   position: relative;
   top: -3px;
+}
+
+merch-card[variant="simplified-pricing-express"][id] div[slot="price"] > p:first-child,
+merch-card[variant="full-pricing-express"][id] div[slot="price"] > p:first-child {
+  display: inline;
 }
 
 merch-card:not([id]) [slot='heading-m'] [is="inline-price"] .price-annual::before {

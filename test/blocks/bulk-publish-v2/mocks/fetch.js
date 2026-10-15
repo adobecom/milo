@@ -48,6 +48,18 @@ export async function mockFetch() {
     const body = headers ? JSON.parse(headers) : undefined;
     const [resource] = args;
     const response = mocks.find((mock) => (body?.delete ? mock.request === 'delete' : mock.url === resource));
+    if (!response) {
+      // Unknown URL — return a 404 so callers degrade gracefully instead of
+      // tripping on an undefined response. Keeps tests resilient when new
+      // background fetches (e.g. the CaaS auto-publish hook reading
+      // /.milo/caas/config.json) are added without per-test fixtures.
+      return Promise.resolve({
+        status: 404,
+        ok: false,
+        json: () => null,
+        text: () => '',
+      });
+    }
     const { status, data } = response;
     return Promise.resolve({
       status,

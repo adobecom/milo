@@ -180,9 +180,9 @@ body[data-mep-highlight='true'] [data-code-manifest-id] {
 
 body[data-mep-highlight='true'] [data-code-manifest-id]::before {
   content: 'MEP Code:  ' attr(data-code-manifest-id);
-  border: 2px solid var(--mep-purple-20);
-  color: var(--mep-purple-20);
-  background-color: var(--mep-code-primary);
+  border: 2px solid var(--mep-code-primary);
+  color: var(--mep-code-primary);
+  background-color: var(--mep-code-accent);
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-roc] {
@@ -194,7 +194,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
   content: 'MEP Lingo:  ' attr(data-mep-lingo-roc);
   border: 2px solid var(--mep-lingo-primary);
   color: var(--mep-lingo-primary);
-  background-color: var(--mep-green-20);
+  background-color: var(--mep-lingo-accent);
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback] {

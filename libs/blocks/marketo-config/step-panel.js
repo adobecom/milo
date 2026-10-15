@@ -12,15 +12,16 @@ const FORM_FIELDS = [
   { name: 'phone', label: 'Phone', step: 2 },
   { name: 'mktoFormsJobTitle', label: 'Job Title', step: 2 },
   { name: 'mktoFormsFunctionalArea', label: 'Functional Area', step: 2 },
-  { name: 'mktoFormsRevenue', label: 'Annual Revenue', step: 2 },
-  { name: 'mktoFormsEmployeeRange', label: 'Employee Range', step: 2 },
+  { name: 'mktodemandbaseIndustry', label: 'Industry', step: 2 },
+  { name: 'companysize', label: 'Employee Range', step: 2 },
+  { name: 'website', label: 'Website', step: 2 },
   { name: 'company', label: 'Company', step: 3 },
   { name: 'state', label: 'State', step: 3 },
   { name: 'postcode', label: 'Postal Code', step: 3 },
   { name: 'mktoFormsPrimaryProductInterest', label: 'Primary Product Interest', step: 3 },
   { name: 'mktoFormsCompanyType', label: 'Company Type', step: 3 },
-  { name: 'mktoFormsComments', label: 'Comments', step: 3 },
-  { name: 'mktoRequestProductDemo', label: 'Request Product Demo', step: 3 },
+  { name: 'comments', label: 'Comments', step: 3 },
+  { name: 'demo', label: 'Request Product Demo', step: 3 },
 ];
 
 const SYNCED_FIELDS = ['mktoFormsPrimaryProductInterest', 'mktoFormsCompanyType'];

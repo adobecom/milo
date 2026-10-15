@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 import * as merch from '../../../libs/blocks/merch/merch.js';
 
 const compareChartState = {
@@ -224,6 +225,33 @@ describe('mas-compare-chart-autoblock', () => {
     expect(compareChart.textContent).to.contain(VPN_ERROR);
     expect(logError.calledOnce).to.be.true;
     expect(logError.firstCall.args[0]).to.equal('MAS-COMPARE-CHART did not initialize within given timeout');
+  });
+
+  it('does not time out while the page is hidden (MWPW-207104)', async () => {
+    const logError = await setupServiceLogStub();
+    let resolveReady;
+    compareChartState.checkReady = () => new Promise((resolve) => { resolveReady = resolve; });
+    const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+    const visibility = stubVisibility();
+
+    const a = appendLink('compare-chart-frozen');
+    const createPromise = createCompareChart(a, { fragment: 'compare-chart-frozen' });
+
+    // Frozen webview: hidden, then long wall-clock suspension, then resume.
+    visibility.hide();
+    await clock.tickAsync(60000);
+    expect(logError.called).to.be.false;
+
+    resolveReady(true);
+    visibility.show();
+    await clock.tickAsync(0);
+    await createPromise;
+    clock.restore();
+    visibility.restore();
+
+    expect(logError.called).to.be.false;
+    const compareChart = document.querySelector('mas-compare-chart');
+    expect(compareChart.textContent).to.not.contain(VPN_ERROR);
   });
 
   it('does not show VPN error in prod', async () => {

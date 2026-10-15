@@ -5,6 +5,7 @@ import {
   normalizePaths,
   parsePathInput,
   getValidPathsForInput,
+  detectFloodgateColor,
 } from '../../../../tools/floodbox/floodgate/utils.js';
 
 describe('validatePaths', () => {
@@ -175,6 +176,76 @@ describe('parsePathInput', () => {
     const result = parsePathInput('https://example.com/foo', true, 'pink');
     expect(result.validPaths).to.eql([]);
     expect(result.invalidLines).to.eql(new Set([0]));
+  });
+});
+
+describe('detectFloodgateColor', () => {
+  it('returns no color for blank input', () => {
+    expect(detectFloodgateColor('')).to.eql({ color: null, conflict: false });
+  });
+
+  it('returns no color for plain source paths', () => {
+    const input = '/adobecom/da-events/events/a\n/adobecom/da-events/events/b';
+    expect(detectFloodgateColor(input)).to.eql({ color: null, conflict: false });
+  });
+
+  it('detects the color from a floodgate path', () => {
+    const result = detectFloodgateColor('/adobecom/da-events-fg-pink/events/my/stuff');
+    expect(result).to.eql({ color: 'pink', conflict: false });
+  });
+
+  it('detects the color from an AEM floodgate host URL', () => {
+    const input = 'https://main--da-events-fg-pink--adobecom.aem.page/events/x';
+    expect(detectFloodgateColor(input)).to.eql({ color: 'pink', conflict: false });
+  });
+
+  it('allows plain paths mixed with a single floodgate color', () => {
+    const input = [
+      '/adobecom/da-events/events/a',
+      '/adobecom/da-events-fg-pink/events/b',
+    ].join('\n');
+    expect(detectFloodgateColor(input)).to.eql({ color: 'pink', conflict: false });
+  });
+
+  it('reports a conflict when two different colors appear', () => {
+    const input = [
+      '/adobecom/da-events-fg-pink/a',
+      '/adobecom/da-events-fg-blue/b',
+    ].join('\n');
+    const result = detectFloodgateColor(input);
+    expect(result.color).to.be.null;
+    expect(result.conflict).to.be.true;
+    expect(result.colors).to.have.members(['pink', 'blue']);
+  });
+
+  it('handles a trailing wildcard in either position', () => {
+    expect(detectFloodgateColor('/adobecom/da-events-fg-pink/*').color).to.equal('pink');
+    expect(detectFloodgateColor('/adobecom/da-events-fg-pink*').color).to.equal('pink');
+  });
+
+  it('supports multi-word colors', () => {
+    expect(detectFloodgateColor('/adobecom/da-events-fg-dark-pink/a').color).to.equal('dark-pink');
+  });
+
+  it('ignores a -fg- marker below the repo segment', () => {
+    const result = detectFloodgateColor('/adobecom/da-events/foo-fg-pink/x');
+    expect(result).to.eql({ color: null, conflict: false });
+  });
+
+  it('detects the color regardless of a file extension deeper in the path', () => {
+    expect(detectFloodgateColor('/adobecom/da-events-fg-pink/a/b.json').color).to.equal('pink');
+  });
+
+  it('handles CRLF line endings', () => {
+    const input = '/adobecom/da-events-fg-pink/a\r\n/adobecom/da-events-fg-pink/b';
+    expect(detectFloodgateColor(input)).to.eql({ color: 'pink', conflict: false });
+  });
+
+  it('ignores non-aem.page URLs', () => {
+    expect(detectFloodgateColor('https://example.com/foo-fg-pink/bar')).to.eql({
+      color: null,
+      conflict: false,
+    });
   });
 });
 

@@ -300,6 +300,11 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
 
+
+  .hero-marquee .action-area > p:has(.con-button):not(:has(a:not(.con-button))) {
+    display: contents;
+  }
+
   .hero-marquee.media-top-mobile {
     flex-direction: column-reverse;
   }

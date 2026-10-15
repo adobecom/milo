@@ -581,7 +581,7 @@ async function checkIsSubscribed() {
   const { email } = await getIMSProfile();
 
   const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest });
-  const { subscribed } = data;
+  const { subscribed } = data || {};
 
   if (subscribed) showHideMessage({ subscribed, email });
 

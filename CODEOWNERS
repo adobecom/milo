@@ -9,6 +9,7 @@
 /libs/features/georouting/ @adobecom/milo-core
 /libs/features/georoutingv2/ @adobecom/milo-core
 /libs/features/icons/ @adobecom/milo-core
+/libs/features/jsonld-graph-manager/ @hparra @spandit22 @chrischrischris
 /libs/features/personalization/ @adobecom/mep-squad
 /libs/features/seotech/ @hparra
 /libs/features/spectrum-web-components/ @adobecom/tacocat

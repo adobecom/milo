@@ -159,7 +159,7 @@
   overflow-y: auto;
   background: var(--feds-background-nav);
   border: 1px solid var(--feds-borderColor);
-  border-radius: var(--s2a-border-radius-xs);
+  border-radius: var(--s2a-border-radius-2xs);
 }
 
 [dir = "rtl"] .feds-regionPicker-wrapper > .fragment {
@@ -565,7 +565,7 @@ span.feds-footer-privacyLink-divider {
   .global-footer {
     padding-top: var(--s2a-layout-xl);
   }
-  
+
   .global-footer:not(.mobile) .feds-footer-options {
     display: grid;
     grid-template-areas: "region legal social";
