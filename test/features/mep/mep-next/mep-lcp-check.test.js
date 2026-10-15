@@ -371,10 +371,48 @@ describe('mep-lcp-check', () => {
       logFindings({ findings: [{ ...(await run('hero-cells-near')).findings[0], match: 'possible', distance: 10 }], unable: [] });
       sinon.restore();
       const [layoutMsg] = log.firstCall.args;
-      expect(layoutMsg).to.include('phone: fragment background cell 1 of 1 media_aaa222.png is a near-duplicate');
+      expect(layoutMsg).to.include('1. phone: fragment background cell 1 of 1 media_aaa222.png is a near-duplicate');
       expect(layoutMsg).to.include('fix: copy the image from the page hero background cell 1 of 2 into the fragment hero background cell 1 of 1 so both use media_aaa111.png');
       expect(layoutMsg).to.include('note: hero layouts differ');
       expect(log.secondCall.args[0]).to.include('possible near-duplicate (distance 10');
+    });
+
+    it('logs one entry per fragment with a numbered fix per image', () => {
+      const log = sinon.stub(console, 'log');
+      sinon.stub(console, 'groupCollapsed');
+      sinon.stub(console, 'groupEnd');
+      const base = {
+        type: 'near-duplicate',
+        manifestPath: '/m.json',
+        variant: 'v',
+        action: 'replace',
+        selector: 'any-marquee',
+        fragmentUrl: 'https://x/frag',
+        match: 'near-duplicate',
+        distance: 1,
+        layout: { page: 'page layout', fragment: 'fragment layout' },
+      };
+      logFindings({
+        findings: [
+          {
+            ...base, viewports: ['phone'], fragmentRole: 'background cell 1 of 3', pageRoles: ['background cell 1 of 3'], fragmentImage: '/media_f1.png', pageImage: '/media_p1.jpg',
+          },
+          {
+            ...base, viewports: ['tablet', 'desktop'], fragmentRole: 'foreground image', pageRoles: ['background cell 2 of 3', 'foreground image'], fragmentImage: '/media_f2.png', pageImage: '/media_p2.jpg',
+          },
+          {
+            ...base, fragmentUrl: 'https://x/other', viewports: ['phone'], fragmentRole: 'background cell 1 of 3', pageRoles: ['background cell 1 of 3'], fragmentImage: '/media_f1.png', pageImage: '/media_p1.jpg',
+          },
+        ],
+        unable: [],
+      });
+      sinon.restore();
+      expect(log.callCount).to.equal(2);
+      const [msg] = log.firstCall.args;
+      expect(msg.match(/\n {2}fragment: /g)).to.have.length(1);
+      expect(msg).to.include('1. phone: fragment background cell 1 of 3 media_f1.png');
+      expect(msg).to.include('2. tablet, desktop: fragment foreground image media_f2.png');
+      expect(msg.match(/note: hero layouts differ/g)).to.have.length(1);
     });
   });
 

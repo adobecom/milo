@@ -514,39 +514,54 @@ export function findHiddenHeroImages(pageImageNames, originalSection) {
   return findings;
 }
 
-const describeNearDuplicate = (f) => {
+const describeVerdict = (f) => (f.match === 'possible'
+  ? `possible near-duplicate (distance ${f.distance}, ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE}: check visually)`
+  : `near-duplicate (distance ${f.distance}, <= ${NEAR_DUP_MAX_DISTANCE})`);
+
+const describeImageFix = (f, i) => {
   const fragName = getMediaName(f.fragmentImage);
   const pageName = getMediaName(f.pageImage);
-  const verdict = f.match === 'possible'
-    ? `possible near-duplicate (distance ${f.distance}, ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE}: check visually)`
-    : `near-duplicate (distance ${f.distance}, <= ${NEAR_DUP_MAX_DISTANCE})`;
-  const lines = [
-    `${f.manifestPath} | variant "${f.variant}" | ${f.action} "${f.selector}"`,
-    `  fragment: ${f.fragmentUrl}`,
-  ];
   if (!f.viewports) {
-    lines.push(
-      `  fragment image: ${f.fragmentImage}`,
-      `  page image: ${f.pageImage}`,
-      `  ${verdict}, viewport unknown (no marquee found to map cells)`,
-      `  fix: reuse ${pageName} from the page hero instead of ${fragName}`,
-    );
-    return lines.join('\n');
+    return [
+      `  ${i}. fragment image: ${f.fragmentImage}`,
+      `     page image: ${f.pageImage}`,
+      `     ${describeVerdict(f)}, viewport unknown (no marquee found to map cells)`,
+      `     fix: reuse ${pageName} from the page hero instead of ${fragName}`,
+    ];
   }
-  const pageRoles = f.pageRoles.join(' and ');
-  lines.push(
-    `  ${f.viewports.join(', ')}: fragment ${f.fragmentRole} ${fragName} is a ${verdict}`,
-    `    of page ${pageRoles} ${pageName}`,
-    `  fix: copy the image from the page hero ${f.pageRoles[0]} into the fragment hero ${f.fragmentRole} so both use ${pageName}`,
-  );
-  if (f.layout) {
+  return [
+    `  ${i}. ${f.viewports.join(', ')}: fragment ${f.fragmentRole} ${fragName} is a ${describeVerdict(f)}`,
+    `     of page ${f.pageRoles.join(' and ')} ${pageName}`,
+    `     fix: copy the image from the page hero ${f.pageRoles[0]} into the fragment hero ${f.fragmentRole} so both use ${pageName}`,
+  ];
+};
+
+const describeNearDuplicates = (group) => {
+  const [first] = group;
+  const lines = [
+    `${first.manifestPath} | variant "${first.variant}" | ${first.action} "${first.selector}"`,
+    `  fragment: ${first.fragmentUrl}`,
+    ...group.flatMap((f, i) => describeImageFix(f, i + 1)),
+  ];
+  const { layout } = group.find((f) => f.layout) || {};
+  if (layout) {
     lines.push(
       '  note: hero layouts differ, so match images by viewport, not by cell position',
-      `    page: ${f.layout.page}`,
-      `    fragment: ${f.layout.fragment}`,
+      `    page: ${layout.page}`,
+      `    fragment: ${layout.fragment}`,
     );
   }
   return lines.join('\n');
+};
+
+const groupByFragment = (findings) => {
+  const groups = new Map();
+  findings.forEach((f) => {
+    const key = [f.manifestPath, f.variant, f.action, f.selector, f.fragmentUrl].join('|');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(f);
+  });
+  return [...groups.values()];
 };
 
 export function logFindings({ findings, unable }) {
@@ -558,8 +573,8 @@ export function logFindings({ findings, unable }) {
     + `  manifests in LCP area: ${f.manifests.join(', ') || 'unknown'}\n`
     + '  remove the hidden content instead of hiding it with CSS, or reuse the visible hero image',
   ));
-  findings.filter((f) => f.type === 'near-duplicate')
-    .forEach((f) => console.log(describeNearDuplicate(f)));
+  groupByFragment(findings.filter((f) => f.type === 'near-duplicate'))
+    .forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   console.groupEnd();
 }
