@@ -90,12 +90,21 @@ async function fetchMiloIcon(iconName) {
   return null;
 }
 
-// Cache the in-flight promise so concurrent requests for the same icon share one fetch
+// Cache the in-flight promise so concurrent requests for the same icon share one fetch.
+// Failed loads are evicted so a later call (e.g. a fragment or modal) can retry.
 function getIcon(iconName) {
   if (!iconCache.has(iconName)) {
     iconCache.set(
       iconName,
-      fetchFederalIcon(iconName).then((icon) => icon || fetchMiloIcon(iconName)),
+      fetchFederalIcon(iconName)
+        .then((icon) => icon || fetchMiloIcon(iconName))
+        .then((icon) => {
+          if (!icon) iconCache.delete(iconName);
+          return icon;
+        }, (error) => {
+          iconCache.delete(iconName);
+          throw error;
+        }),
     );
   }
   return iconCache.get(iconName);

@@ -119,6 +119,18 @@ describe('Icon Support', () => {
     dupeIcons.forEach((icon) => expect(icon.querySelector('svg')).to.exist);
   });
 
+  it('Retries a failed icon when a later fragment loads it', async () => {
+    fetchStub.withArgs(sinon.match('retry-after-fail')).onFirstCall().resolves({ ok: false });
+
+    const sectionIcon = createTag('span', { class: 'icon icon-retry-after-fail' });
+    await loadIcons([sectionIcon], config);
+    expect(sectionIcon.querySelector('svg')).to.not.exist;
+
+    const fragmentIcon = createTag('span', { class: 'icon icon-retry-after-fail' });
+    await loadIcons([fragmentIcon], config);
+    expect(fragmentIcon.querySelector('svg')).to.exist;
+  });
+
   it('Creates default tooltip (right-aligned)', async () => {
     await loadIcons(icons, config);
     const tooltip = document.querySelector('.milo-tooltip.right');
