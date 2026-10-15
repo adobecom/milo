@@ -1,10 +1,11 @@
 # firefly-globe — C2 block
 
-A simplified fork of `libs/mep/ace1209/globe-gallery`. The sphere, drag/inertia, hover, near-camera
+A simplified fork of `libs/c2/blocks/globe-gallery`. The sphere, drag/inertia, hover, near-camera
 fade, modal, on-canvas controls, keyboard/a11y path, pull-quote and reduced-motion handling are the
 same code with the class prefix renamed. **Everything not listed under "What is different" is
 documented in the globe-gallery README, and that document is the spec for this block too.** Keep the
-two in sync when a shared fix lands in either.
+two in sync when a shared fix lands in either. (`libs/mep/ace1209/globe-gallery` is a separate,
+diverged copy of the same block and is **not** the spec.)
 
 Editing conventions are the globe-gallery ones: prose in the README, code comments only as contract or
 as a hazard at the exact line an edit would break. Files ship unminified.
@@ -123,32 +124,10 @@ has the canvas sliding up during the last cards.
 
 ### Pull-quote copy reveal
 
-`PQ_REVEAL_IN_MS` is the whole sweep. `PQ_DRAW_*`, `PQ_COPY_PARTS` and the line timings are shares of
-it, so it is the one knob for overall pace. `PQ_REVEAL_OUT_MS` is the scroll-back exit and is
-absolute, not a share.
-
-Lines are staggered by `PQ_COPY_LINE_STAGGER` of the sweep, capped at `PQ_COPY_LINE_LAG_MAX` for the
-last line, so every line is in flight at once rather than arriving in turn.
-
-Each line carries two vars: `--fg-pq-line-v` for position and `--fg-pq-line-o` for opacity. Position
-is `easeOutQuart` over `lag → lag + span`; opacity is linear over `lag → 1`, the same window the name
-and role use. The mask clips the line for the first part of that window, so an ease-out would be
-spent before the line clears and read as no fade at all. CSS maps the progress onto
-`--fg-pq-line-fade-from → 1`, so a line enters partly visible rather than from nothing.
-
-The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
-`PQ_COPY_PARTS` and the `--fg-pq-copy-rise` lift apply to the name and role only.
-
-The wave is distance, not timing, and it rides on the mask box rather than the glyphs. A line is
-wholly hidden while its offset exceeds its own height, so every line's inner span waits the same
-`--fg-pq-line-start` and starts revealing as soon as its own clock does; rolled into that start
-distance, the wave would delay each lower line's first appearance.
-
-The mask itself is offset by `rank × --fg-pq-line-wave`, rank being the line's index capped at
-`PQ_COPY_LINE_RANK_CAP` and written as `--fg-pq-line-rank` on each split. A mask carries its clip
-rect with it, so that offset opens the gap without changing how much of the line shows: the spacing
-widens down the stack mid-flight and closes to the authored line-height on landing. Raise
-`--fg-pq-line-wave` for a deeper roll, 0 for a flat lift.
+Identical to globe-gallery's, code and constants: read **"The quote rolls in line by line"** and
+**"Frame mechanics"** in that README. The only differences here are the `--fg-` var prefix in place of
+`--gg-`, and that `--fg-formation-vh` is 0 (see the section on `--fg-pq-appear-t` above), so the quote
+is positioned from the pin rather than from a formation offset.
 
 ### Entry reveal
 
@@ -272,10 +251,18 @@ toggled after a value has already been written, so they reset `opacity` and `tra
 
 ## Tests
 
+Conventions, fixtures and the no-WebGL modal constraints are the globe-gallery ones; see that
+README's **Tests**.
+
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
 quote), `buildGlobeDom`, API card mapping (component rendition template, model tags, locale
 fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the clock endpoints
 (`deriveFrame`) and the travel camera inverse pair.
+
+`test/c2/blocks/firefly-globe/modules.test.js` covers `controls.js`, the `a11y.js` keyboard gallery,
+`interaction.js`, `cursor.js`, `materials.js` and `modal.js` DOM behavior.
+
+`mocks/authored.html` is the authoring contract as a fixture.
 
 `layoutQuote` is covered against real layout — the split reads `offsetTop` per word, so those cases
 attach the quote to the document at a width that forces a wrap. They pin the parts a relayout can
